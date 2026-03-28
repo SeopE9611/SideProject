@@ -111,7 +111,7 @@ function amountMeaningText(item: OpItem) {
 const PAGE_COPY = {
   title: "운영 통합 센터",
   description:
-    "주의(실제 오류)와 검수필요(운영 확인 신호)를 구분해 주문·대여·신청을 한 화면에서 점검하는 관리자 운영 허브입니다.",
+    "꼭 확인할 업무를 먼저 보여주고, 각 항목의 이유와 다음 할 일을 한 번에 확인하는 화면입니다.",
   dailyTodoTitle: "오늘 해야 할 일",
   dailyTodoLabels: {
     urgent: "긴급",
@@ -142,7 +142,7 @@ const PAGE_COPY = {
   onboarding: {
     title: "처음 방문하셨나요? 운영 통합 센터 3단계",
     description:
-      "페이지 목적을 확인하고, 주요 필터 프리셋으로 업무 대상을 좁힌 뒤, 주의 → 검수필요 → 미처리 순으로 점검하세요.",
+      "먼저 꼭 확인해야 할 항목을 위에서 확인하고, 필요한 필터를 고른 뒤 이유와 다음 할 일을 순서대로 점검하세요.",
     steps: [
       "1) 오늘 해야 할 일 확인",
       "2) 업무 목적형 프리셋 선택",
@@ -157,9 +157,37 @@ const PAGE_COPY = {
 
 const ROW_ACTION_LABELS = {
   detail: "상세 보기",
-  settlement: "정산 페이지 이동",
+  settlement: "정산 확인",
   copyId: "문서 ID 복사",
 } as const;
+
+const OPERATOR_TERM_MAP: Array<[RegExp, string]> = [
+  [/\bpaymentStatus\b/gi, "결제 상태 정보"],
+  [/\bpaymentSource\b/gi, "결제 연결 정보"],
+  [/\bREVIEW_INFO\b/g, "확인이 필요한 이유"],
+  [/\bderived\b/gi, "주문 정보를 기준으로 계산된"],
+  [/\bsignal\b/gi, "확인 신호"],
+  [/\bwarn\b/gi, "주의"],
+  [/\bpending\b/gi, "미처리"],
+];
+
+function toOperatorSentence(text?: string | null) {
+  if (!text) return "";
+  let next = text;
+  for (const [pattern, replacement] of OPERATOR_TERM_MAP) {
+    next = next.replace(pattern, replacement);
+  }
+  return next
+    .replace(
+      /신청서 paymentStatus가 비어 있어 파생 결제상태를 사용했습니다\./gi,
+      "신청서에 결제 정보가 비어 있어, 주문 정보를 기준으로 결제 상태를 표시했습니다.",
+    )
+    .replace(
+      /파생 결제상태/gi,
+      "주문 정보를 기준으로 계산한 결제 상태",
+    )
+    .trim();
+}
 
 type PresetKey = "paymentMismatch" | "integratedReview" | "singleApplication";
 
@@ -1634,9 +1662,9 @@ export default function OperationsClient() {
                 <Table>
                   <TableHeader>
                     <TableRow className="hover:bg-transparent border-b border-border">
-                      <TableHead className={thClasses}>우선순위/위험</TableHead>
-                      <TableHead className={thClasses}>대상</TableHead>
-                      <TableHead className={thClasses}>상태</TableHead>
+                      <TableHead className={thClasses}>우선순위</TableHead>
+                      <TableHead className={thClasses}>대상 · 요약</TableHead>
+                      <TableHead className={thClasses}>이유 · 다음 액션</TableHead>
                       <TableHead className={thClasses}>금액</TableHead>
                       {/* <TableHead className={cn(thClasses, 'sticky right-0 z-20 bg-card text-right shadow-[-8px_0_12px_-12px_hsl(var(--border))]')}>액션</TableHead> */}
                       <TableHead
@@ -1756,7 +1784,7 @@ export default function OperationsClient() {
                                   g.reviewLevel === "action" &&
                                   reviewReasons.length > 0 && (
                                     <div className="w-full text-[11px] text-primary/90">
-                                      사유 {reviewReasons.length}건 · 펼쳐서
+                                      확인 이유 {reviewReasons.length}건 · 펼쳐서
                                       확인
                                     </div>
                                   )}
@@ -1768,25 +1796,26 @@ export default function OperationsClient() {
                                 {g.primarySignal && (
                                   <div className="w-full rounded-sm border border-warning/30 bg-warning/5 px-2 py-1 text-[11px]">
                                     <p className="font-semibold text-foreground">
-                                      {g.primarySignal.title}
-                                      <span className="ml-1 font-mono text-[10px] text-muted-foreground">
+                                      {toOperatorSentence(g.primarySignal.title)}
+                                      <span className="ml-1 text-[10px] text-muted-foreground">
                                         {g.primarySignal.code}
                                       </span>
                                     </p>
                                     <p className="text-muted-foreground">
-                                      {g.primarySignal.description}
+                                      {toOperatorSentence(g.primarySignal.description)}
                                     </p>
                                     {g.primarySignal.nextAction && (
                                       <p className="text-foreground">
-                                        즉시 조치: {g.primarySignal.nextAction}
+                                        지금 할 일:{" "}
+                                        {toOperatorSentence(g.primarySignal.nextAction)}
                                       </p>
                                     )}
                                   </div>
                                 )}
                                 <div className="w-full rounded-sm border border-primary/20 bg-primary/5 px-2 py-1 text-[11px]">
-                                  다음 할 일:{" "}
+                                  다음 액션:{" "}
                                   {groupGuide.nextAction?.trim()
-                                    ? groupGuide.nextAction
+                                    ? toOperatorSentence(groupGuide.nextAction)
                                     : groupCancelRequested
                                       ? "취소 요청 처리 필요"
                                       : g.reviewLevel === "info"
@@ -1794,7 +1823,7 @@ export default function OperationsClient() {
                                         : "조치 필요 없음"}
                                 </div>
                                 <div className="text-[11px] text-muted-foreground">
-                                  {groupGuide.stage} ·{" "}
+                                  {toOperatorSentence(groupGuide.stage)} ·{" "}
                                   {isGroup
                                     ? `${g.items.length}건 그룹`
                                     : "단일 건"}
@@ -1806,8 +1835,8 @@ export default function OperationsClient() {
                             <TableCell
                               className={cn(tdClasses, rowDensityClass)}
                             >
-                              <div className="space-y-1">
-                                <div className="flex items-center gap-2">
+                              <div className="space-y-1.5">
+                                <div className="flex items-center gap-2 flex-wrap">
                                   {isGroup && (
                                     <Button
                                       type="button"
@@ -1838,6 +1867,17 @@ export default function OperationsClient() {
                                     {shortenId(g.anchor.id)}
                                   </span>
                                 </div>
+                                <p className="text-sm font-medium text-foreground">
+                                  {toOperatorSentence(g.primarySignal?.title) ||
+                                    toOperatorSentence(g.anchor.reviewTitle) ||
+                                    `${opsKindLabel(g.anchor.kind)} 처리 상태 확인 필요`}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  이유:{" "}
+                                  {toOperatorSentence(g.primarySignal?.description) ||
+                                    toOperatorSentence(reviewReasons[0]) ||
+                                    "상태와 연결 문서를 함께 확인해야 하는 항목입니다."}
+                                </p>
                                 <div className="text-sm">
                                   {g.anchor.customer?.name || "-"}
                                 </div>
@@ -1850,7 +1890,7 @@ export default function OperationsClient() {
                             <TableCell
                               className={cn(tdClasses, rowDensityClass)}
                             >
-                              <div className="flex flex-col items-start gap-1">
+                              <div className="flex flex-col items-start gap-1.5">
                                 <Badge
                                   variant={opStatusBadgeSpec(g.anchor).variant}
                                   className={cn(badgeBase, badgeSizeSm)}
@@ -1874,7 +1914,7 @@ export default function OperationsClient() {
                                   })()
                                 ) : (
                                   <span className="text-xs text-muted-foreground">
-                                    결제정보 없음(문서 미기입)
+                                    결제 정보가 문서에 아직 입력되지 않았습니다.
                                   </span>
                                 )}
                                 {(() => {
@@ -1917,7 +1957,9 @@ export default function OperationsClient() {
                                           취소 요청이 접수된 항목입니다.
                                         </p>
                                         <p className="mt-1 text-xs text-muted-foreground">
-                                          {anchorCancelQuickSignal.tooltipCopy}
+                                          {toOperatorSentence(
+                                            anchorCancelQuickSignal.tooltipCopy,
+                                          )}
                                         </p>
                                         {g.anchor.cancel?.refundBankLabel && (
                                           <p className="mt-1 text-xs text-muted-foreground">
@@ -2010,7 +2052,7 @@ export default function OperationsClient() {
                                     aria-label={ROW_ACTION_LABELS.detail}
                                   >
                                     <Eye className="h-3.5 w-3.5" />
-                                    <span className="text-xs">상세</span>
+                                    <span className="text-xs">상세 보기</span>
                                   </Link>
                                 </Button>
                                 <Button
@@ -2026,7 +2068,7 @@ export default function OperationsClient() {
                                     aria-label={ROW_ACTION_LABELS.settlement}
                                   >
                                     <BarChartBig className="h-3.5 w-3.5" />
-                                    <span className="text-xs">정산</span>
+                                    <span className="text-xs">정산 확인</span>
                                   </Link>
                                 </Button>
                                 <Button
@@ -2075,7 +2117,7 @@ export default function OperationsClient() {
                                   )}
                                   <div>
                                     <p className="mb-1 text-xs font-medium text-foreground">
-                                      상태 혼재 내역
+                                      확인이 필요한 이유
                                     </p>
                                     {childStatusSummary.length > 0 ? (
                                       <div className="space-y-1">
@@ -2084,27 +2126,28 @@ export default function OperationsClient() {
                                             key={`st:${g.key}:${s.kind}`}
                                             className="text-xs text-muted-foreground"
                                           >
-                                            {opsKindLabel(s.kind)}: {s.text}
+                                            {opsKindLabel(s.kind)}:{" "}
+                                            {toOperatorSentence(s.text)}
                                             {s.mixed ? " (혼재)" : ""}
                                           </div>
                                         ))}
                                       </div>
                                     ) : (
                                       <span className="text-xs text-muted-foreground">
-                                        혼재 없음
+                                        연결 문서 상태가 크게 엇갈리진 않습니다.
                                       </span>
                                     )}
                                   </div>
                                   <div>
                                     <p className="mb-1 text-xs font-medium text-foreground">
-                                      현재 업무 단계 / 다음 할 일
+                                      현재 단계 / 다음 액션
                                     </p>
                                     <p className="text-xs text-muted-foreground">
-                                      {groupGuide.stage}
+                                      {toOperatorSentence(groupGuide.stage)}
                                     </p>
                                     <p className="text-xs text-foreground">
                                       {groupGuide.nextAction?.trim()
-                                        ? groupGuide.nextAction
+                                        ? toOperatorSentence(groupGuide.nextAction)
                                         : g.reviewLevel === "info"
                                           ? "조치 필요 없음(정상 파생)"
                                           : "조치 필요 없음"}
@@ -2119,7 +2162,7 @@ export default function OperationsClient() {
                                     reviewReasons.length > 0 && (
                                       <div>
                                         <p className="mb-1 text-xs font-medium text-foreground">
-                                          검수 사유
+                                          확인이 필요한 이유
                                         </p>
                                         <ul className="space-y-1">
                                           {reviewReasons.map((reason) => (
@@ -2127,7 +2170,7 @@ export default function OperationsClient() {
                                               key={`review:${g.key}:${reason}`}
                                               className="text-xs text-muted-foreground list-disc list-inside"
                                             >
-                                              {reason}
+                                              {toOperatorSentence(reason)}
                                             </li>
                                           ))}
                                         </ul>
@@ -2162,6 +2205,8 @@ export default function OperationsClient() {
               <div className="space-y-3 bp-lg:hidden">
                 {groupsToRender.map((g) => {
                   const warn = g.warn;
+                  const isGroup = g.items.length > 1;
+                  const isOpen = !!openGroups[g.key];
                   const reviewReasons = collectReviewReasons(g);
                   const groupGuide = inferNextActionForOperationGroup(g.items);
                   const quickActionTarget = resolveQuickActionTarget(
@@ -2175,6 +2220,10 @@ export default function OperationsClient() {
                   const groupCancelRequested = g.items.some(
                     (it) => it.cancel?.status === "requested",
                   );
+                  const settleYyyymm = yyyymmKST(g.createdAt ?? g.anchor.createdAt);
+                  const settleHref = settleYyyymm
+                    ? `/admin/settlements?yyyymm=${settleYyyymm}`
+                    : "/admin/settlements";
                   const anchorCancelQuickSignal = cancelQuickSignalSpec(
                     g.anchor.cancel,
                   );
@@ -2229,6 +2278,17 @@ export default function OperationsClient() {
                         <div className="text-sm font-medium">
                           {g.anchor.customer?.name || "-"}
                         </div>
+                        <p className="text-sm font-semibold text-foreground">
+                          {toOperatorSentence(g.primarySignal?.title) ||
+                            toOperatorSentence(g.anchor.reviewTitle) ||
+                            `${opsKindLabel(g.anchor.kind)} 확인 필요`}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          이유:{" "}
+                          {toOperatorSentence(g.primarySignal?.description) ||
+                            toOperatorSentence(reviewReasons[0]) ||
+                            "상태와 연결 정보를 함께 확인해 주세요."}
+                        </p>
                         <div className="text-xs text-muted-foreground">
                           상태:{" "}
                           {g.anchor.statusDisplayLabel ?? g.anchor.statusLabel}
@@ -2305,12 +2365,12 @@ export default function OperationsClient() {
                             현재 업무 단계
                           </p>
                           <p className="text-[11px] text-muted-foreground">
-                            {groupGuide.stage}
+                            {toOperatorSentence(groupGuide.stage)}
                           </p>
                           <p className="mt-1 text-[11px] text-foreground">
-                            다음 할 일:{" "}
+                            다음 액션:{" "}
                             {groupGuide.nextAction?.trim()
-                              ? groupGuide.nextAction
+                              ? toOperatorSentence(groupGuide.nextAction)
                               : groupCancelRequested
                                 ? "취소 요청 처리 필요"
                                 : g.reviewLevel === "info"
@@ -2326,13 +2386,13 @@ export default function OperationsClient() {
                         {g.primarySignal && (
                           <div className="rounded-md border border-warning/30 bg-warning/5 px-2 py-1.5">
                             <p className="text-[11px] font-medium text-foreground">
-                              {g.primarySignal.title}
-                              <span className="ml-1 font-mono text-[10px] text-muted-foreground">
+                              {toOperatorSentence(g.primarySignal.title)}
+                              <span className="ml-1 text-[10px] text-muted-foreground">
                                 {g.primarySignal.code}
                               </span>
                             </p>
                             <p className="text-[11px] text-muted-foreground">
-                              {g.primarySignal.description}
+                              {toOperatorSentence(g.primarySignal.description)}
                             </p>
                             {(g.signals?.length ?? 0) > 0 && (
                               <p className="mt-1 text-[11px] text-muted-foreground">
@@ -2346,7 +2406,7 @@ export default function OperationsClient() {
                           reviewReasons.length > 0 && (
                             <div className="rounded-md border border-primary/20 bg-primary/5 px-2 py-1.5">
                               <p className="text-[11px] font-medium text-primary">
-                                검수 사유
+                                확인이 필요한 이유
                               </p>
                               <ul className="mt-1 space-y-0.5">
                                 {reviewReasons.map((reason) => (
@@ -2354,12 +2414,43 @@ export default function OperationsClient() {
                                     key={`m-review:${g.key}:${reason}`}
                                     className="text-[11px] text-muted-foreground list-disc list-inside"
                                   >
-                                    {reason}
+                                    {toOperatorSentence(reason)}
                                   </li>
                                 ))}
                               </ul>
                             </div>
                           )}
+                        {isGroup && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 px-2 text-xs"
+                            onClick={() => toggleGroup(g.key)}
+                          >
+                            {isOpen ? "상세 접기" : "상세 펼쳐서 보기"}
+                          </Button>
+                        )}
+                        {isGroup && isOpen && (
+                          <div className="rounded-md border border-border bg-muted/20 p-2 space-y-2">
+                            <p className="text-[11px] font-medium text-foreground">
+                              연결 문서와 상태 참고
+                            </p>
+                            {renderLinkedDocs(
+                              g.items
+                                .filter(
+                                  (item) =>
+                                    `${item.kind}:${item.id}` !==
+                                    `${g.anchor.kind}:${g.anchor.id}`,
+                                )
+                                .map((item) => ({
+                                  kind: item.kind,
+                                  id: item.id,
+                                  href: item.href,
+                                })),
+                            )}
+                          </div>
+                        )}
                         <div className="text-sm font-semibold">
                           금액: {won(g.anchor.amount)}
                         </div>
@@ -2368,7 +2459,7 @@ export default function OperationsClient() {
                             {amountMeaningText(g.anchor)}
                           </div>
                         ) : null}
-                        <div className="flex items-center gap-1.5 pt-1">
+                        <div className="flex flex-wrap items-center gap-1.5 pt-1">
                           {quickActionTarget && (
                             <Button
                               asChild
@@ -2382,13 +2473,11 @@ export default function OperationsClient() {
                             </Button>
                           )}
                           <Button asChild size="sm" variant="outline" className="h-8 px-2 bg-transparent">
-                            <Link href={g.anchor.href}>상세</Link>
+                            <Link href={g.anchor.href}>상세 보기</Link>
                           </Button>
-                          {g.anchor.related && (
-                            <Button asChild size="sm" variant="outline" className="h-8 px-2 bg-transparent">
-                              <Link href={g.anchor.related.href}>연결 문서</Link>
-                            </Button>
-                          )}
+                          <Button asChild size="sm" variant="outline" className="h-8 px-2 bg-transparent">
+                            <Link href={settleHref}>정산 확인</Link>
+                          </Button>
                           <Button
                             size="sm"
                             variant="outline"
