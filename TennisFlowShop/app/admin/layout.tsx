@@ -87,13 +87,13 @@ export default async function AdminLayout({
       <div className="relative overflow-hidden bg-muted/30 text-foreground">
         <div className="absolute inset-0 bg-overlay/10"></div>
         <HeroCourtBackdrop className="h-full w-full text-primary opacity-[0.10] dark:opacity-[0.12]" />
-        <div className="relative container py-12 lg:py-14">
+        <div className="relative container py-9 lg:py-11">
           <div className="flex items-center gap-4 mb-4">
             <div className="p-3 bg-card backdrop-blur-sm rounded-2xl shadow-lg">
               <UserCog2Icon className="h-8 w-8" />
             </div>
             <div>
-              <h1 className="text-4xl font-black mb-2">관리자 페이지</h1>
+              <h1 className="text-3xl font-black mb-1.5 lg:text-4xl">관리자 페이지</h1>
               <p className="text-muted-foreground">
                 관리자 전용 페이지 입니다.
                 <span className="font-medium text-primary">
