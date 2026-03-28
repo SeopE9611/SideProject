@@ -1370,58 +1370,17 @@ export default function OperationsClient() {
                 </div>
               </div>
             )}
-            {/* 범례(운영자 인지 부하 감소) */}
-            <div className="space-y-2 border-t border-border pt-2.5">
-              <p className="text-[11px] text-muted-foreground">
-                현재 뷰 링크는 버튼으로 복사해 공유할 수 있습니다.
-              </p>
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-muted-foreground">
-                <span className="font-medium text-foreground">범례</span>
-                <Badge
-                  variant={opsBadgeVariant(opsKindBadgeTone("order"))}
-                  className={cn(badgeBase, badgeSizeSm)}
-                >
-                  문서유형
-                </Badge>
-                <Badge
-                  className={cn(
-                    badgeBase,
-                    badgeSizeSm,
-                    badgeToneClass("brand"),
-                  )}
-                >
-                  통합여부
-                </Badge>
-                <Badge
-                  className={cn(
-                    badgeBase,
-                    badgeSizeSm,
-                    badgeToneClass("warning"),
-                  )}
-                >
-                  <AlertTriangle className="h-3 w-3" aria-hidden="true" />
-                  주의(실제 오류)
-                </Badge>
-                <Badge
-                  className={cn(
-                    badgeBase,
-                    badgeSizeSm,
-                    badgeToneClass("brand"),
-                  )}
-                >
-                  확인 필요(운영 확인)
-                </Badge>
-                <span>
-                  결제 상태는 주문 기준 결제 상태로 함께 표시될 수 있습니다.
-                </span>
-              </div>
-
-              <div className="flex items-center gap-2">
+            {/* 범례(기본 노출 비중 축소) */}
+            <div className="pt-1">
+              <div className="flex items-center justify-between gap-2 rounded-md border border-border/60 bg-muted/20 px-2.5 py-1.5">
+                <p className="text-[10px] text-muted-foreground">
+                  현재 화면 링크는 복사 버튼으로 공유할 수 있습니다.
+                </p>
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="h-7 px-2 text-xs"
+                  className="h-7 px-2 text-[11px] text-muted-foreground"
                   aria-expanded={showAdvancedLegend}
                   onClick={() => setShowAdvancedLegend((prev) => !prev)}
                 >
@@ -1430,37 +1389,82 @@ export default function OperationsClient() {
                   ) : (
                     <ChevronRight className="mr-1 h-3.5 w-3.5" />
                   )}
-                  고급 필터
+                  {showAdvancedLegend ? "범례 접기" : "범례 보기"}
                 </Button>
               </div>
 
               {showAdvancedLegend && (
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-2 text-xs text-muted-foreground">
-                  <span className="font-medium text-foreground">시나리오</span>
-                  <Badge
-                    data-cy="admin-operations-flow-badge-1"
-                    className={cn(badgeBase, badgeSizeSm, flowBadgeClass(1))}
-                  >
-                    스트링 구매
-                  </Badge>
-                  <Badge
-                    data-cy="admin-operations-flow-badge-4"
-                    className={cn(badgeBase, badgeSizeSm, flowBadgeClass(4))}
-                  >
-                    라켓 구매
-                  </Badge>
-                  <Badge
-                    data-cy="admin-operations-flow-badge-6"
-                    className={cn(badgeBase, badgeSizeSm, flowBadgeClass(6))}
-                  >
-                    대여
-                  </Badge>
-                  <Badge
-                    data-cy="admin-operations-flow-badge-3"
-                    className={cn(badgeBase, badgeSizeSm, flowBadgeClass(3))}
-                  >
-                    교체 신청(단독)
-                  </Badge>
+                <div className="mt-2 space-y-2 rounded-md border border-border/60 bg-muted/15 px-2.5 py-2">
+                  <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
+                    <span className="font-medium">범례</span>
+                    <Badge
+                      variant={opsBadgeVariant(opsKindBadgeTone("order"))}
+                      className={cn(badgeBase, badgeSizeSm, "opacity-90")}
+                    >
+                      문서유형
+                    </Badge>
+                    <Badge
+                      className={cn(
+                        badgeBase,
+                        badgeSizeSm,
+                        badgeToneClass("brand"),
+                        "opacity-90",
+                      )}
+                    >
+                      통합여부
+                    </Badge>
+                    <Badge
+                      className={cn(
+                        badgeBase,
+                        badgeSizeSm,
+                        badgeToneClass("warning"),
+                        "opacity-90",
+                      )}
+                    >
+                      <AlertTriangle className="h-3 w-3" aria-hidden="true" />
+                      주의(오류)
+                    </Badge>
+                    <Badge
+                      className={cn(
+                        badgeBase,
+                        badgeSizeSm,
+                        badgeToneClass("brand"),
+                        "opacity-90",
+                      )}
+                    >
+                      확인 필요
+                    </Badge>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">
+                    결제 상태는 주문 기준으로 함께 표시될 수 있습니다.
+                  </p>
+                  <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
+                    <span className="font-medium">시나리오</span>
+                    <Badge
+                      data-cy="admin-operations-flow-badge-1"
+                      className={cn(badgeBase, badgeSizeSm, flowBadgeClass(1))}
+                    >
+                      스트링 구매
+                    </Badge>
+                    <Badge
+                      data-cy="admin-operations-flow-badge-4"
+                      className={cn(badgeBase, badgeSizeSm, flowBadgeClass(4))}
+                    >
+                      라켓 구매
+                    </Badge>
+                    <Badge
+                      data-cy="admin-operations-flow-badge-6"
+                      className={cn(badgeBase, badgeSizeSm, flowBadgeClass(6))}
+                    >
+                      대여
+                    </Badge>
+                    <Badge
+                      data-cy="admin-operations-flow-badge-3"
+                      className={cn(badgeBase, badgeSizeSm, flowBadgeClass(3))}
+                    >
+                      교체 신청(단독)
+                    </Badge>
+                  </div>
                 </div>
               )}
             </div>
@@ -1672,7 +1676,7 @@ export default function OperationsClient() {
                                       }
                                       className={cn(badgeBase, badgeSizeSm)}
                                     >
-                                      참고 정보(조치 없음)
+                                      참고
                                     </Badge>
                                   )}
                                 </div>
@@ -1688,43 +1692,11 @@ export default function OperationsClient() {
                                 >
                                   {opsKindLabel(g.anchor.kind)}
                                 </Badge>
-                                {!warn &&
-                                  g.reviewLevel === "action" &&
-                                  reviewReasons.length > 0 && (
-                                    <div className="w-full text-[11px] text-primary/90">
-                                      확인 이유 {reviewReasons.length}건 · 펼쳐서
-                                      확인
-                                    </div>
-                                  )}
-                                {!warn && g.reviewLevel === "info" && (
-                                  <div className="w-full text-[11px] text-info">
-                                    정상 파생 · 조치 필요 없음
-                                  </div>
-                                )}
-                                {g.primarySignal && (
-                                  <div className="w-full rounded-sm border border-warning/30 bg-warning/5 px-2 py-1 text-[11px]">
-                                    <p className="font-semibold text-foreground">
-                                      {toOperatorSentence(g.primarySignal.title)}
-                                      <span className="ml-1 text-[10px] text-muted-foreground">
-                                        {g.primarySignal.code}
-                                      </span>
-                                    </p>
-                                    <p className="text-muted-foreground">
-                                      {toOperatorSentence(g.primarySignal.description)}
-                                    </p>
-                                    {g.primarySignal.nextAction && (
-                                      <p className="text-foreground">
-                                        지금 할 일:{" "}
-                                        {toOperatorSentence(g.primarySignal.nextAction)}
-                                      </p>
-                                    )}
-                                  </div>
-                                )}
                                 <div className="w-full rounded-md border border-primary/25 bg-primary/[0.07] px-2.5 py-1.5 text-[11px]">
                                   <p className="font-semibold text-primary">
-                                    다음 액션
+                                    지금 해야 할 일
                                   </p>
-                                  <p className="mt-0.5 text-foreground">
+                                  <p className="mt-0.5 line-clamp-2 text-foreground">
                                     {groupGuide.nextAction?.trim()
                                       ? toOperatorSentence(groupGuide.nextAction)
                                       : groupCancelRequested
@@ -1735,11 +1707,10 @@ export default function OperationsClient() {
                                   </p>
                                 </div>
                                 <div className="text-[11px] text-muted-foreground">
-                                  {toOperatorSentence(groupGuide.stage)} ·{" "}
+                                  단계: {toOperatorSentence(groupGuide.stage)} ·{" "}
                                   {isGroup
                                     ? `${g.items.length}건 그룹`
                                     : "단일 건"}
-                                  {` · 신호 ${g.signals?.length ?? 0}건`}
                                 </div>
                               </div>
                             </TableCell>
@@ -1786,21 +1757,11 @@ export default function OperationsClient() {
                                     g.primarySignal?.description ?? reviewReasons[0],
                                   )}
                                 </p>
-                                <div className="rounded-md border border-primary/20 bg-primary/[0.07] px-2 py-1">
-                                  <p className="flex items-center gap-1 text-[11px] font-semibold text-primary">
-                                    <BellRing className="h-3 w-3" />
-                                    지금 해야 할 일
+                                {g.primarySignal?.title && (
+                                  <p className="text-[11px] text-muted-foreground line-clamp-1">
+                                    신호: {toOperatorSentence(g.primarySignal.title)}
                                   </p>
-                                  <p className="mt-0.5 text-xs text-foreground line-clamp-1">
-                                    {groupGuide.nextAction?.trim()
-                                      ? toOperatorSentence(groupGuide.nextAction)
-                                      : groupCancelRequested
-                                        ? "취소 요청 처리 필요"
-                                        : g.reviewLevel === "info"
-                                          ? "조치 필요 없음(정상 파생)"
-                                          : "조치 필요 없음"}
-                                  </p>
-                                </div>
+                                )}
                               </div>
                             </TableCell>
 
@@ -1819,25 +1780,9 @@ export default function OperationsClient() {
                                   {g.anchor.statusDisplayLabel ??
                                     g.anchor.statusLabel}
                                 </Badge>
-                                {g.anchor.paymentLabel ? (
-                                  (() => {
-                                    const pay = getPaymentStatusBadgeSpec(
-                                      g.anchor.paymentLabel,
-                                    );
-                                    return (
-                                      <Badge
-                                        variant={pay.variant}
-                                        className={cn(badgeBase, badgeSizeSm)}
-                                      >
-                                        {g.anchor.paymentLabel}
-                                      </Badge>
-                                    );
-                                  })()
-                                ) : (
-                                  <span className="text-xs text-muted-foreground">
-                                    결제 정보가 문서에 아직 입력되지 않았습니다.
-                                  </span>
-                                )}
+                                <span className="text-[11px] text-muted-foreground line-clamp-1">
+                                  결제: {g.anchor.paymentLabel || "정보 없음"}
+                                </span>
                                 {(() => {
                                   const cancelBadge = cancelBadgeSpec(
                                     g.anchor.cancel?.status,
@@ -1960,7 +1905,7 @@ export default function OperationsClient() {
                                     asChild
                                     size="sm"
                                     variant="secondary"
-                                    className="h-8 px-2"
+                                    className="h-8 px-2 text-xs"
                                     title={ROW_ACTION_LABELS.detail}
                                   >
                                     <Link
@@ -1973,12 +1918,12 @@ export default function OperationsClient() {
                                     </Link>
                                   </Button>
                                 </div>
-                                <div className="flex flex-wrap justify-end gap-1">
+                                <div className="flex flex-wrap justify-end gap-1 opacity-80">
                                   <Button
                                     asChild
                                     size="sm"
                                     variant="ghost"
-                                    className="h-7 px-1.5 text-[11px] text-muted-foreground"
+                                    className="h-7 px-1.5 text-[11px] text-muted-foreground hover:text-foreground"
                                     title={ROW_ACTION_LABELS.settlement}
                                   >
                                     <Link
@@ -1993,7 +1938,7 @@ export default function OperationsClient() {
                                   <Button
                                     size="sm"
                                     variant="ghost"
-                                    className="h-7 w-7 p-0 text-muted-foreground"
+                                    className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
                                     onClick={() => copyToClipboard(g.anchor.id)}
                                     title={ROW_ACTION_LABELS.copyId}
                                     aria-label={ROW_ACTION_LABELS.copyId}
@@ -2017,7 +1962,7 @@ export default function OperationsClient() {
                                 <div className="mb-2 flex items-center gap-2">
                                   <ChevronDown className="h-3.5 w-3.5 text-primary" />
                                   <p className="text-xs font-semibold text-foreground">
-                                    추가 정보 · 이유/연결 문서
+                                    상세 정보
                                   </p>
                                 </div>
                                 <div className="grid gap-3 bp-xl:grid-cols-2 2xl:grid-cols-4">
@@ -2046,7 +1991,7 @@ export default function OperationsClient() {
                                   )}
                                   <div className="rounded-md border border-border bg-background/70 p-3">
                                     <p className="mb-1 text-xs font-semibold text-foreground">
-                                      확인이 필요한 이유
+                                      연결 상태 요약
                                     </p>
                                     {childStatusSummary.length > 0 ? (
                                       <div className="space-y-1">
@@ -2069,7 +2014,7 @@ export default function OperationsClient() {
                                   </div>
                                   <div className="rounded-md border border-primary/20 bg-primary/[0.06] p-3">
                                     <p className="mb-1 text-xs font-semibold text-foreground">
-                                      현재 단계 / 다음 액션
+                                      단계 / 다음 처리
                                     </p>
                                     <p className="text-xs text-muted-foreground">
                                       {toOperatorSentence(groupGuide.stage)}
@@ -2134,7 +2079,6 @@ export default function OperationsClient() {
               <div className="space-y-3 bp-lg:hidden">
                 {groupsToRender.map((g) => {
                   const warn = g.warn;
-                  const isGroup = g.items.length > 1;
                   const isOpen = !!openGroups[g.key];
                   const reviewReasons = collectReviewReasons(g);
                   const groupGuide = inferNextActionForOperationGroup(g.items);
@@ -2158,9 +2102,9 @@ export default function OperationsClient() {
                   );
                   return (
                     <Card key={`m:${g.key}`} className="border-border shadow-sm">
-                      <CardContent className="p-3 space-y-2">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex flex-wrap items-center gap-1">
+                      <CardContent className="space-y-2 p-3">
+                        <div className="flex flex-wrap items-center justify-between gap-1.5">
+                          <div className="flex items-center gap-1">
                             <Badge
                               className={cn(
                                 badgeBase,
@@ -2183,39 +2127,21 @@ export default function OperationsClient() {
                                 확인 필요
                               </Badge>
                             )}
-                            {!warn && g.reviewLevel === "info" && (
-                              <Badge
-                                variant={
-                                  getWorkflowMetaBadgeSpec("application_linked")
-                                    .variant
-                                }
-                                className={cn(badgeBase, badgeSizeSm)}
-                              >
-                                참고 정보(조치 없음)
-                              </Badge>
-                            )}
                           </div>
-                          <Badge
-                            variant={opsBadgeVariant(
-                              opsKindBadgeTone(g.anchor.kind),
-                            )}
-                            className={cn(
-                              badgeBase,
-                              badgeSizeSm,
-                              "min-w-[3.75rem] justify-center whitespace-nowrap shrink-0",
-                            )}
-                          >
-                            {opsKindLabel(g.anchor.kind)}
-                          </Badge>
-                        </div>
-                        <div className="flex items-center gap-1.5 text-sm">
-                          <span className="font-semibold text-foreground">
-                            {g.anchor.customer?.name || "-"}
-                          </span>
                           <span className="text-[11px] text-muted-foreground">
                             {opsKindLabel(g.anchor.kind)} · {shortenId(g.anchor.id)}
                           </span>
                         </div>
+
+                        <div className="flex items-baseline justify-between gap-2">
+                          <span className="text-sm font-semibold text-foreground">
+                            {g.anchor.customer?.name || "-"}
+                          </span>
+                          <span className="text-base font-extrabold tracking-tight text-foreground">
+                            {won(g.anchor.amount)}
+                          </span>
+                        </div>
+
                         <p className="text-sm font-semibold text-foreground line-clamp-1">
                           {toOperatorSentence(g.primarySignal?.title) ||
                             toOperatorSentence(g.anchor.reviewTitle) ||
@@ -2227,101 +2153,163 @@ export default function OperationsClient() {
                             g.primarySignal?.description ?? reviewReasons[0],
                           )}
                         </p>
-                        <div className="flex flex-wrap items-center gap-1.5">
-                          <Badge
-                            variant={opStatusBadgeSpec(g.anchor).variant}
-                            className={cn(badgeBase, badgeSizeSm)}
-                          >
-                            {g.anchor.statusDisplayLabel ?? g.anchor.statusLabel}
-                          </Badge>
-                        </div>
-                        <div className="flex flex-wrap items-center gap-1">
-                          {(() => {
-                            const cancelBadge = cancelBadgeSpec(
-                              g.anchor.cancel?.status,
-                            );
-                            return cancelBadge ? (
-                              <Badge
-                                variant={cancelBadge.spec.variant}
-                                className={cn(badgeBase, badgeSizeSm)}
-                              >
-                                {cancelBadge.label}
-                              </Badge>
-                            ) : null;
-                          })()}
-                          {anchorCancelQuickSignal && (
-                            <TooltipProvider delayDuration={50}>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Badge
-                                    className={cn(
-                                      badgeBase,
-                                      badgeSizeSm,
-                                      badgeToneClass(
-                                        anchorCancelQuickSignal.tone,
-                                      ),
-                                      "cursor-help",
-                                    )}
-                                  >
-                                    {anchorCancelQuickSignal.label}
-                                  </Badge>
-                                </TooltipTrigger>
-                                <TooltipContent
-                                  side="top"
-                                  align="start"
-                                  sideOffset={6}
-                                  className={adminRichTooltipClass}
-                                >
-                                  <p className="text-sm text-foreground">
-                                    취소 요청이 접수된 항목입니다.
-                                  </p>
-                                  <p className="mt-1 text-xs text-muted-foreground">
-                                    {anchorCancelQuickSignal.tooltipCopy}
-                                  </p>
-                                  {g.anchor.cancel?.refundBankLabel && (
-                                    <p className="mt-1 text-xs text-muted-foreground">
-                                      환불 은행:{" "}
-                                      {g.anchor.cancel.refundBankLabel}
-                                    </p>
-                                  )}
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
+
+                        <p className="flex items-start gap-1 text-[11px] text-foreground">
+                          <BellRing className="mt-0.5 h-3 w-3 shrink-0 text-primary" />
+                          <span className="line-clamp-2">
+                            {groupGuide.nextAction?.trim()
+                              ? toOperatorSentence(groupGuide.nextAction)
+                              : groupCancelRequested
+                                ? "취소 요청 처리 필요"
+                                : g.reviewLevel === "info"
+                                  ? "조치 필요 없음(정상 파생)"
+                                  : "조치 필요 없음"}
+                          </span>
+                        </p>
+
+                        <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                          {quickActionTarget && (
+                            <Button
+                              asChild
+                              size="sm"
+                              variant="default"
+                              className="h-8 px-2.5 font-semibold shadow-sm"
+                            >
+                              <Link href={quickActionTarget.href}>
+                                {quickActionTarget.label}
+                              </Link>
+                            </Button>
                           )}
-                        </div>
-                        <div className="rounded-md border border-primary/20 bg-primary/5 px-2 py-1.5">
-                          <p className="text-[11px] font-medium text-primary">지금 해야 할 일</p>
-                          <p className="mt-1 flex items-start gap-1 text-[11px] text-foreground">
-                            <BellRing className="mt-0.5 h-3 w-3 shrink-0 text-primary" />
-                            <span>
-                              {groupGuide.nextAction?.trim()
-                                ? toOperatorSentence(groupGuide.nextAction)
-                                : groupCancelRequested
-                                  ? "취소 요청 처리 필요"
-                                  : g.reviewLevel === "info"
-                                    ? "조치 필요 없음(정상 파생)"
-                                    : "조치 필요 없음"}
-                            </span>
-                          </p>
-                        </div>
-                        {isGroup && (
+                          <Button
+                            asChild
+                            size="sm"
+                            variant="secondary"
+                            className="h-8 px-2"
+                          >
+                            <Link
+                              href={g.anchor.href}
+                              className="inline-flex items-center gap-1"
+                            >
+                              <Eye className="h-3.5 w-3.5" />
+                              상세
+                            </Link>
+                          </Button>
                           <Button
                             type="button"
                             variant="ghost"
                             size="sm"
-                            className="h-7 px-2 text-xs"
+                            className="ml-auto h-7 px-2 text-[11px] text-muted-foreground"
                             onClick={() => toggleGroup(g.key)}
                           >
-                            {isOpen ? "상세 접기" : "이유/연결 정보 보기"}
+                            {isOpen ? "상세 접기" : "상세 정보"}
                           </Button>
-                        )}
-                        {isGroup && isOpen && (
-                          <div className="rounded-md border border-primary/20 bg-muted/35 p-2.5 space-y-2">
-                            <p className="text-[11px] font-semibold text-foreground">추가 정보 · 이유/연결 문서</p>
+                        </div>
+
+                        {isOpen && (
+                          <div className="space-y-2 rounded-md border border-border/70 bg-muted/25 p-2.5">
                             <p className="text-[11px] text-muted-foreground">
                               기준 시각: {formatKST(g.createdAt ?? g.anchor.createdAt)} · 단계:{" "}
                               {toOperatorSentence(groupGuide.stage)}
                             </p>
+                            <div className="flex flex-wrap items-center gap-1">
+                              <Badge
+                                variant={opStatusBadgeSpec(g.anchor).variant}
+                                className={cn(badgeBase, badgeSizeSm)}
+                              >
+                                {g.anchor.statusDisplayLabel ?? g.anchor.statusLabel}
+                              </Badge>
+                              {(() => {
+                                const cancelBadge = cancelBadgeSpec(
+                                  g.anchor.cancel?.status,
+                                );
+                                return cancelBadge ? (
+                                  <Badge
+                                    variant={cancelBadge.spec.variant}
+                                    className={cn(badgeBase, badgeSizeSm)}
+                                  >
+                                    {cancelBadge.label}
+                                  </Badge>
+                                ) : null;
+                              })()}
+                              {anchorCancelQuickSignal && (
+                                <TooltipProvider delayDuration={50}>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Badge
+                                        className={cn(
+                                          badgeBase,
+                                          badgeSizeSm,
+                                          badgeToneClass(
+                                            anchorCancelQuickSignal.tone,
+                                          ),
+                                          "cursor-help",
+                                        )}
+                                      >
+                                        {anchorCancelQuickSignal.label}
+                                      </Badge>
+                                    </TooltipTrigger>
+                                    <TooltipContent
+                                      side="top"
+                                      align="start"
+                                      sideOffset={6}
+                                      className={adminRichTooltipClass}
+                                    >
+                                      <p className="text-sm text-foreground">
+                                        취소 요청이 접수된 항목입니다.
+                                      </p>
+                                      <p className="mt-1 text-xs text-muted-foreground">
+                                        {anchorCancelQuickSignal.tooltipCopy}
+                                      </p>
+                                      {g.anchor.cancel?.refundBankLabel && (
+                                        <p className="mt-1 text-xs text-muted-foreground">
+                                          환불 은행: {g.anchor.cancel.refundBankLabel}
+                                        </p>
+                                      )}
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              )}
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              결제: {g.anchor.paymentLabel || "정보 없음"}
+                            </p>
+                            {amountMeaningText(g.anchor) ? (
+                              <p className="text-xs text-muted-foreground">
+                                {amountMeaningText(g.anchor)}
+                              </p>
+                            ) : null}
+                            {g.primarySignal && (
+                              <div className="rounded-md border border-warning/30 bg-warning/5 px-2 py-1.5">
+                                <p className="text-[11px] font-medium text-foreground">
+                                  {toOperatorSentence(g.primarySignal.title)}
+                                  <span className="ml-1 text-[10px] text-muted-foreground">
+                                    {g.primarySignal.code}
+                                  </span>
+                                </p>
+                                <p className="text-[11px] text-muted-foreground line-clamp-2">
+                                  {toOperatorSentence(g.primarySignal.description)}
+                                </p>
+                              </div>
+                            )}
+                            {!warn &&
+                              g.reviewLevel === "action" &&
+                              reviewReasons.length > 0 && (
+                                <div className="rounded-md border border-primary/20 bg-primary/5 px-2 py-1.5">
+                                  <p className="text-[11px] font-medium text-primary">
+                                    확인 이유
+                                  </p>
+                                  <ul className="mt-1 space-y-0.5">
+                                    {reviewReasons.map((reason) => (
+                                      <li
+                                        key={`m-review:${g.key}:${reason}`}
+                                        className="list-inside list-disc text-[11px] text-muted-foreground"
+                                      >
+                                        {toOperatorSentence(reason)}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
                             {renderLinkedDocs(
                               g.items
                                 .filter(
@@ -2335,48 +2323,6 @@ export default function OperationsClient() {
                                   href: item.href,
                                 })),
                             )}
-                            {g.primarySignal && (
-                              <div className="rounded-md border border-warning/30 bg-warning/5 px-2 py-1.5">
-                                <p className="text-[11px] font-medium text-foreground">
-                                  {toOperatorSentence(g.primarySignal.title)}
-                                  <span className="ml-1 text-[10px] text-muted-foreground">
-                                    {g.primarySignal.code}
-                                  </span>
-                                </p>
-                                <p className="text-[11px] text-muted-foreground">
-                                  {toOperatorSentence(g.primarySignal.description)}
-                                </p>
-                                {(g.signals?.length ?? 0) > 0 && (
-                                  <p className="mt-1 text-[11px] text-muted-foreground">
-                                    관련 신호 {g.signals.length}건
-                                  </p>
-                                )}
-                              </div>
-                            )}
-                            {!warn &&
-                              g.reviewLevel === "action" &&
-                              reviewReasons.length > 0 && (
-                                <div className="rounded-md border border-primary/20 bg-primary/5 px-2 py-1.5">
-                                  <p className="text-[11px] font-medium text-primary">
-                                    확인이 필요한 이유
-                                  </p>
-                                  <ul className="mt-1 space-y-0.5">
-                                    {reviewReasons.map((reason) => (
-                                      <li
-                                        key={`m-review:${g.key}:${reason}`}
-                                        className="text-[11px] text-muted-foreground list-disc list-inside"
-                                      >
-                                        {toOperatorSentence(reason)}
-                                      </li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              )}
-                            {g.anchor.paymentLabel ? (
-                              <p className="text-xs text-muted-foreground">
-                                결제: {g.anchor.paymentLabel}
-                              </p>
-                            ) : null}
                             {g.anchor.flow === 7 && (
                               <p className="text-xs text-muted-foreground">
                                 스트링 요약:{" "}
@@ -2385,60 +2331,33 @@ export default function OperationsClient() {
                                 ) ?? "정보 없음"}
                               </p>
                             )}
-                          </div>
-                        )}
-                        <div className="rounded-md border border-border/70 bg-background px-2.5 py-2">
-                          <p className="text-[11px] font-medium text-muted-foreground">
-                            금액
-                          </p>
-                          <div className="text-lg font-extrabold tracking-tight whitespace-nowrap">
-                            {won(g.anchor.amount)}
-                          </div>
-                        </div>
-                        {amountMeaningText(g.anchor) ? (
-                          <div className="text-xs text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis">
-                            {amountMeaningText(g.anchor)}
-                          </div>
-                        ) : null}
-                        <div className="space-y-1.5 pt-1">
-                          <div className="flex flex-wrap items-center gap-1.5">
-                            {quickActionTarget && (
+                            <div className="flex flex-wrap items-center gap-1 opacity-85">
                               <Button
                                 asChild
                                 size="sm"
-                                variant="default"
-                                className="h-8 px-2.5 font-semibold shadow-sm"
+                                variant="ghost"
+                                className="h-7 px-1.5 text-[11px] text-muted-foreground"
                               >
-                                <Link href={quickActionTarget.href}>
-                                  {quickActionTarget.label}
+                                <Link
+                                  href={settleHref}
+                                  className="inline-flex items-center gap-1"
+                                >
+                                  <BarChartBig className="h-3.5 w-3.5" />
+                                  정산
                                 </Link>
                               </Button>
-                            )}
-                            <Button asChild size="sm" variant="secondary" className="h-8 px-2">
-                              <Link href={g.anchor.href} className="inline-flex items-center gap-1">
-                                <Eye className="h-3.5 w-3.5" />
-                                상세
-                              </Link>
-                            </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-7 w-7 p-0 text-muted-foreground"
+                                onClick={() => copyToClipboard(g.anchor.id)}
+                                aria-label={ROW_ACTION_LABELS.copyId}
+                              >
+                                <Copy className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
                           </div>
-                          <div className="flex flex-wrap items-center gap-1">
-                            <Button asChild size="sm" variant="ghost" className="h-7 px-1.5 text-[11px] text-muted-foreground">
-                              <Link href={settleHref} className="inline-flex items-center gap-1">
-                                <BarChartBig className="h-3.5 w-3.5" />
-                                정산
-                              </Link>
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="h-7 w-7 p-0 text-muted-foreground"
-                              onClick={() => copyToClipboard(g.anchor.id)}
-                              aria-label={ROW_ACTION_LABELS.copyId}
-                            >
-                              <Copy className="h-3.5 w-3.5" />
-                            </Button>
-                          </div>
-                        </div>
+                        )}
                       </CardContent>
                     </Card>
                   );
