@@ -1062,7 +1062,7 @@ export default function OperationsClient() {
   }
 
   return (
-    <div className="container py-4 lg:py-5">
+    <div className="mx-auto w-full max-w-[1520px] px-4 py-4 lg:px-5 lg:py-5">
       {shouldShowGlobalError && (
         <AsyncState
           kind="error"
@@ -1076,7 +1076,7 @@ export default function OperationsClient() {
         />
       )}
       {/* 페이지 헤더 */}
-      <div className="mx-auto mb-4 max-w-[1440px] space-y-3">
+      <div className="mx-auto mb-4 max-w-[1480px] space-y-3">
         <h1 className="text-3xl font-semibold tracking-tight lg:text-4xl">
           {PAGE_COPY.title}
         </h1>
@@ -1093,7 +1093,7 @@ export default function OperationsClient() {
           >
             {showActionsGuide ? "도움말 닫기" : "도움말 보기"}
           </Button>
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-xs text-muted-foreground/90">
             우선순위: 상태 → 시나리오 → 고객 → 제목 → 다음 처리
           </p>
         </div>
@@ -1103,7 +1103,7 @@ export default function OperationsClient() {
             {PAGE_COPY.actions.map((action) => (
               <div key={action.title} className="rounded-md border border-border/50 bg-background/80 px-2 py-1.5">
                 <p className="text-[11px] font-semibold leading-tight text-foreground">{action.title}</p>
-                <p className="mt-0.5 line-clamp-1 text-[10px] leading-tight text-muted-foreground">{action.description}</p>
+                <p className="mt-0.5 line-clamp-1 text-[11px] leading-snug text-muted-foreground/90">{action.description}</p>
               </div>
             ))}
           </div>
@@ -1753,22 +1753,22 @@ export default function OperationsClient() {
                                     </Button>
                                   )}
                                   <div className="min-w-0 space-y-0.5">
-                                    <p className="text-[10px] text-muted-foreground/75 leading-tight">
+                                    <p className="text-[11px] text-muted-foreground/90 leading-tight">
                                       {scenarioLabel}
                                     </p>
                                     <p className="text-[13px] font-medium text-foreground/85 leading-tight">
                                       {customerPrimary}
                                     </p>
                                     {customerName && customerEmail && (
-                                      <p className="text-[10px] text-muted-foreground/80 leading-tight">
+                                      <p className="text-[11px] text-muted-foreground/90 leading-tight">
                                         {customerEmail}
                                       </p>
                                     )}
-                                    <p className="text-[10px] text-muted-foreground/75 leading-tight">
+                                    <p className="text-[11px] text-muted-foreground/90 leading-tight">
                                       접수 {createdAtLabel}
                                     </p>
                                   </div>
-                                  <div className="ml-auto flex items-center gap-1.5 text-[10px] text-muted-foreground/70">
+                                  <div className="ml-auto flex items-center gap-1.5 text-[11px] text-muted-foreground/85">
                                     <span>{docLabel}</span>
                                     <Button
                                       size="sm"
@@ -1793,10 +1793,10 @@ export default function OperationsClient() {
                                 </p>
                                 {hasReasonCard && (
                                   <div className="rounded-sm border border-border/35 bg-muted/[0.12] px-1.5 py-1">
-                                    <p className="text-[10px] font-medium text-muted-foreground/85">
+                                    <p className="text-[11px] font-medium text-muted-foreground/90">
                                       확인 이유
                                     </p>
-                                    <p className="mt-0.5 text-[10px] text-muted-foreground/85 line-clamp-1">
+                                    <p className="mt-0.5 text-[11px] text-muted-foreground/90 line-clamp-1">
                                       {reasonSummary}
                                     </p>
                                     {shouldShowReasonBullets && (
@@ -1804,7 +1804,7 @@ export default function OperationsClient() {
                                         {reasonBulletsPreview.map((reason) => (
                                           <li
                                             key={`reason:${g.key}:${reason}`}
-                                            className="list-inside list-disc text-[10px] text-muted-foreground/75 line-clamp-1"
+                                            className="list-inside list-disc text-[11px] text-muted-foreground/85 line-clamp-1"
                                           >
                                             {reason}
                                           </li>
@@ -1830,14 +1830,14 @@ export default function OperationsClient() {
                             >
                               <div className="flex flex-col items-end gap-1.5">
                                 <div className="text-right">
-                                  <span className="text-[10px] text-muted-foreground">
-                                    {isGroup ? "총액" : opsKindLabel(g.anchor.kind)}
-                                  </span>
+                                <span className="text-[11px] text-muted-foreground/90">
+                                  {isGroup ? "총액" : opsKindLabel(g.anchor.kind)}
+                                </span>
                                   <p className="text-lg font-extrabold whitespace-nowrap tracking-tight">
                                     {won(g.anchor.amount)}
                                   </p>
                                 </div>
-                                <span className="text-[10px] text-muted-foreground/80 line-clamp-1">
+                                <span className="text-[11px] text-muted-foreground/85 line-clamp-1">
                                   결제 상태: {g.anchor.paymentLabel || "정보 없음"}
                                 </span>
                                 {(() => {
@@ -1895,7 +1895,7 @@ export default function OperationsClient() {
                                   </TooltipProvider>
                                 )}
                                 {amountMeaningText(g.anchor) ? (
-                                  <span className="text-[10px] text-muted-foreground/75 line-clamp-1 text-right">
+                                  <span className="text-[11px] text-muted-foreground/85 line-clamp-1 text-right">
                                     {amountMeaningText(g.anchor)}
                                   </span>
                                 ) : null}
@@ -1972,7 +1972,7 @@ export default function OperationsClient() {
                                         운영 참고 정보
                                       </p>
                                     </div>
-                                    <div className="grid grid-cols-4 gap-2 border-y border-border/60 bg-background/40 px-2 py-1 text-[10px] font-medium text-muted-foreground">
+                                    <div className="grid grid-cols-4 gap-1.5 border-y border-border/60 bg-background/40 px-2 py-1 text-[11px] font-medium text-muted-foreground/90">
                                       <span>문서 · 상태</span>
                                       <span>처리 안내</span>
                                       <span className="text-right">금액</span>
@@ -1982,7 +1982,7 @@ export default function OperationsClient() {
                                       {g.items.map((item) => (
                                         <div
                                           key={`detail:${g.key}:${item.kind}:${item.id}`}
-                                          className="grid grid-cols-4 gap-2 px-2 py-1.5 text-[11px]"
+                                          className="grid grid-cols-4 gap-1.5 px-2 py-1 text-[11px]"
                                         >
                                           <div>
                                             <p className="font-medium text-foreground">
@@ -1996,7 +1996,7 @@ export default function OperationsClient() {
                                             <p className="text-foreground">
                                               {toOperatorSentence(item.nextAction ?? groupGuide.nextAction)}
                                             </p>
-                                            <p className="text-[10px] text-muted-foreground">
+                                            <p className="text-[11px] text-muted-foreground/90">
                                               {formatKST(item.createdAt)}
                                             </p>
                                           </div>
@@ -2004,7 +2004,7 @@ export default function OperationsClient() {
                                             <p className="font-semibold text-foreground">
                                               {won(item.amount)}
                                             </p>
-                                            <p className="text-[10px] text-muted-foreground">
+                                            <p className="text-[11px] text-muted-foreground/90">
                                               {item.kind === "stringing_application"
                                                 ? "신청서"
                                                 : item.kind === "rental"
@@ -2018,7 +2018,7 @@ export default function OperationsClient() {
                                         </div>
                                       ))}
                                     </div>
-                                    <div className="mt-1 flex flex-wrap items-center gap-2 text-[10px] text-muted-foreground">
+                                    <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px] leading-tight text-muted-foreground/90">
                                       <span>기준 시각 {formatKST(g.createdAt ?? g.anchor.createdAt)}</span>
                                       {g.anchor.flow === 7 && (
                                         <span>
@@ -2114,7 +2114,7 @@ export default function OperationsClient() {
                   );
                   return (
                     <Card key={`m:${g.key}`} className="border-border shadow-sm">
-                      <CardContent className="space-y-1.5 p-2.5">
+                      <CardContent className="space-y-1.5 p-2">
                         <div className="flex flex-wrap items-center justify-between gap-1.5">
                           <div className="flex items-center gap-1">
                             <Badge
@@ -2140,7 +2140,7 @@ export default function OperationsClient() {
                               </Badge>
                             )}
                           </div>
-                          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground/85">
+                          <div className="flex items-center gap-1.5 text-[11px] leading-tight text-muted-foreground/90">
                             <span>
                               {opsKindLabel(g.anchor.kind)} · {shortenId(g.anchor.id)}
                             </span>
@@ -2158,23 +2158,23 @@ export default function OperationsClient() {
 
                         <div className="flex items-baseline justify-between gap-2">
                           <div>
-                            <p className="text-[10px] leading-tight text-muted-foreground/80">
+                            <p className="text-[11px] leading-tight text-muted-foreground/90">
                               {scenarioLabel}
                             </p>
                             <span className="text-[13px] font-medium text-foreground/85">
                               {customerPrimary}
                             </span>
                             {customerName && customerEmail && (
-                              <p className="text-[10px] leading-tight text-muted-foreground/80">
+                              <p className="text-[11px] leading-tight text-muted-foreground/90">
                                 {customerEmail}
                               </p>
                             )}
-                            <p className="text-[10px] leading-tight text-muted-foreground/75">
+                            <p className="text-[11px] leading-tight text-muted-foreground/90">
                               접수 {createdAtLabel}
                             </p>
                           </div>
                           <div className="text-right">
-                            <p className="text-[10px] text-muted-foreground">
+                            <p className="text-[11px] text-muted-foreground/90">
                               {g.items.length > 1 ? "총액" : opsKindLabel(g.anchor.kind)}
                             </p>
                             <span className="text-base font-extrabold tracking-tight text-foreground">
@@ -2194,10 +2194,10 @@ export default function OperationsClient() {
                         </p>
                         {hasReasonCard && (
                           <div className="rounded-sm border border-border/35 bg-muted/[0.12] px-1.5 py-1">
-                            <p className="text-[10px] font-medium text-muted-foreground/85">
+                            <p className="text-[11px] font-medium text-muted-foreground/90">
                               확인 이유
                             </p>
-                            <p className="mt-0.5 text-[10px] text-muted-foreground/85 line-clamp-1">
+                            <p className="mt-0.5 text-[11px] leading-tight text-muted-foreground/90 line-clamp-1">
                               {reasonSummary}
                             </p>
                             {shouldShowReasonBullets && (
@@ -2205,7 +2205,7 @@ export default function OperationsClient() {
                                 {reasonBullets.map((reason) => (
                                   <li
                                     key={`m-reason:${g.key}:${reason}`}
-                                    className="list-inside list-disc text-[10px] text-muted-foreground/75 line-clamp-1"
+                                    className="list-inside list-disc text-[11px] leading-tight text-muted-foreground/85 line-clamp-1"
                                   >
                                     {reason}
                                   </li>
@@ -2247,7 +2247,7 @@ export default function OperationsClient() {
                               type="button"
                               variant="ghost"
                               size="sm"
-                              className="ml-auto h-7 px-2 text-[11px] text-muted-foreground"
+                              className="ml-auto h-7 px-2 text-[11px] text-muted-foreground/90"
                               onClick={() => toggleGroup(g.key)}
                             >
                               {isOpen ? "접기" : "운영 참고"}
@@ -2264,15 +2264,15 @@ export default function OperationsClient() {
                           )}
                         >
                           <div className="overflow-hidden">
-                            <div className="space-y-1.5 rounded-md border border-border/60 bg-muted/20 p-2">
-                              <p className="text-[10px] text-muted-foreground/80">
+                            <div className="space-y-1 rounded-md border border-border/60 bg-muted/20 p-1.5">
+                              <p className="text-[11px] leading-tight text-muted-foreground/90">
                                 기준 시각: {formatKST(g.createdAt ?? g.anchor.createdAt)}
                               </p>
                               <div className="divide-y divide-border/50 rounded border border-border/60 bg-background/50">
                                 {g.items.map((item) => (
                                   <div
                                     key={`m-detail:${g.key}:${item.kind}:${item.id}`}
-                                    className="grid grid-cols-[1fr_auto] gap-2 px-2 py-1 text-[11px]"
+                                    className="grid grid-cols-[1fr_auto] gap-1.5 px-1.5 py-0.5 text-[11px]"
                                   >
                                     <div>
                                       <p className="font-medium text-foreground">
@@ -2286,7 +2286,7 @@ export default function OperationsClient() {
                                       <p className="font-semibold text-foreground">
                                         {won(item.amount)}
                                       </p>
-                                      <p className="text-[10px] text-muted-foreground">
+                                      <p className="text-[11px] leading-tight text-muted-foreground/90">
                                         {item.kind === "stringing_application"
                                           ? "신청서"
                                           : item.kind === "rental"
@@ -2356,11 +2356,11 @@ export default function OperationsClient() {
                                 </TooltipProvider>
                               )}
                             </div>
-                            <p className="text-[11px] text-muted-foreground/85">
+                            <p className="text-[11px] leading-tight text-muted-foreground/90">
                               결제: {g.anchor.paymentLabel || "정보 없음"}
                             </p>
                             {amountMeaningText(g.anchor) ? (
-                              <p className="text-[10px] text-muted-foreground/75 line-clamp-1">
+                              <p className="text-[11px] leading-tight text-muted-foreground/85 line-clamp-1">
                                 {amountMeaningText(g.anchor)}
                               </p>
                             ) : null}
@@ -2368,11 +2368,11 @@ export default function OperationsClient() {
                               <div className="rounded-md border border-warning/30 bg-warning/5 px-2 py-1.5">
                                 <p className="text-[11px] font-medium text-foreground">
                                   {toOperatorSentence(g.primarySignal.title)}
-                                  <span className="ml-1 text-[10px] text-muted-foreground">
+                                  <span className="ml-1 text-[11px] text-muted-foreground/85">
                                     {g.primarySignal.code}
                                   </span>
                                 </p>
-                                <p className="text-[11px] text-muted-foreground line-clamp-2">
+                                <p className="text-[11px] leading-tight text-muted-foreground/90 line-clamp-2">
                                   {toOperatorSentence(g.primarySignal.description)}
                                 </p>
                               </div>
