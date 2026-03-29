@@ -260,8 +260,8 @@ function statusHeadlineOf(item: OpItem) {
       return "배송 완료 주문";
     if (lowerStatus.includes("배송중") || lowerStatus.includes("shipped"))
       return "배송 중 주문";
-    if (lowerStatus.includes("결제")) return "결제 확인 주문";
-    return status ? `${status} 주문` : "주문 상태 확인 건";
+    if (lowerStatus.includes("결제")) return "결제 대기 주문";
+    return status ? `${status} 주문` : "처리 대기 주문";
   }
 
   if (item.kind === "rental") {
@@ -270,7 +270,7 @@ function statusHeadlineOf(item: OpItem) {
     if (lowerStatus.includes("대여중") || lowerStatus.includes("out"))
       return "대여 진행 건";
     if (lowerStatus.includes("대기") || lowerStatus.includes("결제완료"))
-      return "대여 시작 전 확인 건";
+      return "대여 시작 전 준비 필요";
     return status ? `${status} 대여 건` : "대여 상태 확인 건";
   }
 
@@ -718,6 +718,7 @@ export default function OperationsClient() {
   >("default");
   const [page, setPage] = useState(1);
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
+  const [openReasons, setOpenReasons] = useState<Record<string, boolean>>({});
   const [showActionsGuide, setShowActionsGuide] = useState(false);
   const [isFilterScrolled, setIsFilterScrolled] = useState(false);
   const [displayDensity, setDisplayDensity] = useState<"default" | "compact">(
@@ -779,6 +780,7 @@ export default function OperationsClient() {
   // 필터/페이지가 바뀌면 펼침 상태를 초기화(예상치 못한 "열림 유지" 방지)
   useEffect(() => {
     setOpenGroups({});
+    setOpenReasons({});
   }, [q, kind, flow, integrated, page, onlyWarn, warnFilter, warnSort]);
 
   // 2) 상태 → URL 동기화
@@ -1014,6 +1016,13 @@ export default function OperationsClient() {
 
   function toggleGroup(key: string) {
     setOpenGroups((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  }
+
+  function toggleReason(key: string) {
+    setOpenReasons((prev) => ({
       ...prev,
       [key]: !prev[key],
     }));
@@ -1619,7 +1628,7 @@ export default function OperationsClient() {
                       );
                       const reasonBullets = reviewReasons
                         .map((reason) => toOperatorSentence(reason))
-                        .filter(Boolean)
+                        .filter(Boolean);
                       const groupCancelRequested = g.items.some(
                         (it) => it.cancel?.status === "requested",
                       );
@@ -1628,19 +1637,20 @@ export default function OperationsClient() {
                         cancelRequested: groupCancelRequested,
                         reviewLevel: g.reviewLevel,
                       });
-                      const reasonBulletsPreview = reasonBullets.slice(0, 2);
                       const reasonNeedsAttention =
                         warn ||
                         g.reviewLevel === "action" ||
                         groupCancelRequested;
                       const hasReasonCard =
                         reasonNeedsAttention ||
-                        (reasonBulletsPreview.length > 0 &&
+                        (reasonBullets.length > 0 &&
                           !isLowTensionNextAction(nextActionText)) ||
                         (Boolean(g.primarySignal?.title) &&
                           !isLowTensionNextAction(nextActionText));
                       const shouldShowReasonBullets =
-                        reasonBulletsPreview.length > 0 && reasonNeedsAttention;
+                        reasonBullets.length > 0 && reasonNeedsAttention;
+                      const reasonBulletCount = reasonBullets.length;
+                      const isReasonOpen = !!openReasons[g.key];
                       const customerName =
                         g.anchor.customer?.name?.trim() || "";
                       const customerEmail =
@@ -1702,8 +1712,8 @@ export default function OperationsClient() {
                             <TableCell
                               className={cn(tdClasses, rowDensityClass)}
                             >
-                              <div className="flex flex-wrap items-center gap-1.5">
-                                <div className="flex items-center gap-1">
+                              <div className="space-y-1.5">
+                                <div className="flex flex-wrap items-center gap-1.5">
                                   <Badge
                                     className={cn(
                                       badgeBase,
@@ -1726,24 +1736,40 @@ export default function OperationsClient() {
                                       확인 필요
                                     </Badge>
                                   )}
+                                  <span className="text-[10px] text-muted-foreground/80">
+                                    {isGroup ? `${g.items.length}건 그룹` : "단일 건"}
+                                  </span>
                                 </div>
-                                <div className="text-[10px] text-muted-foreground/80">
-                                  {isGroup ? `${g.items.length}건 그룹` : "단일 건"}
+                                <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground/90">
+                                  <span>{docLabel}</span>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+                                    onClick={() => copyToClipboard(g.anchor.id)}
+                                    title={ROW_ACTION_LABELS.copyId}
+                                    aria-label={ROW_ACTION_LABELS.copyId}
+                                  >
+                                    <Copy className="h-3.5 w-3.5" />
+                                  </Button>
                                 </div>
+                                <p className="text-[11px] text-muted-foreground/85 leading-tight">
+                                  접수 {createdAtLabel}
+                                </p>
                               </div>
                             </TableCell>
 
                             <TableCell
                               className={cn(tdClasses, rowDensityClass)}
                             >
-                              <div className="space-y-1">
-                                <div className="flex items-center gap-2 flex-wrap">
+                              <div className="space-y-1.5">
+                                <div className="flex items-start gap-2">
                                   {isGroup && (
                                     <Button
                                       type="button"
                                       size="sm"
                                       variant="ghost"
-                                      className="h-6 w-6 p-0"
+                                      className="mt-0.5 h-6 w-6 p-0"
                                       onClick={() => toggleGroup(g.key)}
                                       title={
                                         isOpen ? "운영 참고 접기" : "운영 참고 펼치기"
@@ -1768,22 +1794,6 @@ export default function OperationsClient() {
                                         {customerEmail}
                                       </p>
                                     )}
-                                    <p className="text-[11px] text-muted-foreground/90 leading-tight">
-                                      접수 {createdAtLabel}
-                                    </p>
-                                  </div>
-                                  <div className="ml-auto flex items-center gap-1.5 text-[11px] text-muted-foreground/85">
-                                    <span>{docLabel}</span>
-                                    <Button
-                                      size="sm"
-                                      variant="ghost"
-                                      className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
-                                      onClick={() => copyToClipboard(g.anchor.id)}
-                                      title={ROW_ACTION_LABELS.copyId}
-                                      aria-label={ROW_ACTION_LABELS.copyId}
-                                    >
-                                      <Copy className="h-3.5 w-3.5" />
-                                    </Button>
                                   </div>
                                 </div>
                                 <p className="text-[15px] font-semibold leading-tight text-foreground line-clamp-1">
@@ -1796,31 +1806,47 @@ export default function OperationsClient() {
                                   {nextActionText}
                                 </p>
                                 {hasReasonCard && (
-                                  <div className="rounded-sm border border-border/35 bg-muted/[0.12] px-1.5 py-1">
-                                    <p className="text-[11px] font-medium text-muted-foreground/90">
-                                      확인 이유
-                                    </p>
-                                    <p className="mt-0.5 text-[11px] text-muted-foreground/90 line-clamp-1">
-                                      {reasonSummary}
-                                    </p>
-                                    {shouldShowReasonBullets && (
-                                      <ul className="mt-0.5 space-y-0.5">
-                                        {reasonBulletsPreview.map((reason) => (
-                                          <li
-                                            key={`reason:${g.key}:${reason}`}
-                                            className="list-inside list-disc text-[11px] text-muted-foreground/85 line-clamp-1"
-                                          >
-                                            {reason}
-                                          </li>
-                                        ))}
-                                      </ul>
-                                    )}
+                                  <div className="space-y-1">
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-6 px-1 text-[11px] font-medium text-muted-foreground"
+                                      onClick={() => toggleReason(g.key)}
+                                    >
+                                      {isReasonOpen
+                                        ? "확인 이유 숨기기"
+                                        : reasonBulletCount > 0
+                                          ? `확인 이유 ${reasonBulletCount}개 보기`
+                                          : "확인 이유 보기"}
+                                    </Button>
+                                    <div
+                                      className={cn(
+                                        "grid transition-all duration-200 ease-out",
+                                        isReasonOpen
+                                          ? "grid-rows-[1fr] opacity-100"
+                                          : "grid-rows-[0fr] opacity-0",
+                                      )}
+                                    >
+                                      <div className="overflow-hidden rounded-sm border border-border/40 bg-muted/[0.08] px-1.5 py-1">
+                                        <p className="text-[11px] text-muted-foreground/90">
+                                          {reasonSummary}
+                                        </p>
+                                        {shouldShowReasonBullets && (
+                                          <ul className="mt-0.5 space-y-0.5">
+                                            {reasonBullets.slice(0, 3).map((reason) => (
+                                              <li
+                                                key={`reason:${g.key}:${reason}`}
+                                                className="list-inside list-disc text-[11px] text-muted-foreground/85 line-clamp-1"
+                                              >
+                                                {reason}
+                                              </li>
+                                            ))}
+                                          </ul>
+                                        )}
+                                      </div>
+                                    </div>
                                   </div>
-                                )}
-                                {g.primarySignal?.title && (
-                                  <p className="text-[10px] text-muted-foreground/80 line-clamp-1">
-                                    참고 신호: {toOperatorSentence(g.primarySignal.title)}
-                                  </p>
                                 )}
                               </div>
                             </TableCell>
@@ -1953,19 +1979,19 @@ export default function OperationsClient() {
                           </TableRow>
 
                           {isGroup && (
-                            <TableRow className="bg-muted/35">
+                            <TableRow className="bg-muted/20">
                               <TableCell
                                 colSpan={4}
                                 className={cn(
                                   tdClasses,
-                                  "border-l-2 border-l-primary/35 border-t border-primary/15 py-0",
+                                  "border-l-2 border-l-primary/25 border-t border-border/40 py-0",
                                 )}
                               >
                                 <div
                                   className={cn(
                                     "grid transition-all duration-200 ease-out",
                                     isOpen
-                                      ? "grid-rows-[1fr] opacity-100 py-2.5"
+                                      ? "grid-rows-[1fr] opacity-100 py-2"
                                       : "grid-rows-[0fr] opacity-0",
                                   )}
                                 >
@@ -1976,17 +2002,17 @@ export default function OperationsClient() {
                                         운영 참고 정보
                                       </p>
                                     </div>
-                                    <div className="grid grid-cols-4 gap-1.5 border-y border-border/60 bg-background/40 px-2 py-1 text-[11px] font-medium text-muted-foreground/90">
+                                    <div className="grid grid-cols-4 gap-1.5 border-y border-border/50 bg-muted/10 px-2 py-1 text-[11px] font-medium text-muted-foreground/90">
                                       <span>문서 · 상태</span>
                                       <span>처리 안내</span>
                                       <span className="text-right">금액</span>
                                       <span>연결 정보</span>
                                     </div>
-                                    <div className="divide-y divide-border/50 border-b border-border/60 bg-background/20">
+                                    <div className="divide-y divide-border/40 border-b border-border/50 bg-background/10">
                                       {g.items.map((item) => (
                                         <div
                                           key={`detail:${g.key}:${item.kind}:${item.id}`}
-                                          className="grid grid-cols-4 gap-1.5 px-2 py-1 text-[11px]"
+                                          className="grid grid-cols-4 gap-1.5 px-2 py-1 text-[11px] leading-tight"
                                         >
                                           <div>
                                             <p className="font-medium text-foreground">
@@ -2074,8 +2100,7 @@ export default function OperationsClient() {
                   );
                   const reasonBullets = reviewReasons
                     .map((reason) => toOperatorSentence(reason))
-                    .filter(Boolean)
-                    .slice(0, 2);
+                    .filter(Boolean);
                   const customerName = g.anchor.customer?.name?.trim() || "";
                   const customerEmail = g.anchor.customer?.email?.trim() || "";
                   const customerPrimary = customerName || customerEmail || "-";
@@ -2113,14 +2138,16 @@ export default function OperationsClient() {
                       !isLowTensionNextAction(nextActionText));
                   const shouldShowReasonBullets =
                     reasonNeedsAttention && reasonBullets.length > 0;
+                  const reasonBulletCount = reasonBullets.length;
+                  const isReasonOpen = !!openReasons[g.key];
                   const anchorCancelQuickSignal = cancelQuickSignalSpec(
                     g.anchor.cancel,
                   );
                   return (
                     <Card key={`m:${g.key}`} className="border-border shadow-sm">
                       <CardContent className="space-y-1.5 p-2">
-                        <div className="flex flex-wrap items-center justify-between gap-1.5">
-                          <div className="flex items-center gap-1">
+                        <div className="space-y-1">
+                          <div className="flex flex-wrap items-center gap-1.5">
                             <Badge
                               className={cn(
                                 badgeBase,
@@ -2143,6 +2170,9 @@ export default function OperationsClient() {
                                 확인 필요
                               </Badge>
                             )}
+                            <span className="text-[10px] text-muted-foreground/80">
+                              {g.items.length > 1 ? `${g.items.length}건 그룹` : "단일 건"}
+                            </span>
                           </div>
                           <div className="flex items-center gap-1.5 text-[11px] leading-tight text-muted-foreground/90">
                             <span>
@@ -2158,6 +2188,9 @@ export default function OperationsClient() {
                               <Copy className="h-3.5 w-3.5" />
                             </Button>
                           </div>
+                          <p className="text-[11px] leading-tight text-muted-foreground/90">
+                            접수 {createdAtLabel}
+                          </p>
                         </div>
 
                         <div className="flex items-baseline justify-between gap-2">
@@ -2173,9 +2206,6 @@ export default function OperationsClient() {
                                 {customerEmail}
                               </p>
                             )}
-                            <p className="text-[11px] leading-tight text-muted-foreground/90">
-                              접수 {createdAtLabel}
-                            </p>
                           </div>
                           <div className="text-right">
                             <p className="text-[11px] text-muted-foreground/90">
@@ -2197,25 +2227,46 @@ export default function OperationsClient() {
                           {nextActionText}
                         </p>
                         {hasReasonCard && (
-                          <div className="rounded-sm border border-border/35 bg-muted/[0.12] px-1.5 py-1">
-                            <p className="text-[11px] font-medium text-muted-foreground/90">
-                              확인 이유
-                            </p>
-                            <p className="mt-0.5 text-[11px] leading-tight text-muted-foreground/90 line-clamp-1">
-                              {reasonSummary}
-                            </p>
-                            {shouldShowReasonBullets && (
-                              <ul className="mt-0.5 space-y-0.5">
-                                {reasonBullets.map((reason) => (
-                                  <li
-                                    key={`m-reason:${g.key}:${reason}`}
-                                    className="list-inside list-disc text-[11px] leading-tight text-muted-foreground/85 line-clamp-1"
-                                  >
-                                    {reason}
-                                  </li>
-                                ))}
-                              </ul>
-                            )}
+                          <div className="space-y-1">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 px-1 text-[11px] font-medium text-muted-foreground"
+                              onClick={() => toggleReason(g.key)}
+                            >
+                              {isReasonOpen
+                                ? "확인 이유 숨기기"
+                                : reasonBulletCount > 0
+                                  ? `확인 이유 ${reasonBulletCount}개 보기`
+                                  : "확인 이유 보기"}
+                            </Button>
+                            <div
+                              className={cn(
+                                "grid transition-all duration-200 ease-out",
+                                isReasonOpen
+                                  ? "grid-rows-[1fr] opacity-100"
+                                  : "grid-rows-[0fr] opacity-0",
+                              )}
+                            >
+                              <div className="overflow-hidden rounded-sm border border-border/40 bg-muted/[0.08] px-1.5 py-1">
+                                <p className="text-[11px] leading-tight text-muted-foreground/90 line-clamp-2">
+                                  {reasonSummary}
+                                </p>
+                                {shouldShowReasonBullets && (
+                                  <ul className="mt-0.5 space-y-0.5">
+                                    {reasonBullets.slice(0, 3).map((reason) => (
+                                      <li
+                                        key={`m-reason:${g.key}:${reason}`}
+                                        className="list-inside list-disc text-[11px] leading-tight text-muted-foreground/85 line-clamp-1"
+                                      >
+                                        {reason}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                )}
+                              </div>
+                            </div>
                           </div>
                         )}
 
@@ -2268,11 +2319,16 @@ export default function OperationsClient() {
                           )}
                         >
                           <div className="overflow-hidden">
-                            <div className="space-y-1 rounded-md border border-border/60 bg-muted/20 p-1.5">
+                            <div className="space-y-1 border-t border-border/50 pt-1">
                               <p className="text-[11px] leading-tight text-muted-foreground/90">
                                 기준 시각: {formatKST(g.createdAt ?? g.anchor.createdAt)}
                               </p>
-                              <div className="divide-y divide-border/50 rounded border border-border/60 bg-background/50">
+                              <div className="border border-border/50 bg-background/20">
+                                <div className="grid grid-cols-[1fr_auto] gap-1.5 border-b border-border/50 bg-muted/10 px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground/90">
+                                  <span>문서 · 상태</span>
+                                  <span className="text-right">금액</span>
+                                </div>
+                                <div className="divide-y divide-border/40">
                                 {g.items.map((item) => (
                                   <div
                                     key={`m-detail:${g.key}:${item.kind}:${item.id}`}
@@ -2300,6 +2356,7 @@ export default function OperationsClient() {
                                     </div>
                                   </div>
                                 ))}
+                                </div>
                               </div>
                             <div className="flex flex-wrap items-center gap-1">
                               <Badge
