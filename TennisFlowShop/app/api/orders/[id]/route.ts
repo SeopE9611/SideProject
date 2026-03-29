@@ -11,7 +11,10 @@ import {
   getAdminCancelPolicyMessage,
   isAdminCancelableOrderStatus,
 } from "@/lib/orders/cancel-refund-policy";
-import { getOrderStatusLabelForDisplay } from "@/lib/order-shipping";
+import {
+  canEnterShippingPhase,
+  getOrderStatusLabelForDisplay,
+} from "@/lib/order-shipping";
 import {
   LINKED_FLOW_STAGE_EXCLUDED_APPLICATION_STATUSES,
   LINKED_FLOW_STAGE_EXCLUDED_CANCEL_REQUEST_STATUSES,
@@ -685,6 +688,15 @@ export async function PATCH(
     ]);
     if (!ALLOWED_STATUS.has(nextStatus)) {
       return new NextResponse("허용되지 않은 상태 값입니다.", { status: 400 });
+    }
+    if (nextStatus === "배송중" || nextStatus === "배송완료") {
+      const guard = canEnterShippingPhase((existing as any)?.shippingInfo);
+      if (!guard.ok) {
+        return new NextResponse(
+          guard.message ?? "배송 정보가 등록되지 않았습니다.",
+          { status: 400 },
+        );
+      }
     }
 
     const __nextStatus = nextStatus; // 이번에 바꾸려는 상태
