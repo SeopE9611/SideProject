@@ -101,15 +101,19 @@ export const canEnterShippingPhase = (
     shippingLike?.invoice?.trackingNumber ?? "",
   ).trim();
 
+  const registeredMethod = normalizeOrderShippingMethod(
+    shippingLike?.shippingMethod ?? shippingLike?.deliveryMethod ?? null,
+  );
+
   const isAllowed =
     (method === "courier" &&
-      String(shippingLike?.shippingMethod ?? "").trim() === "courier" &&
+      registeredMethod === "courier" &&
       Boolean(estimatedDate && courier && trackingNumber)) ||
     (method === "quick" &&
-      String(shippingLike?.shippingMethod ?? "").trim() === "quick" &&
+      registeredMethod === "quick" &&
       Boolean(estimatedDate)) ||
     (method === "visit" &&
-      String(shippingLike?.shippingMethod ?? "").trim() === "visit" &&
+      registeredMethod === "visit" &&
       Boolean(estimatedDate));
 
   if (isAllowed) return { ok: true };
