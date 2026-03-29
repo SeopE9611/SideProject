@@ -230,6 +230,12 @@ function summarizeReasonText(text?: string | null) {
   return truncateText(oneLine || normalized, 34);
 }
 
+function isLowTensionNextAction(nextAction: string) {
+  const normalized = nextAction.trim();
+  if (!normalized) return true;
+  return normalized.includes("후속 조치 없음") || normalized.includes("모니터링");
+}
+
 function flowLabelText(item: OpItem) {
   return item.flowLabel?.trim() || FLOW_LABEL_BY_ID[item.flow] || "미분류";
 }
@@ -248,14 +254,55 @@ function groupNextActionText(group: {
 }
 
 function statusHeadlineOf(item: OpItem) {
-  const status = item.statusDisplayLabel?.trim() || item.statusLabel?.trim();
-  if (!status) return `${opsKindLabel(item.kind)} 상태 건`;
-  if (item.kind === "order") return `${status} 주문`;
-  if (item.kind === "rental") return `${status} 대여 건`;
-  if (status.includes("검토") || status.includes("접수")) {
-    return "연결 신청서 검토 대기";
+  const status = item.statusDisplayLabel?.trim() || item.statusLabel?.trim() || "";
+  const flowLabel = flowLabelText(item);
+  const lowerStatus = status.toLowerCase();
+  const hasRelated = Boolean(item.related);
+  const integratedApplication = item.kind === "stringing_application" && hasRelated;
+  const standaloneApplication = item.kind === "stringing_application" && !hasRelated;
+  const isCancelRequested = item.cancel?.status === "requested";
+  const isCancelDone =
+    item.cancel?.status === "approved" || item.cancel?.status === "rejected";
+
+  if (item.kind === "order") {
+    if (isCancelRequested) return "취소 요청 접수 주문";
+    if (isCancelDone || lowerStatus.includes("환불")) return "취소/환불 처리 주문";
+    if (lowerStatus.includes("구매확정")) return "구매확정 주문";
+    if (lowerStatus.includes("배송완료") || lowerStatus.includes("delivered"))
+      return "배송 완료 주문";
+    if (lowerStatus.includes("배송중") || lowerStatus.includes("shipped"))
+      return "배송 중 주문";
+    if (lowerStatus.includes("결제")) return "결제 확인 주문";
+    return status ? `${status} 주문` : "주문 상태 확인 건";
   }
-  return `${status} 신청서`;
+
+  if (item.kind === "rental") {
+    if (isCancelRequested) return "취소 요청 접수 대여 건";
+    if (lowerStatus.includes("반납완료")) return "대여 완료 건";
+    if (lowerStatus.includes("대여중") || lowerStatus.includes("out"))
+      return "대여 진행 건";
+    if (lowerStatus.includes("대기") || lowerStatus.includes("결제완료"))
+      return "대여 시작 전 확인 건";
+    return status ? `${status} 대여 건` : "대여 상태 확인 건";
+  }
+
+  if (isCancelRequested) return "취소 요청 접수 신청 건";
+  if (lowerStatus.includes("교체완료")) {
+    if (flowLabel.includes("신청")) return "신청서 교체 완료 건";
+    return standaloneApplication ? "단독 교체 신청 완료 건" : "연결 교체 신청 완료 건";
+  }
+  if (lowerStatus.includes("검토")) {
+    return standaloneApplication ? "단독 교체 신청 검토 건" : "연결 교체 신청 검토 건";
+  }
+  if (lowerStatus.includes("접수")) {
+    return standaloneApplication ? "신청 접수 완료 건" : "연결 신청 접수 건";
+  }
+  if (lowerStatus.includes("작업")) {
+    return standaloneApplication ? "단독 교체 신청 작업 건" : "연결 교체 신청 작업 건";
+  }
+  if (integratedApplication) return "연결 교체 신청 건";
+  if (standaloneApplication) return "단독 교체 신청 건";
+  return status ? `${status} 신청서` : "신청서 상태 확인 건";
 }
 
 type PresetKey = "paymentMismatch" | "integratedReview" | "singleApplication";
@@ -1624,17 +1671,13 @@ export default function OperationsClient() {
                       const groupGuide = inferNextActionForOperationGroup(
                         g.items,
                       );
+                      const warn = g.warn;
                       const reasonSummary = summarizeReasonText(
                         g.primarySignal?.description ?? reviewReasons[0],
                       );
                       const reasonBullets = reviewReasons
                         .map((reason) => toOperatorSentence(reason))
                         .filter(Boolean)
-                        .slice(0, 3);
-                      const hasReasonCard =
-                        reasonSummary !== "연결 문서 확인 필요" ||
-                        reasonBullets.length > 0 ||
-                        Boolean(g.primarySignal?.title);
                       const groupCancelRequested = g.items.some(
                         (it) => it.cancel?.status === "requested",
                       );
@@ -1643,6 +1686,19 @@ export default function OperationsClient() {
                         cancelRequested: groupCancelRequested,
                         reviewLevel: g.reviewLevel,
                       });
+                      const reasonBulletsPreview = reasonBullets.slice(0, 2);
+                      const reasonNeedsAttention =
+                        warn ||
+                        g.reviewLevel === "action" ||
+                        groupCancelRequested;
+                      const hasReasonCard =
+                        reasonNeedsAttention ||
+                        (reasonBulletsPreview.length > 0 &&
+                          !isLowTensionNextAction(nextActionText)) ||
+                        (Boolean(g.primarySignal?.title) &&
+                          !isLowTensionNextAction(nextActionText));
+                      const shouldShowReasonBullets =
+                        reasonBulletsPreview.length > 0 && reasonNeedsAttention;
                       const customerName =
                         g.anchor.customer?.name?.trim() || "";
                       const customerEmail =
@@ -1671,7 +1727,6 @@ export default function OperationsClient() {
                         : g.anchor.related
                           ? [g.anchor.related]
                           : [];
-                      const warn = g.warn;
                       const settleYyyymm = yyyymmKST(
                         g.createdAt ?? g.anchor.createdAt,
                       );
@@ -1725,31 +1780,8 @@ export default function OperationsClient() {
                                       확인 필요
                                     </Badge>
                                   )}
-                                  {!warn && g.reviewLevel === "info" && (
-                                    <Badge
-                                      variant={
-                                        getWorkflowMetaBadgeSpec("application_linked")
-                                          .variant
-                                      }
-                                      className={cn(badgeBase, badgeSizeSm)}
-                                    >
-                                      참고
-                                    </Badge>
-                                  )}
                                 </div>
-                                <Badge
-                                  variant={opsBadgeVariant(
-                                    opsKindBadgeTone(g.anchor.kind),
-                                  )}
-                                  className={cn(
-                                    badgeBase,
-                                    badgeSizeSm,
-                                    "min-w-[3.75rem] justify-center whitespace-nowrap",
-                                  )}
-                                >
-                                  {opsKindLabel(g.anchor.kind)}
-                                </Badge>
-                                <div className="text-[11px] text-muted-foreground">
+                                <div className="text-[10px] text-muted-foreground/80">
                                   단계: {toOperatorSentence(groupGuide.stage)} ·{" "}
                                   {isGroup
                                     ? `${g.items.length}건 그룹`
@@ -1782,7 +1814,7 @@ export default function OperationsClient() {
                                     </Button>
                                   )}
                                   <div className="min-w-0">
-                                    <p className="text-[11px] text-muted-foreground leading-tight">
+                                    <p className="text-[10px] text-muted-foreground/85 leading-tight">
                                       {scenarioLabel}
                                     </p>
                                     <p className="text-sm font-semibold text-foreground leading-tight">
@@ -1794,7 +1826,7 @@ export default function OperationsClient() {
                                       </p>
                                     )}
                                   </div>
-                                  <div className="ml-auto flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                                  <div className="ml-auto flex items-center gap-1.5 text-[10px] text-muted-foreground/85">
                                     <span>{docLabel}</span>
                                     <Button
                                       size="sm"
@@ -1811,26 +1843,26 @@ export default function OperationsClient() {
                                 <p className="text-[15px] font-semibold leading-snug text-foreground line-clamp-1">
                                   {headline}
                                 </p>
-                                <p className="text-xs text-foreground">
-                                  <span className="font-semibold text-primary">
+                                <p className="text-xs text-foreground/95 line-clamp-1">
+                                  <span className="font-semibold text-primary/90">
                                     다음 처리:
                                   </span>{" "}
                                   {nextActionText}
                                 </p>
                                 {hasReasonCard && (
-                                  <div className="px-0.5 py-1">
-                                    <p className="text-[11px] font-semibold text-muted-foreground">
+                                  <div className="px-0.5 py-0.5">
+                                    <p className="text-[10px] font-semibold text-muted-foreground/90">
                                       확인 이유
                                     </p>
-                                    <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">
+                                    <p className="mt-0.5 text-[11px] text-muted-foreground/90 line-clamp-1">
                                       {reasonSummary}
                                     </p>
-                                    {reasonBullets.length > 0 && (
-                                      <ul className="mt-1.5 space-y-0.5">
-                                        {reasonBullets.map((reason) => (
+                                    {shouldShowReasonBullets && (
+                                      <ul className="mt-1 space-y-0.5">
+                                        {reasonBulletsPreview.map((reason) => (
                                           <li
                                             key={`reason:${g.key}:${reason}`}
-                                            className="list-inside list-disc text-[11px] text-muted-foreground"
+                                            className="list-inside list-disc text-[10px] text-muted-foreground/85 line-clamp-1"
                                           >
                                             {reason}
                                           </li>
@@ -1840,7 +1872,7 @@ export default function OperationsClient() {
                                   </div>
                                 )}
                                 {g.primarySignal?.title && (
-                                  <p className="text-[11px] text-muted-foreground line-clamp-1">
+                                  <p className="text-[10px] text-muted-foreground/80 line-clamp-1">
                                     참고 신호: {toOperatorSentence(g.primarySignal.title)}
                                   </p>
                                 )}
@@ -1858,7 +1890,7 @@ export default function OperationsClient() {
                                 <span className="text-lg font-extrabold whitespace-nowrap tracking-tight">
                                   {won(g.anchor.amount)}
                                 </span>
-                                <span className="text-[11px] text-muted-foreground line-clamp-1">
+                                <span className="text-[10px] text-muted-foreground/80 line-clamp-1">
                                   결제 상태: {g.anchor.paymentLabel || "정보 없음"}
                                 </span>
                                 {(() => {
@@ -1916,7 +1948,7 @@ export default function OperationsClient() {
                                   </TooltipProvider>
                                 )}
                                 {amountMeaningText(g.anchor) ? (
-                                  <span className="text-[11px] text-muted-foreground line-clamp-2 text-right">
+                                  <span className="text-[10px] text-muted-foreground/75 line-clamp-1 text-right">
                                     {amountMeaningText(g.anchor)}
                                   </span>
                                 ) : null}
@@ -2096,11 +2128,7 @@ export default function OperationsClient() {
                   const reasonBullets = reviewReasons
                     .map((reason) => toOperatorSentence(reason))
                     .filter(Boolean)
-                    .slice(0, 3);
-                  const hasReasonCard =
-                    reasonSummary !== "연결 문서 확인 필요" ||
-                    reasonBullets.length > 0 ||
-                    Boolean(g.primarySignal?.title);
+                    .slice(0, 2);
                   const customerName = g.anchor.customer?.name?.trim() || "";
                   const customerEmail = g.anchor.customer?.email?.trim() || "";
                   const customerPrimary = customerName || customerEmail || "-";
@@ -2122,6 +2150,16 @@ export default function OperationsClient() {
                     cancelRequested: groupCancelRequested,
                     reviewLevel: g.reviewLevel,
                   });
+                  const reasonNeedsAttention =
+                    warn || g.reviewLevel === "action" || groupCancelRequested;
+                  const hasReasonCard =
+                    reasonNeedsAttention ||
+                    (reasonBullets.length > 0 &&
+                      !isLowTensionNextAction(nextActionText)) ||
+                    (Boolean(g.primarySignal?.title) &&
+                      !isLowTensionNextAction(nextActionText));
+                  const shouldShowReasonBullets =
+                    reasonNeedsAttention && reasonBullets.length > 0;
                   const settleYyyymm = yyyymmKST(g.createdAt ?? g.anchor.createdAt);
                   const settleHref = settleYyyymm
                     ? `/admin/settlements?yyyymm=${settleYyyymm}`
@@ -2157,7 +2195,7 @@ export default function OperationsClient() {
                               </Badge>
                             )}
                           </div>
-                          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground/85">
                             <span>
                               {opsKindLabel(g.anchor.kind)} · {shortenId(g.anchor.id)}
                             </span>
@@ -2195,26 +2233,26 @@ export default function OperationsClient() {
                         <p className="text-sm font-semibold text-foreground line-clamp-1">
                           {headline}
                         </p>
-                        <p className="text-xs text-foreground">
+                        <p className="text-xs text-foreground line-clamp-1">
                           <span className="mr-1 font-semibold text-primary">
                             다음 처리
                           </span>
                           {nextActionText}
                         </p>
                         {hasReasonCard && (
-                          <div className="px-0.5 py-1">
-                            <p className="text-[11px] font-semibold text-muted-foreground">
+                          <div className="px-0.5 py-0.5">
+                            <p className="text-[10px] font-semibold text-muted-foreground/90">
                               확인 이유
                             </p>
-                            <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">
+                            <p className="mt-0.5 text-[11px] text-muted-foreground/90 line-clamp-1">
                               {reasonSummary}
                             </p>
-                            {reasonBullets.length > 0 && (
-                              <ul className="mt-1.5 space-y-0.5">
+                            {shouldShowReasonBullets && (
+                              <ul className="mt-1 space-y-0.5">
                                 {reasonBullets.map((reason) => (
                                   <li
                                     key={`m-reason:${g.key}:${reason}`}
-                                    className="list-inside list-disc text-[11px] text-muted-foreground"
+                                    className="list-inside list-disc text-[10px] text-muted-foreground/85 line-clamp-1"
                                   >
                                     {reason}
                                   </li>
@@ -2278,7 +2316,7 @@ export default function OperationsClient() {
 
                         {isOpen && (
                           <div className="space-y-2 rounded-md border border-border/70 bg-muted/25 p-2.5">
-                            <p className="text-[11px] text-muted-foreground">
+                            <p className="text-[10px] text-muted-foreground/80">
                               기준 시각: {formatKST(g.createdAt ?? g.anchor.createdAt)} · 단계:{" "}
                               {toOperatorSentence(groupGuide.stage)}
                             </p>
@@ -2341,11 +2379,11 @@ export default function OperationsClient() {
                                 </TooltipProvider>
                               )}
                             </div>
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-[11px] text-muted-foreground/85">
                               결제: {g.anchor.paymentLabel || "정보 없음"}
                             </p>
                             {amountMeaningText(g.anchor) ? (
-                              <p className="text-xs text-muted-foreground">
+                              <p className="text-[10px] text-muted-foreground/75 line-clamp-1">
                                 {amountMeaningText(g.anchor)}
                               </p>
                             ) : null}
