@@ -1,5 +1,16 @@
 export const ORDER_SHIPPING_METHODS = ["courier", "quick", "visit"] as const;
 export type OrderShippingMethod = (typeof ORDER_SHIPPING_METHODS)[number];
+type ShippingInvoiceLike = {
+  courier?: unknown;
+  trackingNumber?: unknown;
+};
+
+type OrderShippingLike = {
+  shippingMethod?: unknown;
+  deliveryMethod?: unknown;
+  estimatedDate?: unknown;
+  invoice?: ShippingInvoiceLike | null;
+} | null | undefined;
 
 /**
  * 주문(Order) 도메인의 shippingMethod를 표준값으로 정규화
@@ -50,6 +61,59 @@ export const isVisitPickupOrder = (shippingLike: any): boolean => {
     shippingLike?.deliveryMethod ??
     shippingLike;
   return normalizeOrderShippingMethod(rawMethod) === "visit";
+};
+
+export const getOrderFulfillmentMethod = (
+  shippingLike: OrderShippingLike,
+): OrderShippingMethod | null => {
+  const rawMethod =
+    shippingLike?.shippingMethod ?? shippingLike?.deliveryMethod ?? null;
+  return normalizeOrderShippingMethod(rawMethod);
+};
+
+export const hasAnyRegisteredFulfillmentField = (
+  shippingLike: OrderShippingLike,
+): boolean => {
+  const registeredMethod = String(shippingLike?.shippingMethod ?? "").trim();
+  const estimatedDate = String(shippingLike?.estimatedDate ?? "").trim();
+  const courier = String(shippingLike?.invoice?.courier ?? "").trim();
+  const trackingNumber = String(
+    shippingLike?.invoice?.trackingNumber ?? "",
+  ).trim();
+  return Boolean(registeredMethod || estimatedDate || courier || trackingNumber);
+};
+
+export const getFulfillmentGuardMessage = (
+  shippingLike: OrderShippingLike,
+): string => {
+  return getOrderFulfillmentMethod(shippingLike) === "visit"
+    ? "방문 수령 정보가 등록되지 않았습니다."
+    : "배송 정보가 등록되지 않았습니다.";
+};
+
+export const canEnterShippingPhase = (
+  shippingLike: OrderShippingLike,
+): { ok: boolean; message?: string } => {
+  const method = getOrderFulfillmentMethod(shippingLike);
+  const estimatedDate = String(shippingLike?.estimatedDate ?? "").trim();
+  const courier = String(shippingLike?.invoice?.courier ?? "").trim();
+  const trackingNumber = String(
+    shippingLike?.invoice?.trackingNumber ?? "",
+  ).trim();
+
+  const isAllowed =
+    (method === "courier" &&
+      String(shippingLike?.shippingMethod ?? "").trim() === "courier" &&
+      Boolean(estimatedDate && courier && trackingNumber)) ||
+    (method === "quick" &&
+      String(shippingLike?.shippingMethod ?? "").trim() === "quick" &&
+      Boolean(estimatedDate)) ||
+    (method === "visit" &&
+      String(shippingLike?.shippingMethod ?? "").trim() === "visit" &&
+      Boolean(estimatedDate));
+
+  if (isAllowed) return { ok: true };
+  return { ok: false, message: getFulfillmentGuardMessage(shippingLike) };
 };
 
 export const shouldShowDeliveryOnlyFields = (shippingLike: any): boolean => {

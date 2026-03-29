@@ -19,7 +19,10 @@ import {
 } from "@/components/ui/select";
 import { adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
 import { useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
-import { normalizeOrderShippingMethod } from "@/lib/order-shipping";
+import {
+  hasAnyRegisteredFulfillmentField,
+  normalizeOrderShippingMethod,
+} from "@/lib/order-shipping";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -99,11 +102,20 @@ export default function ShippingForm({
   // console.log('initialShippingMethod:', initialShippingMethod);
 
   // 기존 값이 하나라도 있으면 "수정", 아무것도 없으면 "등록"
-  const isRegistered = Boolean(
-    String(initialRegisteredShippingMethod ?? "").trim() ||
-    String(initialEstimatedDelivery ?? "").trim() ||
-    String(initialCourier ?? "").trim() ||
-    String(initialTrackingNumber ?? "").trim(),
+  const isRegistered = hasAnyRegisteredFulfillmentField(
+    initialRegisteredShippingMethod ||
+      initialEstimatedDelivery ||
+      initialCourier ||
+      initialTrackingNumber
+      ? {
+          shippingMethod: initialRegisteredShippingMethod,
+          estimatedDate: initialEstimatedDelivery,
+          invoice: {
+            courier: initialCourier,
+            trackingNumber: initialTrackingNumber,
+          },
+        }
+      : null,
   );
   const formTitle = isVisitPickupOrder
     ? isRegistered

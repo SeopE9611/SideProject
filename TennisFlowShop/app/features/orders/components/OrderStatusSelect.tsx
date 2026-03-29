@@ -8,6 +8,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  canEnterShippingPhase,
   getOrderStatusLabelForDisplay,
   isVisitPickupOrder,
 } from "@/lib/order-shipping";
@@ -36,13 +37,21 @@ interface StatusRes {
 interface Props {
   orderId: string; // 대상 주문 ID
   currentStatus: string; // 서버에서 내려준 현재 상태(초깃값)
-  shippingMethod?: string;
+  shippingInfo?: {
+    shippingMethod?: string;
+    deliveryMethod?: string;
+    estimatedDate?: string;
+    invoice?: {
+      courier?: string;
+      trackingNumber?: string;
+    };
+  };
 }
 
 export default function OrderStatusSelect({
   orderId,
   currentStatus,
-  shippingMethod,
+  shippingInfo,
 }: Props) {
   // 상태 전용 SWR: fallbackData로 초기 상태 주입 -> 첫 렌더 안정화
   const { data: statusData, mutate: mutateStatus } = useSWR<StatusRes>(
@@ -66,7 +75,7 @@ export default function OrderStatusSelect({
   const isCancelled = current === "취소";
   const isConfirmed = current === "구매확정";
   const isLocked = isCancelled || isConfirmed;
-  const isVisitPickup = isVisitPickupOrder(shippingMethod);
+  const isVisitPickup = isVisitPickupOrder(shippingInfo);
 
   // 셀렉트에 노출할 “일반 상태”만 남김 (‘취소’는 모달 전용이므로 제외)
   const SELECTABLE_STATUSES = [
@@ -79,12 +88,22 @@ export default function OrderStatusSelect({
 
   // 셀렉트 변경 핸들러
   const handleChange = async (nextStatus: string) => {
+    const prevStatus = current;
     try {
       // 동일 값이면 네트워크 호출 불필요 -> 바로 리턴
-      if (nextStatus === current) return;
+      if (nextStatus === prevStatus) return;
 
       // 안전장치: 혹시라도 ‘취소’가 들어오면 무시하고 모달 버튼을 쓰게 유도
       if (nextStatus === "취소") return;
+
+      if (nextStatus === "배송중" || nextStatus === "배송완료") {
+        const guard = canEnterShippingPhase(shippingInfo);
+        if (!guard.ok) {
+          await mutateStatus({ status: prevStatus }, false);
+          showErrorToast(guard.message ?? "배송 정보가 등록되지 않았습니다.");
+          return;
+        }
+      }
 
       // PATCH 호출(쿠키 인증 포함)
       const res = await fetch(`/api/orders/${orderId}`, {
@@ -105,11 +124,12 @@ export default function OrderStatusSelect({
 
       const displayStatus = getOrderStatusLabelForDisplay(
         nextStatus,
-        shippingMethod,
+        shippingInfo,
       );
       showSuccessToast(`주문 상태가 '${displayStatus}'(으)로 변경되었습니다.`);
     } catch (err: any) {
       console.error(err);
+      await mutateStatus({ status: prevStatus }, false);
       showErrorToast(`상태 변경 실패: ${err?.message || "서버 오류"}`);
     }
   };
@@ -134,7 +154,7 @@ export default function OrderStatusSelect({
             {/*  ‘취소’는 제외. 모달 버튼으로만 처리 */}
             {SELECTABLE_STATUSES.map((s) => (
               <SelectItem key={s} value={s}>
-                {getOrderStatusLabelForDisplay(s, shippingMethod)}
+                {getOrderStatusLabelForDisplay(s, shippingInfo)}
               </SelectItem>
             ))}
           </SelectContent>

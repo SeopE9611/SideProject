@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import clientPromise from "@/lib/mongodb";
 import {
+  hasAnyRegisteredFulfillmentField,
   isVisitPickupOrder,
   normalizeOrderShippingMethod,
 } from "@/lib/order-shipping";
@@ -88,20 +89,7 @@ export async function PATCH(
       );
 
     const prevShippingInfo: any = order?.shippingInfo ?? {};
-    const prevMethodRaw = prevShippingInfo?.shippingMethod ?? "";
-    const prevEstimatedDate = String(
-      prevShippingInfo?.estimatedDate ?? "",
-    ).trim();
-    const prevCourier = String(prevShippingInfo?.invoice?.courier ?? "").trim();
-    const prevTracking = String(
-      prevShippingInfo?.invoice?.trackingNumber ?? "",
-    ).trim();
-    const isRegistered = Boolean(
-      String(prevMethodRaw ?? "").trim() ||
-      prevEstimatedDate ||
-      prevCourier ||
-      prevTracking,
-    );
+    const isRegistered = hasAnyRegisteredFulfillmentField(prevShippingInfo);
 
     const isOriginalVisitPickup = isVisitPickupOrder(order?.shippingInfo);
     // 정책: 체크아웃에서 확정된 주문 성격(방문/배송)을 관리자 폼에서 바꿀 수 없다.

@@ -42,6 +42,7 @@ import {
 import {
   getOrderDeliveryInfoTitle,
   getOrderStatusLabelForDisplay,
+  hasAnyRegisteredFulfillmentField,
   isVisitPickupOrder,
   orderShippingMethodLabel,
   shouldShowDeliveryOnlyFields,
@@ -316,11 +317,8 @@ export default function OrderDetailClient({ orderId }: Props) {
   const registeredShippingMethod = orderDetail.shippingInfo?.shippingMethod;
   const shippingMethodLabel = orderShippingMethodLabel(shippingMethodValue);
   const isVisitPickup = isVisitPickupOrder(orderDetail.shippingInfo);
-  const hasShippingInfoRegistered = Boolean(
-    String(registeredShippingMethod ?? "").trim() ||
-    String(orderDetail.shippingInfo?.estimatedDate ?? "").trim() ||
-    String(orderDetail.shippingInfo?.invoice?.courier ?? "").trim() ||
-    String(orderDetail.shippingInfo?.invoice?.trackingNumber ?? "").trim(),
+  const hasShippingInfoRegistered = hasAnyRegisteredFulfillmentField(
+    orderDetail.shippingInfo,
   );
   const showDeliveryOnlyFields = shouldShowDeliveryOnlyFields(
     orderDetail.shippingInfo,
@@ -810,7 +808,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                       <OrderStatusSelect
                         orderId={orderId!}
                         currentStatus={localStatus}
-                        shippingMethod={shippingMethodValue as string}
+                        shippingInfo={orderDetail.shippingInfo}
                       />
                     </div>
 

@@ -3,7 +3,10 @@ import { headers } from "next/headers";
 import Link from "next/link";
 import { Store, Truck } from "lucide-react";
 import { redirect } from "next/navigation";
-import { isVisitPickupOrder } from "@/lib/order-shipping";
+import {
+  hasAnyRegisteredFulfillmentField,
+  isVisitPickupOrder,
+} from "@/lib/order-shipping";
 
 type StringingApplicationLite = {
   id?: string;
@@ -125,15 +128,7 @@ export default async function ShippingUpdatePage({
     order?.shippingInfo?.shippingMethod ??
     order?.shippingInfo?.deliveryMethod ??
     "";
-  const registeredMethod = String(
-    order?.shippingInfo?.shippingMethod ?? "",
-  ).trim();
-  const date = String(order?.shippingInfo?.estimatedDate ?? "").trim();
-  const courier = String(order?.shippingInfo?.invoice?.courier ?? "").trim();
-  const tracking = String(
-    order?.shippingInfo?.invoice?.trackingNumber ?? "",
-  ).trim();
-  const isRegistered = Boolean(registeredMethod || date || courier || tracking);
+  const isRegistered = hasAnyRegisteredFulfillmentField(order?.shippingInfo);
   const isVisitPickup = isVisitPickupOrder(order?.shippingInfo);
   const pageTitle = isVisitPickup
     ? isRegistered
