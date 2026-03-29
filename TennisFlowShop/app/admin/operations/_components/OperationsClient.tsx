@@ -517,6 +517,7 @@ function resolveQuickActionTarget(
   const nextActionText =
     signal?.nextAction ?? group.nextAction ?? groupGuide.nextAction ?? "";
   const signalCode = String(signal?.code ?? "").toUpperCase();
+  let candidate: QuickActionTarget | null = null;
 
   if (!nextActionText.trim()) return null;
 
@@ -525,45 +526,50 @@ function resolveQuickActionTarget(
     nextActionText.includes("취소승인") ||
     nextActionText.includes("취소거절")
   ) {
-    return {
+    candidate = {
       href: anchor.href,
       label: nextActionText.includes("환불 계좌") ? "계좌 확인" : "취소 검토",
     };
   }
 
-  if (nextActionText.includes("신청서") || signalCode.includes("APP")) {
+  if (!candidate && (nextActionText.includes("신청서") || signalCode.includes("APP"))) {
     if (anchor.kind === "stringing_application") {
-      return { href: anchor.href, label: "신청서 확인" };
+      candidate = { href: anchor.href, label: "신청서 확인" };
     }
-    if (related?.kind === "stringing_application") {
-      return { href: related.href, label: "신청서 확인" };
+    if (!candidate && related?.kind === "stringing_application") {
+      candidate = { href: related.href, label: "신청서 확인" };
     }
   }
 
-  if (
+  const needsShippingCheck =
     nextActionText.includes("배송") ||
     nextActionText.includes("출고") ||
-    nextActionText.includes("운송장")
-  ) {
-    if (anchor.kind === "order") return { href: anchor.href, label: "배송 확인" };
-    if (related?.kind === "order") return { href: related.href, label: "배송 확인" };
+    nextActionText.includes("운송장");
+  if (!candidate && needsShippingCheck) {
+    if (anchor.kind === "order") candidate = { href: anchor.href, label: "배송 확인" };
+    if (!candidate && related?.kind === "order")
+      candidate = { href: related.href, label: "배송 확인" };
   }
 
-  if (
+  const needsRentalCheck =
     nextActionText.includes("대여") ||
     nextActionText.includes("반납") ||
-    nextActionText.includes("수령")
-  ) {
-    if (anchor.kind === "rental") return { href: anchor.href, label: "대여 확인" };
-    if (related?.kind === "rental") return { href: related.href, label: "대여 확인" };
+    nextActionText.includes("수령");
+  if (!candidate && needsRentalCheck) {
+    if (anchor.kind === "rental") candidate = { href: anchor.href, label: "대여 확인" };
+    if (!candidate && related?.kind === "rental")
+      candidate = { href: related.href, label: "대여 확인" };
   }
 
-  if (anchor.kind === "stringing_application" && related) {
-    if (related.kind === "order") return { href: related.href, label: "주문 확인" };
-    if (related.kind === "rental") return { href: related.href, label: "대여 확인" };
+  if (!candidate && anchor.kind === "stringing_application" && related) {
+    if (related.kind === "order") candidate = { href: related.href, label: "주문 확인" };
+    if (!candidate && related.kind === "rental")
+      candidate = { href: related.href, label: "대여 확인" };
   }
 
-  return null;
+  if (!candidate) return null;
+  if (candidate.href === anchor.href) return null;
+  return candidate;
 }
 
 function isCompatiblePaymentContext(anchorPay: string, childPay: string) {
@@ -1658,9 +1664,7 @@ export default function OperationsClient() {
                         quickActionTarget &&
                         MEANINGFUL_QUICK_ACTION_LABELS.has(
                           quickActionTarget.label,
-                        ) &&
-                        (quickActionTarget.href !== g.anchor.href ||
-                          quickActionTarget.label !== "상세")
+                        )
                           ? quickActionTarget
                           : null;
                       const anchorCancelQuickSignal = cancelQuickSignalSpec(
