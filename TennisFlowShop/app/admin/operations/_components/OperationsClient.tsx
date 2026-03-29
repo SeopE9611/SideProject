@@ -167,15 +167,25 @@ const FLOW_LABEL_BY_ID: Record<1 | 2 | 3 | 4 | 5 | 6 | 7, string> = {
   7: "라켓 대여 + 스트링 선택 + 교체서비스 신청(통합)",
 };
 
+const FLOW_LEGEND_LABEL_BY_ID: Record<1 | 2 | 3 | 4 | 5 | 6 | 7, string> = {
+  1: "스트링 단품",
+  2: "스트링+교체",
+  3: "교체 단독 신청",
+  4: "라켓 단품",
+  5: "라켓 구매+교체",
+  6: "라켓 대여",
+  7: "라켓 대여+교체",
+};
+
 const FLOW_SCENARIOS: Array<{ flow: 1 | 2 | 3 | 4 | 5 | 6 | 7; label: string }> =
   [
-    { flow: 1, label: FLOW_LABEL_BY_ID[1] },
-    { flow: 2, label: FLOW_LABEL_BY_ID[2] },
-    { flow: 3, label: FLOW_LABEL_BY_ID[3] },
-    { flow: 4, label: FLOW_LABEL_BY_ID[4] },
-    { flow: 5, label: FLOW_LABEL_BY_ID[5] },
-    { flow: 6, label: FLOW_LABEL_BY_ID[6] },
-    { flow: 7, label: FLOW_LABEL_BY_ID[7] },
+    { flow: 1, label: FLOW_LEGEND_LABEL_BY_ID[1] },
+    { flow: 2, label: FLOW_LEGEND_LABEL_BY_ID[2] },
+    { flow: 3, label: FLOW_LEGEND_LABEL_BY_ID[3] },
+    { flow: 4, label: FLOW_LEGEND_LABEL_BY_ID[4] },
+    { flow: 5, label: FLOW_LEGEND_LABEL_BY_ID[5] },
+    { flow: 6, label: FLOW_LEGEND_LABEL_BY_ID[6] },
+    { flow: 7, label: FLOW_LEGEND_LABEL_BY_ID[7] },
   ];
 
 function toOperatorSentence(text?: string | null) {
@@ -660,7 +670,7 @@ function stringSummaryText(item?: OpItem) {
 
 const thClasses =
   "px-4 py-2 text-left align-middle font-semibold text-foreground text-[11px] whitespace-nowrap";
-const tdClasses = "px-4 py-2.5 align-top";
+const tdClasses = "px-4 py-2 align-top";
 const th = thClasses;
 const td = tdClasses;
 
@@ -1087,7 +1097,7 @@ export default function OperationsClient() {
         <p className="text-xs text-muted-foreground lg:text-sm">
           {PAGE_COPY.description}
         </p>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button
             type="button"
             variant="ghost"
@@ -1098,16 +1108,16 @@ export default function OperationsClient() {
             {showActionsGuide ? "도움말 닫기" : "도움말 보기"}
           </Button>
           <p className="text-[11px] text-muted-foreground">
-            상단 수치는 현재 필터 기준 전체 그룹 요약입니다.
+            우선순위: 상태 → 시나리오 → 고객 → 제목 → 다음 처리
           </p>
         </div>
 
         {showActionsGuide && (
-          <div className="grid gap-2 rounded-xl border border-border bg-muted/30 p-3 grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-1.5 rounded-lg border border-border/70 bg-muted/20 p-2 bp-sm:grid-cols-2 bp-lg:grid-cols-4">
             {PAGE_COPY.actions.map((action) => (
-              <div key={action.title} className="space-y-1">
-                <p className="text-sm font-semibold text-foreground">{action.title}</p>
-                <p className="text-xs text-muted-foreground">{action.description}</p>
+              <div key={action.title} className="rounded-md border border-border/50 bg-background/80 px-2 py-1.5">
+                <p className="text-[11px] font-semibold leading-tight text-foreground">{action.title}</p>
+                <p className="mt-0.5 line-clamp-1 text-[10px] leading-tight text-muted-foreground">{action.description}</p>
               </div>
             ))}
           </div>
@@ -1190,7 +1200,12 @@ export default function OperationsClient() {
               size="sm"
               aria-pressed={presetActive.paymentMismatch}
               onClick={() => applyPreset(PRESET_CONFIG.paymentMismatch.params)}
-              className={!presetActive.paymentMismatch ? "bg-transparent" : ""}
+              className={cn(
+                "h-9 min-h-9 px-3 text-xs font-semibold",
+                presetActive.paymentMismatch
+                  ? "border-primary/70 bg-primary text-primary-foreground shadow-sm"
+                  : "border-border bg-background text-foreground hover:bg-muted/70",
+              )}
             >
               {PRESET_CONFIG.paymentMismatch.label}
             </Button>
@@ -1199,7 +1214,12 @@ export default function OperationsClient() {
               size="sm"
               aria-pressed={presetActive.integratedReview}
               onClick={() => applyPreset(PRESET_CONFIG.integratedReview.params)}
-              className={!presetActive.integratedReview ? "bg-transparent" : ""}
+              className={cn(
+                "h-9 min-h-9 px-3 text-xs font-semibold",
+                presetActive.integratedReview
+                  ? "border-primary/70 bg-primary text-primary-foreground shadow-sm"
+                  : "border-border bg-background text-foreground hover:bg-muted/70",
+              )}
             >
               {PRESET_CONFIG.integratedReview.label}
             </Button>
@@ -1208,11 +1228,22 @@ export default function OperationsClient() {
               size="sm"
               aria-pressed={presetActive.singleApplication}
               onClick={() => applyPreset(PRESET_CONFIG.singleApplication.params)}
-              className={!presetActive.singleApplication ? "bg-transparent" : ""}
+              className={cn(
+                "h-9 min-h-9 px-3 text-xs font-semibold",
+                presetActive.singleApplication
+                  ? "border-primary/70 bg-primary text-primary-foreground shadow-sm"
+                  : "border-border bg-background text-foreground hover:bg-muted/70",
+              )}
             >
               {PRESET_CONFIG.singleApplication.label}
             </Button>
-            <Button type="button" variant="ghost" size="sm" onClick={clearPresetMode}>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={clearPresetMode}
+              className="h-9 min-h-9 px-3 text-xs font-semibold text-muted-foreground hover:text-foreground"
+            >
               전체 보기
             </Button>
           </div>
@@ -1539,7 +1570,14 @@ export default function OperationsClient() {
                     {FLOW_SCENARIOS.map(({ flow, label }) => (
                       <Badge
                         key={`legend-flow:${flow}`}
-                        className={cn(badgeBase, badgeSizeSm, flowBadgeClass(flow))}
+                        className={cn(
+                          badgeBase,
+                          badgeSizeSm,
+                          flowBadgeClass(flow),
+                          "opacity-80",
+                        )}
+                        title={FLOW_LABEL_BY_ID[flow]}
+                        aria-label={`${label} (${FLOW_LABEL_BY_ID[flow]})`}
                       >
                         {label}
                       </Badge>
@@ -1735,7 +1773,7 @@ export default function OperationsClient() {
                         : "/admin/settlements";
 
                       const rowDensityClass =
-                        displayDensity === "compact" ? "py-2" : "py-3";
+                        displayDensity === "compact" ? "py-1.5" : "py-2.5";
                       const rowBaseToneClass =
                         idx % 2 === 0 ? "bg-background" : "bg-muted/[0.18]";
                       const warnEmphasisClass = warn
@@ -1793,7 +1831,7 @@ export default function OperationsClient() {
                             <TableCell
                               className={cn(tdClasses, rowDensityClass)}
                             >
-                              <div className="space-y-1.5">
+                              <div className="space-y-1">
                                 <div className="flex items-center gap-2 flex-wrap">
                                   {isGroup && (
                                     <Button
@@ -1813,20 +1851,20 @@ export default function OperationsClient() {
                                       )}
                                     </Button>
                                   )}
-                                  <div className="min-w-0">
-                                    <p className="text-[10px] text-muted-foreground/85 leading-tight">
+                                  <div className="min-w-0 space-y-0.5">
+                                    <p className="text-[10px] text-muted-foreground/75 leading-tight">
                                       {scenarioLabel}
                                     </p>
-                                    <p className="text-sm font-semibold text-foreground leading-tight">
+                                    <p className="text-[13px] font-medium text-foreground/85 leading-tight">
                                       {customerPrimary}
                                     </p>
                                     {customerName && customerEmail && (
-                                      <p className="text-[11px] text-muted-foreground leading-tight">
+                                      <p className="text-[10px] text-muted-foreground/80 leading-tight">
                                         {customerEmail}
                                       </p>
                                     )}
                                   </div>
-                                  <div className="ml-auto flex items-center gap-1.5 text-[10px] text-muted-foreground/85">
+                                  <div className="ml-auto flex items-center gap-1.5 text-[10px] text-muted-foreground/70">
                                     <span>{docLabel}</span>
                                     <Button
                                       size="sm"
@@ -1840,29 +1878,29 @@ export default function OperationsClient() {
                                     </Button>
                                   </div>
                                 </div>
-                                <p className="text-[15px] font-semibold leading-snug text-foreground line-clamp-1">
+                                <p className="text-[15px] font-semibold leading-tight text-foreground line-clamp-1">
                                   {headline}
                                 </p>
-                                <p className="text-xs text-foreground/95 line-clamp-1">
+                                <p className="text-[12px] text-foreground/95 line-clamp-1">
                                   <span className="font-semibold text-primary/90">
                                     다음 처리:
                                   </span>{" "}
                                   {nextActionText}
                                 </p>
                                 {hasReasonCard && (
-                                  <div className="px-0.5 py-0.5">
-                                    <p className="text-[10px] font-semibold text-muted-foreground/90">
+                                  <div className="rounded-sm border border-border/35 bg-muted/[0.12] px-1.5 py-1">
+                                    <p className="text-[10px] font-medium text-muted-foreground/85">
                                       확인 이유
                                     </p>
-                                    <p className="mt-0.5 text-[11px] text-muted-foreground/90 line-clamp-1">
+                                    <p className="mt-0.5 text-[10px] text-muted-foreground/85 line-clamp-1">
                                       {reasonSummary}
                                     </p>
                                     {shouldShowReasonBullets && (
-                                      <ul className="mt-1 space-y-0.5">
+                                      <ul className="mt-0.5 space-y-0.5">
                                         {reasonBulletsPreview.map((reason) => (
                                           <li
                                             key={`reason:${g.key}:${reason}`}
-                                            className="list-inside list-disc text-[10px] text-muted-foreground/85 line-clamp-1"
+                                            className="list-inside list-disc text-[10px] text-muted-foreground/75 line-clamp-1"
                                           >
                                             {reason}
                                           </li>
@@ -1963,14 +2001,14 @@ export default function OperationsClient() {
                                 stickyActionCellClass,
                               )}
                             >
-                              <div className="flex flex-col items-end gap-1.5">
-                                <div className="flex flex-wrap justify-end gap-1.5">
+                              <div className="flex w-full flex-col items-end gap-1">
+                                <div className="flex w-full flex-col items-end gap-1">
                                   {quickActionTarget && (
                                     <Button
                                       asChild
                                       size="sm"
                                       variant="default"
-                                      className="h-8 px-2.5 font-semibold shadow-sm"
+                                      className="h-8 min-w-[96px] justify-center px-2.5 text-xs font-semibold shadow-sm"
                                       title={groupGuide.nextAction ?? quickActionTarget.label}
                                     >
                                       <Link href={quickActionTarget.href} className="text-xs">
@@ -1978,38 +2016,40 @@ export default function OperationsClient() {
                                       </Link>
                                     </Button>
                                   )}
-                                  <Button
-                                    asChild
-                                    size="sm"
-                                    variant="secondary"
-                                    className="h-8 px-2 text-xs"
-                                    title={ROW_ACTION_LABELS.detail}
-                                  >
-                                    <Link
-                                      href={g.anchor.href}
-                                      className="flex items-center gap-1"
-                                      aria-label={ROW_ACTION_LABELS.detail}
+                                  <div className="flex items-center justify-end gap-1">
+                                    <Button
+                                      asChild
+                                      size="sm"
+                                      variant="secondary"
+                                      className="h-8 min-w-[68px] px-2 text-xs"
+                                      title={ROW_ACTION_LABELS.detail}
                                     >
-                                      <Eye className="h-3.5 w-3.5" />
-                                      <span className="text-xs">상세</span>
-                                    </Link>
-                                  </Button>
-                                  <Button
-                                    asChild
-                                    size="sm"
-                                    variant="ghost"
-                                    className="h-8 px-2 text-xs"
-                                    title={ROW_ACTION_LABELS.settlement}
-                                  >
-                                    <Link
-                                      href={settleHref}
-                                      className="flex items-center gap-1"
-                                      aria-label={ROW_ACTION_LABELS.settlement}
+                                      <Link
+                                        href={g.anchor.href}
+                                        className="flex items-center gap-1"
+                                        aria-label={ROW_ACTION_LABELS.detail}
+                                      >
+                                        <Eye className="h-3.5 w-3.5" />
+                                        <span className="text-xs">상세</span>
+                                      </Link>
+                                    </Button>
+                                    <Button
+                                      asChild
+                                      size="sm"
+                                      variant="ghost"
+                                      className="h-8 min-w-[68px] px-2 text-xs text-muted-foreground hover:text-foreground"
+                                      title={ROW_ACTION_LABELS.settlement}
                                     >
-                                      <BarChartBig className="h-3.5 w-3.5" />
-                                      <span className="text-xs">정산</span>
-                                    </Link>
-                                  </Button>
+                                      <Link
+                                        href={settleHref}
+                                        className="flex items-center gap-1"
+                                        aria-label={ROW_ACTION_LABELS.settlement}
+                                      >
+                                        <BarChartBig className="h-3.5 w-3.5" />
+                                        <span className="text-xs">정산</span>
+                                      </Link>
+                                    </Button>
+                                  </div>
                                 </div>
                               </div>
                             </TableCell>
@@ -2021,31 +2061,31 @@ export default function OperationsClient() {
                                 colSpan={4}
                                 className={cn(
                                   tdClasses,
-                                  "border-l-2 border-l-primary/40 border-t border-primary/20 py-4",
+                                  "border-l-2 border-l-primary/35 border-t border-primary/15 py-2.5",
                                 )}
                               >
-                                <div className="mb-2 flex items-center gap-2">
+                                <div className="mb-1.5 flex items-center gap-2">
                                   <ChevronDown className="h-3.5 w-3.5 text-primary" />
-                                  <p className="text-xs font-semibold text-foreground">
+                                  <p className="text-[11px] font-semibold text-foreground">
                                     운영 참고 정보
                                   </p>
                                 </div>
-                                <div className="grid gap-3 bp-xl:grid-cols-2 2xl:grid-cols-4">
-                                  <div className="rounded-md border border-border bg-background/70 p-3">
-                                    <p className="mb-1 text-xs font-semibold text-foreground">
+                                <div className="grid gap-2 bp-xl:grid-cols-2 2xl:grid-cols-4">
+                                  <div className="rounded-md border border-border/80 bg-background/60 p-2">
+                                    <p className="mb-0.5 text-[11px] font-semibold text-foreground">
                                       연결 문서
                                     </p>
-                                    <p className="mb-2 text-[11px] text-muted-foreground">
+                                    <p className="mb-1 text-[10px] text-muted-foreground">
                                       기준 시각: {formatKST(g.createdAt ?? g.anchor.createdAt)}
                                     </p>
                                     {renderLinkedDocs(linkedDocsForAnchor)}
                                   </div>
                                   {g.anchor.flow === 7 && (
-                                    <div className="rounded-md border border-border bg-background/70 p-3">
-                                      <p className="mb-1 text-xs font-semibold text-foreground">
+                                    <div className="rounded-md border border-border/80 bg-background/60 p-2">
+                                      <p className="mb-0.5 text-[11px] font-semibold text-foreground">
                                         스트링 요약
                                       </p>
-                                      <p className="text-xs text-muted-foreground">
+                                      <p className="text-[11px] text-muted-foreground">
                                         {stringSummaryText(
                                           g.items.find(
                                             (it) => it.kind === "rental",
@@ -2054,16 +2094,16 @@ export default function OperationsClient() {
                                       </p>
                                     </div>
                                   )}
-                                  <div className="rounded-md border border-border bg-background/70 p-3">
-                                    <p className="mb-1 text-xs font-semibold text-foreground">
+                                  <div className="rounded-md border border-border/80 bg-background/60 p-2">
+                                    <p className="mb-0.5 text-[11px] font-semibold text-foreground">
                                       연결 상태 요약
                                     </p>
                                     {childStatusSummary.length > 0 ? (
-                                      <div className="space-y-1">
+                                      <div className="space-y-0.5">
                                         {childStatusSummary.map((s) => (
                                           <div
                                             key={`st:${g.key}:${s.kind}`}
-                                            className="text-xs text-muted-foreground"
+                                            className="text-[11px] text-muted-foreground"
                                           >
                                             {opsKindLabel(s.kind)}:{" "}
                                             {toOperatorSentence(s.text)}
@@ -2077,11 +2117,11 @@ export default function OperationsClient() {
                                       </span>
                                     )}
                                   </div>
-                                  <div className="rounded-md border border-primary/20 bg-primary/[0.06] p-3">
-                                    <p className="mb-1 text-xs font-semibold text-foreground">
+                                  <div className="rounded-md border border-primary/15 bg-primary/[0.05] p-2">
+                                    <p className="mb-0.5 text-[11px] font-semibold text-foreground">
                                       단계
                                     </p>
-                                    <p className="text-xs text-muted-foreground">
+                                    <p className="text-[11px] text-muted-foreground">
                                       {toOperatorSentence(groupGuide.stage)}
                                     </p>
                                   </div>
@@ -2169,7 +2209,7 @@ export default function OperationsClient() {
                   );
                   return (
                     <Card key={`m:${g.key}`} className="border-border shadow-sm">
-                      <CardContent className="space-y-2 p-3">
+                      <CardContent className="space-y-1.5 p-2.5">
                         <div className="flex flex-wrap items-center justify-between gap-1.5">
                           <div className="flex items-center gap-1">
                             <Badge
@@ -2213,14 +2253,14 @@ export default function OperationsClient() {
 
                         <div className="flex items-baseline justify-between gap-2">
                           <div>
-                            <p className="text-[11px] leading-tight text-muted-foreground">
+                            <p className="text-[10px] leading-tight text-muted-foreground/80">
                               {scenarioLabel}
                             </p>
-                            <span className="text-sm font-semibold text-foreground">
+                            <span className="text-[13px] font-medium text-foreground/85">
                               {customerPrimary}
                             </span>
                             {customerName && customerEmail && (
-                              <p className="text-[11px] leading-tight text-muted-foreground">
+                              <p className="text-[10px] leading-tight text-muted-foreground/80">
                                 {customerEmail}
                               </p>
                             )}
@@ -2233,26 +2273,26 @@ export default function OperationsClient() {
                         <p className="text-sm font-semibold text-foreground line-clamp-1">
                           {headline}
                         </p>
-                        <p className="text-xs text-foreground line-clamp-1">
+                        <p className="text-[12px] text-foreground line-clamp-1">
                           <span className="mr-1 font-semibold text-primary">
                             다음 처리
                           </span>
                           {nextActionText}
                         </p>
                         {hasReasonCard && (
-                          <div className="px-0.5 py-0.5">
-                            <p className="text-[10px] font-semibold text-muted-foreground/90">
+                          <div className="rounded-sm border border-border/35 bg-muted/[0.12] px-1.5 py-1">
+                            <p className="text-[10px] font-medium text-muted-foreground/85">
                               확인 이유
                             </p>
-                            <p className="mt-0.5 text-[11px] text-muted-foreground/90 line-clamp-1">
+                            <p className="mt-0.5 text-[10px] text-muted-foreground/85 line-clamp-1">
                               {reasonSummary}
                             </p>
                             {shouldShowReasonBullets && (
-                              <ul className="mt-1 space-y-0.5">
+                              <ul className="mt-0.5 space-y-0.5">
                                 {reasonBullets.map((reason) => (
                                   <li
                                     key={`m-reason:${g.key}:${reason}`}
-                                    className="list-inside list-disc text-[10px] text-muted-foreground/85 line-clamp-1"
+                                    className="list-inside list-disc text-[10px] text-muted-foreground/75 line-clamp-1"
                                   >
                                     {reason}
                                   </li>
@@ -2262,13 +2302,13 @@ export default function OperationsClient() {
                           </div>
                         )}
 
-                        <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                        <div className="flex flex-wrap items-center gap-1 pt-0.5">
                           {quickActionTarget && (
                             <Button
                               asChild
                               size="sm"
                               variant="default"
-                              className="h-8 px-2.5 font-semibold shadow-sm"
+                              className="h-8 min-w-[96px] px-2.5 text-xs font-semibold shadow-sm"
                             >
                               <Link href={quickActionTarget.href}>
                                 {quickActionTarget.label}
@@ -2279,7 +2319,7 @@ export default function OperationsClient() {
                             asChild
                             size="sm"
                             variant="secondary"
-                            className="h-8 px-2"
+                            className="h-8 min-w-[68px] px-2 text-xs"
                           >
                             <Link
                               href={g.anchor.href}
@@ -2293,7 +2333,7 @@ export default function OperationsClient() {
                             asChild
                             size="sm"
                             variant="ghost"
-                            className="h-8 px-2"
+                            className="h-8 min-w-[68px] px-2 text-xs text-muted-foreground"
                           >
                             <Link
                               href={settleHref}
@@ -2303,19 +2343,21 @@ export default function OperationsClient() {
                               정산
                             </Link>
                           </Button>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="ml-auto h-7 px-2 text-[11px] text-muted-foreground"
-                            onClick={() => toggleGroup(g.key)}
-                          >
-                            {isOpen ? "접기" : "운영 참고"}
-                          </Button>
+                          {g.items.length > 1 && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="ml-auto h-7 px-2 text-[11px] text-muted-foreground"
+                              onClick={() => toggleGroup(g.key)}
+                            >
+                              {isOpen ? "접기" : "운영 참고"}
+                            </Button>
+                          )}
                         </div>
 
                         {isOpen && (
-                          <div className="space-y-2 rounded-md border border-border/70 bg-muted/25 p-2.5">
+                          <div className="space-y-1.5 rounded-md border border-border/60 bg-muted/20 p-2">
                             <p className="text-[10px] text-muted-foreground/80">
                               기준 시각: {formatKST(g.createdAt ?? g.anchor.createdAt)} · 단계:{" "}
                               {toOperatorSentence(groupGuide.stage)}
