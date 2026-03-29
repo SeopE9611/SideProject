@@ -18,6 +18,11 @@ import useSWRInfinite from "swr/infinite";
 
 const LIMIT = 5; // 한 페이지에 보여줄 이력 개수
 
+const SHIPPING_GUARD_MESSAGES = new Set([
+  "배송 정보가 등록되지 않았습니다.",
+  "방문 수령 정보가 등록되지 않았습니다.",
+]);
+
 // fetcher 함수: API 호출 후 JSON 파싱
 const fetcher = (url: string) =>
   fetch(url, { credentials: "include" }).then((res) => res.json());
@@ -112,7 +117,10 @@ export default function OrderStatusSelect({
         credentials: "include", // access/refresh 쿠키를 서버가 읽을 수 있게
         body: JSON.stringify({ status: nextStatus }),
       });
-      if (!res.ok) throw new Error(await res.text().catch(() => "변경 실패"));
+      if (!res.ok) {
+        const errorMessage = await res.text().catch(() => "서버 오류");
+        throw new Error(errorMessage || "서버 오류");
+      }
 
       // 성공 후, 연관 캐시 순서대로 재검증
       await mutateStatus();
@@ -127,10 +135,19 @@ export default function OrderStatusSelect({
         shippingInfo,
       );
       showSuccessToast(`주문 상태가 '${displayStatus}'(으)로 변경되었습니다.`);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
       await mutateStatus({ status: prevStatus }, false);
-      showErrorToast(`상태 변경 실패: ${err?.message || "서버 오류"}`);
+
+      const errorMessage =
+        err instanceof Error ? err.message.trim() : "서버 오류";
+
+      if (SHIPPING_GUARD_MESSAGES.has(errorMessage)) {
+        showErrorToast(errorMessage);
+        return;
+      }
+
+      showErrorToast(`상태 변경 실패: ${errorMessage || "서버 오류"}`);
     }
   };
 
