@@ -2,7 +2,6 @@
 
 import {
   AlertTriangle,
-  BarChartBig,
   BellRing,
   ChevronDown,
   ChevronRight,
@@ -143,7 +142,6 @@ const PAGE_COPY = {
 
 const ROW_ACTION_LABELS = {
   detail: "상세 보기",
-  settlement: "정산 확인",
   copyId: "문서 ID 복사",
 } as const;
 
@@ -167,26 +165,6 @@ const FLOW_LABEL_BY_ID: Record<1 | 2 | 3 | 4 | 5 | 6 | 7, string> = {
   7: "라켓 대여 + 스트링 선택 + 교체서비스 신청(통합)",
 };
 
-const FLOW_LEGEND_LABEL_BY_ID: Record<1 | 2 | 3 | 4 | 5 | 6 | 7, string> = {
-  1: "스트링 단품",
-  2: "스트링+교체",
-  3: "교체 단독 신청",
-  4: "라켓 단품",
-  5: "라켓 구매+교체",
-  6: "라켓 대여",
-  7: "라켓 대여+교체",
-};
-
-const FLOW_SCENARIOS: Array<{ flow: 1 | 2 | 3 | 4 | 5 | 6 | 7; label: string }> =
-  [
-    { flow: 1, label: FLOW_LEGEND_LABEL_BY_ID[1] },
-    { flow: 2, label: FLOW_LEGEND_LABEL_BY_ID[2] },
-    { flow: 3, label: FLOW_LEGEND_LABEL_BY_ID[3] },
-    { flow: 4, label: FLOW_LEGEND_LABEL_BY_ID[4] },
-    { flow: 5, label: FLOW_LEGEND_LABEL_BY_ID[5] },
-    { flow: 6, label: FLOW_LEGEND_LABEL_BY_ID[6] },
-    { flow: 7, label: FLOW_LEGEND_LABEL_BY_ID[7] },
-  ];
 
 function toOperatorSentence(text?: string | null) {
   if (!text) return "";
@@ -516,6 +494,15 @@ type QuickActionTarget = {
   label: string;
 };
 
+const MEANINGFUL_QUICK_ACTION_LABELS = new Set([
+  "취소 검토",
+  "계좌 확인",
+  "신청서 확인",
+  "배송 확인",
+  "대여 확인",
+  "주문 확인",
+]);
+
 function resolveQuickActionTarget(
   group: {
     anchor: OpItem;
@@ -576,7 +563,7 @@ function resolveQuickActionTarget(
     if (related.kind === "rental") return { href: related.href, label: "대여 확인" };
   }
 
-  return { href: anchor.href, label: "즉시 처리" };
+  return null;
 }
 
 function isCompatiblePaymentContext(anchorPay: string, childPay: string) {
@@ -723,7 +710,6 @@ export default function OperationsClient() {
   const [warnSort, setWarnSort] = useState<
     "default" | "warn_first" | "safe_first"
   >("default");
-  const [showAdvancedLegend, setShowAdvancedLegend] = useState(false);
   const [page, setPage] = useState(1);
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
   const [showActionsGuide, setShowActionsGuide] = useState(false);
@@ -1355,10 +1341,7 @@ export default function OperationsClient() {
                 size="sm"
                 className="h-9 bg-transparent"
               >
-                <Link href={settlementsHref}>
-                  <BarChartBig className="h-4 w-4 mr-1.5" />
-                  정산 관리
-                </Link>
+                <Link href={settlementsHref}>정산 관리</Link>
               </Button>
             </div>
 
@@ -1497,94 +1480,14 @@ export default function OperationsClient() {
                 </div>
               </div>
             )}
-            {/* 범례(기본 노출 비중 축소) */}
             <div className="pt-1">
-              <div className="flex items-center justify-between gap-2 rounded-md border border-border/60 bg-muted/20 px-2.5 py-1.5">
-                <p className="text-[10px] text-muted-foreground">
-                  현재 화면 링크는 복사 버튼으로 공유할 수 있습니다.
-                </p>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 px-2 text-[11px] text-muted-foreground"
-                  aria-expanded={showAdvancedLegend}
-                  onClick={() => setShowAdvancedLegend((prev) => !prev)}
-                >
-                  {showAdvancedLegend ? (
-                    <ChevronDown className="mr-1 h-3.5 w-3.5" />
-                  ) : (
-                    <ChevronRight className="mr-1 h-3.5 w-3.5" />
-                  )}
-                  {showAdvancedLegend ? "범례 접기" : "범례 보기"}
-                </Button>
+              <div className="flex items-center gap-2 rounded-md border border-border/60 bg-muted/20 px-2.5 py-1.5 text-[10px] text-muted-foreground">
+                <AlertTriangle className="h-3.5 w-3.5 text-warning" />
+                <span>
+                  상태 배지는 목록에 보이는 <strong>주의 / 확인 필요</strong>만
+                  사용합니다. 시나리오는 각 행 텍스트를 직접 확인하세요.
+                </span>
               </div>
-
-              {showAdvancedLegend && (
-                <div className="mt-2 space-y-2 rounded-md border border-border/60 bg-muted/15 px-2.5 py-2">
-                  <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
-                    <span className="font-medium">범례</span>
-                    <Badge
-                      variant={opsBadgeVariant(opsKindBadgeTone("order"))}
-                      className={cn(badgeBase, badgeSizeSm, "opacity-90")}
-                    >
-                      문서유형
-                    </Badge>
-                    <Badge
-                      className={cn(
-                        badgeBase,
-                        badgeSizeSm,
-                        badgeToneClass("brand"),
-                        "opacity-90",
-                      )}
-                    >
-                      통합여부
-                    </Badge>
-                    <Badge
-                      className={cn(
-                        badgeBase,
-                        badgeSizeSm,
-                        badgeToneClass("warning"),
-                        "opacity-90",
-                      )}
-                    >
-                      <AlertTriangle className="h-3 w-3" aria-hidden="true" />
-                      주의(오류)
-                    </Badge>
-                    <Badge
-                      className={cn(
-                        badgeBase,
-                        badgeSizeSm,
-                        badgeToneClass("brand"),
-                        "opacity-90",
-                      )}
-                    >
-                      확인 필요
-                    </Badge>
-                  </div>
-                  <p className="text-[10px] text-muted-foreground">
-                    결제 상태는 주문 기준으로 함께 표시될 수 있습니다.
-                  </p>
-                  <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
-                    <span className="font-medium">시나리오</span>
-                    {FLOW_SCENARIOS.map(({ flow, label }) => (
-                      <Badge
-                        key={`legend-flow:${flow}`}
-                        className={cn(
-                          badgeBase,
-                          badgeSizeSm,
-                          flowBadgeClass(flow),
-                          "opacity-80",
-                        )}
-                        title={FLOW_LABEL_BY_ID[flow]}
-                        aria-label={`${label} (${FLOW_LABEL_BY_ID[flow]})`}
-                      >
-                        {label}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
           </CardContent>
         </Card>
@@ -1700,11 +1603,6 @@ export default function OperationsClient() {
                       const children = g.items.filter(
                         (x) => `${x.kind}:${x.id}` !== anchorKey,
                       );
-                      // statusDisplayLabel은 현재 order에서만 내려오며, 다른 kind는 statusLabel을 그대로 사용한다.
-                      const childStatusSummary = summarizeByKind(
-                        children,
-                        (it) => it.statusDisplayLabel ?? it.statusLabel,
-                      );
                       const reviewReasons = collectReviewReasons(g);
                       const groupGuide = inferNextActionForOperationGroup(
                         g.items,
@@ -1744,6 +1642,9 @@ export default function OperationsClient() {
                       const customerPrimary = customerName || customerEmail || "-";
                       const docLabel = `${opsKindLabel(g.anchor.kind)} · ${shortenId(g.anchor.id)}`;
                       const scenarioLabel = flowLabelText(g.anchor);
+                      const createdAtLabel = formatKST(
+                        g.anchor.createdAt ?? g.createdAt,
+                      );
                       const headline = statusHeadlineOf(g.anchor);
                       const quickActionTarget = resolveQuickActionTarget(
                         {
@@ -1753,6 +1654,15 @@ export default function OperationsClient() {
                         },
                         groupGuide,
                       );
+                      const actionableQuickTarget =
+                        quickActionTarget &&
+                        MEANINGFUL_QUICK_ACTION_LABELS.has(
+                          quickActionTarget.label,
+                        ) &&
+                        (quickActionTarget.href !== g.anchor.href ||
+                          quickActionTarget.label !== "상세")
+                          ? quickActionTarget
+                          : null;
                       const anchorCancelQuickSignal = cancelQuickSignalSpec(
                         g.anchor.cancel,
                       );
@@ -1765,12 +1675,6 @@ export default function OperationsClient() {
                         : g.anchor.related
                           ? [g.anchor.related]
                           : [];
-                      const settleYyyymm = yyyymmKST(
-                        g.createdAt ?? g.anchor.createdAt,
-                      );
-                      const settleHref = settleYyyymm
-                        ? `/admin/settlements?yyyymm=${settleYyyymm}`
-                        : "/admin/settlements";
 
                       const rowDensityClass =
                         displayDensity === "compact" ? "py-1.5" : "py-2.5";
@@ -1820,10 +1724,7 @@ export default function OperationsClient() {
                                   )}
                                 </div>
                                 <div className="text-[10px] text-muted-foreground/80">
-                                  단계: {toOperatorSentence(groupGuide.stage)} ·{" "}
-                                  {isGroup
-                                    ? `${g.items.length}건 그룹`
-                                    : "단일 건"}
+                                  {isGroup ? `${g.items.length}건 그룹` : "단일 건"}
                                 </div>
                               </div>
                             </TableCell>
@@ -1863,6 +1764,9 @@ export default function OperationsClient() {
                                         {customerEmail}
                                       </p>
                                     )}
+                                    <p className="text-[10px] text-muted-foreground/75 leading-tight">
+                                      접수 {createdAtLabel}
+                                    </p>
                                   </div>
                                   <div className="ml-auto flex items-center gap-1.5 text-[10px] text-muted-foreground/70">
                                     <span>{docLabel}</span>
@@ -1925,9 +1829,14 @@ export default function OperationsClient() {
                               )}
                             >
                               <div className="flex flex-col items-end gap-1.5">
-                                <span className="text-lg font-extrabold whitespace-nowrap tracking-tight">
-                                  {won(g.anchor.amount)}
-                                </span>
+                                <div className="text-right">
+                                  <span className="text-[10px] text-muted-foreground">
+                                    {isGroup ? "총액" : opsKindLabel(g.anchor.kind)}
+                                  </span>
+                                  <p className="text-lg font-extrabold whitespace-nowrap tracking-tight">
+                                    {won(g.anchor.amount)}
+                                  </p>
+                                </div>
                                 <span className="text-[10px] text-muted-foreground/80 line-clamp-1">
                                   결제 상태: {g.anchor.paymentLabel || "정보 없음"}
                                 </span>
@@ -2003,16 +1912,16 @@ export default function OperationsClient() {
                             >
                               <div className="flex w-full flex-col items-end gap-1">
                                 <div className="flex w-full flex-col items-end gap-1">
-                                  {quickActionTarget && (
+                                  {actionableQuickTarget && (
                                     <Button
                                       asChild
                                       size="sm"
                                       variant="default"
                                       className="h-8 min-w-[96px] justify-center px-2.5 text-xs font-semibold shadow-sm"
-                                      title={groupGuide.nextAction ?? quickActionTarget.label}
+                                      title={groupGuide.nextAction ?? actionableQuickTarget.label}
                                     >
-                                      <Link href={quickActionTarget.href} className="text-xs">
-                                        {quickActionTarget.label}
+                                      <Link href={actionableQuickTarget.href} className="text-xs">
+                                        {actionableQuickTarget.label}
                                       </Link>
                                     </Button>
                                   )}
@@ -2033,103 +1942,97 @@ export default function OperationsClient() {
                                         <span className="text-xs">상세</span>
                                       </Link>
                                     </Button>
-                                    <Button
-                                      asChild
-                                      size="sm"
-                                      variant="ghost"
-                                      className="h-8 min-w-[68px] px-2 text-xs text-muted-foreground hover:text-foreground"
-                                      title={ROW_ACTION_LABELS.settlement}
-                                    >
-                                      <Link
-                                        href={settleHref}
-                                        className="flex items-center gap-1"
-                                        aria-label={ROW_ACTION_LABELS.settlement}
-                                      >
-                                        <BarChartBig className="h-3.5 w-3.5" />
-                                        <span className="text-xs">정산</span>
-                                      </Link>
-                                    </Button>
                                   </div>
                                 </div>
                               </div>
                             </TableCell>
                           </TableRow>
 
-                          {isGroup && isOpen && (
+                          {isGroup && (
                             <TableRow className="bg-muted/35">
                               <TableCell
                                 colSpan={4}
                                 className={cn(
                                   tdClasses,
-                                  "border-l-2 border-l-primary/35 border-t border-primary/15 py-2.5",
+                                  "border-l-2 border-l-primary/35 border-t border-primary/15 py-0",
                                 )}
                               >
-                                <div className="mb-1.5 flex items-center gap-2">
-                                  <ChevronDown className="h-3.5 w-3.5 text-primary" />
-                                  <p className="text-[11px] font-semibold text-foreground">
-                                    운영 참고 정보
-                                  </p>
-                                </div>
-                                <div className="grid gap-2 bp-xl:grid-cols-2 2xl:grid-cols-4">
-                                  <div className="rounded-md border border-border/80 bg-background/60 p-2">
-                                    <p className="mb-0.5 text-[11px] font-semibold text-foreground">
-                                      연결 문서
-                                    </p>
-                                    <p className="mb-1 text-[10px] text-muted-foreground">
-                                      기준 시각: {formatKST(g.createdAt ?? g.anchor.createdAt)}
-                                    </p>
-                                    {renderLinkedDocs(linkedDocsForAnchor)}
-                                  </div>
-                                  {g.anchor.flow === 7 && (
-                                    <div className="rounded-md border border-border/80 bg-background/60 p-2">
-                                      <p className="mb-0.5 text-[11px] font-semibold text-foreground">
-                                        스트링 요약
-                                      </p>
-                                      <p className="text-[11px] text-muted-foreground">
-                                        {stringSummaryText(
-                                          g.items.find(
-                                            (it) => it.kind === "rental",
-                                          ),
-                                        ) ?? "정보 없음"}
+                                <div
+                                  className={cn(
+                                    "grid transition-all duration-200 ease-out",
+                                    isOpen
+                                      ? "grid-rows-[1fr] opacity-100 py-2.5"
+                                      : "grid-rows-[0fr] opacity-0",
+                                  )}
+                                >
+                                  <div className="overflow-hidden">
+                                    <div className="mb-1.5 flex items-center gap-2">
+                                      <ChevronDown className="h-3.5 w-3.5 text-primary" />
+                                      <p className="text-[11px] font-semibold text-foreground">
+                                        운영 참고 정보
                                       </p>
                                     </div>
-                                  )}
-                                  <div className="rounded-md border border-border/80 bg-background/60 p-2">
-                                    <p className="mb-0.5 text-[11px] font-semibold text-foreground">
-                                      연결 상태 요약
-                                    </p>
-                                    {childStatusSummary.length > 0 ? (
-                                      <div className="space-y-0.5">
-                                        {childStatusSummary.map((s) => (
-                                          <div
-                                            key={`st:${g.key}:${s.kind}`}
-                                            className="text-[11px] text-muted-foreground"
-                                          >
-                                            {opsKindLabel(s.kind)}:{" "}
-                                            {toOperatorSentence(s.text)}
-                                            {s.mixed ? " (혼재)" : ""}
+                                    <div className="grid grid-cols-4 gap-2 border-y border-border/60 bg-background/40 px-2 py-1 text-[10px] font-medium text-muted-foreground">
+                                      <span>문서 · 상태</span>
+                                      <span>처리 안내</span>
+                                      <span className="text-right">금액</span>
+                                      <span>연결 정보</span>
+                                    </div>
+                                    <div className="divide-y divide-border/50 border-b border-border/60 bg-background/20">
+                                      {g.items.map((item) => (
+                                        <div
+                                          key={`detail:${g.key}:${item.kind}:${item.id}`}
+                                          className="grid grid-cols-4 gap-2 px-2 py-1.5 text-[11px]"
+                                        >
+                                          <div>
+                                            <p className="font-medium text-foreground">
+                                              {opsKindLabel(item.kind)} · {shortenId(item.id)}
+                                            </p>
+                                            <p className="text-muted-foreground">
+                                              {item.statusDisplayLabel ?? item.statusLabel}
+                                            </p>
                                           </div>
-                                        ))}
-                                      </div>
-                                    ) : (
-                                      <span className="text-xs text-muted-foreground">
-                                        연결 문서 상태가 크게 엇갈리진 않습니다.
-                                      </span>
-                                    )}
+                                          <div>
+                                            <p className="text-foreground">
+                                              {toOperatorSentence(item.nextAction ?? groupGuide.nextAction)}
+                                            </p>
+                                            <p className="text-[10px] text-muted-foreground">
+                                              {formatKST(item.createdAt)}
+                                            </p>
+                                          </div>
+                                          <div className="text-right">
+                                            <p className="font-semibold text-foreground">
+                                              {won(item.amount)}
+                                            </p>
+                                            <p className="text-[10px] text-muted-foreground">
+                                              {item.kind === "stringing_application"
+                                                ? "신청서"
+                                                : item.kind === "rental"
+                                                  ? "대여"
+                                                  : "주문"}
+                                            </p>
+                                          </div>
+                                          <div className="text-muted-foreground">
+                                            {toOperatorSentence(item.stage ?? groupGuide.stage)}
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                    <div className="mt-1 flex flex-wrap items-center gap-2 text-[10px] text-muted-foreground">
+                                      <span>기준 시각 {formatKST(g.createdAt ?? g.anchor.createdAt)}</span>
+                                      {g.anchor.flow === 7 && (
+                                        <span>
+                                          스트링 요약:{" "}
+                                          {stringSummaryText(
+                                            g.items.find((it) => it.kind === "rental"),
+                                          ) ?? "정보 없음"}
+                                        </span>
+                                      )}
+                                      {linkedDocsForAnchor.length > 0 && (
+                                        <span>연결 문서 {linkedDocsForAnchor.length}건</span>
+                                      )}
+                                    </div>
                                   </div>
-                                  <div className="rounded-md border border-primary/15 bg-primary/[0.05] p-2">
-                                    <p className="mb-0.5 text-[11px] font-semibold text-foreground">
-                                      단계
-                                    </p>
-                                    <p className="text-[11px] text-muted-foreground">
-                                      {toOperatorSentence(groupGuide.stage)}
-                                    </p>
-                                  </div>
-                                  {g.reviewLevel === "info" && (
-                                    <p className="rounded-md border border-info/25 bg-info/10 p-3 text-xs text-info">
-                                      참고 정보입니다. 조치 필요 없음.
-                                    </p>
-                                  )}
                                 </div>
                               </TableCell>
                             </TableRow>
@@ -2173,6 +2076,7 @@ export default function OperationsClient() {
                   const customerEmail = g.anchor.customer?.email?.trim() || "";
                   const customerPrimary = customerName || customerEmail || "-";
                   const scenarioLabel = flowLabelText(g.anchor);
+                  const createdAtLabel = formatKST(g.anchor.createdAt ?? g.createdAt);
                   const headline = statusHeadlineOf(g.anchor);
                   const quickActionTarget = resolveQuickActionTarget(
                     {
@@ -2182,6 +2086,11 @@ export default function OperationsClient() {
                     },
                     groupGuide,
                   );
+                  const actionableQuickTarget =
+                    quickActionTarget &&
+                    MEANINGFUL_QUICK_ACTION_LABELS.has(quickActionTarget.label)
+                      ? quickActionTarget
+                      : null;
                   const groupCancelRequested = g.items.some(
                     (it) => it.cancel?.status === "requested",
                   );
@@ -2200,10 +2109,6 @@ export default function OperationsClient() {
                       !isLowTensionNextAction(nextActionText));
                   const shouldShowReasonBullets =
                     reasonNeedsAttention && reasonBullets.length > 0;
-                  const settleYyyymm = yyyymmKST(g.createdAt ?? g.anchor.createdAt);
-                  const settleHref = settleYyyymm
-                    ? `/admin/settlements?yyyymm=${settleYyyymm}`
-                    : "/admin/settlements";
                   const anchorCancelQuickSignal = cancelQuickSignalSpec(
                     g.anchor.cancel,
                   );
@@ -2264,10 +2169,18 @@ export default function OperationsClient() {
                                 {customerEmail}
                               </p>
                             )}
+                            <p className="text-[10px] leading-tight text-muted-foreground/75">
+                              접수 {createdAtLabel}
+                            </p>
                           </div>
-                          <span className="text-base font-extrabold tracking-tight text-foreground">
-                            {won(g.anchor.amount)}
-                          </span>
+                          <div className="text-right">
+                            <p className="text-[10px] text-muted-foreground">
+                              {g.items.length > 1 ? "총액" : opsKindLabel(g.anchor.kind)}
+                            </p>
+                            <span className="text-base font-extrabold tracking-tight text-foreground">
+                              {won(g.anchor.amount)}
+                            </span>
+                          </div>
                         </div>
 
                         <p className="text-sm font-semibold text-foreground line-clamp-1">
@@ -2303,15 +2216,15 @@ export default function OperationsClient() {
                         )}
 
                         <div className="flex flex-wrap items-center gap-1 pt-0.5">
-                          {quickActionTarget && (
+                          {actionableQuickTarget && (
                             <Button
                               asChild
                               size="sm"
                               variant="default"
                               className="h-8 min-w-[96px] px-2.5 text-xs font-semibold shadow-sm"
                             >
-                              <Link href={quickActionTarget.href}>
-                                {quickActionTarget.label}
+                              <Link href={actionableQuickTarget.href}>
+                                {actionableQuickTarget.label}
                               </Link>
                             </Button>
                           )}
@@ -2329,20 +2242,6 @@ export default function OperationsClient() {
                               상세
                             </Link>
                           </Button>
-                          <Button
-                            asChild
-                            size="sm"
-                            variant="ghost"
-                            className="h-8 min-w-[68px] px-2 text-xs text-muted-foreground"
-                          >
-                            <Link
-                              href={settleHref}
-                              className="inline-flex items-center gap-1"
-                            >
-                              <BarChartBig className="h-3.5 w-3.5" />
-                              정산
-                            </Link>
-                          </Button>
                           {g.items.length > 1 && (
                             <Button
                               type="button"
@@ -2356,12 +2255,48 @@ export default function OperationsClient() {
                           )}
                         </div>
 
-                        {isOpen && (
-                          <div className="space-y-1.5 rounded-md border border-border/60 bg-muted/20 p-2">
-                            <p className="text-[10px] text-muted-foreground/80">
-                              기준 시각: {formatKST(g.createdAt ?? g.anchor.createdAt)} · 단계:{" "}
-                              {toOperatorSentence(groupGuide.stage)}
-                            </p>
+                        <div
+                          className={cn(
+                            "grid transition-all duration-200 ease-out",
+                            isOpen
+                              ? "grid-rows-[1fr] opacity-100"
+                              : "grid-rows-[0fr] opacity-0",
+                          )}
+                        >
+                          <div className="overflow-hidden">
+                            <div className="space-y-1.5 rounded-md border border-border/60 bg-muted/20 p-2">
+                              <p className="text-[10px] text-muted-foreground/80">
+                                기준 시각: {formatKST(g.createdAt ?? g.anchor.createdAt)}
+                              </p>
+                              <div className="divide-y divide-border/50 rounded border border-border/60 bg-background/50">
+                                {g.items.map((item) => (
+                                  <div
+                                    key={`m-detail:${g.key}:${item.kind}:${item.id}`}
+                                    className="grid grid-cols-[1fr_auto] gap-2 px-2 py-1 text-[11px]"
+                                  >
+                                    <div>
+                                      <p className="font-medium text-foreground">
+                                        {opsKindLabel(item.kind)} · {shortenId(item.id)}
+                                      </p>
+                                      <p className="text-muted-foreground">
+                                        {item.statusDisplayLabel ?? item.statusLabel}
+                                      </p>
+                                    </div>
+                                    <div className="text-right">
+                                      <p className="font-semibold text-foreground">
+                                        {won(item.amount)}
+                                      </p>
+                                      <p className="text-[10px] text-muted-foreground">
+                                        {item.kind === "stringing_application"
+                                          ? "신청서"
+                                          : item.kind === "rental"
+                                            ? "대여"
+                                            : "주문"}
+                                      </p>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
                             <div className="flex flex-wrap items-center gap-1">
                               <Badge
                                 variant={opStatusBadgeSpec(g.anchor).variant}
@@ -2464,7 +2399,8 @@ export default function OperationsClient() {
                               </p>
                             )}
                           </div>
-                        )}
+                          </div>
+                        </div>
                       </CardContent>
                     </Card>
                   );
