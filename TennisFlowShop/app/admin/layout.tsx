@@ -106,13 +106,13 @@ export default async function AdminLayout({
           </div>
         </div>
       </div>
-      <div className="mx-auto flex w-full max-w-[1600px] flex-1 gap-4 px-4 py-4 lg:gap-6 lg:px-6">
-        <div className="hidden md:block">
-          <AdminSidebar />
+      <div className="mx-auto flex w-full max-w-[1800px] flex-1 gap-4 px-3 py-4 lg:px-4 xl:gap-6 xl:px-6">
+        <div className="hidden xl:block">
+          <AdminSidebar defaultCollapsed />
         </div>
 
         <main className="min-w-0 flex-1">
-          <div className="mb-3 md:hidden">
+          <div className="mb-3 xl:hidden">
             <AdminMobileMenu />
           </div>
           {children}

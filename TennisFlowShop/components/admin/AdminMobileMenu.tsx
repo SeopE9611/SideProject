@@ -30,7 +30,7 @@ export default function AdminMobileMenu() {
         <Button
           variant="secondary"
           size="sm"
-          className="md:hidden"
+          className="xl:hidden"
           aria-label="관리자 모바일 메뉴 열기"
         >
           <Menu className="h-4 w-4" />
