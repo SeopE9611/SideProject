@@ -292,9 +292,9 @@ export default function OrderDetailClient({ orderId }: Props) {
       })
     : false;
   const linkedStageBlockedReason = isLinkedStageBlockedByOrder
-    ? `주문 상태(${localStatus})에서는 대표 단계를 변경할 수 없습니다.`
+    ? `주문 상태(${localStatus})에서는 연결 진행 단계를 변경할 수 없습니다.`
     : isLinkedStageBlockedByApplication
-      ? "신청서가 취소되었거나 취소 승인 완료 상태여서 대표 단계를 변경할 수 없습니다."
+      ? "신청서가 취소되었거나 취소 승인 완료 상태여서 연결 진행 단계를 변경할 수 없습니다."
       : null;
 
   const shouldShowLinkedSelfShipSummary =
