@@ -689,13 +689,46 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
   const canEditSelfShip = (isAdmin || (userEditableStatuses ?? []).includes(data.status)) && !completedLikeStatuses.includes(data.status);
   const shouldShowReturnMethod = !(data.orderId && data.orderHasRacket === true);
 
+  const summaryCardClass =
+    'flex min-h-[112px] flex-col items-start justify-start gap-1 rounded-xl border border-border/60 bg-card/70 p-3.5 backdrop-blur-sm';
+  const summaryBadgeClass = cn(
+    badgeBase,
+    badgeSizeSm,
+    'inline-flex w-fit self-start',
+  );
+  const detailGridClass = isAdmin ? 'grid gap-4 xl:grid-cols-12' : 'grid gap-4 md:grid-cols-2 bp-sm:gap-6';
+  const detailCardClass = isAdmin ? 'overflow-hidden border-0 bg-muted/30 shadow-xl ring-ring' : 'border border-border shadow-xl bg-card overflow-hidden';
+  const detailCardHeaderClass = isAdmin ? 'bg-muted/30 border-b pb-3' : 'bg-muted/50 border-b border-border pb-3';
+
   return (
-    <main className="w-full">
-      <SiteContainer variant={isAdmin ? 'default' : 'wide'} className={cn('py-6 space-y-6 bp-sm:py-10 bp-sm:space-y-8', !isAdmin && 'px-0 bp-sm:px-4 bp-md:px-6')}>
-        <div className={cn('mx-auto', isAdmin ? 'max-w-4xl' : 'max-w-6xl')}>
+    <main className={cn('w-full', isAdmin && 'min-h-screen bg-muted/30 dark:bg-muted/30')}>
+      <div className={cn(isAdmin && 'container py-6 lg:py-8')}>
+        <SiteContainer
+          variant={isAdmin ? 'full' : 'wide'}
+          className={cn(
+            isAdmin
+              ? 'space-y-6 px-0 bp-sm:px-0 bp-md:px-0 bp-lg:px-0'
+              : 'py-6 space-y-6 bp-sm:py-10 bp-sm:space-y-8 px-0 bp-sm:px-4 bp-md:px-6',
+          )}
+        >
+          <div className={cn('mx-auto w-full', isAdmin ? 'max-w-[1500px]' : 'max-w-6xl')}>
           {/* 헤더 */}
-          <div className={cn('rounded-2xl shadow-lg mb-6 bp-sm:mb-8', isAdmin ? 'bg-primary/10 p-4 border border-primary/20 dark:bg-primary/20 bp-sm:p-8' : 'bg-muted/30 border border-border p-4 bp-sm:p-6 bp-md:p-8')}>
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-4 bp-sm:mb-6">
+          <div
+            className={cn(
+              'rounded-2xl shadow-lg mb-6 bp-sm:mb-8',
+              isAdmin
+                ? 'border border-border bg-muted/30 p-5 lg:p-6'
+                : 'bg-muted/30 border border-border p-4 bp-sm:p-6 bp-md:p-8',
+            )}
+          >
+            <div
+              className={cn(
+                'mb-4',
+                isAdmin
+                  ? 'flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between'
+                  : 'flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bp-sm:mb-6',
+              )}
+            >
               <div className="flex items-center space-x-4">
                 <div className="bg-card rounded-full p-3 shadow-md">{isAdmin ? <Settings className="h-8 w-8 text-foreground" /> : <Target className="h-8 w-8 text-foreground" />}</div>
                 <div>
@@ -780,55 +813,100 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
             </div>
 
             {/* 신청 요약 정보 */}
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-4 bp-sm:gap-6">
-              <div className="bg-card/70 rounded-xl p-4 backdrop-blur-sm">
-                <div className="flex items-center space-x-2 mb-2">
+            <div className={cn('grid grid-cols-1 gap-3', isAdmin ? 'md:grid-cols-2 xl:grid-cols-5' : 'md:grid-cols-4 bp-sm:gap-6')}>
+              <div className={isAdmin ? summaryCardClass : 'bg-card/70 rounded-xl p-4 backdrop-blur-sm'}>
+                <div className="mb-2 flex items-center space-x-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-foreground">신청일시</span>
+                  <span className={cn('text-sm font-medium', isAdmin ? 'text-muted-foreground' : 'text-foreground')}>신청일시</span>
                 </div>
                 <p className="text-lg font-semibold text-foreground">{new Date(data.requestedAt).toLocaleDateString()}</p>
               </div>
 
-              <div className="bg-card/70 rounded-xl p-4 backdrop-blur-sm">
-                <div className="flex items-center space-x-2 mb-2">
+              <div className={isAdmin ? summaryCardClass : 'bg-card/70 rounded-xl p-4 backdrop-blur-sm'}>
+                <div className="mb-2 flex items-center space-x-2">
                   <CreditCard className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-foreground">총 비용</span>
+                  <span className={cn('text-sm font-medium', isAdmin ? 'text-muted-foreground' : 'text-foreground')}>총 비용</span>
                 </div>
                 <p className="text-lg font-semibold text-foreground">{data.totalPrice.toLocaleString()}원</p>
               </div>
 
-              <div className="bg-card/70 rounded-xl p-4 backdrop-blur-sm">
-                <div className="flex items-center space-x-2 mb-2">
+              <div className={isAdmin ? summaryCardClass : 'bg-card/70 rounded-xl p-4 backdrop-blur-sm'}>
+                <div className="mb-2 flex items-center space-x-2">
                   <Target className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-foreground">라켓 종류</span>
+                  <span className={cn('text-sm font-medium', isAdmin ? 'text-muted-foreground' : 'text-foreground')}>{isAdmin ? '신청 상태' : '라켓 종류'}</span>
                 </div>
-                <p className="text-lg font-semibold text-foreground">{racketTypeSummary}</p>
+                {isAdmin ? (
+                  <ApplicationStatusBadge status={data.status} />
+                ) : (
+                  <p className="text-lg font-semibold text-foreground">{racketTypeSummary}</p>
+                )}
               </div>
 
-              <div className="bg-card/70 rounded-xl p-4 backdrop-blur-sm">
-                <div className="flex items-center space-x-2 mb-2">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-foreground">희망 일시</span>
+              <div className={isAdmin ? summaryCardClass : 'bg-card/70 rounded-xl p-4 backdrop-blur-sm'}>
+                <div className="mb-2 flex items-center space-x-2">
+                  <User className="h-4 w-4 text-muted-foreground" />
+                  <span className={cn('text-sm font-medium', isAdmin ? 'text-muted-foreground' : 'text-foreground')}>{isAdmin ? '결제 상태' : '희망 일시'}</span>
                 </div>
-                <p className="text-lg font-semibold text-foreground">{visitTimeLabel}</p>
+                {isAdmin ? (() => {
+                  const pay = getPaymentStatusBadgeSpec(paymentStatus);
+                  return (
+                    <Badge variant={pay.variant} className={summaryBadgeClass}>
+                      {paymentStatus}
+                    </Badge>
+                  );
+                })() : (
+                  <p className="text-lg font-semibold text-foreground">{visitTimeLabel}</p>
+                )}
               </div>
+
+              {isAdmin && (
+                <div className={summaryCardClass}>
+                  <div className="mb-2 flex items-center space-x-2">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm font-medium text-muted-foreground">희망 일시</span>
+                  </div>
+                  <p className="text-lg font-semibold text-foreground">{visitTimeLabel}</p>
+                </div>
+              )}
             </div>
-            {data.orderId && (
-              <div className="mt-4 flex flex-wrap items-center gap-2 text-sm text-foreground">
-                <Truck className="h-4 w-4 text-muted-foreground" />
-                <span className="font-medium">주문 수령 방식</span>
-                <Badge className={`${badgeBase} ${badgeSizeSm} whitespace-nowrap ${linkedOrderPickupBadge?.color ?? badgeToneClass('danger')}`}>{linkedOrderPickupBadge?.label ?? '선택 없음'}</Badge>
-              </div>
-            )}
 
-            {shouldShowReturnMethod && (
-              <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-foreground">
-                <Truck className="h-4 w-4 text-muted-foreground" />
-                <span className="font-medium">반환 방식</span>
-                <Badge className={`${badgeBase} ${badgeSizeSm} whitespace-nowrap ${shippingMethodBadge.color}`}>{shippingMethodBadge.label}</Badge>
-                {shippingMethodBadge.label === '선택 없음' && <span className="text-xs text-muted-foreground">반환 방식이 아직 선택되지 않았습니다.</span>}
-              </div>
-            )}
+            <div className={cn(isAdmin ? 'mt-4 flex flex-wrap items-center gap-3 text-sm text-foreground' : 'mt-4 space-y-2')}>
+              {isAdmin && (
+                <>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Target className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-medium">라켓 종류</span>
+                    <span className="text-sm text-foreground">{racketTypeSummary}</span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Ticket className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-medium">신청 요약</span>
+                    <Badge variant="neutral" className={cn(badgeBase, badgeSizeSm)}>
+                      스트링 {stringTypeCount}종
+                    </Badge>
+                    <Badge variant="neutral" className={cn(badgeBase, badgeSizeSm)}>
+                      라켓 {racketCount}자루
+                    </Badge>
+                  </div>
+                </>
+              )}
+              {data.orderId && (
+                <div className="flex flex-wrap items-center gap-2 text-sm text-foreground">
+                  <Truck className="h-4 w-4 text-muted-foreground" />
+                  <span className="font-medium">주문 수령 방식</span>
+                  <Badge className={`${badgeBase} ${badgeSizeSm} whitespace-nowrap ${linkedOrderPickupBadge?.color ?? badgeToneClass('danger')}`}>{linkedOrderPickupBadge?.label ?? '선택 없음'}</Badge>
+                </div>
+              )}
+
+              {shouldShowReturnMethod && (
+                <div className="flex flex-wrap items-center gap-2 text-sm text-foreground">
+                  <Truck className="h-4 w-4 text-muted-foreground" />
+                  <span className="font-medium">반환 방식</span>
+                  <Badge className={`${badgeBase} ${badgeSizeSm} whitespace-nowrap ${shippingMethodBadge.color}`}>{shippingMethodBadge.label}</Badge>
+                  {shippingMethodBadge.label === '선택 없음' && <span className="text-xs text-muted-foreground">반환 방식이 아직 선택되지 않았습니다.</span>}
+                </div>
+              )}
+            </div>
 
             {!isAdmin && (
               <div className="mt-4 rounded-lg border border-border bg-muted/30 p-3">
@@ -892,74 +970,125 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
           )}
 
           {/* 상태 카드 */}
-          <Card className="border border-border shadow-xl bg-card overflow-hidden mb-6 bp-sm:mb-8">
-            <CardHeader className="bg-muted/50 border-b border-border pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle>신청 상태</CardTitle>
+          <Card className={cn(detailCardClass, 'mb-6 bp-sm:mb-8')}>
+            <CardHeader className={detailCardHeaderClass}>
+              <div className="flex items-center justify-between gap-3">
+                <CardTitle>{isAdmin ? '신청 상태 관리' : '신청 상태'}</CardTitle>
                 <ApplicationStatusBadge status={data.status} />
               </div>
+              {isAdmin && (
+                <CardDescription>
+                  {new Date(data.requestedAt).toLocaleDateString()}에 접수된 신청입니다. 신청 상태 변경과 취소 요청 처리를 이 영역에서 함께 관리합니다.
+                </CardDescription>
+              )}
             </CardHeader>
-            <CardContent className="pt-4">
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                {/* 왼쪽: 안내 문구 */}
-                <div className="text-sm text-muted-foreground">
-                  {isCancelled && <span className="italic">취소된 신청서입니다. 상태 변경 및 취소가 불가능합니다.</span>}
+            <CardContent className={cn(isAdmin ? 'p-4 lg:p-5' : 'pt-4')}>
+              {isAdmin ? (
+                <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_300px]">
+                  <div className="rounded-xl border border-border/60 bg-card/70 p-4">
+                    <div className="space-y-3">
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">신청 진행 상태</p>
+                        <p className="mt-1 text-xs text-muted-foreground">현재 신청서의 진행 단계를 확인하고 필요한 경우 상태를 변경합니다.</p>
+                      </div>
 
-                  {!isCancelled && isCancelRequested && <span className="italic">취소 요청 처리 중입니다. 관리자 확인 후 결과가 반영됩니다.</span>}
+                      <div className="max-w-[280px]">
+                        <ApplicationStatusSelect
+                          applicationId={data.id}
+                          currentStatus={data.status}
+                          onUpdated={async () => {
+                            await mutate();
+                            if (historyMutateRef.current) {
+                              await historyMutateRef.current();
+                            }
+                          }}
+                          disabled={isCancelled}
+                        />
+                      </div>
 
-                  {!isCancelled && !isCancelRequested && <span>{new Date(data.requestedAt).toLocaleDateString()}에 접수된 신청입니다.</span>}
-                  {!isCancelled && !isCancelRequested && !canConfirmExchange && !isUserConfirmed && <span className="block">교체 완료 후 교체서비스 확정을 진행할 수 있습니다.</span>}
-                  {!isCancelled && !isCancelRequested && <span className="block">주문 구매확정과 교체서비스 확정은 별도로 처리됩니다.</span>}
+                      <div className="text-xs text-muted-foreground space-y-1">
+                        {isCancelled ? (
+                          <p>취소된 신청서입니다. 상태 변경 및 추가 운영 액션이 제한됩니다.</p>
+                        ) : isCancelRequested ? (
+                          <p>취소 요청 처리 중입니다. 승인 또는 거절 후 이력에 반영됩니다.</p>
+                        ) : (
+                          <>
+                            <p>{new Date(data.requestedAt).toLocaleDateString()}에 접수된 신청입니다.</p>
+                            <p>주문 구매확정과 교체서비스 확정은 별도로 처리됩니다.</p>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl border border-border/60 bg-card/70 p-4">
+                    <div className="space-y-3">
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">운영 액션</p>
+                        <p className="mt-1 text-xs text-muted-foreground">취소 요청 처리와 관리자 후속 조치를 진행합니다.</p>
+                      </div>
+
+                      <div className="flex min-h-[40px] flex-wrap items-center gap-2">
+                        {isCancelled ? (
+                          <div className="rounded-md border border-border bg-muted px-3 py-2 text-sm text-muted-foreground">
+                            취소된 신청서입니다. 추가 액션이 불가능합니다.
+                          </div>
+                        ) : isCancelRequested && !hasOrderCancelRequested ? (
+                          <>
+                            <Button size="sm" variant="destructive" onClick={handleAdminApproveCancel} disabled={isPending}>
+                              <XCircle className="mr-1 h-4 w-4" />
+                              취소 승인
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={handleAdminRejectCancel} disabled={isPending}>
+                              취소 거절
+                            </Button>
+                          </>
+                        ) : (
+                          <div className="rounded-md border border-border bg-muted px-3 py-2 text-sm text-muted-foreground">
+                            {hasOrderCancelRequested
+                              ? '연결 주문에 취소 요청이 있어 주문 상세에서 최종 처리해야 합니다.'
+                              : '현재 진행 가능한 관리자 취소 액션이 없습니다.'}
+                          </div>
+                        )}
+                      </div>
+
+                      {hasOrderCancelRequested && !isCancelled && (
+                        <p className="text-xs text-destructive">이 신청이 연결된 주문에 이미 취소 요청이 걸려 있습니다. 최종 취소 승인/거절은 주문 상세 화면에서 처리해 주세요.</p>
+                      )}
+                    </div>
+                  </div>
                 </div>
+              ) : (
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  {/* 왼쪽: 안내 문구 */}
+                  <div className="text-sm text-muted-foreground">
+                    {isCancelled && <span className="italic">취소된 신청서입니다. 상태 변경 및 취소가 불가능합니다.</span>}
 
-                <div className="flex flex-wrap gap-2 justify-end">
-                  {/* 관리자: 상태 드롭다운 */}
-                  {isAdmin && (
-                    <ApplicationStatusSelect
-                      applicationId={data.id}
-                      currentStatus={data.status}
-                      onUpdated={async () => {
-                        await mutate();
-                        if (historyMutateRef.current) {
-                          await historyMutateRef.current();
-                        }
-                      }}
-                      disabled={isCancelled}
-                    />
-                  )}
+                    {!isCancelled && isCancelRequested && <span className="italic">취소 요청 처리 중입니다. 관리자 확인 후 결과가 반영됩니다.</span>}
 
-                  {/* 사용자: 아직 취소 요청 전 → "신청 취소 요청" 버튼 */}
-                  {!isAdmin && !isCancelled && !isCancelRequested && (
-                    <Button variant="destructive" onClick={handleOpenCancelDialog} disabled={isPending}>
-                      <XCircle className="mr-2 h-4 w-4" />
-                      신청 취소 요청
-                    </Button>
-                  )}
+                    {!isCancelled && !isCancelRequested && <span>{new Date(data.requestedAt).toLocaleDateString()}에 접수된 신청입니다.</span>}
+                    {!isCancelled && !isCancelRequested && !canConfirmExchange && !isUserConfirmed && <span className="block">교체 완료 후 교체서비스 확정을 진행할 수 있습니다.</span>}
+                    {!isCancelled && !isCancelRequested && <span className="block">주문 구매확정과 교체서비스 확정은 별도로 처리됩니다.</span>}
+                  </div>
 
-                  {/* 사용자: 이미 취소 요청 상태 → "취소 요청 철회" 버튼 */}
-                  {!isAdmin && !isCancelled && isCancelRequested && (
-                    <Button variant="outline" size="sm" onClick={handleWithdrawCancelRequest} disabled={isWithdrawingCancel} className="border-border text-primary hover:bg-muted hover:text-primary">
-                      {isWithdrawingCancel ? '취소 요청 철회 중...' : '취소 요청 철회'}
-                    </Button>
-                  )}
-
-                  {/* 관리자: 취소 요청이 들어온 경우에만 승인/거절 버튼 노출 */}
-                  {isAdmin && isCancelRequested && !isCancelled && !hasOrderCancelRequested && (
-                    <>
-                      <Button size="sm" variant="destructive" onClick={handleAdminApproveCancel} disabled={isPending}>
-                        <XCircle className="mr-1 h-4 w-4" />
-                        취소 승인
+                  <div className="flex flex-wrap gap-2 justify-end">
+                    {/* 사용자: 아직 취소 요청 전 → "신청 취소 요청" 버튼 */}
+                    {!isAdmin && !isCancelled && !isCancelRequested && (
+                      <Button variant="destructive" onClick={handleOpenCancelDialog} disabled={isPending}>
+                        <XCircle className="mr-2 h-4 w-4" />
+                        신청 취소 요청
                       </Button>
-                      <Button size="sm" variant="outline" onClick={handleAdminRejectCancel} disabled={isPending}>
-                        취소 거절
-                      </Button>
-                    </>
-                  )}
+                    )}
 
-                  {/* 주문에 취소 요청이 걸려 있으면 신청 단독 승인/거절 막기 */}
-                  {isAdmin && hasOrderCancelRequested && !isCancelled && <p className="text-xs text-destructive mt-2">이 신청이 연결된 주문에 이미 취소 요청이 걸려 있습니다. 최종 취소 승인/거절은 주문 상세 화면에서 처리해 주세요.</p>}
+                    {/* 사용자: 이미 취소 요청 상태 → "취소 요청 철회" 버튼 */}
+                    {!isAdmin && !isCancelled && isCancelRequested && (
+                      <Button variant="outline" size="sm" onClick={handleWithdrawCancelRequest} disabled={isWithdrawingCancel} className="border-border text-primary hover:bg-muted hover:text-primary">
+                        {isWithdrawingCancel ? '취소 요청 철회 중...' : '취소 요청 철회'}
+                      </Button>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
             </CardContent>
           </Card>
           {/* 연결 문서(공용 카드) */}
@@ -978,10 +1107,10 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
             </Card>
           )}
 
-          <div className="grid gap-4 md:grid-cols-2 bp-sm:gap-6">
+          <div className={detailGridClass}>
             {/* 고객 정보 */}
-            <Card className="border border-border shadow-xl bg-card overflow-hidden">
-              <CardHeader className="bg-muted/50 border-b border-border pb-3">
+            <Card className={cn(detailCardClass, isAdmin && 'xl:col-span-6')}>
+              <CardHeader className={detailCardHeaderClass}>
                 <CardTitle className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <User className="h-5 w-5 text-primary" />
@@ -1063,8 +1192,14 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
             </Card>
 
             {/* 결제 정보 */}
-            <Card className="border border-border shadow-xl bg-card overflow-hidden">
-              <CardHeader className="bg-muted/50 border-b border-border flex flex-row items-center justify-between space-y-0 pb-2">
+            <Card className={cn(detailCardClass, isAdmin && 'xl:col-span-6')}>
+              <CardHeader
+                className={cn(
+                  detailCardHeaderClass,
+                  'flex flex-row items-center justify-between space-y-0',
+                  !isAdmin && 'pb-2',
+                )}
+              >
                 <CardTitle className="text-lg font-semibold flex items-center gap-2">
                   <CreditCard className="w-5 h-5 text-primary" /> 결제 정보
                 </CardTitle>
@@ -1191,10 +1326,15 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
             </Card>
 
             {/* 스트링 정보 */}
-            <Card className="md:col-span-2 border border-border shadow-xl bg-card overflow-hidden">
-              <CardHeader className="bg-muted/50 border-b border-border flex flex-col items-center py-4">
-                <ShoppingCart className="w-6 h-6 text-foreground" />
-                <CardTitle className="mt-2 text-lg font-semibold">신청 스트링 정보</CardTitle>
+            <Card className={cn(detailCardClass, isAdmin ? 'xl:col-span-12' : 'md:col-span-2')}>
+              <CardHeader
+                className={cn(
+                  detailCardHeaderClass,
+                  isAdmin ? 'flex flex-row items-center gap-2' : 'flex flex-col items-center py-4',
+                )}
+              >
+                <ShoppingCart className={cn('text-foreground', isAdmin ? 'h-5 w-5' : 'w-6 h-6')} />
+                <CardTitle className={cn('text-lg font-semibold', !isAdmin && 'mt-2')}>신청 스트링 정보</CardTitle>
               </CardHeader>
 
               <div className="mx-6 mt-4 mb-3 rounded-xl border border-border/80 bg-muted/90 /80 dark:bg-background/70 px-4 py-3">
@@ -1340,8 +1480,8 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
             </Card>
 
             {/* 요청사항 카드 */}
-            <Card className="md:col-span-2 border border-border shadow-xl bg-card overflow-hidden">
-              <CardHeader className="bg-muted/50 border-b border-border pb-3">
+            <Card className={cn(detailCardClass, isAdmin ? 'xl:col-span-12' : 'md:col-span-2')}>
+              <CardHeader className={detailCardHeaderClass}>
                 <CardTitle className="flex items-center justify-between">
                   <span>요청사항</span>
                   {isEditMode && <Edit3 className="h-4 w-4 text-muted-foreground" />}
@@ -1380,10 +1520,10 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
           {/* 관리자 전용 운송장 정보 카드 */}
           <div className="mt-6 space-y-4 bp-sm:mt-8 bp-sm:space-y-6">
             {isAdmin && (
-              <Card className="border-0 shadow-xl bg-card/80 dark:bg-background/80 backdrop-blur mb-8">
-                <CardHeader className="bg-muted/50 border-b border-border flex flex-col items-center py-4">
+              <Card className={cn(detailCardClass, 'mb-8')}>
+                <CardHeader className={cn(detailCardHeaderClass, 'flex flex-row items-center gap-2')}>
                   <Truck className="h-5 w-5 text-foreground" />
-                  <CardTitle className="mt-2 text-lg font-semibold">배송 방향별 운송 정보</CardTitle>
+                  <CardTitle className="text-lg font-semibold">배송 방향별 운송 정보</CardTitle>
                 </CardHeader>
 
                 <CardContent className="grid gap-4 p-4 md:grid-cols-2 bp-sm:p-6">
@@ -1531,6 +1671,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
           </div>
         </div>
       </SiteContainer>
+      </div>
       {/* 관리자: 취소 요청 거절 모달 */}
       {isAdmin && (
         <Dialog
