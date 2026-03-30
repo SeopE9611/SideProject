@@ -233,81 +233,6 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
               <h1 className="text-4xl md:text-5xl font-bold mb-4">주문이 완료되었습니다!</h1>
               <p className="mb-4 md:mb-6 text-xl text-muted-foreground">주문해주셔서 감사합니다. 아래 정보를 확인해주세요.</p>
             </div>
-
-            {withStringService && (
-              <div className="mt-6 md:mt-8 max-w-2xl mx-auto">
-                <div className="rounded-xl border border-border bg-card/10 p-4 md:p-6 text-center backdrop-blur-sm">
-                  <div className="flex items-center justify-center gap-3 mb-3 md:mb-4">
-                    <div className="rounded-full border border-primary/20 bg-primary/10 p-2 text-primary dark:bg-primary/20">
-                      <Package className="h-6 w-6" />
-                    </div>
-                    <h3 className="text-xl font-bold text-foreground">스트링 장착 서비스 포함</h3>
-                  </div>
-                  {/* 문구 분기: 방문/택배 */}
-                  {hasSubmittedApplication ? (
-                    <p className="mb-1 text-muted-foreground">교체 서비스 신청이 함께 접수되었습니다.</p>
-                  ) : (
-                    <p className="mb-3 md:mb-4 text-muted-foreground">{isVisitPickup ? '방문 수령 시 현장 장착으로 진행됩니다. 평균 15~20분 소요.' : '택배 수령을 선택하셨으므로 수거/반송을 통해 장착 서비스가 진행됩니다.'}</p>
-                  )}
-                  {hasSubmittedApplication ? (
-                    <div className="space-y-3 text-sm text-muted-foreground">
-                      <p>별도 신청서 작성 없이 현재 주문에 포함되어 처리됩니다.</p>
-                      <p>추가 요청/장착 정보도 주문과 함께 저장되었습니다.</p>
-                      {stringingApplicationHref ? (
-                        <Button variant="outline" className="bg-background/80" asChild>
-                          <Link href={stringingApplicationHref} className="flex items-center gap-2">
-                            교체 서비스 신청 내역 보기
-                            <ArrowRight className="h-4 w-4" />
-                          </Link>
-                        </Button>
-                      ) : null}
-                    </div>
-                  ) : shouldShowApplyCta ? (
-                    <Button className="bg-primary text-primary-foreground font-semibold shadow-lg hover:bg-primary/90" asChild>
-                      <Link href={appHref} className="flex items-center gap-2">
-                        장착 서비스 신청서 작성하기
-                        <ArrowRight className="h-4 w-4" />
-                      </Link>
-                    </Button>
-                  ) : null}
-                </div>
-              </div>
-            )}
-
-            {withStringService && hasSubmittedApplication && stringingSummary && (
-              <div className="mt-3 md:mt-4 max-w-2xl mx-auto">
-                <Card className="border border-border bg-card/90">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-lg">교체 서비스 접수 요약</CardTitle>
-                    <CardDescription>신청서 상세로 이동하지 않아도 핵심 접수 내용을 바로 확인할 수 있습니다.</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-2 text-sm text-foreground">
-                    {/* 성공 직후 혼동을 줄이기 위한 핵심 요약만 노출 */}
-                    <p>
-                      <span className="text-muted-foreground">접수 방식:</span> <span className="font-semibold">{stringingSummary.receptionLabel}</span>
-                    </p>
-                    <p>
-                      <span className="text-muted-foreground">작업 수량:</span> <span className="font-semibold">{stringingSummary.lineCount}자루</span>
-                    </p>
-                    {stringingSummary.stringNames.length > 0 && (
-                      <p>
-                        <span className="text-muted-foreground">선택 스트링:</span> <span className="font-semibold">{stringingSummary.stringNames.join(', ')}</span>
-                      </p>
-                    )}
-                    {stringingSummary.tensionSummary && (
-                      <p>
-                        <span className="text-muted-foreground">텐션:</span> <span className="font-semibold">{stringingSummary.tensionSummary}</span>
-                      </p>
-                    )}
-                    {stringingSummary.reservationLabel && (
-                      <p>
-                        <span className="text-muted-foreground">예약 정보:</span> <span className="font-semibold">{stringingSummary.reservationLabel}</span>
-                      </p>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
-            )}
           </SiteContainer>
         </div>
 
@@ -319,15 +244,48 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                 <CardTitle className="flex items-center gap-3 text-2xl">
                   <Package className="h-6 w-6 text-primary" />
                   주문 정보
+                  {withStringService && <span className="rounded-full border border-border px-2 py-0.5 text-xs font-medium text-muted-foreground">교체 서비스 포함</span>}
                 </CardTitle>
-                <CardDescription className="mt-2 text-lg text-muted-foreground">
-                  주문 번호:{' '}
-                  <span data-cy="checkout-order-id" className="font-mono font-semibold text-foreground">
-                    {order._id.toString()}
-                  </span>
-                </CardDescription>
+                <CardDescription className="mt-2 text-muted-foreground">주문 및 교체 서비스 진행 정보를 한 번에 확인하세요.</CardDescription>
               </div>
               <CardContent className="p-4 md:p-6">
+                {/* 문서 정보 */}
+                <div className="mb-6">
+                  <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-foreground">
+                    <Shield className="h-5 w-5 text-primary" />
+                    문서 정보
+                  </h3>
+                  <div className="space-y-3 rounded-lg border border-border bg-background p-4">
+                    <div>
+                      <span className="text-sm text-muted-foreground">주문 번호:</span>{' '}
+                      <span data-cy="checkout-order-id" className="font-mono font-semibold text-foreground">
+                        {order._id.toString()}
+                      </span>
+                    </div>
+                    {withStringService && hasSubmittedApplication && representativeStringingApplicationId && (
+                      <div>
+                        <span className="text-sm text-muted-foreground">교체 서비스 신청 번호:</span>{' '}
+                        <span className="font-mono font-semibold text-foreground">{representativeStringingApplicationId}</span>
+                      </div>
+                    )}
+                    {withStringService && (
+                      <p className="text-sm text-muted-foreground">
+                        {hasSubmittedApplication ? '주문과 함께 교체 서비스 신청이 접수되었습니다.' : '현재 주문에 교체 서비스가 포함되어 있습니다.'}
+                      </p>
+                    )}
+                    {withStringService && hasSubmittedApplication && stringingApplicationHref ? (
+                      <Button variant="outline" className="w-full sm:w-auto bg-transparent" asChild>
+                        <Link href={stringingApplicationHref} className="flex items-center gap-2">
+                          신청 내역 보기
+                          <ArrowRight className="h-4 w-4" />
+                        </Link>
+                      </Button>
+                    ) : null}
+                  </div>
+                </div>
+
+                <Separator className="my-6" />
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-6">
                   <div className="space-y-4">
                     <div className="flex items-center gap-3 rounded-lg border border-border bg-background p-4">
@@ -417,6 +375,59 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                 </div>
 
                 <Separator className="my-6" />
+
+                {/* 교체 서비스 정보 */}
+                {withStringService && (
+                  <>
+                    <div className="mb-6">
+                      <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-foreground">
+                        <Package className="h-5 w-5 text-primary" />
+                        교체 서비스 정보
+                      </h3>
+                      {hasSubmittedApplication && stringingSummary ? (
+                        <div className="space-y-2 rounded-lg border border-border bg-background p-4 text-sm text-foreground">
+                          <p>
+                            <span className="text-muted-foreground">접수 방식:</span> <span className="font-semibold">{stringingSummary.receptionLabel}</span>
+                          </p>
+                          <p>
+                            <span className="text-muted-foreground">작업 수량:</span> <span className="font-semibold">{stringingSummary.lineCount}자루</span>
+                          </p>
+                          {stringingSummary.stringNames.length > 0 && (
+                            <p>
+                              <span className="text-muted-foreground">선택 스트링:</span> <span className="font-semibold">{stringingSummary.stringNames.join(', ')}</span>
+                            </p>
+                          )}
+                          {stringingSummary.tensionSummary && (
+                            <p>
+                              <span className="text-muted-foreground">텐션:</span> <span className="font-semibold">{stringingSummary.tensionSummary}</span>
+                            </p>
+                          )}
+                          {stringingSummary.reservationLabel && (
+                            <p>
+                              <span className="text-muted-foreground">예약 정보:</span> <span className="font-semibold">{stringingSummary.reservationLabel}</span>
+                            </p>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="space-y-3 rounded-lg border border-border bg-background p-4">
+                          <p className="text-sm text-muted-foreground">
+                            {isVisitPickup ? '방문 수령 시 현장 장착으로 진행됩니다. 평균 15~20분 소요.' : '택배 수령을 선택하셨으므로 수거/반송을 통해 장착 서비스가 진행됩니다.'}
+                          </p>
+                          {shouldShowApplyCta ? (
+                            <Button className="bg-primary text-primary-foreground font-semibold shadow-lg hover:bg-primary/90" asChild>
+                              <Link href={appHref} className="flex items-center gap-2">
+                                장착 서비스 신청서 작성하기
+                                <ArrowRight className="h-4 w-4" />
+                              </Link>
+                            </Button>
+                          ) : null}
+                        </div>
+                      )}
+                    </div>
+
+                    <Separator className="my-6" />
+                  </>
+                )}
 
                 {/* 수령/배송 정보 */}
                 <div className="mb-6">
