@@ -608,13 +608,21 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
   ];
   const currentStepIndex = userProgressSteps.findIndex((step) => step.key === data.status);
 
-  // 라켓 종류 요약 문자열
+  // 라켓 종류 요약 문자열 (라인 기반 집계 우선)
+  const racketTypeCountMap = new Map<string, number>();
+  for (const line of Array.isArray(data.lines) ? data.lines : []) {
+    const racketName = String(line.racketType ?? line.racketLabel ?? '').trim();
+    if (!racketName) continue;
+    racketTypeCountMap.set(racketName, (racketTypeCountMap.get(racketName) ?? 0) + 1);
+  }
+  const racketTypeSummaryFromLines = Array.from(racketTypeCountMap.entries())
+    .map(([name, count]) => `${name} ${count}자루`)
+    .join(', ');
   const racketTypeSummary =
-    data.stringDetails?.racketType && data.stringDetails.racketType.trim().length > 0
+    racketTypeSummaryFromLines ||
+    (data.stringDetails?.racketType && data.stringDetails.racketType.trim().length > 0
       ? data.stringDetails.racketType.trim()
-      : Array.isArray(data.lines) && data.lines.length > 0
-        ? data.lines.map((line, index) => line.racketType || line.racketLabel || `라켓 ${index + 1}`).join(', ')
-        : '입력된 라켓 정보 없음';
+      : '입력된 라켓 정보 없음');
 
   // 주문 취소 요청 여부
   const hasOrderCancelRequested = data.orderCancelStatus === 'requested' || data.orderCancelStatus === '요청';
