@@ -98,7 +98,7 @@ export default function CheckoutStringingCompactEditor({ adapter }: Props) {
     <Accordion
       type="single"
       defaultValue=""
-      className="rounded-lg border border-border bg-background/80 px-4 py-1"
+      className="overflow-visible rounded-lg border border-border bg-background/80 px-4 py-1"
     >
       <AccordionItem value="detail" className="border-none">
         <AccordionTrigger value="detail" className="py-3.5 text-sm">
