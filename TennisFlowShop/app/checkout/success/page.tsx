@@ -33,6 +33,18 @@ type StringingSummary = {
   tensionSummary: string | null;
   receptionLabel: string;
   reservationLabel: string | null;
+  serviceFeeBefore: number | null;
+  serviceFeeAfter: number | null;
+  packageInfo: {
+    applied: boolean;
+    useCount: number;
+    passId: string | null;
+    passTitle: string | null;
+    packageSize: number | null;
+    usedCount: number | null;
+    remainingCount: number | null;
+    redeemedAt: string | null;
+  };
 };
 
 function getApplicationLines(stringDetails: any): any[] {
@@ -152,7 +164,22 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
 
   let stringingSummary: StringingSummary | null = null;
   if (hasSubmittedApplication && representativeStringingApplicationId && ObjectId.isValid(representativeStringingApplicationId)) {
-    const app = await db.collection('stringing_applications').findOne({ _id: new ObjectId(representativeStringingApplicationId) }, { projection: { stringDetails: 1, collectionMethod: 1 } });
+    const app = await db.collection('stringing_applications').findOne(
+      { _id: new ObjectId(representativeStringingApplicationId) },
+      {
+        projection: {
+          stringDetails: 1,
+          collectionMethod: 1,
+          packageApplied: 1,
+          packagePassId: 1,
+          packageRedeemedAt: 1,
+          packageUseCount: 1,
+          serviceFeeBefore: 1,
+          serviceFee: 1,
+          totalPrice: 1,
+        },
+      },
+    );
     if (app) {
       const lines = getApplicationLines((app as any).stringDetails);
       const stringNames = Array.from(new Set(lines.map((line: any) => String(line?.stringName ?? '').trim()).filter(Boolean)));
@@ -170,6 +197,17 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
       );
       const preferredDate = String((app as any)?.stringDetails?.preferredDate ?? '').trim();
       const preferredTime = String((app as any)?.stringDetails?.preferredTime ?? '').trim();
+      const packagePassId = (app as any)?.packagePassId ? String((app as any).packagePassId) : null;
+      const passDoc =
+        packagePassId && ObjectId.isValid(packagePassId)
+          ? await db.collection('service_passes').findOne(
+              { _id: new ObjectId(packagePassId) },
+              { projection: { packageSize: 1, usedCount: 1, remainingCount: 1, meta: 1 } },
+            )
+          : null;
+      const serviceFeeBeforeRaw = Number((app as any)?.serviceFeeBefore);
+      const serviceFeeAfterCandidates = [Number((app as any)?.serviceFee), Number((app as any)?.totalPrice)];
+      const serviceFeeAfterRaw = serviceFeeAfterCandidates.find((v) => Number.isFinite(v));
 
       stringingSummary = {
         lineCount: lines.length,
@@ -177,6 +215,18 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
         tensionSummary: tensionSet.length ? tensionSet.join(', ') : null,
         receptionLabel: getReceptionLabel((app as any).collectionMethod),
         reservationLabel: preferredDate && preferredTime ? `${preferredDate} ${preferredTime}` : null,
+        serviceFeeBefore: Number.isFinite(serviceFeeBeforeRaw) ? serviceFeeBeforeRaw : null,
+        serviceFeeAfter: Number.isFinite(serviceFeeAfterRaw) ? (serviceFeeAfterRaw as number) : null,
+        packageInfo: {
+          applied: Boolean((app as any)?.packageApplied),
+          useCount: typeof (app as any)?.packageUseCount === 'number' ? (app as any).packageUseCount : lines.length > 0 ? lines.length : 1,
+          passId: packagePassId,
+          passTitle: String((passDoc as any)?.meta?.planTitle ?? '').trim() || null,
+          packageSize: typeof (passDoc as any)?.packageSize === 'number' ? (passDoc as any).packageSize : null,
+          usedCount: typeof (passDoc as any)?.usedCount === 'number' ? (passDoc as any).usedCount : null,
+          remainingCount: typeof (passDoc as any)?.remainingCount === 'number' ? (passDoc as any).remainingCount : null,
+          redeemedAt: (app as any)?.packageRedeemedAt ? new Date((app as any).packageRedeemedAt).toISOString() : null,
+        },
       };
     }
   }
@@ -213,6 +263,15 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
   const normalizedOriginalTotal = Number.isFinite(originalTotalNumber) ? originalTotalNumber : 0;
   const pointsUsedNumber = Number(pointsUsed);
   const normalizedPointsUsed = Number.isFinite(pointsUsedNumber) ? pointsUsedNumber : 0;
+  const serviceFeeRaw = Number(order.paymentInfo?.serviceFee ?? order.serviceFee ?? 0);
+  const normalizedServiceFee = Number.isFinite(serviceFeeRaw) ? serviceFeeRaw : 0;
+  const shippingFeeRaw = Number(order.paymentInfo?.shippingFee ?? order.shippingFee ?? 0);
+  const normalizedShippingFee = Number.isFinite(shippingFeeRaw) ? shippingFeeRaw : 0;
+  const productAmount = Math.max(0, normalizedOriginalTotal - normalizedServiceFee - normalizedShippingFee);
+  const packageDiscount =
+    withStringService && hasSubmittedApplication && stringingSummary?.packageInfo.applied
+      ? Math.max(0, Number(stringingSummary?.serviceFeeBefore ?? 0) - Number(stringingSummary?.serviceFeeAfter ?? 0))
+      : 0;
   // 0원 결제 시 입금 안내 오해 방지
   const isZeroPayment = normalizedTotalPrice <= 0 || normalizedOriginalTotal - normalizedPointsUsed <= 0;
 
@@ -407,6 +466,45 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                               <span className="text-muted-foreground">예약 정보:</span> <span className="font-semibold">{stringingSummary.reservationLabel}</span>
                             </p>
                           )}
+                          <Separator className="my-3" />
+                          <div className="space-y-1.5 rounded-md border border-border bg-card p-3">
+                            <p className="font-semibold text-foreground">패키지 적용 정보</p>
+                            {stringingSummary.packageInfo.applied ? (
+                              <>
+                                <p>
+                                  <span className="text-muted-foreground">패키지 사용:</span> <span className="font-semibold text-primary">적용됨</span>
+                                </p>
+                                <p>
+                                  <span className="text-muted-foreground">사용 패키지:</span>{' '}
+                                  <span className="font-semibold">{stringingSummary.packageInfo.passTitle ?? '패키지명 확인 불가'}</span>
+                                </p>
+                                <p>
+                                  <span className="text-muted-foreground">이번 차감 횟수:</span>{' '}
+                                  <span className="font-semibold">{stringingSummary.packageInfo.useCount}회</span>
+                                </p>
+                                {typeof stringingSummary.packageInfo.remainingCount === 'number' && (
+                                  <p>
+                                    <span className="text-muted-foreground">남은 횟수:</span>{' '}
+                                    <span className="font-semibold">{stringingSummary.packageInfo.remainingCount}회</span>
+                                  </p>
+                                )}
+                                <p>
+                                  <span className="text-muted-foreground">교체 서비스 비용:</span> <span className="font-semibold text-primary">0원 처리</span>
+                                </p>
+                              </>
+                            ) : (
+                              <>
+                                <p>
+                                  <span className="text-muted-foreground">패키지 사용:</span> <span className="font-semibold">적용 안 됨</span>
+                                </p>
+                                <p className="text-muted-foreground">사용 가능한 패키지가 없거나 이번 주문에 패키지가 적용되지 않아 교체 서비스 비용이 일반 결제로 반영되었습니다.</p>
+                                <p>
+                                  <span className="text-muted-foreground">교체 서비스 비용:</span>{' '}
+                                  <span className="font-semibold">{formatPrice(stringingSummary.serviceFeeAfter ?? normalizedServiceFee)}원</span>
+                                </p>
+                              </>
+                            )}
+                          </div>
                         </div>
                       ) : (
                         <div className="space-y-3 rounded-lg border border-border bg-background p-4">
@@ -467,12 +565,29 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                 {/* 결제 금액 - 안전한 데이터 처리 */}
                 <div className="rounded-xl border border-border bg-background p-6">
                   <div className="space-y-2">
-                    {Number(pointsUsed) > 0 && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-muted-foreground">상품 금액</span>
+                      <span className="font-semibold">{formatPrice(productAmount)}원</span>
+                    </div>
+
+                    {withStringService && (
                       <div className="flex justify-between items-center">
-                        <span className="text-muted-foreground">포인트 적용 전 금액</span>
-                        <span className="font-semibold">{formatPrice(originalTotal)}원</span>
+                        <span className="text-muted-foreground">교체 서비스 비용</span>
+                        <span className="font-semibold">{formatPrice(normalizedServiceFee)}원</span>
                       </div>
                     )}
+
+                    {packageDiscount > 0 && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-muted-foreground">패키지 반영</span>
+                        <span className="font-semibold text-primary">-{formatPrice(packageDiscount)}원</span>
+                      </div>
+                    )}
+
+                    <div className="flex justify-between items-center">
+                      <span className="text-muted-foreground">{isVisitPickup ? '추가 비용' : '배송비'}</span>
+                      <span className="font-semibold">{formatPrice(normalizedShippingFee)}원</span>
+                    </div>
 
                     {Number(pointsUsed) > 0 && (
                       <div className="flex justify-between items-center">
@@ -487,7 +602,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                     </div>
 
                     <p className="text-sm text-muted-foreground">
-                      ({isVisitPickup ? '추가 비용' : '배송비'} {formatPrice(order.shippingFee)}원 포함)
+                      ({isVisitPickup ? '추가 비용' : '배송비'} {formatPrice(normalizedShippingFee)}원 포함)
                     </p>
                   </div>
                 </div>
