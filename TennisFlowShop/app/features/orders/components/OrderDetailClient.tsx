@@ -8,9 +8,7 @@ import PaymentEditForm from "@/app/features/orders/components/PaymentEditForm";
 import PaymentMethodDetail from "@/app/features/orders/components/PaymentMethodDetail";
 import RequestEditForm from "@/app/features/orders/components/RequestEditForm";
 import AdminCancelRequestCard from "@/components/admin/AdminCancelRequestCard";
-import LinkedDocsCard, {
-  LinkedDocItem,
-} from "@/components/admin/LinkedDocsCard";
+import { LinkedDocItem } from "@/components/admin/LinkedDocsCard";
 import LinkedFlowStageCard from "@/components/admin/LinkedFlowStageCard";
 import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
@@ -142,6 +140,18 @@ interface OrderDetail {
     receptionLabel?: string | null;
     tensionSummary?: string | null;
     stringNames?: string[];
+    totalPrice?: number | null;
+    packageInfo?: {
+      applied: boolean;
+      useCount: number;
+      passId?: string | null;
+      passTitle?: string | null;
+      packageSize?: number | null;
+      usedCount?: number | null;
+      remainingCount?: number | null;
+      expiresAt?: string | null;
+      redeemedAt?: string | null;
+    } | null;
     reservationLabel?: string | null;
     racketCount?: number;
     shippingInfo?: {
@@ -162,6 +172,18 @@ interface OrderDetail {
     receptionLabel?: string | null;
     tensionSummary?: string | null;
     stringNames?: string[];
+    totalPrice?: number | null;
+    packageInfo?: {
+      applied: boolean;
+      useCount: number;
+      passId?: string | null;
+      passTitle?: string | null;
+      packageSize?: number | null;
+      usedCount?: number | null;
+      remainingCount?: number | null;
+      expiresAt?: string | null;
+      redeemedAt?: string | null;
+    } | null;
     reservationLabel?: string | null;
     racketCount?: number;
     shippingInfo?: {
@@ -249,11 +271,6 @@ export default function OrderDetailClient({ orderId }: Props) {
       </div>
     );
   }
-
-  // remainingSlots 값을 안전하게 읽어오는 파생값
-  const remainingSlots = orderDetail?.stringService?.remainingSlots ?? 0;
-  const totalSlots = orderDetail?.stringService?.totalSlots ?? 0;
-  const usedSlots = orderDetail?.stringService?.usedSlots ?? 0;
 
   // 취소 요청 상태 정보 계산
   const cancelInfo = buildAdminCancelRequestView(
@@ -398,6 +415,34 @@ export default function OrderDetailClient({ orderId }: Props) {
     typeof latestLinkedApplication?.racketCount === "number"
       ? latestLinkedApplication.racketCount
       : null;
+  const latestPackageInfo = latestLinkedApplication?.packageInfo ?? null;
+  const latestPackageApplied = latestPackageInfo?.applied === true;
+  const latestPackageTitle = String(latestPackageInfo?.passTitle ?? "").trim();
+  const latestPackageSize =
+    typeof latestPackageInfo?.packageSize === "number"
+      ? latestPackageInfo.packageSize
+      : null;
+  const latestPackageUsedCount =
+    typeof latestPackageInfo?.usedCount === "number"
+      ? latestPackageInfo.usedCount
+      : null;
+  const latestPackageRemainingCount =
+    typeof latestPackageInfo?.remainingCount === "number"
+      ? latestPackageInfo.remainingCount
+      : null;
+  const latestPackageSummary = (() => {
+    if (
+      latestPackageSize !== null &&
+      latestPackageUsedCount !== null &&
+      latestPackageRemainingCount !== null
+    ) {
+      if (latestPackageTitle) {
+        return `패키지 사용 현황: ${latestPackageTitle} · 총 ${latestPackageSize}회 / 사용 ${latestPackageUsedCount}회 / 남은 ${latestPackageRemainingCount}회`;
+      }
+      return `교체 서비스 사용 현황: 총 ${latestPackageSize}회 / 사용 ${latestPackageUsedCount}회 / 남은 ${latestPackageRemainingCount}회`;
+    }
+    return "이 주문은 교체서비스 신청서와 연결되어 있습니다. 핵심 접수 정보는 우측 요약에서 확인하세요.";
+  })();
 
   const orderGuide = inferNextActionForOperationGroup([
     {
@@ -747,6 +792,28 @@ export default function OrderDetailClient({ orderId }: Props) {
           </div>
 
           {latestLinkedApplication?.id && latestLinkedApplication?.status && (
+            <Card className="mb-4 border border-primary/30 bg-primary/10 shadow-sm">
+              <CardContent className="p-4">
+                <div className="grid gap-2 md:grid-cols-[auto_minmax(0,1fr)_minmax(0,1fr)] md:items-center md:gap-4">
+                  <p className="text-sm font-semibold text-primary">
+                    연결 업무 가이드
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    현재 단계:{" "}
+                    <span className="font-semibold text-foreground">
+                      {orderGuide.stage}
+                    </span>
+                  </p>
+                  <p className="text-sm text-foreground md:text-right">
+                    다음 할 일:{" "}
+                    <span className="font-semibold">{orderGuide.nextAction}</span>
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {latestLinkedApplication?.id && latestLinkedApplication?.status && (
             <LinkedFlowStageCard
               className="mb-4 border border-border shadow-xl bg-card overflow-hidden"
               orderId={orderId}
@@ -788,9 +855,6 @@ export default function OrderDetailClient({ orderId }: Props) {
                 {isVisitPickup
                   ? `${formatDate(orderDetail.date)}에 접수된 주문입니다. · 주문 취소(수령 전)와 환불(수령 후)은 별도 정책으로 운영합니다.`
                   : `${formatDate(orderDetail.date)}에 접수된 주문입니다. · 주문 취소(배송 전)와 환불(배송 후)은 별도 정책으로 운영합니다.`}
-                <br />
-                이 영역은 현재 주문의 개별 상태만 조정합니다. 연결된 주문/신청의
-                공통 흐름 변경은 위 ‘연결 진행 단계’에서 처리합니다.
               </CardDescription>
             </CardHeader>
             <CardContent className="p-4 lg:p-5">
@@ -798,6 +862,11 @@ export default function OrderDetailClient({ orderId }: Props) {
                 {/* 왼쪽: 상태 변경 영역 */}
                 <div className="rounded-xl border border-border/60 bg-card/70 p-4">
                   <div className="space-y-3">
+                    <div className="rounded-md border border-border bg-muted/60 px-3 py-2 text-sm font-medium text-foreground">
+                      이 영역은 현재 주문의 개별 상태만 조정합니다. 연결된
+                      주문/신청의 공통 흐름 변경은 위 ‘연결 진행 단계’에서
+                      처리합니다.
+                    </div>
                     <div>
                       <p className="text-sm font-semibold text-foreground">
                         주문 진행 상태
@@ -876,105 +945,169 @@ export default function OrderDetailClient({ orderId }: Props) {
               </div>
             </CardContent>
 
-            {/* 연결 문서(공용 카드) */}
+            {/* 연결 문서 + 최신 접수 요약 통합 */}
             {linkedDocs.length > 0 && (
               <div className="m-3.5">
-                <LinkedDocsCard
-                  docs={linkedDocs}
-                  description={
-                    totalSlots > 0
-                      ? `이 주문은 교체서비스 신청서와 연결되어 있습니다. · 총 ${totalSlots}회 중 ${usedSlots}회 사용 · 남은 ${remainingSlots}회`
-                      : "이 주문은 교체서비스 신청서와 연결되어 있습니다. 배송/운송장 정보는 신청서에서 단일 관리합니다."
-                  }
-                />
-
-                <Card className="mt-4 border border-border/60 bg-card/70">
+                <Card className="border border-border/60 bg-card/70">
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-base">
-                      교체 서비스 접수 요약
-                    </CardTitle>
+                    <CardTitle className="text-base">연결 문맥 요약</CardTitle>
                     <CardDescription>
-                      운영 판단에 필요한 최신 신청서 기준 핵심 정보입니다.
+                      연결된 신청 문서와 최신 접수 핵심 정보를 한 번에 확인합니다.
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    {/* 값이 있는 항목만 노출해 과밀도를 줄인다. */}
-                    <div className="grid gap-2 text-sm md:grid-cols-2">
-                      {latestLinkedApplication?.status && (
-                        <p>
-                          <span className="text-muted-foreground">
-                            신청 상태:
-                          </span>{" "}
-                          <span className="font-medium text-foreground">
-                            {latestLinkedApplication.status}
-                          </span>
+                    <div className="grid gap-4 lg:grid-cols-2">
+                      <div className="rounded-lg border border-border/60 bg-background/40 p-3">
+                        <p className="mb-2 text-sm font-semibold text-foreground">
+                          연결된 문서
                         </p>
-                      )}
-                      {latestLinkedApplication?.receptionLabel && (
-                        <p>
-                          <span className="text-muted-foreground">
-                            접수 방식:
-                          </span>{" "}
-                          <span className="font-medium text-foreground">
-                            {latestLinkedApplication.receptionLabel}
-                          </span>
+                        <div className="space-y-2">
+                          {linkedDocs.map((doc) => (
+                            <div
+                              key={`${doc.kind}:${doc.id}`}
+                              className="flex flex-col gap-2 rounded-md border border-border/60 bg-card/70 p-2 sm:flex-row sm:items-center sm:justify-between"
+                            >
+                              <p className="text-sm text-muted-foreground">
+                                신청번호:{" "}
+                                <span className="font-mono text-foreground">
+                                  {doc.id}
+                                </span>
+                              </p>
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    void navigator.clipboard
+                                      .writeText(String(doc.id))
+                                      .then(() => {
+                                        showSuccessToast("ID가 복사되었습니다.");
+                                      })
+                                      .catch(() => {});
+                                  }}
+                                >
+                                  복사
+                                </Button>
+                                <Link href={doc.href}>
+                                  <Button type="button" variant="outline" size="sm">
+                                    상세 보기
+                                  </Button>
+                                </Link>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        <p className="mt-3 text-xs text-muted-foreground">
+                          {latestPackageSummary}
                         </p>
-                      )}
-                      {latestRacketCount !== null && (
-                        <p>
-                          <span className="text-muted-foreground">
-                            라인 수:
-                          </span>{" "}
-                          <span className="font-medium text-foreground">
-                            {latestRacketCount}개
-                          </span>
-                        </p>
-                      )}
-                      {latestStringSummary && (
-                        <p>
-                          <span className="text-muted-foreground">스트링:</span>{" "}
-                          <span className="font-medium text-foreground">
-                            {latestStringSummary}
-                          </span>
-                        </p>
-                      )}
-                      {latestLinkedApplication?.tensionSummary && (
-                        <p>
-                          <span className="text-muted-foreground">텐션:</span>{" "}
-                          <span className="font-medium text-foreground">
-                            {latestLinkedApplication.tensionSummary}
-                          </span>
-                        </p>
-                      )}
-                      {latestLinkedApplication?.reservationLabel && (
-                        <p>
-                          <span className="text-muted-foreground">예약:</span>{" "}
-                          <span className="font-medium text-foreground">
-                            {latestLinkedApplication.reservationLabel}
-                          </span>
-                        </p>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
+                      </div>
 
-                <Card className="mt-4 border border-primary/20 bg-primary/5">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base">
-                      연결 업무 가이드
-                    </CardTitle>
-                    <CardDescription>
-                      주문 + 신청 연결 문맥에서 현재 업무 단계와 다음 할 일을
-                      안내합니다.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-1 text-sm">
-                    <p className="text-muted-foreground">
-                      현재 단계: {orderGuide.stage}
-                    </p>
-                    <p className="font-medium">
-                      다음 할 일: {orderGuide.nextAction}
-                    </p>
+                      <div className="rounded-lg border border-border/60 bg-background/40 p-3">
+                        <p className="mb-2 text-sm font-semibold text-foreground">
+                          최신 신청 접수 요약
+                        </p>
+                        <div className="grid gap-2 text-sm sm:grid-cols-2">
+                          {latestLinkedApplication?.status && (
+                            <p>
+                              <span className="text-muted-foreground">
+                                신청 상태:
+                              </span>{" "}
+                              <span className="font-medium text-foreground">
+                                {latestLinkedApplication.status}
+                              </span>
+                            </p>
+                          )}
+                          {latestLinkedApplication?.receptionLabel && (
+                            <p>
+                              <span className="text-muted-foreground">
+                                접수 방식:
+                              </span>{" "}
+                              <span className="font-medium text-foreground">
+                                {latestLinkedApplication.receptionLabel}
+                              </span>
+                            </p>
+                          )}
+                          {latestRacketCount !== null && (
+                            <p>
+                              <span className="text-muted-foreground">
+                                라인 수:
+                              </span>{" "}
+                              <span className="font-medium text-foreground">
+                                {latestRacketCount}개
+                              </span>
+                            </p>
+                          )}
+                          {latestStringSummary && (
+                            <p>
+                              <span className="text-muted-foreground">
+                                스트링:
+                              </span>{" "}
+                              <span className="font-medium text-foreground">
+                                {latestStringSummary}
+                              </span>
+                            </p>
+                          )}
+                          {latestLinkedApplication?.tensionSummary && (
+                            <p>
+                              <span className="text-muted-foreground">텐션:</span>{" "}
+                              <span className="font-medium text-foreground">
+                                {latestLinkedApplication.tensionSummary}
+                              </span>
+                            </p>
+                          )}
+                          {latestLinkedApplication?.reservationLabel && (
+                            <p>
+                              <span className="text-muted-foreground">예약:</span>{" "}
+                              <span className="font-medium text-foreground">
+                                {latestLinkedApplication.reservationLabel}
+                              </span>
+                            </p>
+                          )}
+                          {typeof latestLinkedApplication?.totalPrice ===
+                            "number" && (
+                            <p>
+                              <span className="text-muted-foreground">금액:</span>{" "}
+                              <span className="font-semibold text-foreground">
+                                {formatCurrency(latestLinkedApplication.totalPrice)}
+                              </span>
+                            </p>
+                          )}
+                          <p>
+                            <span className="text-muted-foreground">
+                              패키지 적용:
+                            </span>{" "}
+                            <span className="font-medium text-foreground">
+                              {latestPackageApplied ? "적용" : "미적용"}
+                            </span>
+                          </p>
+                          {latestPackageTitle && (
+                            <p>
+                              <span className="text-muted-foreground">
+                                패키지 상품:
+                              </span>{" "}
+                              <span className="font-medium text-foreground">
+                                {latestPackageTitle}
+                              </span>
+                            </p>
+                          )}
+                          {latestPackageSize !== null &&
+                            latestPackageUsedCount !== null &&
+                            latestPackageRemainingCount !== null && (
+                              <p className="sm:col-span-2">
+                                <span className="text-muted-foreground">
+                                  패키지 사용 현황:
+                                </span>{" "}
+                                <span className="font-medium text-foreground">
+                                  총 {latestPackageSize}회 / 사용{" "}
+                                  {latestPackageUsedCount}회 / 남은{" "}
+                                  {latestPackageRemainingCount}회
+                                </span>
+                              </p>
+                            )}
+                        </div>
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
               </div>

@@ -102,6 +102,13 @@ function getTensionSummary(lines: any[]): string | null {
   return set.length ? set.join(", ") : null;
 }
 
+function toNullableIsoString(value: unknown): string | null {
+  if (!value) return null;
+  if (value instanceof Date) return value.toISOString();
+  const date = new Date(String(value));
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
+}
+
 // 주문-스트링 신청서 동기화 정책:
 // - draft(임시저장)는 제외
 // - 취소는 포함(운영 추적/감사를 위해 이력 동기화 유지)
@@ -338,6 +345,42 @@ export async function GET(
     // 남은 슬롯 계산 (음수 방지)
     const remainingSlots = Math.max(totalSlots - usedSlots, 0);
 
+    const packagePassIds = Array.from(
+      new Set(
+        apps
+          .map((app: any) => {
+            const raw = app?.packagePassId;
+            if (!raw) return null;
+            const value = String(raw);
+            return ObjectId.isValid(value) ? value : null;
+          })
+          .filter(Boolean),
+      ),
+    ) as string[];
+
+    const passDocs = packagePassIds.length
+      ? await db
+          .collection("service_passes")
+          .find(
+            { _id: { $in: packagePassIds.map((id) => new ObjectId(id)) } },
+            {
+              projection: {
+                packageSize: 1,
+                usedCount: 1,
+                remainingCount: 1,
+                expiresAt: 1,
+                redeemedAt: 1,
+                meta: 1,
+              },
+            },
+          )
+          .toArray()
+      : [];
+
+    const passDocById = new Map(
+      passDocs.map((pass: any) => [String(pass?._id), pass]),
+    );
+
     // 이 주문과 연결된 신청서 요약 정보 배열
     const stringingApplications = apps.map((app: any) => {
       const lines = getApplicationLines(app?.stringDetails);
@@ -368,6 +411,31 @@ export async function GET(
           : true;
       const needsInboundTracking =
         inboundRequired && collectionMethod === "self_ship";
+      const packagePassId = app?.packagePassId ? String(app.packagePassId) : null;
+      const passDoc = packagePassId ? passDocById.get(packagePassId) : null;
+      const packageInfo = {
+        applied: !!app?.packageApplied,
+        useCount:
+          typeof app?.packageUseCount === "number"
+            ? app.packageUseCount
+            : lines.length > 0
+              ? lines.length
+              : 1,
+        passId: packagePassId,
+        passTitle: String(passDoc?.meta?.planTitle ?? "").trim() || null,
+        packageSize:
+          typeof passDoc?.packageSize === "number" ? passDoc.packageSize : null,
+        usedCount:
+          typeof passDoc?.usedCount === "number" ? passDoc.usedCount : null,
+        remainingCount:
+          typeof passDoc?.remainingCount === "number"
+            ? passDoc.remainingCount
+            : null,
+        expiresAt: toNullableIsoString(passDoc?.expiresAt),
+        redeemedAt:
+          toNullableIsoString(app?.packageRedeemedAt) ??
+          toNullableIsoString(passDoc?.redeemedAt),
+      };
       return {
         id: app._id?.toString(),
         status: app.status ?? "draft",
@@ -381,6 +449,9 @@ export async function GET(
         receptionLabel: getReceptionLabel(collectionMethod),
         tensionSummary: getTensionSummary(lines),
         stringNames,
+        totalPrice:
+          typeof app?.totalPrice === "number" ? app.totalPrice : null,
+        packageInfo,
         reservationLabel:
           preferredDate && preferredTime
             ? `${preferredDate} ${preferredTime}`
