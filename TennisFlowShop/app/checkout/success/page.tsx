@@ -287,7 +287,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                       <span className="text-muted-foreground">접수 방식:</span> <span className="font-semibold">{stringingSummary.receptionLabel}</span>
                     </p>
                     <p>
-                      <span className="text-muted-foreground">라인 수:</span> <span className="font-semibold">{stringingSummary.lineCount}개</span>
+                      <span className="text-muted-foreground">작업 수량:</span> <span className="font-semibold">{stringingSummary.lineCount}자루</span>
                     </p>
                     {stringingSummary.stringNames.length > 0 && (
                       <p>
@@ -301,7 +301,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                     )}
                     {stringingSummary.reservationLabel && (
                       <p>
-                        <span className="text-muted-foreground">방문 예약:</span> <span className="font-semibold">{stringingSummary.reservationLabel}</span>
+                        <span className="text-muted-foreground">예약 정보:</span> <span className="font-semibold">{stringingSummary.reservationLabel}</span>
                       </p>
                     )}
                   </CardContent>
