@@ -12,6 +12,8 @@ interface TimeSlotSelectorProps {
   times: string[];
   /** 서버에서 내려온 마감 시간대 (예: reservedTimes) */
   disabledTimes?: string[];
+  /** 실제 예약 점유로 막힌 시간대 (reserved) */
+  reservedTimes?: string[];
   isLoading?: boolean;
   errorMessage?: string | null;
 }
@@ -24,6 +26,7 @@ export default function TimeSlotSelector({
   onSelect,
   times,
   disabledTimes = [],
+  reservedTimes = [],
   isLoading = false,
   errorMessage = null,
 }: TimeSlotSelectorProps) {
@@ -86,8 +89,16 @@ export default function TimeSlotSelector({
             const now = new Date();
             const isPast =
               isToday(selectedDateTime) && isAfter(now, selectedDateTime);
-            const isReserved = disabledTimes.includes(time);
-            const disabled = isPast || isReserved;
+            const isReserved = reservedTimes.includes(time);
+            const isBlocked = disabledTimes.includes(time);
+            const disabled = isPast || isBlocked;
+            const reason = isPast
+              ? "종료"
+              : isReserved
+                ? "예약됨"
+                : isBlocked
+                  ? "연속 불가"
+                  : null;
 
             const baseBtn =
               "w-full rounded-lg px-3 py-2 text-sm transition-colors border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40";
@@ -99,17 +110,19 @@ export default function TimeSlotSelector({
                   type="button"
                   disabled
                   title={
-                    isReserved
-                      ? "이미 예약되었거나 연속 예약이 불가능한 시간대입니다"
-                      : "지난 시간대입니다"
+                    reason === "종료"
+                      ? "지난 시간대입니다"
+                      : reason === "예약됨"
+                        ? "이미 예약된 시간대입니다"
+                        : "연속 슬롯 확보가 불가능한 시간대입니다"
                   }
                   className={
                     baseBtn +
-                    " cursor-not-allowed bg-muted dark:bg-card text-muted-foreground border-border"
+                    " cursor-not-allowed bg-muted dark:bg-card text-muted-foreground border-border text-xs bp-sm:text-sm"
                   }
                   aria-disabled
                 >
-                  {time}
+                  {reason ? `${time} (${reason})` : time}
                 </button>
               );
             }
@@ -146,8 +159,7 @@ export default function TimeSlotSelector({
       </div>
 
       <p className="text-xs text-muted-foreground mt-2">
-        🔒 회색으로 표시된 시간은 이미 예약되었거나 연속 예약이 불가능해 선택할
-        수 없습니다.
+        🔒 비활성 시간은 종료/예약됨/연속 불가 사유로 선택할 수 없습니다.
       </p>
     </div>
   );

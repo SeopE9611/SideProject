@@ -14,7 +14,11 @@ type Props = {
 };
 
 export default function CheckoutStringingSummaryCard({ adapter }: Props) {
-  const { summary, completion } = adapter;
+  const { summary, completion, visitTimeRange, visitSlotCountUi } = adapter;
+  const reservationLabel =
+    summary.reservationLabel && visitTimeRange && visitSlotCountUi > 1
+      ? `${summary.reservationLabel} (${visitTimeRange.start}~${visitTimeRange.end}, ${visitSlotCountUi}슬롯)`
+      : summary.reservationLabel;
 
   return (
     <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-3">
@@ -36,8 +40,8 @@ export default function CheckoutStringingSummaryCard({ adapter }: Props) {
         <p><span className="text-muted-foreground">작업 수량:</span> <span className="font-medium">{summary.lineCount}자루</span></p>
         <p><span className="text-muted-foreground">선택 스트링:</span> <span className="font-medium">{summary.stringNames.join(", ") || "미선택"}</span></p>
         <p><span className="text-muted-foreground">텐션:</span> <span className="font-medium">{summary.tensionSummary}</span></p>
-        {summary.reservationLabel && (
-          <p><span className="text-muted-foreground">예약 정보:</span> <span className="font-medium">{summary.reservationLabel}</span></p>
+        {reservationLabel && (
+          <p><span className="text-muted-foreground">예약 정보:</span> <span className="font-medium">{reservationLabel}</span></p>
         )}
         <p><span className="text-muted-foreground">교체 서비스 비용:</span> <span className="font-medium">{summary.priceLabel}</span></p>
         <p><span className="text-muted-foreground">추가 요청:</span> <span className="font-medium">{summary.requestPreview}</span></p>
