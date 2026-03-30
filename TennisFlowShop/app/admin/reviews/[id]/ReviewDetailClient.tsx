@@ -172,9 +172,10 @@ export default function ReviewDetailClient({ reviewId }: Props) {
   };
 
   return (
-    <div className="p-6 space-y-8">
+    <div className="container py-6 lg:py-8">
+      <div className="mx-auto w-full max-w-[1500px] space-y-6 lg:space-y-8">
       {/* 제목 */}
-      <div className="mb-8">
+      <div>
         <div className="flex items-center space-x-3 mb-4">
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary shadow-lg dark:bg-primary/20">
             <MessageSquare className="h-6 w-6" />
@@ -191,7 +192,7 @@ export default function ReviewDetailClient({ reviewId }: Props) {
       </div>
 
       {/* 네비게이션 */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between">
         <Button variant="outline" size="sm" asChild className="bg-transparent">
           <Link href="/admin/reviews">
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -201,7 +202,7 @@ export default function ReviewDetailClient({ reviewId }: Props) {
       </div>
 
       {/* 카드 */}
-      <Card className="border-0 bg-card shadow-xl backdrop-blur-sm max-w-4xl mx-auto">
+      <Card className="w-full border-0 bg-card shadow-xl backdrop-blur-sm">
         <CardHeader className="pb-6">
           <div className="flex flex-col space-y-4">
             <div className="flex items-center justify-between">
@@ -335,6 +336,7 @@ export default function ReviewDetailClient({ reviewId }: Props) {
         eventKey="admin-review-detail-delete-confirm"
         eventMeta={{ reviewId }}
       />
+      </div>
     </div>
   );
 }

@@ -10,7 +10,8 @@ import {
 
 export default function StringingApplicationDetailSkeleton() {
   return (
-    <div className="container py-10 mx-auto max-w-4xl space-y-8">
+    <div className="container py-6 lg:py-8">
+      <div className="mx-auto w-full max-w-6xl space-y-6 lg:space-y-8">
       {/* 헤더 스켈레톤 */}
       <div className="flex flex-col sm:flex-row sm:justify-between gap-4">
         <div className="space-y-2">
@@ -23,7 +24,7 @@ export default function StringingApplicationDetailSkeleton() {
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {/* 신청 상태 카드 */}
         <Card className="md:col-span-3">
           <CardHeader className="space-y-2 pb-3">
@@ -93,6 +94,7 @@ export default function StringingApplicationDetailSkeleton() {
           <Skeleton className="h-8 w-full rounded-md" />
         </div>
       </div>
+    </div>
     </div>
   );
 }

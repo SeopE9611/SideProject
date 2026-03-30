@@ -5,7 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function Loading() {
   return (
     <div className="min-h-[70svh] bg-muted/20 py-8">
-      <SiteContainer variant="wide" className="max-w-4xl space-y-6">
+      <SiteContainer variant="wide" className="max-w-6xl space-y-6">
         <Card className="border-border/50">
           <CardHeader className="space-y-3">
             <Skeleton className="h-7 w-48" />

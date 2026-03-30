@@ -3,8 +3,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ReviewDetailLoading() {
   return (
-    <div className="container py-10">
-      <div className="mx-auto max-w-5xl space-y-6">
+    <div className="container py-6 lg:py-8">
+      <div className="mx-auto w-full max-w-[1500px] space-y-6 lg:space-y-8">
         <Card className="border-border/60">
           <CardHeader className="space-y-2">
             <Skeleton className="h-7 w-56" />
