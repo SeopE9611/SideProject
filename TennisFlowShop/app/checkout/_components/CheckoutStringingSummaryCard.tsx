@@ -24,7 +24,7 @@ export default function CheckoutStringingSummaryCard({ adapter }: Props) {
             <ClipboardList className="h-4 w-4 text-primary" />
             교체 서비스 요약
           </p>
-          <p className="text-xs text-muted-foreground mt-1">주문과 함께 접수되는 옵션입니다.</p>
+          <p className="text-xs text-muted-foreground mt-1">주문과 함께 접수될 내용을 미리 확인하세요.</p>
         </div>
         <Badge variant={completion.isReadyToSubmit ? "success" : "secondary"}>
           {completion.statusLabel}
@@ -33,20 +33,20 @@ export default function CheckoutStringingSummaryCard({ adapter }: Props) {
 
       <div className="grid grid-cols-1 bp-sm:grid-cols-2 gap-2 text-sm">
         <p><span className="text-muted-foreground">접수 방식:</span> <span className="font-medium">{summary.collectionLabel}</span></p>
-        <p><span className="text-muted-foreground">작업 수량:</span> <span className="font-medium">{summary.lineCount}라인</span></p>
+        <p><span className="text-muted-foreground">작업 수량:</span> <span className="font-medium">{summary.lineCount}자루</span></p>
         <p><span className="text-muted-foreground">선택 스트링:</span> <span className="font-medium">{summary.stringNames.join(", ") || "미선택"}</span></p>
         <p><span className="text-muted-foreground">텐션:</span> <span className="font-medium">{summary.tensionSummary}</span></p>
         {summary.reservationLabel && (
-          <p><span className="text-muted-foreground">방문 예약:</span> <span className="font-medium">{summary.reservationLabel}</span></p>
+          <p><span className="text-muted-foreground">예약 정보:</span> <span className="font-medium">{summary.reservationLabel}</span></p>
         )}
-        <p><span className="text-muted-foreground">교체비:</span> <span className="font-medium">{summary.priceLabel}</span></p>
+        <p><span className="text-muted-foreground">교체 서비스 비용:</span> <span className="font-medium">{summary.priceLabel}</span></p>
         <p><span className="text-muted-foreground">추가 요청:</span> <span className="font-medium">{summary.requestPreview}</span></p>
       </div>
 
       <div className="flex flex-wrap gap-2 text-xs">
         <Badge variant={completion.basicConfigured ? "success" : "secondary"}>기본 설정 {completion.basicConfigured ? "완료" : "미완료"}</Badge>
         <Badge variant={completion.lineConfiguredCount === completion.totalLineCount && completion.totalLineCount > 0 ? "success" : "secondary"}>
-          라켓별 설정 {completion.lineConfiguredCount}/{completion.totalLineCount}
+          라켓별 설정 {completion.lineConfiguredCount}/{completion.totalLineCount} 완료
         </Badge>
         {completion.needsVisitReservation && (
           <Badge variant={completion.hasReservation ? "success" : "warning"}>방문 예약 {completion.hasReservation ? "완료" : "필요"}</Badge>
@@ -54,6 +54,9 @@ export default function CheckoutStringingSummaryCard({ adapter }: Props) {
         {!completion.needsVisitReservation && (
           <Badge variant="secondary">방문 예약 없음</Badge>
         )}
+        <Badge variant={summary.requestPreview === "없음" ? "secondary" : "success"}>
+          추가 요청 {summary.requestPreview === "없음" ? "없음" : "입력됨"}
+        </Badge>
       </div>
 
       {completion.isReadyToSubmit && (

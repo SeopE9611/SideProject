@@ -31,9 +31,14 @@ export default function CheckoutStringingCompactEditor({ adapter }: Props) {
     timeSlots,
     disabledTimes,
     slotsLoading,
+    slotsError,
   } = adapter;
 
   const isVisit = formData.collectionMethod === "visit";
+  const hasSelectedDate = Boolean(formData.preferredDate);
+  const availableTimeSlots = (timeSlots || []).filter(
+    (slot) => !(disabledTimes || []).includes(slot),
+  );
 
   return (
     <Accordion type="single" defaultValue="" className="rounded-lg border border-border bg-background px-3">
@@ -78,6 +83,15 @@ export default function CheckoutStringingCompactEditor({ adapter }: Props) {
                       ))}
                     </SelectContent>
                   </Select>
+                  {slotsLoading ? (
+                    <p className="text-xs text-muted-foreground">예약 가능 시간을 불러오는 중입니다.</p>
+                  ) : slotsError ? (
+                    <p className="text-xs text-destructive">예약 가능 시간을 불러오지 못했습니다. 날짜를 다시 선택하거나 잠시 후 다시 시도해주세요.</p>
+                  ) : !hasSelectedDate ? (
+                    <p className="text-xs text-muted-foreground">먼저 날짜를 선택하면 예약 가능한 시간이 표시됩니다.</p>
+                  ) : availableTimeSlots.length === 0 ? (
+                    <p className="text-xs text-muted-foreground">선택한 날짜에 예약 가능한 시간이 없습니다. 다른 날짜를 선택해주세요.</p>
+                  ) : null}
                 </div>
               </div>
             ) : (
@@ -90,7 +104,7 @@ export default function CheckoutStringingCompactEditor({ adapter }: Props) {
             <div className="space-y-3">
               {linesForSubmit.map((line, index) => (
                 <div key={line.id} className="rounded-md border border-border p-3 space-y-2">
-                  <p className="text-xs font-medium text-foreground">라인 {index + 1} · {line.stringName}</p>
+                  <p className="text-xs font-medium text-foreground">라켓 {index + 1} · {line.stringName}</p>
                   <div className="grid grid-cols-1 bp-sm:grid-cols-3 gap-2">
                     <Input
                       value={line.racketType ?? ""}
@@ -125,10 +139,10 @@ export default function CheckoutStringingCompactEditor({ adapter }: Props) {
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, requirements: e.target.value }))
               }
-              placeholder="요청사항이 있으면 입력해주세요"
+              placeholder="예: 선호 텐션 느낌, 작업 시 확인할 요청사항"
               className="min-h-[92px]"
             />
-            <p className="text-xs text-muted-foreground">입력한 요청사항은 주문과 함께 교체 서비스 신청 데이터에 저장됩니다.</p>
+            <p className="text-xs text-muted-foreground">작업 시 참고할 내용을 남겨주세요.</p>
           </section>
         </AccordionContent>
       </AccordionItem>

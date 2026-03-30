@@ -415,10 +415,10 @@ export default function useCheckoutStringingServiceAdapter({
       (!needsVisitReservation || hasReservation);
 
     const statusLabel = isReadyToSubmit
-      ? "설정 완료"
+      ? "접수 준비 완료"
       : basicConfigured
-        ? "상세 설정 필요"
-        : "기본 설정 필요";
+        ? "추가 입력 필요"
+        : "기본 정보 필요";
 
     return {
       basicConfigured,
