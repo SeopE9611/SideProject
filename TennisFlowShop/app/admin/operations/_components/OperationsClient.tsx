@@ -1077,7 +1077,7 @@ export default function OperationsClient() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-[1520px] px-4 py-4 lg:px-5 lg:py-5">
+    <div className="mx-auto w-full max-w-[1560px] px-3 py-4 bp-sm:px-4 bp-md:px-3 lg:px-5 lg:py-5">
       {shouldShowGlobalError && (
         <AsyncState
           kind="error"
@@ -1260,7 +1260,7 @@ export default function OperationsClient() {
       >
         <Card
           className={cn(
-            "rounded-xl border-border px-6 py-4 shadow-md transition-all duration-200",
+            "rounded-xl border-border px-4 py-4 bp-lg:px-5 shadow-md transition-all duration-200",
             onlyWarn
               ? "bg-warning/5 border-warning/20 dark:bg-warning/10 dark:border-warning/30"
               : "bg-card",
@@ -1496,7 +1496,7 @@ export default function OperationsClient() {
               </div>
             )}
             <div className="pt-1">
-              <div className="flex items-center gap-2 rounded-md border border-border/60 bg-muted/20 px-2.5 py-1.5 text-[10px] text-muted-foreground">
+              <div className="flex items-center gap-2 rounded-md border border-border/60 bg-muted/20 px-2.5 py-1.5 text-[11px] leading-tight text-muted-foreground/90">
                 <AlertTriangle className="h-3.5 w-3.5 text-warning" />
                 <span>
                   상태 배지는 목록에 보이는 <strong>주의 / 확인 필요</strong>만
@@ -1509,7 +1509,7 @@ export default function OperationsClient() {
       </div>
 
       {/* 업무 목록 카드 */}
-      <Card className="rounded-xl border-border bg-card px-4 py-4 shadow-md lg:px-5">
+      <Card className="rounded-xl border-border bg-card px-3 py-4 bp-sm:px-4 lg:px-5">
         <CardHeader className="pb-2">
           <div className="flex flex-col gap-2 bp-md:flex-row bp-md:items-center bp-md:justify-between">
             <div className="flex items-center gap-2">
@@ -2145,8 +2145,8 @@ export default function OperationsClient() {
                   );
                   return (
                     <Card key={`m:${g.key}`} className="border-border shadow-sm">
-                      <CardContent className="space-y-1.5 p-2">
-                        <div className="space-y-1">
+                      <CardContent className="space-y-1.5 p-1.5">
+                        <div className="space-y-0.5">
                           <div className="flex flex-wrap items-center gap-1.5">
                             <Badge
                               className={cn(
@@ -2170,11 +2170,11 @@ export default function OperationsClient() {
                                 확인 필요
                               </Badge>
                             )}
-                            <span className="text-[10px] text-muted-foreground/80">
+                            <span className="text-[11px] leading-tight text-muted-foreground/90">
                               {g.items.length > 1 ? `${g.items.length}건 그룹` : "단일 건"}
                             </span>
                           </div>
-                          <div className="flex items-center gap-1.5 text-[11px] leading-tight text-muted-foreground/90">
+                          <div className="flex items-center gap-1.5 text-[11px] leading-snug text-muted-foreground">
                             <span>
                               {opsKindLabel(g.anchor.kind)} · {shortenId(g.anchor.id)}
                             </span>
@@ -2188,27 +2188,27 @@ export default function OperationsClient() {
                               <Copy className="h-3.5 w-3.5" />
                             </Button>
                           </div>
-                          <p className="text-[11px] leading-tight text-muted-foreground/90">
+                          <p className="text-[11px] leading-snug text-muted-foreground">
                             접수 {createdAtLabel}
                           </p>
                         </div>
 
                         <div className="flex items-baseline justify-between gap-2">
                           <div>
-                            <p className="text-[11px] leading-tight text-muted-foreground/90">
+                            <p className="text-[11px] leading-snug text-muted-foreground">
                               {scenarioLabel}
                             </p>
                             <span className="text-[13px] font-medium text-foreground/85">
                               {customerPrimary}
                             </span>
                             {customerName && customerEmail && (
-                              <p className="text-[11px] leading-tight text-muted-foreground/90">
+                              <p className="text-[11px] leading-snug text-muted-foreground">
                                 {customerEmail}
                               </p>
                             )}
                           </div>
                           <div className="text-right">
-                            <p className="text-[11px] text-muted-foreground/90">
+                            <p className="text-[11px] leading-snug text-muted-foreground">
                               {g.items.length > 1 ? "총액" : opsKindLabel(g.anchor.kind)}
                             </p>
                             <span className="text-base font-extrabold tracking-tight text-foreground">
@@ -2232,7 +2232,7 @@ export default function OperationsClient() {
                               type="button"
                               variant="ghost"
                               size="sm"
-                              className="h-6 px-1 text-[11px] font-medium text-muted-foreground"
+                              className="h-6 px-1 text-[11px] font-medium text-foreground/75 hover:text-foreground"
                               onClick={() => toggleReason(g.key)}
                             >
                               {isReasonOpen
@@ -2249,16 +2249,16 @@ export default function OperationsClient() {
                                   : "grid-rows-[0fr] opacity-0",
                               )}
                             >
-                              <div className="overflow-hidden rounded-sm border border-border/40 bg-muted/[0.08] px-1.5 py-1">
-                                <p className="text-[11px] leading-tight text-muted-foreground/90 line-clamp-2">
+                              <div className="overflow-hidden rounded-sm border border-border/40 bg-muted/[0.08] px-1.5 py-0.5">
+                                <p className="text-[11px] leading-snug text-muted-foreground line-clamp-2">
                                   {reasonSummary}
                                 </p>
                                 {shouldShowReasonBullets && (
-                                  <ul className="mt-0.5 space-y-0.5">
+                                  <ul className="mt-0.5 space-y-px">
                                     {reasonBullets.slice(0, 3).map((reason) => (
                                       <li
                                         key={`m-reason:${g.key}:${reason}`}
-                                        className="list-inside list-disc text-[11px] leading-tight text-muted-foreground/85 line-clamp-1"
+                                        className="list-inside list-disc text-[11px] leading-snug text-muted-foreground line-clamp-1"
                                       >
                                         {reason}
                                       </li>
@@ -2270,7 +2270,7 @@ export default function OperationsClient() {
                           </div>
                         )}
 
-                        <div className="flex flex-wrap items-center gap-1 pt-0.5">
+                        <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
                           {actionableQuickTarget && (
                             <Button
                               asChild
@@ -2302,7 +2302,7 @@ export default function OperationsClient() {
                               type="button"
                               variant="ghost"
                               size="sm"
-                              className="ml-auto h-7 px-2 text-[11px] text-muted-foreground/90"
+                              className="ml-auto h-7 px-2 text-[11px] text-foreground/75 hover:text-foreground"
                               onClick={() => toggleGroup(g.key)}
                             >
                               {isOpen ? "접기" : "운영 참고"}
@@ -2319,12 +2319,12 @@ export default function OperationsClient() {
                           )}
                         >
                           <div className="overflow-hidden">
-                            <div className="space-y-1 border-t border-border/50 pt-1">
-                              <p className="text-[11px] leading-tight text-muted-foreground/90">
+                            <div className="space-y-0.5 border-t border-border/50 pt-0.5">
+                              <p className="text-[11px] leading-snug text-muted-foreground">
                                 기준 시각: {formatKST(g.createdAt ?? g.anchor.createdAt)}
                               </p>
                               <div className="border border-border/50 bg-background/20">
-                                <div className="grid grid-cols-[1fr_auto] gap-1.5 border-b border-border/50 bg-muted/10 px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground/90">
+                                <div className="grid grid-cols-[1fr_auto] gap-1 border-b border-border/50 bg-muted/10 px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground">
                                   <span>문서 · 상태</span>
                                   <span className="text-right">금액</span>
                                 </div>
@@ -2332,7 +2332,7 @@ export default function OperationsClient() {
                                 {g.items.map((item) => (
                                   <div
                                     key={`m-detail:${g.key}:${item.kind}:${item.id}`}
-                                    className="grid grid-cols-[1fr_auto] gap-1.5 px-1.5 py-0.5 text-[11px]"
+                                    className="grid grid-cols-[1fr_auto] gap-1 px-1.5 py-0.5 text-[11px] leading-snug"
                                   >
                                     <div>
                                       <p className="font-medium text-foreground">
@@ -2346,7 +2346,7 @@ export default function OperationsClient() {
                                       <p className="font-semibold text-foreground">
                                         {won(item.amount)}
                                       </p>
-                                      <p className="text-[11px] leading-tight text-muted-foreground/90">
+                                      <p className="text-[11px] leading-snug text-muted-foreground">
                                         {item.kind === "stringing_application"
                                           ? "신청서"
                                           : item.kind === "rental"
