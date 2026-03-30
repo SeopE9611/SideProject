@@ -21,21 +21,26 @@ export default function CheckoutStringingSummaryCard({ adapter }: Props) {
       : summary.reservationLabel;
 
   return (
-    <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-3">
-      <div className="flex items-start justify-between gap-3">
+    <div className="space-y-4 rounded-lg border border-border bg-muted/25 px-4 py-5 bp-sm:px-5">
+      <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-sm font-semibold text-foreground flex items-center gap-2">
+          <p className="flex items-center gap-2 text-sm font-semibold text-foreground">
             <ClipboardList className="h-4 w-4 text-primary" />
             교체 서비스 요약
           </p>
-          <p className="text-xs text-muted-foreground mt-1">주문과 함께 접수될 내용을 미리 확인하세요.</p>
+          <p className="mt-1.5 text-xs text-muted-foreground">
+            주문과 함께 접수될 내용을 미리 확인하세요.
+          </p>
         </div>
-        <Badge variant={completion.isReadyToSubmit ? "success" : "secondary"}>
+        <Badge
+          variant={completion.isReadyToSubmit ? "success" : "secondary"}
+          className="mt-0.5"
+        >
           {completion.statusLabel}
         </Badge>
       </div>
 
-      <div className="grid grid-cols-1 bp-sm:grid-cols-2 gap-2 text-sm">
+      <div className="grid grid-cols-1 gap-x-5 gap-y-2.5 text-sm bp-sm:grid-cols-2">
         <p><span className="text-muted-foreground">접수 방식:</span> <span className="font-medium">{summary.collectionLabel}</span></p>
         <p><span className="text-muted-foreground">작업 수량:</span> <span className="font-medium">{summary.lineCount}자루</span></p>
         <p><span className="text-muted-foreground">선택 스트링:</span> <span className="font-medium">{summary.stringNames.join(", ") || "미선택"}</span></p>
@@ -47,24 +52,47 @@ export default function CheckoutStringingSummaryCard({ adapter }: Props) {
         <p><span className="text-muted-foreground">추가 요청:</span> <span className="font-medium">{summary.requestPreview}</span></p>
       </div>
 
-      <div className="flex flex-wrap gap-2 text-xs">
-        <Badge variant={completion.basicConfigured ? "success" : "secondary"}>기본 설정 {completion.basicConfigured ? "완료" : "미완료"}</Badge>
-        <Badge variant={completion.lineConfiguredCount === completion.totalLineCount && completion.totalLineCount > 0 ? "success" : "secondary"}>
+      <div className="pt-1.5">
+        <div className="flex flex-wrap gap-2 text-xs">
+          <Badge
+            variant={completion.basicConfigured ? "success" : "secondary"}
+            className="font-normal"
+          >
+            기본 설정 {completion.basicConfigured ? "완료" : "미완료"}
+          </Badge>
+          <Badge
+            variant={
+              completion.lineConfiguredCount === completion.totalLineCount &&
+              completion.totalLineCount > 0
+                ? "success"
+                : "secondary"
+            }
+            className="font-normal"
+          >
           라켓별 설정 {completion.lineConfiguredCount}/{completion.totalLineCount} 완료
-        </Badge>
-        {completion.needsVisitReservation && (
-          <Badge variant={completion.hasReservation ? "success" : "warning"}>방문 예약 {completion.hasReservation ? "완료" : "필요"}</Badge>
-        )}
-        {!completion.needsVisitReservation && (
-          <Badge variant="secondary">방문 예약 없음</Badge>
-        )}
-        <Badge variant={summary.requestPreview === "없음" ? "secondary" : "success"}>
-          추가 요청 {summary.requestPreview === "없음" ? "없음" : "입력됨"}
-        </Badge>
+          </Badge>
+          {completion.needsVisitReservation && (
+            <Badge
+              variant={completion.hasReservation ? "success" : "warning"}
+              className="font-normal"
+            >
+              방문 예약 {completion.hasReservation ? "완료" : "필요"}
+            </Badge>
+          )}
+          {!completion.needsVisitReservation && (
+            <Badge variant="secondary" className="font-normal">방문 예약 없음</Badge>
+          )}
+          <Badge
+            variant={summary.requestPreview === "없음" ? "secondary" : "success"}
+            className="font-normal"
+          >
+            추가 요청 {summary.requestPreview === "없음" ? "없음" : "입력됨"}
+          </Badge>
+        </div>
       </div>
 
       {completion.isReadyToSubmit && (
-        <p className="text-xs text-foreground flex items-center gap-1.5">
+        <p className="flex items-center gap-1.5 text-xs text-foreground">
           <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
           현재 설정으로 주문과 함께 교체 서비스가 접수됩니다.
         </p>

@@ -72,11 +72,11 @@ export default function TimeSlotSelector({
 
   //  여기부터는 "정상"일 때만 시간대 격자를 보여준다.
   return (
-    <div className="space-y-2" aria-busy={isLoading ? true : undefined}>
+    <div className="space-y-3" aria-busy={isLoading ? true : undefined}>
       <div className="relative">
         <div
           className={[
-            "grid grid-cols-3 gap-2 transition",
+            "grid grid-cols-3 gap-2.5 bp-sm:gap-3 transition",
             isLoading ? "pointer-events-none blur-[2px] opacity-60" : "",
           ].join(" ")}
         >
@@ -101,7 +101,7 @@ export default function TimeSlotSelector({
                   : null;
 
             const baseBtn =
-              "w-full rounded-lg px-3 py-2 text-sm transition-colors border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40";
+              "w-full rounded-lg border px-3 py-2.5 text-sm leading-tight transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 bp-sm:min-h-11";
 
             if (disabled) {
               return (
@@ -118,7 +118,7 @@ export default function TimeSlotSelector({
                   }
                   className={
                     baseBtn +
-                    " cursor-not-allowed bg-muted dark:bg-card text-muted-foreground border-border text-xs bp-sm:text-sm"
+                    " cursor-not-allowed border-border bg-muted/65 text-[11px] text-muted-foreground bp-sm:text-xs"
                   }
                   aria-disabled
                 >
@@ -129,8 +129,8 @@ export default function TimeSlotSelector({
 
             const selectedStyles =
               selected === time
-                ? " bg-primary text-primary-foreground border-primary/70 shadow-sm"
-                : " bg-card text-foreground border-border hover:bg-background dark:hover:bg-card hover:border-border dark:hover:border-border";
+                ? " border-primary/75 bg-primary text-primary-foreground shadow-sm"
+                : " border-border bg-card text-foreground hover:border-primary/30 hover:bg-background";
 
             return (
               <button
@@ -158,7 +158,7 @@ export default function TimeSlotSelector({
         )}
       </div>
 
-      <p className="text-xs text-muted-foreground mt-2">
+      <p className="mt-1 text-xs text-muted-foreground">
         🔒 비활성 시간은 종료/예약됨/연속 불가 사유로 선택할 수 없습니다.
       </p>
     </div>
