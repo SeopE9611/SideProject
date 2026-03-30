@@ -268,10 +268,6 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
   const shippingFeeRaw = Number(order.paymentInfo?.shippingFee ?? order.shippingFee ?? 0);
   const normalizedShippingFee = Number.isFinite(shippingFeeRaw) ? shippingFeeRaw : 0;
   const productAmount = Math.max(0, normalizedOriginalTotal - normalizedServiceFee - normalizedShippingFee);
-  const packageDiscount =
-    withStringService && hasSubmittedApplication && stringingSummary?.packageInfo.applied
-      ? Math.max(0, Number(stringingSummary?.serviceFeeBefore ?? 0) - Number(stringingSummary?.serviceFeeAfter ?? 0))
-      : 0;
   // 0원 결제 시 입금 안내 오해 방지
   const isZeroPayment = normalizedTotalPrice <= 0 || normalizedOriginalTotal - normalizedPointsUsed <= 0;
 
@@ -577,22 +573,15 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                       </div>
                     )}
 
-                    {packageDiscount > 0 && (
-                      <div className="flex justify-between items-center">
-                        <span className="text-muted-foreground">패키지 반영</span>
-                        <span className="font-semibold text-primary">-{formatPrice(packageDiscount)}원</span>
-                      </div>
-                    )}
-
                     <div className="flex justify-between items-center">
                       <span className="text-muted-foreground">{isVisitPickup ? '추가 비용' : '배송비'}</span>
                       <span className="font-semibold">{formatPrice(normalizedShippingFee)}원</span>
                     </div>
 
-                    {Number(pointsUsed) > 0 && (
+                    {normalizedPointsUsed > 0 && (
                       <div className="flex justify-between items-center">
                         <span className="text-muted-foreground">포인트 사용</span>
-                        <span className="font-semibold text-primary">-{formatPrice(pointsUsed)}원</span>
+                        <span className="font-semibold text-primary">-{formatPrice(normalizedPointsUsed)}원</span>
                       </div>
                     )}
 
