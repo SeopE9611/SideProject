@@ -95,17 +95,21 @@ export default function CheckoutStringingCompactEditor({ adapter }: Props) {
   }, [applyBulkToAllLines, linesForSubmit]);
 
   return (
-    <Accordion type="single" defaultValue="" className="rounded-lg border border-border bg-background px-3">
+    <Accordion
+      type="single"
+      defaultValue=""
+      className="rounded-lg border border-border bg-background/80 px-4 py-1"
+    >
       <AccordionItem value="detail" className="border-none">
-        <AccordionTrigger value="detail" className="py-3 text-sm">
+        <AccordionTrigger value="detail" className="py-3.5 text-sm">
           상세 설정 열기
         </AccordionTrigger>
-        <AccordionContent value="detail" className="space-y-5">
-          <section className="space-y-3">
+        <AccordionContent value="detail" className="space-y-7 pb-4">
+          <section className="space-y-4">
             <p className="text-sm font-medium text-foreground">기본 설정</p>
             {isVisit ? (
-              <div className="grid grid-cols-1 bp-sm:grid-cols-2 gap-3">
-                <div className="space-y-2">
+              <div className="grid grid-cols-1 gap-4 bp-sm:grid-cols-2">
+                <div className="space-y-2.5">
                   <Label htmlFor="checkout-preferred-date" className="text-xs text-muted-foreground">희망 날짜</Label>
                   <Input
                     id="checkout-preferred-date"
@@ -117,7 +121,7 @@ export default function CheckoutStringingCompactEditor({ adapter }: Props) {
                     }
                   />
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-2.5">
                   <Label htmlFor="checkout-preferred-time" className="text-xs text-muted-foreground">희망 시간</Label>
                   <TimeSlotSelector
                     selected={formData.preferredTime}
@@ -138,16 +142,16 @@ export default function CheckoutStringingCompactEditor({ adapter }: Props) {
                     formData.preferredTime &&
                     visitSlotCountUi > 0 &&
                     visitDurationMinutesUi && (
-                      <div className="mt-3 rounded-lg border border-border bg-muted/30 px-3 py-2 text-xs text-foreground">
-                        <p className="font-medium">
+                      <div className="mt-4 rounded-lg border border-border bg-muted/20 px-3.5 py-3 text-xs text-foreground">
+                        <p className="font-medium text-foreground">
                           이번 방문 예상 소요 시간:{" "}
                           {visitTimeRange
                             ? `${visitTimeRange.start} ~ ${visitTimeRange.end}`
                             : `약 ${visitDurationMinutesUi}분`}{" "}
                           ({visitSlotCountUi}슬롯)
                         </p>
-                        <p className="mt-0.5 text-[11px] text-muted-foreground">
-                          선택하신 시간부터 연속으로 작업이 진행되며, 해당 시간대에는 다른 예약이 불가능합니다.
+                        <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
+                          선택 시간부터 연속 작업이 진행되며, 해당 구간은 다른 예약이 자동 차단됩니다.
                         </p>
                       </div>
                     )}
@@ -158,12 +162,17 @@ export default function CheckoutStringingCompactEditor({ adapter }: Props) {
             )}
           </section>
 
-          <section className="space-y-3">
-            <p className="text-sm font-medium text-foreground">라켓별 세부 설정</p>
+          <section className="space-y-4">
+            <p className="text-sm font-semibold text-foreground">라켓별 세부 설정</p>
             {lineCount >= 2 && (
-              <div className="rounded-md border border-border bg-muted/20 p-3">
-                <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-xs font-medium text-foreground">일괄 입력</p>
+              <div className="rounded-lg border border-border bg-muted/15 p-3.5">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <p className="text-xs font-medium text-foreground">빠른 설정 (일괄 입력)</p>
+                    <p className="mt-0.5 text-[11px] text-muted-foreground">
+                      동일한 텐션/메모를 모든 라켓에 한 번에 적용합니다.
+                    </p>
+                  </div>
                   <div className="flex gap-2">
                     <Button
                       type="button"
@@ -184,13 +193,15 @@ export default function CheckoutStringingCompactEditor({ adapter }: Props) {
                     </Button>
                   </div>
                 </div>
-                <div className="grid grid-cols-1 gap-2 bp-sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-2.5 bp-sm:grid-cols-2">
                   <Input
+                    className="h-10 px-3"
                     value={bulkTensionMain}
                     onChange={(e) => setBulkTensionMain(toNumberText(e.target.value))}
                     placeholder="공통 메인 텐션"
                   />
                   <Input
+                    className="h-10 px-3"
                     value={bulkTensionCross}
                     onChange={(e) => setBulkTensionCross(toNumberText(e.target.value))}
                     placeholder="공통 크로스 텐션"
@@ -200,23 +211,25 @@ export default function CheckoutStringingCompactEditor({ adapter }: Props) {
                       value={bulkLineNote}
                       onChange={(e) => setBulkLineNote(e.target.value)}
                       placeholder="공통 메모"
-                      className="min-h-[72px]"
+                      className="min-h-[84px] px-3 py-2.5"
                     />
                   </div>
                 </div>
               </div>
             )}
-            <div className="space-y-3">
+            <div className="space-y-4">
               {linesForSubmit.map((line, index) => (
-                <div key={line.id} className="rounded-md border border-border p-3 space-y-2">
+                <div key={line.id} className="space-y-3 rounded-lg border border-border p-3.5">
                   <p className="text-xs font-medium text-foreground">라켓 {index + 1} · {line.stringName}</p>
-                  <div className="grid grid-cols-1 bp-sm:grid-cols-3 gap-2">
+                  <div className="grid grid-cols-1 gap-2.5 bp-sm:grid-cols-3">
                     <Input
+                      className="h-10 px-3"
                       value={line.racketType ?? ""}
                       onChange={(e) => handleLineFieldChange(index, "racketType", e.target.value)}
                       placeholder="라켓명"
                     />
                     <Input
+                      className="h-10 px-3"
                       value={line.tensionMain ?? ""}
                       onChange={(e) =>
                         handleLineFieldChange(index, "tensionMain", toNumberText(e.target.value))
@@ -224,6 +237,7 @@ export default function CheckoutStringingCompactEditor({ adapter }: Props) {
                       placeholder="메인 텐션"
                     />
                     <Input
+                      className="h-10 px-3"
                       value={line.tensionCross ?? ""}
                       onChange={(e) =>
                         handleLineFieldChange(index, "tensionCross", toNumberText(e.target.value))
@@ -235,14 +249,14 @@ export default function CheckoutStringingCompactEditor({ adapter }: Props) {
                     value={line.note ?? ""}
                     onChange={(e) => handleLineFieldChange(index, "note", e.target.value)}
                     placeholder="라켓별 메모 (선택)"
-                    className="min-h-[72px]"
+                    className="min-h-[84px] px-3 py-2.5"
                   />
                 </div>
               ))}
             </div>
           </section>
 
-          <section className="space-y-2">
+          <section className="space-y-2.5">
             <p className="text-sm font-medium text-foreground">추가 요청</p>
             <Textarea
               id="checkout-stringing-requirements"
@@ -251,9 +265,9 @@ export default function CheckoutStringingCompactEditor({ adapter }: Props) {
                 setFormData((prev) => ({ ...prev, requirements: e.target.value }))
               }
               placeholder="예: 선호 텐션 느낌, 작업 시 확인할 요청사항"
-              className="min-h-[92px]"
+              className="min-h-[98px] px-3 py-2.5"
             />
-            <p className="text-xs text-muted-foreground">작업 시 참고할 내용을 남겨주세요.</p>
+            <p className="text-xs text-muted-foreground">작업 시 참고할 내용을 간단히 남겨주세요.</p>
           </section>
         </AccordionContent>
       </AccordionItem>
