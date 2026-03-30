@@ -280,6 +280,7 @@ export default function useCheckoutStringingServiceAdapter({
   // 예약 가능한 시간 목록을 실제로 조회
   const {
     disabledTimes,
+    reservedTimes,
     timeSlots,
     slotsLoading,
     slotsError,
@@ -457,6 +458,7 @@ export default function useCheckoutStringingServiceAdapter({
     // MountingInfoSection으로 내려줄 예약 슬롯 관련 값들
     timeSlots,
     disabledTimes,
+    reservedTimes,
     slotsLoading,
     hasCacheForDate,
     slotsError,

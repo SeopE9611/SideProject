@@ -23,7 +23,7 @@ export default function CheckoutStringingServiceSections({
   if (!withStringService) return null;
 
   return (
-    <Card className="bg-card border border-border shadow-sm overflow-hidden">
+    <Card className="bg-card border border-border shadow-sm">
       <div className="px-4 py-4 border-b border-border bg-muted/40">
         <CardTitle className="flex items-center gap-2 text-base">
           <Wrench className="h-4 w-4 text-primary" />

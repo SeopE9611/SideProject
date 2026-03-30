@@ -21,10 +21,13 @@ export function useReservedSlots<T extends { preferredTime: string }>(args: {
 
   // 예약 슬롯 상태
   const [disabledTimes, setDisabledTimes] = useState<string[]>([]);
+  const [reservedTimes, setReservedTimes] = useState<string[]>([]);
   const [timeSlots, setTimeSlots] = useState<string[]>([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
   const [slotsError, setSlotsError] = useState<string | null>(null);
-  const slotsCache = useRef<Map<string, string[]>>(new Map());
+  const slotsCache = useRef<
+    Map<string, { disabled: string[]; reserved: string[] }>
+  >(new Map());
 
   // 추가 상태: 캐시 히트 여부 (로딩 중 버튼 비활성화 여부 판단에 사용)
   const [hasCacheForDate, setHasCacheForDate] = useState(false);
@@ -33,6 +36,7 @@ export function useReservedSlots<T extends { preferredTime: string }>(args: {
     const date = preferredDate;
     if (!date) {
       setDisabledTimes([]);
+      setReservedTimes([]);
       setSlotsError(null);
       setHasCacheForDate(false);
       return;
@@ -43,10 +47,11 @@ export function useReservedSlots<T extends { preferredTime: string }>(args: {
 
     // 캐시 확인: 있으면 즉시 사용(플리커 방지)
     const cached = slotsCache.current.get(cacheKey);
-    const cacheHit = Array.isArray(cached);
+    const cacheHit = !!cached;
     setHasCacheForDate(!!cacheHit);
     if (cacheHit) {
-      setDisabledTimes(cached!);
+      setDisabledTimes(cached?.disabled ?? []);
+      setReservedTimes(cached?.reserved ?? []);
       setSlotsError(null);
       // 캐시가 있으면 버튼 비활성화 없이 조용히 갱신만 진행
     }
@@ -83,6 +88,7 @@ export function useReservedSlots<T extends { preferredTime: string }>(args: {
             // 시간대 격자는 감춤
             setTimeSlots([]);
             setDisabledTimes([]);
+            setReservedTimes([]);
             // 선택된 시간도 해제
             setFormData((prev) => ({ ...prev, preferredTime: "" }) as T);
             return;
@@ -104,19 +110,24 @@ export function useReservedSlots<T extends { preferredTime: string }>(args: {
           setSlotsError("해당 날짜는 휴무일입니다. 다른 날짜를 선택해주세요.");
           setTimeSlots([]);
           setDisabledTimes([]);
+          setReservedTimes([]);
           setFormData((prev) => ({ ...prev, preferredTime: "" }) as T);
           return;
         }
 
         // 서버 슬롯/비활성 시간 반영
         setTimeSlots(Array.isArray(data?.allTimes) ? data.allTimes : []);
+        const reserved: string[] = Array.isArray(data?.reservedTimes)
+          ? data.reservedTimes
+          : [];
         const disabled: string[] = Array.isArray(data?.blockedTimes)
           ? data.blockedTimes
           : Array.isArray(data?.reservedTimes)
             ? data.reservedTimes
             : [];
-        slotsCache.current.set(cacheKey, disabled);
+        slotsCache.current.set(cacheKey, { disabled, reserved });
         setDisabledTimes(disabled);
+        setReservedTimes(reserved);
 
         // (선택) 현재 선택된 시간이 사용 불가면 선택 해제
         if (
@@ -183,13 +194,17 @@ export function useReservedSlots<T extends { preferredTime: string }>(args: {
       );
       if (!res.ok) return;
       const data = await res.json();
+      const reserved: string[] = Array.isArray(data?.reservedTimes)
+        ? data.reservedTimes
+        : [];
       const disabled: string[] = Array.isArray(data?.blockedTimes)
         ? data.blockedTimes
         : Array.isArray(data?.reservedTimes)
           ? data.reservedTimes
           : [];
-      slotsCache.current.set(cacheKey, disabled);
+      slotsCache.current.set(cacheKey, { disabled, reserved });
       setDisabledTimes(disabled);
+      setReservedTimes(reserved);
     } catch {
       // 조용히 실패 무시
     }
@@ -197,6 +212,7 @@ export function useReservedSlots<T extends { preferredTime: string }>(args: {
 
   return {
     disabledTimes,
+    reservedTimes,
     timeSlots,
     slotsLoading,
     slotsError,

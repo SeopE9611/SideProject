@@ -1,16 +1,18 @@
 "use client";
 
 import type useCheckoutStringingServiceAdapter from "@/app/features/stringing-applications/hooks/useCheckoutStringingServiceAdapter";
+import TimeSlotSelector from "@/app/services/_components/TimeSlotSelector";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useCallback, useState } from "react";
 
 const toNumberText = (raw: string) => raw.replace(/[^0-9.]/g, "").slice(0, 4);
 
@@ -26,19 +28,71 @@ export default function CheckoutStringingCompactEditor({ adapter }: Props) {
   const {
     formData,
     setFormData,
+    lineCount,
     linesForSubmit,
     handleLineFieldChange,
     timeSlots,
     disabledTimes,
+    reservedTimes,
     slotsLoading,
+    hasCacheForDate,
     slotsError,
+    visitSlotCountUi,
+    visitDurationMinutesUi,
+    visitTimeRange,
   } = adapter;
 
   const isVisit = formData.collectionMethod === "visit";
-  const hasSelectedDate = Boolean(formData.preferredDate);
-  const availableTimeSlots = (timeSlots || []).filter(
-    (slot) => !(disabledTimes || []).includes(slot),
+  const [bulkTensionMain, setBulkTensionMain] = useState<string>(
+    () => String(formData?.defaultMainTension ?? ""),
   );
+  const [bulkTensionCross, setBulkTensionCross] = useState<string>(
+    () => String(formData?.defaultCrossTension ?? ""),
+  );
+  const [bulkLineNote, setBulkLineNote] = useState<string>("");
+
+  const applyBulkToAllLines = useCallback(
+    (opts?: { main?: string; cross?: string; note?: string }) => {
+      const main = (opts?.main ?? bulkTensionMain ?? "").trim();
+      const cross = (opts?.cross ?? bulkTensionCross ?? "").trim();
+      const note = (opts?.note ?? bulkLineNote ?? "").trim();
+      if (!main && !cross && !note) return;
+
+      setFormData((prev) => {
+        const baseLines =
+          Array.isArray(prev?.lines) && prev.lines.length > 0
+            ? prev.lines
+            : (linesForSubmit ?? []);
+        if (!Array.isArray(baseLines) || baseLines.length === 0) return prev;
+
+        const nextLines = baseLines.map((line) => ({
+          ...line,
+          tensionMain: main ? main : (line?.tensionMain ?? ""),
+          tensionCross: cross ? cross : (line?.tensionCross ?? ""),
+          note: note ? note : (line?.note ?? ""),
+        }));
+
+        return {
+          ...prev,
+          lines: nextLines,
+          ...(main ? { defaultMainTension: main } : {}),
+          ...(cross ? { defaultCrossTension: cross } : {}),
+        };
+      });
+    },
+    [bulkTensionCross, bulkTensionMain, bulkLineNote, linesForSubmit, setFormData],
+  );
+
+  const applyFirstLineTensionToAll = useCallback(() => {
+    const first = (linesForSubmit ?? [])[0];
+    if (!first) return;
+    const main = String(first?.tensionMain ?? "").trim();
+    const cross = String(first?.tensionCross ?? "").trim();
+    if (!main && !cross) return;
+    if (main) setBulkTensionMain(main);
+    if (cross) setBulkTensionCross(cross);
+    applyBulkToAllLines({ main, cross });
+  }, [applyBulkToAllLines, linesForSubmit]);
 
   return (
     <Accordion type="single" defaultValue="" className="rounded-lg border border-border bg-background px-3">
@@ -65,33 +119,38 @@ export default function CheckoutStringingCompactEditor({ adapter }: Props) {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="checkout-preferred-time" className="text-xs text-muted-foreground">희망 시간</Label>
-                  <Select
-                    value={formData.preferredTime || ""}
-                    onValueChange={(value) =>
-                      setFormData((prev) => ({ ...prev, preferredTime: value }))
+                  <TimeSlotSelector
+                    selected={formData.preferredTime}
+                    selectedDate={formData.preferredDate}
+                    onSelect={(value) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        preferredTime: prev.preferredTime === value ? "" : value,
+                      }))
                     }
-                    disabled={!formData.preferredDate || slotsLoading}
-                  >
-                    <SelectTrigger id="checkout-preferred-time">
-                      <SelectValue placeholder={slotsLoading ? "시간 조회 중" : "시간 선택"} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {(timeSlots || []).map((slot) => (
-                        <SelectItem key={slot} value={slot} disabled={(disabledTimes || []).includes(slot)}>
-                          {slot}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {slotsLoading ? (
-                    <p className="text-xs text-muted-foreground">예약 가능 시간을 불러오는 중입니다.</p>
-                  ) : slotsError ? (
-                    <p className="text-xs text-destructive">예약 가능 시간을 불러오지 못했습니다. 날짜를 다시 선택하거나 잠시 후 다시 시도해주세요.</p>
-                  ) : !hasSelectedDate ? (
-                    <p className="text-xs text-muted-foreground">먼저 날짜를 선택하면 예약 가능한 시간이 표시됩니다.</p>
-                  ) : availableTimeSlots.length === 0 ? (
-                    <p className="text-xs text-muted-foreground">선택한 날짜에 예약 가능한 시간이 없습니다. 다른 날짜를 선택해주세요.</p>
-                  ) : null}
+                    times={timeSlots}
+                    disabledTimes={disabledTimes}
+                    reservedTimes={reservedTimes}
+                    isLoading={slotsLoading && !hasCacheForDate}
+                    errorMessage={slotsError}
+                  />
+                  {formData.preferredDate &&
+                    formData.preferredTime &&
+                    visitSlotCountUi > 0 &&
+                    visitDurationMinutesUi && (
+                      <div className="mt-3 rounded-lg border border-border bg-muted/30 px-3 py-2 text-xs text-foreground">
+                        <p className="font-medium">
+                          이번 방문 예상 소요 시간:{" "}
+                          {visitTimeRange
+                            ? `${visitTimeRange.start} ~ ${visitTimeRange.end}`
+                            : `약 ${visitDurationMinutesUi}분`}{" "}
+                          ({visitSlotCountUi}슬롯)
+                        </p>
+                        <p className="mt-0.5 text-[11px] text-muted-foreground">
+                          선택하신 시간부터 연속으로 작업이 진행되며, 해당 시간대에는 다른 예약이 불가능합니다.
+                        </p>
+                      </div>
+                    )}
                 </div>
               </div>
             ) : (
@@ -101,6 +160,52 @@ export default function CheckoutStringingCompactEditor({ adapter }: Props) {
 
           <section className="space-y-3">
             <p className="text-sm font-medium text-foreground">라켓별 세부 설정</p>
+            {lineCount >= 2 && (
+              <div className="rounded-md border border-border bg-muted/20 p-3">
+                <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-xs font-medium text-foreground">일괄 입력</p>
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-7 px-2 text-xs"
+                      onClick={applyFirstLineTensionToAll}
+                    >
+                      1번 텐션 → 전체
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      className="h-7 px-2 text-xs"
+                      onClick={() => applyBulkToAllLines()}
+                    >
+                      입력값 → 전체
+                    </Button>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 gap-2 bp-sm:grid-cols-2">
+                  <Input
+                    value={bulkTensionMain}
+                    onChange={(e) => setBulkTensionMain(toNumberText(e.target.value))}
+                    placeholder="공통 메인 텐션"
+                  />
+                  <Input
+                    value={bulkTensionCross}
+                    onChange={(e) => setBulkTensionCross(toNumberText(e.target.value))}
+                    placeholder="공통 크로스 텐션"
+                  />
+                  <div className="bp-sm:col-span-2">
+                    <Textarea
+                      value={bulkLineNote}
+                      onChange={(e) => setBulkLineNote(e.target.value)}
+                      placeholder="공통 메모"
+                      className="min-h-[72px]"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
             <div className="space-y-3">
               {linesForSubmit.map((line, index) => (
                 <div key={line.id} className="rounded-md border border-border p-3 space-y-2">
@@ -126,6 +231,12 @@ export default function CheckoutStringingCompactEditor({ adapter }: Props) {
                       placeholder="크로스 텐션"
                     />
                   </div>
+                  <Textarea
+                    value={line.note ?? ""}
+                    onChange={(e) => handleLineFieldChange(index, "note", e.target.value)}
+                    placeholder="라켓별 메모 (선택)"
+                    className="min-h-[72px]"
+                  />
                 </div>
               ))}
             </div>

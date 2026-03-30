@@ -69,6 +69,7 @@ export type MountingInfoSectionProps = {
 
   timeSlots: any[];
   disabledTimes: any[];
+  reservedTimes?: any[];
   slotsLoading: boolean;
   hasCacheForDate: boolean;
   slotsError: string | null | undefined;
@@ -117,6 +118,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
     handleLineFieldChange,
     timeSlots,
     disabledTimes,
+    reservedTimes,
     slotsLoading,
     hasCacheForDate,
     slotsError,
@@ -1278,6 +1280,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                 }
                 times={timeSlots}
                 disabledTimes={disabledTimes}
+                reservedTimes={reservedTimes}
                 isLoading={slotsLoading && !hasCacheForDate}
                 errorMessage={slotsError}
               />
