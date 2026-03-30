@@ -12,7 +12,7 @@ export default function Loading() {
               <Skeleton className="h-4 w-80" />
             </div>
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5 lg:gap-4">
-              {Array.from({ length: 4 }).map((_, index) => (
+              {Array.from({ length: 5 }).map((_, index) => (
                 <Skeleton key={index} className="h-20 w-full rounded-lg" />
               ))}
             </div>
