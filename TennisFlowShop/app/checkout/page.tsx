@@ -12,6 +12,7 @@ import { usePdpBundleStore } from "@/app/store/pdpBundleStore";
 import SiteContainer from "@/components/layout/SiteContainer";
 import LoginGate from "@/components/system/LoginGate";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardFooter, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -1020,7 +1021,12 @@ export default function CheckoutPage() {
 
                         <div className="min-w-0 flex-1">
                           <h3 className="font-semibold text-foreground line-clamp-2">{item.name}</h3>
-                          <p className="text-sm text-muted-foreground">수량: {item.quantity}개</p>
+                          <div className="mt-1 flex flex-wrap items-center gap-2">
+                            <p className="text-sm text-muted-foreground">수량: {item.quantity}개</p>
+                            {withStringService && serviceTargetIds.includes(String(item.id)) && (
+                              <Badge variant="secondary" className="text-[11px]">교체 서비스 대상</Badge>
+                            )}
+                          </div>
                         </div>
                       </div>
 
@@ -1258,7 +1264,7 @@ export default function CheckoutPage() {
               </CardContent>
             </Card>
 
-            {withStringService && checkoutStringingAdapter && <CheckoutStringingServiceSections section="mounting" withStringService={withStringService} adapter={checkoutStringingAdapter} />}
+            {withStringService && checkoutStringingAdapter && <CheckoutStringingServiceSections withStringService={withStringService} adapter={checkoutStringingAdapter} />}
 
             {/* 결제 정보 */}
             <Card className="bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card/80 border border-border bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
@@ -1359,7 +1365,6 @@ export default function CheckoutPage() {
               </CardContent>
             </Card>
 
-            {withStringService && checkoutStringingAdapter && <CheckoutStringingServiceSections section="final" withStringService={withStringService} adapter={checkoutStringingAdapter} />}
 
             {/* 주문자 동의 */}
             <Card className="bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card/80 border border-border bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">

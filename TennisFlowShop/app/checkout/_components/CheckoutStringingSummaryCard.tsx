@@ -1,0 +1,67 @@
+"use client";
+
+import { CheckCircle2, ClipboardList } from "lucide-react";
+
+import type useCheckoutStringingServiceAdapter from "@/app/features/stringing-applications/hooks/useCheckoutStringingServiceAdapter";
+import { Badge } from "@/components/ui/badge";
+
+type CheckoutStringingServiceAdapter = ReturnType<
+  typeof useCheckoutStringingServiceAdapter
+>;
+
+type Props = {
+  adapter: CheckoutStringingServiceAdapter;
+};
+
+export default function CheckoutStringingSummaryCard({ adapter }: Props) {
+  const { summary, completion } = adapter;
+
+  return (
+    <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-3">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-sm font-semibold text-foreground flex items-center gap-2">
+            <ClipboardList className="h-4 w-4 text-primary" />
+            교체 서비스 요약
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">주문과 함께 접수되는 옵션입니다.</p>
+        </div>
+        <Badge variant={completion.isReadyToSubmit ? "success" : "secondary"}>
+          {completion.statusLabel}
+        </Badge>
+      </div>
+
+      <div className="grid grid-cols-1 bp-sm:grid-cols-2 gap-2 text-sm">
+        <p><span className="text-muted-foreground">접수 방식:</span> <span className="font-medium">{summary.collectionLabel}</span></p>
+        <p><span className="text-muted-foreground">작업 수량:</span> <span className="font-medium">{summary.lineCount}라인</span></p>
+        <p><span className="text-muted-foreground">선택 스트링:</span> <span className="font-medium">{summary.stringNames.join(", ") || "미선택"}</span></p>
+        <p><span className="text-muted-foreground">텐션:</span> <span className="font-medium">{summary.tensionSummary}</span></p>
+        {summary.reservationLabel && (
+          <p><span className="text-muted-foreground">방문 예약:</span> <span className="font-medium">{summary.reservationLabel}</span></p>
+        )}
+        <p><span className="text-muted-foreground">교체비:</span> <span className="font-medium">{summary.priceLabel}</span></p>
+        <p><span className="text-muted-foreground">추가 요청:</span> <span className="font-medium">{summary.requestPreview}</span></p>
+      </div>
+
+      <div className="flex flex-wrap gap-2 text-xs">
+        <Badge variant={completion.basicConfigured ? "success" : "secondary"}>기본 설정 {completion.basicConfigured ? "완료" : "미완료"}</Badge>
+        <Badge variant={completion.lineConfiguredCount === completion.totalLineCount && completion.totalLineCount > 0 ? "success" : "secondary"}>
+          라켓별 설정 {completion.lineConfiguredCount}/{completion.totalLineCount}
+        </Badge>
+        {completion.needsVisitReservation && (
+          <Badge variant={completion.hasReservation ? "success" : "warning"}>방문 예약 {completion.hasReservation ? "완료" : "필요"}</Badge>
+        )}
+        {!completion.needsVisitReservation && (
+          <Badge variant="secondary">방문 예약 없음</Badge>
+        )}
+      </div>
+
+      {completion.isReadyToSubmit && (
+        <p className="text-xs text-foreground flex items-center gap-1.5">
+          <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
+          현재 설정으로 주문과 함께 교체 서비스가 접수됩니다.
+        </p>
+      )}
+    </div>
+  );
+}

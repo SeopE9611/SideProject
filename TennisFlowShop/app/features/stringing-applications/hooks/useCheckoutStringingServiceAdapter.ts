@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+import { collectionMethodLabel } from "@/app/features/stringing-applications/lib/fulfillment-labels";
 import useStringingApplySharedState from "@/app/features/stringing-applications/hooks/useStringingApplySharedState";
 import {
   resolvePackageUsage,
@@ -339,6 +340,97 @@ export default function useCheckoutStringingServiceAdapter({
       (it) => it.id === shared.formData.stringTypes?.[0],
     ) ?? null;
 
+  const summary = useMemo(() => {
+    const collectionLabel = collectionMethodLabel(shared.formData.collectionMethod);
+    const lineCount = shared.linesForSubmit.length;
+    const stringNames = Array.from(
+      new Set(
+        shared.linesForSubmit
+          .map((line) => String(line.stringName ?? "").trim())
+          .filter(Boolean),
+      ),
+    );
+    const tensionSet = Array.from(
+      new Set(
+        shared.linesForSubmit
+          .map((line) => {
+            const main = String(line.tensionMain ?? "").trim();
+            const cross = String(line.tensionCross ?? "").trim();
+            if (!main && !cross) return "";
+            return cross && cross !== main ? `${main}/${cross}` : main || cross;
+          })
+          .filter(Boolean),
+      ),
+    );
+
+    const reservationLabel =
+      shared.formData.collectionMethod === "visit" &&
+      shared.formData.preferredDate &&
+      shared.formData.preferredTime
+        ? `${shared.formData.preferredDate} ${shared.formData.preferredTime}`
+        : null;
+
+    const requestRaw = String(shared.formData.requirements ?? "").trim();
+    const requestPreview = requestRaw
+      ? requestRaw.length > 24
+        ? `${requestRaw.slice(0, 24)}…`
+        : requestRaw
+      : "없음";
+
+    const priceLabel = usingPackage
+      ? "패키지 적용(교체비 0원)"
+      : `${price.toLocaleString("ko-KR")}원`;
+
+    return {
+      collectionLabel,
+      lineCount,
+      stringNames,
+      tensionSummary: tensionSet.length ? tensionSet.join(", ") : "미입력",
+      reservationLabel,
+      requestPreview,
+      priceLabel,
+    };
+  }, [shared.formData, shared.linesForSubmit, usingPackage, price]);
+
+  const completion = useMemo(() => {
+    const totalLineCount = shared.linesForSubmit.length;
+    const lineConfiguredCount = shared.linesForSubmit.filter((line) => {
+      const hasRacketType = String(line.racketType ?? "").trim().length > 0;
+      const hasTension =
+        String(line.tensionMain ?? "").trim().length > 0 ||
+        String(line.tensionCross ?? "").trim().length > 0;
+      return hasRacketType && hasTension;
+    }).length;
+
+    const basicConfigured =
+      shared.formData.stringTypes.length > 0 && totalLineCount > 0;
+    const needsVisitReservation = shared.formData.collectionMethod === "visit";
+    const hasReservation =
+      !!shared.formData.preferredDate && !!shared.formData.preferredTime;
+    const lineDone = totalLineCount > 0 && lineConfiguredCount === totalLineCount;
+
+    const isReadyToSubmit =
+      basicConfigured &&
+      lineDone &&
+      (!needsVisitReservation || hasReservation);
+
+    const statusLabel = isReadyToSubmit
+      ? "설정 완료"
+      : basicConfigured
+        ? "상세 설정 필요"
+        : "기본 설정 필요";
+
+    return {
+      basicConfigured,
+      lineConfiguredCount,
+      totalLineCount,
+      needsVisitReservation,
+      hasReservation,
+      statusLabel,
+      isReadyToSubmit,
+    };
+  }, [shared.formData, shared.linesForSubmit]);
+
   return {
     previewOrder,
     previewOrderId: PREVIEW_ORDER_ID,
@@ -370,6 +462,9 @@ export default function useCheckoutStringingServiceAdapter({
     slotsError,
     visitSlotCountUi,
     visitDurationMinutesUi,
+
+    summary,
+    completion,
 
     ...shared,
   };

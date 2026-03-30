@@ -1,121 +1,38 @@
 "use client";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardTitle,
-} from "@/components/ui/card";
-import { ClipboardList, MessageSquare } from "lucide-react";
+import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { Wrench } from "lucide-react";
 
-import FinalRequestSection from "@/app/features/stringing-applications/components/apply-shared/FinalRequestSection";
-import MountingInfoSection from "@/app/features/stringing-applications/components/apply-shared/MountingInfoSection";
+import CheckoutStringingCompactEditor from "@/app/checkout/_components/CheckoutStringingCompactEditor";
+import CheckoutStringingSummaryCard from "@/app/checkout/_components/CheckoutStringingSummaryCard";
 import type useCheckoutStringingServiceAdapter from "@/app/features/stringing-applications/hooks/useCheckoutStringingServiceAdapter";
 
-type SectionType = "mounting" | "final";
 type CheckoutStringingServiceAdapter = ReturnType<
   typeof useCheckoutStringingServiceAdapter
 >;
 
 type Props = {
-  section: SectionType;
   withStringService: boolean;
   adapter: CheckoutStringingServiceAdapter;
 };
 
 export default function CheckoutStringingServiceSections({
-  section,
   withStringService,
   adapter,
 }: Props) {
   if (!withStringService) return null;
 
-  if (section === "mounting") {
-    return (
-      <Card className="bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card/80 border border-border bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
-        <div className="bg-card p-4 bp-sm:p-6">
-          <CardTitle className="flex items-center gap-3 text-base bp-sm:text-lg">
-            <ClipboardList className="h-5 w-5 text-foreground" />
-            장착 정보
-          </CardTitle>
-          <CardDescription className="mt-2">
-            교체 서비스 라켓/스트링 정보를 확인하고 입력해주세요.
-          </CardDescription>
-        </div>
-        <CardContent className="p-3 bp-sm:p-4 bp-lg:p-6">
-          <MountingInfoSection
-            formData={adapter.formData}
-            setFormData={adapter.setFormData}
-            handleInputChange={adapter.handleInputChange}
-            fromPDP={false}
-            orderId={adapter.previewOrderId}
-            rentalId={null}
-            rentalRacketId={null}
-            rentalDays={null}
-            pdpProductId={null}
-            isLoadingPdpProduct={false}
-            pdpProduct={null}
-            orderRemainingSlots={adapter.orderRemainingSlots}
-            orderStringService={adapter.orderStringService}
-            isOrderSlotBlocked={false}
-            order={adapter.previewOrder}
-            lineCount={adapter.lineCount}
-            price={adapter.price}
-            priceView={adapter.priceView}
-            handleStringTypesChange={adapter.handleStringTypesChange}
-            handleCustomInputChange={adapter.handleCustomInputChange}
-            handleUseQtyChange={adapter.handleUseQtyChange}
-            lockedStringStock={null}
-            lockedRacketQuantity={null}
-            maxNonOrderQty={adapter.maxNonOrderQty}
-            selectedOrderItem={adapter.selectedOrderItem}
-            isCombinedPdpMode={false}
-            pdpStringPrice={0}
-            racketPrice={null}
-            won={(n) => `${n.toLocaleString("ko-KR")}원`}
-            packagePreview={adapter.packagePreview}
-            canApplyPackage={adapter.canApplyPackage}
-            packageInsufficient={adapter.packageInsufficient}
-            packageRemaining={adapter.packageRemaining}
-            requiredPassCount={adapter.requiredPassCount}
-            linesForSubmit={adapter.linesForSubmit}
-            handleLineFieldChange={adapter.handleLineFieldChange}
-            timeSlots={adapter.timeSlots}
-            disabledTimes={adapter.disabledTimes}
-            slotsLoading={adapter.slotsLoading}
-            hasCacheForDate={adapter.hasCacheForDate}
-            slotsError={adapter.slotsError}
-            visitSlotCountUi={adapter.visitSlotCountUi}
-            visitDurationMinutesUi={adapter.visitDurationMinutesUi}
-            visitTimeRange={adapter.visitTimeRange}
-          />
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
-    <Card className="bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card/80 border border-border bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
-      <div className="bg-card p-4 bp-sm:p-6">
-        <CardTitle className="flex items-center gap-3 text-base bp-sm:text-lg">
-          <MessageSquare className="h-5 w-5 text-foreground" />
-          추가 요청
+    <Card className="bg-card border border-border shadow-sm overflow-hidden">
+      <div className="px-4 py-4 border-b border-border bg-muted/40">
+        <CardTitle className="flex items-center gap-2 text-base">
+          <Wrench className="h-4 w-4 text-primary" />
+          교체 서비스 옵션
         </CardTitle>
-        <CardDescription className="mt-2">
-          교체 서비스 관련 요청사항을 남겨주세요.
-        </CardDescription>
       </div>
-      <CardContent className="p-3 bp-sm:p-4 bp-lg:p-6">
-        <FinalRequestSection
-          formData={adapter.formData}
-          setFormData={adapter.setFormData}
-          handleInputChange={adapter.handleInputChange}
-          orderId={adapter.previewOrderId}
-          isMember={adapter.isMember}
-          usingPackage={adapter.usingPackage}
-          packageInsufficient={adapter.packageInsufficient}
-          context="checkout"
-        />
+      <CardContent className="p-4 space-y-3">
+        <CheckoutStringingSummaryCard adapter={adapter} />
+        <CheckoutStringingCompactEditor adapter={adapter} />
       </CardContent>
     </Card>
   );
