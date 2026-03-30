@@ -3,15 +3,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Loading() {
   return (
-    <div className="container py-10">
-      <div className="mx-auto max-w-6xl space-y-6">
+    <div className="container py-6 lg:py-8">
+      <div className="mx-auto w-full max-w-[1500px] space-y-6 lg:space-y-8">
         <Card className="border-border/60">
           <CardContent className="space-y-4 p-6">
             <div className="space-y-2">
               <Skeleton className="h-8 w-64" />
               <Skeleton className="h-4 w-80" />
             </div>
-            <div className="grid gap-3 md:grid-cols-4">
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5 lg:gap-4">
               {Array.from({ length: 4 }).map((_, index) => (
                 <Skeleton key={index} className="h-20 w-full rounded-lg" />
               ))}

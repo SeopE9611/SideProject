@@ -324,7 +324,7 @@ export default function AdminRentalDetailClient() {
   if (error) {
     return (
       <div className="min-h-screen bg-muted/30 dark:bg-muted/30">
-        <div className="container py-10">
+        <div className="container py-6 lg:py-8">
           <AsyncState
             kind="error"
             tone="admin"
@@ -341,10 +341,10 @@ export default function AdminRentalDetailClient() {
   if (isLoading || !data) {
     return (
       <div className="min-h-screen bg-muted/30 dark:bg-muted/30">
-        <div className="container py-10">
-          <div className="mx-auto max-w-4xl space-y-8">
-            <div className="rounded-2xl border border-border/30 bg-muted/30 p-8 shadow-lg">
-              <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="container py-6 lg:py-8">
+          <div className="mx-auto w-full max-w-[1500px] space-y-6 lg:space-y-8">
+            <div className="rounded-2xl border border-border bg-muted/30 p-5 shadow-lg lg:p-6">
+              <div className="mb-5 flex flex-col gap-3 lg:mb-6 lg:gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-4">
                   <Skeleton className="h-14 w-14 rounded-full" />
                   <div className="space-y-2">
@@ -357,9 +357,9 @@ export default function AdminRentalDetailClient() {
                   <Skeleton className="h-8 w-36" />
                 </div>
               </div>
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4 lg:gap-4">
                 {Array.from({ length: 4 }).map((_, index) => (
-                  <div key={index} className="rounded-xl bg-card/60 p-4">
+                  <div key={index} className="rounded-xl border border-border/60 bg-card/70 p-4 backdrop-blur-sm">
                     <Skeleton className="mb-3 h-4 w-20" />
                     <Skeleton className="h-6 w-24" />
                   </div>
@@ -367,7 +367,7 @@ export default function AdminRentalDetailClient() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div className="grid gap-4 xl:grid-cols-2">
               {Array.from({ length: 2 }).map((_, index) => (
                 <Card key={index} className="border-border/60">
                   <CardHeader className="space-y-2">
@@ -478,10 +478,10 @@ export default function AdminRentalDetailClient() {
 
   return (
     <div className="min-h-screen bg-muted/30 dark:bg-muted/30">
-      <div className="container py-10">
-        <div className="mx-auto max-w-4xl space-y-8">
-          <div className="bg-muted/30 rounded-2xl p-8 border border-border/30 shadow-lg mb-8">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
+      <div className="container py-6 lg:py-8">
+        <div className="mx-auto w-full max-w-[1500px] space-y-6 lg:space-y-8">
+          <div className="mb-6 rounded-2xl border border-border bg-muted/30 p-5 shadow-lg lg:mb-8 lg:p-6">
+            <div className="mb-5 flex flex-col gap-3 lg:mb-6 lg:gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center space-x-4">
                 <div className="bg-card rounded-full p-3 shadow-md">
                   <Settings className="h-8 w-8 text-primary" />
@@ -495,7 +495,7 @@ export default function AdminRentalDetailClient() {
                   </p>
                 </div>
               </div>
-              <div className="sm:ml-auto flex flex-wrap items-center justify-end gap-2">
+              <div className="sm:ml-auto flex flex-wrap items-center justify-end gap-2.5">
                 <Button
                   variant="outline"
                   size="sm"
@@ -526,8 +526,8 @@ export default function AdminRentalDetailClient() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <div className="bg-card/60 dark:bg-card/60 rounded-xl p-4 backdrop-blur-sm">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4 lg:gap-4">
+              <div className="rounded-xl border border-border/60 bg-card/70 p-4 backdrop-blur-sm">
                 <div className="flex items-center space-x-2 mb-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium text-foreground">
@@ -539,7 +539,7 @@ export default function AdminRentalDetailClient() {
                 </p>
               </div>
 
-              <div className="bg-card/60 dark:bg-card/60 rounded-xl p-4 backdrop-blur-sm">
+              <div className="rounded-xl border border-border/60 bg-card/70 p-4 backdrop-blur-sm">
                 <div className="flex items-center space-x-2 mb-2">
                   <CreditCard className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium text-foreground">
@@ -551,7 +551,7 @@ export default function AdminRentalDetailClient() {
                 </p>
               </div>
 
-              <div className="bg-card/60 dark:bg-card/60 rounded-xl p-4 backdrop-blur-sm">
+              <div className="rounded-xl border border-border/60 bg-card/70 p-4 backdrop-blur-sm">
                 <div className="flex items-center space-x-2 mb-2">
                   <Package className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium text-foreground">
@@ -573,7 +573,7 @@ export default function AdminRentalDetailClient() {
                 })()}
               </div>
 
-              <div className="bg-card/60 dark:bg-card/60 rounded-xl p-4 backdrop-blur-sm">
+              <div className="rounded-xl border border-border/60 bg-card/70 p-4 backdrop-blur-sm">
                 <div className="flex items-center space-x-2 mb-2">
                   <Truck className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium text-foreground">
@@ -882,20 +882,20 @@ export default function AdminRentalDetailClient() {
               eventMeta={pendingDialogConfig.eventMeta}
             />
           )}
-          <Card className="mt-8 border-0 shadow-xl ring-1 ring-ring bg-muted/30 overflow-hidden">
+          <Card className="border-0 shadow-xl ring-1 ring-ring bg-muted/30 overflow-hidden">
             <CardHeader className="bg-muted/30 border-b pb-3">
               <CardTitle>고객 정보</CardTitle>
             </CardHeader>
-            <CardContent className="p-6 text-sm space-y-3">
-              <div>
+            <CardContent className="grid gap-3 p-6 text-sm md:grid-cols-2 xl:grid-cols-3">
+              <div className="rounded-lg border border-border/60 bg-card/70 p-3">
                 <span className="text-muted-foreground">이름</span>
                 <div className="font-semibold">{data.user?.name || "-"}</div>
               </div>
-              <div>
+              <div className="rounded-lg border border-border/60 bg-card/70 p-3">
                 <span className="text-muted-foreground">이메일</span>
                 <div className="font-semibold">{data.user?.email || "-"}</div>
               </div>
-              <div>
+              <div className="rounded-lg border border-border/60 bg-card/70 p-3">
                 <span className="text-muted-foreground">연락처</span>
                 <div className="font-semibold">{data.user?.phone || "-"}</div>
               </div>

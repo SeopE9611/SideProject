@@ -4,9 +4,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function Loading() {
   return (
     <div className="min-h-screen bg-muted/30 dark:bg-muted/30">
-      <div className="container py-10">
-        <div className="mx-auto max-w-4xl space-y-8">
-          <Card className="border-border/30 bg-muted/30 p-8 shadow-lg">
+      <div className="container py-6 lg:py-8">
+        <div className="mx-auto w-full max-w-[1500px] space-y-6 lg:space-y-8">
+          <Card className="border-border/30 bg-muted/30 p-5 shadow-lg lg:p-6">
             <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-4">
                 <Skeleton className="h-14 w-14 rounded-full" />
@@ -20,7 +20,7 @@ export default function Loading() {
                 <Skeleton className="h-8 w-36" />
               </div>
             </div>
-            <div className="grid gap-4 md:grid-cols-4">
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4 lg:gap-4">
               {Array.from({ length: 4 }).map((_, index) => (
                 <div key={index} className="rounded-xl bg-card/60 p-4">
                   <Skeleton className="mb-3 h-4 w-20" />
@@ -30,7 +30,7 @@ export default function Loading() {
             </div>
           </Card>
 
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 xl:grid-cols-2">
             {Array.from({ length: 2 }).map((_, index) => (
               <Card key={index} className="border-border/60">
                 <CardHeader className="space-y-2">

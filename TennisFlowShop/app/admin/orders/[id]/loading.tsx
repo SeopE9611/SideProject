@@ -3,8 +3,8 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 export default function OrderDetailLoading() {
   return (
-    <div className="container py-10">
-      <div className="mx-auto max-w-4xl space-y-6">
+    <div className="container py-6 lg:py-8">
+      <div className="mx-auto w-full max-w-[1500px] space-y-6 lg:space-y-8">
         {/* 상단 헤더 */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>

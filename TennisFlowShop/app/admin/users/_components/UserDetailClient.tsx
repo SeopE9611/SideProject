@@ -504,7 +504,7 @@ export default function UserDetailClient({ id }: { id: string }) {
       <TooltipProvider>
         {/* 상단 스티키 액션바 */}
         <div className="sticky top-14 md:top-[64px] z-50 -mx-2 px-2 pt-2 pb-3 border-b border-border bg-card/80 dark:bg-card backdrop-blur supports-[backdrop-filter]:bg-card supports-[backdrop-filter]:dark:bg-card">
-          <div className="mx-auto max-w-5xl flex items-center justify-between gap-2">
+          <div className="mx-auto w-full max-w-[1500px] flex items-center justify-between gap-2">
             {/* 좌측: 뒤로 */}
             <div className="flex items-center gap-2">
               <Button
