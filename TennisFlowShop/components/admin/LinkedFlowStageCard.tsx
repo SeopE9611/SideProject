@@ -20,6 +20,7 @@ import {
 import { adminMutator } from "@/lib/admin/adminFetcher";
 import {
   buildLinkedFlowStagePreview,
+  getLinkedFlowStageLabelForDisplay,
   inferLinkedFlowStage,
   LINKED_FLOW_STAGE_LIST,
   LinkedFlowStage,
@@ -54,6 +55,7 @@ interface Props {
   className?: string;
   disabled?: boolean;
   disabledReason?: string | null;
+  shippingInfo?: any;
   onSaved?: (result: LinkedFlowStagePatchResponse) => Promise<void> | void;
 }
 
@@ -64,6 +66,7 @@ export default function LinkedFlowStageCard({
   className,
   disabled = false,
   disabledReason = null,
+  shippingInfo,
   onSaved,
 }: Props) {
   const currentStage = useMemo(
@@ -88,8 +91,9 @@ export default function LinkedFlowStageCard({
       orderNextStatus: mapStageToOrderStatus(selectedStage),
       applicationPreviousStatus: applicationStatus,
       applicationNextStatus: mapStageToApplicationStatus(selectedStage),
+      shippingLike: shippingInfo,
     });
-  }, [applicationStatus, orderStatus, selectedStage]);
+  }, [applicationStatus, orderStatus, selectedStage, shippingInfo]);
 
   const isSameStage = currentStage === selectedStage;
 
@@ -122,13 +126,16 @@ export default function LinkedFlowStageCard({
         if (result.noop) {
           showSuccessToast(result.message || "변경 사항이 없습니다.");
         } else {
-          showSuccessToast(result.message || "묶음 진행 단계를 저장했습니다.");
+          showSuccessToast(
+            result.message ||
+              `연결 진행 단계를 '${getLinkedFlowStageLabelForDisplay(selectedStage, shippingInfo)}'(으)로 저장했습니다.`,
+          );
         }
 
         await onSaved?.(result);
       } catch (error: any) {
         const message = String(error?.message ?? "").trim();
-        showErrorToast(message || "대표 단계 변경 중 오류가 발생했습니다.");
+          showErrorToast(message || "연결 진행 단계 변경 중 오류가 발생했습니다.");
       }
     });
   };
@@ -136,15 +143,19 @@ export default function LinkedFlowStageCard({
   return (
     <Card className={className}>
       <CardHeader className="pb-3">
-        <CardTitle className="text-base">묶음 진행 단계</CardTitle>
+        <CardTitle className="text-base">연결 진행 단계</CardTitle>
         <CardDescription>
-          연결된 주문/신청서의 일반 진행 단계를 한 번에 변경합니다.
+          연결된 주문/신청서의 일반 흐름을 함께 변경하는 단축 조작입니다. 개별 상태 조정은 아래 주문 상태/신청 상태 영역에서 따로 처리하세요.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="flex flex-wrap items-center gap-2 text-sm">
           <span className="text-muted-foreground">현재 단계</span>
-          <Badge variant="outline">{currentStage ?? "판별 불가"}</Badge>
+          <Badge variant="outline">
+            {currentStage
+              ? getLinkedFlowStageLabelForDisplay(currentStage, shippingInfo)
+              : "판별 불가"}
+          </Badge>
         </div>
 
         <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
@@ -163,7 +174,7 @@ export default function LinkedFlowStageCard({
               <SelectContent>
                 {LINKED_FLOW_STAGE_LIST.map((stage) => (
                   <SelectItem key={stage} value={stage}>
-                    {stage}
+                    {getLinkedFlowStageLabelForDisplay(stage, shippingInfo)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -187,8 +198,9 @@ export default function LinkedFlowStageCard({
           </p>
         )}
         <p className="text-xs text-muted-foreground break-keep">
-          일반 진행 단계만 이 카드에서 변경 가능합니다. 취소/환불/구매확정은
-          기존 개별 액션 또는 기존 플로우를 사용해 주세요.
+          이 카드는 연결된 주문+신청의 일반 진행 단계만 함께 조정합니다.
+          취소/환불/구매확정 및 개별 상태 관리는 각 상세의 개별 상태 영역을
+          사용해 주세요.
         </p>
       </CardContent>
     </Card>

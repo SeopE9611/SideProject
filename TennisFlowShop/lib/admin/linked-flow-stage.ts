@@ -1,3 +1,5 @@
+import { isVisitPickupOrder } from "@/lib/order-shipping";
+
 const LINKED_FLOW_STAGES = [
   "결제대기",
   "신청접수",
@@ -150,12 +152,26 @@ export function inferLinkedFlowStage(
   return null;
 }
 
+export function getLinkedFlowStageLabelForDisplay(
+  stage: LinkedFlowStage,
+  shippingLike?: any,
+): string {
+  if (stage === "인도준비") {
+    return isVisitPickupOrder(shippingLike) ? "수령 준비중" : "배송중";
+  }
+  if (stage === "인도완료") {
+    return isVisitPickupOrder(shippingLike) ? "방문 수령 완료" : "배송완료";
+  }
+  return stage;
+}
+
 export function buildLinkedFlowStagePreview(input: {
   stage: LinkedFlowStage;
   orderPreviousStatus: string;
   orderNextStatus: string;
   applicationPreviousStatus: string;
   applicationNextStatus: string;
+  shippingLike?: any;
 }): string {
   const {
     stage,
@@ -163,10 +179,11 @@ export function buildLinkedFlowStagePreview(input: {
     orderNextStatus,
     applicationPreviousStatus,
     applicationNextStatus,
+    shippingLike,
   } = input;
 
   return [
-    `[대표단계: ${stage}]`,
+    `[대표단계: ${getLinkedFlowStageLabelForDisplay(stage, shippingLike)}]`,
     `주문: '${orderPreviousStatus}' → '${orderNextStatus}'`,
     `신청서: '${applicationPreviousStatus}' → '${applicationNextStatus}'`,
   ].join(" / ");

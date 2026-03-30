@@ -752,6 +752,7 @@ export default function OrderDetailClient({ orderId }: Props) {
               orderId={orderId}
               orderStatus={localStatus}
               applicationStatus={latestLinkedApplication.status}
+              shippingInfo={orderDetail.shippingInfo}
               disabled={Boolean(linkedStageBlockedReason)}
               disabledReason={linkedStageBlockedReason}
               onSaved={async () => {
@@ -787,6 +788,9 @@ export default function OrderDetailClient({ orderId }: Props) {
                 {isVisitPickup
                   ? `${formatDate(orderDetail.date)}에 접수된 주문입니다. · 주문 취소(수령 전)와 환불(수령 후)은 별도 정책으로 운영합니다.`
                   : `${formatDate(orderDetail.date)}에 접수된 주문입니다. · 주문 취소(배송 전)와 환불(배송 후)은 별도 정책으로 운영합니다.`}
+                <br />
+                이 영역은 현재 주문의 개별 상태만 조정합니다. 연결된 주문/신청의
+                공통 흐름 변경은 위 ‘연결 진행 단계’에서 처리합니다.
               </CardDescription>
             </CardHeader>
             <CardContent className="p-4 lg:p-5">
