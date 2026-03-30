@@ -183,7 +183,7 @@ export function buildLinkedFlowStagePreview(input: {
   } = input;
 
   return [
-    `[대표단계: ${getLinkedFlowStageLabelForDisplay(stage, shippingLike)}]`,
+    `[연결 진행 단계: ${getLinkedFlowStageLabelForDisplay(stage, shippingLike)}]`,
     `주문: '${orderPreviousStatus}' → '${orderNextStatus}'`,
     `신청서: '${applicationPreviousStatus}' → '${applicationNextStatus}'`,
   ].join(" / ");

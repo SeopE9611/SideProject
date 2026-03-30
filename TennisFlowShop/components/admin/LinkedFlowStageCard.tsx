@@ -120,7 +120,7 @@ export default function LinkedFlowStageCard({
         );
 
         if (!result?.success) {
-          throw new Error(result?.message || "대표 단계 변경에 실패했습니다.");
+          throw new Error(result?.message || "연결 진행 단계 변경에 실패했습니다.");
         }
 
         if (result.noop) {
@@ -169,7 +169,7 @@ export default function LinkedFlowStageCard({
               disabled={isPending || disabled}
             >
               <SelectTrigger>
-                <SelectValue placeholder="대표 단계를 선택하세요" />
+                <SelectValue placeholder="연결 진행 단계를 선택하세요" />
               </SelectTrigger>
               <SelectContent>
                 {LINKED_FLOW_STAGE_LIST.map((stage) => (
