@@ -5,47 +5,19 @@ import SearchPreview from "@/components/SearchPreview";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { UserNav } from "@/components/nav/UserNav";
 import { ThemeToggle } from "@/components/theme-toggle";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { getSocialProviderBadgeSpec } from "@/lib/badge-style";
 import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import { useUnreadMessageCount } from "@/lib/hooks/useUnreadMessageCount";
-import {
-  ChevronDown,
-  ChevronRight,
-  Gift,
-  Grid2X2,
-  Loader2,
-  Mail,
-  Menu,
-  MessageSquare,
-  MessageSquareText,
-  ShoppingCart,
-  UserIcon,
-} from "lucide-react";
+import { ChevronDown, ChevronRight, Gift, Grid2X2, Loader2, Mail, Menu, MessageSquare, MessageSquareText, ShoppingCart, UserIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { MdSportsTennis } from "react-icons/md";
 
 /** 재질 카테고리(스트링 타입) 노출 온/오프 */
@@ -57,22 +29,14 @@ const SHOW_MATERIAL_MENU = false;
  * - 결제/적립 직후처럼 강제 갱신이 필요할 때만 커스텀 이벤트로 무효화할 수 있게 준비합니다.
  */
 const HEADER_POINTS_CACHE_TTL_MS = 30_000;
-let headerPointsCache:
-  | {
-      fetchedAt: number;
-      userId: string;
-      balance: number;
-    }
-  | null = null;
+let headerPointsCache: {
+  fetchedAt: number;
+  userId: string;
+  balance: number;
+} | null = null;
 
 /** 모바일 브랜드 그리드 */
-function MobileBrandGrid({
-  brands,
-  onPick,
-}: {
-  brands: { name: string; href: string }[];
-  onPick: (href: string) => void;
-}) {
+function MobileBrandGrid({ brands, onPick }: { brands: { name: string; href: string }[]; onPick: (href: string) => void }) {
   const [expanded, setExpanded] = useState(false);
   const VISIBLE = 6;
   const list = expanded ? brands : brands.slice(0, VISIBLE);
@@ -92,12 +56,7 @@ function MobileBrandGrid({
         ))}
       </div>
       {brands.length > VISIBLE && (
-        <Button
-          variant="ghost"
-          size="sm"
-          className="w-full justify-center rounded-lg text-muted-foreground hover:text-foreground transition-colors"
-          onClick={() => setExpanded((v) => !v)}
-        >
+        <Button variant="ghost" size="sm" className="w-full justify-center rounded-lg text-muted-foreground hover:text-foreground transition-colors" onClick={() => setExpanded((v) => !v)}>
           {expanded ? "접기" : "더보기"}
         </Button>
       )}
@@ -111,9 +70,7 @@ const Header = () => {
   const pathname = usePathname();
 
   // 장바구니 아이템 총 수량 (Zustand selector로 필요한 값만 구독)
-  const cartCount = useCartStore((s) =>
-    s.items.reduce((sum, it) => sum + (it.quantity || 0), 0),
-  );
+  const cartCount = useCartStore((s) => s.items.reduce((sum, it) => sum + (it.quantity || 0), 0));
   const cartBadge = cartCount > 99 ? "99+" : String(cartCount);
 
   const [open, setOpen] = useState(false);
@@ -143,9 +100,7 @@ const Header = () => {
     const style = window.getComputedStyle(wrap);
     const gap = Number.parseFloat(style.columnGap || style.gap || "0") || 0;
 
-    const itemEls = Array.from(
-      root.querySelectorAll<HTMLElement>("[data-measure-item]"),
-    );
+    const itemEls = Array.from(root.querySelectorAll<HTMLElement>("[data-measure-item]"));
     const itemWidths = itemEls.map((el) => el.offsetWidth);
 
     const dotsEl = root.querySelector<HTMLElement>("[data-measure-dots]");
@@ -162,10 +117,7 @@ const Header = () => {
     const navStyle = window.getComputedStyle(navEl);
     const paddingLeft = Number.parseFloat(navStyle.paddingLeft || "0") || 0;
     const paddingRight = Number.parseFloat(navStyle.paddingRight || "0") || 0;
-    const available = Math.max(
-      0,
-      navEl.clientWidth - paddingLeft - paddingRight,
-    );
+    const available = Math.max(0, navEl.clientWidth - paddingLeft - paddingRight);
 
     const prefixWidth = (count: number) => {
       if (count <= 0) return 0;
@@ -182,8 +134,7 @@ const Header = () => {
     for (let visible = n; visible >= 0; visible--) {
       const overflow = n - visible;
       const base = prefixWidth(visible);
-      const total =
-        overflow === 0 ? base : base + (visible > 0 ? gap : 0) + dotsW;
+      const total = overflow === 0 ? base : base + (visible > 0 ? gap : 0) + dotsW;
 
       if (total <= available) {
         nextOverflow = overflow;
@@ -248,11 +199,8 @@ const Header = () => {
 
   const { user, loading } = useCurrentUser();
   const isAdmin = user?.role === "admin";
-  const { count: unreadCount, status: unreadStatus } = useUnreadMessageCount(
-    !loading && !!user,
-  );
-  const resolvedUnreadCount =
-    unreadStatus === "ready" ? (unreadCount ?? 0) : null;
+  const { count: unreadCount, status: unreadStatus } = useUnreadMessageCount(!loading && !!user);
+  const resolvedUnreadCount = unreadStatus === "ready" ? (unreadCount ?? 0) : null;
 
   // 소셜 로그인 제공자 배지
   const socialProviders = user?.socialProviders ?? [];
@@ -262,9 +210,7 @@ const Header = () => {
   // 헤더 포인트 표시(로그인 유저만)
   const [pointsBalance, setPointsBalance] = useState<number | null>(null);
   // 로딩/실패/실제 값(0 포함)을 분리해 잘못된 0 선노출을 막는다.
-  const [pointsStatus, setPointsStatus] = useState<
-    "loading" | "ready" | "error"
-  >("loading");
+  const [pointsStatus, setPointsStatus] = useState<"loading" | "ready" | "error">("loading");
 
   useEffect(() => {
     if (!user) {
@@ -286,10 +232,7 @@ const Header = () => {
     // - 직접 headerPointsCache.balance에 접근하면
     //   정적 점검에서 "possibly null" 경고가 다시 발생할 수 있습니다.
     const cachedPoints = headerPointsCache;
-    const canUseCache =
-      !!cachedPoints &&
-      cachedPoints.userId === currentUserId &&
-      Date.now() - cachedPoints.fetchedAt < HEADER_POINTS_CACHE_TTL_MS;
+    const canUseCache = !!cachedPoints && cachedPoints.userId === currentUserId && Date.now() - cachedPoints.fetchedAt < HEADER_POINTS_CACHE_TTL_MS;
 
     if (canUseCache) {
       // UX 목적:
@@ -468,21 +411,14 @@ const Header = () => {
   const isActiveMenu = (item: (typeof menuItems)[number]) => {
     const p = pathname ?? "";
     if (item.isServiceMenu) return p === item.href;
-    if (item.isRacketMenu)
-      return (
-        p === item.href ||
-        (p.startsWith("/rackets/") && !p.startsWith("/rackets/finder"))
-      );
+    if (item.isRacketMenu) return p === item.href || (p.startsWith("/rackets/") && !p.startsWith("/rackets/finder"));
     return p.startsWith(item.href);
   };
 
   return (
     <>
       {/* 스킵 링크 */}
-      <a
-        href="#main"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md focus:shadow-lg"
-      >
+      <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md focus:shadow-lg">
         메인 콘텐츠로 건너뛰기
       </a>
       <Sheet open={open} onOpenChange={setOpen}>
@@ -490,31 +426,17 @@ const Header = () => {
           side="left"
           className="w-[min(88vw,340px)] max-w-[340px] h-[100dvh] max-h-[100dvh] overflow-hidden bg-card p-0 flex flex-col border-r border-border"
           onOpenAutoFocus={(e) => {
-            if (typeof window !== "undefined" && window.innerWidth < 768)
-              e.preventDefault();
+            if (typeof window !== "undefined" && window.innerWidth < 768) e.preventDefault();
           }}
         >
           {/* 상단 로고/검색 */}
           <div className="shrink-0 border-b border-border bg-muted/30 px-4 pt-5 pb-3 bp-sm:px-5 bp-sm:pt-6 bp-sm:pb-4">
-            <Link
-              href="/"
-              className="flex flex-col group"
-              aria-label="테니스 플로우 홈"
-              onClick={() => setOpen(false)}
-            >
-              <div className="font-bold text-lg text-foreground whitespace-nowrap">
-                테니스 플로우
-              </div>
-              <div className="text-xs tracking-wider text-muted-foreground font-medium">
-                TENNIS FLOW SHOP
-              </div>
+            <Link href="/" className="flex flex-col group" aria-label="상호명 미정 홈" onClick={() => setOpen(false)}>
+              <div className="font-bold text-lg text-foreground whitespace-nowrap">상호명 미정</div>
+              <div className="text-xs tracking-wider text-muted-foreground font-medium">Name Pending</div>
             </Link>
             <div className="mt-4">
-              <SearchPreview
-                placeholder="스트링 / 라켓 검색."
-                className="w-full rounded-lg border-border focus-within:border-border focus-within:ring-2 focus-within:ring-ring transition-colors"
-                onSelect={() => setOpen(false)}
-              />
+              <SearchPreview placeholder="스트링 / 라켓 검색." className="w-full rounded-lg border-border focus-within:border-border focus-within:ring-2 focus-within:ring-ring transition-colors" onSelect={() => setOpen(false)} />
             </div>
           </div>
 
@@ -522,10 +444,7 @@ const Header = () => {
             <Accordion type="single">
               {/* 스트링 */}
               <AccordionItem value="strings" className="border-none">
-                <AccordionTrigger
-                  value="strings"
-                  className="py-3 px-3 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 hover:no-underline transition-all group"
-                >
+                <AccordionTrigger value="strings" className="py-3 px-3 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 hover:no-underline transition-all group">
                   <span className="inline-flex items-center gap-2.5 text-base font-bold">
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
                       <Grid2X2 className="h-4 w-4" />
@@ -533,10 +452,7 @@ const Header = () => {
                     <span className="text-foreground">스트링</span>
                   </span>
                 </AccordionTrigger>
-                <AccordionContent
-                  value="strings"
-                  className="pb-2 pt-1 space-y-0.5"
-                >
+                <AccordionContent value="strings" className="pb-2 pt-1 space-y-0.5">
                   <Button
                     variant="ghost"
                     className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-primary/10 dark:hover:bg-primary/20 transition-all relative z-0 hover:shadow-sm hover:ring-1 hover:ring-inset hover:ring-ring/40 hover:z-10 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
@@ -557,29 +473,18 @@ const Header = () => {
                       router.push("/services/apply");
                     }}
                   >
-                    <span className="font-semibold text-primary">
-                      장착 서비스 즉시 예약
-                    </span>
+                    <span className="font-semibold text-primary">장착 서비스 즉시 예약</span>
                     <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
                   </Button>
 
                   {/* 접어두는 하위 그룹(안내/브랜드) */}
                   <div className="mt-2 pl-2">
                     <Accordion type="single" className="space-y-1">
-                      <AccordionItem
-                        value="strings-service"
-                        className="border-none"
-                      >
-                        <AccordionTrigger
-                          value="strings-service"
-                          className="px-3 py-2 text-[12px] font-semibold text-muted-foreground hover:text-foreground rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20"
-                        >
+                      <AccordionItem value="strings-service" className="border-none">
+                        <AccordionTrigger value="strings-service" className="px-3 py-2 text-[12px] font-semibold text-muted-foreground hover:text-foreground rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20">
                           장착 서비스 안내
                         </AccordionTrigger>
-                        <AccordionContent
-                          value="strings-service"
-                          className="pb-0"
-                        >
+                        <AccordionContent value="strings-service" className="pb-0">
                           <div className="space-y-0.5">
                             {NAV_LINKS.services.map((it) => (
                               <Button
@@ -599,20 +504,11 @@ const Header = () => {
                         </AccordionContent>
                       </AccordionItem>
 
-                      <AccordionItem
-                        value="strings-brand"
-                        className="border-none"
-                      >
-                        <AccordionTrigger
-                          value="strings-brand"
-                          className="px-3 py-2 text-[12px] font-semibold text-muted-foreground hover:text-foreground rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20"
-                        >
+                      <AccordionItem value="strings-brand" className="border-none">
+                        <AccordionTrigger value="strings-brand" className="px-3 py-2 text-[12px] font-semibold text-muted-foreground hover:text-foreground rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20">
                           브랜드
                         </AccordionTrigger>
-                        <AccordionContent
-                          value="strings-brand"
-                          className="pb-0"
-                        >
+                        <AccordionContent value="strings-brand" className="pb-0">
                           <div className="px-1 pt-2">
                             <MobileBrandGrid
                               brands={NAV_LINKS.strings.brands}
@@ -631,10 +527,7 @@ const Header = () => {
 
               {/* 게시판 */}
               <AccordionItem value="boards" className="border-none">
-                <AccordionTrigger
-                  value="boards"
-                  className="py-3 px-3 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 hover:no-underline transition-all group"
-                >
+                <AccordionTrigger value="boards" className="py-3 px-3 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 hover:no-underline transition-all group">
                   <span className="inline-flex items-center gap-2.5 text-base font-bold">
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
                       <MessageSquareText className="h-4 w-4" />
@@ -642,10 +535,7 @@ const Header = () => {
                     <span className="text-foreground">게시판</span>
                   </span>
                 </AccordionTrigger>
-                <AccordionContent
-                  value="boards"
-                  className="pb-2 pt-1 space-y-0.5"
-                >
+                <AccordionContent value="boards" className="pb-2 pt-1 space-y-0.5">
                   {NAV_LINKS.boards.map((it) => (
                     <Button
                       key={it.name}
@@ -665,10 +555,7 @@ const Header = () => {
 
               {/* 패키지 */}
               <AccordionItem value="packages" className="border-none">
-                <AccordionTrigger
-                  value="packages"
-                  className="py-3 px-3 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 hover:no-underline transition-all group"
-                >
+                <AccordionTrigger value="packages" className="py-3 px-3 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 hover:no-underline transition-all group">
                   <span className="inline-flex items-center gap-2.5 text-base font-bold">
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
                       <Gift className="h-4 w-4" />
@@ -676,10 +563,7 @@ const Header = () => {
                     <span className="text-foreground">패키지</span>
                   </span>
                 </AccordionTrigger>
-                <AccordionContent
-                  value="packages"
-                  className="pb-2 pt-1 space-y-0.5"
-                >
+                <AccordionContent value="packages" className="pb-2 pt-1 space-y-0.5">
                   {NAV_LINKS.packages.map((it) => (
                     <Button
                       key={it.name}
@@ -699,10 +583,7 @@ const Header = () => {
 
               {/* 중고 라켓 */}
               <AccordionItem value="rackets" className="border-none">
-                <AccordionTrigger
-                  value="rackets"
-                  className="py-3 px-3 rounded-lg hover:no-underline transition-all group"
-                >
+                <AccordionTrigger value="rackets" className="py-3 px-3 rounded-lg hover:no-underline transition-all group">
                   <span className="inline-flex items-center gap-2.5 text-base font-bold">
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
                       <MdSportsTennis className="h-4 w-4" />
@@ -710,10 +591,7 @@ const Header = () => {
                     <span className="text-foreground">중고 라켓</span>
                   </span>
                 </AccordionTrigger>
-                <AccordionContent
-                  value="rackets"
-                  className="pb-2 pt-1 space-y-0.5"
-                >
+                <AccordionContent value="rackets" className="pb-2 pt-1 space-y-0.5">
                   <Button
                     variant="ghost"
                     className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-primary/10 dark:hover:bg-primary/20 transition-all"
@@ -728,9 +606,7 @@ const Header = () => {
 
                   {/* 브랜드 서브메뉴 */}
                   <div className="mt-2 pl-2 space-y-0.5">
-                    <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-3 py-1">
-                      브랜드
-                    </div>
+                    <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-3 py-1">브랜드</div>
                     {NAV_LINKS.rackets.brands.map((b) => (
                       <Button
                         key={b.href}
@@ -751,10 +627,7 @@ const Header = () => {
 
               {/* 고객센터 */}
               <AccordionItem value="support" className="border-none">
-                <AccordionTrigger
-                  value="support"
-                  className="py-3 px-3 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 hover:no-underline transition-all group"
-                >
+                <AccordionTrigger value="support" className="py-3 px-3 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 hover:no-underline transition-all group">
                   <span className="inline-flex items-center gap-2.5 text-base font-bold">
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
                       <MessageSquare className="h-4 w-4" />
@@ -762,10 +635,7 @@ const Header = () => {
                     <span className="text-foreground">고객센터</span>
                   </span>
                 </AccordionTrigger>
-                <AccordionContent
-                  value="support"
-                  className="pb-2 pt-1 space-y-0.5"
-                >
+                <AccordionContent value="support" className="pb-2 pt-1 space-y-0.5">
                   {NAV_LINKS.support.map((it) => (
                     <Button
                       key={it.name}
@@ -802,28 +672,14 @@ const Header = () => {
                         </Avatar> */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-foreground truncate">
-                          {user.name} 님
-                        </span>
-                        <Link
-                          href="/mypage?tab=points"
-                          onClick={() => setOpen(false)}
-                          className="shrink-0 inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-[11px] font-semibold tabular-nums"
-                          aria-label="포인트 보기"
-                        >
-                          <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-muted text-[10px] font-bold text-muted-foreground">
-                            P
-                          </span>
+                        <span className="text-sm font-bold text-foreground truncate">{user.name} 님</span>
+                        <Link href="/mypage?tab=points" onClick={() => setOpen(false)} className="shrink-0 inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-[11px] font-semibold tabular-nums" aria-label="포인트 보기">
+                          <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-muted text-[10px] font-bold text-muted-foreground">P</span>
                           <span className="inline-flex items-center gap-1">
                             {pointsStatus === "loading" ? (
                               <>
-                                <Loader2
-                                  className="h-3.5 w-3.5 animate-spin text-muted-foreground"
-                                  aria-hidden="true"
-                                />
-                                <span className="sr-only">
-                                  포인트 불러오는 중
-                                </span>
+                                <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" aria-hidden="true" />
+                                <span className="sr-only">포인트 불러오는 중</span>
                               </>
                             ) : pointsStatus === "error" ? (
                               <>-</>
@@ -834,10 +690,7 @@ const Header = () => {
                         </Link>
 
                         {isAdmin && (
-                          <Badge
-                            variant="success"
-                            className="border-0 px-2 py-0 text-[10px] h-5"
-                          >
+                          <Badge variant="success" className="border-0 px-2 py-0 text-[10px] h-5">
                             관리자
                           </Badge>
                         )}
@@ -846,22 +699,12 @@ const Header = () => {
                       {(hasKakao || hasNaver) && (
                         <div className="mt-2 flex flex-wrap gap-1.5">
                           {hasKakao && (
-                            <Badge
-                              variant={
-                                getSocialProviderBadgeSpec("kakao").variant
-                              }
-                              className="border-0 text-[10px] h-5 px-2"
-                            >
+                            <Badge variant={getSocialProviderBadgeSpec("kakao").variant} className="border-0 text-[10px] h-5 px-2">
                               카카오
                             </Badge>
                           )}
                           {hasNaver && (
-                            <Badge
-                              variant={
-                                getSocialProviderBadgeSpec("naver").variant
-                              }
-                              className="border-0 text-[10px] h-5 px-2"
-                            >
+                            <Badge variant={getSocialProviderBadgeSpec("naver").variant} className="border-0 text-[10px] h-5 px-2">
                               네이버
                             </Badge>
                           )}
@@ -898,14 +741,11 @@ const Header = () => {
                     aria-label="쪽지함"
                   >
                     <Mail className="h-5 w-5" />
-                    {resolvedUnreadCount !== null &&
-                      resolvedUnreadCount > 0 && (
-                        <span className="absolute -top-1 -right-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground">
-                          {resolvedUnreadCount > 99
-                            ? "99+"
-                            : resolvedUnreadCount}
-                        </span>
-                      )}
+                    {resolvedUnreadCount !== null && resolvedUnreadCount > 0 && (
+                      <span className="absolute -top-1 -right-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground">
+                        {resolvedUnreadCount > 99 ? "99+" : resolvedUnreadCount}
+                      </span>
+                    )}
                     <span className="sr-only">쪽지함</span>
                   </Button>
 
@@ -920,11 +760,7 @@ const Header = () => {
                     aria-label="장바구니"
                   >
                     <ShoppingCart className="h-5 w-5" />
-                    {cartCount > 0 && (
-                      <span className="absolute -top-1 -right-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">
-                        {cartBadge}
-                      </span>
-                    )}
+                    {cartCount > 0 && <span className="absolute -top-1 -right-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">{cartBadge}</span>}
                     <span className="sr-only">장바구니</span>
                   </Button>
                 </div>
@@ -967,10 +803,7 @@ const Header = () => {
                 className="h-10 w-full justify-center rounded-xl bg-primary text-primary-foreground shadow-md transition-all duration-200 hover:bg-primary/90"
                 onClick={() => {
                   setOpen(false);
-                  const redirectTo =
-                    typeof window !== "undefined"
-                      ? window.location.pathname + window.location.search
-                      : "/";
+                  const redirectTo = typeof window !== "undefined" ? window.location.pathname + window.location.search : "/";
                   router.push(`/login?next=${encodeURIComponent(redirectTo)}`);
                 }}
               >
@@ -984,15 +817,8 @@ const Header = () => {
             </div>
           </div>
         </SheetContent>
-        <header
-          ref={headerRef as any}
-          data-scrolled={isScrolled}
-          className={`app-header fixed top-0 inset-x-0 z-[40] w-full isolate transition-[height] duration-300 ${isScrolled ? "h-[56px]" : "h-[72px]"}`}
-        >
-          <div
-            aria-hidden="true"
-            className={`absolute left-0 right-0 top-0 z-0 pointer-events-none transition-[height,background] duration-300 ${isScrolled ? "h-[56px]" : "h-[72px]"} bg-background/70 backdrop-blur-md border-b border-border`}
-          />
+        <header ref={headerRef as any} data-scrolled={isScrolled} className={`app-header fixed top-0 inset-x-0 z-[40] w-full isolate transition-[height] duration-300 ${isScrolled ? "h-[56px]" : "h-[72px]"}`}>
+          <div aria-hidden="true" className={`absolute left-0 right-0 top-0 z-0 pointer-events-none transition-[height,background] duration-300 ${isScrolled ? "h-[56px]" : "h-[72px]"} bg-background/70 backdrop-blur-md border-b border-border`} />
           <SiteContainer
             className="bp-lg:mx-0 bp-lg:max-w-none bp-lg:px-6 xl:px-8 2xl:px-10 h-full flex items-center justify-between overflow-visible transition-transform duration-300"
             style={{
@@ -1003,85 +829,40 @@ const Header = () => {
           >
             <div className="flex items-center justify-between w-full bp-lg:hidden">
               <SheetTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="rounded-full hover:bg-primary/10 dark:hover:bg-primary/20 p-2 focus-visible:ring-2 ring-ring"
-                  aria-label="메뉴 열기"
-                >
+                <Button variant="ghost" size="icon" className="rounded-full hover:bg-primary/10 dark:hover:bg-primary/20 p-2 focus-visible:ring-2 ring-ring" aria-label="메뉴 열기">
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
 
-              <Link
-                href="/"
-                className="flex flex-col items-center group"
-                aria-label="테니스 플로우 홈"
-                onClick={() => setOpen(false)}
-              >
-                <div className="font-black text-[15px] tracking-tight text-foreground group-hover:text-foreground transition-colors">
-                  테니스 플로우
-                </div>
-                <div className="text-[10px] tracking-wider text-muted-foreground font-medium whitespace-nowrap">
-                  TENNIS FLOW SHOP
-                </div>
+              <Link href="/" className="flex flex-col items-center group" aria-label="상호명 미정 홈" onClick={() => setOpen(false)}>
+                <div className="font-black text-[15px] tracking-tight text-foreground group-hover:text-foreground transition-colors">상호명 미정</div>
+                <div className="text-[10px] tracking-wider text-muted-foreground font-medium whitespace-nowrap">Name Pending</div>
               </Link>
 
               <div className="flex items-center gap-1.5">
                 <Link href="/cart">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="relative rounded-full hover:bg-primary/10 dark:hover:bg-primary/20 p-2 focus-visible:ring-2 ring-ring"
-                    aria-label="장바구니"
-                  >
+                  <Button variant="ghost" size="icon" className="relative rounded-full hover:bg-primary/10 dark:hover:bg-primary/20 p-2 focus-visible:ring-2 ring-ring" aria-label="장바구니">
                     <ShoppingCart className="h-5 w-5" />
-                    {cartCount > 0 && (
-                      <span className="absolute -top-1 -right-1 text-[10px] h-4 min-w-4 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold">
-                        {cartBadge}
-                      </span>
-                    )}
+                    {cartCount > 0 && <span className="absolute -top-1 -right-1 text-[10px] h-4 min-w-4 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold">{cartBadge}</span>}
                   </Button>
                 </Link>
               </div>
             </div>
             <div className="hidden bp-lg:flex items-center w-full min-w-0 gap-1 bp-lg:gap-2">
-              <Link
-                href="/"
-                className="flex items-center gap-2 shrink-0 group"
-                aria-label="테니스 플로우 홈"
-              >
+              <Link href="/" className="flex items-center gap-2 shrink-0 group" aria-label="상호명 미정 홈">
                 {/* 로고 마크: 가로형 비율 + 라이트/다크 자동 교체 */}
                 <div className="relative h-8 w-16 shrink-0 overflow-hidden">
                   {/* 라이트 모드 */}
-                  <Image
-                    src="/tennisflowmark-light.png"
-                    alt=""
-                    aria-hidden="true"
-                    fill
-                    className="object-contain dark:hidden"
-                    priority
-                  />
+                  <Image src="/tennisflowmark-light.png" alt="" aria-hidden="true" fill className="object-contain dark:hidden" priority />
 
                   {/* 다크 모드 */}
-                  <Image
-                    src="/tennisflowmark-dark.png"
-                    alt=""
-                    aria-hidden="true"
-                    fill
-                    className="hidden object-contain dark:block"
-                    priority
-                  />
+                  <Image src="/tennisflowmark-dark.png" alt="" aria-hidden="true" fill className="hidden object-contain dark:block" priority />
                 </div>
 
                 {/* 텍스트 로고 */}
                 <div className="flex flex-col leading-none">
-                  <div className="font-black text-lg bp-lg:text-xl tracking-tight text-foreground group-hover:text-foreground transition-colors">
-                    테니스 플로우
-                  </div>
-                  <div className="mt-1 text-xs tracking-wider text-muted-foreground font-medium whitespace-nowrap">
-                    TENNIS FLOW SHOP
-                  </div>
+                  <div className="font-black text-lg bp-lg:text-xl tracking-tight text-foreground group-hover:text-foreground transition-colors">상호명 미정</div>
+                  <div className="mt-1 text-xs tracking-wider text-muted-foreground font-medium whitespace-nowrap">Name Pending</div>
                 </div>
               </Link>
               <nav
@@ -1090,9 +871,7 @@ const Header = () => {
                   // 메뉴가 전부 보일 때는 중앙 정렬로 넓은 화면의 빈 여백을 줄이고,
                   // 하나라도 overflow가 생기면 왼쪽 정렬로 전환해
                   // 첫 메뉴(스트링)가 잘리지 않게 합니다.
-                  hasOverflow
-                    ? "justify-start"
-                    : "xl:justify-center xl:pr-8 2xl:pr-10"
+                  hasOverflow ? "justify-start" : "xl:justify-center xl:pr-8 2xl:pr-10"
                 }`}
               >
                 {primaryMenuItems.map((item) => {
@@ -1112,11 +891,7 @@ const Header = () => {
 
                 {/* bp-lg(1200+)~1580px 미만 구간: 우측 메뉴가 검색 영역에 가려질 수 있어 '더보기'로 이동 */}
                 {overflowMenuItems.length > 0 && (
-                  <DropdownMenu
-                    modal={false}
-                    open={overflowMenuOpen}
-                    onOpenChange={setOverflowMenuOpen}
-                  >
+                  <DropdownMenu modal={false} open={overflowMenuOpen} onOpenChange={setOverflowMenuOpen}>
                     <DropdownMenuTrigger asChild>
                       <button
                         type="button"
@@ -1134,11 +909,7 @@ const Header = () => {
                         return (
                           <DropdownMenuItem
                             key={item.name}
-                            className={
-                              active
-                                ? "bg-primary text-primary-foreground font-semibold"
-                                : undefined
-                            }
+                            className={active ? "bg-primary text-primary-foreground font-semibold" : undefined}
                             onSelect={(e) => {
                               e.preventDefault();
                               setOverflowMenuOpen(false);
@@ -1160,40 +931,21 @@ const Header = () => {
 
               {/* 검색 (PC 전용) */}
               <div className="ml-auto shrink-0 flex justify-end">
-                <div
-                  className="min-w-[180px]"
-                  style={{ width: "clamp(220px, 24vw, 560px)" }}
-                >
-                  <SearchPreview
-                    placeholder="스트링 / 라켓 검색..."
-                    className="w-full rounded-full bg-background/80 border border-border focus-within:ring-2 focus-within:ring-ring transition-all duration-200"
-                  />
+                <div className="min-w-[180px]" style={{ width: "clamp(220px, 24vw, 560px)" }}>
+                  <SearchPreview placeholder="스트링 / 라켓 검색..." className="w-full rounded-full bg-background/80 border border-border focus-within:ring-2 focus-within:ring-ring transition-all duration-200" />
                 </div>
               </div>
 
               {/* 숨은 측정 DOM: 실제 렌더 폭(텍스트/패딩/아이콘/갭)을 그대로 재기 */}
-              <div
-                ref={measureRef}
-                className="absolute -left-[9999px] top-0 opacity-0 pointer-events-none"
-              >
-                <div
-                  data-measure-wrap
-                  className="flex items-center gap-1.5 ml-2 whitespace-nowrap"
-                >
+              <div ref={measureRef} className="absolute -left-[9999px] top-0 opacity-0 pointer-events-none">
+                <div data-measure-wrap className="flex items-center gap-1.5 ml-2 whitespace-nowrap">
                   {menuItems.map((it) => (
-                    <span
-                      key={`measure-${it.name}`}
-                      data-measure-item
-                      className="inline-flex shrink-0 items-center h-9 px-2.5 rounded-lg text-sm leading-none whitespace-nowrap font-semibold"
-                    >
+                    <span key={`measure-${it.name}`} data-measure-item className="inline-flex shrink-0 items-center h-9 px-2.5 rounded-lg text-sm leading-none whitespace-nowrap font-semibold">
                       {it.name}
                     </span>
                   ))}
 
-                  <span
-                    data-measure-dots
-                    className="inline-flex shrink-0 items-center h-9 gap-1 px-2.5 rounded-lg text-sm leading-none whitespace-nowrap font-semibold"
-                  >
+                  <span data-measure-dots className="inline-flex shrink-0 items-center h-9 gap-1 px-2.5 rounded-lg text-sm leading-none whitespace-nowrap font-semibold">
                     ⋯ <ChevronDown className="h-4 w-4" aria-hidden="true" />
                   </span>
                 </div>
@@ -1202,51 +954,25 @@ const Header = () => {
               {/* 아이콘/유저 */}
               <div className="flex items-center gap-3 bp-lg:gap-4 pl-2 shrink-0">
                 <SheetTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="bp-lg:hidden rounded-full hover:bg-primary/10 dark:hover:bg-primary/20 p-2 transition-all duration-300 focus-visible:ring-2 ring-ring"
-                    aria-label="메뉴 열기"
-                  >
+                  <Button variant="ghost" size="icon" className="bp-lg:hidden rounded-full hover:bg-primary/10 dark:hover:bg-primary/20 p-2 transition-all duration-300 focus-visible:ring-2 ring-ring" aria-label="메뉴 열기">
                     <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
                 <Link href="/cart">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="relative rounded-full hover:bg-primary/10 dark:hover:bg-primary/20 p-2 transition-all duration-300 focus-visible:ring-2 ring-ring"
-                    aria-label="장바구니"
-                  >
+                  <Button variant="ghost" size="icon" className="relative rounded-full hover:bg-primary/10 dark:hover:bg-primary/20 p-2 transition-all duration-300 focus-visible:ring-2 ring-ring" aria-label="장바구니">
                     <ShoppingCart className="h-5 w-5" />
-                    {cartCount > 0 && (
-                      <span className="absolute -top-1 -right-1 text-[10px] min-w-[18px] h-[18px] px-[5px] rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold">
-                        {cartBadge}
-                      </span>
-                    )}
+                    {cartCount > 0 && <span className="absolute -top-1 -right-1 text-[10px] min-w-[18px] h-[18px] px-[5px] rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold">{cartBadge}</span>}
                   </Button>
                 </Link>
 
                 {user && (
-                  <Button
-                    variant="ghost"
-                    className="h-9 px-3 rounded-full"
-                    asChild
-                  >
-                    <Link
-                      href="/mypage?tab=points"
-                      className="flex items-center gap-2"
-                    >
-                      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-muted text-xs font-bold text-muted-foreground">
-                        P
-                      </span>
+                  <Button variant="ghost" className="h-9 px-3 rounded-full" asChild>
+                    <Link href="/mypage?tab=points" className="flex items-center gap-2">
+                      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-muted text-xs font-bold text-muted-foreground">P</span>
                       <span className="inline-flex items-center gap-1 text-sm font-semibold tabular-nums">
                         {pointsStatus === "loading" ? (
                           <>
-                            <Loader2
-                              className="h-4 w-4 animate-spin text-muted-foreground"
-                              aria-hidden="true"
-                            />
+                            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" aria-hidden="true" />
                             <span className="sr-only">포인트 불러오는 중</span>
                           </>
                         ) : pointsStatus === "error" ? (

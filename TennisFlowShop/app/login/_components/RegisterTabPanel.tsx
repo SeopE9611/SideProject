@@ -4,29 +4,12 @@ import SocialAuthButtons from "@/app/login/_components/SocialAuthButtons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TabsContent } from "@/components/ui/tabs";
 import { getReservedDisplayNameErrorMessage } from "@/lib/reserved-display-name";
 import { getReservedEmailLocalPartErrorMessage } from "@/lib/reserved-email-localpart";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
-import {
-  AlertCircle,
-  CheckCircle,
-  Eye,
-  EyeOff,
-  Loader2,
-  Lock,
-  Mail,
-  MapPin,
-  Phone,
-  User,
-} from "lucide-react";
+import { AlertCircle, CheckCircle, Eye, EyeOff, Loader2, Lock, Mail, MapPin, Phone, User } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import type React from "react";
 import { useEffect, useMemo, useState } from "react";
@@ -46,16 +29,7 @@ const formatKoreanPhone = (v: string) => {
 
 const isValidKoreanPhone = (v: string) => /^010\d{8}$/.test(onlyDigits(v));
 
-type RegisterField =
-  | "emailId"
-  | "emailDomain"
-  | "password"
-  | "confirmPassword"
-  | "name"
-  | "phone"
-  | "postalCode"
-  | "address"
-  | "addressDetail";
+type RegisterField = "emailId" | "emailDomain" | "password" | "confirmPassword" | "name" | "phone" | "postalCode" | "address" | "addressDetail";
 
 async function readJsonSafe(res: Response): Promise<any | null> {
   try {
@@ -94,26 +68,14 @@ type RegisterTabPanelProps = {
   resetSignal: number;
 };
 
-export default function RegisterTabPanel({
-  isSocialOauthRegister,
-  oauthProvider,
-  oauthToken,
-  onKakaoOAuth,
-  onNaverOAuth,
-  onSwitchToLoginTab,
-  onRegisterDirtyChange,
-  onRegisterSubmittingChange,
-  resetSignal,
-}: RegisterTabPanelProps) {
+export default function RegisterTabPanel({ isSocialOauthRegister, oauthProvider, oauthToken, onKakaoOAuth, onNaverOAuth, onSwitchToLoginTab, onRegisterDirtyChange, onRegisterSubmittingChange, resetSignal }: RegisterTabPanelProps) {
   const router = useRouter();
   const params = useSearchParams();
 
   const [emailId, setEmailId] = useState("");
   const [emailDomain, setEmailDomain] = useState("gmail.com");
   const [isCustomDomain, setIsCustomDomain] = useState(false);
-  const [isEmailAvailable, setIsEmailAvailable] = useState<boolean | null>(
-    null,
-  );
+  const [isEmailAvailable, setIsEmailAvailable] = useState<boolean | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [checkingEmail, setCheckingEmail] = useState(false);
   const [password, setPassword] = useState("");
@@ -126,9 +88,7 @@ export default function RegisterTabPanel({
   const [address, setAddress] = useState("");
   const [addressDetail, setAddressDetail] = useState("");
 
-  const [registerFieldErrors, setRegisterFieldErrors] = useState<
-    Partial<Record<RegisterField, string>>
-  >({});
+  const [registerFieldErrors, setRegisterFieldErrors] = useState<Partial<Record<RegisterField, string>>>({});
   const [registerFormError, setRegisterFormError] = useState<string>("");
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -170,18 +130,7 @@ export default function RegisterTabPanel({
       address.trim() !== "" ||
       addressDetail.trim() !== ""
     );
-  }, [
-    emailId,
-    emailDomain,
-    isCustomDomain,
-    password,
-    confirmPassword,
-    name,
-    phone,
-    postalCode,
-    address,
-    addressDetail,
-  ]);
+  }, [emailId, emailDomain, isCustomDomain, password, confirmPassword, name, phone, postalCode, address, addressDetail]);
 
   useEffect(() => {
     onRegisterDirtyChange(registerDirty);
@@ -197,19 +146,14 @@ export default function RegisterTabPanel({
 
     (async () => {
       try {
-        const res = await fetch(
-          `/api/oauth/pending?token=${encodeURIComponent(oauthToken!)}`,
-          {
-            credentials: "include",
-            cache: "no-store",
-          },
-        );
+        const res = await fetch(`/api/oauth/pending?token=${encodeURIComponent(oauthToken!)}`, {
+          credentials: "include",
+          cache: "no-store",
+        });
         const data = await readJsonSafe(res);
 
         if (!res.ok || !data?.email) {
-          showErrorToast(
-            "소셜 회원가입 정보가 만료되었어요. 다시 시도해주세요.",
-          );
+          showErrorToast("소셜 회원가입 정보가 만료되었어요. 다시 시도해주세요.");
           router.push("/login?tab=login");
           return;
         }
@@ -250,16 +194,9 @@ export default function RegisterTabPanel({
       setRegisterFieldErrors((prev) => ({
         ...prev,
         emailId: !idTrim ? "이메일 아이디를 입력해주세요." : undefined,
-        emailDomain: !domainTrim
-          ? "이메일 도메인을 선택/입력해주세요."
-          : undefined,
+        emailDomain: !domainTrim ? "이메일 도메인을 선택/입력해주세요." : undefined,
       }));
-      focusFirst(
-        [
-          !idTrim ? "register-email-id" : "",
-          !domainTrim ? "register-email-domain" : "",
-        ].filter(Boolean),
-      );
+      focusFirst([!idTrim ? "register-email-id" : "", !domainTrim ? "register-email-domain" : ""].filter(Boolean));
       return;
     }
 
@@ -293,10 +230,7 @@ export default function RegisterTabPanel({
 
     try {
       setCheckingEmail(true);
-      const res = await fetch(
-        `/api/check-email?email=${encodeURIComponent(emailVal)}`,
-        { credentials: "include" },
-      );
+      const res = await fetch(`/api/check-email?email=${encodeURIComponent(emailVal)}`, { credentials: "include" });
       const data = await readJsonSafe(res);
 
       if (!res.ok) {
@@ -308,9 +242,7 @@ export default function RegisterTabPanel({
       const available = !!data?.isAvailable;
       setIsEmailAvailable(available);
     } catch (err) {
-      setRegisterFormError(
-        "네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
-      );
+      setRegisterFormError("네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
       return;
     } finally {
       setCheckingEmail(false);
@@ -330,43 +262,23 @@ export default function RegisterTabPanel({
     const addressTrim = address.trim();
 
     const nextCommonErrors: Partial<Record<RegisterField, string>> = {};
-    if (!nameTrim || nameTrim.length < 2)
-      nextCommonErrors.name = "이름을 입력해주세요. (2자 이상)";
+    if (!nameTrim || nameTrim.length < 2) nextCommonErrors.name = "이름을 입력해주세요. (2자 이상)";
     else {
       const reservedNameError = getReservedDisplayNameErrorMessage(nameTrim);
       if (reservedNameError) nextCommonErrors.name = reservedNameError;
     }
-    if (!phoneDigits)
-      nextCommonErrors.phone = "연락처를 입력해주세요. (예: 01012345678)";
-    else if (!isValidKoreanPhone(phoneDigits))
-      nextCommonErrors.phone =
-        "올바른 연락처 형식으로 입력해주세요. (010 0000 0000)";
-    if (!postalTrim || !addressTrim)
-      nextCommonErrors.postalCode = "우편번호 찾기를 통해 주소를 등록해주세요.";
-    else if (!POSTAL_RE.test(postalTrim))
-      nextCommonErrors.postalCode = "우편번호 형식이 올바르지 않습니다.";
-    if (!addressTrim)
-      nextCommonErrors.address = "우편번호 찾기를 통해 주소를 등록해주세요.";
+    if (!phoneDigits) nextCommonErrors.phone = "연락처를 입력해주세요. (예: 01012345678)";
+    else if (!isValidKoreanPhone(phoneDigits)) nextCommonErrors.phone = "올바른 연락처 형식으로 입력해주세요. (010 0000 0000)";
+    if (!postalTrim || !addressTrim) nextCommonErrors.postalCode = "우편번호 찾기를 통해 주소를 등록해주세요.";
+    else if (!POSTAL_RE.test(postalTrim)) nextCommonErrors.postalCode = "우편번호 형식이 올바르지 않습니다.";
+    if (!addressTrim) nextCommonErrors.address = "우편번호 찾기를 통해 주소를 등록해주세요.";
 
     if (isSocialOauthRegister) {
       if (Object.keys(nextCommonErrors).length > 0) {
-        const firstMsg =
-          nextCommonErrors.name ||
-          nextCommonErrors.phone ||
-          nextCommonErrors.postalCode ||
-          nextCommonErrors.address ||
-          "입력값을 확인해주세요.";
+        const firstMsg = nextCommonErrors.name || nextCommonErrors.phone || nextCommonErrors.postalCode || nextCommonErrors.address || "입력값을 확인해주세요.";
         setRegisterFieldErrors(nextCommonErrors);
         setRegisterFormError(firstMsg);
-        focusFirst(
-          [
-            nextCommonErrors.name ? "register-name" : "",
-            nextCommonErrors.phone ? "register-phone" : "",
-            nextCommonErrors.postalCode || nextCommonErrors.address
-              ? "register-find-postcode"
-              : "",
-          ].filter(Boolean),
-        );
+        focusFirst([nextCommonErrors.name ? "register-name" : "", nextCommonErrors.phone ? "register-phone" : "", nextCommonErrors.postalCode || nextCommonErrors.address ? "register-find-postcode" : ""].filter(Boolean));
         return;
       }
 
@@ -399,9 +311,7 @@ export default function RegisterTabPanel({
         router.replace(data?.redirectTo || "/");
         router.refresh();
       } catch (err) {
-        setRegisterFormError(
-          "네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
-        );
+        setRegisterFormError("네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
         return;
       } finally {
         setSubmitting(false);
@@ -418,37 +328,22 @@ export default function RegisterTabPanel({
     const emailVal = `${idTrim}@${domainTrim}`;
 
     if (!idTrim || !domainTrim) nextErrors.emailId = "이메일을 입력해주세요.";
-    else if (!emailIdRegex.test(idTrim))
-      nextErrors.emailId =
-        "아이디는 영문 소문자와 숫자 조합으로 4자 이상 입력해주세요.";
-    else if (!emailRegex.test(emailVal))
-      nextErrors.emailId = "유효한 이메일 형식이 아닙니다.";
+    else if (!emailIdRegex.test(idTrim)) nextErrors.emailId = "아이디는 영문 소문자와 숫자 조합으로 4자 이상 입력해주세요.";
+    else if (!emailRegex.test(emailVal)) nextErrors.emailId = "유효한 이메일 형식이 아닙니다.";
     else {
       const reservedEmailError = getReservedEmailLocalPartErrorMessage(emailVal);
       if (reservedEmailError) nextErrors.emailId = reservedEmailError;
-      else if (isEmailAvailable !== true)
-        nextErrors.emailId = "이메일 중복 확인을 진행해주세요.";
+      else if (isEmailAvailable !== true) nextErrors.emailId = "이메일 중복 확인을 진행해주세요.";
     }
 
     if (!password) nextErrors.password = "비밀번호를 입력해주세요.";
-    else if (!PASSWORD_POLICY_RE.test(password))
-      nextErrors.password = "비밀번호는 8자 이상이며 영문/숫자를 포함해야 합니다.";
+    else if (!PASSWORD_POLICY_RE.test(password)) nextErrors.password = "비밀번호는 8자 이상이며 영문/숫자를 포함해야 합니다.";
 
-    if (!confirmPassword)
-      nextErrors.confirmPassword = "비밀번호 확인을 입력해주세요.";
-    else if (password !== confirmPassword)
-      nextErrors.confirmPassword = "비밀번호가 일치하지 않습니다.";
+    if (!confirmPassword) nextErrors.confirmPassword = "비밀번호 확인을 입력해주세요.";
+    else if (password !== confirmPassword) nextErrors.confirmPassword = "비밀번호가 일치하지 않습니다.";
 
     if (Object.keys(nextErrors).length > 0) {
-      const firstMsg =
-        nextErrors.emailId ||
-        nextErrors.password ||
-        nextErrors.confirmPassword ||
-        nextErrors.name ||
-        nextErrors.phone ||
-        nextErrors.postalCode ||
-        nextErrors.address ||
-        "입력값을 확인해주세요.";
+      const firstMsg = nextErrors.emailId || nextErrors.password || nextErrors.confirmPassword || nextErrors.name || nextErrors.phone || nextErrors.postalCode || nextErrors.address || "입력값을 확인해주세요.";
       setRegisterFieldErrors(nextErrors);
       setRegisterFormError(firstMsg);
 
@@ -460,9 +355,7 @@ export default function RegisterTabPanel({
           nextErrors.confirmPassword ? "register-confirm-password" : "",
           nextErrors.name ? "register-name" : "",
           nextErrors.phone ? "register-phone" : "",
-          nextErrors.postalCode || nextErrors.address
-            ? "register-find-postcode"
-            : "",
+          nextErrors.postalCode || nextErrors.address ? "register-find-postcode" : "",
         ].filter(Boolean),
       );
       return;
@@ -504,9 +397,7 @@ export default function RegisterTabPanel({
       q.set("tab", "login");
       router.replace(`/login?${q.toString()}`);
     } catch (err) {
-      setRegisterFormError(
-        "네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
-      );
+      setRegisterFormError("네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
       return;
     } finally {
       setSubmitting(false);
@@ -520,29 +411,21 @@ export default function RegisterTabPanel({
       if (!window.daum?.Postcode) {
         if (!daumPostcodeScriptPromise) {
           daumPostcodeScriptPromise = new Promise<void>((resolve, reject) => {
-            const existing = document.querySelector<HTMLScriptElement>(
-              'script[src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"]',
-            );
+            const existing = document.querySelector<HTMLScriptElement>('script[src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"]');
 
             if (existing) {
               existing.addEventListener("load", () => resolve(), {
                 once: true,
               });
-              existing.addEventListener(
-                "error",
-                () => reject(new Error("Failed to load Daum postcode script")),
-                { once: true },
-              );
+              existing.addEventListener("error", () => reject(new Error("Failed to load Daum postcode script")), { once: true });
               return;
             }
 
             const script = document.createElement("script");
-            script.src =
-              "https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js";
+            script.src = "https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js";
             script.async = true;
             script.onload = () => resolve();
-            script.onerror = () =>
-              reject(new Error("Failed to load Daum postcode script"));
+            script.onerror = () => reject(new Error("Failed to load Daum postcode script"));
             document.body.appendChild(script);
           }).catch((error) => {
             daumPostcodeScriptPromise = null;
@@ -579,16 +462,13 @@ export default function RegisterTabPanel({
       <div className="space-y-4 md:space-y-6">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-foreground">회원가입</h2>
-          <p className="text-foreground mt-2">테니스 플로우의 회원이 되어보세요</p>
+          <p className="text-foreground mt-2">상호명 미정의 회원이 되어보세요</p>
         </div>
 
         <form onSubmit={handleRegister} className="space-y-4 md:space-y-6">
           <div className="grid grid-cols-1 bp-lg:grid-cols-2 gap-4 md:gap-6">
             <div className="bp-lg:col-span-2 space-y-2">
-              <Label
-                htmlFor="register-email-id"
-                className="flex items-center gap-2 text-sm font-medium text-foreground"
-              >
+              <Label htmlFor="register-email-id" className="flex items-center gap-2 text-sm font-medium text-foreground">
                 <Mail className="h-4 w-4 text-foreground" />
                 이메일 주소
               </Label>
@@ -670,10 +550,7 @@ export default function RegisterTabPanel({
                           }}
                           disabled={isSocialOauthRegister}
                         >
-                          <SelectTrigger
-                            id="register-email-domain"
-                            className={`h-12 ${registerFieldErrors.emailDomain ? "border-destructive focus:border-destructive" : ""}`}
-                          >
+                          <SelectTrigger id="register-email-domain" className={`h-12 ${registerFieldErrors.emailDomain ? "border-destructive focus:border-destructive" : ""}`}>
                             <SelectValue placeholder="도메인 선택" />
                           </SelectTrigger>
                           <SelectContent>
@@ -689,16 +566,7 @@ export default function RegisterTabPanel({
                   </div>
 
                   {!isSocialOauthRegister && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="h-12 px-4 shrink-0"
-                      onClick={checkEmailAvailability}
-                      disabled={
-                        !emailRegex.test(`${emailId.trim()}@${emailDomain.trim()}`) ||
-                        checkingEmail
-                      }
-                    >
+                    <Button type="button" variant="outline" className="h-12 px-4 shrink-0" onClick={checkEmailAvailability} disabled={!emailRegex.test(`${emailId.trim()}@${emailDomain.trim()}`) || checkingEmail}>
                       {checkingEmail ? (
                         <span className="flex items-center gap-2">
                           <Loader2 className="h-4 w-4 animate-spin" />
@@ -736,17 +604,9 @@ export default function RegisterTabPanel({
                 )}
 
                 {!isSocialOauthRegister && isEmailAvailable !== null && (
-                  <div
-                    className={`flex items-center gap-2 text-sm ${isEmailAvailable ? "text-foreground" : "text-destructive"}`}
-                  >
-                    {isEmailAvailable ? (
-                      <CheckCircle className="h-4 w-4" />
-                    ) : (
-                      <AlertCircle className="h-4 w-4" />
-                    )}
-                    {isEmailAvailable
-                      ? "사용 가능한 이메일입니다."
-                      : "이미 사용 중인 이메일입니다."}
+                  <div className={`flex items-center gap-2 text-sm ${isEmailAvailable ? "text-foreground" : "text-destructive"}`}>
+                    {isEmailAvailable ? <CheckCircle className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
+                    {isEmailAvailable ? "사용 가능한 이메일입니다." : "이미 사용 중인 이메일입니다."}
                   </div>
                 )}
               </div>
@@ -772,26 +632,14 @@ export default function RegisterTabPanel({
                       placeholder="비밀번호를 입력하세요"
                       className="pl-10 pr-10 h-12 border-border focus:border-border dark:focus:border-border"
                     />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 text-foreground"
-                      onClick={() => setShowRegisterPassword(!showRegisterPassword)}
-                    >
-                      {showRegisterPassword ? (
-                        <EyeOff className="h-4 w-4" />
-                      ) : (
-                        <Eye className="h-4 w-4" />
-                      )}
+                    <Button type="button" variant="ghost" size="icon" className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 text-foreground" onClick={() => setShowRegisterPassword(!showRegisterPassword)}>
+                      {showRegisterPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </Button>
                   </div>
                   {registerFieldErrors.password && (
                     <div className="mt-2 flex items-center gap-2 text-sm text-destructive">
                       <AlertCircle className="h-4 w-4" />
-                      <span className="whitespace-pre-line">
-                        {registerFieldErrors.password}
-                      </span>
+                      <span className="whitespace-pre-line">{registerFieldErrors.password}</span>
                     </div>
                   )}
                 </div>
@@ -815,18 +663,8 @@ export default function RegisterTabPanel({
                       placeholder="비밀번호를 다시 입력하세요"
                       className="pl-10 pr-10 h-12 border-border focus:border-border dark:focus:border-border"
                     />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 text-foreground"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    >
-                      {showConfirmPassword ? (
-                        <EyeOff className="h-4 w-4" />
-                      ) : (
-                        <Eye className="h-4 w-4" />
-                      )}
+                    <Button type="button" variant="ghost" size="icon" className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 text-foreground" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+                      {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </Button>
                   </div>
                   {password && confirmPassword && password !== confirmPassword && (
@@ -848,8 +686,7 @@ export default function RegisterTabPanel({
                   onChange={(e) => {
                     const nextName = e.target.value;
                     setName(nextName);
-                    const reservedNameError =
-                      getReservedDisplayNameErrorMessage(nextName.trim());
+                    const reservedNameError = getReservedDisplayNameErrorMessage(nextName.trim());
                     setRegisterFieldErrors((prev) => ({
                       ...prev,
                       name: reservedNameError ?? undefined,
@@ -900,44 +737,23 @@ export default function RegisterTabPanel({
             <div className="bp-lg:col-span-2 space-y-2">
               <div className="flex items-center justify-between">
                 <Label className="text-foreground font-medium">우편번호</Label>
-                <Button
-                  id="register-find-postcode"
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="border-border text-foreground hover:bg-muted dark:hover:bg-muted bg-transparent"
-                  onClick={handleFindPostcode}
-                >
+                <Button id="register-find-postcode" type="button" variant="outline" size="sm" className="border-border text-foreground hover:bg-muted dark:hover:bg-muted bg-transparent" onClick={handleFindPostcode}>
                   <MapPin className="mr-2 h-4 w-4" />
                   우편번호 찾기
                 </Button>
               </div>
-              <Input
-                id="register-postal-code"
-                value={postalCode}
-                placeholder="우편번호를 입력하세요"
-                readOnly
-                className="bg-muted cursor-not-allowed max-w-xs h-12 border-border"
-              />
+              <Input id="register-postal-code" value={postalCode} placeholder="우편번호를 입력하세요" readOnly className="bg-muted cursor-not-allowed max-w-xs h-12 border-border" />
               {registerFieldErrors.postalCode && (
                 <div className="mt-2 flex items-center gap-2 text-sm text-destructive">
                   <AlertCircle className="h-4 w-4" />
-                  <span className="whitespace-pre-line">
-                    {registerFieldErrors.postalCode}
-                  </span>
+                  <span className="whitespace-pre-line">{registerFieldErrors.postalCode}</span>
                 </div>
               )}
             </div>
 
             <div className="bp-lg:col-span-2 space-y-2">
               <Label className="text-foreground font-medium">기본 배송지 주소</Label>
-              <Input
-                id="register-address"
-                value={address}
-                placeholder="기본 주소를 입력하세요"
-                readOnly
-                className="bg-muted cursor-not-allowed h-12 border-border"
-              />
+              <Input id="register-address" value={address} placeholder="기본 주소를 입력하세요" readOnly className="bg-muted cursor-not-allowed h-12 border-border" />
               {registerFieldErrors.address && (
                 <div className="mt-2 flex items-center gap-2 text-sm text-destructive">
                   <AlertCircle className="h-4 w-4" />
@@ -1016,16 +832,10 @@ export default function RegisterTabPanel({
                   <span className="w-full border-t border-border" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-card dark:bg-muted px-4 text-foreground font-medium">
-                    SNS 계정으로 가입
-                  </span>
+                  <span className="bg-card dark:bg-muted px-4 text-foreground font-medium">SNS 계정으로 가입</span>
                 </div>
               </div>
-              <SocialAuthButtons
-                onKakaoClick={onKakaoOAuth}
-                onNaverClick={onNaverOAuth}
-                isRegisterMode={true}
-              />
+              <SocialAuthButtons onKakaoClick={onKakaoOAuth} onNaverClick={onNaverOAuth} isRegisterMode={true} />
             </>
           )}
         </form>

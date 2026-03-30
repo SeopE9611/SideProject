@@ -8,16 +8,11 @@ import { Suspense } from "react";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
-export default async function RacketsPage({
-  searchParams,
-}: {
-  searchParams: Promise<SearchParams>;
-}) {
+export default async function RacketsPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const sp = await searchParams;
 
   // 유틸: string | string[] | undefined → string | null 로 정리
-  const pickFirst = (v: string | string[] | undefined): string | null =>
-    typeof v === "string" ? v : Array.isArray(v) ? (v[0] ?? null) : null;
+  const pickFirst = (v: string | string[] | undefined): string | null => (typeof v === "string" ? v : Array.isArray(v) ? (v[0] ?? null) : null);
 
   const initialBrand = pickFirst(sp.brand);
   const initialCondition = pickFirst(sp.cond);
@@ -52,13 +47,9 @@ export default async function RacketsPage({
 
         <SiteContainer variant="wide" className="relative">
           <div className="text-center text-foreground">
-            <h1 className="text-3xl bp-sm:text-4xl bp-md:text-5xl bp-lg:text-6xl font-bold mb-3 bp-sm:mb-4 bp-md:mb-6 text-foreground leading-tight">
-              중고 라켓
-            </h1>
+            <h1 className="text-3xl bp-sm:text-4xl bp-md:text-5xl bp-lg:text-6xl font-bold mb-3 bp-sm:mb-4 bp-md:mb-6 text-foreground leading-tight">중고 라켓</h1>
             <p className="text-base bp-sm:text-lg bp-md:text-2xl mb-5 bp-sm:mb-6 bp-md:mb-8 text-muted-foreground max-w-3xl mx-auto leading-relaxed px-4">
-              테니스 플로우의 중고 라켓으로{" "}
-              <span className="font-medium text-primary">합리적인 가격</span>에
-              대여하세요.
+              상호명 미정의 중고 라켓으로 <span className="font-medium text-primary">합리적인 가격</span>에 대여하세요.
             </p>
             <div className="mt-2 flex items-center justify-center">
               <Button asChild size="lg" variant="secondary">
@@ -68,9 +59,7 @@ export default async function RacketsPage({
                 </Link>
               </Button>
             </div>
-            <p className="mt-2 text-sm text-muted-foreground">
-              헤드·무게·밸런스·RA·SW 범위로 빠르게 좁혀보세요.
-            </p>
+            <p className="mt-2 text-sm text-muted-foreground">헤드·무게·밸런스·RA·SW 범위로 빠르게 좁혀보세요.</p>
           </div>
         </SiteContainer>
       </div>
@@ -81,29 +70,16 @@ export default async function RacketsPage({
             <div className="rounded-xl border border-border bg-card/90 backdrop-blur p-4 bp-sm:p-5 shadow-sm">
               <div className="flex items-start justify-between gap-3 flex-wrap">
                 <div className="min-w-0">
-                  <p className="text-sm bp-sm:text-base font-semibold text-foreground">
-                    교체·장착 신청을 위한 라켓 선택 단계예요
-                  </p>
+                  <p className="text-sm bp-sm:text-base font-semibold text-foreground">교체·장착 신청을 위한 라켓 선택 단계예요</p>
                   <p className="mt-1 text-xs bp-sm:text-sm text-muted-foreground leading-relaxed">
-                    라켓을 선택한 뒤, 결제/대여 흐름에서 신청서가 자동으로
-                    이어질 수 있어요.
-                    <span className="block mt-1 text-sm text-foreground">
-                      [현재 보기:{" "}
-                      {rentOnly ? "대여 가능 라켓만" : "전체(구매/대여)"}]
-                    </span>
+                    라켓을 선택한 뒤, 결제/대여 흐름에서 신청서가 자동으로 이어질 수 있어요.
+                    <span className="block mt-1 text-sm text-foreground">[현재 보기: {rentOnly ? "대여 가능 라켓만" : "전체(구매/대여)"}]</span>
                   </p>
                 </div>
 
                 <div className="flex w-full bp-sm:w-auto items-center gap-2 flex-wrap">
-                  <Button
-                    asChild
-                    variant="outline"
-                    className="flex-1 bp-sm:flex-none border-border bg-card text-foreground"
-                  >
-                    <Link
-                      href="/services/apply"
-                      className="flex items-center gap-2"
-                    >
+                  <Button asChild variant="outline" className="flex-1 bp-sm:flex-none border-border bg-card text-foreground">
+                    <Link href="/services/apply" className="flex items-center gap-2">
                       <span className="text-base">←</span>
                       신청 화면으로
                     </Link>
@@ -135,10 +111,7 @@ export default async function RacketsPage({
           </div>
         )}
         <Suspense>
-          <FilterableRacketList
-            initialBrand={initialBrand}
-            initialCondition={initialCondition}
-          />
+          <FilterableRacketList initialBrand={initialBrand} initialCondition={initialCondition} />
         </Suspense>
       </SiteContainer>
     </div>

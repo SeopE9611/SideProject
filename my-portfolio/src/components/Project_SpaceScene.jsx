@@ -1,14 +1,14 @@
-import { ExternalLink, Github } from 'lucide-react';
-import React, { useRef, useEffect, useState } from 'react';
-import ReactDOM from 'react-dom';
-import * as THREE from 'three';
+import { ExternalLink, Github } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import ReactDOM from "react-dom";
+import * as THREE from "three";
 // OrbitControls: 카메라의 회전, 패닝, 줌 제어 (여기서는 줌/팬 비활성)
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 // 포스트 프로세싱: 씬 렌더링 후 후처리 효과를 위해 사용 (여기서는 블룸 효과)
-import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
-import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
-import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass';
-import { badgeVariant, buttonVariants, linkVariant, modalPanelVariant } from './ui/variants';
+import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer";
+import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass";
+import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass";
+import { badgeVariant, buttonVariants, linkVariant, modalPanelVariant } from "./ui/variants";
 
 // 간단한 난수 생성 함수
 const rand = (min, max) => Math.random() * (max - min) + min;
@@ -40,7 +40,7 @@ const SpaceScene = () => {
     const scene = new THREE.Scene();
     // CubeTextureLoader를 이용해 스카이박스 이미지 로드 (여기서는 6면 이미지 사용)
     const cubeLoader = new THREE.CubeTextureLoader();
-    const envMap = cubeLoader.setPath('/skybox/').load(['px.jpg', 'nx.jpg', 'py.jpg', 'ny.jpg', 'pz.jpg', 'nz.jpg']);
+    const envMap = cubeLoader.setPath("/skybox/").load(["px.jpg", "nx.jpg", "py.jpg", "ny.jpg", "pz.jpg", "nz.jpg"]);
     scene.background = envMap;
     scene.environment = envMap;
 
@@ -88,7 +88,7 @@ const SpaceScene = () => {
       starPositions[i * 3 + 1] = (Math.random() - 0.5) * 2000;
       starPositions[i * 3 + 2] = (Math.random() - 0.5) * 2000;
     }
-    starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+    starGeometry.setAttribute("position", new THREE.BufferAttribute(starPositions, 3));
     const starMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 1 });
     const stars = new THREE.Points(starGeometry, starMaterial);
     scene.add(stars);
@@ -96,7 +96,7 @@ const SpaceScene = () => {
     // ====== 중앙 로고 (Plane) 생성 ======
     // 중앙에 로고 이미지(예: 투명 배경 PNG)를 표시하기 위한 Plane
     const textureLoader = new THREE.TextureLoader();
-    const logoTexture = textureLoader.load('/logo_dark.png');
+    const logoTexture = textureLoader.load("/logo_dark.png");
     const planeGeometry = new THREE.PlaneGeometry(120, 120);
     const planeMaterial = new THREE.MeshStandardMaterial({
       map: logoTexture,
@@ -130,31 +130,31 @@ const SpaceScene = () => {
 
     const projects = [
       {
-        title: '다시,봄',
-        description_sub: '프로젝트 기간 : 2024.12.22 ~ 1.23',
-        description: '친환경 제품을 판매하기 위한 목적으로 제작한 전자상거래 사이트입니다.',
-        image: '/2trillionmarket_light.png',
-        tags: ['Node.js', 'Vite React', 'Tailwind CSS', 'Tanstack', 'zustand'],
-        liveLink: 'https://2trillionmarket.netlify.app/',
-        githubLink: 'https://github.com/FRONTENDBOOTCAMP-11th/againSpring_shop/tree/main',
+        title: "다시,봄",
+        description_sub: "프로젝트 기간 : 2024.12.22 ~ 1.23",
+        description: "친환경 제품을 판매하기 위한 목적으로 제작한 전자상거래 사이트입니다.",
+        image: "/2trillionmarket_light.png",
+        tags: ["Node.js", "Vite React", "Tailwind CSS", "Tanstack", "zustand"],
+        liveLink: "https://2trillionmarket.netlify.app/",
+        githubLink: "https://github.com/FRONTENDBOOTCAMP-11th/againSpring_shop/tree/main",
       },
       {
-        title: '테니스 플로우',
-        description_sub: '프로젝트 기간 : 진행중~ing',
-        description: '테니스 라켓 / 스트링 교체,판매 및 아카데미 관리 목적으로 제작한 사이트입니다.',
-        image: '/ddokaebi-tennis_light.png',
-        tags: ['React'],
-        liveLink: '#',
-        githubLink: '#',
+        title: "상호명 미정",
+        description_sub: "프로젝트 기간 : 진행중~ing",
+        description: "테니스 라켓 / 스트링 교체,판매 및 아카데미 관리 목적으로 제작한 사이트입니다.",
+        image: "/ddokaebi-tennis_light.png",
+        tags: ["React"],
+        liveLink: "#",
+        githubLink: "#",
       },
       {
-        title: '샬롬의집 (예정)',
-        description_sub: '프로젝트 기간 : null',
-        description: '서울시 강서구 방화동에 위치한 장애인 공동체 복지관 사이트 입니다.',
-        image: '/shalom.png',
-        tags: ['React'],
-        liveLink: '#',
-        githubLink: '#',
+        title: "샬롬의집 (예정)",
+        description_sub: "프로젝트 기간 : null",
+        description: "서울시 강서구 방화동에 위치한 장애인 공동체 복지관 사이트 입니다.",
+        image: "/shalom.png",
+        tags: ["React"],
+        liveLink: "#",
+        githubLink: "#",
       },
     ];
 
@@ -212,7 +212,7 @@ const SpaceScene = () => {
       mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
       mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
     };
-    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener("mousemove", onMouseMove);
 
     // ====== 애니메이션 루프 ======
     const animate = () => {
@@ -259,7 +259,7 @@ const SpaceScene = () => {
 
     // 정리: 컴포넌트 언마운트 시 이벤트 리스너와 렌더러 제거
     return () => {
-      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener("mousemove", onMouseMove);
       if (mountNode && renderer.domElement.parentNode) {
         mountNode.removeChild(renderer.domElement);
       }
@@ -289,7 +289,7 @@ const SpaceScene = () => {
             </button>
           </div>
 
-          <p style={{ padding: '5px 10px' }}>{hoverModalData.projectData.description_sub}</p>
+          <p style={{ padding: "5px 10px" }}>{hoverModalData.projectData.description_sub}</p>
           {/* "자세히 보기" 버튼을 클릭하면 full 모달이 열림 */}
           <div className="py-2 w-full text-center">
             <button onClick={() => setFullModalProject(hoverModalData.projectData)} className={`${buttonVariants.outline} text-end`}>

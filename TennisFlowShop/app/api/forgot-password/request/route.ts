@@ -2,10 +2,7 @@ import { NextResponse } from "next/server";
 
 import { sendEmail } from "@/app/features/notifications/channels/email";
 import { getDb } from "@/lib/mongodb";
-import {
-  createPasswordResetToken,
-  hashPasswordResetToken,
-} from "@/lib/password-reset";
+import { createPasswordResetToken, hashPasswordResetToken } from "@/lib/password-reset";
 
 function isValidEmail(email: string) {
   // 너무 빡센 정규식은 오히려 유지보수성이 떨어질 수 있어
@@ -19,10 +16,7 @@ export async function POST(req: Request) {
     try {
       body = await req.json();
     } catch {
-      return NextResponse.json(
-        { message: "요청 형식이 올바르지 않습니다." },
-        { status: 400 },
-      );
+      return NextResponse.json({ message: "요청 형식이 올바르지 않습니다." }, { status: 400 });
     }
 
     const email = String(body?.email ?? "")
@@ -30,17 +24,11 @@ export async function POST(req: Request) {
       .toLowerCase();
 
     if (!email) {
-      return NextResponse.json(
-        { message: "이메일을 입력해주세요." },
-        { status: 400 },
-      );
+      return NextResponse.json({ message: "이메일을 입력해주세요." }, { status: 400 });
     }
 
     if (!isValidEmail(email)) {
-      return NextResponse.json(
-        { message: "올바른 이메일 형식을 입력해주세요." },
-        { status: 400 },
-      );
+      return NextResponse.json({ message: "올바른 이메일 형식을 입력해주세요." }, { status: 400 });
     }
 
     const db = await getDb();
@@ -66,10 +54,7 @@ export async function POST(req: Request) {
     const hashedToken = hashPasswordResetToken(rawToken);
 
     // 현재 프로젝트 환경 기준으로 base URL 후보를 순서대로 확인
-    const baseUrl =
-      process.env.NEXT_PUBLIC_SITE_URL ||
-      process.env.NEXT_PUBLIC_BASE_URL ||
-      "http://localhost:3000";
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
     const resetUrl = `${baseUrl}/reset-password?token=${encodeURIComponent(rawToken)}`;
 
@@ -89,12 +74,12 @@ export async function POST(req: Request) {
 
     await sendEmail({
       to: email,
-      subject: "[테니스 플로우] 비밀번호 재설정 안내",
+      subject: "[상호명 미정] 비밀번호 재설정 안내",
       html: `
         <div style="max-width:560px;margin:0 auto;padding:24px;font-family:Arial,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;line-height:1.6;color:black;">
           <h2 style="margin:0 0 16px;">비밀번호 재설정</h2>
           <p style="margin:0 0 12px;">
-            안녕하세요. 테니스 플로우 계정의 비밀번호 재설정 요청이 접수되었습니다.
+            안녕하세요. 상호명 미정 계정의 비밀번호 재설정 요청이 접수되었습니다.
           </p>
           <p style="margin:0 0 20px;">
             아래 버튼을 눌러 새 비밀번호를 설정해주세요.
@@ -124,9 +109,6 @@ export async function POST(req: Request) {
     return NextResponse.json(safeResponse, { status: 200 });
   } catch (error) {
     console.error("[forgot-password/request] error", error);
-    return NextResponse.json(
-      { message: "비밀번호 재설정 메일 전송 중 오류가 발생했습니다." },
-      { status: 500 },
-    );
+    return NextResponse.json({ message: "비밀번호 재설정 메일 전송 중 오류가 발생했습니다." }, { status: 500 });
   }
 }

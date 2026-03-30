@@ -3,7 +3,7 @@ import { getCurrentUser } from "@/lib/hooks/get-current-user";
 import { redirect } from "next/navigation";
 
 export const metadata = {
-  title: "중고 거래 글쓰기 | 테니스 플로우",
+  title: "중고 거래 글쓰기 | 상호명 미정",
   // description: '자유 게시판에 테니스 관련 이야기를 작성합니다.',
   alternates: { canonical: "/board/market/write" },
 };

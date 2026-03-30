@@ -1,15 +1,15 @@
-import type { ReactNode } from "react";
-import { UserCog2Icon } from "lucide-react";
-import { getCurrentUser } from "@/lib/hooks/get-current-user";
-import AccessDenied from "@/components/system/AccessDenied";
-import { headers } from "next/headers";
-import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminMobileMenu from "@/components/admin/AdminMobileMenu";
-import { logInfo } from "@/lib/logger";
+import AdminSidebar from "@/components/admin/AdminSidebar";
+import AccessDenied from "@/components/system/AccessDenied";
 import HeroCourtBackdrop from "@/components/system/HeroCourtBackdrop";
+import { getCurrentUser } from "@/lib/hooks/get-current-user";
+import { logInfo } from "@/lib/logger";
+import { UserCog2Icon } from "lucide-react";
+import { headers } from "next/headers";
+import type { ReactNode } from "react";
 
 export const metadata = {
-  title: "관리자 페이지 - 테니스 플로우",
+  title: "관리자 페이지 - 상호명 미정",
 };
 
 function canBypassAdminGuard(requestHeaders: Headers): boolean {
@@ -27,11 +27,7 @@ function canBypassAdminGuard(requestHeaders: Headers): boolean {
       msg: "admin_guard_bypass_denied",
       path: "/admin",
       extra: {
-        reason: !isTestRuntime
-          ? "non_test_runtime"
-          : isProductionEnvironment
-            ? "production_environment"
-            : "feature_disabled",
+        reason: !isTestRuntime ? "non_test_runtime" : isProductionEnvironment ? "production_environment" : "feature_disabled",
         nodeEnv: process.env.NODE_ENV ?? null,
         vercelEnv: process.env.VERCEL_ENV ?? null,
       },
@@ -54,9 +50,7 @@ function canBypassAdminGuard(requestHeaders: Headers): boolean {
   const bypassAccepted = providedToken === expectedToken;
 
   logInfo({
-    msg: bypassAccepted
-      ? "admin_guard_bypass_approved"
-      : "admin_guard_bypass_denied",
+    msg: bypassAccepted ? "admin_guard_bypass_approved" : "admin_guard_bypass_denied",
     path: "/admin",
     extra: {
       reason: bypassAccepted ? "token_matched" : "token_mismatch",
@@ -67,11 +61,7 @@ function canBypassAdminGuard(requestHeaders: Headers): boolean {
 }
 
 /** 관리자 UI 권한 검사의 단일 진입점. (app/admin/**) */
-export default async function AdminLayout({
-  children,
-}: {
-  children: ReactNode;
-}) {
+export default async function AdminLayout({ children }: { children: ReactNode }) {
   const requestHeaders = await headers();
   const e2eBypass = canBypassAdminGuard(requestHeaders);
 
@@ -96,11 +86,7 @@ export default async function AdminLayout({
               <h1 className="text-3xl font-black mb-1.5 lg:text-4xl">관리자 페이지</h1>
               <p className="text-muted-foreground">
                 관리자 전용 페이지 입니다.
-                <span className="font-medium text-primary">
-                  {" "}
-                  상품 및 주문관리
-                </span>
-                를 진행해보세요.
+                <span className="font-medium text-primary"> 상품 및 주문관리</span>를 진행해보세요.
               </p>
             </div>
           </div>

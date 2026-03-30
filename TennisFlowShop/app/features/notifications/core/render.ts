@@ -1,12 +1,8 @@
-import {
-  ApplicationCtx,
-  EventType,
-  UserCtx,
-} from "@/app/features/notifications/core/type";
+import { ApplicationCtx, EventType, UserCtx } from "@/app/features/notifications/core/type";
 
 /* ========= Theme ========= */
 const THEME = {
-  brand: "테니스 플로우",
+  brand: "상호명 미정",
   surface: "#FCFFFC",
   text: "#1A1C1A",
   sub: "#4A544A",
@@ -54,9 +50,7 @@ function buildICS(app: ApplicationCtx): string | undefined {
   if (!dateStr) return undefined;
 
   const timeStr = app.stringDetails?.preferredTime ?? "10:00";
-  const [hhRaw, mmRaw] = timeStr.includes(":")
-    ? timeStr.split(":")
-    : [timeStr, "00"];
+  const [hhRaw, mmRaw] = timeStr.includes(":") ? timeStr.split(":") : [timeStr, "00"];
   const hh = String(Number(hhRaw || "10")).padStart(2, "0");
   const mm = String(Number(mmRaw || "00")).padStart(2, "0");
 
@@ -77,7 +71,7 @@ function buildICS(app: ApplicationCtx): string | undefined {
     "METHOD:PUBLISH",
     "BEGIN:VEVENT",
     `UID:${uid}`,
-    "SUMMARY:테니스 플로우 스트링 교체 예약",
+    "SUMMARY:상호명 미정 스트링 교체 예약",
     dtstart,
     dtend,
     `DESCRIPTION:참조코드 ${shortCode(app.applicationId)}`,
@@ -89,27 +83,13 @@ function buildICS(app: ApplicationCtx): string | undefined {
 // 전화번호 고르기: contactPhone 우선, 없으면 배송정보의 phone
 function pickPhone(app: ApplicationCtx) {
   const anyApp = app as any;
-  const raw =
-    anyApp?.contactPhone ??
-    anyApp?.phone ??
-    anyApp?.customer?.phone ??
-    app.shippingInfo?.phone ??
-    "";
+  const raw = anyApp?.contactPhone ?? anyApp?.phone ?? anyApp?.customer?.phone ?? app.shippingInfo?.phone ?? "";
   return String(raw || "").replace(/[^\d]/g, "");
 }
 
 // SMS 공통 포맷
-function makeSms(
-  prefix: string,
-  ctx: { name?: string; when?: string; id: string; baseUrl: string },
-) {
-  const lines = [
-    `[테니스 플로우] ${prefix}`,
-    `${ctx.name ?? ""}님`,
-    `일정: ${ctx.when ?? "미정"}`,
-    `신청번호: ${ctx.id}`,
-    `상세 보기: ${ctx.baseUrl}/mypage?tab=orders&flowType=application&flowId=${ctx.id}&from=orders`,
-  ];
+function makeSms(prefix: string, ctx: { name?: string; when?: string; id: string; baseUrl: string }) {
+  const lines = [`[상호명 미정] ${prefix}`, `${ctx.name ?? ""}님`, `일정: ${ctx.when ?? "미정"}`, `신청번호: ${ctx.id}`, `상세 보기: ${ctx.baseUrl}/mypage?tab=orders&flowType=application&flowId=${ctx.id}&from=orders`];
   return lines.filter(Boolean).join("\n");
 }
 
@@ -122,13 +102,8 @@ function selfShipCta(app: ApplicationCtx, baseUrl: string) {
       url: `${baseUrl}/services/applications/${app.applicationId}/shipping`,
     };
   }
-  const method =
-    (app as any)?.shippingInfo?.collectionMethod ??
-    (app as any)?.collectionMethod ??
-    "";
-  const isSelf =
-    typeof method === "string" &&
-    ["self_ship", "self", "자가발송"].includes(method.toLowerCase());
+  const method = (app as any)?.shippingInfo?.collectionMethod ?? (app as any)?.collectionMethod ?? "";
+  const isSelf = typeof method === "string" && ["self_ship", "self", "자가발송"].includes(method.toLowerCase());
   return isSelf
     ? {
         label: "운송장 등록하기",
@@ -183,24 +158,8 @@ function footer(note?: string) {
     ⓒ ${THEME.brand} · 문의 010-0000-0000 · 영업시간 10:00–19:00
   </div>`;
 }
-function wrapEmail({
-  title,
-  badge,
-  preheader,
-  rows,
-  ctas,
-  note,
-}: {
-  title: string;
-  badge?: string;
-  preheader?: string;
-  rows: [string, string][];
-  ctas?: { label: string; url: string }[];
-  note?: string;
-}) {
-  const pre = preheader
-    ? `<span style="display:none;visibility:hidden;opacity:0;color:transparent;height:0;width:0;">${preheader}</span>`
-    : "";
+function wrapEmail({ title, badge, preheader, rows, ctas, note }: { title: string; badge?: string; preheader?: string; rows: [string, string][]; ctas?: { label: string; url: string }[]; note?: string }) {
+  const pre = preheader ? `<span style="display:none;visibility:hidden;opacity:0;color:transparent;height:0;width:0;">${preheader}</span>` : "";
   return `
   ${pre}
   <div style="max-width:680px;margin:0 auto;background:${THEME.surface};border:1px solid ${THEME.line};border-radius:12px;overflow:hidden;font-family:system-ui,-apple-system,Segoe UI,Roboto,'Noto Sans KR',sans-serif;">
@@ -214,16 +173,10 @@ function wrapEmail({
 }
 
 /* ========= Render ========= */
-export async function renderForEvent(
-  event: EventType,
-  ctx: { user?: UserCtx; application: ApplicationCtx; adminDetailUrl?: string },
-) {
+export async function renderForEvent(event: EventType, ctx: { user?: UserCtx; application: ApplicationCtx; adminDetailUrl?: string }) {
   const app = ctx.application;
   const name = ctx.user?.name || "고객님";
-  const whenPretty = fmtKST(
-    app.stringDetails?.preferredDate,
-    app.stringDetails?.preferredTime,
-  );
+  const whenPretty = fmtKST(app.stringDetails?.preferredDate, app.stringDetails?.preferredTime);
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "";
   const ADMIN_BCC = process.env.ADMIN_NOTIFY_EMAILS || "";
   const ref = shortCode(app.applicationId);
@@ -291,11 +244,7 @@ export async function renderForEvent(
   if (event === "stringing.status_updated") {
     const title = `신청 상태 업데이트`;
     const pre = `${app.status} · ${whenPretty ?? "미정"} · ${ref}`;
-    const rows: [string, string][] = [
-      ["현재 상태", String(app.status)],
-      ...(whenPretty ? ([["일정", whenPretty]] as [string, string][]) : []),
-      ["신청번호", `#${app.applicationId}`],
-    ];
+    const rows: [string, string][] = [["현재 상태", String(app.status)], ...(whenPretty ? ([["일정", whenPretty]] as [string, string][]) : []), ["신청번호", `#${app.applicationId}`]];
     const ctasBase = [
       {
         label: "신청서 상세 보기",
@@ -345,8 +294,7 @@ export async function renderForEvent(
     ];
     const maybeSelfShip = selfShipCta(app, baseUrl);
     const ctas = maybeSelfShip ? [...ctasBase, maybeSelfShip] : ctasBase;
-    const note =
-      "예약 변경/취소는 방문 24시간 전까지 가능합니다. 이후에는 유선 문의 부탁드립니다.";
+    const note = "예약 변경/취소는 방문 24시간 전까지 가능합니다. 이후에는 유선 문의 부탁드립니다.";
     const html = wrapEmail({
       title,
       badge: "확정",
@@ -519,10 +467,7 @@ export async function renderForEvent(
   if (event === "stringing.service_completed") {
     const app = ctx.application;
     const name = ctx.user?.name || "고객님";
-    const whenPretty = fmtKST(
-      app.stringDetails?.preferredDate,
-      app.stringDetails?.preferredTime,
-    );
+    const whenPretty = fmtKST(app.stringDetails?.preferredDate, app.stringDetails?.preferredTime);
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "";
     const ADMIN_BCC = process.env.ADMIN_NOTIFY_EMAILS || "";
     const ref = shortCode(app.applicationId);
@@ -579,10 +524,7 @@ export async function renderForEvent(
   if (event === "stringing.service_in_progress") {
     const app = ctx.application;
     const name = ctx.user?.name || "고객님";
-    const whenPretty = fmtKST(
-      app.stringDetails?.preferredDate,
-      app.stringDetails?.preferredTime,
-    );
+    const whenPretty = fmtKST(app.stringDetails?.preferredDate, app.stringDetails?.preferredTime);
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "";
     const ADMIN_BCC = process.env.ADMIN_NOTIFY_EMAILS || "";
     const ref = shortCode(app.applicationId);

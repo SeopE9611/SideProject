@@ -1,8 +1,8 @@
-import { ExternalLink, Github, X } from 'lucide-react';
-import useScrollReveal from '../hooks/useScrollReveal';
-import { useState } from 'react';
-import ReactDOM from 'react-dom';
-import { badgeVariant, buttonVariants, cardVariant, linkVariant, modalPanelVariant, overlayVariant } from './ui/variants';
+import { ExternalLink, Github, X } from "lucide-react";
+import { useState } from "react";
+import ReactDOM from "react-dom";
+import useScrollReveal from "../hooks/useScrollReveal";
+import { badgeVariant, buttonVariants, cardVariant, linkVariant, modalPanelVariant, overlayVariant } from "./ui/variants";
 
 const Projects = ({ darkMode }) => {
   const revealRef = useScrollReveal(0.2);
@@ -11,41 +11,41 @@ const Projects = ({ darkMode }) => {
   const closeModal = () => setSelectedProject(null);
   const projects = [
     {
-      title: '다시,봄',
-      description_sub: '프로젝트 기간 : 2024.12.22 ~ 1.23',
-      description: '친환경 제품을 판매하기 위한 목적으로 제작한 전자상거래 사이트입니다.',
+      title: "다시,봄",
+      description_sub: "프로젝트 기간 : 2024.12.22 ~ 1.23",
+      description: "친환경 제품을 판매하기 위한 목적으로 제작한 전자상거래 사이트입니다.",
       image: {
-        light: '/2trillionmarket_light.png',
-        dark: '/2trillionmarket_dark.png',
+        light: "/2trillionmarket_light.png",
+        dark: "/2trillionmarket_dark.png",
       },
-      tags: ['Node.js', 'Vite React', 'Tailwind CSS', 'Tanstack', 'zustand'],
-      liveLink: 'https://2trillionmarket.netlify.app/',
-      githubLink: 'https://github.com/FRONTENDBOOTCAMP-11th/againSpring_shop/tree/main',
+      tags: ["Node.js", "Vite React", "Tailwind CSS", "Tanstack", "zustand"],
+      liveLink: "https://2trillionmarket.netlify.app/",
+      githubLink: "https://github.com/FRONTENDBOOTCAMP-11th/againSpring_shop/tree/main",
     },
     {
-      title: '테니스 플로우 (진행중)',
-      description_sub: '프로젝트 기간 : ~ing',
-      description: '테니스 라켓 / 스트링 교체,판매 및 아카데미 관리 목적으로 제작한 사이트입니다.',
+      title: "상호명 미정 (진행중)",
+      description_sub: "프로젝트 기간 : ~ing",
+      description: "테니스 라켓 / 스트링 교체,판매 및 아카데미 관리 목적으로 제작한 사이트입니다.",
       image: {
-        light: '/ddokaebi-tennis_light.png',
-        dark: '/ddokaebi-tennis_dark.png',
+        light: "/ddokaebi-tennis_light.png",
+        dark: "/ddokaebi-tennis_dark.png",
       },
-      tags: ['React'],
-      liveLink: '#',
-      githubLink: '#',
+      tags: ["React"],
+      liveLink: "#",
+      githubLink: "#",
     },
     {
-      title: '샬롬의집 (예정)',
-      description_sub: '프로젝트 기간 : null',
-      description: '서울시 강서구 방화동에 위치한 장애인 공동체 복지관 사이트 입니다.',
-      image: '/shalom.png',
-      tags: ['React'],
-      liveLink: '#',
-      githubLink: '#',
+      title: "샬롬의집 (예정)",
+      description_sub: "프로젝트 기간 : null",
+      description: "서울시 강서구 방화동에 위치한 장애인 공동체 복지관 사이트 입니다.",
+      image: "/shalom.png",
+      tags: ["React"],
+      liveLink: "#",
+      githubLink: "#",
     },
   ];
 
-  const modalContainer = document.getElementById('modal-root') || document.body;
+  const modalContainer = document.getElementById("modal-root") || document.body;
 
   const modal =
     selectedProject &&
@@ -91,7 +91,7 @@ const Projects = ({ darkMode }) => {
           {projects.map((project, index) => (
             <div key={index} className="group relative">
               <div className={`${cardVariant} overflow-hidden p-0 transition-transform hover:scale-[1.02]`}>
-                <img src={typeof project.image === 'object' ? (darkMode ? project.image.dark : project.image.light) : project.image} alt={project.title} className="container mx-auto h-80 object-cover" />
+                <img src={typeof project.image === "object" ? (darkMode ? project.image.dark : project.image.light) : project.image} alt={project.title} className="container mx-auto h-80 object-cover" />
               </div>
               <div className="absolute inset-0 flex items-center justify-center bg-overlay opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                 <button onClick={() => setSelectedProject(project)} className={buttonVariants.outline}>

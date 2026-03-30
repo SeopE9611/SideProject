@@ -1,23 +1,23 @@
-import type React from "react";
-import type { Metadata } from "next";
-import "./globals.css";
-import { ThemeProvider } from "@/components/theme-provider";
-import Header from "@/components/header";
-import Footer from "@/components/footer";
-import { Toaster } from "@/components/ui/sonner";
-import Script from "next/script";
-import { cookies } from "next/headers";
-import { verifyAccessToken } from "@/lib/auth.utils";
 import { AuthHydrator } from "@/app/providers/AuthHydrator";
-import GlobalTokenGuard from "@/components/system/GlobalTokenGuard";
-import TokenRefresher from "@/components/system/TokenRefresher";
-import SessionWatcher from "@/components/system/SessionWatcher";
-import ClaimsAutoLinker from "@/components/system/ClaimsAutoLinker";
+import Footer from "@/components/footer";
+import Header from "@/components/header";
 import AppShell from "@/components/layout/AppShell";
+import ClaimsAutoLinker from "@/components/system/ClaimsAutoLinker";
+import GlobalTokenGuard from "@/components/system/GlobalTokenGuard";
 import KakaoInquiryWidget from "@/components/system/KakaoInquiryWidget";
-import "spoqa-han-sans/css/SpoqaHanSansNeo.css";
 import RootScrollLockBridge from "@/components/system/RootScrollLockBridge";
 import ScrollToTopOnPathChange from "@/components/system/ScrollToTopOnPathChange";
+import SessionWatcher from "@/components/system/SessionWatcher";
+import TokenRefresher from "@/components/system/TokenRefresher";
+import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
+import { verifyAccessToken } from "@/lib/auth.utils";
+import type { Metadata } from "next";
+import { cookies } from "next/headers";
+import Script from "next/script";
+import type React from "react";
+import "spoqa-han-sans/css/SpoqaHanSansNeo.css";
+import "./globals.css";
 
 declare global {
   interface Window {
@@ -34,13 +34,11 @@ declare global {
 }
 
 export const metadata: Metadata = {
-  title: "테니스 플로우",
+  title: "상호명 미정",
   description: "테니스 스트링 및 장비 전문 쇼핑몰",
 };
 
-export default async function RootLayout({
-  children,
-}: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const token = (await cookies()).get("accessToken")?.value;
 
   let initialUser: any = null;
@@ -62,19 +60,10 @@ export default async function RootLayout({
   }
   // throw new Error('[TEST] app/global error.tsx 동작 확인용');
   return (
-    <html
-      lang="ko"
-      suppressHydrationWarning
-      className="scroll-smooth overflow-x-hidden"
-    >
+    <html lang="ko" suppressHydrationWarning className="scroll-smooth overflow-x-hidden">
       <body className="bg-background text-foreground">
         {/* Kakao JavaScript SDK (채널 1:1 문의용) */}
-        <Script
-          id="kakao-jssdk"
-          src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.9/kakao.min.js"
-          strategy="afterInteractive"
-          crossOrigin="anonymous"
-        />
+        <Script id="kakao-jssdk" src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.9/kakao.min.js" strategy="afterInteractive" crossOrigin="anonymous" />
         <Script
           id="resume-debug-listeners"
           strategy="afterInteractive"
@@ -140,12 +129,7 @@ export default async function RootLayout({
         <ClaimsAutoLinker />
         <RootScrollLockBridge />
         <ScrollToTopOnPathChange />
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          enableSystem
-          disableTransitionOnChange
-        >
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
           <div className="flex min-h-screen flex-col">
             <Header />
 

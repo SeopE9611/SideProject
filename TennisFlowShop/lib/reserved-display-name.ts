@@ -1,70 +1,17 @@
-export const RESERVED_DISPLAY_NAME_MESSAGE =
-  "사용할 수 없는 이름입니다. 운영/공식 계정으로 오해될 수 있는 표현은 사용할 수 없습니다.";
+export const RESERVED_DISPLAY_NAME_MESSAGE = "사용할 수 없는 이름입니다. 운영/공식 계정으로 오해될 수 있는 표현은 사용할 수 없습니다.";
 
-type ReservedCategory =
-  | "impersonation"
-  | "brand"
-  | "system_route"
-  | "confusing";
+type ReservedCategory = "impersonation" | "brand" | "system_route" | "confusing";
 
-export const normalizeDisplayNameInput = (value: string) =>
-  value.normalize("NFKC").trim().toLowerCase();
-export const normalizeDisplayNameForComparison = (value: string) =>
-  normalizeDisplayNameInput(value).replace(/[\s_.-]/g, "");
+export const normalizeDisplayNameInput = (value: string) => value.normalize("NFKC").trim().toLowerCase();
+export const normalizeDisplayNameForComparison = (value: string) => normalizeDisplayNameInput(value).replace(/[\s_.-]/g, "");
 
-const IMPERSONATION_EXACT = new Set([
-  "admin",
-  "administrator",
-  "root",
-  "superadmin",
-  "support",
-  "official",
-  "system",
-  "bot",
-  "관리자",
-  "운영자",
-  "운영진",
-  "공식",
-  "고객센터",
-  "시스템",
-  "test",
-  "anonymous",
-  "guest",
-]);
+const IMPERSONATION_EXACT = new Set(["admin", "administrator", "root", "superadmin", "support", "official", "system", "bot", "관리자", "운영자", "운영진", "공식", "고객센터", "시스템", "test", "anonymous", "guest"]);
 
-const IMPERSONATION_PREFIX = [
-  "admin",
-  "administrator",
-  "superadmin",
-  "official",
-  "helpdesk",
-  "관리자",
-  "운영자",
-];
+const IMPERSONATION_PREFIX = ["admin", "administrator", "superadmin", "official", "helpdesk", "관리자", "운영자"];
 
-const IMPERSONATION_EXPLICIT_CONTAINS = [
-  "고객센터",
-  "문의센터",
-  "지원팀",
-  "보안팀",
-  "운영팀",
-  "관리자팀",
-  "supportteam",
-  "시스템봇",
-  "운영봇",
-  "관리자봇",
-];
+const IMPERSONATION_EXPLICIT_CONTAINS = ["고객센터", "문의센터", "지원팀", "보안팀", "운영팀", "관리자팀", "supportteam", "시스템봇", "운영봇", "관리자봇"];
 
-const BRAND_EXACT = new Set([
-  "tennisflow",
-  "tennis flow",
-  "tennisflowshop",
-  "테니스플로우",
-  "테니스 플로우",
-  "테니스플로우샵",
-  "tennisflowofficial",
-  "공식테니스플로우",
-]);
+const BRAND_EXACT = new Set(["tennisflow", "tennis flow", "tennisflowshop", "테니스플로우", "상호명 미정", "테니스플로우샵", "tennisflowofficial", "공식테니스플로우"]);
 
 const SYSTEM_ROUTE_EXACT = new Set([
   "api",
@@ -100,17 +47,9 @@ const SYSTEM_ROUTE_EXACT = new Set([
   "마이페이지",
 ]);
 
-const CONFUSING_EXACT = new Set([
-  "null",
-  "undefined",
-  "unknown",
-  "deleted",
-  "systemuser",
-]);
+const CONFUSING_EXACT = new Set(["null", "undefined", "unknown", "deleted", "systemuser"]);
 
-export function getReservedDisplayNameReason(
-  name: string,
-): ReservedCategory | null {
+export function getReservedDisplayNameReason(name: string): ReservedCategory | null {
   const normalized = normalizeDisplayNameInput(name);
   const compact = normalizeDisplayNameForComparison(name);
 
@@ -120,30 +59,15 @@ export function getReservedDisplayNameReason(
     return "impersonation";
   }
 
-  if (
-    IMPERSONATION_PREFIX.some(
-      (keyword) =>
-        normalized.startsWith(keyword) ||
-        compact.startsWith(normalizeDisplayNameForComparison(keyword)),
-    )
-  ) {
+  if (IMPERSONATION_PREFIX.some((keyword) => normalized.startsWith(keyword) || compact.startsWith(normalizeDisplayNameForComparison(keyword)))) {
     return "impersonation";
   }
 
-  if (
-    IMPERSONATION_EXPLICIT_CONTAINS.some(
-      (keyword) =>
-        normalized.includes(keyword) ||
-        compact.includes(normalizeDisplayNameForComparison(keyword)),
-    )
-  ) {
+  if (IMPERSONATION_EXPLICIT_CONTAINS.some((keyword) => normalized.includes(keyword) || compact.includes(normalizeDisplayNameForComparison(keyword)))) {
     return "impersonation";
   }
 
-  if (
-    BRAND_EXACT.has(normalized) ||
-    BRAND_EXACT.has(normalizeDisplayNameForComparison(normalized))
-  ) {
+  if (BRAND_EXACT.has(normalized) || BRAND_EXACT.has(normalizeDisplayNameForComparison(normalized))) {
     return "brand";
   }
 
@@ -162,9 +86,7 @@ export function isReservedDisplayName(name: string): boolean {
   return getReservedDisplayNameReason(name) !== null;
 }
 
-export function getReservedDisplayNameErrorMessage(
-  name: string,
-): string | null {
+export function getReservedDisplayNameErrorMessage(name: string): string | null {
   if (!isReservedDisplayName(name)) return null;
   return RESERVED_DISPLAY_NAME_MESSAGE;
 }

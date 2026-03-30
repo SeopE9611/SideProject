@@ -1,15 +1,5 @@
+import { ArrowLeft, Ban, Building2, FileText, MessageSquare, RefreshCw, Scale, Shield, UserCheck } from "lucide-react";
 import Link from "next/link";
-import {
-  ArrowLeft,
-  FileText,
-  UserCheck,
-  Shield,
-  Building2,
-  MessageSquare,
-  Ban,
-  Scale,
-  RefreshCw,
-} from "lucide-react";
 
 export default function TermsPage() {
   const termsSections = [
@@ -104,20 +94,14 @@ export default function TermsPage() {
     <div className="min-h-screen bg-background">
       <div className="border-b">
         <div className="container py-8 max-w-5xl">
-          <Link
-            href="/"
-            className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors mb-8"
-          >
+          <Link href="/" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors mb-8">
             <ArrowLeft className="mr-2 h-4 w-4" />
             홈으로 돌아가기
           </Link>
 
           <div className="space-y-4">
             <h1 className="text-4xl font-bold tracking-tight">이용약관</h1>
-            <p className="text-muted-foreground max-w-3xl leading-relaxed">
-              테니스 플로우 웹사이트 이용에 관한 약관입니다. 서비스 이용 전
-              반드시 읽어주시기 바랍니다.
-            </p>
+            <p className="text-muted-foreground max-w-3xl leading-relaxed">상호명 미정 웹사이트 이용에 관한 약관입니다. 서비스 이용 전 반드시 읽어주시기 바랍니다.</p>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <RefreshCw className="h-4 w-4" />
               <span>최종 업데이트: 2025년 10월 14일</span>
@@ -130,30 +114,20 @@ export default function TermsPage() {
         <div className="space-y-12">
           {/* Introduction */}
           <div className="space-y-4">
-            <p className="text-foreground/80 leading-relaxed">
-              테니스 플로우(이하 '회사')는 이용자의 권리를 보호하고 안전하고
-              편리한 서비스를 제공하기 위해 본 약관을 마련하였습니다. 본 약관은
-              회사가 제공하는 모든 서비스에 적용됩니다.
-            </p>
+            <p className="text-foreground/80 leading-relaxed">상호명 미정(이하 '회사')는 이용자의 권리를 보호하고 안전하고 편리한 서비스를 제공하기 위해 본 약관을 마련하였습니다. 본 약관은 회사가 제공하는 모든 서비스에 적용됩니다.</p>
           </div>
 
           {/* Terms Sections */}
           {termsSections.map((section) => {
             const Icon = section.icon;
             return (
-              <div
-                key={section.id}
-                id={section.id}
-                className="scroll-mt-20 space-y-4"
-              >
+              <div key={section.id} id={section.id} className="scroll-mt-20 space-y-4">
                 <div className="flex items-center gap-3">
                   <Icon className="h-5 w-5 text-primary flex-shrink-0" />
                   <h2 className="text-2xl font-semibold">{section.title}</h2>
                 </div>
                 <div className="pl-8">
-                  <div className="whitespace-pre-line text-foreground/80 leading-relaxed">
-                    {section.content}
-                  </div>
+                  <div className="whitespace-pre-line text-foreground/80 leading-relaxed">{section.content}</div>
                 </div>
               </div>
             );
@@ -166,17 +140,10 @@ export default function TermsPage() {
               <h2 className="text-2xl font-semibold">약관 동의 안내</h2>
             </div>
             <div className="pl-8 space-y-3">
-              <p className="text-foreground/80 leading-relaxed">
-                본 약관에 동의하시면 테니스 플로우의 서비스를 이용하실 수
-                있습니다. 약관에 동의하지 않으실 경우 서비스 이용이 제한될 수
-                있습니다.
-              </p>
+              <p className="text-foreground/80 leading-relaxed">본 약관에 동의하시면 상호명 미정의 서비스를 이용하실 수 있습니다. 약관에 동의하지 않으실 경우 서비스 이용이 제한될 수 있습니다.</p>
               <p className="text-foreground/80">
                 문의사항이 있으시면{" "}
-                <Link
-                  href="/board/qna/write"
-                  className="text-primary hover:underline"
-                >
+                <Link href="/board/qna/write" className="text-primary hover:underline">
                   고객센터
                 </Link>
                 로 연락해 주시기 바랍니다.
@@ -189,19 +156,13 @@ export default function TermsPage() {
       <div className="border-t mt-16">
         <div className="container py-8 max-w-5xl">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
-            <p>
-              &copy; {new Date().getFullYear()} 테니스 플로우. All rights
-              reserved.
-            </p>
+            <p>&copy; {new Date().getFullYear()} 상호명 미정. All rights reserved.</p>
             <div className="flex items-center gap-4">
               <Link href="/terms" className="text-foreground">
                 이용약관
               </Link>
               <span>·</span>
-              <Link
-                href="/privacy"
-                className="hover:text-foreground transition-colors"
-              >
+              <Link href="/privacy" className="hover:text-foreground transition-colors">
                 개인정보처리방침
               </Link>
             </div>

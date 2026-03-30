@@ -1,18 +1,10 @@
 "use client";
 
 import { adminTypography } from "@/components/admin/admin-typography";
-import {
-  SIDEBAR_SECTIONS,
-  type SidebarBadgeKey,
-} from "@/components/admin/sidebar-navigation";
+import { SIDEBAR_SECTIONS, type SidebarBadgeKey } from "@/components/admin/sidebar-navigation";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { isAdminNavActive } from "@/lib/admin-nav";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -23,10 +15,7 @@ import { useEffect, useState } from "react";
 type BadgeCounts = Partial<Record<SidebarBadgeKey, number>>;
 type Props = { defaultCollapsed?: boolean; badgeCounts?: BadgeCounts };
 
-export default function AdminSidebar({
-  defaultCollapsed = false,
-  badgeCounts = {},
-}: Props) {
+export default function AdminSidebar({ defaultCollapsed = false, badgeCounts = {} }: Props) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(defaultCollapsed);
 
@@ -49,27 +38,14 @@ export default function AdminSidebar({
           collapsed ? "w-16" : "w-64",
         )}
       >
-        <div
-          className={cn(
-            "relative flex items-center justify-between",
-            collapsed ? "px-2 py-2" : "px-3 py-3",
-          )}
-        >
-          {!collapsed && (
-            <div className="text-sm font-semibold tracking-tight text-foreground">
-              테니스 플로우
-            </div>
-          )}
+        <div className={cn("relative flex items-center justify-between", collapsed ? "px-2 py-2" : "px-3 py-3")}>
+          {!collapsed && <div className="text-sm font-semibold tracking-tight text-foreground">상호명 미정</div>}
           <button
             onClick={() => setCollapsed((v) => !v)}
             className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-border bg-card text-muted-foreground hover:bg-background dark:border-border dark:bg-card dark:text-muted-foreground"
             aria-label={collapsed ? "사이드바 펼치기" : "사이드바 접기"}
           >
-            {collapsed ? (
-              <ChevronRight className="h-4 w-4" />
-            ) : (
-              <ChevronLeft className="h-4 w-4" />
-            )}
+            {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
           </button>
         </div>
 
@@ -78,15 +54,7 @@ export default function AdminSidebar({
         <nav className="mt-2 h-[calc(100%-2.75rem)] overflow-y-auto px-2 pb-8">
           {SIDEBAR_SECTIONS.map((section) => (
             <div key={section.label} className="mt-3">
-              <div
-                className={cn(
-                  "px-3",
-                  adminTypography.sidebarSection,
-                  collapsed && "px-0 text-center",
-                )}
-              >
-                {section.label}
-              </div>
+              <div className={cn("px-3", adminTypography.sidebarSection, collapsed && "px-0 text-center")}>{section.label}</div>
               <ul className="mt-2 space-y-1">
                 {section.items.map((item) => {
                   const Icon = item.icon;
@@ -98,36 +66,14 @@ export default function AdminSidebar({
                       href={item.href}
                       className={cn(
                         "group relative flex items-center gap-3 rounded-xl px-3 py-2 text-sm outline-none transition-colors",
-                        active
-                          ? "bg-primary/10 text-primary ring-1 ring-primary/20 dark:bg-primary/20"
-                          : "text-muted-foreground hover:bg-primary/10 dark:text-muted-foreground dark:hover:bg-primary/20 hover:text-foreground",
+                        active ? "bg-primary/10 text-primary ring-1 ring-primary/20 dark:bg-primary/20" : "text-muted-foreground hover:bg-primary/10 dark:text-muted-foreground dark:hover:bg-primary/20 hover:text-foreground",
                       )}
                     >
-                      <span
-                        className={cn(
-                          "absolute left-0 top-1/2 h-6 -translate-y-1/2 rounded-r-full bg-primary transition-all",
-                          active
-                            ? "w-1.5 opacity-100"
-                            : "w-0 opacity-0 group-hover:w-1 group-hover:opacity-60",
-                        )}
-                      />
-                      <Icon
-                        className={cn(
-                          "h-4 w-4 shrink-0",
-                          active && "text-primary",
-                        )}
-                      />
-                      {!collapsed && (
-                        <span className="truncate">{item.title}</span>
-                      )}
+                      <span className={cn("absolute left-0 top-1/2 h-6 -translate-y-1/2 rounded-r-full bg-primary transition-all", active ? "w-1.5 opacity-100" : "w-0 opacity-0 group-hover:w-1 group-hover:opacity-60")} />
+                      <Icon className={cn("h-4 w-4 shrink-0", active && "text-primary")} />
+                      {!collapsed && <span className="truncate">{item.title}</span>}
                       {!!count && !collapsed && (
-                        <Badge
-                          variant="secondary"
-                          className={cn(
-                            "ml-auto",
-                            adminTypography.sidebarCount,
-                          )}
-                        >
+                        <Badge variant="secondary" className={cn("ml-auto", adminTypography.sidebarCount)}>
                           {count > 99 ? "99+" : count}
                         </Badge>
                       )}
@@ -139,9 +85,7 @@ export default function AdminSidebar({
                       {collapsed ? (
                         <Tooltip>
                           <TooltipTrigger asChild>{link}</TooltipTrigger>
-                          <TooltipContent side="right">
-                            {item.title}
-                          </TooltipContent>
+                          <TooltipContent side="right">{item.title}</TooltipContent>
                         </Tooltip>
                       ) : (
                         link
@@ -153,15 +97,7 @@ export default function AdminSidebar({
             </div>
           ))}
 
-          <div
-            className={cn(
-              "mt-6 px-3",
-              adminTypography.sidebarFooter,
-              collapsed && "px-0 text-center",
-            )}
-          >
-            v1.0 • 관리자
-          </div>
+          <div className={cn("mt-6 px-3", adminTypography.sidebarFooter, collapsed && "px-0 text-center")}>v1.0 • 관리자</div>
         </nav>
       </aside>
     </TooltipProvider>

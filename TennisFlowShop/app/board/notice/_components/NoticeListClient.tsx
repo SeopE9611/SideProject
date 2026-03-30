@@ -5,30 +5,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  badgeBaseOutlined,
-  badgeSizeSm,
-  getNoticeCategoryBadgeSpec,
-} from "@/lib/badge-style";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { badgeBaseOutlined, badgeSizeSm, getNoticeCategoryBadgeSpec } from "@/lib/badge-style";
 import { boardFetcher, parseApiError } from "@/lib/fetchers/boardFetcher";
 import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
-import {
-  ArrowLeft,
-  Bell,
-  Eye,
-  ImageIcon,
-  Paperclip,
-  Pin,
-  Plus,
-  Search,
-} from "lucide-react";
+import { ArrowLeft, Bell, Eye, ImageIcon, Paperclip, Pin, Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -54,12 +35,7 @@ function AdminNoticeWriteButton() {
   if (loading || user?.role !== "admin") return null;
 
   return (
-    <Button
-      asChild
-      size="sm"
-      variant="outline"
-      className="h-9 sm:h-10 text-sm sm:text-base"
-    >
+    <Button asChild size="sm" variant="outline" className="h-9 sm:h-10 text-sm sm:text-base">
       <Link href="/board/notice/write">
         <Plus className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
         작성하기
@@ -68,15 +44,7 @@ function AdminNoticeWriteButton() {
   );
 }
 
-export default function NoticeListClient({
-  initialItems,
-  initialTotal,
-  initialLoadError,
-  initialErrorMessage,
-  initialPage = 1,
-  initialKeyword = "",
-  initialField = "all",
-}: Props) {
+export default function NoticeListClient({ initialItems, initialTotal, initialLoadError, initialErrorMessage, initialPage = 1, initialKeyword = "", initialField = "all" }: Props) {
   type NoticeItem = {
     _id: string;
     title: string;
@@ -110,24 +78,17 @@ export default function NoticeListClient({
       })
       .replace(/\.\s/g, ".")
       .replace(/\.$/, "");
-  const noticeMobileTitleClampClass =
-    "flex-1 min-w-0 line-clamp-2 text-sm font-semibold leading-snug sm:line-clamp-1 sm:text-base";
-  const noticeMobileMetaWrapClass =
-    "flex flex-wrap items-center gap-x-3.5 gap-y-1 text-xs text-muted-foreground";
-  const noticeMobileActionGroupClass =
-    "flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto";
+  const noticeMobileTitleClampClass = "flex-1 min-w-0 line-clamp-2 text-sm font-semibold leading-snug sm:line-clamp-1 sm:text-base";
+  const noticeMobileMetaWrapClass = "flex flex-wrap items-center gap-x-3.5 gap-y-1 text-xs text-muted-foreground";
+  const noticeMobileActionGroupClass = "flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto";
 
   // 목록 불러오기 (핀 우선 + 최신, 서버에서 정렬됨)
   // 입력용 상태 (타이핑 중)
   const [inputKeyword, setInputKeyword] = useState(initialKeyword);
-  const [inputField, setInputField] = useState<
-    "all" | "title" | "content" | "title_content"
-  >(initialField);
+  const [inputField, setInputField] = useState<"all" | "title" | "content" | "title_content">(initialField);
   // 제출용 상태 (버튼/엔터로 확정된 값만 SWR에 반영)
   const [keyword, setKeyword] = useState(initialKeyword);
-  const [field, setField] = useState<
-    "all" | "title" | "content" | "title_content"
-  >(initialField);
+  const [field, setField] = useState<"all" | "title" | "content" | "title_content">(initialField);
 
   const [page, setPage] = useState(initialPage);
   const [pageJump, setPageJump] = useState("");
@@ -139,12 +100,7 @@ export default function NoticeListClient({
   useEffect(() => {
     const urlKeyword = searchParams.get("q") ?? "";
     const rawField = searchParams.get("field");
-    const urlField: "all" | "title" | "content" | "title_content" =
-      rawField === "title" ||
-      rawField === "content" ||
-      rawField === "title_content"
-        ? rawField
-        : "all";
+    const urlField: "all" | "title" | "content" | "title_content" = rawField === "title" || rawField === "content" || rawField === "title_content" ? rawField : "all";
     const rawPage = Number.parseInt(searchParams.get("page") ?? "1", 10);
     const urlPage = Number.isFinite(rawPage) && rawPage > 0 ? rawPage : 1;
 
@@ -173,11 +129,7 @@ export default function NoticeListClient({
     return listQuery ? `${base}?${listQuery}` : base;
   };
 
-  const pushUrlFromState = (next: {
-    page: number;
-    keyword: string;
-    field: "all" | "title" | "content" | "title_content";
-  }) => {
+  const pushUrlFromState = (next: { page: number; keyword: string; field: "all" | "title" | "content" | "title_content" }) => {
     const sp = new URLSearchParams();
     const normalizedKeyword = next.keyword.trim();
 
@@ -217,8 +169,7 @@ export default function NoticeListClient({
   const initialKey = `/api/boards?${initialQs.toString()}`;
 
   // fallbackData는 "초기 진입 키"에서만 제공해야 페이지/검색 전환 시 튐이 사라짐
-  const hasInitialResolvedData =
-    !initialLoadError && !!initialItems && initialTotal !== null;
+  const hasInitialResolvedData = !initialLoadError && !!initialItems && initialTotal !== null;
   const fallbackData: BoardListRes | undefined =
     key === initialKey && hasInitialResolvedData
       ? {
@@ -229,17 +180,13 @@ export default function NoticeListClient({
           limit,
         }
       : undefined;
-  const { data, error, isLoading, isValidating, mutate } = useSWR<BoardListRes>(
-    key,
-    (url) => boardFetcher<BoardListRes>(url),
-    {
-      fallbackData,
-      keepPreviousData: true, // 키 변경 시 이전 data 유지 → 깜빡임 제거
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-      revalidateOnMount: fallbackData ? false : true,
-    },
-  );
+  const { data, error, isLoading, isValidating, mutate } = useSWR<BoardListRes>(key, (url) => boardFetcher<BoardListRes>(url), {
+    fallbackData,
+    keepPreviousData: true, // 키 변경 시 이전 data 유지 → 깜빡임 제거
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    revalidateOnMount: fallbackData ? false : true,
+  });
   const listError = parseApiError(error, "공지 목록을 불러오지 못했습니다.");
   // 초기(SSR fallback)에서의 revalidate는 "로딩 UI"로 취급하지 않기
   const isBusy = key !== initialKey && (isLoading || isValidating);
@@ -255,18 +202,8 @@ export default function NoticeListClient({
   const items: NoticeItem[] = data?.items ?? [];
   const total: number | null = data?.total ?? null;
   const shouldShowLoadingState = isBusy && !hasResolvedData;
-  const shouldShowActualEmptyState =
-    !isBusy &&
-    !hasDataError &&
-    hasResolvedData &&
-    !hasSearchKeyword &&
-    items.length === 0;
-  const shouldShowSearchEmptyState =
-    !isBusy &&
-    !hasDataError &&
-    hasResolvedData &&
-    hasSearchKeyword &&
-    items.length === 0;
+  const shouldShowActualEmptyState = !isBusy && !hasDataError && hasResolvedData && !hasSearchKeyword && items.length === 0;
+  const shouldShowSearchEmptyState = !isBusy && !hasDataError && hasResolvedData && hasSearchKeyword && items.length === 0;
 
   // total이 확정되지 않은(preload 실패/초기 로딩) 상황에서
   // 0건/1페이지처럼 굳어 보이지 않게 기본 페이징만 안전 처리
@@ -274,10 +211,7 @@ export default function NoticeListClient({
   const totalPages = Math.max(1, Math.ceil(resolvedTotalForPaging / limit));
   const pageStart = Math.max(1, Math.min(page - 1, totalPages - 2));
   const pageEnd = Math.min(totalPages, pageStart + 2);
-  const visiblePages = Array.from(
-    { length: pageEnd - pageStart + 1 },
-    (_, i) => pageStart + i,
-  );
+  const visiblePages = Array.from({ length: pageEnd - pageStart + 1 }, (_, i) => pageStart + i);
 
   const movePage = (nextPage: number) => {
     const safePage = Math.max(1, Math.min(totalPages, nextPage));
@@ -298,9 +232,7 @@ export default function NoticeListClient({
   const monthCount = items.filter((n) => {
     const d = new Date(n.createdAt);
     const now = new Date();
-    return (
-      d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()
-    );
+    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
   }).length;
 
   return (
@@ -320,13 +252,8 @@ export default function NoticeListClient({
                 <Bell className="h-5 w-5 sm:h-6 sm:w-6" />
               </div>
               <div>
-                <h1 className="text-2xl sm:text-3xl md:text-[2rem] font-bold tracking-tight text-foreground">
-                  고객센터 · 공지사항
-                </h1>
-                <p className="text-sm sm:text-base text-muted-foreground">
-                  테니스 플로우 고객센터의 주요 안내와 공지사항을 확인하실 수
-                  있습니다.
-                </p>
+                <h1 className="text-2xl sm:text-3xl md:text-[2rem] font-bold tracking-tight text-foreground">고객센터 · 공지사항</h1>
+                <p className="text-sm sm:text-base text-muted-foreground">상호명 미정 고객센터의 주요 안내와 공지사항을 확인하실 수 있습니다.</p>
               </div>
             </div>
           </div>
@@ -337,16 +264,11 @@ export default function NoticeListClient({
             <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div className="flex items-center space-x-2 sm:space-x-3">
                 <Bell className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-                <span className="text-lg sm:text-xl md:text-2xl">
-                  공지사항 목록
-                </span>
+                <span className="text-lg sm:text-xl md:text-2xl">공지사항 목록</span>
               </div>
 
               <div className={noticeMobileActionGroupClass}>
-                <Select
-                  value={inputField}
-                  onValueChange={(v) => setInputField(v as any)}
-                >
+                <Select value={inputField} onValueChange={(v) => setInputField(v as any)}>
                   <SelectTrigger className="w-full sm:w-[140px] bg-card text-sm sm:text-base h-9 sm:h-10">
                     <SelectValue placeholder="검색 조건" />
                   </SelectTrigger>
@@ -398,9 +320,7 @@ export default function NoticeListClient({
                   className="h-9 sm:h-10 text-sm sm:text-base"
                   disabled={isBusy}
                 >
-                  {isBusy && (
-                    <div className="h-4 w-4 border-2 border-border/30 border-t-primary-foreground rounded-full animate-spin mr-2" />
-                  )}
+                  {isBusy && <div className="h-4 w-4 border-2 border-border/30 border-t-primary-foreground rounded-full animate-spin mr-2" />}
                   검색
                 </Button>
                 <AdminNoticeWriteButton />
@@ -411,76 +331,54 @@ export default function NoticeListClient({
             <div className="space-y-3.5 sm:space-y-4">
               {!shouldShowLoadingState && hasDataError && (
                 <ErrorBox
-                  message={
-                    hasPreloadError
-                      ? initialErrorMessage ||
-                        "공지 목록을 불러오지 못했습니다."
-                      : listError.message
-                  }
+                  message={hasPreloadError ? initialErrorMessage || "공지 목록을 불러오지 못했습니다." : listError.message}
                   status={hasPreloadError ? 500 : listError.status}
                   fallbackMessage="공지 목록을 불러오지 못했습니다."
                   onRetry={() => mutate()}
                 />
               )}
-              {!shouldShowLoadingState &&
-                !hasDataError &&
-                shouldShowActualEmptyState && (
-                  <div className="space-y-3">
-                    <AsyncState
-                      kind="empty"
-                      variant="card"
-                      title="등록된 공지사항이 없습니다."
-                      description="새 소식이 등록되면 이곳에서 가장 먼저 안내해 드릴게요."
-                    />
-                    <div className="mt-3">
-                      <Button asChild variant="outline" size="sm">
-                        <Link href="/support">고객센터 홈으로</Link>
-                      </Button>
-                    </div>
+              {!shouldShowLoadingState && !hasDataError && shouldShowActualEmptyState && (
+                <div className="space-y-3">
+                  <AsyncState kind="empty" variant="card" title="등록된 공지사항이 없습니다." description="새 소식이 등록되면 이곳에서 가장 먼저 안내해 드릴게요." />
+                  <div className="mt-3">
+                    <Button asChild variant="outline" size="sm">
+                      <Link href="/support">고객센터 홈으로</Link>
+                    </Button>
                   </div>
-                )}
-              {!shouldShowLoadingState &&
-                !hasDataError &&
-                !shouldShowActualEmptyState &&
-                shouldShowSearchEmptyState && (
-                  <div className="space-y-3">
-                    <AsyncState
-                      kind="empty"
-                      variant="card"
-                      title="검색 결과가 없습니다."
-                      description="검색어를 바꾸거나 전체 공지 목록으로 돌아가 확인해 보세요."
-                    />
-                    <div className="mt-3">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setInputKeyword("");
-                          setKeyword("");
-                          setInputField("all");
-                          setField("all");
-                          setPage(1);
-                          pushUrlFromState({
-                            page: 1,
-                            keyword: "",
-                            field: "all",
-                          });
-                        }}
-                      >
-                        전체 공지 보기
-                      </Button>
-                    </div>
+                </div>
+              )}
+              {!shouldShowLoadingState && !hasDataError && !shouldShowActualEmptyState && shouldShowSearchEmptyState && (
+                <div className="space-y-3">
+                  <AsyncState kind="empty" variant="card" title="검색 결과가 없습니다." description="검색어를 바꾸거나 전체 공지 목록으로 돌아가 확인해 보세요." />
+                  <div className="mt-3">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setInputKeyword("");
+                        setKeyword("");
+                        setInputField("all");
+                        setField("all");
+                        setPage(1);
+                        pushUrlFromState({
+                          page: 1,
+                          keyword: "",
+                          field: "all",
+                        });
+                      }}
+                    >
+                      전체 공지 보기
+                    </Button>
                   </div>
-                )}
+                </div>
+              )}
               {!shouldShowLoadingState &&
                 !hasDataError &&
                 !shouldShowActualEmptyState &&
                 !shouldShowSearchEmptyState &&
                 items.map((notice) => {
-                  const noticeCategoryBadge = getNoticeCategoryBadgeSpec(
-                    notice.category,
-                  );
+                  const noticeCategoryBadge = getNoticeCategoryBadgeSpec(notice.category);
 
                   return (
                     <Link key={notice._id} href={buildDetailHref(notice._id)}>
@@ -491,31 +389,18 @@ export default function NoticeListClient({
                               <div className="mb-1 flex flex-wrap items-start justify-between gap-2">
                                 <div className="flex min-w-0 flex-1 items-center gap-2 flex-wrap">
                                   {notice.category && (
-                                    <Badge
-                                      variant={noticeCategoryBadge.variant}
-                                      className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`}
-                                      title={notice.category ?? undefined}
-                                    >
+                                    <Badge variant={noticeCategoryBadge.variant} className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`} title={notice.category ?? undefined}>
                                       {notice.category}
                                     </Badge>
                                   )}
 
                                   {notice.isPinned && (
-                                    <Badge
-                                      variant="brand"
-                                      className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`}
-                                      title="고정 공지"
-                                      aria-label="고정 공지"
-                                    >
+                                    <Badge variant="brand" className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`} title="고정 공지" aria-label="고정 공지">
                                       <Pin className="h-3 w-3" />
                                     </Badge>
                                   )}
 
-                                  <span
-                                    className={`${noticeMobileTitleClampClass} text-foreground transition-colors hover:text-primary dark:hover:text-primary`}
-                                  >
-                                    {notice.title}
-                                  </span>
+                                  <span className={`${noticeMobileTitleClampClass} text-foreground transition-colors hover:text-primary dark:hover:text-primary`}>{notice.title}</span>
                                 </div>
                               </div>
 
@@ -526,30 +411,15 @@ export default function NoticeListClient({
                                   {notice.viewCount ?? 0}
                                 </span>
                                 {(notice.hasImage || notice.hasFile) && (
-                                  <span
-                                    className="flex items-center gap-1.5"
-                                    aria-label="첨부 정보"
-                                  >
+                                  <span className="flex items-center gap-1.5" aria-label="첨부 정보">
                                     {notice.hasImage && (
-                                      <span
-                                        title="이미지 첨부"
-                                        aria-label="이미지 첨부"
-                                      >
-                                        <ImageIcon
-                                          className="h-3.5 w-3.5"
-                                          aria-hidden="true"
-                                        />
+                                      <span title="이미지 첨부" aria-label="이미지 첨부">
+                                        <ImageIcon className="h-3.5 w-3.5" aria-hidden="true" />
                                       </span>
                                     )}
                                     {notice.hasFile && (
-                                      <span
-                                        title="첨부파일 있음"
-                                        aria-label="첨부파일 있음"
-                                      >
-                                        <Paperclip
-                                          className="h-3.5 w-3.5"
-                                          aria-hidden="true"
-                                        />
+                                      <span title="첨부파일 있음" aria-label="첨부파일 있음">
+                                        <Paperclip className="h-3.5 w-3.5" aria-hidden="true" />
                                       </span>
                                     )}
                                   </span>
@@ -566,35 +436,12 @@ export default function NoticeListClient({
 
             <div className="mt-8 sm:mt-10 flex items-center justify-center">
               <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="bg-card h-10 w-10 sm:h-12 sm:w-12"
-                  onClick={() => movePage(1)}
-                  disabled={page <= 1 || isBusy}
-                >
+                <Button variant="outline" size="icon" className="bg-card h-10 w-10 sm:h-12 sm:w-12" onClick={() => movePage(1)} disabled={page <= 1 || isBusy}>
                   <span className="sr-only">첫 페이지</span>«
                 </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="bg-card h-10 w-10 sm:h-12 sm:w-12"
-                  onClick={() => movePage(page - 1)}
-                  disabled={page <= 1 || isBusy}
-                >
+                <Button variant="outline" size="icon" className="bg-card h-10 w-10 sm:h-12 sm:w-12" onClick={() => movePage(page - 1)} disabled={page <= 1 || isBusy}>
                   <span className="sr-only">이전 페이지</span>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="h-4 w-4 sm:h-5 sm:w-5"
-                  >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 sm:h-5 sm:w-5">
                     <polyline points="15 18 9 12 15 6" />
                   </svg>
                 </Button>
@@ -603,11 +450,7 @@ export default function NoticeListClient({
                     key={pageNumber}
                     variant="outline"
                     size="sm"
-                    className={
-                      pageNumber === page
-                        ? "h-10 w-10 sm:h-12 sm:w-12 bg-primary text-primary-foreground border-border text-sm sm:text-base"
-                        : "h-10 w-10 sm:h-12 sm:w-12 bg-card text-sm sm:text-base"
-                    }
+                    className={pageNumber === page ? "h-10 w-10 sm:h-12 sm:w-12 bg-primary text-primary-foreground border-border text-sm sm:text-base" : "h-10 w-10 sm:h-12 sm:w-12 bg-card text-sm sm:text-base"}
                     onClick={() => movePage(pageNumber)}
                     disabled={isBusy}
                   >
@@ -615,43 +458,17 @@ export default function NoticeListClient({
                   </Button>
                 ))}
 
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="bg-card h-10 w-10 sm:h-12 sm:w-12"
-                  onClick={() => movePage(page + 1)}
-                  disabled={page >= totalPages || isBusy}
-                >
+                <Button variant="outline" size="icon" className="bg-card h-10 w-10 sm:h-12 sm:w-12" onClick={() => movePage(page + 1)} disabled={page >= totalPages || isBusy}>
                   <span className="sr-only">다음 페이지</span>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="h-4 w-4 sm:h-5 sm:w-5"
-                  >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 sm:h-5 sm:w-5">
                     <polyline points="9 18 15 12 9 6" />
                   </svg>
                 </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="bg-card h-10 w-10 sm:h-12 sm:w-12"
-                  onClick={() => movePage(totalPages)}
-                  disabled={page >= totalPages || isBusy}
-                >
+                <Button variant="outline" size="icon" className="bg-card h-10 w-10 sm:h-12 sm:w-12" onClick={() => movePage(totalPages)} disabled={page >= totalPages || isBusy}>
                   <span className="sr-only">마지막 페이지</span>»
                 </Button>
 
-                <form
-                  onSubmit={handlePageJump}
-                  className="ml-1 flex items-center gap-1"
-                >
+                <form onSubmit={handlePageJump} className="ml-1 flex items-center gap-1">
                   <input
                     type="number"
                     min={1}
@@ -661,13 +478,7 @@ export default function NoticeListClient({
                     placeholder="페이지"
                     className="h-10 w-20 sm:h-12 rounded-md border border-border bg-card px-2 text-xs sm:text-sm dark:border-border dark:bg-card"
                   />
-                  <Button
-                    type="submit"
-                    variant="outline"
-                    size="sm"
-                    className="h-10 sm:h-12 px-2 bg-card"
-                    disabled={isBusy}
-                  >
+                  <Button type="submit" variant="outline" size="sm" className="h-10 sm:h-12 px-2 bg-card" disabled={isBusy}>
                     이동
                   </Button>
                 </form>

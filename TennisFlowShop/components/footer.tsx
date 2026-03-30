@@ -11,19 +11,14 @@ const Footer = () => {
    * - on: 비회원 주문을 운영할 때만 '주문 조회(/order-lookup)' 링크 노출
    */
   const rawMode = (process.env.GUEST_ORDER_MODE ?? "on").trim();
-  const guestOrderMode =
-    rawMode === "off" || rawMode === "legacy" || rawMode === "on"
-      ? rawMode
-      : "on";
+  const guestOrderMode = rawMode === "off" || rawMode === "legacy" || rawMode === "on" ? rawMode : "on";
 
   const quickLinks = [
     { name: "스트링 쇼핑", href: "/products" },
     { name: "장착 서비스", href: "/services" },
     { name: "패키지", href: "/services/packages" },
     // { name: '주문 조회', href: '/order-lookup' },
-    ...(guestOrderMode === "on"
-      ? [{ name: "주문 조회", href: "/order-lookup" }]
-      : []),
+    ...(guestOrderMode === "on" ? [{ name: "주문 조회", href: "/order-lookup" }] : []),
     { name: "오프라인 매장 찾기", href: "/services/locations" },
   ];
 
@@ -45,49 +40,25 @@ const Footer = () => {
             <div className="bp-sm:col-span-2 bp-lg:col-span-1">
               <Link href="/" className="flex items-center gap-3 mb-5 group">
                 <div className="relative h-9 w-[72px] shrink-0 overflow-hidden">
-                  <Image
-                    src="/tennisflowmark-light.png"
-                    alt=""
-                    aria-hidden="true"
-                    fill
-                    className="object-contain dark:hidden"
-                  />
-                  <Image
-                    src="/tennisflowmark-dark.png"
-                    alt=""
-                    aria-hidden="true"
-                    fill
-                    className="hidden object-contain dark:block"
-                  />
+                  <Image src="/tennisflowmark-light.png" alt="" aria-hidden="true" fill className="object-contain dark:hidden" />
+                  <Image src="/tennisflowmark-dark.png" alt="" aria-hidden="true" fill className="hidden object-contain dark:block" />
                 </div>
 
                 <div>
-                  <div className="font-black text-lg bp-sm:text-xl text-primary">
-                    테니스 플로우
-                  </div>
-                  <div className="text-xs text-muted-foreground font-semibold tracking-wider">
-                    TENNIS FLOW SHOP
-                  </div>
+                  <div className="font-black text-lg bp-sm:text-xl text-primary">상호명 미정</div>
+                  <div className="text-xs text-muted-foreground font-semibold tracking-wider">Name Pending</div>
                 </div>
               </Link>
 
-              <p className="text-sm text-muted-foreground mb-5 leading-relaxed">
-                전문 테니스 스트링 서비스로 여러분의 테니스 라이프를
-                완성해드립니다.
-              </p>
+              <p className="text-sm text-muted-foreground mb-5 leading-relaxed">전문 테니스 스트링 서비스로 여러분의 테니스 라이프를 완성해드립니다.</p>
             </div>
 
             <div>
-              <h3 className="text-base bp-sm:text-lg font-bold mb-3 bp-sm:mb-4 text-foreground">
-                바로가기
-              </h3>
+              <h3 className="text-base bp-sm:text-lg font-bold mb-3 bp-sm:mb-4 text-foreground">바로가기</h3>
               <ul className="space-y-2">
                 {quickLinks.map((link) => (
                   <li key={link.name}>
-                    <Link
-                      href={link.href}
-                      className="text-sm text-muted-foreground hover:text-primary transition-colors duration-300"
-                    >
+                    <Link href={link.href} className="text-sm text-muted-foreground hover:text-primary transition-colors duration-300">
                       {link.name}
                     </Link>
                   </li>
@@ -97,16 +68,11 @@ const Footer = () => {
 
             {/* 고객센터 */}
             <div>
-              <h3 className="text-base bp-sm:text-lg font-bold mb-3 bp-sm:mb-4 text-foreground">
-                고객센터
-              </h3>
+              <h3 className="text-base bp-sm:text-lg font-bold mb-3 bp-sm:mb-4 text-foreground">고객센터</h3>
               <ul className="space-y-2">
                 {customerService.map((link) => (
                   <li key={link.name}>
-                    <Link
-                      href={link.href}
-                      className="text-sm text-muted-foreground hover:text-primary transition-colors duration-300"
-                    >
+                    <Link href={link.href} className="text-sm text-muted-foreground hover:text-primary transition-colors duration-300">
                       {link.name}
                     </Link>
                   </li>
@@ -115,38 +81,26 @@ const Footer = () => {
             </div>
 
             <div>
-              <h3 className="text-base bp-sm:text-lg font-bold mb-3 bp-sm:mb-4 text-foreground">
-                연락처
-              </h3>
+              <h3 className="text-base bp-sm:text-lg font-bold mb-3 bp-sm:mb-4 text-foreground">연락처</h3>
               <div className="space-y-3">
                 <div className="flex items-start gap-2.5">
                   <Phone className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                   <div>
-                    <span className="text-sm font-semibold text-foreground block">
-                      0507-1392-3493
-                    </span>
-                    <p className="text-xs text-muted-foreground">
-                      영업 시간 내 상담 가능
-                    </p>
+                    <span className="text-sm font-semibold text-foreground block">0507-1392-3493</span>
+                    <p className="text-xs text-muted-foreground">영업 시간 내 상담 가능</p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2.5">
                   <Mail className="h-4 w-4 text-primary shrink-0" />
-                  <span className="text-xs bp-sm:text-sm text-foreground break-all">
-                    korgis5813@naver.com
-                  </span>
+                  <span className="text-xs bp-sm:text-sm text-foreground break-all">korgis5813@naver.com</span>
                 </div>
 
                 <div className="flex items-start gap-2.5">
                   <MapPin className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                   <div>
-                    <span className="text-sm text-foreground block">
-                      서울 동작구 노량진로 22 B1
-                    </span>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      우편번호: 06938
-                    </p>
+                    <span className="text-sm text-foreground block">서울 동작구 노량진로 22 B1</span>
+                    <p className="text-xs text-muted-foreground mt-0.5">우편번호: 06938</p>
                   </div>
                 </div>
 
@@ -154,12 +108,8 @@ const Footer = () => {
                   <Clock className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                   <div className="text-sm space-y-0.5">
                     <div className="text-foreground">평일 10:00 - 22:00</div>
-                    <div className="text-xs text-muted-foreground">
-                      토요일 09:00 - 18:00
-                    </div>
-                    <div className="text-xs text-destructive">
-                      일요일 정기 휴무
-                    </div>
+                    <div className="text-xs text-muted-foreground">토요일 09:00 - 18:00</div>
+                    <div className="text-xs text-destructive">일요일 정기 휴무</div>
                   </div>
                 </div>
               </div>
@@ -173,14 +123,8 @@ const Footer = () => {
           <SiteContainer className="bp-lg:mx-0">
             <div className="flex flex-col bp-sm:flex-row items-start bp-sm:items-center justify-between gap-2 text-xs text-muted-foreground">
               <div className="space-y-1">
-                <p>
-                  &copy; {new Date().getFullYear()} 테니스 플로우. All rights
-                  reserved.
-                </p>
-                <p>
-                  사업자등록번호: 등록예정 | 대표: 김재민 | 통신판매업신고:
-                  등록예정
-                </p>
+                <p>&copy; {new Date().getFullYear()} 상호명 미정. All rights reserved.</p>
+                <p>사업자등록번호: 등록예정 | 대표: 김재민 | 통신판매업신고: 등록예정</p>
               </div>
             </div>
           </SiteContainer>

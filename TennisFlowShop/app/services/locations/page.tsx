@@ -1,49 +1,49 @@
-import HeroCourtBackdrop from '@/components/system/HeroCourtBackdrop';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Clock, MapPin, Phone, Train } from 'lucide-react';
-import Link from 'next/link';
+import HeroCourtBackdrop from "@/components/system/HeroCourtBackdrop";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Clock, MapPin, Phone, Train } from "lucide-react";
+import Link from "next/link";
 
 export default function LocationsPage() {
   const locations = [
     {
-      name: '테니스 플로우',
-      address: '서울 동작구 노량진로 22 B1',
-      phone: '0507-1392-3493',
-      email: 'info@tennis-flow.com',
+      name: "상호명 미정",
+      address: "서울 동작구 노량진로 22 B1",
+      phone: "0507-1392-3493",
+      email: "info@tennis-flow.com",
       hours: {
-        weekday: '10:00 - 22:00',
-        weekend: '09:00 - 18:00',
-        holiday: '휴무',
+        weekday: "10:00 - 22:00",
+        weekend: "09:00 - 18:00",
+        holiday: "휴무",
       },
-      services: ['스트링 장착', '텐션 가이드', '스트링 추천', '라켓 상담'],
-      transport: ['대방역 2번출구'],
+      services: ["스트링 장착", "텐션 가이드", "스트링 추천", "라켓 상담"],
+      transport: ["대방역 2번출구"],
       isMain: true,
-      specialNote: '매장에 방문하시면 친절하게 상담해드립니다.',
+      specialNote: "매장에 방문하시면 친절하게 상담해드립니다.",
     },
   ];
 
   const reservationSteps = [
     {
       step: 1,
-      title: '서비스 선택',
-      description: '스트링 장착 서비스를 선택하세요',
+      title: "서비스 선택",
+      description: "스트링 장착 서비스를 선택하세요",
     },
     {
       step: 2,
-      title: '날짜/시간 선택',
-      description: '편리한 시간을 예약하세요',
+      title: "날짜/시간 선택",
+      description: "편리한 시간을 예약하세요",
     },
     {
       step: 3,
-      title: '상담 및 확인',
-      description: '전화 또는 방문 상담을 받으세요',
+      title: "상담 및 확인",
+      description: "전화 또는 방문 상담을 받으세요",
     },
     {
       step: 4,
-      title: '서비스 완료',
-      description: '전문적인 스트링 장착을 받으세요',
+      title: "서비스 완료",
+      description: "전문적인 스트링 장착을 받으세요",
     },
   ];
 

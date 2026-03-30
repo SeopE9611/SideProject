@@ -7,10 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  UNSAVED_CHANGES_MESSAGE,
-  useUnsavedChangesGuard,
-} from "@/lib/hooks/useUnsavedChangesGuard";
+import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { AlertCircle, Eye, EyeOff, Loader2, Lock, Mail, Shield } from "lucide-react";
 import dynamic from "next/dynamic";
@@ -30,10 +27,7 @@ function getGuestOrderModeClient(): GuestOrderMode {
 
 type LoginField = "email" | "password";
 
-const RegisterTabPanel = dynamic(
-  () => import("@/app/login/_components/RegisterTabPanel"),
-  { loading: () => null },
-);
+const RegisterTabPanel = dynamic(() => import("@/app/login/_components/RegisterTabPanel"), { loading: () => null });
 
 // fetch 응답이 JSON이 아닐 때(res.json() 파싱 실패 등)도 화면/UX가 깨지지 않도록 안전 파싱
 async function readJsonSafe(res: Response): Promise<any | null> {
@@ -85,10 +79,7 @@ export default function LoginPageClient() {
   // 소셜 회원가입(카카오/네이버) 모드 판별
   const oauthProvider = params.get("oauth"); // 'kakao' | 'naver'
   const oauthToken = params.get("token"); // pending token
-  const isSocialOauthRegister =
-    activeTab === "register" &&
-    (oauthProvider === "kakao" || oauthProvider === "naver") &&
-    !!oauthToken;
+  const isSocialOauthRegister = activeTab === "register" && (oauthProvider === "kakao" || oauthProvider === "naver") && !!oauthToken;
 
   const { setUser } = useAuthStore();
 
@@ -101,9 +92,7 @@ export default function LoginPageClient() {
   const [saveEmail, setSaveEmail] = useState(false);
 
   // 로그인: 필드별/공통 에러 UX
-  const [loginFieldErrors, setLoginFieldErrors] = useState<
-    Partial<Record<LoginField, string>>
-  >({});
+  const [loginFieldErrors, setLoginFieldErrors] = useState<Partial<Record<LoginField, string>>>({});
   const [loginFormError, setLoginFormError] = useState<string>("");
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -152,9 +141,7 @@ export default function LoginPageClient() {
   useEffect(() => {
     const savedEmail = localStorage.getItem("saved-email");
     if (savedEmail) {
-      const emailInput = document.getElementById(
-        "email",
-      ) as HTMLInputElement | null;
+      const emailInput = document.getElementById("email") as HTMLInputElement | null;
       if (emailInput) emailInput.value = savedEmail;
       setSaveEmail(true);
     }
@@ -167,33 +154,22 @@ export default function LoginPageClient() {
     setLoginFieldErrors({});
 
     // 로그인 폼은 기존 UI를 유지하기 위해 uncontrolled input(id 기반) 접근을 사용합니다.
-    const emailInput = document.getElementById(
-      "email",
-    ) as HTMLInputElement | null;
-    const pwInput = document.getElementById(
-      "password",
-    ) as HTMLInputElement | null;
+    const emailInput = document.getElementById("email") as HTMLInputElement | null;
+    const pwInput = document.getElementById("password") as HTMLInputElement | null;
 
     const emailVal = (emailInput?.value ?? "").trim();
     const pwVal = pwInput?.value ?? "";
 
     const nextErrors: Partial<Record<LoginField, string>> = {};
     if (!emailVal) nextErrors.email = "이메일을 입력해주세요.";
-    else if (!emailRegex.test(emailVal))
-      nextErrors.email = "유효한 이메일 형식이 아닙니다.";
+    else if (!emailRegex.test(emailVal)) nextErrors.email = "유효한 이메일 형식이 아닙니다.";
     if (!pwVal) nextErrors.password = "비밀번호를 입력해주세요.";
 
     if (Object.keys(nextErrors).length > 0) {
-      const firstMsg =
-        nextErrors.email || nextErrors.password || "입력값을 확인해주세요.";
+      const firstMsg = nextErrors.email || nextErrors.password || "입력값을 확인해주세요.";
       setLoginFieldErrors(nextErrors);
       setLoginFormError(firstMsg);
-      focusFirst(
-        [
-          nextErrors.email ? "email" : "",
-          nextErrors.password ? "password" : "",
-        ].filter(Boolean),
-      );
+      focusFirst([nextErrors.email ? "email" : "", nextErrors.password ? "password" : ""].filter(Boolean));
       return;
     }
 
@@ -227,10 +203,7 @@ export default function LoginPageClient() {
       const meUser = (meData as any)?.user ?? meData;
 
       if (!meRes.ok || !meUser?.id) {
-        const msg =
-          (meData as any)?.error ||
-          (meData as any)?.message ||
-          "로그인에 실패했습니다.";
+        const msg = (meData as any)?.error || (meData as any)?.message || "로그인에 실패했습니다.";
         setLoginFormError(msg);
         showErrorToast(msg);
         return;
@@ -239,20 +212,15 @@ export default function LoginPageClient() {
       setUser(meUser);
       showSuccessToast("로그인되었습니다.");
 
-      const redirectToRaw =
-        params.get("next") || params.get("redirectTo") || "/";
+      const redirectToRaw = params.get("next") || params.get("redirectTo") || "/";
       const redirectTo = safeRedirectTarget(redirectToRaw);
 
       // 로그인 페이지로 "뒤로가기" 했을 때 다시 로그인 폼이 보이지 않도록 replace가 더 안전
       router.replace(redirectTo);
       router.refresh();
     } catch (err) {
-      setLoginFormError(
-        "네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
-      );
-      showErrorToast(
-        "네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
-      );
+      setLoginFormError("네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+      showErrorToast("네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
 
       return;
     } finally {
@@ -263,18 +231,14 @@ export default function LoginPageClient() {
   const handleKakaoOAuth = () => {
     if (!confirmLeaveIfDirty()) return;
     const from = new URLSearchParams(window.location.search).get("from");
-    const url = from
-      ? `/api/oauth/kakao?from=${encodeURIComponent(from)}`
-      : "/api/oauth/kakao";
+    const url = from ? `/api/oauth/kakao?from=${encodeURIComponent(from)}` : "/api/oauth/kakao";
     window.location.href = url;
   };
 
   const handleNaverOAuth = () => {
     if (!confirmLeaveIfDirty()) return;
     const from = new URLSearchParams(window.location.search).get("from");
-    const url = from
-      ? `/api/oauth/naver?from=${encodeURIComponent(from)}`
-      : "/api/oauth/naver";
+    const url = from ? `/api/oauth/naver?from=${encodeURIComponent(from)}` : "/api/oauth/naver";
     window.location.href = url;
   };
 
@@ -284,58 +248,28 @@ export default function LoginPageClient() {
       <div className="absolute bottom-10 right-10 w-32 h-32 bg-muted rounded-full blur-3xl animate-pulse"></div>
 
       <div className="relative w-full max-w-6xl">
-        <Card
-          className={`mx-auto overflow-hidden backdrop-blur-sm bg-card/95 dark:bg-muted border-0 shadow-2xl transition-all duration-700 ease-in-out ${activeTab === "register" ? "max-w-4xl" : "max-w-md"}`}
-        >
+        <Card className={`mx-auto overflow-hidden backdrop-blur-sm bg-card/95 dark:bg-muted border-0 shadow-2xl transition-all duration-700 ease-in-out ${activeTab === "register" ? "max-w-4xl" : "max-w-md"}`}>
           <div className="p-4 md:p-6 border-b border-primary/20 bg-primary/10 dark:bg-primary/20 text-foreground relative overflow-hidden">
             <div className="absolute inset-0 bg-foreground/10"></div>
             <div className="relative text-center">
               <div className="mx-auto mb-4 flex justify-center">
                 <div className="relative h-12 w-24 shrink-0 overflow-hidden">
-                  <Image
-                    src="/tennisflowmark-light.png"
-                    alt=""
-                    aria-hidden="true"
-                    fill
-                    className="object-contain dark:hidden"
-                    priority
-                  />
-                  <Image
-                    src="/tennisflowmark-dark.png"
-                    alt=""
-                    aria-hidden="true"
-                    fill
-                    className="hidden object-contain dark:block"
-                    priority
-                  />
+                  <Image src="/tennisflowmark-light.png" alt="" aria-hidden="true" fill className="object-contain dark:hidden" priority />
+                  <Image src="/tennisflowmark-dark.png" alt="" aria-hidden="true" fill className="hidden object-contain dark:block" priority />
                 </div>
               </div>
 
-              <h1 className="text-2xl bp-sm:text-3xl font-black">
-                테니스 플로우
-              </h1>
-              <p className="text-foreground mt-2 font-medium">
-                TENNIS FLOW SHOP
-              </p>
+              <h1 className="text-2xl bp-sm:text-3xl font-black">상호명 미정</h1>
+              <p className="text-foreground mt-2 font-medium">Name Pending</p>
             </div>
           </div>
 
-          <Tabs
-            value={activeTab}
-            onValueChange={handleTabChange}
-            className="w-full"
-          >
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
             <TabsList className="grid w-full grid-cols-2 bg-muted">
-              <TabsTrigger
-                value="login"
-                className="data-[state=active]:bg-card dark:data-[state=active]:bg-muted data-[state=active]:shadow-md data-[state=active]:text-foreground dark:data-[state=active]:text-foreground font-semibold"
-              >
+              <TabsTrigger value="login" className="data-[state=active]:bg-card dark:data-[state=active]:bg-muted data-[state=active]:shadow-md data-[state=active]:text-foreground dark:data-[state=active]:text-foreground font-semibold">
                 로그인
               </TabsTrigger>
-              <TabsTrigger
-                value="register"
-                className="data-[state=active]:bg-card dark:data-[state=active]:bg-muted data-[state=active]:shadow-md data-[state=active]:text-foreground dark:data-[state=active]:text-foreground font-semibold"
-              >
+              <TabsTrigger value="register" className="data-[state=active]:bg-card dark:data-[state=active]:bg-muted data-[state=active]:shadow-md data-[state=active]:text-foreground dark:data-[state=active]:text-foreground font-semibold">
                 회원가입
               </TabsTrigger>
             </TabsList>
@@ -345,9 +279,7 @@ export default function LoginPageClient() {
               <div className="space-y-4 md:space-y-6">
                 <div className="text-center">
                   <h2 className="text-2xl font-bold text-foreground">로그인</h2>
-                  <p className="text-foreground mt-2">
-                    계정에 로그인하여 쇼핑을 시작하세요
-                  </p>
+                  <p className="text-foreground mt-2">계정에 로그인하여 쇼핑을 시작하세요</p>
                 </div>
 
                 <form
@@ -365,10 +297,7 @@ export default function LoginPageClient() {
  </div>
  )} */}
                   <div className="space-y-2">
-                    <Label
-                      htmlFor="email"
-                      className="text-foreground font-medium"
-                    >
+                    <Label htmlFor="email" className="text-foreground font-medium">
                       이메일
                     </Label>
                     <div className="relative">
@@ -384,15 +313,8 @@ export default function LoginPageClient() {
                             email: undefined,
                           }));
                           setLoginFormError("");
-                          const pwVal =
-                            (
-                              document.getElementById(
-                                "password",
-                              ) as HTMLInputElement | null
-                            )?.value ?? "";
-                          setLoginDirty(
-                            !!e.currentTarget.value.trim() || !!pwVal,
-                          );
+                          const pwVal = (document.getElementById("password") as HTMLInputElement | null)?.value ?? "";
+                          setLoginDirty(!!e.currentTarget.value.trim() || !!pwVal);
                         }}
                         className="pl-10 h-12 border-border focus:border-border focus:ring-ring dark:focus:border-border"
                       />
@@ -400,18 +322,13 @@ export default function LoginPageClient() {
                     {loginFieldErrors.email && (
                       <div className="mt-2 flex items-center gap-2 text-sm text-destructive">
                         <AlertCircle className="h-4 w-4" />
-                        <span className="whitespace-pre-line">
-                          {loginFieldErrors.email}
-                        </span>
+                        <span className="whitespace-pre-line">{loginFieldErrors.email}</span>
                       </div>
                     )}
                   </div>
 
                   <div className="space-y-2">
-                    <Label
-                      htmlFor="password"
-                      className="text-foreground font-medium"
-                    >
+                    <Label htmlFor="password" className="text-foreground font-medium">
                       비밀번호
                     </Label>
                     <div className="relative">
@@ -427,15 +344,8 @@ export default function LoginPageClient() {
                             password: undefined,
                           }));
                           setLoginFormError("");
-                          const emailVal =
-                            (
-                              document.getElementById(
-                                "email",
-                              ) as HTMLInputElement | null
-                            )?.value ?? "";
-                          setLoginDirty(
-                            !!emailVal.trim() || !!e.currentTarget.value,
-                          );
+                          const emailVal = (document.getElementById("email") as HTMLInputElement | null)?.value ?? "";
+                          setLoginDirty(!!emailVal.trim() || !!e.currentTarget.value);
                         }}
                         className="pl-10 pr-10 h-12 border-border focus:border-border focus:ring-ring dark:focus:border-border"
                       />
@@ -446,31 +356,20 @@ export default function LoginPageClient() {
                         className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 text-foreground hover:text-foreground dark:hover:text-foreground"
                         onClick={() => setShowPassword(!showPassword)}
                       >
-                        {showPassword ? (
-                          <EyeOff className="h-4 w-4" />
-                        ) : (
-                          <Eye className="h-4 w-4" />
-                        )}
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </Button>
                     </div>
                     {loginFieldErrors.password && (
                       <div className="mt-2 flex items-center gap-2 text-sm text-destructive">
                         <AlertCircle className="h-4 w-4" />
-                        <span className="whitespace-pre-line">
-                          {loginFieldErrors.password}
-                        </span>
+                        <span className="whitespace-pre-line">{loginFieldErrors.password}</span>
                       </div>
                     )}
                   </div>
 
                   <div className="flex items-center justify-between">
                     <label className="flex items-center gap-2 text-sm text-foreground">
-                      <input
-                        type="checkbox"
-                        checked={saveEmail}
-                        onChange={(e) => setSaveEmail(e.target.checked)}
-                        className="rounded border-border text-foreground focus:ring-ring"
-                      />
+                      <input type="checkbox" checked={saveEmail} onChange={(e) => setSaveEmail(e.target.checked)} className="rounded border-border text-foreground focus:ring-ring" />
                       이메일 저장
                     </label>
                     <Link
@@ -487,12 +386,7 @@ export default function LoginPageClient() {
                     </Link>
                   </div>
 
-                  <Button
-                    type="submit"
-                    className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
-                    disabled={loginLoading}
-                    data-cy="login-submit"
-                  >
+                  <Button type="submit" className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg hover:shadow-xl transition-all duration-300" disabled={loginLoading} data-cy="login-submit">
                     {loginLoading ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -509,25 +403,18 @@ export default function LoginPageClient() {
                     <span className="w-full border-t border-border" />
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-card dark:bg-muted px-4 text-foreground font-medium">
-                      SNS 계정으로 로그인
-                    </span>
+                    <span className="bg-card dark:bg-muted px-4 text-foreground font-medium">SNS 계정으로 로그인</span>
                   </div>
                 </div>
 
-                <SocialAuthButtons
-                  onKakaoClick={handleKakaoOAuth}
-                  onNaverClick={handleNaverOAuth}
-                />
+                <SocialAuthButtons onKakaoClick={handleKakaoOAuth} onNaverClick={handleNaverOAuth} />
 
                 {showGuestLookup && (
                   <div className="text-center">
                     <div className="bg-muted rounded-xl p-4 mb-4 border border-border">
                       <div className="flex items-center justify-center gap-2 mb-3">
                         <Shield className="h-5 w-5 text-foreground" />
-                        <p className="text-sm font-semibold text-foreground">
-                          비회원도 주문하실 수 있습니다
-                        </p>
+                        <p className="text-sm font-semibold text-foreground">비회원도 주문하실 수 있습니다</p>
                       </div>
                       <Button
                         variant="outline"

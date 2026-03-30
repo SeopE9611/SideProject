@@ -5,37 +5,12 @@ import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  badgeBaseOutlined,
-  badgeSizeSm,
-  getAnswerStatusBadgeSpec,
-  getQnaCategoryBadgeSpec,
-} from "@/lib/badge-style";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { badgeBaseOutlined, badgeSizeSm, getAnswerStatusBadgeSpec, getQnaCategoryBadgeSpec } from "@/lib/badge-style";
 import { boardFetcher, parseApiError } from "@/lib/fetchers/boardFetcher";
-import {
-  ArrowLeft,
-  Eye,
-  Lock,
-  MessageSquare,
-  Plus,
-  Search,
-} from "lucide-react";
+import { ArrowLeft, Eye, Lock, MessageSquare, Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -51,13 +26,9 @@ const CAT_LABELS: Record<string, string> = {
   member: "회원",
 };
 const CODE_TO_LABEL = CAT_LABELS; // 가독성용 alias
-const LABEL_TO_CODE: Record<string, string> = Object.fromEntries(
-  Object.entries(CODE_TO_LABEL).map(([code, label]) => [label, code]),
-);
-const qnaMobileTitleClampClass =
-  "min-w-0 flex-1 truncate text-sm font-semibold leading-snug sm:text-base";
-const qnaMobileMetaWrapClass =
-  "flex flex-wrap items-center gap-x-3.5 gap-y-1 text-xs text-muted-foreground";
+const LABEL_TO_CODE: Record<string, string> = Object.fromEntries(Object.entries(CODE_TO_LABEL).map(([code, label]) => [label, code]));
+const qnaMobileTitleClampClass = "min-w-0 flex-1 truncate text-sm font-semibold leading-snug sm:text-base";
+const qnaMobileMetaWrapClass = "flex flex-wrap items-center gap-x-3.5 gap-y-1 text-xs text-muted-foreground";
 const qnaStatusBadgeWrapClass = "shrink-0 self-start";
 
 type QnaItem = {
@@ -111,17 +82,7 @@ type Props = {
   initialField?: "all" | "title" | "content" | "title_content";
 };
 
-export default function QnaPageClient({
-  initialItems,
-  initialTotal,
-  initialLoadError,
-  initialErrorMessage,
-  initialPage = 1,
-  initialCategory = "all",
-  initialAnswerFilter = "all",
-  initialKeyword = "",
-  initialField = "all",
-}: Props) {
+export default function QnaPageClient({ initialItems, initialTotal, initialLoadError, initialErrorMessage, initialPage = 1, initialCategory = "all", initialAnswerFilter = "all", initialKeyword = "", initialField = "all" }: Props) {
   type MeRes = { id: string; role?: string | null };
   async function meFetcher(url: string): Promise<MeRes | null> {
     const res = await fetch(url, { credentials: "include" });
@@ -143,23 +104,17 @@ export default function QnaPageClient({
 
   // 필터/페이지 상태: "URL 기반 초기값"으로 시작해야 튐이 사라짐
   const [category, setCategory] = useState<string>(initialCategory);
-  const [answerFilter, setAnswerFilter] = useState<
-    "all" | "waiting" | "completed"
-  >(initialAnswerFilter);
+  const [answerFilter, setAnswerFilter] = useState<"all" | "waiting" | "completed">(initialAnswerFilter);
   const [page, setPage] = useState(initialPage);
   const [pageJump, setPageJump] = useState("");
   const limit = 20;
 
   // 입력용/제출용도 초기값 동기화
   const [inputKeyword, setInputKeyword] = useState(initialKeyword);
-  const [inputField, setInputField] = useState<
-    "all" | "title" | "content" | "title_content"
-  >(initialField);
+  const [inputField, setInputField] = useState<"all" | "title" | "content" | "title_content">(initialField);
 
   const [keyword, setKeyword] = useState(initialKeyword);
-  const [field, setField] = useState<
-    "all" | "title" | "content" | "title_content"
-  >(initialField);
+  const [field, setField] = useState<"all" | "title" | "content" | "title_content">(initialField);
 
   // 현재 상태 기반 key
   const qs = new URLSearchParams({
@@ -195,14 +150,12 @@ export default function QnaPageClient({
     initialQs.set("q", initialKeyword.trim());
     initialQs.set("field", initialField);
   }
-  if (initialAnswerFilter !== "all")
-    initialQs.set("answer", initialAnswerFilter);
+  if (initialAnswerFilter !== "all") initialQs.set("answer", initialAnswerFilter);
 
   const initialKey = `/api/boards?${initialQs.toString()}`;
 
   // key가 초기키와 같을 때만 SSR 프리로드를 fallbackData로 공급
-  const hasInitialResolvedData =
-    !initialLoadError && !!initialItems && initialTotal !== null;
+  const hasInitialResolvedData = !initialLoadError && !!initialItems && initialTotal !== null;
   const fallbackData: BoardListRes | undefined =
     key === initialKey && hasInitialResolvedData
       ? {
@@ -257,25 +210,17 @@ export default function QnaPageClient({
   }
 
   function parseUrlState(): UrlState {
-    const sp = new URLSearchParams(
-      typeof window !== "undefined" ? window.location.search : "",
-    );
+    const sp = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
 
     const nextPage = Math.max(1, Number(sp.get("page") ?? "1") || 1);
     const nextCategory = normalizeCategory(sp.get("category"));
 
     const rawAnswer = sp.get("answer");
-    const nextAnswerFilter: UrlState["answerFilter"] =
-      rawAnswer === "waiting" || rawAnswer === "completed" ? rawAnswer : "all";
+    const nextAnswerFilter: UrlState["answerFilter"] = rawAnswer === "waiting" || rawAnswer === "completed" ? rawAnswer : "all";
 
     const nextKeyword = sp.get("q") ?? "";
     const rawField = sp.get("field");
-    const nextField: UrlState["field"] =
-      rawField === "title" ||
-      rawField === "content" ||
-      rawField === "title_content"
-        ? rawField
-        : "all";
+    const nextField: UrlState["field"] = rawField === "title" || rawField === "content" || rawField === "title_content" ? rawField : "all";
 
     return {
       page: nextPage,
@@ -332,14 +277,10 @@ export default function QnaPageClient({
     return () => window.removeEventListener("popstate", onPopState);
   }, []);
 
-  const { data: pinnedNoticeData } = useSWR<NoticePinnedResponse>(
-    "/api/boards?type=notice&page=1&limit=5",
-    (url) => boardFetcher<NoticePinnedResponse>(url),
-    {
-      revalidateOnFocus: false,
-      keepPreviousData: true,
-    },
-  );
+  const { data: pinnedNoticeData } = useSWR<NoticePinnedResponse>("/api/boards?type=notice&page=1&limit=5", (url) => boardFetcher<NoticePinnedResponse>(url), {
+    revalidateOnFocus: false,
+    keepPreviousData: true,
+  });
 
   const pinnedNotices = (pinnedNoticeData?.items ?? [])
     .filter((notice) => notice.isPinned)
@@ -350,21 +291,17 @@ export default function QnaPageClient({
       createdAt: notice.createdAt,
     }));
 
-  const { data, error, isLoading, isValidating, mutate } = useSWR<BoardListRes>(
-    key,
-    (url) => boardFetcher<BoardListRes>(url),
-    {
-      keepPreviousData: true,
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
+  const { data, error, isLoading, isValidating, mutate } = useSWR<BoardListRes>(key, (url) => boardFetcher<BoardListRes>(url), {
+    keepPreviousData: true,
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
 
-      fallbackData,
+    fallbackData,
 
-      // page.tsx가 revalidate=30(SSR 캐시)라서, 작성 직후 목록 누락이 생길 수 있음
-      // fallbackData가 있어도 mount 시 1회 재검증해서 항상 최신 목록으로 맞춘다.
-      revalidateOnMount: true,
-    },
-  );
+    // page.tsx가 revalidate=30(SSR 캐시)라서, 작성 직후 목록 누락이 생길 수 있음
+    // fallbackData가 있어도 mount 시 1회 재검증해서 항상 최신 목록으로 맞춘다.
+    revalidateOnMount: true,
+  });
 
   useEffect(() => {
     if (uiLoading && !isValidating) setUiLoading(false);
@@ -389,10 +326,7 @@ export default function QnaPageClient({
   const totalPages = Math.max(1, Math.ceil(resolvedTotalForPaging / limit));
   const pageStart = Math.max(1, Math.min(page - 1, totalPages - 2));
   const pageEnd = Math.min(totalPages, pageStart + 2);
-  const visiblePages = Array.from(
-    { length: pageEnd - pageStart + 1 },
-    (_, i) => pageStart + i,
-  );
+  const visiblePages = Array.from({ length: pageEnd - pageStart + 1 }, (_, i) => pageStart + i);
   const movePage = (nextPage: number) => {
     const safePage = Math.max(1, Math.min(totalPages, nextPage));
     setUiLoading(true);
@@ -409,24 +343,11 @@ export default function QnaPageClient({
   };
   const answeredCount = serverItems.filter((q) => !!q.answer).length;
   const waitingCount = serverItems.filter((q) => !q.answer).length;
-  const totalViews = serverItems.reduce(
-    (sum, q) => sum + (q.viewCount ?? 0),
-    0,
-  );
+  const totalViews = serverItems.reduce((sum, q) => sum + (q.viewCount ?? 0), 0);
 
   // empty state는 "성공적으로 데이터가 확정된 경우"에만 노출
-  const shouldShowActualEmptyState =
-    !isBusy &&
-    !hasDataError &&
-    hasResolvedData &&
-    !keyword.trim() &&
-    items.length === 0;
-  const shouldShowSearchEmptyState =
-    !isBusy &&
-    !hasDataError &&
-    hasResolvedData &&
-    !!keyword.trim() &&
-    items.length === 0;
+  const shouldShowActualEmptyState = !isBusy && !hasDataError && hasResolvedData && !keyword.trim() && items.length === 0;
+  const shouldShowSearchEmptyState = !isBusy && !hasDataError && hasResolvedData && !!keyword.trim() && items.length === 0;
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -444,13 +365,8 @@ export default function QnaPageClient({
                 <MessageSquare className="h-5 w-5" />
               </div>
               <div>
-                <h1 className="text-2xl sm:text-3xl md:text-[2rem] font-bold tracking-tight text-foreground">
-                  고객센터 · Q&amp;A
-                </h1>
-                <p className="text-sm sm:text-base text-muted-foreground">
-                  테니스 플로우 고객센터에서 궁금한 점을 문의하고, 답변을
-                  받아보실 수 있습니다.
-                </p>
+                <h1 className="text-2xl sm:text-3xl md:text-[2rem] font-bold tracking-tight text-foreground">고객센터 · Q&amp;A</h1>
+                <p className="text-sm sm:text-base text-muted-foreground">상호명 미정 고객센터에서 궁금한 점을 문의하고, 답변을 받아보실 수 있습니다.</p>
               </div>
             </div>
           </div>
@@ -521,17 +437,10 @@ export default function QnaPageClient({
               <div className="flex flex-wrap items-center gap-1.5 md:gap-2">
                 <MessageSquare className="h-5 w-5 text-success" />
                 <span>Q&A 목록</span>
-                {(isBusy || isValidating) && (
-                  <div className="h-4 w-4 border-2 border-border border-t-foreground rounded-full animate-spin" />
-                )}
+                {(isBusy || isValidating) && <div className="h-4 w-4 border-2 border-border border-t-foreground rounded-full animate-spin" />}
               </div>
 
-              <Button
-                asChild
-                variant="outline"
-                size="sm"
-                className="h-9 md:h-10"
-              >
+              <Button asChild variant="outline" size="sm" className="h-9 md:h-10">
                 <Link href="/board/qna/write">
                   <Plus className="h-4 w-4 mr-2" />
                   문의하기
@@ -579,9 +488,7 @@ export default function QnaPageClient({
                   value={answerFilter}
                   onValueChange={(v) => {
                     setUiLoading(true);
-                    const nextAnswerFilter = (
-                      v === "waiting" || v === "completed" ? v : "all"
-                    ) as "all" | "waiting" | "completed";
+                    const nextAnswerFilter = (v === "waiting" || v === "completed" ? v : "all") as "all" | "waiting" | "completed";
                     const nextPage = 1;
 
                     setAnswerFilter(nextAnswerFilter);
@@ -608,16 +515,7 @@ export default function QnaPageClient({
               </div>
 
               <div className="flex flex-wrap items-center gap-1.5 md:gap-2">
-                <Select
-                  value={inputField}
-                  onValueChange={(v) =>
-                    setInputField(
-                      v === "title" || v === "content" || v === "title_content"
-                        ? v
-                        : "all",
-                    )
-                  }
-                >
+                <Select value={inputField} onValueChange={(v) => setInputField(v === "title" || v === "content" || v === "title_content" ? v : "all")}>
                   <SelectTrigger className="h-9 md:h-10 w-[120px] bg-card text-sm">
                     <SelectValue placeholder="검색 조건" />
                   </SelectTrigger>
@@ -703,19 +601,14 @@ export default function QnaPageClient({
                   className="h-9 md:h-10 text-sm"
                   disabled={isBusy}
                 >
-                  {isBusy && (
-                    <div className="h-4 w-4 border-2 border-border/30 border-t-primary-foreground rounded-full animate-spin mr-2" />
-                  )}
+                  {isBusy && <div className="h-4 w-4 border-2 border-border/30 border-t-primary-foreground rounded-full animate-spin mr-2" />}
                   검색
                 </Button>
               </div>
             </div>
 
             {/* 비밀글 1차 차단(안내 모달): 바깥 클릭 시 자동 닫힘(radix 기본) */}
-            <Dialog
-              open={secretBlock.open}
-              onOpenChange={(open) => setSecretBlock((p) => ({ ...p, open }))}
-            >
+            <Dialog open={secretBlock.open} onOpenChange={(open) => setSecretBlock((p) => ({ ...p, open }))}>
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle className="flex items-center gap-2">
@@ -724,19 +617,10 @@ export default function QnaPageClient({
                   </DialogTitle>
                   <DialogDescription className="space-y-2">
                     <span className="block">
-                      이 문의는 <b>비밀글</b>로 등록되어{" "}
-                      <b>작성자와 관리자만</b> 확인할 수 있습니다.
+                      이 문의는 <b>비밀글</b>로 등록되어 <b>작성자와 관리자만</b> 확인할 수 있습니다.
                     </span>
 
-                    {!viewerId ? (
-                      <span className="block">
-                        작성자 계정이라면 로그인 후 다시 확인해 주세요.
-                      </span>
-                    ) : (
-                      <span className="block">
-                        현재 계정으로는 이 문의를 열람할 수 없습니다.
-                      </span>
-                    )}
+                    {!viewerId ? <span className="block">작성자 계정이라면 로그인 후 다시 확인해 주세요.</span> : <span className="block">현재 계정으로는 이 문의를 열람할 수 없습니다.</span>}
                   </DialogDescription>
                 </DialogHeader>
                 <DialogFooter className="flex-wrap gap-2 sm:justify-end">
@@ -748,11 +632,7 @@ export default function QnaPageClient({
                   </Button>
                   {!viewerId && secretBlock.item?._id && (
                     <Button asChild>
-                      <Link
-                        href={`/login?next=${encodeURIComponent(`/board/qna/${secretBlock.item._id}${detailQuery ? `?${detailQuery}` : ""}`)}`}
-                      >
-                        로그인하고 확인
-                      </Link>
+                      <Link href={`/login?next=${encodeURIComponent(`/board/qna/${secretBlock.item._id}${detailQuery ? `?${detailQuery}` : ""}`)}`}>로그인하고 확인</Link>
                     </Button>
                   )}
                 </DialogFooter>
@@ -762,11 +642,7 @@ export default function QnaPageClient({
             <div className="space-y-3.5">
               {hasDataError && (
                 <ErrorBox
-                  message={
-                    hasPreloadError
-                      ? initialErrorMessage || "Q&A 목록을 불러오지 못했습니다."
-                      : listError.message
-                  }
+                  message={hasPreloadError ? initialErrorMessage || "Q&A 목록을 불러오지 못했습니다." : listError.message}
                   status={hasPreloadError ? 500 : listError.status}
                   fallbackMessage="Q&A 목록을 불러오지 못했습니다."
                   onRetry={() => mutate()}
@@ -778,13 +654,9 @@ export default function QnaPageClient({
               {!isLoading &&
                 !hasDataError &&
                 items.map((qna) => {
-                  const canOpenSecret =
-                    !qna.isSecret ||
-                    isAdmin ||
-                    (viewerId && qna.authorId && viewerId === qna.authorId);
+                  const canOpenSecret = !qna.isSecret || isAdmin || (viewerId && qna.authorId && viewerId === qna.authorId);
 
-                  const displayTitle =
-                    qna.isSecret && !canOpenSecret ? "비밀글입니다" : qna.title;
+                  const displayTitle = qna.isSecret && !canOpenSecret ? "비밀글입니다" : qna.title;
 
                   const CardInner = (
                     <Card className="border-border transition-colors hover:border-success/25 hover:bg-muted/25">
@@ -793,42 +665,24 @@ export default function QnaPageClient({
                           <div className="flex-1 min-w-0">
                             <div className="mb-1 flex items-start gap-2">
                               <div className="flex min-w-0 flex-1 items-center gap-2 flex-wrap">
-                                <Badge
-                                  variant={
-                                    getQnaCategoryBadgeSpec(qna.category)
-                                      .variant
-                                  }
-                                  className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`}
-                                >
+                                <Badge variant={getQnaCategoryBadgeSpec(qna.category).variant} className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`}>
                                   {qna.category ?? "일반문의"}
                                 </Badge>
 
                                 {qna.isSecret && (
-                                  <Badge
-                                    variant="secondary"
-                                    className="shrink-0 text-xs inline-flex items-center gap-1"
-                                  >
+                                  <Badge variant="secondary" className="shrink-0 text-xs inline-flex items-center gap-1">
                                     <Lock className="h-3 w-3" />
                                     비밀글
                                   </Badge>
                                 )}
 
-                                <span
-                                  className={`${qnaMobileTitleClampClass} text-foreground transition-colors hover:text-success dark:hover:text-success`}
-                                  title={displayTitle}
-                                >
+                                <span className={`${qnaMobileTitleClampClass} text-foreground transition-colors hover:text-success dark:hover:text-success`} title={displayTitle}>
                                   {displayTitle}
                                 </span>
                               </div>
 
                               <div className={qnaStatusBadgeWrapClass}>
-                                <Badge
-                                  variant={
-                                    getAnswerStatusBadgeSpec(!!qna.answer)
-                                      .variant
-                                  }
-                                  className={`${badgeBaseOutlined} ${badgeSizeSm}`}
-                                >
+                                <Badge variant={getAnswerStatusBadgeSpec(!!qna.answer).variant} className={`${badgeBaseOutlined} ${badgeSizeSm}`}>
                                   {qna.answer ? "답변 완료" : "답변 대기"}
                                 </Badge>
                               </div>
@@ -857,24 +711,14 @@ export default function QnaPageClient({
                   // 비밀글 + 권한없음: 상세로 보내지 않고 모달로 1차 차단
                   if (qna.isSecret && !canOpenSecret) {
                     return (
-                      <button
-                        key={qna._id}
-                        type="button"
-                        className="block w-full text-left"
-                        onClick={() =>
-                          setSecretBlock({ open: true, item: qna })
-                        }
-                      >
+                      <button key={qna._id} type="button" className="block w-full text-left" onClick={() => setSecretBlock({ open: true, item: qna })}>
                         {CardInner}
                       </button>
                     );
                   }
 
                   return (
-                    <Link
-                      key={qna._id}
-                      href={`/board/qna/${qna._id}${detailQuery ? `?${detailQuery}` : ""}`}
-                    >
+                    <Link key={qna._id} href={`/board/qna/${qna._id}${detailQuery ? `?${detailQuery}` : ""}`}>
                       {CardInner}
                     </Link>
                   );
@@ -882,12 +726,7 @@ export default function QnaPageClient({
 
               {shouldShowSearchEmptyState && (
                 <div className="space-y-3">
-                  <AsyncState
-                    kind="empty"
-                    variant="card"
-                    title="검색 결과가 없습니다."
-                    description="검색어를 바꾸거나 필터를 초기화한 뒤 다시 확인해 보세요."
-                  />
+                  <AsyncState kind="empty" variant="card" title="검색 결과가 없습니다." description="검색어를 바꾸거나 필터를 초기화한 뒤 다시 확인해 보세요." />
                   <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
                     <Button
                       type="button"
@@ -919,12 +758,7 @@ export default function QnaPageClient({
               )}
               {shouldShowActualEmptyState && (
                 <div className="space-y-3">
-                  <AsyncState
-                    kind="empty"
-                    variant="card"
-                    title="등록된 문의가 없습니다."
-                    description="궁금한 점이 있다면 첫 문의를 남겨 주세요."
-                  />
+                  <AsyncState kind="empty" variant="card" title="등록된 문의가 없습니다." description="궁금한 점이 있다면 첫 문의를 남겨 주세요." />
                   <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
                     <Button asChild size="sm">
                       <Link href="/board/qna/write">
@@ -942,109 +776,35 @@ export default function QnaPageClient({
 
             <div className="mt-6 md:mt-8 flex items-center justify-center">
               <div className="flex flex-wrap items-center justify-center gap-2">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="bg-card"
-                  onClick={() => movePage(1)}
-                  disabled={page <= 1 || isBusy}
-                >
+                <Button variant="outline" size="icon" className="bg-card" onClick={() => movePage(1)} disabled={page <= 1 || isBusy}>
                   <span className="sr-only">첫 페이지</span>«
                 </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="bg-card"
-                  onClick={() => movePage(page - 1)}
-                  disabled={page <= 1 || isBusy}
-                >
+                <Button variant="outline" size="icon" className="bg-card" onClick={() => movePage(page - 1)} disabled={page <= 1 || isBusy}>
                   <span className="sr-only">이전 페이지</span>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="h-4 w-4"
-                  >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
                     <polyline points="15 18 9 12 15 6" />
                   </svg>
                 </Button>
 
                 {visiblePages.map((pageNumber) => (
-                  <Button
-                    key={pageNumber}
-                    variant="outline"
-                    size="sm"
-                    className={
-                      pageNumber === page
-                        ? "h-10 w-10 bg-primary text-primary-foreground border-border"
-                        : "h-10 w-10 bg-card"
-                    }
-                    onClick={() => movePage(pageNumber)}
-                    disabled={isBusy}
-                  >
+                  <Button key={pageNumber} variant="outline" size="sm" className={pageNumber === page ? "h-10 w-10 bg-primary text-primary-foreground border-border" : "h-10 w-10 bg-card"} onClick={() => movePage(pageNumber)} disabled={isBusy}>
                     {pageNumber}
                   </Button>
                 ))}
 
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="bg-card"
-                  onClick={() => movePage(page + 1)}
-                  disabled={page >= totalPages || isBusy}
-                >
+                <Button variant="outline" size="icon" className="bg-card" onClick={() => movePage(page + 1)} disabled={page >= totalPages || isBusy}>
                   <span className="sr-only">다음 페이지</span>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="h-4 w-4"
-                  >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
                     <polyline points="9 18 15 12 9 6" />
                   </svg>
                 </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="bg-card"
-                  onClick={() => movePage(totalPages)}
-                  disabled={page >= totalPages || isBusy}
-                >
+                <Button variant="outline" size="icon" className="bg-card" onClick={() => movePage(totalPages)} disabled={page >= totalPages || isBusy}>
                   <span className="sr-only">마지막 페이지</span>»
                 </Button>
 
-                <form
-                  onSubmit={handlePageJump}
-                  className="ml-1 flex items-center gap-1"
-                >
-                  <Input
-                    type="number"
-                    min={1}
-                    max={totalPages}
-                    value={pageJump}
-                    onChange={(e) => setPageJump(e.target.value)}
-                    placeholder="페이지"
-                    className="h-10 w-20"
-                  />
-                  <Button
-                    type="submit"
-                    variant="outline"
-                    size="sm"
-                    className="h-10 px-2 bg-card"
-                    disabled={isBusy}
-                  >
+                <form onSubmit={handlePageJump} className="ml-1 flex items-center gap-1">
+                  <Input type="number" min={1} max={totalPages} value={pageJump} onChange={(e) => setPageJump(e.target.value)} placeholder="페이지" className="h-10 w-20" />
+                  <Button type="submit" variant="outline" size="sm" className="h-10 px-2 bg-card" disabled={isBusy}>
                     이동
                   </Button>
                 </form>

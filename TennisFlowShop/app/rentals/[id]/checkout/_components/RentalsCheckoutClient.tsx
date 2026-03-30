@@ -1,58 +1,29 @@
 "use client";
 
 import { type StringingApplicationInput } from "@/app/features/stringing-applications/api/submit-core";
-import RentalCheckoutStringingRuntimeBridge from "@/app/rentals/[id]/checkout/_components/RentalCheckoutStringingRuntimeBridge";
 import type useRentalCheckoutStringingServiceAdapter from "@/app/features/stringing-applications/hooks/useRentalCheckoutStringingServiceAdapter";
 import { collectionMethodLabel } from "@/app/features/stringing-applications/lib/fulfillment-labels";
+import RentalCheckoutStringingRuntimeBridge from "@/app/rentals/[id]/checkout/_components/RentalCheckoutStringingRuntimeBridge";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { getMyInfo } from "@/lib/auth.client";
 import { badgeToneVariant } from "@/lib/badge-style";
 import { bankLabelMap, racketBrandLabel } from "@/lib/constants";
 import { useBackNavigationGuard } from "@/lib/hooks/useBackNavigationGuard";
-import {
-  UNSAVED_CHANGES_MESSAGE,
-  useUnsavedChangesGuard,
-} from "@/lib/hooks/useUnsavedChangesGuard";
-import { showErrorToast } from "@/lib/toast";
+import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
 import { loadDaumPostcode } from "@/lib/loadDaumPostcode";
+import { showErrorToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
-import {
-  Building2,
-  CheckCircle,
-  CreditCard,
-  Home,
-  Mail,
-  MapPin,
-  MessageSquare,
-  Package,
-  Phone,
-  Shield,
-  Truck,
-  Undo2,
-  UserIcon,
-} from "lucide-react";
+import { Building2, CheckCircle, CreditCard, Home, Mail, MapPin, MessageSquare, Package, Phone, Shield, Truck, Undo2, UserIcon } from "lucide-react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -79,18 +50,8 @@ const isValidAccountDigits = (v: string) => {
 const RENTAL_IDEM_STORE_KEY = "rentals.checkout.idem.v1";
 const RENTAL_IDEM_TTL_MS = 15 * 60 * 1000;
 
-const buildRentalCheckoutSignature = (params: {
-  racketId: string;
-  days: number;
-  requestStringing: boolean;
-  selectedStringId?: string | null;
-}) => {
-  return [
-    params.racketId,
-    String(params.days),
-    params.requestStringing ? "1" : "0",
-    params.selectedStringId ? String(params.selectedStringId) : "",
-  ].join("|");
+const buildRentalCheckoutSignature = (params: { racketId: string; days: number; requestStringing: boolean; selectedStringId?: string | null }) => {
+  return [params.racketId, String(params.days), params.requestStringing ? "1" : "0", params.selectedStringId ? String(params.selectedStringId) : ""].join("|");
 };
 
 const getOrCreateRentalIdemKey = (signature: string) => {
@@ -103,22 +64,11 @@ const getOrCreateRentalIdemKey = (signature: string) => {
         signature?: string;
         ts?: number;
       };
-      const fresh =
-        typeof parsed.ts === "number" &&
-        Date.now() - parsed.ts < RENTAL_IDEM_TTL_MS;
-      if (
-        fresh &&
-        parsed.signature === signature &&
-        typeof parsed.key === "string" &&
-        parsed.key
-      )
-        return parsed.key;
+      const fresh = typeof parsed.ts === "number" && Date.now() - parsed.ts < RENTAL_IDEM_TTL_MS;
+      if (fresh && parsed.signature === signature && typeof parsed.key === "string" && parsed.key) return parsed.key;
     }
     const key = crypto.randomUUID();
-    window.sessionStorage.setItem(
-      RENTAL_IDEM_STORE_KEY,
-      JSON.stringify({ key, signature, ts: Date.now() }),
-    );
+    window.sessionStorage.setItem(RENTAL_IDEM_STORE_KEY, JSON.stringify({ key, signature, ts: Date.now() }));
     return key;
   } catch {
     return crypto.randomUUID();
@@ -132,25 +82,11 @@ const clearRentalIdemKey = () => {
   } catch {}
 };
 
-type RentalCheckoutStringingAdapter = ReturnType<
-  typeof useRentalCheckoutStringingServiceAdapter
->;
+type RentalCheckoutStringingAdapter = ReturnType<typeof useRentalCheckoutStringingServiceAdapter>;
 
-const MountingInfoSection = dynamic(
-  () =>
-    import(
-      "@/app/features/stringing-applications/components/apply-shared/MountingInfoSection"
-    ),
-  { loading: () => null },
-);
+const MountingInfoSection = dynamic(() => import("@/app/features/stringing-applications/components/apply-shared/MountingInfoSection"), { loading: () => null });
 
-const FinalRequestSection = dynamic(
-  () =>
-    import(
-      "@/app/features/stringing-applications/components/apply-shared/FinalRequestSection"
-    ),
-  { loading: () => null },
-);
+const FinalRequestSection = dynamic(() => import("@/app/features/stringing-applications/components/apply-shared/FinalRequestSection"), { loading: () => null });
 
 type Initial = {
   racketId: string;
@@ -174,11 +110,7 @@ type Initial = {
   } | null;
 };
 
-export default function RentalsCheckoutClient({
-  initial,
-}: {
-  initial: Initial;
-}) {
+export default function RentalsCheckoutClient({ initial }: { initial: Initial }) {
   const router = useRouter();
   const submitIdemKeyRef = useRef<string | null>(null);
   /**
@@ -193,8 +125,7 @@ export default function RentalsCheckoutClient({
 
   // --- 수령 방식(택배/방문수령) ---
   type DeliveryMethod = "택배수령" | "방문수령";
-  const [deliveryMethod, setDeliveryMethod] =
-    useState<DeliveryMethod>("택배수령");
+  const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>("택배수령");
   const isVisitPickup = deliveryMethod === "방문수령";
 
   /**
@@ -202,8 +133,7 @@ export default function RentalsCheckoutClient({
    * - SELF_SEND: 택배로 보내기(자가 발송)
    * - SHOP_VISIT: 매장 방문(방문 시간 선택 UI가 열리는 쪽)
    */
-  const servicePickupMethod =
-    deliveryMethod === "방문수령" ? "SHOP_VISIT" : "SELF_SEND";
+  const servicePickupMethod = deliveryMethod === "방문수령" ? "SHOP_VISIT" : "SELF_SEND";
 
   // 로그인 여부/포인트 조회를 위한 최소 상태(게스트면 null 유지)
   const [userId, setUserId] = useState<string | null>(null);
@@ -217,9 +147,7 @@ export default function RentalsCheckoutClient({
   const [deliveryRequest, setRequest] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const [selectedBank, setSelectedBank] = useState<
-    "shinhan" | "kookmin" | "woori" | ""
-  >("");
+  const [selectedBank, setSelectedBank] = useState<"shinhan" | "kookmin" | "woori" | "">("");
   const [depositor, setDepositor] = useState("");
 
   /**
@@ -228,9 +156,7 @@ export default function RentalsCheckoutClient({
    * - stringingFee: 선택한 스트링 상품의 mountingFee(장착비/교체비)
    */
   const stringPrice = requestStringing ? (selectedString?.price ?? 0) : 0;
-  const stringingFee = requestStringing
-    ? (selectedString?.mountingFee ?? 0)
-    : 0;
+  const stringingFee = requestStringing ? (selectedString?.mountingFee ?? 0) : 0;
 
   // 총 결제 금액 = 대여수수료 + 보증금 + 스트링 + 교체비
   const total = initial.fee + initial.deposit + stringPrice + stringingFee;
@@ -240,13 +166,8 @@ export default function RentalsCheckoutClient({
   const [pointsBalance, setPointsBalance] = useState<number | null>(null);
   const [pointsDebt, setPointsDebt] = useState<number | null>(null);
   // 포인트 조회 상태를 분리해 실패/미확정을 실제 0P로 오해하지 않게 한다.
-  const [pointsStatus, setPointsStatus] = useState<
-    "idle" | "loading" | "ready" | "error"
-  >("idle");
-  const pointsAvailable =
-    pointsStatus === "ready"
-      ? Math.max(0, (pointsBalance ?? 0) - (pointsDebt ?? 0))
-      : 0;
+  const [pointsStatus, setPointsStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const pointsAvailable = pointsStatus === "ready" ? Math.max(0, (pointsBalance ?? 0) - (pointsDebt ?? 0)) : 0;
 
   const [useAllPoints, setUseAllPoints] = useState(false);
   const [pointsInput, setPointsInput] = useState("0");
@@ -254,10 +175,8 @@ export default function RentalsCheckoutClient({
 
   // 정책: 보증금(initial.deposit)에는 포인트 적용 금지 → (총액 - 보증금)까지만 가능
   const maxPointsByPolicy = Math.max(0, total - initial.deposit);
-  const maxPointsToUse =
-    pointsStatus === "ready" ? Math.min(pointsAvailable, maxPointsByPolicy) : 0;
-  const normalizePoints = (raw: number) =>
-    Math.floor(raw / POINT_UNIT) * POINT_UNIT;
+  const maxPointsToUse = pointsStatus === "ready" ? Math.min(pointsAvailable, maxPointsByPolicy) : 0;
+  const normalizePoints = (raw: number) => Math.floor(raw / POINT_UNIT) * POINT_UNIT;
   const clampPoints = (raw: number) => {
     const normalized = normalizePoints(raw);
     const maxNormalized = normalizePoints(maxPointsToUse);
@@ -265,13 +184,10 @@ export default function RentalsCheckoutClient({
   };
 
   // 실제 적용될 포인트(게스트면 0으로 강제)
-  const appliedPoints =
-    userId && pointsStatus === "ready" ? clampPoints(pointsToUse) : 0;
+  const appliedPoints = userId && pointsStatus === "ready" ? clampPoints(pointsToUse) : 0;
   const payableTotal = Math.max(0, total - appliedPoints);
 
-  const [refundBank, setRefundBank] = useState<
-    "shinhan" | "kookmin" | "woori" | ""
-  >("");
+  const [refundBank, setRefundBank] = useState<"shinhan" | "kookmin" | "woori" | "">("");
   const [refundAccount, setRefundAccount] = useState(""); // 계좌번호
   const [refundHolder, setRefundHolder] = useState(""); // 예금주
 
@@ -281,9 +197,7 @@ export default function RentalsCheckoutClient({
   const [agreeRefund, setAgreeRefund] = useState(false);
 
   const [prefillReady, setPrefillReady] = useState(false);
-  const [stringingDirtySignature, setStringingDirtySignature] = useState<
-    string | null
-  >(null);
+  const [stringingDirtySignature, setStringingDirtySignature] = useState<string | null>(null);
 
   const fingerprint = useMemo(
     () =>
@@ -337,10 +251,7 @@ export default function RentalsCheckoutClient({
     ],
   );
   const baselineRef = useRef<string | null>(null);
-  const isDirty = useMemo(
-    () => baselineRef.current !== null && baselineRef.current !== fingerprint,
-    [fingerprint],
-  );
+  const isDirty = useMemo(() => baselineRef.current !== null && baselineRef.current !== fingerprint, [fingerprint]);
 
   useEffect(() => {
     if (!prefillReady) return;
@@ -461,9 +372,7 @@ export default function RentalsCheckoutClient({
     try {
       await loadDaumPostcode();
     } catch {
-      showErrorToast(
-        "주소 검색기를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.",
-      );
+      showErrorToast("주소 검색기를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
       return;
     }
 
@@ -482,12 +391,8 @@ export default function RentalsCheckoutClient({
     // 중복 클릭/중복 요청 방지(버튼 disabled 우회 대비)
     if (loading) return;
     if (requestStringing && !selectedString?.id) {
-      showErrorToast(
-        "스트링 교체를 함께 진행하려면 먼저 스트링을 선택해주세요.",
-      );
-      pushIfSafe(
-        `/rentals/${initial.racketId}/select-string?period=${initial.period}`,
-      );
+      showErrorToast("스트링 교체를 함께 진행하려면 먼저 스트링을 선택해주세요.");
+      pushIfSafe(`/rentals/${initial.racketId}/select-string?period=${initial.period}`);
       return;
     }
 
@@ -502,16 +407,9 @@ export default function RentalsCheckoutClient({
             const form = rentalStringingAdapter.formData;
             const isVisitCollection = form.collectionMethod === "visit";
             const stringTypes = (form.stringTypes ?? []).filter(Boolean);
-            const lines = (rentalStringingAdapter.linesForSubmit ?? []).filter(
-              (line) => line?.stringProductId,
-            );
+            const lines = (rentalStringingAdapter.linesForSubmit ?? []).filter((line) => line?.stringProductId);
 
-            if (
-              !name.trim() ||
-              !phone.trim() ||
-              stringTypes.length === 0 ||
-              lines.length === 0
-            ) {
+            if (!name.trim() || !phone.trim() || stringTypes.length === 0 || lines.length === 0) {
               return undefined;
             }
 
@@ -608,9 +506,7 @@ export default function RentalsCheckoutClient({
 
       // 환급 계좌(보증금) 정보
       if (!refundBankValue || !refundAccountDigits || !refundHolderTrim) {
-        showErrorToast(
-          "보증금 환급 계좌(은행/계좌번호/예금주)를 모두 입력해주세요.",
-        );
+        showErrorToast("보증금 환급 계좌(은행/계좌번호/예금주)를 모두 입력해주세요.");
         return;
       }
       if (!ALLOWED_BANKS.has(refundBankValue)) {
@@ -640,8 +536,7 @@ export default function RentalsCheckoutClient({
         requestStringing,
         selectedStringId: selectedString?.id,
       });
-      const idemKey =
-        submitIdemKeyRef.current ?? getOrCreateRentalIdemKey(submitSignature);
+      const idemKey = submitIdemKeyRef.current ?? getOrCreateRentalIdemKey(submitSignature);
       submitIdemKeyRef.current = idemKey;
 
       const res = await fetch("/api/rentals", {
@@ -715,13 +610,10 @@ export default function RentalsCheckoutClient({
 
       // 게스트 대여는 success 진입 전에 접근 토큰을 먼저 심는다.
       if (!userId) {
-        const guestTokenRes = await fetch(
-          `/api/rentals/${rentalId}/guest-token`,
-          {
-            method: "POST",
-            credentials: "include",
-          },
-        );
+        const guestTokenRes = await fetch(`/api/rentals/${rentalId}/guest-token`, {
+          method: "POST",
+          credentials: "include",
+        });
         if (!guestTokenRes.ok) {
           showErrorToast("접근 토큰 설정에 실패했습니다. 다시 시도해주세요.");
           return;
@@ -743,9 +635,7 @@ export default function RentalsCheckoutClient({
     }
   };
 
-  const renderCheckout = (
-    rentalStringingAdapter?: RentalCheckoutStringingAdapter,
-  ) => (
+  const renderCheckout = (rentalStringingAdapter?: RentalCheckoutStringingAdapter) => (
     <div className="min-h-full bg-background">
       {/* Hero Section */}
       <div className="relative overflow-hidden bg-card text-foreground border-b border-border">
@@ -757,11 +647,7 @@ export default function RentalsCheckoutClient({
             </div>
             <div>
               <h1 className="text-4xl font-bold mb-2">라켓 대여 결제</h1>
-              <p className="text-muted-foreground">
-                {isVisitPickup
-                  ? "수령/연락 정보를 입력하고 대여를 완료하세요"
-                  : "배송 정보를 입력하고 대여를 완료하세요"}
-              </p>
+              <p className="text-muted-foreground">{isVisitPickup ? "수령/연락 정보를 입력하고 대여를 완료하세요" : "배송 정보를 입력하고 대여를 완료하세요"}</p>
             </div>
           </div>
         </SiteContainer>
@@ -777,21 +663,13 @@ export default function RentalsCheckoutClient({
                   <Package className="h-5 w-5 text-primary" />
                   대여 상품
                 </CardTitle>
-                <CardDescription className="mt-2">
-                  선택하신 라켓 정보입니다.
-                </CardDescription>
+                <CardDescription className="mt-2">선택하신 라켓 정보입니다.</CardDescription>
               </div>
               <CardContent className="p-4 md:p-6">
                 <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg border border-border">
                   <div className="relative">
                     {initial.racket?.image ? (
-                      <Image
-                        src={initial.racket.image || "/placeholder.svg"}
-                        alt="racket"
-                        width={80}
-                        height={80}
-                        className="rounded-lg border-2 border-border shadow-lg object-cover"
-                      />
+                      <Image src={initial.racket.image || "/placeholder.svg"} alt="racket" width={80} height={80} className="rounded-lg border-2 border-border shadow-lg object-cover" />
                     ) : (
                       <div className="w-20 h-20 bg-background rounded-lg flex items-center justify-center">
                         <Package className="h-8 w-8 text-muted-foreground" />
@@ -799,24 +677,13 @@ export default function RentalsCheckoutClient({
                     )}
                   </div>
                   <div className="flex-1">
-                    <div className="text-sm text-muted-foreground">
-                      중고 라켓
-                    </div>
-                    <h3 className="font-semibold text-foreground">
-                      {initial.racket
-                        ? `${racketBrandLabel(initial.racket.brand)} ${initial.racket.model}`
-                        : ""}
-                    </h3>
+                    <div className="text-sm text-muted-foreground">중고 라켓</div>
+                    <h3 className="font-semibold text-foreground">{initial.racket ? `${racketBrandLabel(initial.racket.brand)} ${initial.racket.model}` : ""}</h3>
                     <div className="flex items-center gap-2 mt-1">
-                      <Badge
-                        variant={badgeToneVariant("neutral")}
-                        className="px-2 py-0.5 text-xs"
-                      >
+                      <Badge variant={badgeToneVariant("neutral")} className="px-2 py-0.5 text-xs">
                         상태 {initial.racket?.condition}
                       </Badge>
-                      <span className="text-xs text-muted-foreground">
-                        대여 기간 {initial.period}일
-                      </span>
+                      <span className="text-xs text-muted-foreground">대여 기간 {initial.period}일</span>
                     </div>
                   </div>
                 </div>
@@ -830,48 +697,25 @@ export default function RentalsCheckoutClient({
                   <Truck className="h-5 w-5 text-primary" />
                   라켓 수령 방식
                 </CardTitle>
-                <CardDescription className="mt-2">
-                  라켓을 어떻게 수령하실지 선택해주세요.
-                </CardDescription>
+                <CardDescription className="mt-2">라켓을 어떻게 수령하실지 선택해주세요.</CardDescription>
               </div>
 
               <CardContent className="p-4 md:p-6 space-y-4">
-                <RadioGroup
-                  value={deliveryMethod}
-                  onValueChange={(value) => setDeliveryMethod(value as any)}
-                  className="space-y-3"
-                >
+                <RadioGroup value={deliveryMethod} onValueChange={(value) => setDeliveryMethod(value as any)} className="space-y-3">
                   <div className="flex items-center space-x-3 p-4 bg-muted rounded-lg border border-border">
-                    <RadioGroupItem
-                      value="택배수령"
-                      id="rentals-delivery-courier"
-                    />
-                    <Label
-                      htmlFor="rentals-delivery-courier"
-                      className="flex-1 cursor-pointer font-medium"
-                    >
+                    <RadioGroupItem value="택배수령" id="rentals-delivery-courier" />
+                    <Label htmlFor="rentals-delivery-courier" className="flex-1 cursor-pointer font-medium">
                       택배 수령 (자택 또는 지정 장소로 배송)
-                      <div className="text-xs text-muted-foreground mt-1">
-                        결제 완료 후 택배 발송으로 진행됩니다.
-                      </div>
+                      <div className="text-xs text-muted-foreground mt-1">결제 완료 후 택배 발송으로 진행됩니다.</div>
                     </Label>
                     <Truck className="h-5 w-5 text-primary" />
                   </div>
 
                   <div className="flex items-center space-x-3 p-4 bg-muted rounded-lg border border-border">
-                    <RadioGroupItem
-                      value="방문수령"
-                      id="rentals-delivery-visit"
-                    />
-                    <Label
-                      htmlFor="rentals-delivery-visit"
-                      className="flex-1 cursor-pointer font-medium"
-                    >
-                      오프라인 매장 방문 (테니스 플로우 샵에서 직접 수령)
-                      <div className="text-xs text-muted-foreground mt-1">
-                        스트링 교체를 함께 신청하면 방문 접수 기준으로
-                        처리됩니다.
-                      </div>
+                    <RadioGroupItem value="방문수령" id="rentals-delivery-visit" />
+                    <Label htmlFor="rentals-delivery-visit" className="flex-1 cursor-pointer font-medium">
+                      오프라인 매장 방문 (상호명 미정 샵에서 직접 수령)
+                      <div className="text-xs text-muted-foreground mt-1">스트링 교체를 함께 신청하면 방문 접수 기준으로 처리됩니다.</div>
                     </Label>
                     <Building2 className="h-5 w-5 text-primary" />
                   </div>
@@ -881,25 +725,13 @@ export default function RentalsCheckoutClient({
                 <div className="bg-muted p-4 rounded-lg border border-primary/30">
                   <div className="flex items-start justify-between gap-3">
                     <div className="space-y-1">
-                      <p className="font-medium text-foreground">
-                        스트링 교체 서비스 (선택)
-                      </p>
+                      <p className="font-medium text-foreground">스트링 교체 서비스 (선택)</p>
                       <p className="text-sm text-foreground">
-                        {deliveryMethod === "방문수령"
-                          ? `방문 수령을 선택하면 ${collectionMethodLabel("visit")}로 교체가 진행됩니다.`
-                          : "택배 수령을 선택하면 자가 발송(편의점/우체국 등) 방식으로 교체가 진행됩니다."}
+                        {deliveryMethod === "방문수령" ? `방문 수령을 선택하면 ${collectionMethodLabel("visit")}로 교체가 진행됩니다.` : "택배 수령을 선택하면 자가 발송(편의점/우체국 등) 방식으로 교체가 진행됩니다."}
                       </p>
                     </div>
 
-                    <Button
-                      type="button"
-                      variant={selectedString ? "outline" : "default"}
-                      onClick={() =>
-                        pushIfSafe(
-                          `/rentals/${initial.racketId}/select-string?period=${initial.period}`,
-                        )
-                      }
-                    >
+                    <Button type="button" variant={selectedString ? "outline" : "default"} onClick={() => pushIfSafe(`/rentals/${initial.racketId}/select-string?period=${initial.period}`)}>
                       {selectedString ? "스트링 변경" : "스트링 선택"}
                     </Button>
                   </div>
@@ -907,27 +739,17 @@ export default function RentalsCheckoutClient({
                   <div className="mt-3 rounded-lg border border-border p-4 bg-card/70 dark:bg-card/40">
                     {selectedString ? (
                       <div className="space-y-1">
-                        <div className="text-xs text-muted-foreground">
-                          선택된 스트링
-                        </div>
-                        <div className="font-semibold text-foreground">
-                          {selectedString.name}
-                        </div>
+                        <div className="text-xs text-muted-foreground">선택된 스트링</div>
+                        <div className="font-semibold text-foreground">{selectedString.name}</div>
                         <div className="text-sm text-muted-foreground">
-                          {selectedString.price.toLocaleString()}원 + 교체{" "}
-                          {selectedString.mountingFee.toLocaleString()}원
+                          {selectedString.price.toLocaleString()}원 + 교체 {selectedString.mountingFee.toLocaleString()}원
                         </div>
 
-                        <div className="mt-2 text-xs text-muted-foreground">
-                          * 대여 결제 시 입력한 교체 서비스 정보가 함께
-                          접수됩니다. (구형/예외 건만 별도 신청서 이동)
-                        </div>
+                        <div className="mt-2 text-xs text-muted-foreground">* 대여 결제 시 입력한 교체 서비스 정보가 함께 접수됩니다. (구형/예외 건만 별도 신청서 이동)</div>
                       </div>
                     ) : (
                       <div className="text-sm text-muted-foreground">
-                        현재는 <b>교체 서비스 미선택</b> 상태입니다. 필요하면
-                        "스트링 선택"을 눌러 교체 서비스를 함께 진행할 수
-                        있습니다.
+                        현재는 <b>교체 서비스 미선택</b> 상태입니다. 필요하면 "스트링 선택"을 눌러 교체 서비스를 함께 진행할 수 있습니다.
                       </div>
                     )}
                   </div>
@@ -941,17 +763,13 @@ export default function RentalsCheckoutClient({
                           <Package className="h-4 w-4 text-primary" />
                           교체 서비스 장착 정보
                         </CardTitle>
-                        <CardDescription className="mt-1">
-                          대여 checkout에서 바로 신청서 핵심 항목을 입력합니다.
-                        </CardDescription>
+                        <CardDescription className="mt-1">대여 checkout에서 바로 신청서 핵심 항목을 입력합니다.</CardDescription>
                       </div>
                       <CardContent className="p-4">
                         <MountingInfoSection
                           formData={rentalStringingAdapter.formData}
                           setFormData={rentalStringingAdapter.setFormData}
-                          handleInputChange={
-                            rentalStringingAdapter.handleInputChange
-                          }
+                          handleInputChange={rentalStringingAdapter.handleInputChange}
                           fromPDP={false}
                           orderId={null}
                           rentalId={initial.racketId}
@@ -967,15 +785,9 @@ export default function RentalsCheckoutClient({
                           lineCount={rentalStringingAdapter.lineCount}
                           price={rentalStringingAdapter.price}
                           priceView={rentalStringingAdapter.priceView}
-                          handleStringTypesChange={
-                            rentalStringingAdapter.handleStringTypesChange
-                          }
-                          handleCustomInputChange={
-                            rentalStringingAdapter.handleCustomInputChange
-                          }
-                          handleUseQtyChange={
-                            rentalStringingAdapter.handleUseQtyChange
-                          }
+                          handleStringTypesChange={rentalStringingAdapter.handleStringTypesChange}
+                          handleCustomInputChange={rentalStringingAdapter.handleCustomInputChange}
+                          handleUseQtyChange={rentalStringingAdapter.handleUseQtyChange}
                           lockedStringStock={null}
                           lockedRacketQuantity={1}
                           maxNonOrderQty={1}
@@ -990,22 +802,14 @@ export default function RentalsCheckoutClient({
                           packageRemaining={0}
                           requiredPassCount={0}
                           linesForSubmit={rentalStringingAdapter.linesForSubmit}
-                          handleLineFieldChange={
-                            rentalStringingAdapter.handleLineFieldChange
-                          }
+                          handleLineFieldChange={rentalStringingAdapter.handleLineFieldChange}
                           timeSlots={rentalStringingAdapter.timeSlots}
                           disabledTimes={rentalStringingAdapter.disabledTimes}
                           slotsLoading={rentalStringingAdapter.slotsLoading}
-                          hasCacheForDate={
-                            rentalStringingAdapter.hasCacheForDate
-                          }
+                          hasCacheForDate={rentalStringingAdapter.hasCacheForDate}
                           slotsError={rentalStringingAdapter.slotsError}
-                          visitSlotCountUi={
-                            rentalStringingAdapter.visitSlotCountUi
-                          }
-                          visitDurationMinutesUi={
-                            rentalStringingAdapter.visitDurationMinutesUi
-                          }
+                          visitSlotCountUi={rentalStringingAdapter.visitSlotCountUi}
+                          visitDurationMinutesUi={rentalStringingAdapter.visitDurationMinutesUi}
                           visitTimeRange={rentalStringingAdapter.visitTimeRange}
                         />
                       </CardContent>
@@ -1022,9 +826,7 @@ export default function RentalsCheckoutClient({
                         <FinalRequestSection
                           formData={rentalStringingAdapter.formData}
                           setFormData={rentalStringingAdapter.setFormData}
-                          handleInputChange={
-                            rentalStringingAdapter.handleInputChange
-                          }
+                          handleInputChange={rentalStringingAdapter.handleInputChange}
                           orderId={null}
                           isMember={!!userId}
                           usingPackage={false}
@@ -1045,11 +847,7 @@ export default function RentalsCheckoutClient({
                   <MapPin className="h-5 w-5 text-foreground" />
                   {isVisitPickup ? "수령/연락 정보" : "배송 정보"}
                 </CardTitle>
-                <CardDescription className="mt-2">
-                  {isVisitPickup
-                    ? "매장 방문 수령을 위해 연락 가능한 정보를 입력해주세요."
-                    : "라켓을 받으실 배송지 정보를 입력해주세요."}
-                </CardDescription>
+                <CardDescription className="mt-2">{isVisitPickup ? "매장 방문 수령을 위해 연락 가능한 정보를 입력해주세요." : "라켓을 받으실 배송지 정보를 입력해주세요."}</CardDescription>
               </div>
               <CardContent className="p-4 md:p-6">
                 <div className="space-y-4 md:space-y-6">
@@ -1059,104 +857,50 @@ export default function RentalsCheckoutClient({
                         <UserIcon className="h-4 w-4 text-primary" />
                         수령인 이름
                       </Label>
-                      <Input
-                        id="name"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        placeholder="수령인 이름을 입력하세요"
-                        className="border-2 focus:border-border transition-colors"
-                      />
+                      <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="수령인 이름을 입력하세요" className="border-2 focus:border-border transition-colors" />
                     </div>
                     <div className="space-y-2">
-                      <Label
-                        htmlFor="email"
-                        className="flex items-center gap-2"
-                      >
+                      <Label htmlFor="email" className="flex items-center gap-2">
                         <Mail className="h-4 w-4 text-primary" />
                         이메일
                       </Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="예: user@example.com"
-                        className="border-2 focus:border-border transition-colors"
-                      />
+                      <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="예: user@example.com" className="border-2 focus:border-border transition-colors" />
                     </div>
                     <div className="space-y-2 bp-sm:col-span-2">
-                      <Label
-                        htmlFor="phone"
-                        className="flex items-center gap-2"
-                      >
+                      <Label htmlFor="phone" className="flex items-center gap-2">
                         <Phone className="h-4 w-4 text-primary" />
                         연락처
                       </Label>
-                      <Input
-                        id="phone"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        placeholder="연락처를 입력하세요 ('-' 제외)"
-                        className="border-2 focus:border-primary transition-colors"
-                      />
+                      <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="연락처를 입력하세요 ('-' 제외)" className="border-2 focus:border-primary transition-colors" />
                     </div>
                   </div>
                   {!isVisitPickup && (
                     <>
                       <div className="space-y-4">
                         <div className="flex items-center justify-between">
-                          <Label
-                            htmlFor="postal"
-                            className="flex items-center gap-2"
-                          >
+                          <Label htmlFor="postal" className="flex items-center gap-2">
                             <Home className="h-4 w-4 text-foreground" />
                             우편번호
                           </Label>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={openPostcode}
-                            className="bg-primary text-primary-foreground border-0 hover:bg-primary/90"
-                          >
+                          <Button variant="outline" size="sm" onClick={openPostcode} className="bg-primary text-primary-foreground border-0 hover:bg-primary/90">
                             우편번호 찾기
                           </Button>
                         </div>
-                        <Input
-                          id="postal"
-                          readOnly
-                          value={postalCode}
-                          placeholder="우편번호"
-                          className="bg-muted cursor-not-allowed max-w-[200px] border-2"
-                        />
+                        <Input id="postal" readOnly value={postalCode} placeholder="우편번호" className="bg-muted cursor-not-allowed max-w-[200px] border-2" />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="address-main">기본 주소</Label>
-                        <Input
-                          id="address-main"
-                          readOnly
-                          value={address}
-                          placeholder="기본 주소"
-                          className="bg-muted cursor-not-allowed border-2"
-                        />
+                        <Input id="address-main" readOnly value={address} placeholder="기본 주소" className="bg-muted cursor-not-allowed border-2" />
                       </div>
 
                       <div className="space-y-2">
                         <Label htmlFor="address-detail">상세 주소</Label>
-                        <Input
-                          id="address-detail"
-                          value={addressDetail}
-                          onChange={(e) => setAddressDetail(e.target.value)}
-                          placeholder="동/호수 등"
-                          className="border-2 focus:border-border transition-colors"
-                        />
+                        <Input id="address-detail" value={addressDetail} onChange={(e) => setAddressDetail(e.target.value)} placeholder="동/호수 등" className="border-2 focus:border-border transition-colors" />
                       </div>
                     </>
                   )}
                   <div className="space-y-2">
-                    <Label
-                      htmlFor="request"
-                      className="flex items-center gap-2"
-                    >
+                    <Label htmlFor="request" className="flex items-center gap-2">
                       <MessageSquare className="h-4 w-4 text-foreground" />
                       {isVisitPickup ? "방문 수령 요청사항" : "배송 요청사항"}
                     </Label>
@@ -1164,11 +908,7 @@ export default function RentalsCheckoutClient({
                       id="request"
                       value={deliveryRequest}
                       onChange={(e) => setRequest(e.target.value)}
-                      placeholder={
-                        isVisitPickup
-                          ? "방문 수령 시 요청사항을 입력하세요"
-                          : "배송 시 요청사항을 입력하세요"
-                      }
+                      placeholder={isVisitPickup ? "방문 수령 시 요청사항을 입력하세요" : "배송 시 요청사항을 입력하세요"}
                       className="border-2 focus:border-border transition-colors"
                     />
                   </div>
@@ -1182,27 +922,16 @@ export default function RentalsCheckoutClient({
                   <CreditCard className="h-5 w-5 text-foreground" />
                   결제 정보
                 </CardTitle>
-                <CardDescription className="mt-2">
-                  결제 방법을 선택하고 필요한 정보를 입력해주세요.
-                </CardDescription>
+                <CardDescription className="mt-2">결제 방법을 선택하고 필요한 정보를 입력해주세요.</CardDescription>
               </div>
               <CardContent className="p-4 md:p-6">
                 <div className="space-y-4 md:space-y-6">
                   <div className="space-y-3">
                     <Label>결제 방법</Label>
-                    <RadioGroup
-                      defaultValue="bank-transfer"
-                      className="space-y-3"
-                    >
+                    <RadioGroup defaultValue="bank-transfer" className="space-y-3">
                       <div className="flex items-center space-x-3 p-4 bg-background rounded-lg border-2 border-border">
-                        <RadioGroupItem
-                          value="bank-transfer"
-                          id="bank-transfer"
-                        />
-                        <Label
-                          htmlFor="bank-transfer"
-                          className="flex-1 cursor-pointer font-medium"
-                        >
+                        <RadioGroupItem value="bank-transfer" id="bank-transfer" />
+                        <Label htmlFor="bank-transfer" className="flex-1 cursor-pointer font-medium">
                           무통장입금
                         </Label>
                         <Building2 className="h-5 w-5 text-foreground" />
@@ -1211,28 +940,19 @@ export default function RentalsCheckoutClient({
                   </div>
                   <div className="space-y-3">
                     <Label htmlFor="bank-account">입금 계좌 선택</Label>
-                    <Select
-                      value={selectedBank}
-                      onValueChange={(v) => setSelectedBank(v as any)}
-                    >
-                      <SelectTrigger
-                        id="bank-account"
-                        className="border-2 focus:border-border"
-                      >
+                    <Select value={selectedBank} onValueChange={(v) => setSelectedBank(v as any)}>
+                      <SelectTrigger id="bank-account" className="border-2 focus:border-border">
                         <SelectValue placeholder="입금 계좌를 선택하세요" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="shinhan">
-                          신한은행 {bankLabelMap.shinhan.account} (예금주:{" "}
-                          {bankLabelMap.shinhan.holder})
+                          신한은행 {bankLabelMap.shinhan.account} (예금주: {bankLabelMap.shinhan.holder})
                         </SelectItem>
                         <SelectItem value="kookmin">
-                          국민은행 {bankLabelMap.kookmin.account} (예금주:{" "}
-                          {bankLabelMap.kookmin.holder})
+                          국민은행 {bankLabelMap.kookmin.account} (예금주: {bankLabelMap.kookmin.holder})
                         </SelectItem>
                         <SelectItem value="woori">
-                          우리은행 {bankLabelMap.woori.account} (예금주:{" "}
-                          {bankLabelMap.woori.holder})
+                          우리은행 {bankLabelMap.woori.account} (예금주: {bankLabelMap.woori.holder})
                         </SelectItem>
                       </SelectContent>
                     </Select>
@@ -1240,32 +960,22 @@ export default function RentalsCheckoutClient({
 
                   <div className="space-y-2">
                     <Label htmlFor="depositor-name">입금자명</Label>
-                    <Input
-                      id="depositor-name"
-                      value={depositor}
-                      onChange={(e) => setDepositor(e.target.value)}
-                      placeholder="입금자명을 입력하세요"
-                      className="border-2 focus:border-border transition-colors"
-                    />
+                    <Input id="depositor-name" value={depositor} onChange={(e) => setDepositor(e.target.value)} placeholder="입금자명을 입력하세요" className="border-2 focus:border-border transition-colors" />
                   </div>
 
                   <div className="bg-muted p-4 rounded-lg border border-border">
                     <div className="flex items-center gap-2 mb-3">
                       <Shield className="h-5 w-5 text-primary" />
-                      <p className="font-semibold text-foreground">
-                        무통장입금 안내
-                      </p>
+                      <p className="font-semibold text-foreground">무통장입금 안내</p>
                     </div>
                     <ul className="space-y-2 text-sm text-foreground">
                       <li className="flex items-center gap-2">
                         <CheckCircle className="h-4 w-4" />
-                        주문 후 24시간 이내에 입금해 주셔야 주문이 정상
-                        처리됩니다.
+                        주문 후 24시간 이내에 입금해 주셔야 주문이 정상 처리됩니다.
                       </li>
                       <li className="flex items-center gap-2">
                         <CheckCircle className="h-4 w-4" />
-                        입금자명이 주문자명과 다를 경우, 고객센터로 연락
-                        부탁드립니다.
+                        입금자명이 주문자명과 다를 경우, 고객센터로 연락 부탁드립니다.
                       </li>
                       <li className="flex items-center gap-2">
                         <CheckCircle className="h-4 w-4" />
@@ -1282,22 +992,14 @@ export default function RentalsCheckoutClient({
                   <Undo2 className="h-5 w-5 text-foreground" />
                   보증금 환급 계좌
                 </CardTitle>
-                <CardDescription className="mt-2">
-                  반납 완료 후 보증금을 환급해 드릴 계좌 정보를 입력해주세요.
-                </CardDescription>
+                <CardDescription className="mt-2">반납 완료 후 보증금을 환급해 드릴 계좌 정보를 입력해주세요.</CardDescription>
               </div>
               <CardContent className="p-4 md:p-6 space-y-4">
                 {/* 환급 은행 */}
                 <div className="space-y-2">
                   <Label htmlFor="refund-bank">환급 은행</Label>
-                  <Select
-                    value={refundBank}
-                    onValueChange={(v) => setRefundBank(v as any)}
-                  >
-                    <SelectTrigger
-                      id="refund-bank"
-                      className="border-2 focus:border-border"
-                    >
+                  <Select value={refundBank} onValueChange={(v) => setRefundBank(v as any)}>
+                    <SelectTrigger id="refund-bank" className="border-2 focus:border-border">
                       <SelectValue placeholder="환급 받을 은행을 선택하세요" />
                     </SelectTrigger>
                     <SelectContent>
@@ -1310,31 +1012,16 @@ export default function RentalsCheckoutClient({
                 {/* 계좌번호 */}
                 <div className="space-y-2">
                   <Label htmlFor="refund-account">환급 계좌번호</Label>
-                  <Input
-                    id="refund-account"
-                    value={refundAccount}
-                    onChange={(e) => setRefundAccount(e.target.value)}
-                    placeholder="예: 110-123-456789"
-                    className="border-2 focus:border-border"
-                  />
+                  <Input id="refund-account" value={refundAccount} onChange={(e) => setRefundAccount(e.target.value)} placeholder="예: 110-123-456789" className="border-2 focus:border-border" />
                 </div>
                 {/* 예금주 */}
                 <div className="space-y-2">
                   <Label htmlFor="refund-holder">예금주</Label>
-                  <Input
-                    id="refund-holder"
-                    value={refundHolder}
-                    onChange={(e) => setRefundHolder(e.target.value)}
-                    placeholder="예: 홍길동"
-                    className="border-2 focus:border-border"
-                  />
+                  <Input id="refund-holder" value={refundHolder} onChange={(e) => setRefundHolder(e.target.value)} placeholder="예: 홍길동" className="border-2 focus:border-border" />
                 </div>
                 {/* 안내 */}
                 <div className="bg-muted rounded-lg p-4">
-                  <p className="text-sm text-foreground">
-                    반납 완료 후 보증금이 환급됩니다. 파손/연체 시 약관에 따라
-                    차감될 수 있습니다.
-                  </p>
+                  <p className="text-sm text-foreground">반납 완료 후 보증금이 환급됩니다. 파손/연체 시 약관에 따라 차감될 수 있습니다.</p>
                 </div>
               </CardContent>
             </Card>
@@ -1362,10 +1049,7 @@ export default function RentalsCheckoutClient({
                           setAgreeRefund(newValue);
                         }}
                       />
-                      <label
-                        htmlFor="agree-all"
-                        className="font-semibold text-lg text-foreground"
-                      >
+                      <label htmlFor="agree-all" className="font-semibold text-lg text-foreground">
                         전체 동의
                       </label>
                     </div>
@@ -1392,10 +1076,7 @@ export default function RentalsCheckoutClient({
                         setState: setAgreeRefund,
                       },
                     ].map((item, index) => (
-                      <div
-                        key={item.id}
-                        className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
-                      >
+                      <div key={item.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                         <div className="flex items-center space-x-2">
                           <Checkbox
                             id={item.id}
@@ -1404,26 +1085,14 @@ export default function RentalsCheckoutClient({
                               const value = !!checked;
                               item.setState(value);
                               if (!value) setAgreeAll(false);
-                              else if (
-                                agreeTerms &&
-                                agreePrivacy &&
-                                agreeRefund
-                              )
-                                setAgreeAll(true);
+                              else if (agreeTerms && agreePrivacy && agreeRefund) setAgreeAll(true);
                             }}
                           />
-                          <label
-                            htmlFor={item.id}
-                            className="text-sm font-medium text-foreground"
-                          >
+                          <label htmlFor={item.id} className="text-sm font-medium text-foreground">
                             {item.label}
                           </label>
                         </div>
-                        <Button
-                          variant="link"
-                          size="sm"
-                          className="h-auto p-0 text-foreground hover:text-foreground"
-                        >
+                        <Button variant="link" size="sm" className="h-auto p-0 text-foreground hover:text-foreground">
                           보기
                         </Button>
                       </div>
@@ -1450,34 +1119,22 @@ export default function RentalsCheckoutClient({
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
                       <span className="text-muted-foreground">대여 수수료</span>
-                      <span className="font-semibold text-lg">
-                        {initial.fee.toLocaleString()}원
-                      </span>
+                      <span className="font-semibold text-lg">{initial.fee.toLocaleString()}원</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-muted-foreground">보증금</span>
-                      <span className="font-semibold text-lg">
-                        {initial.deposit.toLocaleString()}원
-                      </span>
+                      <span className="font-semibold text-lg">{initial.deposit.toLocaleString()}원</span>
                     </div>
                     {requestStringing && selectedString && (
                       <>
                         <div className="flex justify-between items-center">
-                          <span className="text-muted-foreground">
-                            스트링 금액
-                          </span>
-                          <span className="font-semibold text-lg">
-                            {selectedString.price.toLocaleString()}원
-                          </span>
+                          <span className="text-muted-foreground">스트링 금액</span>
+                          <span className="font-semibold text-lg">{selectedString.price.toLocaleString()}원</span>
                         </div>
 
                         <div className="flex justify-between items-center">
-                          <span className="text-muted-foreground">
-                            교체 서비스비
-                          </span>
-                          <span className="font-semibold text-lg">
-                            {stringingFee.toLocaleString()}원
-                          </span>
+                          <span className="text-muted-foreground">교체 서비스비</span>
+                          <span className="font-semibold text-lg">{stringingFee.toLocaleString()}원</span>
                         </div>
                       </>
                     )}
@@ -1485,45 +1142,26 @@ export default function RentalsCheckoutClient({
                     {/* 포인트 차감 표시 */}
                     {appliedPoints > 0 && (
                       <div className="flex justify-between items-center">
-                        <span className="text-muted-foreground">
-                          포인트 사용
-                        </span>
-                        <span className="font-semibold text-lg text-destructive">
-                          - {appliedPoints.toLocaleString()}P
-                        </span>
+                        <span className="text-muted-foreground">포인트 사용</span>
+                        <span className="font-semibold text-lg text-destructive">- {appliedPoints.toLocaleString()}P</span>
                       </div>
                     )}
 
                     {/* 포인트 입력 UI (보증금 제외) */}
                     <div className="rounded-lg border border-border p-4 bg-background/40 dark:bg-muted/30 space-y-3">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-semibold text-foreground">
-                          포인트 사용
-                        </span>
+                        <span className="text-sm font-semibold text-foreground">포인트 사용</span>
                         <span className="text-xs text-muted-foreground">
-                          {pointsStatus === "ready"
-                            ? `사용 가능 ${pointsAvailable.toLocaleString()}P`
-                            : pointsStatus === "loading"
-                              ? "포인트 조회 중"
-                              : pointsStatus === "error"
-                                ? "포인트 조회 실패"
-                                : "로그인 시 조회"}
+                          {pointsStatus === "ready" ? `사용 가능 ${pointsAvailable.toLocaleString()}P` : pointsStatus === "loading" ? "포인트 조회 중" : pointsStatus === "error" ? "포인트 조회 실패" : "로그인 시 조회"}
                         </span>
                       </div>
 
                       {!userId ? (
-                        <div className="text-sm text-muted-foreground">
-                          로그인 시 포인트 사용이 가능합니다.
-                        </div>
+                        <div className="text-sm text-muted-foreground">로그인 시 포인트 사용이 가능합니다.</div>
                       ) : pointsStatus === "loading" ? (
-                        <div className="text-sm text-muted-foreground">
-                          포인트를 불러오는 중입니다.
-                        </div>
+                        <div className="text-sm text-muted-foreground">포인트를 불러오는 중입니다.</div>
                       ) : pointsStatus === "error" ? (
-                        <div className="text-sm text-destructive">
-                          포인트 조회에 실패했습니다. 새로고침 후 다시
-                          시도해주세요.
-                        </div>
+                        <div className="text-sm text-destructive">포인트 조회에 실패했습니다. 새로고침 후 다시 시도해주세요.</div>
                       ) : (
                         <>
                           <div className="flex items-center gap-2">
@@ -1539,21 +1177,14 @@ export default function RentalsCheckoutClient({
                                 }
                               }}
                             />
-                            <label
-                              htmlFor="use-all-points"
-                              className="text-sm text-foreground cursor-pointer"
-                            >
+                            <label htmlFor="use-all-points" className="text-sm text-foreground cursor-pointer">
                               전액 사용 (보증금 제외)
                             </label>
                           </div>
 
                           <Input
                             value={pointsInput}
-                            disabled={
-                              pointsStatus !== "ready" ||
-                              useAllPoints ||
-                              maxPointsToUse <= 0
-                            }
+                            disabled={pointsStatus !== "ready" || useAllPoints || maxPointsToUse <= 0}
                             onChange={(e) => {
                               const raw = e.target.value.replace(/[^\d]/g, "");
                               setPointsInput(raw);
@@ -1570,9 +1201,7 @@ export default function RentalsCheckoutClient({
                           />
 
                           <div className="text-xs text-muted-foreground">
-                            보증금({initial.deposit.toLocaleString()}원)에는
-                            포인트가 적용되지 않습니다. (최대{" "}
-                            {normalizePoints(maxPointsToUse).toLocaleString()}P)
+                            보증금({initial.deposit.toLocaleString()}원)에는 포인트가 적용되지 않습니다. (최대 {normalizePoints(maxPointsToUse).toLocaleString()}P)
                           </div>
                         </>
                       )}
@@ -1581,9 +1210,7 @@ export default function RentalsCheckoutClient({
                     <Separator />
                     <div className="flex justify-between items-center text-xl font-bold">
                       <span>총 결제 금액</span>
-                      <span className="text-foreground">
-                        {payableTotal.toLocaleString()}원
-                      </span>
+                      <span className="text-foreground">{payableTotal.toLocaleString()}원</span>
                     </div>
                   </div>
 
@@ -1592,10 +1219,7 @@ export default function RentalsCheckoutClient({
                       <Shield className="h-4 w-4" />
                       <span className="font-semibold">보증금 안내</span>
                     </div>
-                    <p className="text-sm text-foreground">
-                      반납 완료 시 보증금이 환불됩니다. 연체 또는 파손 시 차감될
-                      수 있습니다.
-                    </p>
+                    <p className="text-sm text-foreground">반납 완료 시 보증금이 환불됩니다. 연체 또는 파손 시 차감될 수 있습니다.</p>
                   </div>
 
                   <div className="bg-muted p-4 rounded-lg border border-border">
@@ -1614,10 +1238,7 @@ export default function RentalsCheckoutClient({
                   <Button
                     onClick={() => onPay(rentalStringingAdapter)}
                     disabled={loading}
-                    className={cn(
-                      "w-full h-12 bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300",
-                      loading && "opacity-50 cursor-not-allowed",
-                    )}
+                    className={cn("w-full h-12 bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300", loading && "opacity-50 cursor-not-allowed")}
                   >
                     {loading ? "처리 중..." : "결제하기"}
                   </Button>
@@ -1662,9 +1283,7 @@ export default function RentalsCheckoutClient({
       servicePickupMethod={servicePickupMethod}
       onDirtySignatureChange={setStringingDirtySignature}
     >
-      {({ adapter: rentalStringingAdapter }) =>
-        renderCheckout(rentalStringingAdapter)
-      }
+      {({ adapter: rentalStringingAdapter }) => renderCheckout(rentalStringingAdapter)}
     </RentalCheckoutStringingRuntimeBridge>
   );
 }
