@@ -14,7 +14,6 @@ import { getStringingAddressReadLabels, orderShippingMethodLabel } from '@/app/f
 import { useStringingStore } from '@/app/store/stringingStore';
 import AdminCancelRequestCard from '@/components/admin/AdminCancelRequestCard';
 import LinkedDocsCard, { LinkedDocItem } from '@/components/admin/LinkedDocsCard';
-import LinkedFlowStageCard from '@/components/admin/LinkedFlowStageCard';
 import SiteContainer from '@/components/layout/SiteContainer';
 import ServiceReviewCTA from '@/components/reviews/ServiceReviewCTA';
 import AsyncState from '@/components/system/AsyncState';
@@ -23,7 +22,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogClose, DialogContent, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { isApplicationClosedForLinkedAutomation, isOrderBlockedForLinkedAutomation } from '@/lib/admin/linked-flow-stage';
 import { inferNextActionForOperationItem } from '@/lib/admin/next-action-guidance';
 import { badgeBase, badgeSizeSm, badgeToneClass, getPaymentStatusBadgeSpec, getShippingMethodBadge } from '@/lib/badge-style';
 import { buildAdminCancelRequestView, normalizeAdminCancelRequestStatus } from '@/lib/cancel-request/admin-cancel-request-view';
@@ -301,6 +299,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
 
   // 교체 확정 전용 로딩 상태
   const [isConfirmSubmitting, setIsConfirmSubmitting] = useState(false);
+  const [isLineDetailsExpanded, setIsLineDetailsExpanded] = useState(true);
 
   // 1) 버튼에서 모달 여는 함수
   const handleOpenCancelDialog = () => {
@@ -511,6 +510,10 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
   });
+  useEffect(() => {
+    const lineCount = Array.isArray(data?.lines) ? data.lines.length : 0;
+    setIsLineDetailsExpanded(lineCount <= 3);
+  }, [applicationId, data?.lines]);
 
   if (error)
     return (
@@ -540,6 +543,44 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
 
   // 총 장착비 (백엔드 totalPrice 신뢰)
   const totalPrice = data.totalPrice ?? 0;
+  const lineCount = Array.isArray(data.lines) ? data.lines.length : 0;
+
+  const groupedItemSummary = new Map<string, { id: string; name: string; price: number; quantity: number }>();
+  for (const item of data.items ?? []) {
+    const key = `${item.id}::${item.name}::${item.price}`;
+    const prev = groupedItemSummary.get(key);
+    if (prev) {
+      prev.quantity += item.quantity;
+    } else {
+      groupedItemSummary.set(key, {
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+      });
+    }
+  }
+  const itemSummary = Array.from(groupedItemSummary.values()).map((it) => ({
+    ...it,
+    subtotal: it.price * it.quantity,
+  }));
+
+  const lineSummaryLines = Array.isArray(data.lines) ? data.lines : [];
+  const lineSummaryStringKinds = new Set(
+    lineSummaryLines.map((line) => String(line.stringName ?? '').trim()).filter(Boolean),
+  );
+  const lineSummary = {
+    racketCount: lineSummaryLines.length,
+    stringTypeCount: lineSummaryStringKinds.size,
+    tensionFilledCount: lineSummaryLines.filter(
+      (line) =>
+        String(line.tensionMain ?? '').trim().length > 0 ||
+        String(line.tensionCross ?? '').trim().length > 0,
+    ).length,
+    notedCount: lineSummaryLines.filter(
+      (line) => String(line.note ?? '').trim().length > 0,
+    ).length,
+  };
 
   const isCancelled = data.status === '취소';
   const isPaid = ['접수완료', '작업 중', '교체완료'].includes(data.status);
@@ -619,20 +660,6 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
 
   // 관리자용 취소 요청 정보 (주문 상세와 동일 패턴)
   const cancelInfo = buildAdminCancelRequestView(data.cancelRequest, 'application');
-  const hasOrderStatus = Boolean(String(data.orderStatus ?? '').trim());
-  const isLinkedStageBlockedByOrder = hasOrderStatus ? isOrderBlockedForLinkedAutomation(data.orderStatus) : false;
-  const isLinkedStageBlockedByApplication = isApplicationClosedForLinkedAutomation({
-    status: data.status,
-    cancelRequestStatus: data.cancelRequest?.status ?? null,
-  });
-  const linkedStageDisabledReason = !hasOrderStatus
-    ? '주문 상태를 확인할 수 없어 대표 단계를 안전하게 변경할 수 없습니다.'
-    : isLinkedStageBlockedByOrder
-      ? `주문 상태(${data.orderStatus})에서는 대표 단계를 변경할 수 없습니다.`
-      : isLinkedStageBlockedByApplication
-        ? '신청서가 취소되었거나 취소 승인 완료 상태여서 대표 단계를 변경할 수 없습니다.'
-        : null;
-
   // 자가발송/운송장 등록 여부 계산
   // "고객→매장" 기준은 collectionMethod만 사용
   const collectionMethodRaw = data.shippingInfo?.collectionMethod ?? null;
@@ -953,22 +980,6 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
             )}
           </div>
 
-          {isAdmin && data.orderId && hasOrderStatus && (
-            <LinkedFlowStageCard
-              className="mb-4 border border-border shadow-xl bg-card overflow-hidden"
-              orderId={String(data.orderId)}
-              orderStatus={String(data.orderStatus)}
-              applicationStatus={data.status}
-              disabled={Boolean(linkedStageDisabledReason)}
-              disabledReason={linkedStageDisabledReason}
-              onSaved={async () => {
-                await mutate();
-                await historyMutateRef.current?.();
-                router.refresh();
-              }}
-            />
-          )}
-
           {/* 상태 카드 */}
           <Card className={cn(detailCardClass, 'mb-6 bp-sm:mb-8')}>
             <CardHeader className={detailCardHeaderClass}>
@@ -978,7 +989,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
               </div>
               {isAdmin && (
                 <CardDescription>
-                  {new Date(data.requestedAt).toLocaleDateString()}에 접수된 신청입니다. 신청 상태 변경과 취소 요청 처리를 이 영역에서 함께 관리합니다.
+                  {new Date(data.requestedAt).toLocaleDateString()}에 접수된 신청입니다. 연결 진행 단계는 주문 상세 화면에서 관리하며, 이 화면에서는 현재 신청서의 개별 상태와 취소 요청만 직접 조정합니다.
                 </CardDescription>
               )}
             </CardHeader>
@@ -1369,40 +1380,61 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                         <Target className="w-5 h-5" />
                         <span className="font-medium">라켓별 장착 정보</span>
                       </div>
-
-                      <div className="space-y-3">
-                        {data.lines.map((line, index) => (
-                          <div key={line.id ?? index} className="rounded-xl px-4 py-3 ring-1 ring-ring bg-card/70 dark:ring-ring dark:bg-background/40">
-                            {/* 라켓 이름 + 순번 */}
-                            <div className="flex items-center justify-between mb-2">
-                              <p className="font-medium text-foreground">
-                                라켓 {index + 1}
-                                {line.racketType ? ` · ${line.racketType}` : ''}
-                              </p>
-                              {(line.tensionMain || line.tensionCross) && (
-                                <Badge variant="info" className="px-2 py-1 text-xs">
-                                  텐션 {line.tensionMain ? `${line.tensionMain}LB` : '-'} / {line.tensionCross ? `${line.tensionCross}LB` : '-'}
-                                </Badge>
-                              )}
-                            </div>
-
-                            {/* 스트링 이름 */}
-                            {line.stringName && (
-                              <p className="text-xs text-foreground">
-                                스트링: <span className="font-medium">{line.stringName}</span>
-                              </p>
-                            )}
-
-                            {/* 라켓별 메모 */}
-                            {line.note && <p className="mt-2 text-xs text-muted-foreground leading-relaxed">메모: {line.note}</p>}
-                          </div>
-                        ))}
+                      <div className="space-y-3 rounded-xl border border-border/70 bg-muted/40 p-3">
+                        <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground sm:grid-cols-4">
+                          <p>라켓 {lineSummary.racketCount}자루</p>
+                          <p>스트링 {lineSummary.stringTypeCount}종</p>
+                          <p>텐션 입력 {lineSummary.tensionFilledCount}자루</p>
+                          <p>메모 {lineSummary.notedCount}자루</p>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="h-8"
+                          onClick={() => setIsLineDetailsExpanded((prev) => !prev)}
+                        >
+                          {isLineDetailsExpanded
+                            ? '라켓별 상세 접기'
+                            : `라켓별 상세 ${lineCount}건 보기`}
+                        </Button>
                       </div>
+
+                      {isLineDetailsExpanded && (
+                        <div className="space-y-3">
+                          {data.lines.map((line, index) => (
+                            <div key={line.id ?? index} className="rounded-xl px-4 py-3 ring-1 ring-ring bg-card/70 dark:ring-ring dark:bg-background/40">
+                              {/* 라켓 이름 + 순번 */}
+                              <div className="flex items-center justify-between mb-2">
+                                <p className="font-medium text-foreground">
+                                  라켓 {index + 1}
+                                  {line.racketType ? ` · ${line.racketType}` : ''}
+                                </p>
+                                {(line.tensionMain || line.tensionCross) && (
+                                  <Badge variant="info" className="px-2 py-1 text-xs">
+                                    텐션 {line.tensionMain ? `${line.tensionMain}LB` : '-'} / {line.tensionCross ? `${line.tensionCross}LB` : '-'}
+                                  </Badge>
+                                )}
+                              </div>
+
+                              {/* 스트링 이름 */}
+                              {line.stringName && (
+                                <p className="text-xs text-foreground">
+                                  스트링: <span className="font-medium">{line.stringName}</span>
+                                </p>
+                              )}
+
+                              {/* 라켓별 메모 */}
+                              {line.note && <p className="mt-2 text-xs text-muted-foreground leading-relaxed">메모: {line.note}</p>}
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </section>
                   )}
 
                   {/* 섹션 3: 장착 상품 정보 (스트링 상품 리스트) */}
-                  {data.items && data.items.length > 0 && (
+                  {itemSummary.length > 0 && (
                     <section className="space-y-2">
                       <div className="flex items-center gap-2 text-foreground">
                         <ShoppingCart className="w-5 h-5" />
@@ -1411,20 +1443,22 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
 
                       <div className="overflow-hidden rounded-xl ring-1 ring-ring bg-card/80 dark:ring-ring dark:bg-background/60">
                         {/* 헤더 행 */}
-                        <div className="grid grid-cols-[minmax(0,1.6fr)_80px_100px] px-4 py-2 text-xs font-semibold text-muted-foreground bg-muted dark:bg-card/70">
+                        <div className="grid grid-cols-[minmax(0,1.6fr)_80px_100px_110px] px-4 py-2 text-xs font-semibold text-muted-foreground bg-muted dark:bg-card/70">
                           <span>상품명</span>
-                          <span className="text-center">수량</span>
-                          <span className="text-right">장착비</span>
+                          <span className="text-center">총 수량</span>
+                          <span className="text-right">단가</span>
+                          <span className="text-right">소계</span>
                         </div>
 
                         {/* 데이터 행 */}
-                        {data.items.map((item, index) => (
-                          <div key={`${item.id}-${index}`} className="grid grid-cols-[minmax(0,1.6fr)_80px_100px] px-4 py-2 text-sm border-t border-border/70">
+                        {itemSummary.map((item) => (
+                          <div key={`${item.id}-${item.name}-${item.price}`} className="grid grid-cols-[minmax(0,1.6fr)_80px_100px_110px] px-4 py-2 text-sm border-t border-border/70">
                             <div className="pr-2">
                               <p className="font-medium text-foreground truncate">{item.name}</p>
                             </div>
                             <div className="text-center text-xs text-muted-foreground">x {item.quantity}개</div>
-                            <div className="text-right font-semibold text-foreground">{item.price.toLocaleString()}원</div>
+                            <div className="text-right text-foreground">{item.price.toLocaleString()}원</div>
+                            <div className="text-right font-semibold text-foreground">{item.subtotal.toLocaleString()}원</div>
                           </div>
                         ))}
                       </div>
