@@ -207,13 +207,13 @@ export async function PATCH(
       const orderHistoryEntry = {
         status: nextOrderStatus,
         date: now,
-        description: `[관리자 대표단계 변경] ${currentInferred ? `${currentInferred} → ` : ""}${stage} (연결 신청서 동기화)`,
+        description: `[관리자 연결 진행 단계 변경] ${currentInferred ? `${currentInferred} → ` : ""}${stage} (연결 신청서 동기화)`,
       };
 
       const applicationHistoryEntry = {
         status: nextApplicationStatus,
         date: now,
-        description: `[관리자 대표단계 변경] ${currentInferred ? `${currentInferred} → ` : ""}${stage} (연결 주문 동기화)`,
+        description: `[관리자 연결 진행 단계 변경] ${currentInferred ? `${currentInferred} → ` : ""}${stage} (연결 주문 동기화)`,
       };
 
       const orderSetFields: Record<string, any> = {
@@ -295,7 +295,7 @@ export async function PATCH(
       return NextResponse.json(
         {
           success: false,
-          message: "주문이 종료 상태이므로 대표 단계를 변경할 수 없습니다.",
+          message: "주문이 종료 상태이므로 연결 진행 단계를 변경할 수 없습니다.",
           orderStatus,
           blockedStatuses: LINKED_FLOW_AUTOMATION_BLOCKED_ORDER_STATUSES,
         },
@@ -306,7 +306,7 @@ export async function PATCH(
       return NextResponse.json(
         {
           success: false,
-          message: "취소/종료된 신청서는 대표 단계 변경 대상이 아닙니다.",
+          message: "취소/종료된 신청서는 연결 진행 단계 변경 대상이 아닙니다.",
         },
         { status: 400 },
       );
@@ -317,7 +317,7 @@ export async function PATCH(
       {
         success: false,
         message:
-          "대표 단계 변경 처리 중 오류가 발생했습니다. 저장이 완료되지 않았습니다.",
+          "연결 진행 단계 변경 처리 중 오류가 발생했습니다. 저장이 완료되지 않았습니다.",
       },
       { status: 500 },
     );
