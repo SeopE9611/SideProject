@@ -23,14 +23,14 @@ export default function CheckoutStringingServiceSections({
   if (!withStringService) return null;
 
   return (
-    <Card className="border border-border bg-card shadow-sm">
-      <div className="border-b border-border bg-muted/35 px-5 py-4">
-        <CardTitle className="flex items-center gap-2 text-base">
+    <Card className="border border-border/90 bg-card shadow-sm">
+      <div className="border-b border-border bg-muted/30 px-5 py-4.5">
+        <CardTitle className="flex items-center gap-2 text-[15px] font-semibold">
           <Wrench className="h-4 w-4 text-primary" />
           교체 서비스 옵션
         </CardTitle>
       </div>
-      <CardContent className="space-y-4 p-5">
+      <CardContent className="space-y-5 p-5">
         <CheckoutStringingSummaryCard adapter={adapter} />
         <CheckoutStringingCompactEditor adapter={adapter} />
       </CardContent>
