@@ -49,11 +49,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import AsyncState from "@/components/system/AsyncState";
-import {
-  opsKindBadgeTone,
-  opsKindLabel,
-  type OpsBadgeTone,
-} from "@/lib/admin-ops-taxonomy";
+import { opsKindLabel } from "@/lib/admin-ops-taxonomy";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { buildQueryString } from "@/lib/admin/urlQuerySync";
 import { inferNextActionForOperationGroup } from "@/lib/admin/next-action-guidance";
@@ -61,11 +57,7 @@ import {
   badgeBase,
   badgeSizeSm,
   badgeToneClass,
-  badgeToneVariant,
-  getApplicationStatusBadgeSpec,
-  getOrderStatusBadgeSpec,
   getPaymentStatusBadgeSpec,
-  getRentalStatusBadgeSpec,
   getWorkflowMetaBadgeSpec,
 } from "@/lib/badge-style";
 import { shortenId } from "@/lib/shorten";
@@ -454,13 +446,6 @@ function cancelBadgeSpec(
   return null;
 }
 
-function opStatusBadgeSpec(item: OpItem) {
-  const status = item.statusLabel;
-  if (item.kind === "order") return getOrderStatusBadgeSpec(status);
-  if (item.kind === "rental") return getRentalStatusBadgeSpec(status);
-  return getApplicationStatusBadgeSpec(status);
-}
-
 function cancelQuickSignalSpec(
   cancel?: OpItem["cancel"],
 ): {
@@ -672,10 +657,6 @@ const td = tdClasses;
 // 단, header 배경색은 thead의 bg-muted/50과 동일 톤을 써서 "액션"만 색이 달라 보이는 현상을 방지.
 const stickyActionHeadClass =
   "sticky right-0 z-20 bg-muted/50 text-right shadow-[-8px_0_12px_-12px_hsl(var(--border))]";
-
-function opsBadgeVariant(tone: OpsBadgeTone) {
-  return badgeToneVariant(tone);
-}
 
 export default function OperationsClient() {
   const router = useRouter();
@@ -1026,54 +1007,6 @@ export default function OperationsClient() {
       ...prev,
       [key]: !prev[key],
     }));
-  }
-
-  function renderLinkedDocs(
-    docs: Array<{ kind: Kind; id: string; href: string }>,
-  ) {
-    if (!docs || docs.length === 0) {
-      return <span className="text-xs text-muted-foreground">-</span>;
-    }
-
-    const shown = docs.slice(0, 2);
-    const rest = docs.length - shown.length;
-
-    return (
-      <div className="flex flex-wrap items-center gap-2">
-        {shown.map((d) => (
-          <div key={`${d.kind}:${d.id}`} className="flex items-center gap-1">
-            <Link
-              href={d.href}
-              className="inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs hover:bg-muted/60"
-              aria-label="연결 문서로 이동"
-            >
-              <Badge
-                variant={opsBadgeVariant(opsKindBadgeTone(d.kind))}
-                className={cn(badgeBase, badgeSizeSm)}
-              >
-                {opsKindLabel(d.kind)}
-              </Badge>
-              <span className="font-mono">{shortenId(d.id)}</span>
-            </Link>
-
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              className="h-7 w-7 p-0 bg-transparent"
-              onClick={() => copyToClipboard(d.id)}
-              aria-label={ROW_ACTION_LABELS.copyId}
-            >
-              <Copy className="h-4 w-4" />
-            </Button>
-          </div>
-        ))}
-
-        {rest > 0 && (
-          <span className="text-xs text-muted-foreground">외 {rest}건</span>
-        )}
-      </div>
-    );
   }
 
   return (
@@ -1867,9 +1800,6 @@ export default function OperationsClient() {
                                     {won(g.anchor.amount)}
                                   </p>
                                 </div>
-                                <span className="text-[11px] text-muted-foreground/85 line-clamp-1">
-                                  결제 상태: {g.anchor.paymentLabel || "정보 없음"}
-                                </span>
                                 {(() => {
                                   const cancelBadge = cancelBadgeSpec(
                                     g.anchor.cancel?.status,
@@ -2015,9 +1945,24 @@ export default function OperationsClient() {
                                           className="grid grid-cols-4 gap-1.5 px-2 py-1 text-[11px] leading-tight"
                                         >
                                           <div>
-                                            <p className="font-medium text-foreground">
-                                              {opsKindLabel(item.kind)} · {shortenId(item.id)}
-                                            </p>
+                                            <div className="flex items-center gap-1">
+                                              <Link
+                                                href={item.href}
+                                                className="font-medium text-foreground hover:underline"
+                                              >
+                                                {opsKindLabel(item.kind)} · {shortenId(item.id)}
+                                              </Link>
+                                              <Button
+                                                type="button"
+                                                size="sm"
+                                                variant="ghost"
+                                                className="h-5 w-5 p-0 text-muted-foreground"
+                                                onClick={() => copyToClipboard(item.id)}
+                                                aria-label={ROW_ACTION_LABELS.copyId}
+                                              >
+                                                <Copy className="h-3 w-3" />
+                                              </Button>
+                                            </div>
                                             <p className="text-muted-foreground">
                                               {item.statusDisplayLabel ?? item.statusLabel}
                                             </p>
@@ -2025,6 +1970,9 @@ export default function OperationsClient() {
                                           <div>
                                             <p className="text-foreground">
                                               {toOperatorSentence(item.nextAction ?? groupGuide.nextAction)}
+                                            </p>
+                                            <p className="text-[11px] text-muted-foreground/90">
+                                              결제 상태: {item.paymentLabel || "정보 없음"}
                                             </p>
                                             <p className="text-[11px] text-muted-foreground/90">
                                               {formatKST(item.createdAt)}
@@ -2335,11 +2283,29 @@ export default function OperationsClient() {
                                     className="grid grid-cols-[1fr_auto] gap-1 px-1.5 py-0.5 text-[11px] leading-snug"
                                   >
                                     <div>
-                                      <p className="font-medium text-foreground">
-                                        {opsKindLabel(item.kind)} · {shortenId(item.id)}
-                                      </p>
+                                      <div className="flex items-center gap-1">
+                                        <Link
+                                          href={item.href}
+                                          className="font-medium text-foreground hover:underline"
+                                        >
+                                          {opsKindLabel(item.kind)} · {shortenId(item.id)}
+                                        </Link>
+                                        <Button
+                                          type="button"
+                                          size="sm"
+                                          variant="ghost"
+                                          className="h-5 w-5 p-0 text-muted-foreground"
+                                          onClick={() => copyToClipboard(item.id)}
+                                          aria-label={ROW_ACTION_LABELS.copyId}
+                                        >
+                                          <Copy className="h-3 w-3" />
+                                        </Button>
+                                      </div>
                                       <p className="text-muted-foreground">
                                         {item.statusDisplayLabel ?? item.statusLabel}
+                                      </p>
+                                      <p className="text-muted-foreground/90">
+                                        결제 상태: {item.paymentLabel || "정보 없음"}
                                       </p>
                                     </div>
                                     <div className="text-right">
@@ -2358,98 +2324,19 @@ export default function OperationsClient() {
                                 ))}
                                 </div>
                               </div>
-                            <div className="flex flex-wrap items-center gap-1">
-                              <Badge
-                                variant={opStatusBadgeSpec(g.anchor).variant}
-                                className={cn(badgeBase, badgeSizeSm)}
-                              >
-                                {g.anchor.statusDisplayLabel ?? g.anchor.statusLabel}
-                              </Badge>
-                              {(() => {
-                                const cancelBadge = cancelBadgeSpec(
-                                  g.anchor.cancel?.status,
-                                );
-                                return cancelBadge ? (
-                                  <Badge
-                                    variant={cancelBadge.spec.variant}
-                                    className={cn(badgeBase, badgeSizeSm)}
-                                  >
-                                    {cancelBadge.label}
-                                  </Badge>
-                                ) : null;
-                              })()}
-                              {anchorCancelQuickSignal && (
-                                <TooltipProvider delayDuration={50}>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <Badge
-                                        className={cn(
-                                          badgeBase,
-                                          badgeSizeSm,
-                                          badgeToneClass(
-                                            anchorCancelQuickSignal.tone,
-                                          ),
-                                          "cursor-help",
-                                        )}
-                                      >
-                                        {anchorCancelQuickSignal.label}
-                                      </Badge>
-                                    </TooltipTrigger>
-                                    <TooltipContent
-                                      side="top"
-                                      align="start"
-                                      sideOffset={6}
-                                      className={adminRichTooltipClass}
-                                    >
-                                      <p className="text-sm text-foreground">
-                                        취소 요청이 접수된 항목입니다.
-                                      </p>
-                                      <p className="mt-1 text-xs text-muted-foreground">
-                                        {anchorCancelQuickSignal.tooltipCopy}
-                                      </p>
-                                      {g.anchor.cancel?.refundBankLabel && (
-                                        <p className="mt-1 text-xs text-muted-foreground">
-                                          환불 은행: {g.anchor.cancel.refundBankLabel}
-                                        </p>
-                                      )}
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-                              )}
-                            </div>
-                            <p className="text-[11px] leading-tight text-muted-foreground/90">
-                              결제: {g.anchor.paymentLabel || "정보 없음"}
-                            </p>
                             {amountMeaningText(g.anchor) ? (
                               <p className="text-[11px] leading-tight text-muted-foreground/85 line-clamp-1">
                                 {amountMeaningText(g.anchor)}
                               </p>
                             ) : null}
                             {g.primarySignal && (
-                              <div className="rounded-md border border-warning/30 bg-warning/5 px-2 py-1.5">
-                                <p className="text-[11px] font-medium text-foreground">
-                                  {toOperatorSentence(g.primarySignal.title)}
-                                  <span className="ml-1 text-[11px] text-muted-foreground/85">
-                                    {g.primarySignal.code}
-                                  </span>
-                                </p>
-                                <p className="text-[11px] leading-tight text-muted-foreground/90 line-clamp-2">
-                                  {toOperatorSentence(g.primarySignal.description)}
-                                </p>
-                              </div>
-                            )}
-                            {renderLinkedDocs(
-                              g.items
-                                .filter(
-                                  (item) =>
-                                    `${item.kind}:${item.id}` !==
-                                    `${g.anchor.kind}:${g.anchor.id}`,
-                                )
-                                .map((item) => ({
-                                  kind: item.kind,
-                                  id: item.id,
-                                  href: item.href,
-                                })),
+                              <p className="text-[11px] leading-tight text-muted-foreground/85">
+                                참고:{" "}
+                                {toOperatorSentence(
+                                  g.primarySignal.description ??
+                                    g.primarySignal.title,
+                                )}
+                              </p>
                             )}
                             {g.anchor.flow === 7 && (
                               <p className="text-xs text-muted-foreground">
