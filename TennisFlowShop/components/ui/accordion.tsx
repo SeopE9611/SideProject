@@ -119,14 +119,22 @@ type ContentProps = {
 export function AccordionContent({ value, className, children }: ContentProps) {
   const ctx = React.useContext(AccordionCtx)!;
   const open = ctx.openSet.has(value);
+
+  if (!open) {
+    return (
+      <div
+        aria-hidden="true"
+        data-state="closed"
+        className={cn("max-h-0 overflow-hidden", className)}
+      />
+    );
+  }
+
   return (
     <div
-      aria-hidden={!open}
-      className={cn("overflow-hidden", className)}
-      style={{
-        maxHeight: open ? "999px" : "0px",
-        transition: "max-height .2s ease",
-      }}
+      aria-hidden="false"
+      data-state="open"
+      className={cn("max-h-none overflow-visible", className)}
     >
       <div className="pb-3">{children}</div>
     </div>
