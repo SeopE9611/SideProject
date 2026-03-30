@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2, ClipboardList } from "lucide-react";
+import { CheckCircle2, CircleDot, ClipboardList } from "lucide-react";
 
 import type useCheckoutStringingServiceAdapter from "@/app/features/stringing-applications/hooks/useCheckoutStringingServiceAdapter";
 import { Badge } from "@/components/ui/badge";
@@ -19,9 +19,17 @@ export default function CheckoutStringingSummaryCard({ adapter }: Props) {
     summary.reservationLabel && visitTimeRange && visitSlotCountUi > 1
       ? `${summary.reservationLabel} (${visitTimeRange.start}~${visitTimeRange.end}, ${visitSlotCountUi}슬롯)`
       : summary.reservationLabel;
+  const lineConfiguredDone =
+    completion.lineConfiguredCount === completion.totalLineCount &&
+    completion.totalLineCount > 0;
+  const statusMessage = completion.isReadyToSubmit
+    ? "현재 설정으로 주문과 함께 교체 서비스가 접수됩니다."
+    : completion.needsVisitReservation && !completion.hasReservation
+      ? "방문 예약만 완료하면 접수 준비가 완료됩니다."
+      : "추가 요청 없이 현재 설정으로 접수됩니다.";
 
   return (
-    <div className="space-y-4 rounded-lg border border-border bg-muted/25 px-4 py-5 bp-sm:px-5">
+    <div className="space-y-4 rounded-xl border border-primary/20 bg-primary/5 px-4 py-5 bp-sm:px-5">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="flex items-center gap-2 text-sm font-semibold text-foreground">
@@ -34,13 +42,13 @@ export default function CheckoutStringingSummaryCard({ adapter }: Props) {
         </div>
         <Badge
           variant={completion.isReadyToSubmit ? "success" : "secondary"}
-          className="mt-0.5"
+          className="mt-0.5 border border-border/70 bg-background/85"
         >
           {completion.statusLabel}
         </Badge>
       </div>
 
-      <div className="grid grid-cols-1 gap-x-5 gap-y-2.5 text-sm bp-sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-x-5 gap-y-2.5 rounded-lg border border-border/70 bg-background/80 p-3.5 text-sm bp-sm:grid-cols-2">
         <p><span className="text-muted-foreground">접수 방식:</span> <span className="font-medium">{summary.collectionLabel}</span></p>
         <p><span className="text-muted-foreground">작업 수량:</span> <span className="font-medium">{summary.lineCount}자루</span></p>
         <p><span className="text-muted-foreground">선택 스트링:</span> <span className="font-medium">{summary.stringNames.join(", ") || "미선택"}</span></p>
@@ -52,51 +60,58 @@ export default function CheckoutStringingSummaryCard({ adapter }: Props) {
         <p><span className="text-muted-foreground">추가 요청:</span> <span className="font-medium">{summary.requestPreview}</span></p>
       </div>
 
-      <div className="pt-1.5">
+      <div className="rounded-lg border border-border/70 bg-background/70 p-3">
+        <p className="mb-2 text-[11px] font-medium tracking-wide text-muted-foreground">
+          진행 상태
+        </p>
         <div className="flex flex-wrap gap-2 text-xs">
           <Badge
             variant={completion.basicConfigured ? "success" : "secondary"}
-            className="font-normal"
+            className="gap-1 border border-border/70 font-normal"
           >
+            <CircleDot className="h-3 w-3" />
             기본 설정 {completion.basicConfigured ? "완료" : "미완료"}
           </Badge>
           <Badge
-            variant={
-              completion.lineConfiguredCount === completion.totalLineCount &&
-              completion.totalLineCount > 0
-                ? "success"
-                : "secondary"
-            }
-            className="font-normal"
+            variant={lineConfiguredDone ? "success" : "secondary"}
+            className="gap-1 border border-border/70 font-normal"
           >
-          라켓별 설정 {completion.lineConfiguredCount}/{completion.totalLineCount} 완료
+            <CircleDot className="h-3 w-3" />
+            라켓별 설정 {completion.lineConfiguredCount}/{completion.totalLineCount} 완료
           </Badge>
           {completion.needsVisitReservation && (
             <Badge
               variant={completion.hasReservation ? "success" : "warning"}
-              className="font-normal"
+              className="gap-1 border border-border/70 font-normal"
             >
+              <CircleDot className="h-3 w-3" />
               방문 예약 {completion.hasReservation ? "완료" : "필요"}
             </Badge>
           )}
           {!completion.needsVisitReservation && (
-            <Badge variant="secondary" className="font-normal">방문 예약 없음</Badge>
+            <Badge variant="secondary" className="gap-1 border border-border/70 font-normal">
+              <CircleDot className="h-3 w-3" />
+              방문 예약 없음
+            </Badge>
           )}
           <Badge
             variant={summary.requestPreview === "없음" ? "secondary" : "success"}
-            className="font-normal"
+            className="gap-1 border border-border/70 font-normal"
           >
+            <CircleDot className="h-3 w-3" />
             추가 요청 {summary.requestPreview === "없음" ? "없음" : "입력됨"}
           </Badge>
         </div>
       </div>
 
-      {completion.isReadyToSubmit && (
-        <p className="flex items-center gap-1.5 text-xs text-foreground">
+      <p className="flex items-center gap-1.5 border-t border-border/70 pt-1 text-xs text-foreground">
+        {completion.isReadyToSubmit ? (
           <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
-          현재 설정으로 주문과 함께 교체 서비스가 접수됩니다.
-        </p>
-      )}
+        ) : (
+          <CircleDot className="h-3.5 w-3.5 text-muted-foreground" />
+        )}
+        {statusMessage}
+      </p>
     </div>
   );
 }
