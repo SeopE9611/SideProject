@@ -6,10 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { badgeToneVariant } from '@/lib/badge-style';
+import { normalizeRentalStatus } from '@/lib/admin-ops-normalize';
 import { bankLabelMap, racketBrandLabel } from '@/lib/constants';
 import { ArrowRight, CheckCircle, Clock, CreditCard, MapPin, Package, Phone, Shield, Truck, Undo2 } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect } from 'react';
 
 type Props = {
   data: {
@@ -81,22 +81,6 @@ export default function RentalsSuccessClient({ data }: Props) {
   const stringingApplicationHref = dbStringingApplicationId ? `/mypage?tab=orders&flowType=application&flowId=${encodeURIComponent(dbStringingApplicationId)}&from=orders` : null;
   const isPickup = data.shipping?.shippingMethod === 'pickup';
 
-  useEffect(() => {
-    try {
-      sessionStorage.setItem('rentals-success', '1');
-      const onPop = (e: PopStateEvent) => {
-        if (sessionStorage.getItem('rentals-success') === '1') {
-          history.pushState(null, '', location.href);
-        }
-      };
-      window.addEventListener('popstate', onPop);
-      return () => {
-        window.removeEventListener('popstate', onPop);
-        sessionStorage.removeItem('rentals-success');
-      };
-    } catch {}
-  }, []);
-
   const total = typeof data.total === 'number' ? data.total : data.fee + data.deposit + (data.stringPrice ?? 0) + (data.stringingFee ?? 0);
   const bankKeyFromServer = data.payment?.bank || '';
   const depositorFromServer = data.payment?.depositor || '';
@@ -158,7 +142,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                   </p>
                 )}
                 <p>
-                  <span className="text-muted-foreground">대여 상태:</span> <span className="font-semibold text-foreground">{data.status || '접수완료'}</span>
+                  <span className="text-muted-foreground">대여 상태:</span> <span className="font-semibold text-foreground">{normalizeRentalStatus(data.status)}</span>
                 </p>
                 {withService && (
                   <p>
@@ -283,11 +267,85 @@ export default function RentalsSuccessClient({ data }: Props) {
                   )}
                 </div>
               </div>
+
+              <Separator className="my-4 md:my-6" />
+
+              <div className="space-y-3">
+                <h3 className="flex items-center gap-2 text-lg font-bold text-foreground">
+                  <MapPin className="h-5 w-5 text-foreground" />
+                  수령 정보
+                </h3>
+                <div className="space-y-2 rounded-lg border border-border bg-background p-4 text-sm">
+                  {isPickup ? (
+                    <>
+                      <p>
+                        <span className="text-muted-foreground">수령 방식:</span> <span className="font-semibold">방문 수령 선택됨</span>
+                      </p>
+                      <p>
+                        <span className="text-muted-foreground">이름:</span> <span className="font-semibold">{data.shipping?.name || '-'}</span>
+                      </p>
+                      <p>
+                        <span className="text-muted-foreground">연락처:</span> <span className="font-semibold">{data.shipping?.phone || '-'}</span>
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p>
+                        <span className="text-muted-foreground">이름:</span> <span className="font-semibold">{data.shipping?.name || '-'}</span>
+                      </p>
+                      <p>
+                        <span className="text-muted-foreground">연락처:</span> <span className="font-semibold">{data.shipping?.phone || '-'}</span>
+                      </p>
+                      <p>
+                        <span className="text-muted-foreground">우편번호:</span> <span className="font-semibold">{data.shipping?.postalCode || '-'}</span>
+                      </p>
+                      <p>
+                        <span className="text-muted-foreground">주소:</span> <span className="font-semibold">{data.shipping?.address || '-'}</span>
+                      </p>
+                      <p>
+                        <span className="text-muted-foreground">상세주소:</span> <span className="font-semibold">{data.shipping?.addressDetail || '-'}</span>
+                      </p>
+                      <p>
+                        <span className="text-muted-foreground">요청사항:</span> <span className="font-semibold">{data.shipping?.deliveryRequest || '-'}</span>
+                      </p>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <Separator className="my-4 md:my-6" />
+
+              <div className="space-y-3">
+                <h3 className="flex items-center gap-2 text-lg font-bold text-foreground">
+                  <Undo2 className="h-5 w-5 text-foreground" />
+                  보증금 환급 계좌
+                </h3>
+                <div className="rounded-lg border border-border bg-background p-4 text-sm">
+                  <p className="text-muted-foreground">반납 완료 후 아래 계좌로 보증금을 환급해 드립니다.</p>
+                  <div className="mt-4 space-y-1">
+                    {refundBankInfo && (
+                      <div>
+                        은행: <b>{refundBankInfo.label}</b>
+                      </div>
+                    )}
+                    {refundAccount && (
+                      <div>
+                        계좌: <b>{refundAccount}</b>
+                      </div>
+                    )}
+                    {refundHolder && (
+                      <div>
+                        예금주: <b>{refundHolder}</b>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
             </CardContent>
 
             <CardFooter className="bg-muted/30 p-4 md:p-6">
               <div className="flex w-full flex-col gap-4 sm:flex-row">
-                <Button className="h-12 flex-1 bg-muted/30 shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl" asChild>
+                <Button className="h-12 flex-1 shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl" asChild>
                   <Link href="/mypage?tab=orders" className="flex items-center gap-2">
                     <Package className="h-5 w-5" />
                     대여 내역 확인
@@ -295,14 +353,14 @@ export default function RentalsSuccessClient({ data }: Props) {
                   </Link>
                 </Button>
                 {stringingApplicationHref ? (
-                  <Button className="h-12 flex-1 bg-muted/30 shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl" asChild>
+                  <Button variant="outline" className="h-12 flex-1 shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl" asChild>
                     <Link href={stringingApplicationHref} className="flex items-center gap-2">
                       교체 서비스 신청 내역 보기
                       <ArrowRight className="h-4 w-4" />
                     </Link>
                   </Button>
                 ) : null}
-                <Button className="h-12 flex-1 bg-muted/30 shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl" asChild>
+                <Button variant="ghost" className="h-12 flex-1 shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl" asChild>
                   <Link href="/rackets" className="flex items-center gap-2">
                     다른 라켓 보기
                     <ArrowRight className="h-4 w-4" />
@@ -323,16 +381,16 @@ export default function RentalsSuccessClient({ data }: Props) {
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
                 <div className="space-y-4">
                   <div className="flex items-start gap-3 rounded-lg bg-muted/30 p-4">
-                    <Truck className="mt-0.5 h-5 w-5 text-primary" />
+                    <Truck className="mt-0.5 h-5 w-5 text-muted-foreground" />
                     <div>
-                      <h4 className="mb-1 font-semibold text-primary">{isPickup ? '방문 수령 안내' : '배송 안내'}</h4>
+                      <h4 className="mb-1 font-semibold text-foreground">{isPickup ? '방문 수령 안내' : '배송 안내'}</h4>
                       <p className="text-sm text-muted-foreground">{isPickup ? '입금 확인 후 매장에서 수령 준비가 진행됩니다.' : '결제 완료 후 배송이 시작됩니다.'}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3 rounded-lg bg-muted/30 p-4">
-                    <Clock className="mt-0.5 h-5 w-5 text-success" />
+                    <Clock className="mt-0.5 h-5 w-5 text-muted-foreground" />
                     <div>
-                      <h4 className="mb-1 font-semibold text-success">대여 기간</h4>
+                      <h4 className="mb-1 font-semibold text-foreground">대여 기간</h4>
                       <p className="text-sm text-muted-foreground">대여 기간은 {data.period}일입니다. 반납 기한을 꼭 지켜주세요.</p>
                     </div>
                   </div>
@@ -346,88 +404,13 @@ export default function RentalsSuccessClient({ data }: Props) {
                     </div>
                   </div>
                   <div className="flex items-start gap-3 rounded-lg bg-muted/30 p-4">
-                    <Phone className="mt-0.5 h-5 w-5 text-warning" />
+                    <Phone className="mt-0.5 h-5 w-5 text-muted-foreground" />
                     <div>
-                      <h4 className="mb-1 font-semibold text-warning">고객 지원</h4>
+                      <h4 className="mb-1 font-semibold text-foreground">고객 지원</h4>
                       <p className="text-sm text-muted-foreground">대여 관련 문의사항은 고객센터(0507-1392-3493)로 연락주세요.</p>
                     </div>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-0 bg-card/80 shadow-xl backdrop-blur-sm">
-            <CardHeader className="bg-muted/30">
-              <CardTitle className="flex items-center gap-3">
-                <MapPin className="h-5 w-5 text-foreground" />
-                수령 정보
-              </CardTitle>
-              <CardDescription>{isPickup ? '방문 수령으로 접수된 주문입니다.' : '배송지 정보를 확인해주세요.'}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-2 p-4 text-sm md:p-6">
-              {isPickup ? (
-                <>
-                  <p>
-                    <span className="text-muted-foreground">수령 방식:</span> <span className="font-semibold">방문 수령 선택됨</span>
-                  </p>
-                  <p>
-                    <span className="text-muted-foreground">이름:</span> <span className="font-semibold">{data.shipping?.name || '-'}</span>
-                  </p>
-                  <p>
-                    <span className="text-muted-foreground">연락처:</span> <span className="font-semibold">{data.shipping?.phone || '-'}</span>
-                  </p>
-                </>
-              ) : (
-                <>
-                  <p>
-                    <span className="text-muted-foreground">이름:</span> <span className="font-semibold">{data.shipping?.name || '-'}</span>
-                  </p>
-                  <p>
-                    <span className="text-muted-foreground">연락처:</span> <span className="font-semibold">{data.shipping?.phone || '-'}</span>
-                  </p>
-                  <p>
-                    <span className="text-muted-foreground">우편번호:</span> <span className="font-semibold">{data.shipping?.postalCode || '-'}</span>
-                  </p>
-                  <p>
-                    <span className="text-muted-foreground">주소:</span> <span className="font-semibold">{data.shipping?.address || '-'}</span>
-                  </p>
-                  <p>
-                    <span className="text-muted-foreground">상세주소:</span> <span className="font-semibold">{data.shipping?.addressDetail || '-'}</span>
-                  </p>
-                  <p>
-                    <span className="text-muted-foreground">요청사항:</span> <span className="font-semibold">{data.shipping?.deliveryRequest || '-'}</span>
-                  </p>
-                </>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card className="overflow-hidden border-0 bg-card/80 shadow-2xl backdrop-blur-sm">
-            <div className="bg-muted/30 p-4 md:p-6">
-              <CardTitle className="flex items-center gap-3 text-2xl">
-                <Undo2 className="h-6 w-6 text-primary" />
-                보증금 환급 계좌
-              </CardTitle>
-            </div>
-            <CardContent className="p-4 text-sm md:p-6">
-              <p className="text-muted-foreground">반납 완료 후 아래 계좌로 보증금을 환급해 드립니다.</p>
-              <div className="mt-4 space-y-1">
-                {refundBankInfo && (
-                  <div>
-                    은행: <b>{refundBankInfo.label}</b>
-                  </div>
-                )}
-                {refundAccount && (
-                  <div>
-                    계좌: <b>{refundAccount}</b>
-                  </div>
-                )}
-                {refundHolder && (
-                  <div>
-                    예금주: <b>{refundHolder}</b>
-                  </div>
-                )}
               </div>
             </CardContent>
           </Card>

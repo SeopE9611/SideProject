@@ -1,4 +1,5 @@
 import RentalsSuccessClient from "@/app/rentals/success/_components/RentalsSuccessClient";
+import BackButtonGuard from "@/app/rentals/success/_components/BackButtonGuard";
 import LoginGate from "@/components/system/LoginGate";
 import { verifyAccessToken, verifyOrderAccessToken } from "@/lib/auth.utils";
 import clientPromise from "@/lib/mongodb";
@@ -231,17 +232,20 @@ export default async function Page({
 
   const data = await getData(db, id, rental);
   return (
-    <RentalsSuccessClient
-      data={{
-        ...data,
-        queryHint: {
-          withService: parseBooleanHint(withService),
-          stringingSubmitted: parseBooleanHint(stringingSubmitted),
-          stringingApplicationId: stringingApplicationId
-            ? String(stringingApplicationId)
-            : null,
-        },
-      }}
-    />
+    <>
+      <BackButtonGuard />
+      <RentalsSuccessClient
+        data={{
+          ...data,
+          queryHint: {
+            withService: parseBooleanHint(withService),
+            stringingSubmitted: parseBooleanHint(stringingSubmitted),
+            stringingApplicationId: stringingApplicationId
+              ? String(stringingApplicationId)
+              : null,
+          },
+        }}
+      />
+    </>
   );
 }
