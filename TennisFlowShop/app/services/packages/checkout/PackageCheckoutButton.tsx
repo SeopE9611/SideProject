@@ -82,6 +82,7 @@ export default function PackageCheckoutButton({
   serviceRequest,
   saveInfo,
   isLoggedIn,
+  onSubmittingChange,
 }: {
   disabled: boolean;
   ownershipBlockedMessage: string | null;
@@ -96,10 +97,16 @@ export default function PackageCheckoutButton({
   // 로그인 상태는 checkout 서버/상위 클라이언트에서 이미 알고 있으므로
   // 버튼은 이 값을 재사용해 mount 시 중복 사용자 조회를 제거한다.
   isLoggedIn: boolean;
+  onSubmittingChange?: (submitting: boolean) => void;
 }) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const submittingRef = useRef(false);
+
+  const setSubmitting = (submitting: boolean) => {
+    setIsSubmitting(submitting);
+    onSubmittingChange?.(submitting);
+  };
 
   const handleSubmit = async () => {
     // 0) 중복 클릭 방지
@@ -149,7 +156,7 @@ export default function PackageCheckoutButton({
 
     // 검증 통과 후에만 제출 플래그 ON
     submittingRef.current = true;
-    setIsSubmitting(true);
+    setSubmitting(true);
 
     try {
       const serviceInfo = {
@@ -256,7 +263,7 @@ export default function PackageCheckoutButton({
       // 성공한 경우는 success 페이지로 이동하는 동안 로딩 유지
       if (!success) {
         submittingRef.current = false;
-        setIsSubmitting(false);
+        setSubmitting(false);
       }
     }
   };
@@ -281,18 +288,6 @@ export default function PackageCheckoutButton({
           </>
         )}
       </Button>
-
-      {/* 제출 중 전체 오버레이 */}
-      {isSubmitting && (
-        <div className="fixed inset-0 z-[60] bg-overlay/10 backdrop-blur-[2px] cursor-wait">
-          <div className="absolute inset-0 grid place-items-center">
-            <div className="flex items-center gap-3 rounded-xl bg-card/90 px-4 py-3 shadow">
-              <Loader2 className="h-5 w-5 animate-spin" />
-              <span className="text-sm">패키지 주문을 처리하고 있어요…</span>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }

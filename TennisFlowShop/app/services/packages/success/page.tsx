@@ -2,6 +2,7 @@ import UnifiedPackageCard from "@/app/services/packages/_components/UnifiedPacka
 import { normalizePackageCardData } from "@/app/services/packages/_lib/packageCard";
 import { toPackageVariant } from "@/app/services/packages/_lib/packageVariant";
 import DevMarkPaidButton from "@/app/services/packages/success/DevMarkPaidButton";
+import BackButtonGuard from "@/app/checkout/success/_components/BackButtonGuard";
 import HeroCourtBackdrop from "@/components/system/HeroCourtBackdrop";
 import LoginGate from "@/components/system/LoginGate";
 import { Button } from "@/components/ui/button";
@@ -161,7 +162,9 @@ export default async function PackageSuccessPage({
   });
 
   return (
-    <div className="min-h-full bg-muted/30">
+    <>
+      <BackButtonGuard />
+      <div className="min-h-full bg-muted/30">
       {/* Hero Section */}
       <div className="relative overflow-hidden border-b border-border bg-muted/30 text-foreground dark:bg-card/40">
         <div className="absolute inset-0 bg-overlay/20"></div>
@@ -488,6 +491,7 @@ export default async function PackageSuccessPage({
           </Card>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

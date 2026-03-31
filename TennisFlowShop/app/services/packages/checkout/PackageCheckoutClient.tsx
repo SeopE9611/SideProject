@@ -39,6 +39,7 @@ import {
   Calendar,
   CheckCircle,
   CreditCard,
+  Loader2,
   Mail,
   MessageSquare,
   Package,
@@ -251,6 +252,7 @@ export default function PackageCheckoutClient({
 
   const [saveInfo, setSaveInfo] = useState(false);
   const isLoggedIn = Boolean(initialUser?.id);
+  const [isCheckoutSubmitting, setIsCheckoutSubmitting] = useState(false);
 
   const [agreeAll, setAgreeAll] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
@@ -475,7 +477,10 @@ export default function PackageCheckoutClient({
       <div className="container py-8">
         <div className="grid grid-cols-1 gap-6 lg:gap-8 lg:grid-cols-3">
           {/* 주문 정보 입력 폼 */}
-          <div className="lg:col-span-2 space-y-4 md:space-y-6">
+          <div
+            className={`lg:col-span-2 space-y-4 md:space-y-6 ${isCheckoutSubmitting ? "pointer-events-none" : ""}`}
+            aria-busy={isCheckoutSubmitting}
+          >
             {/* 선택된 패키지 정보 */}
             <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border-0 shadow-xl overflow-hidden">
               <div className="bg-primary/10 p-4 md:p-6 dark:bg-primary/20">
@@ -886,7 +891,7 @@ export default function PackageCheckoutClient({
           {/* 주문 요약 */}
           <div className="lg:col-span-1">
             <div className="lg:sticky lg:top-20">
-              <Card className="backdrop-blur-sm bg-card/90 dark:bg-card border-0 shadow-2xl overflow-hidden">
+              <Card className="relative backdrop-blur-sm bg-card/90 dark:bg-card border-0 shadow-2xl overflow-hidden">
                 <div className="bg-muted/60 dark:bg-muted/50 p-4 md:p-6 text-foreground">
                   <CardTitle className="flex items-center gap-3 text-xl">
                     <div className="p-2 bg-card/20 rounded-full">
@@ -1008,6 +1013,7 @@ export default function PackageCheckoutClient({
                       // 버튼 단에서 /api/users/me 재조회(getMyInfo)하지 않도록
                       // 서버/상위에서 이미 확보한 로그인 상태를 그대로 전달한다.
                       isLoggedIn={isLoggedIn}
+                      onSubmittingChange={setIsCheckoutSubmitting}
                     />
                   )}
                   <Button variant="outline" className="w-full border-2" asChild>
@@ -1016,6 +1022,18 @@ export default function PackageCheckoutClient({
                     </Link>
                   </Button>
                 </div>
+                {isCheckoutSubmitting && (
+                  <div className="absolute inset-0 z-10 cursor-wait bg-overlay/10 backdrop-blur-[2px]">
+                    <div className="absolute inset-0 grid place-items-center">
+                      <div className="flex items-center gap-3 rounded-xl bg-card/90 px-4 py-3 shadow">
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                        <span className="text-sm">
+                          패키지 주문을 처리하고 있어요…
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </Card>
             </div>
           </div>
