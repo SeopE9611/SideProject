@@ -653,7 +653,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
 
       <SiteContainer variant="wide" className="py-6 md:py-8">
         <div className="grid grid-cols-1 gap-6 md:gap-8 bp-lg:grid-cols-3">
-          <div className="bp-lg:col-span-2 space-y-4 md:space-y-6">
+          <div className={cn("bp-lg:col-span-2 space-y-4 md:space-y-6", loading && "pointer-events-none")} aria-busy={loading}>
             {/* 대여 상품 정보 */}
             <Card className="backdrop-blur-sm bg-card/80 dark:bg-card/80 border-0 shadow-xl overflow-hidden">
               <div className="bg-muted border-b border-border p-4 md:p-6">
@@ -1023,7 +1023,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
           {/* 주문 요약 */}
           <div className="bp-lg:col-span-1">
             <div className="bp-lg:sticky bp-lg:top-20">
-              <Card className="backdrop-blur-sm bg-card/90 dark:bg-card/90 border-0 shadow-2xl overflow-hidden">
+              <Card className="relative backdrop-blur-sm bg-card/90 dark:bg-card/90 border-0 shadow-2xl overflow-hidden">
                 <div className="p-4 md:p-6 border-b border-primary/20 bg-primary/10 dark:bg-primary/20 text-foreground">
                   <CardTitle className="flex items-center gap-3 text-xl">
                     <div className="p-2 bg-card/20 rounded-full">
@@ -1160,22 +1160,22 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                     {loading ? <span className="inline-flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" />주문을 처리하고 있어요…</span> : "결제하기"}
                   </Button>
                 </CardFooter>
+                {loading && (
+                  <div className="absolute inset-0 z-10 cursor-wait bg-overlay/10 backdrop-blur-[2px]">
+                    <div className="absolute inset-0 grid place-items-center">
+                      <div className="flex items-center gap-3 rounded-xl bg-card/90 px-4 py-3 shadow">
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                        <span className="text-sm">주문을 처리하고 있어요…</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </Card>
             </div>
           </div>
         </div>
       </SiteContainer>
 
-      {loading && (
-        <div className="fixed inset-0 z-[60] cursor-wait bg-overlay/10 backdrop-blur-[2px]">
-          <div className="absolute inset-0 grid place-items-center">
-            <div className="flex items-center gap-3 rounded-xl bg-card/90 px-4 py-3 shadow">
-              <Loader2 className="h-5 w-5 animate-spin" />
-              <span className="text-sm">주문을 처리하고 있어요…</span>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 
