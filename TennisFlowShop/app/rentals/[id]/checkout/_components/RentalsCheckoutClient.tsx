@@ -4,6 +4,7 @@ import { type StringingApplicationInput } from "@/app/features/stringing-applica
 import type useRentalCheckoutStringingServiceAdapter from "@/app/features/stringing-applications/hooks/useRentalCheckoutStringingServiceAdapter";
 import { collectionMethodLabel } from "@/app/features/stringing-applications/lib/fulfillment-labels";
 import RentalCheckoutStringingRuntimeBridge from "@/app/rentals/[id]/checkout/_components/RentalCheckoutStringingRuntimeBridge";
+import RentalCheckoutStringingSections from "@/app/rentals/[id]/checkout/_components/RentalCheckoutStringingSections";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,8 +24,7 @@ import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from "@/lib/hooks/use
 import { loadDaumPostcode } from "@/lib/loadDaumPostcode";
 import { showErrorToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
-import { Building2, CheckCircle, CreditCard, Home, Mail, MapPin, MessageSquare, Package, Phone, Shield, Truck, Undo2, UserIcon } from "lucide-react";
-import dynamic from "next/dynamic";
+import { Building2, CheckCircle, CreditCard, Home, Loader2, Mail, MapPin, MessageSquare, Package, Phone, Shield, Truck, Undo2, UserIcon } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -83,10 +83,6 @@ const clearRentalIdemKey = () => {
 };
 
 type RentalCheckoutStringingAdapter = ReturnType<typeof useRentalCheckoutStringingServiceAdapter>;
-
-const MountingInfoSection = dynamic(() => import("@/app/features/stringing-applications/components/apply-shared/MountingInfoSection"), { loading: () => null });
-
-const FinalRequestSection = dynamic(() => import("@/app/features/stringing-applications/components/apply-shared/FinalRequestSection"), { loading: () => null });
 
 type Initial = {
   racketId: string;
@@ -755,88 +751,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                   </div>
                 </div>
 
-                {requestStringing && rentalStringingAdapter && (
-                  <div className="space-y-4">
-                    <Card className="bg-card/60 border border-border shadow-none">
-                      <div className="bg-card p-4 border-b border-border">
-                        <CardTitle className="flex items-center gap-2 text-base">
-                          <Package className="h-4 w-4 text-primary" />
-                          교체 서비스 장착 정보
-                        </CardTitle>
-                        <CardDescription className="mt-1">대여 checkout에서 바로 신청서 핵심 항목을 입력합니다.</CardDescription>
-                      </div>
-                      <CardContent className="p-4">
-                        <MountingInfoSection
-                          formData={rentalStringingAdapter.formData}
-                          setFormData={rentalStringingAdapter.setFormData}
-                          handleInputChange={rentalStringingAdapter.handleInputChange}
-                          fromPDP={false}
-                          orderId={null}
-                          rentalId={initial.racketId}
-                          rentalRacketId={initial.racketId}
-                          rentalDays={initial.period}
-                          pdpProductId={selectedString?.id ?? null}
-                          isLoadingPdpProduct={false}
-                          pdpProduct={selectedString}
-                          orderRemainingSlots={null}
-                          orderStringService={null}
-                          isOrderSlotBlocked={false}
-                          order={null}
-                          lineCount={rentalStringingAdapter.lineCount}
-                          price={rentalStringingAdapter.price}
-                          priceView={rentalStringingAdapter.priceView}
-                          handleStringTypesChange={rentalStringingAdapter.handleStringTypesChange}
-                          handleCustomInputChange={rentalStringingAdapter.handleCustomInputChange}
-                          handleUseQtyChange={rentalStringingAdapter.handleUseQtyChange}
-                          lockedStringStock={null}
-                          lockedRacketQuantity={1}
-                          maxNonOrderQty={1}
-                          selectedOrderItem={null}
-                          isCombinedPdpMode={false}
-                          pdpStringPrice={selectedString?.price ?? 0}
-                          racketPrice={null}
-                          won={(n) => `${n.toLocaleString("ko-KR")}원`}
-                          packagePreview={null}
-                          canApplyPackage={false}
-                          packageInsufficient={false}
-                          packageRemaining={0}
-                          requiredPassCount={0}
-                          linesForSubmit={rentalStringingAdapter.linesForSubmit}
-                          handleLineFieldChange={rentalStringingAdapter.handleLineFieldChange}
-                          timeSlots={rentalStringingAdapter.timeSlots}
-                          disabledTimes={rentalStringingAdapter.disabledTimes}
-                          slotsLoading={rentalStringingAdapter.slotsLoading}
-                          hasCacheForDate={rentalStringingAdapter.hasCacheForDate}
-                          slotsError={rentalStringingAdapter.slotsError}
-                          visitSlotCountUi={rentalStringingAdapter.visitSlotCountUi}
-                          visitDurationMinutesUi={rentalStringingAdapter.visitDurationMinutesUi}
-                          visitTimeRange={rentalStringingAdapter.visitTimeRange}
-                        />
-                      </CardContent>
-                    </Card>
-
-                    <Card className="bg-card/60 border border-border shadow-none">
-                      <div className="bg-card p-4 border-b border-border">
-                        <CardTitle className="flex items-center gap-2 text-base">
-                          <MessageSquare className="h-4 w-4 text-primary" />
-                          교체 서비스 추가 요청
-                        </CardTitle>
-                      </div>
-                      <CardContent className="p-4">
-                        <FinalRequestSection
-                          formData={rentalStringingAdapter.formData}
-                          setFormData={rentalStringingAdapter.setFormData}
-                          handleInputChange={rentalStringingAdapter.handleInputChange}
-                          orderId={null}
-                          isMember={!!userId}
-                          usingPackage={false}
-                          packageInsufficient={false}
-                          context="checkout"
-                        />
-                      </CardContent>
-                    </Card>
-                  </div>
-                )}
+                {requestStringing && rentalStringingAdapter && <RentalCheckoutStringingSections withStringService={requestStringing} adapter={rentalStringingAdapter} />}
               </CardContent>
             </Card>
 
@@ -1240,7 +1155,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                     disabled={loading}
                     className={cn("w-full h-12 bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300", loading && "opacity-50 cursor-not-allowed")}
                   >
-                    {loading ? "처리 중..." : "결제하기"}
+                    {loading ? <span className="inline-flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" />주문을 처리하고 있어요…</span> : "결제하기"}
                   </Button>
                 </CardFooter>
               </Card>

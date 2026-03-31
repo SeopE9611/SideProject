@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo } from "react";
 
+import { collectionMethodLabel } from "@/app/features/stringing-applications/lib/fulfillment-labels";
 import useStringingApplySharedState from "@/app/features/stringing-applications/hooks/useStringingApplySharedState";
 import { useReservedSlots } from "@/app/services/apply/_hooks/useReservedSlots";
 
@@ -178,6 +179,94 @@ export default function useRentalCheckoutStringingServiceAdapter({
     shared.setVisitDurationMinutesUi(visitDurationMinutesUi);
   }, [visitDurationMinutesUi, shared.setVisitDurationMinutesUi]);
 
+  const summary = useMemo(() => {
+    const collectionLabel = collectionMethodLabel(shared.formData.collectionMethod);
+    const lineCount = shared.linesForSubmit.length;
+    const stringNames = Array.from(
+      new Set(
+        shared.linesForSubmit
+          .map((line) => String(line.stringName ?? "").trim())
+          .filter(Boolean),
+      ),
+    );
+    const tensionSet = Array.from(
+      new Set(
+        shared.linesForSubmit
+          .map((line) => {
+            const main = String(line.tensionMain ?? "").trim();
+            const cross = String(line.tensionCross ?? "").trim();
+            if (!main && !cross) return "";
+            return cross && cross !== main ? `${main}/${cross}` : main || cross;
+          })
+          .filter(Boolean),
+      ),
+    );
+
+    const reservationLabel =
+      shared.formData.collectionMethod === "visit" &&
+      shared.formData.preferredDate &&
+      shared.formData.preferredTime
+        ? `${shared.formData.preferredDate} ${shared.formData.preferredTime}`
+        : null;
+
+    const requestRaw = String(shared.formData.requirements ?? "").trim();
+    const requestPreview = requestRaw
+      ? requestRaw.length > 24
+        ? `${requestRaw.slice(0, 24)}…`
+        : requestRaw
+      : "없음";
+
+    return {
+      collectionLabel,
+      lineCount,
+      stringNames,
+      tensionSummary: tensionSet.length ? tensionSet.join(", ") : "미입력",
+      reservationLabel,
+      requestPreview,
+      priceLabel: `${price.toLocaleString("ko-KR")}원`,
+    };
+  }, [shared.formData, shared.linesForSubmit, price]);
+
+  const completion = useMemo(() => {
+    const totalLineCount = shared.linesForSubmit.length;
+    const lineConfiguredCount = shared.linesForSubmit.filter((line) => {
+      const hasRacketType = String(line.racketType ?? "").trim().length > 0;
+      const hasTension =
+        String(line.tensionMain ?? "").trim().length > 0 ||
+        String(line.tensionCross ?? "").trim().length > 0;
+      return hasRacketType && hasTension;
+    }).length;
+
+    const basicConfigured =
+      shared.formData.stringTypes.length > 0 && totalLineCount > 0;
+    const needsVisitReservation = shared.formData.collectionMethod === "visit";
+    const hasReservation =
+      !!shared.formData.preferredDate && !!shared.formData.preferredTime;
+    const lineDone = totalLineCount > 0 && lineConfiguredCount === totalLineCount;
+
+    const isReadyToSubmit =
+      basicConfigured &&
+      lineDone &&
+      (!needsVisitReservation || hasReservation);
+
+    const statusLabel = isReadyToSubmit
+      ? "접수 준비 완료"
+      : basicConfigured
+        ? "추가 입력 필요"
+        : "기본 정보 필요";
+
+    return {
+      basicConfigured,
+      lineConfiguredCount,
+      totalLineCount,
+      needsVisitReservation,
+      hasReservation,
+      statusLabel,
+      isReadyToSubmit,
+    };
+  }, [shared.formData, shared.linesForSubmit]);
+
+
   return {
     ...shared,
     rentalId,
@@ -202,6 +291,9 @@ export default function useRentalCheckoutStringingServiceAdapter({
     visitDurationMinutesUi,
 
     // 대여 checkout에서는 패키지 미적용 정책을 유지한다.
+    summary,
+    completion,
+
     usingPackage: false,
     packageInsufficient: false,
     canApplyPackage: false,
