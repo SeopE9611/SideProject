@@ -444,6 +444,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
           })()
         : undefined;
 
+    let success = false;
     try {
       // 제출 직전 최종 검증 + 정규화
       const nameTrim = name.trim();
@@ -623,11 +624,12 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
       // legacy query 플래그(withService/stringingSubmitted/stringingApplicationId)는 더 이상 전달하지 않는다.
       const qs = new URLSearchParams();
       qs.set("id", rentalId);
+      success = true;
       router.push(`/rentals/success?${qs.toString()}`);
     } catch (e) {
       showErrorToast("결제 처리 중 오류가 발생했습니다.");
     } finally {
-      setLoading(false);
+      if (!success) setLoading(false);
     }
   };
 
@@ -1163,6 +1165,17 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
           </div>
         </div>
       </SiteContainer>
+
+      {loading && (
+        <div className="fixed inset-0 z-[60] cursor-wait bg-overlay/10 backdrop-blur-[2px]">
+          <div className="absolute inset-0 grid place-items-center">
+            <div className="flex items-center gap-3 rounded-xl bg-card/90 px-4 py-3 shadow">
+              <Loader2 className="h-5 w-5 animate-spin" />
+              <span className="text-sm">주문을 처리하고 있어요…</span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 
