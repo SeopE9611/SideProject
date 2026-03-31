@@ -81,8 +81,8 @@ export default async function Page({
     return <LoginGate next={next} />;
   }
 
-  const blockingOrder = await findBlockingPackageOrderByUserId(String(payload.sub));
-  if (blockingOrder) {
+  const blocking = await findBlockingPackageOrderByUserId(String(payload.sub));
+  if (blocking) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center px-4">
         <Card className="max-w-xl w-full">
@@ -92,13 +92,24 @@ export default async function Page({
               현재 패키지 추가 구매가 제한됩니다
             </h2>
             <p className="text-muted-foreground">
-              현재 보유 중인 패키지가 있어 이 패키지는 구매할 수 없습니다. 기존
-              패키지 이용이 종료된 뒤 다시 구매할 수 있습니다.
+              {blocking.kind === "pending_order"
+                ? "진행 중인 패키지 주문(결제대기)이 있어 추가 구매할 수 없습니다. 기존 주문 상태를 먼저 확인해주세요."
+                : "현재 사용 가능한 패키지가 있어 추가 구매할 수 없습니다. 기존 패키지 이용이 종료된 뒤 다시 구매해주세요."}
             </p>
             <div className="text-sm text-muted-foreground rounded-lg bg-muted/40 p-3">
-              현재 상태: {String(blockingOrder.paymentStatus ?? "-")} /{" "}
-              {String(blockingOrder.status ?? "-")}
-              <br />내 패키지 상태를 확인한 뒤 다시 진행해주세요.
+              {blocking.kind === "pending_order" ? (
+                <>
+                  현재 상태: {String(blocking.pendingOrder.paymentStatus ?? "-")} /{" "}
+                  {String(blocking.pendingOrder.status ?? "-")}
+                  <br />기존 주문 상태를 확인한 뒤 다시 진행해주세요.
+                </>
+              ) : (
+                <>
+                  패키지 상태: {String(blocking.activePass.status ?? "-")} / 남은 횟수{" "}
+                  {Number(blocking.activePass.remainingCount ?? 0)}
+                  <br />내 패키지 상태를 확인한 뒤 다시 진행해주세요.
+                </>
+              )}
             </div>
             <div className="flex justify-center gap-3">
               <Button asChild variant="outline">

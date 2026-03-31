@@ -149,12 +149,14 @@ async function getInitialOwnershipBlockedMessage(): Promise<string | null> {
     const user = safeVerifyAccessToken(token);
     if (!user?.sub) return null;
 
-    const blockingOrder = await findBlockingPackageOrderByUserId(String(user.sub));
-    if (!blockingOrder) return null;
+    const blocking = await findBlockingPackageOrderByUserId(String(user.sub));
+    if (!blocking) return null;
 
-    return (
-      "이미 보유 중인 패키지가 있어 추가 구매할 수 없습니다. 기존 패키지를 취소 또는 정리한 뒤 다시 시도해주세요."
-    );
+    if (blocking.kind === "pending_order") {
+      return "진행 중인 패키지 주문(결제대기)이 있어 추가 구매할 수 없습니다. 기존 주문 상태를 먼저 확인해주세요.";
+    }
+
+    return "현재 사용 가능한 패키지가 있어 추가 구매할 수 없습니다. 기존 패키지 이용이 종료된 뒤 다시 구매해주세요.";
   } catch (error) {
     // 초기 UX 보조 데이터 조회 실패는 조용히 무시한다. 최종 차단은 주문 API에서 다시 검증된다.
     console.error("[packages/page] 초기 ownership 조회 실패", error);
