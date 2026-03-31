@@ -27,7 +27,7 @@ import { useBackNavigationGuard } from "@/lib/hooks/useBackNavigationGuard";
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
 import { calcShippingFee } from "@/lib/shipping-fee";
 import { cn } from "@/lib/utils";
-import { AlertTriangle, Building2, CheckCircle, CreditCard, Home, Mail, MapPin, MessageSquare, Package, Phone, Shield, Truck, UserIcon } from "lucide-react";
+import { AlertTriangle, Building2, CheckCircle, CreditCard, Home, Loader2, Mail, MapPin, MessageSquare, Package, Phone, Shield, Truck, UserIcon } from "lucide-react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
@@ -145,6 +145,7 @@ export default function CheckoutPage() {
 
   // 2) 기존 상태
   const [withStringService, setWithStringService] = useState(false);
+  const [isCheckoutSubmitting, setIsCheckoutSubmitting] = useState(false);
 
   // 이탈 경고/초기값 스냅샷을 위한 초기화 플래그
   const initFlagsRef = useRef({
@@ -960,7 +961,7 @@ export default function CheckoutPage() {
         <SiteContainer variant="wide" className="py-6 bp-sm:py-8">
           <div className="grid grid-cols-1 gap-6 bp-sm:gap-8 bp-lg:grid-cols-3">
             {/* 주문 정보 입력 폼 */}
-            <div className="bp-lg:col-span-2 space-y-4 bp-sm:space-y-6">
+            <div className={cn("bp-lg:col-span-2 space-y-4 bp-sm:space-y-6", isCheckoutSubmitting && "pointer-events-none")} aria-busy={isCheckoutSubmitting}>
               {/* 이탈 경고(고정 노출) */}
               <div className="flex items-start gap-2 rounded-xl border border-border bg-muted px-3 py-2 text-sm text-foreground dark:border-border dark:bg-muted dark:text-foreground">
                 <AlertTriangle className="mt-0.5 h-4 w-4 flex-none" />
@@ -1440,7 +1441,7 @@ export default function CheckoutPage() {
             {/* 주문 요약 */}
             <div className="bp-lg:col-span-1">
               <div className="bp-lg:sticky bp-lg:top-20">
-                <Card className="backdrop-blur-sm bg-card/90 dark:bg-card/90 border-0 shadow-2xl overflow-hidden">
+                <Card className="relative backdrop-blur-sm bg-card/90 dark:bg-card/90 border-0 shadow-2xl overflow-hidden">
                   <div className="bg-card p-4 bp-sm:p-6 text-foreground border border-primary/20">
                     <CardTitle className="flex items-center gap-3 text-xl">
                       <div className="p-2 bg-card/20 rounded-full">
@@ -1636,6 +1637,7 @@ export default function CheckoutPage() {
                       serviceFee={finalServiceFee}
                       pointsToUse={appliedPoints}
                       stringingApplicationInput={stringingApplicationInput}
+                      onSubmittingChange={setIsCheckoutSubmitting}
                     />
                     <Button variant="outline" className="w-full border-2 hover:bg-background dark:hover:bg-muted bg-transparent" asChild>
                       <Link href="/cart" data-no-unsaved-guard onClick={onLeaveCartClick}>
@@ -1643,6 +1645,16 @@ export default function CheckoutPage() {
                       </Link>
                     </Button>
                   </CardFooter>
+                  {isCheckoutSubmitting && (
+                    <div className="absolute inset-0 z-10 cursor-wait bg-overlay/10 backdrop-blur-[2px]">
+                      <div className="absolute inset-0 grid place-items-center">
+                        <div className="flex items-center gap-3 rounded-xl bg-card/90 px-4 py-3 shadow">
+                          <Loader2 className="h-5 w-5 animate-spin" />
+                          <span className="text-sm">주문을 처리하고 있어요…</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </Card>
               </div>
             </div>

@@ -139,6 +139,7 @@ export default function CheckoutButton({
   serviceFee = 0,
   pointsToUse = 0,
   stringingApplicationInput,
+  onSubmittingChange,
 }: {
   disabled: boolean;
   name: string;
@@ -161,6 +162,7 @@ export default function CheckoutButton({
   serviceFee?: number;
   pointsToUse?: number;
   stringingApplicationInput?: StringingApplicationInput;
+  onSubmittingChange?: (submitting: boolean) => void;
 }) {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
@@ -174,6 +176,10 @@ export default function CheckoutButton({
       .catch(() => setUser(null))
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    onSubmittingChange?.(isSubmitting);
+  }, [isSubmitting, onSubmittingChange]);
 
   const handleSubmit = async () => {
     if (disabled) {
@@ -474,7 +480,7 @@ export default function CheckoutButton({
   };
 
   return (
-    <>
+    <div className="w-full">
       <Button
         onClick={handleSubmit}
         className="w-full h-14 text-lg font-semibold bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg hover:shadow-xl transition-all duration-300"
@@ -493,18 +499,6 @@ export default function CheckoutButton({
           </>
         )}
       </Button>
-
-      {/* 제출 중 전체 오버레이 */}
-      {isSubmitting && (
-        <div className="fixed inset-0 z-[60] bg-overlay/10 backdrop-blur-[2px] cursor-wait">
-          <div className="absolute inset-0 grid place-items-center">
-            <div className="flex items-center gap-3 rounded-xl bg-card/90 px-4 py-3 shadow">
-              <Loader2 className="h-5 w-5 animate-spin" />
-              <span className="text-sm">주문을 처리하고 있어요…</span>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
+    </div>
   );
 }
