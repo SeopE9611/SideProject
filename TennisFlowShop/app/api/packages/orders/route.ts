@@ -179,21 +179,38 @@ export async function POST(req: Request) {
     }
 
     // 중복 구매 하드 차단:
-    // - 결제대기 / 결제완료 / 비활성(일시중지 포함) 등 "종료되지 않은" 패키지 주문이 하나라도 있으면 차단
-    // - 관리자 취소/결제취소/환불 등 실제 종료 건만 재구매 허용
-    const blockingOrder = await findBlockingPackageOrderByUserId(
-      String(user.sub),
-    );
-    if (blockingOrder) {
+    // - 결제대기 주문이 남아 있거나
+    // - 실제 사용 가능한 서비스 패스가 남아 있으면 재구매 차단
+    const blocking = await findBlockingPackageOrderByUserId(String(user.sub));
+    if (blocking) {
+      if (blocking.kind === "pending_order") {
+        return NextResponse.json(
+          {
+            error:
+              "진행 중인 패키지 주문(결제대기)이 있어 추가 구매할 수 없습니다. 기존 주문 상태를 먼저 확인해주세요.",
+            code: "PACKAGE_ALREADY_OWNED",
+            blockingKind: "pending_order",
+            blockingOrder: {
+              id: blocking.pendingOrder._id.toString(),
+              status: String(blocking.pendingOrder.status ?? ""),
+              paymentStatus: String(blocking.pendingOrder.paymentStatus ?? ""),
+            },
+          },
+          { status: 409 },
+        );
+      }
+
       return NextResponse.json(
         {
           error:
-            "이미 보유 중인 패키지가 있어 추가 구매할 수 없습니다. 기존 패키지를 취소 또는 정리한 뒤 다시 시도해주세요.",
+            "현재 사용 가능한 패키지가 있어 추가 구매할 수 없습니다. 기존 패키지 이용이 종료된 뒤 다시 구매해주세요.",
           code: "PACKAGE_ALREADY_OWNED",
-          blockingOrder: {
-            id: blockingOrder._id.toString(),
-            status: String(blockingOrder.status ?? ""),
-            paymentStatus: String(blockingOrder.paymentStatus ?? ""),
+          blockingKind: "active_pass",
+          blockingPass: {
+            id: blocking.activePass._id.toString(),
+            status: String(blocking.activePass.status ?? ""),
+            remainingCount: Number(blocking.activePass.remainingCount ?? 0),
+            expiresAt: blocking.activePass.expiresAt ?? null,
           },
         },
         { status: 409 },

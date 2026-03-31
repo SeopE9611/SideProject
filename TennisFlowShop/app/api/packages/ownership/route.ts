@@ -20,24 +20,42 @@ export async function GET() {
       return NextResponse.json({ hasBlockingPackage: false }, { status: 200 });
     }
 
-    const blockingOrder = await findBlockingPackageOrderByUserId(
-      String(user.sub),
-    );
-    if (!blockingOrder) {
+    const blocking = await findBlockingPackageOrderByUserId(String(user.sub));
+    if (!blocking) {
       return NextResponse.json({ hasBlockingPackage: false }, { status: 200 });
+    }
+
+    if (blocking.kind === "pending_order") {
+      return NextResponse.json(
+        {
+          hasBlockingPackage: true,
+          blockingKind: "pending_order",
+          message:
+            "진행 중인 패키지 주문(결제대기)이 있어 추가 구매할 수 없습니다. 기존 주문 상태를 먼저 확인해주세요.",
+          blockingOrder: {
+            id: blocking.pendingOrder._id.toString(),
+            status: String(blocking.pendingOrder.status ?? ""),
+            paymentStatus: String(blocking.pendingOrder.paymentStatus ?? ""),
+            packageTitle: String((blocking.pendingOrder.packageInfo as any)?.title ?? ""),
+            sessions: Number((blocking.pendingOrder.packageInfo as any)?.sessions ?? 0),
+          },
+        },
+        { status: 200 },
+      );
     }
 
     return NextResponse.json(
       {
         hasBlockingPackage: true,
+        blockingKind: "active_pass",
         message:
-          "이미 보유 중인 패키지가 있어 추가 구매할 수 없습니다. 기존 패키지를 취소 또는 정리한 뒤 다시 시도해주세요.",
-        blockingOrder: {
-          id: blockingOrder._id.toString(),
-          status: String(blockingOrder.status ?? ""),
-          paymentStatus: String(blockingOrder.paymentStatus ?? ""),
-          packageTitle: String(blockingOrder?.packageInfo?.title ?? ""),
-          sessions: Number(blockingOrder?.packageInfo?.sessions ?? 0),
+          "현재 사용 가능한 패키지가 있어 추가 구매할 수 없습니다. 기존 패키지 이용이 종료된 뒤 다시 구매해주세요.",
+        blockingPass: {
+          id: blocking.activePass._id.toString(),
+          status: String(blocking.activePass.status ?? ""),
+          remainingCount: Number(blocking.activePass.remainingCount ?? 0),
+          expiresAt: blocking.activePass.expiresAt ?? null,
+          packageSize: Number(blocking.activePass.packageSize ?? 0),
         },
       },
       { status: 200 },

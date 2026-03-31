@@ -172,7 +172,12 @@ export async function GET(req: Request) {
                     },
                     // 2) 패스 미발급이면 대기(활성 전)
                     { case: { $not: ["$passDoc"] }, then: "대기" },
-                    // 3) 일시정지/레거시 suspended, 결제미완료 → 비활성
+                    // 3) 남은 횟수가 0 이하이면 만료 취급(활성 오인 방지)
+                    {
+                      case: { $lte: [{ $ifNull: ["$passDoc.remainingCount", 0] }, 0] },
+                      then: "만료",
+                    },
+                    // 4) 일시정지/레거시 suspended, 결제미완료 → 비활성
                     {
                       case: {
                         $or: [
@@ -182,7 +187,7 @@ export async function GET(req: Request) {
                       },
                       then: "비활성",
                     },
-                    // 4) 활성 패스의 만료 우선
+                    // 5) 활성 패스의 만료 우선
                     {
                       case: {
                         $and: [
@@ -194,7 +199,7 @@ export async function GET(req: Request) {
                       then: "만료",
                     },
                   ],
-                  // 5) 그 외는 활성
+                  // 6) 그 외는 활성
                   default: "활성",
                 },
               },
