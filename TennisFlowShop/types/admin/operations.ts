@@ -118,11 +118,13 @@ export interface AdminOperationsListRequestDto {
 }
 
 export interface AdminOperationsListResponseDto {
-  summary: AdminOperationsSummary;
+  summaryAll: AdminOperationsSummary;
   groups: AdminOperationsGroup[];
   pagination: {
     page: number;
     pageSize: number;
+    totalGroupsAll: number;
+    filteredGroupsCount: number;
     totalGroups: number;
   };
   /** @deprecated transitional shape */

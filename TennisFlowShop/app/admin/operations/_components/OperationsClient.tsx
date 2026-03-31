@@ -751,7 +751,7 @@ export default function OperationsClient() {
   const shouldShowGlobalError = Boolean(error) && !Array.isArray(data?.groups);
 
   const todayTodoCount: AdminOperationsSummary | null =
-    data?.summary ?? (data ? { urgent: 0, caution: 0, pending: 0 } : null);
+    data?.summaryAll ?? (data ? { urgent: 0, caution: 0, pending: 0 } : null);
 
   // 펼칠 수 있는 그룹(통합 묶음)만 추림
   const expandableGroupKeys = useMemo(

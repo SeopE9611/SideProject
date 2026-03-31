@@ -1871,7 +1871,7 @@ export async function handleAdminOperationsGet(req: Request) {
       groupQueueBucket: queueBucket,
     };
   });
-  groups = groupsWithQueue;
+  const allGroups = groupsWithQueue;
 
   const isCautionQueueGroup = (group: AdminOperationsGroup) =>
     group.groupQueueBucket === "caution";
@@ -1881,6 +1881,18 @@ export async function handleAdminOperationsGet(req: Request) {
     group.groupQueueBucket === "clean";
   const isGroupReview = (group: AdminOperationsGroup) =>
     group.groupNeedsReview === true;
+
+  const summaryAll: AdminOperationsSummary = allGroups.reduce(
+    (acc, group) => {
+      if (isGroupWarn(group)) acc.urgent += 1;
+      if (isCautionQueueGroup(group)) acc.caution += 1;
+      if (isPendingQueueGroup(group)) acc.pending += 1;
+      return acc;
+    },
+    { urgent: 0, caution: 0, pending: 0 },
+  );
+
+  groups = allGroups;
 
   if (warnFilter === "warn") groups = groups.filter((group) => isGroupWarn(group));
   if (warnFilter === "caution")
@@ -1905,32 +1917,24 @@ export async function handleAdminOperationsGet(req: Request) {
     });
   }
 
-  const summary: AdminOperationsSummary = groups.reduce(
-    (acc, group) => {
-      if (isGroupWarn(group)) acc.urgent += 1;
-      if (isCautionQueueGroup(group)) acc.caution += 1;
-      if (isPendingQueueGroup(group)) acc.pending += 1;
-      return acc;
-    },
-    { urgent: 0, caution: 0, pending: 0 },
-  );
-
-  const totalGroups = groups.length;
+  const filteredGroupsCount = groups.length;
   const start = (page - 1) * pageSize;
   const pagedGroups = groups.slice(start, start + pageSize);
   const items = pagedGroups.flatMap((group) => group.items);
 
   const responseDto: AdminOperationsListResponseDto = {
-    summary,
+    summaryAll,
     groups: pagedGroups,
     pagination: {
       page,
       pageSize,
-      totalGroups,
+      totalGroupsAll: allGroups.length,
+      filteredGroupsCount,
+      totalGroups: filteredGroupsCount,
     },
     // transitional shape
     items,
-    total: totalGroups,
+    total: filteredGroupsCount,
   };
   return NextResponse.json(responseDto);
 }
