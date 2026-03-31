@@ -84,6 +84,9 @@ export type AdminOperationsGroup = {
   primarySignal: OperationSignal | null;
   signals: OperationSignal[];
   nextAction?: string | null;
+  groupReviewLevel?: AdminOperationReviewLevel;
+  groupNeedsReview?: boolean;
+  groupQueueBucket?: "urgent" | "caution" | "pending" | "clean";
 };
 
 export type AdminOperationsSummary = {
