@@ -395,36 +395,6 @@ function pickOnePerKind(items: OpItem[]) {
     .filter(Boolean) as OpItem[];
 }
 
-// 그룹(통합) 대표 행에서 "연결 문서 상태/결제"를 펼치지 않고도 보이게 하기 위한 요약 유틸
-function summarizeByKind(
-  items: OpItem[],
-  getLabel: (it: OpItem) => string | undefined | null,
-) {
-  const map = new Map<Kind, Set<string>>();
-  for (const it of items) {
-    const v = getLabel(it);
-    if (!v) continue;
-    if (!map.has(it.kind)) map.set(it.kind, new Set());
-    map.get(it.kind)!.add(String(v));
-  }
-
-  return (["order", "rental", "stringing_application"] as Kind[])
-    .map((k) => {
-      const labels = Array.from(map.get(k) ?? []);
-      if (labels.length === 0) return null;
-      // 여러 값이 섞이면 "A 외 n" 형태로 축약해서 과도한 줄바꿈 방지
-      return {
-        kind: k,
-        mixed: labels.length > 1,
-        text:
-          labels.length === 1
-            ? labels[0]
-            : `${labels[0]} 외 ${labels.length - 1}`,
-      };
-    })
-    .filter(Boolean) as Array<{ kind: Kind; mixed: boolean; text: string }>;
-}
-
 function isWarnGroup(g: { items: OpItem[] }) {
   return (g.items ?? []).some(
     (it) => it.warn === true || (it.warnReasons?.length ?? 0) > 0,
@@ -466,12 +436,6 @@ function cancelQuickSignalSpec(
     tone: "warning",
     tooltipCopy: "환불 계좌 확인이 필요합니다.",
   };
-}
-
-function reviewLevelPriority(level: ReviewLevel) {
-  if (level === "action") return 2;
-  if (level === "info") return 1;
-  return 0;
 }
 
 type QuickActionTarget = {
@@ -555,68 +519,6 @@ function resolveQuickActionTarget(
   if (!candidate) return null;
   if (candidate.href === anchor.href) return null;
   return candidate;
-}
-
-function isCompatiblePaymentContext(anchorPay: string, childPay: string) {
-  if (!anchorPay || !childPay || anchorPay === "-" || childPay === "-")
-    return false;
-  if (anchorPay === childPay) return true;
-
-  const pair = new Set([anchorPay, childPay]);
-  if (pair.has("결제완료") && pair.has("주문결제포함")) return true;
-  if (pair.has("결제완료") && pair.has("대여결제포함")) return true;
-  if (pair.has("패키지차감") && pair.has("결제완료")) return true;
-
-  return false;
-}
-
-function computeReviewLevelGroup(g: {
-  anchor: OpItem;
-  items: OpItem[];
-}): ReviewLevel {
-  let level: ReviewLevel = "none";
-  for (const it of g.items ?? []) {
-    const itemLevel: ReviewLevel =
-      it.reviewLevel ??
-      (it.needsReview
-        ? "action"
-        : (it.reviewReasons?.length ?? 0) > 0
-          ? "info"
-          : "none");
-    if (reviewLevelPriority(itemLevel) > reviewLevelPriority(level))
-      level = itemLevel;
-  }
-
-  if (!g.items || g.items.length <= 1) return level;
-
-  const anchorKey = `${g.anchor.kind}:${g.anchor.id}`;
-  const children = g.items.filter((x) => `${x.kind}:${x.id}` !== anchorKey);
-  if (children.length === 0) return level;
-
-  const childStatusSummary = summarizeByKind(children, (it) => it.statusLabel);
-  const childPaymentSummary = summarizeByKind(
-    children,
-    (it) => it.paymentLabel,
-  );
-  const hasMixed =
-    childStatusSummary.some((st) => st.mixed) ||
-    childPaymentSummary.some((pay) => pay.mixed);
-
-  const anchorPay = g.anchor.paymentLabel ?? "-";
-  const childPays = children
-    .map((x) => x.paymentLabel)
-    .filter(Boolean) as string[];
-  const payMismatch =
-    anchorPay !== "-" &&
-    childPays.some(
-      (pay) =>
-        pay &&
-        pay !== "-" &&
-        pay !== anchorPay &&
-        !isCompatiblePaymentContext(anchorPay, pay),
-    );
-  if (hasMixed || payMismatch) return "action";
-  return level;
 }
 
 function collectReviewReasons(g: { anchor: OpItem; items: OpItem[] }) {
@@ -828,18 +730,20 @@ export default function OperationsClient() {
           kinds,
           primarySignal: group.primarySignal,
           signals: group.signals ?? [],
+          groupReviewLevel: group.groupReviewLevel ?? "none",
+          groupNeedsReview: Boolean(group.groupNeedsReview),
+          groupQueueBucket: group.groupQueueBucket ?? "clean",
         };
       });
   }, [data?.groups]);
   const hasResolvedGroups = !isLoading && !error && Array.isArray(data?.groups);
   const groupsToRender = useMemo(() => {
     return groups.map((group) => {
-      const reviewLevel = computeReviewLevelGroup(group);
       return {
         ...group,
-        warn: isWarnGroup(group),
-        reviewLevel,
-        needsReview: reviewLevel === "action",
+        warn: group.groupQueueBucket === "urgent" || isWarnGroup(group),
+        reviewLevel: group.groupReviewLevel as ReviewLevel,
+        needsReview: group.groupNeedsReview,
       };
     });
   }, [groups]);
@@ -1794,7 +1698,7 @@ export default function OperationsClient() {
                               <div className="flex flex-col items-end gap-1.5">
                                 <div className="text-right">
                                 <span className="text-[11px] text-muted-foreground/90">
-                                  {isGroup ? "총액" : opsKindLabel(g.anchor.kind)}
+                                  {isGroup ? "대표 문서 금액" : opsKindLabel(g.anchor.kind)}
                                 </span>
                                   <p className="text-lg font-extrabold whitespace-nowrap tracking-tight">
                                     {won(g.anchor.amount)}
@@ -1989,6 +1893,11 @@ export default function OperationsClient() {
                                                   ? "대여"
                                                   : "주문"}
                                             </p>
+                                            {amountMeaningText(item) ? (
+                                              <p className="text-[11px] text-muted-foreground/85">
+                                                {amountMeaningText(item)}
+                                              </p>
+                                            ) : null}
                                           </div>
                                           <div className="text-muted-foreground">
                                             {toOperatorSentence(item.stage ?? groupGuide.stage)}
@@ -2157,7 +2066,7 @@ export default function OperationsClient() {
                           </div>
                           <div className="text-right">
                             <p className="text-[11px] leading-snug text-muted-foreground">
-                              {g.items.length > 1 ? "총액" : opsKindLabel(g.anchor.kind)}
+                              {g.items.length > 1 ? "대표 문서 금액" : opsKindLabel(g.anchor.kind)}
                             </p>
                             <span className="text-base font-extrabold tracking-tight text-foreground">
                               {won(g.anchor.amount)}

@@ -427,6 +427,86 @@ function pickPrimarySignal(signals: OperationSignal[]): OperationSignal | null {
   })[0]!;
 }
 
+function reviewLevelPriority(level: AdminOperationReviewLevel) {
+  if (level === "action") return 2;
+  if (level === "info") return 1;
+  return 0;
+}
+
+function isCompatiblePaymentContext(anchorPay: string, childPay: string) {
+  if (!anchorPay || !childPay || anchorPay === "-" || childPay === "-")
+    return false;
+  if (anchorPay === childPay) return true;
+
+  const pair = new Set([anchorPay, childPay]);
+  if (pair.has("결제완료") && pair.has("주문결제포함")) return true;
+  if (pair.has("결제완료") && pair.has("대여결제포함")) return true;
+  if (pair.has("패키지차감") && pair.has("결제완료")) return true;
+
+  return false;
+}
+
+function summarizeDistinctLabelsByKind(
+  items: OpItem[],
+  getLabel: (item: OpItem) => string | undefined | null,
+) {
+  const map = new Map<Kind, Set<string>>();
+  for (const it of items) {
+    const value = getLabel(it);
+    if (!value) continue;
+    if (!map.has(it.kind)) map.set(it.kind, new Set());
+    map.get(it.kind)!.add(String(value));
+  }
+  return map;
+}
+
+function computeGroupReviewLevel(group: AdminOperationsGroup): AdminOperationReviewLevel {
+  let level: AdminOperationReviewLevel = "none";
+  for (const item of group.items ?? []) {
+    const itemLevel: AdminOperationReviewLevel =
+      item.reviewLevel ??
+      (item.needsReview
+        ? "action"
+        : (item.reviewReasons?.length ?? 0) > 0
+          ? "info"
+          : "none");
+    if (reviewLevelPriority(itemLevel) > reviewLevelPriority(level)) level = itemLevel;
+  }
+
+  if (!group.items || group.items.length <= 1) return level;
+
+  const anchor =
+    group.items.find(
+      (item) => item.kind === group.anchorKind && item.id === group.anchorId,
+    ) ?? group.items[0];
+  if (!anchor) return level;
+
+  const anchorKey = `${anchor.kind}:${anchor.id}`;
+  const children = group.items.filter((item) => `${item.kind}:${item.id}` !== anchorKey);
+  if (children.length === 0) return level;
+
+  const childStatusMap = summarizeDistinctLabelsByKind(children, (item) => item.statusLabel);
+  const childPaymentMap = summarizeDistinctLabelsByKind(children, (item) => item.paymentLabel);
+  const hasMixed =
+    Array.from(childStatusMap.values()).some((labels) => labels.size > 1) ||
+    Array.from(childPaymentMap.values()).some((labels) => labels.size > 1);
+
+  const anchorPay = anchor.paymentLabel ?? "-";
+  const payMismatch =
+    anchorPay !== "-" &&
+    children.some((item) => {
+      const childPay = item.paymentLabel ?? "-";
+      return (
+        childPay !== "-" &&
+        childPay !== anchorPay &&
+        !isCompatiblePaymentContext(anchorPay, childPay)
+      );
+    });
+
+  if (hasMixed || payMismatch) return "action";
+  return level;
+}
+
 function buildGroups(list: OpItem[]): AdminOperationsGroup[] {
   const map = new Map<string, OpItem[]>();
   const orderKeys: string[] = [];
@@ -1756,10 +1836,9 @@ export async function handleAdminOperationsGet(req: Request) {
 
   const isGroupWarn = (group: AdminOperationsGroup) =>
     group.signals.some((signal) => signal.level === "warn");
-  const isGroupReview = (group: AdminOperationsGroup) =>
-    group.signals.some((signal) => signal.level === "review");
   const isGroupPending = (group: AdminOperationsGroup) =>
     group.signals.some((signal) => signal.level === "pending");
+
   const hasPaymentRisk = (group: AdminOperationsGroup) =>
     group.items.some((item) =>
       ["결제취소", "결제실패", "확인필요"].includes(item.paymentLabel ?? ""),
@@ -1772,33 +1851,36 @@ export async function handleAdminOperationsGet(req: Request) {
         Boolean(item.nextAction?.trim()) &&
         !String(item.nextAction).includes("후속 조치 없음"),
     );
-  const isCautionQueueGroup = (group: AdminOperationsGroup) => {
-    const groupReview = isGroupReview(group);
-    const groupCancelRequested = group.items.some(
-      (item) => item.cancel?.status === "requested",
-    );
-    return groupReview || groupCancelRequested || hasPaymentRisk(group);
-  };
+  const hasCancelRequested = (group: AdminOperationsGroup) =>
+    group.items.some((item) => item.cancel?.status === "requested");
 
+  const groupsWithQueue = groups.map((group) => {
+    const groupReviewLevel = computeGroupReviewLevel(group);
+    const groupNeedsReview = groupReviewLevel === "action";
+    const queueBucket: AdminOperationsGroup["groupQueueBucket"] = isGroupWarn(group)
+      ? "urgent"
+      : groupNeedsReview || hasCancelRequested(group) || hasPaymentRisk(group)
+        ? "caution"
+        : isGroupPending(group) || hasPaymentPending(group) || hasRoutineNextAction(group)
+          ? "pending"
+          : "clean";
+    return {
+      ...group,
+      groupReviewLevel,
+      groupNeedsReview,
+      groupQueueBucket: queueBucket,
+    };
+  });
+  groups = groupsWithQueue;
+
+  const isCautionQueueGroup = (group: AdminOperationsGroup) =>
+    group.groupQueueBucket === "caution";
   const isPendingQueueGroup = (group: AdminOperationsGroup) =>
-    !isGroupWarn(group) &&
-    !isGroupReview(group) &&
-    (isGroupPending(group) || hasPaymentPending(group) || hasRoutineNextAction(group));
-
-  const isCleanGroup = (group: AdminOperationsGroup) => {
-    const hasCancelRequested = group.items.some(
-      (item) => item.cancel?.status === "requested",
-    );
-    return (
-      !isGroupWarn(group) &&
-      !isGroupReview(group) &&
-      !isGroupPending(group) &&
-      !hasCancelRequested &&
-      !hasPaymentRisk(group) &&
-      !hasPaymentPending(group) &&
-      !hasRoutineNextAction(group)
-    );
-  };
+    group.groupQueueBucket === "pending";
+  const isCleanGroup = (group: AdminOperationsGroup) =>
+    group.groupQueueBucket === "clean";
+  const isGroupReview = (group: AdminOperationsGroup) =>
+    group.groupNeedsReview === true;
 
   if (warnFilter === "warn") groups = groups.filter((group) => isGroupWarn(group));
   if (warnFilter === "caution")
