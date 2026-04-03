@@ -47,8 +47,12 @@ export default function StringPackagesPageClient({
   const [ownershipBlockedMessage] = useState<string | null>(
     initialOwnershipBlockedMessage,
   );
-  const cardBlockedHelperText =
-    "기존 패키지 이용 종료 후 다시 구매할 수 있습니다.";
+  const isPendingOrderBlocked =
+    ownershipBlockedMessage?.includes("결제대기") ||
+    ownershipBlockedMessage?.includes("주문 상태");
+  const cardBlockedHelperText = isPendingOrderBlocked
+    ? "기존 주문 상태를 먼저 확인해주세요."
+    : "기존 패키지 이용 종료 후 다시 구매할 수 있습니다.";
 
 
   const additionalBenefits: Array<{
@@ -202,7 +206,7 @@ export default function StringPackagesPageClient({
             </p>
             {ownershipBlockedMessage && (
               <p className="mt-6 rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
-                현재 보유 중인 패키지가 있어 추가 구매가 제한됩니다.
+                {ownershipBlockedMessage}
               </p>
             )}
           </div>
