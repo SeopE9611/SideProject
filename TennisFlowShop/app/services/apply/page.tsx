@@ -1682,16 +1682,17 @@ export default function StringServiceApplyPage() {
       <div className="min-h-full bg-card bp-lg:bg-background">
         <ApplyHero />
         <div className="px-3 bp-sm:px-4 bp-md:px-6 bp-lg:px-6 mx-auto bp-lg:max-w-[1200px] py-8 bp-sm:py-12 bp-lg:py-16">
-          <div className="rounded-2xl border border-border bg-card p-6 bp-sm:p-8">
-            <div className="max-w-xl space-y-2">
-              <p className="text-base font-semibold text-foreground">
+          <div className="mx-auto max-w-xl">
+            <div className="inline-flex items-center gap-2 rounded-md border border-border/60 bg-muted/30 px-3 py-2">
+              <span className="h-2 w-2 rounded-full bg-muted-foreground/70 animate-pulse" />
+              <p className="text-sm font-medium text-foreground">
                 로그인 상태를 확인하고 있습니다.
               </p>
-              <p className="text-sm text-muted-foreground">
-                잠시만 기다려주세요. 확인이 끝나면 신청 화면 또는 로그인 안내로
-                자동 이동합니다.
-              </p>
             </div>
+            <p className="mt-3 text-sm text-muted-foreground">
+              잠시만 기다려주세요. 확인이 끝나면 신청 화면 또는 로그인 안내로
+              자동 이동합니다.
+            </p>
           </div>
         </div>
       </div>
