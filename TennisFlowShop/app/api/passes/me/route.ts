@@ -64,7 +64,19 @@ export async function GET() {
 
     const packageOrders = await db
       .collection("packageOrders")
-      .find({ userId: userObjectId })
+      .find(
+        { userId: userObjectId },
+        {
+          projection: {
+            paymentStatus: 1,
+            status: 1,
+            createdAt: 1,
+            "packageInfo.id": 1,
+            "packageInfo.title": 1,
+            "packageInfo.sessions": 1,
+          },
+        },
+      )
       .sort({ createdAt: -1, _id: -1 })
       .limit(100)
       .toArray();

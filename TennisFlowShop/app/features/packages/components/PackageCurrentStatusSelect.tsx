@@ -91,7 +91,13 @@ export default function PackageCurrentStatusSelect({
   const [reasonType, setReasonType] = useState("");
   const [reasonText, setReasonText] = useState("");
 
-  const isExpired = passStatus === "만료" || passStatus === "종료";
+  const isEndedLike = passStatus === "만료" || passStatus === "종료";
+  const placeholder =
+    passStatus === "종료"
+      ? "종료"
+      : passStatus === "만료"
+        ? "만료됨"
+        : "상태 선택";
 
   function openCancelDialog(next: CurrentStatusUI) {
     setIsRestoreDialog(false);
@@ -148,7 +154,7 @@ export default function PackageCurrentStatusSelect({
     submit(next, "");
   }
 
-  const disabledMessage = isExpired
+  const disabledMessage = isEndedLike
     ? "만료/종료된 패키지는 상태를 바꿀 수 없습니다."
     : undefined;
 
@@ -157,10 +163,10 @@ export default function PackageCurrentStatusSelect({
       <Select
         value={selected || undefined}
         onValueChange={(v) => onValueChange(v as CurrentStatusUI)}
-        disabled={disabled || saving || isExpired}
+        disabled={disabled || saving || isEndedLike}
       >
         <SelectTrigger className="w-[140px]" title={disabledMessage}>
-          <SelectValue placeholder={isExpired ? "만료됨" : "상태 선택"} />
+          <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent>
           {(["활성", "비활성", "취소"] as CurrentStatusUI[]).map((s) => (
