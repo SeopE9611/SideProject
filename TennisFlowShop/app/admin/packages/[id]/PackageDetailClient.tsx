@@ -46,6 +46,8 @@ import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import type {
   AdminPackageDetailDto,
   AdminPackageOperationHistoryDto,
+  AdminPackageUsageHistoryDto,
+  AdminPackageUsageHistoryResponseDto,
 } from "@/types/admin/packages";
 
 import PackagePaymentStatusSelect from "@/app/features/packages/components/PackagePaymentStatusSelect";
@@ -260,9 +262,12 @@ export default function PackageDetailClient({
   );
 
   const data = resp?.item;
-  const usageHistory = Array.isArray(data?.usageHistory)
-    ? data!.usageHistory
-    : [];
+  const [usageHistory, setUsageHistory] = useState<AdminPackageUsageHistoryDto[]>(
+    [],
+  );
+  const [usageCursor, setUsageCursor] = useState<string | null>(null);
+  const [usageHasMore, setUsageHasMore] = useState(false);
+  const [usageLoading, setUsageLoading] = useState(false);
   const operationsHistory = Array.isArray(data?.operationsHistory)
     ? data!.operationsHistory
     : Array.isArray(data?.extensionHistory)
@@ -271,6 +276,32 @@ export default function PackageDetailClient({
 
   const [opsLimit, setOpsLimit] = useState(5);
   useEffect(() => setOpsLimit(5), [data?.id]);
+
+  const loadUsageHistory = async (append: boolean) => {
+    if (!packageId || usageLoading) return;
+    setUsageLoading(true);
+    try {
+      const query = new URLSearchParams({ limit: "10" });
+      if (append && usageCursor) query.set("cursor", usageCursor);
+      const res = await authenticatedSWRFetcher<AdminPackageUsageHistoryResponseDto>(
+        `/api/admin/package-orders/${packageId}/usage-history?${query.toString()}`,
+      );
+      setUsageCursor(res.nextCursor ?? null);
+      setUsageHasMore(Boolean(res.hasMore));
+      setUsageHistory((prev) => (append ? [...prev, ...res.items] : res.items));
+    } catch {
+      showErrorToast("사용 내역 조회에 실패했습니다.");
+    } finally {
+      setUsageLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    setUsageHistory([]);
+    setUsageCursor(null);
+    setUsageHasMore(false);
+    void loadUsageHistory(false);
+  }, [packageId]);
 
   /**
    * 입력 이탈 경고(Unsaved Changes Guard)
@@ -604,6 +635,11 @@ export default function PackageDetailClient({
             </CardHeader>
             <CardContent className="p-6 space-y-3">
               <div className="flex items-center justify-between p-3 rounded-lg bg-card">
+                <span className="text-sm text-muted-foreground">패스 상태</span>
+                <Badge variant="outline">{data.passStatus}</Badge>
+              </div>
+
+              <div className="flex items-center justify-between p-3 rounded-lg bg-card">
                 <span className="text-sm text-muted-foreground">현재 상태</span>
                 <PackageCurrentStatusSelect
                   orderId={packageId}
@@ -723,7 +759,7 @@ export default function PackageDetailClient({
               </CardDescription>
             </CardHeader>
             <CardContent className="p-6">
-              {usageHistory.length === 0 ? (
+              {usageHistory.length === 0 && !usageLoading ? (
                 <p className="text-center text-muted-foreground py-8">
                   사용 내역이 없습니다.
                 </p>
@@ -737,9 +773,6 @@ export default function PackageDetailClient({
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
-                            <Badge variant="outline" className="text-xs">
-                              신청서 ID: {u.applicationId}
-                            </Badge>
                             <Badge
                               variant={
                                 getMerchandisingBadgeSpec("discount").variant
@@ -749,12 +782,9 @@ export default function PackageDetailClient({
                               -{u.sessionsUsed}회 차감
                             </Badge>
                           </div>
-                          <p className="font-medium mb-1">{u.description}</p>
+                          <p className="font-medium mb-1">{u.summary}</p>
                           <p className="text-sm text-muted-foreground">
-                            {new Intl.DateTimeFormat("ko-KR", {
-                              dateStyle: "medium",
-                              timeStyle: "short",
-                            }).format(new Date(u.date))}
+                            {u.applicationSummary || `신청서 #${u.applicationId.slice(-6)}`}
                           </p>
                           {u.adminNote && (
                             <p className="text-sm text-foreground mt-1">
@@ -774,6 +804,25 @@ export default function PackageDetailClient({
                       </div>
                     </div>
                   ))}
+                  <div className="pt-2 flex justify-center">
+                    {usageHasMore ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => void loadUsageHistory(true)}
+                        disabled={usageLoading}
+                      >
+                        {usageLoading ? (
+                          <>
+                            <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                            불러오는 중
+                          </>
+                        ) : (
+                          "더보기"
+                        )}
+                      </Button>
+                    ) : null}
+                  </div>
                 </div>
               )}
             </CardContent>

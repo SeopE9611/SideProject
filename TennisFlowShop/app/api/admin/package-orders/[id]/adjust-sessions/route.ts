@@ -7,6 +7,7 @@ import type { ServicePass } from "@/lib/types/pass";
 import { ObjectId as OID } from "mongodb";
 import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
+import { isCountEnded, shouldRestoreActive } from "@/lib/pass-status";
 
 type PassHistoryItem = {
   _id: OID;
@@ -107,6 +108,19 @@ export async function POST(
     let next = prev + delta;
     if (clampZero && next < 0) next = 0;
 
+    const nextStatus =
+      isCountEnded(next)
+        ? "expired"
+        : shouldRestoreActive({
+              paymentStatus: pkgOrder.paymentStatus,
+              passStatus: passDoc.status,
+              remainingCount: next,
+              expiresAt: passDoc.expiresAt,
+              now,
+            })
+          ? "active"
+          : passDoc.status;
+
     await passes.updateOne({ _id: passDoc._id }, {
       $set: { remainingCount: next, updatedAt: now },
       $push: {
@@ -128,6 +142,13 @@ export async function POST(
         },
       },
     } as UpdateFilter<ServicePass & { history: PassHistoryItem[] }>);
+
+    if (nextStatus !== passDoc.status) {
+      await passes.updateOne(
+        { _id: passDoc._id },
+        { $set: { status: nextStatus, updatedAt: now } },
+      );
+    }
 
     await packageOrders.updateOne(
       { _id },

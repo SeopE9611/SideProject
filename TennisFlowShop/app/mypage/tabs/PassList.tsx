@@ -22,6 +22,7 @@ type PassItem = {
   remainingCount: number;
   status:
     | "active"
+    | "ended"
     | "expired"
     | "suspended"
     | "paused"
@@ -82,7 +83,7 @@ export default function PassList() {
     ),
   );
   const historyItems = items.filter((p) =>
-    ["expired", "cancelled"].includes(p.status),
+    ["ended", "expired", "cancelled"].includes(p.status),
   );
 
   const hasNoHistory = !isInitialLoading && items.length === 0;
@@ -92,6 +93,7 @@ export default function PassList() {
     if (status === "pending_payment") return "입금 확인 중";
     if (status === "pending_activation") return "활성화 대기";
     if (status === "suspended" || status === "paused") return "일시정지";
+    if (status === "ended") return "종료";
     if (status === "expired") return "만료";
     if (status === "cancelled") return "취소";
     return status;
@@ -154,7 +156,9 @@ export default function PassList() {
                   구매하신 패키지가 입금 확인 중입니다.
                 </div>
               )}
-              {(p.status === "expired" || p.status === "cancelled") && (
+              {(p.status === "ended" ||
+                p.status === "expired" ||
+                p.status === "cancelled") && (
                 <div className="text-sm text-muted-foreground">
                   현재는 사용이 종료된 패키지입니다.
                 </div>

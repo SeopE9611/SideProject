@@ -6,6 +6,7 @@ import type { PackageOrder } from "@/lib/types/package-order";
 import { ServicePass } from "@/lib/types/pass";
 import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
+import { shouldRestoreActive } from "@/lib/pass-status";
 
 function normalizePassStatus(
   status: ServicePass["status"],
@@ -163,7 +164,15 @@ export async function PATCH(
           await passCol.updateOne({ _id: passDoc._id }, { $set: updateDoc });
         } else if (hasPositiveRemaining) {
           const normalizedStatus = normalizePassStatus(passDoc.status);
-          const shouldActivate = normalizedStatus !== "cancelled";
+          const shouldActivate =
+            normalizedStatus !== "cancelled" &&
+            shouldRestoreActive({
+              paymentStatus: paymentToSet,
+              passStatus: passDoc.status,
+              remainingCount: passDoc.remainingCount,
+              expiresAt: passDoc.expiresAt,
+              now,
+            });
           if (shouldActivate) {
             const resumeMs = getStoredRemainingForResume(passDoc, now);
             const nextExpiry =
@@ -234,8 +243,20 @@ export async function GET(
         {
           $lookup: {
             from: "service_passes",
-            localField: "_id",
-            foreignField: "orderId",
+            let: { orderId: "$_id" },
+            pipeline: [
+              { $match: { $expr: { $eq: ["$orderId", "$$orderId"] } } },
+              {
+                $project: {
+                  status: 1,
+                  expiresAt: 1,
+                  remainingCount: 1,
+                  usedCount: 1,
+                  packageSize: 1,
+                  history: 1,
+                },
+              },
+            ],
             as: "passDocs",
           },
         },
@@ -254,18 +275,10 @@ export async function GET(
 
             // 구매일/만료일 계산: 패스 값 우선
             _calcExpiry: {
-              $cond: [
-                { $in: ["$passDoc.status", ["active", "expired"]] },
-                "$passDoc.expiresAt",
-                null,
-              ],
+              $ifNull: ["$passDoc.expiresAt", null],
             },
             expiryDate: {
-              $cond: [
-                { $in: ["$passDoc.status", ["active", "expired"]] },
-                "$passDoc.expiresAt",
-                null,
-              ],
+              $ifNull: ["$passDoc.expiresAt", null],
             },
 
             serviceType: {
@@ -280,31 +293,6 @@ export async function GET(
                 "출장",
                 "방문",
               ],
-            },
-
-            usageHistory: {
-              $map: {
-                input: { $ifNull: ["$passDoc.redemptions", []] },
-                as: "r",
-                in: {
-                  id: {
-                    $concat: [
-                      { $toString: "$passDoc._id" },
-                      "-",
-                      {
-                        $toString: {
-                          $indexOfArray: ["$passDoc.redemptions", "$$r"],
-                        },
-                      },
-                    ],
-                  },
-                  applicationId: { $toString: "$$r.applicationId" },
-                  date: "$$r.usedAt",
-                  sessionsUsed: { $ifNull: ["$$r.count", 1] },
-                  description: "스트링 교체 차감",
-                  adminNote: { $cond: ["$$r.reverted", "취소/복원됨", ""] },
-                },
-              },
             },
 
             // 패스 운영 이력(연장+횟수조절) 변환 + 결제상태 변경 합치기
@@ -507,6 +495,21 @@ export async function GET(
                         },
                         then: "취소",
                       },
+                      // 남은 횟수 0 이하면 종료
+                      {
+                        case: { $lte: [{ $ifNull: ["$passDoc.remainingCount", 0] }, 0] },
+                        then: "종료",
+                      },
+                      // 시간 만료
+                      {
+                        case: {
+                          $and: [
+                            { $ne: ["$$exp", null] },
+                            { $lte: ["$$exp", "$$NOW"] },
+                          ],
+                        },
+                        then: "만료",
+                      },
                       // 패스 미발급이면 대기
                       { case: { $not: ["$passDoc"] }, then: "대기" },
                       // 일시정지/legacy suspended 또는 결제미완료
@@ -519,18 +522,7 @@ export async function GET(
                             { $ne: ["$paymentStatus", "결제완료"] },
                           ],
                         },
-                        then: "일시정지",
-                      },
-                      // 활성 패스 만료
-                      {
-                        case: {
-                          $and: [
-                            { $eq: ["$passDoc.status", "active"] },
-                            { $ne: ["$$exp", null] },
-                            { $lte: ["$$exp", "$$NOW"] },
-                          ],
-                        },
-                        then: "만료",
+                        then: "비활성",
                       },
                       {
                         case: { $eq: ["$paymentStatus", "결제완료"] },
@@ -642,7 +634,6 @@ export async function GET(
             status: "$status",
             paymentStatus: "$paymentStatus",
             serviceType: "$serviceType",
-            usageHistory: "$usageHistory",
             history: "$history",
             passStatus: "$passStatusKo",
             operationsHistory: "$operationsHistory",

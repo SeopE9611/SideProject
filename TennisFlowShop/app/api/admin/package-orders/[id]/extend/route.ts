@@ -7,6 +7,7 @@ import type { UpdateFilter } from "mongodb";
 import type { ServicePass } from "@/lib/types/pass";
 import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
+import { shouldRestoreActive } from "@/lib/pass-status";
 
 type PassHistoryItem = {
   _id: OID;
@@ -129,6 +130,14 @@ export async function POST(
               86400000,
           );
 
+    const shouldActivate = shouldRestoreActive({
+      paymentStatus: pkgOrder.paymentStatus,
+      passStatus: passDoc.status,
+      remainingCount: passDoc.remainingCount,
+      expiresAt: nextExpiry,
+      now,
+    });
+
     await passes.updateOne({ _id: passDoc._id }, {
       $set: { expiresAt: nextExpiry, updatedAt: now },
       $push: {
@@ -151,6 +160,13 @@ export async function POST(
         },
       },
     } as UpdateFilter<ServicePass & { history: PassHistoryItem[] }>);
+
+    if (shouldActivate && passDoc.status !== PASS_STATUS.cancelled) {
+      await passes.updateOne(
+        { _id: passDoc._id },
+        { $set: { status: "active", updatedAt: now, remainingValidityMs: null } },
+      );
+    }
 
     // 감사 로그: packageOrders.history에 기록
     await packageOrders.updateOne(

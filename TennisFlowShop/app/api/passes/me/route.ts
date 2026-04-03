@@ -3,6 +3,10 @@ import { cookies } from "next/headers";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
+import {
+  isCountEnded,
+  isTimeExpired,
+} from "@/lib/pass-status";
 
 function safeVerifyAccessToken(token?: string | null) {
   if (!token) return null;
@@ -38,7 +42,22 @@ export async function GET() {
 
     const passes = await db
       .collection("service_passes")
-      .find({ userId: userObjectId })
+      .find(
+        { userId: userObjectId },
+        {
+          projection: {
+            packageSize: 1,
+            usedCount: 1,
+            remainingCount: 1,
+            status: 1,
+            purchasedAt: 1,
+            expiresAt: 1,
+            meta: 1,
+            orderId: 1,
+            redemptions: { $slice: -3 },
+          },
+        },
+      )
       .sort({ expiresAt: 1 })
       .limit(100)
       .toArray();
@@ -57,26 +76,41 @@ export async function GET() {
         .map((id: any) => String(id)),
     );
 
-    const passItems = passes.map((p: any) => ({
+    const passItems = passes.map((p: any) => {
+      const endedByCount = isCountEnded(p.remainingCount);
+      const expiredByTime = isTimeExpired(p.expiresAt, now);
+      const computedStatus =
+        p.status === "cancelled"
+          ? "cancelled"
+          : endedByCount
+            ? "ended"
+            : expiredByTime
+              ? "expired"
+              : p.status;
+
+      return {
       id: p._id.toString(),
       packageSize: p.packageSize,
       usedCount: p.usedCount,
       remainingCount: p.remainingCount,
-      status: p.status,
+      status: computedStatus,
+      rawStatus: p.status,
       purchasedAt: p.purchasedAt,
       expiresAt: p.expiresAt,
       planId: p.meta?.planId ?? null,
       planTitle: p.meta?.planTitle ?? null,
       isExpiringSoon:
-        p.status === "active" &&
+        computedStatus === "active" &&
         new Date(p.expiresAt).getTime() - now.getTime() <= 7 * 86400000,
-      recentUsages: (p.redemptions ?? []).slice(-5).map((r: any) => ({
+      endedByCount,
+      expiredByTime,
+      recentUsages: (p.redemptions ?? []).map((r: any) => ({
         applicationId: r.applicationId?.toString?.() ?? null,
         usedAt: r.usedAt,
         reverted: !!r.reverted,
       })),
       source: "pass",
-    }));
+    }});
 
     const pendingOrHistoryItems = packageOrders
       .filter((order: any) => !issuedOrderIdSet.has(String(order._id)))

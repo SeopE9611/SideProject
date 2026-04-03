@@ -108,8 +108,19 @@ export async function GET(req: Request) {
       {
         $lookup: {
           from: "service_passes",
-          localField: "_id",
-          foreignField: "orderId",
+          let: { orderId: "$_id" },
+          pipeline: [
+            { $match: { $expr: { $eq: ["$orderId", "$$orderId"] } } },
+            {
+              $project: {
+                status: 1,
+                expiresAt: 1,
+                remainingCount: 1,
+                usedCount: 1,
+                packageSize: 1,
+              },
+            },
+          ],
           as: "passDocs",
         },
       },
@@ -128,11 +139,7 @@ export async function GET(req: Request) {
 
           purchaseDate: "$createdAt",
           _calcExpiry: {
-            $cond: [
-              { $in: ["$passDoc.status", ["active", "expired"]] },
-              "$passDoc.expiresAt",
-              null,
-            ],
+            $ifNull: ["$passDoc.expiresAt", null],
           },
 
           serviceType: {
@@ -170,14 +177,24 @@ export async function GET(req: Request) {
                       },
                       then: "취소",
                     },
-                    // 2) 패스 미발급이면 대기(활성 전)
-                    { case: { $not: ["$passDoc"] }, then: "대기" },
-                    // 3) 남은 횟수가 0 이하이면 만료 취급(활성 오인 방지)
+                    // 2) 남은 횟수가 0 이하이면 종료
                     {
                       case: { $lte: [{ $ifNull: ["$passDoc.remainingCount", 0] }, 0] },
+                      then: "종료",
+                    },
+                    // 3) 시간 만료
+                    {
+                      case: {
+                        $and: [
+                          { $ne: ["$$exp", null] },
+                          { $lte: ["$$exp", "$$NOW"] },
+                        ],
+                      },
                       then: "만료",
                     },
-                    // 4) 일시정지/레거시 suspended, 결제미완료 → 비활성
+                    // 4) 패스 미발급이면 대기(활성 전)
+                    { case: { $not: ["$passDoc"] }, then: "대기" },
+                    // 5) 일시정지/레거시 suspended, 결제미완료 → 비활성
                     {
                       case: {
                         $or: [
@@ -186,17 +203,6 @@ export async function GET(req: Request) {
                         ],
                       },
                       then: "비활성",
-                    },
-                    // 5) 활성 패스의 만료 우선
-                    {
-                      case: {
-                        $and: [
-                          { $eq: ["$passDoc.status", "active"] },
-                          { $ne: ["$$exp", null] },
-                          { $lte: ["$$exp", "$$NOW"] },
-                        ],
-                      },
-                      then: "만료",
                     },
                   ],
                   // 6) 그 외는 활성
@@ -244,11 +250,12 @@ export async function GET(req: Request) {
             },
           },
 
-          // 상태 정렬 우선순위: 취소(-1) < 만료(0) < 비활성(1) < 활성(2)
+          // 상태 정렬 우선순위: 취소(-2) < 종료(-1) < 만료(0) < 비활성(1) < 활성(2)
           statusRank: {
             $switch: {
               branches: [
-                { case: { $eq: ["$passStatusKo", "취소"] }, then: -1 },
+                { case: { $eq: ["$passStatusKo", "취소"] }, then: -2 },
+                { case: { $eq: ["$passStatusKo", "종료"] }, then: -1 },
                 { case: { $eq: ["$passStatusKo", "만료"] }, then: 0 },
                 { case: { $eq: ["$passStatusKo", "비활성"] }, then: 1 },
                 { case: { $eq: ["$passStatusKo", "활성"] }, then: 2 },
