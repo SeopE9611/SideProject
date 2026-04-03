@@ -14,7 +14,7 @@ export default function OrderLookupResultsLoading() {
             <div className="flex justify-center" aria-hidden>
               <Skeleton className="h-4 w-56" />
             </div>
-            <span className="sr-only">주문 정보를 불러오는 중입니다.</span>
+            <span className="sr-only">주문 조회 결과 로딩 중</span>
           </CardHeader>
           <Separator />
           <CardContent className="pt-6">

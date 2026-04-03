@@ -137,8 +137,18 @@ export default function RentalSelectStringClient({
           </h2>
 
           {isLoadingInitial ? (
-            <div className="rounded-2xl border border-border bg-card px-4 py-6 text-center text-sm text-muted-foreground">
-              스트링 목록을 준비하고 있습니다.
+            <div className="grid grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-3 gap-4 bp-md:gap-6">
+              {Array.from({ length: 6 }).map((_, idx) => (
+                <div
+                  key={idx}
+                  className="rounded-2xl border border-border bg-card p-5 space-y-4"
+                >
+                  <Skeleton className="aspect-square w-full rounded-xl" />
+                  <Skeleton className="h-5 w-2/3" />
+                  <Skeleton className="h-4 w-1/2" />
+                  <Skeleton className="h-11 w-full rounded-xl" />
+                </div>
+              ))}
             </div>
           ) : (
             <div className="grid grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-3 gap-4 bp-md:gap-6">

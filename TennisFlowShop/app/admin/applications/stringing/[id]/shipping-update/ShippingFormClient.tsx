@@ -92,9 +92,7 @@ export default function ShippingFormClient({
       : isRegistered
         ? "배송 방법과 예상 수령일을 수정할 수 있습니다."
         : "배송 방법과 예상 수령일을 등록할 수 있습니다."
-    : isLoading
-      ? "배송 정보를 준비하고 있습니다."
-      : "신청 정보를 불러올 수 없습니다.";
+    : "신청 정보를 확인하고 배송 정보를 관리할 수 있습니다.";
 
   let content = null;
   if (isLoading) {

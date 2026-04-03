@@ -133,7 +133,10 @@ export default function MypageClient({ user }: Props) {
     return (
       <SiteContainer variant="wide" className="py-10">
         <Card className="border-border bg-card">
-          <CardContent className="p-6 text-sm text-muted-foreground">회원 정보를 확인하는 중입니다.</CardContent>
+          <CardContent className="space-y-3 p-6">
+            <Skeleton className="h-5 w-36" />
+            <Skeleton className="h-4 w-full max-w-md" />
+          </CardContent>
         </Card>
       </SiteContainer>
     );

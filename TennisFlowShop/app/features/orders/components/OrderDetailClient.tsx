@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import CustomerEditForm from "@/app/features/orders/components/CustomerEditForm";
 import OrderHistory from "@/app/features/orders/components/OrderHistory";
 import OrderStatusSelect from "@/app/features/orders/components/OrderStatusSelect";
+import OrderDetailSkeleton from "@/app/features/orders/components/OrderDetailSkeleton";
 import PaymentEditForm from "@/app/features/orders/components/PaymentEditForm";
 import PaymentMethodDetail from "@/app/features/orders/components/PaymentMethodDetail";
 import RequestEditForm from "@/app/features/orders/components/RequestEditForm";
@@ -265,11 +266,7 @@ export default function OrderDetailClient({ orderId }: Props) {
     );
   }
   if (!orderDetail) {
-    return (
-      <div className="py-24 text-center text-sm text-muted-foreground">
-        주문 정보를 불러오는 중입니다.
-      </div>
-    );
+    return <OrderDetailSkeleton />;
   }
 
   // 취소 요청 상태 정보 계산

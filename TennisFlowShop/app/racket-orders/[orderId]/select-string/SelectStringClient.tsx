@@ -45,8 +45,17 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
 
   if (isLoadingInitial) {
     return (
-      <div className="rounded-lg border border-border bg-card p-4 text-center text-sm text-muted-foreground">
-        스트링 목록을 준비하고 있습니다.
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {Array.from({ length: 6 }).map((_, idx) => (
+          <div
+            key={idx}
+            className="rounded-lg border border-border bg-card p-3 space-y-3"
+          >
+            <Skeleton className="h-5 w-2/3" />
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-9 w-full" />
+          </div>
+        ))}
       </div>
     );
   }

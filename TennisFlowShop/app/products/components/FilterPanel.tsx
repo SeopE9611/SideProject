@@ -131,12 +131,26 @@ export const FilterPanel = React.memo(function FilterPanel({
         "rounded-lg bp-sm:rounded-xl border border-border bg-card/80 dark:bg-card backdrop-blur-sm p-4 bp-sm:p-6 shadow-xl",
       )}
     >
-      {isLoadingInitial && (
-        <div className="mb-4 space-y-2 rounded-md border border-border/60 bg-muted/30 p-3">
-          <div className="h-3 w-24 rounded bg-muted animate-pulse" />
-          <div className="h-8 w-full rounded bg-muted animate-pulse" />
+      {isLoadingInitial ? (
+        <div className="space-y-4 bp-sm:space-y-6 animate-pulse">
+          <div className="flex items-center justify-between">
+            <div className="h-6 w-20 rounded bg-muted" />
+            <div className="h-7 w-16 rounded bg-muted" />
+          </div>
+          <div className="space-y-2">
+            <div className="h-3 w-24 rounded bg-muted" />
+            <div className="h-9 bp-sm:h-10 w-full rounded bg-muted" />
+          </div>
+          <div className="space-y-2">
+            <div className="h-3 w-20 rounded bg-muted" />
+            <div className="h-9 bp-sm:h-10 w-full rounded bg-muted" />
+          </div>
+          <div className="space-y-2">
+            <div className="h-3 w-16 rounded bg-muted" />
+            <div className="h-9 bp-sm:h-10 w-full rounded bg-muted" />
+          </div>
         </div>
-      )}
+      ) : (
       <AnimatePresence mode="wait">
         <motion.div
           key={resetKey}
@@ -296,6 +310,7 @@ export const FilterPanel = React.memo(function FilterPanel({
           </div>
         </motion.div>
       </AnimatePresence>
+      )}
     </div>
   );
 });
