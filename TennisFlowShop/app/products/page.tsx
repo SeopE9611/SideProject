@@ -3,7 +3,6 @@ import SiteContainer from "@/components/layout/SiteContainer";
 import HeroCourtBackdrop from "@/components/system/HeroCourtBackdrop";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Suspense } from "react";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
@@ -56,9 +55,10 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
             </div>
           </div>
         )}
-        <Suspense fallback={<div className="rounded-xl border border-dashed border-border bg-muted/20 px-4 py-10 text-center text-sm text-muted-foreground">상품 정보를 불러오는 중입니다.</div>}>
-          <FilterableProductList initialBrand={initialBrand} initialMaterial={initialMaterial} />
-        </Suspense>
+        <FilterableProductList
+          initialBrand={initialBrand}
+          initialMaterial={initialMaterial}
+        />
       </SiteContainer>
     </div>
   );

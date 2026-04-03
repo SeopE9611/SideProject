@@ -28,6 +28,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { useBackNavigationGuard } from "@/lib/hooks/useBackNavigationGuard";
 import {
@@ -499,8 +500,10 @@ export default function PackageCheckoutClient({
                     className="shadow-none"
                   />
                 ) : (
-                  <div className="rounded-xl border border-dashed border-border bg-muted/20 p-5 text-sm text-muted-foreground">
-                    패키지 정보를 불러오는 중입니다.
+                  <div className="space-y-3 rounded-xl border border-border bg-card p-4">
+                    <Skeleton className="h-6 w-1/3" />
+                    <Skeleton className="h-4 w-2/3" />
+                    <Skeleton className="h-24 w-full" />
                   </div>
                 )}
               </CardContent>
@@ -993,11 +996,6 @@ export default function PackageCheckoutClient({
                         (이름/이메일/연락처/입금자명)
                       </p>
                     )}
-                  {isFrameLoading && (
-                    <p className="text-xs text-muted-foreground">
-                      기본 정보를 불러오는 중입니다. 잠시만 기다려주세요.
-                    </p>
-                  )}
                   {selectedPackage && (
                     <PackageCheckoutButton
                       disabled={!canSubmit}

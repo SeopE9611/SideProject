@@ -153,11 +153,7 @@ export default function QnAList() {
   // 목록
   return (
     <div className="space-y-4 md:space-y-6">
-      {isInitialLoading ? (
-        <div className="rounded-xl border border-border bg-muted/20 p-4 text-sm text-muted-foreground">
-          Q&A 내역을 불러오는 중입니다...
-        </div>
-      ) : null}
+      {isInitialLoading ? <QnAListSkeleton count={4} /> : null}
       {qnas.map((qna) => (
         <Card
           key={qna.id}

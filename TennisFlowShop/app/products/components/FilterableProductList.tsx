@@ -751,13 +751,29 @@ export default function FilterableProductList({
 
           {/* 콘텐츠 */}
           {isInitialLikeLoading ? (
-            <div
-              data-cy="products-initial-loading"
-              className="rounded-xl border border-dashed border-border bg-muted/20 px-4 py-10 text-center"
-            >
-              <p className="text-sm text-muted-foreground">
-                상품 목록을 불러오는 중입니다.
-              </p>
+            <div data-cy="products-initial-loading" className="space-y-4">
+              <div
+                className={cn(
+                  "grid gap-4 bp-md:gap-6",
+                  viewMode === "grid"
+                    ? "grid-cols-1 bp-sm:grid-cols-2 bp-xl:grid-cols-3"
+                    : "grid-cols-1",
+                )}
+              >
+                {Array.from({ length: viewMode === "grid" ? 6 : 4 }).map(
+                  (_, index) => (
+                    <div
+                      key={`products-loading-skeleton-${index}`}
+                      className="rounded-xl border border-border bg-card p-4"
+                    >
+                      <Skeleton className="mb-4 aspect-[4/3] w-full rounded-lg" />
+                      <Skeleton className="h-5 w-2/3" />
+                      <Skeleton className="mt-2 h-4 w-1/2" />
+                      <Skeleton className="mt-4 h-8 w-full rounded-md" />
+                    </div>
+                  ),
+                )}
+              </div>
             </div>
           ) : error ? (
             <AsyncState

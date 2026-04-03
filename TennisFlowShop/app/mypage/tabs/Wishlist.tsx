@@ -9,6 +9,7 @@ import { Heart, ShoppingCart, Trash2 } from "lucide-react";
 import { useWishlist } from "@/app/features/wishlist/useWishlist";
 import { useCartStore } from "@/app/store/cartStore";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const LIMIT = 12;
 
@@ -40,8 +41,17 @@ export default function Wishlist() {
   if (isLoading && !hasResolvedData) {
     return (
       <Card className="relative overflow-hidden border-0">
-        <CardContent className="p-8 md:p-12 text-center text-muted-foreground">
-          위시리스트를 불러오는 중입니다.
+        <CardContent className="space-y-3 p-4 md:p-6">
+          {Array.from({ length: 4 }).map((_, idx) => (
+            <div
+              key={`wishlist-loading-${idx}`}
+              className="rounded-lg border border-border/50 p-3"
+            >
+              <Skeleton className="h-28 w-full rounded-md" />
+              <Skeleton className="mt-3 h-4 w-2/3" />
+              <Skeleton className="mt-2 h-4 w-1/3" />
+            </div>
+          ))}
         </CardContent>
       </Card>
     );

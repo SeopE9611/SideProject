@@ -29,6 +29,7 @@ import {
   Calendar,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type PointsHistoryRes = {
   ok: boolean;
@@ -44,6 +45,31 @@ type PointsHistoryRes = {
 const fetcher = (url: string) => authenticatedSWRFetcher<PointsHistoryRes>(url);
 
 const fmt = (n: number) => new Intl.NumberFormat("ko-KR").format(n);
+
+const PointsSummarySkeleton = () => (
+  <div className="grid gap-3 bp-sm:gap-5 bp-md:grid-cols-2 bp-lg:grid-cols-3">
+    {Array.from({ length: 3 }).map((_, idx) => (
+      <Card key={`points-summary-skeleton-${idx}`} className="border-0">
+        <CardContent className="space-y-3 p-4 bp-sm:p-5">
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-8 w-28" />
+          <Skeleton className="h-3 w-20" />
+        </CardContent>
+      </Card>
+    ))}
+  </div>
+);
+
+const PointsListSkeleton = ({ count = 5 }: { count?: number }) => (
+  <div className="space-y-2 px-4 py-4">
+    {Array.from({ length: count }).map((_, idx) => (
+      <div key={`points-list-skeleton-${idx}`} className="rounded-lg border border-border/60 p-4">
+        <Skeleton className="h-4 w-1/3" />
+        <Skeleton className="mt-2 h-3 w-1/2" />
+      </div>
+    ))}
+  </div>
+);
 
 export default function MyPointsTab() {
   const [page, setPage] = useState(1);
@@ -131,11 +157,7 @@ export default function MyPointsTab() {
 
   return (
     <div className="space-y-4 md:space-y-6">
-      {isInitialLoading ? (
-        <div className="rounded-xl border border-border bg-muted/20 p-4 text-sm text-muted-foreground">
-          포인트 정보를 불러오는 중입니다...
-        </div>
-      ) : null}
+      {isInitialLoading ? <PointsSummarySkeleton /> : null}
 
       {!isInitialLoading && (
         <>
@@ -261,9 +283,7 @@ export default function MyPointsTab() {
 
             <CardContent className="p-0">
               {isPageTransitionLoading ? (
-                <div className="rounded-xl border border-border bg-muted/20 p-4 text-sm text-muted-foreground mx-4 my-4">
-                  포인트 내역을 불러오는 중입니다...
-                </div>
+                <PointsListSkeleton count={5} />
               ) : shouldShowEmptyState ? (
                 <div className="flex flex-col items-center justify-center py-10 bp-sm:py-14 px-4">
                   <div className="bg-muted/50 rounded-full p-4 mb-4">

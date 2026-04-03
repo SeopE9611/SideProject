@@ -29,6 +29,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -215,8 +216,6 @@ export default function OrdersClient() {
       revalidateOnReconnect: false,
     },
   );
-  const isTableLoading = !data && !error;
-
   // 데이터 준비: data.items, data.total
   const orders = data?.items ?? []; // 현재 페이지 항목 배열
   const totalPages = Math.max(1, Math.ceil((data?.total ?? 0) / limit));
@@ -698,11 +697,6 @@ export default function OrdersClient() {
               </Button>
             </div>
 
-            {isTableLoading && (
-              <p className="text-xs text-muted-foreground">
-                주문 정보를 불러오는 중입니다.
-              </p>
-            )}
           </div>
         </CardContent>
       </Card>
@@ -880,14 +874,22 @@ export default function OrdersClient() {
                 </TableRow>
               ) : !data ? (
                 <TableRow>
-                  <TableCell
-                    colSpan={10}
-                    className={cn(
-                      tdClasses,
-                      "text-center text-muted-foreground",
-                    )}
-                  >
-                    주문 정보를 불러오는 중입니다.
+                  <TableCell colSpan={10} className={tdClasses}>
+                    <div className="space-y-2 py-2">
+                      {Array.from({ length: 6 }).map((_, index) => (
+                        <div
+                          key={`orders-table-skeleton-${index}`}
+                          className="grid grid-cols-10 gap-2"
+                        >
+                          {Array.from({ length: 10 }).map((__, cellIndex) => (
+                            <Skeleton
+                              key={`orders-table-skeleton-${index}-${cellIndex}`}
+                              className="h-6 w-full"
+                            />
+                          ))}
+                        </div>
+                      ))}
+                    </div>
                   </TableCell>
                 </TableRow>
               ) : data.items.length === 0 ? (
