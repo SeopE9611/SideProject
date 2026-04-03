@@ -1,8 +1,6 @@
-import { Suspense } from "react";
 import LoginPageClient from "@/app/login/_components/LoginPageClient";
 import { getCurrentUser } from "@/lib/hooks/get-current-user";
 import { redirect } from "next/navigation";
-import LoginPageSkeleton from "@/components/system/LoginPageSkeleton";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
@@ -31,9 +29,5 @@ export default async function LoginPage({ searchParams }: PageProps) {
       : rRedirectTo;
     redirect(safeRedirectTarget(next ?? redirectTo));
   }
-  return (
-    <Suspense fallback={<LoginPageSkeleton />}>
-      <LoginPageClient />
-    </Suspense>
-  );
+  return <LoginPageClient />;
 }

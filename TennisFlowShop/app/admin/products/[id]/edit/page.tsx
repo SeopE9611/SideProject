@@ -1,6 +1,5 @@
-import EditProductLoading from "@/app/admin/products/[id]/edit/loading";
 import ProductEditClient from "@/app/admin/products/[id]/edit/ProductEditClient";
-import React, { Suspense } from "react";
+import React from "react";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -8,9 +7,5 @@ interface Props {
 
 export default async function EditProductPage({ params }: Props) {
   const { id } = await params;
-  return (
-    <Suspense fallback={<EditProductLoading />}>
-      <ProductEditClient productId={id} />
-    </Suspense>
-  );
+  return <ProductEditClient productId={id} />;
 }
