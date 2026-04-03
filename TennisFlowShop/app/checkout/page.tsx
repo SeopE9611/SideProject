@@ -13,13 +13,14 @@ import SiteContainer from "@/components/layout/SiteContainer";
 import LoginGate from "@/components/system/LoginGate";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { getMyInfo } from "@/lib/auth.client";
 import { bankLabelMap } from "@/lib/constants";
@@ -34,7 +35,6 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import type { MouseEvent as ReactMouseEvent } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import CheckoutLoading from "./loading";
 
 const CheckoutStringingServiceSections = dynamic(() => import("@/app/checkout/_components/CheckoutStringingServiceSections"), { loading: () => null });
 const CheckoutStringingPaymentAddon = dynamic(() => import("@/app/checkout/_components/CheckoutStringingPaymentAddon"), { loading: () => null });
@@ -120,6 +120,40 @@ function getGuestOrderModeClient(): GuestOrderMode {
   // env가 없으면 legacy로 기본값(= 비회원 진입점 숨김/차단) 처리해 실수 노출을 막음.
   const raw = (process.env.NEXT_PUBLIC_GUEST_ORDER_MODE ?? "legacy").trim();
   return raw === "off" || raw === "legacy" || raw === "on" ? raw : "legacy";
+}
+
+function CheckoutBootSkeleton() {
+  return (
+    <div className="min-h-[100svh] bg-muted/20 py-8">
+      <SiteContainer variant="wide" className="space-y-6">
+        <div className="grid gap-6 lg:grid-cols-3">
+          <div className="space-y-4 lg:col-span-2">
+            <Card className="border-border/50">
+              <CardHeader className="space-y-3">
+                <Skeleton className="h-6 w-36" />
+                <Skeleton className="h-4 w-60" />
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <Skeleton key={i} className="h-10 w-full" />
+                ))}
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card className="h-fit border-border/50">
+            <CardHeader className="space-y-3">
+              <Skeleton className="h-6 w-28" />
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-10 w-full" />
+            </CardContent>
+          </Card>
+        </div>
+      </SiteContainer>
+    </div>
+  );
 }
 
 export default function CheckoutPage() {
@@ -807,7 +841,7 @@ export default function CheckoutPage() {
   }, [user]);
 
   if (loading) {
-    return <CheckoutLoading />;
+    return <CheckoutBootSkeleton />;
   }
 
   // 비로그인 + 비회원 주문 중단 상태이면 체크아웃 UI 자체를 막고 로그인 유도 화면을 노출

@@ -42,6 +42,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Tooltip,
   TooltipContent,
@@ -1421,8 +1422,65 @@ export default function OperationsClient() {
         </CardHeader>
         <CardContent className="min-h-[520px] p-0 pt-2">
           {isLoading ? (
-            <div className="px-4 py-8 text-center text-sm text-muted-foreground">
-              업무 목록을 불러오는 중입니다.
+            <div className="space-y-4 px-4 py-4">
+              <div className="hidden bp-lg:block overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="hover:bg-transparent border-b border-border">
+                      <TableHead className={cn(thClasses, "w-[24%]")}>
+                        <Skeleton className="h-4 w-24" />
+                      </TableHead>
+                      <TableHead className={cn(thClasses, "w-[42%]")}>
+                        <Skeleton className="h-4 w-36" />
+                      </TableHead>
+                      <TableHead className={cn(thClasses, "w-[18%] text-right")}>
+                        <Skeleton className="ml-auto h-4 w-16" />
+                      </TableHead>
+                      <TableHead
+                        className={cn(thClasses, stickyActionHeadClass, "w-[16%]")}
+                      >
+                        <Skeleton className="ml-auto h-4 w-16" />
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {Array.from({ length: 6 }).map((_, idx) => (
+                      <TableRow key={idx}>
+                        <TableCell className={cn(tdClasses, "py-5")}>
+                          <Skeleton className="h-5 w-40" />
+                        </TableCell>
+                        <TableCell className={cn(tdClasses, "py-5")}>
+                          <Skeleton className="h-5 w-3/4" />
+                        </TableCell>
+                        <TableCell className={cn(tdClasses, "py-5")}>
+                          <Skeleton className="ml-auto h-5 w-24" />
+                        </TableCell>
+                        <TableCell
+                          className={cn(
+                            tdClasses,
+                            "sticky right-0 z-10 bg-inherit shadow-[-8px_0_12px_-12px_hsl(var(--border))]",
+                            "py-5",
+                          )}
+                        >
+                          <Skeleton className="ml-auto h-8 w-20" />
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              <div className="bp-lg:hidden space-y-3">
+                {Array.from({ length: 5 }).map((_, idx) => (
+                  <div
+                    key={idx}
+                    className="rounded-lg border border-border bg-card p-4 space-y-3"
+                  >
+                    <Skeleton className="h-5 w-1/2" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-4/5" />
+                  </div>
+                ))}
+              </div>
             </div>
           ) : (
             <>
