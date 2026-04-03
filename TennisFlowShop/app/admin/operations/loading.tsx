@@ -1,5 +1,11 @@
-import { ListPageSkeleton } from "@/components/system/PageLoading";
+import { TablePageSkeleton } from "@/components/system/loading";
 
 export default function Loading() {
-  return <ListPageSkeleton rows={6} />;
+  return (
+    <TablePageSkeleton
+      titleWidthClassName="w-48"
+      descriptionWidthClassName="w-80"
+      rows={6}
+    />
+  );
 }

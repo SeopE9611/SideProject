@@ -1,5 +1,5 @@
-import OrderDetailSkeleton from "@/app/features/orders/components/OrderDetailSkeleton";
+import { DetailPageSkeleton } from "@/components/system/loading";
 
 export default function OrderDetailLoading() {
-  return <OrderDetailSkeleton />;
+  return <DetailPageSkeleton sectionCount={4} />;
 }

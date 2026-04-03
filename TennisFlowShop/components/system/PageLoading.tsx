@@ -97,7 +97,7 @@ export function CardGridSkeleton({ className, count = 12 }: GridSkeletonProps) {
         {Array.from({ length: count }).map((_, i) => (
           <div
             key={i}
-            className="rounded-xl border border-border/40 bg-background/60 overflow-hidden"
+            className="overflow-hidden rounded-xl border border-border/40 bg-background/60"
           >
             <Skeleton className="h-40 w-full" />
             <div className="p-3 space-y-2">
