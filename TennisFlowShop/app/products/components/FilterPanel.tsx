@@ -132,8 +132,9 @@ export const FilterPanel = React.memo(function FilterPanel({
       )}
     >
       {isLoadingInitial && (
-        <div className="mb-4 rounded-md border border-border/60 bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
-          필터 정보를 준비하고 있습니다.
+        <div className="mb-4 space-y-2 rounded-md border border-border/60 bg-muted/30 p-3">
+          <div className="h-3 w-24 rounded bg-muted animate-pulse" />
+          <div className="h-8 w-full rounded bg-muted animate-pulse" />
         </div>
       )}
       <AnimatePresence mode="wait">

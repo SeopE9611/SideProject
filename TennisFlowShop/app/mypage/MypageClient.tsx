@@ -11,7 +11,7 @@ import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher"
 import { ClipboardList, Heart, ListTodo, MessageCircleQuestion, MessageSquare, ReceiptCent, Target, Ticket, Trophy, User } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect } from "react";
+import { useEffect } from "react";
 import useSWR from "swr";
 
 const ApplicationDetail = dynamic(() => import("@/app/mypage/applications/_components/ApplicationDetail"), { loading: () => null });
@@ -33,17 +33,6 @@ const ReviewList = dynamic(() => import("@/app/mypage/tabs/ReviewList"), {
 const Wishlist = dynamic(() => import("@/app/mypage/tabs/Wishlist"), {
   loading: () => null,
 });
-
-const MypageTabPanelSkeleton = ({ count = 3 }: { count?: number }) => (
-  <div className="space-y-3">
-    {Array.from({ length: count }).map((_, idx) => (
-      <div key={`mypage-tab-skeleton-${idx}`} className="rounded-lg border border-border/60 p-4">
-        <Skeleton className="h-5 w-1/3" />
-        <Skeleton className="mt-2 h-4 w-2/3" />
-      </div>
-    ))}
-  </div>
-);
 
 type Props = {
   user: {
@@ -336,23 +325,21 @@ export default function MypageClient({ user }: Props) {
                     </div>
                   </CardHeader>
                   <CardContent className="p-3 bp-sm:p-6">
-                    <Suspense fallback={<MypageTabPanelSkeleton count={4} />}>
-                      {isOrdersTab && flowType === "order" && flowId ? (
-                        <OrderDetailClient orderId={flowId} backUrl={flowBackUrl} linkedApplicationHrefBuilder={(applicationId) => `/mypage?tab=orders&flowType=application&flowId=${encodeURIComponent(applicationId)}${flowFromQuery}`} />
-                      ) : isOrdersTab && flowType === "application" && flowId ? (
-                        <ApplicationDetail id={flowId} backUrl={flowBackUrl} />
-                      ) : isOrdersTab && flowType === "rental" && flowId ? (
-                        <RentalsDetailClient id={flowId} backUrl={flowBackUrl} />
-                      ) : isOrdersTab && orderId ? (
-                        <OrderDetailClient orderId={orderId} backUrl={flowBackUrl} linkedApplicationHrefBuilder={(applicationId) => `/mypage?tab=orders&flowType=application&flowId=${encodeURIComponent(applicationId)}${ordersFlowFromQuery}`} />
-                      ) : isOrdersTab && selectedApplicationId ? (
-                        <ApplicationDetail id={selectedApplicationId} backUrl={flowBackUrl} />
-                      ) : isOrdersTab && selectedRentalId ? (
-                        <RentalsDetailClient id={selectedRentalId} backUrl={flowBackUrl} />
-                      ) : isOrdersTab ? (
-                        <TransactionFlowList />
-                      ) : null}
-                    </Suspense>
+                    {isOrdersTab && flowType === "order" && flowId ? (
+                      <OrderDetailClient orderId={flowId} backUrl={flowBackUrl} linkedApplicationHrefBuilder={(applicationId) => `/mypage?tab=orders&flowType=application&flowId=${encodeURIComponent(applicationId)}${flowFromQuery}`} />
+                    ) : isOrdersTab && flowType === "application" && flowId ? (
+                      <ApplicationDetail id={flowId} backUrl={flowBackUrl} />
+                    ) : isOrdersTab && flowType === "rental" && flowId ? (
+                      <RentalsDetailClient id={flowId} backUrl={flowBackUrl} />
+                    ) : isOrdersTab && orderId ? (
+                      <OrderDetailClient orderId={orderId} backUrl={flowBackUrl} linkedApplicationHrefBuilder={(applicationId) => `/mypage?tab=orders&flowType=application&flowId=${encodeURIComponent(applicationId)}${ordersFlowFromQuery}`} />
+                    ) : isOrdersTab && selectedApplicationId ? (
+                      <ApplicationDetail id={selectedApplicationId} backUrl={flowBackUrl} />
+                    ) : isOrdersTab && selectedRentalId ? (
+                      <RentalsDetailClient id={selectedRentalId} backUrl={flowBackUrl} />
+                    ) : isOrdersTab ? (
+                      <TransactionFlowList />
+                    ) : null}
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -372,7 +359,7 @@ export default function MypageClient({ user }: Props) {
                     </div>
                   </CardHeader>
                   <CardContent className="p-3 bp-sm:p-6">
-                    <Suspense fallback={<MypageTabPanelSkeleton count={3} />}>{currentTab === "wishlist" ? <Wishlist /> : null}</Suspense>
+                    {currentTab === "wishlist" ? <Wishlist /> : null}
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -392,7 +379,7 @@ export default function MypageClient({ user }: Props) {
                     </div>
                   </CardHeader>
                   <CardContent className="p-3 bp-sm:p-6">
-                    <Suspense fallback={<MypageTabPanelSkeleton count={3} />}>{currentTab === "reviews" ? <ReviewList /> : null}</Suspense>
+                    {currentTab === "reviews" ? <ReviewList /> : null}
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -412,7 +399,7 @@ export default function MypageClient({ user }: Props) {
                     </div>
                   </CardHeader>
                   <CardContent className="p-3 bp-sm:p-6">
-                    <Suspense fallback={<MypageTabPanelSkeleton count={3} />}>{currentTab === "qna" ? <QnAList /> : null}</Suspense>
+                    {currentTab === "qna" ? <QnAList /> : null}
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -432,7 +419,7 @@ export default function MypageClient({ user }: Props) {
                     </div>
                   </CardHeader>
                   <CardContent className="p-3 bp-sm:p-6">
-                    <Suspense fallback={<MypageTabPanelSkeleton count={3} />}>{currentTab === "passes" ? <PassList /> : null}</Suspense>
+                    {currentTab === "passes" ? <PassList /> : null}
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -452,7 +439,7 @@ export default function MypageClient({ user }: Props) {
                     </div>
                   </CardHeader>
                   <CardContent className="p-3 bp-sm:p-6">
-                    <Suspense fallback={<MypageTabPanelSkeleton count={3} />}>{currentTab === "points" ? <MyPointsTab /> : null}</Suspense>
+                    {currentTab === "points" ? <MyPointsTab /> : null}
                   </CardContent>
                 </Card>
               </TabsContent>

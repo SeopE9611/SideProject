@@ -407,13 +407,13 @@ export default function ProductsClient() {
                   스트링 목록
                 </CardTitle>
                 <CardDescription className="text-foreground">
-                  {!hasResolvedData
-                    ? "상품 목록을 확인하는 중입니다."
-                    : hasDataError
-                      ? "상품 목록을 불러오지 못했습니다."
-                      : total > 0
+                  {hasDataError
+                    ? "상품 목록을 불러오지 못했습니다."
+                    : hasResolvedData
+                      ? total > 0
                         ? `총 ${total}개의 스트링이 검색되었습니다.`
-                        : "조건에 맞는 스트링이 없습니다."}
+                        : "조건에 맞는 스트링이 없습니다."
+                      : "스트링 상품을 조회하고 관리합니다."}
                 </CardDescription>
               </div>
               <Button
