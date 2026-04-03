@@ -134,6 +134,7 @@ export default function PackageOrdersClient() {
     "all",
     "비활성",
     "활성",
+    "종료",
     "만료",
     "취소",
   ];
@@ -389,7 +390,7 @@ export default function PackageOrdersClient() {
     return packages.filter((pkg) => {
       const exp = pkg.expiryDate ?? null;
       const days = getDaysUntilExpiry(exp);
-      const s = computeListStatus(pkg.paymentStatus, exp);
+      const s = computeListStatus(pkg.passStatus, pkg.paymentStatus, exp);
       return s.label !== "취소" && days <= 30 && days > 0;
     }).length;
   }, [hasResolvedData, metrics?.expirySoon, packages]);
@@ -642,9 +643,16 @@ export default function PackageOrdersClient() {
 
   // 상태 계산 함수
   function computeListStatus(
+    passStatus?: string | null,
     paymentStatus?: string | null,
     passExpiresAt?: string | number | Date | null,
   ) {
+    if (passStatus === "종료") return { label: "종료", tone: "muted" as const };
+    if (passStatus === "대기") return { label: "대기", tone: "muted" as const };
+    if (passStatus === "취소")
+      return { label: "취소", tone: "destructive" as const };
+    if (passStatus === "비활성")
+      return { label: "비활성", tone: "warning" as const };
     if (paymentStatus === "결제취소")
       return { label: "취소", tone: "destructive" as const };
 
@@ -833,6 +841,7 @@ export default function PackageOrdersClient() {
                     <SelectItem value="all">모든 상태</SelectItem>
                     <SelectItem value="비활성">비활성</SelectItem>
                     <SelectItem value="활성">활성</SelectItem>
+                    <SelectItem value="종료">종료</SelectItem>
                     <SelectItem value="만료">만료</SelectItem>
                     <SelectItem value="취소">취소</SelectItem>
                   </SelectContent>
@@ -1095,6 +1104,7 @@ export default function PackageOrdersClient() {
 
                         // 상태/남은일수 계산
                         const listState = computeListStatus(
+                          pkg.passStatus,
                           pkg.paymentStatus,
                           expirySource,
                         );

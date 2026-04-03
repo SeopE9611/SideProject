@@ -10,6 +10,10 @@
 import type { Db, ObjectId } from "mongodb";
 import { ObjectId as OID } from "mongodb";
 import type { ServicePass, ServicePassConsumption } from "@/lib/types/pass";
+import {
+  isCountEnded,
+  shouldRestoreActive,
+} from "@/lib/pass-status";
 
 // 일수 더하기 유틸
 function addDays(date: Date, days: number) {
@@ -194,6 +198,14 @@ export async function consumePass(
     throw new Error("PASS_CONSUME_FAILED");
   }
 
+  if (isCountEnded(updatedDoc.remainingCount)) {
+    await passes.updateOne(
+      { _id: updatedDoc._id },
+      { $set: { status: "expired", updatedAt: now } },
+    );
+    updatedDoc.status = "expired";
+  }
+
   return updatedDoc;
 }
 /** 차감 복원(취소 시 등) */
@@ -249,6 +261,36 @@ export async function revertConsumption(
       },
     },
   );
+
+  const now = new Date();
+  const updatedPass = await passes.findOne(
+    { _id: passId },
+    { projection: { remainingCount: 1, status: 1, expiresAt: 1, orderId: 1 } as any },
+  );
+  if (!updatedPass) return;
+
+  const order = updatedPass.orderId
+    ? await db
+        .collection("packageOrders")
+        .findOne(
+          { _id: updatedPass.orderId as any },
+          { projection: { paymentStatus: 1 } as any },
+        )
+    : null;
+  if (
+    shouldRestoreActive({
+      paymentStatus: order?.paymentStatus,
+      passStatus: updatedPass.status,
+      remainingCount: updatedPass.remainingCount,
+      expiresAt: updatedPass.expiresAt,
+      now,
+    })
+  ) {
+    await passes.updateOne(
+      { _id: passId },
+      { $set: { status: "active", updatedAt: now, remainingValidityMs: null } },
+    );
+  }
 }
 
 /** 패키지 주문(결제완료) → 패스 발급(멱등) */

@@ -1,10 +1,15 @@
 export type AdminPackageType = "10회권" | "30회권" | "50회권" | "100회권";
 export type AdminPackageServiceType = "방문" | "출장";
-export type AdminPackagePassStatus = "비활성" | "활성" | "만료" | "취소";
+export type AdminPackagePassStatus =
+  | "비활성"
+  | "활성"
+  | "종료"
+  | "만료"
+  | "취소";
 export type AdminPackagePassStatusDetail =
   | "대기"
   | "일시정지"
-  | Exclude<AdminPackagePassStatus, "비활성">;
+  | AdminPackagePassStatus;
 export type AdminPackagePaymentStatus = "결제완료" | "결제대기" | "결제취소";
 
 export interface AdminPackageCustomerDto {
@@ -63,8 +68,16 @@ export interface AdminPackageUsageHistoryDto {
   applicationId: string;
   date: string;
   sessionsUsed: number;
-  description: string;
+  summary: string;
+  applicationSummary?: string;
   adminNote?: string;
+}
+
+export interface AdminPackageUsageHistoryResponseDto {
+  items: AdminPackageUsageHistoryDto[];
+  total: number;
+  hasMore: boolean;
+  nextCursor: string | null;
 }
 
 export interface AdminPackageDetailDto {
@@ -81,7 +94,6 @@ export interface AdminPackageDetailDto {
   passStatus: AdminPackagePassStatusDetail;
   paymentStatus: AdminPackagePaymentStatus;
   serviceType: AdminPackageServiceType;
-  usageHistory: AdminPackageUsageHistoryDto[];
   operationsHistory: AdminPackageOperationHistoryDto[];
   extensionHistory?: AdminPackageOperationHistoryDto[];
 }
