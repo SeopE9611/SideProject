@@ -469,11 +469,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
 
   return (
     <div className="space-y-4 md:space-y-6">
-      {isInitialLoading ? (
-        <div className="rounded-xl border border-border bg-muted/20 p-4 text-sm text-muted-foreground">
-          리뷰 내역을 불러오는 중입니다...
-        </div>
-      ) : null}
+      {isInitialLoading ? <ReviewListSkeleton count={3} /> : null}
       {/* 필터 */}
       <div className="flex justify-end gap-2">
         <Select

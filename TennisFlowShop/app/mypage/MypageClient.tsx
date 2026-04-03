@@ -34,6 +34,17 @@ const Wishlist = dynamic(() => import("@/app/mypage/tabs/Wishlist"), {
   loading: () => null,
 });
 
+const MypageTabPanelSkeleton = ({ count = 3 }: { count?: number }) => (
+  <div className="space-y-3">
+    {Array.from({ length: count }).map((_, idx) => (
+      <div key={`mypage-tab-skeleton-${idx}`} className="rounded-lg border border-border/60 p-4">
+        <Skeleton className="h-5 w-1/3" />
+        <Skeleton className="mt-2 h-4 w-2/3" />
+      </div>
+    ))}
+  </div>
+);
+
 type Props = {
   user: {
     id: string;
@@ -325,7 +336,7 @@ export default function MypageClient({ user }: Props) {
                     </div>
                   </CardHeader>
                   <CardContent className="p-3 bp-sm:p-6">
-                    <Suspense fallback={null}>
+                    <Suspense fallback={<MypageTabPanelSkeleton count={4} />}>
                       {isOrdersTab && flowType === "order" && flowId ? (
                         <OrderDetailClient orderId={flowId} backUrl={flowBackUrl} linkedApplicationHrefBuilder={(applicationId) => `/mypage?tab=orders&flowType=application&flowId=${encodeURIComponent(applicationId)}${flowFromQuery}`} />
                       ) : isOrdersTab && flowType === "application" && flowId ? (
@@ -361,7 +372,7 @@ export default function MypageClient({ user }: Props) {
                     </div>
                   </CardHeader>
                   <CardContent className="p-3 bp-sm:p-6">
-                    <Suspense fallback={null}>{currentTab === "wishlist" ? <Wishlist /> : null}</Suspense>
+                    <Suspense fallback={<MypageTabPanelSkeleton count={3} />}>{currentTab === "wishlist" ? <Wishlist /> : null}</Suspense>
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -381,7 +392,7 @@ export default function MypageClient({ user }: Props) {
                     </div>
                   </CardHeader>
                   <CardContent className="p-3 bp-sm:p-6">
-                    <Suspense fallback={null}>{currentTab === "reviews" ? <ReviewList /> : null}</Suspense>
+                    <Suspense fallback={<MypageTabPanelSkeleton count={3} />}>{currentTab === "reviews" ? <ReviewList /> : null}</Suspense>
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -401,7 +412,7 @@ export default function MypageClient({ user }: Props) {
                     </div>
                   </CardHeader>
                   <CardContent className="p-3 bp-sm:p-6">
-                    <Suspense fallback={null}>{currentTab === "qna" ? <QnAList /> : null}</Suspense>
+                    <Suspense fallback={<MypageTabPanelSkeleton count={3} />}>{currentTab === "qna" ? <QnAList /> : null}</Suspense>
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -421,7 +432,7 @@ export default function MypageClient({ user }: Props) {
                     </div>
                   </CardHeader>
                   <CardContent className="p-3 bp-sm:p-6">
-                    <Suspense fallback={null}>{currentTab === "passes" ? <PassList /> : null}</Suspense>
+                    <Suspense fallback={<MypageTabPanelSkeleton count={3} />}>{currentTab === "passes" ? <PassList /> : null}</Suspense>
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -441,7 +452,7 @@ export default function MypageClient({ user }: Props) {
                     </div>
                   </CardHeader>
                   <CardContent className="p-3 bp-sm:p-6">
-                    <Suspense fallback={null}>{currentTab === "points" ? <MyPointsTab /> : null}</Suspense>
+                    <Suspense fallback={<MypageTabPanelSkeleton count={3} />}>{currentTab === "points" ? <MyPointsTab /> : null}</Suspense>
                   </CardContent>
                 </Card>
               </TabsContent>

@@ -294,9 +294,16 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
 
                   <div className="space-y-2">
                     {isLoading && (
-                      <div className="flex items-center gap-2 rounded-lg border border-border/30 bg-muted/20 px-3 py-2 text-xs text-muted-foreground">
-                        <Clock className="h-3.5 w-3.5 animate-pulse" />
-                        <span>쪽지 목록을 불러오는 중입니다.</span>
+                      <div className="space-y-2 rounded-lg border border-border/30 bg-card p-3">
+                        {Array.from({ length: 6 }).map((_, idx) => (
+                          <div
+                            key={`messages-list-skeleton-${idx}`}
+                            className="rounded-md border border-border/40 p-3"
+                          >
+                            <Skeleton className="h-4 w-1/2" />
+                            <Skeleton className="mt-2 h-3 w-2/3" />
+                          </div>
+                        ))}
                       </div>
                     )}
 

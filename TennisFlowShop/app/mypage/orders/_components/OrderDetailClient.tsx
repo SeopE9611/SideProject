@@ -3,6 +3,7 @@
 import CustomerEditForm from "@/app/features/orders/components/CustomerEditForm";
 import OrderHistory from "@/app/features/orders/components/OrderHistory";
 import { OrderStatusBadge } from "./OrderStatusBadge";
+import OrderDetailSkeleton from "./OrderDetailSkeleton";
 import PaymentMethodDetail from "@/app/mypage/orders/_components/PaymentMethodDetail";
 import RequestEditForm from "@/app/mypage/orders/_components/RequestEditForm";
 import SiteContainer from "@/components/layout/SiteContainer";
@@ -333,9 +334,7 @@ export default function OrderDetailClient({
     return (
       <main className="w-full">
         <SiteContainer variant="wide" className="py-4 bp-sm:py-6">
-          <div className="rounded-xl border border-border bg-muted/20 p-4 text-sm text-muted-foreground">
-            주문 상세 정보를 불러오는 중입니다...
-          </div>
+          <OrderDetailSkeleton />
         </SiteContainer>
       </main>
     );

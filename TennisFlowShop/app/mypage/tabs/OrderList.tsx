@@ -353,11 +353,7 @@ export default function OrderList() {
   //  주문 내역 렌더링
   return (
     <div className="space-y-6">
-      {isInitialLoading ? (
-        <div className="rounded-xl border border-border bg-muted/20 p-4 text-sm text-muted-foreground">
-          주문 내역을 불러오는 중입니다...
-        </div>
-      ) : null}
+      {isInitialLoading ? <OrderListSkeleton count={3} /> : null}
       {items.map((order) => {
         // 이 주문이 현재 "취소 요청 버튼"을 보여줄 수 있는 상태인지 계산
         const isCancelable =

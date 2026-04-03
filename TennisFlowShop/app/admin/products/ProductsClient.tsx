@@ -42,6 +42,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -407,7 +408,7 @@ export default function ProductsClient() {
                 </CardTitle>
                 <CardDescription className="text-foreground">
                   {!hasResolvedData
-                    ? "상품 목록을 준비하고 있습니다."
+                    ? "상품 목록을 확인하는 중입니다."
                     : hasDataError
                       ? "상품 목록을 불러오지 못했습니다."
                       : total > 0
@@ -562,11 +563,22 @@ export default function ProductsClient() {
                   <TableBody>
                     {isListLoadingState ? (
                       <TableRow className="border-0">
-                        <TableCell
-                          colSpan={8}
-                          className="py-12 text-center text-sm text-muted-foreground"
-                        >
-                          상품 목록을 불러오는 중입니다.
+                        <TableCell colSpan={8} className="py-4">
+                          <div className="space-y-2">
+                            {Array.from({ length: 6 }).map((_, rowIdx) => (
+                              <div
+                                key={`admin-products-loading-row-${rowIdx}`}
+                                className="grid grid-cols-8 gap-2"
+                              >
+                                {Array.from({ length: 8 }).map((__, colIdx) => (
+                                  <Skeleton
+                                    key={`admin-products-loading-cell-${rowIdx}-${colIdx}`}
+                                    className="h-7 w-full"
+                                  />
+                                ))}
+                              </div>
+                            ))}
+                          </div>
                         </TableCell>
                       </TableRow>
                     ) : isActualEmptyState ? (

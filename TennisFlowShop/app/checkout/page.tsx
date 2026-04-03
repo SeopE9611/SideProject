@@ -34,6 +34,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import type { MouseEvent as ReactMouseEvent } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import CheckoutLoading from "./loading";
 
 const CheckoutStringingServiceSections = dynamic(() => import("@/app/checkout/_components/CheckoutStringingServiceSections"), { loading: () => null });
 const CheckoutStringingPaymentAddon = dynamic(() => import("@/app/checkout/_components/CheckoutStringingPaymentAddon"), { loading: () => null });
@@ -806,21 +807,7 @@ export default function CheckoutPage() {
   }, [user]);
 
   if (loading) {
-    return (
-      <div className="min-h-full bg-background">
-        <div className="border-b border-border bg-muted/30">
-          <SiteContainer variant="wide" className="py-8 space-y-2">
-            <h1 className="text-2xl font-bold">주문/결제</h1>
-            <p className="text-sm text-muted-foreground">주문 정보를 준비하고 있습니다.</p>
-          </SiteContainer>
-        </div>
-        <SiteContainer variant="wide" className="py-8">
-          <Card className="border-border/60">
-            <CardContent className="py-10 text-center text-sm text-muted-foreground">로그인 상태와 주문 정보를 확인하고 있습니다…</CardContent>
-          </Card>
-        </SiteContainer>
-      </div>
-    );
+    return <CheckoutLoading />;
   }
 
   // 비로그인 + 비회원 주문 중단 상태이면 체크아웃 UI 자체를 막고 로그인 유도 화면을 노출

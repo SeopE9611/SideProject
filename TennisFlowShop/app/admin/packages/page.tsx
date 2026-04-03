@@ -48,6 +48,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Tooltip,
   TooltipContent,
@@ -1046,11 +1047,22 @@ export default function PackageOrdersClient() {
                 <TableBody>
                   {!hasDataError && isValidating && !shouldShowRows && (
                     <TableRow>
-                      <TableCell
-                        colSpan={11}
-                        className="py-10 text-center text-sm text-muted-foreground"
-                      >
-                        패키지 목록을 불러오는 중입니다.
+                      <TableCell colSpan={11} className="py-4">
+                        <div className="space-y-2">
+                          {Array.from({ length: 6 }).map((_, rowIdx) => (
+                            <div
+                              key={`admin-packages-loading-row-${rowIdx}`}
+                              className="grid grid-cols-11 gap-2"
+                            >
+                              {Array.from({ length: 11 }).map((__, colIdx) => (
+                                <Skeleton
+                                  key={`admin-packages-loading-cell-${rowIdx}-${colIdx}`}
+                                  className="h-7 w-full"
+                                />
+                              ))}
+                            </div>
+                          ))}
+                        </div>
                       </TableCell>
                     </TableRow>
                   )}

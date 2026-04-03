@@ -196,11 +196,7 @@ export default function RentalsList() {
 
   return (
     <div className="space-y-4 md:space-y-6">
-      {isInitialLoading ? (
-        <div className="rounded-xl border border-border bg-muted/20 p-4 text-sm text-muted-foreground">
-          대여 내역을 불러오는 중입니다...
-        </div>
-      ) : null}
+      {isInitialLoading ? <RentalsListSkeleton count={3} /> : null}
       {flat.map((r: any) => {
         const fee = r.amount?.fee ?? 0;
         const deposit = r.amount?.deposit ?? 0;

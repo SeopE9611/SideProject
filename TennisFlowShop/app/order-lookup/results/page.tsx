@@ -20,7 +20,6 @@ import {
   CreditCard,
   ArrowLeft,
   Package,
-  Search,
   CheckCircle2,
   Clock,
   Truck,
@@ -46,6 +45,7 @@ import {
   isVisitPickupOrder,
 } from "@/lib/order-shipping";
 import { getCommonOrderStatusLabel } from "@/lib/status-labels/base";
+import OrderLookupResultsLoading from "./loading";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const onlyDigits = (v: string) => v.replace(/\D/g, "");
@@ -259,47 +259,7 @@ export default function OrderLookupResultsPage() {
 
   // 로딩 상태
   if (loading) {
-    return (
-      <div className="min-h-full bg-background">
-        {/* Hero Section */}
-        <div className="relative overflow-hidden border-b border-border bg-muted/30 dark:bg-card/40">
-          <div className="absolute inset-0 bg-overlay/10"></div>
-          <div className="relative container mx-auto px-4 py-10 md:py-16">
-            <div className="text-center text-foreground">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-card/20 backdrop-blur-sm rounded-full mb-4 md:mb-6">
-                <Search className="w-8 h-8 animate-pulse" />
-              </div>
-              <h1 className="text-4xl md:text-5xl font-bold mb-4">
-                주문 조회 중...
-              </h1>
-              <p className="text-xl text-muted-foreground">
-                주문 정보를 불러오고 있습니다
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="container mx-auto py-8 md:py-12 px-4 md:px-6">
-          <div className="max-w-4xl mx-auto">
-            <Card className="shadow-2xl border-0 bg-card/80 backdrop-blur-sm">
-              <CardContent className="flex justify-center items-center py-10 md:py-16">
-                <div className="text-center">
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-6 dark:bg-primary/20">
-                    <div className="w-8 h-8 border-4 border-border/30 border-t-primary-foreground rounded-full animate-spin"></div>
-                  </div>
-                  <h3 className="text-xl font-semibold text-foreground mb-2">
-                    주문 정보 조회 중
-                  </h3>
-                  <p className="text-muted-foreground">
-                    잠시만 기다려주세요...
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </div>
-    );
+    return <OrderLookupResultsLoading />;
   }
 
   // 에러 상태
