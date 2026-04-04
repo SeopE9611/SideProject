@@ -44,7 +44,6 @@ import useSWR from "swr";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { adminMutator } from "@/lib/admin/adminFetcher";
 import { runAdminActionWithToast } from "@/lib/admin/adminActionHelpers";
-import EditProductLoading from "@/app/admin/products/[id]/edit/loading";
 import {
   UNSAVED_CHANGES_MESSAGE,
   useUnsavedChangesGuard,
@@ -586,7 +585,6 @@ export default function ProductEditClient({
   };
 
   if (error) return <div className="p-6">상품 불러오기 실패</div>;
-  if (isLoading) return <EditProductLoading />;
 
   return (
     <>
@@ -641,6 +639,13 @@ export default function ProductEditClient({
             </div>
 
             <Separator />
+
+            {isLoading && (
+              <div className="flex items-center gap-2 rounded-md border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                상품 정보를 불러오는 중입니다.
+              </div>
+            )}
 
             <Tabs
               value={activeTab}
