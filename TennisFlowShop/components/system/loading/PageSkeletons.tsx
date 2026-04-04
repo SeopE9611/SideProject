@@ -116,15 +116,34 @@ export function TablePageSkeleton({
 
 type DetailPageSkeletonProps = {
   sectionCount?: number;
+  summaryCardCount?: number;
+  actionButtonCount?: number;
+  sectionDensity?: "default" | "dense";
+  asideVariant?: "actions" | "summary" | "history" | "none";
   showAsideCard?: boolean;
   className?: string;
 };
 
 export function DetailPageSkeleton({
   sectionCount = 3,
-  showAsideCard = true,
+  summaryCardCount = 3,
+  actionButtonCount = 2,
+  sectionDensity = "default",
+  asideVariant = "actions",
+  showAsideCard,
   className,
 }: DetailPageSkeletonProps) {
+  const resolvedAsideVariant =
+    typeof showAsideCard === "boolean"
+      ? showAsideCard
+        ? asideVariant === "none"
+          ? "actions"
+          : asideVariant
+        : "none"
+      : asideVariant;
+
+  const isDense = sectionDensity === "dense";
+
   return (
     <div className={cn("container py-8", className)}>
       <div className="mx-auto max-w-6xl space-y-6">
@@ -133,51 +152,106 @@ export function DetailPageSkeleton({
             <Skeleton className="h-9 w-64 rounded-xl" />
             <Skeleton className="h-4 w-52 rounded-lg" />
           </div>
-          <div className="flex gap-2">
-            <Skeleton className="h-10 w-28" />
-            <Skeleton className="h-10 w-32" />
-          </div>
+          {actionButtonCount > 0 ? (
+            <div className="flex flex-wrap gap-2">
+              {Array.from({ length: actionButtonCount }).map((_, index) => (
+                <Skeleton
+                  key={index}
+                  className={cn("h-10", index === actionButtonCount - 1 ? "w-32" : "w-28")}
+                />
+              ))}
+            </div>
+          ) : null}
         </div>
 
-        <Card className="rounded-2xl border-border/50 bg-card shadow-sm">
-          <CardContent className="grid gap-4 p-5 md:grid-cols-3">
-            {Array.from({ length: 3 }).map((_, index) => (
-              <div key={index} className="space-y-2 rounded-xl border border-border/40 p-4">
-                <Skeleton className="h-4 w-20" />
-                <Skeleton className="h-6 w-28" />
-                <Skeleton className="h-3 w-24" />
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+        {summaryCardCount > 0 ? (
+          <Card className="rounded-2xl border-border/50 bg-card shadow-sm">
+            <CardContent
+              className={cn(
+                "grid gap-4 p-5",
+                summaryCardCount >= 4
+                  ? "md:grid-cols-2 xl:grid-cols-4"
+                  : "md:grid-cols-3",
+              )}
+            >
+              {Array.from({ length: summaryCardCount }).map((_, index) => (
+                <div
+                  key={index}
+                  className="space-y-2 rounded-xl border border-border/40 bg-background/60 p-4"
+                >
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-6 w-28" />
+                  <Skeleton className="h-3 w-24" />
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        ) : null}
 
-        <div className={cn("grid gap-6", showAsideCard && "xl:grid-cols-[1fr_320px]")}>
-          <div className="space-y-4">
+        <div
+          className={cn(
+            "grid gap-6",
+            resolvedAsideVariant !== "none" && "xl:grid-cols-[minmax(0,1fr)_320px]",
+          )}
+        >
+          <div className={cn(isDense ? "space-y-3" : "space-y-4")}>
             {Array.from({ length: sectionCount }).map((_, index) => (
               <Card key={index} className="rounded-2xl border-border/50 bg-card shadow-sm">
-                <CardHeader className="space-y-2 pb-3">
+                <CardHeader className={cn("space-y-2", isDense ? "pb-2" : "pb-3")}>
                   <Skeleton className="h-5 w-36" />
                   <Skeleton className="h-4 w-56 max-w-full" />
                 </CardHeader>
-                <CardContent className="space-y-2 pb-5">
+                <CardContent className={cn(isDense ? "space-y-2 pb-4" : "space-y-3 pb-5")}>
                   <Skeleton className="h-4 w-full" />
                   <Skeleton className="h-4 w-[85%]" />
                   <Skeleton className="h-4 w-[70%]" />
+                  {isDense ? null : <Skeleton className="h-4 w-[55%]" />}
                 </CardContent>
               </Card>
             ))}
           </div>
 
-          {showAsideCard ? (
+          {resolvedAsideVariant !== "none" ? (
             <Card className="h-fit rounded-2xl border-border/50 bg-card shadow-sm">
               <CardHeader className="space-y-2 pb-3">
                 <Skeleton className="h-5 w-28" />
                 <Skeleton className="h-4 w-44" />
               </CardHeader>
               <CardContent className="space-y-3 pb-5">
-                <Skeleton className="h-9 w-full" />
-                <Skeleton className="h-9 w-full" />
-                <Skeleton className="h-10 w-full" />
+                {resolvedAsideVariant === "summary" ? (
+                  <>
+                    <div className="space-y-2 rounded-xl border border-border/40 bg-background/70 p-4">
+                      <Skeleton className="h-4 w-24" />
+                      <Skeleton className="h-6 w-20" />
+                    </div>
+                    <div className="space-y-2 rounded-xl border border-border/40 bg-background/70 p-4">
+                      <Skeleton className="h-4 w-20" />
+                      <Skeleton className="h-6 w-24" />
+                    </div>
+                  </>
+                ) : null}
+
+                {resolvedAsideVariant === "actions" ? (
+                  <>
+                    <Skeleton className="h-9 w-full" />
+                    <Skeleton className="h-9 w-full" />
+                    <Skeleton className="h-10 w-full" />
+                  </>
+                ) : null}
+
+                {resolvedAsideVariant === "history" ? (
+                  <div className="space-y-3">
+                    {Array.from({ length: 4 }).map((_, index) => (
+                      <div
+                        key={index}
+                        className="rounded-xl border border-border/40 bg-background/70 p-3"
+                      >
+                        <Skeleton className="h-4 w-24" />
+                        <Skeleton className="mt-2 h-3 w-[85%]" />
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
               </CardContent>
             </Card>
           ) : null}
