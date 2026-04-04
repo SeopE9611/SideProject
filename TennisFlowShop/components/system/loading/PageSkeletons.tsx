@@ -8,6 +8,8 @@ type TablePageSkeletonProps = {
   descriptionWidthClassName?: string;
   statsCount?: number;
   rows?: number;
+  columnCount?: number;
+  toolbarVariant?: "full" | "compact" | "none";
   className?: string;
 };
 
@@ -16,6 +18,8 @@ export function TablePageSkeleton({
   descriptionWidthClassName = "w-80",
   statsCount = 0,
   rows = 6,
+  columnCount = 7,
+  toolbarVariant = "full",
   className,
 }: TablePageSkeletonProps) {
   return (
@@ -51,17 +55,28 @@ export function TablePageSkeleton({
         <Card className="rounded-2xl border-border/50 bg-card shadow-sm">
           <CardHeader className="space-y-3 pb-4">
             <Skeleton className="h-6 w-40" />
-            <div className="flex flex-wrap gap-2">
-              <Skeleton className="h-10 w-full md:w-64" />
-              <Skeleton className="h-10 w-[48%] md:w-40" />
-              <Skeleton className="h-10 w-[48%] md:w-40" />
-              <Skeleton className="h-10 w-full md:ml-auto md:w-28" />
-            </div>
+            {toolbarVariant === "full" ? (
+              <div className="flex flex-wrap gap-2">
+                <Skeleton className="h-10 w-full md:w-64" />
+                <Skeleton className="h-10 w-[48%] md:w-40" />
+                <Skeleton className="h-10 w-[48%] md:w-40" />
+                <Skeleton className="h-10 w-full md:ml-auto md:w-28" />
+              </div>
+            ) : null}
+            {toolbarVariant === "compact" ? (
+              <div className="flex flex-wrap gap-2">
+                <Skeleton className="h-10 w-full md:w-72" />
+                <Skeleton className="h-10 w-[48%] md:ml-auto md:w-32" />
+              </div>
+            ) : null}
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="hidden overflow-hidden rounded-xl border border-border/50 md:block">
-              <div className="grid grid-cols-7 gap-4 border-b border-border/50 bg-muted/40 px-4 py-3">
-                {Array.from({ length: 7 }).map((_, index) => (
+              <div
+                className="grid gap-4 border-b border-border/50 bg-muted/40 px-4 py-3"
+                style={{ gridTemplateColumns: `repeat(${columnCount}, minmax(0, 1fr))` }}
+              >
+                {Array.from({ length: columnCount }).map((_, index) => (
                   <Skeleton key={index} className="h-4 w-20" />
                 ))}
               </div>
@@ -69,9 +84,10 @@ export function TablePageSkeleton({
                 {Array.from({ length: rows }).map((_, index) => (
                   <div
                     key={index}
-                    className="grid grid-cols-7 gap-4 rounded-xl border border-border/40 bg-background/60 px-3 py-3"
+                    className="grid gap-4 rounded-xl border border-border/40 bg-background/60 px-3 py-3"
+                    style={{ gridTemplateColumns: `repeat(${columnCount}, minmax(0, 1fr))` }}
                   >
-                    {Array.from({ length: 7 }).map((__, cell) => (
+                    {Array.from({ length: columnCount }).map((__, cell) => (
                       <Skeleton key={cell} className="h-4 w-full max-w-[120px]" />
                     ))}
                   </div>
