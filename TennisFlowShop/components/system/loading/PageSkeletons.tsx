@@ -205,6 +205,53 @@ export function FormPageSkeleton({ fields = 6, className }: FormPageSkeletonProp
   );
 }
 
+type PreviewSplitFormSkeletonProps = {
+  fields?: number;
+  previewHeightClassName?: string;
+  className?: string;
+};
+
+export function PreviewSplitFormSkeleton({
+  fields = 5,
+  previewHeightClassName = "h-56",
+  className,
+}: PreviewSplitFormSkeletonProps) {
+  return (
+    <div className={cn("container py-10", className)}>
+      <div className="mx-auto max-w-5xl space-y-6">
+        <Card className="rounded-2xl border-border/50 bg-card shadow-sm">
+          <CardHeader className="space-y-2">
+            <Skeleton className="h-8 w-56 rounded-xl" />
+            <Skeleton className="h-4 w-80 max-w-full rounded-lg" />
+          </CardHeader>
+          <CardContent className="space-y-5">
+            <div className="grid gap-5 lg:grid-cols-[220px_1fr]">
+              <Skeleton
+                className={cn(
+                  "w-full rounded-xl border border-border/40 bg-muted/40",
+                  previewHeightClassName,
+                )}
+              />
+              <div className="space-y-3">
+                {Array.from({ length: fields }).map((_, index) => (
+                  <div key={index} className="space-y-2">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-10 w-full rounded-xl" />
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Skeleton className="h-10 w-24" />
+              <Skeleton className="h-10 w-28" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
 type SuccessPageSkeletonProps = {
   summaryRows?: number;
   ctaCount?: number;
