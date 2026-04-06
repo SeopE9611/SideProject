@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import AsyncState from "@/components/system/AsyncState";
-import { Skeleton } from "@/components/ui/skeleton";
+import { StackedCardListSkeleton } from "@/components/system/loading";
 import {
   Dialog,
   DialogContent,
@@ -100,38 +100,6 @@ interface ReviewListProps {
   // SSR 등으로 부모에서 넣을 수도 있는 초기 표시용
   reviews?: SSRReview[];
 }
-
-const ReviewListSkeleton = ({ count = 3 }: { count?: number }) => (
-  <div className="space-y-4">
-    {Array.from({ length: count }).map((_, idx) => (
-      <Card key={idx} className="border-0 bg-card">
-        <CardContent className="space-y-4 p-4 md:p-6">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <Skeleton className="h-12 w-12 rounded-xl" />
-              <div className="space-y-2">
-                <Skeleton className="h-5 w-48" />
-                <Skeleton className="h-4 w-24" />
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <Skeleton className="h-9 w-16" />
-              <Skeleton className="h-9 w-16" />
-            </div>
-          </div>
-          <div className="space-y-2 rounded-lg bg-muted p-4">
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-4/5" />
-          </div>
-          <div className="flex items-center justify-between border-t border-border/60 pt-4">
-            <Skeleton className="h-4 w-24" />
-            <Skeleton className="h-4 w-20" />
-          </div>
-        </CardContent>
-      </Card>
-    ))}
-  </div>
-);
 
 /* 공통 */
 const fetcher = (url: string) => authenticatedSWRFetcher<ApiMineResponse>(url);
@@ -469,7 +437,23 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
 
   return (
     <div className="space-y-4 md:space-y-6">
-      {isInitialLoading ? <ReviewListSkeleton count={3} /> : null}
+      {isInitialLoading ? (
+        <StackedCardListSkeleton
+          count={3}
+          cardContentClassName="space-y-4 p-4 md:p-6"
+          showLeadingVisual
+          titleLineWidthClassName="w-48"
+          subtitleLineWidthClassName="w-24"
+          showHeaderBadge={false}
+          headerActionCount={2}
+          headerActionWidths={["w-16", "w-16"]}
+          showInsetBlock
+          showMetaDivider
+          metaLayout="twoColumn"
+          metaLineWidths={["w-24", "w-20"]}
+          actionCount={0}
+        />
+      ) : null}
       {/* 필터 */}
       <div className="flex justify-end gap-2">
         <Select
@@ -684,7 +668,21 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
       </div>
 
       {itemsToRender.length && hasMore && isValidating ? (
-        <ReviewListSkeleton count={2} />
+        <StackedCardListSkeleton
+          count={2}
+          cardContentClassName="space-y-4 p-4 md:p-6"
+          showLeadingVisual
+          titleLineWidthClassName="w-48"
+          subtitleLineWidthClassName="w-24"
+          showHeaderBadge={false}
+          headerActionCount={2}
+          headerActionWidths={["w-16", "w-16"]}
+          showInsetBlock
+          showMetaDivider
+          metaLayout="twoColumn"
+          metaLineWidths={["w-24", "w-20"]}
+          actionCount={0}
+        />
       ) : null}
 
       {/* 수정 다이얼로그 */}
