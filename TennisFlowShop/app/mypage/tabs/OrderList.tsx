@@ -2,10 +2,10 @@
 
 import OrderReviewCTA from "@/components/reviews/OrderReviewCTA";
 import AsyncState from "@/components/system/AsyncState";
+import { StackedCardListSkeleton } from "@/components/system/loading";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -135,32 +135,6 @@ const LIMIT = 5;
 const LazyCancelOrderDialog = dynamic(
   () => import("@/app/mypage/orders/_components/CancelOrderDialog"),
   { loading: () => null },
-);
-
-const OrderListSkeleton = ({ count = 3 }: { count?: number }) => (
-  <div className="space-y-4">
-    {Array.from({ length: count }).map((_, idx) => (
-      <Card key={idx} className="border-0 bg-card">
-        <CardContent className="space-y-4 p-6">
-          <div className="flex items-center justify-between gap-4">
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-5 w-48" />
-            </div>
-            <Skeleton className="h-7 w-20 rounded-full" />
-          </div>
-          <div className="space-y-2">
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-3/4" />
-          </div>
-          <div className="flex justify-end gap-2">
-            <Skeleton className="h-9 w-24" />
-            <Skeleton className="h-9 w-24" />
-          </div>
-        </CardContent>
-      </Card>
-    ))}
-  </div>
 );
 
 const getOrderCompositionTitle = (order: Order) => {
@@ -353,7 +327,18 @@ export default function OrderList() {
   //  주문 내역 렌더링
   return (
     <div className="space-y-6">
-      {isInitialLoading ? <OrderListSkeleton count={3} /> : null}
+      {isInitialLoading ? (
+        <StackedCardListSkeleton
+          count={3}
+          cardContentClassName="space-y-4 p-6"
+          titleLineWidthClassName="w-24"
+          subtitleLineWidthClassName="w-48"
+          badgeWidthClassName="w-20"
+          metaLineWidths={["w-full", "w-3/4"]}
+          actionCount={2}
+          actionWidths={["w-24", "w-24"]}
+        />
+      ) : null}
       {items.map((order) => {
         // 이 주문이 현재 "취소 요청 버튼"을 보여줄 수 있는 상태인지 계산
         const isCancelable =
@@ -885,7 +870,18 @@ export default function OrderList() {
         ) : null}
       </div>
 
-      {hasMore && isValidating ? <OrderListSkeleton count={2} /> : null}
+      {hasMore && isValidating ? (
+        <StackedCardListSkeleton
+          count={2}
+          cardContentClassName="space-y-4 p-6"
+          titleLineWidthClassName="w-24"
+          subtitleLineWidthClassName="w-48"
+          badgeWidthClassName="w-20"
+          metaLineWidths={["w-full", "w-3/4"]}
+          actionCount={2}
+          actionWidths={["w-24", "w-24"]}
+        />
+      ) : null}
     </div>
   );
 }
