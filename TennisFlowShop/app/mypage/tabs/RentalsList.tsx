@@ -4,8 +4,8 @@ import useSWRInfinite from "swr/infinite";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import AsyncState from "@/components/system/AsyncState";
+import { StackedCardListSkeleton } from "@/components/system/loading";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -88,30 +88,6 @@ const formatDate = (dateString: string) => {
   }).format(date);
 };
 
-const RentalsListSkeleton = ({ count = 3 }: { count?: number }) => (
-  <div className="space-y-4">
-    {Array.from({ length: count }).map((_, idx) => (
-      <Card key={idx} className="border-0 bg-card">
-        <CardContent className="space-y-4 p-4 md:p-6">
-          <div className="flex items-center justify-between gap-4">
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-28" />
-              <Skeleton className="h-5 w-44" />
-            </div>
-            <Skeleton className="h-7 w-20 rounded-full" />
-          </div>
-          <div className="grid grid-cols-1 gap-2 bp-sm:grid-cols-2">
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-full" />
-          </div>
-          <div className="flex justify-end">
-            <Skeleton className="h-9 w-28" />
-          </div>
-        </CardContent>
-      </Card>
-    ))}
-  </div>
-);
 export default function RentalsList() {
   const [cancelRentalDialogId, setCancelRentalDialogId] = useState<
     string | null
@@ -196,7 +172,19 @@ export default function RentalsList() {
 
   return (
     <div className="space-y-4 md:space-y-6">
-      {isInitialLoading ? <RentalsListSkeleton count={3} /> : null}
+      {isInitialLoading ? (
+        <StackedCardListSkeleton
+          count={3}
+          cardContentClassName="space-y-4 p-4 md:p-6"
+          titleLineWidthClassName="w-28"
+          subtitleLineWidthClassName="w-44"
+          badgeWidthClassName="w-20"
+          metaLayout="twoColumn"
+          metaLineWidths={["w-full", "w-full"]}
+          actionCount={1}
+          actionWidths={["w-28"]}
+        />
+      ) : null}
       {flat.map((r: any) => {
         const fee = r.amount?.fee ?? 0;
         const deposit = r.amount?.deposit ?? 0;
@@ -421,7 +409,19 @@ export default function RentalsList() {
         ) : null}
       </div>
 
-      {hasMore && isValidating ? <RentalsListSkeleton count={2} /> : null}
+      {hasMore && isValidating ? (
+        <StackedCardListSkeleton
+          count={2}
+          cardContentClassName="space-y-4 p-4 md:p-6"
+          titleLineWidthClassName="w-28"
+          subtitleLineWidthClassName="w-44"
+          badgeWidthClassName="w-20"
+          metaLayout="twoColumn"
+          metaLineWidths={["w-full", "w-full"]}
+          actionCount={1}
+          actionWidths={["w-28"]}
+        />
+      ) : null}
 
       {/* 취소 요청 클릭 시점에만 다이얼로그 코드를 로드/마운트 */}
       {cancelRentalDialogId ? (

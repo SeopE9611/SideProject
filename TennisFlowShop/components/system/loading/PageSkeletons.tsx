@@ -358,6 +358,82 @@ export function CardListPageSkeleton({
   );
 }
 
+type StackedCardListSkeletonProps = {
+  count?: number;
+  className?: string;
+  cardClassName?: string;
+  cardContentClassName?: string;
+  titleLineWidthClassName?: string;
+  subtitleLineWidthClassName?: string;
+  badgeWidthClassName?: string;
+  metaLayout?: "stacked" | "twoColumn";
+  metaLineWidths?: string[];
+  actionCount?: number;
+  actionWidths?: string[];
+};
+
+export function StackedCardListSkeleton({
+  count = 3,
+  className,
+  cardClassName = "border-0 bg-card",
+  cardContentClassName = "space-y-4 p-6",
+  titleLineWidthClassName = "w-24",
+  subtitleLineWidthClassName = "w-48",
+  badgeWidthClassName = "w-20",
+  metaLayout = "stacked",
+  metaLineWidths = ["w-full", "w-3/4"],
+  actionCount = 1,
+  actionWidths,
+}: StackedCardListSkeletonProps) {
+  const resolvedActionWidths =
+    actionWidths && actionWidths.length > 0
+      ? actionWidths
+      : Array.from({ length: actionCount }).map(() => "w-24");
+
+  return (
+    <div className={cn("space-y-4", className)}>
+      {Array.from({ length: count }).map((_, index) => (
+        <Card key={index} className={cardClassName}>
+          <CardContent className={cardContentClassName}>
+            <div className="flex items-center justify-between gap-4">
+              <div className="space-y-2">
+                <Skeleton className={cn("h-4", titleLineWidthClassName)} />
+                <Skeleton className={cn("h-5", subtitleLineWidthClassName)} />
+              </div>
+              <Skeleton className={cn("h-7 rounded-full", badgeWidthClassName)} />
+            </div>
+
+            <div
+              className={cn(
+                "gap-2",
+                metaLayout === "twoColumn"
+                  ? "grid grid-cols-1 bp-sm:grid-cols-2"
+                  : "space-y-2",
+              )}
+            >
+              {metaLineWidths.map((widthClassName, metaIndex) => (
+                <Skeleton
+                  key={`${index}-meta-${metaIndex}`}
+                  className={cn("h-4", widthClassName)}
+                />
+              ))}
+            </div>
+
+            <div className="flex justify-end gap-2">
+              {Array.from({ length: actionCount }).map((__, actionIndex) => (
+                <Skeleton
+                  key={`${index}-action-${actionIndex}`}
+                  className={cn("h-9", resolvedActionWidths[actionIndex] ?? "w-24")}
+                />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
 type PreviewSplitFormSkeletonProps = {
   fields?: number;
   previewHeightClassName?: string;
