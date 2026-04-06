@@ -363,9 +363,18 @@ type StackedCardListSkeletonProps = {
   className?: string;
   cardClassName?: string;
   cardContentClassName?: string;
+  showLeadingVisual?: boolean;
+  leadingVisualClassName?: string;
   titleLineWidthClassName?: string;
   subtitleLineWidthClassName?: string;
+  showHeaderBadge?: boolean;
   badgeWidthClassName?: string;
+  headerActionCount?: number;
+  headerActionWidths?: string[];
+  showInsetBlock?: boolean;
+  insetBlockClassName?: string;
+  insetLineWidths?: string[];
+  showMetaDivider?: boolean;
   metaLayout?: "stacked" | "twoColumn";
   metaLineWidths?: string[];
   actionCount?: number;
@@ -377,14 +386,27 @@ export function StackedCardListSkeleton({
   className,
   cardClassName = "border-0 bg-card",
   cardContentClassName = "space-y-4 p-6",
+  showLeadingVisual = false,
+  leadingVisualClassName = "h-12 w-12 rounded-xl",
   titleLineWidthClassName = "w-24",
   subtitleLineWidthClassName = "w-48",
+  showHeaderBadge = true,
   badgeWidthClassName = "w-20",
+  headerActionCount = 0,
+  headerActionWidths,
+  showInsetBlock = false,
+  insetBlockClassName = "space-y-2 rounded-lg bg-muted p-4",
+  insetLineWidths = ["w-full", "w-4/5"],
+  showMetaDivider = false,
   metaLayout = "stacked",
   metaLineWidths = ["w-full", "w-3/4"],
   actionCount = 1,
   actionWidths,
 }: StackedCardListSkeletonProps) {
+  const resolvedHeaderActionWidths =
+    headerActionWidths && headerActionWidths.length > 0
+      ? headerActionWidths
+      : Array.from({ length: headerActionCount }).map(() => "w-16");
   const resolvedActionWidths =
     actionWidths && actionWidths.length > 0
       ? actionWidths
@@ -395,17 +417,50 @@ export function StackedCardListSkeleton({
       {Array.from({ length: count }).map((_, index) => (
         <Card key={index} className={cardClassName}>
           <CardContent className={cardContentClassName}>
-            <div className="flex items-center justify-between gap-4">
-              <div className="space-y-2">
-                <Skeleton className={cn("h-4", titleLineWidthClassName)} />
-                <Skeleton className={cn("h-5", subtitleLineWidthClassName)} />
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-start gap-3">
+                {showLeadingVisual ? (
+                  <Skeleton className={leadingVisualClassName} />
+                ) : null}
+                <div className="space-y-2">
+                  <Skeleton className={cn("h-4", titleLineWidthClassName)} />
+                  <Skeleton className={cn("h-5", subtitleLineWidthClassName)} />
+                </div>
               </div>
-              <Skeleton className={cn("h-7 rounded-full", badgeWidthClassName)} />
+
+              <div className="flex items-center gap-2">
+                {showHeaderBadge ? (
+                  <Skeleton
+                    className={cn("h-7 rounded-full", badgeWidthClassName)}
+                  />
+                ) : null}
+                {Array.from({ length: headerActionCount }).map((__, actionIndex) => (
+                  <Skeleton
+                    key={`${index}-header-action-${actionIndex}`}
+                    className={cn(
+                      "h-9",
+                      resolvedHeaderActionWidths[actionIndex] ?? "w-16",
+                    )}
+                  />
+                ))}
+              </div>
             </div>
+
+            {showInsetBlock ? (
+              <div className={insetBlockClassName}>
+                {insetLineWidths.map((widthClassName, insetIndex) => (
+                  <Skeleton
+                    key={`${index}-inset-${insetIndex}`}
+                    className={cn("h-4", widthClassName)}
+                  />
+                ))}
+              </div>
+            ) : null}
 
             <div
               className={cn(
                 "gap-2",
+                showMetaDivider && "border-t border-border/60 pt-4",
                 metaLayout === "twoColumn"
                   ? "grid grid-cols-1 bp-sm:grid-cols-2"
                   : "space-y-2",

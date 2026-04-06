@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import AsyncState from "@/components/system/AsyncState";
-import { Skeleton } from "@/components/ui/skeleton";
+import { StackedCardListSkeleton } from "@/components/system/loading";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import {
   ArrowRight,
@@ -34,28 +34,6 @@ type QnaPage = { items: Qna[]; total: number };
 const LIMIT = 10;
 
 const fetcher = (url: string) => authenticatedSWRFetcher<QnaPage>(url);
-
-const QnAListSkeleton = ({ count = 4 }: { count?: number }) => (
-  <div className="space-y-4">
-    {Array.from({ length: count }).map((_, idx) => (
-      <Card key={idx} className="border-0 bg-card">
-        <CardContent className="space-y-4 p-4 md:p-6">
-          <div className="flex items-start justify-between gap-4">
-            <div className="space-y-2">
-              <Skeleton className="h-6 w-20 rounded-full" />
-              <Skeleton className="h-5 w-64" />
-            </div>
-            <Skeleton className="h-6 w-16 rounded-full" />
-          </div>
-          <div className="flex items-center justify-between border-t border-border/60 pt-4">
-            <Skeleton className="h-4 w-28" />
-            <Skeleton className="h-9 w-20" />
-          </div>
-        </CardContent>
-      </Card>
-    ))}
-  </div>
-);
 
 export default function QnAList() {
   // 필터/검색 대비
@@ -153,7 +131,20 @@ export default function QnAList() {
   // 목록
   return (
     <div className="space-y-4 md:space-y-6">
-      {isInitialLoading ? <QnAListSkeleton count={4} /> : null}
+      {isInitialLoading ? (
+        <StackedCardListSkeleton
+          count={4}
+          cardContentClassName="space-y-4 p-4 md:p-6"
+          showLeadingVisual
+          titleLineWidthClassName="w-20"
+          subtitleLineWidthClassName="w-64"
+          badgeWidthClassName="w-16"
+          showMetaDivider
+          metaLineWidths={["w-28"]}
+          actionCount={1}
+          actionWidths={["w-20"]}
+        />
+      ) : null}
       {qnas.map((qna) => (
         <Card
           key={qna.id}
@@ -244,7 +235,20 @@ export default function QnAList() {
         ) : null}
       </div>
 
-      {hasMore && isValidating ? <QnAListSkeleton count={2} /> : null}
+      {hasMore && isValidating ? (
+        <StackedCardListSkeleton
+          count={2}
+          cardContentClassName="space-y-4 p-4 md:p-6"
+          showLeadingVisual
+          titleLineWidthClassName="w-20"
+          subtitleLineWidthClassName="w-64"
+          badgeWidthClassName="w-16"
+          showMetaDivider
+          metaLineWidths={["w-28"]}
+          actionCount={1}
+          actionWidths={["w-20"]}
+        />
+      ) : null}
     </div>
   );
 }
