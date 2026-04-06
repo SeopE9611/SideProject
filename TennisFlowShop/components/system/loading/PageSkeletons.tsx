@@ -295,6 +295,69 @@ export function FormPageSkeleton({ fields = 6, className }: FormPageSkeletonProp
   );
 }
 
+type CardListPageSkeletonProps = {
+  cardCount?: number;
+  columns?: 1 | 2 | 3;
+  showToolbar?: boolean;
+  className?: string;
+};
+
+export function CardListPageSkeleton({
+  cardCount = 6,
+  columns = 1,
+  showToolbar = true,
+  className,
+}: CardListPageSkeletonProps) {
+  const gridColumnsClassName =
+    columns === 3
+      ? "grid-cols-1 lg:grid-cols-2 xl:grid-cols-3"
+      : columns === 2
+        ? "grid-cols-1 lg:grid-cols-2"
+        : "grid-cols-1";
+
+  return (
+    <div className={cn("container py-10", className)}>
+      <div className="mx-auto max-w-6xl space-y-6">
+        <div className="space-y-2">
+          <Skeleton className="h-9 w-40 rounded-xl" />
+          <Skeleton className="h-4 w-72 rounded-lg" />
+        </div>
+
+        <Card className="rounded-2xl border-border/50 bg-card shadow-sm">
+          {showToolbar ? (
+            <CardHeader className="space-y-3 pb-4">
+              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <Skeleton className="h-10 w-full md:w-80" />
+                <div className="flex gap-2">
+                  <Skeleton className="h-10 w-24" />
+                  <Skeleton className="h-10 w-28" />
+                </div>
+              </div>
+            </CardHeader>
+          ) : null}
+
+          <CardContent className={cn("grid gap-3", gridColumnsClassName)}>
+            {Array.from({ length: cardCount }).map((_, index) => (
+              <div
+                key={index}
+                className="rounded-xl border border-border/50 bg-background/70 p-4"
+              >
+                <div className="space-y-2">
+                  <Skeleton className="h-5 w-52 max-w-full" />
+                  <Skeleton className="h-4 w-72 max-w-full" />
+                </div>
+                <div className="mt-3 flex justify-end">
+                  <Skeleton className="h-9 w-24" />
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
 type PreviewSplitFormSkeletonProps = {
   fields?: number;
   previewHeightClassName?: string;

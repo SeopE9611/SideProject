@@ -1,4 +1,5 @@
 export {
+  CardListPageSkeleton,
   TablePageSkeleton,
   DetailPageSkeleton,
   FormPageSkeleton,
