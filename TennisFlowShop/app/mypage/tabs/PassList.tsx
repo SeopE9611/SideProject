@@ -2,16 +2,9 @@
 
 import { Badge } from "@/components/ui/badge";
 import AsyncState from "@/components/system/AsyncState";
+import { UsageCardListSkeleton } from "@/components/system/loading";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent } from "@/components/ui/card";
 import { Clock, Ticket } from "lucide-react";
 import { useEffect, useState } from "react";
 import useSWR from "swr";
@@ -47,20 +40,6 @@ type PassItem = {
 type Res = { items: PassItem[] };
 
 const fetcher = (url: string) => authenticatedSWRFetcher<Res>(url);
-
-const PassListSkeleton = ({ count = 3 }: { count?: number }) => (
-  <div className="space-y-4">
-    {Array.from({ length: count }).map((_, idx) => (
-      <Card key={`pass-skeleton-${idx}`} className="border-0">
-        <CardContent className="space-y-3 p-4">
-          <Skeleton className="h-5 w-1/3" />
-          <Skeleton className="h-4 w-1/2" />
-          <Skeleton className="h-20 w-full" />
-        </CardContent>
-      </Card>
-    ))}
-  </div>
-);
 
 export default function PassList() {
   const { data, isLoading, error, mutate } = useSWR<Res>(
@@ -231,7 +210,14 @@ export default function PassList() {
   return (
     <Card className="border-0">
       <CardContent className="space-y-4">
-        {isInitialLoading ? <PassListSkeleton count={3} /> : null}
+        {isInitialLoading ? (
+          <UsageCardListSkeleton
+            count={3}
+            cardContentClassName="space-y-4 p-4"
+            metaLineWidths={["w-40", "w-32"]}
+            actionCount={0}
+          />
+        ) : null}
         {hasNoHistory && (
           <div className="flex flex-col items-center justify-center py-12 bp-sm:py-16 px-4">
             <div className="bg-muted/50 rounded-full p-4 mb-4">
