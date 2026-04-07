@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/tooltip";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Slider } from "@/components/ui/slider";
+import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/lib/supabase";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -71,6 +72,56 @@ import {
   reorderMainImage,
   sanitizeUploadFileName,
 } from "./utils/productEditTransforms";
+
+function EditTabOverlaySkeleton({ tab }: { tab: string }) {
+  if (tab === "basic") {
+    return (
+      <div className="pointer-events-none absolute inset-0 z-10 rounded-md bg-background/70 p-6">
+        <div className="space-y-4">
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-40 w-full" />
+          <Skeleton className="h-40 w-full" />
+        </div>
+      </div>
+    );
+  }
+  if (tab === "features") {
+    return (
+      <div className="pointer-events-none absolute inset-0 z-10 rounded-md bg-background/70 p-6">
+        <div className="space-y-4">
+          <Skeleton className="h-72 w-full" />
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-24 w-full" />
+        </div>
+      </div>
+    );
+  }
+  if (tab === "inventory") {
+    return (
+      <div className="pointer-events-none absolute inset-0 z-10 rounded-md bg-background/70 p-6">
+        <div className="space-y-4">
+          <Skeleton className="h-28 w-full" />
+          <Skeleton className="h-28 w-full" />
+          <Skeleton className="h-44 w-full" />
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="pointer-events-none absolute inset-0 z-10 rounded-md bg-background/70 p-6">
+      <div className="space-y-4">
+        <Skeleton className="h-16 w-full" />
+        <Skeleton className="h-24 w-full" />
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <Skeleton key={index} className="h-48 w-full" />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function ProductEditClient({
   productId,
@@ -335,6 +386,7 @@ export default function ProductEditClient({
 
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const isInitialClientLoading = isLoading && !data?.product;
 
   const confirmLeave = (e: React.MouseEvent<HTMLElement>) => {
     if (!isDirty || submitting || uploading || deleting) return;
@@ -585,8 +637,8 @@ export default function ProductEditClient({
   };
 
   if (error) return <div className="p-6">상품 불러오기 실패</div>;
-  if (isLoading && !data?.product) return null;
-  if (!data?.product) return <div className="p-6">상품 정보를 찾을 수 없습니다.</div>;
+  if (!data?.product && !isLoading)
+    return <div className="p-6">상품 정보를 찾을 수 없습니다.</div>;
 
   return (
     <>
@@ -623,14 +675,18 @@ export default function ProductEditClient({
                     type="button"
                     variant="destructive"
                     onClick={handleDelete}
-                    disabled={uploading || submitting || deleting}
+                    disabled={
+                      isInitialClientLoading || uploading || submitting || deleting
+                    }
                   >
                     <Delete className="mr-2 h-4 w-4" />
                     삭제
                   </Button>
                   <Button
                     type="submit"
-                    disabled={uploading || submitting || deleting}
+                    disabled={
+                      isInitialClientLoading || uploading || submitting || deleting
+                    }
                     variant="default"
                   >
                     <Save className="mr-2 h-4 w-4" />
@@ -675,7 +731,8 @@ export default function ProductEditClient({
               </TabsList>
 
               {/* 기본 정보 탭 */}
-              <TabsContent value="basic" className="space-y-4">
+              <TabsContent value="basic" className="relative space-y-4">
+                {isInitialClientLoading ? <EditTabOverlaySkeleton tab="basic" /> : null}
                 <Card
                   variant="ghost"
                   className="shadow-xl bg-muted/30 border border-border"
@@ -1165,7 +1222,10 @@ export default function ProductEditClient({
               </TabsContent>
 
               {/* 성능 및 특성 탭 */}
-              <TabsContent value="features" className="space-y-4">
+              <TabsContent value="features" className="relative space-y-4">
+                {isInitialClientLoading ? (
+                  <EditTabOverlaySkeleton tab="features" />
+                ) : null}
                 <Card
                   variant="ghost"
                   className="shadow-xl bg-muted/30 border border-border"
@@ -1399,7 +1459,10 @@ export default function ProductEditClient({
               </TabsContent>
 
               {/* 재고 관리 탭 */}
-              <TabsContent value="inventory" className="space-y-4">
+              <TabsContent value="inventory" className="relative space-y-4">
+                {isInitialClientLoading ? (
+                  <EditTabOverlaySkeleton tab="inventory" />
+                ) : null}
                 <Card
                   variant="ghost"
                   className="shadow-xl bg-muted/30 border border-border"
@@ -1597,7 +1660,8 @@ export default function ProductEditClient({
               </TabsContent>
 
               {/* 이미지 탭 */}
-              <TabsContent value="images" className="space-y-4">
+              <TabsContent value="images" className="relative space-y-4">
+                {isInitialClientLoading ? <EditTabOverlaySkeleton tab="images" /> : null}
                 <Card
                   variant="ghost"
                   className="shadow-xl bg-muted/30 border border-border"
