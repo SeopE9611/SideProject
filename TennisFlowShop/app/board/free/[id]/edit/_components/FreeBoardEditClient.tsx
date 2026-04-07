@@ -357,37 +357,6 @@ export default function FreeBoardEditClient({ id }: Props) {
 
   // 로딩/에러 UI ----------------------------------------------------
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-muted/30">
-        <SiteContainer
-          variant="wide"
-          className="py-6 bp-sm:py-8 bp-md:py-10 space-y-8"
-        >
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Skeleton className="h-4 w-16" />
-            <span>›</span>
-            <Skeleton className="h-4 w-20" />
-            <span>›</span>
-            <Skeleton className="h-4 w-16" />
-          </div>
-          <Card className="border-0 bg-card shadow-xl backdrop-blur-sm dark:bg-card">
-            <CardHeader className="space-y-1">
-              <Skeleton className="h-6 w-40" />
-              <Skeleton className="h-4 w-64" />
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-40 w-full" />
-              </div>
-            </CardContent>
-          </Card>
-        </SiteContainer>
-      </div>
-    );
-  }
-
   const isNotFound = data && !data.ok && data.error === "not_found";
   if (error || isNotFound) {
     return (
@@ -490,7 +459,32 @@ export default function FreeBoardEditClient({ id }: Props) {
           </CardHeader>
 
           <CardContent className="p-6">
-            <form className="space-y-6" onSubmit={handleSubmit}>
+            {isLoading ? (
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <Skeleton className="h-5 w-14" />
+                  <div className="flex flex-wrap gap-2">
+                    {Array.from({ length: 5 }).map((_, idx) => (
+                      <Skeleton key={idx} className="h-6 w-16 rounded-full" />
+                    ))}
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Skeleton className="h-5 w-10" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+                <div className="space-y-2">
+                  <Skeleton className="h-5 w-10" />
+                  <Skeleton className="h-40 w-full" />
+                </div>
+                <Skeleton className="h-56 w-full" />
+                <div className="flex justify-end gap-2">
+                  <Skeleton className="h-9 w-20" />
+                  <Skeleton className="h-9 w-24" />
+                </div>
+              </div>
+            ) : (
+              <form className="space-y-6" onSubmit={handleSubmit}>
               {/* 분류 선택 */}
               <div className="space-y-2">
                 <Label>분류</Label>
@@ -730,7 +724,8 @@ export default function FreeBoardEditClient({ id }: Props) {
                   <span>수정하기</span>
                 </Button>
               </div>
-            </form>
+              </form>
+            )}
           </CardContent>
         </Card>
       </SiteContainer>

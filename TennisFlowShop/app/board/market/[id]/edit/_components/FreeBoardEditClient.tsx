@@ -715,34 +715,6 @@ export default function FreeBoardEditClient({ id }: Props) {
 
   // 로딩/에러 UI ----------------------------------------------------
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-muted/30">
-        <div className="container mx-auto px-4 py-8 space-y-8">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Skeleton className="h-4 w-16" />
-            <span>›</span>
-            <Skeleton className="h-4 w-20" />
-            <span>›</span>
-            <Skeleton className="h-4 w-16" />
-          </div>
-          <Card className="border-0 bg-card shadow-xl backdrop-blur-sm dark:bg-card">
-            <CardHeader className="space-y-1">
-              <Skeleton className="h-6 w-40" />
-              <Skeleton className="h-4 w-64" />
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-40 w-full" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
-
   const isNotFound = data && !data.ok && data.error === "not_found";
   if (error || isNotFound) {
     return (
@@ -832,6 +804,34 @@ export default function FreeBoardEditClient({ id }: Props) {
           </div>
         </div>
 
+        {isLoading ? (
+          <Card className="border-0 bg-card shadow-xl backdrop-blur-sm dark:bg-card">
+            <CardHeader className="space-y-1 border-b border-border pb-4 dark:border-border">
+              <CardTitle className="text-base font-semibold">글 내용 수정</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6 p-6">
+              <div className="space-y-2">
+                <Skeleton className="h-5 w-20" />
+                <div className="grid grid-cols-3 gap-2">
+                  {Array.from({ length: 3 }).map((_, idx) => (
+                    <Skeleton key={idx} className="h-10 w-full" />
+                  ))}
+                </div>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-52 w-full" />
+              <Skeleton className="h-72 w-full" />
+              <div className="flex justify-end gap-2">
+                <Skeleton className="h-9 w-20" />
+                <Skeleton className="h-9 w-24" />
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
         <form onSubmit={handleSubmit}>
           {/* 1단계 핵심: write 페이지와 같은 2컬럼 골격 이식 */}
           <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
@@ -1527,6 +1527,7 @@ export default function FreeBoardEditClient({ id }: Props) {
             </aside>
           </div>
         </form>
+        )}
       </div>
     </div>
   );
