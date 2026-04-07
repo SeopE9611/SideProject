@@ -12,7 +12,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   ArrowLeft,
   MapPin,
@@ -213,44 +212,7 @@ export default function OrderDetailPage() {
     }).format(amount);
   };
 
-  // 로딩 상태
-  if (loading) {
-    return (
-      <div className="min-h-full bg-background">
-        {/* Hero Section */}
-        <div className="relative overflow-hidden border-b border-border bg-muted/30 dark:bg-card/40">
-          <div className="absolute inset-0 bg-overlay/10"></div>
-          <div className="relative container mx-auto px-4 py-10 md:py-16">
-            <div className="text-center text-foreground">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-card/20 backdrop-blur-sm rounded-full mb-6">
-                <Package className="w-8 h-8 animate-pulse" />
-              </div>
-              <h1 className="text-4xl md:text-5xl font-bold mb-4">
-                <span className="text-primary">주문</span> 상세 정보
-              </h1>
-              <Skeleton className="mx-auto h-6 w-72 max-w-full" />
-            </div>
-          </div>
-        </div>
-
-        <div className="container mx-auto px-4 py-8 md:px-6 md:py-12">
-          <div className="max-w-4xl mx-auto">
-            <Card className="shadow-2xl border-0 bg-card/80 backdrop-blur-sm">
-              <CardContent className="flex justify-center items-center py-16">
-                <div className="text-center">
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 dark:bg-primary/20 rounded-full mb-6">
-                    <div className="w-8 h-8 border-4 border-border/30 border-t-primary-foreground rounded-full animate-spin"></div>
-                  </div>
-                  <Skeleton className="mx-auto h-6 w-48" />
-                  <Skeleton className="mx-auto mt-2 h-4 w-40" />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return null;
 
   // 에러 상태
   if (error) {

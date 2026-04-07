@@ -34,7 +34,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 import LoginGate from "@/components/system/LoginGate";
 import { badgeToneVariant, getOrderStatusTone } from "@/lib/badge-style";
 import {
@@ -380,34 +379,8 @@ export default function OrderLookupResultsPage() {
 
             <CardContent className="pt-6 md:pt-8">
               {isInitialLoading ? (
-                <div className="space-y-4 md:space-y-6">
-                  {[0, 1].map((idx) => (
-                    <Card
-                      key={idx}
-                      className="overflow-hidden border-2 border-border"
-                    >
-                      <div className="p-4 md:p-6 space-y-4">
-                        <div className="flex items-center justify-between">
-                          <Skeleton className="h-6 w-40" />
-                          <Skeleton className="h-7 w-24 rounded-full" />
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-                          {Array.from({ length: 4 }).map((_, itemIdx) => (
-                            <div
-                              key={itemIdx}
-                              className="p-3 bg-background rounded-lg"
-                            >
-                              <Skeleton className="h-3 w-14 mb-2" />
-                              <Skeleton className="h-5 w-full" />
-                            </div>
-                          ))}
-                        </div>
-                        <div className="flex justify-end">
-                          <Skeleton className="h-10 w-28" />
-                        </div>
-                      </div>
-                    </Card>
-                  ))}
+                <div className="py-10 text-center text-sm text-muted-foreground">
+                  주문 내역을 불러오는 중입니다...
                 </div>
               ) : orders && orders.length > 0 ? (
                 <div className="space-y-4 md:space-y-6">

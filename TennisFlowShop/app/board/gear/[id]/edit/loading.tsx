@@ -1,5 +1,5 @@
-import { ListPageSkeleton } from "@/components/system/PageLoading";
+import { FormPageSkeleton } from "@/components/system/loading";
 
 export default function Loading() {
-  return <ListPageSkeleton rows={6} />;
+  return <FormPageSkeleton fields={8} />;
 }
