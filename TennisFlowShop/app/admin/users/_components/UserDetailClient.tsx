@@ -412,12 +412,8 @@ export default function UserDetailClient({ id }: { id: string }) {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <div className="h-10 w-64 rounded-xl bg-muted animate-pulse" />
-        <div className="grid md:grid-cols-2 gap-6">
-          <div className="h-60 rounded-2xl border border-border bg-muted/30 animate-pulse" />
-          <div className="h-60 rounded-2xl border border-border bg-muted/30 animate-pulse" />
-        </div>
+      <div className="rounded-lg border border-border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
+        회원 정보를 불러오는 중입니다...
       </div>
     );
   }

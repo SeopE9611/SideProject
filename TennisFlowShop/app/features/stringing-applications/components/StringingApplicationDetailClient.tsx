@@ -7,7 +7,6 @@ import PaymentEditForm from '@/app/features/stringing-applications/components/Pa
 import PaymentMethodDetail from '@/app/features/stringing-applications/components/PaymentMethodDetail';
 import RequirementsEditForm from '@/app/features/stringing-applications/components/RequirementsEditForm';
 import StringInfoEditForm from '@/app/features/stringing-applications/components/StringInfoEditForm';
-import StringingApplicationDetailSkeleton from '@/app/features/stringing-applications/components/StringingApplicationDetailSkeleton';
 import StringingApplicationHistory from '@/app/features/stringing-applications/components/StringingApplicationHistory';
 import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
 import { getStringingAddressReadLabels, orderShippingMethodLabel } from '@/app/features/stringing-applications/lib/fulfillment-labels';
@@ -527,7 +526,30 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
         }}
       />
     );
-  if (isLoading || !data) return <StringingApplicationDetailSkeleton />;
+  if (!data) {
+    if (isLoading) {
+      return (
+        <main className={cn('w-full', isAdmin && 'min-h-screen bg-muted/30 dark:bg-muted/30')}>
+          <div className={cn(isAdmin && 'container py-6 lg:py-8')}>
+            <div className="rounded-lg border border-border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
+              신청서 정보를 불러오는 중입니다...
+            </div>
+          </div>
+        </main>
+      );
+    }
+
+    return (
+      <AsyncState
+        kind="empty"
+        tone={isAdmin ? 'admin' : 'user'}
+        variant="page-center"
+        resourceName="신청서 상세"
+        title="신청서 정보를 찾을 수 없습니다"
+        description="신청서 ID를 확인한 뒤 다시 시도해 주세요."
+      />
+    );
+  }
 
   // 관리자이거나(isAdmin), 또는 상태가 userEditableStatuses에 포함될 때를 판단
   const isEditableAllowed = isAdmin || userEditableStatuses.includes(data.status);
@@ -746,6 +768,11 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
               : 'py-6 space-y-6 bp-sm:py-10 bp-sm:space-y-8 px-0 bp-sm:px-4 bp-md:px-6',
           )}
         >
+          {isLoading ? (
+            <div className="mx-auto w-full max-w-[1500px] rounded-lg border border-border bg-muted/30 px-4 py-2 text-sm text-muted-foreground">
+              최신 상태를 확인하고 있습니다...
+            </div>
+          ) : null}
           <div className={cn('mx-auto w-full', isAdmin ? 'max-w-[1500px]' : 'max-w-6xl')}>
           {/* 헤더 */}
           <div
