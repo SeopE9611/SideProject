@@ -74,6 +74,7 @@ import {
 import { InfoItem } from "@/components/admin/InfoItem";
 import StatusBadge from "@/components/admin/StatusBadge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   UNSAVED_CHANGES_MESSAGE,
   useUnsavedChangesGuard,
@@ -410,7 +411,43 @@ export default function UserDetailClient({ id }: { id: string }) {
     );
   }
 
-  if (isLoading && !data) return null;
+  const isInitialLoading = isLoading && !data;
+
+  if (isInitialLoading) {
+    return (
+      <div className="relative">
+        <div
+          aria-hidden
+          className={[
+            "pointer-events-none absolute inset-0 -z-10",
+            "bg-muted/30",
+            "before:content-[''] before:absolute before:inset-0 before:bg-border/10 before:opacity-30",
+          ].join(" ")}
+        />
+        <div className="sticky top-14 md:top-[64px] z-50 -mx-2 px-2 pt-2 pb-3 border-b border-border bg-card/80 dark:bg-card backdrop-blur supports-[backdrop-filter]:bg-card supports-[backdrop-filter]:dark:bg-card">
+          <div className="mx-auto w-full max-w-[1500px] flex items-center justify-between gap-2">
+            <Skeleton className="h-9 w-28" />
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-9 w-20" />
+              <Skeleton className="h-9 w-20" />
+              <Skeleton className="h-9 w-24" />
+            </div>
+          </div>
+        </div>
+        <div className="mx-auto w-full max-w-[1500px] p-4 md:p-6 space-y-6">
+          <div className="grid gap-4 md:grid-cols-3">
+            <Skeleton className="h-28 rounded-xl" />
+            <Skeleton className="h-28 rounded-xl" />
+            <Skeleton className="h-28 rounded-xl" />
+          </div>
+          <div className="grid gap-6 xl:grid-cols-[1.4fr_1fr]">
+            <Skeleton className="h-[460px] rounded-xl" />
+            <Skeleton className="h-[460px] rounded-xl" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!user) {
     return (

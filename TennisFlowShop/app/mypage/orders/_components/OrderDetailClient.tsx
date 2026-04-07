@@ -19,6 +19,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   badgeBase,
   badgeSizeSm,
@@ -329,7 +330,27 @@ export default function OrderDetailClient({
 
   const isInitialLoading = isOrderLoading && !orderDetail;
 
-  if (isInitialLoading) return null;
+  if (isInitialLoading) {
+    return (
+      <main className="w-full">
+        <SiteContainer variant="wide" className="py-4 bp-sm:py-6 space-y-6">
+          <div className="flex items-center justify-between">
+            <Skeleton className="h-9 w-44" />
+            <Skeleton className="h-9 w-24" />
+          </div>
+          <div className="grid gap-4 md:grid-cols-3">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <Skeleton key={index} className="h-24 rounded-xl" />
+            ))}
+          </div>
+          <div className="grid gap-6 xl:grid-cols-[1.4fr_1fr]">
+            <Skeleton className="h-[440px] rounded-xl" />
+            <Skeleton className="h-[440px] rounded-xl" />
+          </div>
+        </SiteContainer>
+      </main>
+    );
+  }
 
   if (!orderDetail) {
     return (

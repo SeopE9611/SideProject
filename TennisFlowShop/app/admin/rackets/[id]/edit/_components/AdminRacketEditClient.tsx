@@ -9,6 +9,7 @@ import { ArrowLeft, Edit, Trash2, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -106,7 +107,29 @@ export default function AdminRacketEditClient({ id }: { id: string }) {
   };
 
   if (error || !data?.id) {
-    if (isLoading && !data?.id) return null;
+    if (isLoading && !data?.id) {
+      return (
+        <div className="min-h-screen bg-muted/30">
+          <div className="relative overflow-hidden bg-muted/30">
+            <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-4">
+              <Skeleton className="h-9 w-24" />
+              <div className="flex items-center justify-between">
+                <Skeleton className="h-12 w-64" />
+                <Skeleton className="h-10 w-24" />
+              </div>
+            </div>
+          </div>
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="bg-card rounded-xl shadow-sm border border-border p-6 space-y-4">
+              {Array.from({ length: 5 }).map((_, index) => (
+                <Skeleton key={index} className="h-10 w-full" />
+              ))}
+              <Skeleton className="h-36 w-full" />
+            </div>
+          </div>
+        </div>
+      );
+    }
 
     return (
       <div className="min-h-screen bg-muted/30">
