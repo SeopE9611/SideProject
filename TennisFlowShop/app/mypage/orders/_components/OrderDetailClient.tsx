@@ -329,21 +329,7 @@ export default function OrderDetailClient({
 
   const isInitialLoading = isOrderLoading && !orderDetail;
 
-  if (isInitialLoading) {
-    return (
-      <main className="w-full">
-        <SiteContainer
-          variant="wide"
-          className="px-0 py-4 bp-sm:px-4 bp-sm:py-6 bp-md:px-6"
-        >
-          <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
-            <Clock className="h-4 w-4 animate-pulse" />
-            <span>주문 상세 정보를 불러오는 중입니다.</span>
-          </div>
-        </SiteContainer>
-      </main>
-    );
-  }
+  if (isInitialLoading) return null;
 
   if (!orderDetail) {
     return (

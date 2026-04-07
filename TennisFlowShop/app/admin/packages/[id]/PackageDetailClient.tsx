@@ -349,15 +349,7 @@ export default function PackageDetailClient({
   }
 
   if (!data) {
-    if (isLoading) {
-      return (
-        <div className="container py-6">
-          <div className="rounded-lg border border-border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
-            패키지 정보를 불러오는 중입니다...
-          </div>
-        </div>
-      );
-    }
+    if (isLoading) return null;
     return (
       <div className="container py-6">
         <AsyncState

@@ -640,13 +640,6 @@ export default function ProductEditClient({
 
             <Separator />
 
-            {isLoading && (
-              <div className="flex items-center gap-2 rounded-md border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                상품 정보를 불러오는 중입니다.
-              </div>
-            )}
-
             <Tabs
               value={activeTab}
               onValueChange={setActiveTab}

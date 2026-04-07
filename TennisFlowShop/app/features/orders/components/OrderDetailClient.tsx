@@ -4,7 +4,6 @@ import dynamic from "next/dynamic";
 import CustomerEditForm from "@/app/features/orders/components/CustomerEditForm";
 import OrderHistory from "@/app/features/orders/components/OrderHistory";
 import OrderStatusSelect from "@/app/features/orders/components/OrderStatusSelect";
-import { DetailPageSkeleton } from "@/components/system/loading";
 import PaymentEditForm from "@/app/features/orders/components/PaymentEditForm";
 import PaymentMethodDetail from "@/app/features/orders/components/PaymentMethodDetail";
 import RequestEditForm from "@/app/features/orders/components/RequestEditForm";
@@ -217,6 +216,7 @@ export default function OrderDetailClient({ orderId }: Props) {
   const {
     data: orderDetail,
     error: orderError,
+    isLoading: isOrderLoading,
     mutate: mutateOrder,
   } = useSWR<OrderDetail>(
     orderId ? `/api/orders/${orderId}` : null,
@@ -266,7 +266,17 @@ export default function OrderDetailClient({ orderId }: Props) {
     );
   }
   if (!orderDetail) {
-    return <DetailPageSkeleton sectionCount={4} />;
+    if (isOrderLoading) return null;
+    return (
+      <AsyncState
+        kind="empty"
+        tone="admin"
+        variant="page-center"
+        resourceName="주문 상세"
+        title="주문 정보를 찾을 수 없습니다"
+        description="주문 ID를 확인한 뒤 다시 시도해 주세요."
+      />
+    );
   }
 
   // 취소 요청 상태 정보 계산

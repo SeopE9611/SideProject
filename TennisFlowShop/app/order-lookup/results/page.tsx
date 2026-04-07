@@ -102,44 +102,6 @@ const getLookupOrderStatusLabel = (status?: string, shippingLike?: any) => {
   return getOrderStatusLabelForDisplay(baseLabel, shippingLike);
 };
 
-function OrderLookupResultsInlineSkeleton() {
-  return (
-    <div className="container mx-auto py-10 px-4 md:px-6">
-      <div className="max-w-3xl mx-auto">
-        <Card className="shadow-md">
-          <CardHeader className="space-y-3">
-            <div className="mx-auto w-52">
-              <div className="h-7 w-full rounded bg-muted animate-pulse" />
-            </div>
-            <div className="mx-auto w-64">
-              <div className="h-4 w-full rounded bg-muted animate-pulse" />
-            </div>
-          </CardHeader>
-          <Separator />
-          <CardContent className="pt-6 space-y-4">
-            {Array.from({ length: 2 }).map((_, i) => (
-              <Card key={i} className="overflow-hidden">
-                <div className="p-4 md:p-6 space-y-3">
-                  <div className="h-5 w-1/2 rounded bg-muted animate-pulse" />
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {Array.from({ length: 4 }).map((__, j) => (
-                      <div
-                        key={j}
-                        className="h-4 w-full rounded bg-muted animate-pulse"
-                      />
-                    ))}
-                  </div>
-                  <div className="h-9 w-24 rounded bg-muted animate-pulse ml-auto" />
-                </div>
-              </Card>
-            ))}
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
-}
-
 export default function OrderLookupResultsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -295,9 +257,7 @@ export default function OrderLookupResultsPage() {
   };
 
   // 로딩 상태
-  if (loading) {
-    return <OrderLookupResultsInlineSkeleton />;
-  }
+  if (loading) return null;
 
   // 에러 상태
   if (error) {

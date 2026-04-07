@@ -527,17 +527,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
       />
     );
   if (!data) {
-    if (isLoading) {
-      return (
-        <main className={cn('w-full', isAdmin && 'min-h-screen bg-muted/30 dark:bg-muted/30')}>
-          <div className={cn(isAdmin && 'container py-6 lg:py-8')}>
-            <div className="rounded-lg border border-border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
-              신청서 정보를 불러오는 중입니다...
-            </div>
-          </div>
-        </main>
-      );
-    }
+    if (isLoading) return null;
 
     return (
       <AsyncState
