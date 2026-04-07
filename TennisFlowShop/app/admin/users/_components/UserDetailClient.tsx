@@ -410,13 +410,7 @@ export default function UserDetailClient({ id }: { id: string }) {
     );
   }
 
-  if (isLoading) {
-    return (
-      <div className="rounded-lg border border-border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
-        회원 정보를 불러오는 중입니다...
-      </div>
-    );
-  }
+  if (isLoading && !data) return null;
 
   if (!user) {
     return (

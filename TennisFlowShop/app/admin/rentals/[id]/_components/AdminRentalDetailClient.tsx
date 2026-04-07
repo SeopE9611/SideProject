@@ -338,6 +338,8 @@ export default function AdminRentalDetailClient() {
     );
   }
   if (!data) {
+    if (isLoading) return null;
+
     if (!isLoading) {
       return (
         <div className="min-h-screen bg-muted/30 dark:bg-muted/30">
@@ -355,15 +357,7 @@ export default function AdminRentalDetailClient() {
       );
     }
 
-    return (
-      <div className="min-h-screen bg-muted/30 dark:bg-muted/30">
-        <div className="container py-6 lg:py-8">
-          <div className="rounded-lg border border-border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
-            대여 정보를 불러오는 중입니다...
-          </div>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   const Outbound = data?.shipping?.outbound;

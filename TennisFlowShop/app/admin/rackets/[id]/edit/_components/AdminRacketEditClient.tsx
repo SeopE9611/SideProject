@@ -105,19 +105,9 @@ export default function AdminRacketEditClient({ id }: { id: string }) {
     r.push("/admin/rackets");
   };
 
-  if (isLoading && !data?.id) {
-    return (
-      <div className="min-h-screen bg-muted/30">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="rounded-lg border border-border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
-            라켓 정보를 불러오는 중입니다...
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   if (error || !data?.id) {
+    if (isLoading && !data?.id) return null;
+
     return (
       <div className="min-h-screen bg-muted/30">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
