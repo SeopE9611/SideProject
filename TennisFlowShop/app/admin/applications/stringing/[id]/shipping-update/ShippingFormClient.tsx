@@ -4,7 +4,7 @@ import useSWR from "swr";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import AsyncState from "@/components/system/AsyncState";
-import { Loader2, Store, Truck } from "lucide-react";
+import { Store, Truck } from "lucide-react";
 import ShippingForm from "@/app/admin/applications/stringing/[id]/shipping-update/shipping-form";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { isVisitPickupOrder } from "@/lib/order-shipping";
@@ -97,17 +97,26 @@ export default function ShippingFormClient({
   let content = null;
   if (isLoading) {
     content = (
-      <Card className="border-border/60">
+      <Card className="w-full max-w-md mx-auto border-border/60">
         <CardContent className="space-y-5 p-6">
-          <Skeleton className="h-5 w-28" />
-          <div className="space-y-3">
-            {Array.from({ length: 4 }).map((_, index) => (
-              <Skeleton key={index} className="h-11 w-full" />
-            ))}
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-foreground">배송 방법</p>
+            <Skeleton className="h-10 w-full" />
           </div>
-          <div className="flex justify-end gap-2 pt-2">
-            <Skeleton className="h-10 w-24" />
-            <Skeleton className="h-10 w-28" />
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-foreground">예상 수령일</p>
+            <Skeleton className="h-10 w-full" />
+          </div>
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-foreground">택배사</p>
+            <Skeleton className="h-10 w-full" />
+          </div>
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-foreground">운송장 번호</p>
+            <Skeleton className="h-10 w-full" />
+          </div>
+          <div className="pt-2">
+            <Skeleton className="h-10 w-full" />
           </div>
         </CardContent>
       </Card>

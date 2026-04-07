@@ -127,40 +127,75 @@ export default function ShippingFormClient({
   // 1) 로딩/에러(모든 렌더에서 동일한 훅 호출 순서)
   if (isLoading) {
     return (
-      <div className="max-w-3xl mx-auto mt-8 md:mt-12 px-4">
-        <Card className="border-border shadow-lg">
-          <CardContent className="p-4 md:p-8 space-y-4 md:space-y-6">
-            <div className="space-y-3">
-              <Skeleton className="h-7 w-48" />
-              <Skeleton className="h-4 w-64" />
+      <div className="min-h-screen bg-background py-8 md:py-12">
+        <div className="max-w-3xl mx-auto px-4">
+          <div className="mb-6 md:mb-8 text-center">
+            <div className="inline-flex items-center gap-3 mb-4">
+              <div className="w-12 h-px bg-primary/30"></div>
+              <div className="w-14 h-14 bg-card rounded-2xl flex items-center justify-center shadow-lg">
+                <Truck className="w-7 h-7 text-foreground" />
+              </div>
+              <div className="w-12 h-px bg-muted/30"></div>
             </div>
+            <h1 className="text-3xl lg:text-4xl font-bold text-foreground mb-3">
+              라켓 발송 정보
+            </h1>
+            <p className="text-muted-foreground leading-relaxed">
+              배송 정보를 불러오는 중입니다.
+            </p>
+          </div>
 
-            <div className="rounded-xl border border-border p-4 space-y-4">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Skeleton className="h-3 w-16" />
-                  <Skeleton className="h-10 w-full" />
+          <div className="space-y-4 md:space-y-6">
+            <Card className="border-border bg-card shadow-md">
+              <CardContent className="p-4 md:p-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 bg-primary/10 dark:bg-primary/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Clock className="w-5 h-5 text-foreground" />
+                  </div>
+                  <div className="space-y-2 w-full">
+                    <Skeleton className="h-5 w-52" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-3/4" />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Skeleton className="h-3 w-16" />
-                  <Skeleton className="h-10 w-full" />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Skeleton className="h-3 w-20" />
-                <Skeleton className="h-10 w-full" />
-              </div>
-              <div className="space-y-2">
-                <Skeleton className="h-3 w-24" />
-                <Skeleton className="h-24 w-full" />
-              </div>
-            </div>
+              </CardContent>
+            </Card>
 
-            <div className="flex justify-end">
-              <Skeleton className="h-10 w-28 rounded-md" />
-            </div>
-          </CardContent>
-        </Card>
+            <Card className="border-border shadow-lg">
+              <CardContent className="p-4 md:p-8 space-y-4 md:space-y-6">
+                <div className="flex items-center gap-3 md:gap-4">
+                  <div className="flex-1 h-px bg-primary/30"></div>
+                  <div className="flex items-center gap-2 text-foreground">
+                    <Package className="w-5 h-5" />
+                    <span className="font-semibold">배송 정보</span>
+                  </div>
+                  <div className="flex-1 h-px bg-muted/30"></div>
+                </div>
+                <div className="space-y-4 md:space-y-6">
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-12 w-full" />
+                  </div>
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-12 w-full" />
+                  </div>
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-12 w-full" />
+                  </div>
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-24 w-full" />
+                  </div>
+                </div>
+                <div className="flex justify-end pt-2">
+                  <Skeleton className="h-11 w-32 rounded-md" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
     );
   }
