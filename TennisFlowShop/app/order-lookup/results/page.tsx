@@ -34,6 +34,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import LoginGate from "@/components/system/LoginGate";
 import { badgeToneVariant, getOrderStatusTone } from "@/lib/badge-style";
 import {
@@ -246,6 +247,7 @@ export default function OrderLookupResultsPage() {
   const handleGoBack = () => {
     router.push("/order-lookup");
   };
+  const isInitialLoading = loading && !orders && !error;
 
   // 금액 포맷팅 함수
   const formatCurrency = (amount: number) => {
@@ -255,9 +257,6 @@ export default function OrderLookupResultsPage() {
       currencyDisplay: "symbol",
     }).format(amount);
   };
-
-  // 로딩 상태
-  if (loading) return null;
 
   // 에러 상태
   if (error) {
@@ -380,7 +379,37 @@ export default function OrderLookupResultsPage() {
             <Separator className="mx-6" />
 
             <CardContent className="pt-6 md:pt-8">
-              {orders && orders.length > 0 ? (
+              {isInitialLoading ? (
+                <div className="space-y-4 md:space-y-6">
+                  {[0, 1].map((idx) => (
+                    <Card
+                      key={idx}
+                      className="overflow-hidden border-2 border-border"
+                    >
+                      <div className="p-4 md:p-6 space-y-4">
+                        <div className="flex items-center justify-between">
+                          <Skeleton className="h-6 w-40" />
+                          <Skeleton className="h-7 w-24 rounded-full" />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+                          {Array.from({ length: 4 }).map((_, itemIdx) => (
+                            <div
+                              key={itemIdx}
+                              className="p-3 bg-background rounded-lg"
+                            >
+                              <Skeleton className="h-3 w-14 mb-2" />
+                              <Skeleton className="h-5 w-full" />
+                            </div>
+                          ))}
+                        </div>
+                        <div className="flex justify-end">
+                          <Skeleton className="h-10 w-28" />
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              ) : orders && orders.length > 0 ? (
                 <div className="space-y-4 md:space-y-6">
                   {orders.map((order, index) => {
                     const hasStringingApplication =
