@@ -105,16 +105,12 @@ export default function AdminRacketEditClient({ id }: { id: string }) {
     r.push("/admin/rackets");
   };
 
-  if (isLoading) {
+  if (isLoading && !data?.id) {
     return (
       <div className="min-h-screen bg-muted/30">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="bg-card rounded-xl shadow-sm border border-border p-8">
-            <div className="space-y-4">
-              {[...Array(8)].map((_, i) => (
-                <div key={i} className="h-12 bg-card rounded animate-pulse" />
-              ))}
-            </div>
+          <div className="rounded-lg border border-border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
+            라켓 정보를 불러오는 중입니다...
           </div>
         </div>
       </div>
@@ -141,6 +137,11 @@ export default function AdminRacketEditClient({ id }: { id: string }) {
     <div className="min-h-screen bg-muted/30">
       <div className="relative overflow-hidden bg-muted/30">
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          {isLoading ? (
+            <div className="mb-4 rounded-lg border border-border bg-muted/30 px-4 py-2 text-sm text-muted-foreground">
+              최신 정보를 확인하고 있습니다...
+            </div>
+          ) : null}
           <Link
             href="/admin/rackets"
             data-no-unsaved-guard

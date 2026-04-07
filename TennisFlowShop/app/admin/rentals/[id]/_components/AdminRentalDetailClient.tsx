@@ -20,7 +20,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import AsyncState from "@/components/system/AsyncState";
-import { Skeleton } from "@/components/ui/skeleton";
 import { runAdminActionWithToast } from "@/lib/admin/adminActionHelpers";
 import {
   adminFetcher,
@@ -338,72 +337,29 @@ export default function AdminRentalDetailClient() {
       </div>
     );
   }
-  if (isLoading || !data) {
+  if (!data) {
+    if (!isLoading) {
+      return (
+        <div className="min-h-screen bg-muted/30 dark:bg-muted/30">
+          <div className="container py-6 lg:py-8">
+            <AsyncState
+              kind="empty"
+              tone="admin"
+              variant="page-center"
+              resourceName="대여 상세"
+              title="대여 정보를 찾을 수 없습니다"
+              description="대여 ID를 확인한 뒤 다시 시도해 주세요."
+            />
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="min-h-screen bg-muted/30 dark:bg-muted/30">
         <div className="container py-6 lg:py-8">
-          <div className="mx-auto w-full max-w-[1500px] space-y-6 lg:space-y-8">
-            <div className="rounded-2xl border border-border bg-muted/30 p-5 shadow-lg lg:p-6">
-              <div className="mb-5 flex flex-col gap-3 lg:mb-6 lg:gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex items-center gap-4">
-                  <Skeleton className="h-14 w-14 rounded-full" />
-                  <div className="space-y-2">
-                    <Skeleton className="h-8 w-40" />
-                    <Skeleton className="h-4 w-52" />
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <Skeleton className="h-8 w-28" />
-                  <Skeleton className="h-8 w-36" />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4 lg:gap-4">
-                {Array.from({ length: 4 }).map((_, index) => (
-                  <div key={index} className="rounded-xl border border-border/60 bg-card/70 p-4 backdrop-blur-sm">
-                    <Skeleton className="mb-3 h-4 w-20" />
-                    <Skeleton className="h-6 w-24" />
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="grid gap-4 xl:grid-cols-2">
-              {Array.from({ length: 2 }).map((_, index) => (
-                <Card key={index} className="border-border/60">
-                  <CardHeader className="space-y-2">
-                    <Skeleton className="h-5 w-32" />
-                    <Skeleton className="h-4 w-56" />
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    {Array.from({ length: 4 }).map((__, rowIndex) => (
-                      <Skeleton key={rowIndex} className="h-10 w-full" />
-                    ))}
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-
-            <Card className="border-border/60">
-              <CardHeader className="space-y-2">
-                <Skeleton className="h-5 w-40" />
-                <Skeleton className="h-4 w-64" />
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {Array.from({ length: 4 }).map((_, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center gap-3 rounded-lg border p-3"
-                  >
-                    <Skeleton className="h-10 w-10 rounded-full" />
-                    <div className="flex-1 space-y-2">
-                      <Skeleton className="h-4 w-44" />
-                      <Skeleton className="h-3 w-52" />
-                    </div>
-                    <Skeleton className="h-4 w-20" />
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
+          <div className="rounded-lg border border-border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
+            대여 정보를 불러오는 중입니다...
           </div>
         </div>
       </div>
@@ -479,6 +435,11 @@ export default function AdminRentalDetailClient() {
   return (
     <div className="min-h-screen bg-muted/30 dark:bg-muted/30">
       <div className="container py-6 lg:py-8">
+        {isLoading ? (
+          <div className="mx-auto mb-4 w-full max-w-[1500px] rounded-lg border border-border bg-muted/30 px-4 py-2 text-sm text-muted-foreground">
+            최신 상태를 확인하고 있습니다...
+          </div>
+        ) : null}
         <div className="mx-auto w-full max-w-[1500px] space-y-6 lg:space-y-8">
           <div className="mb-6 rounded-2xl border border-border bg-muted/30 p-5 shadow-lg lg:mb-8 lg:p-6">
             <div className="mb-5 flex flex-col gap-3 lg:mb-6 lg:gap-4 sm:flex-row sm:items-center sm:justify-between">

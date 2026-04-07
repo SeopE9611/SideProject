@@ -39,7 +39,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { Skeleton } from "@/components/ui/skeleton";
 import useSWR from "swr";
 import { parseISO, isValid, format } from "date-fns";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
@@ -333,27 +332,6 @@ export default function PackageDetailClient({
   const visibleOps = operationsHistorySorted.slice(0, opsLimit);
   const opsHasMore = operationsHistorySorted.length > opsLimit;
 
-  // 로딩/에러 처리
-  if (isLoading) {
-    return (
-      <div className="container py-6 space-y-6">
-        <Skeleton className="h-8 w-64" />
-        <div className="grid gap-6 md:grid-cols-2">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Card key={i} className="dark:bg-card dark:border-border">
-              <CardHeader>
-                <Skeleton className="h-6 w-32" />
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-20 w-full" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
   if (error) {
     return (
       <div className="container py-6">
@@ -371,6 +349,15 @@ export default function PackageDetailClient({
   }
 
   if (!data) {
+    if (isLoading) {
+      return (
+        <div className="container py-6">
+          <div className="rounded-lg border border-border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
+            패키지 정보를 불러오는 중입니다...
+          </div>
+        </div>
+      );
+    }
     return (
       <div className="container py-6">
         <AsyncState
@@ -491,6 +478,11 @@ export default function PackageDetailClient({
   return (
     <div className="min-h-screen bg-muted/30">
       <div className="container py-6">
+        {isLoading ? (
+          <div className="mb-4 rounded-lg border border-border bg-muted/30 px-4 py-2 text-sm text-muted-foreground">
+            최신 상태를 확인하고 있습니다...
+          </div>
+        ) : null}
         {/* 헤더 카드 */}
         <div className="rounded-2xl p-6 md:p-8 border shadow-lg mb-8 bg-card/80 border-border dark:bg-card dark:border-border">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
