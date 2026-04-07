@@ -42,6 +42,7 @@ import { cn } from "@/lib/utils";
 import useSWR from "swr";
 import { parseISO, isValid, format } from "date-fns";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import { Skeleton } from "@/components/ui/skeleton";
 import type {
   AdminPackageDetailDto,
   AdminPackageOperationHistoryDto,
@@ -348,8 +349,32 @@ export default function PackageDetailClient({
     );
   }
 
+  const isInitialLoading = isLoading && !data;
   if (!data) {
-    if (isLoading) return null;
+    if (isInitialLoading) {
+      return (
+        <div className="container py-6">
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <Skeleton className="h-9 w-56" />
+              <div className="flex gap-2">
+                <Skeleton className="h-9 w-24" />
+                <Skeleton className="h-9 w-24" />
+              </div>
+            </div>
+            <div className="grid gap-4 md:grid-cols-4">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <Skeleton key={index} className="h-24 rounded-xl" />
+              ))}
+            </div>
+            <div className="grid gap-6 lg:grid-cols-2">
+              <Skeleton className="h-[360px] rounded-xl" />
+              <Skeleton className="h-[360px] rounded-xl" />
+            </div>
+          </div>
+        </div>
+      );
+    }
     return (
       <div className="container py-6">
         <AsyncState

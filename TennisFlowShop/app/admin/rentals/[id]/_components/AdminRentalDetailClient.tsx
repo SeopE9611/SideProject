@@ -19,6 +19,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import AsyncState from "@/components/system/AsyncState";
 import { runAdminActionWithToast } from "@/lib/admin/adminActionHelpers";
 import {
@@ -338,7 +339,30 @@ export default function AdminRentalDetailClient() {
     );
   }
   if (!data) {
-    if (isLoading) return null;
+    if (isLoading) {
+      return (
+        <div className="min-h-screen bg-muted/30 dark:bg-muted/30">
+          <div className="container py-6 lg:py-8 space-y-6">
+            <div className="flex items-center justify-between gap-3">
+              <Skeleton className="h-9 w-48" />
+              <div className="flex gap-2">
+                <Skeleton className="h-9 w-24" />
+                <Skeleton className="h-9 w-24" />
+              </div>
+            </div>
+            <div className="grid gap-4 md:grid-cols-4">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <Skeleton key={index} className="h-24 rounded-xl" />
+              ))}
+            </div>
+            <div className="grid gap-6 xl:grid-cols-[1.3fr_1fr]">
+              <Skeleton className="h-[420px] rounded-xl" />
+              <Skeleton className="h-[420px] rounded-xl" />
+            </div>
+          </div>
+        </div>
+      );
+    }
 
     if (!isLoading) {
       return (
@@ -357,7 +381,6 @@ export default function AdminRentalDetailClient() {
       );
     }
 
-    return null;
   }
 
   const Outbound = data?.shipping?.outbound;

@@ -20,6 +20,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogClose, DialogContent, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { inferNextActionForOperationItem } from '@/lib/admin/next-action-guidance';
 import { badgeBase, badgeSizeSm, badgeToneClass, getPaymentStatusBadgeSpec, getShippingMethodBadge } from '@/lib/badge-style';
@@ -527,7 +528,28 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
       />
     );
   if (!data) {
-    if (isLoading) return null;
+    if (isLoading) {
+      return (
+        <SiteContainer variant="wide" className="py-6 lg:py-8 space-y-6">
+          <div className="flex items-center justify-between">
+            <Skeleton className="h-9 w-56" />
+            <div className="flex gap-2">
+              <Skeleton className="h-9 w-20" />
+              <Skeleton className="h-9 w-20" />
+            </div>
+          </div>
+          <div className="grid gap-4 md:grid-cols-5">
+            {Array.from({ length: 5 }).map((_, index) => (
+              <Skeleton key={index} className="h-24 rounded-xl" />
+            ))}
+          </div>
+          <div className="grid gap-6 xl:grid-cols-[1.4fr_1fr]">
+            <Skeleton className="h-[460px] rounded-xl" />
+            <Skeleton className="h-[460px] rounded-xl" />
+          </div>
+        </SiteContainer>
+      );
+    }
 
     return (
       <AsyncState

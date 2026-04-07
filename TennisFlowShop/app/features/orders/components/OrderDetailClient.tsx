@@ -21,6 +21,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { inferNextActionForOperationGroup } from "@/lib/admin/next-action-guidance";
 import {
   isApplicationClosedForLinkedAutomation,
@@ -266,7 +267,28 @@ export default function OrderDetailClient({ orderId }: Props) {
     );
   }
   if (!orderDetail) {
-    if (isOrderLoading) return null;
+    if (isOrderLoading) {
+      return (
+        <div className="container py-6 lg:py-8 space-y-6">
+          <div className="flex items-center justify-between">
+            <Skeleton className="h-9 w-48" />
+            <div className="flex gap-2">
+              <Skeleton className="h-9 w-24" />
+              <Skeleton className="h-9 w-24" />
+            </div>
+          </div>
+          <div className="grid gap-4 md:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <Skeleton key={index} className="h-24 rounded-xl" />
+            ))}
+          </div>
+          <div className="grid gap-6 xl:grid-cols-[1.4fr_1fr]">
+            <Skeleton className="h-[460px] rounded-xl" />
+            <Skeleton className="h-[460px] rounded-xl" />
+          </div>
+        </div>
+      );
+    }
     return (
       <AsyncState
         kind="empty"
