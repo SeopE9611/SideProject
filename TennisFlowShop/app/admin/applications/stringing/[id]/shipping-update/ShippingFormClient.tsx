@@ -94,58 +94,7 @@ export default function ShippingFormClient({
         : "배송 방법과 예상 수령일을 등록할 수 있습니다."
     : "신청 정보를 확인하고 배송 정보를 관리할 수 있습니다.";
 
-  let content = null;
-  if (isLoading) {
-    content = (
-      <Card className="w-full max-w-md mx-auto border-border/60">
-        <CardContent className="space-y-5 p-6">
-          <div className="space-y-2">
-            <p className="text-sm font-medium text-foreground">배송 방법</p>
-            <Skeleton className="h-10 w-full" />
-          </div>
-          <div className="space-y-2">
-            <p className="text-sm font-medium text-foreground">예상 수령일</p>
-            <Skeleton className="h-10 w-full" />
-          </div>
-          <div className="space-y-2">
-            <p className="text-sm font-medium text-foreground">택배사</p>
-            <Skeleton className="h-10 w-full" />
-          </div>
-          <div className="space-y-2">
-            <p className="text-sm font-medium text-foreground">운송장 번호</p>
-            <Skeleton className="h-10 w-full" />
-          </div>
-          <div className="pt-2">
-            <Skeleton className="h-10 w-full" />
-          </div>
-        </CardContent>
-      </Card>
-    );
-  } else if (error || !data) {
-    content = (
-      <AsyncState
-        kind="error"
-        tone="admin"
-        variant="card"
-        resourceName="신청 정보"
-        onAction={() => {
-          void mutate();
-        }}
-      />
-    );
-  } else {
-    content = (
-      <ShippingForm
-        applicationId={applicationId}
-        initialShippingMethod={rawMethod}
-        initialEstimatedDelivery={shippingInfo.estimatedDate || ""}
-        initialCourier={invoice.courier || ""}
-        initialTrackingNumber={invoice.trackingNumber || ""}
-        onSuccess={onSuccess}
-        isVisitPickup={isVisitPickup}
-      />
-    );
-  }
+  const isInitialLoading = isLoading && !data;
 
   return (
     <div className="min-h-screen bg-muted/30 py-8 px-4">
@@ -163,7 +112,51 @@ export default function ShippingFormClient({
           </h1>
           <p className="text-muted-foreground">{pageDesc}</p>
         </div>
-        {content}
+        {isInitialLoading ? (
+          <Card className="w-full max-w-md mx-auto border-border/60">
+            <CardContent className="space-y-5 p-6">
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-foreground">배송 방법</p>
+                <Skeleton className="h-10 w-full" />
+              </div>
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-foreground">예상 수령일</p>
+                <Skeleton className="h-10 w-full" />
+              </div>
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-foreground">택배사</p>
+                <Skeleton className="h-10 w-full" />
+              </div>
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-foreground">운송장 번호</p>
+                <Skeleton className="h-10 w-full" />
+              </div>
+              <div className="pt-2">
+                <Skeleton className="h-10 w-full" />
+              </div>
+            </CardContent>
+          </Card>
+        ) : error || !data ? (
+          <AsyncState
+            kind="error"
+            tone="admin"
+            variant="card"
+            resourceName="신청 정보"
+            onAction={() => {
+              void mutate();
+            }}
+          />
+        ) : (
+          <ShippingForm
+            applicationId={applicationId}
+            initialShippingMethod={rawMethod}
+            initialEstimatedDelivery={shippingInfo.estimatedDate || ""}
+            initialCourier={invoice.courier || ""}
+            initialTrackingNumber={invoice.trackingNumber || ""}
+            onSuccess={onSuccess}
+            isVisitPickup={isVisitPickup}
+          />
+        )}
       </div>
     </div>
   );

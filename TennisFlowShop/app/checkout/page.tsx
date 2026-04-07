@@ -20,6 +20,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { getMyInfo } from "@/lib/auth.client";
 import { bankLabelMap } from "@/lib/constants";
@@ -805,12 +806,11 @@ export default function CheckoutPage() {
     };
   }, [user]);
 
-  if (loading) return null;
-
   // 비로그인 + 비회원 주문 중단 상태이면 체크아웃 UI 자체를 막고 로그인 유도 화면을 노출
   if (!user && !allowGuestCheckout) {
     return <LoginGate next={checkoutHref} variant="checkout" />;
   }
+  const isInitialLoading = loading;
 
   const renderCheckout = (checkoutStringingAdapter?: CheckoutStringingServiceAdapter) => {
     const checkoutPackageUsage = resolveCheckoutPackageUsage(withStringService, checkoutStringingAdapter);
@@ -943,7 +943,20 @@ export default function CheckoutPage() {
         </div>
 
         <SiteContainer variant="wide" className="py-6 bp-sm:py-8">
-          <div className="grid grid-cols-1 gap-6 bp-sm:gap-8 bp-lg:grid-cols-3">
+          {isInitialLoading ? (
+            <div className="grid grid-cols-1 gap-6 bp-sm:gap-8 bp-lg:grid-cols-3">
+              <div className="bp-lg:col-span-2 space-y-4 bp-sm:space-y-6">
+                <Skeleton className="h-16 w-full rounded-xl" />
+                <Skeleton className="h-56 w-full rounded-xl" />
+                <Skeleton className="h-72 w-full rounded-xl" />
+                <Skeleton className="h-80 w-full rounded-xl" />
+              </div>
+              <div className="bp-lg:col-span-1">
+                <Skeleton className="h-[540px] w-full rounded-xl" />
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-6 bp-sm:gap-8 bp-lg:grid-cols-3">
             {/* 주문 정보 입력 폼 */}
             <div className={cn("bp-lg:col-span-2 space-y-4 bp-sm:space-y-6", isCheckoutSubmitting && "pointer-events-none")} aria-busy={isCheckoutSubmitting}>
               {/* 이탈 경고(고정 노출) */}
@@ -1642,7 +1655,8 @@ export default function CheckoutPage() {
                 </Card>
               </div>
             </div>
-          </div>
+            </div>
+          )}
         </SiteContainer>
       </div>
     );
