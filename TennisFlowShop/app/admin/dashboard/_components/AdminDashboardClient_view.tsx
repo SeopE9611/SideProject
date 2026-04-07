@@ -394,35 +394,49 @@ export default function AdminDashboardClient() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <Skeleton className="h-8 w-48" />
-          <Skeleton className="h-10 w-24" />
+      <div className="space-y-8 pb-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="space-y-1">
+            <h1 className="text-4xl font-bold tracking-tight">관리자 대시보드</h1>
+            <p className="text-sm text-muted-foreground">최근 운영 지표를 불러오는 중입니다.</p>
+          </div>
+          <Button variant="outline" disabled className="shrink-0">
+            <Activity className="mr-2 h-4 w-4" />
+            새로고침
+          </Button>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Card key={i}>
-              <CardHeader>
-                <Skeleton className="h-4 w-24" />
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-8 w-40" />
-                <Skeleton className="mt-2 h-4 w-28" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <section className="space-y-4">
+          <div>
+            <h2 className="text-2xl font-semibold tracking-tight">핵심 지표</h2>
+            <p className="text-sm text-muted-foreground">주요 비즈니스 메트릭</p>
+          </div>
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Card key={i}>
+                <CardHeader>
+                  <Skeleton className="h-4 w-24" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-8 w-40" />
+                  <Skeleton className="mt-2 h-4 w-28" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
 
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-5 w-40" />
-            <Skeleton className="mt-2 h-4 w-72" />
-          </CardHeader>
-          <CardContent>
-            <Skeleton className="h-44 w-full" />
-          </CardContent>
-        </Card>
+        <section className="space-y-4">
+          <div>
+            <h2 className="text-2xl font-semibold tracking-tight">즉시 처리 필요</h2>
+            <p className="text-sm text-muted-foreground">긴급 대응이 필요한 항목</p>
+          </div>
+          <Card>
+            <CardContent className="p-6">
+              <Skeleton className="h-44 w-full" />
+            </CardContent>
+          </Card>
+        </section>
       </div>
     );
   }
