@@ -4,7 +4,6 @@ import HeroCourtBackdrop from "@/components/system/HeroCourtBackdrop";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import Link from "next/link";
-import { Suspense } from "react";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
@@ -110,9 +109,7 @@ export default async function RacketsPage({ searchParams }: { searchParams: Prom
             </div>
           </div>
         )}
-        <Suspense>
-          <FilterableRacketList initialBrand={initialBrand} initialCondition={initialCondition} />
-        </Suspense>
+        <FilterableRacketList initialBrand={initialBrand} initialCondition={initialCondition} />
       </SiteContainer>
     </div>
   );

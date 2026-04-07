@@ -127,6 +127,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
     hasResolvedData &&
     Array.isArray(items) &&
     items.length === 0;
+  const showListSkeleton = isLoading && hasResolvedData;
 
   async function afterOpenDetail() {
     if (key) await mutate();
@@ -293,7 +294,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                   </div>
 
                   <div className="space-y-2">
-                    {isLoading && (
+                    {showListSkeleton && (
                       <div className="space-y-2 rounded-lg border border-border/30 bg-card p-3">
                         {Array.from({ length: 6 }).map((_, idx) => (
                           <div

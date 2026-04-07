@@ -1,5 +1,5 @@
-import { ListPageSkeleton } from "@/components/system/PageLoading";
+import { TablePageSkeleton } from "@/components/system/loading";
 
 export default function Loading() {
-  return <ListPageSkeleton rows={6} />;
+  return <TablePageSkeleton statsCount={4} rows={5} columnCount={4} toolbarVariant="none" />;
 }

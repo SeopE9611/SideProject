@@ -1,4 +1,4 @@
-import { ListPageSkeleton } from "@/components/system/PageLoading";
+import { ListPageSkeleton } from "@/components/system/loading";
 
 export default function Loading() {
   return <ListPageSkeleton rows={6} />;
