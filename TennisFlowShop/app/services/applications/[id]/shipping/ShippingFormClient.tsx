@@ -35,7 +35,7 @@ import {
   Truck,
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import useSWR, { mutate as globalMutate } from "swr";
 import { z } from "zod";
 
@@ -124,82 +124,7 @@ export default function ShippingFormClient({
   const searchParams = useSearchParams();
   const returnTo = searchParams.get("return"); // 예: /mypage?tab=applications
 
-  // 1) 로딩/에러(모든 렌더에서 동일한 훅 호출 순서)
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background py-8 md:py-12">
-        <div className="max-w-3xl mx-auto px-4">
-          <div className="mb-6 md:mb-8 text-center">
-            <div className="inline-flex items-center gap-3 mb-4">
-              <div className="w-12 h-px bg-primary/30"></div>
-              <div className="w-14 h-14 bg-card rounded-2xl flex items-center justify-center shadow-lg">
-                <Truck className="w-7 h-7 text-foreground" />
-              </div>
-              <div className="w-12 h-px bg-muted/30"></div>
-            </div>
-            <h1 className="text-3xl lg:text-4xl font-bold text-foreground mb-3">
-              라켓 발송 정보
-            </h1>
-            <p className="text-muted-foreground leading-relaxed">
-              배송 정보를 불러오는 중입니다.
-            </p>
-          </div>
-
-          <div className="space-y-4 md:space-y-6">
-            <Card className="border-border bg-card shadow-md">
-              <CardContent className="p-4 md:p-6">
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 bg-primary/10 dark:bg-primary/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Clock className="w-5 h-5 text-foreground" />
-                  </div>
-                  <div className="space-y-2 w-full">
-                    <Skeleton className="h-5 w-52" />
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-3/4" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-border shadow-lg">
-              <CardContent className="p-4 md:p-8 space-y-4 md:space-y-6">
-                <div className="flex items-center gap-3 md:gap-4">
-                  <div className="flex-1 h-px bg-primary/30"></div>
-                  <div className="flex items-center gap-2 text-foreground">
-                    <Package className="w-5 h-5" />
-                    <span className="font-semibold">배송 정보</span>
-                  </div>
-                  <div className="flex-1 h-px bg-muted/30"></div>
-                </div>
-                <div className="space-y-4 md:space-y-6">
-                  <div className="space-y-2">
-                    <Skeleton className="h-4 w-20" />
-                    <Skeleton className="h-12 w-full" />
-                  </div>
-                  <div className="space-y-2">
-                    <Skeleton className="h-4 w-24" />
-                    <Skeleton className="h-12 w-full" />
-                  </div>
-                  <div className="space-y-2">
-                    <Skeleton className="h-4 w-20" />
-                    <Skeleton className="h-12 w-full" />
-                  </div>
-                  <div className="space-y-2">
-                    <Skeleton className="h-4 w-20" />
-                    <Skeleton className="h-24 w-full" />
-                  </div>
-                </div>
-                <div className="flex justify-end pt-2">
-                  <Skeleton className="h-11 w-32 rounded-md" />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </div>
-    );
-  }
-  if (error || !data) {
+  if (error && !data) {
     return (
       <div className="max-w-3xl mx-auto mt-8 md:mt-12 px-4">
         <AsyncState
@@ -211,6 +136,16 @@ export default function ShippingFormClient({
           }}
         />
       </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <SelfShipForm
+        applicationId={applicationId}
+        isLoading={isLoading}
+        returnTo={returnTo ?? undefined}
+      />
     );
   }
 
@@ -306,6 +241,7 @@ export default function ShippingFormClient({
   return (
     <SelfShipForm
       applicationId={applicationId}
+      isLoading={isLoading}
       application={data}
       returnTo={returnTo ?? undefined}
     />
@@ -315,11 +251,13 @@ export default function ShippingFormClient({
 // 실제 폼
 function SelfShipForm({
   applicationId,
+  isLoading,
   application,
   returnTo,
 }: {
   applicationId: string;
-  application: Application;
+  isLoading: boolean;
+  application?: Application;
   returnTo?: string;
 }) {
   const router = useRouter();
@@ -330,15 +268,15 @@ function SelfShipForm({
   // 초기값은 항상 계산 (훅 순서 고정)
   const initial: FormValues = useMemo(
     () => ({
-      courier: application.shippingInfo?.selfShip?.courier ?? "",
-      trackingNo: application.shippingInfo?.selfShip?.trackingNo ?? "",
-      shippedAt: application.shippingInfo?.selfShip?.shippedAt ?? "",
-      note: application.shippingInfo?.selfShip?.note ?? "",
+      courier: application?.shippingInfo?.selfShip?.courier ?? "",
+      trackingNo: application?.shippingInfo?.selfShip?.trackingNo ?? "",
+      shippedAt: application?.shippingInfo?.selfShip?.shippedAt ?? "",
+      note: application?.shippingInfo?.selfShip?.note ?? "",
     }),
     [application],
   );
 
-  const isEdit = Boolean(initial.trackingNo);
+  const isEdit = !isLoading && Boolean(initial.trackingNo);
   const defaultReturnTo = `/mypage?${new URLSearchParams({
     tab: "orders",
     flowType: "application",
@@ -348,16 +286,19 @@ function SelfShipForm({
 
   // 신청서로 돌아갈 URL (order/rental/single 문맥 유지)
   const applyUrl = useMemo(() => {
-    const orderId = application.orderId;
+    const orderId = application?.orderId;
     if (orderId) return `/services/apply?orderId=${orderId}`;
 
-    const rentalId = application.rentalId;
+    const rentalId = application?.rentalId;
     if (rentalId) return `/services/apply?rentalId=${rentalId}`;
 
     return "/services/apply?mode=single";
   }, [application]);
 
   const [form, setForm] = useState<FormValues>(initial);
+  useEffect(() => {
+    setForm(initial);
+  }, [initial]);
 
   const isDirty =
     form.courier !== initial.courier ||
@@ -389,7 +330,7 @@ function SelfShipForm({
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (submittingRef.current || submitting) return;
+    if (submittingRef.current || submitting || isLoading || !application) return;
 
     const parsed = FormSchema.safeParse(form);
     if (!parsed.success) {
@@ -480,10 +421,12 @@ function SelfShipForm({
             <div className="w-12 h-px bg-muted/30"></div>
           </div>
           <h1 className="text-3xl lg:text-4xl font-bold text-foreground mb-3">
-            {isEdit ? "라켓 발송 정보 수정" : "라켓 발송 정보 등록"}
+            {isLoading ? "라켓 발송 정보" : isEdit ? "라켓 발송 정보 수정" : "라켓 발송 정보 등록"}
           </h1>
           <p className="text-muted-foreground leading-relaxed">
-            매장으로 보내는 라켓의 택배사와 운송장 번호를 입력해 주세요.
+            {isLoading
+              ? "배송 정보를 불러오는 중입니다."
+              : "매장으로 보내는 라켓의 택배사와 운송장 번호를 입력해 주세요."}
           </p>
         </div>
 
@@ -496,15 +439,25 @@ function SelfShipForm({
                   <Clock className="w-5 h-5 text-foreground" />
                 </div>
                 <div className="space-y-2">
-                  <h3 className="font-semibold text-foreground">
-                    아직 발송 전이신가요?
-                  </h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    라켓 발송 후 이 페이지에서 발송 정보(택배사/운송장 번호)를
-                    등록하셔도 됩니다.
-                    <br />
-                    발송일은 선택 항목이며, 나중에 추가하실 수 있습니다.
-                  </p>
+                  {isLoading ? (
+                    <>
+                      <Skeleton className="h-5 w-52" />
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-3/4" />
+                    </>
+                  ) : (
+                    <>
+                      <h3 className="font-semibold text-foreground">
+                        아직 발송 전이신가요?
+                      </h3>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        라켓 발송 후 이 페이지에서 발송 정보(택배사/운송장 번호)를
+                        등록하셔도 됩니다.
+                        <br />
+                        발송일은 선택 항목이며, 나중에 추가하실 수 있습니다.
+                      </p>
+                    </>
+                  )}
                 </div>
               </div>
             </CardContent>
@@ -523,166 +476,195 @@ function SelfShipForm({
                 <div className="flex-1 h-px bg-muted/30"></div>
               </div>
 
-              <div className="space-y-4 md:space-y-6">
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="courier"
-                    className="text-base font-semibold text-foreground flex items-center gap-2"
-                  >
-                    <Truck className="w-4 h-4 text-primary" />
-                    택배사
-                    <span className="text-destructive">*</span>
-                  </Label>
-                  <Select
-                    value={form.courier}
-                    onValueChange={(value) => {
-                      setForm((prev) => ({
-                        ...prev,
-                        courier: value,
-                      }));
-                      if (fieldErrors.courier) {
-                        setFieldErrors((prev) => ({
-                          ...prev,
-                          courier: undefined,
-                        }));
-                      }
-                    }}
-                  >
-                    <SelectTrigger
-                      id="courier"
-                      className={`h-12 text-base focus:ring-2 focus:ring-ring dark:focus:ring-ring ${fieldErrors.courier ? "border-destructive focus:border-destructive" : "border-border focus:border-border"}`}
+              {isLoading ? (
+                <div className="space-y-4 md:space-y-6">
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-12 w-full" />
+                  </div>
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-12 w-full" />
+                  </div>
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-12 w-full" />
+                  </div>
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-24 w-full" />
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4 md:space-y-6">
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="courier"
+                      className="text-base font-semibold text-foreground flex items-center gap-2"
                     >
-                      <SelectValue placeholder="택배사를 선택하세요" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {COURIER_OPTIONS.map((label) => (
-                        <SelectItem key={label} value={label}>
-                          {label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <p className="min-h-[18px] text-sm text-destructive">
-                    {fieldErrors.courier ?? ""}
-                  </p>
-                </div>
+                      <Truck className="w-4 h-4 text-primary" />
+                      택배사
+                      <span className="text-destructive">*</span>
+                    </Label>
+                    <Select
+                      value={form.courier}
+                      onValueChange={(value) => {
+                        setForm((prev) => ({
+                          ...prev,
+                          courier: value,
+                        }));
+                        if (fieldErrors.courier) {
+                          setFieldErrors((prev) => ({
+                            ...prev,
+                            courier: undefined,
+                          }));
+                        }
+                      }}
+                    >
+                      <SelectTrigger
+                        id="courier"
+                        className={`h-12 text-base focus:ring-2 focus:ring-ring dark:focus:ring-ring ${fieldErrors.courier ? "border-destructive focus:border-destructive" : "border-border focus:border-border"}`}
+                      >
+                        <SelectValue placeholder="택배사를 선택하세요" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {COURIER_OPTIONS.map((label) => (
+                          <SelectItem key={label} value={label}>
+                            {label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="min-h-[18px] text-sm text-destructive">
+                      {fieldErrors.courier ?? ""}
+                    </p>
+                  </div>
 
-                {/* Tracking Number Field */}
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="trackingNo"
-                    className="text-base font-semibold text-foreground flex items-center gap-2"
-                  >
-                    <FileText className="w-4 h-4 text-foreground" />
-                    송장번호
-                    <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    id="trackingNo"
-                    value={form.trackingNo}
-                    onChange={onChange("trackingNo")}
-                    placeholder="숫자 또는 영문 조합으로 입력해 주세요"
-                    className={`h-12 text-base focus:ring-2 focus:ring-ring dark:focus:ring-ring ${fieldErrors.trackingNo ? "border-destructive focus:border-destructive" : "border-border focus:border-border dark:focus:border-border"}`}
-                  />
-                  <p className="min-h-[18px] text-sm text-destructive">
-                    {fieldErrors.trackingNo ?? ""}
-                  </p>
-                </div>
+                  {/* Tracking Number Field */}
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="trackingNo"
+                      className="text-base font-semibold text-foreground flex items-center gap-2"
+                    >
+                      <FileText className="w-4 h-4 text-foreground" />
+                      송장번호
+                      <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      id="trackingNo"
+                      value={form.trackingNo}
+                      onChange={onChange("trackingNo")}
+                      placeholder="숫자 또는 영문 조합으로 입력해 주세요"
+                      className={`h-12 text-base focus:ring-2 focus:ring-ring dark:focus:ring-ring ${fieldErrors.trackingNo ? "border-destructive focus:border-destructive" : "border-border focus:border-border dark:focus:border-border"}`}
+                    />
+                    <p className="min-h-[18px] text-sm text-destructive">
+                      {fieldErrors.trackingNo ?? ""}
+                    </p>
+                  </div>
 
-                {/* Shipped Date Field */}
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="shippedAt"
-                    className="text-base font-semibold text-foreground flex items-center gap-2"
-                  >
-                    <Calendar className="w-4 h-4 text-primary dark:text-foreground" />
-                    발송일
-                    <span className="text-xs text-muted-foreground font-normal">
-                      (선택사항)
-                    </span>
-                  </Label>
-                  <Input
-                    id="shippedAt"
-                    type="date"
-                    value={form.shippedAt ?? ""}
-                    onChange={onChange("shippedAt")}
-                    className="h-12 text-base border-border focus:border-border dark:focus:border-border focus:ring-2 focus:ring-ring dark:focus:ring-ring"
-                  />
-                </div>
+                  {/* Shipped Date Field */}
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="shippedAt"
+                      className="text-base font-semibold text-foreground flex items-center gap-2"
+                    >
+                      <Calendar className="w-4 h-4 text-primary dark:text-foreground" />
+                      발송일
+                      <span className="text-xs text-muted-foreground font-normal">
+                        (선택사항)
+                      </span>
+                    </Label>
+                    <Input
+                      id="shippedAt"
+                      type="date"
+                      value={form.shippedAt ?? ""}
+                      onChange={onChange("shippedAt")}
+                      className="h-12 text-base border-border focus:border-border dark:focus:border-border focus:ring-2 focus:ring-ring dark:focus:ring-ring"
+                    />
+                  </div>
 
-                {/* Note Field */}
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="note"
-                    className="text-base font-semibold text-foreground flex items-center gap-2"
-                  >
-                    <FileText className="w-4 h-4 text-muted-foreground" />
-                    메모
-                    <span className="text-xs text-muted-foreground font-normal">
-                      (선택사항)
-                    </span>
-                  </Label>
-                  <Textarea
-                    id="note"
-                    value={form.note ?? ""}
-                    onChange={onChange("note")}
-                    placeholder="포장 상태, 수거 관련 참고사항 등을 입력해 주세요"
-                    rows={4}
-                    className="text-base border-border focus:border-border dark:focus:border-border focus:ring-2 focus:ring-ring dark:focus:ring-ring resize-none"
-                  />
+                  {/* Note Field */}
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="note"
+                      className="text-base font-semibold text-foreground flex items-center gap-2"
+                    >
+                      <FileText className="w-4 h-4 text-muted-foreground" />
+                      메모
+                      <span className="text-xs text-muted-foreground font-normal">
+                        (선택사항)
+                      </span>
+                    </Label>
+                    <Textarea
+                      id="note"
+                      value={form.note ?? ""}
+                      onChange={onChange("note")}
+                      placeholder="포장 상태, 수거 관련 참고사항 등을 입력해 주세요"
+                      rows={4}
+                      className="text-base border-border focus:border-border dark:focus:border-border focus:ring-2 focus:ring-ring dark:focus:ring-ring resize-none"
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
             </CardContent>
           </Card>
 
           {/* Action Buttons */}
           <Card className="border-border shadow-lg">
             <CardContent className="p-4 md:p-6">
-              <div className="flex flex-col sm:flex-row gap-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => confirmLeaveIfDirty(() => history.back())}
-                  disabled={submitting}
-                  className="flex-1 h-12 text-base border-border hover:bg-background dark:hover:bg-card"
-                >
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  돌아가기
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() =>
-                    confirmLeaveIfDirty(() => router.push(applyUrl))
-                  }
-                  disabled={submitting}
-                  className="flex-1 h-12 text-base border-border hover:bg-background dark:hover:bg-card"
-                >
-                  <Clock className="w-4 h-4 mr-2" />
-                  나중에 등록할게요
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={submitting}
-                  className="flex-1 h-12 text-base bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {submitting ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      저장 중...
-                    </>
-                  ) : (
-                    <>
-                      <Check className="w-4 h-4 mr-2" />
-                      {submitting
-                        ? "저장 중…"
-                        : isEdit
-                          ? "수정하기"
-                          : "저장하기"}
-                    </>
-                  )}
-                </Button>
-              </div>
+              {isLoading ? (
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Skeleton className="h-12 flex-1" />
+                  <Skeleton className="h-12 flex-1" />
+                  <Skeleton className="h-12 flex-1" />
+                </div>
+              ) : (
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => confirmLeaveIfDirty(() => history.back())}
+                    disabled={submitting}
+                    className="flex-1 h-12 text-base border-border hover:bg-background dark:hover:bg-card"
+                  >
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    돌아가기
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() =>
+                      confirmLeaveIfDirty(() => router.push(applyUrl))
+                    }
+                    disabled={submitting}
+                    className="flex-1 h-12 text-base border-border hover:bg-background dark:hover:bg-card"
+                  >
+                    <Clock className="w-4 h-4 mr-2" />
+                    나중에 등록할게요
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={submitting}
+                    className="flex-1 h-12 text-base bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {submitting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        저장 중...
+                      </>
+                    ) : (
+                      <>
+                        <Check className="w-4 h-4 mr-2" />
+                        {submitting
+                          ? "저장 중…"
+                          : isEdit
+                            ? "수정하기"
+                            : "저장하기"}
+                      </>
+                    )}
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         </form>
