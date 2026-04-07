@@ -585,6 +585,8 @@ export default function ProductEditClient({
   };
 
   if (error) return <div className="p-6">상품 불러오기 실패</div>;
+  if (isLoading && !data?.product) return null;
+  if (!data?.product) return <div className="p-6">상품 정보를 찾을 수 없습니다.</div>;
 
   return (
     <>
