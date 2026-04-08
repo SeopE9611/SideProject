@@ -356,6 +356,11 @@ export default function OrderDetailPage() {
   const trackingNumber =
     order.shippingInfo?.invoice?.trackingNumber ?? order.trackingNumber;
   const canTrack = !isVisitPickup && Boolean(trackingNumber);
+  const isUnsupportedCourier =
+    String(order.shippingInfo?.invoice?.courier ?? "").trim().toLowerCase() ===
+    "etc";
+  const unsupportedCourierMessage =
+    "현재 택배사는 자동 배송조회가 지원되지 않습니다.";
 
   const formatDateTime = (dateString: string | null | undefined) => {
     if (!dateString) return "-";
@@ -373,6 +378,10 @@ export default function OrderDetailPage() {
 
   const handleTrackingClick = async () => {
     if (!canTrack || trackingLoading) return;
+    if (isUnsupportedCourier) {
+      setTrackingError(unsupportedCourierMessage);
+      return;
+    }
     setTrackingLoading(true);
     setTrackingError(null);
     try {
@@ -707,14 +716,23 @@ export default function OrderDetailPage() {
                                 {trackingError}
                               </p>
                             )}
+                            {!trackingError && isUnsupportedCourier && (
+                              <p className="mt-1 text-sm text-muted-foreground">
+                                {unsupportedCourierMessage}
+                              </p>
+                            )}
                           </div>
                           <Button
                             variant="link"
                             className="text-primary hover:text-primary p-0"
                             onClick={handleTrackingClick}
-                            disabled={trackingLoading}
+                            disabled={trackingLoading || isUnsupportedCourier}
                           >
-                            {trackingLoading ? "조회 중..." : "배송 조회"}
+                            {isUnsupportedCourier
+                              ? "조회 불가"
+                              : trackingLoading
+                                ? "조회 중..."
+                                : "배송 조회"}
                           </Button>
                         </div>
                       )}

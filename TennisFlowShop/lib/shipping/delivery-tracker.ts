@@ -31,62 +31,68 @@ export type DeliveryTrackerSummaryFailure = {
 const TRACKING_QUERY = `
   query Track($carrierId: ID!, $trackingNumber: String!) {
     track(carrierId: $carrierId, trackingNumber: $trackingNumber) {
+      trackingNumber
       lastEvent {
         time
         status {
-          id
-          text
+          code
+          name
         }
         location {
           name
         }
         description
       }
-      progresses {
-        time
-        status {
-          id
-          text
+      events(last: 3) {
+        edges {
+          node {
+            time
+            status {
+              code
+              name
+            }
+            location {
+              name
+            }
+            description
+          }
         }
-        location {
-          name
-        }
-        description
-      }
-      state {
-        id
-        text
-      }
-      carrier {
-        id
-        name
       }
     }
   }
 `;
 
-const IN_TRANSIT_STATE_IDS = new Set([
-  "in_transit",
-  "out_for_delivery",
-  "at_pickup",
-  "pickup_complete",
-  "picked_up",
+const IN_TRANSIT_STATE_CODES = new Set([
+  "IN_TRANSIT",
+  "OUT_FOR_DELIVERY",
+  "AT_PICKUP",
+  "AVAILABLE_FOR_PICKUP",
+  "PICKUP_COMPLETE",
+  "PICKED_UP",
 ]);
 
 function normalizeProgress(item: any): DeliveryTrackerProgressItem {
   return {
     time: item?.time ? String(item.time) : null,
-    statusText: item?.status?.text ? String(item.status.text) : null,
+    statusText: item?.status?.name ? String(item.status.name) : null,
     locationName: item?.location?.name ? String(item.location.name) : null,
     description: item?.description ? String(item.description) : null,
   };
 }
 
-function normalizeDisplayStatus(stateId: string | null): DeliveryStatus {
-  if (!stateId) return "조회불가";
-  if (stateId === "delivered") return "배송완료";
-  if (IN_TRANSIT_STATE_IDS.has(stateId)) return "배송중";
-  return "배송준비중";
+function normalizeDisplayStatus(stateCode: string | null): DeliveryStatus {
+  const normalizedCode = stateCode ? String(stateCode).toUpperCase() : "";
+  if (!normalizedCode) return "조회불가";
+  if (normalizedCode === "DELIVERED") return "배송완료";
+  if (IN_TRANSIT_STATE_CODES.has(normalizedCode)) return "배송중";
+  if (
+    normalizedCode === "INFO_RECEIVED" ||
+    normalizedCode === "PENDING" ||
+    normalizedCode === "PRE_TRANSIT"
+  ) {
+    return "배송준비중";
+  }
+  return "조회불가";
 }
 
 export function buildDeliveryTrackerLink(params: {
@@ -107,8 +113,10 @@ export async function fetchDeliveryTrackerSummary(params: {
   trackingNumber: string;
   clientId: string;
   clientSecret: string;
+  carrierDisplayName?: string | null;
 }): Promise<DeliveryTrackerSummarySuccess | DeliveryTrackerSummaryFailure> {
-  const { carrierId, trackingNumber, clientId, clientSecret } = params;
+  const { carrierId, trackingNumber, clientId, clientSecret, carrierDisplayName } =
+    params;
   const auth = `TRACKQL-API-KEY ${clientId}:${clientSecret}`;
 
   try {
@@ -144,9 +152,15 @@ export async function fetchDeliveryTrackerSummary(params: {
     }
 
     const track = payload.data.track;
-    const stateId = track?.state?.id ? String(track.state.id) : null;
-    const progresses = Array.isArray(track?.progresses)
-      ? track.progresses.slice(-3).reverse().map(normalizeProgress)
+    const stateId = track?.lastEvent?.status?.code
+      ? String(track.lastEvent.status.code)
+      : null;
+    const progresses = Array.isArray(track?.events?.edges)
+      ? track.events.edges
+          .map((edge: any) => edge?.node)
+          .filter(Boolean)
+          .map(normalizeProgress)
+          .reverse()
       : [];
 
     const lastEvent = track?.lastEvent ? normalizeProgress(track.lastEvent) : null;
@@ -154,10 +168,12 @@ export async function fetchDeliveryTrackerSummary(params: {
     return {
       success: true,
       carrierId,
-      carrierName: track?.carrier?.name ? String(track.carrier.name) : null,
+      carrierName: carrierDisplayName ? String(carrierDisplayName) : null,
       trackingNumber,
       stateId,
-      stateText: track?.state?.text ? String(track.state.text) : null,
+      stateText: track?.lastEvent?.status?.name
+        ? String(track.lastEvent.status.name)
+        : null,
       displayStatus: normalizeDisplayStatus(stateId),
       linkUrl: buildDeliveryTrackerLink({ clientId, carrierId, trackingNumber }),
       lastEvent,
