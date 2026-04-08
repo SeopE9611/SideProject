@@ -13,7 +13,7 @@ import SiteContainer from "@/components/layout/SiteContainer";
 import LoginGate from "@/components/system/LoginGate";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -807,7 +807,7 @@ export default function CheckoutPage() {
   }, [user]);
 
   // 비로그인 + 비회원 주문 중단 상태이면 체크아웃 UI 자체를 막고 로그인 유도 화면을 노출
-  if (!user && !allowGuestCheckout) {
+  if (!loading && !user && !allowGuestCheckout) {
     return <LoginGate next={checkoutHref} variant="checkout" />;
   }
   const isInitialLoading = loading;
@@ -957,704 +957,704 @@ export default function CheckoutPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-6 bp-sm:gap-8 bp-lg:grid-cols-3">
-            {/* 주문 정보 입력 폼 */}
-            <div className={cn("bp-lg:col-span-2 space-y-4 bp-sm:space-y-6", isCheckoutSubmitting && "pointer-events-none")} aria-busy={isCheckoutSubmitting}>
-              {/* 이탈 경고(고정 노출) */}
-              <div className="flex items-start gap-2 rounded-xl border border-border bg-muted px-3 py-2 text-sm text-foreground dark:border-border dark:bg-muted dark:text-foreground">
-                <AlertTriangle className="mt-0.5 h-4 w-4 flex-none" />
-                <p className="leading-relaxed">
-                  <span className="font-semibold">주의:</span> 작성 중에 다른 페이지로 이동하거나 새로고침하면 입력한 내용이 <span className="font-semibold">초기화될 수 있습니다.</span>
-                </p>
-              </div>
-              {/* 주문 상품 */}
-              <Card className="bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card/80 border border-border bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
-                <div className="bg-muted border-b border-border p-3 bp-sm:p-4 bp-lg:p-6">
-                  <CardTitle className="flex items-center gap-3 text-base bp-sm:text-lg">
-                    <Package className="h-5 w-5 text-primary" />
-                    주문 상품
-                  </CardTitle>
-                  <CardDescription className="mt-2">장바구니에서 선택한 상품 목록입니다.</CardDescription>
+              {/* 주문 정보 입력 폼 */}
+              <div className={cn("bp-lg:col-span-2 space-y-4 bp-sm:space-y-6", isCheckoutSubmitting && "pointer-events-none")} aria-busy={isCheckoutSubmitting}>
+                {/* 이탈 경고(고정 노출) */}
+                <div className="flex items-start gap-2 rounded-xl border border-border bg-muted px-3 py-2 text-sm text-foreground dark:border-border dark:bg-muted dark:text-foreground">
+                  <AlertTriangle className="mt-0.5 h-4 w-4 flex-none" />
+                  <p className="leading-relaxed">
+                    <span className="font-semibold">주의:</span> 작성 중에 다른 페이지로 이동하거나 새로고침하면 입력한 내용이 <span className="font-semibold">초기화될 수 있습니다.</span>
+                  </p>
                 </div>
-                <CardContent className="p-3 bp-sm:p-4 bp-lg:p-6">
-                  {isBundleCheckout && bundleQty !== null && (
-                    <div className="mb-4 rounded-xl border border-border bg-background px-4 py-3 text-sm text-foreground dark:border-border dark:bg-card/60 dark:text-foreground">
-                      <p className="font-semibold">번들 수량: {bundleQty}개</p>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        라켓/스트링 수량은 동일하게 묶여 있으며, 수량 변경은 <span className="font-medium">스트링 선택 단계</span>
-                        에서만 가능합니다.
-                      </p>
-                      {bundleRacketId && (
-                        <div className="mt-3">
-                          <Button type="button" variant="outline" size="sm" className="h-8" asChild>
-                            <Link href={`/rackets/${bundleRacketId}/select-string`} data-no-unsaved-guard onClick={onLeaveCartClick}>
-                              수량/스트링 변경
-                            </Link>
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  <div className="space-y-4">
-                    {orderItems.map((item) => (
-                      <div key={item.id} className="flex flex-col bp-sm:flex-row bp-sm:items-center gap-3 bp-sm:gap-4 p-3 bp-sm:p-4 bg-muted/50 rounded-lg border border-border">
-                        <div className="flex items-center gap-3 min-w-0 flex-1">
-                          <div className="relative shrink-0">
-                            <Image
-                              src={item.image || "/placeholder.svg?height=80&width=80&query=tennis+product"}
-                              alt={item.name}
-                              width={80}
-                              height={80}
-                              loading="lazy"
-                              className="h-14 w-14 bp-sm:h-20 bp-sm:w-20 rounded-lg border-2 border-border shadow-lg object-cover"
-                            />
-                            <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">{item.quantity}</div>
+                {/* 주문 상품 */}
+                <Card className="bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card/80 border border-border bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
+                  <div className="bg-muted border-b border-border p-3 bp-sm:p-4 bp-lg:p-6">
+                    <CardTitle className="flex items-center gap-3 text-base bp-sm:text-lg">
+                      <Package className="h-5 w-5 text-primary" />
+                      주문 상품
+                    </CardTitle>
+                    <CardDescription className="mt-2">장바구니에서 선택한 상품 목록입니다.</CardDescription>
+                  </div>
+                  <CardContent className="p-3 bp-sm:p-4 bp-lg:p-6">
+                    {isBundleCheckout && bundleQty !== null && (
+                      <div className="mb-4 rounded-xl border border-border bg-background px-4 py-3 text-sm text-foreground dark:border-border dark:bg-card/60 dark:text-foreground">
+                        <p className="font-semibold">번들 수량: {bundleQty}개</p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          라켓/스트링 수량은 동일하게 묶여 있으며, 수량 변경은 <span className="font-medium">스트링 선택 단계</span>
+                          에서만 가능합니다.
+                        </p>
+                        {bundleRacketId && (
+                          <div className="mt-3">
+                            <Button type="button" variant="outline" size="sm" className="h-8" asChild>
+                              <Link href={`/rackets/${bundleRacketId}/select-string`} data-no-unsaved-guard onClick={onLeaveCartClick}>
+                                수량/스트링 변경
+                              </Link>
+                            </Button>
                           </div>
+                        )}
+                      </div>
+                    )}
+                    <div className="space-y-4">
+                      {orderItems.map((item) => (
+                        <div key={item.id} className="flex flex-col bp-sm:flex-row bp-sm:items-center gap-3 bp-sm:gap-4 p-3 bp-sm:p-4 bg-muted/50 rounded-lg border border-border">
+                          <div className="flex items-center gap-3 min-w-0 flex-1">
+                            <div className="relative shrink-0">
+                              <Image
+                                src={item.image || "/placeholder.svg?height=80&width=80&query=tennis+product"}
+                                alt={item.name}
+                                width={80}
+                                height={80}
+                                loading="lazy"
+                                className="h-14 w-14 bp-sm:h-20 bp-sm:w-20 rounded-lg border-2 border-border shadow-lg object-cover"
+                              />
+                              <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">{item.quantity}</div>
+                            </div>
 
-                          <div className="min-w-0 flex-1">
-                            <h3 className="font-semibold text-foreground line-clamp-2">{item.name}</h3>
-                            <div className="mt-1 flex flex-wrap items-center gap-2">
-                              <p className="text-sm text-muted-foreground">수량: {item.quantity}개</p>
-                              {withStringService && serviceTargetIds.includes(String(item.id)) && (
-                                <Badge variant="secondary" className="text-[11px]">
-                                  교체 서비스 대상
-                                </Badge>
-                              )}
+                            <div className="min-w-0 flex-1">
+                              <h3 className="font-semibold text-foreground line-clamp-2">{item.name}</h3>
+                              <div className="mt-1 flex flex-wrap items-center gap-2">
+                                <p className="text-sm text-muted-foreground">수량: {item.quantity}개</p>
+                                {withStringService && serviceTargetIds.includes(String(item.id)) && (
+                                  <Badge variant="secondary" className="text-[11px]">
+                                    교체 서비스 대상
+                                  </Badge>
+                                )}
+                              </div>
                             </div>
                           </div>
-                        </div>
 
-                        <div className="flex items-center justify-between bp-sm:flex-col bp-sm:items-end bp-sm:justify-center bp-sm:text-right">
-                          <div className="text-xs bp-sm:text-sm text-muted-foreground">단가: {item.price.toLocaleString()}원</div>
-                          <div className="font-bold text-base bp-sm:text-lg text-primary">{(item.price * item.quantity).toLocaleString()}원</div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* 수령 방식 및 장착 서비스 카드 */}
-              <Card className="bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card/80 border border-border bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
-                <div className="bg-muted border-b border-border p-4 bp-sm:p-6">
-                  <CardTitle className="flex items-center gap-3 text-base bp-sm:text-lg">
-                    <Truck className="h-5 w-5 text-primary" />
-                    상품 접수 예약 방식
-                  </CardTitle>
-                  <CardDescription className="mt-2">상품을 어떻게 예약하실지 선택해주세요.</CardDescription>
-                </div>
-                <CardContent className="p-4 bp-sm:p-6 space-y-4">
-                  <RadioGroup defaultValue="택배수령" onValueChange={(value) => setDeliveryMethod(value as "택배수령" | "방문수령")}>
-                    <div className="flex items-center space-x-3 p-4 bg-muted rounded-lg border border-border">
-                      <RadioGroupItem value="택배수령" id="택배수령" />
-                      <Label htmlFor="택배수령" className="flex-1 cursor-pointer font-medium">
-                        택배 발송/수령 (자택 또는 지정 장소로 배송)
-                      </Label>
-                      <Truck className="h-5 w-5 text-primary" />
-                    </div>
-                    <div className="flex items-center space-x-3 p-4 bg-muted rounded-lg border border-border">
-                      <RadioGroupItem value="방문수령" id="방문수령" />
-                      <Label htmlFor="방문수령" className="flex-1 cursor-pointer font-medium">
-                        오프라인 매장 방문 (상호명 미정 샵에서 직접 수령)
-                      </Label>
-                      <Building2 className="h-5 w-5 text-primary" />
-                    </div>
-                  </RadioGroup>
-
-                  <div className="bg-muted p-4 rounded-lg border border-primary/30">
-                    <div className="flex items-center space-x-2 mb-2">
-                      <Checkbox
-                        id="withStringService"
-                        checked={withStringService}
-                        disabled={isBundleCheckout || lockServiceMode}
-                        onCheckedChange={(checked) => {
-                          if (isBundleCheckout || lockServiceMode) return;
-                          const next = !!checked;
-                          setWithStringService(next);
-
-                          // 사용자가 OFF로 내리면 URL에서 withService 제거
-                          if (!next) {
-                            const url = new URL(window.location.href);
-                            url.searchParams.delete("withService");
-                            window.history.replaceState(window.history.state, "", `${url.pathname}${url.search}${url.hash}`);
-                          }
-                        }}
-                      />
-                      <Label htmlFor="withStringService" className="font-medium text-foreground">
-                        {withStringServiceLabel}
-                      </Label>
-                    </div>
-                    <p className="text-sm text-foreground ml-6">{serviceHelpText}</p>
-                    {lockServiceMode && (
-                      <div className="ml-6 mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                        <span>
-                          지금은 <span className="font-semibold text-foreground">교체 서비스 포함</span> 모드예요. 결제와 함께 교체 서비스 정보가 접수되며 장착 정보와 추가 요청도 현재 주문에 함께 저장됩니다.
-                        </span>
-
-                        {/* '상품만 결제'로 바꾸고 싶을 때의 명시적 전환 버튼 */}
-                        <button type="button" className="underline underline-offset-2 hover:text-foreground" onClick={switchToProductOnly}>
-                          상품만 결제할래요
-                        </button>
-                      </div>
-                    )}
-                    {isBundleCheckout && (
-                      <p className="text-sm text-foreground ml-6 mt-1">
-                        번들 주문은 장착 서비스 포함이 <span className="font-semibold">고정</span>이며, 번들 수량은 <span className="font-semibold">{bundleQty}개</span>로 <span className="font-semibold">고정</span>됩니다. 수량 변경은{" "}
-                        <span className="font-semibold">스트링 선택 단계</span>
-                        에서만 가능합니다.
-                      </p>
-                    )}
-                    {/* 서비스 ON일 때만 세부 방식 표시 */}
-                    <div className={cn("transition-all duration-300 ease-in-out overflow-hidden", withStringService ? "opacity-100 max-h-[300px] mt-3" : "opacity-0 max-h-0")}>
-                      {withStringService &&
-                        (deliveryMethod === "방문수령" ? (
-                          // 방문 수령: 매장 방문 접수 고정(선택 불가 안내)
-                          <div className="ml-7 mt-2 text-sm">
-                            <span className="px-2 py-1 rounded bg-primary text-primary-foreground">{collectionMethodLabel("visit")}로 진행됩니다.</span>
+                          <div className="flex items-center justify-between bp-sm:flex-col bp-sm:items-end bp-sm:justify-center bp-sm:text-right">
+                            <div className="text-xs bp-sm:text-sm text-muted-foreground">단가: {item.price.toLocaleString()}원</div>
+                            <div className="font-bold text-base bp-sm:text-lg text-primary">{(item.price * item.quantity).toLocaleString()}원</div>
                           </div>
-                        ) : (
-                          // 택배 수령: **선택지는 자가 발송만** 노출
-                          <div className="ml-7 mt-2 grid gap-2 text-sm">
-                            <label className="flex items-center gap-2 text-base bp-sm:text-lg">
-                              <input type="radio" name="pickup" checked={servicePickupMethod === "SELF_SEND"} onChange={() => setServicePickupMethod("SELF_SEND")} />
-                              <span>자가 발송 (편의점/우체국 등 직접 발송)</span>
-                            </label>
-                            {/* 기사 방문 수거 옵션은 잠정 비노출
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* 수령 방식 및 장착 서비스 카드 */}
+                <Card className="bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card/80 border border-border bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
+                  <div className="bg-muted border-b border-border p-4 bp-sm:p-6">
+                    <CardTitle className="flex items-center gap-3 text-base bp-sm:text-lg">
+                      <Truck className="h-5 w-5 text-primary" />
+                      상품 접수 예약 방식
+                    </CardTitle>
+                    <CardDescription className="mt-2">상품을 어떻게 예약하실지 선택해주세요.</CardDescription>
+                  </div>
+                  <CardContent className="p-4 bp-sm:p-6 space-y-4">
+                    <RadioGroup defaultValue="택배수령" onValueChange={(value) => setDeliveryMethod(value as "택배수령" | "방문수령")}>
+                      <div className="flex items-center space-x-3 p-4 bg-muted rounded-lg border border-border">
+                        <RadioGroupItem value="택배수령" id="택배수령" />
+                        <Label htmlFor="택배수령" className="flex-1 cursor-pointer font-medium">
+                          택배 발송/수령 (자택 또는 지정 장소로 배송)
+                        </Label>
+                        <Truck className="h-5 w-5 text-primary" />
+                      </div>
+                      <div className="flex items-center space-x-3 p-4 bg-muted rounded-lg border border-border">
+                        <RadioGroupItem value="방문수령" id="방문수령" />
+                        <Label htmlFor="방문수령" className="flex-1 cursor-pointer font-medium">
+                          오프라인 매장 방문 (상호명 미정 샵에서 직접 수령)
+                        </Label>
+                        <Building2 className="h-5 w-5 text-primary" />
+                      </div>
+                    </RadioGroup>
+
+                    <div className="bg-muted p-4 rounded-lg border border-primary/30">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <Checkbox
+                          id="withStringService"
+                          checked={withStringService}
+                          disabled={isBundleCheckout || lockServiceMode}
+                          onCheckedChange={(checked) => {
+                            if (isBundleCheckout || lockServiceMode) return;
+                            const next = !!checked;
+                            setWithStringService(next);
+
+                            // 사용자가 OFF로 내리면 URL에서 withService 제거
+                            if (!next) {
+                              const url = new URL(window.location.href);
+                              url.searchParams.delete("withService");
+                              window.history.replaceState(window.history.state, "", `${url.pathname}${url.search}${url.hash}`);
+                            }
+                          }}
+                        />
+                        <Label htmlFor="withStringService" className="font-medium text-foreground">
+                          {withStringServiceLabel}
+                        </Label>
+                      </div>
+                      <p className="text-sm text-foreground ml-6">{serviceHelpText}</p>
+                      {lockServiceMode && (
+                        <div className="ml-6 mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                          <span>
+                            지금은 <span className="font-semibold text-foreground">교체 서비스 포함</span> 모드예요. 결제와 함께 교체 서비스 정보가 접수되며 장착 정보와 추가 요청도 현재 주문에 함께 저장됩니다.
+                          </span>
+
+                          {/* '상품만 결제'로 바꾸고 싶을 때의 명시적 전환 버튼 */}
+                          <button type="button" className="underline underline-offset-2 hover:text-foreground" onClick={switchToProductOnly}>
+                            상품만 결제할래요
+                          </button>
+                        </div>
+                      )}
+                      {isBundleCheckout && (
+                        <p className="text-sm text-foreground ml-6 mt-1">
+                          번들 주문은 장착 서비스 포함이 <span className="font-semibold">고정</span>이며, 번들 수량은 <span className="font-semibold">{bundleQty}개</span>로 <span className="font-semibold">고정</span>됩니다. 수량 변경은{" "}
+                          <span className="font-semibold">스트링 선택 단계</span>
+                          에서만 가능합니다.
+                        </p>
+                      )}
+                      {/* 서비스 ON일 때만 세부 방식 표시 */}
+                      <div className={cn("transition-all duration-300 ease-in-out overflow-hidden", withStringService ? "opacity-100 max-h-[300px] mt-3" : "opacity-0 max-h-0")}>
+                        {withStringService &&
+                          (deliveryMethod === "방문수령" ? (
+                            // 방문 수령: 매장 방문 접수 고정(선택 불가 안내)
+                            <div className="ml-7 mt-2 text-sm">
+                              <span className="px-2 py-1 rounded bg-primary text-primary-foreground">{collectionMethodLabel("visit")}로 진행됩니다.</span>
+                            </div>
+                          ) : (
+                            // 택배 수령: **선택지는 자가 발송만** 노출
+                            <div className="ml-7 mt-2 grid gap-2 text-sm">
+                              <label className="flex items-center gap-2 text-base bp-sm:text-lg">
+                                <input type="radio" name="pickup" checked={servicePickupMethod === "SELF_SEND"} onChange={() => setServicePickupMethod("SELF_SEND")} />
+                                <span>자가 발송 (편의점/우체국 등 직접 발송)</span>
+                              </label>
+                              {/* 기사 방문 수거 옵션은 잠정 비노출
  <label className="flex items-center gap-2 text-base bp-sm:text-lg">
  <input type="radio" name="pickup" checked={servicePickupMethod === 'COURIER_VISIT'} onChange={() => setServicePickupMethod('COURIER_VISIT')} />
  <span>택배 기사 방문 수거 (+3,000원 예상)</span>
  </label>
  */}
-                          </div>
-                        ))}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* 배송 정보/수령 정보 */}
-              <Card className="bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card/80 border border-border bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
-                <div className="bg-card p-3 bp-sm:p-4 bp-lg:p-6">
-                  <CardTitle className="flex items-center gap-3 text-base bp-sm:text-lg">
-                    <MapPin className="h-5 w-5 text-foreground" />
-                    {needsShippingAddress ? "배송 정보" : "수령/연락 정보"}
-                  </CardTitle>
-                  <CardDescription className="mt-2">{needsShippingAddress ? "상품을 받으실 배송지 정보를 입력해주세요." : "매장 방문 수령을 위해 연락 가능한 정보를 입력해주세요."}</CardDescription>
-                </div>
-                <CardContent className="p-3 bp-sm:p-4 bp-lg:p-6">
-                  <div className="space-y-4 bp-sm:space-y-6">
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                      <div className="space-y-2">
-                        <Label htmlFor="recipient-name" className="flex items-center gap-2 text-sm">
-                          <UserIcon className="h-4 w-4 text-primary" />
-                          수령인 이름
-                        </Label>
-                        <Input
-                          id="recipient-name"
-                          value={name}
-                          onChange={(e) => setName(e.target.value)}
-                          onBlur={() => touchField("name")}
-                          placeholder="수령인 이름을 입력하세요"
-                          className={cn("border-2 focus:border-border transition-colors", showNameError && "border-destructive/30 focus:border-destructive/30")}
-                        />
-                        <div className="min-h-[16px]">{showNameError && <p className="text-xs text-destructive">{fieldErrors.name}</p>}</div>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="recipient-email" className="flex items-center gap-2 text-sm">
-                          <Mail className="h-4 w-4 text-primary" />
-                          이메일
-                        </Label>
-                        <Input
-                          id="recipient-email"
-                          type="email"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          onBlur={() => touchField("email")}
-                          placeholder="example@naver.com"
-                          className={cn("border-2 focus:border-border transition-colors", showEmailError && "border-destructive/30 focus:border-destructive/30")}
-                        />
-                        <div className="min-h-[16px]">{showEmailError && <p className="text-xs text-destructive">{fieldErrors.email}</p>}</div>
-                      </div>
-                      <div className="space-y-2 sm:col-span-2">
-                        <Label htmlFor="recipient-phone" className="flex items-center gap-2 text-sm">
-                          <Phone className="h-4 w-4 text-primary" />
-                          연락처
-                        </Label>
-                        <Input
-                          id="recipient-phone"
-                          value={phone}
-                          onChange={(e) => setPhone(formatKoreanPhone010(e.target.value))}
-                          onBlur={() => touchField("phone")}
-                          placeholder="연락처를 입력하세요 ('-' 제외)"
-                          inputMode="numeric"
-                          className={cn("border-2 focus:border-primary transition-colors", showPhoneError && "border-destructive/30 focus:border-destructive/30")}
-                        />
-                        <div className="min-h-[16px]">{showPhoneError && <p className="text-xs text-destructive">{fieldErrors.phone}</p>}</div>
-                      </div>
-                    </div>
-
-                    {needsShippingAddress && (
-                      <>
-                        <div className="space-y-4">
-                          <div className="flex items-center justify-between">
-                            <Label htmlFor="address-postal" className="flex items-center gap-2 text-sm">
-                              <Home className="h-4 w-4 text-foreground" />
-                              우편번호
-                            </Label>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                touchField("postalCode");
-                                handleFindPostcode();
-                              }}
-                              className="bg-primary text-primary-foreground border-0 hover:bg-primary/90"
-                            >
-                              우편번호 찾기
-                            </Button>
-                          </div>
-                          <Input id="address-postal" readOnly value={postalCode} placeholder="우편번호" className={cn("bg-muted cursor-not-allowed max-w-[200px] border-2", showPostalCodeError && "border-destructive/30")} />
-                          <div className="min-h-[16px]">{showPostalCodeError && <p className="text-xs text-destructive">{fieldErrors.postalCode}</p>}</div>
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="address-main">기본 주소</Label>
-                          <Input id="address-main" readOnly value={address} placeholder="기본 주소" className={cn("bg-muted cursor-not-allowed border-2", showPostalCodeError && "border-destructive/30")} />
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="address-detail">상세 주소</Label>
-                          <Input
-                            id="address-detail"
-                            value={addressDetail}
-                            onChange={(e) => setAddressDetail(e.target.value)}
-                            onBlur={() => touchField("addressDetail")}
-                            placeholder="상세 주소를 입력하세요"
-                            className={cn("border-2 focus:border-border transition-colors", showAddressDetailError && "border-destructive/30 focus:border-destructive/30")}
-                          />
-                          <div className="min-h-[16px]">{showAddressDetailError && <p className="text-xs text-destructive">{fieldErrors.addressDetail}</p>}</div>
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="delivery-request" className="flex items-center gap-2 text-sm">
-                            <MessageSquare className="h-4 w-4 text-foreground" />
-                            배송 요청사항
-                          </Label>
-                          <Textarea id="delivery-request" value={deliveryRequest} onChange={(e) => setDeliveryRequest(e.target.value)} placeholder="배송 시 요청사항을 입력하세요" className="border-2 focus:border-border transition-colors" />
-                        </div>
-
-                        <div className="bg-muted p-4 rounded-lg border border-border">
-                          <div className="flex items-center space-x-2">
-                            <Checkbox id="save-address" checked={saveAddress} onCheckedChange={(checked) => setSaveAddress(!!checked)} disabled={!user} />
-                            <label htmlFor="save-address" className={`text-sm font-medium ${!user ? "text-muted-foreground" : "text-foreground"}`}>
-                              이 배송지 정보를 저장
-                            </label>
-                          </div>
-                          {!user && <p className="text-xs text-muted-foreground ml-6 mt-1">로그인 후 배송지 정보를 저장할 수 있습니다.</p>}
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {withStringService && checkoutStringingAdapter && <CheckoutStringingServiceSections withStringService={withStringService} adapter={checkoutStringingAdapter} />}
-
-              {/* 결제 정보 */}
-              <Card className="bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card/80 border border-border bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
-                <div className="bg-card p-4 bp-sm:p-6">
-                  <CardTitle className="flex items-center gap-3 text-base bp-sm:text-lg">
-                    <CreditCard className="h-5 w-5 text-foreground" />
-                    결제 정보
-                  </CardTitle>
-                  <CardDescription className="mt-2">결제 방법을 선택하고 필요한 정보를 입력해주세요.</CardDescription>
-                </div>
-                <CardContent className="p-3 bp-sm:p-4 bp-lg:p-6">
-                  <div className="space-y-4 bp-sm:space-y-6">
-                    <div className="space-y-3">
-                      <Label>결제 방법</Label>
-                      <RadioGroup defaultValue="bank-transfer" className="space-y-3">
-                        <div className="flex items-center space-x-3 p-4 bg-background rounded-lg border-2 border-border">
-                          <RadioGroupItem value="bank-transfer" id="bank-transfer" />
-                          <Label htmlFor="bank-transfer" className="flex-1 cursor-pointer font-medium">
-                            무통장입금
-                          </Label>
-                          <Building2 className="h-5 w-5 text-foreground" />
-                        </div>
-                      </RadioGroup>
-                    </div>
-
-                    <div className="space-y-3">
-                      <Label htmlFor="bank-account">입금 계좌 선택</Label>
-                      <Select value={selectedBank} onValueChange={setSelectedBank}>
-                        <SelectTrigger className="border-2 focus:border-border">
-                          <SelectValue placeholder="입금 계좌를 선택하세요" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="shinhan">
-                            신한은행 {bankLabelMap.shinhan.account} (예금주: {bankLabelMap.shinhan.holder})
-                          </SelectItem>
-                          <SelectItem value="kookmin">
-                            국민은행 {bankLabelMap.kookmin.account} (예금주: {bankLabelMap.kookmin.holder})
-                          </SelectItem>
-                          <SelectItem value="woori">
-                            우리은행 {bankLabelMap.woori.account} (예금주: {bankLabelMap.woori.holder})
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="depositor-name">입금자명</Label>
-                      <Input
-                        id="depositor-name"
-                        value={depositor}
-                        onChange={(e) => setDepositor(e.target.value)}
-                        onBlur={() => touchField("depositor")}
-                        placeholder="입금자명을 입력하세요"
-                        className={cn("border-2 focus:border-border transition-colors", showDepositorError && "border-destructive/30 focus:border-destructive/30")}
-                      />
-                      <div className="min-h-[16px]">{showDepositorError && <p className="text-xs text-destructive">{fieldErrors.depositor}</p>}</div>
-                    </div>
-
-                    {withStringService && checkoutStringingAdapter && (
-                      <CheckoutStringingPaymentAddon
-                        packagePreview={checkoutStringingAdapter.packagePreview}
-                        packageRemaining={checkoutStringingAdapter.packageRemaining}
-                        requiredPassCount={checkoutStringingAdapter.requiredPassCount}
-                        canApplyPackage={checkoutStringingAdapter.canApplyPackage}
-                        usingPackage={checkoutStringingAdapter.usingPackage}
-                        packageInsufficient={checkoutStringingAdapter.packageInsufficient}
-                        packageOptOut={!!checkoutStringingAdapter.formData.packageOptOut}
-                        onPackageOptOutChange={(next) => {
-                          checkoutStringingAdapter.setFormData((prev) => ({
-                            ...prev,
-                            packageOptOut: next,
-                          }));
-                        }}
-                      />
-                    )}
-
-                    <div className="bg-muted p-4 rounded-lg border border-border">
-                      <div className="flex items-center gap-2 mb-3">
-                        <Shield className="h-5 w-5 text-primary" />
-                        <p className="font-semibold text-foreground">무통장입금 안내</p>
-                      </div>
-                      <ul className="space-y-2 text-sm text-foreground">
-                        <li className="flex items-center gap-2 text-base bp-sm:text-lg">
-                          <CheckCircle className="h-4 w-4" />
-                          주문 후 24시간 이내에 입금해 주셔야 주문이 정상 처리됩니다.
-                        </li>
-                        <li className="flex items-center gap-2 text-base bp-sm:text-lg">
-                          <CheckCircle className="h-4 w-4" />
-                          입금자명이 주문자명과 다를 경우, 고객센터로 연락 부탁드립니다.
-                        </li>
-                        <li className="flex items-center gap-2 text-base bp-sm:text-lg">
-                          <CheckCircle className="h-4 w-4" />
-                          {needsShippingAddress ? "입금 확인 후 배송이 시작됩니다." : "입금 확인 후 매장 수령 준비가 시작됩니다."}
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* 주문자 동의 */}
-              <Card className="bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card/80 border border-border bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
-                <div className="bg-card p-4 bp-sm:p-6">
-                  <CardTitle className="flex items-center gap-3 text-base bp-sm:text-lg">
-                    <Shield className="h-5 w-5 text-destructive" />
-                    주문자 동의
-                  </CardTitle>
-                </div>
-                <CardContent className="p-3 bp-sm:p-4 bp-lg:p-6">
-                  <div className="space-y-4">
-                    <div className="bg-background p-4 rounded-lg">
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id="agree-all"
-                          checked={agreeAll}
-                          onCheckedChange={(checked) => {
-                            const newValue = !!checked;
-                            setAgreeAll(newValue);
-                            setAgreeTerms(newValue);
-                            setAgreePrivacy(newValue);
-                            setAgreeRefund(newValue);
-                          }}
-                        />
-                        <label htmlFor="agree-all" className="font-semibold text-lg text-foreground">
-                          전체 동의
-                        </label>
-                      </div>
-                    </div>
-                    <Separator />
-                    <div className="space-y-3">
-                      {[
-                        {
-                          id: "agree-terms",
-                          label: "이용약관 동의 (필수)",
-                          state: agreeTerms,
-                          setState: setAgreeTerms,
-                        },
-                        {
-                          id: "agree-privacy",
-                          label: "개인정보 수집 및 이용 동의 (필수)",
-                          state: agreePrivacy,
-                          setState: setAgreePrivacy,
-                        },
-                        {
-                          id: "agree-refund",
-                          label: "환불 규정 동의 (필수)",
-                          state: agreeRefund,
-                          setState: setAgreeRefund,
-                        },
-                      ].map((item, index) => (
-                        <div key={item.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                          <div className="flex items-center space-x-2">
-                            <Checkbox
-                              id={item.id}
-                              checked={item.state}
-                              onCheckedChange={(checked) => {
-                                const value = !!checked;
-                                item.setState(value);
-                                if (!value) setAgreeAll(false);
-                                else if (agreeTerms && agreePrivacy && agreeRefund) setAgreeAll(true);
-                              }}
-                            />
-                            <label htmlFor={item.id} className="text-sm font-medium text-foreground">
-                              {item.label}
-                            </label>
-                          </div>
-                          <Button variant="link" size="sm" className="h-auto p-0 text-foreground hover:text-foreground">
-                            보기
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* 주문 요약 */}
-            <div className="bp-lg:col-span-1">
-              <div className="bp-lg:sticky bp-lg:top-20">
-                <Card className="relative backdrop-blur-sm bg-card/90 dark:bg-card/90 border-0 shadow-2xl overflow-hidden">
-                  <div className="bg-card p-4 bp-sm:p-6 text-foreground border border-primary/20">
-                    <CardTitle className="flex items-center gap-3 text-xl">
-                      <div className="p-2 bg-card/20 rounded-full">
-                        <CreditCard className="h-5 w-5" />
-                      </div>
-                      주문 요약
-                    </CardTitle>
-                  </div>
-                  <CardContent className="p-4 bp-sm:p-6 space-y-4 bp-sm:space-y-6">
-                    <div className="space-y-4">
-                      <div className="flex justify-between items-center">
-                        <span className="text-muted-foreground">상품 금액</span>
-                        <span className="font-semibold text-lg">{subtotal.toLocaleString()}원</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-muted-foreground">배송비</span>
-                        <span className="font-semibold text-foreground">
-                          <span className="ml-2 text-xs font-normal text-muted-foreground">(30,000원 이상 구매 시 무료배송) </span>
-                          {shippingFee > 0 ? `${shippingFee.toLocaleString()}원` : "무료"}
-                        </span>
-                      </div>
-                      {/* 교체 서비스비 */}
-                      {withStringService && (
-                        <div className="flex justify-between items-center">
-                          <span className="text-muted-foreground">교체 서비스비</span>
-
-                          {!isMountingFeeReady ? (
-                            <div className="h-6 w-24 rounded-md bg-muted relative overflow-hidden">
-                              <div className="absolute inset-0 animate-shimmer bg-foreground/10" />
                             </div>
-                          ) : finalServiceFee > 0 ? (
-                            <span className="font-semibold text-lg">{finalServiceFee.toLocaleString()}원</span>
-                          ) : (
-                            <span className="text-sm text-muted-foreground">해당 없음</span>
-                          )}
-                        </div>
-                      )}
-
-                      {/* 포인트 사용(로그인 유저만) */}
-                      <div className="mt-2 bg-background p-3 bp-sm:p-4 rounded-lg border border-border">
-                        <div className="flex justify-between items-center">
-                          <span className="text-muted-foreground">사용 가능 포인트</span>
-                          <span className="font-semibold">{user ? (pointsFetchError ? "-" : pointsAvailable === null ? "-" : `${pointsAvailable.toLocaleString()}P`) : "로그인 필요"}</span>
-                        </div>
-
-                        {user && pointsFetchError && <p className="mt-1 text-xs text-destructive">포인트 정보를 불러오지 못했습니다.</p>}
-
-                        {user && !pointsFetchError && resolvedPointsDebt > 0 && <p className="mt-1 text-xs text-destructive">회수 예정 포인트(채무): {resolvedPointsDebt.toLocaleString()}P → 적립금이 먼저 상계됩니다.</p>}
-
-                        <div className="mt-3 flex items-center justify-between gap-3">
-                          <div className="flex items-center gap-2 text-sm">
-                            <Checkbox
-                              id="useAllPoints"
-                              checked={useAllPoints}
-                              onCheckedChange={(checked) => setUseAllPoints(Boolean(checked))}
-                              disabled={!user || !!pointsFetchError || pointsAvailable === null || resolvedPointsAvailable <= 0 || maxPointsToUse <= 0}
-                            />
-                            <Label htmlFor="useAllPoints" className="text-sm font-medium">
-                              전액 사용
-                            </Label>
-                          </div>
-
-                          <div className="flex items-center gap-2 text-sm">
-                            <Input
-                              type="text"
-                              inputMode="numeric"
-                              pattern="[0-9]*"
-                              min={0}
-                              step={POINT_UNIT}
-                              max={maxPointsToUse}
-                              className="w-28 text-right"
-                              value={pointsInput}
-                              disabled={!user || !!pointsFetchError || pointsAvailable === null || resolvedPointsAvailable <= 0 || maxPointsToUse <= 0 || useAllPoints}
-                              onFocus={(e) => {
-                                setIsEditingPoints(true);
-                                const el = e.currentTarget;
-
-                                if (pointsInput === "0") setPointsInput("");
-
-                                setTimeout(() => {
-                                  if (el && typeof el.select === "function") el.select();
-                                }, 0);
-                              }}
-                              onChange={(e) => {
-                                // 숫자만 허용
-                                const onlyDigits = e.target.value.replace(/[^\d]/g, "");
-                                setPointsInput(onlyDigits);
-                                setUseAllPoints(false);
-                                const n = Number(onlyDigits);
-                                setPointsToUse(Number.isFinite(n) ? Math.floor(n) : 0);
-                              }}
-                              onBlur={(e) => {
-                                setIsEditingPoints(false);
-
-                                // blur 시점에 최종 보정: 숫자만 → 정수 → 100P 단위 → 최대치(clamp)
-                                const rawText = e.currentTarget.value ?? "";
-                                const onlyDigits = String(rawText).replace(/[^\d]/g, "");
-                                const raw = Number(onlyDigits || "0");
-                                const safe = Number.isFinite(raw) ? Math.floor(raw) : 0;
-
-                                const normalized = Math.floor(safe / POINT_UNIT) * POINT_UNIT;
-                                const clamped = Math.max(0, Math.min(normalized, maxPointsToUse));
-
-                                setPointsInput(String(clamped));
-                                setPointsToUse(clamped);
-                              }}
-                            />
-                            <span className="text-sm text-muted-foreground">P</span>
-                          </div>
-                        </div>
-
-                        <p className="mt-2 text-xs text-muted-foreground">배송비에는 적용되지 않습니다. 최대 {maxPointsToUse.toLocaleString()}P 사용 가능</p>
-                      </div>
-                      {appliedPoints > 0 && (
-                        <div className="flex justify-between items-center">
-                          <span className="text-muted-foreground">포인트 사용(예정)</span>
-                          <span className="font-semibold text-destructive">-{appliedPoints.toLocaleString()}원</span>
-                        </div>
-                      )}
-                      <Separator />
-                      <div className="flex justify-between items-center text-xl font-bold">
-                        <span>총 결제 금액</span>
-                        <span className="text-foreground">{totalPrice.toLocaleString()}원</span>
-                      </div>
-                      {appliedPoints > 0 && (
-                        <div className="flex justify-between items-center text-lg font-bold">
-                          <span className="text-muted-foreground">포인트 적용 후 결제 예정 금액</span>
-                          <span className="text-foreground">{payableTotalPrice.toLocaleString()}원</span>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="bg-muted p-4 rounded-lg border border-border">
-                      <div className="flex items-center gap-2 text-foreground mb-2">
-                        <Shield className="h-4 w-4" />
-                        <span className="font-semibold">주문 안내</span>
-                      </div>
-                      <div className="text-sm text-foreground space-y-1">
-                        <p>• 주문 완료 후 입금 대기 상태로 등록됩니다.</p>
-                        <p>• {needsShippingAddress ? "입금 확인 후 배송이 시작됩니다." : "입금 확인 후 매장 수령 준비가 시작됩니다."}</p>
-                        <p>• 24시간 이내 입금 부탁드립니다.</p>
+                          ))}
                       </div>
                     </div>
                   </CardContent>
-                  <CardFooter className="flex flex-col gap-4 p-4 bp-sm:p-6 shrink-0">
-                    {(fieldErrors.items || fieldErrors.bundle || (isMountingFeeReady && fieldErrors.composition)) && (
-                      <div className="w-full rounded-lg border border-destructive/30 bg-destructive/15 p-3 text-sm text-destructive dark:bg-destructive/20">
-                        <p className="font-semibold mb-1">확인 필요</p>
-                        {fieldErrors.items && <p>• {fieldErrors.items}</p>}
-                        {fieldErrors.bundle && <p>• {fieldErrors.bundle}</p>}
-                        {fieldErrors.composition && (
-                          <p>
-                            • {fieldErrors.composition}{" "}
-                            {mode !== "buynow" && (
-                              <Link href="/cart" data-no-unsaved-guard onClick={onLeaveCartClick} className="underline underline-offset-2">
-                                (장바구니에서 정리)
-                              </Link>
+                </Card>
+
+                {/* 배송 정보/수령 정보 */}
+                <Card className="bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card/80 border border-border bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
+                  <div className="bg-card p-3 bp-sm:p-4 bp-lg:p-6">
+                    <CardTitle className="flex items-center gap-3 text-base bp-sm:text-lg">
+                      <MapPin className="h-5 w-5 text-foreground" />
+                      {needsShippingAddress ? "배송 정보" : "수령/연락 정보"}
+                    </CardTitle>
+                    <CardDescription className="mt-2">{needsShippingAddress ? "상품을 받으실 배송지 정보를 입력해주세요." : "매장 방문 수령을 위해 연락 가능한 정보를 입력해주세요."}</CardDescription>
+                  </div>
+                  <CardContent className="p-3 bp-sm:p-4 bp-lg:p-6">
+                    <div className="space-y-4 bp-sm:space-y-6">
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div className="space-y-2">
+                          <Label htmlFor="recipient-name" className="flex items-center gap-2 text-sm">
+                            <UserIcon className="h-4 w-4 text-primary" />
+                            수령인 이름
+                          </Label>
+                          <Input
+                            id="recipient-name"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            onBlur={() => touchField("name")}
+                            placeholder="수령인 이름을 입력하세요"
+                            className={cn("border-2 focus:border-border transition-colors", showNameError && "border-destructive/30 focus:border-destructive/30")}
+                          />
+                          <div className="min-h-[16px]">{showNameError && <p className="text-xs text-destructive">{fieldErrors.name}</p>}</div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="recipient-email" className="flex items-center gap-2 text-sm">
+                            <Mail className="h-4 w-4 text-primary" />
+                            이메일
+                          </Label>
+                          <Input
+                            id="recipient-email"
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            onBlur={() => touchField("email")}
+                            placeholder="example@naver.com"
+                            className={cn("border-2 focus:border-border transition-colors", showEmailError && "border-destructive/30 focus:border-destructive/30")}
+                          />
+                          <div className="min-h-[16px]">{showEmailError && <p className="text-xs text-destructive">{fieldErrors.email}</p>}</div>
+                        </div>
+                        <div className="space-y-2 sm:col-span-2">
+                          <Label htmlFor="recipient-phone" className="flex items-center gap-2 text-sm">
+                            <Phone className="h-4 w-4 text-primary" />
+                            연락처
+                          </Label>
+                          <Input
+                            id="recipient-phone"
+                            value={phone}
+                            onChange={(e) => setPhone(formatKoreanPhone010(e.target.value))}
+                            onBlur={() => touchField("phone")}
+                            placeholder="연락처를 입력하세요 ('-' 제외)"
+                            inputMode="numeric"
+                            className={cn("border-2 focus:border-primary transition-colors", showPhoneError && "border-destructive/30 focus:border-destructive/30")}
+                          />
+                          <div className="min-h-[16px]">{showPhoneError && <p className="text-xs text-destructive">{fieldErrors.phone}</p>}</div>
+                        </div>
+                      </div>
+
+                      {needsShippingAddress && (
+                        <>
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                              <Label htmlFor="address-postal" className="flex items-center gap-2 text-sm">
+                                <Home className="h-4 w-4 text-foreground" />
+                                우편번호
+                              </Label>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  touchField("postalCode");
+                                  handleFindPostcode();
+                                }}
+                                className="bg-primary text-primary-foreground border-0 hover:bg-primary/90"
+                              >
+                                우편번호 찾기
+                              </Button>
+                            </div>
+                            <Input id="address-postal" readOnly value={postalCode} placeholder="우편번호" className={cn("bg-muted cursor-not-allowed max-w-[200px] border-2", showPostalCodeError && "border-destructive/30")} />
+                            <div className="min-h-[16px]">{showPostalCodeError && <p className="text-xs text-destructive">{fieldErrors.postalCode}</p>}</div>
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="address-main">기본 주소</Label>
+                            <Input id="address-main" readOnly value={address} placeholder="기본 주소" className={cn("bg-muted cursor-not-allowed border-2", showPostalCodeError && "border-destructive/30")} />
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="address-detail">상세 주소</Label>
+                            <Input
+                              id="address-detail"
+                              value={addressDetail}
+                              onChange={(e) => setAddressDetail(e.target.value)}
+                              onBlur={() => touchField("addressDetail")}
+                              placeholder="상세 주소를 입력하세요"
+                              className={cn("border-2 focus:border-border transition-colors", showAddressDetailError && "border-destructive/30 focus:border-destructive/30")}
+                            />
+                            <div className="min-h-[16px]">{showAddressDetailError && <p className="text-xs text-destructive">{fieldErrors.addressDetail}</p>}</div>
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="delivery-request" className="flex items-center gap-2 text-sm">
+                              <MessageSquare className="h-4 w-4 text-foreground" />
+                              배송 요청사항
+                            </Label>
+                            <Textarea id="delivery-request" value={deliveryRequest} onChange={(e) => setDeliveryRequest(e.target.value)} placeholder="배송 시 요청사항을 입력하세요" className="border-2 focus:border-border transition-colors" />
+                          </div>
+
+                          <div className="bg-muted p-4 rounded-lg border border-border">
+                            <div className="flex items-center space-x-2">
+                              <Checkbox id="save-address" checked={saveAddress} onCheckedChange={(checked) => setSaveAddress(!!checked)} disabled={!user} />
+                              <label htmlFor="save-address" className={`text-sm font-medium ${!user ? "text-muted-foreground" : "text-foreground"}`}>
+                                이 배송지 정보를 저장
+                              </label>
+                            </div>
+                            {!user && <p className="text-xs text-muted-foreground ml-6 mt-1">로그인 후 배송지 정보를 저장할 수 있습니다.</p>}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {withStringService && checkoutStringingAdapter && <CheckoutStringingServiceSections withStringService={withStringService} adapter={checkoutStringingAdapter} />}
+
+                {/* 결제 정보 */}
+                <Card className="bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card/80 border border-border bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
+                  <div className="bg-card p-4 bp-sm:p-6">
+                    <CardTitle className="flex items-center gap-3 text-base bp-sm:text-lg">
+                      <CreditCard className="h-5 w-5 text-foreground" />
+                      결제 정보
+                    </CardTitle>
+                    <CardDescription className="mt-2">결제 방법을 선택하고 필요한 정보를 입력해주세요.</CardDescription>
+                  </div>
+                  <CardContent className="p-3 bp-sm:p-4 bp-lg:p-6">
+                    <div className="space-y-4 bp-sm:space-y-6">
+                      <div className="space-y-3">
+                        <Label>결제 방법</Label>
+                        <RadioGroup defaultValue="bank-transfer" className="space-y-3">
+                          <div className="flex items-center space-x-3 p-4 bg-background rounded-lg border-2 border-border">
+                            <RadioGroupItem value="bank-transfer" id="bank-transfer" />
+                            <Label htmlFor="bank-transfer" className="flex-1 cursor-pointer font-medium">
+                              무통장입금
+                            </Label>
+                            <Building2 className="h-5 w-5 text-foreground" />
+                          </div>
+                        </RadioGroup>
+                      </div>
+
+                      <div className="space-y-3">
+                        <Label htmlFor="bank-account">입금 계좌 선택</Label>
+                        <Select value={selectedBank} onValueChange={setSelectedBank}>
+                          <SelectTrigger className="border-2 focus:border-border">
+                            <SelectValue placeholder="입금 계좌를 선택하세요" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="shinhan">
+                              신한은행 {bankLabelMap.shinhan.account} (예금주: {bankLabelMap.shinhan.holder})
+                            </SelectItem>
+                            <SelectItem value="kookmin">
+                              국민은행 {bankLabelMap.kookmin.account} (예금주: {bankLabelMap.kookmin.holder})
+                            </SelectItem>
+                            <SelectItem value="woori">
+                              우리은행 {bankLabelMap.woori.account} (예금주: {bankLabelMap.woori.holder})
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="depositor-name">입금자명</Label>
+                        <Input
+                          id="depositor-name"
+                          value={depositor}
+                          onChange={(e) => setDepositor(e.target.value)}
+                          onBlur={() => touchField("depositor")}
+                          placeholder="입금자명을 입력하세요"
+                          className={cn("border-2 focus:border-border transition-colors", showDepositorError && "border-destructive/30 focus:border-destructive/30")}
+                        />
+                        <div className="min-h-[16px]">{showDepositorError && <p className="text-xs text-destructive">{fieldErrors.depositor}</p>}</div>
+                      </div>
+
+                      {withStringService && checkoutStringingAdapter && (
+                        <CheckoutStringingPaymentAddon
+                          packagePreview={checkoutStringingAdapter.packagePreview}
+                          packageRemaining={checkoutStringingAdapter.packageRemaining}
+                          requiredPassCount={checkoutStringingAdapter.requiredPassCount}
+                          canApplyPackage={checkoutStringingAdapter.canApplyPackage}
+                          usingPackage={checkoutStringingAdapter.usingPackage}
+                          packageInsufficient={checkoutStringingAdapter.packageInsufficient}
+                          packageOptOut={!!checkoutStringingAdapter.formData.packageOptOut}
+                          onPackageOptOutChange={(next) => {
+                            checkoutStringingAdapter.setFormData((prev) => ({
+                              ...prev,
+                              packageOptOut: next,
+                            }));
+                          }}
+                        />
+                      )}
+
+                      <div className="bg-muted p-4 rounded-lg border border-border">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Shield className="h-5 w-5 text-primary" />
+                          <p className="font-semibold text-foreground">무통장입금 안내</p>
+                        </div>
+                        <ul className="space-y-2 text-sm text-foreground">
+                          <li className="flex items-center gap-2 text-base bp-sm:text-lg">
+                            <CheckCircle className="h-4 w-4" />
+                            주문 후 24시간 이내에 입금해 주셔야 주문이 정상 처리됩니다.
+                          </li>
+                          <li className="flex items-center gap-2 text-base bp-sm:text-lg">
+                            <CheckCircle className="h-4 w-4" />
+                            입금자명이 주문자명과 다를 경우, 고객센터로 연락 부탁드립니다.
+                          </li>
+                          <li className="flex items-center gap-2 text-base bp-sm:text-lg">
+                            <CheckCircle className="h-4 w-4" />
+                            {needsShippingAddress ? "입금 확인 후 배송이 시작됩니다." : "입금 확인 후 매장 수령 준비가 시작됩니다."}
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* 주문자 동의 */}
+                <Card className="bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card/80 border border-border bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
+                  <div className="bg-card p-4 bp-sm:p-6">
+                    <CardTitle className="flex items-center gap-3 text-base bp-sm:text-lg">
+                      <Shield className="h-5 w-5 text-destructive" />
+                      주문자 동의
+                    </CardTitle>
+                  </div>
+                  <CardContent className="p-3 bp-sm:p-4 bp-lg:p-6">
+                    <div className="space-y-4">
+                      <div className="bg-background p-4 rounded-lg">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="agree-all"
+                            checked={agreeAll}
+                            onCheckedChange={(checked) => {
+                              const newValue = !!checked;
+                              setAgreeAll(newValue);
+                              setAgreeTerms(newValue);
+                              setAgreePrivacy(newValue);
+                              setAgreeRefund(newValue);
+                            }}
+                          />
+                          <label htmlFor="agree-all" className="font-semibold text-lg text-foreground">
+                            전체 동의
+                          </label>
+                        </div>
+                      </div>
+                      <Separator />
+                      <div className="space-y-3">
+                        {[
+                          {
+                            id: "agree-terms",
+                            label: "이용약관 동의 (필수)",
+                            state: agreeTerms,
+                            setState: setAgreeTerms,
+                          },
+                          {
+                            id: "agree-privacy",
+                            label: "개인정보 수집 및 이용 동의 (필수)",
+                            state: agreePrivacy,
+                            setState: setAgreePrivacy,
+                          },
+                          {
+                            id: "agree-refund",
+                            label: "환불 규정 동의 (필수)",
+                            state: agreeRefund,
+                            setState: setAgreeRefund,
+                          },
+                        ].map((item, index) => (
+                          <div key={item.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                            <div className="flex items-center space-x-2">
+                              <Checkbox
+                                id={item.id}
+                                checked={item.state}
+                                onCheckedChange={(checked) => {
+                                  const value = !!checked;
+                                  item.setState(value);
+                                  if (!value) setAgreeAll(false);
+                                  else if (agreeTerms && agreePrivacy && agreeRefund) setAgreeAll(true);
+                                }}
+                              />
+                              <label htmlFor={item.id} className="text-sm font-medium text-foreground">
+                                {item.label}
+                              </label>
+                            </div>
+                            <Button variant="link" size="sm" className="h-auto p-0 text-foreground hover:text-foreground">
+                              보기
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* 주문 요약 */}
+              <div className="bp-lg:col-span-1">
+                <div className="bp-lg:sticky bp-lg:top-20">
+                  <Card className="relative backdrop-blur-sm bg-card/90 dark:bg-card/90 border-0 shadow-2xl overflow-hidden">
+                    <div className="bg-card p-4 bp-sm:p-6 text-foreground border border-primary/20">
+                      <CardTitle className="flex items-center gap-3 text-xl">
+                        <div className="p-2 bg-card/20 rounded-full">
+                          <CreditCard className="h-5 w-5" />
+                        </div>
+                        주문 요약
+                      </CardTitle>
+                    </div>
+                    <CardContent className="p-4 bp-sm:p-6 space-y-4 bp-sm:space-y-6">
+                      <div className="space-y-4">
+                        <div className="flex justify-between items-center">
+                          <span className="text-muted-foreground">상품 금액</span>
+                          <span className="font-semibold text-lg">{subtotal.toLocaleString()}원</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-muted-foreground">배송비</span>
+                          <span className="font-semibold text-foreground">
+                            <span className="ml-2 text-xs font-normal text-muted-foreground">(30,000원 이상 구매 시 무료배송) </span>
+                            {shippingFee > 0 ? `${shippingFee.toLocaleString()}원` : "무료"}
+                          </span>
+                        </div>
+                        {/* 교체 서비스비 */}
+                        {withStringService && (
+                          <div className="flex justify-between items-center">
+                            <span className="text-muted-foreground">교체 서비스비</span>
+
+                            {!isMountingFeeReady ? (
+                              <div className="h-6 w-24 rounded-md bg-muted relative overflow-hidden">
+                                <div className="absolute inset-0 animate-shimmer bg-foreground/10" />
+                              </div>
+                            ) : finalServiceFee > 0 ? (
+                              <span className="font-semibold text-lg">{finalServiceFee.toLocaleString()}원</span>
+                            ) : (
+                              <span className="text-sm text-muted-foreground">해당 없음</span>
                             )}
-                          </p>
+                          </div>
                         )}
-                        {/* CTA 강화: composition 에러면 "장바구니로 가서 정리하기"를 버튼으로도 제공
- - 단, 즉시구매(buynow) 흐름에서는 장바구니에 담기지 않을 수 있어 CTA를 숨긴다.
- */}
-                        {fieldErrors.composition && mode !== "buynow" && (
-                          <div className="mt-3 flex flex-wrap gap-2">
-                            <Link href="/cart" data-no-unsaved-guard onClick={onLeaveCartClick} className="inline-flex items-center justify-center rounded-md bg-muted/50 dark:bg-card/60 px-3 py-2 text-sm font-medium text-foreground hover:bg-muted">
-                              장바구니로 가서 정리하기
-                            </Link>
-                            <span className="text-xs text-muted-foreground">정리 후 다시 이 페이지로 돌아와 주문을 진행해주세요.</span>
+
+                        {/* 포인트 사용(로그인 유저만) */}
+                        <div className="mt-2 bg-background p-3 bp-sm:p-4 rounded-lg border border-border">
+                          <div className="flex justify-between items-center">
+                            <span className="text-muted-foreground">사용 가능 포인트</span>
+                            <span className="font-semibold">{user ? (pointsFetchError ? "-" : pointsAvailable === null ? "-" : `${pointsAvailable.toLocaleString()}P`) : "로그인 필요"}</span>
+                          </div>
+
+                          {user && pointsFetchError && <p className="mt-1 text-xs text-destructive">포인트 정보를 불러오지 못했습니다.</p>}
+
+                          {user && !pointsFetchError && resolvedPointsDebt > 0 && <p className="mt-1 text-xs text-destructive">회수 예정 포인트(채무): {resolvedPointsDebt.toLocaleString()}P → 적립금이 먼저 상계됩니다.</p>}
+
+                          <div className="mt-3 flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-2 text-sm">
+                              <Checkbox
+                                id="useAllPoints"
+                                checked={useAllPoints}
+                                onCheckedChange={(checked) => setUseAllPoints(Boolean(checked))}
+                                disabled={!user || !!pointsFetchError || pointsAvailable === null || resolvedPointsAvailable <= 0 || maxPointsToUse <= 0}
+                              />
+                              <Label htmlFor="useAllPoints" className="text-sm font-medium">
+                                전액 사용
+                              </Label>
+                            </div>
+
+                            <div className="flex items-center gap-2 text-sm">
+                              <Input
+                                type="text"
+                                inputMode="numeric"
+                                pattern="[0-9]*"
+                                min={0}
+                                step={POINT_UNIT}
+                                max={maxPointsToUse}
+                                className="w-28 text-right"
+                                value={pointsInput}
+                                disabled={!user || !!pointsFetchError || pointsAvailable === null || resolvedPointsAvailable <= 0 || maxPointsToUse <= 0 || useAllPoints}
+                                onFocus={(e) => {
+                                  setIsEditingPoints(true);
+                                  const el = e.currentTarget;
+
+                                  if (pointsInput === "0") setPointsInput("");
+
+                                  setTimeout(() => {
+                                    if (el && typeof el.select === "function") el.select();
+                                  }, 0);
+                                }}
+                                onChange={(e) => {
+                                  // 숫자만 허용
+                                  const onlyDigits = e.target.value.replace(/[^\d]/g, "");
+                                  setPointsInput(onlyDigits);
+                                  setUseAllPoints(false);
+                                  const n = Number(onlyDigits);
+                                  setPointsToUse(Number.isFinite(n) ? Math.floor(n) : 0);
+                                }}
+                                onBlur={(e) => {
+                                  setIsEditingPoints(false);
+
+                                  // blur 시점에 최종 보정: 숫자만 → 정수 → 100P 단위 → 최대치(clamp)
+                                  const rawText = e.currentTarget.value ?? "";
+                                  const onlyDigits = String(rawText).replace(/[^\d]/g, "");
+                                  const raw = Number(onlyDigits || "0");
+                                  const safe = Number.isFinite(raw) ? Math.floor(raw) : 0;
+
+                                  const normalized = Math.floor(safe / POINT_UNIT) * POINT_UNIT;
+                                  const clamped = Math.max(0, Math.min(normalized, maxPointsToUse));
+
+                                  setPointsInput(String(clamped));
+                                  setPointsToUse(clamped);
+                                }}
+                              />
+                              <span className="text-sm text-muted-foreground">P</span>
+                            </div>
+                          </div>
+
+                          <p className="mt-2 text-xs text-muted-foreground">배송비에는 적용되지 않습니다. 최대 {maxPointsToUse.toLocaleString()}P 사용 가능</p>
+                        </div>
+                        {appliedPoints > 0 && (
+                          <div className="flex justify-between items-center">
+                            <span className="text-muted-foreground">포인트 사용(예정)</span>
+                            <span className="font-semibold text-destructive">-{appliedPoints.toLocaleString()}원</span>
+                          </div>
+                        )}
+                        <Separator />
+                        <div className="flex justify-between items-center text-xl font-bold">
+                          <span>총 결제 금액</span>
+                          <span className="text-foreground">{totalPrice.toLocaleString()}원</span>
+                        </div>
+                        {appliedPoints > 0 && (
+                          <div className="flex justify-between items-center text-lg font-bold">
+                            <span className="text-muted-foreground">포인트 적용 후 결제 예정 금액</span>
+                            <span className="text-foreground">{payableTotalPrice.toLocaleString()}원</span>
                           </div>
                         )}
                       </div>
-                    )}
-                    <CheckoutButton
-                      disabled={!canSubmit}
-                      name={name}
-                      phone={phone}
-                      email={email}
-                      postalCode={postalCode}
-                      address={address}
-                      addressDetail={addressDetail}
-                      depositor={depositor}
-                      totalPrice={totalPrice}
-                      shippingFee={shippingFee}
-                      selectedBank={selectedBank}
-                      deliveryRequest={deliveryRequest}
-                      saveAddress={saveAddress}
-                      deliveryMethod={deliveryMethod}
-                      serviceTargetIds={serviceTargetIds}
-                      withStringService={withStringService}
-                      servicePickupMethod={servicePickupMethod}
-                      items={orderItems}
-                      serviceFee={finalServiceFee}
-                      pointsToUse={appliedPoints}
-                      stringingApplicationInput={stringingApplicationInput}
-                      onSubmittingChange={setIsCheckoutSubmitting}
-                    />
-                    <Button variant="outline" className="w-full border-2 hover:bg-background dark:hover:bg-muted bg-transparent" asChild>
-                      <Link href="/cart" data-no-unsaved-guard onClick={onLeaveCartClick}>
-                        장바구니로 돌아가기
-                      </Link>
-                    </Button>
-                  </CardFooter>
-                  {isCheckoutSubmitting && (
-                    <div className="absolute inset-0 z-10 cursor-wait bg-overlay/10 backdrop-blur-[2px]">
-                      <div className="absolute inset-0 grid place-items-center">
-                        <div className="flex items-center gap-3 rounded-xl bg-card/90 px-4 py-3 shadow">
-                          <Loader2 className="h-5 w-5 animate-spin" />
-                          <span className="text-sm">주문을 처리하고 있어요…</span>
+
+                      <div className="bg-muted p-4 rounded-lg border border-border">
+                        <div className="flex items-center gap-2 text-foreground mb-2">
+                          <Shield className="h-4 w-4" />
+                          <span className="font-semibold">주문 안내</span>
+                        </div>
+                        <div className="text-sm text-foreground space-y-1">
+                          <p>• 주문 완료 후 입금 대기 상태로 등록됩니다.</p>
+                          <p>• {needsShippingAddress ? "입금 확인 후 배송이 시작됩니다." : "입금 확인 후 매장 수령 준비가 시작됩니다."}</p>
+                          <p>• 24시간 이내 입금 부탁드립니다.</p>
                         </div>
                       </div>
-                    </div>
-                  )}
-                </Card>
+                    </CardContent>
+                    <CardFooter className="flex flex-col gap-4 p-4 bp-sm:p-6 shrink-0">
+                      {(fieldErrors.items || fieldErrors.bundle || (isMountingFeeReady && fieldErrors.composition)) && (
+                        <div className="w-full rounded-lg border border-destructive/30 bg-destructive/15 p-3 text-sm text-destructive dark:bg-destructive/20">
+                          <p className="font-semibold mb-1">확인 필요</p>
+                          {fieldErrors.items && <p>• {fieldErrors.items}</p>}
+                          {fieldErrors.bundle && <p>• {fieldErrors.bundle}</p>}
+                          {fieldErrors.composition && (
+                            <p>
+                              • {fieldErrors.composition}{" "}
+                              {mode !== "buynow" && (
+                                <Link href="/cart" data-no-unsaved-guard onClick={onLeaveCartClick} className="underline underline-offset-2">
+                                  (장바구니에서 정리)
+                                </Link>
+                              )}
+                            </p>
+                          )}
+                          {/* CTA 강화: composition 에러면 "장바구니로 가서 정리하기"를 버튼으로도 제공
+ - 단, 즉시구매(buynow) 흐름에서는 장바구니에 담기지 않을 수 있어 CTA를 숨긴다.
+ */}
+                          {fieldErrors.composition && mode !== "buynow" && (
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              <Link href="/cart" data-no-unsaved-guard onClick={onLeaveCartClick} className="inline-flex items-center justify-center rounded-md bg-muted/50 dark:bg-card/60 px-3 py-2 text-sm font-medium text-foreground hover:bg-muted">
+                                장바구니로 가서 정리하기
+                              </Link>
+                              <span className="text-xs text-muted-foreground">정리 후 다시 이 페이지로 돌아와 주문을 진행해주세요.</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      <CheckoutButton
+                        disabled={!canSubmit}
+                        name={name}
+                        phone={phone}
+                        email={email}
+                        postalCode={postalCode}
+                        address={address}
+                        addressDetail={addressDetail}
+                        depositor={depositor}
+                        totalPrice={totalPrice}
+                        shippingFee={shippingFee}
+                        selectedBank={selectedBank}
+                        deliveryRequest={deliveryRequest}
+                        saveAddress={saveAddress}
+                        deliveryMethod={deliveryMethod}
+                        serviceTargetIds={serviceTargetIds}
+                        withStringService={withStringService}
+                        servicePickupMethod={servicePickupMethod}
+                        items={orderItems}
+                        serviceFee={finalServiceFee}
+                        pointsToUse={appliedPoints}
+                        stringingApplicationInput={stringingApplicationInput}
+                        onSubmittingChange={setIsCheckoutSubmitting}
+                      />
+                      <Button variant="outline" className="w-full border-2 hover:bg-background dark:hover:bg-muted bg-transparent" asChild>
+                        <Link href="/cart" data-no-unsaved-guard onClick={onLeaveCartClick}>
+                          장바구니로 돌아가기
+                        </Link>
+                      </Button>
+                    </CardFooter>
+                    {isCheckoutSubmitting && (
+                      <div className="absolute inset-0 z-10 cursor-wait bg-overlay/10 backdrop-blur-[2px]">
+                        <div className="absolute inset-0 grid place-items-center">
+                          <div className="flex items-center gap-3 rounded-xl bg-card/90 px-4 py-3 shadow">
+                            <Loader2 className="h-5 w-5 animate-spin" />
+                            <span className="text-sm">주문을 처리하고 있어요…</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </Card>
+                </div>
               </div>
-            </div>
             </div>
           )}
         </SiteContainer>
