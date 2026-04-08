@@ -515,6 +515,60 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
     setIsLineDetailsExpanded(lineCount <= 3);
   }, [applicationId, data?.lines]);
 
+  const renderInitialLoading = () => (
+    <main className={cn('w-full', isAdmin && 'min-h-screen bg-muted/30 dark:bg-muted/30')}>
+      <div className={cn(isAdmin && 'container py-6 lg:py-8')}>
+        <SiteContainer
+          variant={isAdmin ? 'full' : 'wide'}
+          className={cn(
+            isAdmin
+              ? 'space-y-6 px-0 bp-sm:px-0 bp-md:px-0 bp-lg:px-0'
+              : 'py-6 space-y-6 bp-sm:py-10 bp-sm:space-y-8 px-0 bp-sm:px-4 bp-md:px-6',
+          )}
+        >
+          <div className={cn('mx-auto w-full', isAdmin ? 'max-w-[1500px]' : 'max-w-6xl')}>
+            <div className="mb-6 rounded-2xl border border-border bg-muted/30 p-4 shadow-lg bp-sm:mb-8 bp-sm:p-6 bp-md:p-8 lg:p-6">
+              <div className="space-y-3">
+                <Skeleton className="h-8 w-52" />
+                <Skeleton className="h-4 w-72 max-w-full" />
+                <div className="flex flex-wrap gap-2 pt-1">
+                  <Skeleton className="h-9 w-40" />
+                  <Skeleton className="h-9 w-32" />
+                </div>
+              </div>
+            </div>
+
+            <div className={cn('grid gap-4 md:grid-cols-2', isAdmin && 'xl:grid-cols-12')}>
+              <Card className={cn('overflow-hidden shadow-xl', isAdmin ? 'border-0 bg-muted/30 ring-ring xl:col-span-8' : 'border border-border bg-card')}>
+                <CardHeader className={cn('space-y-2 border-b pb-3', isAdmin ? 'bg-muted/30' : 'bg-muted/50 border-border')}>
+                  <Skeleton className="h-6 w-48" />
+                  <Skeleton className="h-4 w-72 max-w-full" />
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-[90%]" />
+                  <Skeleton className="h-4 w-[75%]" />
+                </CardContent>
+              </Card>
+
+              <Card className={cn('overflow-hidden shadow-xl', isAdmin ? 'border-0 bg-muted/30 ring-ring xl:col-span-4' : 'border border-border bg-card')}>
+                <CardHeader className={cn('space-y-2 border-b pb-3', isAdmin ? 'bg-muted/30' : 'bg-muted/50 border-border')}>
+                  <Skeleton className="h-6 w-40" />
+                  <Skeleton className="h-4 w-56 max-w-full" />
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-[85%]" />
+                  <Skeleton className="h-4 w-[70%]" />
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </SiteContainer>
+      </div>
+    </main>
+  );
+
   if (error)
     return (
       <AsyncState
@@ -529,7 +583,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
     );
   if (!data) {
     if (isLoading) {
-      return null;
+      return renderInitialLoading();
     }
 
     return (
@@ -749,7 +803,6 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
   const detailGridClass = isAdmin ? 'grid gap-4 xl:grid-cols-12' : 'grid gap-4 md:grid-cols-2 bp-sm:gap-6';
   const detailCardClass = isAdmin ? 'overflow-hidden border-0 bg-muted/30 shadow-xl ring-ring' : 'border border-border shadow-xl bg-card overflow-hidden';
   const detailCardHeaderClass = isAdmin ? 'bg-muted/30 border-b pb-3' : 'bg-muted/50 border-b border-border pb-3';
-
   return (
     <main className={cn('w-full', isAdmin && 'min-h-screen bg-muted/30 dark:bg-muted/30')}>
       <div className={cn(isAdmin && 'container py-6 lg:py-8')}>
