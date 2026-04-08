@@ -87,6 +87,7 @@ export async function GET(
     }
 
     const carrierId = mapCourierCodeToCarrierId(courier);
+    const carrierDisplayName = getCourierDisplayName(courier);
     if (!carrierId) {
       return NextResponse.json({
         success: true,
@@ -110,6 +111,7 @@ export async function GET(
       trackingNumber,
       clientId,
       clientSecret,
+      carrierDisplayName,
     });
 
     if (!summary.success) {
@@ -121,7 +123,7 @@ export async function GET(
       supported: true,
       carrierCode: courier,
       carrierId,
-      carrierName: summary.carrierName ?? getCourierDisplayName(courier),
+      carrierName: summary.carrierName ?? carrierDisplayName,
       trackingNumber,
       displayStatus: summary.displayStatus,
       stateId: summary.stateId,
