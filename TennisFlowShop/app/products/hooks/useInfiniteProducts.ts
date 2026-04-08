@@ -81,7 +81,7 @@ export function useInfiniteProducts(filters: Filters) {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [total, setTotal] = useState<number | null>(null); // 전체 매칭 개수(필터 기준)
-  const [isLoadingInitial, setIsLoadingInitial] = useState(false);
+  const [isLoadingInitial, setIsLoadingInitial] = useState(true);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

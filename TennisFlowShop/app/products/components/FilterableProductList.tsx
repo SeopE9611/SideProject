@@ -319,11 +319,7 @@ export default function FilterableProductList({
 
   const loadedCount = (productsList ?? []).length;
   const isInitialLikeLoading = isLoadingInitial || isUiTransitioning;
-  const hasLoadedOnce = useMemo(
-    () => total !== null || !!error || productsList.length > 0,
-    [total, error, productsList.length],
-  );
-  const showInlineLoadingSkeleton = hasLoadedOnce && isInitialLikeLoading;
+  const showInlineLoadingSkeleton = isInitialLikeLoading;
   const isCountLoading = isInitialLikeLoading || total === null;
 
   // 검색 제출 handler
