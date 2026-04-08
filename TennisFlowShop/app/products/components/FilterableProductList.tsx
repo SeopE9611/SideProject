@@ -320,6 +320,8 @@ export default function FilterableProductList({
   const loadedCount = (productsList ?? []).length;
   const isInitialLikeLoading = isLoadingInitial || isUiTransitioning;
   const showInlineLoadingSkeleton = isInitialLikeLoading;
+  const hasInitialFetchSettled = total !== null || error !== null;
+  const canShowEmptyState = hasInitialFetchSettled && loadedCount === 0;
   const isCountLoading = isInitialLikeLoading || total === null;
 
   // 검색 제출 handler
@@ -783,7 +785,7 @@ export default function FilterableProductList({
               resourceName="상품 목록"
               onAction={() => resetInfinite()}
             />
-          ) : loadedCount === 0 ? (
+          ) : canShowEmptyState ? (
             <div className="space-y-4">
               <AsyncState
                 kind="empty"

@@ -1,7 +1,5 @@
+export { ListPageSkeleton, CardGridSkeleton, FullPageSpinner } from "./BasePageSkeletons";
 export {
-  ListPageSkeleton,
-  CardGridSkeleton,
-  FullPageSpinner,
   CardListPageSkeleton,
   TablePageSkeleton,
   DetailPageSkeleton,
