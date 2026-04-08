@@ -197,6 +197,36 @@ interface OrderDetail {
   }[];
 }
 
+type OrderTrackingResponse =
+  | {
+      success: true;
+      supported: true;
+      displayStatus: string;
+      linkUrl: string;
+      lastEvent: {
+        time: string | null;
+        statusText: string | null;
+        locationName: string | null;
+        description: string | null;
+      } | null;
+      progresses: Array<{
+        time: string | null;
+        statusText: string | null;
+        locationName: string | null;
+        description: string | null;
+      }>;
+    }
+  | {
+      success: true;
+      supported: false;
+      reason: "unsupported_courier";
+      message: string;
+    }
+  | {
+      success: false;
+      message: string;
+    };
+
 // 메인 컴포넌트
 interface Props {
   orderId: string;
@@ -236,6 +266,18 @@ export default function OrderDetailClient({ orderId }: Props) {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
   });
+  const canTrackDelivery =
+    !isVisitPickupOrder(orderDetail?.shippingInfo) &&
+    Boolean(orderDetail?.shippingInfo?.invoice?.trackingNumber);
+  const { data: trackingData, error: trackingError, isLoading: isTrackingLoading } =
+    useSWR<OrderTrackingResponse>(
+      canTrackDelivery ? `/api/orders/${orderId}/tracking` : null,
+      authenticatedSWRFetcher,
+      {
+        revalidateOnFocus: false,
+        revalidateOnReconnect: false,
+      },
+    );
 
   // local 상태를 두어 "옵티미스틱 업데이트"가 가능하게 적용
   // 서버에서 받아온 orderDetail.status가 바뀌면 자동 동기화
@@ -392,6 +434,19 @@ export default function OrderDetailClient({ orderId }: Props) {
       style: "currency",
       currency: "KRW",
     }).format(amount);
+  };
+  const formatDateTime = (dateString: string | null | undefined) => {
+    if (!dateString) return "-";
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "-";
+    return new Intl.DateTimeFormat("ko-KR", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    }).format(date);
   };
 
   // 연결 문서(표시용) 구성: 신청서(복수) 우선, 없으면 레거시 단일 필드 사용
@@ -1406,6 +1461,77 @@ export default function OrderDetailClient({ orderId }: Props) {
                               </p>
                             </div>
                           </div>
+                          {!isTrackingLoading && !trackingError && trackingData && (
+                            <div className="space-y-2 rounded-lg border border-border bg-muted/60 p-3 text-sm dark:bg-card/60">
+                              {trackingData.success && trackingData.supported ? (
+                                <>
+                                  <p className="text-foreground">
+                                    <span className="text-muted-foreground">
+                                      실시간 배송 상태:
+                                    </span>{" "}
+                                    {trackingData.displayStatus}
+                                  </p>
+                                  {trackingData.lastEvent?.locationName && (
+                                    <p className="text-foreground">
+                                      <span className="text-muted-foreground">
+                                        최근 위치:
+                                      </span>{" "}
+                                      {trackingData.lastEvent.locationName}
+                                    </p>
+                                  )}
+                                  {trackingData.lastEvent?.time && (
+                                    <p className="text-foreground">
+                                      <span className="text-muted-foreground">
+                                        최근 갱신:
+                                      </span>{" "}
+                                      {formatDateTime(trackingData.lastEvent.time)}
+                                    </p>
+                                  )}
+                                  {trackingData.progresses.length > 0 && (
+                                    <ul className="list-disc space-y-1 pl-5 text-muted-foreground">
+                                      {trackingData.progresses.map((progress, idx) => (
+                                        <li key={`${progress.time ?? "na"}-${idx}`}>
+                                          {(progress.statusText ?? "상태 업데이트") +
+                                            (progress.locationName
+                                              ? ` · ${progress.locationName}`
+                                              : "") +
+                                            (progress.time
+                                              ? ` · ${formatDateTime(progress.time)}`
+                                              : "")}
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  )}
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() =>
+                                      window.open(
+                                        trackingData.linkUrl,
+                                        "_blank",
+                                        "noopener,noreferrer",
+                                      )
+                                    }
+                                  >
+                                    배송조회
+                                  </Button>
+                                </>
+                              ) : trackingData.success && !trackingData.supported ? (
+                                <p className="text-muted-foreground">
+                                  {trackingData.message}
+                                </p>
+                              ) : (
+                                <p className="text-destructive">
+                                  {trackingData.message}
+                                </p>
+                              )}
+                            </div>
+                          )}
+                          {trackingError && (
+                            <p className="text-sm text-destructive">
+                              배송조회 정보를 불러오지 못했습니다.
+                            </p>
+                          )}
                         </>
                       )}
                   </div>

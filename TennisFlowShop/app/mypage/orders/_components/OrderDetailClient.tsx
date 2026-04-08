@@ -166,6 +166,36 @@ interface Props {
   linkedApplicationHrefBuilder?: (applicationId: string) => string;
 }
 
+type OrderTrackingResponse =
+  | {
+      success: true;
+      supported: true;
+      displayStatus: string;
+      linkUrl: string;
+      lastEvent: {
+        time: string | null;
+        statusText: string | null;
+        locationName: string | null;
+        description: string | null;
+      } | null;
+      progresses: Array<{
+        time: string | null;
+        statusText: string | null;
+        locationName: string | null;
+        description: string | null;
+      }>;
+    }
+  | {
+      success: true;
+      supported: false;
+      reason: "unsupported_courier";
+      message: string;
+    }
+  | {
+      success: false;
+      message: string;
+    };
+
 // 주문 취소 요청 상태 텍스트를 계산하는 헬퍼
 function getCancelRequestLabel(order: any): string | null {
   const cancel = order?.cancelRequest;
@@ -231,6 +261,22 @@ export default function OrderDetailClient({
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
   });
+
+  const canTrackDelivery =
+    !isVisitPickupOrder(orderDetail?.shippingInfo) &&
+    Boolean(orderDetail?.shippingInfo?.invoice?.trackingNumber);
+  const {
+    data: trackingData,
+    error: trackingError,
+    isLoading: isTrackingLoading,
+  } = useSWR<OrderTrackingResponse>(
+    canTrackDelivery ? `/api/orders/${orderId}/tracking` : null,
+    authenticatedSWRFetcher,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+    },
+  );
 
   // 상품 리뷰 작성 여부 맵: { [productId]: boolean }
   const [reviewedMap, setReviewedMap] = useState<Record<string, boolean>>({});
@@ -307,6 +353,19 @@ export default function OrderDetailClient({
       style: "currency",
       currency: "KRW",
     }).format(amount);
+  };
+  const formatDateTime = (dateString: string | null | undefined) => {
+    if (!dateString) return "-";
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "-";
+    return new Intl.DateTimeFormat("ko-KR", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    }).format(date);
   };
 
   // 에러/로딩 처리
@@ -1053,6 +1112,62 @@ export default function OrderDetailClient({
                           </p>
                         </div>
                       </div>
+                      {!isTrackingLoading && !trackingError && trackingData && (
+                        <div className="space-y-2 p-3 bg-muted rounded-lg text-sm">
+                          {trackingData.success && trackingData.supported ? (
+                            <>
+                              <p className="text-foreground">
+                                <span className="text-muted-foreground">
+                                  실시간 배송 상태:
+                                </span>{" "}
+                                {trackingData.displayStatus}
+                              </p>
+                              {trackingData.lastEvent?.locationName && (
+                                <p className="text-foreground">
+                                  <span className="text-muted-foreground">
+                                    최근 위치:
+                                  </span>{" "}
+                                  {trackingData.lastEvent.locationName}
+                                </p>
+                              )}
+                              {trackingData.lastEvent?.time && (
+                                <p className="text-foreground">
+                                  <span className="text-muted-foreground">
+                                    최근 갱신:
+                                  </span>{" "}
+                                  {formatDateTime(trackingData.lastEvent.time)}
+                                </p>
+                              )}
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() =>
+                                  window.open(
+                                    trackingData.linkUrl,
+                                    "_blank",
+                                    "noopener,noreferrer",
+                                  )
+                                }
+                              >
+                                배송조회
+                              </Button>
+                            </>
+                          ) : trackingData.success && !trackingData.supported ? (
+                            <p className="text-muted-foreground">
+                              {trackingData.message}
+                            </p>
+                          ) : (
+                            <p className="text-destructive">
+                              {trackingData.message}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                      {trackingError && (
+                        <p className="text-sm text-destructive">
+                          배송조회 정보를 불러오지 못했습니다.
+                        </p>
+                      )}
                     </>
                   )}
 
