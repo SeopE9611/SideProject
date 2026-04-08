@@ -58,6 +58,10 @@ interface OrderDetail {
     deliveryMethod?: string;
     shippingMethod?: string;
     withStringService?: boolean;
+    invoice?: {
+      courier?: string;
+      trackingNumber?: string;
+    };
   };
   isStringServiceApplied?: boolean;
   stringingApplicationId?: string | null;
@@ -89,6 +93,30 @@ interface OrderDetail {
     image?: string;
   }[];
 }
+
+type TrackingResponse =
+  | {
+      success: true;
+      supported: true;
+      displayStatus: string;
+      linkUrl: string;
+      lastEvent: {
+        time: string | null;
+        statusText: string | null;
+        locationName: string | null;
+        description: string | null;
+      } | null;
+    }
+  | {
+      success: true;
+      supported: false;
+      reason: "unsupported_courier";
+      message: string;
+    }
+  | {
+      success: false;
+      message: string;
+    };
 
 type GuestOrderMode = "off" | "legacy" | "on";
 
@@ -153,6 +181,11 @@ export default function OrderDetailPage() {
   const [order, setOrder] = useState<OrderDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [trackingInfo, setTrackingInfo] = useState<TrackingResponse | null>(
+    null,
+  );
+  const [trackingError, setTrackingError] = useState<string | null>(null);
+  const [trackingLoading, setTrackingLoading] = useState(false);
 
   useEffect(() => {
     if (!allowGuestLookup) {
@@ -320,6 +353,55 @@ export default function OrderDetailPage() {
   const shippingAddressValue = isVisitPickup
     ? orderShippingReadLabels.primaryValue
     : order.shippingInfo.address;
+  const trackingNumber =
+    order.shippingInfo?.invoice?.trackingNumber ?? order.trackingNumber;
+  const canTrack = !isVisitPickup && Boolean(trackingNumber);
+
+  const formatDateTime = (dateString: string | null | undefined) => {
+    if (!dateString) return "-";
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "-";
+    return new Intl.DateTimeFormat("ko-KR", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    }).format(date);
+  };
+
+  const handleTrackingClick = async () => {
+    if (!canTrack || trackingLoading) return;
+    setTrackingLoading(true);
+    setTrackingError(null);
+    try {
+      const res = await fetch(`/api/guest-orders/${order._id}/tracking`, {
+        credentials: "include",
+      });
+      const data = (await res.json()) as TrackingResponse;
+      setTrackingInfo(data);
+      if (!res.ok) {
+        setTrackingError(
+          (data as any)?.message ?? "배송조회 정보를 불러오지 못했습니다.",
+        );
+        return;
+      }
+      if (data.success && data.supported) {
+        window.open(data.linkUrl, "_blank", "noopener,noreferrer");
+        return;
+      }
+      if (data.success && !data.supported) {
+        setTrackingError(data.message);
+        return;
+      }
+      setTrackingError(data.message);
+    } catch {
+      setTrackingError("배송조회 정보를 불러오지 못했습니다.");
+    } finally {
+      setTrackingLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-full bg-background">
@@ -599,7 +681,7 @@ export default function OrderDetailPage() {
                         </p>
                         <p className="font-semibold">{shippingAddressValue}</p>
                       </div>
-                      {order.trackingNumber && (
+                      {canTrack && (
                         <div className="flex items-center gap-3 p-3 border border-primary/20 bg-primary/10 dark:bg-primary/20 rounded-lg">
                           <Truck className="w-5 h-5 text-primary" />
                           <div className="flex-1">
@@ -607,14 +689,32 @@ export default function OrderDetailPage() {
                               운송장 번호
                             </p>
                             <p className="font-mono font-semibold text-primary">
-                              {order.trackingNumber}
+                              {trackingNumber}
                             </p>
+                            {trackingInfo?.success && trackingInfo.supported && (
+                              <p className="mt-1 text-sm text-foreground">
+                                실시간 배송 상태: {trackingInfo.displayStatus}
+                                {trackingInfo.lastEvent?.locationName
+                                  ? ` · ${trackingInfo.lastEvent.locationName}`
+                                  : ""}
+                                {trackingInfo.lastEvent?.time
+                                  ? ` · ${formatDateTime(trackingInfo.lastEvent.time)}`
+                                  : ""}
+                              </p>
+                            )}
+                            {trackingError && (
+                              <p className="mt-1 text-sm text-muted-foreground">
+                                {trackingError}
+                              </p>
+                            )}
                           </div>
                           <Button
                             variant="link"
                             className="text-primary hover:text-primary p-0"
+                            onClick={handleTrackingClick}
+                            disabled={trackingLoading}
                           >
-                            배송 조회
+                            {trackingLoading ? "조회 중..." : "배송 조회"}
                           </Button>
                         </div>
                       )}
