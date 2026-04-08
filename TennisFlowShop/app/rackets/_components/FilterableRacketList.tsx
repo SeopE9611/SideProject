@@ -256,8 +256,7 @@ export default function FilterableRacketList({
   // 전환 중 + 실제 로딩을 초기 로딩처럼 취급 (0개 1프레임 노출 방지)
   const isInitialLikeLoading = isLoading || isValidating || isUiTransitioning;
   const isBackgroundRefreshing = !!data && isValidating;
-  const hasLoadedOnce = !!data || !!error;
-  const showInlineLoadingSkeleton = hasLoadedOnce && isInitialLikeLoading;
+  const showInlineLoadingSkeleton = isInitialLikeLoading;
 
   // 배열/객체 응답을 rackets/total로 통일
   const { rackets, total } = useMemo(() => {
@@ -666,7 +665,7 @@ export default function FilterableRacketList({
               resourceName="라켓 목록"
               onAction={() => mutate()}
             />
-          ) : products.length === 0 ? (
+          ) : !isInitialLikeLoading && products.length === 0 ? (
             <div className="space-y-4">
               <AsyncState
                 kind="empty"
