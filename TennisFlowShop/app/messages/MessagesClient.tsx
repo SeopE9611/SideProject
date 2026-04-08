@@ -127,7 +127,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
     hasResolvedData &&
     Array.isArray(items) &&
     items.length === 0;
-  const showListSkeleton = isLoading && hasResolvedData;
+  const showListSkeleton = isLoading && !hasDataError;
 
   async function afterOpenDetail() {
     if (key) await mutate();

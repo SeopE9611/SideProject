@@ -2,11 +2,13 @@ import SiteContainer from "@/components/layout/SiteContainer";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-export {
-  ListPageSkeleton,
+import {
   CardGridSkeleton,
   FullPageSpinner,
-} from "@/components/system/PageLoading";
+  ListPageSkeleton,
+} from "./BasePageSkeletons";
+
+export { ListPageSkeleton, CardGridSkeleton, FullPageSpinner };
 
 type TablePageSkeletonProps = {
   titleWidthClassName?: string;
