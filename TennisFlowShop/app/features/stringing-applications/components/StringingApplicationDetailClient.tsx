@@ -3,6 +3,7 @@
 import ApplicationStatusBadge from '@/app/features/stringing-applications/components/ApplicationStatusBadge';
 import { ApplicationStatusSelect } from '@/app/features/stringing-applications/components/ApplicationStatusSelect';
 import CustomerEditForm from '@/app/features/stringing-applications/components/CustomerEditForm';
+import { NextTodoCallout, OrdersScopeContextNav, resolveOrdersScopeContext } from '@/app/mypage/_components/OrdersScopeContextNav';
 import PaymentEditForm from '@/app/features/stringing-applications/components/PaymentEditForm';
 import PaymentMethodDetail from '@/app/features/stringing-applications/components/PaymentMethodDetail';
 import RequirementsEditForm from '@/app/features/stringing-applications/components/RequirementsEditForm';
@@ -698,6 +699,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
 
   const backQuery = new URLSearchParams(backUrl.split('?')[1] ?? '');
   const ordersScope = backQuery.get('scope');
+  const activeScope = resolveOrdersScopeContext(backUrl, 'application');
   const flowQuery = new URLSearchParams();
   flowQuery.set('from', 'orders');
   if (ordersScope) {
@@ -774,6 +776,9 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
 
   const selfShip = data.shippingInfo?.selfShip;
   const hasTracking = Boolean(selfShip?.trackingNo);
+  const inboundTrackingHref = `/services/applications/${data.id}/shipping?${new URLSearchParams({
+    return: `/mypage?tab=orders&flowType=application&flowId=${data.id}&${flowQuery.toString()}`,
+  }).toString()}`;
   const invoice = data.shippingInfo?.invoice;
   const isCourierShipping = normalizeOrderShippingMethod(shippingMethod) === 'courier';
 
@@ -792,6 +797,11 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
   const completedLikeStatuses = ['교체완료', '반송완료', '완료', 'DONE', '취소'];
   const canEditSelfShip = (isAdmin || (userEditableStatuses ?? []).includes(data.status)) && !completedLikeStatuses.includes(data.status);
   const shouldShowReturnMethod = !(data.orderId && data.orderHasRacket === true);
+  const userNextTodo = !isAdmin && needsInboundTracking
+    ? { label: "라켓 운송장 등록", ctaLabel: hasTracking ? "라켓 발송 수정" : "라켓 발송 등록", ctaHref: inboundTrackingHref }
+    : !isAdmin && showConfirmExchangeButton && canConfirmExchange
+      ? { label: "교체서비스 확정", ctaLabel: "교체서비스 확정", onCtaClick: handleConfirmExchange }
+      : null;
 
   const summaryCardClass =
     'flex min-h-[112px] flex-col items-start justify-start gap-1 rounded-xl border border-border/60 bg-card/70 p-3.5 backdrop-blur-sm';
@@ -856,9 +866,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                   {/* 사용자: 자가발송 운송장 등록/수정 버튼 */}
                   {!isAdmin && needsInboundTracking && (
                     <Link
-                      href={`/services/applications/${data.id}/shipping?${new URLSearchParams({
-                        return: `/mypage?tab=orders&flowType=application&flowId=${data.id}&${flowQuery.toString()}`,
-                      }).toString()}`}
+                      href={inboundTrackingHref}
                     >
                       <Button variant="outline" size="sm" className="bg-card/70 backdrop-blur-sm border-border hover:bg-muted dark:bg-card/60 dark:hover:bg-secondary/60">
                         <Truck className="w-4 h-4 mr-2" />
@@ -919,6 +927,18 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                 </div>
               </TooltipProvider>
             </div>
+            {!isAdmin && (
+              <OrdersScopeContextNav activeScope={activeScope} className="mb-4 bp-sm:mb-5" />
+            )}
+            {!isAdmin && userNextTodo && (
+              <NextTodoCallout
+                className="mb-4"
+                label={userNextTodo.label}
+                ctaLabel={userNextTodo.ctaLabel}
+                ctaHref={userNextTodo.ctaHref}
+                onCtaClick={userNextTodo.onCtaClick}
+              />
+            )}
 
             {/* 신청 요약 정보 */}
             <div className={cn('grid grid-cols-1 gap-3', isAdmin ? 'md:grid-cols-2 xl:grid-cols-5' : 'md:grid-cols-4 bp-sm:gap-6')}>
