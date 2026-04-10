@@ -276,6 +276,7 @@ export default function OrderDetailClient({
   // 취소 철회 로딩
   const [isWithdrawingCancelRequest, setIsWithdrawingCancelRequest] =
     useState(false);
+  const [isConfirmingPurchase, setIsConfirmingPurchase] = useState(false);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
 
   // 주문 상세를 SWR로 가져오기
@@ -347,6 +348,7 @@ export default function OrderDetailClient({
 
   const canShowReviewCTA =
     Boolean(orderDetail?.userConfirmedAt) || orderDetail?.status === "구매확정";
+  const canConfirmPurchase = getCommonOrderStatusLabel(orderDetail?.status ?? "") === "배송완료";
   const reviewsReady = (orderDetail?.items ?? []).every(
     (it) => it.id in reviewedMap,
   );
@@ -532,12 +534,55 @@ export default function OrderDetailClient({
   const cancelLabel = getCancelRequestLabel(orderDetail);
   const cancelStatus = (orderDetail as any)?.cancelRequest?.status;
   const canWithdrawCancelRequest = cancelStatus === "requested";
+  const handleConfirmPurchase = async () => {
+    if (!orderDetail?._id || isConfirmingPurchase) return;
+    if (
+      !window.confirm(
+        "구매확정 처리하시겠습니까?\n확정 후에는 되돌릴 수 없습니다.",
+      )
+    ) {
+      return;
+    }
+
+    try {
+      setIsConfirmingPurchase(true);
+      const res = await fetch(`/api/orders/${orderDetail._id}/confirm`, {
+        method: "POST",
+        credentials: "include",
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || data?.ok === false) {
+        showErrorToast(
+          data?.error || data?.message || "구매확정 처리 중 오류가 발생했습니다.",
+        );
+        return;
+      }
+
+      showSuccessToast("구매확정이 완료되었습니다.");
+      await Promise.all([
+        mutateOrderDetail(),
+        mutateHistory(),
+        mutate(`/api/orders/${orderDetail._id}/status`),
+      ]);
+    } catch (e) {
+      console.error(e);
+      showErrorToast("구매확정 처리 중 오류가 발생했습니다.");
+    } finally {
+      setIsConfirmingPurchase(false);
+    }
+  };
   const nextTodo = shouldShowInboundShippingBlock && inboundShippingHref
     ? {
         label: "라켓 운송장 등록",
         ctaLabel: hasSelfShipTracking ? "라켓 발송 수정" : "라켓 발송 등록",
         ctaHref: inboundShippingHref,
       }
+    : canConfirmPurchase
+      ? {
+          label: "구매확정",
+          ctaLabel: isConfirmingPurchase ? "처리 중..." : "구매확정",
+          onCtaClick: handleConfirmPurchase,
+        }
     : canShowReviewCTA && Boolean(firstUnreviewed)
       ? {
           label: "리뷰 작성",
@@ -765,6 +810,7 @@ export default function OrderDetailClient({
             label={nextTodo.label}
             ctaLabel={nextTodo.ctaLabel}
             ctaHref={nextTodo.ctaHref}
+            onCtaClick={nextTodo.onCtaClick}
           />
         )}
         {/* 취소 요청 상태 안내 배너 */}

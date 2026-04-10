@@ -63,7 +63,7 @@ export default function MypageClient({ user }: Props) {
   const hasSummaryError = !!summaryError;
 
   const resolveOrdersScope = (scope: string | null) => {
-    if (scope === "todo" || scope === "order" || scope === "application" || scope === "rental") {
+    if (scope === "all" || scope === "todo" || scope === "order" || scope === "application" || scope === "rental") {
       return scope;
     }
     return null;

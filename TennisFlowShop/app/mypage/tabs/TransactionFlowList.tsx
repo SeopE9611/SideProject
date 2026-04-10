@@ -585,9 +585,7 @@ export default function TransactionFlowList() {
   const flowQuery = useMemo(() => {
     const params = new URLSearchParams();
     params.set('from', 'orders');
-    if (scope !== 'all') {
-      params.set('scope', scope);
-    }
+    params.set('scope', scope);
     return params.toString();
   }, [scope]);
 
