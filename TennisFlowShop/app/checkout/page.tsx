@@ -811,10 +811,6 @@ export default function CheckoutPage() {
     };
   }, [user]);
 
-  // 비로그인 + 비회원 주문 중단 상태이면 체크아웃 UI 자체를 막고 로그인 유도 화면을 노출
-  if (!loading && !user && !allowGuestCheckout) {
-    return <LoginGate next={checkoutHref} variant="checkout" />;
-  }
   const isInitialLoading = loading;
   const previewTotalPrice = subtotal + shippingFee + baseServiceFee;
   const previewPointCapBase = Math.max(0, previewTotalPrice - shippingFee);
@@ -830,6 +826,11 @@ export default function CheckoutPage() {
     if (!isZeroPayableAmount || paymentMethod !== "toss-widget") return;
     setPaymentMethod("bank-transfer");
   }, [isZeroPayableAmount, paymentMethod]);
+
+  // 비로그인 + 비회원 주문 중단 상태이면 체크아웃 UI 자체를 막고 로그인 유도 화면을 노출
+  if (!loading && !user && !allowGuestCheckout) {
+    return <LoginGate next={checkoutHref} variant="checkout" />;
+  }
 
   const renderCheckout = (checkoutStringingAdapter?: CheckoutStringingServiceAdapter) => {
     const checkoutPackageUsage = resolveCheckoutPackageUsage(withStringService, checkoutStringingAdapter);
@@ -1318,86 +1319,83 @@ export default function CheckoutPage() {
                       </div>
 
                       {paymentMethod === "bank-transfer" ? (
-                      <>
-                      <div className="space-y-3">
-                        <Label htmlFor="bank-account">입금 계좌 선택</Label>
-                        <Select value={selectedBank} onValueChange={setSelectedBank}>
-                          <SelectTrigger className="border-2 focus:border-border">
-                            <SelectValue placeholder="입금 계좌를 선택하세요" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="shinhan">
-                              신한은행 {bankLabelMap.shinhan.account} (예금주: {bankLabelMap.shinhan.holder})
-                            </SelectItem>
-                            <SelectItem value="kookmin">
-                              국민은행 {bankLabelMap.kookmin.account} (예금주: {bankLabelMap.kookmin.holder})
-                            </SelectItem>
-                            <SelectItem value="woori">
-                              우리은행 {bankLabelMap.woori.account} (예금주: {bankLabelMap.woori.holder})
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
+                        <>
+                          <div className="space-y-3">
+                            <Label htmlFor="bank-account">입금 계좌 선택</Label>
+                            <Select value={selectedBank} onValueChange={setSelectedBank}>
+                              <SelectTrigger className="border-2 focus:border-border">
+                                <SelectValue placeholder="입금 계좌를 선택하세요" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="shinhan">
+                                  신한은행 {bankLabelMap.shinhan.account} (예금주: {bankLabelMap.shinhan.holder})
+                                </SelectItem>
+                                <SelectItem value="kookmin">
+                                  국민은행 {bankLabelMap.kookmin.account} (예금주: {bankLabelMap.kookmin.holder})
+                                </SelectItem>
+                                <SelectItem value="woori">
+                                  우리은행 {bankLabelMap.woori.account} (예금주: {bankLabelMap.woori.holder})
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
 
-                      <div className="space-y-2">
-                        <Label htmlFor="depositor-name">입금자명</Label>
-                        <Input
-                          id="depositor-name"
-                          value={depositor}
-                          onChange={(e) => setDepositor(e.target.value)}
-                          onBlur={() => touchField("depositor")}
-                          placeholder="입금자명을 입력하세요"
-                          className={cn("border-2 focus:border-border transition-colors", showDepositorError && "border-destructive/30 focus:border-destructive/30")}
-                        />
-                        <div className="min-h-[16px]">{showDepositorError && <p className="text-xs text-destructive">{fieldErrors.depositor}</p>}</div>
-                      </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="depositor-name">입금자명</Label>
+                            <Input
+                              id="depositor-name"
+                              value={depositor}
+                              onChange={(e) => setDepositor(e.target.value)}
+                              onBlur={() => touchField("depositor")}
+                              placeholder="입금자명을 입력하세요"
+                              className={cn("border-2 focus:border-border transition-colors", showDepositorError && "border-destructive/30 focus:border-destructive/30")}
+                            />
+                            <div className="min-h-[16px]">{showDepositorError && <p className="text-xs text-destructive">{fieldErrors.depositor}</p>}</div>
+                          </div>
 
-                      {withStringService && checkoutStringingAdapter && (
-                        <CheckoutStringingPaymentAddon
-                          packagePreview={checkoutStringingAdapter.packagePreview}
-                          packageRemaining={checkoutStringingAdapter.packageRemaining}
-                          requiredPassCount={checkoutStringingAdapter.requiredPassCount}
-                          canApplyPackage={checkoutStringingAdapter.canApplyPackage}
-                          usingPackage={checkoutStringingAdapter.usingPackage}
-                          packageInsufficient={checkoutStringingAdapter.packageInsufficient}
-                          packageOptOut={!!checkoutStringingAdapter.formData.packageOptOut}
-                          onPackageOptOutChange={(next) => {
-                            checkoutStringingAdapter.setFormData((prev) => ({
-                              ...prev,
-                              packageOptOut: next,
-                            }));
-                          }}
-                        />
-                      )}
+                          {withStringService && checkoutStringingAdapter && (
+                            <CheckoutStringingPaymentAddon
+                              packagePreview={checkoutStringingAdapter.packagePreview}
+                              packageRemaining={checkoutStringingAdapter.packageRemaining}
+                              requiredPassCount={checkoutStringingAdapter.requiredPassCount}
+                              canApplyPackage={checkoutStringingAdapter.canApplyPackage}
+                              usingPackage={checkoutStringingAdapter.usingPackage}
+                              packageInsufficient={checkoutStringingAdapter.packageInsufficient}
+                              packageOptOut={!!checkoutStringingAdapter.formData.packageOptOut}
+                              onPackageOptOutChange={(next) => {
+                                checkoutStringingAdapter.setFormData((prev) => ({
+                                  ...prev,
+                                  packageOptOut: next,
+                                }));
+                              }}
+                            />
+                          )}
 
-                      <div className="bg-muted p-4 rounded-lg border border-border">
-                        <div className="flex items-center gap-2 mb-3">
-                          <Shield className="h-5 w-5 text-primary" />
-                          <p className="font-semibold text-foreground">무통장입금 안내</p>
-                        </div>
-                        <ul className="space-y-2 text-sm text-foreground">
-                          <li className="flex items-center gap-2 text-base bp-sm:text-lg">
-                            <CheckCircle className="h-4 w-4" />
-                            주문 후 24시간 이내에 입금해 주셔야 주문이 정상 처리됩니다.
-                          </li>
-                          <li className="flex items-center gap-2 text-base bp-sm:text-lg">
-                            <CheckCircle className="h-4 w-4" />
-                            입금자명이 주문자명과 다를 경우, 고객센터로 연락 부탁드립니다.
-                          </li>
-                          <li className="flex items-center gap-2 text-base bp-sm:text-lg">
-                            <CheckCircle className="h-4 w-4" />
-                            {needsShippingAddress ? "입금 확인 후 배송이 시작됩니다." : "입금 확인 후 매장 수령 준비가 시작됩니다."}
-                          </li>
-                        </ul>
-                      </div>
-                      </>
+                          <div className="bg-muted p-4 rounded-lg border border-border">
+                            <div className="flex items-center gap-2 mb-3">
+                              <Shield className="h-5 w-5 text-primary" />
+                              <p className="font-semibold text-foreground">무통장입금 안내</p>
+                            </div>
+                            <ul className="space-y-2 text-sm text-foreground">
+                              <li className="flex items-center gap-2 text-base bp-sm:text-lg">
+                                <CheckCircle className="h-4 w-4" />
+                                주문 후 24시간 이내에 입금해 주셔야 주문이 정상 처리됩니다.
+                              </li>
+                              <li className="flex items-center gap-2 text-base bp-sm:text-lg">
+                                <CheckCircle className="h-4 w-4" />
+                                입금자명이 주문자명과 다를 경우, 고객센터로 연락 부탁드립니다.
+                              </li>
+                              <li className="flex items-center gap-2 text-base bp-sm:text-lg">
+                                <CheckCircle className="h-4 w-4" />
+                                {needsShippingAddress ? "입금 확인 후 배송이 시작됩니다." : "입금 확인 후 매장 수령 준비가 시작됩니다."}
+                              </li>
+                            </ul>
+                          </div>
+                        </>
                       ) : !isZeroPayableAmount ? (
                         <div className="space-y-3">
                           <p className="text-sm text-muted-foreground">테스트 결제위젯입니다. 결제 승인 후 주문이 생성됩니다.</p>
-                          <TossPaymentWidget
-                            amount={payableTotalPrice}
-                            customerKey={user ? String(user.id) : `guest_${phone.replace(/\D/g, "") || "anon"}`}
-                          />
+                          <TossPaymentWidget amount={payableTotalPrice} customerKey={user ? String(user.id) : `guest_${phone.replace(/\D/g, "") || "anon"}`} />
                         </div>
                       ) : null}
                     </div>
@@ -1667,30 +1665,30 @@ export default function CheckoutPage() {
                         </div>
                       )}
                       {paymentMethod === "bank-transfer" ? (
-                      <CheckoutButton
-                        disabled={!canSubmit}
-                        name={name}
-                        phone={phone}
-                        email={email}
-                        postalCode={postalCode}
-                        address={address}
-                        addressDetail={addressDetail}
-                        depositor={depositor}
-                        totalPrice={totalPrice}
-                        shippingFee={shippingFee}
-                        selectedBank={selectedBank}
-                        deliveryRequest={deliveryRequest}
-                        saveAddress={saveAddress}
-                        deliveryMethod={deliveryMethod}
-                        serviceTargetIds={serviceTargetIds}
-                        withStringService={withStringService}
-                        servicePickupMethod={servicePickupMethod}
-                        items={orderItems}
-                        serviceFee={finalServiceFee}
-                        pointsToUse={appliedPoints}
-                        stringingApplicationInput={stringingApplicationInput}
-                        onSubmittingChange={setIsCheckoutSubmitting}
-                      />
+                        <CheckoutButton
+                          disabled={!canSubmit}
+                          name={name}
+                          phone={phone}
+                          email={email}
+                          postalCode={postalCode}
+                          address={address}
+                          addressDetail={addressDetail}
+                          depositor={depositor}
+                          totalPrice={totalPrice}
+                          shippingFee={shippingFee}
+                          selectedBank={selectedBank}
+                          deliveryRequest={deliveryRequest}
+                          saveAddress={saveAddress}
+                          deliveryMethod={deliveryMethod}
+                          serviceTargetIds={serviceTargetIds}
+                          withStringService={withStringService}
+                          servicePickupMethod={servicePickupMethod}
+                          items={orderItems}
+                          serviceFee={finalServiceFee}
+                          pointsToUse={appliedPoints}
+                          stringingApplicationInput={stringingApplicationInput}
+                          onSubmittingChange={setIsCheckoutSubmitting}
+                        />
                       ) : !isZeroPayableAmount ? (
                         <TossCheckoutButton
                           disabled={!canSubmit}
