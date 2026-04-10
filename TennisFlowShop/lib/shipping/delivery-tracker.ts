@@ -24,8 +24,15 @@ export type DeliveryTrackerSummarySuccess = {
 
 export type DeliveryTrackerSummaryFailure = {
   success: false;
+  errorCode:
+    | "NOT_FOUND"
+    | "BAD_REQUEST"
+    | "UNAUTHENTICATED"
+    | "FORBIDDEN"
+    | "INTERNAL"
+    | "UNKNOWN";
   message: string;
-  statusCode?: number;
+  statusCode: number;
 };
 
 const TRACKING_QUERY = `
@@ -70,6 +77,63 @@ const IN_TRANSIT_STATE_CODES = new Set([
   "PICKUP_COMPLETE",
   "PICKED_UP",
 ]);
+
+type DeliveryTrackerErrorInfo = Pick<
+  DeliveryTrackerSummaryFailure,
+  "errorCode" | "message" | "statusCode"
+>;
+
+function maskTrackingNumber(trackingNumber: string): string {
+  const trimmed = String(trackingNumber ?? "").trim();
+  if (!trimmed) return "****";
+  const suffix = trimmed.slice(-4);
+  return `${"*".repeat(Math.max(trimmed.length - 4, 3))}${suffix}`;
+}
+
+function getDeliveryTrackerErrorInfo(payload: any): DeliveryTrackerErrorInfo {
+  const rawCode = payload?.errors?.[0]?.extensions?.code;
+  const code = String(rawCode ?? "UNKNOWN").toUpperCase();
+
+  switch (code) {
+    case "NOT_FOUND":
+      return {
+        errorCode: "NOT_FOUND",
+        statusCode: 404,
+        message:
+          "해당 운송장을 조회할 수 없습니다. 택배사 또는 운송장 번호를 확인해주세요.",
+      };
+    case "BAD_REQUEST":
+      return {
+        errorCode: "BAD_REQUEST",
+        statusCode: 400,
+        message: "운송장 번호 형식이 올바르지 않습니다.",
+      };
+    case "UNAUTHENTICATED":
+      return {
+        errorCode: "UNAUTHENTICATED",
+        statusCode: 503,
+        message: "배송조회 인증 설정이 올바르지 않거나 만료되었습니다.",
+      };
+    case "FORBIDDEN":
+      return {
+        errorCode: "FORBIDDEN",
+        statusCode: 503,
+        message: "배송조회 서비스 접근 권한이 없습니다.",
+      };
+    case "INTERNAL":
+      return {
+        errorCode: "INTERNAL",
+        statusCode: 502,
+        message: "배송조회 서비스 내부 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
+      };
+    default:
+      return {
+        errorCode: "UNKNOWN",
+        statusCode: 502,
+        message: "배송조회 정보를 불러오지 못했습니다.",
+      };
+  }
+}
 
 function normalizeProgress(item: any): DeliveryTrackerProgressItem {
   return {
@@ -137,17 +201,36 @@ export async function fetchDeliveryTrackerSummary(params: {
     if (!response.ok) {
       return {
         success: false,
+        errorCode: response.status === 401 ? "UNAUTHENTICATED" : "UNKNOWN",
         statusCode: response.status,
         message: "배송조회 서비스 응답을 가져오지 못했습니다. 잠시 후 다시 시도해주세요.",
       };
     }
 
     const payload = await response.json().catch(() => null);
-    if (!payload || Array.isArray(payload?.errors) || !payload?.data?.track) {
+    if (!payload) {
       return {
         success: false,
+        errorCode: "UNKNOWN",
         statusCode: 502,
         message: "배송조회 서비스 응답을 가져오지 못했습니다. 잠시 후 다시 시도해주세요.",
+      };
+    }
+    if (Array.isArray(payload?.errors) && payload.errors.length > 0) {
+      const errorInfo = getDeliveryTrackerErrorInfo(payload);
+      console.warn("[delivery-tracker] graphql-error", {
+        errorCode: errorInfo.errorCode,
+        carrierId,
+        trackingNumber: maskTrackingNumber(trackingNumber),
+      });
+      return { success: false, ...errorInfo };
+    }
+    if (!payload?.data?.track) {
+      return {
+        success: false,
+        errorCode: "UNKNOWN",
+        statusCode: 502,
+        message: "배송조회 정보를 불러오지 못했습니다.",
       };
     }
 
@@ -182,6 +265,7 @@ export async function fetchDeliveryTrackerSummary(params: {
   } catch {
     return {
       success: false,
+      errorCode: "UNKNOWN",
       statusCode: 503,
       message: "배송조회 서비스 응답을 가져오지 못했습니다. 잠시 후 다시 시도해주세요.",
     };

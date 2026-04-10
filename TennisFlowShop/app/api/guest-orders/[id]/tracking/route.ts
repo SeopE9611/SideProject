@@ -29,10 +29,13 @@ function safeVerifyAccessToken(token?: string | null) {
 }
 
 function externalFailureResponse(result: DeliveryTrackerSummaryFailure) {
-  const status = result.statusCode === 503 ? 503 : 502;
   return NextResponse.json(
-    { success: false, message: result.message },
-    { status },
+    {
+      success: false,
+      errorCode: result.errorCode,
+      message: result.message,
+    },
+    { status: result.statusCode },
   );
 }
 
