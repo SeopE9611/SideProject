@@ -1542,9 +1542,10 @@ export default function OrderDetailClient({ orderId }: Props) {
                                     </p>
                                   )}
                                   {shouldShowTrackingStatusNotice && (
-                                    <p className="rounded-md bg-background/70 px-2.5 py-1.5 text-xs text-muted-foreground">
-                                      실시간 배송 상태는 택배사 조회 기준이며, 주문 상태와 다를 수 있습니다.
-                                    </p>
+                                    <div className="space-y-0.5 rounded-md bg-background/70 px-2.5 py-1.5 text-xs leading-relaxed text-muted-foreground">
+                                      <p>실시간 배송 상태는 택배사 기준이며,</p>
+                                      <p>주문 상태와 다를 수 있습니다.</p>
+                                    </div>
                                   )}
                                   {trackingData.progresses.length > 0 && (
                                     <ul className="list-disc space-y-1 pl-5 text-muted-foreground">

@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
+import { trackingSWRFetcher, type TrackingSWRFetcherError } from '@/lib/fetchers/trackingSWRFetcher';
 import { getOrderDeliveryInfoTitle, getOrderStatusLabelForDisplay, isVisitPickupOrder } from '@/lib/order-shipping';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 type CourierCode = 'cj' | 'hanjin' | 'logen' | 'lotte' | 'post' | 'daesin' | 'ilogen' | 'kr' | 'etc' | string;
@@ -35,6 +36,31 @@ type OrderDetail = {
     };
   };
 };
+
+type OrderTrackingResponse =
+  | {
+      success: true;
+      supported: true;
+      displayStatus: string;
+      linkUrl: string;
+      lastEvent: {
+        time: string | null;
+        statusText: string | null;
+        locationName: string | null;
+        description: string | null;
+      } | null;
+    }
+  | {
+      success: true;
+      supported: false;
+      reason: 'unsupported_courier';
+      message: string;
+    }
+  | {
+      success: false;
+      errorCode?: 'NOT_FOUND' | 'BAD_REQUEST' | 'UNAUTHENTICATED' | 'FORBIDDEN' | 'INTERNAL' | 'UNKNOWN';
+      message: string;
+    };
 
 function courierLabel(code?: CourierCode) {
   switch (code) {
@@ -79,6 +105,37 @@ const formatDate = (value?: string | null) => {
     month: 'long',
     day: 'numeric',
   });
+};
+
+const formatDateTime = (value?: string | null) => {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toLocaleString('ko-KR', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+};
+
+const getTrackingFailureMessage = (tracking: Extract<OrderTrackingResponse, { success: false }>) => {
+  if (tracking.errorCode === 'UNAUTHENTICATED' || tracking.errorCode === 'FORBIDDEN') {
+    return '배송조회 서비스 설정을 확인해주세요.';
+  }
+  if (tracking.errorCode === 'BAD_REQUEST') {
+    return '운송장 번호 형식이 올바르지 않습니다.';
+  }
+  return tracking.message || '배송조회 정보를 불러오지 못했습니다.';
+};
+
+const getTrackingErrorMessage = (trackingData: OrderTrackingResponse | undefined, trackingError: unknown) => {
+  if (trackingData && !trackingData.success && trackingData.message) {
+    return trackingData.message;
+  }
+  const message = (trackingError as TrackingSWRFetcherError | undefined)?.message;
+  return message || '배송조회 정보를 불러오지 못했습니다.';
 };
 
 /**
@@ -152,6 +209,23 @@ export default function OrderShippingInfoDialog({
   const hasInvoice = Boolean(courier || trackingNumber);
   const rawStatusLabel = getMypageUserStatusLabel(displayData?.status);
   const displayStatusLabel = getOrderStatusLabelForDisplay(rawStatusLabel, displayData?.shippingInfo);
+  const canTrackDelivery = dialogOpen && !isVisitPickup && Boolean(trackingNumber);
+  const { data: trackingData, isLoading: isTrackingLoading, error: trackingError } = useSWR<OrderTrackingResponse>(
+    canTrackDelivery ? `/api/orders/${orderId}/tracking` : null,
+    trackingSWRFetcher,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+    },
+  );
+  const shouldShowTrackingSummarySkeleton = isTrackingLoading && !trackingData && !trackingError;
+  const shouldShowTrackingStatusNotice = Boolean(
+    trackingData &&
+      trackingData.success &&
+      trackingData.supported &&
+      trackingData.displayStatus &&
+      trackingData.displayStatus.trim() !== (displayStatusLabel || '').trim(),
+  );
 
   const addressText = useMemo(() => {
     const s = displayData?.shippingInfo;
@@ -264,6 +338,57 @@ export default function OrderShippingInfoDialog({
                 <div className="text-muted-foreground">{displayData.shippingInfo.deliveryRequest}</div>
               </div>
             ) : null}
+
+            {shouldShowTrackingSummarySkeleton ? (
+              <div className="space-y-2 rounded-md border border-border bg-muted/50 p-3 text-sm">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-28" />
+                <Skeleton className="h-8 w-20" />
+              </div>
+            ) : null}
+
+            {!isTrackingLoading && !trackingError && trackingData ? (
+              <div className="space-y-2 rounded-md border border-border bg-muted/50 p-3 text-sm">
+                {trackingData.success && trackingData.supported ? (
+                  <>
+                    <p className="text-foreground">
+                      <span className="text-muted-foreground">실시간 배송 상태:</span> {trackingData.displayStatus}
+                    </p>
+                    {trackingData.lastEvent?.locationName ? (
+                      <p className="text-foreground">
+                        <span className="text-muted-foreground">최근 위치:</span> {trackingData.lastEvent.locationName}
+                      </p>
+                    ) : null}
+                    {trackingData.lastEvent?.time ? (
+                      <p className="text-foreground">
+                        <span className="text-muted-foreground">최근 갱신:</span> {formatDateTime(trackingData.lastEvent.time)}
+                      </p>
+                    ) : null}
+                    {shouldShowTrackingStatusNotice ? (
+                      <div className="space-y-0.5 rounded-md bg-background/70 px-2.5 py-1.5 text-xs leading-relaxed text-muted-foreground">
+                        <p>실시간 배송 상태는 택배사 기준이며,</p>
+                        <p>주문 상태와 다를 수 있습니다.</p>
+                      </div>
+                    ) : null}
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => window.open(trackingData.linkUrl, '_blank', 'noopener,noreferrer')}
+                    >
+                      배송조회
+                    </Button>
+                  </>
+                ) : trackingData.success && !trackingData.supported ? (
+                  <p className="text-muted-foreground">{trackingData.message}</p>
+                ) : (
+                  <p className="text-destructive">{getTrackingFailureMessage(trackingData)}</p>
+                )}
+              </div>
+            ) : null}
+
+            {trackingError ? <p className="text-sm text-destructive">{getTrackingErrorMessage(trackingData, trackingError)}</p> : null}
 
             {invoice?.updatedAt ? <div className="text-xs text-muted-foreground">운송장 업데이트: {new Date(invoice.updatedAt).toLocaleString()}</div> : null}
           </div>
