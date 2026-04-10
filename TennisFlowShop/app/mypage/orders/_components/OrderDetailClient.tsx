@@ -35,10 +35,12 @@ import {
 } from "@/lib/fetchers/trackingSWRFetcher";
 import {
   getOrderDeliveryInfoTitle,
+  getOrderStatusLabelForDisplay,
   isVisitPickupOrder,
   orderShippingMethodLabel,
   shouldShowDeliveryOnlyFields,
 } from "@/lib/order-shipping";
+import { getCommonOrderStatusLabel } from "@/lib/status-labels/base";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import {
@@ -326,6 +328,20 @@ export default function OrderDetailClient({
     orderDetail?.shippingInfo?.shippingMethod ??
     (orderDetail?.shippingInfo as any)?.deliveryMethod;
   const shippingMethodLabel = orderShippingMethodLabel(shippingMethodValue);
+  const displayOrderStatusLabel = getOrderStatusLabelForDisplay(
+    getCommonOrderStatusLabel(orderDetail?.status ?? "") ?? (orderDetail?.status ?? ""),
+    orderDetail?.shippingInfo,
+  ).trim();
+  const shouldShowTrackingSummarySkeleton =
+    isTrackingLoading && !trackingData && !trackingError;
+  const shouldShowTrackingStatusNotice =
+    Boolean(
+      trackingData &&
+        trackingData.success &&
+        trackingData.supported &&
+        trackingData.displayStatus &&
+        trackingData.displayStatus.trim() !== displayOrderStatusLabel,
+    );
 
   const canShowReviewCTA =
     Boolean(orderDetail?.userConfirmedAt) || orderDetail?.status === "구매확정";
@@ -1145,6 +1161,14 @@ export default function OrderDetailClient({
                           </p>
                         </div>
                       </div>
+                      {shouldShowTrackingSummarySkeleton && (
+                        <div className="space-y-2 p-3 bg-muted rounded-lg">
+                          <Skeleton className="h-4 w-40" />
+                          <Skeleton className="h-4 w-32" />
+                          <Skeleton className="h-4 w-36" />
+                          <Skeleton className="h-8 w-24" />
+                        </div>
+                      )}
                       {!isTrackingLoading && !trackingError && trackingData && (
                         <div className="space-y-2 p-3 bg-muted rounded-lg text-sm">
                           {trackingData.success && trackingData.supported ? (
@@ -1169,6 +1193,11 @@ export default function OrderDetailClient({
                                     최근 갱신:
                                   </span>{" "}
                                   {formatDateTime(trackingData.lastEvent.time)}
+                                </p>
+                              )}
+                              {shouldShowTrackingStatusNotice && (
+                                <p className="rounded-md bg-background/70 px-2.5 py-1.5 text-xs text-muted-foreground">
+                                  실시간 배송 상태는 택배사 조회 기준이며, 주문 상태와 다를 수 있습니다.
                                 </p>
                               )}
                               <Button

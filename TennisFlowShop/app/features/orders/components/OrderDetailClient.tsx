@@ -444,6 +444,19 @@ export default function OrderDetailClient({ orderId }: Props) {
   const showDeliveryOnlyFields = shouldShowDeliveryOnlyFields(
     orderDetail.shippingInfo,
   );
+  const displayOrderStatusLabel = getOrderStatusLabelForDisplay(
+    localStatus,
+    orderDetail.shippingInfo,
+  ).trim();
+  const shouldShowTrackingSummarySkeleton =
+    isTrackingLoading && !trackingData && !trackingError;
+  const shouldShowTrackingStatusNotice = Boolean(
+    trackingData &&
+      trackingData.success &&
+      trackingData.supported &&
+      trackingData.displayStatus &&
+      trackingData.displayStatus.trim() !== displayOrderStatusLabel,
+  );
 
   // 페이지네이션 없이 가져온 모든 이력 합치기
   const allHistory: any[] = historyPages
@@ -1494,6 +1507,14 @@ export default function OrderDetailClient({ orderId }: Props) {
                               </p>
                             </div>
                           </div>
+                          {shouldShowTrackingSummarySkeleton && (
+                            <div className="space-y-2 rounded-lg border border-border bg-muted/60 p-3 text-sm dark:bg-card/60">
+                              <Skeleton className="h-4 w-40" />
+                              <Skeleton className="h-4 w-32" />
+                              <Skeleton className="h-4 w-36" />
+                              <Skeleton className="h-8 w-24" />
+                            </div>
+                          )}
                           {!isTrackingLoading && !trackingError && trackingData && (
                             <div className="space-y-2 rounded-lg border border-border bg-muted/60 p-3 text-sm dark:bg-card/60">
                               {trackingData.success && trackingData.supported ? (
@@ -1518,6 +1539,11 @@ export default function OrderDetailClient({ orderId }: Props) {
                                         최근 갱신:
                                       </span>{" "}
                                       {formatDateTime(trackingData.lastEvent.time)}
+                                    </p>
+                                  )}
+                                  {shouldShowTrackingStatusNotice && (
+                                    <p className="rounded-md bg-background/70 px-2.5 py-1.5 text-xs text-muted-foreground">
+                                      실시간 배송 상태는 택배사 조회 기준이며, 주문 상태와 다를 수 있습니다.
                                     </p>
                                   )}
                                   {trackingData.progresses.length > 0 && (
