@@ -6,9 +6,14 @@ import { useState } from "react";
 
 export default function TossCheckoutButton({ disabled, payload }: { disabled: boolean; payload: Record<string, unknown> }) {
   const [loading, setLoading] = useState(false);
+  const amount = Number(payload?.totalPrice ?? 0) - Number(payload?.pointsToUse ?? 0);
 
   const handleClick = async () => {
     if (disabled || loading) return;
+    if (!Number.isFinite(amount) || amount <= 0) {
+      alert("최종 결제금액이 0원인 경우 카드/간편결제를 사용할 수 없습니다.");
+      return;
+    }
     setLoading(true);
     try {
       const prepRes = await fetch("/api/payments/toss/prepare", {
@@ -38,7 +43,7 @@ export default function TossCheckoutButton({ disabled, payload }: { disabled: bo
   };
 
   return (
-    <Button onClick={handleClick} className="w-full h-14 text-lg" disabled={disabled || loading}>
+    <Button onClick={handleClick} className="w-full h-14 text-lg" disabled={disabled || loading || amount <= 0}>
       {loading ? (
         <>
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
