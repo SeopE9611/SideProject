@@ -687,10 +687,16 @@ export default function TransactionFlowList() {
           const needsTrackingAction = Boolean(applicationActionTarget?.needsInboundTracking && !applicationActionTarget?.hasTracking);
           const normalizedMetaLabel = normalizeLabel(FLOW_TYPE_META_LABEL[g.flowType]);
           const normalizedFlowLabel = normalizeLabel(g.flowLabel);
-          const todoPrimaryReason = scope === 'todo' ? getTodoPrimaryReason(g) : null;
-          const shouldShowFlowBadge = !prefersApplicationView && Boolean(normalizedFlowLabel) && normalizedFlowLabel !== normalizedMetaLabel;
+          const todoPrimaryReason = scope === 'todo' || scope === 'all' ? getTodoPrimaryReason(g) : null;
+          const flowKindBadgeLabel = prefersApplicationView ? '서비스 신청' : g.kind === 'order' ? '주문' : g.kind === 'rental' ? '대여' : '서비스 신청';
+          const linkedFlowBadgeLabel = !prefersApplicationView && (g.flowType === 'order_plus_stringing' || g.flowType === 'rental_plus_stringing') ? '교체서비스 연결' : null;
+          const shouldShowFlowBadge =
+            !prefersApplicationView &&
+            !linkedFlowBadgeLabel &&
+            Boolean(normalizedFlowLabel) &&
+            normalizedFlowLabel !== normalizedMetaLabel;
           const displayKind: FlowDetailType = prefersApplicationView ? 'application' : g.kind;
-          const isApplicationActionContext = Boolean(applicationActionTarget) && (isDirectApplicationCard || scope === 'todo');
+          const isApplicationActionContext = Boolean(applicationActionTarget) && (isDirectApplicationCard || scope === 'todo' || scope === 'all');
           const displayTitle = prefersApplicationView ? getApplicationTitle(displayApplication) : getRepresentativeTitle(g);
           const displayStatus = prefersApplicationView ? displayApplication?.status : status;
           const displayUserStatusLabel = prefersApplicationView
@@ -727,6 +733,8 @@ export default function TransactionFlowList() {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2 text-xs">
+                  <Badge variant="outline">{flowKindBadgeLabel}</Badge>
+                  {linkedFlowBadgeLabel ? <Badge variant="secondary">{linkedFlowBadgeLabel}</Badge> : null}
                   {todoPrimaryReason ? (
                     <Badge variant={getWorkflowMetaBadgeSpec('action_required').variant}>
                       해야 할 일: {todoPrimaryReason}
@@ -862,7 +870,7 @@ export default function TransactionFlowList() {
 
                     const actions: ActionDef[] = [];
 
-                    const detailPriority = scope === 'todo' || prefersApplicationView ? 10 : 1;
+                    const detailPriority = scope === 'todo' || prefersApplicationView ? 10 : 3;
                     actions.push({
                       key: 'flow-detail',
                       priority: detailPriority,
@@ -980,7 +988,8 @@ export default function TransactionFlowList() {
                       } else if (normalizedStatus === '배송완료') {
                         actions.push({
                           key: 'order-confirm',
-                          priority: 2,
+                          priority: 0,
+                          pinInline: true,
                           node: (
                             <Button key="order-confirm" size="sm" disabled={confirmingOrderId === orderId} onClick={() => handleConfirmPurchase(orderId)}>
                               <CheckCircle className="mr-1 h-3.5 w-3.5" />
@@ -1068,8 +1077,8 @@ export default function TransactionFlowList() {
                       if (getMypageNormalizedStatus(applicationActionTarget.status) === '교체완료' && !applicationActionTarget.userConfirmedAt) {
                         actions.push({
                           key: 'application-confirm',
-                          priority: 2,
-                          pinInline: scope === 'todo',
+                          priority: 0,
+                          pinInline: scope === 'todo' || scope === 'all',
                           node: (
                             <Button key="application-confirm" size="sm" disabled={confirmingApplicationId === applicationActionTarget.id} onClick={() => handleConfirmApplication(applicationActionTarget.id)}>
                               <CheckCircle className="mr-1 h-3.5 w-3.5" />
