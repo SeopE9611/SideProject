@@ -816,6 +816,20 @@ export default function CheckoutPage() {
     return <LoginGate next={checkoutHref} variant="checkout" />;
   }
   const isInitialLoading = loading;
+  const previewTotalPrice = subtotal + shippingFee + baseServiceFee;
+  const previewPointCapBase = Math.max(0, previewTotalPrice - shippingFee);
+  const previewMaxPointsByPolicy = user ? previewPointCapBase : 0;
+  const previewResolvedPointsAvailable = pointsAvailable ?? 0;
+  const previewMaxPointsToUseRaw = Math.min(previewResolvedPointsAvailable, previewMaxPointsByPolicy);
+  const previewMaxPointsToUse = Math.floor(previewMaxPointsToUseRaw / POINT_UNIT) * POINT_UNIT;
+  const previewNormalizedPointsToUse = Math.floor((Number(pointsToUse) || 0) / POINT_UNIT) * POINT_UNIT;
+  const previewAppliedPoints = Math.min(previewNormalizedPointsToUse, previewMaxPointsToUse);
+  const isZeroPayableAmount = previewTotalPrice - previewAppliedPoints <= 0;
+
+  useEffect(() => {
+    if (!isZeroPayableAmount || paymentMethod !== "toss-widget") return;
+    setPaymentMethod("bank-transfer");
+  }, [isZeroPayableAmount, paymentMethod]);
 
   const renderCheckout = (checkoutStringingAdapter?: CheckoutStringingServiceAdapter) => {
     const checkoutPackageUsage = resolveCheckoutPackageUsage(withStringService, checkoutStringingAdapter);
@@ -1277,7 +1291,14 @@ export default function CheckoutPage() {
                     <div className="space-y-4 bp-sm:space-y-6">
                       <div className="space-y-3">
                         <Label>결제 방법</Label>
-                        <RadioGroup value={paymentMethod} onValueChange={(v) => setPaymentMethod(v as "bank-transfer" | "toss-widget")} className="space-y-3">
+                        <RadioGroup
+                          value={paymentMethod}
+                          onValueChange={(v) => {
+                            if (v === "toss-widget" && isZeroPayableAmount) return;
+                            setPaymentMethod(v as "bank-transfer" | "toss-widget");
+                          }}
+                          className="space-y-3"
+                        >
                           <div className="flex items-center space-x-3 p-4 bg-background rounded-lg border-2 border-border">
                             <RadioGroupItem value="bank-transfer" id="bank-transfer" />
                             <Label htmlFor="bank-transfer" className="flex-1 cursor-pointer font-medium">
@@ -1285,14 +1306,15 @@ export default function CheckoutPage() {
                             </Label>
                             <Building2 className="h-5 w-5 text-foreground" />
                           </div>
-                          <div className="flex items-center space-x-3 p-4 bg-background rounded-lg border-2 border-border">
-                            <RadioGroupItem value="toss-widget" id="toss-widget" />
-                            <Label htmlFor="toss-widget" className="flex-1 cursor-pointer font-medium">
+                          <div className={cn("flex items-center space-x-3 p-4 bg-background rounded-lg border-2 border-border", isZeroPayableAmount && "opacity-60")}>
+                            <RadioGroupItem value="toss-widget" id="toss-widget" disabled={isZeroPayableAmount} />
+                            <Label htmlFor="toss-widget" className={cn("flex-1 cursor-pointer font-medium", isZeroPayableAmount && "cursor-not-allowed text-muted-foreground")}>
                               카드/간편결제 (테스트)
                             </Label>
                             <CreditCard className="h-5 w-5 text-foreground" />
                           </div>
                         </RadioGroup>
+                        {isZeroPayableAmount && <p className="text-xs text-muted-foreground">최종 결제금액이 0원인 경우 카드/간편결제를 사용할 수 없습니다.</p>}
                       </div>
 
                       {paymentMethod === "bank-transfer" ? (
@@ -1369,7 +1391,7 @@ export default function CheckoutPage() {
                         </ul>
                       </div>
                       </>
-                      ) : (
+                      ) : !isZeroPayableAmount ? (
                         <div className="space-y-3">
                           <p className="text-sm text-muted-foreground">테스트 결제위젯입니다. 결제 승인 후 주문이 생성됩니다.</p>
                           <TossPaymentWidget
@@ -1377,7 +1399,7 @@ export default function CheckoutPage() {
                             customerKey={user ? String(user.id) : `guest_${phone.replace(/\D/g, "") || "anon"}`}
                           />
                         </div>
-                      )}
+                      ) : null}
                     </div>
                   </CardContent>
                 </Card>
@@ -1600,11 +1622,19 @@ export default function CheckoutPage() {
                           <Shield className="h-4 w-4" />
                           <span className="font-semibold">주문 안내</span>
                         </div>
-                        <div className="text-sm text-foreground space-y-1">
-                          <p>• 주문 완료 후 입금 대기 상태로 등록됩니다.</p>
-                          <p>• {needsShippingAddress ? "입금 확인 후 배송이 시작됩니다." : "입금 확인 후 매장 수령 준비가 시작됩니다."}</p>
-                          <p>• 24시간 이내 입금 부탁드립니다.</p>
-                        </div>
+                        {paymentMethod === "bank-transfer" ? (
+                          <div className="text-sm text-foreground space-y-1">
+                            <p>• 주문 완료 후 입금 대기 상태로 등록됩니다.</p>
+                            <p>• {needsShippingAddress ? "입금 확인 후 배송이 시작됩니다." : "입금 확인 후 매장 수령 준비가 시작됩니다."}</p>
+                            <p>• 24시간 이내 입금 부탁드립니다.</p>
+                          </div>
+                        ) : (
+                          <div className="text-sm text-foreground space-y-1">
+                            <p>• 결제 승인 후 주문이 완료됩니다.</p>
+                            <p>• {needsShippingAddress ? "결제 완료 후 배송 준비가 시작됩니다." : "결제 완료 후 매장 수령 준비가 시작됩니다."}</p>
+                            <p>• 카드/간편결제는 테스트 결제 환경에서 진행됩니다.</p>
+                          </div>
+                        )}
                       </div>
                     </CardContent>
                     <CardFooter className="flex flex-col gap-4 p-4 bp-sm:p-6 shrink-0">
@@ -1661,7 +1691,7 @@ export default function CheckoutPage() {
                         stringingApplicationInput={stringingApplicationInput}
                         onSubmittingChange={setIsCheckoutSubmitting}
                       />
-                      ) : (
+                      ) : !isZeroPayableAmount ? (
                         <TossCheckoutButton
                           disabled={!canSubmit}
                           payload={{
@@ -1688,7 +1718,7 @@ export default function CheckoutPage() {
                             stringingApplicationInput: withStringService && stringingApplicationInput ? stringingApplicationInput : undefined,
                           }}
                         />
-                      )}
+                      ) : null}
                       <Button variant="outline" className="w-full border-2 hover:bg-background dark:hover:bg-muted bg-transparent" asChild>
                         <Link href="/cart" data-no-unsaved-guard onClick={onLeaveCartClick}>
                           장바구니로 돌아가기
