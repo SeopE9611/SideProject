@@ -1,6 +1,7 @@
 "use client";
 
 import { getDepositBanner } from "@/app/features/rentals/utils/ui";
+import { NextTodoCallout, OrdersScopeContextNav, resolveOrdersScopeContext } from "@/app/mypage/_components/OrdersScopeContextNav";
 import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -297,6 +298,7 @@ export default function RentalsDetailClient({
   // 신청서 ID가 없는데 교체 서비스가 포함된 경우 => "교체 신청하기" CTA 노출
   const canApplyStringService =
     withStringService && !data?.stringingApplicationId;
+  const activeScope = resolveOrdersScopeContext(backUrl, "rental");
 
   // 교체서비스 보기 링크: "마이페이지 탭" 방식으로 통일
   const applicationHref = useMemo(() => {
@@ -320,6 +322,7 @@ export default function RentalsDetailClient({
 
   // 교체 신청하기 링크(대여 기반 신청)
   const applyHref = `/services/apply?rentalId=${encodeURIComponent(id)}`;
+  const returnShippingHref = `/mypage/rentals/${id}/return-shipping`;
 
   if (loading) {
     return (
@@ -409,6 +412,19 @@ export default function RentalsDetailClient({
           : data.cancelRequest.reasonText || "",
       }
     : null;
+  const nextTodo = canApplyStringService
+    ? { label: "교체서비스 신청", ctaLabel: "교체 신청하기", ctaHref: applyHref }
+    : data?.status === "out"
+      ? {
+          label: data?.shipping?.return?.trackingNumber
+            ? "반납 운송장 확인/수정"
+            : "반납 운송장 등록",
+          ctaLabel: data?.shipping?.return?.trackingNumber
+            ? "반납 운송장 수정"
+            : "반납 운송장 등록",
+          ctaHref: returnShippingHref,
+        }
+      : null;
   return (
     <main className="space-y-6 md:space-y-8">
       <div className="bg-muted/30 rounded-2xl p-6 md:p-8 border border-border/30 shadow-lg">
@@ -456,7 +472,7 @@ export default function RentalsDetailClient({
                 asChild
                 className="bg-card/70 backdrop-blur-sm border-border hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground"
               >
-                <Link href={`/mypage/rentals/${data.id}/return-shipping`}>
+                <Link href={returnShippingHref}>
                   <Truck className="h-4 w-4 mr-2" />
                   {data?.shipping?.return?.trackingNumber
                     ? "반납 운송장 수정"
@@ -490,6 +506,15 @@ export default function RentalsDetailClient({
             </Button>
           </div>
         </div>
+        <OrdersScopeContextNav activeScope={activeScope} className="mb-4 md:mb-5" />
+        {nextTodo && (
+          <NextTodoCallout
+            className="mb-4"
+            label={nextTodo.label}
+            ctaLabel={nextTodo.ctaLabel}
+            ctaHref={nextTodo.ctaHref}
+          />
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-card/70 dark:bg-muted/60 rounded-xl p-4 backdrop-blur-sm">

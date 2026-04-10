@@ -2,6 +2,7 @@
 
 import CustomerEditForm from "@/app/features/orders/components/CustomerEditForm";
 import OrderHistory from "@/app/features/orders/components/OrderHistory";
+import { NextTodoCallout, OrdersScopeContextNav, resolveOrdersScopeContext } from "@/app/mypage/_components/OrdersScopeContextNav";
 import { OrderStatusBadge } from "./OrderStatusBadge";
 import PaymentMethodDetail from "@/app/mypage/orders/_components/PaymentMethodDetail";
 import RequestEditForm from "@/app/mypage/orders/_components/RequestEditForm";
@@ -263,6 +264,7 @@ export default function OrderDetailClient({
   const flowScopeQuery = resolvedScope
     ? `&scope=${encodeURIComponent(resolvedScope)}`
     : "";
+  const activeScope = resolveOrdersScopeContext(resolvedBackUrl, "order");
 
   // 편집 모드 전체 토글
   const [isEditMode, setIsEditMode] = useState(false);
@@ -517,6 +519,9 @@ export default function OrderDetailClient({
   const shouldShowInboundShippingBlock = Boolean(
     primaryStringingAppId && primaryStringingApp?.needsInboundTracking === true,
   );
+  const inboundShippingHref = primaryStringingAppId
+    ? `/services/applications/${primaryStringingAppId}/shipping?${new URLSearchParams({ return: `/mypage?tab=orders&flowType=order&flowId=${orderId}&from=orders${flowScopeQuery}` }).toString()}`
+    : null;
   const selfShipInfo = primaryStringingApp?.shippingInfo?.selfShip ?? null;
   const hasSelfShipTracking = Boolean(selfShipInfo?.trackingNo);
   const selfShipStatusLabel = hasSelfShipTracking ? "등록 완료" : "미등록";
@@ -527,6 +532,19 @@ export default function OrderDetailClient({
   const cancelLabel = getCancelRequestLabel(orderDetail);
   const cancelStatus = (orderDetail as any)?.cancelRequest?.status;
   const canWithdrawCancelRequest = cancelStatus === "requested";
+  const nextTodo = shouldShowInboundShippingBlock && inboundShippingHref
+    ? {
+        label: "라켓 운송장 등록",
+        ctaLabel: hasSelfShipTracking ? "라켓 발송 수정" : "라켓 발송 등록",
+        ctaHref: inboundShippingHref,
+      }
+    : canShowReviewCTA && Boolean(firstUnreviewed)
+      ? {
+          label: "리뷰 작성",
+          ctaLabel: "리뷰 작성하기",
+          ctaHref: `/reviews/write?productId=${firstUnreviewed?.id}&orderId=${orderDetail?._id}`,
+        }
+      : null;
 
   // 상세 헤더에서 "주문 취소 요청" 버튼을 보여줄 수 있는 상태인지 판단
   // - 대기중 / 결제완료 상태에서만 가능
@@ -694,6 +712,10 @@ export default function OrderDetailClient({
               )}
             </div>
           </div>
+          <OrdersScopeContextNav
+            activeScope={activeScope}
+            className="mt-4 bp-sm:mt-5"
+          />
 
           {/* 주문 상태 및 요약 섹션 */}
           <div className="mt-5 bp-sm:mt-8">
@@ -738,6 +760,13 @@ export default function OrderDetailClient({
             </div>
           </div>
         </div>
+        {nextTodo && (
+          <NextTodoCallout
+            label={nextTodo.label}
+            ctaLabel={nextTodo.ctaLabel}
+            ctaHref={nextTodo.ctaHref}
+          />
+        )}
         {/* 취소 요청 상태 안내 배너 */}
         {cancelLabel && (
           <div className="mb-4 flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between rounded-lg border border-border bg-muted px-4 py-3 text-sm text-foreground">
@@ -1247,7 +1276,7 @@ export default function OrderDetailClient({
                         </p>
                       </div>
                       <Link
-                        href={`/services/applications/${primaryStringingAppId}/shipping?${new URLSearchParams({ return: `/mypage?tab=orders&flowType=order&flowId=${orderId}&from=orders${flowScopeQuery}` }).toString()}`}
+                        href={inboundShippingHref ?? "#"}
                       >
                         <Button size="sm" variant="outline" className="h-8">
                           {hasSelfShipTracking
