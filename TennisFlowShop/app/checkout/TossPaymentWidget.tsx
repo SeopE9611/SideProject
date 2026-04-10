@@ -19,7 +19,7 @@ export default function TossPaymentWidget({ amount, customerKey }: { amount: num
     const load = async () => {
       if (!window.PaymentWidget) {
         await new Promise<void>((resolve, reject) => {
-          const existing = document.querySelector(`script[src=\"${SCRIPT_SRC}\"]`) as HTMLScriptElement | null;
+          const existing = document.querySelector(`script[src="${SCRIPT_SRC}"]`) as HTMLScriptElement | null;
           if (existing) {
             existing.addEventListener("load", () => resolve(), { once: true });
             existing.addEventListener("error", () => reject(new Error("failed")), { once: true });
