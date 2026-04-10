@@ -51,6 +51,10 @@ import {
   isAdminCancelableOrderStatus,
 } from "@/lib/orders/cancel-refund-policy";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
+import {
+  trackingSWRFetcher,
+  type TrackingSWRFetcherError,
+} from "@/lib/fetchers/trackingSWRFetcher";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import {
@@ -244,6 +248,18 @@ const getTrackingFailureMessage = (tracking: Extract<OrderTrackingResponse, { su
   return tracking.message || "배송조회 정보를 불러오지 못했습니다.";
 };
 
+const getTrackingErrorMessage = (
+  trackingData: OrderTrackingResponse | undefined,
+  trackingError: unknown,
+) => {
+  if (trackingData && !trackingData.success && trackingData.message) {
+    return trackingData.message;
+  }
+
+  const message = (trackingError as TrackingSWRFetcherError | undefined)?.message;
+  return message || "배송조회 정보를 불러오지 못했습니다.";
+};
+
 // 메인 컴포넌트
 interface Props {
   orderId: string;
@@ -289,7 +305,7 @@ export default function OrderDetailClient({ orderId }: Props) {
   const { data: trackingData, error: trackingError, isLoading: isTrackingLoading } =
     useSWR<OrderTrackingResponse>(
       canTrackDelivery ? `/api/orders/${orderId}/tracking` : null,
-      authenticatedSWRFetcher,
+      trackingSWRFetcher,
       {
         revalidateOnFocus: false,
         revalidateOnReconnect: false,
@@ -1546,7 +1562,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                           )}
                           {trackingError && (
                             <p className="text-sm text-destructive">
-                              배송조회 정보를 불러오지 못했습니다.
+                              {getTrackingErrorMessage(trackingData, trackingError)}
                             </p>
                           )}
                         </>
