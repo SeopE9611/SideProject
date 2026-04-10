@@ -1,5 +1,7 @@
 "use client";
 import CheckoutButton from "@/app/checkout/CheckoutButton";
+import TossCheckoutButton from "@/app/checkout/TossCheckoutButton";
+import TossPaymentWidget from "@/app/checkout/TossPaymentWidget";
 import CheckoutStringingRuntimeBridge from "@/app/checkout/_components/CheckoutStringingRuntimeBridge";
 import type { StringingApplicationInput } from "@/app/features/stringing-applications/api/submit-core";
 import type useCheckoutStringingServiceAdapter from "@/app/features/stringing-applications/hooks/useCheckoutStringingServiceAdapter";
@@ -432,6 +434,7 @@ export default function CheckoutPage() {
   }, [orderItemsKey, withStringService, serviceTargetIds]);
 
   const [selectedBank, setSelectedBank] = useState("shinhan");
+  const [paymentMethod, setPaymentMethod] = useState<"bank-transfer" | "toss-widget">("bank-transfer");
 
   // 장착 서비스 수거방식(신청서 Step1과 1:1 매핑)
   // (UI에서는 COURIER_VISIT 선택지를 숨김)
@@ -668,13 +671,15 @@ export default function CheckoutPage() {
       if (!addressDetail.trim()) errors.addressDetail = "상세 주소는 필수입니다.";
     }
 
-    // 무통장(현 구조)에서는 입금자명 필수
-    // 제출 버튼 검증(CheckoutButton)과 동일하게 2자 이상 규칙도 맞춘다.
-    const depositorTrim = depositor.trim();
-    if (!depositorTrim) {
-      errors.depositor = "입금자명은 필수입니다.";
-    } else if (depositorTrim.length < 2) {
-      errors.depositor = "입금자명은 2자 이상 입력해주세요.";
+    if (paymentMethod === "bank-transfer") {
+      // 무통장(현 구조)에서는 입금자명 필수
+      // 제출 버튼 검증(CheckoutButton)과 동일하게 2자 이상 규칙도 맞춘다.
+      const depositorTrim = depositor.trim();
+      if (!depositorTrim) {
+        errors.depositor = "입금자명은 필수입니다.";
+      } else if (depositorTrim.length < 2) {
+        errors.depositor = "입금자명은 2자 이상 입력해주세요.";
+      }
     }
     if (!orderItems || orderItems.length === 0) errors.items = "주문 상품이 비어있습니다.";
 
@@ -696,7 +701,7 @@ export default function CheckoutPage() {
     }
 
     return errors;
-  }, [name, phone, email, postalCode, address, addressDetail, depositor, deliveryMethod, orderItems, bundleQtyGuard, bundleCompositionGuard, isLoggedIn, needsShippingAddress, mode, isMountingFeeReady]);
+  }, [name, phone, email, postalCode, address, addressDetail, depositor, deliveryMethod, orderItems, bundleQtyGuard, bundleCompositionGuard, isLoggedIn, needsShippingAddress, mode, isMountingFeeReady, paymentMethod]);
 
   const showNameError = !!touchedFields.name && !!fieldErrors.name;
   const showEmailError = !!touchedFields.email && !!fieldErrors.email;
@@ -1272,7 +1277,7 @@ export default function CheckoutPage() {
                     <div className="space-y-4 bp-sm:space-y-6">
                       <div className="space-y-3">
                         <Label>결제 방법</Label>
-                        <RadioGroup defaultValue="bank-transfer" className="space-y-3">
+                        <RadioGroup value={paymentMethod} onValueChange={(v) => setPaymentMethod(v as "bank-transfer" | "toss-widget")} className="space-y-3">
                           <div className="flex items-center space-x-3 p-4 bg-background rounded-lg border-2 border-border">
                             <RadioGroupItem value="bank-transfer" id="bank-transfer" />
                             <Label htmlFor="bank-transfer" className="flex-1 cursor-pointer font-medium">
@@ -1280,9 +1285,18 @@ export default function CheckoutPage() {
                             </Label>
                             <Building2 className="h-5 w-5 text-foreground" />
                           </div>
+                          <div className="flex items-center space-x-3 p-4 bg-background rounded-lg border-2 border-border">
+                            <RadioGroupItem value="toss-widget" id="toss-widget" />
+                            <Label htmlFor="toss-widget" className="flex-1 cursor-pointer font-medium">
+                              카드/간편결제 (테스트)
+                            </Label>
+                            <CreditCard className="h-5 w-5 text-foreground" />
+                          </div>
                         </RadioGroup>
                       </div>
 
+                      {paymentMethod === "bank-transfer" ? (
+                      <>
                       <div className="space-y-3">
                         <Label htmlFor="bank-account">입금 계좌 선택</Label>
                         <Select value={selectedBank} onValueChange={setSelectedBank}>
@@ -1354,6 +1368,16 @@ export default function CheckoutPage() {
                           </li>
                         </ul>
                       </div>
+                      </>
+                      ) : (
+                        <div className="space-y-3">
+                          <p className="text-sm text-muted-foreground">테스트 결제위젯입니다. 결제 승인 후 주문이 생성됩니다.</p>
+                          <TossPaymentWidget
+                            amount={payableTotalPrice}
+                            customerKey={user ? String(user.id) : `guest_${phone.replace(/\D/g, "") || "anon"}`}
+                          />
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -1612,6 +1636,7 @@ export default function CheckoutPage() {
                           )}
                         </div>
                       )}
+                      {paymentMethod === "bank-transfer" ? (
                       <CheckoutButton
                         disabled={!canSubmit}
                         name={name}
@@ -1636,6 +1661,34 @@ export default function CheckoutPage() {
                         stringingApplicationInput={stringingApplicationInput}
                         onSubmittingChange={setIsCheckoutSubmitting}
                       />
+                      ) : (
+                        <TossCheckoutButton
+                          disabled={!canSubmit}
+                          payload={{
+                            items: orderItems.map((item) => ({ productId: item.id, quantity: item.quantity, kind: item.kind ?? "product" })),
+                            shippingInfo: {
+                              name: name.trim(),
+                              phone: phone.replace(/\D/g, ""),
+                              address: address.trim(),
+                              addressDetail: addressDetail.trim(),
+                              postalCode: postalCode.replace(/\D/g, ""),
+                              depositor: "토스결제",
+                              deliveryRequest: deliveryRequest.trim(),
+                              deliveryMethod,
+                              withStringService,
+                            },
+                            paymentInfo: { method: "토스페이먼츠" },
+                            totalPrice,
+                            shippingFee,
+                            serviceFee: finalServiceFee,
+                            pointsToUse: appliedPoints,
+                            guestInfo: !user ? { name: name.trim(), phone: phone.replace(/\D/g, ""), email: email.trim().toLowerCase() } : undefined,
+                            isStringServiceApplied: withStringService,
+                            servicePickupMethod,
+                            stringingApplicationInput: withStringService && stringingApplicationInput ? stringingApplicationInput : undefined,
+                          }}
+                        />
+                      )}
                       <Button variant="outline" className="w-full border-2 hover:bg-background dark:hover:bg-muted bg-transparent" asChild>
                         <Link href="/cart" data-no-unsaved-guard onClick={onLeaveCartClick}>
                           장바구니로 돌아가기
