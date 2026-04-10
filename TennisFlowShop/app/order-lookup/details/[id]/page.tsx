@@ -115,8 +115,27 @@ type TrackingResponse =
     }
   | {
       success: false;
+      errorCode?:
+        | "NOT_FOUND"
+        | "BAD_REQUEST"
+        | "UNAUTHENTICATED"
+        | "FORBIDDEN"
+        | "INTERNAL"
+        | "UNKNOWN";
       message: string;
     };
+
+const getTrackingFailureMessage = (
+  tracking: Extract<TrackingResponse, { success: false }>,
+) => {
+  if (tracking.errorCode === "UNAUTHENTICATED" || tracking.errorCode === "FORBIDDEN") {
+    return "배송조회 서비스 설정을 확인해주세요.";
+  }
+  if (tracking.errorCode === "BAD_REQUEST") {
+    return "운송장 번호 형식이 올바르지 않습니다.";
+  }
+  return tracking.message || "배송조회 정보를 불러오지 못했습니다.";
+};
 
 type GuestOrderMode = "off" | "legacy" | "on";
 
@@ -391,9 +410,13 @@ export default function OrderDetailPage() {
       const data = (await res.json()) as TrackingResponse;
       setTrackingInfo(data);
       if (!res.ok) {
-        setTrackingError(
-          (data as any)?.message ?? "배송조회 정보를 불러오지 못했습니다.",
-        );
+        if (!data.success) {
+          setTrackingError(getTrackingFailureMessage(data));
+        } else {
+          setTrackingError(
+            (data as any)?.message ?? "배송조회 정보를 불러오지 못했습니다.",
+          );
+        }
         return;
       }
       if (data.success && data.supported) {
@@ -404,7 +427,7 @@ export default function OrderDetailPage() {
         setTrackingError(data.message);
         return;
       }
-      setTrackingError(data.message);
+      setTrackingError(getTrackingFailureMessage(data));
     } catch {
       setTrackingError("배송조회 정보를 불러오지 못했습니다.");
     } finally {

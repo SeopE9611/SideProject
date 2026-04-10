@@ -193,8 +193,25 @@ type OrderTrackingResponse =
     }
   | {
       success: false;
+      errorCode?:
+        | "NOT_FOUND"
+        | "BAD_REQUEST"
+        | "UNAUTHENTICATED"
+        | "FORBIDDEN"
+        | "INTERNAL"
+        | "UNKNOWN";
       message: string;
     };
+
+const getTrackingFailureMessage = (tracking: Extract<OrderTrackingResponse, { success: false }>) => {
+  if (tracking.errorCode === "UNAUTHENTICATED" || tracking.errorCode === "FORBIDDEN") {
+    return "배송조회 서비스 설정을 확인해주세요.";
+  }
+  if (tracking.errorCode === "BAD_REQUEST") {
+    return "운송장 번호 형식이 올바르지 않습니다.";
+  }
+  return tracking.message || "배송조회 정보를 불러오지 못했습니다.";
+};
 
 // 주문 취소 요청 상태 텍스트를 계산하는 헬퍼
 function getCancelRequestLabel(order: any): string | null {
@@ -1158,7 +1175,7 @@ export default function OrderDetailClient({
                             </p>
                           ) : (
                             <p className="text-destructive">
-                              {trackingData.message}
+                              {getTrackingFailureMessage(trackingData)}
                             </p>
                           )}
                         </div>
