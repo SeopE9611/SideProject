@@ -30,6 +30,10 @@ import {
 import { refreshOnce } from "@/lib/auth/refresh-mutex";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import {
+  trackingSWRFetcher,
+  type TrackingSWRFetcherError,
+} from "@/lib/fetchers/trackingSWRFetcher";
+import {
   getOrderDeliveryInfoTitle,
   isVisitPickupOrder,
   orderShippingMethodLabel,
@@ -213,6 +217,18 @@ const getTrackingFailureMessage = (tracking: Extract<OrderTrackingResponse, { su
   return tracking.message || "배송조회 정보를 불러오지 못했습니다.";
 };
 
+const getTrackingErrorMessage = (
+  trackingData: OrderTrackingResponse | undefined,
+  trackingError: unknown,
+) => {
+  if (trackingData && !trackingData.success && trackingData.message) {
+    return trackingData.message;
+  }
+
+  const message = (trackingError as TrackingSWRFetcherError | undefined)?.message;
+  return message || "배송조회 정보를 불러오지 못했습니다.";
+};
+
 // 주문 취소 요청 상태 텍스트를 계산하는 헬퍼
 function getCancelRequestLabel(order: any): string | null {
   const cancel = order?.cancelRequest;
@@ -288,7 +304,7 @@ export default function OrderDetailClient({
     isLoading: isTrackingLoading,
   } = useSWR<OrderTrackingResponse>(
     canTrackDelivery ? `/api/orders/${orderId}/tracking` : null,
-    authenticatedSWRFetcher,
+    trackingSWRFetcher,
     {
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
@@ -1182,7 +1198,7 @@ export default function OrderDetailClient({
                       )}
                       {trackingError && (
                         <p className="text-sm text-destructive">
-                          배송조회 정보를 불러오지 못했습니다.
+                          {getTrackingErrorMessage(trackingData, trackingError)}
                         </p>
                       )}
                     </>
