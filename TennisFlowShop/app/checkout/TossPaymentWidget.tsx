@@ -6,6 +6,7 @@ declare global {
   interface Window {
     PaymentWidget?: any;
     __tossPaymentWidget?: any;
+    __tossPaymentMethodWidget?: any;
   }
 }
 
@@ -37,11 +38,16 @@ export default function TossPaymentWidget({ amount, customerKey }: { amount: num
       const clientKey = process.env.NEXT_PUBLIC_TOSS_WIDGET_CLIENT_KEY;
       if (!clientKey || !window.PaymentWidget || !mounted) return;
 
-      const widget = window.PaymentWidget(clientKey, customerKey);
-      await widget.renderPaymentMethods("#toss-payment-widget", { value: amount }, { variantKey: "DEFAULT" });
-      await widget.renderAgreement("#toss-payment-agreement", { variantKey: "AGREEMENT" });
+      const paymentWidget = window.PaymentWidget(clientKey, customerKey);
 
-      window.__tossPaymentWidget = widget;
+      const paymentMethodWidget = await paymentWidget.renderPaymentMethods("#toss-payment-widget", { value: amount }, { variantKey: "DEFAULT" });
+
+      await paymentWidget.renderAgreement("#toss-payment-agreement", {
+        variantKey: "AGREEMENT",
+      });
+
+      window.__tossPaymentWidget = paymentWidget;
+      window.__tossPaymentMethodWidget = paymentMethodWidget;
       setReady(true);
     };
 
@@ -52,9 +58,9 @@ export default function TossPaymentWidget({ amount, customerKey }: { amount: num
   }, [customerKey]);
 
   useEffect(() => {
-    const widget = window.__tossPaymentWidget;
-    if (!widget) return;
-    widget.updateAmount(amount).catch(() => undefined);
+    const paymentMethodWidget = window.__tossPaymentMethodWidget;
+    if (!paymentMethodWidget) return;
+    paymentMethodWidget.updateAmount(amount).catch(() => undefined);
   }, [amount]);
 
   return (
