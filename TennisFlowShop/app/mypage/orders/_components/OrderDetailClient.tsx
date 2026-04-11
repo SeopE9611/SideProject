@@ -2,7 +2,7 @@
 
 import CustomerEditForm from "@/app/features/orders/components/CustomerEditForm";
 import OrderHistory from "@/app/features/orders/components/OrderHistory";
-import { NextTodoCallout, OrdersScopeContextNav, resolveOrdersScopeContext } from "@/app/mypage/_components/OrdersScopeContextNav";
+import { NextTodoCallout } from "@/app/mypage/_components/OrdersScopeContextNav";
 import { OrderStatusBadge } from "./OrderStatusBadge";
 import PaymentMethodDetail from "@/app/mypage/orders/_components/PaymentMethodDetail";
 import RequestEditForm from "@/app/mypage/orders/_components/RequestEditForm";
@@ -264,7 +264,6 @@ export default function OrderDetailClient({
   const flowScopeQuery = resolvedScope
     ? `&scope=${encodeURIComponent(resolvedScope)}`
     : "";
-  const activeScope = resolveOrdersScopeContext(resolvedBackUrl, "order");
 
   // 편집 모드 전체 토글
   const [isEditMode, setIsEditMode] = useState(false);
@@ -757,11 +756,6 @@ export default function OrderDetailClient({
               )}
             </div>
           </div>
-          <OrdersScopeContextNav
-            activeScope={activeScope}
-            className="mt-4 bp-sm:mt-5"
-          />
-
           {/* 주문 상태 및 요약 섹션 */}
           <div className="mt-5 bp-sm:mt-8">
             <div className="grid grid-cols-1 gap-4 bp-sm:gap-6 bp-md:grid-cols-3">

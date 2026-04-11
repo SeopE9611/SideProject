@@ -1,7 +1,7 @@
 "use client";
 
 import { getDepositBanner } from "@/app/features/rentals/utils/ui";
-import { NextTodoCallout, OrdersScopeContextNav, resolveOrdersScopeContext } from "@/app/mypage/_components/OrdersScopeContextNav";
+import { NextTodoCallout } from "@/app/mypage/_components/OrdersScopeContextNav";
 import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -298,7 +298,6 @@ export default function RentalsDetailClient({
   // 신청서 ID가 없는데 교체 서비스가 포함된 경우 => "교체 신청하기" CTA 노출
   const canApplyStringService =
     withStringService && !data?.stringingApplicationId;
-  const activeScope = resolveOrdersScopeContext(backUrl, "rental");
 
   // 교체서비스 보기 링크: "마이페이지 탭" 방식으로 통일
   const applicationHref = useMemo(() => {
@@ -506,7 +505,6 @@ export default function RentalsDetailClient({
             </Button>
           </div>
         </div>
-        <OrdersScopeContextNav activeScope={activeScope} className="mb-4 md:mb-5" />
         {nextTodo && (
           <NextTodoCallout
             className="mb-4"
