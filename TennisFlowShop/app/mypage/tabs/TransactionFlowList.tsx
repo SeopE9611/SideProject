@@ -2,6 +2,7 @@
 
 import { collectionMethodLabel, orderShippingMethodLabel } from '@/app/features/stringing-applications/lib/fulfillment-labels';
 import { getMypageNormalizedStatus, getMypagePaymentStatusLabel, getMypageUserStatusLabel } from '@/app/mypage/_lib/status-label';
+import OrdersScopeTabs, { parseOrdersScope } from '@/app/mypage/_components/OrdersScopeTabs';
 import ActivityOrderReviewCTA from '@/app/mypage/tabs/_components/ActivityOrderReviewCTA';
 import ServiceReviewCTA from '@/components/reviews/ServiceReviewCTA';
 import AsyncState from '@/components/system/AsyncState';
@@ -18,10 +19,10 @@ import {
 import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
 import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from '@/lib/order-shipping';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
-import { AlertCircle, ArrowRight, Calendar, CheckCircle, ChevronDown, ChevronUp, CreditCard, Link2, ListChecks, Package, ShoppingBag, Sparkles, Store, Truck, Undo2, Wallet, Wrench, XCircle } from 'lucide-react';
+import { AlertCircle, ArrowRight, Calendar, CheckCircle, ChevronDown, ChevronUp, CreditCard, Link2, Package, Sparkles, Store, Truck, Undo2, Wallet, Wrench, XCircle } from 'lucide-react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { Fragment, useMemo, useState } from 'react';
 import { mutate as globalMutate } from 'swr';
 import useSWRInfinite from 'swr/infinite';
@@ -106,46 +107,6 @@ const CancelOrderDialog = dynamic(() => import('@/app/mypage/orders/_components/
 const CancelStringingDialog = dynamic(() => import('@/app/mypage/applications/_components/CancelStringingDialog'), { loading: () => null });
 const CancelRentalDialog = dynamic(() => import('@/app/mypage/rentals/_components/CancelRentalDialog'), { loading: () => null });
 const OrderShippingInfoDialog = dynamic(() => import('@/app/mypage/tabs/_components/OrderShippingInfoDialog'), { loading: () => null });
-
-type FlowScope = 'all' | 'todo' | 'order' | 'application' | 'rental';
-
-const FLOW_SCOPE_OPTIONS: Array<{
-  value: FlowScope;
-  label: string;
-  icon: typeof Package;
-  description: string;
-}> = [
-  { value: 'all', label: '전체', icon: Package, description: '모든 거래 내역' },
-  {
-    value: 'todo',
-    label: '해야 할 일',
-    icon: ListChecks,
-    description: '처리 필요 항목',
-  },
-  {
-    value: 'order',
-    label: '주문',
-    icon: ShoppingBag,
-    description: '상품 주문 내역',
-  },
-  {
-    value: 'application',
-    label: '서비스 신청',
-    icon: Wrench,
-    description: '교체서비스 신청',
-  },
-  {
-    value: 'rental',
-    label: '대여',
-    icon: Calendar,
-    description: '라켓 대여 내역',
-  },
-];
-
-const parseScope = (value: string | null): FlowScope => {
-  if (value === 'todo' || value === 'order' || value === 'application' || value === 'rental') return value;
-  return 'all';
-};
 
 const formatDate = (iso: string) => {
   const d = new Date(iso);
@@ -334,8 +295,7 @@ function FlowListSkeleton() {
 
 export default function TransactionFlowList() {
   const searchParams = useSearchParams();
-  const router = useRouter();
-  const scope = parseScope(searchParams.get('scope'));
+  const scope = parseOrdersScope(searchParams.get('scope')) ?? 'all';
   const [confirmingOrderId, setConfirmingOrderId] = useState<string | null>(null);
   const [confirmingApplicationId, setConfirmingApplicationId] = useState<string | null>(null);
   const [expandedSecondaryKey, setExpandedSecondaryKey] = useState<string | null>(null);
@@ -571,17 +531,6 @@ export default function TransactionFlowList() {
     }
   };
 
-  const handleScopeChange = (nextScope: FlowScope) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('tab', 'orders');
-    if (nextScope === 'all') {
-      params.delete('scope');
-    } else {
-      params.set('scope', nextScope);
-    }
-    router.replace(`/mypage?${params.toString()}`, { scroll: false });
-  };
-
   const flowQuery = useMemo(() => {
     const params = new URLSearchParams();
     params.set('from', 'orders');
@@ -609,31 +558,7 @@ export default function TransactionFlowList() {
   return (
     <div className="space-y-4">
       {/* Enhanced Filter Tabs */}
-      <div className="relative">
-        <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none sm:gap-2">
-          {FLOW_SCOPE_OPTIONS.map((option) => {
-            const Icon = option.icon;
-            const isActive = scope === option.value;
-            return (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() => handleScopeChange(option.value)}
-                className={`
-                  group relative flex items-center gap-2 whitespace-nowrap rounded-full px-4 py-2.5
-                  text-sm font-medium transition-all duration-200 ease-out
-                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2
-                  ${isActive ? 'bg-primary text-primary-foreground shadow-md shadow-primary/25' : 'bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground hover:shadow-sm'}
-                `}
-              >
-                <Icon className={`h-4 w-4 transition-transform duration-200 ${isActive ? 'scale-110' : 'group-hover:scale-105'}`} />
-                <span>{option.label}</span>
-                {isActive && <span className="absolute -bottom-1 left-1/2 h-0.5 w-6 -translate-x-1/2 rounded-full bg-primary/40" />}
-              </button>
-            );
-          })}
-        </div>
-      </div>
+      <OrdersScopeTabs activeScope={scope} />
       {scope === 'todo' ? <p className="text-xs text-muted-foreground">해야 할 일은 구매확정·운송장 등록·교체확정·리뷰 작성처럼 지금 바로 처리할 항목만 모아 보여줍니다.</p> : null}
       <p className="text-xs text-muted-foreground">주문 구매확정과 교체서비스 확정은 별도로 처리됩니다.</p>
       {items.length === 0 ? (

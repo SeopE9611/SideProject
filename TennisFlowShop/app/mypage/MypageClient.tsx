@@ -1,7 +1,7 @@
 "use client";
 
 import { UserSidebar } from "@/app/mypage/orders/_components/UserSidebar";
-import { OrdersScopeContextNav, resolveOrdersScopeContext } from "@/app/mypage/_components/OrdersScopeContextNav";
+import OrdersScopeTabs, { resolveOrdersScopeContext } from "@/app/mypage/_components/OrdersScopeTabs";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -335,7 +335,7 @@ export default function MypageClient({ user }: Props) {
                     </div>
                   </CardHeader>
                   <CardContent className="p-3 bp-sm:p-6">
-                    {isOrdersDetailView ? <OrdersScopeContextNav activeScope={activeOrdersScope} className="mb-4 bp-sm:mb-5" /> : null}
+                    {isOrdersDetailView ? <OrdersScopeTabs activeScope={activeOrdersScope} className="mb-4 bp-sm:mb-5" /> : null}
                     {isOrdersTab && flowType === "order" && flowId ? (
                       <OrderDetailClient orderId={flowId} backUrl={flowBackUrl} linkedApplicationHrefBuilder={(applicationId) => `/mypage?tab=orders&flowType=application&flowId=${encodeURIComponent(applicationId)}${flowFromQuery}`} />
                     ) : isOrdersTab && flowType === "application" && flowId ? (
