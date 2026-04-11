@@ -3,7 +3,7 @@
 import ApplicationStatusBadge from '@/app/features/stringing-applications/components/ApplicationStatusBadge';
 import { ApplicationStatusSelect } from '@/app/features/stringing-applications/components/ApplicationStatusSelect';
 import CustomerEditForm from '@/app/features/stringing-applications/components/CustomerEditForm';
-import { NextTodoCallout, OrdersScopeContextNav, resolveOrdersScopeContext } from '@/app/mypage/_components/OrdersScopeContextNav';
+import { NextTodoCallout } from '@/app/mypage/_components/OrdersScopeContextNav';
 import PaymentEditForm from '@/app/features/stringing-applications/components/PaymentEditForm';
 import PaymentMethodDetail from '@/app/features/stringing-applications/components/PaymentMethodDetail';
 import RequirementsEditForm from '@/app/features/stringing-applications/components/RequirementsEditForm';
@@ -699,7 +699,6 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
 
   const backQuery = new URLSearchParams(backUrl.split('?')[1] ?? '');
   const ordersScope = backQuery.get('scope');
-  const activeScope = resolveOrdersScopeContext(backUrl, 'application');
   const flowQuery = new URLSearchParams();
   flowQuery.set('from', 'orders');
   if (ordersScope) {
@@ -927,9 +926,6 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                 </div>
               </TooltipProvider>
             </div>
-            {!isAdmin && (
-              <OrdersScopeContextNav activeScope={activeScope} className="mb-4 bp-sm:mb-5" />
-            )}
             {!isAdmin && userNextTodo && (
               <NextTodoCallout
                 className="mb-4"

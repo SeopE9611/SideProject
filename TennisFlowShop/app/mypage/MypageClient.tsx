@@ -1,6 +1,7 @@
 "use client";
 
 import { UserSidebar } from "@/app/mypage/orders/_components/UserSidebar";
+import { OrdersScopeContextNav, resolveOrdersScopeContext } from "@/app/mypage/_components/OrdersScopeContextNav";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -175,6 +176,12 @@ export default function MypageClient({ user }: Props) {
   const flowFromQuery = buildFlowFromQuery(from, scope);
   const ordersFlowFromQuery = buildFlowFromQuery("orders", scope);
   const isOrdersTab = currentTab === "orders";
+  const hasOrderFlowDetail = Boolean((flowType === "order" && flowId) || orderId);
+  const hasApplicationFlowDetail = Boolean((flowType === "application" && flowId) || selectedApplicationId);
+  const hasRentalFlowDetail = Boolean((flowType === "rental" && flowId) || selectedRentalId);
+  const isOrdersDetailView = isOrdersTab && (hasOrderFlowDetail || hasApplicationFlowDetail || hasRentalFlowDetail);
+  const detailScopeFallback = hasApplicationFlowDetail ? "application" : hasRentalFlowDetail ? "rental" : "order";
+  const activeOrdersScope = resolveOrdersScopeContext(flowBackUrl, detailScopeFallback);
 
   // 페이지 톤 클래스 분류(히어로, 카드 헤더, 아이콘 배경)
   const pageTone = {
@@ -328,6 +335,7 @@ export default function MypageClient({ user }: Props) {
                     </div>
                   </CardHeader>
                   <CardContent className="p-3 bp-sm:p-6">
+                    {isOrdersDetailView ? <OrdersScopeContextNav activeScope={activeOrdersScope} className="mb-4 bp-sm:mb-5" /> : null}
                     {isOrdersTab && flowType === "order" && flowId ? (
                       <OrderDetailClient orderId={flowId} backUrl={flowBackUrl} linkedApplicationHrefBuilder={(applicationId) => `/mypage?tab=orders&flowType=application&flowId=${encodeURIComponent(applicationId)}${flowFromQuery}`} />
                     ) : isOrdersTab && flowType === "application" && flowId ? (
