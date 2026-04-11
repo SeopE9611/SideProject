@@ -60,7 +60,16 @@ export default function TossPaymentWidget({ amount, customerKey }: { amount: num
   useEffect(() => {
     const paymentMethodWidget = window.__tossPaymentMethodWidget;
     if (!paymentMethodWidget) return;
-    paymentMethodWidget.updateAmount(amount).catch(() => undefined);
+
+    try {
+      const result = paymentMethodWidget.updateAmount(amount);
+
+      if (result && typeof result.then === "function") {
+        result.catch(() => undefined);
+      }
+    } catch {
+      // 필요하면 개발용 로그만 남기고 무시
+    }
   }, [amount]);
 
   return (
