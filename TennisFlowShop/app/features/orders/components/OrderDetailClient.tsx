@@ -121,6 +121,9 @@ interface OrderDetail {
   paymentStatus: string;
   paymentMethod: string;
   paymentBank?: string;
+  paymentProvider?: string | null;
+  paymentEasyPayProvider?: string | null;
+  paymentApprovedAt?: string | null;
   total: number;
   items: Array<{ name: string; quantity: number; price: number }>;
   history: Array<any>; // initialData용 (하지만 useSWRInfinite로 실제 이력 사용)
@@ -1656,6 +1659,9 @@ export default function OrderDetailClient({ orderId }: Props) {
                           method={orderDetail.paymentMethod || "무통장입금"}
                           bankKey={orderDetail.paymentBank}
                           depositor={orderDetail.shippingInfo?.depositor}
+                          paymentProvider={orderDetail.paymentProvider}
+                          easyPayProvider={orderDetail.paymentEasyPayProvider}
+                          paymentStatus={orderDetail.paymentStatus}
                         />
                       </div>
 

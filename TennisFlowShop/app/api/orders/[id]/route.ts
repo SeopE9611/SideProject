@@ -492,6 +492,10 @@ export async function GET(
       },
       paymentStatus: order.paymentStatus || "결제대기",
       paymentMethod: order.paymentInfo?.method ?? "결제방법 없음",
+      paymentProvider: order.paymentInfo?.provider ?? null,
+      paymentApprovedAt: toNullableIsoString(order.paymentInfo?.approvedAt),
+      paymentEasyPayProvider:
+        order.paymentInfo?.rawSummary?.easyPay?.provider ?? null,
       paymentBank: order.paymentInfo?.bank ?? null,
       total: order.totalPrice,
       date: order.createdAt,

@@ -59,6 +59,31 @@ function getReceptionLabel(collectionMethod?: string | null): string {
   return '발송 접수';
 }
 
+const EASY_PAY_PROVIDER_LABEL_MAP: Record<string, string> = {
+  TOSSPAY: '토스페이',
+  KAKAOPAY: '카카오페이',
+  NAVERPAY: '네이버페이',
+  PAYCO: '페이코',
+  SAMSUNGPAY: '삼성페이',
+  LGPAY: 'LG페이',
+};
+
+function getTossMethodLabel(method?: string, easyPayProvider?: string | null) {
+  const normalizedMethod = String(method ?? '').trim().toUpperCase();
+  const hasEasyPayProvider = Boolean(String(easyPayProvider ?? '').trim());
+
+  if (normalizedMethod.includes('CARD') && (normalizedMethod.includes('EASY') || hasEasyPayProvider)) {
+    return '카드/간편결제';
+  }
+  if (normalizedMethod.includes('EASY') || hasEasyPayProvider) {
+    return '간편결제';
+  }
+  if (normalizedMethod.includes('CARD')) {
+    return '카드 결제';
+  }
+  return '카드/간편결제';
+}
+
 // verifyAccessToken은 throw 가능 → 안전하게 null 처리(500 방지)
 function safeVerifyAccessToken(token?: string) {
   if (!token) return null;
@@ -270,6 +295,12 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
   const productAmount = Math.max(0, normalizedOriginalTotal - normalizedServiceFee - normalizedShippingFee);
   // 0원 결제 시 입금 안내 오해 방지
   const isZeroPayment = normalizedTotalPrice <= 0 || normalizedOriginalTotal - normalizedPointsUsed <= 0;
+  const paymentProvider = String(order.paymentInfo?.provider ?? '').trim().toLowerCase();
+  const paymentMethodRaw = String(order.paymentInfo?.method ?? '').trim();
+  const easyPayProviderRaw = String(order.paymentInfo?.rawSummary?.easyPay?.provider ?? '').trim().toUpperCase();
+  const easyPayProviderLabel = easyPayProviderRaw ? EASY_PAY_PROVIDER_LABEL_MAP[easyPayProviderRaw] ?? easyPayProviderRaw : null;
+  const isTossPayment = paymentProvider === 'tosspayments';
+  const paymentMethodLabel = isZeroPayment ? '결제 불필요' : isTossPayment ? getTossMethodLabel(paymentMethodRaw, easyPayProviderRaw) : '무통장입금';
 
   return (
     <>
@@ -367,7 +398,10 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                             <p className="text-sm text-muted-foreground">포인트 전액 사용 등으로 추가 입금이 필요하지 않습니다.</p>
                           </>
                         ) : (
-                          <p className="font-semibold text-foreground">무통장입금</p>
+                          <>
+                            <p className="font-semibold text-foreground">{paymentMethodLabel}</p>
+                            {isTossPayment && <p className="text-sm text-muted-foreground">결제 제공사: Toss Payments</p>}
+                          </>
                         )}
                       </div>
                     </div>
@@ -376,12 +410,30 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                   <div className="rounded-xl border border-border bg-background p-6">
                     <div className="flex items-center gap-2 mb-4">
                       <CreditCard className="h-5 w-5 text-primary" />
-                      <h3 className="font-bold text-foreground">입금 계좌 정보</h3>
+                      <h3 className="font-bold text-foreground">{isTossPayment ? '결제 완료 정보' : '입금 계좌 정보'}</h3>
                     </div>
                     {isZeroPayment ? (
                       <div className="space-y-2 rounded-lg border border-border bg-card p-4">
                         <p className="font-semibold text-foreground">추가 입금 불필요</p>
                         <p className="text-sm text-muted-foreground">결제 금액이 0원으로 확인되어 입금 안내가 생략되었습니다.</p>
+                      </div>
+                    ) : isTossPayment ? (
+                      <div className="space-y-2 rounded-lg border border-border bg-card p-4 text-sm">
+                        <p>
+                          <span className="text-muted-foreground">결제 상태:</span> <span className="font-semibold text-foreground">{order.paymentStatus || '결제완료'}</span>
+                        </p>
+                        <p>
+                          <span className="text-muted-foreground">결제 방식:</span> <span className="font-semibold text-foreground">{paymentMethodLabel}</span>
+                        </p>
+                        <p>
+                          <span className="text-muted-foreground">결제 제공사:</span> <span className="font-semibold text-foreground">Toss Payments</span>
+                        </p>
+                        {easyPayProviderLabel && (
+                          <p>
+                            <span className="text-muted-foreground">간편결제:</span> <span className="font-semibold text-foreground">{easyPayProviderLabel}</span>
+                          </p>
+                        )}
+                        <p className="text-muted-foreground">결제가 정상 승인되어 주문이 완료되었습니다.</p>
                       </div>
                     ) : order.paymentInfo?.bank && bankLabelMap[order.paymentInfo.bank] ? (
                       <>

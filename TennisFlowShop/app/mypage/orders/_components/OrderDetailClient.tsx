@@ -133,7 +133,10 @@ interface OrderDetail {
   };
   paymentStatus: string;
   paymentMethod: string;
-  paymentBank: string;
+  paymentBank?: string | null;
+  paymentProvider?: string | null;
+  paymentEasyPayProvider?: string | null;
+  paymentApprovedAt?: string | null;
   total: number;
   items: OrderItem[];
   history: Array<any>;
@@ -1386,8 +1389,11 @@ export default function OrderDetailClient({
                 <div className="p-3 bg-muted rounded-lg">
                   <PaymentMethodDetail
                     method={orderDetail.paymentMethod || "무통장입금"}
-                    bankKey={orderDetail.paymentBank}
+                    bankKey={orderDetail.paymentBank ?? undefined}
                     depositor={orderDetail.shippingInfo?.depositor}
+                    paymentProvider={orderDetail.paymentProvider}
+                    easyPayProvider={orderDetail.paymentEasyPayProvider}
+                    paymentStatus={orderDetail.paymentStatus}
                   />
                 </div>
 
