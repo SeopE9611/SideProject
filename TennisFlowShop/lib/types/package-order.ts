@@ -36,11 +36,23 @@ export interface PackageOrder {
     address?: any;
     addressDetail?: any;
     postalCode?: any;
+    name?: string;
+    phone?: string;
+    email?: string;
   };
   paymentInfo: {
-    method: string;
-    bank: string | null;
-    depositor: string | null;
+    provider?: "manual_bank_transfer" | "tosspayments";
+    method?: string;
+    bank?: string | null;
+    depositor?: string | null;
+    paymentKey?: string;
+    approvedAt?: Date;
+    rawSummary?: {
+      orderId?: string;
+      totalAmount?: number;
+      card?: { issuerCode?: string; acquirerCode?: string };
+      easyPay?: { provider?: string; amount?: number };
+    };
   };
   history: Array<{
     status: string;

@@ -177,6 +177,7 @@ export default function PackageCheckoutButton({
         },
         serviceInfo,
         paymentInfo: {
+          provider: "manual_bank_transfer",
           method: "무통장입금",
           bank: selectedBank,
         },

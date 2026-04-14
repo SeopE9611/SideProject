@@ -52,7 +52,9 @@ import {
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
+import TossPaymentWidget from "@/app/checkout/TossPaymentWidget";
 import PackageCheckoutButton from "./PackageCheckoutButton";
+import PackageTossCheckoutButton from "./PackageTossCheckoutButton";
 
 // 클라이언트 유효성(UX용)
 type CheckoutField = "name" | "email" | "phone" | "depositor";
@@ -228,6 +230,7 @@ export default function PackageCheckoutClient({
   const [isPackageLoading, setIsPackageLoading] = useState(
     packageId ? initialPackageConfigs.length === 0 : false,
   );
+  const [paymentMethod, setPaymentMethod] = useState<"bank_transfer" | "tosspayments">("bank_transfer");
   const [selectedBank, setSelectedBank] = useState("shinhan");
   const [name, setName] = useState(initialUser.name ?? "");
   const [phone, setPhone] = useState(initialUser.phone ?? "");
@@ -254,6 +257,8 @@ export default function PackageCheckoutClient({
   const [saveInfo, setSaveInfo] = useState(false);
   const isLoggedIn = Boolean(initialUser?.id);
   const [isCheckoutSubmitting, setIsCheckoutSubmitting] = useState(false);
+  const [tossWidgetReady, setTossWidgetReady] = useState(false);
+  const [tossWidgetLoadError, setTossWidgetLoadError] = useState<string | null>(null);
 
   const [agreeAll, setAgreeAll] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
@@ -274,6 +279,7 @@ export default function PackageCheckoutClient({
         serviceRequest,
         depositor,
         selectedBank,
+        paymentMethod,
         agreeAll,
         agreeTerms,
         agreePrivacy,
@@ -286,6 +292,7 @@ export default function PackageCheckoutClient({
       serviceRequest,
       depositor,
       selectedBank,
+      paymentMethod,
       agreeAll,
       agreeTerms,
       agreePrivacy,
@@ -382,13 +389,15 @@ export default function PackageCheckoutClient({
     else if (!isValidKoreanPhone(phoneDigits))
       errs.phone = "올바른 연락처 형식(01012345678)으로 입력해주세요.";
 
-    const depositorTrim = depositor.trim();
-    if (!depositorTrim) errs.depositor = "입금자명은 필수입니다.";
-    else if (depositorTrim.length < 2)
-      errs.depositor = "입금자명은 2자 이상 입력해주세요.";
+    if (paymentMethod === "bank_transfer") {
+      const depositorTrim = depositor.trim();
+      if (!depositorTrim) errs.depositor = "입금자명은 필수입니다.";
+      else if (depositorTrim.length < 2)
+        errs.depositor = "입금자명은 2자 이상 입력해주세요.";
+    }
 
     return errs;
-  }, [name, email, phone, depositor]);
+  }, [name, email, phone, depositor, paymentMethod]);
 
   const isFormValid = Object.keys(fieldErrors).length === 0;
   // 초기 필수 데이터(선택 패키지/기본 입력값)가 준비되면 바로 입력 가능해야 하므로
@@ -401,6 +410,9 @@ export default function PackageCheckoutClient({
     isFormValid &&
     !ownershipBlockedMessage &&
     !isFrameLoading;
+  const tossBlockedByZeroAmount =
+    !Number.isFinite(Number(selectedPackage?.price ?? 0)) ||
+    Number(selectedPackage?.price ?? 0) <= 0;
 
   if (!selectedPackage && !isPackageLoading) {
     return (
@@ -696,12 +708,17 @@ export default function PackageCheckoutClient({
                   <div className="space-y-3">
                     <Label>결제 방법</Label>
                     <RadioGroup
-                      defaultValue="bank-transfer"
+                      value={paymentMethod}
+                      onValueChange={(v) =>
+                        setPaymentMethod(
+                          v === "tosspayments" ? "tosspayments" : "bank_transfer",
+                        )
+                      }
                       className="space-y-3"
                     >
                       <div className="flex items-center space-x-3 p-4 bg-primary/10 dark:bg-primary/20 rounded-lg border-2 border-primary/20">
                         <RadioGroupItem
-                          value="bank-transfer"
+                          value="bank_transfer"
                           id="bank-transfer"
                           disabled={isFrameLoading}
                         />
@@ -713,83 +730,111 @@ export default function PackageCheckoutClient({
                         </Label>
                         <Building2 className="h-5 w-5 text-primary" />
                       </div>
+                      <div className="flex items-center space-x-3 p-4 bg-muted/40 rounded-lg border-2 border-border">
+                        <RadioGroupItem
+                          value="tosspayments"
+                          id="toss-payments"
+                          disabled={isFrameLoading || tossBlockedByZeroAmount}
+                        />
+                        <Label
+                          htmlFor="toss-payments"
+                          className="flex-1 cursor-pointer font-medium"
+                        >
+                          토스페이먼츠
+                        </Label>
+                        <CreditCard className="h-5 w-5 text-primary" />
+                      </div>
                     </RadioGroup>
                   </div>
 
-                  <div className="space-y-3">
-                    <Label htmlFor="bank-account">입금 계좌 선택</Label>
-                    <Select
-                      value={selectedBank}
-                      disabled={isFrameLoading}
-                      onValueChange={(v) => {
-                        setSelectedBank(v);
-                        touch();
-                      }}
-                    >
-                      <SelectTrigger className="border-2 focus:border-border">
-                        <SelectValue placeholder="입금 계좌를 선택하세요" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="shinhan">
-                          신한은행 123-456-789012 (예금주: 테니스플로우)
-                        </SelectItem>
-                        <SelectItem value="kookmin">
-                          국민은행 123-45-6789-012 (예금주: 테니스플로우)
-                        </SelectItem>
-                        <SelectItem value="woori">
-                          우리은행 1234-567-890123 (예금주: 테니스플로우)
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  {paymentMethod === "bank_transfer" ? (
+                    <>
+                      <div className="space-y-3">
+                        <Label htmlFor="bank-account">입금 계좌 선택</Label>
+                        <Select
+                          value={selectedBank}
+                          disabled={isFrameLoading}
+                          onValueChange={(v) => {
+                            setSelectedBank(v);
+                            touch();
+                          }}
+                        >
+                          <SelectTrigger className="border-2 focus:border-border">
+                            <SelectValue placeholder="입금 계좌를 선택하세요" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="shinhan">
+                              신한은행 123-456-789012 (예금주: 테니스플로우)
+                            </SelectItem>
+                            <SelectItem value="kookmin">
+                              국민은행 123-45-6789-012 (예금주: 테니스플로우)
+                            </SelectItem>
+                            <SelectItem value="woori">
+                              우리은행 1234-567-890123 (예금주: 테니스플로우)
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="depositor-name">입금자명</Label>
-                    <Input
-                      id="depositor-name"
-                      value={depositor}
-                      onChange={(e) => {
-                        setDepositor(e.target.value);
-                        touch();
-                      }}
-                      disabled={isFrameLoading}
-                      placeholder="입금자명을 입력하세요"
-                      className={inputClass(
-                        "border-2 focus:border-border transition-colors",
-                        "depositor",
-                        fieldErrors,
-                      )}
-                    />
-                    {hasInteracted && fieldErrors.depositor && (
-                      <p className="mt-1 text-xs text-destructive">
-                        {fieldErrors.depositor}
-                      </p>
-                    )}
-                  </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="depositor-name">입금자명</Label>
+                        <Input
+                          id="depositor-name"
+                          value={depositor}
+                          onChange={(e) => {
+                            setDepositor(e.target.value);
+                            touch();
+                          }}
+                          disabled={isFrameLoading}
+                          placeholder="입금자명을 입력하세요"
+                          className={inputClass(
+                            "border-2 focus:border-border transition-colors",
+                            "depositor",
+                            fieldErrors,
+                          )}
+                        />
+                        {hasInteracted && fieldErrors.depositor && (
+                          <p className="mt-1 text-xs text-destructive">
+                            {fieldErrors.depositor}
+                          </p>
+                        )}
+                      </div>
 
-                  <div className="bg-primary/10 dark:bg-primary/20 p-3 md:p-4 rounded-lg border border-primary/20">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Shield className="h-5 w-5 text-primary" />
-                      <p className="font-semibold text-foreground">
-                        무통장입금 안내
-                      </p>
+                      <div className="bg-primary/10 dark:bg-primary/20 p-3 md:p-4 rounded-lg border border-primary/20">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Shield className="h-5 w-5 text-primary" />
+                          <p className="font-semibold text-foreground">
+                            무통장입금 안내
+                          </p>
+                        </div>
+                        <ul className="space-y-2 text-sm text-muted-foreground">
+                          <li className="flex items-center gap-2">
+                            <CheckCircle className="h-4 w-4" />
+                            주문 후 24시간 이내에 입금해 주셔야 주문이 정상 처리됩니다.
+                          </li>
+                          <li className="flex items-center gap-2">
+                            <CheckCircle className="h-4 w-4" />
+                            입금 확인 후 패키지가 활성화됩니다.
+                          </li>
+                          <li className="flex items-center gap-2">
+                            <CheckCircle className="h-4 w-4" />
+                            패키지 이용은 입금 확인 후부터 가능합니다.
+                          </li>
+                        </ul>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="space-y-3">
+                      <TossPaymentWidget
+                        amount={Number(selectedPackage?.price ?? 0)}
+                        customerKey={String(initialUser?.id || email || "guest")}
+                        onStatusChange={({ ready, loadError }) => {
+                          setTossWidgetReady(ready);
+                          setTossWidgetLoadError(loadError);
+                        }}
+                      />
                     </div>
-                    <ul className="space-y-2 text-sm text-muted-foreground">
-                      <li className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4" />
-                        주문 후 24시간 이내에 입금해 주셔야 주문이 정상
-                        처리됩니다.
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4" />
-                        입금 확인 후 패키지가 활성화됩니다.
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4" />
-                        패키지 이용은 입금 확인 후부터 가능합니다.
-                      </li>
-                    </ul>
-                  </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -993,10 +1038,10 @@ export default function PackageCheckoutClient({
                     !isFormValid && (
                       <p className="text-xs text-destructive">
                         필수 입력칸을 확인해주세요.
-                        (이름/이메일/연락처/입금자명)
+                        (이름/이메일/연락처/결제수단별 필수값)
                       </p>
                     )}
-                  {selectedPackage && (
+                  {selectedPackage && paymentMethod === "bank_transfer" && (
                     <PackageCheckoutButton
                       disabled={!canSubmit}
                       ownershipBlockedMessage={ownershipBlockedMessage}
@@ -1008,10 +1053,22 @@ export default function PackageCheckoutClient({
                       selectedBank={selectedBank}
                       serviceRequest={serviceRequest}
                       saveInfo={saveInfo}
-                      // 버튼 단에서 /api/users/me 재조회(getMyInfo)하지 않도록
-                      // 서버/상위에서 이미 확보한 로그인 상태를 그대로 전달한다.
                       isLoggedIn={isLoggedIn}
                       onSubmittingChange={setIsCheckoutSubmitting}
+                    />
+                  )}
+                  {selectedPackage && paymentMethod === "tosspayments" && (
+                    <PackageTossCheckoutButton
+                      disabled={!canSubmit}
+                      widgetReady={tossWidgetReady}
+                      widgetLoadError={tossWidgetLoadError}
+                      payableAmount={Number(selectedPackage.price ?? 0)}
+                      packageId={selectedPackage.id}
+                      packageName={selectedPackage.title}
+                      name={name}
+                      phone={phone}
+                      email={email}
+                      serviceRequest={serviceRequest}
                     />
                   )}
                   <Button variant="outline" className="w-full border-2" asChild>

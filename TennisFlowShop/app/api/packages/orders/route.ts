@@ -119,6 +119,7 @@ export async function POST(req: Request) {
     };
 
     const paymentInfo = {
+      provider: "manual_bank_transfer",
       method: "무통장입금",
       bank: str(body?.paymentInfo?.bank ?? body?.bank),
       depositor: serviceInfo.depositor || undefined,
