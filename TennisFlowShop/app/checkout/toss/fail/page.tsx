@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
 
 const FAIL_GUIDE_MAP: Record<
   string,
@@ -49,11 +49,7 @@ const FAIL_GUIDE_MAP: Record<
   },
 };
 
-export default async function TossCheckoutFailPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ code?: string; message?: string }>;
-}) {
+export default async function TossCheckoutFailPage({ searchParams }: { searchParams: Promise<{ code?: string; message?: string }> }) {
   const sp = await searchParams;
   const rawCode = (sp.code || "UNKNOWN").trim().toUpperCase();
   const code = FAIL_GUIDE_MAP[rawCode] ? rawCode : "UNKNOWN";
@@ -74,9 +70,7 @@ export default async function TossCheckoutFailPage({
           </div>
 
           {guide.accent === "warning" && (
-            <div className="rounded-md border border-amber-400/40 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-              중복 결제를 막기 위해 같은 상품으로 반복 결제하지 마시고, 주문 내역 또는 관리자 확인 후 진행해주세요.
-            </div>
+            <div className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning dark:bg-warning/15">중복 결제를 막기 위해 같은 상품으로 반복 결제하지 마시고, 주문 내역 또는 관리자 확인 후 진행해주세요.</div>
           )}
 
           <div className="rounded-md border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
