@@ -172,14 +172,14 @@ function NoticeCard({
   return (
     <Card className="border-0 bg-card/90 dark:bg-card shadow-xl backdrop-blur-sm h-full">
       <CardHeader className="bg-muted/30 border-b p-4 sm:p-5 md:p-6">
-        <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <CardTitle className="flex flex-wrap items-center gap-x-3 gap-y-2">
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             <Bell className="h-5 w-5 text-primary" />
             <span className="text-lg sm:text-xl md:text-2xl font-semibold leading-tight break-keep">
               공지사항
             </span>
           </div>
-          <div className="flex w-full sm:w-auto flex-wrap items-center justify-end gap-1.5 sm:gap-2">
+          <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
             {isAdmin && (
               <Button
                 asChild
@@ -336,14 +336,14 @@ function QnaCard({
   return (
     <Card className="border-0 bg-card/90 dark:bg-card shadow-xl backdrop-blur-sm h-full">
       <CardHeader className="bg-muted/30 border-b p-4 sm:p-5 md:p-6">
-        <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <CardTitle className="flex flex-wrap items-center gap-x-3 gap-y-2">
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             <MessageSquare className="h-5 w-5 text-success" />
             <span className="text-lg sm:text-xl md:text-2xl font-semibold leading-tight break-keep">
               Q&amp;A
             </span>
           </div>
-          <div className="flex w-full sm:w-auto flex-wrap items-center justify-end gap-1.5 sm:gap-2">
+          <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
             <Button
               asChild
               size="sm"
