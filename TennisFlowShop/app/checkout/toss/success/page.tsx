@@ -26,7 +26,10 @@ export default function TossCheckoutSuccessPage() {
       .then(async (res) => {
         const json = await res.json();
         if (!res.ok || !json?.mongoOrderId) {
-          throw new Error(json?.error || "결제 승인에 실패했습니다.");
+          const nextCode = String(json?.code || "CONFIRM_FAILED");
+          const nextMessage = encodeURIComponent(json?.error || "결제 승인에 실패했습니다.");
+          router.replace(`/checkout/toss/fail?code=${encodeURIComponent(nextCode)}&message=${nextMessage}`);
+          return;
         }
         router.replace(`/checkout/success?orderId=${encodeURIComponent(json.mongoOrderId)}`);
       })

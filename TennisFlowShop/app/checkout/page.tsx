@@ -435,6 +435,9 @@ export default function CheckoutPage() {
 
   const [selectedBank, setSelectedBank] = useState("shinhan");
   const [paymentMethod, setPaymentMethod] = useState<"bank-transfer" | "toss-widget">("bank-transfer");
+  const [tossWidgetReady, setTossWidgetReady] = useState(false);
+  const [tossWidgetLoadError, setTossWidgetLoadError] = useState<string | null>(null);
+  const [tossPreparedAmount, setTossPreparedAmount] = useState<number | null>(null);
 
   // 장착 서비스 수거방식(신청서 Step1과 1:1 매핑)
   // (UI에서는 COURIER_VISIT 선택지를 숨김)
@@ -823,6 +826,10 @@ export default function CheckoutPage() {
   const isZeroPayableAmount = previewTotalPrice - previewAppliedPoints <= 0;
 
   useEffect(() => {
+    setTossPreparedAmount(null);
+  }, [paymentMethod, previewTotalPrice, previewAppliedPoints]);
+
+  useEffect(() => {
     if (!isZeroPayableAmount || paymentMethod !== "toss-widget") return;
     setPaymentMethod("bank-transfer");
   }, [isZeroPayableAmount, paymentMethod]);
@@ -845,6 +852,7 @@ export default function CheckoutPage() {
     const normalizedPointsToUse = Math.floor((Number(pointsToUse) || 0) / POINT_UNIT) * POINT_UNIT;
     const appliedPoints = Math.min(normalizedPointsToUse, maxPointsToUse);
     const payableTotalPrice = totalPrice - appliedPoints;
+    const tossWidgetAmount = tossPreparedAmount ?? payableTotalPrice;
 
     const stringingApplicationInput: StringingApplicationInput | undefined = (() => {
       if (!withStringService || !checkoutStringingAdapter) return undefined;
@@ -1395,7 +1403,14 @@ export default function CheckoutPage() {
                       ) : !isZeroPayableAmount ? (
                         <div className="space-y-3">
                           <p className="text-sm text-muted-foreground">테스트 결제위젯입니다. 결제 승인 후 주문이 생성됩니다.</p>
-                          <TossPaymentWidget amount={payableTotalPrice} customerKey={user ? String(user.id) : `guest_${phone.replace(/\D/g, "") || "anon"}`} />
+                          <TossPaymentWidget
+                            amount={tossWidgetAmount}
+                            customerKey={user ? String(user.id) : `guest_${phone.replace(/\D/g, "") || "anon"}`}
+                            onStatusChange={({ ready, loadError }) => {
+                              setTossWidgetReady(ready);
+                              setTossWidgetLoadError(loadError);
+                            }}
+                          />
                         </div>
                       ) : null}
                     </div>
@@ -1692,6 +1707,10 @@ export default function CheckoutPage() {
                       ) : !isZeroPayableAmount ? (
                         <TossCheckoutButton
                           disabled={!canSubmit}
+                          payableAmount={payableTotalPrice}
+                          widgetReady={tossWidgetReady}
+                          widgetLoadError={tossWidgetLoadError}
+                          onPreparedAmountChange={setTossPreparedAmount}
                           payload={{
                             items: orderItems.map((item) => ({ productId: item.id, quantity: item.quantity, kind: item.kind ?? "product" })),
                             shippingInfo: {
