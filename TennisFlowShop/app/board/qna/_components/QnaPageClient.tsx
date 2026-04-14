@@ -432,20 +432,24 @@ export default function QnaPageClient({ initialItems, initialTotal, initialLoadE
         </div>
 
         <Card className="border-0 bg-card shadow-xl backdrop-blur-sm">
-          <CardHeader className="bg-muted/30 border-b p-4 md:p-5">
-            <CardTitle className="flex items-center justify-between gap-3">
-              <div className="flex flex-wrap items-center gap-1.5 md:gap-2">
+          <CardHeader className="bg-muted/30 border-b p-4 sm:p-5 md:p-6">
+            <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div className="flex min-w-0 items-center gap-2 sm:gap-3">
                 <MessageSquare className="h-5 w-5 text-success" />
-                <span>Q&A 목록</span>
+                <span className="text-lg sm:text-xl md:text-2xl font-semibold leading-tight break-keep">
+                  Q&amp;A 목록
+                </span>
                 {(isBusy || isValidating) && <div className="h-4 w-4 border-2 border-border border-t-foreground rounded-full animate-spin" />}
               </div>
 
-              <Button asChild variant="outline" size="sm" className="h-9 md:h-10">
-                <Link href="/board/qna/write">
-                  <Plus className="h-4 w-4 mr-2" />
-                  문의하기
-                </Link>
-              </Button>
+              <div className="flex w-full sm:w-auto flex-wrap items-center justify-end gap-1.5 sm:gap-2">
+                <Button asChild variant="outline" size="sm" className="h-9 md:h-10">
+                  <Link href="/board/qna/write">
+                    <Plus className="h-4 w-4 mr-2" />
+                    문의하기
+                  </Link>
+                </Button>
+              </div>
             </CardTitle>
           </CardHeader>
 
