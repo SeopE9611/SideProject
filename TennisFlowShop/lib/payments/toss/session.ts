@@ -1,6 +1,8 @@
 import { ObjectId, type Db } from "mongodb";
 
-export type TossPaymentSessionStatus = "ready" | "approved" | "failed";
+export type TossPaymentSessionStatus = "ready" | "approved" | "failed" | "confirm_succeeded_order_failed";
+
+export type TossPaymentFailureStage = "session_expired_before_confirm" | "confirm_payment" | "create_order_after_confirm";
 
 export type TossPaymentSession = {
   _id?: ObjectId;
@@ -16,6 +18,18 @@ export type TossPaymentSession = {
   } | null;
   mongoOrderId?: string | null;
   paymentKey?: string | null;
+  failureStage?: TossPaymentFailureStage;
+  failureCode?: string;
+  failureMessage?: string;
+  confirmedPaymentSummary?: {
+    orderId: string;
+    method?: string;
+    type?: string;
+    totalAmount: number;
+    approvedAt?: Date;
+    card?: { issuerCode?: string; acquirerCode?: string };
+    easyPay?: { provider?: string; amount?: number };
+  };
   createdAt: Date;
   updatedAt: Date;
   expiresAt: Date;
