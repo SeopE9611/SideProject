@@ -143,6 +143,12 @@ export default async function PackageSuccessPage({
   const packageInfo = packageOrder.packageInfo;
   const serviceInfo = packageOrder.serviceInfo;
   const paymentInfo = packageOrder.paymentInfo;
+  const paymentProvider = String(paymentInfo?.provider ?? "manual_bank_transfer");
+  const isTossPayment = paymentProvider === "tosspayments";
+  const paymentMethodLabel = isTossPayment
+    ? `토스페이먼츠 (${String(paymentInfo?.method || "CARD")})`
+    : "무통장입금";
+  const isPaid = String(packageOrder.paymentStatus ?? "") === "결제완료";
 
   const packageCard = normalizePackageCardData({
     id: String(packageInfo.id ?? ""),
@@ -189,7 +195,7 @@ export default async function PackageSuccessPage({
               </div>
               <div className="flex items-center gap-2">
                 <Calendar className="h-4 w-4 text-primary" />
-                <span>패키지 활성화 대기</span>
+                <span>{isPaid ? "패키지 활성화 완료" : "패키지 활성화 대기"}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Star className="h-4 w-4 text-primary" />
@@ -210,8 +216,9 @@ export default async function PackageSuccessPage({
                 </h3>
               </div>
               <p className="text-muted-foreground mb-4">
-                입금 확인 후 패키지가 활성화되며, 스트링 교체 서비스 예약이
-                가능합니다.
+                {isTossPayment
+                  ? "결제가 완료되어 패키지가 활성화되었습니다. 바로 이용하실 수 있어요."
+                  : "입금 확인 후 패키지가 활성화되며, 스트링 교체 서비스 예약이 가능합니다."}
               </p>
               <Button
                 variant="default"
@@ -278,42 +285,52 @@ export default async function PackageSuccessPage({
                     <div>
                       <p className="text-sm text-muted-foreground">결제 방법</p>
                       <p className="font-semibold text-foreground">
-                        무통장입금
+                        {paymentMethodLabel}
                       </p>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-muted p-4 md:p-6 rounded-xl border border-border">
-                  <div className="flex items-center gap-2 mb-4">
-                    <CreditCard className="h-5 w-5 text-primary" />
-                    <h3 className="font-bold text-primary">입금 계좌 정보</h3>
-                  </div>
-                  {paymentInfo?.bank && bankLabelMap[paymentInfo.bank] ? (
-                    <div className="bg-card p-4 rounded-lg border-2 border-border space-y-2">
-                      <div className="font-semibold text-foreground">
-                        {bankLabelMap[paymentInfo.bank].label}
-                      </div>
-                      <div className="font-mono text-lg font-bold text-primary">
-                        {bankLabelMap[paymentInfo.bank].account}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        예금주: {bankLabelMap[paymentInfo.bank].holder}
-                      </div>
+                {!isTossPayment ? (
+                  <div className="bg-muted p-4 md:p-6 rounded-xl border border-border">
+                    <div className="flex items-center gap-2 mb-4">
+                      <CreditCard className="h-5 w-5 text-primary" />
+                      <h3 className="font-bold text-primary">입금 계좌 정보</h3>
                     </div>
-                  ) : (
-                    <p className="text-muted-foreground">선택된 은행 없음</p>
-                  )}
-                  <div className="mt-4 p-3 bg-destructive/10 rounded-lg border border-destructive/30 dark:bg-destructive/15">
-                    <p className="text-destructive font-semibold text-sm">
-                      ⏰ 입금 기한:{" "}
-                      {new Date(packageOrder.createdAt).toLocaleDateString(
-                        "ko-KR",
-                      )}{" "}
-                      23:59까지
+                    {paymentInfo?.bank && bankLabelMap[paymentInfo.bank] ? (
+                      <div className="bg-card p-4 rounded-lg border-2 border-border space-y-2">
+                        <div className="font-semibold text-foreground">
+                          {bankLabelMap[paymentInfo.bank].label}
+                        </div>
+                        <div className="font-mono text-lg font-bold text-primary">
+                          {bankLabelMap[paymentInfo.bank].account}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          예금주: {bankLabelMap[paymentInfo.bank].holder}
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-muted-foreground">선택된 은행 없음</p>
+                    )}
+                    <div className="mt-4 p-3 bg-destructive/10 rounded-lg border border-destructive/30 dark:bg-destructive/15">
+                      <p className="text-destructive font-semibold text-sm">
+                        ⏰ 입금 기한:{" "}
+                        {new Date(packageOrder.createdAt).toLocaleDateString(
+                          "ko-KR",
+                        )}{" "}
+                        23:59까지
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="bg-muted p-4 md:p-6 rounded-xl border border-border">
+                    <h3 className="font-bold text-primary mb-3">토스 결제 정보</h3>
+                    <p className="text-sm text-muted-foreground">결제 상태: 결제완료</p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      승인 시각: {paymentInfo?.approvedAt ? new Date(paymentInfo.approvedAt).toLocaleString("ko-KR") : "-"}
                     </p>
                   </div>
-                </div>
+                )}
               </div>
 
               <Separator className="my-6" />
@@ -419,7 +436,7 @@ export default async function PackageSuccessPage({
             <div className="px-4 md:px-6">
               <DevMarkPaidButton
                 orderId={packageOrder._id.toString()}
-                show={showDevBtn}
+                show={showDevBtn && !isPaid}
               />
             </div>
           </Card>
@@ -439,11 +456,12 @@ export default async function PackageSuccessPage({
                     <CreditCard className="h-5 w-5 text-primary mt-0.5" />
                     <div>
                       <h4 className="font-semibold text-primary mb-1">
-                        입금 안내
+                        {isTossPayment ? "결제 안내" : "입금 안내"}
                       </h4>
                       <p className="text-sm text-muted-foreground">
-                        패키지 금액을 위 계좌로 입금해주세요. 입금 확인 후
-                        패키지가 활성화돼요.
+                        {isTossPayment
+                          ? "토스 결제가 완료되어 패키지가 즉시 활성화되었습니다."
+                          : "패키지 금액을 위 계좌로 입금해주세요. 입금 확인 후 패키지가 활성화돼요."}
                       </p>
                     </div>
                   </div>

@@ -2,6 +2,8 @@ import { ObjectId, type Db } from "mongodb";
 
 export type TossPaymentSessionStatus = "ready" | "approved" | "failed" | "confirm_succeeded_order_failed";
 
+export type TossPaymentFlowType = "checkout_order" | "package_order";
+
 export type TossPaymentFailureStage = "session_expired_before_confirm" | "confirm_payment" | "create_order_after_confirm";
 
 export type TossPaymentSession = {
@@ -9,7 +11,17 @@ export type TossPaymentSession = {
   tossOrderId: string;
   amount: number;
   status: TossPaymentSessionStatus;
-  checkoutPayload: Record<string, unknown>;
+  flowType: TossPaymentFlowType;
+  checkoutPayload?: Record<string, unknown>;
+  packagePayload?: {
+    packageId: string;
+    serviceInfo: {
+      name: string;
+      phone: string;
+      email: string;
+      serviceRequest?: string;
+    };
+  };
   userId: string | null;
   guestInfo?: {
     name?: string;

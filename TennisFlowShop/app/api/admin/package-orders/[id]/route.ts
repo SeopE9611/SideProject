@@ -1,12 +1,11 @@
 import { NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
-import { issuePassesForPaidPackageOrder } from "@/lib/passes.service";
 import type { PackageOrder } from "@/lib/types/package-order";
 import { ServicePass } from "@/lib/types/pass";
 import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
-import { shouldRestoreActive } from "@/lib/pass-status";
+import { markPackageOrderPaid } from "@/lib/package-orders/mark-paid";
 
 function normalizePassStatus(
   status: ServicePass["status"],
@@ -23,17 +22,6 @@ function getCurrentRemainingForPause(passDoc: ServicePass, now: Date): number {
     return 0;
   }
 
-  if (
-    typeof passDoc.remainingValidityMs === "number" &&
-    passDoc.remainingValidityMs >= 0
-  )
-    return passDoc.remainingValidityMs;
-  if (passDoc.expiresAt instanceof Date)
-    return Math.max(0, passDoc.expiresAt.getTime() - now.getTime());
-  return 0;
-}
-
-function getStoredRemainingForResume(passDoc: ServicePass, now: Date): number {
   if (
     typeof passDoc.remainingValidityMs === "number" &&
     passDoc.remainingValidityMs >= 0
@@ -107,31 +95,34 @@ export async function PATCH(
         (reason ? ` / 사유: ${reason}` : "") +
         (adminLabel ? ` / 관리자: ${adminLabel}` : "");
 
-    await packageOrders.updateOne(
-      { _id },
-      {
-        $set: {
-          status: statusStr,
-          updatedAt: now,
-          ...(willSetPayment ? { paymentStatus: paymentToSet as any } : {}),
-        },
-        $push: {
-          history: {
-            $each: [
-              {
-                status: statusStr,
-                date: now,
-                description: historyDesc,
-              } satisfies PackageOrder["history"][number],
-            ],
+    if (statusStr === "결제완료") {
+      await markPackageOrderPaid(db, {
+        packageOrderId: _id,
+        actorLabel: adminLabel,
+        reason,
+      });
+    } else {
+      await packageOrders.updateOne(
+        { _id },
+        {
+          $set: {
+            status: statusStr,
+            updatedAt: now,
+            ...(willSetPayment ? { paymentStatus: paymentToSet as any } : {}),
+          },
+          $push: {
+            history: {
+              $each: [
+                {
+                  status: statusStr,
+                  date: now,
+                  description: historyDesc,
+                } satisfies PackageOrder["history"][number],
+              ],
+            },
           },
         },
-      },
-    );
-    const passesCol = db.collection<ServicePass>("service_passes");
-
-    if (statusStr === "결제완료") {
-      await issuePassesForPaidPackageOrder(db, { ...pkgOrder, _id });
+      );
     }
     /**
      * 주문/결제 상태에 따라 연결된 패스 상태 동기화
@@ -162,40 +153,6 @@ export async function PATCH(
             updateDoc.expiresAt = null;
           }
           await passCol.updateOne({ _id: passDoc._id }, { $set: updateDoc });
-        } else if (hasPositiveRemaining) {
-          const normalizedStatus = normalizePassStatus(passDoc.status);
-          const shouldActivate =
-            normalizedStatus !== "cancelled" &&
-            shouldRestoreActive({
-              paymentStatus: paymentToSet,
-              passStatus: passDoc.status,
-              remainingCount: passDoc.remainingCount,
-              expiresAt: passDoc.expiresAt,
-              now,
-            });
-          if (shouldActivate) {
-            const resumeMs = getStoredRemainingForResume(passDoc, now);
-            const nextExpiry =
-              normalizedStatus === "active"
-                ? passDoc.expiresAt
-                : resumeMs > 0
-                  ? new Date(now.getTime() + resumeMs)
-                  : null;
-
-            await passCol.updateOne(
-              { _id: passDoc._id },
-              {
-                $set: {
-                  status: "active",
-                  activatedAt: passDoc.activatedAt ?? now,
-                  expiresAt: nextExpiry,
-                  // active 전환 이후 stale remainingValidityMs 정리
-                  remainingValidityMs: null,
-                  updatedAt: now,
-                },
-              },
-            );
-          }
         }
       }
     } catch (e) {

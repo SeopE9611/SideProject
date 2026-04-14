@@ -45,6 +45,7 @@ export async function POST(req: Request) {
       tossOrderId,
       amount: quote.payableTotalPrice,
       status: "ready",
+      flowType: "checkout_order",
       checkoutPayload: body,
       userId,
       guestInfo: body?.guestInfo ?? null,
