@@ -29,6 +29,19 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: true, mongoOrderId: session.mongoOrderId, paymentKey: session.paymentKey ?? paymentKey });
     }
 
+    if (session.status === "confirm_succeeded_order_failed") {
+      return NextResponse.json(
+        {
+          success: false,
+          code: "ORDER_CREATION_FAILED_AFTER_PAYMENT_CONFIRM",
+          error:
+            session.failureMessage ||
+            "결제 승인 후 주문 처리에 실패한 상태가 이미 기록되어 있습니다. 중복 결제를 시도하지 말고 주문/결제 상태를 확인해주세요.",
+        },
+        { status: 409 },
+      );
+    }
+
     const now = new Date();
     if (session.expiresAt && session.expiresAt.getTime() < now.getTime()) {
       await col.updateOne(
