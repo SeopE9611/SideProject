@@ -228,8 +228,8 @@ export async function POST(req: Request) {
       userId: new ObjectId(String(session.userId)),
       createdAt: now,
       updatedAt: now,
-      status: "결제완료",
-      paymentStatus: "결제완료",
+      status: "주문접수",
+      paymentStatus: "결제대기",
       totalPrice: amount,
       packageInfo: {
         id: config.id,

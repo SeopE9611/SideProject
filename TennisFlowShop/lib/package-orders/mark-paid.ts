@@ -43,6 +43,8 @@ export async function markPackageOrderPaid(
 
   const now = new Date();
   const prevPayment = pkgOrder.paymentStatus ?? "결제대기";
+  const wasAlreadyPaid =
+    prevPayment === "결제완료" && String(pkgOrder.status ?? "") === "결제완료";
   const historyDesc =
     `결제 상태 ${prevPayment} → 결제완료` +
     (params.reason ? ` / 사유: ${params.reason}` : "") +
@@ -53,24 +55,36 @@ export async function markPackageOrderPaid(
     ...(params.paymentInfoPatch ?? {}),
   };
 
-  await packageOrders.updateOne(
-    { _id },
-    {
-      $set: {
-        status: "결제완료",
-        paymentStatus: "결제완료",
-        paymentInfo: nextPaymentInfo,
-        updatedAt: now,
-      },
-      $push: {
-        history: {
-          status: "결제완료",
-          date: now,
-          description: historyDesc,
-        } satisfies PackageOrder["history"][number],
-      },
+  const updateDoc: {
+    $set: {
+      status: "결제완료";
+      paymentStatus: "결제완료";
+      paymentInfo: PackageOrder["paymentInfo"];
+      updatedAt: Date;
+    };
+    $push?: {
+      history: PackageOrder["history"][number];
+    };
+  } = {
+    $set: {
+      status: "결제완료",
+      paymentStatus: "결제완료",
+      paymentInfo: nextPaymentInfo,
+      updatedAt: now,
     },
-  );
+  };
+
+  if (!wasAlreadyPaid) {
+    updateDoc.$push = {
+      history: {
+        status: "결제완료",
+        date: now,
+        description: historyDesc,
+      } satisfies PackageOrder["history"][number],
+    };
+  }
+
+  await packageOrders.updateOne({ _id }, updateDoc);
 
   await issuePassesForPaidPackageOrder(db, { ...pkgOrder, _id });
 
