@@ -10,6 +10,8 @@ export default function TossCheckoutButton({
   widgetLoadError,
   payableAmount,
   onPreparedAmountChange,
+  onBeforeSuccessNavigation,
+  onSuccessNavigationAbort,
   payload,
 }: {
   disabled: boolean;
@@ -17,6 +19,8 @@ export default function TossCheckoutButton({
   widgetLoadError: string | null;
   payableAmount: number;
   onPreparedAmountChange?: (amount: number) => void;
+  onBeforeSuccessNavigation?: () => void;
+  onSuccessNavigationAbort?: () => void;
   payload: Record<string, unknown>;
 }) {
   const [loading, setLoading] = useState(false);
@@ -64,15 +68,21 @@ export default function TossCheckoutButton({
       }
       onPreparedAmountChange?.(prepareAmount);
 
-      await widget.requestPayment({
-        orderId: prepJson.orderId,
-        orderName: prepJson.orderName,
-        successUrl: prepJson.successUrl,
-        failUrl: prepJson.failUrl,
-        customerName: prepJson.customerName,
-        customerEmail: prepJson.customerEmail,
-        customerMobilePhone: prepJson.customerMobilePhone,
-      });
+      onBeforeSuccessNavigation?.();
+      try {
+        await widget.requestPayment({
+          orderId: prepJson.orderId,
+          orderName: prepJson.orderName,
+          successUrl: prepJson.successUrl,
+          failUrl: prepJson.failUrl,
+          customerName: prepJson.customerName,
+          customerEmail: prepJson.customerEmail,
+          customerMobilePhone: prepJson.customerMobilePhone,
+        });
+      } catch (error) {
+        onSuccessNavigationAbort?.();
+        throw error;
+      }
     } catch (error: any) {
       setInlineError(error?.message || "결제 요청에 실패했습니다.");
       setLoading(false);

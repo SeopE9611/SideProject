@@ -83,6 +83,8 @@ export default function PackageCheckoutButton({
   saveInfo,
   isLoggedIn,
   onSubmittingChange,
+  onBeforeSuccessNavigation,
+  onSuccessNavigationAbort,
 }: {
   disabled: boolean;
   ownershipBlockedMessage: string | null;
@@ -98,6 +100,8 @@ export default function PackageCheckoutButton({
   // 버튼은 이 값을 재사용해 mount 시 중복 사용자 조회를 제거한다.
   isLoggedIn: boolean;
   onSubmittingChange?: (submitting: boolean) => void;
+  onBeforeSuccessNavigation?: () => void;
+  onSuccessNavigationAbort?: () => void;
 }) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -249,9 +253,15 @@ export default function PackageCheckoutButton({
         }
 
         success = true; // 성공했으므로 현재 페이지에서 로딩을 풀지 않음
-        router.push(
-          `/services/packages/success?packageOrderId=${data.packageOrderId}`,
-        );
+        onBeforeSuccessNavigation?.();
+        try {
+          router.push(
+            `/services/packages/success?packageOrderId=${data.packageOrderId}`,
+          );
+        } catch {
+          onSuccessNavigationAbort?.();
+          throw new Error("success navigation failed");
+        }
         router.refresh();
         return;
       }

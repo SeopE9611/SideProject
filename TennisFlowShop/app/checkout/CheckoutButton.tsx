@@ -140,6 +140,8 @@ export default function CheckoutButton({
   pointsToUse = 0,
   stringingApplicationInput,
   onSubmittingChange,
+  onBeforeSuccessNavigation,
+  onSuccessNavigationAbort,
 }: {
   disabled: boolean;
   name: string;
@@ -163,6 +165,8 @@ export default function CheckoutButton({
   pointsToUse?: number;
   stringingApplicationInput?: StringingApplicationInput;
   onSubmittingChange?: (submitting: boolean) => void;
+  onBeforeSuccessNavigation?: () => void;
+  onSuccessNavigationAbort?: () => void;
 }) {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
@@ -432,7 +436,13 @@ export default function CheckoutButton({
 
         success = true;
         const qs = `orderId=${data.orderId}`;
-        router.push(`/checkout/success?${qs}`);
+        onBeforeSuccessNavigation?.();
+        try {
+          router.push(`/checkout/success?${qs}`);
+        } catch {
+          onSuccessNavigationAbort?.();
+          throw new Error("success navigation failed");
+        }
         router.refresh();
         return;
       }

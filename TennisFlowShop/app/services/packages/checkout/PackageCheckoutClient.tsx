@@ -176,6 +176,7 @@ export default function PackageCheckoutClient({
   const [saveInfo, setSaveInfo] = useState(false);
   const isLoggedIn = Boolean(initialUser?.id);
   const [isCheckoutSubmitting, setIsCheckoutSubmitting] = useState(false);
+  const [isIntentionalSuccessNavigation, setIsIntentionalSuccessNavigation] = useState(false);
   const [tossWidgetReady, setTossWidgetReady] = useState(false);
   const [tossWidgetLoadError, setTossWidgetLoadError] = useState<string | null>(null);
 
@@ -214,8 +215,9 @@ export default function PackageCheckoutClient({
     baselineRef.current = fingerprint;
   }, [prefillDone, isPackageLoading, fingerprint]);
 
-  useUnsavedChangesGuard(isDirty);
-  useBackNavigationGuard(isDirty);
+  const guardEnabled = isDirty && !isIntentionalSuccessNavigation;
+  useUnsavedChangesGuard(guardEnabled);
+  useBackNavigationGuard(guardEnabled);
 
   const onLeavePageClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (!isDirty) return;
@@ -771,6 +773,8 @@ export default function PackageCheckoutClient({
                       saveInfo={saveInfo}
                       isLoggedIn={isLoggedIn}
                       onSubmittingChange={setIsCheckoutSubmitting}
+                      onBeforeSuccessNavigation={() => setIsIntentionalSuccessNavigation(true)}
+                      onSuccessNavigationAbort={() => setIsIntentionalSuccessNavigation(false)}
                     />
                   )}
                   {selectedPackage && paymentMethod === "tosspayments" && (
@@ -785,6 +789,8 @@ export default function PackageCheckoutClient({
                       phone={phone}
                       email={email}
                       serviceRequest={serviceRequest}
+                      onBeforeSuccessNavigation={() => setIsIntentionalSuccessNavigation(true)}
+                      onSuccessNavigationAbort={() => setIsIntentionalSuccessNavigation(false)}
                     />
                   )}
                   <Button variant="outline" className="w-full border-2" asChild>
