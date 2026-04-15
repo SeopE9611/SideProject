@@ -15,32 +15,32 @@ export default function BrandBoardPage() {
     <div className="min-h-screen bg-muted/30">
       <SiteContainer variant="wide" className="py-6 bp-sm:py-8 bp-md:py-10 space-y-8">
         {/* 헤더 영역 */}
-        <div className="flex items-center justify-between gap-3">
-          <div>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+          <div className="min-w-0">
             <div className="mb-1 text-sm text-muted-foreground">
               <span className="font-medium text-success">게시판</span>
               <span className="mx-1">›</span>
               <span>브랜드별 게시판</span>
             </div>
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">브랜드별 게시판 (준비중)</h1>
+            <h1 className="text-lg sm:text-xl md:text-2xl font-semibold leading-tight break-keep tracking-tight text-foreground">브랜드별 게시판 (준비중)</h1>
             <p className="mt-1 text-sm md:text-base text-muted-foreground">윌슨, 바볼랏, 요넥스 등 브랜드별로 라켓/스트링 사용 후기를 모아볼 수 있는 공간입니다. 현재 기능을 준비하고 있습니다.</p>
           </div>
 
-          <Button asChild variant="outline" size="sm" className="shrink-0">
+          <Button asChild variant="outline" size="sm" className="ml-auto shrink-0">
             <Link href="/board">게시판 홈으로</Link>
           </Button>
         </div>
 
         {/* 준비중 안내 카드 */}
         <Card className="border-0 bg-card shadow-xl backdrop-blur-sm">
-          <CardHeader className="flex flex-row items-center justify-between gap-3 border-b bg-muted/30">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted shadow-lg">
+          <CardHeader className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b bg-muted/30">
+            <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted shadow-lg">
                 <Grid2X2 className="h-5 w-5 text-primary" />
               </div>
-              <CardTitle className="text-lg md:text-xl">브랜드별 게시판 기능을 준비 중입니다</CardTitle>
+              <CardTitle className="text-lg sm:text-xl md:text-2xl font-semibold leading-tight break-keep">브랜드별 게시판 기능을 준비 중입니다</CardTitle>
             </div>
-            <span className="text-xs md:text-sm rounded-full border px-3 py-1 text-muted-foreground dark:border-border bg-card">Coming Soon</span>
+            <span className="ml-auto shrink-0 text-xs md:text-sm rounded-full border px-3 py-1 text-muted-foreground dark:border-border bg-card">Coming Soon</span>
           </CardHeader>
           <CardContent className="p-6 space-y-3 text-sm md:text-base text-muted-foreground">
             <p>추후 다음과 같은 기능을 제공할 예정입니다:</p>
