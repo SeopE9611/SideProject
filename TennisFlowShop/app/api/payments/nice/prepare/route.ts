@@ -4,8 +4,16 @@ import clientPromise from "@/lib/mongodb";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { calculateCheckoutPayableAmount } from "@/lib/payments/toss/checkout-quote";
 import { isNicePaymentsEnabled } from "@/lib/payments/provider-flags";
-import { buildNiceOrderName, createNiceEdiDate, createNiceMoid, createNiceSignData } from "@/lib/payments/nice/server";
+import { buildNiceOrderName, createNiceOrderId } from "@/lib/payments/nice/server";
 import { ensureTossPaymentSessionIndexes, tossPaymentSessions } from "@/lib/payments/toss/session";
+
+function resolveClientId() {
+  return String(process.env.NICEPAY_CLIENT_KEY ?? process.env.NICEPAY_CLIENT_ID ?? "").trim();
+}
+
+function resolveAppUrl() {
+  return String(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000").trim().replace(/\/+$/, "");
+}
 
 export async function POST(req: Request) {
   try {
@@ -28,14 +36,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: "요청 데이터가 올바르지 않습니다." }, { status: 400 });
     }
 
-    const mid = String(process.env.NICEPAY_MID ?? "").trim();
-    const merchantKey = String(process.env.NICEPAY_MERCHANT_KEY ?? "").trim();
-    if (!mid || !merchantKey) {
+    const clientId = resolveClientId();
+    if (!clientId) {
       return NextResponse.json(
         {
           success: false,
           code: "NICE_CONFIG_MISSING",
-          error: "결제 설정이 올바르지 않습니다. 관리자에게 문의해주세요.",
+          error: "NicePay client key 설정이 누락되었습니다.",
         },
         { status: 500 },
       );
@@ -62,34 +69,37 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, code: "INVALID_AMOUNT", error: "최종 결제금액이 올바르지 않습니다." }, { status: 400 });
     }
 
-    const moid = createNiceMoid();
-    const amt = Math.floor(quote.payableTotalPrice);
-    const ediDate = createNiceEdiDate();
-    const signData = createNiceSignData({ ediDate, mid, amt, merchantKey });
-    const orderName = buildNiceOrderName(quote.itemsWithSnapshot.map((it) => ({ name: it.name, quantity: it.quantity })));
+    const orderId = createNiceOrderId();
+    const amount = Math.floor(quote.payableTotalPrice);
+    const goodsName = buildNiceOrderName(quote.itemsWithSnapshot.map((it) => ({ name: it.name, quantity: it.quantity })));
+    const returnUrl = `${resolveAppUrl()}/api/payments/nice/return`;
+
+    const buyerName = String(shippingInfo?.name ?? body?.guestInfo?.name ?? "").trim();
+    const buyerTel = String(shippingInfo?.phone ?? body?.guestInfo?.phone ?? "").replace(/\D/g, "");
+    const buyerEmail = String(body?.guestInfo?.email ?? body?.email ?? "").trim().toLowerCase();
 
     await ensureTossPaymentSessionIndexes(db);
     const col = tossPaymentSessions(db);
     const now = new Date();
     const expiresAt = new Date(now.getTime() + 1000 * 60 * 30);
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-    const returnUrl = `${appUrl}/api/payments/nice/return`;
-
     await col.insertOne({
       provider: "nicepay",
-      niceMoid: moid,
-      amount: amt,
+      niceOrderId: orderId,
+      amount,
       status: "ready",
       flowType: "checkout_order",
       checkoutPayload: body,
       userId,
       guestInfo: body?.guestInfo ?? null,
       nicePrepared: {
-        mid,
-        ediDate,
-        signData,
+        clientId,
+        orderId,
         returnUrl,
+        goodsName,
+        buyerName,
+        buyerTel,
+        buyerEmail,
       },
       createdAt: now,
       updatedAt: now,
@@ -98,20 +108,15 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       success: true,
-      amount: amt,
-      orderName,
       nice: {
-        MID: mid,
-        Moid: moid,
-        Amt: String(amt),
-        EdiDate: ediDate,
-        SignData: signData,
-        BuyerName: shippingInfo?.name ?? body?.guestInfo?.name ?? "",
-        BuyerTel: shippingInfo?.phone ?? body?.guestInfo?.phone ?? "",
-        BuyerEmail: body?.guestInfo?.email ?? body?.email ?? "",
-        ReturnURL: returnUrl,
-        GoodsName: orderName,
-        MallReserved: "checkout_order",
+        clientId,
+        orderId,
+        amount,
+        goodsName,
+        returnUrl,
+        buyerName,
+        buyerTel,
+        buyerEmail,
       },
     });
   } catch (error: any) {
