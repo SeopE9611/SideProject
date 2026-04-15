@@ -62,6 +62,12 @@ function getApproveCredentials() {
   return { clientKey, secretKey };
 }
 
+function getApproveApiBase() {
+  return String(process.env.NICEPAY_APPROVE_API_BASE || "https://api.nicepay.co.kr/v1/payments")
+    .trim()
+    .replace(/\/+$/, "");
+}
+
 async function handleNiceReturn(req: Request) {
   try {
     const raw = await parseRequestPayload(req);
@@ -167,6 +173,7 @@ async function handleNiceReturn(req: Request) {
     }
 
     const { clientKey, secretKey } = getApproveCredentials();
+    const approveApiBase = getApproveApiBase();
     if (!clientKey || !secretKey) {
       return NextResponse.redirect(new URL(toFailUrl("APPROVE_FAILED", "결제 승인 설정이 올바르지 않습니다."), req.url));
     }
@@ -174,13 +181,21 @@ async function handleNiceReturn(req: Request) {
     let approvedRaw = session.niceApprovedRaw;
     if (!approvedRaw || Object.keys(approvedRaw).length === 0) {
       try {
+        console.info("[nicepay][approve][request]", { tid, amount, approveApiBase, orderId });
         approvedRaw = await approveNicePaymentByTid({
           tid,
           amount,
           clientKey,
           secretKey,
+          apiBaseUrl: approveApiBase,
         });
       } catch (error: any) {
+        console.error("[nicepay][approve][failed]", {
+          failureStage: "approve_payment",
+          httpStatus: error?.httpStatus ?? null,
+          resultCode: error?.resultCode ?? null,
+          resultMsg: error?.resultMsg ?? error?.message ?? null,
+        });
         await col.updateOne(
           { _id: session._id },
           {
@@ -201,6 +216,12 @@ async function handleNiceReturn(req: Request) {
     const resultCode = pick(approvedRaw, "resultCode", "ResultCode");
     if (resultCode !== "0000") {
       const resultMsg = pick(approvedRaw, "resultMsg", "ResultMsg") || "승인 처리에 실패했습니다.";
+      console.error("[nicepay][approve][failed]", {
+        failureStage: "approve_payment",
+        httpStatus: null,
+        resultCode,
+        resultMsg,
+      });
       await col.updateOne(
         { _id: session._id },
         {

@@ -84,6 +84,31 @@ function getTossMethodLabel(method?: string, easyPayProvider?: string | null) {
   return '카드/간편결제';
 }
 
+function getNiceMethodLabel(method?: string, easyPayProvider?: string | null) {
+  const normalizedMethod = String(method ?? '').trim().toUpperCase();
+  const normalizedEasyPayProvider = String(easyPayProvider ?? '').trim().toUpperCase();
+
+  if (normalizedMethod.includes('CARD') && (normalizedMethod.includes('EASY') || Boolean(normalizedEasyPayProvider))) {
+    return '카드/간편결제';
+  }
+  if (normalizedMethod.includes('EASY') || Boolean(normalizedEasyPayProvider)) {
+    return '간편결제';
+  }
+  if (normalizedMethod.includes('VBANK')) {
+    return '가상계좌';
+  }
+  if (normalizedMethod.includes('BANK')) {
+    return '계좌이체';
+  }
+  if (normalizedMethod.includes('CELLPHONE') || normalizedMethod.includes('MOBILE') || normalizedMethod.includes('PHONE')) {
+    return '휴대폰 결제';
+  }
+  if (normalizedMethod.includes('CARD')) {
+    return '카드 결제';
+  }
+  return 'NicePay 결제';
+}
+
 // verifyAccessToken은 throw 가능 → 안전하게 null 처리(500 방지)
 function safeVerifyAccessToken(token?: string) {
   if (!token) return null;
@@ -300,7 +325,14 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
   const easyPayProviderRaw = String(order.paymentInfo?.rawSummary?.easyPay?.provider ?? '').trim().toUpperCase();
   const easyPayProviderLabel = easyPayProviderRaw ? EASY_PAY_PROVIDER_LABEL_MAP[easyPayProviderRaw] ?? easyPayProviderRaw : null;
   const isTossPayment = paymentProvider === 'tosspayments';
-  const paymentMethodLabel = isZeroPayment ? '결제 불필요' : isTossPayment ? getTossMethodLabel(paymentMethodRaw, easyPayProviderRaw) : '무통장입금';
+  const isNicePayment = paymentProvider === 'nicepay';
+  const paymentMethodLabel = isZeroPayment
+    ? '결제 불필요'
+    : isTossPayment
+      ? getTossMethodLabel(paymentMethodRaw, easyPayProviderRaw)
+      : isNicePayment
+        ? getNiceMethodLabel(paymentMethodRaw, easyPayProviderRaw)
+        : '무통장입금';
 
   return (
     <>
@@ -401,6 +433,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                           <>
                             <p className="font-semibold text-foreground">{paymentMethodLabel}</p>
                             {isTossPayment && <p className="text-sm text-muted-foreground">결제 제공사: Toss Payments</p>}
+                            {isNicePayment && <p className="text-sm text-muted-foreground">결제 제공사: NicePay</p>}
                           </>
                         )}
                       </div>
@@ -410,7 +443,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                   <div className="rounded-xl border border-border bg-background p-6">
                     <div className="flex items-center gap-2 mb-4">
                       <CreditCard className="h-5 w-5 text-primary" />
-                      <h3 className="font-bold text-foreground">{isTossPayment ? '결제 완료 정보' : '입금 계좌 정보'}</h3>
+                      <h3 className="font-bold text-foreground">{isTossPayment || isNicePayment ? '결제 완료 정보' : '입금 계좌 정보'}</h3>
                     </div>
                     {isZeroPayment ? (
                       <div className="space-y-2 rounded-lg border border-border bg-card p-4">
@@ -427,6 +460,24 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                         </p>
                         <p>
                           <span className="text-muted-foreground">결제 제공사:</span> <span className="font-semibold text-foreground">Toss Payments</span>
+                        </p>
+                        {easyPayProviderLabel && (
+                          <p>
+                            <span className="text-muted-foreground">간편결제:</span> <span className="font-semibold text-foreground">{easyPayProviderLabel}</span>
+                          </p>
+                        )}
+                        <p className="text-muted-foreground">결제가 정상 승인되어 주문이 완료되었습니다.</p>
+                      </div>
+                    ) : isNicePayment ? (
+                      <div className="space-y-2 rounded-lg border border-border bg-card p-4 text-sm">
+                        <p>
+                          <span className="text-muted-foreground">결제 상태:</span> <span className="font-semibold text-foreground">{order.paymentStatus || '결제완료'}</span>
+                        </p>
+                        <p>
+                          <span className="text-muted-foreground">결제 방식:</span> <span className="font-semibold text-foreground">{paymentMethodLabel}</span>
+                        </p>
+                        <p>
+                          <span className="text-muted-foreground">결제 제공사:</span> <span className="font-semibold text-foreground">NicePay</span>
                         </p>
                         {easyPayProviderLabel && (
                           <p>

@@ -34,6 +34,32 @@ function getTossMethodLabel(method?: string, easyPayProvider?: string | null) {
   return "카드/간편결제";
 }
 
+
+function getNiceMethodLabel(method?: string, easyPayProvider?: string | null) {
+  const normalized = String(method ?? "").trim().toUpperCase();
+  const hasEasyPayProvider = Boolean(String(easyPayProvider ?? "").trim());
+
+  if (normalized.includes("CARD") && (normalized.includes("EASY") || hasEasyPayProvider)) {
+    return "카드/간편결제";
+  }
+  if (normalized.includes("EASY") || hasEasyPayProvider) {
+    return "간편결제";
+  }
+  if (normalized.includes("VBANK")) {
+    return "가상계좌";
+  }
+  if (normalized.includes("BANK")) {
+    return "계좌이체";
+  }
+  if (normalized.includes("CELLPHONE") || normalized.includes("MOBILE") || normalized.includes("PHONE")) {
+    return "휴대폰 결제";
+  }
+  if (normalized.includes("CARD")) {
+    return "카드 결제";
+  }
+  return "NicePay 결제";
+}
+
 function getEasyPayProviderLabel(easyPayProvider?: string | null) {
   const normalized = String(easyPayProvider ?? "").trim().toUpperCase();
   if (!normalized) return null;
@@ -52,6 +78,7 @@ export default function PaymentMethodDetail({
   const isNicePayment = String(paymentProvider ?? "").trim().toLowerCase() === "nicepay";
   const bankInfo = bankKey ? bankLabelMap[bankKey] : null;
   const tossMethodLabel = getTossMethodLabel(method, easyPayProvider);
+  const niceMethodLabel = getNiceMethodLabel(method, easyPayProvider);
   const easyPayProviderLabel = getEasyPayProviderLabel(easyPayProvider);
   const statusLabel = paymentStatus === "결제완료" ? "결제완료" : paymentStatus;
 
@@ -68,7 +95,7 @@ export default function PaymentMethodDetail({
           </div>
         ) : isNicePayment ? (
           <div className="mt-1 rounded-md border border-border bg-muted/60 dark:bg-card px-3 py-2 text-sm text-foreground/90 leading-relaxed space-y-1">
-            <div className="font-semibold text-foreground">{method || "카드 결제"}</div>
+            <div className="font-semibold text-foreground">{niceMethodLabel}</div>
             <div className="text-sm text-muted-foreground">결제 제공사: NicePay</div>
             {statusLabel && <div className="text-sm text-muted-foreground">결제 상태: {statusLabel}</div>}
           </div>
