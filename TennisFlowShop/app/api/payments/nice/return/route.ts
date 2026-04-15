@@ -21,6 +21,8 @@ function toFailUrl(code: string, message?: string) {
 
 async function parseRequestPayload(req: Request): Promise<Record<string, string>> {
   const contentType = req.headers.get("content-type") || "";
+  // PC: nicepaySubmit()에서 form(action=/api/payments/nice/return) submit.
+  // Mobile: ReturnURL redirect/query 혹은 form-urlencoded 응답.
   if (contentType.includes("application/x-www-form-urlencoded") || contentType.includes("multipart/form-data")) {
     const formData = await req.formData();
     const obj: Record<string, string> = {};
@@ -34,6 +36,13 @@ async function parseRequestPayload(req: Request): Promise<Record<string, string>
       acc[k] = typeof v === "string" ? v : v === undefined || v === null ? "" : String(v);
       return acc;
     }, {});
+  }
+
+  if (req.method.toUpperCase() === "POST") {
+    const text = await req.text().catch(() => "");
+    if (text.trim()) {
+      return Object.fromEntries(new URLSearchParams(text));
+    }
   }
 
   const url = new URL(req.url);
@@ -147,7 +156,6 @@ async function handleNiceReturn(req: Request) {
       authToken,
       mid,
       amt,
-      ediDate,
       merchantKey,
       signature,
     });

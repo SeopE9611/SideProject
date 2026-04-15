@@ -1,16 +1,17 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 
 declare global {
   interface Window {
     goPay?: (form: HTMLFormElement) => void;
+    nicepaySubmit?: () => void;
   }
 }
 
-const NICEPAY_SCRIPT_SRC = "https://web.nicepay.co.kr/v3/common/js/nicepay-pgweb.js";
+const NICEPAY_SCRIPT_SRC = "https://pg-web.nicepay.co.kr/v3/common/js/nicepay-pgweb.js";
 
 type NicePrepareResponse = {
   success: boolean;
@@ -35,6 +36,7 @@ export default function NiceCheckoutButton({
   const [inlineError, setInlineError] = useState<string | null>(null);
   const [scriptReady, setScriptReady] = useState(false);
   const [scriptError, setScriptError] = useState<string | null>(null);
+  const pendingFormRef = useRef<HTMLFormElement | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -52,6 +54,10 @@ export default function NiceCheckoutButton({
       await new Promise<void>((resolve, reject) => {
         const existing = document.querySelector(`script[src="${NICEPAY_SCRIPT_SRC}"]`) as HTMLScriptElement | null;
         if (existing) {
+          if (typeof window.goPay === "function") {
+            resolve();
+            return;
+          }
           existing.addEventListener("load", () => resolve(), { once: true });
           existing.addEventListener("error", () => reject(new Error("NICE_SCRIPT_LOAD_FAILED")), { once: true });
           return;
@@ -85,6 +91,22 @@ export default function NiceCheckoutButton({
     };
   }, []);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    // PC 인증 완료 후 NICE 결제창이 호출하는 전역 콜백.
+    // 이 시점에 인증 응답 필드가 form에 세팅되므로 action(target)으로 submit한다.
+    window.nicepaySubmit = () => {
+      const form = pendingFormRef.current;
+      if (!form) return;
+      form.submit();
+    };
+
+    return () => {
+      if (window.nicepaySubmit) delete window.nicepaySubmit;
+    };
+  }, []);
+
   const isDisabled = useMemo(() => {
     return disabled || loading || !scriptReady || !!scriptError;
   }, [disabled, loading, scriptReady, scriptError]);
@@ -112,6 +134,8 @@ export default function NiceCheckoutButton({
 
       const form = document.createElement("form");
       form.method = "post";
+      form.action = "/api/payments/nice/return";
+      form.target = "_self";
       form.acceptCharset = "euc-kr";
       form.style.display = "none";
 
@@ -129,6 +153,7 @@ export default function NiceCheckoutButton({
       });
 
       document.body.appendChild(form);
+      pendingFormRef.current = form;
 
       onBeforeSuccessNavigation?.();
       try {
@@ -138,10 +163,17 @@ export default function NiceCheckoutButton({
         throw error;
       }
 
+      // PC는 nicepaySubmit()에서 submit 후 정리되고,
+      // 모바일은 ReturnURL 기반 redirect 흐름을 사용하므로 fallback 정리를 둔다.
       setTimeout(() => {
+        if (pendingFormRef.current === form) pendingFormRef.current = null;
         form.remove();
-      }, 2000);
+      }, 60000);
     } catch (error: any) {
+      if (pendingFormRef.current) {
+        pendingFormRef.current.remove();
+        pendingFormRef.current = null;
+      }
       setInlineError(error?.message || "결제 요청에 실패했습니다.");
       setLoading(false);
     }
