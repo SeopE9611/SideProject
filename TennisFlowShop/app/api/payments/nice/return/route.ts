@@ -3,7 +3,7 @@ import { ObjectId } from "mongodb";
 import clientPromise from "@/lib/mongodb";
 import { createOrder } from "@/app/features/orders/api/handlers";
 import { ensureTossPaymentSessionIndexes, tossPaymentSessions } from "@/lib/payments/toss/session";
-import { approveNicePayment, createNiceSignData, triggerNiceNetCancel, verifyNiceAuthSignature } from "@/lib/payments/nice/server";
+import { approveNicePaymentByTid } from "@/lib/payments/nice/server";
 
 function pick(raw: Record<string, string>, ...keys: string[]) {
   for (const key of keys) {
@@ -19,10 +19,13 @@ function toFailUrl(code: string, message?: string) {
   return `/checkout/nice/fail?${qs.toString()}`;
 }
 
+function toAmount(value: string) {
+  const amount = Math.floor(Number(value || 0));
+  return Number.isFinite(amount) ? amount : 0;
+}
+
 async function parseRequestPayload(req: Request): Promise<Record<string, string>> {
   const contentType = req.headers.get("content-type") || "";
-  // PC: nicepaySubmit()에서 form(action=/api/payments/nice/return) submit.
-  // Mobile: ReturnURL redirect/query 혹은 form-urlencoded 응답.
   if (contentType.includes("application/x-www-form-urlencoded") || contentType.includes("multipart/form-data")) {
     const formData = await req.formData();
     const obj: Record<string, string> = {};
@@ -53,36 +56,37 @@ async function parseRequestPayload(req: Request): Promise<Record<string, string>
   return obj;
 }
 
+function getApproveCredentials() {
+  const clientKey = String(process.env.NICEPAY_CLIENT_KEY ?? process.env.NICEPAY_CLIENT_ID ?? "").trim();
+  const secretKey = String(process.env.NICEPAY_SECRET_KEY ?? "").trim();
+  return { clientKey, secretKey };
+}
+
 async function handleNiceReturn(req: Request) {
   try {
     const raw = await parseRequestPayload(req);
 
-    const authResultCode = pick(raw, "AuthResultCode", "authResultCode");
-    const authResultMsg = pick(raw, "AuthResultMsg", "authResultMsg");
-    const authToken = pick(raw, "AuthToken", "authToken");
-    const mid = pick(raw, "MID", "Mid", "mid");
-    const moid = pick(raw, "Moid", "MOID", "moid");
-    const signature = pick(raw, "Signature", "signature");
-    const txTid = pick(raw, "TxTid", "TID", "tid");
-    const nextAppUrl = pick(raw, "NextAppURL", "nextAppUrl");
-    const netCancelUrl = pick(raw, "NetCancelURL", "netCancelUrl");
-    const amt = Number(pick(raw, "Amt", "amt") || 0);
+    const authResultCode = pick(raw, "authResultCode", "AuthResultCode");
+    const authResultMsg = pick(raw, "authResultMsg", "AuthResultMsg");
+    const tid = pick(raw, "tid", "TID", "TxTid");
+    const clientId = pick(raw, "clientId", "ClientId", "CID");
+    const orderId = pick(raw, "orderId", "OrderId", "MOID", "Moid");
+    const amount = toAmount(pick(raw, "amount", "Amt"));
+    const authToken = pick(raw, "authToken", "AuthToken");
+    const signature = pick(raw, "signature", "Signature");
 
-    if (!moid) {
-      return NextResponse.redirect(new URL(toFailUrl("INVALID_QUERY", "Moid 값이 누락되었습니다."), req.url));
+    if (!orderId) {
+      return NextResponse.redirect(new URL(toFailUrl("SESSION_NOT_FOUND", "orderId 값이 누락되었습니다."), req.url));
     }
 
     const client = await clientPromise;
     const db = client.db();
     await ensureTossPaymentSessionIndexes(db);
     const col = tossPaymentSessions(db);
-    const session = await col.findOne({ niceMoid: moid });
+    const session = await col.findOne({ niceOrderId: orderId });
 
-    if (!session) {
+    if (!session || (session.provider && session.provider !== "nicepay")) {
       return NextResponse.redirect(new URL(toFailUrl("SESSION_NOT_FOUND", "결제 세션을 찾을 수 없습니다."), req.url));
-    }
-    if (session.provider && session.provider !== "nicepay") {
-      return NextResponse.redirect(new URL(toFailUrl("SESSION_NOT_FOUND", "나이스 결제 세션이 아닙니다."), req.url));
     }
 
     if (session.status === "approved" && session.mongoOrderId) {
@@ -90,7 +94,7 @@ async function handleNiceReturn(req: Request) {
     }
 
     if (session.status === "approve_succeeded_order_failed") {
-      return NextResponse.redirect(new URL(toFailUrl("NET_CANCEL_REQUIRED", session.failureMessage || "승인 이후 주문 처리 실패 상태입니다."), req.url));
+      return NextResponse.redirect(new URL(toFailUrl("ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE", session.failureMessage || "승인 이후 주문 처리 실패 상태입니다."), req.url));
     }
 
     const now = new Date();
@@ -120,7 +124,6 @@ async function handleNiceReturn(req: Request) {
             failureCode: "AUTH_FAILED",
             failureMessage: authResultMsg || "인증 결제에 실패했습니다.",
             niceAuthRaw: raw,
-            netCancelUrl: netCancelUrl || session.netCancelUrl,
             updatedAt: new Date(),
           },
         },
@@ -128,7 +131,25 @@ async function handleNiceReturn(req: Request) {
       return NextResponse.redirect(new URL(toFailUrl("AUTH_FAILED", authResultMsg || "인증 결제에 실패했습니다."), req.url));
     }
 
-    if (!Number.isFinite(amt) || amt <= 0 || session.amount !== amt) {
+    const prepared = session.nicePrepared || { clientId: "", orderId: "" };
+    if (!tid || !authToken || !signature || !clientId || !prepared.clientId || clientId !== prepared.clientId) {
+      await col.updateOne(
+        { _id: session._id },
+        {
+          $set: {
+            status: "failed",
+            failureStage: "verify_auth",
+            failureCode: "AUTH_FAILED",
+            failureMessage: "인증 응답 필수값 검증에 실패했습니다.",
+            niceAuthRaw: raw,
+            updatedAt: new Date(),
+          },
+        },
+      );
+      return NextResponse.redirect(new URL(toFailUrl("AUTH_FAILED", "인증 응답 필수값 검증에 실패했습니다."), req.url));
+    }
+
+    if (!Number.isFinite(amount) || amount <= 0 || session.amount !== amount || prepared.orderId !== orderId) {
       await col.updateOne(
         { _id: session._id },
         {
@@ -138,7 +159,6 @@ async function handleNiceReturn(req: Request) {
             failureCode: "AMOUNT_MISMATCH",
             failureMessage: "결제 금액 검증에 실패했습니다.",
             niceAuthRaw: raw,
-            netCancelUrl: netCancelUrl || session.netCancelUrl,
             updatedAt: new Date(),
           },
         },
@@ -146,55 +166,19 @@ async function handleNiceReturn(req: Request) {
       return NextResponse.redirect(new URL(toFailUrl("AMOUNT_MISMATCH", "결제 금액 검증에 실패했습니다."), req.url));
     }
 
-    const merchantKey = String(process.env.NICEPAY_MERCHANT_KEY ?? "").trim();
-    const ediDate = session.nicePrepared?.ediDate || "";
-    if (!merchantKey || !ediDate) {
-      return NextResponse.redirect(new URL(toFailUrl("NICE_CONFIG_MISSING", "결제 설정이 올바르지 않습니다."), req.url));
-    }
-
-    const signatureValid = verifyNiceAuthSignature({
-      authToken,
-      mid,
-      amt,
-      merchantKey,
-      signature,
-    });
-
-    if (!signatureValid) {
-      await col.updateOne(
-        { _id: session._id },
-        {
-          $set: {
-            status: "failed",
-            failureStage: "verify_auth",
-            failureCode: "SIGNATURE_MISMATCH",
-            failureMessage: "인증 응답 위변조 검증에 실패했습니다.",
-            niceAuthRaw: raw,
-            netCancelUrl: netCancelUrl || session.netCancelUrl,
-            updatedAt: new Date(),
-          },
-        },
-      );
-      return NextResponse.redirect(new URL(toFailUrl("AUTH_FAILED", "인증 응답 검증에 실패했습니다."), req.url));
+    const { clientKey, secretKey } = getApproveCredentials();
+    if (!clientKey || !secretKey) {
+      return NextResponse.redirect(new URL(toFailUrl("APPROVE_FAILED", "결제 승인 설정이 올바르지 않습니다."), req.url));
     }
 
     let approvedRaw = session.niceApprovedRaw;
     if (!approvedRaw || Object.keys(approvedRaw).length === 0) {
-      const signData = createNiceSignData({
-        ediDate,
-        mid,
-        amt,
-        merchantKey,
-      });
       try {
-        approvedRaw = await approveNicePayment({
-          nextAppUrl,
-          tid: txTid,
-          authToken,
-          mid,
-          amt,
-          ediDate,
-          signData,
+        approvedRaw = await approveNicePaymentByTid({
+          tid,
+          amount,
+          clientKey,
+          secretKey,
         });
       } catch (error: any) {
         await col.updateOne(
@@ -206,7 +190,6 @@ async function handleNiceReturn(req: Request) {
               failureCode: "APPROVE_FAILED",
               failureMessage: error?.message || "승인 처리에 실패했습니다.",
               niceAuthRaw: raw,
-              netCancelUrl: netCancelUrl || session.netCancelUrl,
               updatedAt: new Date(),
             },
           },
@@ -215,9 +198,9 @@ async function handleNiceReturn(req: Request) {
       }
     }
 
-    const resultCode = pick(approvedRaw, "ResultCode", "resultCode");
-    if (resultCode !== "3001") {
-      const resultMsg = pick(approvedRaw, "ResultMsg", "resultMsg") || "승인 처리에 실패했습니다.";
+    const resultCode = pick(approvedRaw, "resultCode", "ResultCode");
+    if (resultCode !== "0000") {
+      const resultMsg = pick(approvedRaw, "resultMsg", "ResultMsg") || "승인 처리에 실패했습니다.";
       await col.updateOne(
         { _id: session._id },
         {
@@ -228,7 +211,6 @@ async function handleNiceReturn(req: Request) {
             failureMessage: resultMsg,
             niceAuthRaw: raw,
             niceApprovedRaw: approvedRaw,
-            netCancelUrl: netCancelUrl || session.netCancelUrl,
             updatedAt: new Date(),
           },
         },
@@ -236,7 +218,7 @@ async function handleNiceReturn(req: Request) {
       return NextResponse.redirect(new URL(toFailUrl("APPROVE_FAILED", resultMsg), req.url));
     }
 
-    const idemKey = `nice:${moid}`;
+    const idemKey = `nice:${orderId}`;
     const orderReq = new Request("http://internal/api/orders", {
       method: "POST",
       headers: {
@@ -250,13 +232,6 @@ async function handleNiceReturn(req: Request) {
     const orderJson = await orderRes.json();
     if (!orderRes.ok || !orderJson?.orderId) {
       const failureMessage = orderJson?.error ?? "주문 생성에 실패했습니다.";
-      const netCancelResult = await triggerNiceNetCancel(netCancelUrl || session.netCancelUrl, {
-        TID: txTid,
-        MID: mid,
-        Moid: moid,
-        Amt: String(amt),
-      });
-
       await col.updateOne(
         { _id: session._id },
         {
@@ -267,11 +242,10 @@ async function handleNiceReturn(req: Request) {
             failureMessage,
             niceAuthRaw: raw,
             niceApprovedRaw: approvedRaw,
-            netCancelUrl: netCancelUrl || session.netCancelUrl,
             confirmedPaymentSummary: {
-              orderId: moid,
-              method: pick(approvedRaw, "PayMethod", "payMethod") || "CARD",
-              totalAmount: amt,
+              orderId,
+              method: pick(approvedRaw, "payMethod", "PayMethod") || "card",
+              totalAmount: amount,
               approvedAt: new Date(),
             },
             updatedAt: new Date(),
@@ -279,9 +253,7 @@ async function handleNiceReturn(req: Request) {
         },
       );
 
-      const failCode = netCancelResult.ok ? "ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE" : "NET_CANCEL_REQUIRED";
-      const failMessage = netCancelResult.ok ? "승인 후 주문 생성에 실패했습니다. 결제 취소 처리 여부를 확인해주세요." : "망취소 대상입니다. 운영 확인이 필요합니다.";
-      return NextResponse.redirect(new URL(toFailUrl(failCode, failMessage), req.url));
+      return NextResponse.redirect(new URL(toFailUrl("ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE", "승인 후 주문 생성에 실패했습니다. 주문 내역을 확인해주세요."), req.url));
     }
 
     const mongoOrderId = String(orderJson.orderId);
@@ -292,16 +264,18 @@ async function handleNiceReturn(req: Request) {
           paymentStatus: "결제완료",
           paymentInfo: {
             provider: "nicepay",
-            method: pick(approvedRaw, "PayMethod", "payMethod") || "CARD",
-            status: "paid",
-            tid: txTid,
-            total: amt,
-            approvedAt: new Date(),
+            method: pick(approvedRaw, "payMethod", "PayMethod") || "card",
+            status: pick(approvedRaw, "status") || "paid",
+            tid,
+            total: amount,
+            approvedAt: pick(approvedRaw, "paidAt") || new Date().toISOString(),
             rawSummary: {
-              moid,
+              orderId,
               resultCode,
-              resultMsg: pick(approvedRaw, "ResultMsg", "resultMsg"),
-              goodsName: pick(approvedRaw, "GoodsName", "goodsName"),
+              resultMsg: pick(approvedRaw, "resultMsg", "ResultMsg"),
+              goodsName: pick(approvedRaw, "goodsName", "GoodsName"),
+              card: pick(approvedRaw, "cardName") ? { cardName: pick(approvedRaw, "cardName") } : undefined,
+              easyPay: pick(approvedRaw, "easyPayProvider") ? { provider: pick(approvedRaw, "easyPayProvider") } : undefined,
             },
           },
           updatedAt: new Date(),
@@ -317,11 +291,10 @@ async function handleNiceReturn(req: Request) {
           mongoOrderId,
           niceAuthRaw: raw,
           niceApprovedRaw: approvedRaw,
-          netCancelUrl: netCancelUrl || session.netCancelUrl,
           confirmedPaymentSummary: {
-            orderId: moid,
-            method: pick(approvedRaw, "PayMethod", "payMethod") || "CARD",
-            totalAmount: amt,
+            orderId,
+            method: pick(approvedRaw, "payMethod", "PayMethod") || "card",
+            totalAmount: amount,
             approvedAt: new Date(),
           },
           updatedAt: new Date(),

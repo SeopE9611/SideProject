@@ -19,7 +19,7 @@ export type TossPaymentSession = {
   _id?: ObjectId;
   provider?: PaymentProvider;
   tossOrderId?: string;
-  niceMoid?: string;
+  niceOrderId?: string;
   amount: number;
   status: TossPaymentSessionStatus;
   flowType: TossPaymentFlowType;
@@ -79,14 +79,16 @@ export type TossPaymentSession = {
     easyPay?: { provider?: string; amount?: number };
   };
   nicePrepared?: {
-    mid: string;
-    ediDate: string;
-    signData: string;
+    clientId: string;
+    orderId: string;
     returnUrl: string;
+    goodsName?: string;
+    buyerName?: string;
+    buyerTel?: string;
+    buyerEmail?: string;
   };
   niceAuthRaw?: Record<string, string>;
   niceApprovedRaw?: Record<string, string>;
-  netCancelUrl?: string;
   createdAt: Date;
   updatedAt: Date;
   expiresAt: Date;
@@ -94,7 +96,7 @@ export type TossPaymentSession = {
 
 export async function ensureTossPaymentSessionIndexes(db: Db) {
   await db.collection<TossPaymentSession>("toss_payment_sessions").createIndex({ tossOrderId: 1 }, { unique: true, sparse: true });
-  await db.collection<TossPaymentSession>("toss_payment_sessions").createIndex({ niceMoid: 1 }, { unique: true, sparse: true });
+  await db.collection<TossPaymentSession>("toss_payment_sessions").createIndex({ niceOrderId: 1 }, { unique: true, sparse: true });
   await db.collection<TossPaymentSession>("toss_payment_sessions").createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 }
 

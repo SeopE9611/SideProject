@@ -10,6 +10,10 @@ const FAIL_GUIDE_MAP: Record<
     accent?: "default" | "warning";
   }
 > = {
+  PAYMENT_PROVIDER_DISABLED: {
+    title: "현재 Nice 결제를 사용할 수 없어요",
+    description: ["운영 설정상 Nice 결제가 비활성화되어 있어 결제를 진행할 수 없어요.", "다른 결제수단을 이용하거나 관리자에게 문의해주세요."],
+  },
   USER_CANCEL: {
     title: "결제를 취소했어요",
     description: ["결제창에서 취소를 선택해 결제가 완료되지 않았어요.", "결제수단을 다시 선택한 뒤 결제를 다시 시도해주세요."],
@@ -37,11 +41,6 @@ const FAIL_GUIDE_MAP: Record<
   ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE: {
     title: "승인 후 주문 생성 중 오류가 발생했어요",
     description: ["결제 승인은 완료됐지만 주문 생성 단계에서 문제가 발생했어요.", "중복 결제를 피하기 위해 주문 내역 또는 관리자 확인이 필요합니다."],
-    accent: "warning",
-  },
-  NET_CANCEL_REQUIRED: {
-    title: "결제 복구 확인이 필요해요",
-    description: ["승인 후 내부 처리 실패로 망취소 대상 상태가 기록되었어요.", "운영팀 확인 전까지 동일 주문 재결제를 시도하지 말아주세요."],
     accent: "warning",
   },
   UNKNOWN: {
