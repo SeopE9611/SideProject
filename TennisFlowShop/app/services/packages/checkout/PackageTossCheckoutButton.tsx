@@ -16,6 +16,8 @@ type Props = {
   phone: string;
   email: string;
   serviceRequest: string;
+  onBeforeSuccessNavigation?: () => void;
+  onSuccessNavigationAbort?: () => void;
 };
 
 export default function PackageTossCheckoutButton({
@@ -29,6 +31,8 @@ export default function PackageTossCheckoutButton({
   phone,
   email,
   serviceRequest,
+  onBeforeSuccessNavigation,
+  onSuccessNavigationAbort,
 }: Props) {
   const [loading, setLoading] = useState(false);
   const [inlineError, setInlineError] = useState<string | null>(null);
@@ -90,15 +94,21 @@ export default function PackageTossCheckoutButton({
         await updateResult;
       }
 
-      await widget.requestPayment({
-        orderId: prepJson.orderId,
-        orderName: prepJson.orderName || packageName,
-        successUrl: prepJson.successUrl,
-        failUrl: prepJson.failUrl,
-        customerName: prepJson.customerName,
-        customerEmail: prepJson.customerEmail,
-        customerMobilePhone: prepJson.customerMobilePhone,
-      });
+      onBeforeSuccessNavigation?.();
+      try {
+        await widget.requestPayment({
+          orderId: prepJson.orderId,
+          orderName: prepJson.orderName || packageName,
+          successUrl: prepJson.successUrl,
+          failUrl: prepJson.failUrl,
+          customerName: prepJson.customerName,
+          customerEmail: prepJson.customerEmail,
+          customerMobilePhone: prepJson.customerMobilePhone,
+        });
+      } catch (error) {
+        onSuccessNavigationAbort?.();
+        throw error;
+      }
     } catch (error: any) {
       const message = error?.message || "결제 요청에 실패했습니다.";
       setInlineError(message);

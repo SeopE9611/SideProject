@@ -194,6 +194,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
 
   const [prefillReady, setPrefillReady] = useState(false);
   const [stringingDirtySignature, setStringingDirtySignature] = useState<string | null>(null);
+  const [isIntentionalSuccessNavigation, setIsIntentionalSuccessNavigation] = useState(false);
 
   const fingerprint = useMemo(
     () =>
@@ -255,8 +256,9 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
     baselineRef.current = fingerprint;
   }, [prefillReady, fingerprint]);
 
-  useUnsavedChangesGuard(isDirty);
-  useBackNavigationGuard(isDirty);
+  const guardEnabled = isDirty && !isIntentionalSuccessNavigation;
+  useUnsavedChangesGuard(guardEnabled);
+  useBackNavigationGuard(guardEnabled);
 
   const pushIfSafe = (href: string) => {
     if (isDirty && !window.confirm(UNSAVED_CHANGES_MESSAGE)) return;
@@ -625,7 +627,13 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
       const qs = new URLSearchParams();
       qs.set("id", rentalId);
       success = true;
-      router.push(`/rentals/success?${qs.toString()}`);
+      setIsIntentionalSuccessNavigation(true);
+      try {
+        router.push(`/rentals/success?${qs.toString()}`);
+      } catch {
+        setIsIntentionalSuccessNavigation(false);
+        throw new Error("success navigation failed");
+      }
     } catch (e) {
       showErrorToast("결제 처리 중 오류가 발생했습니다.");
     } finally {

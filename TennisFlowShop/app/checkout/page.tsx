@@ -149,6 +149,7 @@ export default function CheckoutPage() {
   // 2) 기존 상태
   const [withStringService, setWithStringService] = useState(false);
   const [isCheckoutSubmitting, setIsCheckoutSubmitting] = useState(false);
+  const [isIntentionalSuccessNavigation, setIsIntentionalSuccessNavigation] = useState(false);
 
   // 이탈 경고/초기값 스냅샷을 위한 초기화 플래그
   const initFlagsRef = useRef({
@@ -628,9 +629,11 @@ export default function CheckoutPage() {
     );
   }, [withStringService, selectedBank, deliveryMethod, servicePickupMethod, name, phone, email, postalCode, address, addressDetail, deliveryRequest, depositor, pointsToUse, agreeTerms, agreePrivacy, agreeRefund]);
 
+  const guardEnabled = isDirty && !isIntentionalSuccessNavigation;
+
   // 새로고침/탭 닫기/브라우저 뒤로가기(주소창) 등 브라우저 레벨 이탈 경고
-  useUnsavedChangesGuard(isDirty);
-  useBackNavigationGuard(isDirty);
+  useUnsavedChangesGuard(guardEnabled);
+  useBackNavigationGuard(guardEnabled);
 
   // 내부 링크(예: 장바구니로 돌아가기) 클릭 시 confirm 경고
   const onLeaveCartClick = (e: ReactMouseEvent<HTMLAnchorElement>) => {
@@ -1703,6 +1706,8 @@ export default function CheckoutPage() {
                           pointsToUse={appliedPoints}
                           stringingApplicationInput={stringingApplicationInput}
                           onSubmittingChange={setIsCheckoutSubmitting}
+                          onBeforeSuccessNavigation={() => setIsIntentionalSuccessNavigation(true)}
+                          onSuccessNavigationAbort={() => setIsIntentionalSuccessNavigation(false)}
                         />
                       ) : !isZeroPayableAmount ? (
                         <TossCheckoutButton
@@ -1711,6 +1716,8 @@ export default function CheckoutPage() {
                           widgetReady={tossWidgetReady}
                           widgetLoadError={tossWidgetLoadError}
                           onPreparedAmountChange={setTossPreparedAmount}
+                          onBeforeSuccessNavigation={() => setIsIntentionalSuccessNavigation(true)}
+                          onSuccessNavigationAbort={() => setIsIntentionalSuccessNavigation(false)}
                           payload={{
                             items: orderItems.map((item) => ({ productId: item.id, quantity: item.quantity, kind: item.kind ?? "product" })),
                             shippingInfo: {

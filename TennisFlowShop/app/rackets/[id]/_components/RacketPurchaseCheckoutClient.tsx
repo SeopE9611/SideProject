@@ -97,6 +97,8 @@ export default function RacketPurchaseCheckoutClient({
 
   const [agree, setAgree] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [isIntentionalSuccessNavigation, setIsIntentionalSuccessNavigation] =
+    useState(false);
   const submittingRef = useRef(false);
 
   const shippingFee = useMemo(() => {
@@ -153,8 +155,9 @@ export default function RacketPurchaseCheckoutClient({
     agree,
   ]);
 
-  useUnsavedChangesGuard(isDirty);
-  useBackNavigationGuard(isDirty);
+  const guardEnabled = isDirty && !isIntentionalSuccessNavigation;
+  useUnsavedChangesGuard(guardEnabled);
+  useBackNavigationGuard(guardEnabled);
 
   async function onSubmit() {
     // 0) 중복 클릭 방지
@@ -259,7 +262,13 @@ export default function RacketPurchaseCheckoutClient({
       clearIdemKey();
 
       success = true;
-      router.push(`/racket-orders/${json.orderId}/select-string`);
+      setIsIntentionalSuccessNavigation(true);
+      try {
+        router.push(`/racket-orders/${json.orderId}/select-string`);
+      } catch {
+        setIsIntentionalSuccessNavigation(false);
+        throw new Error("success navigation failed");
+      }
       return;
     } catch (e) {
       showErrorToast("주문 처리 중 오류가 발생했습니다.");
