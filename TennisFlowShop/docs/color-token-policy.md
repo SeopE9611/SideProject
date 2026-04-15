@@ -61,10 +61,10 @@ rg -n "#[0-9A-Fa-f]{3,6}|style=\{\{[^}]*\b(color|background|border)\b" app compo
 - `text`: `#1A1C1A` — 제목/본문 기본 텍스트
 - `sub`: `#4A544A` — 보조 텍스트/메타 정보
 - `line`: `#D7E3D7` — 구분선/테이블 보더
-- `bgSoft`: `#F3F8F3` — 요약 표의 key 셀 배경
-- `badgeBg`: `#E9F6EC` — 상태 배지 배경
-- `badgeText`: `#2C5341` — 상태 배지 텍스트(브랜드 그린)
-- `btnBg`: `#2C5341` — CTA 배경
+- `bgSoft`: `#F9F3F5` — 요약 표의 key 셀 배경(웜 뉴트럴)
+- `badgeBg`: `#F6E9ED` — 상태 배지 배경(버건디 틴트)
+- `badgeText`: `#8B1025` — 상태 배지 텍스트(브랜드 버건디)
+- `btnBg`: `#8B1025` — CTA 배경
 - `btnText`: `#FCFFFC` — CTA 텍스트
 
 운영 규칙:
@@ -92,8 +92,8 @@ rg -n "lib/shadcn-plugin|shadcn-plugin" . --glob '!node_modules/**'
 
 - Base Light: `#FCFFFC`
 - Base Dark: `#1A1C1A`
-- Brand Green: `#2C5341`
-- Accent Green: `#2C5341`
+- Brand Burgundy: `#8B1025`
+- Accent Burgundy: `#7A1021`
 
 ### Light
 
@@ -101,9 +101,9 @@ rg -n "lib/shadcn-plugin|shadcn-plugin" . --glob '!node_modules/**'
 - `--card`: `#FFFFFF` (카드/패널)
 - `--foreground`: `#1A1C1A` (본문/제목)
 - `--muted-foreground`: `#4A544A` (보조 텍스트)
-- `--primary`: `#2C5341` (주요 버튼/브랜드 인터랙션)
+- `--primary`: `#8B1025` (주요 버튼/브랜드 인터랙션)
 - `--primary-foreground`: `#FCFFFC`
-- `--accent`: `#2C5341` (포인트/강조)
+- `--accent`: `#7A1021` (포인트/강조)
 - `--accent-foreground`: `#FCFFFC`
 - `--border`: `#D7E3D7`
 
@@ -113,18 +113,18 @@ rg -n "lib/shadcn-plugin|shadcn-plugin" . --glob '!node_modules/**'
 - `--card`: `#222622` (배경 대비 +1단 밝은 표면)
 - `--foreground`: `#FCFFFC`
 - `--muted-foreground`: `#B9C3B9`
-- `--primary`: `#4E9373` (브랜드 그린 계열 톤 업)
+- `--primary`: `#C66B79` (브랜드 버건디 계열 톤 업)
 - `--primary-foreground`: `#1A1C1A`
-- `--accent`: `#4E9373`
+- `--accent`: `#B85C6C`
 - `--accent-foreground`: `#1A1C1A`
 - `--border`: `#3A433A`
 
 ### 상태색(실무 최소)
 
-- `--success`: `#2C5341` (Light) / `#4E9373` (Dark)
+- `--success`: `#2C5341` (Light) / `#4E9373` (Dark) *(의미색 유지: 브랜드색과 분리)*
 - `--warning`: `#D97706`
 - `--destructive`: `#DC2626`
-- `--ring`: `#2C5341` (Light) / `#4E9373` (Dark)
+- `--ring`: `#8B1025` (Light) / `#C66B79` (Dark)
 
 상태색 허용 위치(필수 준수):
 
@@ -150,7 +150,7 @@ rg -n "lib/shadcn-plugin|shadcn-plugin" . --glob '!node_modules/**'
 권장 원칙:
 
 1. `primary`는 배경색이 아니라 **인터랙션(CTA)** 용도로 유지.
-2. 본문은 `text-foreground`, 브랜드 그린은 제목/강조/링크 중심으로 제한.
+2. 본문은 `text-foreground`, 브랜드 버건디는 제목/강조/링크 중심으로 제한.
 3. hover/active는 토큰 기반(`primary/90` 또는 별도 `--primary-hover`)으로 정의.
 4. 일반 UI는 하드코딩 hex 금지, 브랜드 제휴 UI만 예외 허용.
 
