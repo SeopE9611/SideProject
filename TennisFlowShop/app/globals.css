@@ -32,17 +32,17 @@ html body[data-scroll-locked] {
 /* 라이트 모드용 CSS 변수 정의 */
 :root {
   /* Page base */
-  --background: 120 35% 99%;
-  --foreground: 120 4% 11%;
+  --background: 30 20% 98%;
+  --foreground: 10 8% 14%;
 
   /* Surface (card/panel) */
   --surface: 0 0% 100%;
-  --surface-foreground: 120 4% 11%;
-  --card: 0 0% 100%;
-  --card-foreground: 120 4% 11%;
+  --surface-foreground: 10 8% 14%;
+  --card: 30 18% 97%;
+  --card-foreground: 10 8% 14%;
 
-  --popover: 0 0% 100%;
-  --popover-foreground: 120 4% 11%;
+  --popover: 30 18% 97%;
+  --popover-foreground: 10 8% 14%;
 
   /* Primary action (CTA / main interaction)
      기준 색상: #8B1025 */
@@ -62,17 +62,17 @@ html body[data-scroll-locked] {
   --success-foreground: 120 100% 99%;
   --warning: 38 92% 46%;
   --warning-foreground: 32 100% 15%;
-  --secondary: 120 8% 94%;
-  --secondary-foreground: 120 4% 11%;
+  --secondary: 24 16% 93%;
+  --secondary-foreground: 10 8% 18%;
 
-  --muted: 120 6% 95%;
-  --muted-foreground: 120 6% 31%;
+  --muted: 24 14% 95%;
+  --muted-foreground: 12 8% 42%;
   --brand-text: 349.8 79.4% 30.4%;
 
-  --border: 120 10% 87%;
-  --input: 120 5% 86%;
+  --border: 20 12% 86%;
+  --input: 20 12% 86%;
   --ring: 349.8 79.4% 30.4%;
-  --overlay: 120 8% 8%;
+  --overlay: 20 8% 8%;
 
   --destructive: 0 72% 51%;
   --destructive-foreground: 210 40% 98%;
@@ -80,18 +80,18 @@ html body[data-scroll-locked] {
   /* 패키지 페이지를 위한 추가 디자인 토큰 */
   --chart-1: 349.7 41.2% 50%;
   --chart-2: 349.8 79.4% 30.4%;
-  --chart-3: 120 4% 35%;
-  --chart-4: 120 8% 60%;
-  --chart-5: 120 12% 45%;
+  --chart-3: 350 32% 62%;
+  --chart-4: 24 18% 52%;
+  --chart-5: 320 16% 46%;
   --radius: 0.5rem;
 
-  --sidebar: 0 0% 100%;
-  --sidebar-foreground: 120 4% 11%;
+  --sidebar: 30 22% 98%;
+  --sidebar-foreground: 10 8% 14%;
   --sidebar-primary: 349.7 41.2% 50%;
   --sidebar-primary-foreground: 120 100% 99%;
-  --sidebar-accent: 349.8 79.4% 30.4%;
-  --sidebar-accent-foreground: 120 100% 99%;
-  --sidebar-border: 120 8% 86%;
+  --sidebar-accent: 349 45% 94%;
+  --sidebar-accent-foreground: 349 70% 28%;
+  --sidebar-border: 20 12% 86%;
   --sidebar-ring: 349.7 41.2% 50%;
 }
 
