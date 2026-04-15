@@ -1,6 +1,6 @@
 import { Buffer } from "node:buffer";
 
-export const NICE_SANDBOX_APPROVE_API_BASE = "https://sandbox-api.nicepay.co.kr/v1/payments";
+export const NICE_DEFAULT_APPROVE_API_BASE = "https://api.nicepay.co.kr/v1/payments";
 
 function toPositiveAmount(amount: unknown): number {
   const normalized = Math.floor(Number(amount) || 0);
@@ -41,7 +41,7 @@ export async function approveNicePaymentByTid(params: {
   if (!tid) throw new Error("NICE_TID_REQUIRED");
 
   const amount = toPositiveAmount(params.amount);
-  const endpointBase = (params.apiBaseUrl || NICE_SANDBOX_APPROVE_API_BASE).trim().replace(/\/+$/, "");
+  const endpointBase = (params.apiBaseUrl || process.env.NICEPAY_APPROVE_API_BASE || NICE_DEFAULT_APPROVE_API_BASE).trim().replace(/\/+$/, "");
   const url = `${endpointBase}/${encodeURIComponent(tid)}`;
 
   const response = await fetch(url, {
@@ -65,7 +65,11 @@ export async function approveNicePaymentByTid(params: {
   const raw = toRecordString(parsed);
   if (!response.ok) {
     const message = raw.resultMsg || raw.message || `NICE_APPROVE_HTTP_${response.status}`;
-    throw new Error(message);
+    const error = new Error(message) as Error & { httpStatus?: number; resultCode?: string; resultMsg?: string };
+    error.httpStatus = response.status;
+    error.resultCode = raw.resultCode || raw.ResultCode || "";
+    error.resultMsg = raw.resultMsg || raw.ResultMsg || raw.message || "";
+    throw error;
   }
 
   return raw;
