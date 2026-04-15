@@ -2,7 +2,7 @@ import { ObjectId, type Db } from "mongodb";
 
 export type TossPaymentSessionStatus = "ready" | "approved" | "failed" | "confirm_succeeded_order_failed";
 
-export type TossPaymentFlowType = "checkout_order" | "package_order";
+export type TossPaymentFlowType = "checkout_order" | "package_order" | "racket_order";
 
 export type TossPaymentFailureStage = "session_expired_before_confirm" | "confirm_payment" | "create_order_after_confirm";
 
@@ -21,6 +21,31 @@ export type TossPaymentSession = {
       email: string;
       serviceRequest?: string;
     };
+  };
+  racketPayload?: {
+    racketId: string;
+    items: Array<{ productId: string; quantity: number; kind: "racket" }>;
+    shippingInfo: {
+      name: string;
+      phone: string;
+      address: string;
+      addressDetail: string;
+      postalCode: string;
+      depositor: string;
+      deliveryRequest: string;
+      shippingMethod: "courier" | "visit";
+    };
+    servicePickupMethod: "courier" | "visit";
+    shippingFee: number;
+    totalPrice: number;
+    paymentInfo: {
+      bank?: string;
+    };
+    guestInfo?: {
+      name?: string;
+      email?: string;
+      phone?: string;
+    } | null;
   };
   userId: string | null;
   guestInfo?: {

@@ -1,5 +1,6 @@
 "use client";
 
+import TossPaymentWidget from "@/app/checkout/TossPaymentWidget";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -15,6 +16,7 @@ import { calcShippingFee } from "@/lib/shipping-fee";
 import { showErrorToast } from "@/lib/toast";
 import { useRouter } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
+import RacketTossCheckoutButton from "./RacketTossCheckoutButton";
 
 type RacketView = {
   id: string;
@@ -27,15 +29,14 @@ type RacketView = {
 
 type PickupMethod = "courier" | "visit";
 type Bank = "shinhan" | "kookmin" | "woori";
+type PaymentMethod = "bank_transfer" | "tosspayments";
 
-// 제출 직전 최종 유효성 가드
 const POSTAL_RE = /^\d{5}$/;
 const onlyDigits = (v: string) => String(v ?? "").replace(/\D/g, "");
 const isValidKoreanPhone = (v: string) => /^010\d{8}$/.test(onlyDigits(v));
 const ALLOWED_BANKS = new Set<Bank>(["shinhan", "kookmin", "woori"]);
 const ALLOWED_PICKUP = new Set<PickupMethod>(["courier", "visit"]);
 
-// idemKey 재시도 안전장치(라켓 구매 전용)
 const IDEM_STORE_KEY = "racket-checkout.idem.v1";
 const IDEM_TTL_MS = 15 * 60 * 1000;
 const fnv1a32 = (str: string) => {
@@ -92,6 +93,8 @@ export default function RacketPurchaseCheckoutClient({
 
   const [pickupMethod, setPickupMethod] = useState<PickupMethod>("courier");
   const [bank, setBank] = useState<Bank>("shinhan");
+  const [paymentMethod, setPaymentMethod] =
+    useState<PaymentMethod>("bank_transfer");
   const isVisitPickup = pickupMethod === "visit";
   const needsShippingAddress = !isVisitPickup;
 
@@ -99,6 +102,10 @@ export default function RacketPurchaseCheckoutClient({
   const [submitting, setSubmitting] = useState(false);
   const [isIntentionalSuccessNavigation, setIsIntentionalSuccessNavigation] =
     useState(false);
+  const [tossWidgetReady, setTossWidgetReady] = useState(false);
+  const [tossWidgetLoadError, setTossWidgetLoadError] = useState<string | null>(
+    null,
+  );
   const submittingRef = useRef(false);
 
   const shippingFee = useMemo(() => {
@@ -112,24 +119,18 @@ export default function RacketPurchaseCheckoutClient({
     [racket.price, shippingFee],
   );
 
-  // const canSubmit = racket.status === 'available' && agree && !submitting && name.trim() && phone.trim() && address.trim() && postalCode.trim() && depositor.trim();
-  // canSubmit은 boolean으로 유지(기존은 && 체인 때문에 string이 될 수 있음)
-  const canSubmit =
+  const canSubmitBase =
     racket.status === "available" &&
     agree &&
     !submitting &&
     Boolean(
       name.trim() &&
-      phone.trim() &&
-      depositor.trim() &&
-      (!needsShippingAddress || (address.trim() && postalCode.trim())),
+        phone.trim() &&
+        (!needsShippingAddress || (address.trim() && postalCode.trim())),
     );
 
-  /**
-   * 입력 이탈 경고(Unsaved Changes Guard)
-   * - 초기값 대비 “뭐라도” 바뀌면 dirty=true
-   * - 입력했다가 다시 초기값으로 되돌리면 dirty=false로 복귀
-   */
+  const canSubmitBank = canSubmitBase && Boolean(depositor.trim());
+
   const isDirty = useMemo(() => {
     const hasText =
       Boolean(name) ||
@@ -140,7 +141,10 @@ export default function RacketPurchaseCheckoutClient({
       Boolean(depositor) ||
       Boolean(deliveryRequest);
     const hasNonDefault =
-      pickupMethod !== "courier" || bank !== "shinhan" || agree !== false;
+      pickupMethod !== "courier" ||
+      bank !== "shinhan" ||
+      agree !== false ||
+      paymentMethod !== "bank_transfer";
     return hasText || hasNonDefault;
   }, [
     name,
@@ -153,63 +157,73 @@ export default function RacketPurchaseCheckoutClient({
     pickupMethod,
     bank,
     agree,
+    paymentMethod,
   ]);
 
   const guardEnabled = isDirty && !isIntentionalSuccessNavigation;
   useUnsavedChangesGuard(guardEnabled);
   useBackNavigationGuard(guardEnabled);
 
-  async function onSubmit() {
-    // 0) 중복 클릭 방지
-    if (submittingRef.current || submitting) return;
-
-    // 1) disabled 우회 방지: devtools로 버튼을 강제로 눌러도 여기서 차단
-    if (!canSubmit) {
-      showErrorToast("필수 입력값/동의 항목을 확인해주세요.");
-      return;
-    }
-
-    // 2) 제출 직전 최종 검증 + 정규화
+  const validateCommon = () => {
     const nameTrim = name.trim();
     const phoneDigits = onlyDigits(phone);
     const postalTrim = onlyDigits(postalCode).trim();
     const addressTrim = address.trim();
-    const addressDetailTrim = addressDetail.trim();
-    const depositorTrim = depositor.trim();
-    const deliveryRequestTrim = deliveryRequest.trim();
 
-    // 재고/상태 가드(동시성)
     if (racket.status !== "available") {
       showErrorToast("현재 판매 가능한 라켓이 아닙니다.");
-      return;
+      return null;
     }
-
     if (nameTrim.length < 2) {
       showErrorToast("수령인 이름은 2자 이상 입력해주세요.");
-      return;
+      return null;
     }
     if (!isValidKoreanPhone(phoneDigits)) {
       showErrorToast("올바른 연락처 형식(01012345678)으로 입력해주세요.");
-      return;
+      return null;
     }
     if (needsShippingAddress) {
       if (!POSTAL_RE.test(postalTrim)) {
         showErrorToast("우편번호(5자리)를 확인해주세요.");
-        return;
+        return null;
       }
       if (!addressTrim) {
         showErrorToast("주소를 입력해주세요.");
-        return;
+        return null;
       }
     }
+    if (!ALLOWED_PICKUP.has(pickupMethod)) {
+      showErrorToast("접수 방식 값이 올바르지 않습니다. 다시 선택해주세요.");
+      return null;
+    }
+
+    return {
+      nameTrim,
+      phoneDigits,
+      postalTrim,
+      addressTrim,
+      addressDetailTrim: addressDetail.trim(),
+      deliveryRequestTrim: deliveryRequest.trim(),
+    };
+  };
+
+  async function onSubmitBankTransfer() {
+    if (submittingRef.current || submitting) return;
+
+    if (!canSubmitBank) {
+      showErrorToast("필수 입력값/동의 항목을 확인해주세요.");
+      return;
+    }
+
+    const common = validateCommon();
+    if (!common) return;
+
+    const depositorTrim = depositor.trim();
     if (depositorTrim.length < 2) {
       showErrorToast("입금자명은 2자 이상 입력해주세요.");
       return;
     }
-    if (!ALLOWED_PICKUP.has(pickupMethod)) {
-      showErrorToast("접수 방식 값이 올바르지 않습니다. 다시 선택해주세요.");
-      return;
-    }
+
     if (!ALLOWED_BANKS.has(bank)) {
       showErrorToast("은행 선택 값이 올바르지 않습니다. 다시 선택해주세요.");
       return;
@@ -224,22 +238,21 @@ export default function RacketPurchaseCheckoutClient({
       const payload = {
         items: [{ productId: racket.id, quantity: 1, kind: "racket" as const }],
         shippingInfo: {
-          name: nameTrim,
-          phone: phoneDigits,
-          address: addressTrim,
-          addressDetail: addressDetailTrim,
-          postalCode: postalTrim,
+          name: common.nameTrim,
+          phone: common.phoneDigits,
+          address: common.addressTrim,
+          addressDetail: common.addressDetailTrim,
+          postalCode: common.postalTrim,
           depositor: depositorTrim,
-          deliveryRequest: deliveryRequestTrim,
+          deliveryRequest: common.deliveryRequestTrim,
           shippingMethod: pickupMethod === "visit" ? "visit" : "courier",
         },
         totalPrice,
         shippingFee,
-        paymentInfo: { bank }, // 서버 createOrder가 body.paymentInfo?.bank 읽음
-        servicePickupMethod: pickupMethod, // 서버에서 (order as any).servicePickupMethod로 저장 중
+        paymentInfo: { bank },
+        servicePickupMethod: pickupMethod,
       };
 
-      // payload 기반 시그니처(PII 원문은 저장하지 않고 해시만 사용)
       const sig = `v1:${fnv1a32(JSON.stringify(payload))}`;
       const idemKey = getOrCreateIdemKey(sig);
 
@@ -258,7 +271,6 @@ export default function RacketPurchaseCheckoutClient({
         return;
       }
 
-      // 성공 시에는 다음 주문을 위해 제거
       clearIdemKey();
 
       success = true;
@@ -269,8 +281,7 @@ export default function RacketPurchaseCheckoutClient({
         setIsIntentionalSuccessNavigation(false);
         throw new Error("success navigation failed");
       }
-      return;
-    } catch (e) {
+    } catch {
       showErrorToast("주문 처리 중 오류가 발생했습니다.");
     } finally {
       if (!success) {
@@ -280,6 +291,20 @@ export default function RacketPurchaseCheckoutClient({
     }
   }
 
+  const tossPayload = {
+    racketId: racket.id,
+    shippingInfo: {
+      name: name.trim(),
+      phone: onlyDigits(phone),
+      address: address.trim(),
+      addressDetail: addressDetail.trim(),
+      postalCode: onlyDigits(postalCode).trim(),
+      deliveryRequest: deliveryRequest.trim(),
+      shippingMethod: pickupMethod,
+    },
+    servicePickupMethod: pickupMethod,
+  };
+
   return (
     <div className="mx-auto max-w-2xl space-y-6 p-4">
       <div className="rounded-lg border p-4">
@@ -287,9 +312,7 @@ export default function RacketPurchaseCheckoutClient({
         <div className="mt-2 text-sm text-muted-foreground">
           {racket.brand} {racket.model}
         </div>
-        <div className="mt-1 text-sm">
-          가격: {racket.price.toLocaleString()}원
-        </div>
+        <div className="mt-1 text-sm">가격: {racket.price.toLocaleString()}원</div>
       </div>
 
       <div className="rounded-lg border p-4 space-y-3">
@@ -315,100 +338,98 @@ export default function RacketPurchaseCheckoutClient({
       </div>
 
       <div className="rounded-lg border p-4 space-y-3">
-        <div className="font-semibold">
-          {isVisitPickup ? "수령/연락 정보" : "배송 정보"}
-        </div>
+        <div className="font-semibold">{isVisitPickup ? "수령/연락 정보" : "배송 정보"}</div>
 
-        <Input
-          className="w-full text-sm"
-          placeholder="수령인"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-        <Input
-          className="w-full text-sm"
-          placeholder="연락처"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-        />
+        <Input className="w-full text-sm" placeholder="수령인" value={name} onChange={(e) => setName(e.target.value)} />
+        <Input className="w-full text-sm" placeholder="연락처" value={phone} onChange={(e) => setPhone(e.target.value)} />
         {needsShippingAddress && (
           <>
-            <Input
-              className="w-full text-sm"
-              placeholder="우편번호"
-              value={postalCode}
-              onChange={(e) => setPostalCode(e.target.value)}
-            />
-            <Input
-              className="w-full text-sm"
-              placeholder="주소"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-            />
-            <Input
-              className="w-full text-sm"
-              placeholder="상세주소(선택)"
-              value={addressDetail}
-              onChange={(e) => setAddressDetail(e.target.value)}
-            />
-            <Input
-              className="w-full text-sm"
-              placeholder="배송 요청사항(선택)"
-              value={deliveryRequest}
-              onChange={(e) => setDeliveryRequest(e.target.value)}
-            />
+            <Input className="w-full text-sm" placeholder="우편번호" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} />
+            <Input className="w-full text-sm" placeholder="주소" value={address} onChange={(e) => setAddress(e.target.value)} />
+            <Input className="w-full text-sm" placeholder="상세주소(선택)" value={addressDetail} onChange={(e) => setAddressDetail(e.target.value)} />
+            <Input className="w-full text-sm" placeholder="배송 요청사항(선택)" value={deliveryRequest} onChange={(e) => setDeliveryRequest(e.target.value)} />
           </>
         )}
-        <Input
-          className="w-full text-sm"
-          placeholder="입금자명"
-          value={depositor}
-          onChange={(e) => setDepositor(e.target.value)}
-        />
       </div>
 
       <div className="rounded-lg border p-4 space-y-3">
         <div className="font-semibold">결제 정보</div>
 
-        <label className="block text-sm">
-          은행 선택
-          <Select
-            value={bank}
-            onValueChange={(value) => setBank(value as Bank)}
-          >
-            <SelectTrigger className="mt-1 w-full text-sm">
-              <SelectValue placeholder="은행 선택" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="shinhan">신한</SelectItem>
-              <SelectItem value="kookmin">국민</SelectItem>
-              <SelectItem value="woori">우리</SelectItem>
-            </SelectContent>
-          </Select>
-        </label>
+        <div className="space-y-2">
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="radio"
+              name="payment-method"
+              checked={paymentMethod === "bank_transfer"}
+              onChange={() => setPaymentMethod("bank_transfer")}
+            />
+            무통장입금
+          </label>
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="radio"
+              name="payment-method"
+              checked={paymentMethod === "tosspayments"}
+              onChange={() => setPaymentMethod("tosspayments")}
+              disabled={!Number.isFinite(totalPrice) || totalPrice <= 0}
+            />
+            카드/간편결제 (토스)
+          </label>
+        </div>
+
+        {paymentMethod === "bank_transfer" ? (
+          <>
+            <label className="block text-sm">
+              은행 선택
+              <Select value={bank} onValueChange={(value) => setBank(value as Bank)}>
+                <SelectTrigger className="mt-1 w-full text-sm">
+                  <SelectValue placeholder="은행 선택" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="shinhan">신한</SelectItem>
+                  <SelectItem value="kookmin">국민</SelectItem>
+                  <SelectItem value="woori">우리</SelectItem>
+                </SelectContent>
+              </Select>
+            </label>
+
+            <Input className="w-full text-sm" placeholder="입금자명" value={depositor} onChange={(e) => setDepositor(e.target.value)} />
+          </>
+        ) : (
+          <TossPaymentWidget
+            amount={totalPrice}
+            customerKey={`${racket.id}:${onlyDigits(phone) || "guest"}`}
+            onStatusChange={({ ready, loadError }) => {
+              setTossWidgetReady(ready);
+              setTossWidgetLoadError(loadError);
+            }}
+          />
+        )}
 
         <div className="text-sm">
-          결제 금액:{" "}
-          <span className="font-semibold">{totalPrice.toLocaleString()}원</span>
+          결제 금액: <span className="font-semibold">{totalPrice.toLocaleString()}원</span>
         </div>
 
         <label className="flex items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            checked={agree}
-            onChange={(e) => setAgree(e.target.checked)}
-          />
+          <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} />
           주문/결제/개인정보 제공에 동의합니다.
         </label>
 
-        <Button
-          className="w-full text-sm"
-          variant="default"
-          disabled={!canSubmit || submitting}
-          onClick={onSubmit}
-        >
-          {submitting ? "처리 중..." : "스트링 선택으로 이동"}
-        </Button>
+        {paymentMethod === "bank_transfer" ? (
+          <Button className="w-full text-sm" variant="default" disabled={!canSubmitBank || submitting} onClick={onSubmitBankTransfer}>
+            {submitting ? "처리 중..." : "스트링 선택으로 이동"}
+          </Button>
+        ) : (
+          <RacketTossCheckoutButton
+            disabled={!canSubmitBase || submitting}
+            widgetReady={tossWidgetReady}
+            widgetLoadError={tossWidgetLoadError}
+            payableAmount={totalPrice}
+            payload={tossPayload}
+            onBeforeSuccessNavigation={() => setIsIntentionalSuccessNavigation(true)}
+            onSuccessNavigationAbort={() => setIsIntentionalSuccessNavigation(false)}
+          />
+        )}
 
         {racket.status !== "available" && (
           <div className="text-sm text-destructive">
