@@ -8,10 +8,10 @@ const THEME = {
   sub: "#4A544A",
   footerMeta: "#4A544A",
   line: "#D7E3D7",
-  bgSoft: "#F3F8F3",
-  badgeBg: "#E9F6EC",
-  badgeText: "#2C5341",
-  btnBg: "#2C5341",
+  bgSoft: "#F9F3F5",
+  badgeBg: "#F6E9ED",
+  badgeText: "#8B1025",
+  btnBg: "#8B1025",
   btnText: "#FCFFFC",
 } as const;
 
