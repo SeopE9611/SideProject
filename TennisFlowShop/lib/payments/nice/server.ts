@@ -29,16 +29,15 @@ export function createNiceSignData(params: {
 }
 
 // Nice 인증응답 검증(Signature)
-// 문서 기준 기본 검증식: sha256(AuthToken + MID + Amt + EdiDate + MerchantKey)
+// 문서 기준 검증식: sha256(AuthToken + MID + Amt + MerchantKey)
 export function verifyNiceAuthSignature(params: {
   authToken: string;
   mid: string;
   amt: number;
-  ediDate: string;
   merchantKey: string;
   signature: string;
 }): boolean {
-  const expected = sha256Hex(`${params.authToken}${params.mid}${String(Math.max(0, Math.floor(Number(params.amt) || 0)))}${params.ediDate}${params.merchantKey}`);
+  const expected = sha256Hex(`${params.authToken}${params.mid}${String(Math.max(0, Math.floor(Number(params.amt) || 0)))}${params.merchantKey}`);
   return expected.toLowerCase() === String(params.signature ?? "").trim().toLowerCase();
 }
 

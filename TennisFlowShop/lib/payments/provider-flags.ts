@@ -4,7 +4,7 @@ function parseBooleanFlag(value: string | undefined): boolean {
   return ENABLED_VALUES.has(String(value ?? "").trim().toLowerCase());
 }
 
-export const ENABLE_NICE_PAYMENTS = parseBooleanFlag(process.env.NEXT_PUBLIC_ENABLE_NICE_PAYMENTS ?? process.env.ENABLE_NICE_PAYMENTS ?? "true");
+export const ENABLE_NICE_PAYMENTS = parseBooleanFlag(process.env.NEXT_PUBLIC_ENABLE_NICE_PAYMENTS ?? process.env.ENABLE_NICE_PAYMENTS ?? "false");
 export const ENABLE_TOSS_PAYMENTS_RAW = parseBooleanFlag(process.env.NEXT_PUBLIC_ENABLE_TOSS_PAYMENTS ?? process.env.ENABLE_TOSS_PAYMENTS ?? "false");
 
 export function isNicePaymentsEnabled(): boolean {
