@@ -109,15 +109,21 @@ rg -n "lib/shadcn-plugin|shadcn-plugin" . --glob '!node_modules/**'
 
 ### Dark
 
-- `--background`: `#1A1C1A`
-- `--card`: `#222622` (배경 대비 +1단 밝은 표면)
-- `--foreground`: `#FCFFFC`
-- `--muted-foreground`: `#B9C3B9`
+- `--background`: `#141414` (차콜 기반 다크 배경, green cast 제거)
+- `--card`: `#1F1F1F` (배경 대비 +1단 밝은 중립 표면)
+- `--foreground`: `#F5F5F5`
+- `--secondary`: `#292929`
+- `--muted`: `#2E2E2E`
+- `--muted-foreground`: `#B3B3B3`
 - `--primary`: `#C66B79` (브랜드 버건디 계열 톤 업)
 - `--primary-foreground`: `#1A1C1A`
 - `--accent`: `#B85C6C`
 - `--accent-foreground`: `#1A1C1A`
-- `--border`: `#3A433A`
+- `--border`: `#383838`
+- `--input`: `#383838`
+- `--sidebar`: `#1A1A1A`
+- `--sidebar-accent`: `#262626`
+- `--sidebar-border`: `#333333`
 
 ### 상태색(실무 최소)
 
@@ -153,6 +159,7 @@ rg -n "lib/shadcn-plugin|shadcn-plugin" . --glob '!node_modules/**'
 2. 본문은 `text-foreground`, 브랜드 버건디는 제목/강조/링크 중심으로 제한.
 3. hover/active는 토큰 기반(`primary/90` 또는 별도 `--primary-hover`)으로 정의.
 4. 일반 UI는 하드코딩 hex 금지, 브랜드 제휴 UI만 예외 허용.
+5. 다크 모드는 `primary/accent`보다 `background/card/border/input`의 **neutral surface 일관성**을 우선하고, 브랜드 색은 포인트 영역에만 사용한다.
 
 ## `text-muted-foreground` 적용 기준 (다크 모드 가독성 보호)
 
