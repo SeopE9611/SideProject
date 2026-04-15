@@ -49,6 +49,7 @@ export default function PaymentMethodDetail({
   paymentStatus,
 }: PaymentMethodDetailProps) {
   const isTossPayment = String(paymentProvider ?? "").trim().toLowerCase() === "tosspayments";
+  const isNicePayment = String(paymentProvider ?? "").trim().toLowerCase() === "nicepay";
   const bankInfo = bankKey ? bankLabelMap[bankKey] : null;
   const tossMethodLabel = getTossMethodLabel(method, easyPayProvider);
   const easyPayProviderLabel = getEasyPayProviderLabel(easyPayProvider);
@@ -63,6 +64,12 @@ export default function PaymentMethodDetail({
             <div className="font-semibold text-foreground">{tossMethodLabel}</div>
             <div className="text-sm text-muted-foreground">결제 제공사: Toss Payments</div>
             {easyPayProviderLabel && <div className="text-sm text-muted-foreground">간편결제: {easyPayProviderLabel}</div>}
+            {statusLabel && <div className="text-sm text-muted-foreground">결제 상태: {statusLabel}</div>}
+          </div>
+        ) : isNicePayment ? (
+          <div className="mt-1 rounded-md border border-border bg-muted/60 dark:bg-card px-3 py-2 text-sm text-foreground/90 leading-relaxed space-y-1">
+            <div className="font-semibold text-foreground">{method || "카드 결제"}</div>
+            <div className="text-sm text-muted-foreground">결제 제공사: NicePay</div>
             {statusLabel && <div className="text-sm text-muted-foreground">결제 상태: {statusLabel}</div>}
           </div>
         ) : bankInfo ? (
@@ -81,8 +88,8 @@ export default function PaymentMethodDetail({
             {method || "결제 정보 확인 필요"}
           </div>
         )}
-        {!isTossPayment && !bankInfo && bankKey && <div className="text-sm">{bankKey}</div>}
-        {!isTossPayment && depositor && (
+        {!isTossPayment && !isNicePayment && !bankInfo && bankKey && <div className="text-sm">{bankKey}</div>}
+        {!isTossPayment && !isNicePayment && depositor && (
           <div>
             <div className="text-sm font-medium">입금자명</div>
             <div>{depositor}</div>
