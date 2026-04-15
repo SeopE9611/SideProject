@@ -1,14 +1,25 @@
 import { ObjectId, type Db } from "mongodb";
 
-export type TossPaymentSessionStatus = "ready" | "approved" | "failed" | "confirm_succeeded_order_failed";
+export type PaymentProvider = "toss" | "nicepay";
+
+export type TossPaymentSessionStatus = "ready" | "approved" | "failed" | "confirm_succeeded_order_failed" | "approve_succeeded_order_failed";
 
 export type TossPaymentFlowType = "checkout_order" | "package_order" | "racket_order";
 
-export type TossPaymentFailureStage = "session_expired_before_confirm" | "confirm_payment" | "create_order_after_confirm";
+export type TossPaymentFailureStage =
+  | "session_expired_before_confirm"
+  | "confirm_payment"
+  | "approve_payment"
+  | "verify_auth"
+  | "create_order_after_confirm"
+  | "create_order_after_approve"
+  | "net_cancel_required";
 
 export type TossPaymentSession = {
   _id?: ObjectId;
-  tossOrderId: string;
+  provider?: PaymentProvider;
+  tossOrderId?: string;
+  niceMoid?: string;
   amount: number;
   status: TossPaymentSessionStatus;
   flowType: TossPaymentFlowType;
@@ -67,13 +78,23 @@ export type TossPaymentSession = {
     card?: { issuerCode?: string; acquirerCode?: string };
     easyPay?: { provider?: string; amount?: number };
   };
+  nicePrepared?: {
+    mid: string;
+    ediDate: string;
+    signData: string;
+    returnUrl: string;
+  };
+  niceAuthRaw?: Record<string, string>;
+  niceApprovedRaw?: Record<string, string>;
+  netCancelUrl?: string;
   createdAt: Date;
   updatedAt: Date;
   expiresAt: Date;
 };
 
 export async function ensureTossPaymentSessionIndexes(db: Db) {
-  await db.collection<TossPaymentSession>("toss_payment_sessions").createIndex({ tossOrderId: 1 }, { unique: true });
+  await db.collection<TossPaymentSession>("toss_payment_sessions").createIndex({ tossOrderId: 1 }, { unique: true, sparse: true });
+  await db.collection<TossPaymentSession>("toss_payment_sessions").createIndex({ niceMoid: 1 }, { unique: true, sparse: true });
   await db.collection<TossPaymentSession>("toss_payment_sessions").createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 }
 

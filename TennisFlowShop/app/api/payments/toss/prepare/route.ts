@@ -54,6 +54,7 @@ export async function POST(req: Request) {
     const expiresAt = new Date(now.getTime() + 1000 * 60 * 30);
 
     await col.insertOne({
+      provider: "toss",
       tossOrderId,
       amount: quote.payableTotalPrice,
       status: "ready",

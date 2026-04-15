@@ -1,7 +1,6 @@
 "use client";
 import CheckoutButton from "@/app/checkout/CheckoutButton";
-import TossCheckoutButton from "@/app/checkout/TossCheckoutButton";
-import TossPaymentWidget from "@/app/checkout/TossPaymentWidget";
+import NiceCheckoutButton from "@/app/checkout/NiceCheckoutButton";
 import CheckoutStringingRuntimeBridge from "@/app/checkout/_components/CheckoutStringingRuntimeBridge";
 import type { StringingApplicationInput } from "@/app/features/stringing-applications/api/submit-core";
 import type useCheckoutStringingServiceAdapter from "@/app/features/stringing-applications/hooks/useCheckoutStringingServiceAdapter";
@@ -28,7 +27,7 @@ import { getMyInfo } from "@/lib/auth.client";
 import { bankLabelMap } from "@/lib/constants";
 import { useBackNavigationGuard } from "@/lib/hooks/useBackNavigationGuard";
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
-import { isTossPaymentsEnabled } from "@/lib/payments/provider-flags";
+import { isNicePaymentsEnabled } from "@/lib/payments/provider-flags";
 import { calcShippingFee } from "@/lib/shipping-fee";
 import { cn } from "@/lib/utils";
 import { AlertTriangle, Building2, CheckCircle, CreditCard, Home, Loader2, Mail, MapPin, MessageSquare, Package, Phone, Shield, Truck, UserIcon } from "lucide-react";
@@ -436,11 +435,8 @@ export default function CheckoutPage() {
   }, [orderItemsKey, withStringService, serviceTargetIds]);
 
   const [selectedBank, setSelectedBank] = useState("shinhan");
-  const [paymentMethod, setPaymentMethod] = useState<"bank-transfer" | "toss-widget">("bank-transfer");
-  const tossPaymentsEnabled = isTossPaymentsEnabled();
-  const [tossWidgetReady, setTossWidgetReady] = useState(false);
-  const [tossWidgetLoadError, setTossWidgetLoadError] = useState<string | null>(null);
-  const [tossPreparedAmount, setTossPreparedAmount] = useState<number | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<"bank-transfer" | "nicepay">("bank-transfer");
+  const nicePaymentsEnabled = isNicePaymentsEnabled();
 
   // 장착 서비스 수거방식(신청서 Step1과 1:1 매핑)
   // (UI에서는 COURIER_VISIT 선택지를 숨김)
@@ -831,18 +827,14 @@ export default function CheckoutPage() {
   const isZeroPayableAmount = previewTotalPrice - previewAppliedPoints <= 0;
 
   useEffect(() => {
-    setTossPreparedAmount(null);
-  }, [paymentMethod, previewTotalPrice, previewAppliedPoints]);
-
-  useEffect(() => {
-    if (!isZeroPayableAmount || paymentMethod !== "toss-widget") return;
+    if (!isZeroPayableAmount || paymentMethod !== "nicepay") return;
     setPaymentMethod("bank-transfer");
   }, [isZeroPayableAmount, paymentMethod]);
 
   useEffect(() => {
-    if (tossPaymentsEnabled || paymentMethod !== "toss-widget") return;
+    if (nicePaymentsEnabled || paymentMethod !== "nicepay") return;
     setPaymentMethod("bank-transfer");
-  }, [tossPaymentsEnabled, paymentMethod]);
+  }, [nicePaymentsEnabled, paymentMethod]);
 
   // 비로그인 + 비회원 주문 중단 상태이면 체크아웃 UI 자체를 막고 로그인 유도 화면을 노출
   if (!loading && !user && !allowGuestCheckout) {
@@ -862,8 +854,6 @@ export default function CheckoutPage() {
     const normalizedPointsToUse = Math.floor((Number(pointsToUse) || 0) / POINT_UNIT) * POINT_UNIT;
     const appliedPoints = Math.min(normalizedPointsToUse, maxPointsToUse);
     const payableTotalPrice = totalPrice - appliedPoints;
-    const tossWidgetAmount = tossPreparedAmount ?? payableTotalPrice;
-
     const stringingApplicationInput: StringingApplicationInput | undefined = (() => {
       if (!withStringService || !checkoutStringingAdapter) return undefined;
 
@@ -1313,9 +1303,9 @@ export default function CheckoutPage() {
                         <RadioGroup
                           value={paymentMethod}
                           onValueChange={(v) => {
-                            if (!tossPaymentsEnabled && v === "toss-widget") return;
-                            if (v === "toss-widget" && isZeroPayableAmount) return;
-                            setPaymentMethod(v as "bank-transfer" | "toss-widget");
+                            if (!nicePaymentsEnabled && v === "nicepay") return;
+                            if (v === "nicepay" && isZeroPayableAmount) return;
+                            setPaymentMethod(v as "bank-transfer" | "nicepay");
                           }}
                           className="space-y-3"
                         >
@@ -1326,17 +1316,17 @@ export default function CheckoutPage() {
                             </Label>
                             <Building2 className="h-5 w-5 text-foreground" />
                           </div>
-                          {tossPaymentsEnabled && (
+                          {nicePaymentsEnabled && (
                             <div className={cn("flex items-center space-x-3 p-4 bg-background rounded-lg border-2 border-border", isZeroPayableAmount && "opacity-60")}>
-                              <RadioGroupItem value="toss-widget" id="toss-widget" disabled={isZeroPayableAmount} />
-                              <Label htmlFor="toss-widget" className={cn("flex-1 cursor-pointer font-medium", isZeroPayableAmount && "cursor-not-allowed text-muted-foreground")}>
-                                카드/간편결제 (테스트)
+                              <RadioGroupItem value="nicepay" id="nicepay" disabled={isZeroPayableAmount} />
+                              <Label htmlFor="nicepay" className={cn("flex-1 cursor-pointer font-medium", isZeroPayableAmount && "cursor-not-allowed text-muted-foreground")}>
+                                NicePG 카드결제
                               </Label>
                               <CreditCard className="h-5 w-5 text-foreground" />
                             </div>
                           )}
                         </RadioGroup>
-                        {tossPaymentsEnabled && isZeroPayableAmount && <p className="text-xs text-muted-foreground">최종 결제금액이 0원인 경우 카드/간편결제를 사용할 수 없습니다.</p>}
+                        {nicePaymentsEnabled && isZeroPayableAmount && <p className="text-xs text-muted-foreground">최종 결제금액이 0원인 경우 NicePG를 사용할 수 없습니다.</p>}
                       </div>
 
                       {paymentMethod === "bank-transfer" ? (
@@ -1413,17 +1403,9 @@ export default function CheckoutPage() {
                             </ul>
                           </div>
                         </>
-                      ) : tossPaymentsEnabled && !isZeroPayableAmount ? (
+                      ) : nicePaymentsEnabled && !isZeroPayableAmount ? (
                         <div className="space-y-3">
-                          <p className="text-sm text-muted-foreground">테스트 결제위젯입니다. 결제 승인 후 주문이 생성됩니다.</p>
-                          <TossPaymentWidget
-                            amount={tossWidgetAmount}
-                            customerKey={user ? String(user.id) : `guest_${phone.replace(/\D/g, "") || "anon"}`}
-                            onStatusChange={({ ready, loadError }) => {
-                              setTossWidgetReady(ready);
-                              setTossWidgetLoadError(loadError);
-                            }}
-                          />
+                          <p className="text-sm text-muted-foreground">Nice 인증결제창에서 인증을 마치면 서버 승인 후 주문이 생성됩니다.</p>
                         </div>
                       ) : null}
                     </div>
@@ -1654,13 +1636,13 @@ export default function CheckoutPage() {
                             <p>• {needsShippingAddress ? "입금 확인 후 배송이 시작됩니다." : "입금 확인 후 매장 수령 준비가 시작됩니다."}</p>
                             <p>• 24시간 이내 입금 부탁드립니다.</p>
                           </div>
-                        ) : (
-                          <div className="text-sm text-foreground space-y-1">
-                            <p>• 결제 승인 후 주문이 완료됩니다.</p>
-                            <p>• {needsShippingAddress ? "결제 완료 후 배송 준비가 시작됩니다." : "결제 완료 후 매장 수령 준비가 시작됩니다."}</p>
-                            <p>• 카드/간편결제는 테스트 결제 환경에서 진행됩니다.</p>
-                          </div>
-                        )}
+                      ) : (
+                        <div className="text-sm text-foreground space-y-1">
+                          <p>• 결제 승인 후 주문이 완료됩니다.</p>
+                          <p>• {needsShippingAddress ? "결제 완료 후 배송 준비가 시작됩니다." : "결제 완료 후 매장 수령 준비가 시작됩니다."}</p>
+                          <p>• NicePG 인증/승인 처리 후 주문이 생성됩니다.</p>
+                        </div>
+                      )}
                       </div>
                     </CardContent>
                     <CardFooter className="flex flex-col gap-4 p-4 bp-sm:p-6 shrink-0">
@@ -1719,13 +1701,9 @@ export default function CheckoutPage() {
                           onBeforeSuccessNavigation={() => setIsIntentionalSuccessNavigation(true)}
                           onSuccessNavigationAbort={() => setIsIntentionalSuccessNavigation(false)}
                         />
-                      ) : tossPaymentsEnabled && !isZeroPayableAmount ? (
-                        <TossCheckoutButton
+                      ) : nicePaymentsEnabled && !isZeroPayableAmount ? (
+                        <NiceCheckoutButton
                           disabled={!canSubmit}
-                          payableAmount={payableTotalPrice}
-                          widgetReady={tossWidgetReady}
-                          widgetLoadError={tossWidgetLoadError}
-                          onPreparedAmountChange={setTossPreparedAmount}
                           onBeforeSuccessNavigation={() => setIsIntentionalSuccessNavigation(true)}
                           onSuccessNavigationAbort={() => setIsIntentionalSuccessNavigation(false)}
                           payload={{
@@ -1736,12 +1714,12 @@ export default function CheckoutPage() {
                               address: address.trim(),
                               addressDetail: addressDetail.trim(),
                               postalCode: postalCode.replace(/\D/g, ""),
-                              depositor: "토스결제",
+                              depositor: "나이스결제",
                               deliveryRequest: deliveryRequest.trim(),
                               deliveryMethod,
                               withStringService,
                             },
-                            paymentInfo: { method: "토스페이먼츠" },
+                            paymentInfo: { method: "나이스페이" },
                             totalPrice,
                             shippingFee,
                             serviceFee: finalServiceFee,

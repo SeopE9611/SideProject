@@ -24,6 +24,9 @@ export async function POST(req: Request) {
     if (!session) {
       return NextResponse.json({ success: false, code: "SESSION_NOT_FOUND", error: "결제 세션을 찾을 수 없습니다." }, { status: 404 });
     }
+    if (session.provider && session.provider !== "toss") {
+      return NextResponse.json({ success: false, code: "PAYMENT_PROVIDER_MISMATCH", error: "토스 결제 세션이 아닙니다." }, { status: 400 });
+    }
 
     if (session.flowType && session.flowType !== "checkout_order") {
       return NextResponse.json({ success: false, code: "FLOW_TYPE_MISMATCH", error: "일반 체크아웃 결제 세션이 아닙니다." }, { status: 400 });
