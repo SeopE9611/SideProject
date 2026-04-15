@@ -11,11 +11,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useBackNavigationGuard } from "@/lib/hooks/useBackNavigationGuard";
+import { isTossPaymentsEnabled } from "@/lib/payments/provider-flags";
 import { useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
 import { calcShippingFee } from "@/lib/shipping-fee";
 import { showErrorToast } from "@/lib/toast";
 import { useRouter } from "next/navigation";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import RacketTossCheckoutButton from "./RacketTossCheckoutButton";
 
 type RacketView = {
@@ -95,6 +96,7 @@ export default function RacketPurchaseCheckoutClient({
   const [bank, setBank] = useState<Bank>("shinhan");
   const [paymentMethod, setPaymentMethod] =
     useState<PaymentMethod>("bank_transfer");
+  const tossPaymentsEnabled = isTossPaymentsEnabled();
   const isVisitPickup = pickupMethod === "visit";
   const needsShippingAddress = !isVisitPickup;
 
@@ -107,6 +109,11 @@ export default function RacketPurchaseCheckoutClient({
     null,
   );
   const submittingRef = useRef(false);
+
+  useEffect(() => {
+    if (tossPaymentsEnabled || paymentMethod !== "tosspayments") return;
+    setPaymentMethod("bank_transfer");
+  }, [tossPaymentsEnabled, paymentMethod]);
 
   const shippingFee = useMemo(() => {
     return calcShippingFee({
@@ -365,16 +372,18 @@ export default function RacketPurchaseCheckoutClient({
             />
             무통장입금
           </label>
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="radio"
-              name="payment-method"
-              checked={paymentMethod === "tosspayments"}
-              onChange={() => setPaymentMethod("tosspayments")}
-              disabled={!Number.isFinite(totalPrice) || totalPrice <= 0}
-            />
-            카드/간편결제 (토스)
-          </label>
+          {tossPaymentsEnabled && (
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="radio"
+                name="payment-method"
+                checked={paymentMethod === "tosspayments"}
+                onChange={() => setPaymentMethod("tosspayments")}
+                disabled={!Number.isFinite(totalPrice) || totalPrice <= 0}
+              />
+              카드/간편결제 (토스)
+            </label>
+          )}
         </div>
 
         {paymentMethod === "bank_transfer" ? (
@@ -395,7 +404,7 @@ export default function RacketPurchaseCheckoutClient({
 
             <Input className="w-full text-sm" placeholder="입금자명" value={depositor} onChange={(e) => setDepositor(e.target.value)} />
           </>
-        ) : (
+        ) : tossPaymentsEnabled ? (
           <TossPaymentWidget
             amount={totalPrice}
             customerKey={`${racket.id}:${onlyDigits(phone) || "guest"}`}
@@ -404,7 +413,7 @@ export default function RacketPurchaseCheckoutClient({
               setTossWidgetLoadError(loadError);
             }}
           />
-        )}
+        ) : null}
 
         <div className="text-sm">
           결제 금액: <span className="font-semibold">{totalPrice.toLocaleString()}원</span>
@@ -419,7 +428,7 @@ export default function RacketPurchaseCheckoutClient({
           <Button className="w-full text-sm" variant="default" disabled={!canSubmitBank || submitting} onClick={onSubmitBankTransfer}>
             {submitting ? "처리 중..." : "스트링 선택으로 이동"}
           </Button>
-        ) : (
+        ) : tossPaymentsEnabled ? (
           <RacketTossCheckoutButton
             disabled={!canSubmitBase || submitting}
             widgetReady={tossWidgetReady}
@@ -429,7 +438,7 @@ export default function RacketPurchaseCheckoutClient({
             onBeforeSuccessNavigation={() => setIsIntentionalSuccessNavigation(true)}
             onSuccessNavigationAbort={() => setIsIntentionalSuccessNavigation(false)}
           />
-        )}
+        ) : null}
 
         {racket.status !== "available" && (
           <div className="text-sm text-destructive">
