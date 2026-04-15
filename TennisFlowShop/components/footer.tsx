@@ -124,7 +124,7 @@ const Footer = () => {
             <div className="flex flex-col bp-sm:flex-row items-start bp-sm:items-center justify-between gap-2 text-xs text-muted-foreground">
               <div className="space-y-1">
                 <p>&copy; {new Date().getFullYear()} 도깨비테니스스트링. All rights reserved.</p>
-                <p>사업자등록번호: 등록예정 | 대표: 김재민 | 통신판매업신고: 등록예정</p>
+                <p>사업자등록번호: 329-39-01593 | 대표: 김재민 | 통신판매업신고: 제 A07-20260415-0049 호</p>
               </div>
             </div>
           </SiteContainer>
