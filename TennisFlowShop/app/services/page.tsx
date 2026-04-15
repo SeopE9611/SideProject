@@ -175,7 +175,7 @@ export default async function ServicesPage() {
           <div className="max-w-4xl mx-auto">
             <Card className="border-0 shadow-2xl bg-card/95 backdrop-blur-sm dark:bg-card/95 overflow-hidden">
               <div className="bg-card border-b border-primary/20 p-6 md:p-8 text-center text-foreground">
-                <h2 className="text-4xl font-bold mb-4">예약 안내</h2>
+                <h2 className="text-3xl sm:text-4xl font-bold mb-4">예약 안내</h2>
                 <p className="text-xl text-muted-foreground">
                   스트링 장착 서비스는 예약제로 운영됩니다.
                   <br />
@@ -279,7 +279,7 @@ export default async function ServicesPage() {
               <Star className="w-4 h-4 mr-2" />
               프리미엄 스트링 컬렉션
             </Badge>
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">스트링 종류 안내</h2>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 text-foreground">스트링 종류 안내</h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
               플레이 스타일과 경기력 향상을 위한 다양한 특성의 스트링을 제공합니다.
               <br />
@@ -377,7 +377,7 @@ export default async function ServicesPage() {
               <Award className="w-4 h-4 mr-2" />
               투명한 가격 정책
             </Badge>
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">가격 안내</h2>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 text-foreground">가격 안내</h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
               합리적인 가격으로 최고의 스트링 장착 서비스를 제공합니다.
               <br />
@@ -474,7 +474,7 @@ export default async function ServicesPage() {
               <Shield className="w-4 h-4 mr-2" />
               전문적인 프로세스
             </Badge>
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">스트링 장착 과정</h2>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 text-foreground">스트링 장착 과정</h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
               상호명 미정는 세심한 과정을 통해
               <br />
@@ -513,7 +513,7 @@ export default async function ServicesPage() {
       <section className="py-12 bp-md:py-16 bp-lg:py-20 bg-muted/40">
         <div className="container">
           <div className="text-center mb-10">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">고객 후기</h2>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 text-foreground">고객 후기</h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">상호명 미정 스트링 서비스를 경험한 후기를 확인해보세요</p>
           </div>
 

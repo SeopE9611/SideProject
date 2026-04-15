@@ -58,7 +58,7 @@ export default function LocationsPage() {
             <MapPin className="h-5 w-5 text-primary" />
             <span className="text-sm font-semibold text-primary">오프라인 매장 찾기</span>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">매장 위치 안내</h1>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground mb-4">매장 위치 안내</h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">가까운 매장을 찾아 편리하게 서비스를 이용하세요</p>
         </div>
 
