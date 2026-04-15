@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { ObjectId } from "mongodb";
 import clientPromise from "@/lib/mongodb";
 import { verifyAccessToken } from "@/lib/auth.utils";
+import { isTossPaymentsEnabled } from "@/lib/payments/provider-flags";
 import { calcShippingFee } from "@/lib/shipping-fee";
 import {
   buildTossOrderName,
@@ -18,6 +19,17 @@ const onlyDigits = (v: unknown) => String(v ?? "").replace(/\D/g, "");
 
 export async function POST(req: Request) {
   try {
+    if (!isTossPaymentsEnabled()) {
+      return NextResponse.json(
+        {
+          success: false,
+          code: "PAYMENT_PROVIDER_DISABLED",
+          message: "현재 해당 결제수단은 사용할 수 없습니다.",
+        },
+        { status: 503 },
+      );
+    }
+
     const body = await req.json().catch(() => ({}));
     const racketId = String(body?.racketId ?? "").trim();
 

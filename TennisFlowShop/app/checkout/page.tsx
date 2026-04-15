@@ -28,6 +28,7 @@ import { getMyInfo } from "@/lib/auth.client";
 import { bankLabelMap } from "@/lib/constants";
 import { useBackNavigationGuard } from "@/lib/hooks/useBackNavigationGuard";
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
+import { isTossPaymentsEnabled } from "@/lib/payments/provider-flags";
 import { calcShippingFee } from "@/lib/shipping-fee";
 import { cn } from "@/lib/utils";
 import { AlertTriangle, Building2, CheckCircle, CreditCard, Home, Loader2, Mail, MapPin, MessageSquare, Package, Phone, Shield, Truck, UserIcon } from "lucide-react";
@@ -436,6 +437,7 @@ export default function CheckoutPage() {
 
   const [selectedBank, setSelectedBank] = useState("shinhan");
   const [paymentMethod, setPaymentMethod] = useState<"bank-transfer" | "toss-widget">("bank-transfer");
+  const tossPaymentsEnabled = isTossPaymentsEnabled();
   const [tossWidgetReady, setTossWidgetReady] = useState(false);
   const [tossWidgetLoadError, setTossWidgetLoadError] = useState<string | null>(null);
   const [tossPreparedAmount, setTossPreparedAmount] = useState<number | null>(null);
@@ -836,6 +838,11 @@ export default function CheckoutPage() {
     if (!isZeroPayableAmount || paymentMethod !== "toss-widget") return;
     setPaymentMethod("bank-transfer");
   }, [isZeroPayableAmount, paymentMethod]);
+
+  useEffect(() => {
+    if (tossPaymentsEnabled || paymentMethod !== "toss-widget") return;
+    setPaymentMethod("bank-transfer");
+  }, [tossPaymentsEnabled, paymentMethod]);
 
   // 비로그인 + 비회원 주문 중단 상태이면 체크아웃 UI 자체를 막고 로그인 유도 화면을 노출
   if (!loading && !user && !allowGuestCheckout) {
@@ -1306,6 +1313,7 @@ export default function CheckoutPage() {
                         <RadioGroup
                           value={paymentMethod}
                           onValueChange={(v) => {
+                            if (!tossPaymentsEnabled && v === "toss-widget") return;
                             if (v === "toss-widget" && isZeroPayableAmount) return;
                             setPaymentMethod(v as "bank-transfer" | "toss-widget");
                           }}
@@ -1318,15 +1326,17 @@ export default function CheckoutPage() {
                             </Label>
                             <Building2 className="h-5 w-5 text-foreground" />
                           </div>
-                          <div className={cn("flex items-center space-x-3 p-4 bg-background rounded-lg border-2 border-border", isZeroPayableAmount && "opacity-60")}>
-                            <RadioGroupItem value="toss-widget" id="toss-widget" disabled={isZeroPayableAmount} />
-                            <Label htmlFor="toss-widget" className={cn("flex-1 cursor-pointer font-medium", isZeroPayableAmount && "cursor-not-allowed text-muted-foreground")}>
-                              카드/간편결제 (테스트)
-                            </Label>
-                            <CreditCard className="h-5 w-5 text-foreground" />
-                          </div>
+                          {tossPaymentsEnabled && (
+                            <div className={cn("flex items-center space-x-3 p-4 bg-background rounded-lg border-2 border-border", isZeroPayableAmount && "opacity-60")}>
+                              <RadioGroupItem value="toss-widget" id="toss-widget" disabled={isZeroPayableAmount} />
+                              <Label htmlFor="toss-widget" className={cn("flex-1 cursor-pointer font-medium", isZeroPayableAmount && "cursor-not-allowed text-muted-foreground")}>
+                                카드/간편결제 (테스트)
+                              </Label>
+                              <CreditCard className="h-5 w-5 text-foreground" />
+                            </div>
+                          )}
                         </RadioGroup>
-                        {isZeroPayableAmount && <p className="text-xs text-muted-foreground">최종 결제금액이 0원인 경우 카드/간편결제를 사용할 수 없습니다.</p>}
+                        {tossPaymentsEnabled && isZeroPayableAmount && <p className="text-xs text-muted-foreground">최종 결제금액이 0원인 경우 카드/간편결제를 사용할 수 없습니다.</p>}
                       </div>
 
                       {paymentMethod === "bank-transfer" ? (
@@ -1403,7 +1413,7 @@ export default function CheckoutPage() {
                             </ul>
                           </div>
                         </>
-                      ) : !isZeroPayableAmount ? (
+                      ) : tossPaymentsEnabled && !isZeroPayableAmount ? (
                         <div className="space-y-3">
                           <p className="text-sm text-muted-foreground">테스트 결제위젯입니다. 결제 승인 후 주문이 생성됩니다.</p>
                           <TossPaymentWidget
@@ -1709,7 +1719,7 @@ export default function CheckoutPage() {
                           onBeforeSuccessNavigation={() => setIsIntentionalSuccessNavigation(true)}
                           onSuccessNavigationAbort={() => setIsIntentionalSuccessNavigation(false)}
                         />
-                      ) : !isZeroPayableAmount ? (
+                      ) : tossPaymentsEnabled && !isZeroPayableAmount ? (
                         <TossCheckoutButton
                           disabled={!canSubmit}
                           payableAmount={payableTotalPrice}

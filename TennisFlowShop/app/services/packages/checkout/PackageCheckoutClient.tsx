@@ -16,6 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { useBackNavigationGuard } from "@/lib/hooks/useBackNavigationGuard";
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
+import { isTossPaymentsEnabled } from "@/lib/payments/provider-flags";
 import { Building2, Calendar, CheckCircle, CreditCard, Loader2, Mail, MessageSquare, Package, Phone, Shield, Star, UserIcon } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -156,6 +157,7 @@ export default function PackageCheckoutClient({
   // 서버 선조회가 있으면 mount 후 추가 fetch 없이 즉시 화면을 안정화할 수 있다.
   const [isPackageLoading, setIsPackageLoading] = useState(packageId ? initialPackageConfigs.length === 0 : false);
   const [paymentMethod, setPaymentMethod] = useState<"bank_transfer" | "tosspayments">("bank_transfer");
+  const tossPaymentsEnabled = isTossPaymentsEnabled();
   const [selectedBank, setSelectedBank] = useState("shinhan");
   const [name, setName] = useState(initialUser.name ?? "");
   const [phone, setPhone] = useState(initialUser.phone ?? "");
@@ -301,6 +303,11 @@ export default function PackageCheckoutClient({
   const isFrameLoading = isPackageLoading;
   const canSubmit = agreeTerms && agreePrivacy && agreeRefund && isFormValid && !ownershipBlockedMessage && !isFrameLoading;
   const tossBlockedByZeroAmount = !Number.isFinite(Number(selectedPackage?.price ?? 0)) || Number(selectedPackage?.price ?? 0) <= 0;
+
+  useEffect(() => {
+    if (tossPaymentsEnabled || paymentMethod !== "tosspayments") return;
+    setPaymentMethod("bank_transfer");
+  }, [tossPaymentsEnabled, paymentMethod]);
 
   if (!selectedPackage && !isPackageLoading) {
     return (
@@ -518,7 +525,11 @@ export default function PackageCheckoutClient({
                 <div className="space-y-6">
                   <div className="space-y-3">
                     <Label>결제 방법</Label>
-                    <RadioGroup value={paymentMethod} onValueChange={(v) => setPaymentMethod(v === "tosspayments" ? "tosspayments" : "bank_transfer")} className="space-y-3">
+                    <RadioGroup
+                      value={paymentMethod}
+                      onValueChange={(v) => setPaymentMethod(tossPaymentsEnabled && v === "tosspayments" ? "tosspayments" : "bank_transfer")}
+                      className="space-y-3"
+                    >
                       <div className="flex items-center space-x-3 p-4 bg-primary/10 dark:bg-primary/20 rounded-lg border-2 border-primary/20">
                         <RadioGroupItem value="bank_transfer" id="bank-transfer" disabled={isFrameLoading} />
                         <Label htmlFor="bank-transfer" className="flex-1 cursor-pointer font-medium">
@@ -526,13 +537,15 @@ export default function PackageCheckoutClient({
                         </Label>
                         <Building2 className="h-5 w-5 text-primary" />
                       </div>
-                      <div className="flex items-center space-x-3 p-4 bg-muted/40 rounded-lg border-2 border-border">
-                        <RadioGroupItem value="tosspayments" id="toss-payments" disabled={isFrameLoading || tossBlockedByZeroAmount} />
-                        <Label htmlFor="toss-payments" className="flex-1 cursor-pointer font-medium">
-                          카드/간편결제 (테스트)
-                        </Label>
-                        <CreditCard className="h-5 w-5 text-primary" />
-                      </div>
+                      {tossPaymentsEnabled && (
+                        <div className="flex items-center space-x-3 p-4 bg-muted/40 rounded-lg border-2 border-border">
+                          <RadioGroupItem value="tosspayments" id="toss-payments" disabled={isFrameLoading || tossBlockedByZeroAmount} />
+                          <Label htmlFor="toss-payments" className="flex-1 cursor-pointer font-medium">
+                            카드/간편결제 (테스트)
+                          </Label>
+                          <CreditCard className="h-5 w-5 text-primary" />
+                        </div>
+                      )}
                     </RadioGroup>
                   </div>
 
@@ -596,7 +609,7 @@ export default function PackageCheckoutClient({
                         </ul>
                       </div>
                     </>
-                  ) : (
+                  ) : tossPaymentsEnabled ? (
                     <div className="space-y-3">
                       <TossPaymentWidget
                         amount={Number(selectedPackage?.price ?? 0)}
@@ -607,7 +620,7 @@ export default function PackageCheckoutClient({
                         }}
                       />
                     </div>
-                  )}
+                  ) : null}
                 </div>
               </CardContent>
             </Card>
@@ -778,7 +791,7 @@ export default function PackageCheckoutClient({
                       onSuccessNavigationAbort={() => setIsIntentionalSuccessNavigation(false)}
                     />
                   )}
-                  {selectedPackage && paymentMethod === "tosspayments" && (
+                  {selectedPackage && tossPaymentsEnabled && paymentMethod === "tosspayments" && (
                     <PackageTossCheckoutButton
                       disabled={!canSubmit}
                       widgetReady={tossWidgetReady}

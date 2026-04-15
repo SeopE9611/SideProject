@@ -3,11 +3,23 @@ import { cookies } from "next/headers";
 import clientPromise from "@/lib/mongodb";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { calculateCheckoutPayableAmount } from "@/lib/payments/toss/checkout-quote";
+import { isTossPaymentsEnabled } from "@/lib/payments/provider-flags";
 import { buildTossOrderName, createTossOrderId } from "@/lib/payments/toss/server";
 import { ensureTossPaymentSessionIndexes, tossPaymentSessions } from "@/lib/payments/toss/session";
 
 export async function POST(req: Request) {
   try {
+    if (!isTossPaymentsEnabled()) {
+      return NextResponse.json(
+        {
+          success: false,
+          code: "PAYMENT_PROVIDER_DISABLED",
+          message: "현재 해당 결제수단은 사용할 수 없습니다.",
+        },
+        { status: 503 },
+      );
+    }
+
     const body = await req.json();
     const items = Array.isArray(body?.items) ? body.items : [];
     const shippingInfo = body?.shippingInfo;

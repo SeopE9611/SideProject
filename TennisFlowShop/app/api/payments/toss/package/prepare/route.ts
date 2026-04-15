@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import clientPromise from "@/lib/mongodb";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { getPackagePricingInfo } from "@/app/features/packages/api/db";
+import { isTossPaymentsEnabled } from "@/lib/payments/provider-flags";
 import { buildTossOrderName, createTossOrderId } from "@/lib/payments/toss/server";
 import { ensureTossPaymentSessionIndexes, tossPaymentSessions } from "@/lib/payments/toss/session";
 import { findBlockingPackageOrderByUserId } from "@/lib/package-order-ownership";
@@ -12,6 +13,17 @@ const onlyDigits = (v: string) => String(v ?? "").replace(/\D/g, "");
 
 export async function POST(req: Request) {
   try {
+    if (!isTossPaymentsEnabled()) {
+      return NextResponse.json(
+        {
+          success: false,
+          code: "PAYMENT_PROVIDER_DISABLED",
+          message: "현재 해당 결제수단은 사용할 수 없습니다.",
+        },
+        { status: 503 },
+      );
+    }
+
     const cookieStore = await cookies();
     const token = cookieStore.get("accessToken")?.value;
     const payload = token ? verifyAccessToken(token) : null;
