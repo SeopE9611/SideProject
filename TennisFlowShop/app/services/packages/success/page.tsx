@@ -180,7 +180,7 @@ export default async function PackageSuccessPage({
             <div className="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 backdrop-blur-sm dark:bg-primary/20">
               <CheckCircle className="h-12 w-12 text-foreground" />
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
               패키지 구매가 완료되었습니다!
             </h1>
             <p className="mb-6 text-xl text-muted-foreground">

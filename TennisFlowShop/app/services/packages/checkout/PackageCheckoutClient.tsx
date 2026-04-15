@@ -339,7 +339,7 @@ export default function PackageCheckoutClient({
               <CreditCard className="h-8 w-8" />
             </div>
             <div>
-              <h1 className="text-4xl font-bold mb-2">패키지 주문/결제</h1>
+              <h1 className="text-3xl sm:text-4xl font-bold mb-2">패키지 주문/결제</h1>
               <p className="text-muted-foreground">선택하신 패키지로 프리미엄 서비스를 시작하세요</p>
             </div>
           </div>

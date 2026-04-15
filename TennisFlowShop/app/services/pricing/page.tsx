@@ -89,7 +89,7 @@ export default async function PricingPage() {
               장착 서비스 정책
             </span>
           </div>
-          <h1 className="text-4xl font-bold mb-3">장착 비용 안내</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold mb-3">장착 비용 안내</h1>
           <p className="text-muted-foreground">
             실제 정산 정책 기준으로 요금을 안내합니다.
           </p>
