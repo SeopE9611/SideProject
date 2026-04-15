@@ -853,10 +853,10 @@ const Header = () => {
                 {/* 로고 마크: 가로형 비율 + 라이트/다크 자동 교체 */}
                 <div className="relative h-8 w-16 shrink-0 overflow-hidden">
                   {/* 라이트 모드 */}
-                  <Image src="/tennisflowmark-light.png" alt="" aria-hidden="true" fill className="object-contain dark:hidden" priority />
+                  <Image src="/DokkaebiTennisString.png" alt="" aria-hidden="true" fill className="object-contain dark:hidden" priority />
 
                   {/* 다크 모드 */}
-                  <Image src="/tennisflowmark-dark.png" alt="" aria-hidden="true" fill className="hidden object-contain dark:block" priority />
+                  <Image src="/DokkaebiTennisString.png" alt="" aria-hidden="true" fill className="hidden object-contain dark:block" priority />
                 </div>
 
                 {/* 텍스트 로고 */}

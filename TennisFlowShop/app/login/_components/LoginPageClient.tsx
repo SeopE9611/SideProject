@@ -254,8 +254,8 @@ export default function LoginPageClient() {
             <div className="relative text-center">
               <div className="mx-auto mb-4 flex justify-center">
                 <div className="relative h-12 w-24 shrink-0 overflow-hidden">
-                  <Image src="/tennisflowmark-light.png" alt="" aria-hidden="true" fill className="object-contain dark:hidden" priority />
-                  <Image src="/tennisflowmark-dark.png" alt="" aria-hidden="true" fill className="hidden object-contain dark:block" priority />
+                  <Image src="/DokkaebiTennisString.png" alt="" aria-hidden="true" fill className="object-contain dark:hidden" priority />
+                  <Image src="/DokkaebiTennisString.png" alt="" aria-hidden="true" fill className="hidden object-contain dark:block" priority />
                 </div>
               </div>
 
