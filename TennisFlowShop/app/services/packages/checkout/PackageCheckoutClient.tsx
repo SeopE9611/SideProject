@@ -478,7 +478,8 @@ export default function PackageCheckoutClient({
               </div>
               <CardContent className="p-4 md:p-6 space-y-4">
                 <div className="rounded-lg border border-primary/20 bg-primary/10 dark:bg-primary/20 p-4 space-y-2 text-sm text-foreground">
-                  <p>• 입금 확인 후 관리자가 패키지를 활성화해드려요.</p>
+                  <p>• 무통장 입금 시 관리자가 확인 후 패키지를 활성화해드려요.</p>
+                  <p>• 카드/간편결제시 자동으로 패키지 활성화돼요.</p>
                   <p>• 활성화 완료 후부터 패키지를 사용할 수 있어요.</p>
                   <p>• 교체 서비스 신청이 완료되면 이용 횟수가 1회 차감돼요.</p>
                   <p>• 패키지가 비활성화된 동안에는 서비스를 이용할 수 없어요.</p>
