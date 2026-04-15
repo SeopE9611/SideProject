@@ -393,7 +393,9 @@ export default async function PackageSuccessPage({
                   </span>
                 </div>
                 <p className="text-sm text-muted-foreground mt-2">
-                  패키지 이용료 (입금 확인 후 활성화)
+                  {isTossPayment
+                    ? "패키지 이용료 (결제 완료, 즉시 활성화)"
+                    : "패키지 이용료 (입금 확인 후 활성화)"}
                 </p>
               </div>
             </CardContent>
