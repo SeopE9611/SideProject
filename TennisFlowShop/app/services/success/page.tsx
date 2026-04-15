@@ -286,7 +286,7 @@ export default async function StringServiceSuccessPage(props: Props) {
             <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-card/20 backdrop-blur-sm mb-6 md:mb-8">
               <CheckCircle className="h-12 w-12 text-primary" />
             </div>
-            <h1 className="text-4xl md:text-6xl font-bold mb-4 md:mb-6 text-foreground">신청이 완료되었습니다!</h1>
+            <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold mb-4 md:mb-6 text-foreground">신청이 완료되었습니다!</h1>
             <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">상호명 미정에서 확인 후 빠르게 연락드리겠습니다</p>
             <div className="mt-6 md:mt-8 inline-flex items-center space-x-2 bg-card/10 backdrop-blur-sm rounded-full px-6 py-3">
               <Calendar className="h-5 w-5" />
