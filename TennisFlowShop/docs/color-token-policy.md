@@ -86,7 +86,7 @@ rg -n "lib/shadcn-plugin|shadcn-plugin" . --glob '!node_modules/**'
 - 실제 import/require 경로는 없었고, `eslint.config.mjs`의 ignore 항목과 본 문서의 과거 설명에만 등장했습니다.
 - 더 이상 런타임/빌드 경로에서 사용되지 않아 `lib/shadcn-plugin.js` 파일을 제거했습니다.
 
-## 최소 토큰 세트(3색 유지)
+## 최소 토큰 세트(브랜드 + 웜 뉴트럴)
 
 고정 팔레트:
 
@@ -95,17 +95,31 @@ rg -n "lib/shadcn-plugin|shadcn-plugin" . --glob '!node_modules/**'
 - Brand Burgundy: `#8B1025`
 - Accent Burgundy: `#7A1021`
 
-### Light
+### Light (아이보리/스톤/웜 뉴트럴 기반)
 
-- `--background`: `#FCFFFC` (페이지 배경)
-- `--card`: `#FFFFFF` (카드/패널)
-- `--foreground`: `#1A1C1A` (본문/제목)
-- `--muted-foreground`: `#4A544A` (보조 텍스트)
+- `--background`: `#FCFAF8` (페이지 배경, 따뜻한 아이보리)
+- `--foreground`: `#26211F` (본문/제목 기본 텍스트)
+- `--surface-foreground`: `#26211F` (surface 위 기본 텍스트)
+- `--card`: `#F8F5F2` (카드/패널)
+- `--card-foreground`: `#26211F`
+- `--popover`: `#F8F5F2`
+- `--popover-foreground`: `#26211F`
+- `--secondary`: `#EFE7E3` (보조 배경 tint)
+- `--secondary-foreground`: `#322C2A`
+- `--muted`: `#F3ECE8` (중립 강조 배경)
+- `--muted-foreground`: `#746965` (보조 텍스트)
+- `--border`: `#DDD4CF` (웜 뉴트럴 경계선)
+- `--input`: `#DDD4CF` (입력 경계선)
 - `--primary`: `#8B1025` (주요 버튼/브랜드 인터랙션)
 - `--primary-foreground`: `#FCFFFC`
 - `--accent`: `#7A1021` (포인트/강조)
 - `--accent-foreground`: `#FCFFFC`
-- `--border`: `#D7E3D7`
+- `--overlay`: `#161312` (라이트 모달 오버레이의 green cast 제거)
+- `--sidebar`: `#FCFAF8`
+- `--sidebar-foreground`: `#26211F`
+- `--sidebar-border`: `#DDD4CF`
+- `--sidebar-accent`: `#F6E9EC` (선택/hover용 매우 연한 버건디 tint)
+- `--sidebar-accent-foreground`: `#79162A` (선택 텍스트/아이콘 강조)
 
 ### Dark
 
@@ -131,6 +145,15 @@ rg -n "lib/shadcn-plugin|shadcn-plugin" . --glob '!node_modules/**'
 - `--warning`: `#D97706`
 - `--destructive`: `#DC2626`
 - `--ring`: `#8B1025` (Light) / `#C66B79` (Dark)
+
+### 차트 팔레트 원칙 (Light)
+
+- `--chart-1`, `--chart-2`: 브랜드 버건디 축 유지 (메인 시리즈)
+- `--chart-3`: `#BC808D` (dusty rose)
+- `--chart-4`: `#9B7F74` (warm taupe / brown-gray)
+- `--chart-5`: `#886474` (muted plum / slate-wine)
+- 차트 보조색은 버건디 단일 반복이 아니라 **웜/로즈/플럼 축**으로 확장해 구분성을 확보한다.
+- `chart-3~5`에 green/mint/teal 인상이 재유입되면 회귀로 간주한다.
 
 상태색 허용 위치(필수 준수):
 
@@ -160,6 +183,7 @@ rg -n "lib/shadcn-plugin|shadcn-plugin" . --glob '!node_modules/**'
 3. hover/active는 토큰 기반(`primary/90` 또는 별도 `--primary-hover`)으로 정의.
 4. 일반 UI는 하드코딩 hex 금지, 브랜드 제휴 UI만 예외 허용.
 5. 다크 모드는 `primary/accent`보다 `background/card/border/input`의 **neutral surface 일관성**을 우선하고, 브랜드 색은 포인트 영역에만 사용한다.
+6. 라이트 사이드바 선택 상태는 **진한 버건디 블록**이 아니라 `--sidebar-accent`의 연한 tint 배경 + `--sidebar-accent-foreground` 텍스트 대비로 표현한다.
 
 ## `text-muted-foreground` 적용 기준 (다크 모드 가독성 보호)
 
