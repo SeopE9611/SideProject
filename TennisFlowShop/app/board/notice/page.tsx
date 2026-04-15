@@ -3,19 +3,19 @@ import type { Metadata } from "next";
 import NoticeListClient from "./_components/NoticeListClient";
 
 export const metadata: Metadata = {
-  title: "공지사항 | 상호명 미정",
-  description: "상호명 미정의 운영 공지, 이벤트, 서비스 업데이트 소식을 확인하는 게시판입니다.",
+  title: "공지사항 | 도깨비테니스스트링",
+  description: "도깨비테니스스트링의 운영 공지, 이벤트, 서비스 업데이트 소식을 확인하는 게시판입니다.",
   alternates: { canonical: "/board/notice" },
   openGraph: {
-    title: "공지사항 | 상호명 미정",
-    description: "상호명 미정의 운영 공지, 이벤트, 서비스 업데이트 소식을 확인하는 게시판입니다.",
+    title: "공지사항 | 도깨비테니스스트링",
+    description: "도깨비테니스스트링의 운영 공지, 이벤트, 서비스 업데이트 소식을 확인하는 게시판입니다.",
     url: "/board/notice",
     type: "website",
   },
   twitter: {
     card: "summary",
-    title: "공지사항 | 상호명 미정",
-    description: "상호명 미정의 운영 공지, 이벤트, 서비스 업데이트 소식을 확인하는 게시판입니다.",
+    title: "공지사항 | 도깨비테니스스트링",
+    description: "도깨비테니스스트링의 운영 공지, 이벤트, 서비스 업데이트 소식을 확인하는 게시판입니다.",
   },
 };
 

@@ -2,7 +2,7 @@ import { ApplicationCtx, EventType, UserCtx } from "@/app/features/notifications
 
 /* ========= Theme ========= */
 const THEME = {
-  brand: "상호명 미정",
+  brand: "도깨비테니스스트링",
   surface: "#FCFFFC",
   text: "#1A1C1A",
   sub: "#4A544A",
@@ -71,7 +71,7 @@ function buildICS(app: ApplicationCtx): string | undefined {
     "METHOD:PUBLISH",
     "BEGIN:VEVENT",
     `UID:${uid}`,
-    "SUMMARY:상호명 미정 스트링 교체 예약",
+    "SUMMARY:도깨비테니스스트링 스트링 교체 예약",
     dtstart,
     dtend,
     `DESCRIPTION:참조코드 ${shortCode(app.applicationId)}`,
@@ -89,7 +89,7 @@ function pickPhone(app: ApplicationCtx) {
 
 // SMS 공통 포맷
 function makeSms(prefix: string, ctx: { name?: string; when?: string; id: string; baseUrl: string }) {
-  const lines = [`[상호명 미정] ${prefix}`, `${ctx.name ?? ""}님`, `일정: ${ctx.when ?? "미정"}`, `신청번호: ${ctx.id}`, `상세 보기: ${ctx.baseUrl}/mypage?tab=orders&flowType=application&flowId=${ctx.id}&from=orders`];
+  const lines = [`[도깨비테니스스트링] ${prefix}`, `${ctx.name ?? ""}님`, `일정: ${ctx.when ?? "미정"}`, `신청번호: ${ctx.id}`, `상세 보기: ${ctx.baseUrl}/mypage?tab=orders&flowType=application&flowId=${ctx.id}&from=orders`];
   return lines.filter(Boolean).join("\n");
 }
 

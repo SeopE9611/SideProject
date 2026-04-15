@@ -74,12 +74,12 @@ export async function POST(req: Request) {
 
     await sendEmail({
       to: email,
-      subject: "[상호명 미정] 비밀번호 재설정 안내",
+      subject: "[도깨비테니스스트링] 비밀번호 재설정 안내",
       html: `
         <div style="max-width:560px;margin:0 auto;padding:24px;font-family:Arial,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;line-height:1.6;color:black;">
           <h2 style="margin:0 0 16px;">비밀번호 재설정</h2>
           <p style="margin:0 0 12px;">
-            안녕하세요. 상호명 미정 계정의 비밀번호 재설정 요청이 접수되었습니다.
+            안녕하세요. 도깨비테니스스트링 계정의 비밀번호 재설정 요청이 접수되었습니다.
           </p>
           <p style="margin:0 0 20px;">
             아래 버튼을 눌러 새 비밀번호를 설정해주세요.

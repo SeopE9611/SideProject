@@ -11,7 +11,7 @@ const IMPERSONATION_PREFIX = ["admin", "administrator", "superadmin", "official"
 
 const IMPERSONATION_EXPLICIT_CONTAINS = ["고객센터", "문의센터", "지원팀", "보안팀", "운영팀", "관리자팀", "supportteam", "시스템봇", "운영봇", "관리자봇"];
 
-const BRAND_EXACT = new Set(["tennisflow", "tennis flow", "tennisflowshop", "테니스플로우", "상호명 미정", "테니스플로우샵", "tennisflowofficial", "공식테니스플로우"]);
+const BRAND_EXACT = new Set(["tennisflow", "tennis flow", "tennisflowshop", "테니스플로우", "도깨비테니스스트링", "테니스플로우샵", "tennisflowofficial", "공식테니스플로우"]);
 
 const SYSTEM_ROUTE_EXACT = new Set([
   "api",

@@ -1,7 +1,7 @@
 "use client";
 
-import { UserSidebar } from "@/app/mypage/orders/_components/UserSidebar";
 import OrdersScopeTabs, { resolveOrdersScopeContext } from "@/app/mypage/_components/OrdersScopeTabs";
+import { UserSidebar } from "@/app/mypage/orders/_components/UserSidebar";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -210,7 +210,7 @@ export default function MypageClient({ user }: Props) {
               </div>
               <div className="flex-1 min-w-0">
                 <h1 className="text-2xl bp-sm:text-3xl bp-lg:text-5xl font-black mb-1 text-foreground truncate">안녕하세요, {user.name}님!</h1>
-                <p className="text-sm bp-sm:text-base bp-lg:text-xl text-foreground">상호명 미정의 회원이 되어주셔서 감사합니다</p>
+                <p className="text-sm bp-sm:text-base bp-lg:text-xl text-foreground">도깨비테니스스트링의 회원이 되어주셔서 감사합니다</p>
               </div>
             </div>
 
@@ -369,9 +369,7 @@ export default function MypageClient({ user }: Props) {
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="p-3 bp-sm:p-6">
-                    {currentTab === "wishlist" ? <Wishlist /> : null}
-                  </CardContent>
+                  <CardContent className="p-3 bp-sm:p-6">{currentTab === "wishlist" ? <Wishlist /> : null}</CardContent>
                 </Card>
               </TabsContent>
 
@@ -389,9 +387,7 @@ export default function MypageClient({ user }: Props) {
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="p-3 bp-sm:p-6">
-                    {currentTab === "reviews" ? <ReviewList /> : null}
-                  </CardContent>
+                  <CardContent className="p-3 bp-sm:p-6">{currentTab === "reviews" ? <ReviewList /> : null}</CardContent>
                 </Card>
               </TabsContent>
 
@@ -409,9 +405,7 @@ export default function MypageClient({ user }: Props) {
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="p-3 bp-sm:p-6">
-                    {currentTab === "qna" ? <QnAList /> : null}
-                  </CardContent>
+                  <CardContent className="p-3 bp-sm:p-6">{currentTab === "qna" ? <QnAList /> : null}</CardContent>
                 </Card>
               </TabsContent>
 
@@ -429,9 +423,7 @@ export default function MypageClient({ user }: Props) {
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="p-3 bp-sm:p-6">
-                    {currentTab === "passes" ? <PassList /> : null}
-                  </CardContent>
+                  <CardContent className="p-3 bp-sm:p-6">{currentTab === "passes" ? <PassList /> : null}</CardContent>
                 </Card>
               </TabsContent>
 
@@ -449,9 +441,7 @@ export default function MypageClient({ user }: Props) {
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="p-3 bp-sm:p-6">
-                    {currentTab === "points" ? <MyPointsTab /> : null}
-                  </CardContent>
+                  <CardContent className="p-3 bp-sm:p-6">{currentTab === "points" ? <MyPointsTab /> : null}</CardContent>
                 </Card>
               </TabsContent>
             </Tabs>

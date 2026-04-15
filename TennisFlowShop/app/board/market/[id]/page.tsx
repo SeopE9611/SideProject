@@ -6,7 +6,7 @@ type Props = {
 };
 
 export const metadata = {
-  title: "중고 거래 글 상세 | 상호명 미정",
+  title: "중고 거래 글 상세 | 도깨비테니스스트링",
   // description: '자유 게시판에 작성된 글 상세 내용입니다.',
 };
 

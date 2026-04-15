@@ -28,7 +28,7 @@ export async function GET(req: Request) {
   }
 
   const url = new URL(req.url);
-  const textRaw = url.searchParams.get("text") || "[상호명 미정] SMS 테스트";
+  const textRaw = url.searchParams.get("text") || "[도깨비테니스스트링] SMS 테스트";
   // 과도한 길이 방지(예상치 못한 비용/오류 방지)
   const text = textRaw.slice(0, 500);
 

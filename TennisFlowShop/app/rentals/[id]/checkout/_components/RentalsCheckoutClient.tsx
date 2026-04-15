@@ -720,7 +720,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                   <div className="flex items-center space-x-3 p-4 bg-muted rounded-lg border border-border">
                     <RadioGroupItem value="방문수령" id="rentals-delivery-visit" />
                     <Label htmlFor="rentals-delivery-visit" className="flex-1 cursor-pointer font-medium">
-                      오프라인 매장 방문 (상호명 미정 샵에서 직접 수령)
+                      오프라인 매장 방문 (도깨비테니스스트링 샵에서 직접 수령)
                       <div className="text-xs text-muted-foreground mt-1">스트링 교체를 함께 신청하면 방문 접수 기준으로 처리됩니다.</div>
                     </Label>
                     <Building2 className="h-5 w-5 text-primary" />
@@ -1165,7 +1165,14 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                     disabled={loading}
                     className={cn("w-full h-12 bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300", loading && "opacity-50 cursor-not-allowed")}
                   >
-                    {loading ? <span className="inline-flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" />주문을 처리하고 있어요…</span> : "결제하기"}
+                    {loading ? (
+                      <span className="inline-flex items-center gap-2">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        주문을 처리하고 있어요…
+                      </span>
+                    ) : (
+                      "결제하기"
+                    )}
                   </Button>
                 </CardFooter>
                 {loading && (
@@ -1183,7 +1190,6 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
           </div>
         </div>
       </SiteContainer>
-
     </div>
   );
 

@@ -253,7 +253,7 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
               </div>
               <div>
                 <h1 className="text-2xl sm:text-3xl md:text-[2rem] font-bold tracking-tight text-foreground">고객센터 · 공지사항</h1>
-                <p className="text-sm sm:text-base text-muted-foreground">상호명 미정 고객센터의 주요 안내와 공지사항을 확인하실 수 있습니다.</p>
+                <p className="text-sm sm:text-base text-muted-foreground">도깨비테니스스트링 고객센터의 주요 안내와 공지사항을 확인하실 수 있습니다.</p>
               </div>
             </div>
           </div>

@@ -44,7 +44,7 @@ export async function GET(req: Request) {
 
     await sendEmail({
       to,
-      subject: "[테스트] 상호명 미정 SendGrid 파이프라인 확인",
+      subject: "[테스트] 도깨비테니스스트링 SendGrid 파이프라인 확인",
       html: `<p>이 메일이 도착했다면 SMTP 연결 OK<br/>MAIL_FROM=${process.env.MAIL_FROM}</p>`,
     });
 

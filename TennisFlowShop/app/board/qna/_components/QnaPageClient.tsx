@@ -366,7 +366,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialLoadE
               </div>
               <div>
                 <h1 className="text-2xl sm:text-3xl md:text-[2rem] font-bold tracking-tight text-foreground">고객센터 · Q&amp;A</h1>
-                <p className="text-sm sm:text-base text-muted-foreground">상호명 미정 고객센터에서 궁금한 점을 문의하고, 답변을 받아보실 수 있습니다.</p>
+                <p className="text-sm sm:text-base text-muted-foreground">도깨비테니스스트링 고객센터에서 궁금한 점을 문의하고, 답변을 받아보실 수 있습니다.</p>
               </div>
             </div>
           </div>
@@ -436,9 +436,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialLoadE
             <CardTitle className="flex flex-wrap items-center gap-x-3 gap-y-2">
               <div className="flex min-w-0 items-center gap-2 sm:gap-3">
                 <MessageSquare className="h-5 w-5 text-success" />
-                <span className="text-lg sm:text-xl md:text-2xl font-semibold leading-tight break-keep">
-                  Q&amp;A 목록
-                </span>
+                <span className="text-lg sm:text-xl md:text-2xl font-semibold leading-tight break-keep">Q&amp;A 목록</span>
                 {(isBusy || isValidating) && <div className="h-4 w-4 border-2 border-border border-t-foreground rounded-full animate-spin" />}
               </div>
 

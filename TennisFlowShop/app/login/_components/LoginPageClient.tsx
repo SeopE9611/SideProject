@@ -259,8 +259,8 @@ export default function LoginPageClient() {
                 </div>
               </div>
 
-              <h1 className="text-2xl bp-sm:text-3xl font-black">상호명 미정</h1>
-              <p className="text-foreground mt-2 font-medium">Name Pending</p>
+              <h1 className="text-2xl bp-sm:text-3xl font-black">도깨비테니스스트링</h1>
+              <p className="text-foreground mt-2 font-medium">Powered by Tennis Flow</p>
             </div>
           </div>
 

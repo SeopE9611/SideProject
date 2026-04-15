@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 
 export const metadata: Metadata = {
-  title: "운송장 입력 | 상호명 미정",
+  title: "운송장 입력 | 도깨비테니스스트링",
   description: "자가발송 신청을 위한 운송장 정보를 입력합니다.",
 };
 

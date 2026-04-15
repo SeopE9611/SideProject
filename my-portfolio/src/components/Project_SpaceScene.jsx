@@ -139,7 +139,7 @@ const SpaceScene = () => {
         githubLink: "https://github.com/FRONTENDBOOTCAMP-11th/againSpring_shop/tree/main",
       },
       {
-        title: "상호명 미정",
+        title: "도깨비테니스스트링",
         description_sub: "프로젝트 기간 : 진행중~ing",
         description: "테니스 라켓 / 스트링 교체,판매 및 아카데미 관리 목적으로 제작한 사이트입니다.",
         image: "/ddokaebi-tennis_light.png",

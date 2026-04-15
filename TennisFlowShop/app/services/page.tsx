@@ -476,7 +476,7 @@ export default async function ServicesPage() {
             </Badge>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 text-foreground">스트링 장착 과정</h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-              상호명 미정는 세심한 과정을 통해
+              도깨비테니스스트링는 세심한 과정을 통해
               <br />
               최고 품질의 스트링 장착 서비스를 제공합니다.
             </p>
@@ -514,7 +514,7 @@ export default async function ServicesPage() {
         <div className="container">
           <div className="text-center mb-10">
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 text-foreground">고객 후기</h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">상호명 미정 스트링 서비스를 경험한 후기를 확인해보세요</p>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">도깨비테니스스트링 스트링 서비스를 경험한 후기를 확인해보세요</p>
           </div>
 
           {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">

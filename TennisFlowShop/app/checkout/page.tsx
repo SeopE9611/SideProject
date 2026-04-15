@@ -1085,7 +1085,7 @@ export default function CheckoutPage() {
                       <div className="flex items-center space-x-3 p-4 bg-muted rounded-lg border border-border">
                         <RadioGroupItem value="방문수령" id="방문수령" />
                         <Label htmlFor="방문수령" className="flex-1 cursor-pointer font-medium">
-                          오프라인 매장 방문 (상호명 미정 샵에서 직접 수령)
+                          오프라인 매장 방문 (도깨비테니스스트링 샵에서 직접 수령)
                         </Label>
                         <Building2 className="h-5 w-5 text-primary" />
                       </div>
