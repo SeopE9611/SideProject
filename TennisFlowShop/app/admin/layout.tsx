@@ -9,7 +9,7 @@ import { headers } from "next/headers";
 import type { ReactNode } from "react";
 
 export const metadata = {
-  title: "관리자 페이지 - 도깨비테니스스트링",
+  title: "관리자 페이지 - 도깨비테니스",
 };
 
 function canBypassAdminGuard(requestHeaders: Headers): boolean {

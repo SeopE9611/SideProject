@@ -431,8 +431,8 @@ const Header = () => {
         >
           {/* 상단 로고/검색 */}
           <div className="shrink-0 border-b border-border bg-muted/30 px-4 pt-5 pb-3 bp-sm:px-5 bp-sm:pt-6 bp-sm:pb-4">
-            <Link href="/" className="flex flex-col group" aria-label="도깨비테니스스트링 홈" onClick={() => setOpen(false)}>
-              <div className="font-bold text-lg text-foreground whitespace-nowrap">도깨비테니스스트링</div>
+            <Link href="/" className="flex flex-col group" aria-label="도깨비테니스 홈" onClick={() => setOpen(false)}>
+              <div className="font-bold text-lg text-foreground whitespace-nowrap">도깨비테니스</div>
               <div className="text-xs tracking-wider text-muted-foreground font-medium">Powered by Tennis Flow</div>
             </Link>
             <div className="mt-4">
@@ -447,7 +447,7 @@ const Header = () => {
                 <AccordionTrigger value="strings" className="py-3 px-3 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 hover:no-underline transition-all group">
                   <span className="inline-flex items-center gap-2.5 text-base font-bold">
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
-                      <Grid2X2 className="h-4 w-4" />
+                      {/* <Grid2X2 className="h-4 w-4" /> */}
                     </div>
                     <span className="text-foreground">스트링</span>
                   </span>
@@ -530,7 +530,7 @@ const Header = () => {
                 <AccordionTrigger value="boards" className="py-3 px-3 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 hover:no-underline transition-all group">
                   <span className="inline-flex items-center gap-2.5 text-base font-bold">
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
-                      <MessageSquareText className="h-4 w-4" />
+                      {/* <MessageSquareText className="h-4 w-4" /> */}
                     </div>
                     <span className="text-foreground">게시판</span>
                   </span>
@@ -558,7 +558,7 @@ const Header = () => {
                 <AccordionTrigger value="packages" className="py-3 px-3 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 hover:no-underline transition-all group">
                   <span className="inline-flex items-center gap-2.5 text-base font-bold">
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
-                      <Gift className="h-4 w-4" />
+                      {/* <Gift className="h-4 w-4" /> */}
                     </div>
                     <span className="text-foreground">패키지</span>
                   </span>
@@ -586,7 +586,7 @@ const Header = () => {
                 <AccordionTrigger value="rackets" className="py-3 px-3 rounded-lg hover:no-underline transition-all group">
                   <span className="inline-flex items-center gap-2.5 text-base font-bold">
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
-                      <MdSportsTennis className="h-4 w-4" />
+                      {/* <MdSportsTennis className="h-4 w-4" /> */}
                     </div>
                     <span className="text-foreground">중고 라켓</span>
                   </span>
@@ -630,7 +630,7 @@ const Header = () => {
                 <AccordionTrigger value="support" className="py-3 px-3 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 hover:no-underline transition-all group">
                   <span className="inline-flex items-center gap-2.5 text-base font-bold">
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
-                      <MessageSquare className="h-4 w-4" />
+                      {/* <MessageSquare className="h-4 w-4" /> */}
                     </div>
                     <span className="text-foreground">고객센터</span>
                   </span>
@@ -834,8 +834,8 @@ const Header = () => {
                 </Button>
               </SheetTrigger>
 
-              <Link href="/" className="flex flex-col items-center group" aria-label="도깨비테니스스트링 홈" onClick={() => setOpen(false)}>
-                <div className="font-black text-[15px] tracking-tight text-foreground group-hover:text-foreground transition-colors">도깨비테니스스트링</div>
+              <Link href="/" className="flex flex-col items-center group" aria-label="도깨비테니스 홈" onClick={() => setOpen(false)}>
+                <div className="font-black text-[15px] tracking-tight text-foreground group-hover:text-foreground transition-colors">도깨비테니스</div>
                 <div className="text-[10px] tracking-wider text-muted-foreground font-medium whitespace-nowrap">Powered by Tennis Flow</div>
               </Link>
 
@@ -849,7 +849,7 @@ const Header = () => {
               </div>
             </div>
             <div className="hidden bp-lg:flex items-center w-full min-w-0 gap-1 bp-lg:gap-2">
-              <Link href="/" className="flex items-center gap-2 shrink-0 group" aria-label="도깨비테니스스트링 홈">
+              <Link href="/" className="flex items-center gap-2 shrink-0 group" aria-label="도깨비테니스 홈">
                 {/* 로고 마크: 가로형 비율 + 라이트/다크 자동 교체 */}
                 <div className="relative h-8 w-16 shrink-0 overflow-hidden">
                   {/* 라이트 모드 */}
@@ -861,7 +861,7 @@ const Header = () => {
 
                 {/* 텍스트 로고 */}
                 <div className="flex flex-col leading-none">
-                  <div className="font-black text-lg bp-lg:text-xl tracking-tight text-foreground group-hover:text-foreground transition-colors">도깨비테니스스트링</div>
+                  <div className="font-black text-lg bp-lg:text-xl tracking-tight text-foreground group-hover:text-foreground transition-colors">도깨비테니스</div>
                   <div className="mt-1 text-xs tracking-wider text-muted-foreground font-medium whitespace-nowrap">Powered by Tennis Flow</div>
                 </div>
               </Link>

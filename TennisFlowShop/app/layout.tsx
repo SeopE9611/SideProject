@@ -34,7 +34,7 @@ declare global {
 }
 
 export const metadata: Metadata = {
-  title: "도깨비테니스스트링",
+  title: "도깨비테니스",
   description: "테니스 스트링 및 장비 전문 쇼핑몰",
 };
 

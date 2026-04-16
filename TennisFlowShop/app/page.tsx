@@ -639,7 +639,7 @@ export default function Home() {
         <SiteContainer>
           <div className="mb-6 bp-sm:mb-8 text-center">
             <h2 className="text-2xl bp-sm:text-3xl font-bold text-foreground">중고 라켓</h2>
-            <p className="mt-1.5 bp-sm:mt-2 text-xs bp-sm:text-sm text-muted-foreground">도깨비테니스스트링에서 관리하는 라켓을 활용해보세요</p>
+            <p className="mt-1.5 bp-sm:mt-2 text-xs bp-sm:text-sm text-muted-foreground">도깨비테니스에서 관리하는 라켓을 활용해보세요</p>
           </div>
           <div className="mb-6 bp-sm:mb-8">
             <div className="flex justify-center">
@@ -664,7 +664,7 @@ export default function Home() {
           </div>
           <HorizontalProducts
             title="중고 라켓"
-            subtitle={activeBrand === "all" ? "도깨비테니스스트링 중고" : `${racketBrandLabel(activeBrand)} 중고`}
+            subtitle={activeBrand === "all" ? "도깨비테니스 중고" : `${racketBrandLabel(activeBrand)} 중고`}
             items={usedRacketsItems}
             moreHref={activeBrand === "all" ? "/rackets" : `/rackets?brand=${activeBrand}`}
             firstPageSlots={4}

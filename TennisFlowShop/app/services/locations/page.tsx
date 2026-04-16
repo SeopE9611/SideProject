@@ -8,7 +8,7 @@ import Link from "next/link";
 export default function LocationsPage() {
   const locations = [
     {
-      name: "도깨비테니스스트링",
+      name: "도깨비테니스",
       address: "서울 동작구 노량진로 22 B1",
       phone: "0507-1392-3493",
       email: "info@tennis-flow.com",

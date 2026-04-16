@@ -259,7 +259,7 @@ export default function LoginPageClient() {
                 </div>
               </div>
 
-              <h1 className="text-2xl bp-sm:text-3xl font-black">도깨비테니스스트링</h1>
+              <h1 className="text-2xl bp-sm:text-3xl font-black">도깨비테니스</h1>
               <p className="text-foreground mt-2 font-medium">Powered by Tennis Flow</p>
             </div>
           </div>

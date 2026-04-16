@@ -720,7 +720,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                   <div className="flex items-center space-x-3 p-4 bg-muted rounded-lg border border-border">
                     <RadioGroupItem value="방문수령" id="rentals-delivery-visit" />
                     <Label htmlFor="rentals-delivery-visit" className="flex-1 cursor-pointer font-medium">
-                      오프라인 매장 방문 (도깨비테니스스트링 샵에서 직접 수령)
+                      오프라인 매장 방문 (도깨비테니스 샵에서 직접 수령)
                       <div className="text-xs text-muted-foreground mt-1">스트링 교체를 함께 신청하면 방문 접수 기준으로 처리됩니다.</div>
                     </Label>
                     <Building2 className="h-5 w-5 text-primary" />

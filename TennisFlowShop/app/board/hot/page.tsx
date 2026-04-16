@@ -4,7 +4,7 @@ import { Flame } from "lucide-react";
 import Link from "next/link";
 
 export const metadata = {
-  title: "인기글 모아보기 (준비중) | 도깨비테니스스트링",
+  title: "인기글 모아보기 (준비중) | 도깨비테니스",
   description: "조회수/댓글/공감 수 기준 인기 게시글을 모아서 보여주는 페이지입니다. 현재 준비 중입니다.",
   alternates: { canonical: "/board/hot" },
 };

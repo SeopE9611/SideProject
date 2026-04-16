@@ -23,7 +23,7 @@ const Projects = ({ darkMode }) => {
       githubLink: "https://github.com/FRONTENDBOOTCAMP-11th/againSpring_shop/tree/main",
     },
     {
-      title: "도깨비테니스스트링 (진행중)",
+      title: "도깨비테니스 (진행중)",
       description_sub: "프로젝트 기간 : ~ing",
       description: "테니스 라켓 / 스트링 교체,판매 및 아카데미 관리 목적으로 제작한 사이트입니다.",
       image: {

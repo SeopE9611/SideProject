@@ -280,9 +280,7 @@ export default function CheckoutPage() {
 
     async function loadMountingFees() {
       const allItemIds = Array.from(new Set(orderItems.map((it) => String(it.id))));
-      const serviceTargetIds = new Set(
-        orderItems.filter(isServiceFeeTarget).map((it) => String(it.id)),
-      );
+      const serviceTargetIds = new Set(orderItems.filter(isServiceFeeTarget).map((it) => String(it.id)));
 
       if (allItemIds.length === 0) {
         setMountingFeeLoading(false);
@@ -310,14 +308,7 @@ export default function CheckoutPage() {
       );
 
       if (cancelled) return;
-      setMountingFeeByProductId(
-        Object.fromEntries(
-          entries.map(([id, fee]) => [
-            id,
-            serviceTargetIds.has(id) ? fee.mountingFee : 0,
-          ]),
-        ),
-      );
+      setMountingFeeByProductId(Object.fromEntries(entries.map(([id, fee]) => [id, serviceTargetIds.has(id) ? fee.mountingFee : 0])));
       setShippingFeeByProductId(Object.fromEntries(entries.map(([id, fee]) => [id, fee.shippingFee])));
       setMountingFeeLoading(false);
     }
@@ -334,14 +325,16 @@ export default function CheckoutPage() {
   const [deliveryMethod, setDeliveryMethod] = useState<"택배수령" | "방문수령">("택배수령");
 
   // 배송비
-  const shippingFee = useMemo(() =>
-    calcOrderShippingFeeFromItems({
-      items: orderItems.map((item) => ({
-        shippingFee: shippingFeeByProductId[String(item.id)],
-      })),
-      isVisitPickup: deliveryMethod === "방문수령",
-    }),
-  [orderItems, shippingFeeByProductId, deliveryMethod]);
+  const shippingFee = useMemo(
+    () =>
+      calcOrderShippingFeeFromItems({
+        items: orderItems.map((item) => ({
+          shippingFee: shippingFeeByProductId[String(item.id)],
+        })),
+        isVisitPickup: deliveryMethod === "방문수령",
+      }),
+    [orderItems, shippingFeeByProductId, deliveryMethod],
+  );
 
   // 교체 서비스 공임(serviceFee) 계산
   // let serviceFee = 0;
@@ -1092,7 +1085,7 @@ export default function CheckoutPage() {
                       <div className="flex items-center space-x-3 p-4 bg-muted rounded-lg border border-border">
                         <RadioGroupItem value="방문수령" id="방문수령" />
                         <Label htmlFor="방문수령" className="flex-1 cursor-pointer font-medium">
-                          오프라인 매장 방문 (도깨비테니스스트링 샵에서 직접 수령)
+                          오프라인 매장 방문 (도깨비테니스 샵에서 직접 수령)
                         </Label>
                         <Building2 className="h-5 w-5 text-primary" />
                       </div>
@@ -1646,13 +1639,13 @@ export default function CheckoutPage() {
                             <p>• {needsShippingAddress ? "입금 확인 후 배송이 시작됩니다." : "입금 확인 후 매장 수령 준비가 시작됩니다."}</p>
                             <p>• 24시간 이내 입금 부탁드립니다.</p>
                           </div>
-                      ) : (
-                        <div className="text-sm text-foreground space-y-1">
-                          <p>• 결제 승인 후 주문이 완료됩니다.</p>
-                          <p>• {needsShippingAddress ? "결제 완료 후 배송 준비가 시작됩니다." : "결제 완료 후 매장 수령 준비가 시작됩니다."}</p>
-                          <p>• NicePG 인증/승인 처리 후 주문이 생성됩니다.</p>
-                        </div>
-                      )}
+                        ) : (
+                          <div className="text-sm text-foreground space-y-1">
+                            <p>• 결제 승인 후 주문이 완료됩니다.</p>
+                            <p>• {needsShippingAddress ? "결제 완료 후 배송 준비가 시작됩니다." : "결제 완료 후 매장 수령 준비가 시작됩니다."}</p>
+                            <p>• NicePG 인증/승인 처리 후 주문이 생성됩니다.</p>
+                          </div>
+                        )}
                       </div>
                     </CardContent>
                     <CardFooter className="flex flex-col gap-4 p-4 bp-sm:p-6 shrink-0">
