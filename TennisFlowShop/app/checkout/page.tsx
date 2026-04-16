@@ -973,7 +973,7 @@ export default function CheckoutPage() {
  </div>
  <div className="flex items-center gap-2 text-sm">
  <Star className="h-4 w-4 text-foreground" />
- <span>30,000원 이상 무료배송</span>
+ <span>상품별 배송비 정책 적용</span>
  </div>
  </div> */}
           </SiteContainer>
@@ -1519,7 +1519,7 @@ export default function CheckoutPage() {
                         <div className="flex justify-between items-center">
                           <span className="text-muted-foreground">배송비</span>
                           <span className="font-semibold text-foreground">
-                            <span className="ml-2 text-xs font-normal text-muted-foreground">(30,000원 이상 구매 시 무료배송) </span>
+                            <span className="ml-2 text-xs font-normal text-muted-foreground">상품에 따라 배송비가 다를 수 있습니다.</span>
                             {!isShippingFeeReady ? (
                               <span className="inline-flex align-middle ml-2">
                                 <Skeleton className="h-6 w-20 rounded-md" />

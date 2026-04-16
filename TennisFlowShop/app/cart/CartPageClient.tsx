@@ -536,7 +536,7 @@ export default function CartPageClient() {
               </div>
               <div className="flex items-center gap-2">
                 <Star className="h-4 w-4 text-warning" />
-                <span>30,000원 이상 무료배송</span>
+                <span>상품별 배송비 정책이 적용됩니다.</span>
               </div>
             </div>
           )}
@@ -978,16 +978,13 @@ export default function CartPageClient() {
                     <div className="bg-muted dark:bg-background p-4 rounded-xl border border-border">
                       <div className="flex items-center gap-2 text-primary mb-2">
                         <Star className="h-4 w-4" />
-                        <span className="font-semibold">배송 혜택</span>
+                        <span className="font-semibold">배송 안내</span>
                       </div>
                       <p className="text-sm text-primary">
-                        30,000원 이상 구매 시 무료배송
-                        {subtotal < 30000 && (
-                          <span className="block mt-1 font-semibold">
-                            {(30000 - subtotal).toLocaleString()}원 더 구매하면
-                            무료배송!
-                          </span>
-                        )}
+                        상품에 따라 배송비가 다를 수 있습니다.
+                        <span className="block mt-1">
+                          무료배송 상품은 배송비가 0원으로 표시됩니다.
+                        </span>
                       </p>
                     </div>
                   </CardContent>
