@@ -13,7 +13,7 @@ import {
 import { useBackNavigationGuard } from "@/lib/hooks/useBackNavigationGuard";
 import { isTossPaymentsEnabled } from "@/lib/payments/provider-flags";
 import { useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
-import { calcShippingFee } from "@/lib/shipping-fee";
+import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { showErrorToast } from "@/lib/toast";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -24,6 +24,7 @@ type RacketView = {
   brand: string;
   model: string;
   price: number;
+  shippingFee?: number;
   images: string[];
   status: "available" | "sold" | "rented" | "inactive";
 };
@@ -116,11 +117,9 @@ export default function RacketPurchaseCheckoutClient({
   }, [tossPaymentsEnabled, paymentMethod]);
 
   const shippingFee = useMemo(() => {
-    return calcShippingFee({
-      subtotal: racket.price,
-      isVisitPickup: pickupMethod === "visit",
-    });
-  }, [pickupMethod, racket.price]);
+    if (pickupMethod === "visit") return 0;
+    return normalizeItemShippingFee(racket.shippingFee);
+  }, [pickupMethod, racket.shippingFee]);
   const totalPrice = useMemo(
     () => racket.price + shippingFee,
     [racket.price, shippingFee],

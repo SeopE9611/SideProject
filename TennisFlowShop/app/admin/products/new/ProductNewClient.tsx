@@ -73,6 +73,7 @@ export default function NewStringPage() {
     length: "",
     price: 0,
     mountingFee: 0,
+    shippingFee: 3000,
   });
 
   // 성능 및 특성 정보
@@ -589,7 +590,7 @@ export default function NewStringPage() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4 p-6">
-                    <div className="grid gap-4 md:grid-cols-2">
+                    <div className="grid gap-4 md:grid-cols-3">
                       <div className="space-y-2">
                         <Label htmlFor="string-name">
                           스트링명 <span className="text-destructive">*</span>
@@ -1039,6 +1040,38 @@ export default function NewStringPage() {
                             원
                           </span>
                         </div>
+                      </div>
+
+
+
+                      {/* 배송비 */}
+                      <div className="space-y-2">
+                        <Label htmlFor="string-shipping-fee">배송비</Label>
+                        <div className="flex">
+                          <Input
+                            id="string-shipping-fee"
+                            type="number"
+                            min={0}
+                            step={1000}
+                            placeholder="3000"
+                            value={basicInfo.shippingFee}
+                            onChange={(e) => {
+                              const numeric = Number(e.target.value);
+                              if (!isNaN(numeric)) {
+                                setBasicInfo({
+                                  ...basicInfo,
+                                  shippingFee: Math.max(0, numeric),
+                                });
+                              }
+                            }}
+                          />
+                          <span className="ml-2 flex items-center text-sm">
+                            원
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          0 입력 시 무료배송
+                        </p>
                       </div>
 
                       {/* 가격 */}

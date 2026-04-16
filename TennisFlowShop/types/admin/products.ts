@@ -48,6 +48,7 @@ export type ProductDetail = {
   length: string;
   price: number;
   mountingFee: number;
+  shippingFee: number;
   searchKeywords?: string[];
   specifications?: {
     hybrid?: {
@@ -91,6 +92,7 @@ export interface AdminProductsListRequestDto {
 export interface AdminProductCreateRequestDto {
   name: string;
   price: number;
+  shippingFee: number;
   raw: Record<string, unknown>;
 }
 
@@ -123,6 +125,7 @@ export interface AdminProductUpdateRequestDto {
   length: string;
   mountingFee: number;
   price: number;
+  shippingFee: number;
   features: Record<string, unknown>;
   tags: Record<string, unknown>;
   specifications: Record<string, unknown>;

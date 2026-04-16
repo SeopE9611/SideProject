@@ -1,5 +1,5 @@
 import { ObjectId, type Db } from "mongodb";
-import { calcShippingFee } from "@/lib/shipping-fee";
+import { calcOrderShippingFeeFromItems, normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { applyPackageToServiceFee, resolvePackageUsage, resolveRequiredPassCountFromInput } from "@/app/features/stringing-applications/lib/package-pricing";
 import { findOneActivePassForUser } from "@/lib/passes.service";
 import type { StringingApplicationInput } from "@/app/features/stringing-applications/api/submit-core";
@@ -26,6 +26,7 @@ export async function calculateCheckoutPayableAmount(params: {
           quantity,
           kind: "product" as const,
           mountingFee: Number.isFinite(Number((prod as any)?.mountingFee)) ? Number((prod as any).mountingFee) : 0,
+          shippingFee: normalizeItemShippingFee((prod as any)?.shippingFee),
         };
       }
       const racket = await db.collection("used_rackets").findOne({ _id: new ObjectId(it.productId) });
@@ -34,6 +35,7 @@ export async function calculateCheckoutPayableAmount(params: {
         price: Number(racket?.price ?? 0),
         quantity,
         kind: "racket" as const,
+        shippingFee: normalizeItemShippingFee((racket as any)?.shippingFee),
       };
     }),
   );
@@ -78,8 +80,8 @@ export async function calculateCheckoutPayableAmount(params: {
 
   const computedServiceFee = shippingInfo?.withStringService ? applyPackageToServiceFee(baseServiceFee, packageUsage) : 0;
 
-  const computedShippingFee = calcShippingFee({
-    subtotal: computedSubtotal,
+  const computedShippingFee = calcOrderShippingFeeFromItems({
+    items: itemsWithSnapshot,
     isVisitPickup: shippingInfo?.deliveryMethod === "방문수령",
   });
 

@@ -1,10 +1,12 @@
 import { getDb } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 import { NextResponse } from "next/server";
+import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 
 type MiniBatchRow = {
   id: string;
   mountingFee: number;
+  shippingFee: number;
 };
 
 export async function POST(req: Request) {
@@ -36,23 +38,24 @@ export async function POST(req: Request) {
           .collection("products")
           .find(
             { _id: { $in: validObjectIds } },
-            { projection: { _id: 1, mountingFee: 1 } },
+            { projection: { _id: 1, mountingFee: 1, shippingFee: 1 } },
           )
           .toArray()
       : [];
 
-  const feeById = new Map<string, number>();
+  const feeById = new Map<string, { mountingFee: number; shippingFee: number }>();
   products.forEach((product) => {
-    const raw = Number((product as { mountingFee?: number }).mountingFee ?? 0);
-    feeById.set(
-      String(product._id),
-      Number.isFinite(raw) && raw > 0 ? raw : 0,
-    );
+    const rawMounting = Number((product as { mountingFee?: number }).mountingFee ?? 0);
+    feeById.set(String(product._id), {
+      mountingFee: Number.isFinite(rawMounting) && rawMounting > 0 ? rawMounting : 0,
+      shippingFee: normalizeItemShippingFee((product as { shippingFee?: unknown }).shippingFee),
+    });
   });
 
   const items: MiniBatchRow[] = uniqueIds.map((id) => ({
     id,
-    mountingFee: feeById.get(id) ?? 0,
+    mountingFee: feeById.get(id)?.mountingFee ?? 0,
+    shippingFee: feeById.get(id)?.shippingFee ?? 3000,
   }));
 
   return NextResponse.json(

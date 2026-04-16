@@ -6,6 +6,7 @@ import {
   normalizeAndValidateGripSize,
   normalizeAndValidateStringPattern,
 } from "@/lib/constants";
+import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 
@@ -26,7 +27,12 @@ export async function GET(
     .collection("used_rackets")
     .findOne({ _id: new ObjectId(id) });
   if (!doc) return NextResponse.json({ message: "Not Found" }, { status: 404 });
-  return NextResponse.json({ ...doc, id: doc._id.toString(), _id: undefined });
+  return NextResponse.json({
+    ...doc,
+    shippingFee: normalizeItemShippingFee((doc as Record<string, unknown>).shippingFee),
+    id: doc._id.toString(),
+    _id: undefined,
+  });
 }
 
 // PATCH - 수정
@@ -85,6 +91,7 @@ export async function PATCH(
     },
     condition: body.condition ?? "B",
     price: Number(body.price ?? 0),
+    shippingFee: normalizeItemShippingFee(body.shippingFee),
     images: Array.isArray(body.images) ? body.images : [],
     status: body.status ?? "available",
     searchKeywords: Array.isArray(body.searchKeywords)
