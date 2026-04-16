@@ -20,6 +20,7 @@ export type UsedRacket = {
   };
   condition: RacketCondition; // 상태등급
   price: number; // 중고 판매가
+  shippingFee: number; // 상품별 배송비
   images: string[]; // Supabase 등 업로드 URL
   status: "available" | "sold" | "rented" | "inactive";
   quantity?: number;

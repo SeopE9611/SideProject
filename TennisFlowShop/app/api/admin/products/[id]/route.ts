@@ -2,6 +2,7 @@ import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 import { getHangulInitials } from "@/lib/hangul-utils";
 import { getDb } from "@/lib/mongodb";
+import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 import type {
   AdminProductMutationResponseDto,
   AdminProductUpdateRequestDto,
@@ -44,6 +45,7 @@ function parseUpdateRequest(raw: unknown): AdminProductUpdateRequestDto | null {
     length: asString(body.length),
     mountingFee: asNumber(body.mountingFee),
     price: asNumber(body.price),
+    shippingFee: normalizeItemShippingFee(body.shippingFee),
     features: asRecord(body.features) ?? {},
     tags: asRecord(body.tags) ?? {},
     specifications: asRecord(body.specifications) ?? {},
@@ -94,6 +96,7 @@ export async function GET(
     return NextResponse.json({
       product: {
         ...prod,
+        shippingFee: normalizeItemShippingFee((prod as Record<string, unknown>).shippingFee),
         _id: prod._id.toString(),
       },
     });

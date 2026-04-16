@@ -42,7 +42,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
-import { calcShippingFee } from "@/lib/shipping-fee";
+import { calcOrderShippingFeeFromItems, normalizeItemShippingFee } from "@/lib/shipping-fee";
 import HeroCourtBackdrop from "@/components/system/HeroCourtBackdrop";
 
 // 통화 포맷 유틸 (일관성)
@@ -101,6 +101,9 @@ export default function CartPageClient() {
   const [mountingFeeByProductId, setMountingFeeByProductId] = useState<
     Record<string, number>
   >({});
+  const [shippingFeeByProductId, setShippingFeeByProductId] = useState<
+    Record<string, number>
+  >({});
 
   useEffect(() => {
     let cancelled = false;
@@ -121,7 +124,13 @@ export default function CartPageClient() {
     () => cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
     [cartItems],
   );
-  const shippingFee = calcShippingFee({ subtotal });
+  const shippingFee = useMemo(() =>
+    calcOrderShippingFeeFromItems({
+      items: cartItems
+        .filter((it) => (it.kind ?? "product") === "product")
+        .map((it) => ({ shippingFee: shippingFeeByProductId[String(it.id)] })),
+    }),
+  [cartItems, shippingFeeByProductId]);
   const total = subtotal + shippingFee;
 
   const productIds = useMemo(
@@ -146,7 +155,10 @@ export default function CartPageClient() {
 
     const load = async () => {
       if (productIds.length === 0) {
-        if (!cancelled) setMountingFeeByProductId({});
+        if (!cancelled) {
+          setMountingFeeByProductId({});
+          setShippingFeeByProductId({});
+        }
         return;
       }
 
@@ -162,22 +174,36 @@ export default function CartPageClient() {
 
         const json = await res.json();
         const rows = Array.isArray(json?.items) ? json.items : [];
-        const mountingFeeMap = new Map<string, number>(
-          rows.map((entry: { id?: string; mountingFee?: number }) => [
+        const miniMap = new Map<string, { mountingFee: number; shippingFee: number }>(
+          rows.map((entry: { id?: string; mountingFee?: number; shippingFee?: unknown }) => [
             String(entry?.id ?? ""),
-            Number(entry?.mountingFee ?? 0),
+            {
+              mountingFee: Number(entry?.mountingFee ?? 0),
+              shippingFee: normalizeItemShippingFee(entry?.shippingFee),
+            },
           ]),
         );
         const pairs = productIds.map((id) => {
-          const mf = Number(mountingFeeMap.get(id) ?? 0);
+          const mf = Number(miniMap.get(id)?.mountingFee ?? 0);
           return [id, Number.isFinite(mf) && mf > 0 ? mf : 0] as const;
         });
 
-        if (!cancelled) setMountingFeeByProductId(Object.fromEntries(pairs));
+        const shippingPairs = productIds.map((id) => [
+          id,
+          normalizeItemShippingFee(miniMap.get(id)?.shippingFee),
+        ] as const);
+
+        if (!cancelled) {
+          setMountingFeeByProductId(Object.fromEntries(pairs));
+          setShippingFeeByProductId(Object.fromEntries(shippingPairs));
+        }
       } catch {
         if (!cancelled) {
           setMountingFeeByProductId(
             Object.fromEntries(productIds.map((id) => [id, 0] as const)),
+          );
+          setShippingFeeByProductId(
+            Object.fromEntries(productIds.map((id) => [id, 3000] as const)),
           );
         }
       }

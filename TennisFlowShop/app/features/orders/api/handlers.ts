@@ -18,7 +18,7 @@ import {
 import { deductPoints } from "@/lib/points.service";
 import { getShippingBadge } from "@/lib/badge-style";
 import { z } from "zod";
-import { calcShippingFee } from "@/lib/shipping-fee";
+import { calcOrderShippingFeeFromItems, normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { findOneActivePassForUser } from "@/lib/passes.service";
 import { normalizeEmailForSearch } from "@/lib/search-email";
 
@@ -577,6 +577,9 @@ export async function createOrder(req: Request): Promise<Response> {
                 mountingFee: Number.isFinite(Number((prod as any)?.mountingFee))
                   ? Number((prod as any).mountingFee)
                   : 0,
+                shippingFee: normalizeItemShippingFee(
+                  (prod as any)?.shippingFee,
+                ),
 
                 imageUrl: prod?.images?.[0],
                 quantity,
@@ -599,6 +602,9 @@ export async function createOrder(req: Request): Promise<Response> {
               imageUrl: (racket as any)?.images?.[0] ?? null,
               quantity,
               kind: "racket" as const,
+              shippingFee: normalizeItemShippingFee(
+                (racket as any)?.shippingFee,
+              ),
             };
           }),
         );
@@ -701,8 +707,8 @@ export async function createOrder(req: Request): Promise<Response> {
           ? applyPackageToServiceFee(baseServiceFee, packageUsage)
           : 0;
 
-        const computedShippingFee = calcShippingFee({
-          subtotal: computedSubtotal,
+        const computedShippingFee = calcOrderShippingFeeFromItems({
+          items: itemsWithSnapshot,
           isVisitPickup: shippingInfo?.deliveryMethod === "방문수령",
         });
 

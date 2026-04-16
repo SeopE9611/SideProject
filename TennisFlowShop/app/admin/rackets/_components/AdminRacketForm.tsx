@@ -64,6 +64,7 @@ export type RacketForm = {
   model: string;
   year: number | null;
   price: number;
+  shippingFee: number;
   condition: "A" | "B" | "C";
   status: "available" | "rented" | "sold" | "inactive";
   spec: {
@@ -141,6 +142,7 @@ export default function AdminRacketForm({
     model: initial?.model ?? "",
     year: initial?.year ?? null,
     price: initial?.price ?? 0,
+    shippingFee: initial?.shippingFee ?? 3000,
     quantity: initial?.quantity ?? 1,
     condition: toCondition(initial?.condition),
     status: toStatus(initial?.status),
@@ -254,6 +256,10 @@ export default function AdminRacketForm({
       showErrorToast(`가격은 ${PRICE_MIN}원 이상 입력하세요.`);
       return;
     }
+    if (!nonNegative(form.shippingFee)) {
+      showErrorToast("배송비는 0 이상 숫자만 입력하세요.");
+      return;
+    }
     if (!isFiniteNumber(form.quantity) || Number(form.quantity) < 1) {
       showErrorToast("보유 수량은 1 이상이어야 합니다.");
       return;
@@ -323,6 +329,7 @@ export default function AdminRacketForm({
         model: modelTrim,
         year: form.year != null ? Number(form.year) : null,
         price: Number(form.price || 0),
+        shippingFee: Math.max(0, Number(form.shippingFee || 0)),
         quantity: Math.max(1, Number(form.quantity || 1)),
         spec: {
           weight: form.spec.weight != null ? Number(form.spec.weight) : null,
@@ -489,6 +496,24 @@ export default function AdminRacketForm({
                       setForm({ ...form, price: Number(e.target.value || 0) })
                     }
                   />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="shippingFee">배송비 (원)</Label>
+                  <Input
+                    id="shippingFee"
+                    type="number"
+                    min={0}
+                    step={1}
+                    placeholder="예: 3000"
+                    value={form.shippingFee}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        shippingFee: Math.max(0, Number(e.target.value || 0)),
+                      })
+                    }
+                  />
+                  <p className="text-xs text-muted-foreground">0 입력 시 무료배송</p>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="quantity">보유 수량</Label>

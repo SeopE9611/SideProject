@@ -3,6 +3,7 @@ import { Filter, Sort, Document } from "mongodb";
 import { getDb } from "@/lib/mongodb";
 import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
+import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 import type {
   AdminProductsListRequestDto,
   AdminProductsListResponseDto,
@@ -91,9 +92,10 @@ function parseCreateRequest(raw: unknown): AdminProductCreateRequestDto | null {
 
   const name = typeof body.name === "string" ? body.name.trim() : "";
   const price = Number(body.price);
+  const shippingFee = normalizeItemShippingFee(body.shippingFee);
 
   if (!name || !Number.isFinite(price)) return null;
-  return { name, price, raw: body };
+  return { name, price, shippingFee, raw: body };
 }
 
 function toProductListItem(doc: ProductDoc): AdminProductListItemDto {
@@ -304,6 +306,7 @@ export async function POST(req: NextRequest) {
         ...requestDto.raw,
         name: requestDto.name,
         price: requestDto.price,
+        shippingFee: requestDto.shippingFee,
       });
 
     return NextResponse.json(

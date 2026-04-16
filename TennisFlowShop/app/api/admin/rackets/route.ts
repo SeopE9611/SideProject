@@ -5,6 +5,7 @@ import {
   normalizeAndValidateGripSize,
   normalizeAndValidateStringPattern,
 } from "@/lib/constants";
+import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 
@@ -140,6 +141,7 @@ export async function POST(req: Request) {
     },
     condition: body.condition ?? "B", // A/B/C
     price: Number(body.price ?? 0),
+    shippingFee: normalizeItemShippingFee(body.shippingFee),
     images: Array.isArray(body.images) ? body.images : [],
     status: body.status ?? "available", // available | rented | sold | inactive
     rental: {
