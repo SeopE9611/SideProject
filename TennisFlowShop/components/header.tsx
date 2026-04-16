@@ -446,9 +446,9 @@ const Header = () => {
               <AccordionItem value="strings" className="border-none">
                 <AccordionTrigger value="strings" className="py-3 px-3 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 hover:no-underline transition-all group">
                   <span className="inline-flex items-center gap-2.5 text-base font-bold">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
-                      {/* <Grid2X2 className="h-4 w-4" /> */}
-                    </div>
+                    {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
+                      <Grid2X2 className="h-4 w-4" />
+                    </div> */}
                     <span className="text-foreground">스트링</span>
                   </span>
                 </AccordionTrigger>
@@ -529,9 +529,9 @@ const Header = () => {
               <AccordionItem value="boards" className="border-none">
                 <AccordionTrigger value="boards" className="py-3 px-3 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 hover:no-underline transition-all group">
                   <span className="inline-flex items-center gap-2.5 text-base font-bold">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
-                      {/* <MessageSquareText className="h-4 w-4" /> */}
-                    </div>
+                    {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
+                      <MessageSquareText className="h-4 w-4" />
+                    </div> */}
                     <span className="text-foreground">게시판</span>
                   </span>
                 </AccordionTrigger>
@@ -557,9 +557,9 @@ const Header = () => {
               <AccordionItem value="packages" className="border-none">
                 <AccordionTrigger value="packages" className="py-3 px-3 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 hover:no-underline transition-all group">
                   <span className="inline-flex items-center gap-2.5 text-base font-bold">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
-                      {/* <Gift className="h-4 w-4" /> */}
-                    </div>
+                    {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
+                      <Gift className="h-4 w-4" />
+                    </div> */}
                     <span className="text-foreground">패키지</span>
                   </span>
                 </AccordionTrigger>
@@ -585,9 +585,9 @@ const Header = () => {
               <AccordionItem value="rackets" className="border-none">
                 <AccordionTrigger value="rackets" className="py-3 px-3 rounded-lg hover:no-underline transition-all group">
                   <span className="inline-flex items-center gap-2.5 text-base font-bold">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
-                      {/* <MdSportsTennis className="h-4 w-4" /> */}
-                    </div>
+                    {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
+                      <MdSportsTennis className="h-4 w-4" />
+                    </div> */}
                     <span className="text-foreground">중고 라켓</span>
                   </span>
                 </AccordionTrigger>
@@ -629,9 +629,9 @@ const Header = () => {
               <AccordionItem value="support" className="border-none">
                 <AccordionTrigger value="support" className="py-3 px-3 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 hover:no-underline transition-all group">
                   <span className="inline-flex items-center gap-2.5 text-base font-bold">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
-                      {/* <MessageSquare className="h-4 w-4" /> */}
-                    </div>
+                    {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
+                      <MessageSquare className="h-4 w-4" />
+                    </div> */}
                     <span className="text-foreground">고객센터</span>
                   </span>
                 </AccordionTrigger>
