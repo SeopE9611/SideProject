@@ -5,6 +5,9 @@ import { createOrder } from "@/app/features/orders/api/handlers";
 import { ensureTossPaymentSessionIndexes, tossPaymentSessions } from "@/lib/payments/toss/session";
 import { approveNicePaymentByTid } from "@/lib/payments/nice/server";
 
+export const runtime = "nodejs";
+export const preferredRegion = ["icn1", "hnd1"];
+
 function pick(raw: Record<string, string>, ...keys: string[]) {
   for (const key of keys) {
     const value = raw[key];
@@ -195,6 +198,12 @@ async function handleNiceReturn(req: Request) {
           httpStatus: error?.httpStatus ?? null,
           resultCode: error?.resultCode ?? null,
           resultMsg: error?.resultMsg ?? error?.message ?? null,
+        });
+        console.error("[nicepay][approve][failed:raw]", {
+          name: error?.name ?? null,
+          message: error?.message ?? null,
+          code: error?.code ?? null,
+          cause: error?.cause ?? null,
         });
         await col.updateOne(
           { _id: session._id },

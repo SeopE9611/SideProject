@@ -7,6 +7,9 @@ import { isNicePaymentsEnabled } from "@/lib/payments/provider-flags";
 import { buildNiceOrderName, createNiceOrderId } from "@/lib/payments/nice/server";
 import { ensureTossPaymentSessionIndexes, tossPaymentSessions } from "@/lib/payments/toss/session";
 
+export const runtime = "nodejs";
+export const preferredRegion = ["icn1", "hnd1"];
+
 function resolveClientId() {
   return String(process.env.NICEPAY_CLIENT_KEY ?? process.env.NICEPAY_CLIENT_ID ?? "").trim();
 }
