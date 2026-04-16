@@ -1052,7 +1052,7 @@ export default function NewStringPage() {
                             id="string-shipping-fee"
                             type="number"
                             min={0}
-                            step={1000}
+                            step={1}
                             placeholder="3000"
                             value={basicInfo.shippingFee}
                             onChange={(e) => {

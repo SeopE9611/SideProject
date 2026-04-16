@@ -26,6 +26,7 @@ export async function GET(
     images: 1,
     mountingFee: 1,
     price: 1,
+    shippingFee: 1,
 
     // used_rackets
     brand: 1,
