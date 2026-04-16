@@ -1,51 +1,22 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
-import {
-  ArrowLeft,
-  MapPin,
-  Calendar,
-  CreditCard,
-  ShoppingBag,
-  CheckCircle,
-  Package,
-  User,
-  Phone,
-  Truck,
-  Clock,
-  Shield,
-  Store,
-} from "lucide-react";
-import Link from "next/link";
-import { bankLabelMap } from "@/lib/constants";
-import {
-  getOrderStatusLabelForDisplay,
-  isVisitPickupOrder,
-} from "@/lib/order-shipping";
-import {
-  getCommonApplicationStatusLabel,
-  getCommonOrderStatusLabel,
-} from "@/lib/status-labels/base";
-import Image from "next/image";
-import LoginGate from "@/components/system/LoginGate";
-import { badgeToneVariant, getOrderStatusTone } from "@/lib/badge-style";
-import {
-  getOrderShippingReadLabels,
-  normalizeOrderShippingMethod,
-} from "@/app/features/stringing-applications/lib/fulfillment-labels";
+import { getOrderShippingReadLabels, normalizeOrderShippingMethod } from "@/app/features/stringing-applications/lib/fulfillment-labels";
 import { hasCompletedStringingApplication } from "@/app/order-lookup/_lib/stringing-status";
+import LoginGate from "@/components/system/LoginGate";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { badgeToneVariant, getOrderStatusTone } from "@/lib/badge-style";
+import { bankLabelMap } from "@/lib/constants";
+import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from "@/lib/order-shipping";
+import { getCommonApplicationStatusLabel, getCommonOrderStatusLabel } from "@/lib/status-labels/base";
+import { ArrowLeft, Calendar, CheckCircle, Clock, CreditCard, MapPin, Package, Phone, Shield, ShoppingBag, Store, Truck, User } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 // 주문 상세 타입 정의
 interface OrderDetail {
@@ -115,19 +86,11 @@ type TrackingResponse =
     }
   | {
       success: false;
-      errorCode?:
-        | "NOT_FOUND"
-        | "BAD_REQUEST"
-        | "UNAUTHENTICATED"
-        | "FORBIDDEN"
-        | "INTERNAL"
-        | "UNKNOWN";
+      errorCode?: "NOT_FOUND" | "BAD_REQUEST" | "UNAUTHENTICATED" | "FORBIDDEN" | "INTERNAL" | "UNKNOWN";
       message: string;
     };
 
-const getTrackingFailureMessage = (
-  tracking: Extract<TrackingResponse, { success: false }>,
-) => {
+const getTrackingFailureMessage = (tracking: Extract<TrackingResponse, { success: false }>) => {
   if (tracking.errorCode === "UNAUTHENTICATED" || tracking.errorCode === "FORBIDDEN") {
     return "배송조회 서비스 설정을 확인해주세요.";
   }
@@ -151,11 +114,7 @@ const getStatusIcon = (status: string, isVisitPickup: boolean) => {
     case "배송완료":
       return <CheckCircle className="w-5 h-5" />;
     case "배송중":
-      return isVisitPickup ? (
-        <Store className="w-5 h-5" />
-      ) : (
-        <Truck className="w-5 h-5" />
-      );
+      return isVisitPickup ? <Store className="w-5 h-5" /> : <Truck className="w-5 h-5" />;
     case "배송준비중":
       return <Clock className="w-5 h-5" />;
     default:
@@ -200,9 +159,7 @@ export default function OrderDetailPage() {
   const [order, setOrder] = useState<OrderDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [trackingInfo, setTrackingInfo] = useState<TrackingResponse | null>(
-    null,
-  );
+  const [trackingInfo, setTrackingInfo] = useState<TrackingResponse | null>(null);
   const [trackingError, setTrackingError] = useState<string | null>(null);
   const [trackingLoading, setTrackingLoading] = useState(false);
 
@@ -225,9 +182,7 @@ export default function OrderDetailPage() {
         }
       } catch (err) {
         console.error("주문 상세 정보 조회 중 오류 발생:", err);
-        setError(
-          "주문 정보를 불러오는 중 오류가 발생했습니다. 다시 시도해주세요.",
-        );
+        setError("주문 정보를 불러오는 중 오류가 발생했습니다. 다시 시도해주세요.");
       } finally {
         setLoading(false);
       }
@@ -247,14 +202,7 @@ export default function OrderDetailPage() {
 
   const hasStringingApplication = hasCompletedStringingApplication(order ?? {});
   const latestStringingApplication =
-    Array.isArray(order?.stringingApplications) &&
-    order.stringingApplications.length > 0
-      ? [...order.stringingApplications].sort(
-          (a, b) =>
-            new Date(b.createdAt ?? 0).getTime() -
-            new Date(a.createdAt ?? 0).getTime(),
-        )[0]
-      : null;
+    Array.isArray(order?.stringingApplications) && order.stringingApplications.length > 0 ? [...order.stringingApplications].sort((a, b) => new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime())[0] : null;
 
   // 금액 포맷팅 함수
   const formatCurrency = (amount: number) => {
@@ -285,10 +233,7 @@ export default function OrderDetailPage() {
             <Skeleton className="h-5 w-40" />
 
             {Array.from({ length: 3 }).map((_, index) => (
-              <Card
-                key={index}
-                className="rounded-2xl border-border/50 bg-card/80 shadow-sm"
-              >
+              <Card key={index} className="rounded-2xl border-border/50 bg-card/80 shadow-sm">
                 <CardHeader className="space-y-2">
                   <Skeleton className="h-6 w-40" />
                   <Skeleton className="h-4 w-64 max-w-full" />
@@ -318,12 +263,8 @@ export default function OrderDetailPage() {
               <div className="inline-flex items-center justify-center w-16 h-16 bg-card/20 backdrop-blur-sm rounded-full mb-6">
                 <Package className="w-8 h-8" />
               </div>
-              <h1 className="text-4xl md:text-5xl font-bold mb-4">
-                주문 상세 정보 오류
-              </h1>
-              <p className="text-xl text-destructive">
-                주문 정보를 불러오는 중 문제가 발생했습니다
-              </p>
+              <h1 className="text-4xl md:text-5xl font-bold mb-4">주문 상세 정보 오류</h1>
+              <p className="text-xl text-destructive">주문 정보를 불러오는 중 문제가 발생했습니다</p>
             </div>
           </div>
         </div>
@@ -336,14 +277,9 @@ export default function OrderDetailPage() {
                   <div className="inline-flex items-center justify-center w-16 h-16 border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20 rounded-full mb-6">
                     <Package className="w-8 h-8 text-primary" />
                   </div>
-                  <h3 className="text-xl font-semibold text-foreground mb-4">
-                    오류가 발생했습니다
-                  </h3>
+                  <h3 className="text-xl font-semibold text-foreground mb-4">오류가 발생했습니다</h3>
                   <p className="text-destructive mb-8 max-w-md">{error}</p>
-                  <Button
-                    onClick={handleGoBack}
-                    className="bg-primary text-primary-foreground hover:bg-primary/90"
-                  >
+                  <Button onClick={handleGoBack} className="bg-primary text-primary-foreground hover:bg-primary/90">
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     이전 페이지로 돌아가기
                   </Button>
@@ -360,26 +296,21 @@ export default function OrderDetailPage() {
     return null;
   }
 
-  const rawShippingMethod =
-    order.shippingInfo?.shippingMethod ?? order.shippingInfo?.deliveryMethod;
+  const rawShippingMethod = order.shippingInfo?.shippingMethod ?? order.shippingInfo?.deliveryMethod;
   const orderShippingMethod = normalizeOrderShippingMethod(rawShippingMethod);
   // 비회원 주문 상세도 공용 방문 수령 판별 유틸로 통일해 화면/서버 정책 판단 기준을 맞춘다.
   const isVisitPickup = isVisitPickupOrder(order.shippingInfo);
-  const orderShippingReadLabels =
-    getOrderShippingReadLabels(orderShippingMethod);
+  const orderShippingReadLabels = getOrderShippingReadLabels(orderShippingMethod);
   const shippingCardTitle = orderShippingReadLabels.sectionTitle;
   const shippingAddressLabel = orderShippingReadLabels.primaryLabel;
-  const shippingAddressValue = isVisitPickup
-    ? orderShippingReadLabels.primaryValue
-    : order.shippingInfo.address;
-  const trackingNumber =
-    order.shippingInfo?.invoice?.trackingNumber ?? order.trackingNumber;
+  const shippingAddressValue = isVisitPickup ? orderShippingReadLabels.primaryValue : order.shippingInfo.address;
+  const trackingNumber = order.shippingInfo?.invoice?.trackingNumber ?? order.trackingNumber;
   const canTrack = !isVisitPickup && Boolean(trackingNumber);
   const isUnsupportedCourier =
-    String(order.shippingInfo?.invoice?.courier ?? "").trim().toLowerCase() ===
-    "etc";
-  const unsupportedCourierMessage =
-    "현재 택배사는 자동 배송조회가 지원되지 않습니다.";
+    String(order.shippingInfo?.invoice?.courier ?? "")
+      .trim()
+      .toLowerCase() === "etc";
+  const unsupportedCourierMessage = "현재 택배사는 자동 배송조회가 지원되지 않습니다.";
 
   const formatDateTime = (dateString: string | null | undefined) => {
     if (!dateString) return "-";
@@ -413,9 +344,7 @@ export default function OrderDetailPage() {
         if (!data.success) {
           setTrackingError(getTrackingFailureMessage(data));
         } else {
-          setTrackingError(
-            (data as any)?.message ?? "배송조회 정보를 불러오지 못했습니다.",
-          );
+          setTrackingError((data as any)?.message ?? "배송조회 정보를 불러오지 못했습니다.");
         }
         return;
       }
@@ -448,22 +377,10 @@ export default function OrderDetailPage() {
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
               <span className="text-primary">주문</span> 상세 정보
             </h1>
-            <p className="text-xl text-muted-foreground">
-              주문번호: {order._id.slice(-8)}
-            </p>
+            <p className="text-xl text-muted-foreground">주문번호: {order._id.slice(-8)}</p>
             <div className="mt-4">
-              <Badge
-                variant={badgeToneVariant(
-                  getOrderStatusTone(
-                    getLookupOrderStatusLabel(order.status, order.shippingInfo),
-                  ),
-                )}
-                className="gap-2 px-4 py-2 text-lg font-semibold"
-              >
-                {getStatusIcon(
-                  getLookupOrderStatusLabel(order.status, order.shippingInfo),
-                  isVisitPickup,
-                )}
+              <Badge variant={badgeToneVariant(getOrderStatusTone(getLookupOrderStatusLabel(order.status, order.shippingInfo)))} className="gap-2 px-4 py-2 text-lg font-semibold">
+                {getStatusIcon(getLookupOrderStatusLabel(order.status, order.shippingInfo), isVisitPickup)}
                 {getLookupOrderStatusLabel(order.status, order.shippingInfo)}
               </Badge>
             </div>
@@ -475,11 +392,7 @@ export default function OrderDetailPage() {
         <div className="max-w-6xl mx-auto">
           {/* Back Button */}
           <div className="mb-6 md:mb-8">
-            <Button
-              variant="ghost"
-              className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors group"
-              onClick={handleGoBack}
-            >
+            <Button variant="ghost" className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors group" onClick={handleGoBack}>
               <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
               주문 목록으로 돌아가기
             </Button>
@@ -495,22 +408,15 @@ export default function OrderDetailPage() {
                       <ShoppingBag className="w-6 h-6 text-foreground" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-semibold text-foreground mb-2">
-                        스트링 장착 서비스 신청 가능
-                      </h3>
+                      <h3 className="font-semibold text-foreground mb-2">스트링 장착 서비스 신청 가능</h3>
                       <p className="text-muted-foreground mb-4">
                         {isVisitPickup
                           ? "이 주문은 스트링 장착 서비스가 포함되어 있습니다. 방문 수령 시 현장 장착으로 진행되며, 아직 접수된 신청서가 없어 신청을 진행할 수 있습니다."
                           : "이 주문은 스트링 장착 서비스가 포함되어 있습니다. 택배 수령 주문은 수거/반송으로 장착 서비스가 진행되며, 아직 접수된 신청서가 없어 신청을 진행할 수 있습니다."}
                       </p>
-                      <Link
-                        href={`/services/apply?orderId=${order._id}`}
-                        className="inline-flex items-center px-4 py-2 bg-muted hover:bg-muted text-foreground font-semibold rounded-lg transition-colors"
-                      >
+                      <Link href={`/services/apply?orderId=${order._id}`} className="inline-flex items-center px-4 py-2 bg-muted hover:bg-muted text-foreground font-semibold rounded-lg transition-colors">
                         <ShoppingBag className="w-4 h-4 mr-2" />
-                        {isVisitPickup
-                          ? "스트링 장착 서비스 신청하기"
-                          : "택배 장착 서비스 신청하기"}
+                        {isVisitPickup ? "스트링 장착 서비스 신청하기" : "택배 장착 서비스 신청하기"}
                       </Link>
                     </div>
                   </div>
@@ -520,13 +426,9 @@ export default function OrderDetailPage() {
                       <CheckCircle className="w-6 h-6" />
                     </div>
                     <div>
-                      <h3 className="mb-1 font-semibold text-foreground">
-                        교체 서비스 신청서 접수 완료
-                      </h3>
+                      <h3 className="mb-1 font-semibold text-foreground">교체 서비스 신청서 접수 완료</h3>
                       <p className="text-foreground">
-                        {isVisitPickup
-                          ? "이미 접수된 신청서가 존재합니다. 방문 수령 시 접수된 내용에 따라 현장 장착이 진행됩니다."
-                          : "이미 접수된 신청서가 존재합니다. 택배 장착 서비스는 접수된 내용에 따라 수거/반송으로 진행됩니다."}
+                        {isVisitPickup ? "이미 접수된 신청서가 존재합니다. 방문 수령 시 접수된 내용에 따라 현장 장착이 진행됩니다." : "이미 접수된 신청서가 존재합니다. 택배 장착 서비스는 접수된 내용에 따라 수거/반송으로 진행됩니다."}
                       </p>
                     </div>
                   </div>
@@ -536,69 +438,43 @@ export default function OrderDetailPage() {
           )}
 
           {/* 비회원 조회에서도 신청서 상세 진입 없이 핵심 맥락을 확인할 수 있게 요약 노출 */}
-          {order.shippingInfo?.withStringService &&
-            hasStringingApplication &&
-            latestStringingApplication && (
-              <Card className="mb-6 border border-border bg-card md:mb-8">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">
-                    교체 서비스 접수 요약
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="grid gap-2 text-sm">
+          {order.shippingInfo?.withStringService && hasStringingApplication && latestStringingApplication && (
+            <Card className="mb-6 border border-border bg-card md:mb-8">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">교체 서비스 접수 요약</CardTitle>
+              </CardHeader>
+              <CardContent className="grid gap-2 text-sm">
+                <p className="text-muted-foreground">
+                  신청 상태: <span className="font-medium text-foreground">{getLookupApplicationStatusLabel(latestStringingApplication.status)}</span>
+                </p>
+                {latestStringingApplication.receptionLabel && (
                   <p className="text-muted-foreground">
-                    신청 상태:{" "}
-                    <span className="font-medium text-foreground">
-                      {getLookupApplicationStatusLabel(
-                        latestStringingApplication.status,
-                      )}
-                    </span>
+                    접수 방식: <span className="font-medium text-foreground">{latestStringingApplication.receptionLabel}</span>
                   </p>
-                  {latestStringingApplication.receptionLabel && (
-                    <p className="text-muted-foreground">
-                      접수 방식:{" "}
-                      <span className="font-medium text-foreground">
-                        {latestStringingApplication.receptionLabel}
-                      </span>
-                    </p>
-                  )}
-                  {typeof latestStringingApplication.racketCount === "number" &&
-                    latestStringingApplication.racketCount > 0 && (
-                      <p className="text-muted-foreground">
-                        라인 수:{" "}
-                        <span className="font-medium text-foreground">
-                          {latestStringingApplication.racketCount}개
-                        </span>
-                      </p>
-                    )}
-                  {Array.isArray(latestStringingApplication.stringNames) &&
-                    latestStringingApplication.stringNames.length > 0 && (
-                      <p className="text-muted-foreground">
-                        스트링:{" "}
-                        <span className="font-medium text-foreground">
-                          {latestStringingApplication.stringNames.join(", ")}
-                        </span>
-                      </p>
-                    )}
-                  {latestStringingApplication.tensionSummary && (
-                    <p className="text-muted-foreground">
-                      텐션:{" "}
-                      <span className="font-medium text-foreground">
-                        {latestStringingApplication.tensionSummary}
-                      </span>
-                    </p>
-                  )}
-                  {latestStringingApplication.reservationLabel && (
-                    <p className="text-muted-foreground">
-                      방문 예약:{" "}
-                      <span className="font-medium text-foreground">
-                        {latestStringingApplication.reservationLabel}
-                      </span>
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
-            )}
+                )}
+                {typeof latestStringingApplication.racketCount === "number" && latestStringingApplication.racketCount > 0 && (
+                  <p className="text-muted-foreground">
+                    라인 수: <span className="font-medium text-foreground">{latestStringingApplication.racketCount}개</span>
+                  </p>
+                )}
+                {Array.isArray(latestStringingApplication.stringNames) && latestStringingApplication.stringNames.length > 0 && (
+                  <p className="text-muted-foreground">
+                    스트링: <span className="font-medium text-foreground">{latestStringingApplication.stringNames.join(", ")}</span>
+                  </p>
+                )}
+                {latestStringingApplication.tensionSummary && (
+                  <p className="text-muted-foreground">
+                    텐션: <span className="font-medium text-foreground">{latestStringingApplication.tensionSummary}</span>
+                  </p>
+                )}
+                {latestStringingApplication.reservationLabel && (
+                  <p className="text-muted-foreground">
+                    방문 예약: <span className="font-medium text-foreground">{latestStringingApplication.reservationLabel}</span>
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           <div className="grid grid-cols-1 gap-6 md:gap-8 lg:grid-cols-3">
             {/* Main Content */}
@@ -610,58 +486,34 @@ export default function OrderDetailPage() {
                     <div className="w-10 h-10 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center">
                       <Calendar className="w-5 h-5 text-foreground" />
                     </div>
-                    <CardTitle className="text-xl font-bold">
-                      주문 정보
-                    </CardTitle>
+                    <CardTitle className="text-xl font-bold">주문 정보</CardTitle>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-4">
                       <div>
-                        <p className="text-sm text-muted-foreground mb-1">
-                          주문일자
-                        </p>
-                        <p className="font-semibold">
-                          {new Date(order.createdAt).toLocaleDateString()}
-                        </p>
+                        <p className="text-sm text-muted-foreground mb-1">주문일자</p>
+                        <p className="font-semibold">{new Date(order.createdAt).toLocaleDateString()}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-muted-foreground mb-1">
-                          주문번호
-                        </p>
-                        <p className="font-mono text-sm bg-muted px-3 py-1 rounded">
-                          {order._id}
-                        </p>
+                        <p className="text-sm text-muted-foreground mb-1">주문번호</p>
+                        <p className="font-mono text-sm bg-muted px-3 py-1 rounded">{order._id}</p>
                       </div>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground mb-2">
-                        입금 계좌
-                      </p>
-                      {order.paymentInfo?.bank &&
-                      bankLabelMap[order.paymentInfo.bank] ? (
+                      <p className="text-sm text-muted-foreground mb-2">입금 계좌</p>
+                      {order.paymentInfo?.bank && bankLabelMap[order.paymentInfo.bank] ? (
                         <div className="bg-primary/10 dark:bg-primary/20 border border-primary/20 rounded-lg p-4">
                           <div className="space-y-2">
-                            <p className="font-semibold text-foreground">
-                              {order.paymentInfo.method}
-                            </p>
-                            <p className="font-semibold text-foreground">
-                              {bankLabelMap[order.paymentInfo.bank].label}
-                            </p>
-                            <p className="font-mono text-foreground">
-                              {bankLabelMap[order.paymentInfo.bank].account}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              예금주:{" "}
-                              {bankLabelMap[order.paymentInfo.bank].holder}
-                            </p>
+                            <p className="font-semibold text-foreground">{order.paymentInfo.method}</p>
+                            <p className="font-semibold text-foreground">{bankLabelMap[order.paymentInfo.bank].label}</p>
+                            <p className="font-mono text-foreground">{bankLabelMap[order.paymentInfo.bank].account}</p>
+                            <p className="text-sm text-muted-foreground">예금주: {bankLabelMap[order.paymentInfo.bank].holder}</p>
                           </div>
                         </div>
                       ) : (
-                        <p className="text-muted-foreground">
-                          선택된 은행 없음
-                        </p>
+                        <p className="text-muted-foreground">선택된 은행 없음</p>
                       )}
                     </div>
                   </div>
@@ -675,9 +527,7 @@ export default function OrderDetailPage() {
                     <div className="w-10 h-10 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center">
                       <MapPin className="w-5 h-5 text-foreground" />
                     </div>
-                    <CardTitle className="text-xl font-bold">
-                      {shippingCardTitle}
-                    </CardTitle>
+                    <CardTitle className="text-xl font-bold">{shippingCardTitle}</CardTitle>
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -686,76 +536,41 @@ export default function OrderDetailPage() {
                       <div className="flex items-center gap-3 p-3 bg-background rounded-lg">
                         <User className="w-5 h-5 text-primary" />
                         <div>
-                          <p className="text-sm text-muted-foreground">
-                            수령인
-                          </p>
-                          <p className="font-semibold">
-                            {order.shippingInfo.name}
-                          </p>
+                          <p className="text-sm text-muted-foreground">수령인</p>
+                          <p className="font-semibold">{order.shippingInfo.name}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3 p-3 bg-background rounded-lg">
                         <Phone className="w-5 h-5 text-success" />
                         <div>
-                          <p className="text-sm text-muted-foreground">
-                            연락처
-                          </p>
-                          <p className="font-semibold">
-                            {order.shippingInfo.phone}
-                          </p>
+                          <p className="text-sm text-muted-foreground">연락처</p>
+                          <p className="font-semibold">{order.shippingInfo.phone}</p>
                         </div>
                       </div>
                     </div>
                     <div className="space-y-4">
                       <div className="p-3 bg-background rounded-lg">
-                        <p className="text-sm text-muted-foreground mb-1">
-                          {shippingAddressLabel}
-                        </p>
+                        <p className="text-sm text-muted-foreground mb-1">{shippingAddressLabel}</p>
                         <p className="font-semibold">{shippingAddressValue}</p>
                       </div>
                       {canTrack && (
                         <div className="flex items-center gap-3 p-3 border border-primary/20 bg-primary/10 dark:bg-primary/20 rounded-lg">
                           <Truck className="w-5 h-5 text-primary" />
                           <div className="flex-1">
-                            <p className="text-sm text-muted-foreground mb-1">
-                              운송장 번호
-                            </p>
-                            <p className="font-mono font-semibold text-primary">
-                              {trackingNumber}
-                            </p>
+                            <p className="text-sm text-muted-foreground mb-1">운송장 번호</p>
+                            <p className="font-mono font-semibold text-primary">{trackingNumber}</p>
                             {trackingInfo?.success && trackingInfo.supported && (
                               <p className="mt-1 text-sm text-foreground">
                                 실시간 배송 상태: {trackingInfo.displayStatus}
-                                {trackingInfo.lastEvent?.locationName
-                                  ? ` · ${trackingInfo.lastEvent.locationName}`
-                                  : ""}
-                                {trackingInfo.lastEvent?.time
-                                  ? ` · ${formatDateTime(trackingInfo.lastEvent.time)}`
-                                  : ""}
+                                {trackingInfo.lastEvent?.locationName ? ` · ${trackingInfo.lastEvent.locationName}` : ""}
+                                {trackingInfo.lastEvent?.time ? ` · ${formatDateTime(trackingInfo.lastEvent.time)}` : ""}
                               </p>
                             )}
-                            {trackingError && (
-                              <p className="mt-1 text-sm text-muted-foreground">
-                                {trackingError}
-                              </p>
-                            )}
-                            {!trackingError && isUnsupportedCourier && (
-                              <p className="mt-1 text-sm text-muted-foreground">
-                                {unsupportedCourierMessage}
-                              </p>
-                            )}
+                            {trackingError && <p className="mt-1 text-sm text-muted-foreground">{trackingError}</p>}
+                            {!trackingError && isUnsupportedCourier && <p className="mt-1 text-sm text-muted-foreground">{unsupportedCourierMessage}</p>}
                           </div>
-                          <Button
-                            variant="link"
-                            className="text-primary hover:text-primary p-0"
-                            onClick={handleTrackingClick}
-                            disabled={trackingLoading || isUnsupportedCourier}
-                          >
-                            {isUnsupportedCourier
-                              ? "조회 불가"
-                              : trackingLoading
-                                ? "조회 중..."
-                                : "배송 조회"}
+                          <Button variant="link" className="text-primary hover:text-primary p-0" onClick={handleTrackingClick} disabled={trackingLoading || isUnsupportedCourier}>
+                            {isUnsupportedCourier ? "조회 불가" : trackingLoading ? "조회 중..." : "배송 조회"}
                           </Button>
                         </div>
                       )}
@@ -771,45 +586,26 @@ export default function OrderDetailPage() {
                     <div className="w-10 h-10 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center">
                       <ShoppingBag className="w-5 h-5 text-foreground" />
                     </div>
-                    <CardTitle className="text-xl font-bold">
-                      주문 상품
-                    </CardTitle>
+                    <CardTitle className="text-xl font-bold">주문 상품</CardTitle>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     {order.items.map((item, index) => (
-                      <div
-                        key={item.id || index}
-                        className="flex flex-col md:flex-row gap-4 p-4 border-2 border-border rounded-lg hover:border-border transition-colors"
-                      >
+                      <div key={item.id || index} className="flex flex-col md:flex-row gap-4 p-4 border-2 border-border rounded-lg hover:border-border transition-colors">
                         <div className="flex-shrink-0 w-full md:w-24 h-24 bg-muted rounded-lg overflow-hidden">
-                          <Image
-                            src={item.image || "/placeholder.svg"}
-                            alt={item.name}
-                            width={96}
-                            height={96}
-                            className="w-full h-full object-cover"
-                          />
+                          <Image src={item.image || "/placeholder.svg"} alt={item.name} width={96} height={96} className="w-full h-full object-cover" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h4 className="font-semibold text-foreground mb-1 truncate">
-                            {item.name}
-                          </h4>
-                          {item.option && (
-                            <p className="text-sm text-muted-foreground mb-2">
-                              {item.option}
-                            </p>
-                          )}
+                          <h4 className="font-semibold text-foreground mb-1 truncate">{item.name}</h4>
+                          {item.option && <p className="text-sm text-muted-foreground mb-2">{item.option}</p>}
                           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                             <div className="flex items-center gap-4 text-sm text-muted-foreground">
                               <span>단가: {formatCurrency(item.price)}</span>
                               <span>수량: {item.quantity}개</span>
                             </div>
                             <div className="text-right">
-                              <p className="font-bold text-lg text-primary">
-                                {formatCurrency(item.price * item.quantity)}
-                              </p>
+                              <p className="font-bold text-lg text-primary">{formatCurrency(item.price * item.quantity)}</p>
                             </div>
                           </div>
                         </div>
@@ -828,35 +624,23 @@ export default function OrderDetailPage() {
                     <div className="w-10 h-10 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center">
                       <CreditCard className="w-5 h-5 text-foreground" />
                     </div>
-                    <CardTitle className="text-xl font-bold">
-                      결제 정보
-                    </CardTitle>
+                    <CardTitle className="text-xl font-bold">결제 정보</CardTitle>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     <div className="flex justify-between items-center py-2">
                       <span className="text-muted-foreground">상품 금액</span>
-                      <span className="font-semibold">
-                        {formatCurrency(order.totalPrice - order.shippingFee)}
-                      </span>
+                      <span className="font-semibold">{formatCurrency(order.totalPrice - order.shippingFee)}</span>
                     </div>
                     <div className="flex justify-between items-center py-2">
                       <span className="text-muted-foreground">배송비</span>
-                      <span className="font-semibold">
-                        {order.shippingFee > 0
-                          ? formatCurrency(order.shippingFee)
-                          : "무료"}
-                      </span>
+                      <span className="font-semibold">{order.shippingFee > 0 ? formatCurrency(order.shippingFee) : "무료"}</span>
                     </div>
                     <Separator className="my-4" />
                     <div className="flex justify-between items-center py-2">
-                      <span className="text-lg font-bold text-foreground">
-                        총 결제금액
-                      </span>
-                      <span className="text-xl font-bold text-primary">
-                        {formatCurrency(order.totalPrice)}
-                      </span>
+                      <span className="text-lg font-bold text-foreground">총 결제금액</span>
+                      <span className="text-xl font-bold text-primary">{formatCurrency(order.totalPrice)}</span>
                     </div>
 
                     {/* Benefits */}
@@ -864,24 +648,16 @@ export default function OrderDetailPage() {
                       <div className="flex items-center gap-3 p-3 rounded-lg border border-primary/20 bg-primary/10 dark:bg-primary/20">
                         <Shield className="w-5 h-5 text-primary" />
                         <div>
-                          <p className="text-sm font-medium text-foreground">
-                            안전한 결제
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            SSL 보안 결제 시스템
-                          </p>
+                          <p className="text-sm font-medium text-foreground">안전한 결제</p>
+                          <p className="text-xs text-muted-foreground">SSL 보안 결제 시스템</p>
                         </div>
                       </div>
 
                       <div className="flex items-center gap-3 p-3 border border-primary/20 bg-primary/10 dark:bg-primary/20 rounded-lg">
                         <Truck className="w-5 h-5 text-primary" />
                         <div>
-                          <p className="text-sm font-medium text-foreground">
-                            배송 보장
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            30,000원 이상 무료배송
-                          </p>
+                          <p className="text-sm font-medium text-foreground">배송 보장</p>
+                          <p className="text-xs text-muted-foreground">30,000원 이상 무료배송</p>
                         </div>
                       </div>
                     </div>
@@ -889,11 +665,7 @@ export default function OrderDetailPage() {
                 </CardContent>
 
                 <CardFooter className="pt-6">
-                  <Button
-                    variant="outline"
-                    onClick={handleGoBack}
-                    className="w-full border-border text-primary hover:bg-primary/10 dark:hover:bg-primary/20 hover:border-border bg-transparent"
-                  >
+                  <Button variant="outline" onClick={handleGoBack} className="w-full border-border text-primary hover:bg-primary/10 dark:hover:bg-primary/20 hover:border-border bg-transparent">
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     주문 목록으로 돌아가기
                   </Button>

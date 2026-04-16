@@ -378,31 +378,29 @@ export default function Home() {
         <HeroSlider slides={SLIDES} />
         {/* 히어로 하단: 문의/광고 배너(운영값 있을 때만 노출) */}
         {PROMO_BANNERS.length > 0 && (
-          <section className="mt-3 bp-sm:mt-4 bp-md:mt-5">
+          <section className="mt-4 bp-sm:mt-5 bp-md:mt-6">
             <div className="mx-3 bp-sm:mx-4 bp-md:mx-6 bp-lg:mx-0">
               <div className="grid grid-cols-2 bp-xxs:grid-cols-1 bp-md-only:grid-cols-4 bp-lg:grid-cols-4 gap-3 bp-sm:gap-4">
                 {PROMO_BANNERS.map((b) => {
                   const title = (b.label ?? "").split("\n")[0] || "광고 문의";
 
                   const baseClass =
-                    "group relative block h-24 bp-sm:h-28 bp-md:h-32 bp-lg:h-32 overflow-hidden rounded-xl border border-border transition-all hover:-translate-y-0.5 hover:shadow-lg focus:outline-none focus:ring focus:ring-border/10 dark:focus:ring-ring/30";
+                    "group relative block h-24 bp-sm:h-28 bp-md:h-32 bp-lg:h-36 overflow-hidden rounded-2xl bg-card border border-border/60 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-border focus:outline-none focus:ring-2 focus:ring-ring/20";
 
                   const inner = (
                     <>
                       {b.img ? (
                         <>
-                          <img src={b.img} alt={b.alt ?? title} className="absolute inset-0 h-full w-full object-cover" loading="lazy" decoding="async" />
-                          <div className="absolute inset-0 bg-muted/30" />
+                          <img src={b.img} alt={b.alt ?? title} className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" decoding="async" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent" />
                         </>
                       ) : (
-                        <div className="absolute inset-0 bg-card" />
+                        <div className="absolute inset-0 bg-gradient-to-br from-muted/30 to-muted/10" />
                       )}
 
-                      <div className="absolute inset-0 bg-overlay/0 transition-colors group-hover:bg-overlay/5" />
-
                       <div className="relative z-10 flex h-full items-center justify-center p-4 text-center">
-                        <div className={b.img ? "text-foreground" : "text-foreground"}>
-                          <div className="text-2xl bp-sm:text-2xl font-bold leading-tight">{title}</div>
+                        <div className="text-foreground">
+                          <div className="text-lg bp-sm:text-xl bp-md:text-2xl font-bold leading-tight tracking-tight">{title}</div>
                         </div>
                       </div>
                     </>
@@ -437,71 +435,83 @@ export default function Home() {
       </SiteContainer>
 
       {/* 빠른 메뉴 */}
-      <section className="py-8 bp-sm:py-10 bp-md:py-12">
+      <section className="py-10 bp-sm:py-12 bp-md:py-16">
         <SiteContainer>
-          <div className="mb-6 bp-sm:mb-8 text-center">
-            <h2 className="text-xl bp-sm:text-2xl font-bold text-foreground">빠른 메뉴</h2>
-            <p className="mt-1.5 bp-sm:mt-2 text-xs bp-sm:text-sm text-muted-foreground">원하는 서비스를 바로 이용하세요</p>
+          <div className="mb-8 bp-sm:mb-10 text-center">
+            <h2 className="text-2xl bp-sm:text-3xl font-bold text-foreground tracking-tight">빠른 메뉴</h2>
+            <p className="mt-2 bp-sm:mt-3 text-sm bp-sm:text-base text-muted-foreground">원하는 서비스를 바로 이용하세요</p>
           </div>
-          <div className="grid gap-3 bp-sm:gap-4 bp-md:gap-5 grid-cols-2 bp-md-only:grid-cols-4 bp-lg:grid-cols-4">
-            <Link href="/services/apply" className="group flex h-full flex-col items-center gap-2 bp-sm:gap-3 rounded-xl bg-card p-4 bp-sm:p-5 bp-md:p-6 transition-all hover:scale-105 hover:shadow-lg border border-border">
-              <div className="flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary/20 transition-colors group-hover:bg-primary/10 dark:group-hover:bg-primary/20">
-                <Wrench className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 group-hover:text-primary" />
+          <div className="grid gap-4 bp-sm:gap-5 bp-md:gap-6 grid-cols-2 bp-md-only:grid-cols-4 bp-lg:grid-cols-4">
+            <Link
+              href="/services/apply"
+              className="group flex h-full flex-col items-center gap-3 bp-sm:gap-4 rounded-2xl bg-card p-5 bp-sm:p-6 bp-md:p-7 shadow-sm border border-border/60 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-border"
+            >
+              <div className="flex h-12 w-12 bp-sm:h-14 bp-sm:w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-primary-foreground group-hover:scale-110">
+                <Wrench className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
               </div>
               <div className="text-center">
                 <h3 className="text-sm bp-sm:text-base font-semibold text-foreground">교체 서비스 신청</h3>
-                <p className="mt-0.5 bp-sm:mt-1 text-[10px] bp-sm:text-xs line-clamp-2 text-muted-foreground">라켓/스트링 선택 후 한 번에</p>
+                <p className="mt-1 bp-sm:mt-1.5 text-xs bp-sm:text-sm line-clamp-2 text-muted-foreground">라켓/스트링 선택 후 한 번에</p>
               </div>
             </Link>
 
-            <Link href="/services/tension-guide" className="group flex h-full flex-col items-center gap-2 bp-sm:gap-3 rounded-xl bg-card p-4 bp-sm:p-5 bp-md:p-6 transition-all hover:scale-105 hover:shadow-lg border border-border">
-              <div className="flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary/20 transition-colors group-hover:bg-primary/10 dark:group-hover:bg-primary/20">
-                <BookOpen className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 group-hover:text-primary" />
+            <Link
+              href="/services/tension-guide"
+              className="group flex h-full flex-col items-center gap-3 bp-sm:gap-4 rounded-2xl bg-card p-5 bp-sm:p-6 bp-md:p-7 shadow-sm border border-border/60 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-border"
+            >
+              <div className="flex h-12 w-12 bp-sm:h-14 bp-sm:w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-primary-foreground group-hover:scale-110">
+                <BookOpen className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
               </div>
               <div className="text-center">
                 <h3 className="text-sm bp-sm:text-base font-semibold text-foreground">장착/텐션 가이드</h3>
-                <p className="mt-0.5 bp-sm:mt-1 text-[10px] bp-sm:text-xs line-clamp-2 text-muted-foreground">초보도 쉽게 고르기</p>
+                <p className="mt-1 bp-sm:mt-1.5 text-xs bp-sm:text-sm line-clamp-2 text-muted-foreground">초보도 쉽게 고르기</p>
               </div>
             </Link>
 
-            <Link href="/board/market" className="group flex h-full flex-col items-center gap-2 bp-sm:gap-3 rounded-xl bg-card p-4 bp-sm:p-5 bp-md:p-6 transition-all hover:scale-105 hover:shadow-lg border border-border">
-              <div className="flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary/20 transition-colors group-hover:bg-primary/10 dark:group-hover:bg-primary/20">
-                <Tags className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 group-hover:text-primary" />
+            <Link
+              href="/board/market"
+              className="group flex h-full flex-col items-center gap-3 bp-sm:gap-4 rounded-2xl bg-card p-5 bp-sm:p-6 bp-md:p-7 shadow-sm border border-border/60 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-border"
+            >
+              <div className="flex h-12 w-12 bp-sm:h-14 bp-sm:w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-primary-foreground group-hover:scale-110">
+                <Tags className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
               </div>
               <div className="text-center">
                 <h3 className="text-sm bp-sm:text-base font-semibold text-foreground">중고 거래</h3>
-                <p className="mt-0.5 bp-sm:mt-1 text-[10px] bp-sm:text-xs line-clamp-2 text-muted-foreground">라켓/스트링/장비 거래</p>
+                <p className="mt-1 bp-sm:mt-1.5 text-xs bp-sm:text-sm line-clamp-2 text-muted-foreground">라켓/스트링/장비 거래</p>
               </div>
             </Link>
 
-            <Link href="/board" className="group flex h-full flex-col items-center gap-2 bp-sm:gap-3 rounded-xl bg-card p-4 bp-sm:p-5 bp-md:p-6 transition-all hover:scale-105 hover:shadow-lg border border-border">
-              <div className="flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary/20 transition-colors group-hover:bg-primary/10 dark:group-hover:bg-primary/20">
-                <MessageSquareText className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 group-hover:text-primary" />
+            <Link
+              href="/board"
+              className="group flex h-full flex-col items-center gap-3 bp-sm:gap-4 rounded-2xl bg-card p-5 bp-sm:p-6 bp-md:p-7 shadow-sm border border-border/60 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-border"
+            >
+              <div className="flex h-12 w-12 bp-sm:h-14 bp-sm:w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-primary-foreground group-hover:scale-110">
+                <MessageSquareText className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
               </div>
               <div className="text-center">
                 <h3 className="text-sm bp-sm:text-base font-semibold text-foreground">커뮤니티</h3>
-                <p className="mt-0.5 bp-sm:mt-1 text-[10px] bp-sm:text-xs line-clamp-2 text-muted-foreground">리뷰·자유·사용기</p>
+                <p className="mt-1 bp-sm:mt-1.5 text-xs bp-sm:text-sm line-clamp-2 text-muted-foreground">리뷰·자유·사용기</p>
               </div>
             </Link>
           </div>
         </SiteContainer>
       </section>
       {/* 라켓 검색 바로가기 (Hero 아래 CTA 블록) */}
-      <section className="py-5 bp-sm:py-6">
+      <section className="py-6 bp-sm:py-8">
         <SiteContainer>
           <Link href="/rackets/finder" className="group block">
-            <div className="rounded-2xl border border-border bg-card p-5 bp-sm:p-6 flex flex-col bp-md:flex-row bp-md:items-center bp-md:justify-between gap-4 transition-all hover:shadow-lg">
-              <div className="flex items-start gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary dark:bg-primary/20">
-                  <Search className="h-6 w-6" />
+            <div className="rounded-2xl border border-border/60 bg-card p-6 bp-sm:p-7 bp-md:p-8 flex flex-col bp-md:flex-row bp-md:items-center bp-md:justify-between gap-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-border">
+              <div className="flex items-start gap-4 bp-sm:gap-5">
+                <div className="flex h-14 w-14 bp-sm:h-16 bp-sm:w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-primary-foreground group-hover:scale-110">
+                  <Search className="h-6 w-6 bp-sm:h-7 bp-sm:w-7" />
                 </div>
                 <div className="min-w-0">
-                  <div className="text-sm bp-sm:text-base font-bold text-foreground">라켓 검색</div>
-                  <p className="mt-1 text-xs bp-sm:text-sm text-muted-foreground">헤드/무게/밸런스/RA/SW 범위로 중고 라켓을 빠르게 좁혀보세요.</p>
+                  <div className="text-base bp-sm:text-lg font-bold text-foreground">라켓 검색</div>
+                  <p className="mt-1.5 text-sm bp-sm:text-base text-muted-foreground">헤드/무게/밸런스/RA/SW 범위로 중고 라켓을 빠르게 좁혀보세요.</p>
                 </div>
               </div>
 
-              <div className="shrink-0 inline-flex items-center justify-center rounded-lg px-4 py-2 text-xs bp-sm:text-sm font-semibold bg-muted text-foreground transition-colors group-hover:bg-primary/10 group-hover:text-foreground dark:group-hover:bg-primary/20">
+              <div className="shrink-0 inline-flex items-center justify-center rounded-xl px-5 py-2.5 text-sm bp-sm:text-base font-semibold bg-primary text-primary-foreground shadow-md transition-all duration-300 group-hover:shadow-lg group-hover:scale-105">
                 바로가기
               </div>
             </div>
@@ -510,11 +520,11 @@ export default function Home() {
       </section>
 
       {/* 공지사항/중고거래 섹션 */}
-      <section ref={communitySectionRef} className="py-8 bp-sm:py-10 bp-md:py-12">
+      <section ref={communitySectionRef} className="py-10 bp-sm:py-12 bp-md:py-16">
         <SiteContainer>
-          <div className="mb-6 bp-sm:mb-8 text-center">
-            <h2 className="text-xl bp-sm:text-2xl font-bold text-foreground">소식 & 커뮤니티</h2>
-            <p className="mt-1.5 bp-sm:mt-2 text-xs bp-sm:text-sm text-muted-foreground">공지사항과 중고 거래 최신 소식을 확인하세요</p>
+          <div className="mb-8 bp-sm:mb-10 text-center">
+            <h2 className="text-2xl bp-sm:text-3xl font-bold text-foreground tracking-tight">소식 & 커뮤니티</h2>
+            <p className="mt-2 bp-sm:mt-3 text-sm bp-sm:text-base text-muted-foreground">공지사항과 중고 거래 최신 소식을 확인하세요</p>
           </div>
           <div className="grid gap-5 bp-sm:gap-6 bp-lg:grid-cols-2">
             {shouldLoadCommunity ? (
@@ -524,8 +534,8 @@ export default function Home() {
               </>
             ) : (
               <>
-                <div className="h-[280px] animate-pulse rounded-2xl border border-border bg-card" />
-                <div className="h-[280px] animate-pulse rounded-2xl border border-border bg-card" />
+                <div className="h-[300px] animate-pulse rounded-2xl border border-border/60 bg-card shadow-sm" />
+                <div className="h-[300px] animate-pulse rounded-2xl border border-border/60 bg-card shadow-sm" />
               </>
             )}
           </div>
@@ -533,52 +543,63 @@ export default function Home() {
       </section>
 
       {/* 서비스 플로우 */}
-      <section className="py-8 bp-sm:py-10 bp-md:py-12">
+      <section className="py-10 bp-sm:py-12 bp-md:py-16">
         <SiteContainer>
-          <div className="rounded-2xl bg-card border border-border p-6 bp-sm:p-8">
-            <div className="mb-6 bp-sm:mb-8 text-center">
-              <h2 className="text-xl bp-sm:text-2xl font-bold text-foreground">스트링 교체 프로세스</h2>
-              <p className="mt-1.5 bp-sm:mt-2 text-xs bp-sm:text-sm text-muted-foreground">처음 방문해도 쉽게 이해할 수 있어요</p>
+          <div className="rounded-3xl bg-card border border-border/60 p-6 bp-sm:p-8 bp-md:p-10 shadow-sm">
+            <div className="mb-8 bp-sm:mb-10 text-center">
+              <h2 className="text-2xl bp-sm:text-3xl font-bold text-foreground tracking-tight">스트링 교체 프로세스</h2>
+              <p className="mt-2 bp-sm:mt-3 text-sm bp-sm:text-base text-muted-foreground">처음 방문해도 쉽게 이해할 수 있어요</p>
             </div>
-            <div className="mb-6 bp-sm:mb-8 grid gap-4 bp-sm:gap-6 grid-cols-2 bp-lg:grid-cols-4">
-              <div className="flex flex-col items-center text-center">
-                <div className="mb-2 bp-sm:mb-3 flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary/20">
-                  <BookOpen className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 group-hover:text-primary" />
+            <div className="mb-8 bp-sm:mb-10 grid gap-6 bp-sm:gap-8 grid-cols-2 bp-lg:grid-cols-4">
+              <div className="group flex flex-col items-center text-center p-4 rounded-2xl transition-all duration-300 hover:bg-muted/50">
+                <div className="relative mb-3 bp-sm:mb-4">
+                  <div className="flex h-14 w-14 bp-sm:h-16 bp-sm:w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-primary-foreground group-hover:scale-110">
+                    <BookOpen className="h-6 w-6 bp-sm:h-7 bp-sm:w-7" />
+                  </div>
+                  <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-foreground text-background flex items-center justify-center text-xs font-bold">1</div>
                 </div>
-                <div className="mb-0.5 bp-sm:mb-1 text-[10px] bp-sm:text-xs font-semibold text-muted-foreground">STEP 1</div>
-                <h3 className="mb-0.5 bp-sm:mb-1 text-sm bp-sm:text-base font-semibold text-foreground">신청서 작성</h3>
-                <p className="text-[10px] bp-sm:text-xs text-muted-foreground">라켓/스트링/옵션 선택</p>
+                <h3 className="mb-1 bp-sm:mb-1.5 text-sm bp-sm:text-base font-semibold text-foreground">신청서 작성</h3>
+                <p className="text-xs bp-sm:text-sm text-muted-foreground">라켓/스트링/옵션 선택</p>
               </div>
-              <div className="flex flex-col items-center text-center">
-                <div className="mb-2 bp-sm:mb-3 flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary/20">
-                  <Package className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
+              <div className="group flex flex-col items-center text-center p-4 rounded-2xl transition-all duration-300 hover:bg-muted/50">
+                <div className="relative mb-3 bp-sm:mb-4">
+                  <div className="flex h-14 w-14 bp-sm:h-16 bp-sm:w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-primary-foreground group-hover:scale-110">
+                    <Package className="h-6 w-6 bp-sm:h-7 bp-sm:w-7" />
+                  </div>
+                  <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-foreground text-background flex items-center justify-center text-xs font-bold">2</div>
                 </div>
-                <div className="mb-0.5 bp-sm:mb-1 text-[10px] bp-sm:text-xs font-semibold text-muted-foreground">STEP 2</div>
-                <h3 className="mb-0.5 bp-sm:mb-1 text-sm bp-sm:text-base font-semibold text-foreground">방문·택배</h3>
-                <p className="text-[10px] bp-sm:text-xs text-muted-foreground">방문 예약 또는 택배 발송</p>
-              </div>
-
-              <div className="flex flex-col items-center text-center">
-                <div className="mb-2 bp-sm:mb-3 flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary/20">
-                  <Wrench className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 group-hover:text-primary" />
-                </div>
-                <div className="mb-0.5 bp-sm:mb-1 text-[10px] bp-sm:text-xs font-semibold text-muted-foreground">STEP 3</div>
-                <h3 className="mb-0.5 bp-sm:mb-1 text-sm bp-sm:text-base font-semibold text-foreground">작업 진행</h3>
-                <p className="text-[10px] bp-sm:text-xs text-muted-foreground">장착/텐션 세팅 후 검수</p>
+                <h3 className="mb-1 bp-sm:mb-1.5 text-sm bp-sm:text-base font-semibold text-foreground">방문/택배</h3>
+                <p className="text-xs bp-sm:text-sm text-muted-foreground">방문 예약 또는 택배 발송</p>
               </div>
 
-              <div className="flex flex-col items-center text-center">
-                <div className="mb-2 bp-sm:mb-3 flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary/20">
-                  <BadgeCheck className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
+              <div className="group flex flex-col items-center text-center p-4 rounded-2xl transition-all duration-300 hover:bg-muted/50">
+                <div className="relative mb-3 bp-sm:mb-4">
+                  <div className="flex h-14 w-14 bp-sm:h-16 bp-sm:w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-primary-foreground group-hover:scale-110">
+                    <Wrench className="h-6 w-6 bp-sm:h-7 bp-sm:w-7" />
+                  </div>
+                  <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-foreground text-background flex items-center justify-center text-xs font-bold">3</div>
                 </div>
-                <div className="mb-0.5 bp-sm:mb-1 text-[10px] bp-sm:text-xs font-semibold text-muted-foreground">STEP 4</div>
-                <h3 className="mb-0.5 bp-sm:mb-1 text-sm bp-sm:text-base font-semibold text-foreground">수령</h3>
-                <p className="text-[10px] bp-sm:text-xs text-muted-foreground">방문 수령 또는 배송</p>
+                <h3 className="mb-1 bp-sm:mb-1.5 text-sm bp-sm:text-base font-semibold text-foreground">작업 진행</h3>
+                <p className="text-xs bp-sm:text-sm text-muted-foreground">장착/텐션 세팅 후 검수</p>
+              </div>
+
+              <div className="group flex flex-col items-center text-center p-4 rounded-2xl transition-all duration-300 hover:bg-muted/50">
+                <div className="relative mb-3 bp-sm:mb-4">
+                  <div className="flex h-14 w-14 bp-sm:h-16 bp-sm:w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-primary-foreground group-hover:scale-110">
+                    <BadgeCheck className="h-6 w-6 bp-sm:h-7 bp-sm:w-7" />
+                  </div>
+                  <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-foreground text-background flex items-center justify-center text-xs font-bold">4</div>
+                </div>
+                <h3 className="mb-1 bp-sm:mb-1.5 text-sm bp-sm:text-base font-semibold text-foreground">수령</h3>
+                <p className="text-xs bp-sm:text-sm text-muted-foreground">방문 수령 또는 배송</p>
               </div>
             </div>
             <div className="text-center">
-              <Link href="/services/apply" className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 bp-sm:px-6 py-2.5 bp-sm:py-3 text-xs bp-sm:text-sm font-semibold text-primary-foreground shadow-md transition hover:bg-primary/90">
-                <Wrench className="h-3.5 w-3.5 bp-sm:h-4 bp-sm:w-4" />
+              <Link
+                href="/services/apply"
+                className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 bp-sm:px-8 py-3 bp-sm:py-3.5 text-sm bp-sm:text-base font-semibold text-primary-foreground shadow-lg transition-all duration-300 hover:bg-primary/90 hover:shadow-xl hover:scale-105"
+              >
+                <Wrench className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                 지금 신청하기
               </Link>
             </div>
@@ -587,18 +608,18 @@ export default function Home() {
       </section>
 
       {/* 스트링 섹션 */}
-      <section ref={stringsSectionRef} className="py-10 bp-sm:py-12 bp-md:py-16">
+      <section ref={stringsSectionRef} className="py-12 bp-sm:py-14 bp-md:py-20">
         <SiteContainer>
-          <div className="mb-6 bp-sm:mb-8 text-center">
-            <h2 className="text-2xl bp-sm:text-3xl font-bold text-foreground">스트링</h2>
-            <p className="mt-1.5 bp-sm:mt-2 text-xs bp-sm:text-sm text-muted-foreground">프로가 선택하는 테니스 스트링</p>
+          <div className="mb-8 bp-sm:mb-10 text-center">
+            <h2 className="text-2xl bp-sm:text-3xl bp-md:text-4xl font-bold text-foreground tracking-tight">스트링</h2>
+            <p className="mt-2 bp-sm:mt-3 text-sm bp-sm:text-base text-muted-foreground">프로가 선택하는 테니스 스트링</p>
           </div>
-          <div className="mb-6 bp-sm:mb-8">
+          <div className="mb-8 bp-sm:mb-10">
             <div className="flex justify-center">
-              <div className="flex items-center gap-1.5 bp-sm:gap-2 overflow-x-auto pb-2 scrollbar-hide">
+              <div className="flex items-center gap-2 bp-sm:gap-2.5 overflow-x-auto pb-2 scrollbar-hide">
                 <button
                   onClick={() => setActiveStringBrand("all")}
-                  className={`shrink-0 px-4 bp-sm:px-5 bp-md:px-6 py-2 bp-sm:py-2.5 rounded-full text-xs bp-sm:text-sm font-semibold transition-all duration-300 whitespace-nowrap ${activeStringBrand === "all" ? "bg-primary text-primary-foreground shadow-md" : "border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20 hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground"}`}
+                  className={`shrink-0 px-5 bp-sm:px-6 bp-md:px-7 py-2.5 bp-sm:py-3 rounded-xl text-sm bp-sm:text-base font-semibold transition-all duration-300 whitespace-nowrap ${activeStringBrand === "all" ? "bg-foreground text-background shadow-lg" : "bg-card border border-border/60 text-foreground hover:border-border hover:shadow-md"}`}
                 >
                   전체
                 </button>
@@ -606,7 +627,7 @@ export default function Home() {
                   <button
                     key={b.value}
                     onClick={() => setActiveStringBrand(b.value as StringBrandKey)}
-                    className={`shrink-0 px-4 bp-sm:px-5 bp-md:px-6 py-2 bp-sm:py-2.5 rounded-full text-xs bp-sm:text-sm font-semibold transition-all duration-300 whitespace-nowrap ${activeStringBrand === b.value ? "bg-primary text-primary-foreground shadow-md" : "border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20 hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground"}`}
+                    className={`shrink-0 px-5 bp-sm:px-6 bp-md:px-7 py-2.5 bp-sm:py-3 rounded-xl text-sm bp-sm:text-base font-semibold transition-all duration-300 whitespace-nowrap ${activeStringBrand === b.value ? "bg-foreground text-background shadow-lg" : "bg-card border border-border/60 text-foreground hover:border-border hover:shadow-md"}`}
                   >
                     {b.label}
                   </button>
@@ -635,18 +656,18 @@ export default function Home() {
       </section>
 
       {/* 중고 라켓 섹션 */}
-      <section ref={racketsSectionRef} className="py-10 bp-sm:py-12 bp-md:py-16">
+      <section ref={racketsSectionRef} className="py-12 bp-sm:py-14 bp-md:py-20">
         <SiteContainer>
-          <div className="mb-6 bp-sm:mb-8 text-center">
-            <h2 className="text-2xl bp-sm:text-3xl font-bold text-foreground">중고 라켓</h2>
-            <p className="mt-1.5 bp-sm:mt-2 text-xs bp-sm:text-sm text-muted-foreground">도깨비테니스에서 관리하는 라켓을 활용해보세요</p>
+          <div className="mb-8 bp-sm:mb-10 text-center">
+            <h2 className="text-2xl bp-sm:text-3xl bp-md:text-4xl font-bold text-foreground tracking-tight">중고 라켓</h2>
+            <p className="mt-2 bp-sm:mt-3 text-sm bp-sm:text-base text-muted-foreground">도깨비테니스에서 관리하는 라켓을 활용해보세요</p>
           </div>
-          <div className="mb-6 bp-sm:mb-8">
+          <div className="mb-8 bp-sm:mb-10">
             <div className="flex justify-center">
-              <div className="flex items-center gap-1.5 bp-sm:gap-2 overflow-x-auto pb-2 scrollbar-hide">
+              <div className="flex items-center gap-2 bp-sm:gap-2.5 overflow-x-auto pb-2 scrollbar-hide">
                 <button
                   onClick={() => setActiveBrand("all")}
-                  className={`shrink-0 px-4 bp-sm:px-5 bp-md:px-6 py-2 bp-sm:py-2.5 rounded-full text-xs bp-sm:text-sm font-semibold transition-all duration-300 whitespace-nowrap ${activeBrand === "all" ? "bg-primary text-primary-foreground shadow-md" : "border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20 hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground"}`}
+                  className={`shrink-0 px-5 bp-sm:px-6 bp-md:px-7 py-2.5 bp-sm:py-3 rounded-xl text-sm bp-sm:text-base font-semibold transition-all duration-300 whitespace-nowrap ${activeBrand === "all" ? "bg-foreground text-background shadow-lg" : "bg-card border border-border/60 text-foreground hover:border-border hover:shadow-md"}`}
                 >
                   전체
                 </button>
@@ -654,7 +675,7 @@ export default function Home() {
                   <button
                     key={b.value}
                     onClick={() => setActiveBrand(b.value as BrandKey)}
-                    className={`shrink-0 px-4 bp-sm:px-5 bp-md:px-6 py-2 bp-sm:py-2.5 rounded-full text-xs bp-sm:text-sm font-semibold transition-all duration-300 whitespace-nowrap ${activeBrand === b.value ? "bg-primary text-primary-foreground shadow-md" : "border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20 hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground"}`}
+                    className={`shrink-0 px-5 bp-sm:px-6 bp-md:px-7 py-2.5 bp-sm:py-3 rounded-xl text-sm bp-sm:text-base font-semibold transition-all duration-300 whitespace-nowrap ${activeBrand === b.value ? "bg-foreground text-background shadow-lg" : "bg-card border border-border/60 text-foreground hover:border-border hover:shadow-md"}`}
                   >
                     {b.label}
                   </button>

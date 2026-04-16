@@ -8,20 +8,10 @@ import MaskedBlock from "@/components/reviews/MaskedBlock";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  badgeBaseOutlined,
-  badgeSizeSm,
-  getAnswerStatusBadgeSpec,
-  getQnaCategoryBadgeSpec,
-} from "@/lib/badge-style";
+import { badgeBaseOutlined, badgeSizeSm, getAnswerStatusBadgeSpec, getQnaCategoryBadgeSpec } from "@/lib/badge-style";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import {
   Activity,
@@ -50,11 +40,12 @@ import {
   Target,
   Trash2,
   Truck,
+  Wrench,
   X,
   Zap,
 } from "lucide-react";
-import Image from "next/image";
 import dynamic from "next/dynamic";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -70,10 +61,7 @@ function getGuestOrderModeClient(): GuestOrderMode {
   return raw === "off" || raw === "legacy" || raw === "on" ? raw : "legacy";
 }
 
-const ReviewPhotoViewerDialog = dynamic(
-  () => import("./ReviewPhotoViewerDialog"),
-  { loading: () => null },
-);
+const ReviewPhotoViewerDialog = dynamic(() => import("./ReviewPhotoViewerDialog"), { loading: () => null });
 const ReviewEditDialog = dynamic(() => import("./ReviewEditDialog"), {
   loading: () => null,
 });
@@ -150,36 +138,14 @@ export default function ProductDetailClient({ product }: { product: any }) {
   // ====== 스펙 표 렌더링용 변환 ======
   const toDisplaySpec = () => {
     const spec = product?.specifications || {};
-    const origin =
-      spec.origin ??
-      spec.madeIn ??
-      spec.제조국 ??
-      product?.origin ??
-      product?.madeIn;
-    const brand =
-      BRAND_MAP[product?.brand] ??
-      BRAND_MAP[spec.brand] ??
-      product?.brand ??
-      spec.brand;
-    const material =
-      MATERIAL_MAP[product?.material] ??
-      MATERIAL_MAP[spec.material] ??
-      spec.소재 ??
-      product?.material ??
-      spec.material;
+    const origin = spec.origin ?? spec.madeIn ?? spec.제조국 ?? product?.origin ?? product?.madeIn;
+    const brand = BRAND_MAP[product?.brand] ?? BRAND_MAP[spec.brand] ?? product?.brand ?? spec.brand;
+    const material = MATERIAL_MAP[product?.material] ?? MATERIAL_MAP[spec.material] ?? spec.소재 ?? product?.material ?? spec.material;
     const gaugeRaw = product?.gauge ?? spec.gauge ?? spec.게이지;
     const gauge = GAUGE_MAP[gaugeRaw] ?? gaugeRaw;
-    const color =
-      COLOR_MAP[product?.color] ??
-      COLOR_MAP[spec.color] ??
-      spec.색상 ??
-      product?.color ??
-      spec.color;
+    const color = COLOR_MAP[product?.color] ?? COLOR_MAP[spec.color] ?? spec.색상 ?? product?.color ?? spec.color;
     const lengthRaw = product?.length ?? spec.length ?? spec.길이;
-    const length =
-      typeof lengthRaw === "string" && /^\d+(\.\d+)?$/.test(lengthRaw)
-        ? `${lengthRaw}m`
-        : lengthRaw;
+    const length = typeof lengthRaw === "string" && /^\d+(\.\d+)?$/.test(lengthRaw) ? `${lengthRaw}m` : lengthRaw;
 
     const display: Record<string, any> = {
       브랜드: brand,
@@ -191,8 +157,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
     if (origin) display["제조국"] = origin;
 
     if (product?.mountingFee && Number(product.mountingFee) > 0) {
-      display["장착 서비스 비용"] =
-        `${Number(product.mountingFee).toLocaleString()}원`;
+      display["장착 서비스 비용"] = `${Number(product.mountingFee).toLocaleString()}원`;
     }
 
     return display;
@@ -241,10 +206,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const [loading, setLoading] = useState(false);
   const [hasResolvedReviewUser, setHasResolvedReviewUser] = useState(false);
   const [showSticky, setShowSticky] = useState(false);
-  const fetcher = (url: string) =>
-    fetch(url, { credentials: "include" }).then(async (r) =>
-      r.status === 200 ? r.json() : null,
-    );
+  const fetcher = (url: string) => fetch(url, { credentials: "include" }).then(async (r) => (r.status === 200 ? r.json() : null));
   const relatedSectionRef = useRef<HTMLDivElement | null>(null);
   const [shouldLoadRelated, setShouldLoadRelated] = useState(false);
 
@@ -268,79 +230,47 @@ export default function ProductDetailClient({ product }: { product: any }) {
   }, [shouldLoadRelated]);
 
   // 1) 브랜드 기준 1차
-  const { data: byBrand } = useSWR(
-    shouldLoadRelated
-      ? `/api/products?brand=${encodeURIComponent(product.brand ?? "")}&limit=16&exclude=${product._id}`
-      : null,
-    fetcher,
-    { revalidateOnFocus: false },
-  );
+  const { data: byBrand } = useSWR(shouldLoadRelated ? `/api/products?brand=${encodeURIComponent(product.brand ?? "")}&limit=16&exclude=${product._id}` : null, fetcher, { revalidateOnFocus: false });
 
   // 2) 재질 기준 2차 (1차가 빈 경우에만)
-  const { data: byMaterial } = useSWR(
-    shouldLoadRelated && !byBrand?.products?.length && product.material
-      ? `/api/products?material=${encodeURIComponent(product.material)}&limit=16&exclude=${product._id}`
-      : null,
-    fetcher,
-    { revalidateOnFocus: false },
-  );
+  const { data: byMaterial } = useSWR(shouldLoadRelated && !byBrand?.products?.length && product.material ? `/api/products?material=${encodeURIComponent(product.material)}&limit=16&exclude=${product._id}` : null, fetcher, {
+    revalidateOnFocus: false,
+  });
 
   // 3) 전체 백업 3차 (1·2차 둘 다 빈 경우에만)
-  const { data: anyPool } = useSWR(
-    shouldLoadRelated && !byBrand?.products?.length && !byMaterial?.products?.length
-      ? `/api/products?limit=16&exclude=${product._id}`
-      : null,
-    fetcher,
-    { revalidateOnFocus: false },
-  );
+  const { data: anyPool } = useSWR(shouldLoadRelated && !byBrand?.products?.length && !byMaterial?.products?.length ? `/api/products?limit=16&exclude=${product._id}` : null, fetcher, { revalidateOnFocus: false });
 
   // 최종 풀 구성
-  const pool =
-    (byBrand?.products?.length
-      ? byBrand.products
-      : byMaterial?.products?.length
-        ? byMaterial.products
-        : anyPool?.products) ?? [];
+  const pool = (byBrand?.products?.length ? byBrand.products : byMaterial?.products?.length ? byMaterial.products : anyPool?.products) ?? [];
 
   const relatedFiltered = useMemo(() => {
     const base = pool.filter((p: any) => String(p._id) !== String(product._id));
-    const same = base.filter(
-      (p: any) => p.brand === product.brand || p.material === product.material,
-    );
+    const same = base.filter((p: any) => p.brand === product.brand || p.material === product.material);
     return (same.length ? same : base).slice(0, 4);
   }, [pool, product]);
 
   // 로딩 상태(세 요청 모두 아직 없음)
-  const loadingRelated =
-    !shouldLoadRelated || (!byBrand && !byMaterial && !anyPool);
+  const loadingRelated = !shouldLoadRelated || (!byBrand && !byMaterial && !anyPool);
 
   // 상품별 QnA 목록
   const {
     data: qnaData,
     error: qnaError,
     isLoading: qnaLoading,
-  } = useSWR(
-    activeTab === "qna"
-      ? `/api/products/${product._id}/qna?page=1&limit=10`
-      : null,
-    fetcher,
-    {
-      revalidateOnFocus: false,
-    },
-  );
+  } = useSWR(activeTab === "qna" ? `/api/products/${product._id}/qna?page=1&limit=10` : null, fetcher, {
+    revalidateOnFocus: false,
+  });
 
   const qnas = qnaData?.items ?? [];
   const qnaTotal = qnaData?.total ?? 0;
 
-  const fmtDate = (v?: string | Date) =>
-    v ? new Date(v).toLocaleDateString() : "";
+  const fmtDate = (v?: string | Date) => (v ? new Date(v).toLocaleDateString() : "");
 
   // 합계 계산
   const unitPrice = Number(product?.price ?? 0);
   const qtyTotal = unitPrice * quantity;
   const serviceTotal = qtyTotal + Number(product?.mountingFee ?? 0);
-  const canCheckoutWithService =
-    typeof product?.mountingFee === "number" && product.mountingFee > 0;
+  const canCheckoutWithService = typeof product?.mountingFee === "number" && product.mountingFee > 0;
 
   // 브라우저 뒤/앞으로 가기 시에도 URL 변화에 맞춰 동기화
   useEffect(() => {
@@ -384,24 +314,12 @@ export default function ProductDetailClient({ product }: { product: any }) {
   };
 
   // 로그인 정보 로드가 끝난 후 계산
-  const isAdmin =
-    !!user &&
-    ((user as any).role === "admin" ||
-      (user as any).role === "ADMIN" ||
-      (user as any).isAdmin === true ||
-      (Array.isArray((user as any).roles) &&
-        (user as any).roles.includes("admin")));
+  const isAdmin = !!user && ((user as any).role === "admin" || (user as any).role === "ADMIN" || (user as any).isAdmin === true || (Array.isArray((user as any).roles) && (user as any).roles.includes("admin")));
 
   // 화면에 보이는 개수만큼만 가져와 병합(과한 트래픽 방지)
   const reviewsCount = reviewsLen || 10;
 
-  const { data: adminReviews, mutate: mutateAdminReviews } = useSWR(
-    activeTab === "reviews" && isAdmin
-      ? `/api/reviews/admin?productId=${product._id}&limit=${reviewsCount}`
-      : null,
-    fetcher,
-    { revalidateOnFocus: false },
-  );
+  const { data: adminReviews, mutate: mutateAdminReviews } = useSWR(activeTab === "reviews" && isAdmin ? `/api/reviews/admin?productId=${product._id}&limit=${reviewsCount}` : null, fetcher, { revalidateOnFocus: false });
 
   const { has, toggle, isValidating } = useWishlist();
   const wishState = has(product._id);
@@ -435,18 +353,10 @@ export default function ProductDetailClient({ product }: { product: any }) {
   }, [activeTab, hasResolvedReviewUser]);
 
   // 로그인한 경우에만 내 리뷰 원문을 추가 조회 (비공개라도 원문 반환)
-  const { data: myReview, mutate: mutateMyReview } = useSWR(
-    activeTab === "reviews" && user
-      ? `/api/reviews/self?productId=${product._id}`
-      : null,
-    fetcher,
-    { revalidateOnFocus: false },
-  );
+  const { data: myReview, mutate: mutateMyReview } = useSWR(activeTab === "reviews" && user ? `/api/reviews/self?productId=${product._id}` : null, fetcher, { revalidateOnFocus: false });
 
   // 내 리뷰 여부 판별(merged에서 ownedByMe 세팅 + id 비교)
-  const isMine = (rv: any) =>
-    !!rv?.ownedByMe ||
-    (myReview && rv && String(myReview._id) === String(rv._id));
+  const isMine = (rv: any) => !!rv?.ownedByMe || (myReview && rv && String(myReview._id) === String(rv._id));
 
   // 서버가 내려준 product.reviews는 숨김 리뷰를 마스킹
   // myReview가 있으면 동일 _id 항목을 원문으로 덮어쓰기 + 마스킹 해제
@@ -457,9 +367,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
     // 내 리뷰 덮어쓰기 (있을 때만)
     if (myReview && myReview._id) {
-      const i = next.findIndex(
-        (r: any) => String(r._id) === String(myReview._id),
-      );
+      const i = next.findIndex((r: any) => String(r._id) === String(myReview._id));
       if (i !== -1) {
         next = [...next];
         next[i] = {
@@ -525,8 +433,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
   };
   const closeViewer = () => setViewerOpen(false);
   const nextViewer = () => setViewerIndex((i) => (i + 1) % viewerImages.length);
-  const prevViewer = () =>
-    setViewerIndex((i) => (i - 1 + viewerImages.length) % viewerImages.length);
+  const prevViewer = () => setViewerIndex((i) => (i - 1 + viewerImages.length) % viewerImages.length);
 
   const openEdit = (review: any) => {
     setEditing(review);
@@ -652,10 +559,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
         action: {
           label: "로그인하기",
           // onClick: () => router.push('/login?from=cart'),
-          onClick: () =>
-            router.push(
-              `/login?next=${encodeURIComponent(`/products/${product._id}`)}`,
-            ),
+          onClick: () => router.push(`/login?next=${encodeURIComponent(`/products/${product._id}`)}`),
         },
       });
     } else {
@@ -718,8 +622,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
     setBuyNowItem(buyNowItem);
 
     // 장착비(서비스비) – 없으면 0
-    const mountingFee =
-      typeof product.mountingFee === "number" ? product.mountingFee : 0;
+    const mountingFee = typeof product.mountingFee === "number" ? product.mountingFee : 0;
 
     const search = new URLSearchParams({
       mode: "buynow",
@@ -742,18 +645,11 @@ export default function ProductDetailClient({ product }: { product: any }) {
     setBusy(true);
     try {
       await toggle(product._id); // 항상 서버에 요청
-      showSuccessToast(
-        isWishlisted
-          ? "위시리스트에서 제거했습니다."
-          : "위시리스트에 추가했습니다.",
-      );
+      showSuccessToast(isWishlisted ? "위시리스트에서 제거했습니다." : "위시리스트에 추가했습니다.");
     } catch (e: any) {
       if (e?.message === "unauthorized") {
         showErrorToast("로그인이 필요합니다.");
-        const nextPath =
-          typeof window !== "undefined"
-            ? window.location.pathname + window.location.search
-            : `/products/${product._id}`;
+        const nextPath = typeof window !== "undefined" ? window.location.pathname + window.location.search : `/products/${product._id}`;
         router.push(`/login?next=${encodeURIComponent(nextPath)}`);
       } else {
         showErrorToast("처리 중 오류가 발생했습니다.");
@@ -773,90 +669,68 @@ export default function ProductDetailClient({ product }: { product: any }) {
     setSelectedImageIndex((prev) => (prev - 1 + images.length) % images.length);
   };
 
-  const averageRating =
-    reviewsLen > 0
-      ? reviews.reduce(
-          (sum: number, review: any) => sum + (Number(review?.rating) || 0),
-          0,
-        ) / reviewsLen
-      : 0;
+  const averageRating = reviewsLen > 0 ? reviews.reduce((sum: number, review: any) => sum + (Number(review?.rating) || 0), 0) / reviewsLen : 0;
 
   // 수량 버튼 상태
   const canDec = quantity > 1;
   const canInc = quantity < stock;
 
   return (
-    <div className="min-h-full bg-muted/30 pb-20 bp-md:pb-8">
+    <div className="min-h-full bg-background pb-24 bp-md:pb-10">
       {/* Hero Section with Breadcrumb */}
-      <div className="relative bg-muted/30 dark:bg-card/40 text-foreground py-6 sm:py-8 border-b border-border">
-        <div className="absolute inset-0 bg-muted/50 dark:bg-card/60"></div>
+      <div className="relative bg-muted/20 text-foreground py-5 sm:py-6 border-b border-border/60">
         <SiteContainer variant="wide" className="relative">
-          <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm mb-3 sm:mb-4 opacity-90 overflow-x-auto scrollbar-hide">
-            <Link
-              href="/"
-              className="hover:text-primary transition-colors whitespace-nowrap"
-            >
-              홈
-            </Link>
-            <span>/</span>
-            <Link
-              href="/products"
-              className="hover:text-primary transition-colors whitespace-nowrap"
-            >
-              상품
-            </Link>
-            <span>/</span>
-            <span className="text-primary truncate max-w-[120px] sm:max-w-none">
-              {product.name}
-            </span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 sm:gap-2.5 text-sm sm:text-base overflow-x-auto scrollbar-hide">
+              <Link href="/" className="text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap">
+                홈
+              </Link>
+              <span className="text-muted-foreground/50">/</span>
+              <Link href="/products" className="text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap">
+                상품
+              </Link>
+              <span className="text-muted-foreground/50">/</span>
+              <span className="text-foreground font-medium truncate max-w-[150px] sm:max-w-none">{product.name}</span>
+            </div>
+            <Button variant="ghost" className="text-muted-foreground hover:text-foreground hover:bg-muted/50 px-3 py-2 h-auto text-sm rounded-xl transition-all duration-300" onClick={() => router.back()}>
+              <ArrowLeft className="mr-1.5 h-4 w-4" />
+              뒤로
+            </Button>
           </div>
-          <Button
-            variant="ghost"
-            className="text-foreground hover:bg-card/10 p-0 h-auto text-sm"
-            onClick={() => router.back()}
-          >
-            <ArrowLeft className="mr-1.5 h-4 w-4" />
-            이전 페이지로
-          </Button>
         </SiteContainer>
       </div>
 
-      <SiteContainer variant="wide" className="py-4 bp-sm:py-6 bp-md:py-8">
-        <div className="grid grid-cols-1 gap-4 sm:gap-6 bp-lg:grid-cols-5">
-          <div className="bp-lg:col-span-3 space-y-3 sm:space-y-4">
-            <Card className="overflow-hidden border-0 shadow-xl sm:shadow-2xl bg-card/90 backdrop-blur-sm dark:bg-muted/90">
-              <div className="relative aspect-square">
-                <Image
-                  src={images[selectedImageIndex] || "/placeholder.svg"}
-                  alt={product.name}
-                  fill
-                  className="object-cover transition-transform duration-300 hover:scale-105"
-                />
+      <SiteContainer variant="wide" className="py-6 bp-sm:py-8 bp-md:py-10">
+        <div className="grid grid-cols-1 gap-6 sm:gap-8 bp-lg:grid-cols-5">
+          <div className="bp-lg:col-span-3 space-y-4 sm:space-y-5">
+            <Card className="overflow-hidden border border-border/60 shadow-lg bg-card rounded-3xl">
+              <div className="relative aspect-square bg-muted/20">
+                <Image src={images[selectedImageIndex] || "/placeholder.svg"} alt={product.name} fill className="object-contain p-4 transition-transform duration-500 hover:scale-105" />
                 {images.length > 1 && (
                   <>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="absolute left-2 top-1/2 -translate-y-1/2 h-8 w-8 sm:h-10 sm:w-10 bg-background/80 text-foreground border border-border shadow-sm hover:bg-background dark:bg-background/30 dark:hover:bg-background/40"
+                      className="absolute left-3 top-1/2 -translate-y-1/2 h-10 w-10 sm:h-12 sm:w-12 bg-card/90 text-foreground border border-border/60 shadow-lg hover:bg-card hover:shadow-xl hover:scale-105 rounded-xl transition-all duration-300"
                       onClick={prevImage}
                     >
-                      <ChevronLeft className="h-4 w-4" />
+                      <ChevronLeft className="h-5 w-5" />
                     </Button>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 sm:h-10 sm:w-10 bg-background/80 text-foreground border border-border shadow-sm hover:bg-background dark:bg-background/30 dark:hover:bg-background/40"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 h-10 w-10 sm:h-12 sm:w-12 bg-card/90 text-foreground border border-border/60 shadow-lg hover:bg-card hover:shadow-xl hover:scale-105 rounded-xl transition-all duration-300"
                       onClick={nextImage}
                     >
-                      <ChevronRight className="h-4 w-4" />
+                      <ChevronRight className="h-5 w-5" />
                     </Button>
                   </>
                 )}
-                <div className="absolute top-3 sm:top-4 left-3 sm:left-4 flex gap-1.5 sm:gap-2">
-                  <Badge variant="brand" className="text-xs">
+                <div className="absolute top-4 sm:top-5 left-4 sm:left-5 flex gap-2 sm:gap-2.5">
+                  <Badge variant="brand" className="text-xs px-3 py-1 rounded-lg shadow-sm">
                     NEW
                   </Badge>
-                  <Badge variant="info" className="text-xs">
+                  <Badge variant="info" className="text-xs px-3 py-1 rounded-lg shadow-sm">
                     정품
                   </Badge>
                 </div>
@@ -864,23 +738,15 @@ export default function ProductDetailClient({ product }: { product: any }) {
             </Card>
 
             {images.length > 1 && (
-              <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
+              <div className="grid grid-cols-4 gap-2 sm:gap-3">
                 {images.map((image: string, index: number) => (
                   <Card
                     key={index}
-                    className={`overflow-hidden cursor-pointer transition-all duration-200 ${selectedImageIndex === index ? "ring-2 ring-ring shadow-lg" : "hover:shadow-md"}`}
+                    className={`overflow-hidden cursor-pointer transition-all duration-300 rounded-xl border ${selectedImageIndex === index ? "ring-2 ring-foreground border-foreground shadow-lg scale-[1.02]" : "border-border/60 hover:border-border hover:shadow-md"}`}
                     onClick={() => setSelectedImageIndex(index)}
                   >
-                    <div className="aspect-square relative">
-                      <Image
-                        src={
-                          image ||
-                          "/placeholder.svg?height=100&width=100&query=tennis string thumbnail"
-                        }
-                        alt={`${product.name} ${index + 1}`}
-                        fill
-                        className="object-cover"
-                      />
+                    <div className="aspect-square relative bg-muted/20">
+                      <Image src={image || "/placeholder.svg?height=100&width=100&query=tennis string thumbnail"} alt={`${product.name} ${index + 1}`} fill className="object-contain p-2" />
                     </div>
                   </Card>
                 ))}
@@ -888,203 +754,166 @@ export default function ProductDetailClient({ product }: { product: any }) {
             )}
           </div>
 
-          <div className="bp-lg:col-span-2 space-y-3 sm:space-y-4">
-            <Card className="border-0 shadow-lg sm:shadow-xl bg-card/90 backdrop-blur-sm dark:bg-muted/90">
-              <CardContent className="p-4 sm:p-6">
-                <div className="space-y-3 sm:space-y-4">
+          <div className="bp-lg:col-span-2 space-y-4 sm:space-y-5">
+            <Card className="border border-border/60 shadow-lg bg-card rounded-3xl">
+              <CardContent className="p-5 sm:p-6 bp-md:p-7">
+                <div className="space-y-5 sm:space-y-6">
                   {/* 브랜드와 제품명 */}
                   <div>
-                    <Badge variant="brand" className="mb-2 text-xs">
-                      {BRAND_MAP[(product?.brand ?? "").toLowerCase()] ??
-                        product.brand}
-                    </Badge>
-                    <h1 className="text-xl sm:text-2xl bp-lg:text-3xl font-bold bg-muted/30 text-foreground leading-tight">
-                      {product.name}
-                    </h1>
-                    <div className="mt-2 flex items-center gap-2 sm:gap-3">
-                      <div className="flex items-center">
+                    <span className="inline-block text-sm sm:text-base text-muted-foreground font-medium mb-2">{BRAND_MAP[(product?.brand ?? "").toLowerCase()] ?? product.brand}</span>
+                    <h1 className="text-xl sm:text-2xl bp-lg:text-3xl font-bold text-foreground leading-tight tracking-tight">{product.name}</h1>
+                    <div className="mt-3 flex items-center gap-3">
+                      <div className="flex items-center gap-0.5">
                         {[...Array(5)].map((_, i) => (
-                          <Star
-                            key={i}
-                            className={`h-3 w-3 sm:h-4 sm:w-4 ${i < Math.floor(averageRating) ? "text-warning fill-current" : "fill-muted text-muted"}`}
-                          />
+                          <Star key={i} className={`h-4 w-4 sm:h-5 sm:w-5 ${i < Math.floor(averageRating) ? "text-foreground fill-current" : "text-muted-foreground/30 fill-current"}`} />
                         ))}
                       </div>
-                      <span className="text-xs sm:text-sm text-muted-foreground">
-                        {averageRating.toFixed(1)} ({reviewsLen})
+                      <span className="text-sm sm:text-base text-muted-foreground">
+                        {averageRating.toFixed(1)} ({reviewsLen}개 리뷰)
                       </span>
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <div className="flex items-baseline gap-2 sm:gap-3 flex-wrap">
-                      <span className="text-2xl sm:text-3xl font-bold text-primary">
-                        {product.price.toLocaleString()}원
+                  <div className="space-y-3">
+                    <div className="flex items-baseline gap-3 flex-wrap">
+                      <span className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
+                        {product.price.toLocaleString()}
+                        <span className="text-xl sm:text-2xl font-medium ml-0.5">원</span>
                       </span>
-                      {product.originalPrice &&
-                        product.originalPrice > product.price && (
-                          <>
-                            <span className="text-base sm:text-lg text-muted-foreground line-through">
-                              {product.originalPrice.toLocaleString()}원
-                            </span>
-                            <Badge variant="warning" className="text-xs">
-                              {Math.round(
-                                (1 - product.price / product.originalPrice) *
-                                  100,
-                              )}
-                              % 할인
-                            </Badge>
-                          </>
-                        )}
+                      {product.originalPrice && product.originalPrice > product.price && (
+                        <>
+                          <span className="text-lg sm:text-xl text-muted-foreground/60 line-through">{product.originalPrice.toLocaleString()}원</span>
+                          <span className="text-sm font-semibold text-destructive bg-destructive/10 px-2.5 py-1 rounded-lg">{Math.round((1 - product.price / product.originalPrice) * 100)}% OFF</span>
+                        </>
+                      )}
                     </div>
                     {typeof product?.mountingFee === "number" && (
-                      <div className="text-xs sm:text-sm text-muted-foreground">
-                        <span className="inline-flex items-center rounded-md bg-primary/10 dark:bg-primary/20 border border-border px-2 py-1 text-xs">
-                          장착 서비스:{" "}
-                          {product.mountingFee > 0
-                            ? `+${product.mountingFee.toLocaleString()}원`
-                            : "무료"}
+                      <div className="text-sm sm:text-base text-muted-foreground">
+                        <span className="inline-flex items-center gap-1.5 rounded-xl bg-muted/50 border border-border/60 px-3 py-1.5 text-sm font-medium">
+                          <Wrench className="h-3.5 w-3.5" />
+                          장착 서비스: {product.mountingFee > 0 ? `+${product.mountingFee.toLocaleString()}원` : "무료"}
                         </span>
                       </div>
                     )}
                   </div>
 
-                  <div className="space-y-3 sm:space-y-4 pt-3 sm:pt-4 border-t">
+                  <div className="space-y-4 sm:space-y-5 pt-5 sm:pt-6 border-t border-border/60">
                     <div className="flex items-center justify-between">
-                      <span className="font-medium text-sm sm:text-base">
-                        수량
-                      </span>
+                      <span className="font-semibold text-base sm:text-lg">수량</span>
 
-                      <div className="flex items-center rounded-full bg-muted px-1 dark:bg-muted">
+                      <div className="flex items-center rounded-xl bg-muted/50 border border-border/60 p-1">
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-8 w-8 sm:h-9 sm:w-9 disabled:opacity-40"
+                          className="h-9 w-9 sm:h-10 sm:w-10 rounded-lg disabled:opacity-30 hover:bg-card transition-all duration-200"
                           aria-label="수량 감소"
                           disabled={!canDec}
                           onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                         >
-                          <Minus className="h-3 w-3 sm:h-4 sm:w-4" />
+                          <Minus className="h-4 w-4" />
                         </Button>
 
-                        <span className="tabular-nums w-8 sm:w-10 select-none text-center font-medium text-sm sm:text-base">
-                          {quantity}
-                        </span>
+                        <span className="tabular-nums w-10 sm:w-12 select-none text-center font-bold text-lg sm:text-xl">{quantity}</span>
 
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-8 w-8 sm:h-9 sm:w-9 disabled:opacity-40"
+                          className="h-9 w-9 sm:h-10 sm:w-10 rounded-lg disabled:opacity-30 hover:bg-card transition-all duration-200"
                           aria-label="수량 증가"
                           disabled={!canInc}
                           onClick={() => {
                             if (!canInc) {
-                              showErrorToast(
-                                `더 이상 담을 수 없습니다. 재고: ${stock}개`,
-                              );
+                              showErrorToast(`더 이상 담을 수 없습니다. 재고: ${stock}개`);
                               return;
                             }
                             setQuantity((q) => q + 1);
                           }}
                         >
-                          <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
+                          <Plus className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
-                    {product.inventory?.manageStock &&
-                      product.inventory.stock <= 5 &&
-                      product.inventory.stock > 0 && (
-                        <div className="flex items-center gap-2 p-2.5 sm:p-3 bg-muted/50 border border-border rounded-lg dark:bg-muted/40 dark:border-border">
-                          <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
-                          <span className="text-xs sm:text-sm text-muted-foreground">
-                            현재 남은 수량이 {product.inventory.stock}개입니다.
-                          </span>
-                        </div>
-                      )}
+                    {product.inventory?.manageStock && product.inventory.stock <= 5 && product.inventory.stock > 0 && (
+                      <div className="flex items-center gap-2.5 p-3 sm:p-3.5 bg-muted/30 border border-border/60 rounded-xl">
+                        <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span className="text-sm sm:text-base text-muted-foreground">
+                          현재 남은 수량이 <span className="font-semibold text-foreground">{product.inventory.stock}개</span>입니다.
+                        </span>
+                      </div>
+                    )}
 
-                    <div
-                      id="cta-anchor"
-                      className="flex flex-col gap-2 sm:gap-3"
-                    >
-                      {product.inventory?.manageStock &&
-                      product.inventory.stock <= 0 ? (
-                        <Button
-                          disabled
-                          className="w-full h-10 sm:h-11 text-sm bg-destructive/15 text-destructive border border-border dark:bg-destructive/20 dark:text-destructive"
-                        >
-                          <X className="mr-2 h-4 w-4" />
+                    <div id="cta-anchor" className="flex flex-col gap-3 sm:gap-3.5">
+                      {product.inventory?.manageStock && product.inventory.stock <= 0 ? (
+                        <Button disabled className="w-full h-12 sm:h-14 text-base rounded-xl bg-muted text-muted-foreground border border-border/60">
+                          <X className="mr-2 h-5 w-5" />
                           재고가 소진되었습니다
                         </Button>
                       ) : (
                         <>
                           <Button
-                            className="w-full h-10 sm:h-11 text-sm bg-primary text-primary-foreground hover:bg-primary/90 shadow"
+                            className="w-full h-12 sm:h-14 text-base font-semibold bg-foreground text-background hover:bg-foreground/90 shadow-lg rounded-xl transition-all duration-300 hover:shadow-xl hover:scale-[1.02]"
                             onClick={handleBuyNow}
                             disabled={loading || stock <= 0 || quantity > stock}
                           >
-                            <CreditCard className="mr-2 h-4 w-4" />
-                            즉시 구매하기
+                            <CreditCard className="mr-2 h-5 w-5" />
+                            바로 구매하기
                           </Button>
 
                           {canCheckoutWithService && (
                             <Button
-                              className="flex-1 h-12 rounded-lg border border-border bg-card dark:bg-muted hover:bg-muted/50 dark:hover:bg-muted active:bg-muted dark:active:bg-muted text-foreground font-semibold text-sm transition-colors flex items-center justify-center gap-2"
+                              className="w-full h-12 sm:h-14 rounded-xl border-2 border-foreground/20 bg-card hover:bg-muted/50 text-foreground font-semibold text-base transition-all duration-300 hover:border-foreground/40 flex items-center justify-center gap-2"
                               disabled={loading || quantity > stock}
                               onClick={handleBuyNowWithService}
                             >
-                              <CreditCard className="mr-2 h-4 w-4" />
-                              교체 서비스 포함 즉시 결제
+                              <Wrench className="mr-2 h-5 w-5" />
+                              교체 서비스 포함 구매
                             </Button>
                           )}
 
-                          <Button
-                            variant="outline"
-                            className="w-full h-10 sm:h-11 text-sm bg-transparent"
-                            onClick={handleAddToCart}
-                            disabled={loading || quantity > stock}
-                          >
-                            <ShoppingCart className="mr-2 h-4 w-4" />
-                            장바구니에 담기
-                          </Button>
+                          <div className="grid grid-cols-2 gap-3">
+                            <Button
+                              variant="outline"
+                              className="h-11 sm:h-12 text-sm sm:text-base rounded-xl border-border/60 bg-transparent hover:bg-muted/50 hover:border-border transition-all duration-300"
+                              onClick={handleAddToCart}
+                              disabled={loading || quantity > stock}
+                            >
+                              <ShoppingCart className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                              장바구니
+                            </Button>
+                            <Button
+                              variant="outline"
+                              disabled={busy || isWishlistUnknown}
+                              onClick={handleWishlist}
+                              className={`h-11 sm:h-12 text-sm sm:text-base rounded-xl border-border/60 transition-all duration-300 ${isWishlisted ? "bg-destructive/10 border-destructive/30 text-destructive hover:bg-destructive/20" : "bg-transparent hover:bg-muted/50 hover:border-border"} ${isWishlistUnknown ? "opacity-70 cursor-not-allowed" : ""}`}
+                              aria-disabled={busy || isWishlistUnknown}
+                              aria-label={isWishlistUnknown ? "위시리스트 상태 확인 중" : "위시리스트"}
+                            >
+                              <Heart className={`mr-2 h-4 w-4 sm:h-5 sm:w-5 ${isWishlisted ? "text-destructive fill-current" : isWishlistUnknown ? "text-muted-foreground/70" : ""}`} />
+                              위시리스트
+                            </Button>
+                          </div>
                         </>
                       )}
-                      <Button
-                        variant="outline"
-                        disabled={busy || isWishlistUnknown}
-                        onClick={handleWishlist}
-                        className={`w-full h-10 sm:h-11 text-sm ${isWishlisted ? "bg-destructive/10 border-border text-destructive dark:bg-destructive/15 dark:border-border dark:text-destructive" : ""} ${isWishlistUnknown ? "opacity-70 cursor-not-allowed" : ""}`}
-                        aria-disabled={busy || isWishlistUnknown}
-                        aria-label={
-                          isWishlistUnknown
-                            ? "위시리스트 상태 확인 중"
-                            : "위시리스트"
-                        }
-                      >
-                        <Heart
-                          className={`mr-2 h-4 w-4 ${isWishlisted ? "text-destructive fill-current" : isWishlistUnknown ? "text-muted-foreground/70" : ""}`}
-                        />
-                        위시리스트
-                      </Button>
                     </div>
                   </div>
 
-                  <div className="pt-3 sm:pt-4 border-t">
-                    <h3 className="font-semibold text-sm sm:text-base mb-2 sm:mb-3 flex items-center">
-                      <Truck className="mr-2 h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                  <div className="pt-5 sm:pt-6 border-t border-border/60">
+                    <h3 className="font-semibold text-base sm:text-lg mb-4 flex items-center">
+                      <Truck className="mr-2.5 h-5 w-5 text-foreground" />
                       배송 정보
                     </h3>
-                    <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">
-                      <div className="flex items-center gap-2">
-                        <Check className="h-3 w-3 sm:h-4 sm:w-4 text-primary shrink-0" />
-                        <span>3,000원 (30,000원 이상 무료)</span>
+                    <div className="grid gap-2.5 sm:gap-3">
+                      <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-xl border border-border/40">
+                        <Check className="h-4 w-4 sm:h-5 sm:w-5 text-foreground shrink-0" />
+                        <span className="text-sm sm:text-base">3,000원 (30,000원 이상 무료)</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Check className="h-3 w-3 sm:h-4 sm:w-4 text-primary shrink-0" />
-                        <span>오후 2시 이전 주문 시 당일 출고</span>
+                      <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-xl border border-border/40">
+                        <Check className="h-4 w-4 sm:h-5 sm:w-5 text-foreground shrink-0" />
+                        <span className="text-sm sm:text-base">오후 2시 이전 주문 시 당일 출고</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Check className="h-3 w-3 sm:h-4 sm:w-4 text-primary shrink-0" />
-                        <span>장착 서비스 신청 시 1-2일 추가</span>
+                      <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-xl border border-border/40">
+                        <Check className="h-4 w-4 sm:h-5 sm:w-5 text-foreground shrink-0" />
+                        <span className="text-sm sm:text-base">장착 서비스 신청 시 1-2일 추가</span>
                       </div>
                     </div>
                   </div>
@@ -1094,67 +923,55 @@ export default function ProductDetailClient({ product }: { product: any }) {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 bp-md:grid-cols-2 gap-4 sm:gap-6 mt-6 sm:mt-8">
-          <Card className="border-0 shadow-lg bg-card/90 backdrop-blur-sm dark:bg-muted/90">
-            <CardHeader className="pb-3 sm:pb-4 p-4 sm:p-6">
-              <CardTitle className="text-base sm:text-lg font-semibold text-primary flex items-center gap-2">
-                <Target className="h-4 w-4 sm:h-5 sm:w-5" />
+        <div className="grid grid-cols-1 bp-md:grid-cols-2 gap-5 sm:gap-6 mt-8 sm:mt-10">
+          <Card className="border border-border/60 shadow-lg bg-card rounded-3xl">
+            <CardHeader className="pb-4 sm:pb-5 p-5 sm:p-6">
+              <CardTitle className="text-lg sm:text-xl font-semibold text-foreground flex items-center gap-2.5">
+                <Target className="h-5 w-5 sm:h-6 sm:w-6" />
                 추천 정보 & 특성
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6 pt-0">
+            <CardContent className="space-y-5 sm:space-y-6 p-5 sm:p-6 pt-0">
               <div>
-                <h4 className="font-medium text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3">
-                  추천 대상
-                </h4>
-                <div className="space-y-1.5 sm:space-y-2">
+                <h4 className="font-semibold text-sm sm:text-base text-foreground mb-3 sm:mb-4">추천 대상</h4>
+                <div className="space-y-2 sm:space-y-2.5">
                   {selectedPlayerTypes.length > 0 && (
-                    <div className="flex items-center gap-2 text-xs sm:text-sm">
-                      <div className="w-2 h-2 bg-primary rounded-full shrink-0"></div>
+                    <div className="flex items-center gap-3 text-sm sm:text-base p-3 bg-muted/30 rounded-xl border border-border/40">
+                      <div className="w-2.5 h-2.5 bg-foreground rounded-full shrink-0"></div>
                       <span className="text-muted-foreground">플레이어:</span>
-                      <span className="font-medium">
-                        {selectedPlayerTypes.join(", ")}
-                      </span>
+                      <span className="font-medium text-foreground">{selectedPlayerTypes.join(", ")}</span>
                     </div>
                   )}
                   {selectedPlayStyles.length > 0 && (
-                    <div className="flex items-center gap-2 text-xs sm:text-sm">
-                      <div className="w-2 h-2 bg-primary rounded-full shrink-0"></div>
+                    <div className="flex items-center gap-3 text-sm sm:text-base p-3 bg-muted/30 rounded-xl border border-border/40">
+                      <div className="w-2.5 h-2.5 bg-foreground rounded-full shrink-0"></div>
                       <span className="text-muted-foreground">스타일:</span>
-                      <span className="font-medium">
-                        {selectedPlayStyles.join(", ")}
-                      </span>
+                      <span className="font-medium text-foreground">{selectedPlayStyles.join(", ")}</span>
                     </div>
                   )}
                 </div>
               </div>
 
               <div>
-                <h4 className="font-medium text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3">
-                  추가 특성
-                </h4>
+                <h4 className="font-semibold text-sm sm:text-base text-foreground mb-3 sm:mb-4">추가 특성</h4>
                 {additionalFeaturesText ? (
-                  <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                    {additionalFeaturesText}
-                  </p>
+                  <p className="text-sm sm:text-base text-muted-foreground leading-relaxed p-3 bg-muted/30 rounded-xl border border-border/40">{additionalFeaturesText}</p>
                 ) : (
-                  <p className="text-xs sm:text-sm text-muted-foreground italic">
-                    추가 특성 정보가 없습니다.
-                  </p>
+                  <p className="text-sm sm:text-base text-muted-foreground italic p-3 bg-muted/30 rounded-xl border border-border/40">추가 특성 정보가 없습니다.</p>
                 )}
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-card/90 backdrop-blur-sm dark:bg-muted/90">
-            <CardHeader className="pb-3 sm:pb-4 p-4 sm:p-6">
-              <CardTitle className="text-base sm:text-lg font-semibold text-primary flex items-center gap-2">
-                <Activity className="h-4 w-4 sm:h-5 sm:w-5" />
+          <Card className="border border-border/60 shadow-lg bg-card rounded-3xl">
+            <CardHeader className="pb-4 sm:pb-5 p-5 sm:p-6">
+              <CardTitle className="text-lg sm:text-xl font-semibold text-foreground flex items-center gap-2.5">
+                <Activity className="h-5 w-5 sm:h-6 sm:w-6" />
                 성능 특성
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-4 sm:p-6 pt-0">
-              <div className="grid grid-cols-2 gap-2.5 sm:gap-4">
+            <CardContent className="p-5 sm:p-6 pt-0">
+              <div className="grid grid-cols-2 gap-3 sm:gap-4">
                 {[
                   { name: "반발력", icon: Zap, key: "power", koKey: "반발력" },
                   {
@@ -1177,22 +994,14 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     koKey: "편안함",
                   },
                 ].map((spec, index) => (
-                  <div
-                    key={index}
-                    className="p-2.5 sm:p-3 bg-primary/10 dark:bg-primary/20 rounded-lg"
-                  >
-                    <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
-                      <spec.icon className="h-3 w-3 sm:h-4 sm:w-4 text-primary" />
-                      <span className="text-xs sm:text-sm font-medium text-muted-foreground">
-                        {spec.name}
-                      </span>
+                  <div key={index} className="p-3.5 sm:p-4 bg-muted/30 border border-border/40 rounded-xl">
+                    <div className="flex items-center gap-2 sm:gap-2.5 mb-2 sm:mb-2.5">
+                      <spec.icon className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
+                      <span className="text-sm sm:text-base font-medium text-foreground">{spec.name}</span>
                     </div>
-                    <div className="flex gap-1">
+                    <div className="flex gap-1.5">
                       {[...Array(5)].map((_, i) => (
-                        <div
-                          key={i}
-                          className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${i < featureValue(spec.key, spec.koKey) ? "bg-primary dark:bg-primary/70" : "bg-muted"}`}
-                        />
+                        <div key={i} className={`w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full transition-colors ${i < featureValue(spec.key, spec.koKey) ? "bg-foreground" : "bg-border"}`} />
                       ))}
                     </div>
                   </div>
@@ -1202,47 +1011,43 @@ export default function ProductDetailClient({ product }: { product: any }) {
           </Card>
         </div>
 
-        <Card className="mt-8 sm:mt-12 border-0 shadow-lg sm:shadow-xl bg-card/90 backdrop-blur-sm dark:bg-muted/90">
+        <Card className="mt-10 sm:mt-12 border border-border/60 shadow-lg bg-card rounded-3xl overflow-hidden">
           <CardContent className="p-0">
-            <Tabs
-              value={activeTab}
-              onValueChange={(v) => updateTabInUrl(v as any)}
-              className="w-full"
-            >
-              <TabsList className="w-full grid grid-cols-2 md:grid-cols-4 h-auto gap-0.5 sm:gap-1 bg-muted/30 rounded-t-lg p-0.5 sm:p-1">
+            <Tabs value={activeTab} onValueChange={(v) => updateTabInUrl(v as any)} className="w-full">
+              <TabsList className="w-full grid grid-cols-2 md:grid-cols-4 h-auto gap-1 sm:gap-1.5 bg-muted/30 rounded-none p-1 sm:p-1.5 border-b border-border/60">
                 <TabsTrigger
                   value="description"
-                  className="min-w-0 h-11 sm:h-12 md:h-16 px-2 text-xs sm:text-sm md:text-base font-medium truncate data-[state=active]:bg-card data-[state=active]:shadow-md data-[state=active]:text-primary dark:data-[state=active]:bg-muted dark:data-[state=active]:text-primary"
+                  className="min-w-0 h-12 sm:h-14 md:h-16 px-3 text-sm sm:text-base md:text-lg font-medium truncate rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-lg data-[state=active]:text-foreground transition-all duration-300"
                 >
-                  <FileText className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                  <FileText className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
                   <span className="hidden sm:inline">상품 설명</span>
                   <span className="sm:hidden">설명</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="specifications"
-                  className="min-w-0 h-11 sm:h-12 md:h-16 px-2 text-xs sm:text-sm md:text-base font-medium truncate data-[state=active]:bg-card data-[state=active]:shadow-md data-[state=active]:text-primary dark:data-[state=active]:bg-muted dark:data-[state=active]:text-primary"
+                  className="min-w-0 h-12 sm:h-14 md:h-16 px-3 text-sm sm:text-base md:text-lg font-medium truncate rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-lg data-[state=active]:text-foreground transition-all duration-300"
                 >
-                  <Settings className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                  <Settings className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
                   <span className="hidden sm:inline">상세 스펙</span>
                   <span className="sm:hidden">스펙</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="reviews"
-                  className="min-w-0 h-11 sm:h-12 md:h-16 px-2 text-xs sm:text-sm md:text-base font-medium truncate data-[state=active]:bg-card data-[state=active]:shadow-md data-[state=active]:text-primary dark:data-[state=active]:bg-muted dark:data-[state=active]:text-primary"
+                  className="min-w-0 h-12 sm:h-14 md:h-16 px-3 text-sm sm:text-base md:text-lg font-medium truncate rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-lg data-[state=active]:text-foreground transition-all duration-300"
                 >
-                  <Star className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                  <Star className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
                   <span className="hidden sm:inline">리뷰</span>
                   <span className="sm:hidden">리뷰</span>
-                  <span className="ml-0.5 sm:ml-1">({reviewsLen})</span>
+                  <span className="ml-1 sm:ml-1.5 text-muted-foreground">({reviewsLen})</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="qna"
-                  className="min-w-0 h-11 sm:h-12 md:h-16 px-2 text-xs sm:text-sm md:text-base font-medium truncate data-[state=active]:bg-card data-[state=active]:shadow-md data-[state=active]:text-primary dark:data-[state=active]:bg-muted dark:data-[state=active]:text-primary"
+                  className="min-w-0 h-12 sm:h-14 md:h-16 px-3 text-sm sm:text-base md:text-lg font-medium truncate rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-lg data-[state=active]:text-foreground transition-all duration-300"
                 >
-                  <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                  <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
                   <span className="hidden sm:inline">문의</span>
                   <span className="sm:hidden">문의</span>
-                  <span className="ml-0.5 sm:ml-1">({qnaTotal})</span>
+                  <span className="ml-1 sm:ml-1.5 text-muted-foreground">({qnaTotal})</span>
                 </TabsTrigger>
               </TabsList>
 
@@ -1252,14 +1057,11 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     <div className="w-10 sm:w-12 h-10 sm:h-12 border border-primary/20 bg-primary/10 dark:bg-primary/20 text-primary rounded-lg flex items-center justify-center">
                       <FileText className="h-4 w-4 sm:h-6 sm:w-6" />
                     </div>
-                    <h3 className="text-xl sm:text-2xl font-bold text-foreground">
-                      상품 설명
-                    </h3>
+                    <h3 className="text-xl sm:text-2xl font-bold text-foreground">상품 설명</h3>
                   </div>
                   <div className="bg-muted/30 p-4 sm:p-6 rounded-lg">
                     <p className="text-muted-foreground leading-relaxed text-base sm:text-lg">
-                      {product.description ||
-                        "이 제품은 최고급 소재로 제작된 프리미엄 테니스 스트링입니다. 뛰어난 반발력과 내구성을 자랑하며, 모든 레벨의 플레이어에게 적합합니다. 전문적인 장착 서비스와 함께 최상의 테니스 경험을 제공합니다."}
+                      {product.description || "이 제품은 최고급 소재로 제작된 프리미엄 테니스 스트링입니다. 뛰어난 반발력과 내구성을 자랑하며, 모든 레벨의 플레이어에게 적합합니다. 전문적인 장착 서비스와 함께 최상의 테니스 경험을 제공합니다."}
                     </p>
                   </div>
                 </div>
@@ -1271,26 +1073,17 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     <div className="w-10 sm:w-12 h-10 sm:h-12 border border-primary/20 bg-primary/10 dark:bg-primary/20 text-primary rounded-lg flex items-center justify-center">
                       <Settings className="h-4 w-4 sm:h-6 sm:w-6" />
                     </div>
-                    <h3 className="text-xl sm:text-2xl font-bold text-foreground">
-                      상세 스펙
-                    </h3>
+                    <h3 className="text-xl sm:text-2xl font-bold text-foreground">상세 스펙</h3>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                     {Object.entries(toDisplaySpec())
                       .filter(([, value]) => value)
                       .map(([key, value]) => (
-                        <div
-                          key={key}
-                          className="bg-muted/30 p-3 sm:p-4 rounded-lg border border-border"
-                        >
+                        <div key={key} className="bg-muted/30 p-3 sm:p-4 rounded-lg border border-border">
                           <div className="flex items-center justify-between">
-                            <span className="font-semibold text-foreground text-sm sm:text-base">
-                              {key}
-                            </span>
-                            <span className="text-muted-foreground font-medium text-sm sm:text-base">
-                              {String(value)}
-                            </span>
+                            <span className="font-semibold text-foreground text-sm sm:text-base">{key}</span>
+                            <span className="text-muted-foreground font-medium text-sm sm:text-base">{String(value)}</span>
                           </div>
                         </div>
                       ))}
@@ -1304,17 +1097,13 @@ export default function ProductDetailClient({ product }: { product: any }) {
                             <div className="w-9 sm:w-10 h-9 sm:h-10 border border-primary/20 bg-primary/10 dark:bg-primary/20 text-primary rounded-lg flex items-center justify-center">
                               <Settings className="h-4 w-4 sm:h-5 sm:w-5" />
                             </div>
-                            <h4 className="text-lg sm:text-xl font-bold text-foreground">
-                              하이브리드 구성
-                            </h4>
+                            <h4 className="text-lg sm:text-xl font-bold text-foreground">하이브리드 구성</h4>
                           </div>
 
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                             {/* 메인 */}
                             <div className="bg-muted/30 p-3 sm:p-4 rounded-lg border border-border">
-                              <div className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">
-                                메인(Mains)
-                              </div>
+                              <div className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">메인(Mains)</div>
                               <div className="font-medium text-sm sm:text-base">
                                 {hMainBrand ?? ""} {hMain?.name ?? ""}
                               </div>
@@ -1326,9 +1115,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
                             {/* 크로스 */}
                             <div className="bg-muted/30 p-3 sm:p-4 rounded-lg border border-border">
-                              <div className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">
-                                크로스(Crosses)
-                              </div>
+                              <div className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">크로스(Crosses)</div>
                               <div className="font-medium text-sm sm:text-base">
                                 {hCrossBrand ?? ""} {hCross?.name ?? ""}
                               </div>
@@ -1352,15 +1139,9 @@ export default function ProductDetailClient({ product }: { product: any }) {
                       <div className="w-10 sm:w-12 h-10 sm:h-12 bg-muted/30 rounded-lg flex items-center justify-center">
                         <Star className="h-4 w-4 sm:h-6 sm:w-6 text-primary" />
                       </div>
-                      <h3 className="text-xl sm:text-2xl font-bold text-foreground">
-                        고객 리뷰
-                      </h3>
+                      <h3 className="text-xl sm:text-2xl font-bold text-foreground">고객 리뷰</h3>
                     </div>
-                    <Button
-                      asChild
-                      variant="outline"
-                      className="bg-primary/10 dark:bg-primary/20 border border-primary/20 text-primary hover:bg-primary/15 dark:hover:bg-primary/25 shadow-lg text-xs sm:text-sm h-9 sm:h-10"
-                    >
+                    <Button asChild variant="outline" className="bg-primary/10 dark:bg-primary/20 border border-primary/20 text-primary hover:bg-primary/15 dark:hover:bg-primary/25 shadow-lg text-xs sm:text-sm h-9 sm:h-10">
                       <Link href={`/reviews/write?productId=${product._id}`}>
                         <Pencil className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
                         리뷰 작성하기
@@ -1371,10 +1152,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   <div className="space-y-4 sm:space-y-6">
                     {mergedReviews.length > 0 ? (
                       mergedReviews.map((review: any, index: number) => (
-                        <Card
-                          key={index}
-                          className="border-0 shadow-lg bg-muted/30"
-                        >
+                        <Card key={index} className="border-0 shadow-lg bg-muted/30">
                           <CardContent className="p-4 sm:p-6 relative">
                             {busyReviewId === String(review._id) && (
                               <div className="absolute inset-0 bg-card/70 dark:bg-background/40 backdrop-blur-sm flex items-center justify-center z-10 rounded-lg">
@@ -1385,31 +1163,18 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
                             <div className="flex items-start justify-between mb-3 sm:mb-4">
                               <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-primary/10 dark:bg-primary/20 border border-primary/20 rounded-full flex items-center justify-center text-primary font-bold text-lg shadow-lg">
-                                  {review.user?.charAt(0) || "U"}
-                                </div>
+                                <div className="w-10 h-10 bg-primary/10 dark:bg-primary/20 border border-primary/20 rounded-full flex items-center justify-center text-primary font-bold text-lg shadow-lg">{review.user?.charAt(0) || "U"}</div>
                                 <div>
                                   <div className="font-bold text-foreground text-sm sm:text-base">
-                                    {review.status === "hidden"
-                                      ? review.ownedByMe
-                                        ? `${review.user ?? "내 리뷰"} (비공개)`
-                                        : review.adminView
-                                          ? `${review.user ?? "사용자"} (비공개)`
-                                          : "비공개 리뷰"
-                                      : (review.user ?? "익명")}
+                                    {review.status === "hidden" ? (review.ownedByMe ? `${review.user ?? "내 리뷰"} (비공개)` : review.adminView ? `${review.user ?? "사용자"} (비공개)` : "비공개 리뷰") : (review.user ?? "익명")}
                                   </div>
                                   <div className="flex items-center gap-2 mt-1">
                                     <div className="flex items-center gap-1">
                                       {[...Array(5)].map((_, i) => (
-                                        <Star
-                                          key={i}
-                                          className={`h-3 w-3 sm:h-4 sm:w-4 ${i < (review.rating || 5) ? "text-warning fill-current" : "fill-muted text-muted"}`}
-                                        />
+                                        <Star key={i} className={`h-3 w-3 sm:h-4 sm:w-4 ${i < (review.rating || 5) ? "text-warning fill-current" : "fill-muted text-muted"}`} />
                                       ))}
                                     </div>
-                                    <span className="text-xs sm:text-sm text-muted-foreground">
-                                      {review.date || "2099-01-01"}
-                                    </span>
+                                    <span className="text-xs sm:text-sm text-muted-foreground">{review.date || "2099-01-01"}</span>
                                   </div>
                                 </div>
                               </div>
@@ -1417,40 +1182,23 @@ export default function ProductDetailClient({ product }: { product: any }) {
                               {(review.ownedByMe || isAdmin) && (
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
-                                    <button
-                                      type="button"
-                                      className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground transition-colors"
-                                      aria-label="내 리뷰 관리"
-                                    >
+                                    <button type="button" className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground transition-colors" aria-label="내 리뷰 관리">
                                       <MoreHorizontal className="h-4 w-4" />
                                     </button>
                                   </DropdownMenuTrigger>
-                                  <DropdownMenuContent
-                                    align="end"
-                                    className="w-44"
-                                  >
+                                  <DropdownMenuContent align="end" className="w-44">
                                     {/* 공개/비공개 토글 */}
                                     <DropdownMenuItem
-                                      disabled={
-                                        busyReviewId === String(review._id)
-                                      }
+                                      disabled={busyReviewId === String(review._id)}
                                       onClick={async (e) => {
                                         e.stopPropagation();
                                         setBusyReviewId(String(review._id));
-                                        const next =
-                                          review.status === "visible"
-                                            ? "hidden"
-                                            : "visible";
+                                        const next = review.status === "visible" ? "hidden" : "visible";
 
                                         // 낙관적 업데이트
                                         if (isMine(review)) {
                                           mutateMyReview((prev: any) => {
-                                            if (
-                                              !prev?._id ||
-                                              String(prev._id) !==
-                                                String(review._id)
-                                            )
-                                              return prev;
+                                            if (!prev?._id || String(prev._id) !== String(review._id)) return prev;
                                             return {
                                               ...prev,
                                               status: next,
@@ -1459,75 +1207,50 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                             };
                                           }, false);
                                         } else if (isAdmin) {
-                                          mutateAdminReviews(
-                                            (prev: any[] | undefined) => {
-                                              if (!Array.isArray(prev))
-                                                return prev;
-                                              return prev.map((r) =>
-                                                String(r._id) ===
-                                                String(review._id)
-                                                  ? {
-                                                      ...r,
-                                                      status: next,
-                                                      masked: false,
-                                                    }
-                                                  : r,
-                                              );
-                                            },
-                                            false,
-                                          );
+                                          mutateAdminReviews((prev: any[] | undefined) => {
+                                            if (!Array.isArray(prev)) return prev;
+                                            return prev.map((r) =>
+                                              String(r._id) === String(review._id)
+                                                ? {
+                                                    ...r,
+                                                    status: next,
+                                                    masked: false,
+                                                  }
+                                                : r,
+                                            );
+                                          }, false);
                                         }
 
                                         // 서버 반영
                                         try {
-                                          const res = await fetch(
-                                            `/api/reviews/${review._id}`,
-                                            {
-                                              method: "PATCH",
-                                              credentials: "include",
-                                              headers: {
-                                                "Content-Type":
-                                                  "application/json",
-                                              },
-                                              body: JSON.stringify({
-                                                status: next,
-                                              }),
+                                          const res = await fetch(`/api/reviews/${review._id}`, {
+                                            method: "PATCH",
+                                            credentials: "include",
+                                            headers: {
+                                              "Content-Type": "application/json",
                                             },
-                                          );
-                                          if (!res.ok)
-                                            throw new Error("상태 변경 실패");
+                                            body: JSON.stringify({
+                                              status: next,
+                                            }),
+                                          });
+                                          if (!res.ok) throw new Error("상태 변경 실패");
 
                                           // 재검증
-                                          if (isMine(review))
-                                            await mutateMyReview();
-                                          else if (isAdmin)
-                                            await mutateAdminReviews();
+                                          if (isMine(review)) await mutateMyReview();
+                                          else if (isAdmin) await mutateAdminReviews();
 
                                           // 탭 유지 + 서버컴포넌트 리프레시
-                                          const params = new URLSearchParams(
-                                            searchParams.toString(),
-                                          );
+                                          const params = new URLSearchParams(searchParams.toString());
                                           params.set("tab", "reviews");
-                                          router.replace(
-                                            `?${params.toString()}`,
-                                            { scroll: false },
-                                          );
+                                          router.replace(`?${params.toString()}`, { scroll: false });
                                           router.refresh();
 
-                                          showSuccessToast(
-                                            next === "hidden"
-                                              ? "비공개로 전환했습니다."
-                                              : "공개로 전환했습니다.",
-                                          );
+                                          showSuccessToast(next === "hidden" ? "비공개로 전환했습니다." : "공개로 전환했습니다.");
                                         } catch (err: any) {
                                           // 실패 시 되돌리기(재검증)
-                                          if (isMine(review))
-                                            await mutateMyReview();
-                                          else if (isAdmin)
-                                            await mutateAdminReviews();
-                                          showErrorToast(
-                                            err?.message || "상태 변경 중 오류",
-                                          );
+                                          if (isMine(review)) await mutateMyReview();
+                                          else if (isAdmin) await mutateAdminReviews();
+                                          showErrorToast(err?.message || "상태 변경 중 오류");
                                         } finally {
                                           setBusyReviewId(null);
                                         }
@@ -1549,9 +1272,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
                                     {/* 수정 */}
                                     <DropdownMenuItem
-                                      disabled={
-                                        busyReviewId === String(review._id)
-                                      }
+                                      disabled={busyReviewId === String(review._id)}
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         openEdit(review);
@@ -1564,57 +1285,35 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
                                     {/* 삭제 */}
                                     <DropdownMenuItem
-                                      disabled={
-                                        busyReviewId === String(review._id)
-                                      }
+                                      disabled={busyReviewId === String(review._id)}
                                       onClick={async (e) => {
                                         e.stopPropagation();
-                                        if (
-                                          !confirm(
-                                            "이 리뷰를 삭제하시겠습니까?",
-                                          )
-                                        )
-                                          return;
+                                        if (!confirm("이 리뷰를 삭제하시겠습니까?")) return;
 
                                         setBusyReviewId(String(review._id));
                                         try {
-                                          const res = await fetch(
-                                            `/api/reviews/${review._id}`,
-                                            {
-                                              method: "DELETE",
-                                              credentials: "include",
-                                            },
-                                          );
-                                          if (!res.ok)
-                                            throw new Error("삭제 실패");
+                                          const res = await fetch(`/api/reviews/${review._id}`, {
+                                            method: "DELETE",
+                                            credentials: "include",
+                                          });
+                                          if (!res.ok) throw new Error("삭제 실패");
 
                                           // 재검증
-                                          if (isMine(review))
-                                            await mutateMyReview();
-                                          else if (isAdmin)
-                                            await mutateAdminReviews();
+                                          if (isMine(review)) await mutateMyReview();
+                                          else if (isAdmin) await mutateAdminReviews();
 
                                           // 탭 유지 + 서버컴포넌트 리프레시
-                                          const params = new URLSearchParams(
-                                            searchParams.toString(),
-                                          );
+                                          const params = new URLSearchParams(searchParams.toString());
                                           params.set("tab", "reviews");
-                                          router.replace(
-                                            `?${params.toString()}`,
-                                            { scroll: false },
-                                          );
+                                          router.replace(`?${params.toString()}`, { scroll: false });
                                           router.refresh();
 
                                           showSuccessToast("삭제했습니다.");
                                         } catch (err: any) {
                                           // 실패 시 복구(재검증으로 복원)
-                                          if (isMine(review))
-                                            await mutateMyReview();
-                                          else if (isAdmin)
-                                            await mutateAdminReviews();
-                                          showErrorToast(
-                                            err?.message || "삭제 중 오류",
-                                          );
+                                          if (isMine(review)) await mutateMyReview();
+                                          else if (isAdmin) await mutateAdminReviews();
+                                          showErrorToast(err?.message || "삭제 중 오류");
                                         } finally {
                                           setBusyReviewId(null);
                                         }
@@ -1630,52 +1329,33 @@ export default function ProductDetailClient({ product }: { product: any }) {
                             </div>
 
                             {(() => {
-                              const isMasked =
-                                review.masked ??
-                                (review.status === "hidden" &&
-                                  !review.ownedByMe &&
-                                  !review.adminView);
+                              const isMasked = review.masked ?? (review.status === "hidden" && !review.ownedByMe && !review.adminView);
                               if (isMasked) return <MaskedBlock />;
 
                               return (
                                 <div className="space-y-3 sm:space-y-4">
                                   <div className="bg-card dark:bg-muted/50 p-3 sm:p-4 rounded-lg border border-border">
-                                    <p className="text-muted-foreground leading-relaxed text-sm sm:text-base">
-                                      {review.content}
-                                    </p>
+                                    <p className="text-muted-foreground leading-relaxed text-sm sm:text-base">{review.content}</p>
                                   </div>
 
-                                  {Array.isArray(review.photos) &&
-                                    review.photos.length > 0 && (
-                                      <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
-                                        {review.photos
-                                          .slice(0, 4)
-                                          .map((src: string, i: number) => (
-                                            <button
-                                              key={i}
-                                              type="button"
-                                              onClick={() =>
-                                                openViewer(review.photos, i)
-                                              }
-                                              className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border-2 border-border hover:border-border dark:hover:border-border transition-colors shadow-md shrink-0"
-                                              aria-label={`리뷰 사진 ${i + 1} 크게 보기`}
-                                            >
-                                              <Image
-                                                src={src || "/placeholder.svg"}
-                                                alt={`리뷰 사진 ${i + 1}`}
-                                                fill
-                                                className="object-cover"
-                                              />
-                                              {i === 3 &&
-                                                review.photos.length > 4 && (
-                                                  <div className="absolute inset-0 bg-background/80 text-foreground border border-border text-xs font-bold flex items-center justify-center">
-                                                    +{review.photos.length - 3}
-                                                  </div>
-                                                )}
-                                            </button>
-                                          ))}
-                                      </div>
-                                    )}
+                                  {Array.isArray(review.photos) && review.photos.length > 0 && (
+                                    <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+                                      {review.photos.slice(0, 4).map((src: string, i: number) => (
+                                        <button
+                                          key={i}
+                                          type="button"
+                                          onClick={() => openViewer(review.photos, i)}
+                                          className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border-2 border-border hover:border-border dark:hover:border-border transition-colors shadow-md shrink-0"
+                                          aria-label={`리뷰 사진 ${i + 1} 크게 보기`}
+                                        >
+                                          <Image src={src || "/placeholder.svg"} alt={`리뷰 사진 ${i + 1}`} fill className="object-cover" />
+                                          {i === 3 && review.photos.length > 4 && (
+                                            <div className="absolute inset-0 bg-background/80 text-foreground border border-border text-xs font-bold flex items-center justify-center">+{review.photos.length - 3}</div>
+                                          )}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  )}
                                 </div>
                               );
                             })()}
@@ -1687,12 +1367,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         <div className="w-16 sm:w-20 h-16 sm:h-20 bg-muted/30 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-lg">
                           <Star className="h-8 w-8 sm:h-10 sm:w-10 text-primary" />
                         </div>
-                        <h3 className="text-lg sm:text-xl font-bold text-foreground mb-2">
-                          아직 리뷰가 없습니다
-                        </h3>
-                        <p className="text-muted-foreground mb-6 text-base sm:text-lg">
-                          첫 번째 리뷰를 작성해보세요!
-                        </p>
+                        <h3 className="text-lg sm:text-xl font-bold text-foreground mb-2">아직 리뷰가 없습니다</h3>
+                        <p className="text-muted-foreground mb-6 text-base sm:text-lg">첫 번째 리뷰를 작성해보세요!</p>
                         <Button className="bg-primary/10 dark:bg-primary/20 border border-primary/20 text-primary hover:bg-primary/15 dark:hover:bg-primary/25 shadow-lg px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base">
                           <Pencil className="h-4 w-4 mr-2" />
                           리뷰 작성하기
@@ -1709,19 +1385,10 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     <div className="w-10 sm:w-12 h-10 sm:h-12 bg-muted/30 text-foreground rounded-lg flex items-center justify-center">
                       <MessageSquare className="h-4 w-4 sm:h-6 sm:w-6" />
                     </div>
-                    <h3 className="text-xl sm:text-2xl font-bold text-foreground">
-                      상품 문의
-                    </h3>
+                    <h3 className="text-xl sm:text-2xl font-bold text-foreground">상품 문의</h3>
                   </div>
-                  <Button
-                    asChild
-                    className="bg-primary/10 dark:bg-primary/20 border border-primary/20 text-primary hover:bg-primary/15 dark:hover:bg-primary/25 shadow-lg text-xs sm:text-sm h-9 sm:h-10"
-                  >
-                    <Link
-                      href={`/board/qna/write?productId=${product._id}&productName=${encodeURIComponent(product.name)}`}
-                    >
-                      문의하기
-                    </Link>
+                  <Button asChild className="bg-primary/10 dark:bg-primary/20 border border-primary/20 text-primary hover:bg-primary/15 dark:hover:bg-primary/25 shadow-lg text-xs sm:text-sm h-9 sm:h-10">
+                    <Link href={`/board/qna/write?productId=${product._id}&productName=${encodeURIComponent(product.name)}`}>문의하기</Link>
                   </Button>
                 </div>
 
@@ -1730,11 +1397,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     <Skeleton className="h-4 w-20" />
                   </div>
                 )}
-                {qnaError && (
-                  <div className="text-sm text-destructive">
-                    문의 목록을 불러오지 못했습니다.
-                  </div>
-                )}
+                {qnaError && <div className="text-sm text-destructive">문의 목록을 불러오지 못했습니다.</div>}
 
                 {!qnaLoading && !qnaError && (
                   <>
@@ -1743,21 +1406,10 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         <div className="w-16 sm:w-20 h-16 sm:h-20 bg-muted/30 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-lg">
                           <MessageSquare className="h-8 w-8 sm:h-10 sm:w-10 text-primary" />
                         </div>
-                        <h4 className="text-lg sm:text-xl font-bold text-foreground mb-2">
-                          아직 문의가 없습니다
-                        </h4>
-                        <p className="text-muted-foreground mb-6 text-base sm:text-lg">
-                          첫 번째 문의를 남겨보세요!
-                        </p>
-                        <Button
-                          asChild
-                          className="bg-primary/10 dark:bg-primary/20 border border-primary/20 text-primary hover:bg-primary/15 dark:hover:bg-primary/25 shadow-lg px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base"
-                        >
-                          <Link
-                            href={`/board/qna/write?productId=${product._id}&productName=${encodeURIComponent(product.name)}`}
-                          >
-                            문의하기
-                          </Link>
+                        <h4 className="text-lg sm:text-xl font-bold text-foreground mb-2">아직 문의가 없습니다</h4>
+                        <p className="text-muted-foreground mb-6 text-base sm:text-lg">첫 번째 문의를 남겨보세요!</p>
+                        <Button asChild className="bg-primary/10 dark:bg-primary/20 border border-primary/20 text-primary hover:bg-primary/15 dark:hover:bg-primary/25 shadow-lg px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base">
+                          <Link href={`/board/qna/write?productId=${product._id}&productName=${encodeURIComponent(product.name)}`}>문의하기</Link>
                         </Button>
                       </div>
                     ) : (
@@ -1770,37 +1422,20 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                   <div className="flex-1 min-w-0">
                                     <div className="space-y-1 min-w-0">
                                       <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-                                        <Badge
-                                          variant={
-                                            getQnaCategoryBadgeSpec(q.category)
-                                              .variant
-                                          }
-                                          className={`${badgeBaseOutlined} ${badgeSizeSm}`}
-                                        >
+                                        <Badge variant={getQnaCategoryBadgeSpec(q.category).variant} className={`${badgeBaseOutlined} ${badgeSizeSm}`}>
                                           {q.category ?? "상품문의"}
                                         </Badge>
                                         {q.isSecret && (
-                                          <Badge
-                                            variant="outline"
-                                            className={`${badgeBaseOutlined} ${badgeSizeSm} bg-muted/50 text-muted-foreground border-border/40 dark:border-border shrink-0`}
-                                          >
+                                          <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} bg-muted/50 text-muted-foreground border-border/40 dark:border-border shrink-0`}>
                                             <Lock className="h-3 w-3 mr-1" />
                                             비밀글
                                           </Badge>
                                         )}
-                                        <Badge
-                                          variant={
-                                            getAnswerStatusBadgeSpec(!!q.answer)
-                                              .variant
-                                          }
-                                          className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`}
-                                        >
+                                        <Badge variant={getAnswerStatusBadgeSpec(!!q.answer).variant} className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`}>
                                           {q.answer ? "답변 완료" : "답변 대기"}
                                         </Badge>
                                       </div>
-                                      <div className="font-semibold text-foreground truncate hover:text-primary dark:hover:text-primary text-sm sm:text-base">
-                                        {q.title}
-                                      </div>
+                                      <div className="font-semibold text-foreground truncate hover:text-primary dark:hover:text-primary text-sm sm:text-base">{q.title}</div>
                                       <div className="flex items-center gap-3 sm:gap-4 text-xs text-muted-foreground">
                                         <span>{q.authorName ?? "익명"}</span>
                                         <span>{fmtDate(q.createdAt)}</span>
@@ -1822,24 +1457,12 @@ export default function ProductDetailClient({ product }: { product: any }) {
         </Card>
 
         {/* 리뷰 전용 모달 UI는 필요 시점에만 로드 */}
-        {viewerOpen && (
-          <ReviewPhotoViewerDialog
-            open={viewerOpen}
-            images={viewerImages}
-            index={viewerIndex}
-            onClose={closeViewer}
-            onPrev={prevViewer}
-            onNext={nextViewer}
-            onChangeIndex={setViewerIndex}
-          />
-        )}
+        {viewerOpen && <ReviewPhotoViewerDialog open={viewerOpen} images={viewerImages} index={viewerIndex} onClose={closeViewer} onPrev={prevViewer} onNext={nextViewer} onChangeIndex={setViewerIndex} />}
 
         <div ref={relatedSectionRef} className="mt-8 sm:mt-12">
           <Card className="border-0 shadow-xl bg-card/90 backdrop-blur-sm dark:bg-muted/90">
             <CardHeader>
-              <CardTitle className="text-xl sm:text-2xl font-bold bg-muted/30 text-foreground">
-                관련 상품
-              </CardTitle>
+              <CardTitle className="text-xl sm:text-2xl font-bold bg-muted/30 text-foreground">관련 상품</CardTitle>
             </CardHeader>
             <CardContent>
               {/* 4칸 고정: 상품이 부족하면 플레이스홀더로 채움 */}
@@ -1847,10 +1470,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 // 로딩 스켈레톤
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
                   {Array.from({ length: 4 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className="rounded-xl p-3 sm:p-4 bg-card/80 dark:bg-muted/80 shadow-sm animate-pulse"
-                    >
+                    <div key={i} className="rounded-xl p-3 sm:p-4 bg-card/80 dark:bg-muted/80 shadow-sm animate-pulse">
                       <div className="aspect-square rounded-lg bg-muted mb-2 sm:mb-3"></div>
                       <div className="h-4 rounded bg-muted mb-1.5 sm:mb-2"></div>
                       <div className="h-4 w-1/2 rounded bg-muted"></div>
@@ -1864,22 +1484,12 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     <Link key={rp._id} href={`/products/${rp._id}`}>
                       <Card className="h-full overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 group border border-border">
                         <div className="relative aspect-square overflow-hidden bg-muted/30">
-                          <img
-                            src={rp.images?.[0] || "/placeholder.svg"}
-                            alt={rp.name}
-                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                          />
+                          <img src={rp.images?.[0] || "/placeholder.svg"} alt={rp.name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
                         </div>
                         <CardContent className="p-3 sm:p-4">
-                          <div className="text-xs text-muted-foreground mb-0.5 sm:mb-1">
-                            {BRAND_MAP[rp.brand] ?? rp.brand}
-                          </div>
-                          <div className="font-medium line-clamp-2 mb-1.5 sm:mb-2 text-sm sm:text-base group-hover:text-primary dark:group-hover:text-primary transition-colors">
-                            {rp.name}
-                          </div>
-                          <div className="font-bold text-primary text-sm sm:text-base">
-                            {Number(rp.price).toLocaleString()}원
-                          </div>
+                          <div className="text-xs text-muted-foreground mb-0.5 sm:mb-1">{BRAND_MAP[rp.brand] ?? rp.brand}</div>
+                          <div className="font-medium line-clamp-2 mb-1.5 sm:mb-2 text-sm sm:text-base group-hover:text-primary dark:group-hover:text-primary transition-colors">{rp.name}</div>
+                          <div className="font-bold text-primary text-sm sm:text-base">{Number(rp.price).toLocaleString()}원</div>
                         </CardContent>
                       </Card>
                     </Link>
@@ -1889,18 +1499,11 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   {Array.from({
                     length: Math.max(0, 4 - relatedFiltered.length),
                   }).map((_, i) => (
-                    <div
-                      key={`rel-ph-${i}`}
-                      className="rounded-xl p-3 sm:p-4 border-2 border-dashed border-border/70 dark:border-border/70 bg-muted/30 text-center flex flex-col"
-                    >
+                    <div key={`rel-ph-${i}`} className="rounded-xl p-3 sm:p-4 border-2 border-dashed border-border/70 dark:border-border/70 bg-muted/30 text-center flex flex-col">
                       <div className="aspect-square rounded-lg bg-muted mb-2 sm:mb-3 flex items-center justify-center">
-                        <span className="text-muted-foreground text-sm">
-                          준비 중
-                        </span>
+                        <span className="text-muted-foreground text-sm">준비 중</span>
                       </div>
-                      <div className="text-sm text-muted-foreground">
-                        곧 상품이 업데이트됩니다.
-                      </div>
+                      <div className="text-sm text-muted-foreground">곧 상품이 업데이트됩니다.</div>
                     </div>
                   ))}
                 </div>
@@ -1909,53 +1512,27 @@ export default function ProductDetailClient({ product }: { product: any }) {
           </Card>
 
           {/* 리뷰 수정 다이얼로그도 열릴 때만 로드 */}
-          {editOpen && editing && (
-            <ReviewEditDialog
-              open={editOpen}
-              editForm={editForm}
-              hoverRating={hoverRating}
-              onClose={closeEdit}
-              onSubmit={submitEdit}
-              onChangeForm={setEditForm}
-              onChangeHoverRating={setHoverRating}
-            />
-          )}
+          {editOpen && editing && <ReviewEditDialog open={editOpen} editForm={editForm} hoverRating={hoverRating} onClose={closeEdit} onSubmit={submitEdit} onChangeForm={setEditForm} onChangeHoverRating={setHoverRating} />}
         </div>
       </SiteContainer>
       {/* ===== 모바일 전용 하단 Sticky ===== */}
       {showSticky && (
-        <div
-          data-bottom-sticky="1"
-          className="fixed inset-x-0 bottom-0 z-50 bp-md:hidden border-t border-border"
-        >
+        <div data-bottom-sticky="1" className="fixed inset-x-0 bottom-0 z-50 bp-md:hidden border-t border-border">
           <div className="bg-card shadow-[0_-4px_16px_rgba(0,0,0,0.08)] dark:shadow-[0_-4px_16px_rgba(0,0,0,0.3)]">
             <SiteContainer variant="wide" className="py-3">
               {/* 상품 정보 섹션 */}
               <div className="flex items-center gap-3 pb-3 border-b border-border">
                 {/* 썸네일 */}
                 <div className="relative w-14 h-14 rounded-md overflow-hidden bg-muted shrink-0 border border-border">
-                  <img
-                    src={images[0] || "/placeholder.svg"}
-                    alt={product.name}
-                    className="w-full h-full object-cover"
-                  />
+                  <img src={images[0] || "/placeholder.svg"} alt={product.name} className="w-full h-full object-cover" />
                 </div>
 
                 {/* 제품명 & 가격 */}
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-semibold text-foreground truncate leading-tight">
-                    {product.name}
-                  </div>
+                  <div className="text-sm font-semibold text-foreground truncate leading-tight">{product.name}</div>
                   <div className="mt-1 flex items-baseline gap-2">
-                    <span className="text-lg font-bold text-foreground">
-                      {qtyTotal.toLocaleString()}원
-                    </span>
-                    {typeof product?.mountingFee === "number" &&
-                      product.mountingFee > 0 && (
-                        <span className="text-xs text-muted-foreground">
-                          +서비스 {product.mountingFee.toLocaleString()}원
-                        </span>
-                      )}
+                    <span className="text-lg font-bold text-foreground">{qtyTotal.toLocaleString()}원</span>
+                    {typeof product?.mountingFee === "number" && product.mountingFee > 0 && <span className="text-xs text-muted-foreground">+서비스 {product.mountingFee.toLocaleString()}원</span>}
                   </div>
                 </div>
 
@@ -1971,9 +1548,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     <Minus className="h-4 w-4" />
                   </button>
                   <div className="w-10 text-center">
-                    <span className="text-sm font-semibold text-foreground tabular-nums">
-                      {quantity}
-                    </span>
+                    <span className="text-sm font-semibold text-foreground tabular-nums">{quantity}</span>
                   </div>
                   <button
                     type="button"
@@ -1982,9 +1557,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     disabled={!canInc}
                     onClick={() => {
                       if (!canInc) {
-                        showErrorToast(
-                          `더 이상 담을 수 없습니다. 재고: ${stock}개`,
-                        );
+                        showErrorToast(`더 이상 담을 수 없습니다. 재고: ${stock}개`);
                         return;
                       }
                       setQuantity((q) => q + 1);

@@ -13,12 +13,11 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { getSocialProviderBadgeSpec } from "@/lib/badge-style";
 import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import { useUnreadMessageCount } from "@/lib/hooks/useUnreadMessageCount";
-import { ChevronDown, ChevronRight, Gift, Grid2X2, Loader2, Mail, Menu, MessageSquare, MessageSquareText, ShoppingCart, UserIcon } from "lucide-react";
+import { ChevronDown, ChevronRight, Loader2, Mail, Menu, ShoppingCart, UserIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { MdSportsTennis } from "react-icons/md";
 
 /** 재질 카테고리(스트링 타입) 노출 온/오프 */
 const SHOW_MATERIAL_MENU = false;
@@ -853,7 +852,7 @@ const Header = () => {
                 {/* 로고 마크: 가로형 비율 + 라이트/다크 자동 교체 */}
                 <div className="relative h-10 w-20 shrink-0 overflow-hidden">
                   {/* 라이트 모드 */}
-                  <Image src="/tennisflowmark-light.png" alt="" aria-hidden="true" fill className="object-contain dark:hidden" priority />
+                  <Image src="/DokkaebiTennisString.png" alt="" aria-hidden="true" fill className="object-contain dark:hidden" priority />
 
                   {/* 다크 모드 */}
                   <Image src="/tennisflowmark-dark.png" alt="" aria-hidden="true" fill className="hidden object-contain dark:block" priority />
