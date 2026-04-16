@@ -39,9 +39,9 @@ const Footer = () => {
             {/* 브랜드 섹션 - 모바일에서 전체 너비 */}
             <div className="bp-sm:col-span-2 bp-lg:col-span-1">
               <Link href="/" className="flex items-center gap-3 mb-5 group">
-                <div className="relative h-9 w-[72px] shrink-0 overflow-hidden">
-                  <Image src="/DokkaebiTennisString.png" alt="" aria-hidden="true" fill className="object-contain dark:hidden" />
-                  <Image src="/DokkaebiTennisString.png" alt="" aria-hidden="true" fill className="hidden object-contain dark:block" />
+                <div className="relative h-10 w-20 shrink-0 overflow-hidden">
+                  <Image src="/tennisflowmark-light.png" alt="" aria-hidden="true" fill className="object-contain dark:hidden" />
+                  <Image src="/tennisflowmark-dark.png" alt="" aria-hidden="true" fill className="hidden object-contain dark:block" />
                 </div>
 
                 <div>
