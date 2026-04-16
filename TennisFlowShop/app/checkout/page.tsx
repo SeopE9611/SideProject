@@ -324,18 +324,6 @@ export default function CheckoutPage() {
 
   const [deliveryMethod, setDeliveryMethod] = useState<"택배수령" | "방문수령">("택배수령");
 
-  // 배송비
-  const shippingFee = useMemo(
-    () =>
-      calcOrderShippingFeeFromItems({
-        items: orderItems.map((item) => ({
-          shippingFee: shippingFeeByProductId[String(item.id)],
-        })),
-        isVisitPickup: deliveryMethod === "방문수령",
-      }),
-    [orderItems, shippingFeeByProductId, deliveryMethod],
-  );
-
   // 교체 서비스 공임(serviceFee) 계산
   // let serviceFee = 0;
 
@@ -355,12 +343,30 @@ export default function CheckoutPage() {
     return Array.from(new Set(orderItems.filter(isServiceFeeTarget).map((it) => String(it.id))));
   }, [orderItemsKey, withStringService]);
 
+  const shippingFeeIdsToResolve = useMemo(() => Array.from(new Set(orderItems.map((it) => String(it.id)))), [orderItemsKey]);
+
+  const isShippingFeeReady = useMemo(() => {
+    if (shippingFeeIdsToResolve.length === 0) return true;
+    return shippingFeeIdsToResolve.every((id) => Object.prototype.hasOwnProperty.call(shippingFeeByProductId, id));
+  }, [shippingFeeIdsToResolve, shippingFeeByProductId]);
+
   const isMountingFeeReady = useMemo(() => {
     if (!withStringService) return true;
     if (mountingFeeLoading) return false;
     // mini 호출이 끝나면 각 id에 대해 0이든 양수든 값이 "세팅"되므로 hasOwnProperty로 판단한다.
     return mountingFeeIdsToResolve.every((id) => Object.prototype.hasOwnProperty.call(mountingFeeByProductId, id));
   }, [withStringService, mountingFeeLoading, mountingFeeIdsToResolve, mountingFeeByProductId]);
+
+  // 배송비
+  const shippingFee = useMemo(() => {
+    if (!isShippingFeeReady) return 0;
+    return calcOrderShippingFeeFromItems({
+      items: orderItems.map((item) => ({
+        shippingFee: shippingFeeByProductId[String(item.id)],
+      })),
+      isVisitPickup: deliveryMethod === "방문수령",
+    });
+  }, [orderItems, shippingFeeByProductId, deliveryMethod, isShippingFeeReady]);
 
   // serviceFee 계산을 “URL”이 아니라 “mountingFeeByProductId” 기반으로
   const baseServiceFee = withStringService
@@ -718,7 +724,7 @@ export default function CheckoutPage() {
   const showDepositorError = !!touchedFields.depositor && !!fieldErrors.depositor;
 
   const hasFieldErrors = Object.keys(fieldErrors).length > 0;
-  const canSubmit = !loading && agreeTerms && agreePrivacy && agreeRefund && !hasFieldErrors && (!withStringService || isMountingFeeReady);
+  const canSubmit = !loading && agreeTerms && agreePrivacy && agreeRefund && !hasFieldErrors && (!withStringService || isMountingFeeReady) && isShippingFeeReady;
 
   // 비회원 체크아웃 허용: quiet 조회 사용 (401이어도 전역 만료 금지)
   useEffect(() => {
@@ -1514,7 +1520,15 @@ export default function CheckoutPage() {
                           <span className="text-muted-foreground">배송비</span>
                           <span className="font-semibold text-foreground">
                             <span className="ml-2 text-xs font-normal text-muted-foreground">(30,000원 이상 구매 시 무료배송) </span>
-                            {shippingFee > 0 ? `${shippingFee.toLocaleString()}원` : "무료"}
+                            {!isShippingFeeReady ? (
+                              <span className="inline-flex align-middle ml-2">
+                                <Skeleton className="h-6 w-20 rounded-md" />
+                              </span>
+                            ) : shippingFee > 0 ? (
+                              `${shippingFee.toLocaleString()}원`
+                            ) : (
+                              "무료"
+                            )}
                           </span>
                         </div>
                         {/* 교체 서비스비 */}
@@ -1551,7 +1565,7 @@ export default function CheckoutPage() {
                                 id="useAllPoints"
                                 checked={useAllPoints}
                                 onCheckedChange={(checked) => setUseAllPoints(Boolean(checked))}
-                                disabled={!user || !!pointsFetchError || pointsAvailable === null || resolvedPointsAvailable <= 0 || maxPointsToUse <= 0}
+                                disabled={!isShippingFeeReady || !user || !!pointsFetchError || pointsAvailable === null || resolvedPointsAvailable <= 0 || maxPointsToUse <= 0}
                               />
                               <Label htmlFor="useAllPoints" className="text-sm font-medium">
                                 전액 사용
@@ -1568,7 +1582,7 @@ export default function CheckoutPage() {
                                 max={maxPointsToUse}
                                 className="w-28 text-right"
                                 value={pointsInput}
-                                disabled={!user || !!pointsFetchError || pointsAvailable === null || resolvedPointsAvailable <= 0 || maxPointsToUse <= 0 || useAllPoints}
+                                disabled={!isShippingFeeReady || !user || !!pointsFetchError || pointsAvailable === null || resolvedPointsAvailable <= 0 || maxPointsToUse <= 0 || useAllPoints}
                                 onFocus={(e) => {
                                   setIsEditingPoints(true);
                                   const el = e.currentTarget;
@@ -1618,12 +1632,12 @@ export default function CheckoutPage() {
                         <Separator />
                         <div className="flex justify-between items-center text-xl font-bold">
                           <span>총 결제 금액</span>
-                          <span className="text-foreground">{totalPrice.toLocaleString()}원</span>
+                          {!isShippingFeeReady ? <Skeleton className="h-7 w-28 rounded-md" /> : <span className="text-foreground">{totalPrice.toLocaleString()}원</span>}
                         </div>
                         {appliedPoints > 0 && (
                           <div className="flex justify-between items-center text-lg font-bold">
                             <span className="text-muted-foreground">포인트 적용 후 결제 예정 금액</span>
-                            <span className="text-foreground">{payableTotalPrice.toLocaleString()}원</span>
+                            {!isShippingFeeReady ? <Skeleton className="h-6 w-24 rounded-md" /> : <span className="text-foreground">{payableTotalPrice.toLocaleString()}원</span>}
                           </div>
                         )}
                       </div>

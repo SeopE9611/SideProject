@@ -24,6 +24,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useCartStore } from "@/app/store/cartStore";
 import { useAuthStore, type User } from "@/app/store/authStore";
 import { getMyInfo } from "@/lib/auth.client";
@@ -124,14 +125,6 @@ export default function CartPageClient() {
     () => cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
     [cartItems],
   );
-  const shippingFee = useMemo(() =>
-    calcOrderShippingFeeFromItems({
-      items: cartItems
-        .filter((it) => (it.kind ?? "product") === "product")
-        .map((it) => ({ shippingFee: shippingFeeByProductId[String(it.id)] })),
-    }),
-  [cartItems, shippingFeeByProductId]);
-  const total = subtotal + shippingFee;
 
   const productIds = useMemo(
     () =>
@@ -149,6 +142,23 @@ export default function CartPageClient() {
     () => [...productIds].sort().join("|"),
     [productIds],
   );
+
+  const isShippingFeeReady = useMemo(() => {
+    if (productIds.length === 0) return true;
+    return productIds.every((id) =>
+      Object.prototype.hasOwnProperty.call(shippingFeeByProductId, id),
+    );
+  }, [productIds, shippingFeeByProductId]);
+
+  const shippingFee = useMemo(() => {
+    if (!isShippingFeeReady) return 0;
+    return calcOrderShippingFeeFromItems({
+      items: cartItems
+        .filter((it) => (it.kind ?? "product") === "product")
+        .map((it) => ({ shippingFee: shippingFeeByProductId[String(it.id)] })),
+    });
+  }, [cartItems, shippingFeeByProductId, isShippingFeeReady]);
+  const total = subtotal + shippingFee;
 
   useEffect(() => {
     let cancelled = false;
@@ -936,24 +946,32 @@ export default function CartPageClient() {
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-muted-foreground">배송비</span>
-                        <span
-                          className={
-                            shippingFee === 0
-                              ? "font-semibold text-primary"
-                              : "font-semibold"
-                          }
-                        >
-                          {shippingFee > 0
-                            ? `${formatKRW(shippingFee)}원`
-                            : "무료"}
-                        </span>
+                        {!isShippingFeeReady ? (
+                          <Skeleton className="h-6 w-20 rounded-md" />
+                        ) : (
+                          <span
+                            className={
+                              shippingFee === 0
+                                ? "font-semibold text-primary"
+                                : "font-semibold"
+                            }
+                          >
+                            {shippingFee > 0
+                              ? `${formatKRW(shippingFee)}원`
+                              : "무료"}
+                          </span>
+                        )}
                       </div>
                       <Separator className="opacity-40" />
                       <div className="flex items-center justify-between text-xl font-bold">
                         <span>총 결제 금액</span>
-                        <span className="tabular-nums text-primary">
-                          {formatKRW(total)}원
-                        </span>
+                        {!isShippingFeeReady ? (
+                          <Skeleton className="h-7 w-28 rounded-md" />
+                        ) : (
+                          <span className="tabular-nums text-primary">
+                            {formatKRW(total)}원
+                          </span>
+                        )}
                       </div>
                     </div>
 
@@ -1030,6 +1048,15 @@ export default function CartPageClient() {
                         <Loader2 className="h-5 w-5 animate-spin" />
                         로그인 확인 중...
                       </Button>
+                    ) : !isShippingFeeReady ? (
+                      <Button
+                        className="h-14 w-full transform bg-primary text-primary-foreground font-semibold opacity-70"
+                        size="lg"
+                        disabled
+                      >
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                        금액 계산 중...
+                      </Button>
                     ) : (
                       <Button
                         className="h-14 w-full transform bg-primary text-primary-foreground font-semibold hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-2xl"
@@ -1096,9 +1123,13 @@ export default function CartPageClient() {
                 <span className="text-sm text-muted-foreground">
                   총 결제 금액
                 </span>
-                <span className="tabular-nums text-lg font-bold text-primary">
-                  {formatKRW(total)}원
-                </span>
+                {!isShippingFeeReady ? (
+                  <Skeleton className="h-6 w-24 rounded-md" />
+                ) : (
+                  <span className="tabular-nums text-lg font-bold text-primary">
+                    {formatKRW(total)}원
+                  </span>
+                )}
               </div>
               {blockServiceCheckout ? (
                 <div className="space-y-2">
@@ -1138,6 +1169,14 @@ export default function CartPageClient() {
                 >
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   로그인 확인 중...
+                </Button>
+              ) : !isShippingFeeReady ? (
+                <Button
+                  className="h-12 w-full bg-primary text-primary-foreground font-semibold opacity-70"
+                  disabled
+                >
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  금액 계산 중...
                 </Button>
               ) : (
                 <Button
