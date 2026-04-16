@@ -1,6 +1,7 @@
 "use client";
 
 import SocialAuthButtons from "@/app/login/_components/SocialAuthButtons";
+import { useAuthStore } from "@/app/store/authStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -71,6 +72,7 @@ type RegisterTabPanelProps = {
 export default function RegisterTabPanel({ isSocialOauthRegister, oauthProvider, oauthToken, onKakaoOAuth, onNaverOAuth, onSwitchToLoginTab, onRegisterDirtyChange, onRegisterSubmittingChange, resetSignal }: RegisterTabPanelProps) {
   const router = useRouter();
   const params = useSearchParams();
+  const { setUser } = useAuthStore();
 
   const [emailId, setEmailId] = useState("");
   const [emailDomain, setEmailDomain] = useState("gmail.com");
@@ -305,6 +307,16 @@ export default function RegisterTabPanel({ isSocialOauthRegister, oauthProvider,
           setRegisterFormError(msg);
           return;
         }
+
+        try {
+          const meRes = await fetch("/api/users/me", { credentials: "include" });
+          const meData = await readJsonSafe(meRes);
+          const meUser = meData?.user ?? meData;
+
+          if (meRes.ok && meUser?.id) {
+            setUser(meUser);
+          }
+        } catch {}
 
         showSuccessToast("회원가입이 완료되었습니다.");
         resetRegisterForm();
