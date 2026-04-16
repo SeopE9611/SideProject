@@ -503,7 +503,7 @@ export default function AdminRacketForm({
                     id="shippingFee"
                     type="number"
                     min={0}
-                    step={1000}
+                    step={1}
                     placeholder="예: 3000"
                     value={form.shippingFee}
                     onChange={(e) =>
