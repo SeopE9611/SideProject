@@ -29,31 +29,30 @@ html body[data-scroll-locked] {
   position: static !important; /* Radix가 relative를 주입하는 케이스도 차단 */
 }
 
-/* 라이트 모드용 CSS 변수 정의 */
+/* 라이트 모드용 CSS 변수 정의 (Premium Monotone) */
 :root {
   /* Page base */
-  --background: 30 20% 98%;
-  --foreground: 10 8% 14%;
+  --background: 40 14% 98%;
+  --foreground: 0 0% 10%;
 
   /* Surface (card/panel) */
   --surface: 0 0% 100%;
-  --surface-foreground: 10 8% 14%;
-  --card: 30 18% 97%;
-  --card-foreground: 10 8% 14%;
+  --surface-foreground: 0 0% 10%;
+  --card: 40 10% 99%;
+  --card-foreground: 0 0% 10%;
 
-  --popover: 30 18% 97%;
-  --popover-foreground: 10 8% 14%;
+  --popover: 40 10% 99%;
+  --popover-foreground: 0 0% 10%;
 
-  /* Primary action (CTA / main interaction)
-     기준 색상: #8B1025 */
-  --primary: 349.8 79.4% 30.4%;
-  --primary-foreground: 120 100% 99%;
+  /* Primary action (CTA / main interaction) */
+  --primary: 0 0% 10%;
+  --primary-foreground: 0 0% 98%;
 
   /* Secondary emphasis */
-  --accent: 350.4 76.8% 27.1%;
-  --accent-foreground: 120 100% 99%;
-  --accent-hover: 350.4 76.8% 24%;
-  --accent-active: 350.4 76.8% 21%;
+  --accent: 0 0% 18%;
+  --accent-foreground: 0 0% 98%;
+  --accent-hover: 0 0% 14%;
+  --accent-active: 0 0% 8%;
 
   /* System feedback (toast/badge/banner) */
   --info: 213 86% 43%;
@@ -62,64 +61,63 @@ html body[data-scroll-locked] {
   --success-foreground: 120 100% 99%;
   --warning: 38 92% 46%;
   --warning-foreground: 32 100% 15%;
-  --secondary: 24 16% 93%;
-  --secondary-foreground: 10 8% 18%;
+  --secondary: 40 8% 95%;
+  --secondary-foreground: 0 0% 16%;
 
-  --muted: 24 14% 95%;
-  --muted-foreground: 12 8% 42%;
-  --brand-text: 349.8 79.4% 30.4%;
+  --muted: 40 6% 96%;
+  --muted-foreground: 0 0% 42%;
+  --brand-text: 0 0% 10%;
 
-  --border: 20 12% 86%;
-  --input: 20 12% 86%;
-  --ring: 349.8 79.4% 30.4%;
-  --overlay: 20 8% 8%;
+  --border: 40 6% 88%;
+  --input: 40 6% 88%;
+  --ring: 0 0% 18%;
+  --overlay: 0 0% 6%;
 
   --destructive: 0 72% 51%;
   --destructive-foreground: 210 40% 98%;
 
   /* 패키지 페이지를 위한 추가 디자인 토큰 */
-  --chart-1: 349.7 41.2% 50%;
-  --chart-2: 349.8 79.4% 30.4%;
-  --chart-3: 350 32% 62%;
-  --chart-4: 24 18% 52%;
-  --chart-5: 320 16% 46%;
+  --chart-1: 0 0% 10%;
+  --chart-2: 0 0% 28%;
+  --chart-3: 0 0% 45%;
+  --chart-4: 35 8% 58%;
+  --chart-5: 220 6% 42%;
   --radius: 0.5rem;
 
-  --sidebar: 30 22% 98%;
-  --sidebar-foreground: 10 8% 14%;
-  --sidebar-primary: 349.7 41.2% 50%;
-  --sidebar-primary-foreground: 120 100% 99%;
-  --sidebar-accent: 349 45% 94%;
-  --sidebar-accent-foreground: 349 70% 28%;
-  --sidebar-border: 20 12% 86%;
-  --sidebar-ring: 349.7 41.2% 50%;
+  --sidebar: 40 12% 98%;
+  --sidebar-foreground: 0 0% 10%;
+  --sidebar-primary: 0 0% 10%;
+  --sidebar-primary-foreground: 0 0% 98%;
+  --sidebar-accent: 40 8% 95%;
+  --sidebar-accent-foreground: 0 0% 12%;
+  --sidebar-border: 40 6% 88%;
+  --sidebar-ring: 0 0% 18%;
 }
 
-/* 다크 모드용 CSS 변수 정의 */
+/* 다크 모드용 CSS 변수 정의 (Premium Monotone) */
 .dark {
   /* Page base */
-  --background: 0 0% 8%;
+  --background: 240 4% 7%;
   --foreground: 0 0% 96%;
 
   /* Surface (card/panel) */
-  --surface: 0 0% 12%;
+  --surface: 240 3% 10%;
   --surface-foreground: 0 0% 96%;
-  --card: 0 0% 12%;
+  --card: 240 3% 10%;
   --card-foreground: 0 0% 96%;
 
-  --popover: 0 0% 12%;
+  --popover: 240 3% 10%;
   --popover-foreground: 0 0% 96%;
 
-  /* Primary action (CTA / main interaction)
-     다크에서는 가독성 때문에 같은 Hue/S에서 L을 올린 버전 사용 */
-  --primary: 350.8 44.4% 59.8%;
-  --primary-foreground: 120 4% 11%;
+  /* Primary action (CTA / main interaction) */
+  --primary: 0 0% 96%;
+  --primary-foreground: 0 0% 10%;
 
   /* Secondary emphasis */
-  --accent: 349.6 39.3% 54.1%;
-  --accent-foreground: 120 4% 11%;
-  --accent-hover: 349.6 39.3% 58%;
-  --accent-active: 349.6 39.3% 62%;
+  --accent: 0 0% 82%;
+  --accent-foreground: 0 0% 10%;
+  --accent-hover: 0 0% 88%;
+  --accent-active: 0 0% 92%;
 
   /* System feedback (toast/badge/banner) */
   --info: 210 90% 66%;
@@ -128,29 +126,35 @@ html body[data-scroll-locked] {
   --success-foreground: 120 100% 99%;
   --warning: 40 94% 54%;
   --warning-foreground: 30 90% 8%;
-  --secondary: 0 0% 16%;
+  --secondary: 240 3% 15%;
   --secondary-foreground: 0 0% 94%;
 
-  --muted: 0 0% 18%;
+  --muted: 240 3% 17%;
   --muted-foreground: 0 0% 70%;
-  --brand-text: 350.8 44.4% 59.8%;
+  --brand-text: 0 0% 96%;
 
-  --border: 0 0% 22%;
-  --input: 0 0% 22%;
-  --ring: 350.8 44.4% 59.8%;
-  --overlay: 120 10% 4%;
+  --border: 240 3% 24%;
+  --input: 240 3% 24%;
+  --ring: 0 0% 80%;
+  --overlay: 0 0% 4%;
 
   --destructive: 0 72% 51%;
   --destructive-foreground: 210 40% 98%;
 
-  --sidebar: 0 0% 10%;
+  --chart-1: 0 0% 96%;
+  --chart-2: 0 0% 78%;
+  --chart-3: 0 0% 62%;
+  --chart-4: 35 8% 70%;
+  --chart-5: 220 6% 64%;
+
+  --sidebar: 240 4% 9%;
   --sidebar-foreground: 0 0% 94%;
-  --sidebar-primary: 350.8 44.4% 59.8%;
-  --sidebar-primary-foreground: 120 4% 11%;
-  --sidebar-accent: 0 0% 15%;
+  --sidebar-primary: 0 0% 96%;
+  --sidebar-primary-foreground: 0 0% 10%;
+  --sidebar-accent: 240 3% 15%;
   --sidebar-accent-foreground: 0 0% 94%;
-  --sidebar-border: 0 0% 20%;
-  --sidebar-ring: 350.8 44.4% 59.8%;
+  --sidebar-border: 240 3% 22%;
+  --sidebar-ring: 0 0% 80%;
 }
 
 /* 전역 기본 스타일 */

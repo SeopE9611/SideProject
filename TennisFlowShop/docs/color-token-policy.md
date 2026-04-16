@@ -57,15 +57,15 @@ rg -n "#[0-9A-Fa-f]{3,6}|style=\{\{[^}]*\b(color|background|border)\b" app compo
 
 예외 허용 팔레트(고정):
 
-- `surface`: `#FCFFFC` — 메일 본문/카드 배경(고대비, 인쇄/다크 변환 내성)
-- `text`: `#1A1C1A` — 제목/본문 기본 텍스트
-- `sub`: `#4A544A` — 보조 텍스트/메타 정보
-- `line`: `#D7E3D7` — 구분선/테이블 보더
-- `bgSoft`: `#F9F3F5` — 요약 표의 key 셀 배경(웜 뉴트럴)
-- `badgeBg`: `#F6E9ED` — 상태 배지 배경(버건디 틴트)
-- `badgeText`: `#8B1025` — 상태 배지 텍스트(브랜드 버건디)
-- `btnBg`: `#8B1025` — CTA 배경
-- `btnText`: `#FCFFFC` — CTA 텍스트
+- `surface`: `#FCFCFB` — 메일 본문/카드 배경(off-white)
+- `text`: `#1A1A1A` — 제목/본문 기본 텍스트(charcoal)
+- `sub`: `#636363` — 보조 텍스트/메타 정보
+- `line`: `#E3E3E0` — 구분선/테이블 보더(stone gray)
+- `bgSoft`: `#F4F4F2` — 요약 표의 key 셀 배경
+- `badgeBg`: `#F2F2F0` — 상태 배지 배경
+- `badgeText`: `#1A1A1A` — 상태 배지 텍스트
+- `btnBg`: `#1A1A1A` — CTA 배경
+- `btnText`: `#FAFAFA` — CTA 텍스트
 
 운영 규칙:
 
@@ -86,86 +86,107 @@ rg -n "lib/shadcn-plugin|shadcn-plugin" . --glob '!node_modules/**'
 - 실제 import/require 경로는 없었고, `eslint.config.mjs`의 ignore 항목과 본 문서의 과거 설명에만 등장했습니다.
 - 더 이상 런타임/빌드 경로에서 사용되지 않아 `lib/shadcn-plugin.js` 파일을 제거했습니다.
 
-## 최소 토큰 세트(브랜드 + 웜 뉴트럴)
+## 최소 토큰 세트(프리미엄 모노톤)
 
-고정 팔레트:
+핵심 방향:
 
-- Base Light: `#FCFFFC`
-- Base Dark: `#1A1C1A`
-- Brand Burgundy: `#8B1025`
-- Accent Burgundy: `#7A1021`
+- 화이트/블랙 기반의 프리미엄 모노톤을 사용한다.
+- 순수 흑백 반복 대신 off-white / charcoal / graphite / stone gray 단계로 밀도를 만든다.
+- 브랜드 포인트보다 가독성과 표면 hierarchy를 우선한다.
 
-### Light (아이보리/스톤/웜 뉴트럴 기반)
+### Light (off-white + charcoal + stone gray)
 
-- `--background`: `#FCFAF8` (페이지 배경, 따뜻한 아이보리)
-- `--foreground`: `#26211F` (본문/제목 기본 텍스트)
-- `--surface-foreground`: `#26211F` (surface 위 기본 텍스트)
-- `--card`: `#F8F5F2` (카드/패널)
-- `--card-foreground`: `#26211F`
-- `--popover`: `#F8F5F2`
-- `--popover-foreground`: `#26211F`
-- `--secondary`: `#EFE7E3` (보조 배경 tint)
-- `--secondary-foreground`: `#322C2A`
-- `--muted`: `#F3ECE8` (중립 강조 배경)
-- `--muted-foreground`: `#746965` (보조 텍스트)
-- `--border`: `#DDD4CF` (웜 뉴트럴 경계선)
-- `--input`: `#DDD4CF` (입력 경계선)
-- `--primary`: `#8B1025` (주요 버튼/브랜드 인터랙션)
-- `--primary-foreground`: `#FCFFFC`
-- `--accent`: `#7A1021` (포인트/강조)
-- `--accent-foreground`: `#FCFFFC`
-- `--overlay`: `#161312` (라이트 모달 오버레이의 green cast 제거)
-- `--sidebar`: `#FCFAF8`
-- `--sidebar-foreground`: `#26211F`
-- `--sidebar-border`: `#DDD4CF`
-- `--sidebar-accent`: `#F6E9EC` (선택/hover용 매우 연한 버건디 tint)
-- `--sidebar-accent-foreground`: `#79162A` (선택 텍스트/아이콘 강조)
+- `--background`: `40 14% 98%` (`#FAFAF8`)
+- `--foreground`: `0 0% 10%` (`#1A1A1A`)
+- `--surface`: `0 0% 100%` (`#FFFFFF`)
+- `--surface-foreground`: `0 0% 10%`
+- `--card`: `40 10% 99%` (`#FCFCFB`)
+- `--card-foreground`: `0 0% 10%`
+- `--popover`: `40 10% 99%`
+- `--popover-foreground`: `0 0% 10%`
+- `--primary`: `0 0% 10%`
+- `--primary-foreground`: `0 0% 98%`
+- `--accent`: `0 0% 18%`
+- `--accent-foreground`: `0 0% 98%`
+- `--accent-hover`: `0 0% 14%`
+- `--accent-active`: `0 0% 8%`
+- `--secondary`: `40 8% 95%` (`#F2F2F0`)
+- `--secondary-foreground`: `0 0% 16%`
+- `--muted`: `40 6% 96%` (`#F4F4F2`)
+- `--muted-foreground`: `0 0% 42%` (`#6B6B6B`)
+- `--border`: `40 6% 88%` (`#E3E3E0`)
+- `--input`: `40 6% 88%`
+- `--brand-text`: `0 0% 10%`
+- `--ring`: `0 0% 18%`
+- `--overlay`: `0 0% 6%`
+- `--sidebar`: `40 12% 98%`
+- `--sidebar-foreground`: `0 0% 10%`
+- `--sidebar-primary`: `0 0% 10%`
+- `--sidebar-primary-foreground`: `0 0% 98%`
+- `--sidebar-accent`: `40 8% 95%`
+- `--sidebar-accent-foreground`: `0 0% 12%`
+- `--sidebar-border`: `40 6% 88%`
+- `--sidebar-ring`: `0 0% 18%`
 
-### Dark
+### Dark (charcoal + graphite + high legibility)
 
-- `--background`: `#141414` (차콜 기반 다크 배경, green cast 제거)
-- `--card`: `#1F1F1F` (배경 대비 +1단 밝은 중립 표면)
-- `--foreground`: `#F5F5F5`
-- `--secondary`: `#292929`
-- `--muted`: `#2E2E2E`
-- `--muted-foreground`: `#B3B3B3`
-- `--primary`: `#C66B79` (브랜드 버건디 계열 톤 업)
-- `--primary-foreground`: `#1A1C1A`
-- `--accent`: `#B85C6C`
-- `--accent-foreground`: `#1A1C1A`
-- `--border`: `#383838`
-- `--input`: `#383838`
-- `--sidebar`: `#1A1A1A`
-- `--sidebar-accent`: `#262626`
-- `--sidebar-border`: `#333333`
+- `--background`: `240 4% 7%` (`#111113`)
+- `--foreground`: `0 0% 96%` (`#F5F5F5`)
+- `--surface`: `240 3% 10%` (`#19191B`)
+- `--surface-foreground`: `0 0% 96%`
+- `--card`: `240 3% 10%`
+- `--card-foreground`: `0 0% 96%`
+- `--popover`: `240 3% 10%`
+- `--popover-foreground`: `0 0% 96%`
+- `--primary`: `0 0% 96%`
+- `--primary-foreground`: `0 0% 10%`
+- `--accent`: `0 0% 82%`
+- `--accent-foreground`: `0 0% 10%`
+- `--accent-hover`: `0 0% 88%`
+- `--accent-active`: `0 0% 92%`
+- `--secondary`: `240 3% 15%` (`#252528`)
+- `--secondary-foreground`: `0 0% 94%`
+- `--muted`: `240 3% 17%` (`#2B2B2E`)
+- `--muted-foreground`: `0 0% 70%`
+- `--border`: `240 3% 24%` (`#3C3C3F`)
+- `--input`: `240 3% 24%`
+- `--brand-text`: `0 0% 96%`
+- `--ring`: `0 0% 80%`
+- `--overlay`: `0 0% 4%`
+- `--sidebar`: `240 4% 9%` (`#151517`)
+- `--sidebar-foreground`: `0 0% 94%`
+- `--sidebar-primary`: `0 0% 96%`
+- `--sidebar-primary-foreground`: `0 0% 10%`
+- `--sidebar-accent`: `240 3% 15%`
+- `--sidebar-accent-foreground`: `0 0% 94%`
+- `--sidebar-border`: `240 3% 22%`
+- `--sidebar-ring`: `0 0% 80%`
 
-### 상태색(실무 최소)
+### 상태색(역할 유지)
 
-- `--success`: `#2C5341` (Light) / `#4E9373` (Dark) *(의미색 유지: 브랜드색과 분리)*
-- `--warning`: `#D97706`
-- `--destructive`: `#DC2626`
-- `--ring`: `#8B1025` (Light) / `#C66B79` (Dark)
+- `--success`, `--warning`, `--info`, `--destructive`는 **의미색 역할을 유지**한다.
+- 본 리브랜딩에서 변경한 축은 neutral/primary/chart/sidebar이며, 상태색의 의미 체계는 바꾸지 않는다.
 
-### 차트 팔레트 원칙 (Light)
+### 차트 팔레트 원칙 (Monotone with depth)
 
-- `--chart-1`, `--chart-2`: 브랜드 버건디 축 유지 (메인 시리즈)
-- `--chart-3`: `#BC808D` (dusty rose)
-- `--chart-4`: `#9B7F74` (warm taupe / brown-gray)
-- `--chart-5`: `#886474` (muted plum / slate-wine)
-- 차트 보조색은 버건디 단일 반복이 아니라 **웜/로즈/플럼 축**으로 확장해 구분성을 확보한다.
-- `chart-3~5`에 green/mint/teal 인상이 재유입되면 회귀로 간주한다.
+- Light 기본값
+  - `--chart-1`: `0 0% 10%` (almost black / strongest)
+  - `--chart-2`: `0 0% 28%` (deep graphite)
+  - `--chart-3`: `0 0% 45%` (medium gray)
+  - `--chart-4`: `35 8% 58%` (warm stone gray)
+  - `--chart-5`: `220 6% 42%` (slate gray)
+- Dark는 동일 hue를 유지하고 명도만 높여 시인성을 확보한다.
+  - `--chart-1`: `0 0% 96%`
+  - `--chart-2`: `0 0% 78%`
+  - `--chart-3`: `0 0% 62%`
+  - `--chart-4`: `35 8% 70%`
+  - `--chart-5`: `220 6% 64%`
+- green / burgundy / rose 축이 chart 핵심 팔레트로 회귀하면 실패로 본다.
 
-상태색 허용 위치(필수 준수):
+### Sidebar accent / selection 원칙
 
-- 배지: 상태 전달용 `Badge` (`success/warning/destructive`)
-- 토스트: 결과 피드백(`성공/경고/실패`) 알림
-- 폼 검증: 에러/경고/성공 메시지 및 강조 테두리
-- 위험 버튼: 삭제/비활성화/취소 확정 등 파괴적 액션
-
-상태색 금지 위치:
-
-- 장식 목적의 임의 컬러 포인트
-- 일반 본문/카드 배경/섹션 타이틀의 브랜드 대체 색
+- 라이트/다크 모두 선택 상태는 `--sidebar-accent` 배경 + `--sidebar-accent-foreground` 텍스트 대비로 표현한다.
+- 고채도 브랜드 포인트 블록을 선택 상태 기본값으로 사용하지 않는다.
 
 ## shadcn/tailwind 매핑 가이드
 

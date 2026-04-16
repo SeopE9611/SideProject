@@ -3,16 +3,16 @@ import { ApplicationCtx, EventType, UserCtx } from "@/app/features/notifications
 /* ========= Theme ========= */
 const THEME = {
   brand: "도깨비테니스스트링",
-  surface: "#FCFFFC",
-  text: "#1A1C1A",
-  sub: "#4A544A",
-  footerMeta: "#4A544A",
-  line: "#D7E3D7",
-  bgSoft: "#F9F3F5",
-  badgeBg: "#F6E9ED",
-  badgeText: "#8B1025",
-  btnBg: "#8B1025",
-  btnText: "#FCFFFC",
+  surface: "#FCFCFB",
+  text: "#1A1A1A",
+  sub: "#636363",
+  footerMeta: "#636363",
+  line: "#E3E3E0",
+  bgSoft: "#F4F4F2",
+  badgeBg: "#F2F2F0",
+  badgeText: "#1A1A1A",
+  btnBg: "#1A1A1A",
+  btnText: "#FAFAFA",
 } as const;
 
 /* ========= Utils ========= */
