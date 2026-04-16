@@ -1,5 +1,6 @@
 import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
+import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 
 type UsedRacketDoc = { _id: ObjectId | string } & Record<string, unknown>;
 type ReviewAggRow = {
@@ -112,6 +113,7 @@ export async function getRacketDetailPayload(
   return {
     ...doc,
     id: String(doc._id),
+    shippingFee: normalizeItemShippingFee((doc as Record<string, unknown>).shippingFee),
     _id: undefined,
     reviews: (reviews ?? []).map((r) => ({
       _id: r._id,

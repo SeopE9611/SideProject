@@ -29,6 +29,7 @@ export type ProductBasicInfoForm = {
   length: string;
   price: number;
   mountingFee: number;
+  shippingFee: number;
 };
 
 export type ProductEditSnapshotInput = {
@@ -100,6 +101,7 @@ export function buildProductEditInitialSnapshot(
       length: product.length,
       price: product.price,
       mountingFee: product.mountingFee,
+      shippingFee: product.shippingFee ?? 3000,
     },
     features: product.features,
     tags: product.tags,

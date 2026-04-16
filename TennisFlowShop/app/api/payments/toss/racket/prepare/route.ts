@@ -4,7 +4,7 @@ import { ObjectId } from "mongodb";
 import clientPromise from "@/lib/mongodb";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { isTossPaymentsEnabled } from "@/lib/payments/provider-flags";
-import { calcShippingFee } from "@/lib/shipping-fee";
+import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 import {
   buildTossOrderName,
   createTossOrderId,
@@ -93,10 +93,10 @@ export async function POST(req: Request) {
       );
     }
 
-    const shippingFee = calcShippingFee({
-      subtotal: racketPrice,
-      isVisitPickup: shippingMethod === "visit",
-    });
+    const shippingFee =
+      shippingMethod === "visit"
+        ? 0
+        : normalizeItemShippingFee((racket as { shippingFee?: unknown }).shippingFee);
     const totalPrice = racketPrice + shippingFee;
 
     const tossOrderId = createTossOrderId();

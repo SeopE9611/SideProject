@@ -2,6 +2,7 @@ import { racketBrandLabel } from "@/lib/constants";
 import { getDb } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 import { NextResponse } from "next/server";
+import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 
 export async function GET(
   _req: Request,
@@ -39,6 +40,7 @@ export async function GET(
   if (prod) {
     const rawMountingFee = (prod as any).mountingFee;
     const rawPrice = (prod as any).price;
+    const rawShippingFee = (prod as any).shippingFee;
 
     const mf = Number(rawMountingFee);
     const pr = Number(rawPrice);
@@ -60,6 +62,7 @@ export async function GET(
           null,
         mountingFee: safeMountingFee,
         price: safePrice,
+        shippingFee: normalizeItemShippingFee(rawShippingFee),
       },
       { headers: { "Cache-Control": "no-store" } },
     );
@@ -72,6 +75,7 @@ export async function GET(
 
   if (racket) {
     const rawPrice = (racket as any).price;
+    const rawShippingFee = (racket as any).shippingFee;
     const pr = Number(rawPrice);
     const safePrice = Number.isFinite(pr) && pr >= 0 ? pr : 0;
 
@@ -95,6 +99,7 @@ export async function GET(
           null,
         mountingFee: 0, // 라켓은 장착비 개념 없음(필요하면 정책에 맞게)
         price: safePrice,
+        shippingFee: normalizeItemShippingFee(rawShippingFee),
       },
       { headers: { "Cache-Control": "no-store" } },
     );

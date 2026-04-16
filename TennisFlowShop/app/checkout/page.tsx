@@ -28,7 +28,7 @@ import { bankLabelMap } from "@/lib/constants";
 import { useBackNavigationGuard } from "@/lib/hooks/useBackNavigationGuard";
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
 import { isNicePaymentsEnabled } from "@/lib/payments/provider-flags";
-import { calcShippingFee } from "@/lib/shipping-fee";
+import { calcOrderShippingFeeFromItems, normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { cn } from "@/lib/utils";
 import { AlertTriangle, Building2, CheckCircle, CreditCard, Home, Loader2, Mail, MapPin, MessageSquare, Package, Phone, Shield, Truck, UserIcon } from "lucide-react";
 import dynamic from "next/dynamic";
@@ -144,6 +144,7 @@ export default function CheckoutPage() {
 
   // 상품ID 목록을 기준으로 mountingFee를 mini API로 가져오는 상태
   const [mountingFeeByProductId, setMountingFeeByProductId] = useState<Record<string, number>>({});
+  const [shippingFeeByProductId, setShippingFeeByProductId] = useState<Record<string, number>>({});
   const [mountingFeeLoading, setMountingFeeLoading] = useState(false);
 
   // 2) 기존 상태
@@ -278,41 +279,46 @@ export default function CheckoutPage() {
     let cancelled = false;
 
     async function loadMountingFees() {
-      // 서비스 OFF면 굳이 mini API 호출하지 않음
-      if (!withStringService) {
+      const allItemIds = Array.from(new Set(orderItems.map((it) => String(it.id))));
+      const serviceTargetIds = new Set(
+        orderItems.filter(isServiceFeeTarget).map((it) => String(it.id)),
+      );
+
+      if (allItemIds.length === 0) {
         setMountingFeeLoading(false);
         setMountingFeeByProductId({});
+        setShippingFeeByProductId({});
         return;
       }
 
-      // mountingFee 로딩 대상 + serviceFee 계산을 “같은 기준”으로
-      const productIds = Array.from(new Set(orderItems.filter(isServiceFeeTarget).map((it) => String(it.id))));
-
-      if (productIds.length === 0) {
-        setMountingFeeLoading(false);
-        setMountingFeeByProductId({});
-        return;
-      }
-
-      // mini API 로딩 중
-      setMountingFeeLoading(true);
+      // 서비스 ON일 때만 장착비 로딩 상태를 노출
+      setMountingFeeLoading(withStringService);
 
       const entries = await Promise.all(
-        productIds.map(async (id) => {
+        allItemIds.map(async (id) => {
           try {
             const res = await fetch(`/api/products/${id}/mini`);
             const json = await res.json();
-            const raw = json?.ok ? Number(json.mountingFee ?? 0) : 0;
-            const mf = Number.isFinite(raw) && raw > 0 ? raw : 0;
-            return [id, mf] as const;
+            const rawMounting = json?.ok ? Number(json.mountingFee ?? 0) : 0;
+            const mf = Number.isFinite(rawMounting) && rawMounting > 0 ? rawMounting : 0;
+            const sf = normalizeItemShippingFee(json?.shippingFee);
+            return [id, { mountingFee: mf, shippingFee: sf }] as const;
           } catch {
-            return [id, 0] as const;
+            return [id, { mountingFee: 0, shippingFee: 3000 }] as const;
           }
         }),
       );
 
       if (cancelled) return;
-      setMountingFeeByProductId(Object.fromEntries(entries));
+      setMountingFeeByProductId(
+        Object.fromEntries(
+          entries.map(([id, fee]) => [
+            id,
+            serviceTargetIds.has(id) ? fee.mountingFee : 0,
+          ]),
+        ),
+      );
+      setShippingFeeByProductId(Object.fromEntries(entries.map(([id, fee]) => [id, fee.shippingFee])));
       setMountingFeeLoading(false);
     }
 
@@ -328,10 +334,14 @@ export default function CheckoutPage() {
   const [deliveryMethod, setDeliveryMethod] = useState<"택배수령" | "방문수령">("택배수령");
 
   // 배송비
-  const shippingFee = calcShippingFee({
-    subtotal,
-    isVisitPickup: deliveryMethod === "방문수령",
-  });
+  const shippingFee = useMemo(() =>
+    calcOrderShippingFeeFromItems({
+      items: orderItems.map((item) => ({
+        shippingFee: shippingFeeByProductId[String(item.id)],
+      })),
+      isVisitPickup: deliveryMethod === "방문수령",
+    }),
+  [orderItems, shippingFeeByProductId, deliveryMethod]);
 
   // 교체 서비스 공임(serviceFee) 계산
   // let serviceFee = 0;
