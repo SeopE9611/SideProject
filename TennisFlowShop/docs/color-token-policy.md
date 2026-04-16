@@ -181,7 +181,7 @@ rg -n "lib/shadcn-plugin|shadcn-plugin" . --glob '!node_modules/**'
   - `--chart-3`: `0 0% 62%`
   - `--chart-4`: `35 8% 70%`
   - `--chart-5`: `220 6% 64%`
-- green / burgundy / rose 축이 chart 핵심 팔레트로 회귀하면 실패로 본다.
+- 고채도 브랜드 색조가 chart 핵심 팔레트로 회귀하면 실패로 본다. 차트는 모노톤 기반의 명도 단계와 stone/slate 계열 보조 톤 안에서 해결한다.
 
 ### Sidebar accent / selection 원칙
 
@@ -199,12 +199,12 @@ rg -n "lib/shadcn-plugin|shadcn-plugin" . --glob '!node_modules/**'
 
 권장 원칙:
 
-1. `primary`는 배경색이 아니라 **인터랙션(CTA)** 용도로 유지.
-2. 본문은 `text-foreground`, 브랜드 버건디는 제목/강조/링크 중심으로 제한.
-3. hover/active는 토큰 기반(`primary/90` 또는 별도 `--primary-hover`)으로 정의.
-4. 일반 UI는 하드코딩 hex 금지, 브랜드 제휴 UI만 예외 허용.
-5. 다크 모드는 `primary/accent`보다 `background/card/border/input`의 **neutral surface 일관성**을 우선하고, 브랜드 색은 포인트 영역에만 사용한다.
-6. 라이트 사이드바 선택 상태는 **진한 버건디 블록**이 아니라 `--sidebar-accent`의 연한 tint 배경 + `--sidebar-accent-foreground` 텍스트 대비로 표현한다.
+1. `primary`는 특정 hue의 브랜드색이 아니라 **주요 인터랙션(CTA)과 강한 대비가 필요한 요소**를 위한 핵심 토큰으로 사용한다.
+2. 본문은 `text-foreground`를 기본으로 사용하고, 강조는 `text-primary` 또는 `bg-primary text-primary-foreground` 조합으로 해결한다.
+3. hover/active는 하드코딩 색이 아니라 토큰 기반(`primary/90`, `bg-accent`, 별도 상태 토큰 등)으로만 정의한다.
+4. 일반 UI는 하드코딩 hex 금지, 브랜드 제휴 UI만 예외 허용한다.
+5. 라이트/다크 모두 `primary/accent`보다 `background/card/border/input`의 **neutral surface 일관성**을 우선하고, 전체 인상은 off-white / charcoal / graphite / stone gray 단계로 정리한다.
+6. 사이드바 선택 상태는 **강한 고채도 블록색**이 아니라 `--sidebar-accent` 배경 + `--sidebar-accent-foreground` 텍스트 대비로 표현한다.
 
 ## `text-muted-foreground` 적용 기준 (다크 모드 가독성 보호)
 
