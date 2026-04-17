@@ -2,21 +2,22 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { cva, VariantProps } from "class-variance-authority";
 
-const cardVariants = cva("rounded-lg bg-card text-card-foreground shadow-sm", {
+const cardVariants = cva("rounded-2xl border border-border bg-card text-card-foreground shadow-sm", {
   variants: {
     variant: {
-      // 기존 기본값 유지
-      outline: "border",
-      // 테두리 없는 카드
-      ghost: "",
-      // 배경 강조가 필요한 섹션 카드
-      muted: "border bg-muted text-foreground",
-      elevatedGradient:
-        "border border-border bg-card shadow-xl overflow-hidden",
+      default: "",
+      elevated: "shadow-md",
+      interactive:
+        "transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg",
+      // 하위 호환
+      outline: "",
+      ghost: "border-0 bg-transparent shadow-none",
+      muted: "bg-secondary text-foreground",
+      elevatedGradient: "shadow-md overflow-hidden",
     },
   },
   defaultVariants: {
-    variant: "outline",
+    variant: "default",
   },
 });
 
@@ -38,7 +39,9 @@ const cardHeaderVariants = cva("flex flex-col space-y-1.5 p-6", {
   variants: {
     variant: {
       default: "",
-      sectionGradient: "bg-muted/50 dark:bg-card/40 border-b border-border",
+      section: "bg-secondary/70 border-b border-border",
+      // 하위 호환
+      sectionGradient: "bg-secondary/70 border-b border-border",
     },
   },
   defaultVariants: {

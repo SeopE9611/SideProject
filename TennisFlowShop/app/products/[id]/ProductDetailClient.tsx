@@ -68,8 +68,8 @@ const ReviewEditDialog = dynamic(() => import("./ReviewEditDialog"), {
   loading: () => null,
 });
 
-const detailSurfaceSubtleClass = "rounded-xl border border-border/60 bg-secondary/60";
-const detailSurfaceInfoItemClass = "flex items-center gap-3 rounded-xl border border-border/50 bg-secondary/50 p-3";
+const detailSurfaceSubtleInnerClass = "rounded-xl border border-border/60 bg-secondary/50";
+const detailSurfaceInfoItemClass = "flex items-center gap-3 rounded-xl border border-border/60 bg-secondary/40 p-3";
 
 export default function ProductDetailClient({ product }: { product: any }) {
   // 방어: 간헐적으로 images/reviews가 undefined인 데이터가 섞이면 상세페이지가 바로 크래시 나는 현상 대비
@@ -762,7 +762,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
           </div>
 
           <div className="bp-lg:col-span-2 space-y-4 sm:space-y-5">
-            <Card className="border border-border/60 shadow-md bg-card rounded-3xl">
+            <Card className="rounded-3xl border border-border bg-card shadow-sm">
               <CardContent className="p-5 sm:p-6 bp-md:p-7">
                 <div className="space-y-5 sm:space-y-6">
                   {/* 브랜드와 제품명 */}
@@ -808,7 +808,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     <div className="flex items-center justify-between">
                       <span className="font-semibold text-base sm:text-lg">수량</span>
 
-                      <div className="flex items-center rounded-xl bg-secondary border border-border/60 p-1 shadow-sm">
+                      <div className={cn("p-1", detailSurfaceSubtleInnerClass, "flex items-center")}>
                         <Button
                           variant="ghost"
                           size="icon"
@@ -841,7 +841,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                       </div>
                     </div>
                     {product.inventory?.manageStock && product.inventory.stock <= 5 && product.inventory.stock > 0 && (
-                      <div className={cn("flex items-center gap-2.5 p-3 sm:p-3.5", detailSurfaceSubtleClass)}>
+                      <div className={cn("flex items-center gap-2.5 p-3 sm:p-3.5", detailSurfaceSubtleInnerClass)}>
                         <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
                         <span className="text-sm sm:text-base text-muted-foreground">
                           현재 남은 수량이 <span className="font-semibold text-foreground">{product.inventory.stock}개</span>입니다.
@@ -941,7 +941,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
         </div>
 
         <div className="grid grid-cols-1 bp-md:grid-cols-2 gap-5 sm:gap-6 mt-8 sm:mt-10">
-          <Card className="border border-border/60 shadow-lg bg-card rounded-3xl">
+          <Card className="rounded-3xl border border-border bg-card shadow-sm">
             <CardHeader className="pb-4 sm:pb-5 p-5 sm:p-6">
               <CardTitle className="text-lg sm:text-xl font-semibold text-foreground flex items-center gap-2.5">
                 <Target className="h-5 w-5 sm:h-6 sm:w-6" />
@@ -953,14 +953,14 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 <h4 className="font-semibold text-sm sm:text-base text-foreground mb-3 sm:mb-4">추천 대상</h4>
                 <div className="space-y-2 sm:space-y-2.5">
                   {selectedPlayerTypes.length > 0 && (
-                    <div className="flex items-center gap-3 text-sm sm:text-base p-3 bg-muted/30 rounded-xl border border-border/40">
+                    <div className="flex items-center gap-3 rounded-xl border border-border/60 bg-secondary/40 p-3 text-sm sm:text-base">
                       <div className="w-2.5 h-2.5 bg-foreground rounded-full shrink-0"></div>
                       <span className="text-muted-foreground">플레이어:</span>
                       <span className="font-medium text-foreground">{selectedPlayerTypes.join(", ")}</span>
                     </div>
                   )}
                   {selectedPlayStyles.length > 0 && (
-                    <div className="flex items-center gap-3 text-sm sm:text-base p-3 bg-muted/30 rounded-xl border border-border/40">
+                    <div className="flex items-center gap-3 rounded-xl border border-border/60 bg-secondary/40 p-3 text-sm sm:text-base">
                       <div className="w-2.5 h-2.5 bg-foreground rounded-full shrink-0"></div>
                       <span className="text-muted-foreground">스타일:</span>
                       <span className="font-medium text-foreground">{selectedPlayStyles.join(", ")}</span>
@@ -972,15 +972,15 @@ export default function ProductDetailClient({ product }: { product: any }) {
               <div>
                 <h4 className="font-semibold text-sm sm:text-base text-foreground mb-3 sm:mb-4">추가 특성</h4>
                 {additionalFeaturesText ? (
-                  <p className="text-sm sm:text-base text-muted-foreground leading-relaxed p-3 bg-muted/30 rounded-xl border border-border/40">{additionalFeaturesText}</p>
+                  <p className="rounded-xl border border-border/60 bg-secondary/40 p-3 text-sm leading-relaxed text-muted-foreground sm:text-base">{additionalFeaturesText}</p>
                 ) : (
-                  <p className="text-sm sm:text-base text-muted-foreground italic p-3 bg-muted/30 rounded-xl border border-border/40">추가 특성 정보가 없습니다.</p>
+                  <p className="rounded-xl border border-border/60 bg-secondary/40 p-3 text-sm italic text-muted-foreground sm:text-base">추가 특성 정보가 없습니다.</p>
                 )}
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border border-border/60 shadow-lg bg-card rounded-3xl">
+          <Card className="rounded-3xl border border-border bg-card shadow-sm">
             <CardHeader className="pb-4 sm:pb-5 p-5 sm:p-6">
               <CardTitle className="text-lg sm:text-xl font-semibold text-foreground flex items-center gap-2.5">
                 <Activity className="h-5 w-5 sm:h-6 sm:w-6" />

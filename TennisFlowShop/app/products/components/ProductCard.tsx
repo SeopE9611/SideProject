@@ -151,6 +151,15 @@ function RatingStars({
   );
 }
 
+const productCardSurfaceClass =
+  "group h-full overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg";
+const productImageWrapClass =
+  "relative w-full overflow-hidden rounded-t-2xl bg-secondary/40 aspect-[5/4] bp-md:aspect-square";
+const productMetaPillClass =
+  "flex items-center justify-between rounded-xl border border-border/60 bg-secondary/50 px-2 py-1.5";
+const productOverlayActionClass =
+  "absolute inset-x-0 bottom-0 flex items-center gap-2 border-t border-border/60 bg-card/90 px-3 py-3 opacity-0 transition-all duration-200 group-hover:opacity-100";
+
 type Props = {
   product: Product;
   viewMode: "grid" | "list";
@@ -242,11 +251,11 @@ const ProductCard = React.memo(
 
     if (viewMode === "list") {
       return (
-        <Card className="overflow-hidden transition-all duration-300 hover:shadow-xl bg-card border border-border hover:border-border relative">
+        <Card className={cn(productCardSurfaceClass, "relative")}>
           {/* 리스트뷰: 배경 장식 SVG 제거 */}
 
           <div className="flex flex-col bp-md:flex-row relative z-10">
-            <div className="relative w-full bp-md:w-48 aspect-[4/3] bp-md:aspect-square flex-shrink-0 overflow-hidden">
+            <div className="relative w-full bp-md:w-48 aspect-[5/4] bp-md:aspect-square flex-shrink-0 overflow-hidden bg-secondary/40">
               <Image
                 src={
                   (product.images?.[0] as string) ||
@@ -299,7 +308,7 @@ const ProductCard = React.memo(
                       <div
                         key={feature.key}
                         className={cn(
-                          "rounded-md border border-border/60 bg-muted/30 px-2.5 py-2",
+                          productMetaPillClass,
                           featureEntries.length % 2 === 1 &&
                             index === featureEntries.length - 1 &&
                             "col-span-2",
@@ -389,9 +398,9 @@ const ProductCard = React.memo(
     // ─── 그리드 뷰 ────────────────────────────────────────────────────────────
     return (
       <Link href={detailHref}>
-        <Card className="h-full overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 bg-card border border-border hover:border-primary/40 dark:hover:border-primary/40 group relative">
+        <Card className={productCardSurfaceClass}>
           {/* 이미지 영역 */}
-          <div className="relative w-full aspect-[4/3] bp-md:aspect-square overflow-hidden">
+          <div className={productImageWrapClass}>
             <Image
               src={
                 (product.images?.[0] as string) ||
@@ -416,21 +425,12 @@ const ProductCard = React.memo(
                 라이트: 흰색 베이스 / 다크: 짙은 카드색 베이스
                 opacity-0 → opacity-100 전환만 사용, bg-overlay 제거
             ──────────────────────────────────────────────────────────────── */}
-            <div
-              className={cn(
-                "absolute inset-0 flex items-end justify-between px-3 pb-3 gap-2",
-                "opacity-0 group-hover:opacity-100 transition-opacity duration-200",
-                // 라이트: 하단 흰 그라디언트 (이미지 가리지 않고 버튼 가독성 확보)
-                // 다크: 하단 짙은 그라디언트
-                "bg-gradient-to-t from-card via-card/70 to-transparent",
-                "dark:from-card dark:via-card/70 dark:to-transparent",
-              )}
-            >
+            <div className={productOverlayActionClass}>
               {/* 상세보기 버튼 */}
               <Button
                 size="sm"
                 variant="default"
-                className="h-8 sm:h-9 text-xs sm:text-sm shadow-md flex-1"
+                className="h-8 flex-1 text-xs shadow-sm sm:h-9 sm:text-sm"
                 onClick={(e) => e.stopPropagation()}
               >
                 <Eye className="w-3 h-3 bp-sm:w-4 bp-sm:h-4 mr-1" />
@@ -468,7 +468,7 @@ const ProductCard = React.memo(
             <div className="text-xs text-muted-foreground mb-1.5 font-medium">
               {brandLabel}
             </div>
-            <CardTitle className="text-sm sm:text-base font-semibold mb-2 line-clamp-2 text-foreground group-hover:text-primary transition-colors min-h-[2.5rem] sm:min-h-[3rem]">
+            <CardTitle className="mb-2 min-h-[2.5rem] line-clamp-2 text-sm font-semibold text-foreground transition-colors group-hover:text-foreground sm:min-h-[3rem] sm:text-base">
               {product.name}
             </CardTitle>
 
@@ -485,7 +485,7 @@ const ProductCard = React.memo(
                   <div
                     key={feature.key}
                     className={cn(
-                      "flex items-center justify-between rounded-md bg-muted/30 px-2 py-1.5",
+                      productMetaPillClass,
                       featureEntries.length % 2 === 1 &&
                         index === featureEntries.length - 1 &&
                         "col-span-2",
@@ -507,8 +507,8 @@ const ProductCard = React.memo(
               </div>
             )}
 
-            <div className="flex justify-end">
-              <div className="font-bold text-base sm:text-lg text-primary">
+            <div className="flex justify-end pt-0.5">
+              <div className="text-base font-bold text-foreground sm:text-lg">
                 {product.price.toLocaleString()}원
               </div>
             </div>
