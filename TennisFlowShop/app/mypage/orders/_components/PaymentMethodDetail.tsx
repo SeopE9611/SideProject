@@ -79,8 +79,6 @@ export default function PaymentMethodDetail({
   paymentProvider,
   easyPayProvider,
   paymentStatus,
-  paymentTid,
-  paymentNiceSync,
 }: PaymentMethodDetailProps) {
   const isTossPayment = String(paymentProvider ?? "").trim().toLowerCase() === "tosspayments";
   const isNicePayment = String(paymentProvider ?? "").trim().toLowerCase() === "nicepay";
@@ -104,11 +102,7 @@ export default function PaymentMethodDetail({
         ) : isNicePayment ? (
           <div className="mt-1 rounded-md bg-muted px-3 py-2 text-sm text-foreground leading-relaxed border border-border space-y-1">
             <div className="font-semibold">{niceMethodLabel}</div>
-            <div className="text-sm">결제 제공사: NicePay</div>
             {statusLabel && <div className="text-sm">결제 상태: {statusLabel}</div>}
-            {paymentTid && <div className="text-sm">거래 TID: {paymentTid}</div>}
-            {paymentNiceSync?.pgStatus && <div className="text-sm">PG 상태: {paymentNiceSync.pgStatus}</div>}
-            {paymentNiceSync?.lastSyncedAt && <div className="text-sm">최근 동기화: {new Date(paymentNiceSync.lastSyncedAt).toLocaleString("ko-KR")}</div>}
           </div>
         ) : bankInfo ? (
           <div className="mt-1 rounded-md bg-muted px-3 py-2 text-sm text-foreground leading-relaxed border border-border space-y-1">
