@@ -61,7 +61,7 @@ export default function RacketsClient() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-4 space-y-4 md:space-y-6">
+    <div className="mx-auto max-w-6xl space-y-4 p-4 md:space-y-6">
       {/* 상단 타이틀 + 간단 필터 */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold">중고 라켓</h1>
@@ -91,7 +91,7 @@ export default function RacketsClient() {
           {Array.from({ length: 8 }).map((_, i) => (
             <div
               key={i}
-              className="h-56 rounded-lg bg-muted/60 dark:bg-muted/50 animate-pulse"
+              className="h-56 rounded-xl border border-border bg-muted/40 animate-pulse"
             />
           ))}
         </div>
@@ -105,9 +105,9 @@ export default function RacketsClient() {
             <Link
               key={it.id}
               href={`/rackets/${it.id}`}
-              className="group overflow-hidden rounded-xl border hover:shadow transition"
+              className="group overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg"
             >
-              <div className="aspect-[4/5] bg-muted relative">
+              <div className="relative aspect-[4/5] bg-secondary/40">
                 {it.images?.[0] ? (
                   <Image
                     src={it.images[0]}

@@ -34,11 +34,11 @@ export default function RacketCompareTray() {
 
       <div data-bottom-sticky="1" className="fixed inset-x-0 bottom-0 z-50">
         <div className="mx-auto w-full px-3 pb-3 bp-sm:px-4 bp-md:px-6 bp-lg:max-w-[1200px]">
-          <div className="rounded-xl bg-background/95 shadow-xl backdrop-blur-md ring-1 ring-primary/10 ring-border/10">
+          <div className="rounded-xl border border-border bg-card/95 shadow-md backdrop-blur-sm">
             <div className="p-3 bp-sm:p-4">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 dark:bg-primary/20">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary">
                     <Scale className="h-4 w-4 text-primary" />
                   </div>
                   <div>
@@ -106,9 +106,9 @@ export default function RacketCompareTray() {
                       className={cn(
                         "group relative flex h-16 bp-sm:h-18 items-center gap-2 rounded-lg px-2",
                         "bg-card/80",
-                        "ring-1 ring-primary/20 dark:ring-primary/30",
+                        "border border-border bg-background",
                         "transition-all duration-200",
-                        "hover:ring-primary/40 hover:shadow-sm",
+                        "hover:shadow-md",
                       )}
                     >
                       <div className="relative h-11 w-11 bp-sm:h-12 bp-sm:w-12 shrink-0 overflow-hidden rounded-md bg-muted/50 ring-1 ring-border/10">

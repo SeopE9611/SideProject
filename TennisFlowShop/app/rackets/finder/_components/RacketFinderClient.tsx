@@ -540,7 +540,7 @@ export default function RacketFinderClient() {
     <div className="space-y-4 md:space-y-6">
       <div className="space-y-2">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 dark:bg-primary/20">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-secondary">
             <Search className="h-5 w-5 text-primary" />
           </div>
           <div>
@@ -714,7 +714,7 @@ export default function RacketFinderClient() {
                         "flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm transition-all",
                         "bg-background/50 dark:bg-background/30 hover:bg-background/80 dark:hover:bg-background/50",
                         checked &&
-                          "bg-primary/10 dark:bg-primary/20 ring-1 ring-primary/30",
+                          "bg-secondary ring-1 ring-border",
                       )}
                     >
                       <Checkbox
@@ -752,7 +752,7 @@ export default function RacketFinderClient() {
                         "flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm transition-all",
                         "bg-background/50 dark:bg-background/30 hover:bg-background/80 dark:hover:bg-background/50",
                         checked &&
-                          "bg-primary/10 dark:bg-primary/20 ring-1 ring-primary/30",
+                          "bg-secondary ring-1 ring-border",
                       )}
                     >
                       <Checkbox
@@ -831,13 +831,13 @@ export default function RacketFinderClient() {
               {chips.map((c) => (
                 <div
                   key={c.id}
-                  className="group inline-flex items-center gap-1.5 rounded-full bg-primary/10 dark:bg-primary/20 px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/20 dark:hover:bg-primary/30"
+                  className="group inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted"
                 >
                   <span className="max-w-[200px] truncate">{c.text}</span>
                   <button
                     type="button"
                     onClick={c.onRemove}
-                    className="inline-flex h-4 w-4 items-center justify-center rounded-full opacity-60 transition-opacity hover:opacity-100 hover:bg-primary/20"
+                    className="inline-flex h-4 w-4 items-center justify-center rounded-full opacity-60 transition-opacity hover:opacity-100 hover:bg-muted"
                     aria-label={`${c.text} 제거`}
                   >
                     <X className="h-3 w-3" />
@@ -948,7 +948,7 @@ export default function RacketFinderClient() {
 
           {!hasSearched ? (
             <div className="rounded-2xl bg-muted/30 dark:bg-muted/10 ring-1 ring-muted/50 dark:ring-muted/20 p-6 md:p-8 text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 dark:bg-primary/20">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-secondary">
                 <Search className="h-8 w-8 text-primary" />
               </div>
               <h3 className="text-lg font-semibold text-foreground mb-2">

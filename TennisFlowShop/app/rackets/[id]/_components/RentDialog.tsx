@@ -76,7 +76,7 @@ export default function RentDialog({
         size={size}
         className={cn(
           full ? "w-full h-12 min-w-0 justify-center gap-2" : "",
-          "bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg",
+          "shadow-sm",
           className,
         )}
         onClick={() => setOpen(true)}
@@ -86,7 +86,7 @@ export default function RentDialog({
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md border border-border bg-card shadow-md">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold text-foreground">
               대여 신청
@@ -94,7 +94,7 @@ export default function RentDialog({
           </DialogHeader>
 
           <div className="space-y-4">
-            <div className="bg-muted p-4 rounded-lg border border-border">
+            <div className="bg-secondary/60 p-4 rounded-lg border border-border">
               <div className="text-sm text-muted-foreground mb-1">
                 선택한 라켓
               </div>
@@ -112,7 +112,7 @@ export default function RentDialog({
                   <button
                     key={d}
                     onClick={() => setPeriod(d as 7 | 15 | 30)}
-                    className={`h-12 px-3 rounded-lg border-2 font-medium transition-all ${period === d ? "bg-primary/10 border-primary/30 text-foreground dark:bg-primary/20" : "border-border hover:border-border dark:hover:border-border text-foreground"}`}
+                    className={`h-12 px-3 rounded-lg border-2 font-medium transition-all ${period === d ? "bg-secondary border-border text-foreground" : "border-border bg-background text-foreground hover:bg-secondary"}`}
                   >
                     {d}일
                   </button>
@@ -120,7 +120,7 @@ export default function RentDialog({
               </div>
             </div>
 
-            <div className="bg-muted/30 p-4 rounded-lg border border-border space-y-2">
+            <div className="bg-background p-4 rounded-lg border border-border space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">
                   대여 수수료
@@ -152,7 +152,7 @@ export default function RentDialog({
               취소
             </Button>
             <Button
-              className="bg-primary text-primary-foreground"
+              className=""
               onClick={onSubmit}
               disabled={loading}
             >

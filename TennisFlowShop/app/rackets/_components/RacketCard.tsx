@@ -173,7 +173,7 @@ const RacketCard = React.memo(
 
     if (viewMode === "list") {
       return (
-        <Card className="overflow-hidden transition-all duration-300 hover:shadow-xl bg-card/90 dark:bg-card/90 backdrop-blur-sm border border-border hover:border-border dark:hover:border-border relative">
+        <Card className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg relative">
           <div className="absolute inset-0 opacity-5 dark:opacity-10">
             <svg className="w-full h-full" viewBox="0 0 400 200" fill="none">
               <rect
@@ -250,7 +250,7 @@ const RacketCard = React.memo(
                       <Button
                         asChild
                         size="sm"
-                        className="shadow-lg text-xs bp-sm:text-base w-full justify-center whitespace-nowrap"
+                        className="text-xs bp-sm:text-base w-full justify-center whitespace-nowrap"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <Link
@@ -264,7 +264,7 @@ const RacketCard = React.memo(
                     ) : (
                       <Button
                         size="sm"
-                        className="shadow-lg text-xs bp-sm:text-base w-full justify-center whitespace-nowrap"
+                        className="text-xs bp-sm:text-base w-full justify-center whitespace-nowrap"
                         disabled
                         title={buyDisabledTitle}
                       >
@@ -288,7 +288,7 @@ const RacketCard = React.memo(
                       ) : (
                         <Button
                           size="sm"
-                          className="shadow-lg bg-muted/70 text-muted-foreground cursor-not-allowed dark:bg-muted dark:text-muted-foreground text-xs bp-sm:text-base w-full justify-center whitespace-nowrap"
+                          className="bg-muted text-muted-foreground cursor-not-allowed text-xs bp-sm:text-base w-full justify-center whitespace-nowrap"
                           disabled
                           aria-disabled
                           title={rentDisabledTitle}
@@ -300,7 +300,7 @@ const RacketCard = React.memo(
                     ) : (
                       <Button
                         size="sm"
-                        className="shadow-lg bg-muted/70 text-muted-foreground cursor-not-allowed dark:bg-muted dark:text-muted-foreground text-xs bp-sm:text-base w-full justify-center whitespace-nowrap"
+                        className="bg-muted text-muted-foreground cursor-not-allowed text-xs bp-sm:text-base w-full justify-center whitespace-nowrap"
                         disabled
                         aria-disabled
                         title={rentDisabledTitle}
@@ -316,7 +316,7 @@ const RacketCard = React.memo(
                       asChild
                       size="sm"
                       variant="outline"
-                      className="w-full bg-card/80 dark:bg-card/30 shadow text-xs bp-sm:text-base justify-center whitespace-nowrap"
+                      className="w-full bg-background text-xs bp-sm:text-base justify-center whitespace-nowrap"
                     >
                       <Link
                         href={`/rackets/${racket.id}`}
@@ -338,7 +338,7 @@ const RacketCard = React.memo(
 
     // grid view
     return (
-      <Card className="h-full overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2 bg-card/90 dark:bg-card/90 backdrop-blur-sm border border-border hover:border-border dark:hover:border-border group relative">
+      <Card className="group h-full overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg relative">
         <div className="absolute top-0 left-0 right-0 h-1 bg-muted/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
         <div className="relative w-full aspect-[4/3] bp-md:aspect-square overflow-hidden">
@@ -402,7 +402,7 @@ const RacketCard = React.memo(
                 <Button
                   asChild
                   size="sm"
-                  className="flex-1 min-w-0 bg-primary text-primary-foreground shadow hover:bg-primary/90"
+                  className="flex-1 min-w-0"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <Link
@@ -443,7 +443,7 @@ const RacketCard = React.memo(
                 ) : (
                   <Button
                     size="sm"
-                    className="flex-1 min-w-0 shadow-lg bg-muted/70 text-muted-foreground cursor-not-allowed dark:bg-muted dark:text-muted-foreground"
+                    className="flex-1 min-w-0 bg-muted text-muted-foreground cursor-not-allowed"
                     disabled
                     aria-disabled
                     title={rentDisabledTitle}
@@ -455,7 +455,7 @@ const RacketCard = React.memo(
               ) : (
                 <Button
                   size="sm"
-                  className="flex-1 min-w-0 shadow-lg bg-muted/70 text-muted-foreground cursor-not-allowed dark:bg-muted dark:text-muted-foreground"
+                  className="flex-1 min-w-0 bg-muted text-muted-foreground cursor-not-allowed"
                   disabled
                   aria-disabled
                   title={rentDisabledTitle}
