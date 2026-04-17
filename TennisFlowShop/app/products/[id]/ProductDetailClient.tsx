@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { badgeBaseOutlined, badgeSizeSm, getAnswerStatusBadgeSpec, getQnaCategoryBadgeSpec } from "@/lib/badge-style";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { normalizeItemShippingFee } from "@/lib/shipping-fee";
+import { cn } from "@/lib/utils";
 import {
   Activity,
   ArrowLeft,
@@ -66,6 +67,9 @@ const ReviewPhotoViewerDialog = dynamic(() => import("./ReviewPhotoViewerDialog"
 const ReviewEditDialog = dynamic(() => import("./ReviewEditDialog"), {
   loading: () => null,
 });
+
+const detailSurfaceSubtleClass = "rounded-xl border border-border/60 bg-secondary/60";
+const detailSurfaceInfoItemClass = "flex items-center gap-3 rounded-xl border border-border/50 bg-secondary/50 p-3";
 
 export default function ProductDetailClient({ product }: { product: any }) {
   // 방어: 간헐적으로 images/reviews가 undefined인 데이터가 섞이면 상세페이지가 바로 크래시 나는 현상 대비
@@ -807,8 +811,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
                       <div className="flex items-center rounded-xl bg-secondary border border-border/60 p-1 shadow-sm">
                         <Button
                           variant="ghost"
-                          size="sm"
-                          className="h-9 w-9 sm:h-10 sm:w-10 rounded-lg disabled:opacity-30 hover:bg-card transition-all duration-200"
+                          size="icon"
+                          className="h-9 w-9 rounded-lg sm:h-10 sm:w-10"
                           aria-label="수량 감소"
                           disabled={!canDec}
                           onClick={() => setQuantity((q) => Math.max(1, q - 1))}
@@ -820,8 +824,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
                         <Button
                           variant="ghost"
-                          size="sm"
-                          className="h-9 w-9 sm:h-10 sm:w-10 rounded-lg disabled:opacity-30 hover:bg-card transition-all duration-200"
+                          size="icon"
+                          className="h-9 w-9 rounded-lg sm:h-10 sm:w-10"
                           aria-label="수량 증가"
                           disabled={!canInc}
                           onClick={() => {
@@ -837,7 +841,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                       </div>
                     </div>
                     {product.inventory?.manageStock && product.inventory.stock <= 5 && product.inventory.stock > 0 && (
-                      <div className="flex items-center gap-2.5 p-3 sm:p-3.5 bg-secondary/60 border border-border/60 rounded-xl">
+                      <div className={cn("flex items-center gap-2.5 p-3 sm:p-3.5", detailSurfaceSubtleClass)}>
                         <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
                         <span className="text-sm sm:text-base text-muted-foreground">
                           현재 남은 수량이 <span className="font-semibold text-foreground">{product.inventory.stock}개</span>입니다.
@@ -847,14 +851,16 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
                     <div id="cta-anchor" className="flex flex-col gap-3 sm:gap-3.5">
                       {product.inventory?.manageStock && product.inventory.stock <= 0 ? (
-                        <Button disabled className="w-full h-12 sm:h-14 text-base rounded-xl bg-muted text-muted-foreground border border-border/60">
+                        <Button disabled variant="secondary" size="tall" className="h-12 w-full sm:h-14">
                           <X className="mr-2 h-5 w-5" />
                           재고가 소진되었습니다
                         </Button>
                       ) : (
                         <>
                           <Button
-                            className="w-full h-12 sm:h-14 text-base font-semibold rounded-xl bg-foreground text-background shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
+                            variant="default"
+                            size="tall"
+                            className="h-12 w-full sm:h-14"
                             onClick={handleBuyNow}
                             disabled={loading || stock <= 0 || quantity > stock}
                           >
@@ -864,7 +870,9 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
                           {canCheckoutWithService && (
                             <Button
-                              className="w-full h-12 sm:h-14 rounded-xl border border-border/70 bg-secondary text-foreground font-semibold text-base transition-all duration-300 hover:border-border hover:shadow-sm flex items-center justify-center gap-2"
+                              variant="secondary"
+                              size="tall"
+                              className="h-12 w-full gap-2 sm:h-14"
                               disabled={loading || quantity > stock}
                               onClick={handleBuyNowWithService}
                             >
@@ -876,7 +884,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
                           <div className="grid grid-cols-2 gap-3">
                             <Button
                               variant="outline"
-                              className="h-11 sm:h-12 text-sm sm:text-base rounded-xl border-border/60 bg-background hover:bg-muted/40 hover:border-border transition-all duration-300"
+                              size="lg"
+                              className="h-11 text-sm sm:h-12 sm:text-base"
                               onClick={handleAddToCart}
                               disabled={loading || quantity > stock}
                             >
@@ -887,7 +896,12 @@ export default function ProductDetailClient({ product }: { product: any }) {
                               variant="outline"
                               disabled={busy || isWishlistUnknown}
                               onClick={handleWishlist}
-                              className={`h-11 sm:h-12 text-sm sm:text-base rounded-xl border-border/60 transition-all duration-300 ${isWishlisted ? "bg-destructive/10 border-destructive/30 text-destructive hover:bg-destructive/15" : "bg-background hover:bg-muted/40 hover:border-border"} ${isWishlistUnknown ? "opacity-70 cursor-not-allowed" : ""}`}
+                              size="lg"
+                              className={cn(
+                                "h-11 text-sm sm:h-12 sm:text-base",
+                                isWishlisted ? "border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/15" : "bg-background",
+                                isWishlistUnknown && "cursor-not-allowed opacity-70",
+                              )}
                               aria-disabled={busy || isWishlistUnknown}
                               aria-label={isWishlistUnknown ? "위시리스트 상태 확인 중" : "위시리스트"}
                             >
@@ -906,15 +920,15 @@ export default function ProductDetailClient({ product }: { product: any }) {
                       배송 정보
                     </h3>
                     <div className="grid gap-2.5 sm:gap-3">
-                      <div className="flex items-center gap-3 p-3 bg-secondary/50 rounded-xl border border-border/50">
+                      <div className={detailSurfaceInfoItemClass}>
                         <Check className="h-4 w-4 sm:h-5 sm:w-5 text-foreground shrink-0" />
                         <span className="text-sm sm:text-base">{productShippingLabel}</span>
                       </div>
-                      <div className="flex items-center gap-3 p-3 bg-secondary/50 rounded-xl border border-border/50">
+                      <div className={detailSurfaceInfoItemClass}>
                         <Check className="h-4 w-4 sm:h-5 sm:w-5 text-foreground shrink-0" />
                         <span className="text-sm sm:text-base">오후 2시 이전 주문 시 당일 출고</span>
                       </div>
-                      <div className="flex items-center gap-3 p-3 bg-secondary/50 rounded-xl border border-border/50">
+                      <div className={detailSurfaceInfoItemClass}>
                         <Check className="h-4 w-4 sm:h-5 sm:w-5 text-foreground shrink-0" />
                         <span className="text-sm sm:text-base">장착 서비스 신청 시 1-2일 추가</span>
                       </div>

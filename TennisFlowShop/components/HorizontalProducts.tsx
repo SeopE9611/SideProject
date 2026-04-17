@@ -8,6 +8,12 @@ import { AlertTriangle, ArrowRight, ChevronLeft, ChevronRight, Inbox, RefreshCcw
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
+const productCardSurfaceClass =
+  "group block h-full rounded-2xl border border-border/60 bg-card p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-border";
+const placeholderSurfaceClass = "h-full rounded-xl bg-card/50 p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7";
+const moreCardSurfaceClass =
+  "group flex h-full items-center justify-center rounded-2xl border border-border/60 bg-card p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md hover:border-border";
+
 export type HItem = {
   _id: string;
   name: string;
@@ -200,7 +206,7 @@ export default function HorizontalProducts({
     <Link
       key={p._id}
       href={p.href ?? `/products/${p._id}`}
-      className="group block h-full bg-card rounded-2xl p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7 border border-border/60 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-border"
+      className={productCardSurfaceClass}
     >
       <div className="relative mb-4 bp-sm:mb-5 bp-md:mb-6 aspect-square rounded-xl overflow-hidden bg-muted/30">
         {p.images?.[0] ? (
@@ -229,7 +235,7 @@ export default function HorizontalProducts({
   );
 
   const PlaceholderCard = () => (
-    <div className="h-full rounded-xl p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7 bg-card/50 flex flex-col items-center justify-center">
+    <div className={`${placeholderSurfaceClass} flex flex-col items-center justify-center`}>
       <div className="relative mb-3 bp-sm:mb-4 bp-md:mb-5 aspect-square w-full rounded-lg bg-muted/50 dark:bg-card flex items-center justify-center">
         <div className="w-12 h-12 bp-sm:w-14 bp-sm:h-14 bp-md:w-16 bp-md:h-16 rounded-full bg-secondary border border-border/60" />
       </div>
@@ -254,7 +260,7 @@ export default function HorizontalProducts({
   const MoreCard = () => (
     <Link
       href={moreHref}
-      className="group h-full bg-card rounded-2xl p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7 border border-border/60 shadow-sm transition-all duration-300 flex items-center justify-center hover:-translate-y-0.5 hover:shadow-md hover:border-border"
+      className={moreCardSurfaceClass}
     >
       <div className="text-center space-y-2 bp-sm:space-y-3 bp-md:space-y-4">
         <div className="w-14 h-14 bp-sm:w-16 bp-sm:h-16 bp-md:w-20 bp-md:h-20 rounded-full border border-border/60 bg-secondary mx-auto flex items-center justify-center transition-all duration-300 group-hover:shadow-sm">
@@ -362,22 +368,22 @@ export default function HorizontalProducts({
             <div className="mt-4 bp-sm:mt-6 bp-md:mt-8 flex flex-col items-center gap-2">
               <div className="flex gap-2 bp-sm:gap-3">
                 <Button
-                  variant="outline"
-                  size="sm"
+                  variant="elevated"
+                  size="icon"
                   aria-label="이전 상품 보기"
                   disabled={!canPrev}
-                  className="rounded-full w-9 h-9 bp-sm:w-10 bp-sm:h-10 bp-md:w-12 bp-md:h-12 p-0 bg-card border-0 shadow-md hover:shadow-xl hover:scale-105 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300"
+                  className="h-9 w-9 rounded-full bp-sm:h-10 bp-sm:w-10 bp-md:h-12 bp-md:w-12"
                   onClick={() => scrollByPage("left")}
                 >
                   <ChevronLeft className="h-4 w-4 bp-sm:h-4 bp-sm:w-4 bp-md:h-5 bp-md:w-5" />
                 </Button>
 
                 <Button
-                  variant="outline"
-                  size="sm"
+                  variant="elevated"
+                  size="icon"
                   aria-label="다음 상품 보기"
                   disabled={!canNext}
-                  className="rounded-full w-9 h-9 bp-sm:w-10 bp-sm:h-10 bp-md:w-12 bp-md:h-12 p-0 bg-card border-0 shadow-md hover:shadow-xl hover:scale-105 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300"
+                  className="h-9 w-9 rounded-full bp-sm:h-10 bp-sm:w-10 bp-md:h-12 bp-md:w-12"
                   onClick={() => scrollByPage("right")}
                 >
                   <ChevronRight className="h-4 w-4 bp-sm:h-4 bp-sm:w-4 bp-md:h-5 bp-md:w-5" />
