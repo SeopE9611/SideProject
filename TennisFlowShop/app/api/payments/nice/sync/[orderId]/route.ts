@@ -3,7 +3,7 @@ import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 import clientPromise from "@/lib/mongodb";
 import { verifyAccessToken } from "@/lib/auth.utils";
-import { extractNiceCardInfo, getNicePaymentByTid } from "@/lib/payments/nice/server";
+import { extractNiceCardInfo, getNicePaymentByTid, summarizeNiceCardRaw } from "@/lib/payments/nice/server";
 
 function pick(raw: Record<string, string>, ...keys: string[]) {
   for (const key of keys) {
@@ -100,6 +100,13 @@ export async function POST(_req: Request, { params }: { params: Promise<{ orderI
 
     console.info("[nicepay][sync]", { stage: "before_sync", orderId, tid });
     const pgRaw = await getNicePaymentByTid({ tid, clientKey, secretKey, apiBaseUrl });
+    const syncRawSummary = summarizeNiceCardRaw(pgRaw);
+    console.info("[nicepay][card][sync_raw_keys]", {
+      orderId,
+      tid,
+      topLevelKeys: syncRawSummary.topLevelKeys,
+      presentCardCandidateKeys: syncRawSummary.presentCandidateKeys,
+    });
     const resultCode = pick(pgRaw, "resultCode", "ResultCode");
     const resultMsg = pick(pgRaw, "resultMsg", "ResultMsg");
     if (resultCode && resultCode !== "0000") {
@@ -121,6 +128,14 @@ export async function POST(_req: Request, { params }: { params: Promise<{ orderI
       previousPaymentInfoStatus,
     });
     const syncCardInfo = extractNiceCardInfo(pgRaw);
+    console.info("[nicepay][card][sync_extract]", {
+      orderId,
+      tid,
+      hasNiceCard: Boolean(syncCardInfo),
+      cardDisplayName: Boolean(syncCardInfo?.displayName),
+      cardCompany: Boolean(syncCardInfo?.issuerName),
+      cardLabel: Boolean(syncCardInfo?.cardName),
+    });
     const currentCardDisplayName = String((order as any)?.paymentInfo?.cardDisplayName ?? "").trim();
     const currentCardCompany = String((order as any)?.paymentInfo?.cardCompany ?? "").trim();
     const currentCardLabel = String((order as any)?.paymentInfo?.cardLabel ?? "").trim();
@@ -130,6 +145,24 @@ export async function POST(_req: Request, { params }: { params: Promise<{ orderI
     const nextCardCompany = currentCardCompany || syncCardInfo?.issuerName || "";
     const nextCardLabel = currentCardLabel || syncCardInfo?.cardName || "";
     const nextNiceCard = currentNiceCard || syncCardInfo || null;
+    console.info("[nicepay][card][persist_summary]", {
+      orderId,
+      tid,
+      source: "manual_sync_api",
+      existing: {
+        cardDisplayName: Boolean(currentCardDisplayName),
+        cardCompany: Boolean(currentCardCompany),
+        cardLabel: Boolean(currentCardLabel),
+        niceCard: Boolean(currentNiceCard),
+      },
+      next: {
+        cardDisplayName: Boolean(nextCardDisplayName),
+        cardCompany: Boolean(nextCardCompany),
+        cardLabel: Boolean(nextCardLabel),
+        niceCard: Boolean(nextNiceCard),
+        rawSummaryCard: Boolean(nextNiceCard),
+      },
+    });
     console.info("[nicepay][sync]", {
       stage: "sync_mapping",
       orderId,
