@@ -174,7 +174,15 @@ async function ensureOrdersIdemIndex(db: Db) {
 }
 
 // 주문 생성 핸들러
-export async function createOrder(req: Request): Promise<Response> {
+type CreateOrderExecutionContext = {
+  source?: "api_orders_route" | "nicepay_return";
+  userIdOverride?: string | null;
+};
+
+export async function createOrder(
+  req: Request,
+  executionContext?: CreateOrderExecutionContext,
+): Promise<Response> {
   try {
     const idemKeyRaw = req.headers.get("Idempotency-Key");
     const idemKey = idemKeyRaw && idemKeyRaw.trim() ? idemKeyRaw : undefined;
@@ -193,7 +201,9 @@ export async function createOrder(req: Request): Promise<Response> {
     const cookieStore = await cookies();
     const token = cookieStore.get("accessToken")?.value;
     const payload = token ? verifyAccessToken(token) : null;
-    const userId = payload?.sub ?? null;
+    const cookieUserId = payload?.sub ?? null;
+    const contextUserId = executionContext?.userIdOverride ?? null;
+    const userId = contextUserId || cookieUserId;
 
     /** ================================================
      * 비회원(게스트) 주문 생성 차단 플래그
@@ -212,6 +222,16 @@ export async function createOrder(req: Request): Promise<Response> {
       gomRaw === "off" || gomRaw === "legacy" || gomRaw === "on"
         ? gomRaw
         : "on";
+    if (executionContext?.source === "nicepay_return") {
+      console.info("[orders][createOrder][context]", {
+        source: executionContext.source,
+        hasAccessTokenCookie: Boolean(token),
+        hasCookieUserId: Boolean(cookieUserId),
+        hasContextUserId: Boolean(contextUserId),
+        hasResolvedUserId: Boolean(userId),
+        guestOrderMode,
+      });
+    }
     if (!userId && guestOrderMode !== "on") {
       return NextResponse.json(
         {

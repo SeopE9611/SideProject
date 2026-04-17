@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { ObjectId } from "mongodb";
 import clientPromise from "@/lib/mongodb";
 import { createOrder } from "@/app/features/orders/api/handlers";
@@ -365,19 +366,56 @@ async function handleNiceReturn(req: Request) {
     };
 
     try {
-      console.info("[nicepay][flow]", { stage: "before_create_order", tid, orderId, amount });
-      const orderRes = await createOrder(orderReq);
+      const cookieStore = await cookies();
+      const hasAccessTokenCookie = Boolean(cookieStore.get("accessToken")?.value);
+      const guestModeRaw = String(process.env.GUEST_ORDER_MODE ?? "on").trim();
+      const guestMode =
+        guestModeRaw === "off" || guestModeRaw === "legacy" || guestModeRaw === "on" ? guestModeRaw : "on";
+      console.info("[nicepay][flow]", {
+        stage: "before_create_order",
+        source: "nicepay_return",
+        tid,
+        orderId,
+        amount,
+        hasAccessTokenCookie,
+        hasUserId: Boolean(session.userId),
+        guestMode,
+        hasCheckoutPayload: Boolean(session.checkoutPayload),
+      });
+      const orderRes = await createOrder(orderReq, {
+        source: "nicepay_return",
+        userIdOverride: session.userId ?? null,
+      });
       const orderJson = await orderRes.json();
       console.info("[nicepay][flow]", {
         stage: "after_create_order_response",
+        source: "nicepay_return",
         tid,
         orderId,
         amount,
         orderResponseStatus: orderRes.status,
         orderResponseSummary: orderJson?.orderId ? "order_created" : orderJson?.code || orderJson?.error || "empty_response",
       });
+      if (!orderRes.ok && orderJson?.code === "GUEST_ORDER_DISABLED") {
+        console.error("[nicepay][flow]", {
+          stage: "create_order_policy_failed",
+          source: "nicepay_return",
+          tid,
+          orderId,
+          guestMode,
+          code: orderJson?.code,
+        });
+      }
       if (!orderRes.ok || !orderJson?.orderId) {
         const failureMessage = orderJson?.error ?? "주문 생성에 실패했습니다.";
+        console.error("[nicepay][flow]", {
+          stage: "before_auto_cancel_after_create_order_failed",
+          source: "nicepay_return",
+          tid,
+          orderId,
+          amount,
+          failureReason: orderJson?.code || orderJson?.error || "unknown_create_order_failure",
+        });
         await col.updateOne(
           { _id: session._id },
           {
