@@ -916,7 +916,7 @@ export default function CheckoutPage() {
           <div className="absolute inset-0 bg-muted/50 dark:bg-card/60"></div>
           <SiteContainer variant="wide" className="relative py-6 bp-sm:py-10 bp-md:py-14">
             <div className="flex items-center gap-4 mb-4">
-              <div className="p-3 bg-card/20 dark:bg-card/30 backdrop-blur-sm rounded-full">
+              <div className="rounded-2xl border border-border/60 bg-secondary p-3 shadow-sm">
                 <CreditCard className="h-8 w-8" />
               </div>
               <div>
@@ -1004,8 +1004,8 @@ export default function CheckoutPage() {
                   </p>
                 </div>
                 {/* 주문 상품 */}
-                <Card className="bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card/80 border border-border bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
-                  <div className="bg-muted border-b border-border p-3 bp-sm:p-4 bp-lg:p-6">
+                <Card className="border border-border bg-card shadow-sm overflow-hidden">
+                  <div className="border-b border-border bg-secondary/70 p-3 bp-sm:p-4 bp-lg:p-6">
                     <CardTitle className="flex items-center gap-3 text-base bp-sm:text-lg">
                       <Package className="h-5 w-5 text-primary" />
                       주문 상품
@@ -1033,7 +1033,7 @@ export default function CheckoutPage() {
                     )}
                     <div className="space-y-4">
                       {orderItems.map((item) => (
-                        <div key={item.id} className="flex flex-col bp-sm:flex-row bp-sm:items-center gap-3 bp-sm:gap-4 p-3 bp-sm:p-4 bg-muted/50 rounded-lg border border-border">
+                        <div key={item.id} className="flex flex-col gap-3 rounded-xl border border-border/60 bg-secondary/40 p-3 bp-sm:flex-row bp-sm:items-center bp-sm:gap-4 bp-sm:p-4">
                           <div className="flex items-center gap-3 min-w-0 flex-1">
                             <div className="relative shrink-0">
                               <Image
@@ -1044,7 +1044,7 @@ export default function CheckoutPage() {
                                 loading="lazy"
                                 className="h-14 w-14 bp-sm:h-20 bp-sm:w-20 rounded-lg border-2 border-border shadow-lg object-cover"
                               />
-                              <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">{item.quantity}</div>
+                              <div className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full border border-border bg-card text-xs font-bold text-foreground">{item.quantity}</div>
                             </div>
 
                             <div className="min-w-0 flex-1">
@@ -1071,7 +1071,7 @@ export default function CheckoutPage() {
                 </Card>
 
                 {/* 수령 방식 및 장착 서비스 카드 */}
-                <Card className="bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card/80 border border-border bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
+                <Card className="border border-border bg-card shadow-sm overflow-hidden">
                   <div className="bg-muted border-b border-border p-4 bp-sm:p-6">
                     <CardTitle className="flex items-center gap-3 text-base bp-sm:text-lg">
                       <Truck className="h-5 w-5 text-primary" />
@@ -1097,7 +1097,7 @@ export default function CheckoutPage() {
                       </div>
                     </RadioGroup>
 
-                    <div className="bg-muted p-4 rounded-lg border border-primary/30">
+                    <div className="rounded-xl border border-border bg-secondary/40 p-4">
                       <div className="flex items-center space-x-2 mb-2">
                         <Checkbox
                           id="withStringService"
@@ -1146,7 +1146,7 @@ export default function CheckoutPage() {
                           (deliveryMethod === "방문수령" ? (
                             // 방문 수령: 매장 방문 접수 고정(선택 불가 안내)
                             <div className="ml-7 mt-2 text-sm">
-                              <span className="px-2 py-1 rounded bg-primary text-primary-foreground">{collectionMethodLabel("visit")}로 진행됩니다.</span>
+                              <span className="rounded border border-border bg-card px-2 py-1 text-foreground">{collectionMethodLabel("visit")}로 진행됩니다.</span>
                             </div>
                           ) : (
                             // 택배 수령: **선택지는 자가 발송만** 노출
@@ -1169,8 +1169,8 @@ export default function CheckoutPage() {
                 </Card>
 
                 {/* 배송 정보/수령 정보 */}
-                <Card className="bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card/80 border border-border bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
-                  <div className="bg-card p-3 bp-sm:p-4 bp-lg:p-6">
+                <Card className="border border-border bg-card shadow-sm overflow-hidden">
+                  <div className="border-b border-border bg-secondary/70 p-3 bp-sm:p-4 bp-lg:p-6">
                     <CardTitle className="flex items-center gap-3 text-base bp-sm:text-lg">
                       <MapPin className="h-5 w-5 text-foreground" />
                       {needsShippingAddress ? "배송 정보" : "수령/연락 정보"}
@@ -1244,7 +1244,7 @@ export default function CheckoutPage() {
                                   touchField("postalCode");
                                   handleFindPostcode();
                                 }}
-                                className="bg-primary text-primary-foreground border-0 hover:bg-primary/90"
+                                className=""
                               >
                                 우편번호 찾기
                               </Button>
@@ -1297,7 +1297,7 @@ export default function CheckoutPage() {
                 {withStringService && checkoutStringingAdapter && <CheckoutStringingServiceSections withStringService={withStringService} adapter={checkoutStringingAdapter} />}
 
                 {/* 결제 정보 */}
-                <Card className="bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card/80 border border-border bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
+                <Card className="border border-border bg-card shadow-sm overflow-hidden">
                   <div className="bg-card p-4 bp-sm:p-6">
                     <CardTitle className="flex items-center gap-3 text-base bp-sm:text-lg">
                       <CreditCard className="h-5 w-5 text-foreground" />
@@ -1422,7 +1422,7 @@ export default function CheckoutPage() {
                 </Card>
 
                 {/* 주문자 동의 */}
-                <Card className="bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card/80 border border-border bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
+                <Card className="border border-border bg-card shadow-sm overflow-hidden">
                   <div className="bg-card p-4 bp-sm:p-6">
                     <CardTitle className="flex items-center gap-3 text-base bp-sm:text-lg">
                       <Shield className="h-5 w-5 text-destructive" />
@@ -1471,7 +1471,7 @@ export default function CheckoutPage() {
                             setState: setAgreeRefund,
                           },
                         ].map((item, index) => (
-                          <div key={item.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                          <div key={item.id} className="flex items-center justify-between rounded-lg border border-border/60 bg-secondary/40 p-3">
                             <div className="flex items-center space-x-2">
                               <Checkbox
                                 id={item.id}
@@ -1501,10 +1501,10 @@ export default function CheckoutPage() {
               {/* 주문 요약 */}
               <div className="bp-lg:col-span-1">
                 <div className="bp-lg:sticky bp-lg:top-20">
-                  <Card className="relative backdrop-blur-sm bg-card/90 dark:bg-card/90 border-0 shadow-2xl overflow-hidden">
-                    <div className="bg-card p-4 bp-sm:p-6 text-foreground border border-primary/20">
+                  <Card className="relative border border-border bg-card shadow-sm overflow-hidden">
+                    <div className="border-b border-border bg-secondary/70 p-4 bp-sm:p-6 text-foreground">
                       <CardTitle className="flex items-center gap-3 text-xl">
-                        <div className="p-2 bg-card/20 rounded-full">
+                        <div className="rounded-xl border border-border/60 bg-secondary p-2">
                           <CreditCard className="h-5 w-5" />
                         </div>
                         주문 요약

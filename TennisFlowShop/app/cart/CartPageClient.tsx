@@ -515,7 +515,7 @@ export default function CartPageClient() {
           className="relative py-10 bp-sm:py-12 bp-md:py-14"
         >
           <div className="mb-4 flex items-center gap-4">
-            <div className="rounded-2xl bg-card/20 p-3 backdrop-blur-sm shadow-lg">
+            <div className="rounded-2xl border border-border/60 bg-secondary p-3 shadow-sm">
               <ShoppingBag className="h-8 w-8" />
             </div>
             <div>
@@ -551,8 +551,8 @@ export default function CartPageClient() {
           <div className="grid grid-cols-1 gap-6 bp-lg:grid-cols-3">
             {/* 목록 */}
             <div className="bp-lg:col-span-2 space-y-5">
-              <Card className="backdrop-blur-sm bg-card/95 dark:bg-card/95 border-0 shadow-2xl">
-                <CardHeader className="rounded-t-lg bg-muted dark:bg-background">
+              <Card className="border border-border bg-card shadow-sm">
+                <CardHeader variant="section" className="rounded-t-2xl">
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <CardTitle className="flex items-center gap-3">
@@ -895,7 +895,7 @@ export default function CartPageClient() {
                   <div className="flex w-full flex-col justify-between gap-4 bp-sm:flex-row">
                     <Button
                       variant="outline"
-                      className="group border-0 shadow-sm hover:bg-muted dark:hover:bg-primary/20"
+                      className="group"
                       asChild
                     >
                       <Link
@@ -908,7 +908,7 @@ export default function CartPageClient() {
                     </Button>
                     <Button
                       variant="destructive"
-                      className="bg-background shadow-lg hover:bg-primary/10 dark:hover:bg-primary/20"
+                      className=""
                       onClick={() => {
                         if (confirm("장바구니의 모든 상품을 비울까요?"))
                           clearCart();
@@ -927,8 +927,8 @@ export default function CartPageClient() {
             {/* 요약 */}
             <div className="bp-lg:col-span-1">
               <div className="bp-lg:sticky bp-lg:top-[calc(var(--header-h)+16px)]">
-                <Card className="backdrop-blur-sm bg-card/95 dark:bg-card/95 border-0 shadow-2xl overflow-hidden">
-                  <div className="bg-card p-4 bp-sm:p-6 text-foreground border border-primary/20">
+                <Card className="border border-border bg-card shadow-sm overflow-hidden">
+                  <div className="bg-secondary/70 p-4 bp-sm:p-6 text-foreground border-b border-border">
                     <CardTitle className="flex items-center gap-3 text-xl">
                       <div className="rounded-2xl bg-card/20 p-2 shadow-lg">
                         <Package className="h-5 w-5" />
@@ -975,7 +975,7 @@ export default function CartPageClient() {
                       </div>
                     </div>
 
-                    <div className="bg-muted dark:bg-background p-4 rounded-xl border border-border">
+                    <div className="rounded-xl border border-border/60 bg-secondary/50 p-4">
                       <div className="flex items-center gap-2 text-primary mb-2">
                         <Star className="h-4 w-4" />
                         <span className="font-semibold">배송 안내</span>
@@ -1012,7 +1012,7 @@ export default function CartPageClient() {
                         {bundleEditHref ? (
                           <Button
                             asChild
-                            className="h-14 w-full transform bg-primary text-primary-foreground text-lg font-semibold shadow-xl transition-all duration-300 hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-2xl flex items-center justify-center gap-3"
+                            className="h-14 w-full text-lg font-semibold flex items-center justify-center gap-3"
                           >
                             <Link href={bundleEditHref}>
                               <ShoppingBag className="h-5 w-5" />
@@ -1022,7 +1022,7 @@ export default function CartPageClient() {
                           </Button>
                         ) : (
                           <Button
-                            className="h-14 w-full transform bg-primary text-primary-foreground text-lg font-semibold shadow-xl transition-all duration-300 hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-2xl flex items-center justify-center gap-3"
+                            className="h-14 w-full text-lg font-semibold flex items-center justify-center gap-3"
                             size="lg"
                             onClick={() =>
                               showErrorToast(serviceBlockToastMessage)
@@ -1038,7 +1038,7 @@ export default function CartPageClient() {
                       </>
                     ) : loading ? (
                       <Button
-                        className="h-14 w-full transform bg-primary text-primary-foreground font-semibold opacity-70"
+                        className="h-14 w-full font-semibold opacity-70"
                         size="lg"
                         disabled
                       >
@@ -1047,7 +1047,7 @@ export default function CartPageClient() {
                       </Button>
                     ) : !isShippingFeeReady ? (
                       <Button
-                        className="h-14 w-full transform bg-primary text-primary-foreground font-semibold opacity-70"
+                        className="h-14 w-full font-semibold opacity-70"
                         size="lg"
                         disabled
                       >
@@ -1056,7 +1056,7 @@ export default function CartPageClient() {
                       </Button>
                     ) : (
                       <Button
-                        className="h-14 w-full transform bg-primary text-primary-foreground font-semibold hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-2xl"
+                        className="h-14 w-full font-semibold"
                         size="lg"
                         asChild
                       >
@@ -1077,9 +1077,9 @@ export default function CartPageClient() {
           </div>
         ) : (
           <div className="mx-auto max-w-2xl">
-            <Card className="backdrop-blur-sm bg-card/95 dark:bg-card/95 border-0 shadow-2xl text-center overflow-hidden">
-              <div className="bg-muted p-8 md:p-12 dark:bg-background">
-                <div className="mb-6 inline-flex h-24 w-24 items-center justify-center rounded-full border border-primary/20 bg-primary/10 text-primary shadow-xl dark:bg-primary/20">
+            <Card className="border border-border bg-card shadow-sm text-center overflow-hidden">
+              <div className="bg-secondary/50 p-8 md:p-12">
+                <div className="mb-6 inline-flex h-24 w-24 items-center justify-center rounded-full border border-border bg-muted text-foreground shadow-sm">
                   <PackageOpen className="h-12 w-12" />
                 </div>
                 <h2 className="mb-4 text-3xl font-bold text-foreground">
@@ -1089,7 +1089,7 @@ export default function CartPageClient() {
                   마음에 드는 테니스 용품을 장바구니에 담아보세요!
                 </p>
                 <Button
-                  className="transform bg-primary px-6 md:px-8 py-3 font-semibold text-primary-foreground shadow-xl transition-all duration-300 hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-2xl"
+                  className="px-6 py-3 font-semibold md:px-8"
                   size="lg"
                   asChild
                 >
@@ -1114,7 +1114,7 @@ export default function CartPageClient() {
           data-bottom-sticky="1"
           className="fixed inset-x-0 bottom-0 z-40 bp-md:hidden"
         >
-          <div className="rounded-t-2xl bg-card/95 shadow-[0_-8px_24px_rgba(0,0,0,0.15)] backdrop-blur-md dark:bg-card/95">
+          <div className="rounded-t-2xl border-t border-border bg-card shadow-sm">
             <SiteContainer variant="full" className="max-w-screen-sm py-3">
               <div className="mb-2 flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">
@@ -1144,13 +1144,13 @@ export default function CartPageClient() {
                   {bundleEditHref ? (
                     <Button
                       asChild
-                      className="h-12 w-full bg-primary text-primary-foreground font-semibold hover:bg-primary/90"
+                      className="h-12 w-full font-semibold"
                     >
                       <Link href={bundleEditHref}>번들 수량/스트링 변경</Link>
                     </Button>
                   ) : (
                     <Button
-                      className="h-12 w-full bg-primary text-primary-foreground font-semibold hover:bg-primary/90"
+                      className="h-12 w-full font-semibold"
                       onClick={() => showErrorToast(serviceBlockToastMessage)}
                     >
                       {blockServiceCheckoutByComposition
@@ -1178,7 +1178,7 @@ export default function CartPageClient() {
               ) : (
                 <Button
                   asChild
-                  className="h-12 w-full bg-primary text-primary-foreground font-semibold hover:bg-primary/90"
+                  className="h-12 w-full font-semibold"
                 >
                   <Link href={checkoutHref}>
                     {user ? "주문하기" : "로그인 후 주문하기"}

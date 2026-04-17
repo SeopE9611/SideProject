@@ -244,14 +244,11 @@ export default function LoginPageClient() {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="absolute top-10 left-10 w-20 h-20 bg-muted rounded-full blur-2xl animate-pulse"></div>
-      <div className="absolute bottom-10 right-10 w-32 h-32 bg-muted rounded-full blur-3xl animate-pulse"></div>
 
       <div className="relative w-full max-w-6xl">
-        <Card className={`mx-auto overflow-hidden backdrop-blur-sm bg-card/95 dark:bg-muted border-0 shadow-2xl transition-all duration-700 ease-in-out ${activeTab === "register" ? "max-w-4xl" : "max-w-md"}`}>
-          <div className="p-4 md:p-6 border-b border-primary/20 bg-primary/10 dark:bg-primary/20 text-foreground relative overflow-hidden">
-            <div className="absolute inset-0 bg-foreground/10"></div>
-            <div className="relative text-center">
+        <Card className={`mx-auto overflow-hidden border border-border bg-card shadow-sm transition-all duration-300 ${activeTab === "register" ? "max-w-4xl" : "max-w-md"}`}>
+          <div className="border-b border-border bg-secondary/60 p-4 text-foreground md:p-6">
+            <div className="text-center">
               <div className="mx-auto mb-4 flex justify-center">
                 <div className="relative h-16 w-32 shrink-0 overflow-hidden">
                   <Image src="/tennisflowmark-light.png" alt="" aria-hidden="true" fill className="object-contain dark:hidden" priority />
@@ -386,7 +383,7 @@ export default function LoginPageClient() {
                     </Link>
                   </div>
 
-                  <Button type="submit" className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg hover:shadow-xl transition-all duration-300" disabled={loginLoading} data-cy="login-submit">
+                  <Button type="submit" className="h-12 w-full font-semibold" disabled={loginLoading} data-cy="login-submit">
                     {loginLoading ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -411,7 +408,7 @@ export default function LoginPageClient() {
 
                 {showGuestLookup && (
                   <div className="text-center">
-                    <div className="bg-muted rounded-xl p-4 mb-4 border border-border">
+                    <div className="mb-4 rounded-xl border border-border/60 bg-secondary/50 p-4">
                       <div className="flex items-center justify-center gap-2 mb-3">
                         <Shield className="h-5 w-5 text-foreground" />
                         <p className="text-sm font-semibold text-foreground">비회원도 주문하실 수 있습니다</p>
