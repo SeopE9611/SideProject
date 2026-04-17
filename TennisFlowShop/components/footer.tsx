@@ -35,7 +35,7 @@ const Footer = () => {
       <div className="absolute inset-0 pointer-events-none opacity-5 bg-muted/30" />
       <div className="bp-lg:pl-64 bp-lg:pr-8 xl:pl-72 xl:pr-12 2xl:pr-16 py-6 bp-sm:py-8">
         <SiteContainer className="bp-lg:mx-0">
-          <div className="grid grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-4 gap-5 bp-sm:gap-8 mb-6 bp-sm:mb-8">
+          <div className="grid grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-3 xl:grid-cols-5 gap-5 bp-sm:gap-7 bp-lg:gap-8 mb-6 bp-sm:mb-8">
             {/* 브랜드 섹션 - 모바일에서 전체 너비 */}
             <div className="bp-sm:col-span-2 bp-lg:col-span-1">
               <Link href="/" className="flex items-center gap-3 mb-5 group">
@@ -81,6 +81,15 @@ const Footer = () => {
             </div>
 
             <div>
+              <h3 className="text-base bp-sm:text-lg font-bold mb-3 bp-sm:mb-4 text-foreground">입금계좌</h3>
+              <div className="space-y-1.5 text-sm text-muted-foreground leading-relaxed">
+                <p className="text-foreground">농협 123-4567-8901-23</p>
+                <p>예금주: 도깨비테니스</p>
+                <p className="text-xs">무통장 입금 확인은 영업시간 내 순차 처리</p>
+              </div>
+            </div>
+
+            <div>
               <h3 className="text-base bp-sm:text-lg font-bold mb-3 bp-sm:mb-4 text-foreground">연락처</h3>
               <div className="space-y-3">
                 <div className="flex items-start gap-2.5">
@@ -121,10 +130,11 @@ const Footer = () => {
       <div className="border-t border-border bg-muted/30">
         <div className="bp-lg:pl-64 bp-lg:pr-8 xl:pl-72 xl:pr-12 2xl:pr-16 py-4 bp-sm:py-5">
           <SiteContainer className="bp-lg:mx-0">
-            <div className="flex flex-col bp-sm:flex-row items-start bp-sm:items-center justify-between gap-2 text-xs text-muted-foreground">
-              <div className="space-y-1">
+            <div className="flex flex-col items-start gap-2 text-[12px] bp-sm:text-[13px] text-muted-foreground leading-5">
+              <div className="space-y-1.5">
                 <p>&copy; {new Date().getFullYear()} 도깨비테니스. All rights reserved.</p>
-                <p>사업자등록번호: 329-39-01593 | 대표: 김재민 | 통신판매업신고: 제 A07-20260415-0049 호</p>
+                <p>상호: 도깨비테니스 | 대표: 김재민 | 사업자등록번호: 329-39-01593</p>
+                <p>사업장 소재지: 서울특별시 동작구 여의대방로62길 16(대방동) | 통신판매업신고: 제 A07-20260415-0049 호</p>
               </div>
             </div>
           </SiteContainer>
