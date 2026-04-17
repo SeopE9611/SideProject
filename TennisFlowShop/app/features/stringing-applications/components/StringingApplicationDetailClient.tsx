@@ -71,6 +71,26 @@ interface ApplicationDetail {
   submittedAt?: string;
   status: string;
   paymentStatus?: string | null;
+  paymentSource?: string | null;
+  linkedPayment?: {
+    source: 'order' | 'rental' | 'application' | 'package' | null;
+    status: string | null;
+    method: string | null;
+    provider?: string | null;
+    easyPayProvider?: string | null;
+    tid?: string | null;
+    bank?: string | null;
+    depositor?: string | null;
+    cardDisplayName?: string | null;
+    cardCompany?: string | null;
+    cardLabel?: string | null;
+    approvedAt?: string | null;
+    niceSync?: {
+      lastSyncedAt?: string | null;
+      pgStatus?: string | null;
+      source?: string | null;
+    } | null;
+  } | null;
   totalPrice: number;
   history?: { status: string; date: string; description: string }[];
   cancelRequest?: {
@@ -653,8 +673,18 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
   };
 
   const isCancelled = data.status === '취소';
-  const isPaid = ['접수완료', '작업 중', '교체완료'].includes(data.status);
-  const paymentStatus = isPaid ? '결제완료' : '결제대기';
+  const paymentSourceRaw = String(data.paymentSource ?? '').trim();
+  const linkedPayment = data.linkedPayment ?? null;
+  const packageApplied = Boolean(data.packageInfo?.applied);
+  const hasOrderLinkedPayment = paymentSourceRaw.startsWith('order:') && Boolean(linkedPayment) && linkedPayment?.source === 'order';
+  const hasRentalLinkedPayment = paymentSourceRaw.startsWith('rental:') && Boolean(linkedPayment) && linkedPayment?.source === 'rental';
+
+  const paymentStatus =
+    packageApplied
+      ? (linkedPayment?.status ?? '패키지 적용 완료')
+      : hasOrderLinkedPayment || hasRentalLinkedPayment
+        ? (linkedPayment?.status ?? data.orderPaymentStatus ?? data.paymentStatus ?? '결제대기')
+        : data.paymentStatus ?? '결제대기';
 
   // 취소 요청 상태 (한글/영문 모두 허용)
   const rawCancelStatus = normalizeAdminCancelRequestStatus((data.cancelRequest?.status ?? null) as string | null);
@@ -734,7 +764,12 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
           ? '이 신청은 주문에서 생성된 신청입니다. 최종 취소/운영 처리는 주문 상세와 함께 확인하세요.'
           : '이 신청은 대여에서 생성된 신청입니다. 대여 상세와 함께 전체 흐름을 확인하세요.';
 
-  const paymentMethodLabel = data.packageInfo?.applied ? '무통장입금(패키지 사용)' : '무통장입금';
+  const paymentMethodLabel =
+    packageApplied
+      ? (linkedPayment?.method ?? '패키지 사용')
+      : hasOrderLinkedPayment || hasRentalLinkedPayment
+        ? (linkedPayment?.method ?? '결제수단 확인 필요')
+        : (linkedPayment?.method ?? '무통장입금');
 
   // 관리자용 취소 요청 정보 (주문 상세와 동일 패턴)
   const cancelInfo = buildAdminCancelRequestView(data.cancelRequest, 'application');
@@ -786,7 +821,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
   const appGuide = inferNextActionForOperationItem({
     kind: 'stringing_application',
     statusLabel: data.status,
-    paymentLabel: data.paymentStatus ?? paymentStatus,
+    paymentLabel: paymentStatus,
     hasInboundTracking: hasTracking,
   });
 
@@ -1342,7 +1377,18 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                 ) : (
                   <div className="space-y-4">
                     <div className="p-3 bg-muted rounded-lg">
-                      <PaymentMethodDetail method={paymentMethodLabel} bankKey={data.shippingInfo?.bank} depositor={data.shippingInfo?.depositor} />
+                      <PaymentMethodDetail
+                        method={paymentMethodLabel}
+                        bankKey={linkedPayment?.bank ?? data.shippingInfo?.bank}
+                        depositor={linkedPayment?.depositor ?? data.shippingInfo?.depositor}
+                        provider={linkedPayment?.provider}
+                        easyPayProvider={linkedPayment?.easyPayProvider}
+                        tid={linkedPayment?.tid}
+                        cardDisplayName={linkedPayment?.cardDisplayName}
+                        cardCompany={linkedPayment?.cardCompany}
+                        cardLabel={linkedPayment?.cardLabel}
+                        approvedAt={linkedPayment?.approvedAt}
+                      />
                     </div>
                     {/* 패키지 사용 정보 요약 */}
                     {data.packageInfo && (
