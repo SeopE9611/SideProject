@@ -9,10 +9,9 @@ function toPositiveAmount(amount: unknown): number {
 
 function toRecordString(value: unknown): Record<string, string> {
   if (!value || typeof value !== "object") return {};
-  return Object.entries(value as Record<string, unknown>).reduce<Record<string, string>>((acc, [k, v]) => {
-    acc[k] = typeof v === "string" ? v : v === null || v === undefined ? "" : String(v);
-    return acc;
-  }, {});
+  const acc: Record<string, string> = {};
+  flattenObjectToRecord(value as Record<string, unknown>, "", acc);
+  return acc;
 }
 
 function pick(raw: Record<string, string>, ...keys: string[]) {
@@ -23,13 +22,77 @@ function pick(raw: Record<string, string>, ...keys: string[]) {
   return "";
 }
 
+function flattenObjectToRecord(value: unknown, prefix: string, acc: Record<string, string>) {
+  if (value === null || value === undefined) {
+    if (prefix) acc[prefix] = "";
+    return;
+  }
+  if (typeof value !== "object") {
+    if (prefix) acc[prefix] = String(value);
+    return;
+  }
+
+  if (Array.isArray(value)) {
+    if (prefix) acc[prefix] = "[array]";
+    value.forEach((item, index) => {
+      flattenObjectToRecord(item, prefix ? `${prefix}.${index}` : String(index), acc);
+    });
+    return;
+  }
+
+  if (prefix) acc[prefix] = "[object]";
+  for (const [key, child] of Object.entries(value as Record<string, unknown>)) {
+    const nextPrefix = prefix ? `${prefix}.${key}` : key;
+    flattenObjectToRecord(child, nextPrefix, acc);
+  }
+}
+
+const NICE_CARD_FIELD_CANDIDATES = {
+  cardName: ["cardName", "CardName", "card.cardName", "card.name"] as const,
+  issuerName: [
+    "issuerName",
+    "IssuerName",
+    "cardCompany",
+    "CardCompany",
+    "card.issuerName",
+    "card.company",
+    "card.cardCompany",
+  ] as const,
+  issuerCode: ["issuerCode", "IssuerCode", "card.issuerCode"] as const,
+  acquirerName: ["acquirerName", "AcquirerName", "card.acquirerName"] as const,
+  acquirerCode: ["acquirerCode", "AcquirerCode", "card.acquirerCode"] as const,
+  cardCode: ["cardCode", "CardCode", "card.cardCode", "card.code"] as const,
+} as const;
+
+const NICE_EASY_PAY_PROVIDER_CANDIDATES = ["easyPayProvider", "EasyPayProvider", "easyPay.provider", "easyPayProviderName"] as const;
+
+function collectPresentKeys(raw: Record<string, string>, keys: readonly string[]) {
+  return keys.filter((key) => typeof raw[key] === "string" && raw[key].trim() !== "");
+}
+
+export function summarizeNiceCardRaw(raw: Record<string, string>) {
+  const allCandidates = [
+    ...NICE_CARD_FIELD_CANDIDATES.cardName,
+    ...NICE_CARD_FIELD_CANDIDATES.issuerName,
+    ...NICE_CARD_FIELD_CANDIDATES.issuerCode,
+    ...NICE_CARD_FIELD_CANDIDATES.acquirerName,
+    ...NICE_CARD_FIELD_CANDIDATES.acquirerCode,
+    ...NICE_CARD_FIELD_CANDIDATES.cardCode,
+    ...NICE_EASY_PAY_PROVIDER_CANDIDATES,
+  ];
+  return {
+    topLevelKeys: Object.keys(raw),
+    presentCandidateKeys: collectPresentKeys(raw, allCandidates),
+  };
+}
+
 export function extractNiceCardInfo(raw: Record<string, string>) {
-  const cardName = pick(raw, "cardName", "CardName");
-  const issuerName = pick(raw, "issuerName", "IssuerName", "cardCompany", "CardCompany");
-  const issuerCode = pick(raw, "issuerCode", "IssuerCode");
-  const acquirerName = pick(raw, "acquirerName", "AcquirerName");
-  const acquirerCode = pick(raw, "acquirerCode", "AcquirerCode");
-  const cardCode = pick(raw, "cardCode", "CardCode");
+  const cardName = pick(raw, ...NICE_CARD_FIELD_CANDIDATES.cardName);
+  const issuerName = pick(raw, ...NICE_CARD_FIELD_CANDIDATES.issuerName);
+  const issuerCode = pick(raw, ...NICE_CARD_FIELD_CANDIDATES.issuerCode);
+  const acquirerName = pick(raw, ...NICE_CARD_FIELD_CANDIDATES.acquirerName);
+  const acquirerCode = pick(raw, ...NICE_CARD_FIELD_CANDIDATES.acquirerCode);
+  const cardCode = pick(raw, ...NICE_CARD_FIELD_CANDIDATES.cardCode);
 
   const displayName = cardName || issuerName || "";
   if (!displayName && !issuerCode && !acquirerName && !acquirerCode && !cardCode) {
@@ -45,6 +108,10 @@ export function extractNiceCardInfo(raw: Record<string, string>) {
     acquirerCode: acquirerCode || null,
     cardCode: cardCode || null,
   };
+}
+
+export function extractNiceEasyPayProvider(raw: Record<string, string>) {
+  return pick(raw, ...NICE_EASY_PAY_PROVIDER_CANDIDATES) || "";
 }
 
 export function createNiceOrderId(): string {

@@ -4,7 +4,7 @@ import { ObjectId } from "mongodb";
 import clientPromise from "@/lib/mongodb";
 import { createOrder } from "@/app/features/orders/api/handlers";
 import { ensureTossPaymentSessionIndexes, tossPaymentSessions, type TossPaymentFailureStage } from "@/lib/payments/toss/session";
-import { approveNicePaymentByTid, cancelNicePaymentByTid, extractNiceCardInfo } from "@/lib/payments/nice/server";
+import { approveNicePaymentByTid, cancelNicePaymentByTid, extractNiceCardInfo, extractNiceEasyPayProvider, summarizeNiceCardRaw } from "@/lib/payments/nice/server";
 
 export const runtime = "nodejs";
 export const preferredRegion = ["icn1", "hnd1"];
@@ -257,6 +257,13 @@ async function handleNiceReturn(req: Request) {
       return NextResponse.redirect(new URL(toFailUrl("APPROVE_FAILED", resultMsg), req.url));
     }
     console.info("[nicepay][flow]", { stage: "approve_success", tid, orderId, amount, approveStatus: resultCode });
+    const approveRawSummary = summarizeNiceCardRaw(approvedRaw);
+    console.info("[nicepay][card][approve_raw_keys]", {
+      orderId,
+      tid,
+      topLevelKeys: approveRawSummary.topLevelKeys,
+      presentCardCandidateKeys: approveRawSummary.presentCandidateKeys,
+    });
 
     const idemKey = `nice:${orderId}`;
     const orderReq = new Request("http://internal/api/orders", {
@@ -442,6 +449,27 @@ async function handleNiceReturn(req: Request) {
 
       const mongoOrderId = String(orderJson.orderId);
       const niceCard = extractNiceCardInfo(approvedRaw);
+      const easyPayProvider = extractNiceEasyPayProvider(approvedRaw);
+      console.info("[nicepay][card][approve_extract]", {
+        orderId,
+        tid,
+        hasNiceCard: Boolean(niceCard),
+        cardDisplayName: Boolean(niceCard?.displayName),
+        cardCompany: Boolean(niceCard?.issuerName),
+        cardLabel: Boolean(niceCard?.cardName),
+        easyPayProvider: Boolean(easyPayProvider),
+      });
+      console.info("[nicepay][card][persist_summary]", {
+        orderId,
+        tid,
+        source: "approve_return",
+        cardDisplayName: Boolean(niceCard?.displayName),
+        cardCompany: Boolean(niceCard?.issuerName),
+        cardLabel: Boolean(niceCard?.cardName),
+        niceCard: Boolean(niceCard),
+        rawSummaryCard: Boolean(niceCard),
+        rawSummaryEasyPay: Boolean(easyPayProvider),
+      });
       console.info("[nicepay][flow]", { stage: "before_order_update", tid, orderId, mongoOrderId });
       const orderUpdateResult = await db.collection("orders").updateOne(
         { _id: new ObjectId(mongoOrderId) },
@@ -474,7 +502,7 @@ async function handleNiceReturn(req: Request) {
                       cardCode: niceCard.cardCode ?? undefined,
                     }
                   : undefined,
-                easyPay: pick(approvedRaw, "easyPayProvider") ? { provider: pick(approvedRaw, "easyPayProvider") } : undefined,
+                easyPay: easyPayProvider ? { provider: easyPayProvider } : undefined,
               },
               niceSync: {
                 lastSyncedAt: new Date().toISOString(),
