@@ -79,8 +79,8 @@ export default function MessageWriteClient({
 
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-6">
-      <Card data-cy="message-write-card">
-        <CardHeader className="flex flex-row items-center justify-between">
+      <Card className="border-border bg-card shadow-sm" data-cy="message-write-card">
+        <CardHeader className="flex flex-row items-center justify-between border-b border-border/60 bg-secondary/70">
           <CardTitle className="text-lg">쪽지 보내기</CardTitle>
           <Button
             variant="outline"
@@ -102,12 +102,14 @@ export default function MessageWriteClient({
           </div>
 
           <Input
+            className="bg-background"
             data-cy="message-title"
             placeholder="제목"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
           <Textarea
+            className="bg-background"
             data-cy="message-body"
             placeholder="내용"
             rows={10}
@@ -115,7 +117,7 @@ export default function MessageWriteClient({
             onChange={(e) => setBody(e.target.value)}
           />
 
-          <div className="flex justify-end gap-2">
+          <div className="flex justify-end gap-2 border-t border-border/60 pt-3">
             <Button
               data-cy="message-cancel"
               variant="outline"

@@ -192,11 +192,11 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-6 md:py-8">
-      <Card className="shadow-lg border-border/40">
-        <CardHeader className="border-b border-border/40 bg-muted/30">
+      <Card className="border-border bg-card shadow-sm">
+        <CardHeader className="border-b border-border/60 bg-secondary/70">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 dark:bg-primary/20">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-secondary">
                 <Mail className="h-5 w-5 text-primary" />
               </div>
               <div>
@@ -231,7 +231,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
             }}
             className="w-full"
           >
-            <TabsList className="grid w-full max-w-md grid-cols-3 mb-4 md:mb-6 bg-muted/50">
+            <TabsList className="mb-4 grid w-full max-w-md grid-cols-3 bg-secondary/80 md:mb-6">
               <TabsTrigger value="inbox" className="gap-2">
                 <Mail className="h-4 w-4" />
                 <span className="hidden sm:inline">받은쪽지</span>
@@ -339,11 +339,11 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                           <button
                             key={m.id}
                             className={cn(
-                              "w-full text-left border border-border/30 rounded-lg p-4 transition-all hover:shadow-md hover:border-primary/30",
+                              "w-full rounded-lg border border-border/60 bg-card p-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-sm",
                               active &&
-                                "border-primary/40 bg-primary/5 shadow-md dark:bg-primary/10",
+                                "border-border bg-secondary shadow-sm",
                               !active &&
-                                "hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground",
+                                "hover:bg-secondary/60 hover:text-foreground",
                             )}
                             onClick={async () => {
                               setSelectedId(m.id);
@@ -416,7 +416,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                 </div>
 
                 <div className="lg:col-span-7">
-                  <div className="border border-border/30 rounded-lg min-h-[400px] bg-card">
+                  <div className="min-h-[400px] rounded-lg border border-border/60 bg-card">
                     {!selectedId && (
                       <div className="flex flex-col items-center justify-center h-[400px] text-center p-6 md:p-8">
                         <div className="h-16 w-16 rounded-full bg-muted/50 flex items-center justify-center mb-4">

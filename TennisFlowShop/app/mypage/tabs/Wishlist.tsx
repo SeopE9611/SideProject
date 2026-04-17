@@ -40,7 +40,7 @@ export default function Wishlist() {
 
   if (isLoading && !hasResolvedData) {
     return (
-      <Card className="relative overflow-hidden border-0">
+      <Card className="border-border bg-card shadow-sm">
         <CardContent className="space-y-3 p-4 md:p-6">
           {Array.from({ length: 4 }).map((_, idx) => (
             <div
@@ -59,7 +59,7 @@ export default function Wishlist() {
 
   if (hasDataError) {
     return (
-      <Card className="relative overflow-hidden border-0">
+      <Card className="border-border bg-card shadow-sm">
         <CardContent className="p-8 md:p-12 text-center">
           <h3 className="mb-2 text-xl font-semibold">
             위시리스트를 불러오지 못했습니다
@@ -72,9 +72,9 @@ export default function Wishlist() {
 
   if (shouldShowEmptyState) {
     return (
-      <Card className="relative overflow-hidden border-0">
+      <Card className="border-border bg-card shadow-sm">
         <CardContent className="p-8 md:p-12 text-center">
-          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20">
+          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-xl border border-border bg-secondary text-foreground">
             <Heart className="h-10 w-10" />
           </div>
           <h3 className="mb-2 text-xl font-semibold">
@@ -85,7 +85,7 @@ export default function Wishlist() {
           </p>
           <Button
             asChild
-            className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-300"
+            variant="default" className="shadow-sm"
           >
             <Link href="/products">상품 둘러보기</Link>
           </Button>
@@ -100,7 +100,7 @@ export default function Wishlist() {
         {visibleItems.map((it) => (
           <Card
             key={it.id}
-            className="overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300"
+            variant="interactive" className="overflow-hidden border-border bg-card"
           >
             <CardContent className="p-4">
               <Link href={`/products/${it.id}`} className="block">
@@ -110,11 +110,11 @@ export default function Wishlist() {
                     alt={it.name}
                     fill
                     sizes="(max-width:768px) 50vw, (max-width:1024px) 33vw, 25vw"
-                    className="object-cover rounded-xl border shadow-sm"
+                    className="rounded-xl border border-border/60 object-cover"
                   />
                 </div>
                 <div className="mt-3">
-                  <div className="font-medium line-clamp-2 hover:underline hover:text-primary dark:hover:text-primary transition-colors">
+                  <div className="line-clamp-2 font-medium hover:underline">
                     {it.name}
                   </div>
                   <div className="text-sm text-muted-foreground">
@@ -126,7 +126,7 @@ export default function Wishlist() {
               <div className="mt-3 flex gap-2">
                 <Button
                   size="sm"
-                  className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
+                  variant="default" className="shadow-sm"
                   onClick={() => {
                     addItem({
                       id: it.id,
@@ -144,7 +144,7 @@ export default function Wishlist() {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="border-destructive hover:bg-destructive/10 dark:border-destructive dark:hover:bg-destructive/15 bg-transparent"
+                  className="border-destructive/40 hover:bg-destructive/10"
                   onClick={() => {
                     remove(it.id).catch(() => {
                       showErrorToast("위시리스트 삭제에 실패했습니다.");
@@ -169,7 +169,7 @@ export default function Wishlist() {
           <Button
             variant="outline"
             onClick={() => setVisible((v) => v + LIMIT)}
-            className="border-border hover:bg-primary/10 dark:hover:bg-primary/20 bg-transparent"
+            className="bg-transparent"
           >
             더 보기
           </Button>
