@@ -123,10 +123,11 @@ const PROMO_BANNERS: PromoBanner[] = (() => {
 })();
 
 const surfaceCardInteractiveClass =
-  "rounded-2xl border border-border/60 bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-border";
+  "rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg";
 const surfaceIconWrapClass =
   "flex items-center justify-center rounded-2xl border border-border/60 bg-secondary text-foreground shadow-sm transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-md";
-const processStepSurfaceClass = "group flex flex-col items-center rounded-2xl border border-border/40 bg-background p-4 text-center transition-all duration-300 hover:-translate-y-0.5 hover:shadow-sm";
+const surfacePanelClass = "rounded-3xl border border-border bg-card shadow-sm";
+const processStepSurfaceClass = "group flex flex-col items-center rounded-2xl border border-border/60 bg-background p-4 text-center shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md";
 
 export default function Home() {
   const [activeBrand, setActiveBrand] = useState<BrandKey>("all");
@@ -393,7 +394,7 @@ export default function Home() {
                   const title = (b.label ?? "").split("\n")[0] || "광고 문의";
 
                   const baseClass =
-                    "group relative block h-24 bp-sm:h-28 bp-md:h-32 bp-lg:h-36 overflow-hidden rounded-2xl bg-card border border-border/60 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-border focus:outline-none focus:ring-2 focus:ring-ring/20";
+                    "group relative block h-24 overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring/20 bp-sm:h-28 bp-md:h-32 bp-lg:h-36";
 
                   const inner = (
                     <>
@@ -510,7 +511,7 @@ export default function Home() {
           <Link href="/rackets/finder" className="group block">
             <div className={cn("flex flex-col gap-5 p-6 bp-sm:p-7 bp-md:flex-row bp-md:items-center bp-md:justify-between bp-md:p-8", surfaceCardInteractiveClass)}>
               <div className="flex items-start gap-4 bp-sm:gap-5">
-                <div className="flex h-14 w-14 bp-sm:h-16 bp-sm:w-16 items-center justify-center rounded-2xl bg-secondary text-foreground border border-border/60 shadow-sm transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-md">
+                <div className={cn("h-14 w-14 bp-sm:h-16 bp-sm:w-16", surfaceIconWrapClass)}>
                   <Search className="h-6 w-6 bp-sm:h-7 bp-sm:w-7" />
                 </div>
                 <div className="min-w-0">
@@ -553,7 +554,7 @@ export default function Home() {
       {/* 서비스 플로우 */}
       <section className="py-10 bp-sm:py-12 bp-md:py-16">
         <SiteContainer>
-          <div className="rounded-3xl bg-card border border-border/60 p-6 bp-sm:p-8 bp-md:p-10 shadow-sm">
+          <div className={cn("p-6 bp-sm:p-8 bp-md:p-10", surfacePanelClass)}>
             <div className="mb-8 bp-sm:mb-10 text-center">
               <h2 className="text-2xl bp-sm:text-3xl font-bold text-foreground tracking-tight">스트링 교체 프로세스</h2>
               <p className="mt-2 bp-sm:mt-3 text-sm bp-sm:text-base text-muted-foreground">처음 방문해도 쉽게 이해할 수 있어요</p>
@@ -561,7 +562,7 @@ export default function Home() {
             <div className="mb-8 bp-sm:mb-10 grid gap-6 bp-sm:gap-8 grid-cols-2 bp-lg:grid-cols-4">
               <div className={processStepSurfaceClass}>
                 <div className="relative mb-3 bp-sm:mb-4">
-                  <div className="flex h-14 w-14 bp-sm:h-16 bp-sm:w-16 items-center justify-center rounded-2xl bg-secondary text-foreground border border-border/60 shadow-sm transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-md">
+                  <div className={cn("h-14 w-14 bp-sm:h-16 bp-sm:w-16", surfaceIconWrapClass)}>
                     <BookOpen className="h-6 w-6 bp-sm:h-7 bp-sm:w-7" />
                   </div>
                   <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-foreground text-background flex items-center justify-center text-xs font-bold">1</div>
@@ -571,7 +572,7 @@ export default function Home() {
               </div>
               <div className={processStepSurfaceClass}>
                 <div className="relative mb-3 bp-sm:mb-4">
-                  <div className="flex h-14 w-14 bp-sm:h-16 bp-sm:w-16 items-center justify-center rounded-2xl bg-secondary text-foreground border border-border/60 shadow-sm transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-md">
+                  <div className={cn("h-14 w-14 bp-sm:h-16 bp-sm:w-16", surfaceIconWrapClass)}>
                     <Package className="h-6 w-6 bp-sm:h-7 bp-sm:w-7" />
                   </div>
                   <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-foreground text-background flex items-center justify-center text-xs font-bold">2</div>
@@ -582,7 +583,7 @@ export default function Home() {
 
               <div className={processStepSurfaceClass}>
                 <div className="relative mb-3 bp-sm:mb-4">
-                  <div className="flex h-14 w-14 bp-sm:h-16 bp-sm:w-16 items-center justify-center rounded-2xl bg-secondary text-foreground border border-border/60 shadow-sm transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-md">
+                  <div className={cn("h-14 w-14 bp-sm:h-16 bp-sm:w-16", surfaceIconWrapClass)}>
                     <Wrench className="h-6 w-6 bp-sm:h-7 bp-sm:w-7" />
                   </div>
                   <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-foreground text-background flex items-center justify-center text-xs font-bold">3</div>
@@ -593,7 +594,7 @@ export default function Home() {
 
               <div className={processStepSurfaceClass}>
                 <div className="relative mb-3 bp-sm:mb-4">
-                  <div className="flex h-14 w-14 bp-sm:h-16 bp-sm:w-16 items-center justify-center rounded-2xl bg-secondary text-foreground border border-border/60 shadow-sm transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-md">
+                  <div className={cn("h-14 w-14 bp-sm:h-16 bp-sm:w-16", surfaceIconWrapClass)}>
                     <BadgeCheck className="h-6 w-6 bp-sm:h-7 bp-sm:w-7" />
                   </div>
                   <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-foreground text-background flex items-center justify-center text-xs font-bold">4</div>

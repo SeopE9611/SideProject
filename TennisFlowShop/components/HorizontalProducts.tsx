@@ -2,6 +2,7 @@
 
 import StatusBadge from "@/components/badges/StatusBadge";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import type { EmblaCarouselType, EmblaOptionsType } from "embla-carousel";
 import useEmblaCarousel from "embla-carousel-react";
 import { AlertTriangle, ArrowRight, ChevronLeft, ChevronRight, Inbox, RefreshCcw } from "lucide-react";
@@ -9,10 +10,11 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 const productCardSurfaceClass =
-  "group block h-full rounded-2xl border border-border/60 bg-card p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-border";
-const placeholderSurfaceClass = "h-full rounded-xl bg-card/50 p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7";
+  "group block h-full rounded-2xl border border-border bg-card p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg";
+const placeholderSurfaceClass = "h-full rounded-2xl border border-border bg-background p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7 shadow-sm";
 const moreCardSurfaceClass =
-  "group flex h-full items-center justify-center rounded-2xl border border-border/60 bg-card p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md hover:border-border";
+  "group flex h-full items-center justify-center rounded-2xl border border-border bg-card p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg";
+const subtlePanelClass = "rounded-xl border border-border/60 bg-secondary/40";
 
 export type HItem = {
   _id: string;
@@ -208,9 +210,9 @@ export default function HorizontalProducts({
       href={p.href ?? `/products/${p._id}`}
       className={productCardSurfaceClass}
     >
-      <div className="relative mb-4 bp-sm:mb-5 bp-md:mb-6 aspect-square rounded-xl overflow-hidden bg-muted/30">
+      <div className="relative mb-4 aspect-square overflow-hidden rounded-xl border border-border/50 bg-secondary/40 bp-sm:mb-5 bp-md:mb-6">
         {p.images?.[0] ? (
-          <img src={p.images[0] || "/placeholder.svg"} alt={p.name} className="w-full h-full object-contain p-3 bp-sm:p-4 bp-md:p-5 transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+          <img src={p.images[0] || "/placeholder.svg"} alt={p.name} className="h-full w-full object-contain p-3 transition-transform duration-500 group-hover:scale-105 bp-sm:p-4 bp-md:p-5" loading="lazy" />
         ) : (
           <div className="flex items-center justify-center h-full text-3xl bp-sm:text-4xl bp-md:text-5xl font-bold text-muted-foreground/50">{(p.brand ?? "D").charAt(0)}</div>
         )}
@@ -236,8 +238,8 @@ export default function HorizontalProducts({
 
   const PlaceholderCard = () => (
     <div className={`${placeholderSurfaceClass} flex flex-col items-center justify-center`}>
-      <div className="relative mb-3 bp-sm:mb-4 bp-md:mb-5 aspect-square w-full rounded-lg bg-muted/50 dark:bg-card flex items-center justify-center">
-        <div className="w-12 h-12 bp-sm:w-14 bp-sm:h-14 bp-md:w-16 bp-md:h-16 rounded-full bg-secondary border border-border/60" />
+      <div className={cn("relative mb-3 aspect-square w-full rounded-xl flex items-center justify-center", subtlePanelClass, "bp-sm:mb-4 bp-md:mb-5")}>
+        <div className="h-12 w-12 rounded-full border border-border/60 bg-card bp-sm:h-14 bp-sm:w-14 bp-md:h-16 bp-md:w-16" />
       </div>
       <div className="text-center space-y-1.5">
         <div className="text-sm bp-sm:text-base bp-md:text-lg font-semibold text-foreground">준비 중</div>
@@ -247,8 +249,8 @@ export default function HorizontalProducts({
   );
 
   const SkeletonCard = () => (
-    <div className="h-full rounded-xl p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7 bg-card animate-pulse">
-      <div className="relative mb-3 bp-sm:mb-4 bp-md:mb-5 aspect-square rounded-lg bg-muted/60 dark:bg-card/60" />
+    <div className="h-full animate-pulse rounded-2xl border border-border bg-card p-4 shadow-sm bp-sm:p-5 bp-md:p-6 bp-lg:p-7">
+      <div className="relative mb-3 aspect-square rounded-xl border border-border/50 bg-secondary/40 bp-sm:mb-4 bp-md:mb-5" />
       <div className="space-y-2 bp-sm:space-y-2.5 bp-md:space-y-3">
         <div className="h-3 bp-sm:h-4 bp-md:h-5 w-20 bp-sm:w-24 bp-md:w-28 rounded bg-muted/60 dark:bg-card/60" />
         <div className="h-4 bp-sm:h-5 bp-md:h-6 w-32 bp-sm:w-40 bp-md:w-48 rounded bg-muted/60 dark:bg-card/60" />
@@ -275,7 +277,7 @@ export default function HorizontalProducts({
   );
 
   const EmptyCard = () => (
-    <div className="h-full rounded-xl p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7 bg-card/50 flex flex-col items-center justify-center text-center">
+    <div className="flex h-full flex-col items-center justify-center rounded-2xl border border-border bg-background p-4 text-center shadow-sm bp-sm:p-5 bp-md:p-6 bp-lg:p-7">
       <div className="w-14 h-14 bp-sm:w-16 bp-sm:h-16 rounded-full bg-secondary border border-border/60 text-foreground flex items-center justify-center mb-3">
         <Inbox className="h-6 w-6 text-foreground" />
       </div>
@@ -285,11 +287,11 @@ export default function HorizontalProducts({
   );
 
   const ErrorCard = () => (
-    <div className="h-full rounded-xl p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7 border border-destructive/30 bg-destructive/10 dark:bg-destructive/15 text-foreground flex flex-col items-center justify-center text-center">
-      <div className="w-14 h-14 bp-sm:w-16 bp-sm:h-16 rounded-full bg-destructive/10 dark:bg-destructive/15 flex items-center justify-center mb-3">
+    <div className="flex h-full flex-col items-center justify-center rounded-2xl border border-border bg-card p-4 text-center text-foreground shadow-sm bp-sm:p-5 bp-md:p-6 bp-lg:p-7">
+      <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full border border-border/60 bg-secondary bp-sm:h-16 bp-sm:w-16">
         <AlertTriangle className="h-6 w-6 text-destructive" />
       </div>
-      <div className="text-sm bp-sm:text-base font-semibold text-destructive">{errorTitle ?? "불러오지 못했어요"}</div>
+      <div className="text-sm bp-sm:text-base font-semibold text-foreground">{errorTitle ?? "불러오지 못했어요"}</div>
       <div className="mt-1 text-xs bp-sm:text-sm text-muted-foreground">{errorDescription ?? "네트워크 상태를 확인 후 다시 시도해 주세요."}</div>
       {onRetry && (
         <Button type="button" variant="outline" size="sm" onClick={onRetry} className="mt-3 rounded-full">
