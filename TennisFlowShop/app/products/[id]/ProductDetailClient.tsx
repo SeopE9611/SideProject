@@ -13,6 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { badgeBaseOutlined, badgeSizeSm, getAnswerStatusBadgeSpec, getQnaCategoryBadgeSpec } from "@/lib/badge-style";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 import {
   Activity,
   ArrowLeft,
@@ -71,6 +72,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const images: string[] = Array.isArray(product?.images) ? product.images : [];
   const reviews: any[] = Array.isArray(product?.reviews) ? product.reviews : [];
   const reviewsLen = reviews.length;
+  const productShippingFee = normalizeItemShippingFee(product?.shippingFee);
+  const productShippingLabel = productShippingFee > 0 ? `${productShippingFee.toLocaleString()}원 배송비` : "무료배송";
   // ====== 사양/브랜드/색상/게이지 매핑 ======
   const BRAND_MAP: Record<string, string> = {
     luxilon: "럭실론",
@@ -905,7 +908,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     <div className="grid gap-2.5 sm:gap-3">
                       <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-xl border border-border/40">
                         <Check className="h-4 w-4 sm:h-5 sm:w-5 text-foreground shrink-0" />
-                        <span className="text-sm sm:text-base">3,000원 (30,000원 이상 무료)</span>
+                        <span className="text-sm sm:text-base">{productShippingLabel}</span>
                       </div>
                       <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-xl border border-border/40">
                         <Check className="h-4 w-4 sm:h-5 sm:w-5 text-foreground shrink-0" />
