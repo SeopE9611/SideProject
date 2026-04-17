@@ -210,7 +210,7 @@ export default function OrderLookupPage() {
         <div className="absolute inset-0 bg-overlay/10"></div>
         <div className="relative container mx-auto px-4 py-10 md:py-16">
           <div className="text-center text-foreground">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-card/20 backdrop-blur-sm rounded-full mb-6">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-card rounded-full mb-6 border border-border shadow-sm">
               <Search className="w-8 h-8" />
             </div>
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
@@ -237,9 +237,9 @@ export default function OrderLookupPage() {
           </div>
 
           {/* Main Card */}
-          <Card className="shadow-2xl border-0 bg-card/80 backdrop-blur-sm">
+          <Card className="border border-border bg-card shadow-sm">
             <CardHeader className="text-center pb-6 md:pb-8">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-primary/10 rounded-full mb-4 mx-auto dark:bg-primary/20">
+              <div className="inline-flex items-center justify-center w-12 h-12 bg-secondary rounded-full mb-4 mx-auto border border-border/60">
                 <Package className="w-6 h-6 text-foreground" />
               </div>
               <CardTitle className="text-2xl font-bold text-foreground">
@@ -347,7 +347,7 @@ export default function OrderLookupPage() {
                 </div>
 
                 {/* Info Box */}
-                <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 dark:bg-primary/20">
+                <div className="bg-secondary border border-border rounded-lg p-4">
                   <div className="flex items-start gap-3">
                     <div className="flex-shrink-0">
                       <Clock className="w-5 h-5 text-primary mt-0.5" />
@@ -368,7 +368,7 @@ export default function OrderLookupPage() {
                 <Button
                   type="submit"
                   size="lg"
-                  className="w-full h-12 font-semibold bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5"
+                  className="w-full h-12 font-semibold bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (
@@ -399,8 +399,8 @@ export default function OrderLookupPage() {
 
           {/* Features */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mt-8 md:mt-12">
-            <div className="text-center p-4 md:p-6 bg-card/60 backdrop-blur-sm rounded-xl border border-border">
-              <div className="inline-flex items-center justify-center w-12 h-12 border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20 rounded-full mb-4">
+            <div className="text-center p-4 md:p-6 bg-card rounded-xl border border-border shadow-sm">
+              <div className="inline-flex items-center justify-center w-12 h-12 border border-border bg-secondary text-foreground rounded-full mb-4">
                 <Shield className="w-6 h-6 text-primary" />
               </div>
               <h3 className="font-semibold text-foreground mb-2">
@@ -411,7 +411,7 @@ export default function OrderLookupPage() {
               </p>
             </div>
 
-            <div className="text-center p-4 md:p-6 bg-card/60 backdrop-blur-sm rounded-xl border border-border">
+            <div className="text-center p-4 md:p-6 bg-card rounded-xl border border-border shadow-sm">
               <div className="inline-flex items-center justify-center w-12 h-12 bg-success/10 rounded-full mb-4 dark:bg-success/15">
                 <Clock className="w-6 h-6 text-success" />
               </div>
@@ -423,7 +423,7 @@ export default function OrderLookupPage() {
               </p>
             </div>
 
-            <div className="text-center p-4 md:p-6 bg-card/60 backdrop-blur-sm rounded-xl border border-border">
+            <div className="text-center p-4 md:p-6 bg-card rounded-xl border border-border shadow-sm">
               <div className="inline-flex items-center justify-center w-12 h-12 bg-muted rounded-full mb-4">
                 <Package className="w-6 h-6 text-foreground" />
               </div>

@@ -266,7 +266,7 @@ export default function OrderLookupResultsPage() {
           <div className="absolute inset-0 bg-overlay/10"></div>
           <div className="relative container mx-auto px-4 py-10 md:py-16">
             <div className="text-center text-foreground">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-card/20 backdrop-blur-sm rounded-full mb-4 md:mb-6">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-card rounded-full mb-4 md:mb-6 border border-border shadow-sm">
                 <Package className="w-8 h-8" />
               </div>
               <h1 className="text-4xl md:text-5xl font-bold mb-4">조회 오류</h1>
@@ -279,10 +279,10 @@ export default function OrderLookupResultsPage() {
 
         <div className="container mx-auto py-8 md:py-12 px-4 md:px-6">
           <div className="max-w-4xl mx-auto">
-            <Card className="shadow-2xl border-0 bg-card/80 backdrop-blur-sm">
+            <Card className="border border-border bg-card shadow-sm">
               <CardContent className="flex flex-col items-center justify-center py-10 md:py-16">
                 <div className="text-center">
-                  <div className="inline-flex items-center justify-center w-16 h-16 border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20 rounded-full mb-6">
+                  <div className="inline-flex items-center justify-center w-16 h-16 border border-border bg-secondary text-foreground rounded-full mb-6">
                     <Package className="w-8 h-8 text-primary" />
                   </div>
                   <h3 className="text-xl font-semibold text-foreground mb-4">
@@ -336,7 +336,7 @@ export default function OrderLookupResultsPage() {
         <div className="absolute inset-0 bg-overlay/10"></div>
         <div className="relative container mx-auto px-4 py-10 md:py-16">
           <div className="text-center text-foreground">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-card/20 backdrop-blur-sm rounded-full mb-4 md:mb-6">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-card rounded-full mb-4 md:mb-6 border border-border shadow-sm">
               <CheckCircle2 className="w-8 h-8" />
             </div>
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
@@ -362,9 +362,9 @@ export default function OrderLookupResultsPage() {
             </Link>
           </div>
 
-          <Card className="shadow-2xl border-0 bg-card/80 backdrop-blur-sm mb-6 md:mb-8">
+          <Card className="border border-border bg-card shadow-sm mb-6 md:mb-8">
             <CardHeader className="text-center pb-6 md:pb-8">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-primary/10 rounded-full mb-4 mx-auto dark:bg-primary/20">
+              <div className="inline-flex items-center justify-center w-12 h-12 bg-secondary rounded-full mb-4 mx-auto border border-border/60">
                 <ShoppingBag className="w-6 h-6 text-foreground" />
               </div>
               <CardTitle className="text-2xl font-bold text-foreground">
@@ -401,7 +401,7 @@ export default function OrderLookupResultsPage() {
                           {/* Order Header */}
                           <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-4 md:mb-6">
                             <div className="flex items-center mb-4 lg:mb-0">
-                              <div className="flex-shrink-0 w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mr-4 dark:bg-primary/20">
+                              <div className="flex-shrink-0 w-12 h-12 bg-secondary rounded-full flex items-center justify-center mr-4 border border-border/60">
                                 <span className="text-foreground font-bold">
                                   #{index + 1}
                                 </span>
@@ -480,13 +480,13 @@ export default function OrderLookupResultsPage() {
                               </div>
                             </div>
 
-                            <div className="flex items-center gap-3 p-3 bg-primary/10 rounded-lg border border-primary/20 dark:bg-primary/20">
+                            <div className="flex items-center gap-3 p-3 bg-secondary rounded-lg border border-border">
                               <CreditCard className="h-5 w-5 text-primary flex-shrink-0" />
                               <div className="min-w-0">
-                                <p className="text-xs text-primary mb-1">
+                                <p className="text-xs text-muted-foreground mb-1">
                                   결제금액
                                 </p>
-                                <p className="font-bold text-primary">
+                                <p className="font-bold text-foreground">
                                   {formatCurrency(order.totalAmount)}
                                 </p>
                               </div>
@@ -497,7 +497,7 @@ export default function OrderLookupResultsPage() {
                           <div className="flex flex-col sm:flex-row gap-3 justify-end">
                             <Button
                               variant="outline"
-                              className="flex items-center gap-2 border-border text-primary hover:bg-primary/10 dark:hover:bg-primary/20 hover:border-border bg-transparent"
+                              className="flex items-center gap-2 border-border text-foreground hover:bg-secondary hover:border-border bg-background"
                               onClick={() => handleViewDetails(order.id)}
                             >
                               <Package className="w-4 h-4" />
@@ -515,7 +515,7 @@ export default function OrderLookupResultsPage() {
                                         : "택배 기반 장착 서비스 신청이 가능합니다."}
                                     </p>
                                     <Button
-                                      className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+                                      className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-sm transition-all duration-200 hover:shadow-md"
                                       onClick={() =>
                                         router.push(
                                           `/services/apply?orderId=${order.id}`,
@@ -532,7 +532,7 @@ export default function OrderLookupResultsPage() {
                                   <TooltipProvider>
                                     <Tooltip>
                                       <TooltipTrigger asChild>
-                                        <div className="inline-flex h-10 items-center justify-center rounded-md border-2 border-border bg-primary/10 px-4 py-2 text-sm font-semibold text-primary cursor-default dark:bg-primary/20">
+                                        <div className="inline-flex h-10 items-center justify-center rounded-md border border-border bg-secondary px-4 py-2 text-sm font-semibold text-foreground cursor-default">
                                           <CheckCircle2 className="w-4 h-4 mr-2" />
                                           교체 서비스 신청서 접수 완료
                                         </div>
