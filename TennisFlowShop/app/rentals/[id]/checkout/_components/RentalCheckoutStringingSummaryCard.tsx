@@ -29,7 +29,7 @@ export default function RentalCheckoutStringingSummaryCard({ adapter }: Props) {
       : "기본 설정을 확인하면 접수 준비가 완료됩니다.";
 
   return (
-    <div className="space-y-4 rounded-xl border border-primary/20 bg-primary/5 px-4 py-5 bp-sm:px-5">
+    <div className="space-y-4 rounded-xl border border-border bg-card px-4 py-5 bp-sm:px-5">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="flex items-center gap-2 text-sm font-semibold text-foreground">
@@ -42,13 +42,13 @@ export default function RentalCheckoutStringingSummaryCard({ adapter }: Props) {
         </div>
         <Badge
           variant={completion.isReadyToSubmit ? "success" : "secondary"}
-          className="mt-0.5 border border-border/70 bg-background/85"
+          className="mt-0.5 border border-border/70 bg-background"
         >
           {completion.statusLabel}
         </Badge>
       </div>
 
-      <div className="grid grid-cols-1 gap-x-5 gap-y-2.5 rounded-lg border border-border/70 bg-background/80 p-3.5 text-sm bp-sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-x-5 gap-y-2.5 rounded-lg border border-border/70 bg-background p-3.5 text-sm bp-sm:grid-cols-2">
         <p><span className="text-muted-foreground">접수 방식:</span> <span className="font-medium">{summary.collectionLabel}</span></p>
         <p><span className="text-muted-foreground">작업 수량:</span> <span className="font-medium">{summary.lineCount}자루</span></p>
         <p><span className="text-muted-foreground">선택 스트링:</span> <span className="font-medium">{summary.stringNames.join(", ") || "미선택"}</span></p>
@@ -60,7 +60,7 @@ export default function RentalCheckoutStringingSummaryCard({ adapter }: Props) {
         <p><span className="text-muted-foreground">추가 요청:</span> <span className="font-medium">{summary.requestPreview}</span></p>
       </div>
 
-      <div className="rounded-lg border border-border/70 bg-background/70 p-3">
+      <div className="rounded-lg border border-border/70 bg-secondary/40 p-3">
         <p className="mb-2 text-[11px] font-medium tracking-wide text-muted-foreground">
           진행 상태
         </p>

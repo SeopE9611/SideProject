@@ -166,7 +166,7 @@ export default function ApplicantInfoSection({
   return (
     <div className="relative space-y-5">
       <div className="text-center mb-6">
-        <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-primary/10 mb-4 dark:bg-primary/20">
+        <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-secondary mb-4">
           <User className="h-8 w-8 text-foreground" />
         </div>
         <h2 className="text-2xl font-bold mb-2">신청자 정보</h2>
@@ -325,7 +325,7 @@ export default function ApplicantInfoSection({
 
         {/* {normalizeCollection(formData.collectionMethod) === 'self_ship' && applicationId && (
           <div
-            className="block cursor-pointer rounded-xl border border-border bg-card/90 dark:bg-card px-4 py-3 shadow-sm hover:bg-background dark:hover:bg-card transition text-sm peer-data-[state=checked]:border-primary/30 peer-data-[state=checked]:bg-primary/10 dark:peer-data-[state=checked]:bg-primary/20 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-ring"
+            className="block cursor-pointer rounded-xl border border-border bg-card px-4 py-3 shadow-sm hover:bg-background dark:hover:bg-card transition text-sm peer-data-[state=checked]:border-border peer-data-[state=checked]:bg-secondary peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-ring"
           >
             <div className="font-semibold mb-1 text-foreground">자가 발송 안내</div>
             <p className="mb-3 text-foreground">편의점/우체국 등으로 직접 발송하실 수 있어요. 운송장/포장 가이드는 아래 버튼에서 확인하세요.</p>
@@ -410,7 +410,7 @@ export default function ApplicantInfoSection({
             />
             <Label
               htmlFor="cm-self"
-              className="block cursor-pointer rounded-xl border border-border bg-card px-4 py-3 shadow-sm hover:bg-background dark:hover:bg-card transition peer-data-[state=checked]:border-primary/30 peer-data-[state=checked]:bg-primary/10 dark:peer-data-[state=checked]:bg-primary/20 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-ring peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"
+              className="block cursor-pointer rounded-xl border border-border bg-card px-4 py-3 shadow-sm hover:bg-background dark:hover:bg-card transition peer-data-[state=checked]:border-border peer-data-[state=checked]:bg-secondary peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-ring peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"
             >
               <div className="flex items-center gap-2">
                 <Box className="h-4 w-4 text-primary" />
@@ -434,7 +434,7 @@ export default function ApplicantInfoSection({
             />
             <Label
               htmlFor="cm-visit"
-              className="block cursor-pointer rounded-xl border border-border bg-card px-4 py-3 shadow-sm hover:bg-background dark:hover:bg-card transition peer-data-[state=checked]:border-primary/30 peer-data-[state=checked]:bg-primary/10 dark:peer-data-[state=checked]:bg-primary/20 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-ring peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"
+              className="block cursor-pointer rounded-xl border border-border bg-card px-4 py-3 shadow-sm hover:bg-background dark:hover:bg-card transition peer-data-[state=checked]:border-border peer-data-[state=checked]:bg-secondary peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-ring peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"
             >
               <div className="flex items-center gap-2">
                 <Store className="h-4 w-4 text-primary" />
@@ -459,7 +459,7 @@ export default function ApplicantInfoSection({
 
             <Label
               htmlFor="cm-pickup"
-              className="block cursor-pointer rounded-xl border border-border bg-card px-4 py-3 shadow-sm hover:bg-background dark:hover:bg-card transition peer-data-[state=checked]:border-primary/30 peer-data-[state=checked]:bg-primary/10 dark:peer-data-[state=checked]:bg-primary/20 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-ring peer-disabled:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:hover:bg-card dark:peer-disabled:hover:bg-card"
+              className="block cursor-pointer rounded-xl border border-border bg-card px-4 py-3 shadow-sm hover:bg-background dark:hover:bg-card transition peer-data-[state=checked]:border-border peer-data-[state=checked]:bg-secondary peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-ring peer-disabled:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:hover:bg-card dark:peer-disabled:hover:bg-card"
             >
               <div className="flex items-center gap-2">
                 <Truck className="h-4 w-4 text-primary" />
@@ -532,7 +532,7 @@ export default function ApplicantInfoSection({
       </div>
       {/* 로딩 오버레이 */}
       {isUserLoading && (
-        <div className="absolute inset-0 z-10 rounded-2xl bg-card/45 dark:bg-card backdrop-blur-[2px] ring-1 ring-inset ring-ring grid place-content-center">
+        <div className="absolute inset-0 z-10 rounded-2xl bg-card ring-1 ring-inset ring-ring grid place-content-center">
           <div className="flex items-center gap-3 text-foreground">
             <div className="h-5 w-5 animate-spin rounded-full border-2 border-border border-t-transparent" />
             <div className="space-y-2">

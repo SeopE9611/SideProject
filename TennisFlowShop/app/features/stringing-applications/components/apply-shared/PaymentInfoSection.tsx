@@ -34,7 +34,7 @@ export default function PaymentInfoSection({
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4 dark:bg-primary/20">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-secondary mb-4">
           <CreditCard className="h-8 w-8 text-foreground" />
         </div>
         <h2 className="text-2xl font-bold mb-2">결제 정보</h2>
@@ -55,7 +55,7 @@ export default function PaymentInfoSection({
               className={
                 packageInsufficient
                   ? "grid h-10 w-10 shrink-0 place-content-center rounded-full bg-destructive/10 text-destructive shadow-sm dark:bg-destructive/15"
-                  : "grid h-10 w-10 shrink-0 place-content-center rounded-full bg-primary/10 text-primary shadow-sm dark:bg-primary/20"
+                  : "grid h-10 w-10 shrink-0 place-content-center rounded-full bg-secondary text-foreground shadow-sm"
               }
             >
               <Ticket className="h-5 w-5" />

@@ -36,7 +36,7 @@ export default function FinalRequestSection({
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4 dark:bg-primary/20">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-secondary mb-4">
           <CheckCircle className="h-8 w-8 text-foreground" />
         </div>
         <h2 className="text-2xl font-bold mb-2">추가 요청</h2>
@@ -92,14 +92,14 @@ export default function FinalRequestSection({
       )}
 
       {/* 패키지 관련 최종 안내 */}
-      <div className="rounded-2xl border border-border bg-card/70 dark:bg-card p-5">
+      <div className="rounded-2xl border border-border bg-card p-5">
         <div className="flex items-center gap-2">
           <Badge
             className={
               packageInsufficient
                 ? "border border-destructive/30 bg-destructive/10 text-destructive dark:bg-destructive/15"
                 : usingPackage
-                  ? "border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20"
+                  ? "border border-border bg-secondary text-foreground"
                   : "border border-border bg-muted text-foreground dark:bg-card"
             }
           >

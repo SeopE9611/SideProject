@@ -23,9 +23,6 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
         <div className="absolute inset-0 bg-overlay/10 dark:bg-overlay/30" />
         <HeroCourtBackdrop className="hidden bp-md:block h-full w-full text-primary opacity-[0.10] dark:opacity-[0.12]" />
 
-        <div className="hidden bp-md:block absolute top-10 left-4 bp-md:left-10 w-16 h-16 bp-md:w-20 bp-md:h-20 bg-card/10 rounded-full blur-xl animate-float" />
-        <div className="hidden bp-md:block absolute bottom-10 right-4 bp-md:right-10 w-24 h-24 bp-md:w-32 bp-md:h-32 bg-card/5 rounded-full blur-2xl animate-float-delayed" />
-        <div className="hidden bp-md:block absolute top-1/2 left-1/4 w-12 h-12 bg-muted/60 dark:bg-card/60 rounded-full blur-lg animate-pulse" />
 
         <SiteContainer variant="wide" className="relative">
           <div className="text-center text-foreground">
@@ -37,7 +34,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
 
       <SiteContainer variant="wide" className="py-6 bp-sm:py-8 bp-md:py-12">
         {from === "apply" && (
-          <div className="mb-4 bp-sm:mb-6 rounded-xl border border-border bg-card/90 dark:bg-card backdrop-blur p-4 bp-sm:p-5">
+          <div className="mb-4 bp-sm:mb-6 rounded-xl border border-border bg-card p-4 bp-sm:p-5 shadow-sm">
             <div className="flex items-start justify-between gap-3 flex-wrap">
               <div className="min-w-0">
                 <p className="text-sm bp-sm:text-base font-semibold text-foreground">장착 서비스 신청용 스트링을 고르는 중이에요</p>
