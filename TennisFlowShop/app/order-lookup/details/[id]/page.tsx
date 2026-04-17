@@ -260,7 +260,7 @@ export default function OrderDetailPage() {
           <div className="absolute inset-0 bg-overlay/10"></div>
           <div className="relative container mx-auto px-4 py-10 md:py-16">
             <div className="text-center text-foreground">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-card/20 backdrop-blur-sm rounded-full mb-6">
+              <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-full border border-border bg-secondary shadow-sm">
                 <Package className="w-8 h-8" />
               </div>
               <h1 className="text-4xl md:text-5xl font-bold mb-4">주문 상세 정보 오류</h1>
@@ -271,15 +271,15 @@ export default function OrderDetailPage() {
 
         <div className="container mx-auto px-4 py-8 md:px-6 md:py-12">
           <div className="max-w-4xl mx-auto">
-            <Card className="shadow-2xl border-0 bg-card/80 backdrop-blur-sm">
+            <Card className="border border-border bg-card shadow-sm">
               <CardContent className="flex flex-col items-center justify-center py-16">
                 <div className="text-center">
-                  <div className="inline-flex items-center justify-center w-16 h-16 border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20 rounded-full mb-6">
+                  <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-full border border-border bg-muted text-foreground">
                     <Package className="w-8 h-8 text-primary" />
                   </div>
                   <h3 className="text-xl font-semibold text-foreground mb-4">오류가 발생했습니다</h3>
                   <p className="text-destructive mb-8 max-w-md">{error}</p>
-                  <Button onClick={handleGoBack} className="bg-primary text-primary-foreground hover:bg-primary/90">
+                  <Button onClick={handleGoBack}>
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     이전 페이지로 돌아가기
                   </Button>
@@ -371,7 +371,7 @@ export default function OrderDetailPage() {
         <div className="absolute inset-0 bg-overlay/10"></div>
         <div className="relative container mx-auto px-4 py-10 md:py-16">
           <div className="text-center text-foreground">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-card/20 backdrop-blur-sm rounded-full mb-6">
+            <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-full border border-border bg-secondary shadow-sm">
               <Package className="w-8 h-8" />
             </div>
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
@@ -414,7 +414,7 @@ export default function OrderDetailPage() {
                           ? "이 주문은 스트링 장착 서비스가 포함되어 있습니다. 방문 수령 시 현장 장착으로 진행되며, 아직 접수된 신청서가 없어 신청을 진행할 수 있습니다."
                           : "이 주문은 스트링 장착 서비스가 포함되어 있습니다. 택배 수령 주문은 수거/반송으로 장착 서비스가 진행되며, 아직 접수된 신청서가 없어 신청을 진행할 수 있습니다."}
                       </p>
-                      <Link href={`/services/apply?orderId=${order._id}`} className="inline-flex items-center px-4 py-2 bg-muted hover:bg-muted text-foreground font-semibold rounded-lg transition-colors">
+                      <Link href={`/services/apply?orderId=${order._id}`} className="inline-flex items-center rounded-lg border border-border bg-secondary px-4 py-2 font-semibold text-foreground transition-colors hover:bg-secondary/80">
                         <ShoppingBag className="w-4 h-4 mr-2" />
                         {isVisitPickup ? "스트링 장착 서비스 신청하기" : "택배 장착 서비스 신청하기"}
                       </Link>
@@ -422,7 +422,7 @@ export default function OrderDetailPage() {
                   </div>
                 ) : (
                   <div className="flex items-center gap-4">
-                    <div className="flex-shrink-0 flex h-12 w-12 items-center justify-center rounded-full border border-success/30 bg-success/10 text-success dark:bg-success/15">
+                    <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full border border-border bg-secondary text-foreground">
                       <CheckCircle className="w-6 h-6" />
                     </div>
                     <div>
@@ -480,10 +480,10 @@ export default function OrderDetailPage() {
             {/* Main Content */}
             <div className="space-y-6 md:space-y-8 lg:col-span-2">
               {/* 주문 정보 */}
-              <Card className="shadow-xl border-0 bg-card/80 backdrop-blur-sm">
+              <Card className="border border-border bg-card shadow-sm">
                 <CardHeader className="pb-6">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-secondary">
                       <Calendar className="w-5 h-5 text-foreground" />
                     </div>
                     <CardTitle className="text-xl font-bold">주문 정보</CardTitle>
@@ -504,7 +504,7 @@ export default function OrderDetailPage() {
                     <div>
                       <p className="text-sm text-muted-foreground mb-2">입금 계좌</p>
                       {order.paymentInfo?.bank && bankLabelMap[order.paymentInfo.bank] ? (
-                        <div className="bg-primary/10 dark:bg-primary/20 border border-primary/20 rounded-lg p-4">
+                        <div className="rounded-lg border border-border bg-secondary/40 p-4">
                           <div className="space-y-2">
                             <p className="font-semibold text-foreground">{order.paymentInfo.method}</p>
                             <p className="font-semibold text-foreground">{bankLabelMap[order.paymentInfo.bank].label}</p>
@@ -521,10 +521,10 @@ export default function OrderDetailPage() {
               </Card>
 
               {/* 배송 정보 */}
-              <Card className="shadow-xl border-0 bg-card/80 backdrop-blur-sm">
+              <Card className="border border-border bg-card shadow-sm">
                 <CardHeader className="pb-6">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-secondary">
                       <MapPin className="w-5 h-5 text-foreground" />
                     </div>
                     <CardTitle className="text-xl font-bold">{shippingCardTitle}</CardTitle>
@@ -534,14 +534,14 @@ export default function OrderDetailPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-4">
                       <div className="flex items-center gap-3 p-3 bg-background rounded-lg">
-                        <User className="w-5 h-5 text-primary" />
+                        <User className="w-5 h-5 text-foreground" />
                         <div>
                           <p className="text-sm text-muted-foreground">수령인</p>
                           <p className="font-semibold">{order.shippingInfo.name}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3 p-3 bg-background rounded-lg">
-                        <Phone className="w-5 h-5 text-success" />
+                        <Phone className="w-5 h-5 text-foreground" />
                         <div>
                           <p className="text-sm text-muted-foreground">연락처</p>
                           <p className="font-semibold">{order.shippingInfo.phone}</p>
@@ -554,11 +554,11 @@ export default function OrderDetailPage() {
                         <p className="font-semibold">{shippingAddressValue}</p>
                       </div>
                       {canTrack && (
-                        <div className="flex items-center gap-3 p-3 border border-primary/20 bg-primary/10 dark:bg-primary/20 rounded-lg">
+                        <div className="flex items-center gap-3 rounded-lg border border-border bg-secondary/40 p-3">
                           <Truck className="w-5 h-5 text-primary" />
                           <div className="flex-1">
                             <p className="text-sm text-muted-foreground mb-1">운송장 번호</p>
-                            <p className="font-mono font-semibold text-primary">{trackingNumber}</p>
+                            <p className="font-mono font-semibold text-foreground">{trackingNumber}</p>
                             {trackingInfo?.success && trackingInfo.supported && (
                               <p className="mt-1 text-sm text-foreground">
                                 실시간 배송 상태: {trackingInfo.displayStatus}
@@ -569,7 +569,7 @@ export default function OrderDetailPage() {
                             {trackingError && <p className="mt-1 text-sm text-muted-foreground">{trackingError}</p>}
                             {!trackingError && isUnsupportedCourier && <p className="mt-1 text-sm text-muted-foreground">{unsupportedCourierMessage}</p>}
                           </div>
-                          <Button variant="link" className="text-primary hover:text-primary p-0" onClick={handleTrackingClick} disabled={trackingLoading || isUnsupportedCourier}>
+                          <Button variant="link" className="p-0" onClick={handleTrackingClick} disabled={trackingLoading || isUnsupportedCourier}>
                             {isUnsupportedCourier ? "조회 불가" : trackingLoading ? "조회 중..." : "배송 조회"}
                           </Button>
                         </div>
@@ -580,10 +580,10 @@ export default function OrderDetailPage() {
               </Card>
 
               {/* 주문 상품 */}
-              <Card className="shadow-xl border-0 bg-card/80 backdrop-blur-sm">
+              <Card className="border border-border bg-card shadow-sm">
                 <CardHeader className="pb-6">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-secondary">
                       <ShoppingBag className="w-5 h-5 text-foreground" />
                     </div>
                     <CardTitle className="text-xl font-bold">주문 상품</CardTitle>
@@ -618,10 +618,10 @@ export default function OrderDetailPage() {
 
             {/* Sidebar - 결제 정보 */}
             <div className="lg:col-span-1">
-              <Card className="shadow-xl border-0 bg-card/80 backdrop-blur-sm sticky top-8">
+              <Card className="sticky top-8 border border-border bg-card shadow-sm">
                 <CardHeader className="pb-6">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-secondary">
                       <CreditCard className="w-5 h-5 text-foreground" />
                     </div>
                     <CardTitle className="text-xl font-bold">결제 정보</CardTitle>
@@ -645,7 +645,7 @@ export default function OrderDetailPage() {
 
                     {/* Benefits */}
                     <div className="mt-6 space-y-3">
-                      <div className="flex items-center gap-3 p-3 rounded-lg border border-primary/20 bg-primary/10 dark:bg-primary/20">
+                      <div className="flex items-center gap-3 rounded-lg border border-border bg-secondary/40 p-3">
                         <Shield className="w-5 h-5 text-primary" />
                         <div>
                           <p className="text-sm font-medium text-foreground">안전한 결제</p>
@@ -653,7 +653,7 @@ export default function OrderDetailPage() {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3 p-3 border border-primary/20 bg-primary/10 dark:bg-primary/20 rounded-lg">
+                      <div className="flex items-center gap-3 rounded-lg border border-border bg-secondary/40 p-3">
                         <Truck className="w-5 h-5 text-primary" />
                         <div>
                           <p className="text-sm font-medium text-foreground">배송 보장</p>
@@ -665,7 +665,7 @@ export default function OrderDetailPage() {
                 </CardContent>
 
                 <CardFooter className="pt-6">
-                  <Button variant="outline" onClick={handleGoBack} className="w-full border-border text-primary hover:bg-primary/10 dark:hover:bg-primary/20 hover:border-border bg-transparent">
+                  <Button variant="outline" onClick={handleGoBack} className="w-full bg-transparent">
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     주문 목록으로 돌아가기
                   </Button>
