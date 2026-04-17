@@ -5,8 +5,10 @@ import HeroSlider from "@/components/HeroSlider";
 import HorizontalProducts, { type HItem } from "@/components/HorizontalProducts";
 import SiteContainer from "@/components/layout/SiteContainer";
 import SignupBonusPromoPopup from "@/components/system/SignupBonusPromoPopup";
+import { Button } from "@/components/ui/button";
 import { RACKET_BRANDS, racketBrandLabel, STRING_BRANDS, stringBrandLabel } from "@/lib/constants";
 import { isSignupBonusActive, SIGNUP_BONUS_CAMPAIGN_ID, SIGNUP_BONUS_END_DATE, SIGNUP_BONUS_POINTS, SIGNUP_BONUS_START_DATE } from "@/lib/points.policy";
+import { cn } from "@/lib/utils";
 import { BadgeCheck, BookOpen, MessageSquareText, Package, Search, Tags, Wrench } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
@@ -119,6 +121,12 @@ const PROMO_BANNERS: PromoBanner[] = (() => {
     return [];
   }
 })();
+
+const surfaceCardInteractiveClass =
+  "rounded-2xl border border-border/60 bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-border";
+const surfaceIconWrapClass =
+  "flex items-center justify-center rounded-2xl border border-border/60 bg-secondary text-foreground shadow-sm transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-md";
+const processStepSurfaceClass = "group flex flex-col items-center rounded-2xl border border-border/40 bg-background p-4 text-center transition-all duration-300 hover:-translate-y-0.5 hover:shadow-sm";
 
 export default function Home() {
   const [activeBrand, setActiveBrand] = useState<BrandKey>("all");
@@ -444,9 +452,9 @@ export default function Home() {
           <div className="grid gap-4 bp-sm:gap-5 bp-md:gap-6 grid-cols-2 bp-md-only:grid-cols-4 bp-lg:grid-cols-4">
             <Link
               href="/services/apply"
-              className="group flex h-full flex-col items-center gap-3 bp-sm:gap-4 rounded-2xl bg-card p-5 bp-sm:p-6 bp-md:p-7 shadow-sm border border-border/60 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-border"
+              className={cn("group flex h-full flex-col items-center gap-3 bp-sm:gap-4 p-5 bp-sm:p-6 bp-md:p-7", surfaceCardInteractiveClass)}
             >
-              <div className="flex h-12 w-12 bp-sm:h-14 bp-sm:w-14 items-center justify-center rounded-2xl bg-secondary text-foreground border border-border/60 shadow-sm transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-md">
+              <div className={cn("h-12 w-12 bp-sm:h-14 bp-sm:w-14", surfaceIconWrapClass)}>
                 <Wrench className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
               </div>
               <div className="text-center">
@@ -457,9 +465,9 @@ export default function Home() {
 
             <Link
               href="/services/tension-guide"
-              className="group flex h-full flex-col items-center gap-3 bp-sm:gap-4 rounded-2xl bg-card p-5 bp-sm:p-6 bp-md:p-7 shadow-sm border border-border/60 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-border"
+              className={cn("group flex h-full flex-col items-center gap-3 bp-sm:gap-4 p-5 bp-sm:p-6 bp-md:p-7", surfaceCardInteractiveClass)}
             >
-              <div className="flex h-12 w-12 bp-sm:h-14 bp-sm:w-14 items-center justify-center rounded-2xl bg-secondary text-foreground border border-border/60 shadow-sm transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-md">
+              <div className={cn("h-12 w-12 bp-sm:h-14 bp-sm:w-14", surfaceIconWrapClass)}>
                 <BookOpen className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
               </div>
               <div className="text-center">
@@ -470,9 +478,9 @@ export default function Home() {
 
             <Link
               href="/board/market"
-              className="group flex h-full flex-col items-center gap-3 bp-sm:gap-4 rounded-2xl bg-card p-5 bp-sm:p-6 bp-md:p-7 shadow-sm border border-border/60 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-border"
+              className={cn("group flex h-full flex-col items-center gap-3 bp-sm:gap-4 p-5 bp-sm:p-6 bp-md:p-7", surfaceCardInteractiveClass)}
             >
-              <div className="flex h-12 w-12 bp-sm:h-14 bp-sm:w-14 items-center justify-center rounded-2xl bg-secondary text-foreground border border-border/60 shadow-sm transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-md">
+              <div className={cn("h-12 w-12 bp-sm:h-14 bp-sm:w-14", surfaceIconWrapClass)}>
                 <Tags className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
               </div>
               <div className="text-center">
@@ -483,9 +491,9 @@ export default function Home() {
 
             <Link
               href="/board"
-              className="group flex h-full flex-col items-center gap-3 bp-sm:gap-4 rounded-2xl bg-card p-5 bp-sm:p-6 bp-md:p-7 shadow-sm border border-border/60 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-border"
+              className={cn("group flex h-full flex-col items-center gap-3 bp-sm:gap-4 p-5 bp-sm:p-6 bp-md:p-7", surfaceCardInteractiveClass)}
             >
-              <div className="flex h-12 w-12 bp-sm:h-14 bp-sm:w-14 items-center justify-center rounded-2xl bg-secondary text-foreground border border-border/60 shadow-sm transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-md">
+              <div className={cn("h-12 w-12 bp-sm:h-14 bp-sm:w-14", surfaceIconWrapClass)}>
                 <MessageSquareText className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
               </div>
               <div className="text-center">
@@ -500,7 +508,7 @@ export default function Home() {
       <section className="py-6 bp-sm:py-8">
         <SiteContainer>
           <Link href="/rackets/finder" className="group block">
-            <div className="rounded-2xl border border-border/60 bg-card p-6 bp-sm:p-7 bp-md:p-8 flex flex-col bp-md:flex-row bp-md:items-center bp-md:justify-between gap-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-border">
+            <div className={cn("flex flex-col gap-5 p-6 bp-sm:p-7 bp-md:flex-row bp-md:items-center bp-md:justify-between bp-md:p-8", surfaceCardInteractiveClass)}>
               <div className="flex items-start gap-4 bp-sm:gap-5">
                 <div className="flex h-14 w-14 bp-sm:h-16 bp-sm:w-16 items-center justify-center rounded-2xl bg-secondary text-foreground border border-border/60 shadow-sm transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-md">
                   <Search className="h-6 w-6 bp-sm:h-7 bp-sm:w-7" />
@@ -511,7 +519,7 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="shrink-0 inline-flex items-center justify-center rounded-xl border border-border/70 bg-card px-5 py-2.5 text-sm bp-sm:text-base font-semibold text-foreground shadow-sm transition-all duration-300 group-hover:shadow-md">
+              <div className="shrink-0 inline-flex items-center justify-center rounded-xl border border-border/70 bg-card px-5 py-2.5 text-sm bp-sm:text-base font-semibold text-foreground shadow-sm transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-md">
                 바로가기
               </div>
             </div>
@@ -551,7 +559,7 @@ export default function Home() {
               <p className="mt-2 bp-sm:mt-3 text-sm bp-sm:text-base text-muted-foreground">처음 방문해도 쉽게 이해할 수 있어요</p>
             </div>
             <div className="mb-8 bp-sm:mb-10 grid gap-6 bp-sm:gap-8 grid-cols-2 bp-lg:grid-cols-4">
-              <div className="group flex flex-col items-center text-center p-4 rounded-2xl border border-border/40 bg-background transition-all duration-300 hover:-translate-y-0.5 hover:shadow-sm">
+              <div className={processStepSurfaceClass}>
                 <div className="relative mb-3 bp-sm:mb-4">
                   <div className="flex h-14 w-14 bp-sm:h-16 bp-sm:w-16 items-center justify-center rounded-2xl bg-secondary text-foreground border border-border/60 shadow-sm transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-md">
                     <BookOpen className="h-6 w-6 bp-sm:h-7 bp-sm:w-7" />
@@ -561,7 +569,7 @@ export default function Home() {
                 <h3 className="mb-1 bp-sm:mb-1.5 text-sm bp-sm:text-base font-semibold text-foreground">신청서 작성</h3>
                 <p className="text-xs bp-sm:text-sm text-muted-foreground">라켓/스트링/옵션 선택</p>
               </div>
-              <div className="group flex flex-col items-center text-center p-4 rounded-2xl border border-border/40 bg-background transition-all duration-300 hover:-translate-y-0.5 hover:shadow-sm">
+              <div className={processStepSurfaceClass}>
                 <div className="relative mb-3 bp-sm:mb-4">
                   <div className="flex h-14 w-14 bp-sm:h-16 bp-sm:w-16 items-center justify-center rounded-2xl bg-secondary text-foreground border border-border/60 shadow-sm transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-md">
                     <Package className="h-6 w-6 bp-sm:h-7 bp-sm:w-7" />
@@ -572,7 +580,7 @@ export default function Home() {
                 <p className="text-xs bp-sm:text-sm text-muted-foreground">방문 예약 또는 택배 발송</p>
               </div>
 
-              <div className="group flex flex-col items-center text-center p-4 rounded-2xl border border-border/40 bg-background transition-all duration-300 hover:-translate-y-0.5 hover:shadow-sm">
+              <div className={processStepSurfaceClass}>
                 <div className="relative mb-3 bp-sm:mb-4">
                   <div className="flex h-14 w-14 bp-sm:h-16 bp-sm:w-16 items-center justify-center rounded-2xl bg-secondary text-foreground border border-border/60 shadow-sm transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-md">
                     <Wrench className="h-6 w-6 bp-sm:h-7 bp-sm:w-7" />
@@ -583,7 +591,7 @@ export default function Home() {
                 <p className="text-xs bp-sm:text-sm text-muted-foreground">장착/텐션 세팅 후 검수</p>
               </div>
 
-              <div className="group flex flex-col items-center text-center p-4 rounded-2xl border border-border/40 bg-background transition-all duration-300 hover:-translate-y-0.5 hover:shadow-sm">
+              <div className={processStepSurfaceClass}>
                 <div className="relative mb-3 bp-sm:mb-4">
                   <div className="flex h-14 w-14 bp-sm:h-16 bp-sm:w-16 items-center justify-center rounded-2xl bg-secondary text-foreground border border-border/60 shadow-sm transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-md">
                     <BadgeCheck className="h-6 w-6 bp-sm:h-7 bp-sm:w-7" />
@@ -595,13 +603,12 @@ export default function Home() {
               </div>
             </div>
             <div className="text-center">
-              <Link
-                href="/services/apply"
-                className="inline-flex items-center gap-2 rounded-xl bg-foreground px-6 bp-sm:px-8 py-3 bp-sm:py-3.5 text-sm bp-sm:text-base font-semibold text-background shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
-              >
-                <Wrench className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
-                지금 신청하기
-              </Link>
+              <Button asChild size="tall" className="px-6 bp-sm:px-8 text-sm bp-sm:text-base">
+                <Link href="/services/apply">
+                  <Wrench className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
+                  지금 신청하기
+                </Link>
+              </Button>
             </div>
           </div>
         </SiteContainer>
