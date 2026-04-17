@@ -12,7 +12,7 @@ import { buildCheckoutSuccessLinks } from '@/lib/checkout-success-links';
 import { bankLabelMap } from '@/lib/constants';
 import clientPromise from '@/lib/mongodb';
 import { getOrderDeliveryInfoTitle, isVisitPickupOrder, shouldShowDeliveryOnlyFields } from '@/lib/order-shipping';
-import { AlertTriangle, ArrowRight, CheckCircle, Clock, CreditCard, MapPin, Package, Phone, Shield, Star } from 'lucide-react';
+import { ArrowRight, CheckCircle, Clock, CreditCard, MapPin, Package, Phone, Shield, Star } from 'lucide-react';
 import { ObjectId } from 'mongodb';
 import { cookies } from 'next/headers';
 import Link from 'next/link';
@@ -349,6 +349,12 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
       : isNicePayment
         ? getNiceMethodLabel(paymentMethodRaw, easyPayProviderRaw)
         : '무통장입금';
+
+    console.info('[checkout][success][render_success_with_details]', {
+      orderId,
+      hasOrderDetail: true,
+      renderMode: 'with_details',
+    });
 
     return (
     <>
@@ -788,9 +794,10 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
       orderId,
       ...errorInfo,
     });
-    console.warn('[checkout][success][fallback_render]', {
+    console.info('[checkout][success][render_success_without_details]', {
       orderId,
-      reason: 'order_detail_fetch_error',
+      hasOrderDetail: false,
+      renderMode: 'without_details',
       isMongoTimeout: errorInfo.isMongoTimeout,
     });
 
@@ -799,25 +806,32 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
         <BackButtonGuard />
         <ClearCartOnMount />
         <div className="min-h-full bg-background text-foreground">
-          <SiteContainer variant="wide" className="py-10 md:py-16">
-            <div className="mx-auto max-w-2xl">
+          <div className="relative overflow-hidden border-b border-border bg-muted/30 text-foreground dark:bg-card/40">
+            <div className="absolute inset-0 bg-muted/50 dark:bg-card/60"></div>
+            <SiteContainer variant="wide" className="relative py-10 md:py-16">
+              <div className="text-center">
+                <div className="mb-4 md:mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 backdrop-blur-sm dark:bg-primary/20">
+                  <CheckCircle className="h-12 w-12 text-foreground" />
+                </div>
+                <h1 className="text-4xl md:text-5xl font-bold mb-4">주문이 접수되었습니다</h1>
+                <p className="mb-4 md:mb-6 text-xl text-muted-foreground">결제가 정상 처리되었습니다.</p>
+              </div>
+            </SiteContainer>
+          </div>
+
+          <SiteContainer variant="wide" className="py-8">
+            <div className="mx-auto max-w-2xl space-y-4">
               <Card className="border border-border bg-card shadow-xl">
                 <CardHeader className="border-b border-border bg-background">
-                  <CardTitle className="flex items-center gap-2 text-xl">
-                    <AlertTriangle className="h-5 w-5 text-primary" />
-                    주문은 접수되었을 수 있어요
-                  </CardTitle>
+                  <CardTitle className="text-xl">주문 완료</CardTitle>
                   <CardDescription>
-                    결제 직후 주문 상세 정보를 불러오는 중 일시적인 문제가 발생했습니다. 결제 자체가 실패했다는 의미는 아닙니다.
+                    주문 상세 정보를 불러오는 중 일시적인 문제가 발생했습니다. 잠시 후 다시 시도하거나 마이페이지에서 확인해주세요.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3 p-6 text-sm text-muted-foreground">
-                  {orderId ? (
-                    <p>
-                      주문번호: <span className="font-mono font-semibold text-foreground">{orderId}</span>
-                    </p>
-                  ) : null}
-                  <p>잠시 후 다시 시도해 주세요. 문제가 계속되면 마이페이지 또는 관리자 페이지에서 주문 상태를 확인해 주세요.</p>
+                  <p>
+                    주문번호: <span className="font-mono font-semibold text-foreground">{orderId}</span>
+                  </p>
                 </CardContent>
                 <CardFooter className="flex flex-col gap-2 border-t border-border bg-background p-6 sm:flex-row">
                   <Button asChild className="w-full sm:w-auto">
