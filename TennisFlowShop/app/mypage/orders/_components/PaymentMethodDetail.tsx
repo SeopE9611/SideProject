@@ -8,6 +8,9 @@ interface PaymentMethodDetailProps {
   easyPayProvider?: string | null;
   paymentStatus?: string | null;
   paymentTid?: string | null;
+  paymentCardDisplayName?: string | null;
+  paymentCardCompany?: string | null;
+  paymentCardLabel?: string | null;
   paymentNiceSync?: {
     lastSyncedAt?: string | null;
     pgStatus?: string | null;
@@ -72,6 +75,19 @@ function getEasyPayProviderLabel(easyPayProvider?: string | null) {
   return EASY_PAY_PROVIDER_LABEL_MAP[normalized] ?? normalized;
 }
 
+function getCardDisplayName(params: {
+  paymentCardDisplayName?: string | null;
+  paymentCardLabel?: string | null;
+  paymentCardCompany?: string | null;
+}) {
+  return (
+    String(params.paymentCardDisplayName ?? "").trim() ||
+    String(params.paymentCardLabel ?? "").trim() ||
+    String(params.paymentCardCompany ?? "").trim() ||
+    ""
+  );
+}
+
 export default function PaymentMethodDetail({
   method,
   bankKey,
@@ -79,6 +95,9 @@ export default function PaymentMethodDetail({
   paymentProvider,
   easyPayProvider,
   paymentStatus,
+  paymentCardDisplayName,
+  paymentCardCompany,
+  paymentCardLabel,
 }: PaymentMethodDetailProps) {
   const isTossPayment = String(paymentProvider ?? "").trim().toLowerCase() === "tosspayments";
   const isNicePayment = String(paymentProvider ?? "").trim().toLowerCase() === "nicepay";
@@ -87,6 +106,11 @@ export default function PaymentMethodDetail({
   const niceMethodLabel = getNiceMethodLabel(method, easyPayProvider);
   const easyPayProviderLabel = getEasyPayProviderLabel(easyPayProvider);
   const statusLabel = paymentStatus === "결제완료" ? "결제완료" : paymentStatus;
+  const cardDisplayName = getCardDisplayName({
+    paymentCardDisplayName,
+    paymentCardLabel,
+    paymentCardCompany,
+  });
 
   return (
     <div className="space-y-2">
@@ -102,6 +126,7 @@ export default function PaymentMethodDetail({
         ) : isNicePayment ? (
           <div className="mt-1 rounded-md bg-muted px-3 py-2 text-sm text-foreground leading-relaxed border border-border space-y-1">
             <div className="font-semibold">{niceMethodLabel}</div>
+            {cardDisplayName && <div className="text-sm">결제 수단: {cardDisplayName}</div>}
             {statusLabel && <div className="text-sm">결제 상태: {statusLabel}</div>}
           </div>
         ) : bankInfo ? (
