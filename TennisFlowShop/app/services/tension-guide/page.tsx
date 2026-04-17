@@ -483,7 +483,7 @@ export default function TensionGuidePage() {
             <div className="grid bp-lg:grid-cols-2 gap-6 bp-md:gap-8">
               {/* 입력 섹션 */}
               <div className="space-y-6">
-                <Card className="border-0 shadow-md bg-card dark:bg-muted/90">
+                <Card className="border border-border shadow-sm bg-card dark:bg-muted/90">
                   <CardHeader className="pb-4 bp-md:pb-6">
                     <CardTitle className="flex items-center gap-2 text-base bp-md:text-lg text-foreground">
                       <Settings2 className="h-4 w-4 bp-md:h-5 bp-md:w-5 text-primary" />
@@ -614,7 +614,7 @@ export default function TensionGuidePage() {
 
               {/* 결과 섹션 */}
               <div className="space-y-6">
-                <Card className="border-0 shadow-sm bg-muted/40 dark:bg-muted/30 overflow-hidden">
+                <Card className="border border-border shadow-sm bg-muted/40 dark:bg-muted/30 overflow-hidden">
                   <CardHeader className="pb-4">
                     <CardTitle className="flex items-center gap-2 text-base bp-md:text-lg text-foreground dark:text-primary-foreground/90">
                       <Target className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
@@ -652,7 +652,7 @@ export default function TensionGuidePage() {
                     </div>
 
                     {/* 추천 범위 */}
-                    <div className="bg-card/80 dark:bg-muted/80 backdrop-blur-sm rounded-xl p-4 mb-4">
+                    <div className="bg-card dark:bg-muted/80 rounded-xl border border-border p-4 mb-4">
                       <div className="flex items-center gap-2 mb-2">
                         <Info className="h-4 w-4 text-primary" />
                         <span className="font-medium text-foreground">
@@ -676,7 +676,7 @@ export default function TensionGuidePage() {
                     </div>
 
                     {/* 계산 근거를 한눈에 보여주면 사용자가 추천값의 출처를 빠르게 이해할 수 있습니다. */}
-                    <div className="bg-card/80 dark:bg-muted/80 backdrop-blur-sm rounded-xl p-4 mb-6">
+                    <div className="bg-card dark:bg-muted/80 rounded-xl border border-border p-4 mb-6">
                       <div className="flex items-center gap-2 mb-3">
                         <BarChart3 className="h-4 w-4 text-primary" />
                         <span className="font-medium text-foreground">
@@ -745,7 +745,7 @@ export default function TensionGuidePage() {
                 </Card>
 
                 {/* 환경 요인 */}
-                <Card className="border-0 shadow-md bg-card dark:bg-muted/90">
+                <Card className="border border-border shadow-sm bg-card dark:bg-muted/90">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm bp-md:text-base flex items-center gap-2 text-foreground">
                       <Thermometer className="h-4 w-4 text-muted-foreground" />

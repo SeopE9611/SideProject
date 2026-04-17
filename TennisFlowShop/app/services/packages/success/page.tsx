@@ -206,7 +206,7 @@ export default async function PackageSuccessPage({
 
           {/* 패키지 활성화 안내 */}
           <div className="mt-8 max-w-2xl mx-auto">
-            <div className="bg-muted backdrop-blur-sm border border-border rounded-xl p-4 md:p-6 text-center">
+            <div className="bg-muted border border-border rounded-xl p-4 md:p-6 text-center">
               <div className="flex items-center justify-center gap-3 mb-4">
                 <div className="p-2 bg-secondary rounded-lg">
                   <Package className="h-6 w-6 text-primary" />
@@ -222,7 +222,7 @@ export default async function PackageSuccessPage({
               </p>
               <Button
                 variant="default"
-                className="font-semibold shadow-lg"
+                className="font-semibold shadow-sm"
                 asChild
               >
                 <Link href="/services" className="flex items-center gap-2">
@@ -404,7 +404,7 @@ export default async function PackageSuccessPage({
               <div className="flex flex-col sm:flex-row gap-3 md:gap-4 w-full">
                 <Button
                   variant="default"
-                  className="flex-1 h-12 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300"
+                  className="flex-1 h-12 shadow-sm hover:shadow-md transition-all duration-300"
                   asChild
                 >
                   <Link

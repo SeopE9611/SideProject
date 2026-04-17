@@ -167,9 +167,9 @@ export default async function ServicesPage() {
         </div>
 
         {/* 장식 요소 */}
-        <div className="absolute top-20 left-10 w-32 h-32 bg-secondary rounded-full blur-xl "></div>
-        <div className="absolute bottom-20 right-10 w-24 h-24 bg-primary/20 dark:bg-primary/30 rounded-full blur-lg"></div>
-        <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-muted rounded-full blur-md  delay-1000"></div>
+        <div className="absolute top-20 left-10 w-32 h-32 bg-secondary/40 rounded-full"></div>
+        <div className="absolute bottom-20 right-10 w-24 h-24 bg-primary/10 dark:bg-primary/20 rounded-full"></div>
+        <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-muted/80 rounded-full delay-1000"></div>
 
         <div className="container relative z-10">
           <div className="max-w-4xl mx-auto">
@@ -289,11 +289,11 @@ export default async function ServicesPage() {
 
           <div className="grid grid-cols-1 bp-md:grid-cols-2 bp-lg:grid-cols-3 gap-6 md:gap-8">
             {stringTypes.map((type) => (
-              <Card key={type.id} className="group relative overflow-hidden border border-border shadow-xl hover:shadow-md transition-all duration-500 transform hover:-translate-y-1 bg-card">
+              <Card key={type.id} className="group relative overflow-hidden border border-border shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 bg-card">
                 <div className="h-2 bg-muted"></div>
 
                 <CardHeader className="text-center pb-4">
-                  <div className="mx-auto mb-4 w-20 h-20 rounded-full border border-border/60 bg-secondary flex items-center justify-center text-primary shadow-lg group-hover:scale-110 transition-transform duration-300">
+                  <div className="mx-auto mb-4 w-20 h-20 rounded-full border border-border/60 bg-secondary flex items-center justify-center text-primary shadow-sm transition-shadow duration-300 group-hover:shadow-md">
                     {type.icon}
                   </div>
                   <CardTitle className="text-2xl font-bold mb-2">{type.title}</CardTitle>
@@ -389,12 +389,12 @@ export default async function ServicesPage() {
             {pricingInfo.map((item) => (
               <Card
                 key={item.service}
-                className={`relative overflow-hidden border-0 shadow-xl hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 ${item.popular ? "bg-card text-foreground border border-border/60 scale-105" : "bg-card"}`}
+                className={`relative overflow-hidden border border-border shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 ${item.popular ? "bg-card text-foreground ring-1 ring-border/60" : "bg-card"}`}
               >
                 {item.popular && <div className="absolute top-0 right-0 bg-primary text-primary-foreground px-3 py-1 text-xs font-bold rounded-bl-lg">인기</div>}
 
                 <CardHeader className="text-center pb-4">
-                  <div className={`mx-auto mb-4 w-16 h-16 rounded-full flex items-center justify-center shadow-lg ${item.popular ? "bg-secondary text-primary" : "bg-secondary text-primary"}`}>{item.icon}</div>
+                  <div className={`mx-auto mb-4 w-16 h-16 rounded-full flex items-center justify-center shadow-sm ${item.popular ? "bg-secondary text-primary" : "bg-secondary text-primary"}`}>{item.icon}</div>
                   <CardTitle className={`text-lg font-bold ${item.popular ? "text-foreground" : ""}`}>{item.service}</CardTitle>
                   <div className={`text-3xl font-bold ${item.popular ? "text-foreground" : "text-foreground"}`}>{item.priceLabel}</div>
                   <div className={`text-sm ${item.popular ? "text-muted-foreground" : "text-muted-foreground"}`}>소요시간: {item.duration}</div>
@@ -409,7 +409,7 @@ export default async function ServicesPage() {
 
           <div className="mb-10 grid grid-cols-1 md:grid-cols-2 gap-4">
             {primarySummaries.map((cat) => (
-              <Card key={cat.key} className="bg-card/95 dark:bg-card/95">
+              <Card key={cat.key} className="bg-card">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-base">{cat.label}</CardTitle>
                 </CardHeader>
@@ -420,7 +420,7 @@ export default async function ServicesPage() {
                 </CardContent>
               </Card>
             ))}
-            <Card className="bg-card/95 dark:bg-card/95 border-dashed md:col-span-2">
+            <Card className="bg-card border-dashed md:col-span-2">
               <CardHeader className="pb-2">
                 <CardTitle className="text-base">하이브리드 조합 안내</CardTitle>
               </CardHeader>
@@ -430,7 +430,7 @@ export default async function ServicesPage() {
               </CardContent>
             </Card>
             {otherSummary?.count ? (
-              <Card className="bg-card/95 dark:bg-card/95 border-dashed md:col-span-2">
+              <Card className="bg-card border-dashed md:col-span-2">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-base">{otherSummary.label} (보조 분류)</CardTitle>
                 </CardHeader>
@@ -446,7 +446,7 @@ export default async function ServicesPage() {
             <h3 className="text-2xl font-bold mb-6 text-center text-foreground">추가 서비스</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {additionalServices.map((service) => (
-                <div key={service.title} className="border border-border rounded-xl p-4 md:p-6 hover:shadow-lg transition-shadow duration-300">
+                <div key={service.title} className="border border-border rounded-xl p-4 md:p-6 hover:shadow-md transition-shadow duration-300">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center">
                       <div className="w-10 h-10 bg-secondary rounded-lg flex items-center justify-center text-primary mr-3">{service.icon}</div>
@@ -487,11 +487,11 @@ export default async function ServicesPage() {
               <div key={step.step} className="relative group">
                 {processSteps.indexOf(step) < processSteps.length - 1 && <div className="hidden bp-lg:block absolute top-16 left-full w-full h-0.5 bg-primary/20 dark:bg-primary/30 transform translate-x-4 z-0"></div>}
 
-                <Card className="relative z-10 text-center border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 bg-card">
+                <Card className="relative z-10 text-center border border-border shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 bg-card">
                   <CardContent className="p-4 bp-md:p-8">
                     <div className="relative mb-6">
-                      <div className="w-20 h-20 bg-secondary rounded-full flex items-center justify-center text-primary mx-auto shadow-lg group-hover:scale-110 transition-transform duration-300">{step.icon}</div>
-                      <div className="absolute -top-2 -right-2 w-8 h-8 bg-secondary rounded-full flex items-center justify-center text-primary text-sm font-bold shadow-lg">{step.step}</div>
+                      <div className="w-20 h-20 bg-secondary rounded-full flex items-center justify-center text-primary mx-auto shadow-sm transition-shadow duration-300 group-hover:shadow-md">{step.icon}</div>
+                      <div className="absolute -top-2 -right-2 w-8 h-8 bg-secondary rounded-full flex items-center justify-center text-primary text-sm font-bold shadow-sm">{step.step}</div>
                     </div>
                     <h3 className="text-xl font-bold mb-4">{step.title}</h3>
                     <p className="text-muted-foreground leading-relaxed">{step.description}</p>
@@ -519,7 +519,7 @@ export default async function ServicesPage() {
 
           {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
             {reviews.map((review, index) => (
-              <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 bg-card">
+              <Card key={index} className="border border-border shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 bg-card">
                 <CardContent className="p-5 bp-md:p-8">
                   <div className="flex items-center mb-4">
                     <Image src={review.avatar || '/placeholder.svg'} alt={review.name} width={60} height={60} className="rounded-full mr-4" />
@@ -542,7 +542,7 @@ export default async function ServicesPage() {
           </div> */}
 
           <div className="text-center">
-            <Button size="lg" variant="default" className="shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300" asChild>
+            <Button size="lg" variant="default" className="shadow-sm hover:shadow-md transition-all duration-300" asChild>
               {/* <Link href="/reviews/write?service=stringing"> */}
               <Link href="/reviews">
                 <Star className="w-5 h-5 mr-2" />
