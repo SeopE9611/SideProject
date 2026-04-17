@@ -1516,20 +1516,20 @@ export default function CheckoutPage() {
                           <span className="text-muted-foreground">상품 금액</span>
                           <span className="font-semibold text-lg">{subtotal.toLocaleString()}원</span>
                         </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-muted-foreground">배송비</span>
-                          <span className="font-semibold text-foreground">
-                            <span className="ml-2 text-xs font-normal text-muted-foreground">상품에 따라 배송비가 다를 수 있습니다.</span>
+                        <div className="flex items-start justify-between gap-3">
+                          <span className="text-muted-foreground pt-0.5">배송비</span>
+
+                          <div className="flex flex-col items-end gap-1 text-right">
                             {!isShippingFeeReady ? (
-                              <span className="inline-flex align-middle ml-2">
+                              <span className="inline-flex align-middle">
                                 <Skeleton className="h-6 w-20 rounded-md" />
                               </span>
-                            ) : shippingFee > 0 ? (
-                              `${shippingFee.toLocaleString()}원`
                             ) : (
-                              "무료"
+                              <span className="font-semibold text-foreground">{shippingFee > 0 ? `${shippingFee.toLocaleString()}원` : "무료"}</span>
                             )}
-                          </span>
+
+                            <span className="max-w-[180px] text-[11px] leading-4 font-normal text-muted-foreground">상품에 따라 배송비가 다를 수 있습니다.</span>
+                          </div>
                         </div>
                         {/* 교체 서비스비 */}
                         {withStringService && (
