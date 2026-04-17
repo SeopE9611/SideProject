@@ -657,7 +657,7 @@ export default function OrderDetailPage() {
                         <Truck className="w-5 h-5 text-primary" />
                         <div>
                           <p className="text-sm font-medium text-foreground">배송 보장</p>
-                          <p className="text-xs text-muted-foreground">30,000원 이상 무료배송</p>
+                          <p className="text-xs text-muted-foreground">상품에 따라 배송비가 다를 수 있습니다.</p>
                         </div>
                       </div>
                     </div>

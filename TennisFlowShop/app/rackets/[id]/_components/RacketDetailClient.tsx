@@ -25,6 +25,7 @@ import {
   stringPatternLabel,
 } from "@/lib/constants";
 import { racketStockBadgeVariant } from "@/lib/badge-style";
+import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import {
   ArrowLeft,
@@ -105,6 +106,8 @@ export default function RacketDetailClient({
   // 라켓 ID 정규화
   const racketId = String(racket?.id ?? racket?._id ?? "");
   const canBuy = !soldOut && racketId !== "";
+  const racketShippingFee = normalizeItemShippingFee(racket?.shippingFee);
+  const racketShippingLabel = racketShippingFee > 0 ? `${racketShippingFee.toLocaleString()}원 배송비` : "무료배송";
 
   // 리뷰 탭 표시를 위한 데이터
   // - racket API에서 reviews/reviewSummary를 함께 내려주도록 되어 있어야 함
@@ -697,7 +700,7 @@ export default function RacketDetailClient({
                     <div className="space-y-2 text-sm">
                       <div className="flex items-center gap-2">
                         <Check className="h-4 w-4 text-success" />
-                        <span>3,000원 (30,000원 이상 무료)</span>
+                        <span>{racketShippingLabel}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Check className="h-4 w-4 text-success" />
