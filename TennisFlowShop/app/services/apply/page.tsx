@@ -1684,7 +1684,7 @@ export default function StringServiceApplyPage() {
         <div className="px-3 bp-sm:px-4 bp-md:px-6 bp-lg:px-6 mx-auto bp-lg:max-w-[1200px] py-8 bp-sm:py-12 bp-lg:py-16">
           <div className="mx-auto max-w-xl">
             <div className="inline-flex items-center gap-2 rounded-md border border-border/60 bg-muted/30 px-3 py-2">
-              <span className="h-2 w-2 rounded-full bg-muted-foreground/70 animate-pulse" />
+              <span className="h-2 w-2 rounded-full bg-muted-foreground/70" />
               <p className="text-sm font-medium text-foreground">
                 로그인 상태를 확인하고 있습니다.
               </p>
@@ -1959,7 +1959,7 @@ export default function StringServiceApplyPage() {
           <div className="relative">
             {/* 중앙 메인 폼 */}
             <div className="mx-auto w-full md:w-[800px]">
-              <Card className="bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card border border-border bp-lg:border-0 shadow-sm bp-lg:shadow-2xl">
+              <Card className="bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card border border-border bp-lg:border-0 shadow-sm bp-lg:shadow-md">
                 <CardContent className="p-4 bp-sm:p-6 bp-lg:p-8">
                   <div
                     className={`mb-5 rounded-xl border p-4 ${isOrderSlotBlocked ? "border-border bg-muted/40" : "border-border bg-background/60"}`}

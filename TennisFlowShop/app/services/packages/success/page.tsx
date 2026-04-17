@@ -177,7 +177,7 @@ export default async function PackageSuccessPage({
         <HeroCourtBackdrop className="h-full w-full text-primary opacity-[0.10] dark:opacity-[0.12]" />
         <div className="relative container py-10 md:py-16">
           <div className="text-center">
-            <div className="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 backdrop-blur-sm dark:bg-primary/20">
+            <div className="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-2xl bg-secondary border border-border">
               <CheckCircle className="h-12 w-12 text-foreground" />
             </div>
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
@@ -208,7 +208,7 @@ export default async function PackageSuccessPage({
           <div className="mt-8 max-w-2xl mx-auto">
             <div className="bg-muted backdrop-blur-sm border border-border rounded-xl p-4 md:p-6 text-center">
               <div className="flex items-center justify-center gap-3 mb-4">
-                <div className="p-2 bg-primary/10 rounded-full dark:bg-primary/20">
+                <div className="p-2 bg-secondary rounded-lg">
                   <Package className="h-6 w-6 text-primary" />
                 </div>
                 <h3 className="text-xl font-bold text-foreground">
@@ -238,7 +238,7 @@ export default async function PackageSuccessPage({
       <div className="container py-8">
         <div className="max-w-4xl mx-auto space-y-4 md:space-y-6">
           {/* 패키지 주문 정보 카드 */}
-          <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border-0 shadow-2xl overflow-hidden">
+          <Card className="bg-card border border-border shadow-md overflow-hidden">
             <div className="bg-muted/60 p-4 md:p-6">
               <CardTitle className="flex items-center gap-3 text-2xl">
                 <Package className="h-6 w-6 text-primary" />
@@ -444,7 +444,7 @@ export default async function PackageSuccessPage({
           </Card>
 
           {/* 안내사항 */}
-          <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border-0 shadow-xl">
+          <Card className="bg-card border border-border shadow-md">
             <CardHeader className="bg-muted/40">
               <CardTitle className="flex items-center gap-3">
                 <Shield className="h-5 w-5 text-primary" />

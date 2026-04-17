@@ -167,14 +167,14 @@ export default async function ServicesPage() {
         </div>
 
         {/* 장식 요소 */}
-        <div className="absolute top-20 left-10 w-32 h-32 bg-card/10 rounded-full blur-xl animate-pulse"></div>
+        <div className="absolute top-20 left-10 w-32 h-32 bg-secondary rounded-full blur-xl "></div>
         <div className="absolute bottom-20 right-10 w-24 h-24 bg-primary/20 dark:bg-primary/30 rounded-full blur-lg"></div>
-        <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-muted rounded-full blur-md animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-muted rounded-full blur-md  delay-1000"></div>
 
         <div className="container relative z-10">
           <div className="max-w-4xl mx-auto">
-            <Card className="border-0 shadow-2xl bg-card/95 backdrop-blur-sm dark:bg-card/95 overflow-hidden">
-              <div className="bg-card border-b border-primary/20 p-6 md:p-8 text-center text-foreground">
+            <Card className="border border-border shadow-md bg-card overflow-hidden">
+              <div className="bg-card border-b border-border/60 p-6 md:p-8 text-center text-foreground">
                 <h2 className="text-3xl sm:text-4xl font-bold mb-4">예약 안내</h2>
                 <p className="text-xl text-muted-foreground">
                   스트링 장착 서비스는 예약제로 운영됩니다.
@@ -186,7 +186,7 @@ export default async function ServicesPage() {
               <CardContent className="p-5 bp-md:p-8">
                 <div className="grid grid-cols-1 bp-md:grid-cols-2 gap-4 bp-md:gap-8 mb-6 bp-md:mb-8">
                   <div className="text-center p-4 md:p-6 border border-border rounded-xl hover:shadow-lg transition-shadow duration-300">
-                    <div className="w-20 h-20 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center text-primary mx-auto mb-4">
+                    <div className="w-20 h-20 bg-secondary rounded-full flex items-center justify-center text-primary mx-auto mb-4">
                       <PhoneCall className="h-10 w-10" />
                     </div>
                     <h3 className="text-2xl font-bold mb-4">전화 예약</h3>
@@ -196,7 +196,7 @@ export default async function ServicesPage() {
                   </div>
 
                   <div className="text-center p-4 md:p-6 border border-border rounded-xl hover:shadow-lg transition-shadow duration-300">
-                    <div className="w-20 h-20 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center text-primary mx-auto mb-4">
+                    <div className="w-20 h-20 bg-secondary rounded-full flex items-center justify-center text-primary mx-auto mb-4">
                       <Calendar className="h-10 w-10" />
                     </div>
                     <h3 className="text-2xl font-bold mb-4">온라인 신청</h3>
@@ -266,7 +266,7 @@ export default async function ServicesPage() {
         {/* 스크롤 인디케이터 */}
         <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
           <div className="w-6 h-10 border-2 border-border/50 rounded-full flex justify-center">
-            <div className="w-1 h-3 bg-card/70 rounded-full mt-2 animate-pulse"></div>
+            <div className="w-1 h-3 bg-card/70 rounded-full mt-2 "></div>
           </div>
         </div>
       </section>
@@ -289,11 +289,11 @@ export default async function ServicesPage() {
 
           <div className="grid grid-cols-1 bp-md:grid-cols-2 bp-lg:grid-cols-3 gap-6 md:gap-8">
             {stringTypes.map((type) => (
-              <Card key={type.id} className="group relative overflow-hidden border border-border shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 bg-card">
+              <Card key={type.id} className="group relative overflow-hidden border border-border shadow-xl hover:shadow-md transition-all duration-500 transform hover:-translate-y-1 bg-card">
                 <div className="h-2 bg-muted"></div>
 
                 <CardHeader className="text-center pb-4">
-                  <div className="mx-auto mb-4 w-20 h-20 rounded-full border border-primary/20 bg-primary/10 dark:bg-primary/20 flex items-center justify-center text-primary shadow-lg group-hover:scale-110 transition-transform duration-300">
+                  <div className="mx-auto mb-4 w-20 h-20 rounded-full border border-border/60 bg-secondary flex items-center justify-center text-primary shadow-lg group-hover:scale-110 transition-transform duration-300">
                     {type.icon}
                   </div>
                   <CardTitle className="text-2xl font-bold mb-2">{type.title}</CardTitle>
@@ -389,12 +389,12 @@ export default async function ServicesPage() {
             {pricingInfo.map((item) => (
               <Card
                 key={item.service}
-                className={`relative overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 ${item.popular ? "bg-card text-foreground border border-primary/20 scale-105" : "bg-card/95 backdrop-blur-sm dark:bg-card/95"}`}
+                className={`relative overflow-hidden border-0 shadow-xl hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 ${item.popular ? "bg-card text-foreground border border-border/60 scale-105" : "bg-card"}`}
               >
                 {item.popular && <div className="absolute top-0 right-0 bg-primary text-primary-foreground px-3 py-1 text-xs font-bold rounded-bl-lg">인기</div>}
 
                 <CardHeader className="text-center pb-4">
-                  <div className={`mx-auto mb-4 w-16 h-16 rounded-full flex items-center justify-center shadow-lg ${item.popular ? "bg-primary/10 dark:bg-primary/20 text-primary" : "bg-primary/10 dark:bg-primary/20 text-primary"}`}>{item.icon}</div>
+                  <div className={`mx-auto mb-4 w-16 h-16 rounded-full flex items-center justify-center shadow-lg ${item.popular ? "bg-secondary text-primary" : "bg-secondary text-primary"}`}>{item.icon}</div>
                   <CardTitle className={`text-lg font-bold ${item.popular ? "text-foreground" : ""}`}>{item.service}</CardTitle>
                   <div className={`text-3xl font-bold ${item.popular ? "text-foreground" : "text-foreground"}`}>{item.priceLabel}</div>
                   <div className={`text-sm ${item.popular ? "text-muted-foreground" : "text-muted-foreground"}`}>소요시간: {item.duration}</div>
@@ -442,14 +442,14 @@ export default async function ServicesPage() {
           </div>
 
           {/* 추가 서비스 */}
-          <div className="bg-card/95 backdrop-blur-sm dark:bg-card/95 rounded-2xl p-4 md:p-8">
+          <div className="bg-card rounded-2xl p-4 md:p-8">
             <h3 className="text-2xl font-bold mb-6 text-center text-foreground">추가 서비스</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {additionalServices.map((service) => (
                 <div key={service.title} className="border border-border rounded-xl p-4 md:p-6 hover:shadow-lg transition-shadow duration-300">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center">
-                      <div className="w-10 h-10 bg-primary/10 dark:bg-primary/20 rounded-lg flex items-center justify-center text-primary mr-3">{service.icon}</div>
+                      <div className="w-10 h-10 bg-secondary rounded-lg flex items-center justify-center text-primary mr-3">{service.icon}</div>
                       <h4 className="font-bold">{service.title}</h4>
                     </div>
                     {service.free ? <Badge variant="info">무료</Badge> : <span className="font-bold text-foreground">{service.priceLabel ?? "별도 안내"}</span>}
@@ -487,11 +487,11 @@ export default async function ServicesPage() {
               <div key={step.step} className="relative group">
                 {processSteps.indexOf(step) < processSteps.length - 1 && <div className="hidden bp-lg:block absolute top-16 left-full w-full h-0.5 bg-primary/20 dark:bg-primary/30 transform translate-x-4 z-0"></div>}
 
-                <Card className="relative z-10 text-center border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 bg-card">
+                <Card className="relative z-10 text-center border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 bg-card">
                   <CardContent className="p-4 bp-md:p-8">
                     <div className="relative mb-6">
-                      <div className="w-20 h-20 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center text-primary mx-auto shadow-lg group-hover:scale-110 transition-transform duration-300">{step.icon}</div>
-                      <div className="absolute -top-2 -right-2 w-8 h-8 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center text-primary text-sm font-bold shadow-lg">{step.step}</div>
+                      <div className="w-20 h-20 bg-secondary rounded-full flex items-center justify-center text-primary mx-auto shadow-lg group-hover:scale-110 transition-transform duration-300">{step.icon}</div>
+                      <div className="absolute -top-2 -right-2 w-8 h-8 bg-secondary rounded-full flex items-center justify-center text-primary text-sm font-bold shadow-lg">{step.step}</div>
                     </div>
                     <h3 className="text-xl font-bold mb-4">{step.title}</h3>
                     <p className="text-muted-foreground leading-relaxed">{step.description}</p>
@@ -505,7 +505,7 @@ export default async function ServicesPage() {
 
       {/* 예약 안내 섹션 */}
       {/* <section className="py-12 bp-md:py-16 bp-lg:py-20 bg-background relative overflow-hidden" id="booking">
-        <div className="absolute top-10 left-10 w-32 h-32 bg-card/10 rounded-full blur-xl animate-pulse"></div>
+        <div className="absolute top-10 left-10 w-32 h-32 bg-secondary rounded-full blur-xl "></div>
         <div className="absolute bottom-10 right-10 w-24 h-24 bg-muted rounded-full blur-lg"></div>
       </section> */}
 

@@ -277,18 +277,18 @@ export default async function StringServiceSuccessPage(props: Props) {
           <div className="absolute inset-0 bg-overlay/20"></div>
           <HeroCourtBackdrop className="h-full w-full text-primary opacity-[0.10] dark:opacity-[0.12]" />
           <div className="absolute inset-0">
-            <div className="absolute top-10 left-10 w-20 h-20 bg-card/10 rounded-full animate-pulse"></div>
-            <div className="absolute top-32 right-20 w-16 h-16 bg-card/10 rounded-full animate-pulse delay-1000"></div>
-            <div className="absolute bottom-20 left-1/4 w-12 h-12 bg-card/10 rounded-full animate-pulse delay-500"></div>
+            <div className="absolute top-10 left-10 w-20 h-20 bg-secondary rounded-full"></div>
+            <div className="absolute top-32 right-20 w-16 h-16 bg-secondary rounded-full delay-1000"></div>
+            <div className="absolute bottom-20 left-1/4 w-12 h-12 bg-secondary rounded-full delay-500"></div>
           </div>
 
           <div className="relative container mx-auto px-4 text-center text-foreground">
-            <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-card/20 backdrop-blur-sm mb-6 md:mb-8">
+            <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-secondary border border-border mb-6 md:mb-8">
               <CheckCircle className="h-12 w-12 text-primary" />
             </div>
             <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold mb-4 md:mb-6 text-foreground">신청이 완료되었습니다!</h1>
             <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">도깨비테니스에서 확인 후 빠르게 연락드리겠습니다</p>
-            <div className="mt-6 md:mt-8 inline-flex items-center space-x-2 bg-card/10 backdrop-blur-sm rounded-full px-6 py-3">
+            <div className="mt-6 md:mt-8 inline-flex items-center space-x-2 bg-secondary rounded-full border border-border px-6 py-3">
               <Calendar className="h-5 w-5" />
               <span className="text-sm font-medium">신청일: {createdAtLabel}</span>
             </div>
@@ -298,7 +298,7 @@ export default async function StringServiceSuccessPage(props: Props) {
             <div className="mt-8 md:mt-10 max-w-2xl mx-auto px-4">
               <div className="bg-muted/30 backdrop-blur-sm border border-border rounded-xl p-4 md:p-6 text-center">
                 <div className="flex items-center justify-center gap-3 mb-3 md:mb-4">
-                  <div className="rounded-full border border-primary/20 bg-primary/10 p-2 text-primary dark:bg-primary/20">
+                  <div className="rounded-full border border-border bg-secondary p-2 text-foreground">
                     <Package className="h-6 w-6 text-primary" />
                   </div>
                   <h3 className="text-xl font-bold text-foreground">운송장 등록 안내</h3>
@@ -321,7 +321,7 @@ export default async function StringServiceSuccessPage(props: Props) {
 
         <div className="container mx-auto px-4 py-8 md:py-16">
           <div className="max-w-5xl mx-auto">
-            <Card data-cy="service-success-summary-card" className="mb-8 backdrop-blur-sm bg-card/90 dark:bg-card border-0 shadow-2xl">
+            <Card data-cy="service-success-summary-card" className="mb-8 bg-card border border-border shadow-md">
               <CardHeader className="bg-muted/30 rounded-t-lg">
                 <div className="flex items-center justify-between">
                   <div>
@@ -507,7 +507,7 @@ export default async function StringServiceSuccessPage(props: Props) {
 
                     <div className="rounded-xl p-4 md:p-6 border-2 border-border/70 bg-muted/30">
                       <div className="flex items-start gap-4">
-                        <div className="grid h-10 w-10 shrink-0 place-content-center rounded-full border border-primary/20 bg-primary/10 text-primary shadow-sm dark:bg-primary/20">
+                        <div className="grid h-10 w-10 shrink-0 place-content-center rounded-full border border-border bg-secondary text-foreground shadow-sm">
                           <Ticket className="h-5 w-5" />
                         </div>
 
@@ -542,7 +542,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                                       </span>
                                       <span className="tabular-nums">{remainPct}%</span>
                                     </div>
-                                    <div className="h-2 w-full bg-primary/20 rounded-full overflow-hidden dark:bg-primary/30">
+                                    <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
                                       <div className="h-full bg-primary" style={{ width: `${remainPct}%` }} />
                                     </div>
                                     <div className="mt-1 text-xs text-muted-foreground">
@@ -747,7 +747,7 @@ export default async function StringServiceSuccessPage(props: Props) {
             </Card>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
-              <Card className="backdrop-blur-sm bg-card/90 dark:bg-card border-0 shadow-xl">
+              <Card className="bg-card border border-border shadow-md">
                 <CardHeader>
                   <CardTitle className="flex items-center text-lg">
                     <Shield className="h-6 w-6 mr-3 text-primary" />
@@ -772,7 +772,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                 </CardContent>
               </Card>
 
-              <Card className="backdrop-blur-sm bg-card/90 dark:bg-card border-0 shadow-xl">
+              <Card className="bg-card border border-border shadow-md">
                 <CardHeader>
                   <CardTitle className="flex items-center text-lg">
                     <Award className="h-6 w-6 mr-3 text-foreground" />
@@ -781,7 +781,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="flex items-center p-3 bg-primary/10 border border-primary/20 dark:bg-primary/20 rounded-lg">
+                    <div className="flex items-center p-3 bg-secondary border border-border rounded-lg">
                       <Shield className="h-6 w-6 text-primary mr-3" />
                       <div>
                         <p className="font-semibold text-foreground">정품 보장</p>
@@ -795,7 +795,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                         <p className="text-sm text-muted-foreground">빠르고 정확한 장착 서비스</p>
                       </div>
                     </div>
-                    <div className="flex items-center p-3 bg-primary/10 border border-primary/20 dark:bg-primary/20 rounded-lg">
+                    <div className="flex items-center p-3 bg-secondary border border-border rounded-lg">
                       <Award className="h-6 w-6 text-foreground mr-3" />
                       <div>
                         <p className="font-semibold text-foreground">전문가 상담</p>

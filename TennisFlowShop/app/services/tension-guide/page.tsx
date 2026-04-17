@@ -91,7 +91,7 @@ export default function TensionGuidePage() {
         "넓은 스윗스팟",
       ],
       recommended: "기본 세팅은 여자 44LB / 남자 50LB를 기준으로 시작해 보세요",
-      color: "bg-primary/10 dark:bg-primary/20",
+      color: "bg-secondary",
     },
     {
       type: "중급자",
@@ -110,7 +110,7 @@ export default function TensionGuidePage() {
       ],
       recommended:
         "안정적인 경기 운영을 위해 여자 44LB / 남자 50LB를 먼저 테스트해 보세요",
-      color: "bg-primary/10 dark:bg-primary/20",
+      color: "bg-secondary",
     },
     {
       type: "상급자",
@@ -129,7 +129,7 @@ export default function TensionGuidePage() {
       ],
       recommended:
         "강한 스윙을 쓰는 경우 여자 46LB / 남자 52LB 전후가 안정적입니다",
-      color: "bg-primary/10 dark:bg-primary/20",
+      color: "bg-secondary",
     },
     {
       type: "프로/투어",
@@ -148,7 +148,7 @@ export default function TensionGuidePage() {
       ],
       recommended:
         "실전 매치 기준으로 여자 48LB / 남자 54LB 세팅부터 미세 조정해 보세요",
-      color: "bg-primary/10 dark:bg-primary/20",
+      color: "bg-secondary",
     },
   ];
 
@@ -193,7 +193,7 @@ export default function TensionGuidePage() {
         female: { min: 42, max: 48, base: 42 },
         male: { min: 48, max: 54, base: 48 },
       },
-      color: "bg-primary/10 dark:bg-primary/20",
+      color: "bg-secondary",
     },
     {
       id: "controlPoly",
@@ -259,7 +259,7 @@ export default function TensionGuidePage() {
         female: { min: 42, max: 48, base: 46 },
         male: { min: 48, max: 54, base: 52 },
       },
-      color: "bg-primary/10 dark:bg-primary/20",
+      color: "bg-secondary",
     },
     {
       id: "syntheticGut",
@@ -299,7 +299,7 @@ export default function TensionGuidePage() {
         female: { min: 46, max: 50, base: 48 },
         male: { min: 50, max: 55, base: 53 },
       },
-      color: "bg-primary/10 dark:bg-primary/20",
+      color: "bg-secondary",
     },
   ];
 
@@ -418,7 +418,7 @@ export default function TensionGuidePage() {
       <div className="relative overflow-hidden bg-muted/30 dark:bg-card/40 border-b border-border">
         <div className="relative mx-auto w-full px-3 bp-sm:px-4 bp-md:px-6 bp-lg:max-w-[1200px] bp-lg:px-6 pt-8 bp-sm:pt-10 bp-md:pt-12 pb-10 bp-md:pb-16">
           <div className="text-center">
-            <div className="inline-flex items-center gap-2 bg-primary/10 dark:bg-primary/20 px-4 py-2 rounded-full mb-4 bp-md:mb-6">
+            <div className="inline-flex items-center gap-2 bg-secondary px-4 py-2 rounded-full mb-4 bp-md:mb-6">
               <Gauge className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-primary" />
               <span className="text-xs bp-sm:text-sm font-semibold text-muted-foreground">
                 전문가 텐션 가이드
@@ -512,7 +512,7 @@ export default function TensionGuidePage() {
                           <button
                             key={option.id}
                             onClick={() => setGender(option.id as Gender)}
-                            className={`p-3 bp-sm:p-4 rounded-xl transition-all duration-200 text-left ${gender === option.id ? "bg-primary/10 dark:bg-primary/20 ring-2 ring-ring shadow-sm" : "bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm"}`}
+                            className={`p-3 bp-sm:p-4 rounded-xl transition-all duration-200 text-left ${gender === option.id ? "bg-secondary ring-2 ring-ring shadow-sm" : "bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm"}`}
                           >
                             <div
                               className={`font-medium text-sm ${gender === option.id ? "text-primary" : "text-foreground"}`}
@@ -539,7 +539,7 @@ export default function TensionGuidePage() {
                             onClick={() =>
                               setSwingSpeed(option.id as SwingSpeed)
                             }
-                            className={`p-2 bp-sm:p-3 rounded-xl transition-all duration-200 ${swingSpeed === option.id ? "bg-primary/10 dark:bg-primary/20 ring-2 ring-ring shadow-sm" : "bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm"}`}
+                            className={`p-2 bp-sm:p-3 rounded-xl transition-all duration-200 ${swingSpeed === option.id ? "bg-secondary ring-2 ring-ring shadow-sm" : "bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm"}`}
                           >
                             <div
                               className={`font-medium text-xs bp-sm:text-sm ${swingSpeed === option.id ? "text-primary" : "text-foreground"}`}
@@ -563,7 +563,7 @@ export default function TensionGuidePage() {
                           <button
                             key={st.id}
                             onClick={() => setStringType(st.id as StringType)}
-                            className={`p-3 bp-sm:p-4 rounded-xl transition-all duration-200 text-left ${stringType === st.id ? "bg-primary/10 dark:bg-primary/20 ring-2 ring-ring shadow-sm" : "bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm"}`}
+                            className={`p-3 bp-sm:p-4 rounded-xl transition-all duration-200 text-left ${stringType === st.id ? "bg-secondary ring-2 ring-ring shadow-sm" : "bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm"}`}
                           >
                             <div className="flex items-center gap-2 mb-1">
                               <st.icon
@@ -594,7 +594,7 @@ export default function TensionGuidePage() {
                           <button
                             key={option.id}
                             onClick={() => setPlayStyle(option.id as PlayStyle)}
-                            className={`p-2 bp-sm:p-3 rounded-xl transition-all duration-200 ${playStyle === option.id ? "bg-primary/10 dark:bg-primary/20 ring-2 ring-ring shadow-sm" : "bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm"}`}
+                            className={`p-2 bp-sm:p-3 rounded-xl transition-all duration-200 ${playStyle === option.id ? "bg-secondary ring-2 ring-ring shadow-sm" : "bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm"}`}
                           >
                             <div
                               className={`font-medium text-xs bp-sm:text-sm ${playStyle === option.id ? "text-primary" : "text-foreground"}`}
@@ -614,7 +614,7 @@ export default function TensionGuidePage() {
 
               {/* 결과 섹션 */}
               <div className="space-y-6">
-                <Card className="border-0 shadow-lg bg-muted/40 dark:bg-muted/30 overflow-hidden">
+                <Card className="border-0 shadow-sm bg-muted/40 dark:bg-muted/30 overflow-hidden">
                   <CardHeader className="pb-4">
                     <CardTitle className="flex items-center gap-2 text-base bp-md:text-lg text-foreground dark:text-primary-foreground/90">
                       <Target className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
@@ -623,7 +623,7 @@ export default function TensionGuidePage() {
                   </CardHeader>
                   <CardContent>
                     <div className="text-center mb-6 bp-md:mb-8">
-                      <div className="text-5xl bp-sm:text-6xl bp-md:text-7xl font-bold text-primary mb-2 animate-in fade-in duration-500">
+                      <div className="text-5xl bp-sm:text-6xl bp-md:text-7xl font-bold text-primary mb-2 ">
                         {calculatedTension}LB
                       </div>
                       <div
@@ -641,7 +641,7 @@ export default function TensionGuidePage() {
                       </div>
                       <div className="relative h-3 bp-sm:h-4 bg-muted/30 rounded-full shadow-inner">
                         <div
-                          className="absolute top-1/2 -translate-y-1/2 -translate-x-[10px] bp-sm:-translate-x-[12px] w-5 h-5 bp-sm:w-6 bp-sm:h-6 bg-card ring-4 ring-ring rounded-full shadow-lg transition-all duration-500 ease-out"
+                          className="absolute top-1/2 -translate-y-1/2 -translate-x-[10px] bp-sm:-translate-x-[12px] w-5 h-5 bp-sm:w-6 bp-sm:h-6 bg-card ring-2 ring-border rounded-full shadow-sm transition-all duration-500 ease-out"
                           style={{ left: `${gaugePosition}%` }}
                         />
                       </div>
@@ -735,7 +735,7 @@ export default function TensionGuidePage() {
                       </ul>
                     </div>
 
-                    {/* <Button asChild className="w-full bg-primary hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] text-primary-foreground transition-all duration-200">
+                    {/* <Button asChild className="w-full bg-secondary hover:bg-secondary/90 transition-all duration-200">
                       <Link href="/services/apply">
                         이 텐션으로 스트링 신청하기
                         <ArrowRight className="ml-2 h-4 w-4" />
@@ -788,7 +788,7 @@ export default function TensionGuidePage() {
                 return (
                   <Card
                     key={index}
-                    className={`cursor-pointer transition-all duration-300 overflow-hidden border bg-card ${isSelected ? "ring-2 ring-ring shadow-lg" : "hover:shadow-md"}`}
+                    className={`cursor-pointer transition-all duration-300 overflow-hidden border bg-card ${isSelected ? "ring-2 ring-ring shadow-sm" : "hover:shadow-md"}`}
                     onClick={() => setSelectedLevel(isSelected ? null : index)}
                   >
                     <CardHeader className="pb-3 bp-md:pb-4">
@@ -844,7 +844,7 @@ export default function TensionGuidePage() {
                             </div>
                             <div className="relative h-2 bg-muted rounded-full overflow-hidden">
                               <div
-                                className="absolute h-full bg-primary/60 rounded-full"
+                                className="absolute h-full bg-foreground/40 rounded-full"
                                 style={{
                                   ...getRangeBarStyle(
                                     player.femaleRange[0],
@@ -965,7 +965,7 @@ export default function TensionGuidePage() {
                               key={i}
                               className="text-[10px] bp-sm:text-xs text-muted-foreground flex items-start gap-2"
                             >
-                              <div className="w-1 h-1 bg-primary/70 rounded-full flex-shrink-0 mt-1.5" />
+                              <div className="w-1 h-1 bg-foreground/50 rounded-full flex-shrink-0 mt-1.5" />
                               {typeof pro === "string" ? (
                                 <span>{pro}</span>
                               ) : (
@@ -984,7 +984,7 @@ export default function TensionGuidePage() {
                       </div>
                     </div>
 
-                    <div className="bg-primary/10 dark:bg-primary/20 p-3 bp-md:p-4 rounded-xl">
+                    <div className="bg-secondary p-3 bp-md:p-4 rounded-xl">
                       <div className="flex items-start gap-2">
                         <Info className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-primary mt-0.5 flex-shrink-0" />
                         <div>
@@ -1027,7 +1027,7 @@ export default function TensionGuidePage() {
                     {/* 낮은 텐션 */}
                     <div className="space-y-3 bp-md:space-y-4">
                       <div className="flex items-center gap-2 bp-sm:gap-3">
-                        <div className="w-10 h-10 bp-md:w-12 bp-md:h-12 border border-primary/20 bg-primary/10 dark:bg-primary/20 rounded-xl flex items-center justify-center">
+                        <div className="w-10 h-10 bp-md:w-12 bp-md:h-12 border border-primary/20 bg-secondary rounded-xl flex items-center justify-center">
                           <TrendingUp className="h-5 w-5 bp-md:h-6 bp-md:w-6 text-primary rotate-180" />
                         </div>
                         <div>
@@ -1101,7 +1101,7 @@ export default function TensionGuidePage() {
 
               {/* 텐션 관리 팁 */}
               <div className="grid bp-sm:grid-cols-2 bp-lg:grid-cols-3 gap-4 bp-md:gap-6">
-                <Card className="bg-primary/10 dark:bg-primary/20 border-border">
+                <Card className="bg-secondary border-border">
                   <CardHeader className="pb-2 bp-md:pb-3">
                     <CardTitle className="text-sm bp-md:text-base flex items-center gap-2 text-foreground dark:text-primary-foreground/90">
                       <Gauge className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
@@ -1114,22 +1114,22 @@ export default function TensionGuidePage() {
                     </p>
                     <ul className="space-y-1.5 bp-md:space-y-2 text-xs bp-md:text-sm text-muted-foreground">
                       <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-primary/70 rounded-full flex-shrink-0" />
+                        <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-foreground/50 rounded-full flex-shrink-0" />
                         첫 24시간: 10-15% 손실
                       </li>
                       <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-primary/70 rounded-full flex-shrink-0" />
+                        <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-foreground/50 rounded-full flex-shrink-0" />
                         첫 주: 추가 5-10% 손실
                       </li>
                       <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-primary/70 rounded-full flex-shrink-0" />
+                        <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-foreground/50 rounded-full flex-shrink-0" />
                         이후: 점진적 안정화
                       </li>
                     </ul>
                   </CardContent>
                 </Card>
 
-                <Card className="bg-primary/10 dark:bg-primary/20 border-border">
+                <Card className="bg-secondary border-border">
                   <CardHeader className="pb-2 bp-md:pb-3">
                     <CardTitle className="text-sm bp-md:text-base flex items-center gap-2 text-foreground">
                       <Shield className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
@@ -1142,15 +1142,15 @@ export default function TensionGuidePage() {
                     </p>
                     <ul className="space-y-1.5 bp-md:space-y-2 text-xs bp-md:text-sm text-muted-foreground">
                       <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-primary/70 rounded-full flex-shrink-0" />
+                        <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-foreground/50 rounded-full flex-shrink-0" />
                         직사광선 피하기
                       </li>
                       <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-primary/70 rounded-full flex-shrink-0" />
+                        <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-foreground/50 rounded-full flex-shrink-0" />
                         극단적 온도 피하기
                       </li>
                       <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-primary/70 rounded-full flex-shrink-0" />
+                        <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-foreground/50 rounded-full flex-shrink-0" />
                         라켓 커버 사용
                       </li>
                     </ul>
@@ -1245,7 +1245,7 @@ export default function TensionGuidePage() {
         </Tabs>
 
         {/* CTA 섹션 */}
-        <Card className="bg-primary/10 border border-primary/20 dark:bg-primary/20 overflow-hidden mb-6 bp-md:mb-8">
+        <Card className="bg-secondary border border-border overflow-hidden mb-6 bp-md:mb-8">
           <CardContent className="p-4 bp-sm:p-6 bp-md:p-10 bp-lg:p-12">
             <div className="flex flex-col bp-md:flex-row items-center justify-between gap-4 bp-md:gap-6">
               <div className="text-center bp-md:text-left">
@@ -1270,7 +1270,7 @@ export default function TensionGuidePage() {
             </div>
           </CardContent>
         </Card>
-        <Card className="bg-primary/10 border border-primary/20 dark:bg-primary/20 overflow-hidden mb-6 bp-md:mb-8">
+        <Card className="bg-secondary border border-border overflow-hidden mb-6 bp-md:mb-8">
           <CardContent className="p-4 bp-sm:p-6 bp-md:p-10 bp-lg:p-12">
             <div className="flex flex-col bp-md:flex-row items-center justify-between gap-4 bp-md:gap-6">
               <div className="text-center bp-md:text-left">

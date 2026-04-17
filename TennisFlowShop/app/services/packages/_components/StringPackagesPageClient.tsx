@@ -141,15 +141,15 @@ export default function StringPackagesPageClient({
             </p>
 
             <div className="flex flex-wrap justify-center gap-6 mb-10">
-              <div className="flex items-center gap-2 bg-card/10 backdrop-blur-sm rounded-full px-4 py-2">
+              <div className="flex items-center gap-2 bg-secondary rounded-full px-4 py-2">
                 <Percent className="w-5 h-5 text-success" />
                 <span className="text-sm font-medium">최대 17% 할인</span>
               </div>
-              <div className="flex items-center gap-2 bg-card/10 backdrop-blur-sm rounded-full px-4 py-2">
+              <div className="flex items-center gap-2 bg-secondary rounded-full px-4 py-2">
                 <Calendar className="w-5 h-5 text-primary" />
                 <span className="text-sm font-medium">최대 12개월 유효</span>
               </div>
-              <div className="flex items-center gap-2 bg-card/10 backdrop-blur-sm rounded-full px-4 py-2">
+              <div className="flex items-center gap-2 bg-secondary rounded-full px-4 py-2">
                 <Shield className="w-5 h-5 text-foreground" />
                 <span className="text-sm font-medium">품질 보장</span>
               </div>
@@ -159,7 +159,7 @@ export default function StringPackagesPageClient({
               <Button
                 size="lg"
                 variant="default"
-                className="shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
+                className="shadow-sm hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-300"
                 asChild
               >
                 <Link href="#packages">
@@ -254,9 +254,9 @@ export default function StringPackagesPageClient({
             {additionalBenefits.map((benefit, index) => (
               <div
                 key={index}
-                className="group bg-card/10 backdrop-blur-sm rounded-2xl p-4 md:p-8 border border-border/20 hover:border-border/40 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2"
+                className="group bg-secondary rounded-2xl p-4 md:p-8 border border-border/20 hover:border-border/40 transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5"
               >
-                <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 bg-primary/10 text-primary group-hover:scale-110 transition-transform duration-300">
+                <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 bg-secondary text-foreground group-hover:scale-110 transition-transform duration-300">
                   {benefit.icon}
                 </div>
                 <h3 className="text-xl font-bold text-foreground mb-4 text-center">
@@ -309,7 +309,7 @@ export default function StringPackagesPageClient({
               ].map((faq, index) => (
                 <Card
                   key={index}
-                  className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300"
+                  className="border border-border shadow-sm hover:shadow-lg transition-shadow duration-300"
                 >
                   <CardContent className="p-4 md:p-6">
                     <h3 className="font-bold text-lg mb-3 text-primary">
@@ -328,7 +328,7 @@ export default function StringPackagesPageClient({
             <Button
               size="lg"
               variant="default"
-              className="shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+              className="shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300"
               asChild
             >
               <Link href="/board/qna">

@@ -54,7 +54,7 @@ export default function LocationsPage() {
       <div className="relative z-10 max-w-7xl mx-auto px-4 py-12">
         {/* Header */}
         <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 bg-primary/10 dark:bg-primary/20 px-4 py-2 rounded-full mb-6">
+          <div className="inline-flex items-center gap-2 bg-secondary px-4 py-2 rounded-full mb-6">
             <MapPin className="h-5 w-5 text-primary" />
             <span className="text-sm font-semibold text-primary">오프라인 매장 찾기</span>
           </div>
@@ -109,7 +109,7 @@ export default function LocationsPage() {
                     </div>
                   </div>
 
-                  <div className="bg-primary/10 dark:bg-primary/20 p-3 rounded-lg border border-primary/20">
+                  <div className="bg-secondary p-3 rounded-lg border border-border">
                     <p className="text-sm font-medium text-primary">{location.specialNote}</p>
                   </div>
 
@@ -136,7 +136,7 @@ export default function LocationsPage() {
             {reservationSteps.map((step, index) => (
               <Card key={index} className="text-center hover:shadow-lg transition-all duration-300">
                 <CardContent className="p-6">
-                  <div className="w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center mx-auto mb-4 text-lg font-bold">{step.step}</div>
+                  <div className="w-12 h-12 bg-secondary text-foreground rounded-full border border-border flex items-center justify-center mx-auto mb-4 text-lg font-bold">{step.step}</div>
                   <h3 className="font-semibold text-foreground mb-2">{step.title}</h3>
                   <p className="text-sm text-muted-foreground">{step.description}</p>
                 </CardContent>
