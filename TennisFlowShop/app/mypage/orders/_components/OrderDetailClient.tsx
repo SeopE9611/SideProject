@@ -137,6 +137,12 @@ interface OrderDetail {
   paymentProvider?: string | null;
   paymentEasyPayProvider?: string | null;
   paymentApprovedAt?: string | null;
+  paymentTid?: string | null;
+  paymentNiceSync?: {
+    lastSyncedAt?: string | null;
+    pgStatus?: string | null;
+    source?: string | null;
+  } | null;
   total: number;
   items: OrderItem[];
   history: Array<any>;
@@ -1394,6 +1400,8 @@ export default function OrderDetailClient({
                     paymentProvider={orderDetail.paymentProvider}
                     easyPayProvider={orderDetail.paymentEasyPayProvider}
                     paymentStatus={orderDetail.paymentStatus}
+                    paymentTid={orderDetail.paymentTid}
+                    paymentNiceSync={orderDetail.paymentNiceSync}
                   />
                 </div>
 

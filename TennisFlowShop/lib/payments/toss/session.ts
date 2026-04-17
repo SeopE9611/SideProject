@@ -2,7 +2,14 @@ import { ObjectId, type Db } from "mongodb";
 
 export type PaymentProvider = "toss" | "nicepay";
 
-export type TossPaymentSessionStatus = "ready" | "approved" | "failed" | "confirm_succeeded_order_failed" | "approve_succeeded_order_failed";
+export type TossPaymentSessionStatus =
+  | "ready"
+  | "approved"
+  | "failed"
+  | "confirm_succeeded_order_failed"
+  | "approve_succeeded_order_failed"
+  | "approve_succeeded_auto_cancel_succeeded"
+  | "approve_succeeded_auto_cancel_failed";
 
 export type TossPaymentFlowType = "checkout_order" | "package_order" | "racket_order";
 
@@ -89,6 +96,12 @@ export type TossPaymentSession = {
   };
   niceAuthRaw?: Record<string, string>;
   niceApprovedRaw?: Record<string, string>;
+  niceAutoCancel?: {
+    attemptedAt: Date;
+    resultCode: string;
+    resultMsg?: string;
+    status: "succeeded" | "failed" | "skipped";
+  };
   createdAt: Date;
   updatedAt: Date;
   expiresAt: Date;

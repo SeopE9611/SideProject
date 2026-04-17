@@ -37,20 +37,77 @@ export async function approveNicePaymentByTid(params: {
   secretKey: string;
   apiBaseUrl?: string;
 }): Promise<Record<string, string>> {
+  const raw = await requestNicePayment({
+    method: "POST",
+    tid: params.tid,
+    body: { amount: toPositiveAmount(params.amount) },
+    clientKey: params.clientKey,
+    secretKey: params.secretKey,
+    apiBaseUrl: params.apiBaseUrl,
+  });
+  return raw;
+}
+
+export async function getNicePaymentByTid(params: {
+  tid: string;
+  clientKey: string;
+  secretKey: string;
+  apiBaseUrl?: string;
+}): Promise<Record<string, string>> {
+  return requestNicePayment({
+    method: "GET",
+    tid: params.tid,
+    clientKey: params.clientKey,
+    secretKey: params.secretKey,
+    apiBaseUrl: params.apiBaseUrl,
+  });
+}
+
+export async function cancelNicePaymentByTid(params: {
+  tid: string;
+  amount: number;
+  reason: string;
+  clientKey: string;
+  secretKey: string;
+  apiBaseUrl?: string;
+}): Promise<Record<string, string>> {
+  return requestNicePayment({
+    method: "POST",
+    tid: params.tid,
+    action: "cancel",
+    body: {
+      amount: toPositiveAmount(params.amount),
+      reason: String(params.reason || "주문 생성 실패로 인한 자동 취소").trim(),
+    },
+    clientKey: params.clientKey,
+    secretKey: params.secretKey,
+    apiBaseUrl: params.apiBaseUrl,
+  });
+}
+
+async function requestNicePayment(params: {
+  method: "GET" | "POST";
+  tid: string;
+  body?: Record<string, unknown>;
+  action?: "cancel";
+  clientKey: string;
+  secretKey: string;
+  apiBaseUrl?: string;
+}): Promise<Record<string, string>> {
   const tid = String(params.tid ?? "").trim();
   if (!tid) throw new Error("NICE_TID_REQUIRED");
 
-  const amount = toPositiveAmount(params.amount);
   const endpointBase = (params.apiBaseUrl || process.env.NICEPAY_APPROVE_API_BASE || NICE_DEFAULT_APPROVE_API_BASE).trim().replace(/\/+$/, "");
-  const url = `${endpointBase}/${encodeURIComponent(tid)}`;
+  const actionSuffix = params.action ? `/${params.action}` : "";
+  const url = `${endpointBase}/${encodeURIComponent(tid)}${actionSuffix}`;
 
   const response = await fetch(url, {
-    method: "POST",
+    method: params.method,
     headers: {
       "Content-Type": "application/json",
       Authorization: createNiceBasicAuthorization(params.clientKey, params.secretKey),
     },
-    body: JSON.stringify({ amount }),
+    body: params.method === "POST" ? JSON.stringify(params.body ?? {}) : undefined,
     cache: "no-store",
   });
 

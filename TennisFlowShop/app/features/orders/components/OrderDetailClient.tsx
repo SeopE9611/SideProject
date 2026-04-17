@@ -124,6 +124,12 @@ interface OrderDetail {
   paymentProvider?: string | null;
   paymentEasyPayProvider?: string | null;
   paymentApprovedAt?: string | null;
+  paymentTid?: string | null;
+  paymentNiceSync?: {
+    lastSyncedAt?: string | null;
+    pgStatus?: string | null;
+    source?: string | null;
+  } | null;
   total: number;
   items: Array<{ name: string; quantity: number; price: number }>;
   history: Array<any>; // initialData용 (하지만 useSWRInfinite로 실제 이력 사용)
@@ -278,6 +284,7 @@ export default function OrderDetailClient({ orderId }: Props) {
   const [editingPayment, setEditingPayment] = useState(false);
   const [editingItems, setEditingItems] = useState(false);
   const [editingRequest, setEditingRequest] = useState(false);
+  const [isSyncingNice, setIsSyncingNice] = useState(false);
 
   // 주문 전체 데이터를 SWR로 가져옴
   const {
@@ -329,6 +336,26 @@ export default function OrderDetailClient({ orderId }: Props) {
       setLocalStatus(orderDetail.status);
     }
   }, [orderDetail]);
+
+  const handleNiceSync = async () => {
+    if (!orderDetail || isSyncingNice) return;
+    setIsSyncingNice(true);
+    try {
+      const res = await fetch(`/api/payments/nice/sync/${orderDetail._id}`, {
+        method: "POST",
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || !json?.success) {
+        throw new Error(json?.error || "PG 상태 재동기화에 실패했습니다.");
+      }
+      await mutateOrder();
+      showSuccessToast("NicePay 상태 재동기화를 완료했습니다.");
+    } catch (error: any) {
+      showErrorToast(error?.message || "PG 상태 재동기화 중 오류가 발생했습니다.");
+    } finally {
+      setIsSyncingNice(false);
+    }
+  };
 
   // 로딩/에러 처리
   if (orderError) {
@@ -1662,7 +1689,16 @@ export default function OrderDetailClient({ orderId }: Props) {
                           paymentProvider={orderDetail.paymentProvider}
                           easyPayProvider={orderDetail.paymentEasyPayProvider}
                           paymentStatus={orderDetail.paymentStatus}
+                          paymentTid={orderDetail.paymentTid}
+                          paymentNiceSync={orderDetail.paymentNiceSync}
                         />
+                        {String(orderDetail.paymentProvider ?? "").trim().toLowerCase() === "nicepay" && (
+                          <div className="mt-3">
+                            <Button variant="outline" size="sm" onClick={handleNiceSync} disabled={isSyncingNice}>
+                              {isSyncingNice ? "PG 상태 동기화 중..." : "PG 상태 다시 확인"}
+                            </Button>
+                          </div>
+                        )}
                       </div>
 
                       <div className="flex items-center space-x-3 p-3 bg-muted/30 rounded-lg border border-border">
