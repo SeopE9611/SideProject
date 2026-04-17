@@ -497,6 +497,8 @@ export async function GET(
       paymentEasyPayProvider:
         order.paymentInfo?.rawSummary?.easyPay?.provider ?? null,
       paymentBank: order.paymentInfo?.bank ?? null,
+      paymentTid: order.paymentInfo?.tid ?? null,
+      paymentNiceSync: order.paymentInfo?.niceSync ?? null,
       total: order.totalPrice,
       date: order.createdAt,
       history: order.history ?? [],

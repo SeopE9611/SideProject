@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import clientPromise from "@/lib/mongodb";
 import { createOrder } from "@/app/features/orders/api/handlers";
-import { ensureTossPaymentSessionIndexes, tossPaymentSessions } from "@/lib/payments/toss/session";
-import { approveNicePaymentByTid } from "@/lib/payments/nice/server";
+import { ensureTossPaymentSessionIndexes, tossPaymentSessions, type TossPaymentFailureStage } from "@/lib/payments/toss/session";
+import { approveNicePaymentByTid, cancelNicePaymentByTid } from "@/lib/payments/nice/server";
 
 export const runtime = "nodejs";
 export const preferredRegion = ["icn1", "hnd1"];
@@ -104,6 +104,14 @@ async function handleNiceReturn(req: Request) {
 
     if (session.status === "approve_succeeded_order_failed") {
       return NextResponse.redirect(new URL(toFailUrl("ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE", session.failureMessage || "승인 이후 주문 처리 실패 상태입니다."), req.url));
+    }
+    if (session.status === "approve_succeeded_auto_cancel_succeeded") {
+      return NextResponse.redirect(
+        new URL(
+          toFailUrl("ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE", "승인 후 주문 생성 실패로 자동 취소가 완료되었습니다."),
+          req.url,
+        ),
+      );
     }
 
     const now = new Date();
@@ -247,6 +255,7 @@ async function handleNiceReturn(req: Request) {
       );
       return NextResponse.redirect(new URL(toFailUrl("APPROVE_FAILED", resultMsg), req.url));
     }
+    console.info("[nicepay][flow]", { stage: "approve_success", tid, orderId, amount, approveStatus: resultCode });
 
     const idemKey = `nice:${orderId}`;
     const orderReq = new Request("http://internal/api/orders", {
@@ -258,18 +267,191 @@ async function handleNiceReturn(req: Request) {
       body: JSON.stringify(session.checkoutPayload ?? {}),
     });
 
-    const orderRes = await createOrder(orderReq);
-    const orderJson = await orderRes.json();
-    if (!orderRes.ok || !orderJson?.orderId) {
-      const failureMessage = orderJson?.error ?? "주문 생성에 실패했습니다.";
-      await col.updateOne(
+    const tryAutoCancelAfterApprove = async (failureMessage: string, failureStage: TossPaymentFailureStage) => {
+      const shouldSkipAutoCancel = session.status === "approve_succeeded_auto_cancel_succeeded" || session.niceAutoCancel?.status === "succeeded";
+      if (shouldSkipAutoCancel) {
+        await col.updateOne(
+          { _id: session._id },
+          {
+            $set: {
+              status: "approve_succeeded_order_failed",
+              failureStage,
+              failureCode: "ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE",
+              failureMessage,
+              updatedAt: new Date(),
+              niceAutoCancel: {
+                attemptedAt: new Date(),
+                resultCode: "SKIPPED_ALREADY_CANCELED",
+                resultMsg: "이미 자동 취소 완료된 세션입니다.",
+                status: "skipped",
+              },
+            },
+          },
+        );
+        return { status: "skipped" as const, resultCode: "SKIPPED_ALREADY_CANCELED", resultMsg: "already canceled" };
+      }
+      try {
+        const canceled = await cancelNicePaymentByTid({
+          tid,
+          amount,
+          reason: "승인 후 내부 주문 생성 실패로 자동 취소",
+          clientKey,
+          secretKey,
+          apiBaseUrl: approveApiBase,
+        });
+        const cancelCode = pick(canceled, "resultCode", "ResultCode");
+        const cancelMsg = pick(canceled, "resultMsg", "ResultMsg");
+        const canceledOk = cancelCode === "0000";
+        await col.updateOne(
+          { _id: session._id },
+          {
+            $set: {
+              status: canceledOk ? "approve_succeeded_auto_cancel_succeeded" : "approve_succeeded_auto_cancel_failed",
+              failureStage,
+              failureCode: "ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE",
+              failureMessage,
+              niceAuthRaw: raw,
+              niceApprovedRaw: approvedRaw,
+              updatedAt: new Date(),
+              niceAutoCancel: {
+                attemptedAt: new Date(),
+                resultCode: cancelCode || "UNKNOWN",
+                resultMsg: cancelMsg || undefined,
+                status: canceledOk ? "succeeded" : "failed",
+              },
+            },
+          },
+        );
+        console.info("[nicepay][flow]", {
+          stage: canceledOk ? "approve_succeeded_auto_cancel_succeeded" : "approve_succeeded_auto_cancel_failed",
+          tid,
+          orderId,
+          amount,
+          cancelStatus: cancelCode || "UNKNOWN",
+        });
+        return { status: canceledOk ? "succeeded" as const : "failed" as const, resultCode: cancelCode, resultMsg: cancelMsg };
+      } catch (cancelError: any) {
+        const cancelMsg = cancelError?.message || "자동 취소 중 오류가 발생했습니다.";
+        await col.updateOne(
+          { _id: session._id },
+          {
+            $set: {
+              status: "approve_succeeded_auto_cancel_failed",
+              failureStage,
+              failureCode: "ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE",
+              failureMessage,
+              niceAuthRaw: raw,
+              niceApprovedRaw: approvedRaw,
+              updatedAt: new Date(),
+              niceAutoCancel: {
+                attemptedAt: new Date(),
+                resultCode: String(cancelError?.resultCode || cancelError?.code || "AUTO_CANCEL_REQUEST_ERROR"),
+                resultMsg: cancelMsg,
+                status: "failed",
+              },
+            },
+          },
+        );
+        console.error("[nicepay][flow]", {
+          stage: "approve_succeeded_auto_cancel_failed",
+          tid,
+          orderId,
+          amount,
+          cancelStatus: cancelError?.resultCode ?? cancelError?.code ?? "AUTO_CANCEL_REQUEST_ERROR",
+          message: cancelMsg,
+        });
+        return { status: "failed" as const, resultCode: String(cancelError?.resultCode || cancelError?.code || "AUTO_CANCEL_REQUEST_ERROR"), resultMsg: cancelMsg };
+      }
+    };
+
+    try {
+      console.info("[nicepay][flow]", { stage: "before_create_order", tid, orderId, amount });
+      const orderRes = await createOrder(orderReq);
+      const orderJson = await orderRes.json();
+      console.info("[nicepay][flow]", {
+        stage: "after_create_order_response",
+        tid,
+        orderId,
+        amount,
+        orderResponseStatus: orderRes.status,
+        orderResponseSummary: orderJson?.orderId ? "order_created" : orderJson?.code || orderJson?.error || "empty_response",
+      });
+      if (!orderRes.ok || !orderJson?.orderId) {
+        const failureMessage = orderJson?.error ?? "주문 생성에 실패했습니다.";
+        await col.updateOne(
+          { _id: session._id },
+          {
+            $set: {
+              status: "approve_succeeded_order_failed",
+              failureStage: "create_order_after_approve",
+              failureCode: "ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE",
+              failureMessage,
+              niceAuthRaw: raw,
+              niceApprovedRaw: approvedRaw,
+              confirmedPaymentSummary: {
+                orderId,
+                method: pick(approvedRaw, "payMethod", "PayMethod") || "card",
+                totalAmount: amount,
+                approvedAt: new Date(),
+              },
+              updatedAt: new Date(),
+            },
+          },
+        );
+        await tryAutoCancelAfterApprove(failureMessage, "create_order_after_approve");
+        return NextResponse.redirect(new URL(toFailUrl("ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE", "승인 후 주문 생성에 실패했습니다. 주문 내역을 확인해주세요."), req.url));
+      }
+
+      const mongoOrderId = String(orderJson.orderId);
+      console.info("[nicepay][flow]", { stage: "before_order_update", tid, orderId, mongoOrderId });
+      const orderUpdateResult = await db.collection("orders").updateOne(
+        { _id: new ObjectId(mongoOrderId) },
+        {
+          $set: {
+            paymentStatus: "결제완료",
+            paymentInfo: {
+              provider: "nicepay",
+              method: pick(approvedRaw, "payMethod", "PayMethod") || "card",
+              status: pick(approvedRaw, "status") || "paid",
+              tid,
+              total: amount,
+              approvedAt: pick(approvedRaw, "paidAt") || new Date().toISOString(),
+              rawSummary: {
+                orderId,
+                resultCode,
+                resultMsg: pick(approvedRaw, "resultMsg", "ResultMsg"),
+                goodsName: pick(approvedRaw, "goodsName", "GoodsName"),
+                card: pick(approvedRaw, "cardName") ? { cardName: pick(approvedRaw, "cardName") } : undefined,
+                easyPay: pick(approvedRaw, "easyPayProvider") ? { provider: pick(approvedRaw, "easyPayProvider") } : undefined,
+              },
+              niceSync: {
+                lastSyncedAt: new Date().toISOString(),
+                source: "approve_return",
+              },
+            },
+            updatedAt: new Date(),
+          },
+        },
+      );
+      console.info("[nicepay][flow]", {
+        stage: "after_order_update",
+        tid,
+        orderId,
+        mongoOrderId,
+        matchedCount: orderUpdateResult.matchedCount,
+        modifiedCount: orderUpdateResult.modifiedCount,
+      });
+      if (orderUpdateResult.matchedCount === 0) {
+        throw new Error("ORDER_UPDATE_TARGET_NOT_FOUND");
+      }
+
+      console.info("[nicepay][flow]", { stage: "before_session_update", tid, orderId, mongoOrderId });
+      const sessionUpdateResult = await col.updateOne(
         { _id: session._id },
         {
           $set: {
-            status: "approve_succeeded_order_failed",
-            failureStage: "create_order_after_approve",
-            failureCode: "ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE",
-            failureMessage,
+            status: "approved",
+            mongoOrderId,
             niceAuthRaw: raw,
             niceApprovedRaw: approvedRaw,
             confirmedPaymentSummary: {
@@ -280,64 +462,39 @@ async function handleNiceReturn(req: Request) {
             },
             updatedAt: new Date(),
           },
+          $unset: {
+            failureStage: "",
+            failureCode: "",
+            failureMessage: "",
+          },
         },
       );
-
-      return NextResponse.redirect(new URL(toFailUrl("ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE", "승인 후 주문 생성에 실패했습니다. 주문 내역을 확인해주세요."), req.url));
+      console.info("[nicepay][flow]", {
+        stage: "after_session_update",
+        tid,
+        orderId,
+        mongoOrderId,
+        sessionStatus: "approved",
+        matchedCount: sessionUpdateResult.matchedCount,
+        modifiedCount: sessionUpdateResult.modifiedCount,
+      });
+      if (sessionUpdateResult.matchedCount === 0) {
+        throw new Error("SESSION_UPDATE_TARGET_NOT_FOUND");
+      }
+      console.info("[nicepay][flow]", { stage: "before_success_redirect", tid, orderId, mongoOrderId });
+      return NextResponse.redirect(new URL(`/checkout/success?orderId=${encodeURIComponent(mongoOrderId)}`, req.url));
+    } catch (downstreamError: any) {
+      const failureMessage = downstreamError?.message || "승인 이후 내부 주문 후처리에 실패했습니다.";
+      console.error("[nicepay][flow]", {
+        stage: "downstream_failed_after_approve",
+        tid,
+        orderId,
+        amount,
+        message: failureMessage,
+      });
+      await tryAutoCancelAfterApprove(failureMessage, "create_order_after_approve");
+      return NextResponse.redirect(new URL(toFailUrl("ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE", "승인 후 내부 주문 처리에 실패했습니다. 결제 상태를 확인해주세요."), req.url));
     }
-
-    const mongoOrderId = String(orderJson.orderId);
-    await db.collection("orders").updateOne(
-      { _id: new ObjectId(mongoOrderId) },
-      {
-        $set: {
-          paymentStatus: "결제완료",
-          paymentInfo: {
-            provider: "nicepay",
-            method: pick(approvedRaw, "payMethod", "PayMethod") || "card",
-            status: pick(approvedRaw, "status") || "paid",
-            tid,
-            total: amount,
-            approvedAt: pick(approvedRaw, "paidAt") || new Date().toISOString(),
-            rawSummary: {
-              orderId,
-              resultCode,
-              resultMsg: pick(approvedRaw, "resultMsg", "ResultMsg"),
-              goodsName: pick(approvedRaw, "goodsName", "GoodsName"),
-              card: pick(approvedRaw, "cardName") ? { cardName: pick(approvedRaw, "cardName") } : undefined,
-              easyPay: pick(approvedRaw, "easyPayProvider") ? { provider: pick(approvedRaw, "easyPayProvider") } : undefined,
-            },
-          },
-          updatedAt: new Date(),
-        },
-      },
-    );
-
-    await col.updateOne(
-      { _id: session._id },
-      {
-        $set: {
-          status: "approved",
-          mongoOrderId,
-          niceAuthRaw: raw,
-          niceApprovedRaw: approvedRaw,
-          confirmedPaymentSummary: {
-            orderId,
-            method: pick(approvedRaw, "payMethod", "PayMethod") || "card",
-            totalAmount: amount,
-            approvedAt: new Date(),
-          },
-          updatedAt: new Date(),
-        },
-        $unset: {
-          failureStage: "",
-          failureCode: "",
-          failureMessage: "",
-        },
-      },
-    );
-
-    return NextResponse.redirect(new URL(`/checkout/success?orderId=${encodeURIComponent(mongoOrderId)}`, req.url));
   } catch (error: any) {
     return NextResponse.redirect(new URL(toFailUrl("APPROVE_FAILED", error?.message || "결제 승인 처리 중 오류가 발생했습니다."), req.url));
   }
