@@ -55,6 +55,19 @@ export async function POST(req: Request) {
     const token = cookieStore.get("accessToken")?.value;
     const payload = token ? verifyAccessToken(token) : null;
     const userId = payload?.sub ?? null;
+    const gomRaw = (process.env.GUEST_ORDER_MODE ?? "on").trim();
+    const guestOrderMode =
+      gomRaw === "off" || gomRaw === "legacy" || gomRaw === "on" ? gomRaw : "on";
+    if (!userId && guestOrderMode !== "on") {
+      return NextResponse.json(
+        {
+          success: false,
+          code: "GUEST_ORDER_DISABLED",
+          error: "비회원 주문은 현재 중단되었습니다. 로그인 후 주문해주세요.",
+        },
+        { status: 401 },
+      );
+    }
 
     const client = await clientPromise;
     const db = client.db();
