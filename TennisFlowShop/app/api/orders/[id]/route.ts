@@ -168,90 +168,146 @@ export async function GET(
     if (!isOwner && !isAdmin && !guestOwnsOrder) {
       return new NextResponse("권한이 없습니다.", { status: 403 });
     }
-    const enrichedItems = await Promise.all(
-      (
-        order.items as {
-          productId: any;
-          quantity: number;
-          kind?: "product" | "racket";
-        }[]
-      ).map(async (item) => {
-        const kind = item.kind ?? "product";
+    const orderItems = (order.items as {
+      productId: any;
+      quantity: number;
+      kind?: "product" | "racket";
+    }[]) ?? [];
 
-        // productId가 오염/레거시 데이터일 때 new ObjectId에서 500이 나지 않도록 방어
-        const raw = item.productId;
-        const idStr =
-          raw instanceof ObjectId ? raw.toString() : String(raw ?? "");
-        const oid =
-          raw instanceof ObjectId
-            ? raw
-            : ObjectId.isValid(idStr)
-              ? new ObjectId(idStr)
-              : null;
-        if (!oid) {
+    console.info("[orders][detail][start]", {
+      orderId: String(order._id),
+      itemCount: orderItems.length,
+    });
+
+    const uniqueProductIds = Array.from(
+      new Set(
+        orderItems
+          .filter((item) => (item.kind ?? "product") === "product")
+          .map((item) => {
+            const raw = item.productId;
+            const idStr =
+              raw instanceof ObjectId ? raw.toString() : String(raw ?? "");
+            return ObjectId.isValid(idStr) ? idStr : null;
+          })
+          .filter(Boolean),
+      ),
+    ) as string[];
+
+    const uniqueUsedRacketIds = Array.from(
+      new Set(
+        orderItems
+          .filter((item) => (item.kind ?? "product") === "racket")
+          .map((item) => {
+            const raw = item.productId;
+            const idStr =
+              raw instanceof ObjectId ? raw.toString() : String(raw ?? "");
+            return ObjectId.isValid(idStr) ? idStr : null;
+          })
+          .filter(Boolean),
+      ),
+    ) as string[];
+
+    const [productDocs, usedRacketDocs] = await Promise.all([
+      uniqueProductIds.length
+        ? db
+            .collection("products")
+            .find(
+              { _id: { $in: uniqueProductIds.map((pid) => new ObjectId(pid)) } },
+              { projection: { _id: 1, name: 1, price: 1, mountingFee: 1 } },
+            )
+            .toArray()
+        : [],
+      uniqueUsedRacketIds.length
+        ? db
+            .collection("used_rackets")
+            .find(
+              {
+                _id: {
+                  $in: uniqueUsedRacketIds.map((rid) => new ObjectId(rid)),
+                },
+              },
+              { projection: { _id: 1, brand: 1, model: 1, price: 1 } },
+            )
+            .toArray()
+        : [],
+    ]);
+
+    console.info("[orders][detail][batch_lookup]", {
+      orderId: String(order._id),
+      itemCount: orderItems.length,
+      productLookupCount: uniqueProductIds.length,
+      usedRacketLookupCount: uniqueUsedRacketIds.length,
+    });
+
+    const productById = new Map(
+      productDocs.map((prod: any) => [String(prod?._id), prod]),
+    );
+    const usedRacketById = new Map(
+      usedRacketDocs.map((racket: any) => [String(racket?._id), racket]),
+    );
+
+    const enrichedItems = orderItems.map((item) => {
+      const kind = item.kind ?? "product";
+      const raw = item.productId;
+      const idStr = raw instanceof ObjectId ? raw.toString() : String(raw ?? "");
+      const normalizedId = ObjectId.isValid(idStr) ? idStr : null;
+
+      if (!normalizedId) {
+        return {
+          id: idStr,
+          name: kind === "racket" ? "알 수 없는 라켓" : "알 수 없는 상품",
+          price: 0,
+          mountingFee: 0,
+          quantity: item.quantity,
+          kind,
+        };
+      }
+
+      if (kind === "product") {
+        const prod = productById.get(normalizedId);
+        if (!prod) {
+          console.warn(`상품을 찾을 수 없음:`, normalizedId);
           return {
-            id: idStr,
-            name: kind === "racket" ? "알 수 없는 라켓" : "알 수 없는 상품",
+            id: normalizedId,
+            name: "알 수 없는 상품",
             price: 0,
             mountingFee: 0,
-            quantity: item.quantity,
-            kind,
-          };
-        }
-
-        // product
-        if (kind === "product") {
-          const prod = await db.collection("products").findOne({ _id: oid });
-
-          if (!prod) {
-            console.warn(`상품을 찾을 수 없음:`, oid);
-            return {
-              id: oid.toString(),
-              name: "알 수 없는 상품",
-              price: 0,
-              mountingFee: 0,
-              quantity: item.quantity,
-              kind: "product" as const,
-            };
-          }
-
-          return {
-            id: prod._id.toString(),
-            name: prod.name,
-            price: prod.price,
-            mountingFee: prod.mountingFee ?? 0,
             quantity: item.quantity,
             kind: "product" as const,
           };
         }
-
-        // racket
-        const racket = await db
-          .collection("used_rackets")
-          .findOne({ _id: oid });
-
-        if (!racket) {
-          console.warn(`라켓으 찾을 수 없음:`, oid);
-          return {
-            id: oid.toString(),
-            name: "알 수 없는 라켓",
-            price: 0,
-            mountingFee: 0, // 라켓 자체는 장착비 없음
-            quantity: item.quantity,
-            kind: "racket" as const,
-          };
-        }
-
         return {
-          id: oid.toString(),
-          name: `${racket.brand} ${racket.model}`.trim(),
-          price: racket.price ?? 0,
+          id: normalizedId,
+          name: prod.name,
+          price: prod.price,
+          mountingFee: prod.mountingFee ?? 0,
+          quantity: item.quantity,
+          kind: "product" as const,
+        };
+      }
+
+      const racket = usedRacketById.get(normalizedId);
+      if (!racket) {
+        console.warn(`라켓을 찾을 수 없음:`, normalizedId);
+        return {
+          id: normalizedId,
+          name: "알 수 없는 라켓",
+          price: 0,
           mountingFee: 0,
           quantity: item.quantity,
           kind: "racket" as const,
         };
-      }),
-    );
+      }
+
+      return {
+        id: normalizedId,
+        name: `${racket.brand} ${racket.model}`.trim(),
+        price: racket.price ?? 0,
+        mountingFee: 0,
+        quantity: item.quantity,
+        kind: "racket" as const,
+      };
+    });
 
     //  customer 통합 처리 시작
     // PATCH에서 $set: { customer: … } 한 값이 있으면 우선 사용
@@ -475,6 +531,13 @@ export async function GET(
           cancelRequestStatus: app?.cancelRequestStatus,
         }),
       ) ?? null;
+
+    console.info("[orders][detail][response_ready]", {
+      orderId: String(order._id),
+      itemCount: enrichedItems.length,
+      productLookupCount: uniqueProductIds.length,
+      usedRacketLookupCount: uniqueUsedRacketIds.length,
+    });
 
     return NextResponse.json({
       ...order, // 원문은 펴주되,
