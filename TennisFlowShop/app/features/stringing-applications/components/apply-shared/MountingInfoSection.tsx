@@ -323,7 +323,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-4 dark:bg-primary/20">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-secondary text-foreground mb-4">
           <ClipboardList className="h-8 w-8" />
         </div>
         <h2 className="text-2xl font-bold mb-2">장착 정보</h2>
@@ -1132,7 +1132,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                   {/* 헤더 영역: 라켓 N, 스트링 이름 */}
                   <div className="flex items-center justify-between gap-3 px-4 py-3 bg-muted/40 dark:bg-muted/30 border-b border-border/50">
                     <div className="flex items-center gap-2.5">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 dark:bg-primary/20 shadow-sm">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary shadow-sm">
                         <span className="text-sm font-bold text-primary">
                           {index + 1}
                         </span>

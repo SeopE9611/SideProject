@@ -936,7 +936,7 @@ export default function ReviewWritePage() {
           {/* 왼쪽: 정보 패널 (코트의 왼쪽 서비스 박스) */}
           <div className="space-y-4 md:space-y-6">
             {/* 헤더 정보 카드 */}
-            <div className="relative rounded-2xl bg-primary/10 border border-primary/20 text-foreground p-4 md:p-6 shadow-xl overflow-hidden dark:bg-primary/20">
+            <div className="relative rounded-2xl bg-card border border-border text-foreground p-4 md:p-6 shadow-sm overflow-hidden">
               {/* 코트 라인 장식 */}
               <div className="absolute top-0 left-0 right-0 h-1 bg-card/30"></div>
               <div className="absolute bottom-0 left-0 right-0 h-1 bg-card/30"></div>
@@ -961,7 +961,7 @@ export default function ReviewWritePage() {
 
                 {/* 상태 뱃지 */}
                 {badge && (
-                  <div className="mt-4 inline-flex items-center rounded-full bg-card/20 backdrop-blur-sm px-3 py-1.5 text-sm font-medium border border-border/20">
+                  <div className="mt-4 inline-flex items-center rounded-full bg-secondary px-3 py-1.5 text-sm font-medium border border-border/60">
                     <div className="w-1.5 h-1.5 rounded-full bg-card/60 mr-2"></div>
                     {badge}
                   </div>
@@ -1076,7 +1076,7 @@ export default function ReviewWritePage() {
             {/* 중앙선 장식 */}
             <div className="absolute -left-4 top-0 bottom-0 w-0.5 bg-primary/40 opacity-60"></div>
 
-            <div className="rounded-2xl bg-card dark:bg-muted shadow-xl ring-1 ring-ring overflow-hidden">
+            <div className="rounded-2xl bg-card shadow-sm ring-1 ring-ring overflow-hidden">
               {/* 폼 헤더 */}
               <div className="bg-muted/50 px-4 md:px-6 py-4 border-b border-border">
                 <div className="flex items-center justify-between">
@@ -1235,7 +1235,7 @@ export default function ReviewWritePage() {
                 {/* 입력 블럭(별점/본문/사진) - 오버레이는 여기만 */}
                 <div className="relative">
                   {locked && (
-                    <div className="absolute inset-0 z-10 rounded-xl bg-card/80 dark:bg-muted backdrop-blur-sm flex items-center justify-center">
+                    <div className="absolute inset-0 z-10 rounded-xl bg-card flex items-center justify-center">
                       <div className="text-center px-4">
                         <div className="w-8 h-8 border-2 border-border border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
                         <div className="text-sm text-foreground">
@@ -1250,7 +1250,7 @@ export default function ReviewWritePage() {
                   )}
 
                   {/* 별점 섹션 */}
-                  <div className="text-center py-6 bg-primary/10 border border-primary/20 rounded-xl dark:bg-primary/20">
+                  <div className="text-center py-6 bg-secondary border border-border rounded-xl">
                     <label className="block text-sm font-semibold text-foreground mb-4">
                       만족도를 별점으로 평가해주세요
                     </label>

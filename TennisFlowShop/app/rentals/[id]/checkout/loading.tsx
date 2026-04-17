@@ -10,11 +10,11 @@ export default function Loading() {
       <div className="container py-8">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
           <div className="lg:col-span-2 space-y-6">
-            <div className="h-64 bg-card/80 dark:bg-card rounded-xl animate-pulse"></div>
-            <div className="h-96 bg-card/80 dark:bg-card rounded-xl animate-pulse"></div>
+            <div className="h-64 bg-card rounded-xl animate-pulse"></div>
+            <div className="h-96 bg-card rounded-xl animate-pulse"></div>
           </div>
           <div className="lg:col-span-1">
-            <div className="h-96 bg-card/90 dark:bg-card rounded-xl animate-pulse"></div>
+            <div className="h-96 bg-card rounded-xl animate-pulse"></div>
           </div>
         </div>
       </div>

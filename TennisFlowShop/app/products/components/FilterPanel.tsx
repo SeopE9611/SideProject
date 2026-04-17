@@ -128,7 +128,7 @@ export const FilterPanel = React.memo(function FilterPanel({
   return (
     <div
       className={cn(
-        "rounded-lg bp-sm:rounded-xl border border-border bg-card/80 dark:bg-card backdrop-blur-sm p-4 bp-sm:p-6 shadow-xl",
+        "rounded-lg bp-sm:rounded-xl border border-border bg-card p-4 bp-sm:p-6 shadow-sm",
       )}
     >
       {isLoadingInitial ? (

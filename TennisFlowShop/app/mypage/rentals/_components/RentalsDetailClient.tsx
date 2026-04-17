@@ -469,7 +469,7 @@ export default function RentalsDetailClient({
                 variant="outline"
                 size="sm"
                 asChild
-                className="bg-card/70 backdrop-blur-sm border-border hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground"
+                className="bg-card border-border hover:bg-secondary hover:text-foreground"
               >
                 <Link href={returnShippingHref}>
                   <Truck className="h-4 w-4 mr-2" />
@@ -496,7 +496,7 @@ export default function RentalsDetailClient({
               variant="outline"
               size="sm"
               asChild
-              className="bg-card/70 backdrop-blur-sm border-border hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground"
+              className="bg-card border-border hover:bg-secondary hover:text-foreground"
             >
               <Link href={backUrl}>
                 <ArrowLeft className="mr-2 h-4 w-4" />
@@ -515,7 +515,7 @@ export default function RentalsDetailClient({
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-card/70 dark:bg-muted/60 rounded-xl p-4 backdrop-blur-sm">
+          <div className="bg-card rounded-xl border border-border p-4 shadow-sm">
             <div className="flex items-center space-x-2 mb-2">
               <Package className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm font-medium text-muted-foreground">
@@ -527,7 +527,7 @@ export default function RentalsDetailClient({
             </p>
           </div>
 
-          <div className="bg-card/70 dark:bg-muted/60 rounded-xl p-4 backdrop-blur-sm">
+          <div className="bg-card rounded-xl border border-border p-4 shadow-sm">
             <div className="flex items-center space-x-2 mb-2">
               <Clock className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm font-medium text-muted-foreground">
@@ -539,7 +539,7 @@ export default function RentalsDetailClient({
             </p>
           </div>
 
-          <div className="bg-card/70 dark:bg-muted/60 rounded-xl p-4 backdrop-blur-sm">
+          <div className="bg-card rounded-xl border border-border p-4 shadow-sm">
             <div className="flex items-center space-x-2 mb-2">
               {getStatusIcon(data.status)}
               <span className="text-sm font-medium text-muted-foreground">
@@ -600,7 +600,7 @@ export default function RentalsDetailClient({
       )}
 
       {withStringService && (
-        <Card className="border-0 shadow-xl bg-muted/30 overflow-hidden">
+        <Card className="border border-border shadow-sm bg-card overflow-hidden">
           <CardHeader className="bg-muted/30 border-b">
             <CardTitle className="flex items-center space-x-2">
               <Wrench className="h-5 w-5 text-primary" />
@@ -674,7 +674,7 @@ export default function RentalsDetailClient({
       )}
 
       <div className="grid gap-6 md:gap-8 lg:grid-cols-2">
-        <Card className="border-0 shadow-xl bg-muted/30 overflow-hidden">
+        <Card className="border border-border shadow-sm bg-card overflow-hidden">
           <CardHeader className="bg-muted/30 border-b">
             <CardTitle className="flex items-center space-x-2">
               <Package className="h-5 w-5 text-primary" />
@@ -753,7 +753,7 @@ export default function RentalsDetailClient({
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-xl bg-muted/30 overflow-hidden">
+        <Card className="border border-border shadow-sm bg-card overflow-hidden">
           <CardHeader className="bg-muted/30 border-b">
             <CardTitle className="flex items-center space-x-2">
               <CreditCard className="h-5 w-5 text-primary" />
@@ -795,7 +795,7 @@ export default function RentalsDetailClient({
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-xl bg-muted/30 overflow-hidden">
+        <Card className="border border-border shadow-sm bg-card overflow-hidden">
           <CardHeader className="bg-muted/30 border-b">
             <CardTitle className="flex items-center space-x-2">
               <Truck className="h-5 w-5 text-primary" />
@@ -831,7 +831,7 @@ export default function RentalsDetailClient({
         </Card>
       </div>
 
-      <Card className="border-0 shadow-xl bg-muted/30 overflow-hidden">
+      <Card className="border border-border shadow-sm bg-card overflow-hidden">
         <CardHeader className="bg-muted/30 border-b">
           <CardTitle className="flex items-center space-x-2">
             <Calendar className="h-5 w-5 text-primary" />
@@ -841,7 +841,7 @@ export default function RentalsDetailClient({
         <CardContent className="p-6">
           <div className="space-y-4">
             <div className="flex items-start gap-4 p-4 bg-muted/50 dark:bg-muted rounded-lg">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 dark:bg-primary/20">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary">
                 <Calendar className="h-5 w-5 text-primary" />
               </div>
               <div className="flex-1">
@@ -854,7 +854,7 @@ export default function RentalsDetailClient({
 
             {data?.shipping?.outbound?.trackingNumber && (
               <div className="flex items-start gap-4 p-4 bg-muted/50 dark:bg-muted rounded-lg">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 dark:bg-primary/20">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary">
                   <Truck className="h-5 w-5 text-primary" />
                 </div>
                 <div className="flex-1">
@@ -892,7 +892,7 @@ export default function RentalsDetailClient({
             )}
 
             <div className="flex items-start gap-4 p-4 bg-muted/50 dark:bg-muted rounded-lg">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 dark:bg-primary/20">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary">
                 <Clock className="h-5 w-5 text-primary" />
               </div>
               <div className="flex-1">
@@ -955,7 +955,7 @@ export default function RentalsDetailClient({
             </div>
 
             <div className="flex items-start gap-4 p-4 bg-muted/50 dark:bg-muted rounded-lg">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 dark:bg-primary/20">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary">
                 <CreditCard className="h-5 w-5 text-primary" />
               </div>
               <div className="flex-1">
