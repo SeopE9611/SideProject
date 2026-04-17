@@ -22,15 +22,44 @@ function getNiceCredentials() {
   return { clientKey, secretKey, apiBaseUrl };
 }
 
-function mapNiceStatusToOrderStatus(raw: Record<string, string>) {
-  const statusRaw = pick(raw, "status", "Status").toLowerCase();
-  const canceledAt = pick(raw, "canceledAt", "cancelledAt", "cancelDate", "cancelDt");
-  const cancelAmount = Math.floor(Number(pick(raw, "cancAmt", "cancelAmount", "cancelAmt")) || 0);
-  const isCanceled = statusRaw.includes("cancel") || Boolean(canceledAt) || cancelAmount > 0;
-  if (isCanceled) {
-    return { paymentStatus: "결제취소", paymentInfoStatus: "canceled" };
+function normalizeNicePgStatus(rawStatus: string): string {
+  const normalized = String(rawStatus ?? "").trim().toLowerCase();
+  if (!normalized) return "";
+  if (normalized === "cancelled") return "canceled";
+  if (normalized === "partialcancelled") return "partialcanceled";
+  return normalized;
+}
+
+function mapNicePgStatusToInternalPaymentStatus(params: {
+  pgStatusRaw: string;
+  previousPaymentStatus: string;
+  previousPaymentInfoStatus: string;
+}) {
+  const normalizedPgStatus = normalizeNicePgStatus(params.pgStatusRaw);
+  const previousPaymentStatus = String(params.previousPaymentStatus ?? "").trim();
+  const previousPaymentInfoStatus = String(params.previousPaymentInfoStatus ?? "").trim();
+
+  if (normalizedPgStatus === "paid") {
+    return { normalizedPgStatus, nextPaymentStatus: "결제완료", nextPaymentInfoStatus: "paid" };
   }
-  return { paymentStatus: "결제완료", paymentInfoStatus: "paid" };
+  if (normalizedPgStatus === "ready") {
+    return { normalizedPgStatus, nextPaymentStatus: "결제대기", nextPaymentInfoStatus: "ready" };
+  }
+  if (normalizedPgStatus === "canceled") {
+    return { normalizedPgStatus, nextPaymentStatus: "결제취소", nextPaymentInfoStatus: "canceled" };
+  }
+  if (normalizedPgStatus === "partialcanceled") {
+    return { normalizedPgStatus, nextPaymentStatus: "부분취소", nextPaymentInfoStatus: "partialCanceled" };
+  }
+  if (normalizedPgStatus === "failed") {
+    return { normalizedPgStatus, nextPaymentStatus: "결제실패", nextPaymentInfoStatus: "failed" };
+  }
+
+  return {
+    normalizedPgStatus,
+    nextPaymentStatus: previousPaymentStatus || "결제대기",
+    nextPaymentInfoStatus: previousPaymentInfoStatus || null,
+  };
 }
 
 export async function POST(_req: Request, { params }: { params: Promise<{ orderId: string }> }) {
@@ -82,16 +111,34 @@ export async function POST(_req: Request, { params }: { params: Promise<{ orderI
     }
 
     const pgStatus = pick(pgRaw, "status", "Status");
+    const previousPaymentStatus = String((order as any)?.paymentStatus ?? "").trim();
+    const previousPaymentInfoStatus = String((order as any)?.paymentInfo?.status ?? "").trim();
     const cancelAmount = Math.floor(Number(pick(pgRaw, "cancAmt", "cancelAmount", "cancelAmt")) || 0);
     const canceledAt = pick(pgRaw, "canceledAt", "cancelledAt", "cancelDate", "cancelDt");
-    const mapped = mapNiceStatusToOrderStatus(pgRaw);
+    const mapped = mapNicePgStatusToInternalPaymentStatus({
+      pgStatusRaw: pgStatus,
+      previousPaymentStatus,
+      previousPaymentInfoStatus,
+    });
+    console.info("[nicepay][sync]", {
+      stage: "sync_mapping",
+      orderId,
+      tid,
+      pgStatusRaw: pgStatus || null,
+      normalizedPgStatus: mapped.normalizedPgStatus || null,
+      previousPaymentStatus: previousPaymentStatus || null,
+      nextPaymentStatus: mapped.nextPaymentStatus,
+      previousPaymentInfoStatus: previousPaymentInfoStatus || null,
+      nextPaymentInfoStatus: mapped.nextPaymentInfoStatus,
+    });
+
     const nowIso = new Date().toISOString();
     const updateResult = await db.collection("orders").updateOne(
       { _id: new ObjectId(orderId) },
       {
         $set: {
-          paymentStatus: mapped.paymentStatus,
-          "paymentInfo.status": mapped.paymentInfoStatus,
+          paymentStatus: mapped.nextPaymentStatus,
+          "paymentInfo.status": mapped.nextPaymentInfoStatus,
           "paymentInfo.niceSync": {
             lastSyncedAt: nowIso,
             source: "manual_sync_api",
@@ -110,7 +157,7 @@ export async function POST(_req: Request, { params }: { params: Promise<{ orderI
       orderId,
       tid,
       pgStatus: pgStatus || null,
-      paymentStatus: mapped.paymentStatus,
+      paymentStatus: mapped.nextPaymentStatus,
       matchedCount: updateResult.matchedCount,
       modifiedCount: updateResult.modifiedCount,
     });
@@ -120,8 +167,8 @@ export async function POST(_req: Request, { params }: { params: Promise<{ orderI
       orderId,
       tid,
       pgStatus: pgStatus || null,
-      paymentStatus: mapped.paymentStatus,
-      paymentInfoStatus: mapped.paymentInfoStatus,
+      paymentStatus: mapped.nextPaymentStatus,
+      paymentInfoStatus: mapped.nextPaymentInfoStatus,
       matchedCount: updateResult.matchedCount,
       modifiedCount: updateResult.modifiedCount,
     });
