@@ -200,7 +200,7 @@ export default function HorizontalProducts({
     <Link
       key={p._id}
       href={p.href ?? `/products/${p._id}`}
-      className="group block h-full bg-card rounded-2xl p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7 border border-border/60 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-border"
+      className="group block h-full bg-card rounded-2xl p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7 border border-border/60 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-border"
     >
       <div className="relative mb-4 bp-sm:mb-5 bp-md:mb-6 aspect-square rounded-xl overflow-hidden bg-muted/30">
         {p.images?.[0] ? (
@@ -231,7 +231,7 @@ export default function HorizontalProducts({
   const PlaceholderCard = () => (
     <div className="h-full rounded-xl p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7 bg-card/50 flex flex-col items-center justify-center">
       <div className="relative mb-3 bp-sm:mb-4 bp-md:mb-5 aspect-square w-full rounded-lg bg-muted/50 dark:bg-card flex items-center justify-center">
-        <div className="w-12 h-12 bp-sm:w-14 bp-sm:h-14 bp-md:w-16 bp-md:h-16 rounded-full bg-primary/10 dark:bg-primary/20" />
+        <div className="w-12 h-12 bp-sm:w-14 bp-sm:h-14 bp-md:w-16 bp-md:h-16 rounded-full bg-secondary border border-border/60" />
       </div>
       <div className="text-center space-y-1.5">
         <div className="text-sm bp-sm:text-base bp-md:text-lg font-semibold text-foreground">준비 중</div>
@@ -254,11 +254,11 @@ export default function HorizontalProducts({
   const MoreCard = () => (
     <Link
       href={moreHref}
-      className="group h-full bg-card rounded-xl p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7 hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground transition-all duration-300 flex items-center justify-center hover:scale-[1.02] hover:shadow-lg"
+      className="group h-full bg-card rounded-2xl p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7 border border-border/60 shadow-sm transition-all duration-300 flex items-center justify-center hover:-translate-y-0.5 hover:shadow-md hover:border-border"
     >
       <div className="text-center space-y-2 bp-sm:space-y-3 bp-md:space-y-4">
-        <div className="w-14 h-14 bp-sm:w-16 bp-sm:h-16 bp-md:w-20 bp-md:h-20 bg-primary/10 rounded-full mx-auto flex items-center justify-center group-hover:scale-110 transition-transform duration-300 dark:bg-primary/20">
-          <ArrowRight className="h-6 w-6 bp-sm:h-7 bp-sm:w-7 bp-md:h-9 bp-md:w-9 text-primary" />
+        <div className="w-14 h-14 bp-sm:w-16 bp-sm:h-16 bp-md:w-20 bp-md:h-20 rounded-full border border-border/60 bg-secondary mx-auto flex items-center justify-center transition-all duration-300 group-hover:shadow-sm">
+          <ArrowRight className="h-6 w-6 bp-sm:h-7 bp-sm:w-7 bp-md:h-9 bp-md:w-9 text-foreground" />
         </div>
         <div className="space-y-1 bp-sm:space-y-1.5">
           <h3 className="text-sm bp-sm:text-base bp-md:text-lg bp-lg:text-xl font-bold text-foreground">더 많은 상품</h3>
@@ -270,8 +270,8 @@ export default function HorizontalProducts({
 
   const EmptyCard = () => (
     <div className="h-full rounded-xl p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7 bg-card/50 flex flex-col items-center justify-center text-center">
-      <div className="w-14 h-14 bp-sm:w-16 bp-sm:h-16 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-3 dark:bg-primary/20">
-        <Inbox className="h-6 w-6 text-primary" />
+      <div className="w-14 h-14 bp-sm:w-16 bp-sm:h-16 rounded-full bg-secondary border border-border/60 text-foreground flex items-center justify-center mb-3">
+        <Inbox className="h-6 w-6 text-foreground" />
       </div>
       <div className="text-sm bp-sm:text-base font-semibold text-foreground">{emptyTitle ?? "등록된 상품이 없습니다"}</div>
       <div className="mt-1 text-xs bp-sm:text-sm text-muted-foreground">{emptyDescription ?? "곧 상품이 업데이트됩니다."}</div>

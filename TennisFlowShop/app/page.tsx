@@ -385,17 +385,17 @@ export default function Home() {
                   const title = (b.label ?? "").split("\n")[0] || "광고 문의";
 
                   const baseClass =
-                    "group relative block h-24 bp-sm:h-28 bp-md:h-32 bp-lg:h-36 overflow-hidden rounded-2xl bg-card border border-border/60 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-border focus:outline-none focus:ring-2 focus:ring-ring/20";
+                    "group relative block h-24 bp-sm:h-28 bp-md:h-32 bp-lg:h-36 overflow-hidden rounded-2xl bg-card border border-border/60 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-border focus:outline-none focus:ring-2 focus:ring-ring/20";
 
                   const inner = (
                     <>
                       {b.img ? (
                         <>
                           <img src={b.img} alt={b.alt ?? title} className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" decoding="async" />
-                          <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent" />
+                          <div className="absolute inset-0 bg-background/50" />
                         </>
                       ) : (
-                        <div className="absolute inset-0 bg-gradient-to-br from-muted/30 to-muted/10" />
+                        <div className="absolute inset-0 bg-muted/30" />
                       )}
 
                       <div className="relative z-10 flex h-full items-center justify-center p-4 text-center">
@@ -444,9 +444,9 @@ export default function Home() {
           <div className="grid gap-4 bp-sm:gap-5 bp-md:gap-6 grid-cols-2 bp-md-only:grid-cols-4 bp-lg:grid-cols-4">
             <Link
               href="/services/apply"
-              className="group flex h-full flex-col items-center gap-3 bp-sm:gap-4 rounded-2xl bg-card p-5 bp-sm:p-6 bp-md:p-7 shadow-sm border border-border/60 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-border"
+              className="group flex h-full flex-col items-center gap-3 bp-sm:gap-4 rounded-2xl bg-card p-5 bp-sm:p-6 bp-md:p-7 shadow-sm border border-border/60 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-border"
             >
-              <div className="flex h-12 w-12 bp-sm:h-14 bp-sm:w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-primary-foreground group-hover:scale-110">
+              <div className="flex h-12 w-12 bp-sm:h-14 bp-sm:w-14 items-center justify-center rounded-2xl bg-secondary text-foreground border border-border/60 shadow-sm transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-md">
                 <Wrench className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
               </div>
               <div className="text-center">
@@ -457,9 +457,9 @@ export default function Home() {
 
             <Link
               href="/services/tension-guide"
-              className="group flex h-full flex-col items-center gap-3 bp-sm:gap-4 rounded-2xl bg-card p-5 bp-sm:p-6 bp-md:p-7 shadow-sm border border-border/60 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-border"
+              className="group flex h-full flex-col items-center gap-3 bp-sm:gap-4 rounded-2xl bg-card p-5 bp-sm:p-6 bp-md:p-7 shadow-sm border border-border/60 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-border"
             >
-              <div className="flex h-12 w-12 bp-sm:h-14 bp-sm:w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-primary-foreground group-hover:scale-110">
+              <div className="flex h-12 w-12 bp-sm:h-14 bp-sm:w-14 items-center justify-center rounded-2xl bg-secondary text-foreground border border-border/60 shadow-sm transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-md">
                 <BookOpen className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
               </div>
               <div className="text-center">
@@ -470,9 +470,9 @@ export default function Home() {
 
             <Link
               href="/board/market"
-              className="group flex h-full flex-col items-center gap-3 bp-sm:gap-4 rounded-2xl bg-card p-5 bp-sm:p-6 bp-md:p-7 shadow-sm border border-border/60 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-border"
+              className="group flex h-full flex-col items-center gap-3 bp-sm:gap-4 rounded-2xl bg-card p-5 bp-sm:p-6 bp-md:p-7 shadow-sm border border-border/60 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-border"
             >
-              <div className="flex h-12 w-12 bp-sm:h-14 bp-sm:w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-primary-foreground group-hover:scale-110">
+              <div className="flex h-12 w-12 bp-sm:h-14 bp-sm:w-14 items-center justify-center rounded-2xl bg-secondary text-foreground border border-border/60 shadow-sm transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-md">
                 <Tags className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
               </div>
               <div className="text-center">
@@ -483,9 +483,9 @@ export default function Home() {
 
             <Link
               href="/board"
-              className="group flex h-full flex-col items-center gap-3 bp-sm:gap-4 rounded-2xl bg-card p-5 bp-sm:p-6 bp-md:p-7 shadow-sm border border-border/60 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-border"
+              className="group flex h-full flex-col items-center gap-3 bp-sm:gap-4 rounded-2xl bg-card p-5 bp-sm:p-6 bp-md:p-7 shadow-sm border border-border/60 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-border"
             >
-              <div className="flex h-12 w-12 bp-sm:h-14 bp-sm:w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-primary-foreground group-hover:scale-110">
+              <div className="flex h-12 w-12 bp-sm:h-14 bp-sm:w-14 items-center justify-center rounded-2xl bg-secondary text-foreground border border-border/60 shadow-sm transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-md">
                 <MessageSquareText className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
               </div>
               <div className="text-center">
@@ -500,9 +500,9 @@ export default function Home() {
       <section className="py-6 bp-sm:py-8">
         <SiteContainer>
           <Link href="/rackets/finder" className="group block">
-            <div className="rounded-2xl border border-border/60 bg-card p-6 bp-sm:p-7 bp-md:p-8 flex flex-col bp-md:flex-row bp-md:items-center bp-md:justify-between gap-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-border">
+            <div className="rounded-2xl border border-border/60 bg-card p-6 bp-sm:p-7 bp-md:p-8 flex flex-col bp-md:flex-row bp-md:items-center bp-md:justify-between gap-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-border">
               <div className="flex items-start gap-4 bp-sm:gap-5">
-                <div className="flex h-14 w-14 bp-sm:h-16 bp-sm:w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-primary-foreground group-hover:scale-110">
+                <div className="flex h-14 w-14 bp-sm:h-16 bp-sm:w-16 items-center justify-center rounded-2xl bg-secondary text-foreground border border-border/60 shadow-sm transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-md">
                   <Search className="h-6 w-6 bp-sm:h-7 bp-sm:w-7" />
                 </div>
                 <div className="min-w-0">
@@ -511,7 +511,7 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="shrink-0 inline-flex items-center justify-center rounded-xl px-5 py-2.5 text-sm bp-sm:text-base font-semibold bg-primary text-primary-foreground shadow-md transition-all duration-300 group-hover:shadow-lg group-hover:scale-105">
+              <div className="shrink-0 inline-flex items-center justify-center rounded-xl border border-border/70 bg-card px-5 py-2.5 text-sm bp-sm:text-base font-semibold text-foreground shadow-sm transition-all duration-300 group-hover:shadow-md">
                 바로가기
               </div>
             </div>
@@ -551,9 +551,9 @@ export default function Home() {
               <p className="mt-2 bp-sm:mt-3 text-sm bp-sm:text-base text-muted-foreground">처음 방문해도 쉽게 이해할 수 있어요</p>
             </div>
             <div className="mb-8 bp-sm:mb-10 grid gap-6 bp-sm:gap-8 grid-cols-2 bp-lg:grid-cols-4">
-              <div className="group flex flex-col items-center text-center p-4 rounded-2xl transition-all duration-300 hover:bg-muted/50">
+              <div className="group flex flex-col items-center text-center p-4 rounded-2xl border border-border/40 bg-background transition-all duration-300 hover:-translate-y-0.5 hover:shadow-sm">
                 <div className="relative mb-3 bp-sm:mb-4">
-                  <div className="flex h-14 w-14 bp-sm:h-16 bp-sm:w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-primary-foreground group-hover:scale-110">
+                  <div className="flex h-14 w-14 bp-sm:h-16 bp-sm:w-16 items-center justify-center rounded-2xl bg-secondary text-foreground border border-border/60 shadow-sm transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-md">
                     <BookOpen className="h-6 w-6 bp-sm:h-7 bp-sm:w-7" />
                   </div>
                   <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-foreground text-background flex items-center justify-center text-xs font-bold">1</div>
@@ -561,9 +561,9 @@ export default function Home() {
                 <h3 className="mb-1 bp-sm:mb-1.5 text-sm bp-sm:text-base font-semibold text-foreground">신청서 작성</h3>
                 <p className="text-xs bp-sm:text-sm text-muted-foreground">라켓/스트링/옵션 선택</p>
               </div>
-              <div className="group flex flex-col items-center text-center p-4 rounded-2xl transition-all duration-300 hover:bg-muted/50">
+              <div className="group flex flex-col items-center text-center p-4 rounded-2xl border border-border/40 bg-background transition-all duration-300 hover:-translate-y-0.5 hover:shadow-sm">
                 <div className="relative mb-3 bp-sm:mb-4">
-                  <div className="flex h-14 w-14 bp-sm:h-16 bp-sm:w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-primary-foreground group-hover:scale-110">
+                  <div className="flex h-14 w-14 bp-sm:h-16 bp-sm:w-16 items-center justify-center rounded-2xl bg-secondary text-foreground border border-border/60 shadow-sm transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-md">
                     <Package className="h-6 w-6 bp-sm:h-7 bp-sm:w-7" />
                   </div>
                   <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-foreground text-background flex items-center justify-center text-xs font-bold">2</div>
@@ -572,9 +572,9 @@ export default function Home() {
                 <p className="text-xs bp-sm:text-sm text-muted-foreground">방문 예약 또는 택배 발송</p>
               </div>
 
-              <div className="group flex flex-col items-center text-center p-4 rounded-2xl transition-all duration-300 hover:bg-muted/50">
+              <div className="group flex flex-col items-center text-center p-4 rounded-2xl border border-border/40 bg-background transition-all duration-300 hover:-translate-y-0.5 hover:shadow-sm">
                 <div className="relative mb-3 bp-sm:mb-4">
-                  <div className="flex h-14 w-14 bp-sm:h-16 bp-sm:w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-primary-foreground group-hover:scale-110">
+                  <div className="flex h-14 w-14 bp-sm:h-16 bp-sm:w-16 items-center justify-center rounded-2xl bg-secondary text-foreground border border-border/60 shadow-sm transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-md">
                     <Wrench className="h-6 w-6 bp-sm:h-7 bp-sm:w-7" />
                   </div>
                   <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-foreground text-background flex items-center justify-center text-xs font-bold">3</div>
@@ -583,9 +583,9 @@ export default function Home() {
                 <p className="text-xs bp-sm:text-sm text-muted-foreground">장착/텐션 세팅 후 검수</p>
               </div>
 
-              <div className="group flex flex-col items-center text-center p-4 rounded-2xl transition-all duration-300 hover:bg-muted/50">
+              <div className="group flex flex-col items-center text-center p-4 rounded-2xl border border-border/40 bg-background transition-all duration-300 hover:-translate-y-0.5 hover:shadow-sm">
                 <div className="relative mb-3 bp-sm:mb-4">
-                  <div className="flex h-14 w-14 bp-sm:h-16 bp-sm:w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-primary-foreground group-hover:scale-110">
+                  <div className="flex h-14 w-14 bp-sm:h-16 bp-sm:w-16 items-center justify-center rounded-2xl bg-secondary text-foreground border border-border/60 shadow-sm transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-md">
                     <BadgeCheck className="h-6 w-6 bp-sm:h-7 bp-sm:w-7" />
                   </div>
                   <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-foreground text-background flex items-center justify-center text-xs font-bold">4</div>
@@ -597,7 +597,7 @@ export default function Home() {
             <div className="text-center">
               <Link
                 href="/services/apply"
-                className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 bp-sm:px-8 py-3 bp-sm:py-3.5 text-sm bp-sm:text-base font-semibold text-primary-foreground shadow-lg transition-all duration-300 hover:bg-primary/90 hover:shadow-xl hover:scale-105"
+                className="inline-flex items-center gap-2 rounded-xl bg-foreground px-6 bp-sm:px-8 py-3 bp-sm:py-3.5 text-sm bp-sm:text-base font-semibold text-background shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
               >
                 <Wrench className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                 지금 신청하기
