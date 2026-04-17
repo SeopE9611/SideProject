@@ -10,6 +10,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Separator } from "@/components/ui/separator";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,6 +25,11 @@ import {
 import { racketBrandLabel } from "@/lib/constants";
 import { UNSAVED_CHANGES_MESSAGE } from "@/lib/hooks/useUnsavedChangesGuard";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
+import {
+  adminMutator,
+  getAdminErrorMessage,
+} from "@/lib/admin/adminFetcher";
+import { showErrorToast } from "@/lib/toast";
 
 type AdminRacketDetail = RacketForm & {
   id: string;
@@ -83,43 +89,38 @@ export default function AdminRacketEditClient({ id }: { id: string }) {
   };
 
   const onSubmit = async (payload: RacketForm) => {
-    const res = await fetch(`/api/admin/rackets/${id}`, {
+    await adminMutator(`/api/admin/rackets/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
-    const json = await res.json();
-    if (!res.ok) {
-      alert(json?.message ?? "수정 실패");
-      return;
-    }
     r.push("/admin/rackets");
   };
 
   const onDelete = async () => {
-    const res = await fetch(`/api/admin/rackets/${id}`, { method: "DELETE" });
-    const json = await res.json();
-    if (!res.ok) {
-      alert(json?.message ?? "삭제 실패");
-      return;
+    try {
+      await adminMutator(`/api/admin/rackets/${id}`, {
+        method: "DELETE",
+      });
+      r.push("/admin/rackets");
+    } catch (error) {
+      showErrorToast(getAdminErrorMessage(error) || "삭제 실패");
     }
-    r.push("/admin/rackets");
   };
 
   if (error || !data?.id) {
     if (isLoading && !data?.id) {
       return (
-        <div className="min-h-screen bg-muted/30">
-          <div className="relative overflow-hidden bg-muted/30">
-            <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-4">
+        <div className="min-h-screen bg-background">
+          <div className="container py-8 px-6 space-y-6">
+            <div className="rounded-2xl p-8 border border-border bg-card shadow-lg space-y-4">
               <Skeleton className="h-9 w-24" />
               <div className="flex items-center justify-between">
                 <Skeleton className="h-12 w-64" />
                 <Skeleton className="h-10 w-24" />
               </div>
             </div>
-          </div>
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <Separator className="bg-border" />
             <div className="bg-card rounded-xl shadow-sm border border-border p-6 space-y-4">
               {Array.from({ length: 5 }).map((_, index) => (
                 <Skeleton key={index} className="h-10 w-full" />
@@ -132,9 +133,9 @@ export default function AdminRacketEditClient({ id }: { id: string }) {
     }
 
     return (
-      <div className="min-h-screen bg-muted/30">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="bg-card rounded-xl shadow-sm border border-destructive p-8 text-center">
+      <div className="min-h-screen bg-background">
+        <div className="container py-8 px-6">
+          <div className="rounded-2xl p-8 border border-destructive bg-card shadow-lg text-center">
             <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
             <p className="text-destructive">데이터를 불러오지 못했습니다.</p>
             <Link href="/admin/rackets" className="mt-4 inline-block">
@@ -147,81 +148,85 @@ export default function AdminRacketEditClient({ id }: { id: string }) {
   }
 
   return (
-    <div className="min-h-screen bg-muted/30">
-      <div className="relative overflow-hidden bg-muted/30">
-        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          {isLoading ? (
-            <div className="mb-4 rounded-lg border border-border bg-muted/30 px-4 py-2 text-sm text-muted-foreground">
-              최신 정보를 확인하고 있습니다...
-            </div>
-          ) : null}
-          <Link
-            href="/admin/rackets"
-            data-no-unsaved-guard
-            onClick={confirmLeave}
-          >
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-foreground hover:bg-card mb-4"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              목록으로
-            </Button>
-          </Link>
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <span className="rounded-2xl border border-primary/20 bg-primary/10 p-2 text-primary dark:bg-primary/20">
-                  <Edit className="h-8 w-8" />
-                </span>
-                <h1 className="text-3xl font-bold text-foreground">
-                  라켓 수정
-                </h1>
-                <StockChip id={data.id} total={data.quantity ?? 1} />
+    <div className="min-h-screen bg-background">
+      <div className="container py-8 px-6">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+          }}
+          className="space-y-6"
+        >
+          <div className="rounded-2xl p-8 border border-border bg-card shadow-lg">
+            {isLoading ? (
+              <div className="mb-4 rounded-lg border border-border bg-muted/30 px-4 py-2 text-sm text-muted-foreground">
+                최신 정보를 확인하고 있습니다...
               </div>
-              <p className="text-primary">
-                {racketBrandLabel(data.brand)} {data.model}
-              </p>
-            </div>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="destructive" size="lg" className="shadow-lg">
-                  <Trash2 className="h-5 w-5 mr-2" />
-                  삭제
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>라켓을 삭제하시겠습니까?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    이 작업은 되돌릴 수 없습니다. 라켓 정보가 영구적으로
-                    삭제됩니다.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>취소</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={onDelete}
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            ) : null}
+            <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
+              <div className="flex items-center space-x-4">
+                <div className="bg-card rounded-full p-3 shadow-md">
+                  <Edit className="h-8 w-8 text-primary" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-3xl font-bold tracking-tight">라켓 수정</h2>
+                    <StockChip id={data.id} total={data.quantity ?? 1} />
+                  </div>
+                  <p className="text-muted-foreground">
+                    {racketBrandLabel(data.brand)} {data.model}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  type="button"
+                  asChild
+                  className="bg-muted/40 hover:bg-muted border-border"
+                >
+                  <Link
+                    href="/admin/rackets"
+                    data-no-unsaved-guard
+                    onClick={confirmLeave}
                   >
-                    삭제
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    목록으로
+                  </Link>
+                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" type="button">
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      삭제
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>라켓을 삭제하시겠습니까?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        이 작업은 되돌릴 수 없습니다. 라켓 정보가 영구적으로
+                        삭제됩니다.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>취소</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={onDelete}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        삭제
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-          <AdminRacketForm
-            initial={data}
-            submitLabel="저장"
-            onSubmit={onSubmit}
-          />
-        </div>
+          <Separator className="bg-border" />
+
+          <AdminRacketForm initial={data} submitLabel="저장" onSubmit={onSubmit} />
+        </form>
       </div>
     </div>
   );

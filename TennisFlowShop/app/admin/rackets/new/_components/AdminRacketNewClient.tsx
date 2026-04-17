@@ -8,8 +8,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { UNSAVED_CHANGES_MESSAGE } from "@/lib/hooks/useUnsavedChangesGuard";
-import { adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
-import { showErrorToast } from "@/lib/toast";
+import { adminMutator } from "@/lib/admin/adminFetcher";
 
 export default function AdminRacketNewClient() {
   const r = useRouter();
@@ -25,16 +24,12 @@ export default function AdminRacketNewClient() {
   };
 
   const onSubmit = async (data: RacketForm) => {
-    try {
-      await adminMutator("/api/admin/rackets", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      r.push("/admin/rackets");
-    } catch (error) {
-      showErrorToast(getAdminErrorMessage(error) || "등록 실패");
-    }
+    await adminMutator("/api/admin/rackets", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    r.push("/admin/rackets");
   };
 
   return (
