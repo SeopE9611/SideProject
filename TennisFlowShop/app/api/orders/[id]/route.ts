@@ -496,6 +496,17 @@ export async function GET(
       paymentApprovedAt: toNullableIsoString(order.paymentInfo?.approvedAt),
       paymentEasyPayProvider:
         order.paymentInfo?.rawSummary?.easyPay?.provider ?? null,
+      paymentCardDisplayName: order.paymentInfo?.cardDisplayName ?? null,
+      paymentCardCompany:
+        order.paymentInfo?.cardCompany ??
+        order.paymentInfo?.niceCard?.issuerName ??
+        order.paymentInfo?.rawSummary?.card?.issuerName ??
+        null,
+      paymentCardLabel:
+        order.paymentInfo?.cardLabel ??
+        order.paymentInfo?.niceCard?.cardName ??
+        order.paymentInfo?.rawSummary?.card?.cardName ??
+        null,
       paymentBank: order.paymentInfo?.bank ?? null,
       paymentTid: order.paymentInfo?.tid ?? null,
       paymentNiceSync: order.paymentInfo?.niceSync ?? null,

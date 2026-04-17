@@ -138,6 +138,9 @@ interface OrderDetail {
   paymentEasyPayProvider?: string | null;
   paymentApprovedAt?: string | null;
   paymentTid?: string | null;
+  paymentCardDisplayName?: string | null;
+  paymentCardCompany?: string | null;
+  paymentCardLabel?: string | null;
   paymentNiceSync?: {
     lastSyncedAt?: string | null;
     pgStatus?: string | null;
@@ -1401,6 +1404,9 @@ export default function OrderDetailClient({
                     easyPayProvider={orderDetail.paymentEasyPayProvider}
                     paymentStatus={orderDetail.paymentStatus}
                     paymentTid={orderDetail.paymentTid}
+                    paymentCardDisplayName={orderDetail.paymentCardDisplayName}
+                    paymentCardCompany={orderDetail.paymentCardCompany}
+                    paymentCardLabel={orderDetail.paymentCardLabel}
                     paymentNiceSync={orderDetail.paymentNiceSync}
                   />
                 </div>

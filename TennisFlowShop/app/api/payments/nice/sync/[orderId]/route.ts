@@ -3,7 +3,7 @@ import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 import clientPromise from "@/lib/mongodb";
 import { verifyAccessToken } from "@/lib/auth.utils";
-import { getNicePaymentByTid } from "@/lib/payments/nice/server";
+import { extractNiceCardInfo, getNicePaymentByTid } from "@/lib/payments/nice/server";
 
 function pick(raw: Record<string, string>, ...keys: string[]) {
   for (const key of keys) {
@@ -120,6 +120,16 @@ export async function POST(_req: Request, { params }: { params: Promise<{ orderI
       previousPaymentStatus,
       previousPaymentInfoStatus,
     });
+    const syncCardInfo = extractNiceCardInfo(pgRaw);
+    const currentCardDisplayName = String((order as any)?.paymentInfo?.cardDisplayName ?? "").trim();
+    const currentCardCompany = String((order as any)?.paymentInfo?.cardCompany ?? "").trim();
+    const currentCardLabel = String((order as any)?.paymentInfo?.cardLabel ?? "").trim();
+    const currentNiceCard = (order as any)?.paymentInfo?.niceCard ?? null;
+
+    const nextCardDisplayName = currentCardDisplayName || syncCardInfo?.displayName || "";
+    const nextCardCompany = currentCardCompany || syncCardInfo?.issuerName || "";
+    const nextCardLabel = currentCardLabel || syncCardInfo?.cardName || "";
+    const nextNiceCard = currentNiceCard || syncCardInfo || null;
     console.info("[nicepay][sync]", {
       stage: "sync_mapping",
       orderId,
@@ -139,6 +149,22 @@ export async function POST(_req: Request, { params }: { params: Promise<{ orderI
         $set: {
           paymentStatus: mapped.nextPaymentStatus,
           "paymentInfo.status": mapped.nextPaymentInfoStatus,
+          ...(nextCardDisplayName ? { "paymentInfo.cardDisplayName": nextCardDisplayName } : {}),
+          ...(nextCardCompany ? { "paymentInfo.cardCompany": nextCardCompany } : {}),
+          ...(nextCardLabel ? { "paymentInfo.cardLabel": nextCardLabel } : {}),
+          ...(nextNiceCard ? { "paymentInfo.niceCard": nextNiceCard } : {}),
+          ...(nextNiceCard
+            ? {
+                "paymentInfo.rawSummary.card": {
+                  cardName: nextNiceCard.cardName ?? undefined,
+                  issuerName: nextNiceCard.issuerName ?? undefined,
+                  issuerCode: nextNiceCard.issuerCode ?? undefined,
+                  acquirerName: nextNiceCard.acquirerName ?? undefined,
+                  acquirerCode: nextNiceCard.acquirerCode ?? undefined,
+                  cardCode: nextNiceCard.cardCode ?? undefined,
+                },
+              }
+            : {}),
           "paymentInfo.niceSync": {
             lastSyncedAt: nowIso,
             source: "manual_sync_api",

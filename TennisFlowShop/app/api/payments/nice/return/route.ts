@@ -4,7 +4,7 @@ import { ObjectId } from "mongodb";
 import clientPromise from "@/lib/mongodb";
 import { createOrder } from "@/app/features/orders/api/handlers";
 import { ensureTossPaymentSessionIndexes, tossPaymentSessions, type TossPaymentFailureStage } from "@/lib/payments/toss/session";
-import { approveNicePaymentByTid, cancelNicePaymentByTid } from "@/lib/payments/nice/server";
+import { approveNicePaymentByTid, cancelNicePaymentByTid, extractNiceCardInfo } from "@/lib/payments/nice/server";
 
 export const runtime = "nodejs";
 export const preferredRegion = ["icn1", "hnd1"];
@@ -441,6 +441,7 @@ async function handleNiceReturn(req: Request) {
       }
 
       const mongoOrderId = String(orderJson.orderId);
+      const niceCard = extractNiceCardInfo(approvedRaw);
       console.info("[nicepay][flow]", { stage: "before_order_update", tid, orderId, mongoOrderId });
       const orderUpdateResult = await db.collection("orders").updateOne(
         { _id: new ObjectId(mongoOrderId) },
@@ -454,12 +455,25 @@ async function handleNiceReturn(req: Request) {
               tid,
               total: amount,
               approvedAt: pick(approvedRaw, "paidAt") || new Date().toISOString(),
+              cardDisplayName: niceCard?.displayName || undefined,
+              cardCompany: niceCard?.issuerName || undefined,
+              cardLabel: niceCard?.cardName || undefined,
+              niceCard: niceCard || undefined,
               rawSummary: {
                 orderId,
                 resultCode,
                 resultMsg: pick(approvedRaw, "resultMsg", "ResultMsg"),
                 goodsName: pick(approvedRaw, "goodsName", "GoodsName"),
-                card: pick(approvedRaw, "cardName") ? { cardName: pick(approvedRaw, "cardName") } : undefined,
+                card: niceCard
+                  ? {
+                      cardName: niceCard.cardName ?? undefined,
+                      issuerName: niceCard.issuerName ?? undefined,
+                      issuerCode: niceCard.issuerCode ?? undefined,
+                      acquirerName: niceCard.acquirerName ?? undefined,
+                      acquirerCode: niceCard.acquirerCode ?? undefined,
+                      cardCode: niceCard.cardCode ?? undefined,
+                    }
+                  : undefined,
                 easyPay: pick(approvedRaw, "easyPayProvider") ? { provider: pick(approvedRaw, "easyPayProvider") } : undefined,
               },
               niceSync: {

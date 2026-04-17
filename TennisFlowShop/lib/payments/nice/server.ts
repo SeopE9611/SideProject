@@ -15,6 +15,38 @@ function toRecordString(value: unknown): Record<string, string> {
   }, {});
 }
 
+function pick(raw: Record<string, string>, ...keys: string[]) {
+  for (const key of keys) {
+    const value = raw[key];
+    if (typeof value === "string" && value.trim() !== "") return value.trim();
+  }
+  return "";
+}
+
+export function extractNiceCardInfo(raw: Record<string, string>) {
+  const cardName = pick(raw, "cardName", "CardName");
+  const issuerName = pick(raw, "issuerName", "IssuerName", "cardCompany", "CardCompany");
+  const issuerCode = pick(raw, "issuerCode", "IssuerCode");
+  const acquirerName = pick(raw, "acquirerName", "AcquirerName");
+  const acquirerCode = pick(raw, "acquirerCode", "AcquirerCode");
+  const cardCode = pick(raw, "cardCode", "CardCode");
+
+  const displayName = cardName || issuerName || "";
+  if (!displayName && !issuerCode && !acquirerName && !acquirerCode && !cardCode) {
+    return null;
+  }
+
+  return {
+    displayName,
+    cardName: cardName || null,
+    issuerName: issuerName || null,
+    issuerCode: issuerCode || null,
+    acquirerName: acquirerName || null,
+    acquirerCode: acquirerCode || null,
+    cardCode: cardCode || null,
+  };
+}
+
 export function createNiceOrderId(): string {
   return `nicepay_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
 }
