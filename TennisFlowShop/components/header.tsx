@@ -864,15 +864,12 @@ const Header = () => {
                   <div className="mt-1 text-xs tracking-wider text-muted-foreground font-medium whitespace-nowrap">Powered by Tennis Flow</div>
                 </div>
               </Link>
-              <nav
-                ref={navRef}
-                className="hidden bp-lg:flex items-center ml-1 whitespace-nowrap flex-1 min-w-0 overflow-hidden"
-              >
+              <nav ref={navRef} className="hidden bp-lg:flex items-center ml-1 whitespace-nowrap flex-1 min-w-0 overflow-hidden">
                 <div
                   className={`flex w-full min-w-0 items-center gap-1.5 xl:gap-2 whitespace-nowrap ${
-                    // 메뉴가 전부 보일 때는 bounded width 안에서 고르게 배치하고,
-                    // overflow가 생기면 기존처럼 왼쪽 정렬로 전환해 첫 메뉴 잘림을 방지합니다.
-                    hasOverflow ? "justify-start" : "mx-auto max-w-[980px] 2xl:max-w-[1080px] justify-between"
+                    // 메뉴가 전부 보일 때는 bounded width를 조금 더 줄여
+                    // 간격이 과하게 벌어지지 않게 정리합니다.
+                    hasOverflow ? "justify-start" : "mx-auto max-w-[780px] 2xl:max-w-[860px] justify-between"
                   }`}
                 >
                   {primaryMenuItems.map((item) => {
@@ -881,7 +878,7 @@ const Header = () => {
                       <Link
                         key={item.name}
                         href={item.href}
-                        className={`inline-flex shrink-0 items-center h-10 px-3 rounded-lg text-sm leading-none transition whitespace-nowrap ${active ? "bg-primary text-primary-foreground font-semibold" : "text-foreground hover:text-foreground hover:bg-primary/10 dark:hover:bg-primary/20"}`}
+                        className={`inline-flex shrink-0 items-center h-10 px-3 rounded-lg text-[15px] leading-none transition whitespace-nowrap ${active ? "bg-primary text-primary-foreground font-semibold" : "text-foreground hover:text-foreground hover:bg-primary/10 dark:hover:bg-primary/20"}`}
                         aria-current={active ? "page" : undefined}
                         aria-label={`${item.name} 페이지로 이동`}
                       >
@@ -896,7 +893,7 @@ const Header = () => {
                       <DropdownMenuTrigger asChild>
                         <button
                           type="button"
-                          className="inline-flex shrink-0 items-center h-10 gap-1 px-3 rounded-lg text-sm leading-none transition whitespace-nowrap text-foreground hover:text-foreground hover:bg-primary/10 dark:hover:bg-primary/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                          className="inline-flex shrink-0 items-center h-10 gap-1 px-3 rounded-lg text-[15px] leading-none transition whitespace-nowrap text-foreground hover:text-foreground hover:bg-primary/10 dark:hover:bg-primary/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                           aria-label="더보기 메뉴"
                         >
                           ⋯
@@ -942,12 +939,12 @@ const Header = () => {
               <div ref={measureRef} className="absolute -left-[9999px] top-0 opacity-0 pointer-events-none">
                 <div data-measure-wrap className="flex items-center gap-1.5 xl:gap-2 ml-2 whitespace-nowrap">
                   {menuItems.map((it) => (
-                    <span key={`measure-${it.name}`} data-measure-item className="inline-flex shrink-0 items-center h-10 px-3 rounded-lg text-sm leading-none whitespace-nowrap font-semibold">
+                    <span key={`measure-${it.name}`} data-measure-item className="inline-flex shrink-0 items-center h-10 px-3 rounded-lg text-[15px] leading-none whitespace-nowrap font-semibold">
                       {it.name}
                     </span>
                   ))}
 
-                  <span data-measure-dots className="inline-flex shrink-0 items-center h-10 gap-1 px-3 rounded-lg text-sm leading-none whitespace-nowrap font-semibold">
+                  <span data-measure-dots className="inline-flex shrink-0 items-center h-10 gap-1 px-3 rounded-lg text-[15px] leading-none whitespace-nowrap font-semibold">
                     ⋯ <ChevronDown className="h-4 w-4" aria-hidden="true" />
                   </span>
                 </div>
