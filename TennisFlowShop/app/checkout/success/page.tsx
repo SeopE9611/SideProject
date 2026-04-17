@@ -12,7 +12,7 @@ import { buildCheckoutSuccessLinks } from '@/lib/checkout-success-links';
 import { bankLabelMap } from '@/lib/constants';
 import clientPromise from '@/lib/mongodb';
 import { getOrderDeliveryInfoTitle, isVisitPickupOrder, shouldShowDeliveryOnlyFields } from '@/lib/order-shipping';
-import { ArrowRight, CheckCircle, Clock, CreditCard, MapPin, Package, Phone, Shield, Star } from 'lucide-react';
+import { AlertTriangle, ArrowRight, CheckCircle, Clock, CreditCard, MapPin, Package, Phone, Shield, Star } from 'lucide-react';
 import { ObjectId } from 'mongodb';
 import { cookies } from 'next/headers';
 import Link from 'next/link';
@@ -128,9 +128,22 @@ function safeVerifyOrderAccessToken(token?: string) {
   }
 }
 
+function toErrorLog(error: unknown) {
+  const err = error as { name?: unknown; message?: unknown; code?: unknown };
+  const name = typeof err?.name === 'string' ? err.name : 'UnknownError';
+  const message = typeof err?.message === 'string' ? err.message : 'Unknown message';
+  const code = typeof err?.code === 'string' || typeof err?.code === 'number' ? String(err.code) : undefined;
+  const isMongoTimeout =
+    name === 'MongoServerSelectionError' ||
+    message.includes('Server selection timed out') ||
+    message.includes('timed out');
+  return { name, message, code, isMongoTimeout };
+}
+
 export default async function CheckoutSuccessPage({ searchParams }: { searchParams: Promise<{ orderId?: string }> }) {
   const sp = await searchParams;
   const orderId = sp.orderId;
+  console.info('[checkout][success][start]', { orderId: orderId ?? null });
 
   if (!orderId || !ObjectId.isValid(orderId)) return notFound();
 
@@ -150,11 +163,14 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
     }
   }
 
-  const client = await clientPromise;
-  const db = client.db();
-  const order = await db.collection('orders').findOne({ _id: new ObjectId(orderId) });
+  try {
+    console.info('[checkout][success][fetch_order_start]', { orderId });
+    const client = await clientPromise;
+    const db = client.db();
+    const order = await db.collection('orders').findOne({ _id: new ObjectId(orderId) });
+    console.info('[checkout][success][fetch_order_success]', { orderId, orderFound: Boolean(order) });
 
-  if (!order) return notFound();
+    if (!order) return notFound();
 
   const cookieStore = await cookies();
   const accessPayload = safeVerifyAccessToken(cookieStore.get('accessToken')?.value);
@@ -334,7 +350,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
         ? getNiceMethodLabel(paymentMethodRaw, easyPayProviderRaw)
         : '무통장입금';
 
-  return (
+    return (
     <>
       <BackButtonGuard />
       <ClearCartOnMount />
@@ -765,5 +781,60 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
         </SiteContainer>
       </div>
     </>
-  );
+    );
+  } catch (error) {
+    const errorInfo = toErrorLog(error);
+    console.error('[checkout][success][fetch_order_failed]', {
+      orderId,
+      ...errorInfo,
+    });
+    console.warn('[checkout][success][fallback_render]', {
+      orderId,
+      reason: 'order_detail_fetch_error',
+      isMongoTimeout: errorInfo.isMongoTimeout,
+    });
+
+    return (
+      <>
+        <BackButtonGuard />
+        <ClearCartOnMount />
+        <div className="min-h-full bg-background text-foreground">
+          <SiteContainer variant="wide" className="py-10 md:py-16">
+            <div className="mx-auto max-w-2xl">
+              <Card className="border border-border bg-card shadow-xl">
+                <CardHeader className="border-b border-border bg-background">
+                  <CardTitle className="flex items-center gap-2 text-xl">
+                    <AlertTriangle className="h-5 w-5 text-primary" />
+                    주문은 접수되었을 수 있어요
+                  </CardTitle>
+                  <CardDescription>
+                    결제 직후 주문 상세 정보를 불러오는 중 일시적인 문제가 발생했습니다. 결제 자체가 실패했다는 의미는 아닙니다.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3 p-6 text-sm text-muted-foreground">
+                  {orderId ? (
+                    <p>
+                      주문번호: <span className="font-mono font-semibold text-foreground">{orderId}</span>
+                    </p>
+                  ) : null}
+                  <p>잠시 후 다시 시도해 주세요. 문제가 계속되면 마이페이지 또는 관리자 페이지에서 주문 상태를 확인해 주세요.</p>
+                </CardContent>
+                <CardFooter className="flex flex-col gap-2 border-t border-border bg-background p-6 sm:flex-row">
+                  <Button asChild className="w-full sm:w-auto">
+                    <Link href={`/checkout/success?orderId=${encodeURIComponent(orderId)}`}>다시 시도</Link>
+                  </Button>
+                  <Button asChild variant="outline" className="w-full sm:w-auto">
+                    <Link href="/mypage">마이페이지 이동</Link>
+                  </Button>
+                  <Button asChild variant="ghost" className="w-full sm:w-auto">
+                    <Link href="/">홈으로</Link>
+                  </Button>
+                </CardFooter>
+              </Card>
+            </div>
+          </SiteContainer>
+        </div>
+      </>
+    );
+  }
 }

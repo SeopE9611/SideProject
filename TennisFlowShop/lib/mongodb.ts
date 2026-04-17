@@ -115,8 +115,12 @@ if (!uri) {
   }
   clientPromise = global._mongoClientPromise!;
 } else {
-  client = new MongoClient(uri);
-  clientPromise = client.connect();
+  // 서버리스/프로덕션에서도 런타임 인스턴스 내에서는 단일 커넥션 프라미스를 재사용한다.
+  if (!global._mongoClientPromise) {
+    client = new MongoClient(uri);
+    global._mongoClientPromise = client.connect();
+  }
+  clientPromise = global._mongoClientPromise!;
 }
 
 // 다른 곳에서 필요하면 default 로 가져다 쓸 수 있게 유지
