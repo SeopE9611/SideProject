@@ -43,7 +43,10 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
-import { calcOrderShippingFeeFromItems, normalizeItemShippingFee } from "@/lib/shipping-fee";
+import {
+  calcOrderShippingFeeWithBundlePolicy,
+  normalizeItemShippingFee,
+} from "@/lib/shipping-fee";
 import HeroCourtBackdrop from "@/components/system/HeroCourtBackdrop";
 
 // 통화 포맷 유틸 (일관성)
@@ -138,33 +141,47 @@ export default function CartPageClient() {
     [cartItems],
   );
 
+  const shippingFeeIdsToResolve = useMemo(
+    () => Array.from(new Set(cartItems.map((it) => String(it.id)))),
+    [cartItems],
+  );
+
   const productIdsKey = useMemo(
     () => [...productIds].sort().join("|"),
     [productIds],
   );
 
   const isShippingFeeReady = useMemo(() => {
-    if (productIds.length === 0) return true;
-    return productIds.every((id) =>
+    if (shippingFeeIdsToResolve.length === 0) return true;
+    return shippingFeeIdsToResolve.every((id) =>
       Object.prototype.hasOwnProperty.call(shippingFeeByProductId, id),
     );
-  }, [productIds, shippingFeeByProductId]);
+  }, [shippingFeeIdsToResolve, shippingFeeByProductId]);
 
   const shippingFee = useMemo(() => {
     if (!isShippingFeeReady) return 0;
-    return calcOrderShippingFeeFromItems({
-      items: cartItems
-        .filter((it) => (it.kind ?? "product") === "product")
-        .map((it) => ({ shippingFee: shippingFeeByProductId[String(it.id)] })),
+    const hasRacket = cartItems.some((it) => (it.kind ?? "product") === "racket");
+    const hasMountableString = cartItems.some(
+      (it) =>
+        (it.kind ?? "product") === "product" &&
+        (mountingFeeByProductId[String(it.id)] ?? 0) > 0,
+    );
+    return calcOrderShippingFeeWithBundlePolicy({
+      items: cartItems.map((it) => ({
+        kind: (it.kind ?? "product") as "product" | "racket",
+        shippingFee: shippingFeeByProductId[String(it.id)],
+        mountingFee: mountingFeeByProductId[String(it.id)] ?? 0,
+      })),
+      withStringService: hasRacket && hasMountableString,
     });
-  }, [cartItems, shippingFeeByProductId, isShippingFeeReady]);
+  }, [cartItems, mountingFeeByProductId, shippingFeeByProductId, isShippingFeeReady]);
   const total = subtotal + shippingFee;
 
   useEffect(() => {
     let cancelled = false;
 
     const load = async () => {
-      if (productIds.length === 0) {
+      if (shippingFeeIdsToResolve.length === 0) {
         if (!cancelled) {
           setMountingFeeByProductId({});
           setShippingFeeByProductId({});
@@ -173,39 +190,50 @@ export default function CartPageClient() {
       }
 
       try {
-        const res = await fetch("/api/products/mini-batch", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          cache: "no-store",
-          body: JSON.stringify({ ids: productIds }),
-        });
-
-        if (!res.ok) throw new Error("mini-batch request failed");
-
-        const json = await res.json();
-        const rows = Array.isArray(json?.items) ? json.items : [];
-        const miniMap = new Map<string, { mountingFee: number; shippingFee: number }>(
-          rows.map((entry: { id?: string; mountingFee?: number; shippingFee?: unknown }) => [
-            String(entry?.id ?? ""),
-            {
-              mountingFee: Number(entry?.mountingFee ?? 0),
-              shippingFee: normalizeItemShippingFee(entry?.shippingFee),
-            },
-          ]),
-        );
-        const pairs = productIds.map((id) => {
-          const mf = Number(miniMap.get(id)?.mountingFee ?? 0);
-          return [id, Number.isFinite(mf) && mf > 0 ? mf : 0] as const;
-        });
-
-        const shippingPairs = productIds.map((id) => [
-          id,
-          normalizeItemShippingFee(miniMap.get(id)?.shippingFee),
-        ] as const);
+        const [mountingMapResult, shippingPairsResult] = await Promise.all([
+          (async () => {
+            if (productIds.length === 0) return {} as Record<string, number>;
+            const res = await fetch("/api/products/mini-batch", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              cache: "no-store",
+              body: JSON.stringify({ ids: productIds }),
+            });
+            if (!res.ok) throw new Error("mini-batch request failed");
+            const json = await res.json();
+            const rows = Array.isArray(json?.items) ? json.items : [];
+            const miniMap = new Map<string, { mountingFee: number }>(
+              rows.map((entry: { id?: string; mountingFee?: number }) => [
+                String(entry?.id ?? ""),
+                {
+                  mountingFee: Number(entry?.mountingFee ?? 0),
+                },
+              ]),
+            );
+            const pairs = productIds.map((id) => {
+              const mf = Number(miniMap.get(id)?.mountingFee ?? 0);
+              return [id, Number.isFinite(mf) && mf > 0 ? mf : 0] as const;
+            });
+            return Object.fromEntries(pairs);
+          })(),
+          Promise.all(
+            shippingFeeIdsToResolve.map(async (id) => {
+              try {
+                const res = await fetch(`/api/products/${id}/mini`, {
+                  cache: "no-store",
+                });
+                const json = await res.json();
+                return [id, normalizeItemShippingFee(json?.shippingFee)] as const;
+              } catch {
+                return [id, 3000] as const;
+              }
+            }),
+          ),
+        ]);
 
         if (!cancelled) {
-          setMountingFeeByProductId(Object.fromEntries(pairs));
-          setShippingFeeByProductId(Object.fromEntries(shippingPairs));
+          setMountingFeeByProductId(mountingMapResult);
+          setShippingFeeByProductId(Object.fromEntries(shippingPairsResult));
         }
       } catch {
         if (!cancelled) {
@@ -213,7 +241,7 @@ export default function CartPageClient() {
             Object.fromEntries(productIds.map((id) => [id, 0] as const)),
           );
           setShippingFeeByProductId(
-            Object.fromEntries(productIds.map((id) => [id, 3000] as const)),
+            Object.fromEntries(shippingFeeIdsToResolve.map((id) => [id, 3000] as const)),
           );
         }
       }
@@ -223,7 +251,7 @@ export default function CartPageClient() {
     return () => {
       cancelled = true;
     };
-  }, [productIdsKey]);
+  }, [productIdsKey, shippingFeeIdsToResolve]);
 
   // 교체/장착 서비스 신청(체크아웃 withService=1)에서는
   // 라켓(또는 중고라켓) 수량과 "장착 가능한 스트링" 수량이 반드시 일치해야함.

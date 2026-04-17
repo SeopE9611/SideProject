@@ -18,7 +18,7 @@ import {
 import { deductPoints } from "@/lib/points.service";
 import { getShippingBadge } from "@/lib/badge-style";
 import { z } from "zod";
-import { calcOrderShippingFeeFromItems, normalizeItemShippingFee } from "@/lib/shipping-fee";
+import { calcOrderShippingFeeWithBundlePolicy, normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { findOneActivePassForUser } from "@/lib/passes.service";
 import { normalizeEmailForSearch } from "@/lib/search-email";
 
@@ -727,9 +727,10 @@ export async function createOrder(
           ? applyPackageToServiceFee(baseServiceFee, packageUsage)
           : 0;
 
-        const computedShippingFee = calcOrderShippingFeeFromItems({
+        const computedShippingFee = calcOrderShippingFeeWithBundlePolicy({
           items: itemsWithSnapshot,
           isVisitPickup: shippingInfo?.deliveryMethod === "방문수령",
+          withStringService: !!shippingInfo?.withStringService,
         });
 
         const computedTotalPrice =

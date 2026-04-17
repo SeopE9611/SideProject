@@ -28,7 +28,7 @@ import { bankLabelMap } from "@/lib/constants";
 import { useBackNavigationGuard } from "@/lib/hooks/useBackNavigationGuard";
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
 import { isNicePaymentsEnabled } from "@/lib/payments/provider-flags";
-import { calcOrderShippingFeeFromItems, normalizeItemShippingFee } from "@/lib/shipping-fee";
+import { calcOrderShippingFeeWithBundlePolicy, normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { cn } from "@/lib/utils";
 import { AlertTriangle, Building2, CheckCircle, CreditCard, Home, Loader2, Mail, MapPin, MessageSquare, Package, Phone, Shield, Truck, UserIcon } from "lucide-react";
 import dynamic from "next/dynamic";
@@ -360,13 +360,16 @@ export default function CheckoutPage() {
   // 배송비
   const shippingFee = useMemo(() => {
     if (!isShippingFeeReady) return 0;
-    return calcOrderShippingFeeFromItems({
+    return calcOrderShippingFeeWithBundlePolicy({
       items: orderItems.map((item) => ({
+        kind: item.kind ?? "product",
         shippingFee: shippingFeeByProductId[String(item.id)],
+        mountingFee: mountingFeeByProductId[String(item.id)] ?? 0,
       })),
       isVisitPickup: deliveryMethod === "방문수령",
+      withStringService,
     });
-  }, [orderItems, shippingFeeByProductId, deliveryMethod, isShippingFeeReady]);
+  }, [orderItems, shippingFeeByProductId, mountingFeeByProductId, deliveryMethod, isShippingFeeReady, withStringService]);
 
   // serviceFee 계산을 “URL”이 아니라 “mountingFeeByProductId” 기반으로
   const baseServiceFee = withStringService
