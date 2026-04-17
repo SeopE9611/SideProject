@@ -52,6 +52,27 @@ function mapCourierLabel(raw?: string | null): string {
   return raw;
 }
 type CancelStatus = 'none' | 'requested' | 'approved' | 'rejected';
+type LinkedPaymentSource = 'order' | 'rental' | 'application' | 'package' | null;
+
+type LinkedPaymentPayload = {
+  source: LinkedPaymentSource;
+  status: string | null;
+  method: string | null;
+  provider: string | null;
+  easyPayProvider?: string | null;
+  tid?: string | null;
+  bank?: string | null;
+  depositor?: string | null;
+  cardDisplayName?: string | null;
+  cardCompany?: string | null;
+  cardLabel?: string | null;
+  approvedAt?: string | null;
+  niceSync?: {
+    lastSyncedAt?: string | null;
+    pgStatus?: string | null;
+    source?: string | null;
+  } | null;
+};
 
 function normalizeCancelStatus(raw: any): CancelStatus {
   const v = typeof raw === 'string' ? raw.trim() : '';
@@ -67,6 +88,40 @@ function normalizeCancelStatus(raw: any): CancelStatus {
 
   // 그 외 알 수 없는 값은 안전하게 none 처리
   return 'none';
+}
+
+function toIsoOrNull(value: unknown): string | null {
+  if (!value) return null;
+  if (value instanceof Date) return value.toISOString();
+  if (typeof value === 'string') return value;
+  return null;
+}
+
+function buildLinkedPaymentFromDoc(source: Exclude<LinkedPaymentSource, 'application' | 'package' | null>, doc: any): LinkedPaymentPayload {
+  const paymentInfo = (doc as any)?.paymentInfo ?? {};
+  const niceSyncRaw = paymentInfo?.niceSync;
+
+  return {
+    source,
+    status: typeof doc?.paymentStatus === 'string' ? doc.paymentStatus : (typeof paymentInfo?.status === 'string' ? paymentInfo.status : null),
+    method: typeof paymentInfo?.method === 'string' ? paymentInfo.method : null,
+    provider: typeof paymentInfo?.provider === 'string' ? paymentInfo.provider : null,
+    easyPayProvider: typeof paymentInfo?.easyPayProvider === 'string' ? paymentInfo.easyPayProvider : null,
+    tid: typeof paymentInfo?.tid === 'string' ? paymentInfo.tid : null,
+    bank: typeof paymentInfo?.bank === 'string' ? paymentInfo.bank : null,
+    depositor: typeof paymentInfo?.depositor === 'string' ? paymentInfo.depositor : null,
+    cardDisplayName: typeof paymentInfo?.cardDisplayName === 'string' ? paymentInfo.cardDisplayName : null,
+    cardCompany: typeof paymentInfo?.cardCompany === 'string' ? paymentInfo.cardCompany : null,
+    cardLabel: typeof paymentInfo?.cardLabel === 'string' ? paymentInfo.cardLabel : null,
+    approvedAt: toIsoOrNull(paymentInfo?.approvedAt),
+    niceSync: niceSyncRaw
+      ? {
+          lastSyncedAt: toIsoOrNull(niceSyncRaw.lastSyncedAt),
+          pgStatus: typeof niceSyncRaw.pgStatus === 'string' ? niceSyncRaw.pgStatus : null,
+          source: typeof niceSyncRaw.source === 'string' ? niceSyncRaw.source : null,
+        }
+      : null,
+  };
 }
 
 function getApplicationLines(stringDetails: any): any[] {
@@ -212,6 +267,7 @@ export async function handleGetStringingApplication(req: Request, id: string) {
             items: 1,
             status: 1,
             paymentStatus: 1,
+            paymentInfo: 1,
             cancelRequest: 1,
             shippingInfo: 1,
             servicePickupMethod: 1,
@@ -219,6 +275,20 @@ export async function handleGetStringingApplication(req: Request, id: string) {
         },
       );
     }
+
+    const rentalIdRaw = (app as any).rentalId;
+    const rentalObjectId = ObjectId.isValid(String(rentalIdRaw ?? '')) ? new ObjectId(String(rentalIdRaw)) : null;
+    const linkedRental = rentalObjectId
+      ? await db.collection('rental_orders').findOne(
+          { _id: rentalObjectId },
+          {
+            projection: {
+              paymentStatus: 1,
+              paymentInfo: 1,
+            },
+          },
+        )
+      : null;
 
     const rawOrderItems = (order?.items ?? []) as {
       productId: string;
@@ -325,10 +395,49 @@ export async function handleGetStringingApplication(req: Request, id: string) {
       reverted: !!c.reverted,
     }));
 
+    const paymentSourceRaw = String((app as any).paymentSource ?? '').trim();
+    const hasPackageApplied = !!(app as any).packageApplied;
+    const linkedPayment: LinkedPaymentPayload = hasPackageApplied
+      ? {
+          source: 'package',
+          status: '패키지 적용 완료',
+          method: '패키지 사용',
+          provider: null,
+          easyPayProvider: null,
+          tid: null,
+          bank: null,
+          depositor: null,
+          cardDisplayName: null,
+          cardCompany: null,
+          cardLabel: null,
+          approvedAt: toIsoOrNull((app as any).packageRedeemedAt),
+          niceSync: null,
+        }
+      : paymentSourceRaw.startsWith('order:') && order
+        ? buildLinkedPaymentFromDoc('order', order)
+        : paymentSourceRaw.startsWith('rental:') && linkedRental
+          ? buildLinkedPaymentFromDoc('rental', linkedRental)
+          : {
+              source: 'application',
+              status: typeof app.paymentStatus === 'string' ? app.paymentStatus : null,
+              method: typeof app.paymentMethod === 'string' ? app.paymentMethod : null,
+              provider: null,
+              easyPayProvider: null,
+              tid: null,
+              bank: typeof app.shippingInfo?.bank === 'string' ? app.shippingInfo.bank : null,
+              depositor: typeof app.shippingInfo?.depositor === 'string' ? app.shippingInfo.depositor : null,
+              cardDisplayName: null,
+              cardCompany: null,
+              cardLabel: null,
+              approvedAt: null,
+              niceSync: null,
+            };
+
     return NextResponse.json({
       id: app._id.toString(),
       orderId: app.orderId?.toString() || null,
       rentalId: (app as any).rentalId?.toString?.() || null,
+      paymentSource: paymentSourceRaw || null,
       linkedOrderPickupMethod,
       // 사용자 확정 시각 (없으면 null)
       userConfirmedAt: (app as any).userConfirmedAt instanceof Date ? (app as any).userConfirmedAt.toISOString() : typeof (app as any).userConfirmedAt === 'string' ? (app as any).userConfirmedAt : null,
@@ -349,6 +458,7 @@ export async function handleGetStringingApplication(req: Request, id: string) {
       desiredDateTime: app.desiredDateTime,
       status: app.status,
       paymentStatus: app.paymentStatus,
+      linkedPayment,
       shippingInfo: app.shippingInfo || null,
       collectionMethod,
       inboundRequired,
