@@ -140,9 +140,47 @@ function toErrorLog(error: unknown) {
   return { name, message, code, isMongoTimeout };
 }
 
+async function runMongoQueryWithDiagnosis<T>(params: {
+  route: string;
+  orderId: string;
+  collection: string;
+  action: string;
+  run: () => Promise<T>;
+}): Promise<T> {
+  const { route, orderId, collection, action, run } = params;
+  console.info('[mongo][diagnose][db_query_start]', {
+    route,
+    orderId,
+    collection,
+    action,
+  });
+  try {
+    const result = await run();
+    console.info('[mongo][diagnose][db_query_success]', {
+      route,
+      orderId,
+      collection,
+      action,
+    });
+    return result;
+  } catch (error) {
+    const errorInfo = toErrorLog(error);
+    console.error('[mongo][diagnose][db_query_failed]', {
+      route,
+      orderId,
+      collection,
+      action,
+      ...errorInfo,
+    });
+    throw error;
+  }
+}
+
 export default async function CheckoutSuccessPage({ searchParams }: { searchParams: Promise<{ orderId?: string }> }) {
   const sp = await searchParams;
   const orderId = sp.orderId;
+  const route = '/checkout/success';
+  console.info('[mongo][diagnose][route_start]', { route, orderId: orderId ?? null });
   console.info('[checkout][success][start]', { orderId: orderId ?? null });
 
   if (!orderId || !ObjectId.isValid(orderId)) return notFound();
@@ -167,7 +205,13 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
     console.info('[checkout][success][fetch_order_start]', { orderId });
     const client = await clientPromise;
     const db = client.db();
-    const order = await db.collection('orders').findOne({ _id: new ObjectId(orderId) });
+    const order = await runMongoQueryWithDiagnosis({
+      route,
+      orderId,
+      collection: 'orders',
+      action: 'findOneById',
+      run: () => db.collection('orders').findOne({ _id: new ObjectId(orderId) }),
+    });
     console.info('[checkout][success][fetch_order_success]', { orderId, orderFound: Boolean(order) });
 
     if (!order) return notFound();
@@ -191,7 +235,12 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
 
   const submittedStatusExclusions = ['draft', 'canceled', 'cancelled', '취소'];
   const latestSubmittedByOrderApp = withStringService
-    ? await db.collection('stringing_applications').findOne(
+    ? await runMongoQueryWithDiagnosis({
+        route,
+        orderId,
+        collection: 'stringing_applications',
+        action: 'findLatestSubmittedByOrder',
+        run: () => db.collection('stringing_applications').findOne(
         {
           $and: [
             {
@@ -201,18 +250,25 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
           ],
         },
         { projection: { _id: 1 }, sort: { createdAt: -1, _id: -1 } },
-      )
+      ),
+      })
     : null;
 
   const orderLinkedSubmittedApp =
     withStringService && orderStringingApplicationId && ObjectId.isValid(orderStringingApplicationId)
-      ? await db.collection('stringing_applications').findOne(
+      ? await runMongoQueryWithDiagnosis({
+          route,
+          orderId,
+          collection: 'stringing_applications',
+          action: 'findLinkedSubmittedByApplicationId',
+          run: () => db.collection('stringing_applications').findOne(
           {
             _id: new ObjectId(orderStringingApplicationId),
             status: { $nin: submittedStatusExclusions },
           },
           { projection: { _id: 1 } },
-        )
+        ),
+        })
       : null;
 
   const representativeStringingApplicationId = (orderLinkedSubmittedApp?._id ? String(orderLinkedSubmittedApp._id) : null) ?? (latestSubmittedByOrderApp?._id ? String(latestSubmittedByOrderApp._id) : null);
@@ -230,22 +286,28 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
 
   let stringingSummary: StringingSummary | null = null;
   if (hasSubmittedApplication && representativeStringingApplicationId && ObjectId.isValid(representativeStringingApplicationId)) {
-    const app = await db.collection('stringing_applications').findOne(
-      { _id: new ObjectId(representativeStringingApplicationId) },
-      {
-        projection: {
-          stringDetails: 1,
-          collectionMethod: 1,
-          packageApplied: 1,
-          packagePassId: 1,
-          packageRedeemedAt: 1,
-          packageUseCount: 1,
-          serviceFeeBefore: 1,
-          serviceFee: 1,
-          totalPrice: 1,
+    const app = await runMongoQueryWithDiagnosis({
+      route,
+      orderId,
+      collection: 'stringing_applications',
+      action: 'findOneByRepresentativeApplicationId',
+      run: () => db.collection('stringing_applications').findOne(
+        { _id: new ObjectId(representativeStringingApplicationId) },
+        {
+          projection: {
+            stringDetails: 1,
+            collectionMethod: 1,
+            packageApplied: 1,
+            packagePassId: 1,
+            packageRedeemedAt: 1,
+            packageUseCount: 1,
+            serviceFeeBefore: 1,
+            serviceFee: 1,
+            totalPrice: 1,
+          },
         },
-      },
-    );
+      ),
+    });
     if (app) {
       const lines = getApplicationLines((app as any).stringDetails);
       const stringNames = Array.from(new Set(lines.map((line: any) => String(line?.stringName ?? '').trim()).filter(Boolean)));
@@ -266,10 +328,16 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
       const packagePassId = (app as any)?.packagePassId ? String((app as any).packagePassId) : null;
       const passDoc =
         packagePassId && ObjectId.isValid(packagePassId)
-          ? await db.collection('service_passes').findOne(
-              { _id: new ObjectId(packagePassId) },
-              { projection: { packageSize: 1, usedCount: 1, remainingCount: 1, meta: 1 } },
-            )
+          ? await runMongoQueryWithDiagnosis({
+              route,
+              orderId,
+              collection: 'service_passes',
+              action: 'findOneByPackagePassId',
+              run: () => db.collection('service_passes').findOne(
+                { _id: new ObjectId(packagePassId) },
+                { projection: { packageSize: 1, usedCount: 1, remainingCount: 1, meta: 1 } },
+              ),
+            })
           : null;
       const serviceFeeBeforeRaw = Number((app as any)?.serviceFeeBefore);
       const serviceFeeAfterCandidates = [Number((app as any)?.serviceFee), Number((app as any)?.totalPrice)];
@@ -799,6 +867,13 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
       hasOrderDetail: false,
       renderMode: 'without_details',
       isMongoTimeout: errorInfo.isMongoTimeout,
+    });
+    console.info('[mongo][diagnose][render_fallback]', {
+      route,
+      orderId,
+      isMongoTimeout: errorInfo.isMongoTimeout,
+      errorName: errorInfo.name,
+      errorMessage: errorInfo.message,
     });
 
     return (
