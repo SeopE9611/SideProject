@@ -33,12 +33,12 @@ const Footer = () => {
   return (
     <footer className="w-full bg-card border-t border-border relative overflow-hidden mt-8 bp-sm:mt-12">
       <div className="absolute inset-0 pointer-events-none opacity-5 bg-muted/30" />
-      <div className="bp-lg:pl-64 bp-lg:pr-8 xl:pl-72 xl:pr-12 2xl:pr-16 py-6 bp-sm:py-8">
+      <div className="bp-lg:pl-64 bp-lg:pr-8 xl:pl-72 xl:pr-12 2xl:pr-16 py-5 bp-sm:py-7">
         <SiteContainer className="bp-lg:mx-0">
-          <div className="grid grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-3 xl:grid-cols-5 gap-5 bp-sm:gap-7 bp-lg:gap-8 mb-6 bp-sm:mb-8">
+          <div className="grid grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-3 xl:grid-cols-4 gap-4 bp-sm:gap-6 bp-lg:gap-7 mb-5 bp-sm:mb-7">
             {/* 브랜드 섹션 - 모바일에서 전체 너비 */}
             <div className="bp-sm:col-span-2 bp-lg:col-span-1">
-              <Link href="/" className="flex items-center gap-3 mb-5 group">
+              <Link href="/" className="flex items-center gap-3 mb-4 group">
                 <div className="relative h-10 w-20 shrink-0 overflow-hidden">
                   <Image src="/DokkaebiTennisString.png" alt="" aria-hidden="true" fill className="object-contain dark:hidden" />
                   <Image src="/tennisflowmark-dark.png" alt="" aria-hidden="true" fill className="hidden object-contain dark:block" />
@@ -50,12 +50,12 @@ const Footer = () => {
                 </div>
               </Link>
 
-              <p className="text-sm text-muted-foreground mb-5 leading-relaxed">전문 테니스 스트링 서비스로 여러분의 테니스 라이프를 완성해드립니다.</p>
+              <p className="text-sm text-muted-foreground mb-4 leading-relaxed">전문 테니스 스트링 서비스로 여러분의 테니스 라이프를 완성해드립니다.</p>
             </div>
 
             <div>
-              <h3 className="text-base bp-sm:text-lg font-bold mb-3 bp-sm:mb-4 text-foreground">바로가기</h3>
-              <ul className="space-y-2">
+              <h3 className="text-base bp-sm:text-lg font-bold mb-2.5 bp-sm:mb-3 text-foreground">바로가기</h3>
+              <ul className="space-y-1.5">
                 {quickLinks.map((link) => (
                   <li key={link.name}>
                     <Link href={link.href} className="text-sm text-muted-foreground hover:text-primary transition-colors duration-300">
@@ -68,8 +68,8 @@ const Footer = () => {
 
             {/* 고객센터 */}
             <div>
-              <h3 className="text-base bp-sm:text-lg font-bold mb-3 bp-sm:mb-4 text-foreground">고객센터</h3>
-              <ul className="space-y-2">
+              <h3 className="text-base bp-sm:text-lg font-bold mb-2.5 bp-sm:mb-3 text-foreground">고객센터</h3>
+              <ul className="space-y-1.5">
                 {customerService.map((link) => (
                   <li key={link.name}>
                     <Link href={link.href} className="text-sm text-muted-foreground hover:text-primary transition-colors duration-300">
@@ -81,18 +81,9 @@ const Footer = () => {
             </div>
 
             <div>
-              <h3 className="text-base bp-sm:text-lg font-bold mb-3 bp-sm:mb-4 text-foreground">입금계좌</h3>
-              <div className="space-y-1.5 text-sm text-muted-foreground leading-relaxed">
-                <p className="text-foreground">농협 123-4567-8901-23</p>
-                <p>예금주: 도깨비테니스</p>
-                <p className="text-xs">무통장 입금 확인은 영업시간 내 순차 처리</p>
-              </div>
-            </div>
-
-            <div>
-              <h3 className="text-base bp-sm:text-lg font-bold mb-3 bp-sm:mb-4 text-foreground">연락처</h3>
-              <div className="space-y-3">
-                <div className="flex items-start gap-2.5">
+              <h3 className="text-base bp-sm:text-lg font-bold mb-2.5 bp-sm:mb-3 text-foreground">연락처</h3>
+              <div className="space-y-2.5">
+                <div className="flex items-start gap-2">
                   <Phone className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                   <div>
                     <span className="text-sm font-semibold text-foreground block">0507-1392-3493</span>
@@ -100,12 +91,12 @@ const Footer = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-2">
                   <Mail className="h-4 w-4 text-primary shrink-0" />
                   <span className="text-xs bp-sm:text-sm text-foreground break-all">korgis5813@naver.com</span>
                 </div>
 
-                <div className="flex items-start gap-2.5">
+                <div className="flex items-start gap-2">
                   <MapPin className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                   <div>
                     <span className="text-sm text-foreground block">서울 동작구 노량진로 22 B1</span>
@@ -113,13 +104,20 @@ const Footer = () => {
                   </div>
                 </div>
 
-                <div className="flex items-start gap-2.5">
+                <div className="flex items-start gap-2">
                   <Clock className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                   <div className="text-sm space-y-0.5">
                     <div className="text-foreground">평일 10:00 - 22:00</div>
                     <div className="text-xs text-muted-foreground">토요일 09:00 - 18:00</div>
                     <div className="text-xs text-destructive">일요일 정기 휴무</div>
                   </div>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-border space-y-1">
+                  <p className="text-sm font-semibold text-foreground">입금계좌</p>
+                  <p className="text-sm text-foreground">농협 123-4567-8901-23</p>
+                  <p className="text-xs text-muted-foreground">예금주: 도깨비테니스</p>
+                  <p className="text-xs text-muted-foreground">무통장 입금 확인은 영업시간 내 순차 처리</p>
                 </div>
               </div>
             </div>
