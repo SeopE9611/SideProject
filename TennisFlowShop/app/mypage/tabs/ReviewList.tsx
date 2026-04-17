@@ -500,10 +500,10 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
         itemsToRender.map((it) => (
           <Card
             key={it._id}
-            className="group relative overflow-hidden border-0 bg-card shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+            className="group relative overflow-hidden border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
           >
             <div
-              className="absolute inset-0 bg-muted/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+              className="absolute inset-0 border border-border/40 bg-secondary/30 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
               style={{ padding: "1px" }}
             >
               <div className="h-full w-full bg-card rounded-lg" />
@@ -590,7 +590,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
               </div>
 
               {/* 본문 */}
-              <div className="bg-muted rounded-lg p-4">
+              <div className="rounded-xl border border-border/60 bg-secondary/50 p-4">
                 <p className="text-foreground leading-relaxed whitespace-pre-wrap break-words">
                   {it.content}
                 </p>
@@ -633,9 +633,9 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
           </Card>
         ))
       ) : (
-        <Card className="relative overflow-hidden border-0 bg-muted/30">
+        <Card className="border-border bg-card shadow-sm">
           <CardContent className="p-8 md:p-12 text-center">
-            <div className="mx-auto mb-4 md:mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-muted/30">
+            <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full border border-border bg-secondary md:mb-6">
               <Star className="h-10 w-10 text-warning" />
             </div>
             <h3 className="mb-2 text-xl font-semibold text-foreground">

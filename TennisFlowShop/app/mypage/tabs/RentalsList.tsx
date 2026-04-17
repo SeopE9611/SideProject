@@ -154,9 +154,9 @@ export default function RentalsList() {
 
   if (!isInitialLoading && !isValidating && flat.length === 0) {
     return (
-      <Card className="relative overflow-hidden border-0 bg-muted/30 dark:bg-card/40">
+      <Card className="border-border bg-card shadow-sm">
         <CardContent className="p-8 md:p-12 text-center">
-          <div className="mx-auto mb-4 md:mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-muted/30 shadow-lg">
+          <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full border border-border bg-secondary md:mb-6">
             <Briefcase className="h-10 w-10 text-foreground" />
           </div>
           <h3 className="mb-2 text-xl font-semibold text-foreground">
@@ -200,10 +200,10 @@ export default function RentalsList() {
         return (
           <Card
             key={r.id}
-            className={`group relative overflow-hidden border-0 bg-card shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${r.stringingApplicationId || r.withStringService ? "ring-1 ring-ring" : ""}`}
+            className={`group relative overflow-hidden border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg ${r.stringingApplicationId || r.withStringService ? "ring-1 ring-ring/50" : ""}`}
           >
             <div
-              className="absolute inset-0 bg-muted/30 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+              className="absolute inset-0 border border-border/40 bg-secondary/30 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
               style={{ padding: "1px" }}
             >
               <div className="h-full w-full rounded-lg bg-card" />
@@ -251,7 +251,7 @@ export default function RentalsList() {
                 </Badge>
               </div>
 
-              <div className="grid grid-cols-1 gap-3 rounded-xl border border-border/50 bg-muted/30 p-3 md:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-1 gap-3 rounded-xl border border-border/60 bg-secondary/40 p-3 md:grid-cols-2 lg:grid-cols-3">
                 <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
                   <Clock className="h-4 w-4 text-muted-foreground" />
                   <div>
@@ -351,7 +351,7 @@ export default function RentalsList() {
                 ) : r.withStringService ? (
                   <Button
                     size="sm"
-                    className="bg-primary text-primary-foreground hover:bg-primary/90"
+                    variant="default" className="shadow-sm"
                     asChild
                   >
                     <Link

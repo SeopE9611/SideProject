@@ -72,7 +72,7 @@ export default function OrderReviewCTA({
   if (reviewNextTargetProductId) {
     return (
       <div className={`inline-flex items-center gap-2 ${className ?? ""}`}>
-        <Button size={size} asChild variant="default" className="shadow-lg">
+        <Button size={size} asChild variant="default" className="shadow-sm">
           <Link
             href={`/reviews/write?productId=${reviewNextTargetProductId}&orderId=${orderId}`}
           >

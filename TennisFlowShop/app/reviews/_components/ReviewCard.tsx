@@ -231,13 +231,13 @@ export default function ReviewCard({
   };
 
   return (
-    <Card className="overflow-hidden rounded-3xl border-0 bg-card/90 dark:bg-card backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 group">
+    <Card variant="interactive" className="group overflow-hidden border-border bg-card">
       {/* Tennis court line accent */}
-      <div className="h-1 bg-primary/70" />
+      <div className="h-1 bg-secondary" />
 
       <CardContent className="p-4 md:p-6 space-y-3 md:space-y-4 relative">
         {busy && (
-          <div className="absolute inset-0 bg-card/80 dark:bg-card backdrop-blur-sm flex items-center justify-center z-10 rounded-3xl">
+          <div className="absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-card/80">
             <Loader2 className="h-5 w-5 animate-spin text-primary" />
             <span className="ml-2 text-sm text-primary">변경 중...</span>
           </div>
@@ -248,7 +248,7 @@ export default function ReviewCard({
           <div className="flex items-center gap-3">
             <Badge
               variant={item.type === "product" ? "info" : "neutral"}
-              className="gap-1.5 px-3 py-1 rounded-full font-medium"
+              className="gap-1.5 rounded-full px-3 py-1 font-medium"
             >
               {item.type === "product" ? (
                 <Package className="h-3.5 w-3.5" />
@@ -258,7 +258,7 @@ export default function ReviewCard({
               {item.type === "product" ? "상품 리뷰" : "서비스 리뷰"}
             </Badge>
             {!!headerTitle && (
-              <span className="text-sm font-semibold text-foreground bg-muted px-2 py-1 rounded-full max-w-[320px] truncate">
+              <span className="max-w-[320px] rounded-full border border-border/60 bg-secondary px-2 py-1 text-sm font-semibold text-foreground truncate">
                 {headerTitle}
               </span>
             )}
@@ -363,7 +363,7 @@ export default function ReviewCard({
 
         {/* Author info with tennis styling */}
         <div className="flex items-center gap-2 text-xs">
-          <div className="w-6 h-6 rounded-full border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20 flex items-center justify-center">
+          <div className="flex h-6 w-6 items-center justify-center rounded-full border border-border bg-secondary text-foreground">
             <span className="font-bold text-[10px]">
               {displayName.charAt(0).toUpperCase()}
             </span>
@@ -374,7 +374,7 @@ export default function ReviewCard({
         </div>
 
         {/* Rating with tennis court styling */}
-        <div className="flex items-center gap-2 p-3 bg-muted/60 rounded-2xl">
+        <div className="flex items-center gap-2 rounded-xl border border-border/60 bg-secondary/50 p-3">
           <div className="flex items-center gap-1">
             {Array.from({ length: 5 }).map((_, i) => (
               <Star
@@ -392,7 +392,7 @@ export default function ReviewCard({
         {isMasked ? (
           <MaskedBlock className="mt-1" />
         ) : (
-          <div className="bg-muted rounded-2xl p-4">
+          <div className="rounded-xl border border-border/60 bg-secondary/50 p-4">
             <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
               {item.content}
             </p>
@@ -401,7 +401,7 @@ export default function ReviewCard({
 
         {/* Photo thumbnails */}
         {Array.isArray(item.photos) && item.photos.length > 0 && (
-          <div className="flex items-center justify-between p-3 bg-muted rounded-2xl">
+          <div className="flex items-center justify-between rounded-xl border border-border/60 bg-secondary/50 p-3">
             <span className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground">
               <ImageIcon className="h-4 w-4 text-primary" />
               사진 {item.photos.length}장
@@ -416,7 +416,7 @@ export default function ReviewCard({
                     setViewerIndex(idx);
                     setOpen(true);
                   }}
-                  className="relative w-12 h-12 rounded-xl overflow-hidden bg-muted focus:outline-none focus:ring-2 focus:ring-primary hover:scale-105 transition-transform"
+                  className="relative h-12 w-12 overflow-hidden rounded-xl border border-border/60 bg-muted transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-ring"
                   aria-label={`리뷰 사진 ${idx + 1} 크게 보기`}
                 >
                   <Image
@@ -443,7 +443,7 @@ export default function ReviewCard({
             variant={voted ? "default" : "secondary"}
             onClick={onHelpful}
             disabled={pending}
-            className={`rounded-full px-4 py-2 font-medium transition-all ${voted ? "shadow-md" : ""}`}
+            className="rounded-full px-4 py-2 font-medium"
             aria-pressed={voted}
             aria-label={`도움돼요 ${count ? `(${count})` : ""}`}
           >
@@ -456,7 +456,7 @@ export default function ReviewCard({
           </Button>
 
           {/* 날짜 */}
-          <time className="ml-auto text-xs font-medium text-muted-foreground bg-muted px-2 py-1 rounded-full whitespace-nowrap shrink-0 tabular-nums">
+          <time className="ml-auto whitespace-nowrap rounded-full border border-border/60 bg-secondary px-2 py-1 text-xs font-medium text-muted-foreground shrink-0 tabular-nums">
             {fmt(item.createdAt)}
           </time>
         </div>

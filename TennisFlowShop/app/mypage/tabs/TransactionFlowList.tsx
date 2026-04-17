@@ -639,8 +639,8 @@ export default function TransactionFlowList() {
             (displayKind === 'application' && (displayApplication ?? g.application)?.cancelStatus === 'requested');
 
           return (
-            <Card key={g.key} className="group relative overflow-hidden border-0 bg-card shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-              <div className="absolute inset-0 bg-muted/30 opacity-0 transition-opacity duration-300 group-hover:opacity-100" style={{ padding: '1px' }}>
+            <Card key={g.key} className="group relative overflow-hidden border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
+              <div className="absolute inset-0 border border-border/40 bg-secondary/30 opacity-0 transition-opacity duration-300 group-hover:opacity-100" style={{ padding: '1px' }}>
                 <div className="h-full w-full rounded-lg bg-card" />
               </div>
               <CardContent className="relative space-y-4 p-4 bp-sm:p-6">
@@ -1057,7 +1057,7 @@ export default function TransactionFlowList() {
         group relative flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium
         transition-all duration-200 ease-out
         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-1
-  ${isSecondaryOpen ? "border-primary/20 bg-primary/10 text-primary shadow-sm" : "border-border bg-muted/30 text-muted-foreground hover:border-primary/20 hover:bg-muted/50 hover:text-foreground"}
+  ${isSecondaryOpen ? "border-border bg-secondary text-foreground shadow-sm" : "border-border bg-background text-muted-foreground hover:bg-card hover:text-foreground"}
       `}
                             onClick={() => setExpandedSecondaryKey((prev) => (prev === g.key ? null : g.key))}
                           >
@@ -1067,7 +1067,7 @@ export default function TransactionFlowList() {
                               className={`
         flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-semibold
         transition-colors duration-200
-        ${isSecondaryOpen ? 'bg-primary text-primary-foreground' : 'bg-muted-foreground/20 text-muted-foreground group-hover:bg-primary/20 group-hover:text-primary'}
+        ${isSecondaryOpen ? 'bg-foreground text-background' : 'bg-muted text-muted-foreground group-hover:bg-secondary group-hover:text-foreground'}
       `}
                             >
                               {secondaryActions.length}
@@ -1077,7 +1077,7 @@ export default function TransactionFlowList() {
                         ) : null}
 
                         {secondaryActions.length > 0 && isSecondaryOpen ? (
-                          <div className="flex w-full animate-in fade-in slide-in-from-top-2 flex-wrap justify-end gap-2 rounded-lg border border-dashed border-border/50 bg-muted/20 p-3 duration-200">
+                          <div className="flex w-full animate-in fade-in flex-wrap justify-end gap-2 rounded-lg border border-dashed border-border/50 bg-muted/20 p-3 duration-200">
                             {secondaryActions.map((action) => (
                               <Fragment key={action.key}>{action.node}</Fragment>
                             ))}

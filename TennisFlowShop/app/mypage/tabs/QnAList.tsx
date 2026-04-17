@@ -100,9 +100,9 @@ export default function QnAList() {
   // 빈 상태
   if (!isInitialLoading && !isValidating && qnas.length === 0) {
     return (
-      <Card className="relative overflow-hidden border-0 bg-muted/30">
+      <Card className="border-border bg-card shadow-sm">
         <CardContent className="p-8 text-center md:p-12">
-          <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-muted/30 md:mb-6">
+          <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full border border-border bg-secondary md:mb-6">
             <MessageCircleQuestion className="h-10 w-10 text-primary" />
           </div>
           <h3 className="mb-2 text-xl font-semibold text-foreground">
@@ -113,7 +113,7 @@ export default function QnAList() {
           </p>
           <Button
             asChild
-            className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-200"
+            variant="default" className="shadow-sm"
           >
             <Link
               href="/board/qna/write"
@@ -148,10 +148,10 @@ export default function QnAList() {
       {qnas.map((qna) => (
         <Card
           key={qna.id}
-          className="group relative overflow-hidden border-0 bg-card shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+          className="group relative overflow-hidden border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
         >
           <div
-            className="absolute inset-0 bg-muted/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+            className="absolute inset-0 border border-border/40 bg-secondary/30 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
             style={{ padding: "1px" }}
           >
             <div className="h-full w-full bg-card rounded-lg" />
@@ -203,7 +203,7 @@ export default function QnAList() {
                 size="sm"
                 variant="outline"
                 asChild
-                className="border-border hover:border-border hover:bg-primary/10 dark:border-border dark:hover:border-border dark:hover:bg-primary/20 transition-colors bg-transparent"
+                className="border-border bg-background transition-colors hover:bg-card"
               >
                 <Link
                   href={`/board/qna/${qna.id}`}

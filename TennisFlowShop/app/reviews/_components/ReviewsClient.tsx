@@ -137,18 +137,18 @@ export default function ReviewsClient() {
   };
 
   return (
-    <div className="min-h-screen bg-muted/30 relative">
+    <div className="relative min-h-screen bg-background">
       {/* Tennis court background pattern */}
       <HeroCourtBackdrop
         opacity="soft"
-        className="h-full w-full text-primary"
+        className="h-full w-full text-muted-foreground"
       />
 
       <div className="relative z-10 container mx-auto px-4 py-6 md:py-8 space-y-4 md:space-y-6">
         {/* Header with tennis theme */}
-        <div className="text-center space-y-3 md:space-y-4 mb-6 md:mb-8">
+        <div className="mb-6 space-y-3 text-center md:mb-8 md:space-y-4">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="w-12 h-12 rounded-full bg-muted/30 flex items-center justify-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full border border-border bg-secondary">
               <Trophy className="h-6 w-6 text-foreground" />
             </div>
             <h1 className="text-3xl font-bold text-foreground">고객 리뷰</h1>
@@ -160,28 +160,28 @@ export default function ReviewsClient() {
         </div>
 
         {/* Control panel with tennis court styling */}
-        <Card className="border-0 bg-card/80 dark:bg-card backdrop-blur-sm shadow-lg rounded-3xl overflow-hidden">
-          <div className="h-1 bg-muted/30" />
+        <Card className="overflow-hidden border-border bg-card shadow-sm">
+          <div className="h-px bg-border" />
           <CardContent className="p-4 md:p-6">
             <div className="flex flex-wrap items-center gap-4">
               {/* Tabs with tennis court styling */}
               <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
-                <TabsList className="bg-muted rounded-full p-1">
+                <TabsList className="bg-secondary p-1">
                   <TabsTrigger
                     value="all"
-                    className="rounded-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                    className="rounded-full data-[state=active]:bg-card data-[state=active]:shadow-sm"
                   >
                     전체
                   </TabsTrigger>
                   <TabsTrigger
                     value="product"
-                    className="rounded-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                    className="rounded-full data-[state=active]:bg-card data-[state=active]:shadow-sm"
                   >
                     상품
                   </TabsTrigger>
                   <TabsTrigger
                     value="service"
-                    className="rounded-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                    className="rounded-full data-[state=active]:bg-card data-[state=active]:shadow-sm"
                   >
                     서비스
                   </TabsTrigger>
@@ -190,7 +190,7 @@ export default function ReviewsClient() {
 
               {/* Sort dropdown */}
               <Select value={sort} onValueChange={(v) => setSort(v as any)}>
-                <SelectTrigger className="w-[150px] rounded-full border-border">
+                <SelectTrigger className="w-[150px] border-border bg-background">
                   <SelectValue placeholder="정렬" />
                 </SelectTrigger>
                 <SelectContent>
@@ -205,7 +205,7 @@ export default function ReviewsClient() {
                 value={rating}
                 onValueChange={(v) => setRating(v as RatingFilter)}
               >
-                <SelectTrigger className="w-[130px] rounded-full border-border">
+                <SelectTrigger className="w-[130px] border-border bg-background">
                   <SelectValue placeholder="전체 별점" />
                 </SelectTrigger>
                 <SelectContent>
@@ -223,7 +223,7 @@ export default function ReviewsClient() {
                 <Checkbox
                   checked={hasPhoto}
                   onCheckedChange={(v) => setHasPhoto(Boolean(v))}
-                  className="rounded border-border data-[state=checked]:bg-primary data-[state=checked]:border-border"
+                  className="rounded border-border data-[state=checked]:bg-foreground data-[state=checked]:border-foreground"
                 />
                 사진만 보기
               </label>
@@ -300,7 +300,7 @@ export default function ReviewsClient() {
                   onClick={() => setSize(size + 1)}
                   disabled={isValidating}
                   variant="outline"
-                  className="rounded-full px-6 md:px-8 py-2 bg-card/80 dark:bg-card backdrop-blur-sm border-border hover:bg-primary/10 dark:hover:bg-primary/20"
+                  className="rounded-full border-border bg-background px-6 py-2 md:px-8 hover:bg-card"
                 >
                   {isValidating ? (
                     <>

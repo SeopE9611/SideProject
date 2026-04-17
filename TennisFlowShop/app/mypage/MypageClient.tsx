@@ -185,9 +185,9 @@ export default function MypageClient({ user }: Props) {
 
   // 페이지 톤 클래스 분류(히어로, 카드 헤더, 아이콘 배경)
   const pageTone = {
-    heroPanel: "relative overflow-hidden bg-card border-b border-border",
-    sectionHeader: "bg-muted border-b border-border p-4 bp-sm:p-6",
-    iconSurface: "bg-muted rounded-xl bp-sm:rounded-2xl p-2.5 bp-sm:p-3 ring-1 ring-ring/20",
+    heroPanel: "relative overflow-hidden border-b border-border bg-card",
+    sectionHeader: "border-b border-border bg-secondary/70 p-4 bp-sm:p-6",
+    iconSurface: "rounded-xl border border-border/60 bg-secondary p-2.5 bp-sm:rounded-2xl bp-sm:p-3",
   };
 
   return (
@@ -245,7 +245,7 @@ export default function MypageClient({ user }: Props) {
         <div className="grid grid-cols-1 gap-6 bp-lg:grid-cols-4 bp-lg:gap-8">
           <div className="hidden bp-lg:block bp-lg:col-span-1">
             <div className="sticky top-8">
-              <Card className="border-0 shadow-2xl bg-card/95 dark:bg-card/95 backdrop-blur-sm">
+              <Card className="border-border bg-card shadow-sm">
                 <CardHeader className="pb-4">
                   <div className="flex items-center gap-3">
                     <div className="bg-muted rounded-2xl p-3 ring-1 ring-ring/20">
@@ -284,7 +284,7 @@ export default function MypageClient({ user }: Props) {
           {/* 메인 콘텐츠 */}
           <div className="bp-lg:col-span-3 min-w-0">
             <Tabs value={currentTab} onValueChange={handleTabChange}>
-              <Card className="border-0 shadow-xl bg-card/95 dark:bg-card/95 backdrop-blur-sm mb-6 bp-sm:mb-8">
+              <Card className="mb-6 border-border bg-card shadow-sm bp-sm:mb-8">
                 <CardContent className="p-3 bp-sm:p-4 bp-lg:p-6">
                   <TabsList className="h-auto w-full p-1 bg-muted grid grid-cols-3 gap-1 bp-md:grid-cols-6">
                     <TabsTrigger value="orders" className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md min-w-0">
@@ -322,7 +322,7 @@ export default function MypageClient({ user }: Props) {
 
               {/* 거래 내역 탭 */}
               <TabsContent value="orders" className="mt-0">
-                <Card className="border-0 shadow-xl bg-card/95 dark:bg-card/95 backdrop-blur-sm">
+                <Card className="border-border bg-card shadow-sm">
                   <CardHeader className="bg-muted border-b border-border p-4 bp-sm:p-6">
                     <div className="flex items-center gap-3">
                       <div className={pageTone.iconSurface}>
@@ -357,7 +357,7 @@ export default function MypageClient({ user }: Props) {
 
               {/* 위시리스트 탭 */}
               <TabsContent value="wishlist" className="mt-0">
-                <Card className="border-0 shadow-xl bg-card/95 dark:bg-card/95 backdrop-blur-sm">
+                <Card className="border-border bg-card shadow-sm">
                   <CardHeader className={pageTone.sectionHeader}>
                     <div className="flex items-center gap-3">
                       <div className={pageTone.iconSurface}>
@@ -375,7 +375,7 @@ export default function MypageClient({ user }: Props) {
 
               {/* 리뷰 관리 탭 */}
               <TabsContent value="reviews" className="mt-0">
-                <Card className="border-0 shadow-xl bg-card/95 dark:bg-card/95 backdrop-blur-sm">
+                <Card className="border-border bg-card shadow-sm">
                   <CardHeader className={pageTone.sectionHeader}>
                     <div className="flex items-center gap-3">
                       <div className={pageTone.iconSurface}>
@@ -393,7 +393,7 @@ export default function MypageClient({ user }: Props) {
 
               {/* Q&A 내역 탭 */}
               <TabsContent value="qna" className="mt-0">
-                <Card className="border-0 shadow-xl bg-card/95 dark:bg-card/95 backdrop-blur-sm">
+                <Card className="border-border bg-card shadow-sm">
                   <CardHeader className={pageTone.sectionHeader}>
                     <div className="flex items-center gap-3">
                       <div className={pageTone.iconSurface}>
@@ -411,7 +411,7 @@ export default function MypageClient({ user }: Props) {
 
               {/* 패키지 탭 */}
               <TabsContent value="passes" className="mt-0">
-                <Card className="border-0 shadow-xl bg-card/95 dark:bg-card/95 backdrop-blur-sm">
+                <Card className="border-border bg-card shadow-sm">
                   <CardHeader className={pageTone.sectionHeader}>
                     <div className="flex items-center gap-3">
                       <div className={pageTone.iconSurface}>
@@ -429,7 +429,7 @@ export default function MypageClient({ user }: Props) {
 
               {/* 적립 포인트 탭 */}
               <TabsContent value="points" className="mt-0">
-                <Card className="border-0 shadow-xl bg-card/95 dark:bg-card/95 backdrop-blur-sm">
+                <Card className="border-border bg-card shadow-sm">
                   <CardHeader className={pageTone.sectionHeader}>
                     <div className="flex items-center gap-3">
                       <div className={pageTone.iconSurface}>
