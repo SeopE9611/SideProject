@@ -65,7 +65,7 @@ export default function ServiceReviewCTA({
         : "");
 
   return (
-    <Button size="sm" variant="highlight" className={className} asChild>
+    <Button size="sm" variant="default" className={className} asChild>
       <Link href={href}>
         <MessageSquarePlus className="mr-1 h-4 w-4" />
         서비스 리뷰 작성하기

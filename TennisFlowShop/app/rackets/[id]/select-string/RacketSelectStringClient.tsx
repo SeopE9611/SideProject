@@ -497,7 +497,7 @@ export default function RacketSelectStringClient({
                       {/* 버튼 영역 */}
                       {isFromCart ? (
                         <Button
-                          variant="cardAction"
+                          variant="elevated"
                           className="mt-4 w-full font-medium rounded-xl py-5 transition-all duration-300"
                           onClick={() => handleSelectString(p)}
                         >
@@ -521,7 +521,7 @@ export default function RacketSelectStringClient({
                       ) : (
                         <div className="mt-4 grid grid-cols-1 gap-2">
                           <Button
-                            variant="cardAction"
+                            variant="elevated"
                             className="w-full font-medium rounded-xl py-5 transition-all duration-300"
                             disabled={isSoldOut || isShort}
                             onClick={() => handleSelectString(p)}
