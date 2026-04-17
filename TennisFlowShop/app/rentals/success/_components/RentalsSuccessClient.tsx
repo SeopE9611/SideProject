@@ -101,7 +101,7 @@ export default function RentalsSuccessClient({ data }: Props) {
         <div className="absolute inset-0 bg-overlay/20 dark:bg-overlay/40"></div>
         <SiteContainer variant="wide" className="relative py-10 md:py-16">
           <div className="text-center">
-            <div className="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full bg-card/20 backdrop-blur-sm dark:bg-card/30">
+            <div className="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full bg-card border border-border shadow-sm">
               <CheckCircle className="h-12 w-12 text-foreground" />
             </div>
             <h1 className="mb-4 text-4xl font-bold md:text-5xl">대여 신청 접수 완료</h1>
@@ -113,7 +113,7 @@ export default function RentalsSuccessClient({ data }: Props) {
       <SiteContainer variant="wide" className="py-8">
         <div className="mx-auto max-w-4xl space-y-4 md:space-y-6">
           {hasStateMismatch && (
-            <Card className="border border-warning/40 bg-warning/10 shadow-xl backdrop-blur-sm dark:bg-warning/10">
+            <Card className="border border-warning/40 bg-warning/10 shadow-sm">
               <CardHeader className="bg-warning/10">
                 <CardTitle className="text-base text-warning">접수 상태 확인 중</CardTitle>
                 <CardDescription className="text-warning/90">최신 상태 동기화 중입니다. 잠시 후 새로고침하거나 마이페이지에서 최종 상태를 확인해 주세요.</CardDescription>
@@ -121,7 +121,7 @@ export default function RentalsSuccessClient({ data }: Props) {
             </Card>
           )}
 
-          <Card className="overflow-hidden border-0 bg-card/80 shadow-2xl backdrop-blur-sm dark:bg-card">
+          <Card className="overflow-hidden border border-border bg-card shadow-md">
             <div className="bg-muted/30 p-4 md:p-6">
               <CardTitle className="flex items-center gap-3 text-2xl">
                 <Package className="h-6 w-6 text-primary" />
@@ -345,7 +345,7 @@ export default function RentalsSuccessClient({ data }: Props) {
 
             <CardFooter className="bg-muted/30 p-4 md:p-6">
               <div className="flex w-full flex-col gap-4 sm:flex-row">
-                <Button className="h-12 flex-1 shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl" asChild>
+                <Button className="h-12 flex-1 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md" asChild>
                   <Link href="/mypage?tab=orders" className="flex items-center gap-2">
                     <Package className="h-5 w-5" />
                     대여 내역 확인
@@ -353,14 +353,14 @@ export default function RentalsSuccessClient({ data }: Props) {
                   </Link>
                 </Button>
                 {stringingApplicationHref ? (
-                  <Button variant="outline" className="h-12 flex-1 shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl" asChild>
+                  <Button variant="outline" className="h-12 flex-1 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md" asChild>
                     <Link href={stringingApplicationHref} className="flex items-center gap-2">
                       교체 서비스 신청 내역 보기
                       <ArrowRight className="h-4 w-4" />
                     </Link>
                   </Button>
                 ) : null}
-                <Button variant="ghost" className="h-12 flex-1 shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl" asChild>
+                <Button variant="ghost" className="h-12 flex-1 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md" asChild>
                   <Link href="/rackets" className="flex items-center gap-2">
                     다른 라켓 보기
                     <ArrowRight className="h-4 w-4" />
@@ -370,7 +370,7 @@ export default function RentalsSuccessClient({ data }: Props) {
             </CardFooter>
           </Card>
 
-          <Card className="border-0 bg-card/80 shadow-xl backdrop-blur-sm">
+          <Card className="border border-border bg-card shadow-sm">
             <CardHeader className="bg-muted/30">
               <CardTitle className="flex items-center gap-3">
                 <Shield className="h-5 w-5 text-foreground" />

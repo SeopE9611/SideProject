@@ -379,7 +379,7 @@ export default function ProfileClient({ user }: Props) {
             </div>
 
             <div className="flex items-center gap-4 md:gap-6">
-              <div className="bg-card/20 backdrop-blur-sm rounded-2xl p-4 md:p-6 shadow-lg">
+              <div className="bg-card rounded-2xl p-4 md:p-6 border border-border shadow-sm">
                 <Settings className="h-12 w-12" />
               </div>
               <div>
@@ -398,7 +398,7 @@ export default function ProfileClient({ user }: Props) {
       <div className="container mx-auto px-4 py-8 md:py-12">
         <div className="max-w-4xl mx-auto">
           <Tabs defaultValue="profile" className="space-y-6 md:space-y-8">
-            <Card className="border-0 shadow-2xl bg-card/95 dark:bg-card/95 backdrop-blur-sm">
+            <Card className="border border-border shadow-sm bg-card">
               <CardContent className="p-6">
                 <TabsList className="grid w-full grid-cols-5 h-auto p-1 bg-muted">
                   <TabsTrigger
@@ -441,10 +441,10 @@ export default function ProfileClient({ user }: Props) {
             </Card>
 
             <TabsContent value="profile">
-              <Card className="border-0 shadow-2xl bg-card/95 dark:bg-card/95 backdrop-blur-sm">
+              <Card className="border border-border shadow-sm bg-card">
                 <CardHeader className="bg-muted border-b">
                   <div className="flex items-center gap-3">
-                    <div className="bg-primary/10 text-primary dark:bg-primary/20 rounded-2xl p-3 shadow-lg">
+                    <div className="bg-secondary text-foreground rounded-2xl p-3 border border-border">
                       <User className="h-6 w-6 text-primary" />
                     </div>
                     <div>
@@ -457,12 +457,12 @@ export default function ProfileClient({ user }: Props) {
                 </CardHeader>
                 <CardContent className="p-4 md:p-8 space-y-6 md:space-y-8">
                   <div className="flex items-center gap-4 md:gap-6">
-                    <Avatar className="h-24 w-24 border-4 border-border shadow-xl">
+                    <Avatar className="h-24 w-24 border-2 border-border shadow-sm">
                       <AvatarImage
                         src="/placeholder.svg?height=96&width=96"
                         alt="프로필 이미지"
                       />
-                      <AvatarFallback className="text-2xl bg-primary/10 text-primary dark:bg-primary/20">
+                      <AvatarFallback className="text-2xl bg-secondary text-foreground">
                         {profileData.name.charAt(0)}
                       </AvatarFallback>
                     </Avatar>
@@ -473,7 +473,7 @@ export default function ProfileClient({ user }: Props) {
                         onClick={() =>
                           showInfoToast("해당 기능은 준비 중입니다.")
                         }
-                        className="mb-2 border-border hover:bg-primary/10 dark:hover:bg-primary/20"
+                        className="mb-2 border-border hover:bg-secondary"
                       >
                         <Camera className="mr-2 h-4 w-4" />
                         이미지 변경
@@ -583,7 +583,7 @@ export default function ProfileClient({ user }: Props) {
                     <Button
                       onClick={handleSave}
                       disabled={isLoading}
-                      className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-300"
+                      className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm hover:shadow-md transition-all duration-200"
                     >
                       <Save className="mr-2 h-4 w-4" />
                       {isLoading ? "저장 중..." : "저장"}
@@ -594,10 +594,10 @@ export default function ProfileClient({ user }: Props) {
             </TabsContent>
 
             <TabsContent value="password">
-              <Card className="border-0 shadow-2xl bg-card/95 dark:bg-card/95 backdrop-blur-sm">
+              <Card className="border border-border shadow-sm bg-card">
                 <CardHeader className="bg-muted border-b">
                   <div className="flex items-center gap-3">
-                    <div className="bg-primary/10 text-primary rounded-2xl p-3 shadow-lg dark:bg-primary/20">
+                    <div className="bg-secondary text-foreground rounded-2xl p-3 border border-border">
                       <Shield className="h-6 w-6 text-primary" />
                     </div>
                     <div>
@@ -675,7 +675,7 @@ export default function ProfileClient({ user }: Props) {
                     <Button
                       onClick={handlePasswordChange}
                       disabled={isLoading}
-                      className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-300"
+                      className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm hover:shadow-md transition-all duration-200"
                     >
                       <Save className="mr-2 h-4 w-4" />
                       {isLoading ? "변경 중..." : "비밀번호 변경"}
@@ -686,10 +686,10 @@ export default function ProfileClient({ user }: Props) {
             </TabsContent>
 
             <TabsContent value="address">
-              <Card className="border-0 shadow-2xl bg-card/95 dark:bg-card/95 backdrop-blur-sm">
+              <Card className="border border-border shadow-sm bg-card">
                 <CardHeader className="bg-muted border-b">
                   <div className="flex items-center gap-3">
-                    <div className="rounded-2xl p-3 shadow-lg border border-primary/20 bg-primary/10 dark:bg-primary/20 text-primary">
+                    <div className="rounded-2xl p-3 border border-border bg-secondary text-foreground">
                       <MapPin className="h-6 w-6 text-primary" />
                     </div>
                     <div>
@@ -717,7 +717,7 @@ export default function ProfileClient({ user }: Props) {
                         <Button
                           type="button"
                           onClick={handleAddressSearch}
-                          className="h-12 px-6 bg-transparent border-border text-primary hover:bg-primary/10 dark:hover:bg-primary/20"
+                          className="h-12 px-6 bg-background border-border text-foreground hover:bg-secondary"
                           variant="outline"
                         >
                           검색
@@ -762,7 +762,7 @@ export default function ProfileClient({ user }: Props) {
                     <Button
                       onClick={handleSave}
                       disabled={isLoading}
-                      className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-300"
+                      className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm hover:shadow-md transition-all duration-200"
                     >
                       <Save className="mr-2 h-4 w-4" />
                       {isLoading ? "저장 중..." : "저장"}
@@ -778,10 +778,10 @@ export default function ProfileClient({ user }: Props) {
 
             <TabsContent value="preferences">
               <div className="space-y-6 md:space-y-8">
-                <Card className="border-0 shadow-2xl bg-card/95 dark:bg-card/95 backdrop-blur-sm">
+                <Card className="border border-border shadow-sm bg-card">
                   <CardHeader className="bg-muted border-b">
                     <div className="flex items-center gap-3">
-                      <div className="bg-primary/10 text-primary dark:bg-primary/20 rounded-2xl p-3 shadow-lg">
+                      <div className="bg-secondary text-foreground rounded-2xl p-3 border border-border">
                         <Bell className="h-6 w-6 text-primary" />
                       </div>
                       <div>
@@ -880,7 +880,7 @@ export default function ProfileClient({ user }: Props) {
                       <Button
                         onClick={handleSave}
                         disabled={isLoading}
-                        className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-300"
+                        className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm hover:shadow-md transition-all duration-200"
                       >
                         <Save className="mr-2 h-4 w-4" />
                         {isLoading ? "저장 중..." : "저장"}
@@ -889,10 +889,10 @@ export default function ProfileClient({ user }: Props) {
                   </CardContent>
                 </Card>
 
-                <Card className="border-0 shadow-2xl bg-card/95 dark:bg-card/95 backdrop-blur-sm border border-destructive/30">
+                <Card className="border border-destructive/30 shadow-sm bg-card">
                   <CardHeader className="bg-destructive/10 dark:bg-destructive/15 border-b border-destructive/30">
                     <div className="flex items-center gap-3">
-                      <div className="bg-destructive/10 dark:bg-destructive/15 text-destructive rounded-2xl p-3 shadow-lg">
+                      <div className="bg-destructive/10 dark:bg-destructive/15 text-destructive rounded-2xl p-3 border border-destructive/30">
                         <AlertTriangle className="h-6 w-6 text-destructive" />
                       </div>
                       <div>
@@ -954,7 +954,7 @@ export default function ProfileClient({ user }: Props) {
                           variant="destructive"
                           type="button"
                           onClick={() => setShowWithdrawalForm(true)}
-                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-lg hover:shadow-xl transition-all duration-300"
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-sm hover:shadow-md transition-all duration-200"
                         >
                           <AlertTriangle className="mr-2 h-4 w-4" />
                           회원 탈퇴
