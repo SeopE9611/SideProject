@@ -30,6 +30,38 @@ export function calcOrderShippingFeeFromItems(args: {
   }, 0);
 }
 
+export function calcOrderShippingFeeWithBundlePolicy(args: {
+  items: Array<{
+    shippingFee?: unknown;
+    kind?: "product" | "racket";
+    mountingFee?: unknown;
+  }>;
+  isVisitPickup?: boolean;
+  withStringService?: boolean;
+}): number {
+  if (args.isVisitPickup) return 0;
+
+  const items = Array.isArray(args.items) ? args.items : [];
+  if (items.length === 0) return 0;
+
+  const hasRacket = items.some((item) => item?.kind === "racket");
+  const shouldExcludeMountableString = Boolean(args.withStringService) && hasRacket;
+
+  const candidates = shouldExcludeMountableString
+    ? items.filter((item) => {
+        const isMountableString = item?.kind === "product" && Number(item?.mountingFee) > 0;
+        return !isMountableString;
+      })
+    : items;
+
+  if (candidates.length === 0) return 0;
+
+  return candidates.reduce((maxFee, item) => {
+    const normalized = normalizeItemShippingFee(item?.shippingFee);
+    return Math.max(maxFee, normalized);
+  }, 0);
+}
+
 /**
  * @deprecated subtotal 기반 정책(3만원 이상 무료배송)은 더 이상 사용하지 마세요.
  */

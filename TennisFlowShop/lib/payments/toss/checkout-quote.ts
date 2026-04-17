@@ -1,5 +1,5 @@
 import { ObjectId, type Db } from "mongodb";
-import { calcOrderShippingFeeFromItems, normalizeItemShippingFee } from "@/lib/shipping-fee";
+import { calcOrderShippingFeeWithBundlePolicy, normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { applyPackageToServiceFee, resolvePackageUsage, resolveRequiredPassCountFromInput } from "@/app/features/stringing-applications/lib/package-pricing";
 import { findOneActivePassForUser } from "@/lib/passes.service";
 import type { StringingApplicationInput } from "@/app/features/stringing-applications/api/submit-core";
@@ -80,9 +80,10 @@ export async function calculateCheckoutPayableAmount(params: {
 
   const computedServiceFee = shippingInfo?.withStringService ? applyPackageToServiceFee(baseServiceFee, packageUsage) : 0;
 
-  const computedShippingFee = calcOrderShippingFeeFromItems({
+  const computedShippingFee = calcOrderShippingFeeWithBundlePolicy({
     items: itemsWithSnapshot,
     isVisitPickup: shippingInfo?.deliveryMethod === "방문수령",
+    withStringService: !!shippingInfo?.withStringService,
   });
 
   const computedTotalPrice = computedSubtotal + computedServiceFee + computedShippingFee;
