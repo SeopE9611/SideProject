@@ -361,7 +361,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialLoadE
             </Button>
 
             <div className="flex items-center space-x-2.5">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-border bg-secondary text-foreground">
                 <MessageSquare className="h-5 w-5" />
               </div>
               <div>
@@ -431,7 +431,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialLoadE
           </div> */}
         </div>
 
-        <Card className="border-0 bg-card shadow-xl backdrop-blur-sm">
+        <Card className="border border-border bg-card shadow-sm">
           <CardHeader className="bg-muted/30 border-b p-4 sm:p-5 md:p-6">
             <CardTitle className="flex flex-wrap items-center gap-x-3 gap-y-2">
               <div className="flex min-w-0 items-center gap-2 sm:gap-3">
@@ -678,7 +678,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialLoadE
                                   </Badge>
                                 )}
 
-                                <span className={`${qnaMobileTitleClampClass} text-foreground transition-colors hover:text-success dark:hover:text-success`} title={displayTitle}>
+                                <span className={`${qnaMobileTitleClampClass} text-foreground transition-colors hover:text-foreground`} title={displayTitle}>
                                   {displayTitle}
                                 </span>
                               </div>
@@ -789,7 +789,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialLoadE
                 </Button>
 
                 {visiblePages.map((pageNumber) => (
-                  <Button key={pageNumber} variant="outline" size="sm" className={pageNumber === page ? "h-10 w-10 bg-primary text-primary-foreground border-border" : "h-10 w-10 bg-card"} onClick={() => movePage(pageNumber)} disabled={isBusy}>
+                  <Button key={pageNumber} variant="outline" size="sm" className={pageNumber === page ? "h-10 w-10 bg-secondary text-foreground border-border" : "h-10 w-10 bg-card"} onClick={() => movePage(pageNumber)} disabled={isBusy}>
                     {pageNumber}
                   </Button>
                 ))}

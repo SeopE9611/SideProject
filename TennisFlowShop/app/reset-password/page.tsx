@@ -115,9 +115,9 @@ export default function ResetPasswordPage() {
     return (
       <div className="min-h-screen bg-muted/30 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
-          <Card className="border-0 bg-card/95 dark:bg-card backdrop-blur-sm shadow-2xl overflow-hidden">
-            <div className="p-4 md:p-6 border-b border-primary/20 bg-primary/10 dark:bg-primary/20 text-center">
-              <div className="w-16 h-16 mx-auto mb-4 bg-primary/10 dark:bg-primary/20 rounded-2xl flex items-center justify-center shadow-lg">
+          <Card className="border border-border bg-card shadow-sm overflow-hidden">
+            <div className="p-4 md:p-6 border-b border-border bg-muted/40 text-center">
+              <div className="w-16 h-16 mx-auto mb-4 border border-border bg-secondary rounded-xl flex items-center justify-center">
                 <ShieldAlert className="h-8 w-8 text-primary" />
               </div>
               <CardTitle className="text-2xl font-bold">
@@ -148,7 +148,7 @@ export default function ResetPasswordPage() {
         <div className="mb-6">
           <Link
             href="/login"
-            className="inline-flex items-center text-sm text-primary hover:text-primary dark:hover:text-primary hover:underline font-medium"
+            className="inline-flex items-center text-sm text-primary hover:text-foreground hover:underline font-medium"
             onClick={(e) => {
               if (confirmLeaveIfDirty()) return;
               e.preventDefault();
@@ -159,9 +159,9 @@ export default function ResetPasswordPage() {
           </Link>
         </div>
 
-        <Card className="border-0 bg-card/95 dark:bg-card backdrop-blur-sm shadow-2xl overflow-hidden">
-          <div className="p-4 md:p-6 border-b border-primary/20 bg-primary/10 dark:bg-primary/20 text-center">
-            <div className="w-16 h-16 mx-auto mb-4 bg-primary/10 dark:bg-primary/20 rounded-2xl flex items-center justify-center shadow-lg">
+        <Card className="border border-border bg-card shadow-sm overflow-hidden">
+          <div className="p-4 md:p-6 border-b border-border bg-muted/40 text-center">
+            <div className="w-16 h-16 mx-auto mb-4 border border-border bg-secondary rounded-xl flex items-center justify-center">
               <KeyRound className="h-8 w-8 text-primary" />
             </div>
             <CardTitle className="text-2xl font-bold">
@@ -214,7 +214,7 @@ export default function ResetPasswordPage() {
             <>
               <CardContent className="p-4 md:p-6">
                 <div className="bg-muted rounded-xl p-4 md:p-6 text-center border border-border">
-                  <div className="w-16 h-16 mx-auto mb-4 border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20 rounded-full flex items-center justify-center shadow-lg">
+                  <div className="w-16 h-16 mx-auto mb-4 border border-border bg-secondary text-foreground rounded-full flex items-center justify-center">
                     <CheckCircle className="h-8 w-8" />
                   </div>
                   <p className="text-sm font-semibold text-primary mb-2">

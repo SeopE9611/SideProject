@@ -804,9 +804,9 @@ export default function RegisterTabPanel({ isSocialOauthRegister, oauthProvider,
             className={
               isSocialOauthRegister
                 ? oauthProvider === "naver"
-                  ? "w-full h-12 bg-card border border-border text-foreground hover:bg-muted dark:hover:bg-muted hover:border-success/40 font-semibold shadow-lg"
-                  : "w-full h-12 bg-card border border-border text-foreground hover:bg-muted dark:hover:bg-muted hover:border-warning/40 font-semibold shadow-lg"
-                : "w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg"
+                  ? "w-full h-12 bg-card border border-border text-foreground hover:bg-muted font-semibold shadow-sm"
+                  : "w-full h-12 bg-card border border-border text-foreground hover:bg-muted font-semibold shadow-sm"
+                : "w-full h-12 font-semibold"
             }
             disabled={submitting}
           >

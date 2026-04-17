@@ -16,16 +16,16 @@ export default function SocialAuthButtons({
   isRegisterMode = false,
 }: Props) {
   const baseButtonClass =
-    "w-full h-12 bg-card border border-border text-foreground hover:bg-muted dark:hover:bg-muted font-semibold text-[15px] flex items-center justify-center gap-3 transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed";
+    "w-full h-12 bg-card border border-border text-foreground hover:bg-muted dark:hover:bg-muted font-semibold text-[15px] flex items-center justify-center gap-3 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed";
 
   return (
     <div className="space-y-3">
       <Button
         type="button"
         onClick={onKakaoClick}
-        className={`${baseButtonClass} hover:border-warning/40`}
+        className={baseButtonClass}
       >
-        <span className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-warning/30 bg-warning/10 text-warning dark:bg-warning/15">
+        <span className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-border bg-secondary text-foreground">
           <svg
             width="16"
             height="16"
@@ -46,9 +46,9 @@ export default function SocialAuthButtons({
         type="button"
         onClick={onNaverClick}
         disabled={!onNaverClick}
-        className={`${baseButtonClass} hover:border-success/40`}
+        className={baseButtonClass}
       >
-        <span className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-success/30 bg-success/10 text-success dark:bg-success/15">
+        <span className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-border bg-secondary text-foreground">
           <svg
             width="16"
             height="16"
@@ -70,9 +70,9 @@ export default function SocialAuthButtons({
         type="button"
         onClick={onGoogleClick}
         disabled={!onGoogleClick}
-        className={`${baseButtonClass} hover:border-primary/40`}
+        className={baseButtonClass}
       >
-        <span className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20">
+        <span className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-border bg-secondary text-foreground">
           <svg
             width="16"
             height="16"
@@ -82,19 +82,19 @@ export default function SocialAuthButtons({
           >
             <path
               d="M18.1713 8.36791H17.5001V8.33325H10.0001V11.6666H14.7096C14.0225 13.607 12.1763 14.9999 10.0001 14.9999C7.23882 14.9999 5.00007 12.7612 5.00007 9.99992C5.00007 7.23867 7.23882 4.99992 10.0001 4.99992C11.2746 4.99992 12.4342 5.48075 13.3171 6.26617L15.6742 3.90909C14.1859 2.52217 12.1951 1.66659 10.0001 1.66659C5.39799 1.66659 1.66675 5.39784 1.66675 9.99992C1.66675 14.602 5.39799 18.3333 10.0001 18.3333C14.6022 18.3333 18.3334 14.602 18.3334 9.99992C18.3334 9.44117 18.2767 8.89575 18.1713 8.36791Z"
-              fill="#FFC107"
+              fill="currentColor"
             />
             <path
               d="M2.6275 6.12117L5.36542 8.12909C6.10625 6.29492 7.90042 4.99992 10.0004 4.99992C11.2746 4.99992 12.4342 5.48075 13.3171 6.26617L15.6742 3.90909C14.1859 2.52217 12.1954 1.66659 10.0004 1.66659C6.79917 1.66659 4.02334 3.47367 2.6275 6.12117Z"
-              fill="#FF3D00"
+              fill="currentColor"
             />
             <path
               d="M10.0004 18.3333C12.1525 18.3333 14.1083 17.5095 15.5871 16.17L13.0079 13.9875C12.1431 14.6451 11.0864 15.0008 10.0004 15C7.83291 15 5.99207 13.6179 5.29874 11.6891L2.58124 13.7829C3.96041 16.4816 6.76124 18.3333 10.0004 18.3333Z"
-              fill="#4CAF50"
+              fill="currentColor"
             />
             <path
               d="M18.1713 8.36791H17.5001V8.33325H10.0001V11.6666H14.7096C14.3809 12.5901 13.7889 13.3972 13.0067 13.9879L13.0079 13.9871L15.5871 16.1696C15.4046 16.3354 18.3334 14.1666 18.3334 9.99992C18.3334 9.44117 18.2767 8.89575 18.1713 8.36791Z"
-              fill="#1976D2"
+              fill="currentColor"
             />
           </svg>
         </span>

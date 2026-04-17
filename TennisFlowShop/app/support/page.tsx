@@ -170,7 +170,7 @@ function NoticeCard({
 }) {
   const supportQuery = "from=support&returnTo=%2Fsupport";
   return (
-    <Card className="border-0 bg-card/90 dark:bg-card shadow-xl backdrop-blur-sm h-full">
+    <Card className="border border-border bg-card shadow-sm h-full">
       <CardHeader className="bg-muted/30 border-b p-4 sm:p-5 md:p-6">
         <CardTitle className="flex flex-wrap items-center gap-x-3 gap-y-2">
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
@@ -258,7 +258,7 @@ function NoticeCard({
                         {/* 말줄임 제목 (부모 flex-1 + min-w-0 중요) */}
                         <Link
                           href={`/board/notice/${notice._id}?${supportQuery}`}
-                          className={`${supportMobileTitleClampClass} text-foreground transition-colors hover:text-primary dark:hover:text-primary`}
+                          className={`${supportMobileTitleClampClass} text-foreground transition-colors hover:text-foreground`}
                         >
                           {notice.title}
                         </Link>
@@ -334,7 +334,7 @@ function QnaCard({
   const supportQuery = "from=support&returnTo=%2Fsupport";
 
   return (
-    <Card className="border-0 bg-card/90 dark:bg-card shadow-xl backdrop-blur-sm h-full">
+    <Card className="border border-border bg-card shadow-sm h-full">
       <CardHeader className="bg-muted/30 border-b p-4 sm:p-5 md:p-6">
         <CardTitle className="flex flex-wrap items-center gap-x-3 gap-y-2">
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">

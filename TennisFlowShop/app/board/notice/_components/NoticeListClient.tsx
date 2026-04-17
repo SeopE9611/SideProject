@@ -248,7 +248,7 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
             </Button>
 
             <div className="flex items-center space-x-2 sm:space-x-3">
-              <div className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20">
+              <div className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-xl border border-border bg-secondary text-foreground">
                 <Bell className="h-5 w-5 sm:h-6 sm:w-6" />
               </div>
               <div>
@@ -259,7 +259,7 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
           </div>
         </div>
 
-        <Card className="border-0 bg-card shadow-xl backdrop-blur-sm">
+        <Card className="border border-border bg-card shadow-sm">
           <CardHeader className="bg-muted/30 border-b p-4 sm:p-5 md:p-6">
             <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div className="flex items-center space-x-2 sm:space-x-3">
@@ -400,7 +400,7 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
                                     </Badge>
                                   )}
 
-                                  <span className={`${noticeMobileTitleClampClass} text-foreground transition-colors hover:text-primary dark:hover:text-primary`}>{notice.title}</span>
+                                  <span className={`${noticeMobileTitleClampClass} text-foreground transition-colors hover:text-foreground`}>{notice.title}</span>
                                 </div>
                               </div>
 
@@ -450,7 +450,7 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
                     key={pageNumber}
                     variant="outline"
                     size="sm"
-                    className={pageNumber === page ? "h-10 w-10 sm:h-12 sm:w-12 bg-primary text-primary-foreground border-border text-sm sm:text-base" : "h-10 w-10 sm:h-12 sm:w-12 bg-card text-sm sm:text-base"}
+                    className={pageNumber === page ? "h-10 w-10 sm:h-12 sm:w-12 bg-secondary text-foreground border-border text-sm sm:text-base" : "h-10 w-10 sm:h-12 sm:w-12 bg-card text-sm sm:text-base"}
                     onClick={() => movePage(pageNumber)}
                     disabled={isBusy}
                   >
