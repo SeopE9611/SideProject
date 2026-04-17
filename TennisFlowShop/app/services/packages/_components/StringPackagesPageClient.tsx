@@ -122,7 +122,7 @@ export default function StringPackagesPageClient({
           <div className="max-w-4xl mx-auto">
             <Badge
               variant={packagesBadgeVariant("hero")}
-              className="mb-6 backdrop-blur-sm"
+              className="mb-6"
             >
               <Package className="w-4 h-4 mr-2" />
               프리미엄 스트링 패키지
@@ -171,7 +171,6 @@ export default function StringPackagesPageClient({
               <Button
                 size="lg"
                 variant="outline"
-                className="backdrop-blur-sm"
                 asChild
               >
                 <Link href="/services">
@@ -254,9 +253,9 @@ export default function StringPackagesPageClient({
             {additionalBenefits.map((benefit, index) => (
               <div
                 key={index}
-                className="group bg-secondary rounded-2xl p-4 md:p-8 border border-border/20 hover:border-border/40 transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5"
+                className="group bg-secondary rounded-2xl p-4 md:p-8 border border-border/20 hover:border-border/40 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5"
               >
-                <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 bg-secondary text-foreground group-hover:scale-110 transition-transform duration-300">
+                <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 bg-secondary text-foreground transition-shadow duration-300 group-hover:shadow-sm">
                   {benefit.icon}
                 </div>
                 <h3 className="text-xl font-bold text-foreground mb-4 text-center">
@@ -309,7 +308,7 @@ export default function StringPackagesPageClient({
               ].map((faq, index) => (
                 <Card
                   key={index}
-                  className="border border-border shadow-sm hover:shadow-lg transition-shadow duration-300"
+                  className="border border-border shadow-sm hover:shadow-md transition-shadow duration-300"
                 >
                   <CardContent className="p-4 md:p-6">
                     <h3 className="font-bold text-lg mb-3 text-primary">
@@ -328,7 +327,7 @@ export default function StringPackagesPageClient({
             <Button
               size="lg"
               variant="default"
-              className="shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300"
+              className="shadow-sm hover:shadow-md transition-all duration-300"
               asChild
             >
               <Link href="/board/qna">

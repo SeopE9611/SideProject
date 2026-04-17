@@ -63,7 +63,7 @@ export default function UnifiedPackageCard({
 
   return (
     <Card
-      className={`group relative overflow-hidden border border-border shadow-sm transition-all duration-300 ${onSelect ? "cursor-pointer hover:-translate-y-1 hover:shadow-lg" : ""} ${pkg.popular || selected ? "ring-2 ring-ring" : ""} ${className ?? ""}`}
+      className={`group relative overflow-hidden border border-border shadow-sm transition-all duration-300 ${onSelect ? "cursor-pointer hover:-translate-y-0.5 hover:shadow-md" : ""} ${pkg.popular || selected ? "ring-2 ring-ring" : ""} ${className ?? ""}`}
       onClick={onSelect}
     >
       {pkg.popular && (
@@ -81,7 +81,7 @@ export default function UnifiedPackageCard({
 
       <CardHeader className="pb-4 text-center">
         <div
-          className={`mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full shadow-lg ${PACKAGE_VARIANT_ICON_CLASS[pkg.variant]}`}
+          className={`mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full shadow-sm ${PACKAGE_VARIANT_ICON_CLASS[pkg.variant]}`}
         >
           <Icon className="h-8 w-8" />
         </div>
@@ -175,7 +175,7 @@ export default function UnifiedPackageCard({
         {ctaHref && ctaLabel && (
           <div className="space-y-2">
             <Button
-              className={`w-full border-0 shadow-lg transition-all hover:shadow-xl ${PACKAGE_VARIANT_BUTTON_CLASS[pkg.variant]}`}
+              className={`w-full border border-border shadow-sm transition-all hover:shadow-md ${PACKAGE_VARIANT_BUTTON_CLASS[pkg.variant]}`}
               asChild
               disabled={ctaDisabled}
             >

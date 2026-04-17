@@ -296,7 +296,7 @@ export default async function StringServiceSuccessPage(props: Props) {
 
           {needsInboundTracking && (
             <div className="mt-8 md:mt-10 max-w-2xl mx-auto px-4">
-              <div className="bg-muted/30 backdrop-blur-sm border border-border rounded-xl p-4 md:p-6 text-center">
+              <div className="bg-muted/30 border border-border rounded-xl p-4 md:p-6 text-center">
                 <div className="flex items-center justify-center gap-3 mb-3 md:mb-4">
                   <div className="rounded-full border border-border bg-secondary p-2 text-foreground">
                     <Package className="h-6 w-6 text-primary" />
@@ -308,7 +308,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                   <br />
                   <span className="text-sm text-muted-foreground">(건너뛰고 마이페이지 → 신청내역 탭에서 등록도 가능합니다)</span>
                 </p>
-                <Button variant="default" className="font-semibold shadow-lg" asChild>
+                <Button variant="default" className="font-semibold shadow-sm" asChild>
                   <Link href={`/services/applications/${applicationId}/shipping`} className="flex items-center gap-2">
                     운송장 등록하기
                     <ArrowRight className="h-4 w-4" />
