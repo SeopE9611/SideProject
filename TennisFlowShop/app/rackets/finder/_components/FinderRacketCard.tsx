@@ -65,14 +65,14 @@ function conditionLabel(condition?: string | null) {
       label: "A",
       desc: "최상",
       className:
-        "bg-primary/10 text-primary ring-1 ring-ring dark:bg-primary/20",
+        "bg-secondary text-foreground ring-1 ring-border",
     };
   if (c === "B")
     return {
       label: "B",
       desc: "상",
       className:
-        "bg-primary/10 text-primary ring-1 ring-ring dark:bg-primary/20",
+        "bg-secondary text-foreground ring-1 ring-border",
     };
   if (c === "C")
     return {
@@ -152,7 +152,7 @@ export default function FinderRacketCard({ racket }: { racket: FinderRacket }) {
   );
 
   return (
-    <article className="group relative overflow-hidden rounded-2xl bg-card ring-1 ring-muted/40 dark:ring-muted/20 transition-all duration-200 hover:ring-primary/30 hover:shadow-lg hover:shadow-primary/5">
+    <article className="group relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg">
       <div className="p-4 bp-sm:p-5">
         <div className="flex flex-col bp-sm:flex-row gap-4">
           {/* 이미지 영역 */}
@@ -210,7 +210,7 @@ export default function FinderRacketCard({ racket }: { racket: FinderRacket }) {
             </div>
 
             {/* 스펙 그리드 */}
-            <div className="grid grid-cols-4 gap-3 py-3 px-3 rounded-xl bg-muted/30 dark:bg-muted/10 mb-4">
+            <div className="grid grid-cols-4 gap-3 rounded-xl border border-border/60 bg-secondary/40 px-3 py-3 mb-4">
               <SpecItem label="Head" value={fmt(spec.headSize, "")} />
               <SpecItem label="Weight" value={fmt(spec.weight, "g")} />
               <SpecItem label="Balance" value={fmt(spec.balance, "mm")} />
@@ -255,7 +255,7 @@ export default function FinderRacketCard({ racket }: { racket: FinderRacket }) {
                 variant={selected ? "default" : "outline"}
                 className={cn(
                   "rounded-lg",
-                  selected && "bg-primary text-primary-foreground",
+                  selected && "bg-secondary text-foreground",
                 )}
                 onClick={() => {
                   if (!selected && compareItems.length >= 4) {

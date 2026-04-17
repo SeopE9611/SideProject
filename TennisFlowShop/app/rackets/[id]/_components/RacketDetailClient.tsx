@@ -454,7 +454,7 @@ export default function RacketDetailClient({
           </div>
           <Button
             variant="ghost"
-            className="mb-4 p-0 text-primary hover:bg-primary/10 dark:hover:bg-primary/20"
+            className="mb-4 p-0 text-foreground hover:bg-secondary"
             onClick={() => router.back()}
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -467,7 +467,7 @@ export default function RacketDetailClient({
         <div className="grid grid-cols-1 gap-6 md:gap-8 lg:grid-cols-5">
           {/* 상품 이미지 */}
           <div className="lg:col-span-3 space-y-4">
-            <Card className="overflow-hidden border-0 shadow-2xl bg-card/90 backdrop-blur-sm dark:bg-card/90">
+            <Card className="overflow-hidden border border-border bg-card shadow-sm">
               <div className="relative aspect-square">
                 {images.length > 0 ? (
                   <Image
@@ -532,7 +532,7 @@ export default function RacketDetailClient({
 
           {/* 상품 정보 */}
           <div className="lg:col-span-2 space-y-4">
-            <Card className="border-0 shadow-xl bg-card/90 backdrop-blur-sm dark:bg-card/90">
+            <Card className="border border-border bg-card shadow-sm">
               <CardContent className="p-4 md:p-6">
                 <div className="space-y-4">
                   {/* 브랜드와 제품명 */}
@@ -598,7 +598,7 @@ export default function RacketDetailClient({
                   <div ref={rentSectionRef} className="space-y-3 pt-4 border-t">
                     <div className="flex gap-2">
                       <Button
-                        className="flex-1 min-w-0 h-12 bg-primary text-primary-foreground shadow hover:bg-primary/90"
+                        className="flex-1 min-w-0 h-12"
                         onClick={() =>
                           router.push(`/rackets/${racketId}/select-string`)
                         }
@@ -651,7 +651,7 @@ export default function RacketDetailClient({
                     <div className="flex gap-2">
                       <Button
                         variant="outline"
-                        className={`flex-1 h-12 ${isCompared ? "bg-primary/10 border-border text-primary hover:bg-primary/20 dark:bg-primary/20" : "bg-card border-border text-foreground"}`}
+                        className={`flex-1 h-12 ${isCompared ? "bg-secondary border-border text-foreground hover:bg-secondary/80" : "bg-card border-border text-foreground"}`}
                         onClick={toggleCompare}
                         disabled={!racketId}
                         title={
@@ -729,7 +729,7 @@ export default function RacketDetailClient({
         </div>
 
         {/* 스펙 카드 */}
-        <Card className="mt-6 border-0 bg-card/90 shadow-xl backdrop-blur-sm md:mt-8 dark:bg-card/90">
+        <Card className="mt-6 border border-border bg-card shadow-sm md:mt-8">
           <CardContent className="p-0">
             <Tabs
               value={activeTab}
@@ -764,7 +764,7 @@ export default function RacketDetailClient({
               <TabsContent value="description" className="p-4 md:p-8">
                 <div className="prose max-w-none">
                   <div className="mb-4 flex items-center gap-3 md:mb-6">
-                    <div className="w-12 h-12 rounded-lg border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20 flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-lg border border-border bg-secondary text-foreground flex items-center justify-center">
                       <FileText className="h-6 w-6" />
                     </div>
                     <h3 className="text-2xl font-bold text-foreground">
@@ -786,7 +786,7 @@ export default function RacketDetailClient({
               <TabsContent value="specifications" className="p-4 md:p-8">
                 <div className="space-y-4 md:space-y-6">
                   <div className="mb-4 flex items-center gap-3 md:mb-6">
-                    <div className="w-12 h-12 rounded-lg border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20 flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-lg border border-border bg-secondary text-foreground flex items-center justify-center">
                       <Settings className="h-6 w-6" />
                     </div>
                     <h3 className="text-2xl font-bold text-foreground">
@@ -883,7 +883,7 @@ export default function RacketDetailClient({
                     <Button
                       asChild
                       variant="outline"
-                      className="bg-primary/10 dark:bg-primary/20 border border-primary/20 text-primary hover:bg-primary/15 dark:hover:bg-primary/25 shadow-lg"
+                      className="border border-border bg-secondary text-foreground hover:bg-secondary/80 shadow-sm"
                     >
                       <Link href={`/reviews/write?productId=${racketId}`}>
                         <Pencil className="h-4 w-4 mr-2" />
@@ -1323,7 +1323,7 @@ export default function RacketDetailClient({
                       ? "비교는 최대 4개까지 가능합니다."
                       : undefined
                 }
-                className={`h-11 rounded-lg border text-sm font-semibold flex items-center justify-center gap-2 ${isCompared ? "border-border bg-primary/10 text-primary dark:bg-primary/20" : "border-border bg-card text-foreground"} ${!racketId || (!isCompared && compareCount >= 4) ? "opacity-60 cursor-not-allowed" : ""}`}
+                className={`h-11 rounded-lg border text-sm font-semibold flex items-center justify-center gap-2 ${isCompared ? "border-border bg-secondary text-foreground" : "border-border bg-card text-foreground"} ${!racketId || (!isCompared && compareCount >= 4) ? "opacity-60 cursor-not-allowed" : ""}`}
               >
                 <Scale className="h-4 w-4" />
                 {isCompared

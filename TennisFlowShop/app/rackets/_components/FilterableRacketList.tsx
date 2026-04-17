@@ -546,7 +546,7 @@ export default function FilterableRacketList({
                     {isInitialLikeLoading ? (
                       <Skeleton className="inline-block h-5 w-12 align-middle" />
                     ) : (
-                      <span className="text-primary font-bold">{total}</span>
+                      <span className="font-bold text-foreground">{total}</span>
                     )}
                     개 라켓
                     {isInitialLikeLoading ? (
@@ -563,7 +563,7 @@ export default function FilterableRacketList({
                     {isInitialLikeLoading ? (
                       <Skeleton className="inline-block h-5 w-12 align-middle" />
                     ) : (
-                      <span className="text-primary font-bold">{total}</span>
+                      <span className="font-bold text-foreground">{total}</span>
                     )}
                     개 라켓
                     {isInitialLikeLoading ? (
@@ -583,7 +583,7 @@ export default function FilterableRacketList({
                   if (showFilters) cancelFiltersSheet();
                   else openFiltersSheet();
                 }}
-                className="bp-lg:hidden h-9 px-3 border-border hover:bg-primary/10 dark:hover:bg-primary/20"
+                className="bp-lg:hidden h-9 px-3 border-border hover:bg-secondary"
                 aria-expanded={showFilters}
                 aria-label="필터 열기"
               >
@@ -600,7 +600,7 @@ export default function FilterableRacketList({
                     "h-9 px-3",
                     rentOnly
                       ? "border-border"
-                      : "border-border hover:bg-primary/10 dark:hover:bg-primary/20",
+                      : "border-border hover:bg-secondary",
                   )}
                   aria-pressed={rentOnly}
                   aria-label="대여 가능 라켓만 보기 토글"
@@ -677,7 +677,7 @@ export default function FilterableRacketList({
               <Button
                 onClick={handleResetAll}
                 variant="outline"
-                className="border-border hover:bg-primary/10 dark:hover:bg-primary/20 bg-transparent"
+                className="border-border hover:bg-secondary bg-transparent"
               >
                 필터 초기화
               </Button>

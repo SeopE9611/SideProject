@@ -98,7 +98,7 @@ function HintIcon({ text }: { text: string }) {
           className={cn(
             "inline-flex h-5 w-5 items-center justify-center rounded-full",
             "text-muted-foreground/70 transition-colors duration-200",
-            "hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-primary",
+            "hover:bg-secondary hover:text-foreground",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
           )}
           aria-label="해석 힌트"
@@ -149,7 +149,7 @@ function SpecRow({
           className={cn(
             "flex h-7 w-7 items-center justify-center rounded-md bp-sm:h-8 bp-sm:w-8",
             "bg-muted/60 transition-all duration-200",
-            "group-hover:bg-primary/10 dark:group-hover:bg-primary/20",
+            "group-hover:bg-secondary",
             isHovered && "scale-105",
           )}
         >
@@ -265,14 +265,14 @@ export default function RacketSpecQuickViewDialog({ racket, trigger }: Props) {
 
       <DialogContent
         className={cn(
-          "w-[calc(100%-24px)] p-0 overflow-hidden bg-card shadow-2xl",
+          "w-[calc(100%-24px)] overflow-hidden border border-border bg-card p-0 shadow-md",
           "max-w-[920px] bp-md:max-w-[1040px] bp-lg:max-w-[1120px]",
           "bp-sm:w-[calc(100%-48px)]",
         )}
       >
         <div className="relative">
           <div
-            className={cn("absolute inset-x-0 top-0 h-1", "bg-primary/40")}
+            className={cn("absolute inset-x-0 top-0 h-1", "bg-secondary")}
           />
           <DialogHeader className="px-4 pt-5 pb-3 bp-sm:px-6 bp-sm:pt-6 bp-sm:pb-4">
             <DialogTitle className="flex flex-wrap items-center gap-2 bp-sm:gap-3">
@@ -406,7 +406,7 @@ export default function RacketSpecQuickViewDialog({ racket, trigger }: Props) {
                       "inline-flex items-center justify-center gap-2",
                       "border-muted-foreground/20 bg-transparent",
                       "transition-all duration-200",
-                      "hover:border-primary/50 hover:bg-primary/5 hover:text-primary",
+                      "hover:bg-secondary",
                       "bp-sm:flex-1",
                     )}
                   >
@@ -426,7 +426,7 @@ export default function RacketSpecQuickViewDialog({ racket, trigger }: Props) {
                       "inline-flex items-center justify-center gap-2",
                       "bg-primary text-primary-foreground",
                       "shadow-sm transition-all duration-200",
-                      "hover:bg-primary/90 hover:shadow-md",
+                      "hover:shadow-md",
                       "bp-sm:flex-1",
                     )}
                   >

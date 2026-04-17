@@ -61,7 +61,7 @@ export default function RacketFilterPanel({
 }: Props) {
   if (isLoadingInitial) {
     return (
-      <div className="rounded-xl bg-card/70 dark:bg-card/70 p-6 shadow-lg">
+      <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
         <SkeletonFilterDetailed />
       </div>
     );
@@ -70,7 +70,7 @@ export default function RacketFilterPanel({
   return (
     <div
       className={cn(
-        "rounded-xl border border-border bg-card/80 dark:bg-card/80 backdrop-blur-sm p-6 shadow-xl",
+        "rounded-xl border border-border bg-card p-6 shadow-sm",
       )}
     >
       <AnimatePresence mode="wait">
@@ -124,7 +124,7 @@ export default function RacketFilterPanel({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="라켓 모델 검색..."
-                className="pl-10 pr-10 rounded-lg border-2 border-border focus:border-border dark:focus:border-border transition-colors w-full"
+                className="pl-10 pr-10 rounded-lg border border-input bg-background transition-colors w-full"
               />
               {searchQuery && (
                 <button
@@ -160,7 +160,7 @@ export default function RacketFilterPanel({
               }
               value={selectedBrand ?? "all"}
             >
-              <SelectTrigger className="rounded-lg border-2 border-border focus:border-border dark:focus:border-border">
+              <SelectTrigger className="rounded-lg border border-input bg-background">
                 <SelectValue placeholder="브랜드 선택" />
               </SelectTrigger>
               <SelectContent className="dark:bg-card dark:border-border">
@@ -183,7 +183,7 @@ export default function RacketFilterPanel({
                 setSelectedCondition(v === "all" ? null : v)
               }
             >
-              <SelectTrigger className="rounded-lg border-2 border-border focus:border-border dark:focus:border-border">
+              <SelectTrigger className="rounded-lg border border-input bg-background">
                 <SelectValue placeholder="전체" />
               </SelectTrigger>
               <SelectContent className="dark:bg-card dark:border-border">
@@ -207,7 +207,7 @@ export default function RacketFilterPanel({
                   onChangePriceMin(raw === "" ? null : Number(raw));
                 }}
                 placeholder="최소"
-                className="rounded-lg border-2 border-border focus:border-border dark:focus:border-border"
+                className="rounded-lg border border-input bg-background"
               />
               <span className="text-muted-foreground">~</span>
               <Input
@@ -218,7 +218,7 @@ export default function RacketFilterPanel({
                   onChangePriceMax(raw === "" ? null : Number(raw));
                 }}
                 placeholder="최대"
-                className="rounded-lg border-2 border-border focus:border-border dark:focus:border-border"
+                className="rounded-lg border border-input bg-background"
               />
             </div>
             <div className="flex justify-between text-xs text-muted-foreground mt-2">

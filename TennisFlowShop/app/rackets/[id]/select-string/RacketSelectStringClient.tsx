@@ -285,9 +285,8 @@ export default function RacketSelectStringClient({
         </div>
 
         <div className="max-w-3xl mx-auto">
-          <div className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-lg hover:shadow-xl transition-shadow duration-300">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-muted/30 rounded-full blur-3xl opacity-50 -z-0" />
-            <div className="relative z-10 p-4 bp-md:p-6 flex gap-4 bp-md:gap-6 items-center">
+          <div className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm hover:shadow-md transition-shadow duration-300">
+                        <div className="relative z-10 p-4 bp-md:p-6 flex gap-4 bp-md:gap-6 items-center">
               <div className="flex-shrink-0">
                 {racket.image ? (
                   <img
@@ -424,7 +423,7 @@ export default function RacketSelectStringClient({
                   <div
                     key={stringId}
                     className={[
-                      "group relative overflow-hidden border rounded-2xl bg-card transition-all duration-300 hover:shadow-xl hover:-translate-y-1",
+                      "group relative overflow-hidden rounded-2xl border border-border bg-card transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg",
                       isCurrent
                         ? "border-border ring-2 ring-ring"
                         : "border-border hover:border-border",
@@ -498,7 +497,7 @@ export default function RacketSelectStringClient({
                       {isFromCart ? (
                         <Button
                           variant="elevated"
-                          className="mt-4 w-full font-medium rounded-xl py-5 transition-all duration-300"
+                          className="mt-4 w-full rounded-xl py-5 font-medium"
                           onClick={() => handleSelectString(p)}
                         >
                           <span className="flex items-center justify-center gap-2">

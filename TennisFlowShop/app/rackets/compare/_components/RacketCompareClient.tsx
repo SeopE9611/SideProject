@@ -234,7 +234,7 @@ export default function RacketCompareClient() {
       <div className="space-y-6">
         <div className="flex flex-col bp-sm:flex-row bp-sm:items-start bp-sm:justify-between gap-4">
           <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 dark:bg-primary/20">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-secondary">
               <Scale className="h-5 w-5 text-primary" />
             </div>
             <div>
@@ -270,7 +270,7 @@ export default function RacketCompareClient() {
 
         {/* 로딩 상태 */}
         {!mounted ? (
-          <div className="rounded-xl bg-muted/30 dark:bg-muted/20 ring-1 ring-border/10 p-6">
+          <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
             <div className="flex items-center gap-3 text-muted-foreground">
               <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
               <div className="space-y-2">
@@ -281,8 +281,8 @@ export default function RacketCompareClient() {
           </div>
         ) : !canCompare ? (
           /* 비교 불가 상태 개선 */
-          <div className="rounded-xl bg-card/80 ring-1 ring-ring overflow-hidden">
-            <div className="bg-muted px-4 py-3 flex items-center gap-2">
+          <div className="rounded-xl border border-border bg-card overflow-hidden">
+            <div className="border-b border-border bg-secondary/60 px-4 py-3 flex items-center gap-2">
               <AlertCircle className="h-4 w-4 text-primary" />
               <span className="text-sm font-medium text-primary">
                 비교할 라켓이 부족합니다
@@ -381,7 +381,7 @@ export default function RacketCompareClient() {
               </span>
             </div>
 
-            <div className="overflow-x-auto rounded-xl bg-card/80 ring-1 ring-border/10 shadow-sm">
+            <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-muted/30 dark:bg-muted/20">
@@ -586,9 +586,9 @@ export default function RacketCompareClient() {
 
                           const barClass =
                             delta === null
-                              ? "bg-primary/10 dark:bg-primary/20"
+                              ? "bg-secondary"
                               : delta > 0
-                                ? "bg-primary/10 dark:bg-primary/20"
+                                ? "bg-secondary"
                                 : delta < 0
                                   ? "bg-destructive/10 dark:bg-destructive/20"
                                   : "bg-muted/30";

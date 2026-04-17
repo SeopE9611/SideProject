@@ -40,9 +40,6 @@ export default async function RacketsPage({ searchParams }: { searchParams: Prom
         <div className="absolute inset-0 bg-overlay/20" />
         <HeroCourtBackdrop className="hidden bp-md:block h-full w-full text-primary opacity-[0.10] dark:opacity-[0.12]" />
 
-        <div className="hidden bp-md:block absolute top-10 left-4 bp-md:left-10 w-16 h-16 bp-md:w-20 bp-md:h-20 bg-card/10 rounded-full blur-xl animate-float" />
-        <div className="hidden bp-md:block absolute bottom-10 right-4 bp-md:right-10 w-24 h-24 bp-md:w-32 bp-md:h-32 bg-card/5 rounded-full blur-2xl animate-float-delayed" />
-        <div className="hidden bp-md:block absolute top-1/2 left-1/4 w-12 h-12 bg-muted/60 dark:bg-card/60 rounded-full blur-lg animate-pulse" />
 
         <SiteContainer variant="wide" className="relative">
           <div className="text-center text-foreground">
@@ -86,11 +83,11 @@ export default async function RacketsPage({ searchParams }: { searchParams: Prom
 
                   {/* segmented-control: 전체 / 대여가능만 */}
                   <div className="flex-1 bp-sm:flex-none">
-                    <div className="inline-flex w-full bp-sm:w-[320px] rounded-full border border-border bg-card p-1">
+                    <div className="inline-flex w-full bp-sm:w-[320px] rounded-lg border border-border bg-card p-1">
                       <Link
                         href="/rackets?from=apply"
                         aria-current={!rentOnly ? "page" : undefined}
-                        className={`flex-1 text-center text-sm font-semibold rounded-full px-3 py-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${rentOnly ? "text-foreground hover:bg-background/70" : "bg-primary text-primary-foreground shadow hover:bg-primary/90"}`}
+                        className={`flex-1 text-center text-sm font-semibold rounded-md px-3 py-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${rentOnly ? "text-foreground hover:bg-secondary" : "bg-secondary text-foreground"}`}
                       >
                         전체보기
                       </Link>
@@ -98,7 +95,7 @@ export default async function RacketsPage({ searchParams }: { searchParams: Prom
                       <Link
                         href="/rackets?from=apply&rentOnly=1"
                         aria-current={rentOnly ? "page" : undefined}
-                        className={`flex-1 text-center text-sm font-semibold rounded-full px-3 py-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${rentOnly ? "bg-primary text-primary-foreground shadow hover:bg-primary/90" : "text-foreground hover:bg-background/70"}`}
+                        className={`flex-1 text-center text-sm font-semibold rounded-md px-3 py-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${rentOnly ? "bg-secondary text-foreground" : "text-foreground hover:bg-secondary"}`}
                       >
                         대여가능만
                       </Link>
