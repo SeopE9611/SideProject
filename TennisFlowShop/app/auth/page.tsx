@@ -41,9 +41,9 @@ export default function AuthGatePage() {
 
   return (
     <div className="fixed inset-0 z-[9999]">
-      <div className="absolute inset-0 bg-overlay/80 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-overlay/70" />
       <div className="relative h-full flex items-center justify-center p-4">
-        <div className="w-full max-w-md rounded-2xl bg-card dark:bg-muted shadow-2xl p-6 space-y-4">
+        <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 space-y-4 shadow-sm">
           <h1 className="text-xl font-semibold">🔒 아직 개발 단계입니다</h1>
           <p className="text-sm text-muted-foreground">
             접근하려면 개발자 전용 비밀번호를 입력하세요.
@@ -67,7 +67,7 @@ export default function AuthGatePage() {
             type="button"
             disabled={loading || !pw}
             onClick={handleClick}
-            className="w-full rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 py-2.5 font-medium disabled:opacity-60"
+            className="w-full rounded-lg py-2.5 font-medium disabled:opacity-60"
           >
             {loading ? "확인 중…" : "입장하기"}
           </button>

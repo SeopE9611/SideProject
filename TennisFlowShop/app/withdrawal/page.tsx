@@ -40,10 +40,12 @@ export default function AccountDeletedPage() {
   };
 
   return (
-    <div className="grid min-h-[100svh] place-items-center bg-background px-4 py-12">
-      <Card className="w-full max-w-md shadow-lg">
+    <div className="grid min-h-[100svh] place-items-center bg-muted/30 px-4 py-12">
+      <Card className="w-full max-w-md border border-border bg-card shadow-sm">
         <CardHeader className="flex flex-col items-center pt-10 pb-6">
-          <CheckCircle className="h-16 w-16 text-success mb-4" />
+          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full border border-border bg-secondary">
+            <CheckCircle className="h-8 w-8 text-foreground" />
+          </div>
           <h1 className="text-2xl font-bold text-center text-foreground">
             회원 탈퇴가 정상적으로 완료되었습니다
           </h1>

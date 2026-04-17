@@ -79,13 +79,13 @@ export default function ForgotPasswordPage() {
   return (
     <div className="min-h-screen bg-muted/30 flex items-center justify-center p-4">
       <div className="absolute top-10 left-10 w-20 h-20 bg-muted/60 dark:bg-card/60 rounded-full blur-2xl animate-pulse" />
-      <div className="absolute bottom-10 right-10 w-32 h-32 bg-success/10 rounded-full blur-3xl animate-pulse dark:bg-success/15" />
+      <div className="absolute bottom-10 right-10 w-32 h-32 bg-muted rounded-full blur-3xl" />
 
       <div className="relative w-full max-w-md">
         <div className="mb-6">
           <Link
             href="/login"
-            className="inline-flex items-center text-sm text-primary hover:text-primary dark:hover:text-primary hover:underline font-medium"
+            className="inline-flex items-center text-sm text-primary hover:text-foreground hover:underline font-medium"
             onClick={(e) => {
               if (confirmLeaveIfDirty()) return;
               e.preventDefault();
@@ -96,11 +96,10 @@ export default function ForgotPasswordPage() {
           </Link>
         </div>
 
-        <Card className="border-0 bg-card/95 dark:bg-card backdrop-blur-sm shadow-2xl overflow-hidden">
-          <div className="p-4 md:p-6 border-b border-primary/20 bg-primary/10 dark:bg-primary/20 text-foreground relative">
-            <div className="absolute inset-0 bg-overlay/10" />
+        <Card className="border border-border bg-card shadow-sm overflow-hidden">
+          <div className="p-4 md:p-6 border-b border-border bg-muted/40 text-foreground">
             <div className="relative text-center">
-              <div className="w-16 h-16 mx-auto mb-4 bg-primary/10 dark:bg-primary/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg">
+              <div className="w-16 h-16 mx-auto mb-4 border border-border bg-secondary rounded-xl flex items-center justify-center">
                 <Shield className="h-8 w-8 text-primary" />
               </div>
               <CardTitle className="text-2xl font-bold text-foreground">
@@ -135,14 +134,14 @@ export default function ForgotPasswordPage() {
                         onChange={(e) => setEmail(e.target.value)}
                         required
                         disabled={isSubmitting}
-                        className="pl-10 h-12 border-border focus:border-border focus:ring-ring dark:focus:border-border bg-card/50 dark:bg-muted"
+                        className="pl-10 h-12 border-border focus:border-border focus:ring-ring dark:focus:border-border bg-background"
                       />
                     </div>
                   </div>
                 </div>
               ) : (
                 <div className="bg-muted rounded-xl p-4 md:p-6 text-center border border-border">
-                  <div className="w-16 h-16 mx-auto mb-4 border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20 rounded-full flex items-center justify-center shadow-lg">
+                  <div className="w-16 h-16 mx-auto mb-4 border border-border bg-secondary text-foreground rounded-full flex items-center justify-center">
                     <CheckCircle className="h-8 w-8" />
                   </div>
 
@@ -165,7 +164,7 @@ export default function ForgotPasswordPage() {
               {!isSubmitted ? (
                 <Button
                   type="submit"
-                  className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+                  className="w-full h-12 font-semibold"
                   disabled={isSubmitting || !email.trim()}
                 >
                   {isSubmitting ? "전송 중..." : "비밀번호 재설정 링크 전송"}
@@ -174,7 +173,7 @@ export default function ForgotPasswordPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full h-12 border-border text-primary hover:bg-primary/10 dark:hover:bg-primary/20 bg-transparent"
+                  className="w-full h-12 border-border bg-transparent hover:bg-muted"
                   onClick={() => {
                     setEmail("");
                     setIsSubmitted(false);

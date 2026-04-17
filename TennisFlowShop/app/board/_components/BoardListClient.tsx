@@ -674,7 +674,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
         <Card className="border bg-card shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between gap-3 border-b border-border bg-muted/30 px-4 py-3 sm:px-6">
             <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-secondary text-foreground">
                 <MessageSquare className="h-4 w-4" />
               </div>
               <div>
@@ -717,7 +717,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                             'px-3 py-1.5 text-xs sm:text-[13px]',
                             'transition-colors',
                             'border-r border-border last:border-r-0',
-                            sort === opt.value ? 'bg-primary text-primary-foreground' : 'bg-transparent text-muted-foreground hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground',
+                            sort === opt.value ? 'bg-secondary text-foreground' : 'bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground',
                           ].join(' ')}
                         >
                           {opt.label}
@@ -740,7 +740,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                         className={[
                           'rounded-full border px-3 py-1',
                           'transition-colors',
-                          active ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-background text-muted-foreground hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground',
+                          active ? 'border-border bg-secondary text-foreground' : 'border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground',
                         ].join(' ')}
                       >
                         {cat.label}
@@ -758,7 +758,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                           key={o.value}
                           type="button"
                           onClick={() => handleBrandChange(o.value)}
-                          className={['rounded-full border px-3 py-1 transition-colors', active ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground'].join(
+                          className={['rounded-full border px-3 py-1 transition-colors', active ? 'border-border bg-secondary text-foreground' : 'border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground'].join(
                             ' ',
                           )}
                         >
@@ -806,7 +806,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                     {activeMarketFilterCount > 0 && (
                       <div className="flex flex-wrap items-center gap-1.5 border-t border-border/50 px-4 py-2">
                         {getActiveFilterChips(searchParams).map((chip) => (
-                          <span key={chip.key} className="inline-flex items-center gap-1 rounded-full border border-primary/20 bg-primary/10 px-2 py-0.5 text-[11px] text-primary">
+                          <span key={chip.key} className="inline-flex items-center gap-1 rounded-full border border-border bg-secondary px-2 py-0.5 text-[11px] text-foreground">
                             {chip.label}
                           </span>
                         ))}

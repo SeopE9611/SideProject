@@ -166,10 +166,10 @@ const fmtDateTime = (v: string | Date) =>
 
 function DetailSkeleton() {
   return (
-    <Card className="border-0 bg-card/90 shadow-xl backdrop-blur-sm">
+    <Card className="border border-border bg-card shadow-sm">
       <CardHeader className="space-y-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary shadow-lg dark:bg-primary/20">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-secondary text-foreground">
             <MessageSquare className="h-5 w-5" />
           </div>
           <div className="flex-1 space-y-2">
@@ -1422,7 +1422,7 @@ export default function BoardDetailClient({
         {isLoading && <DetailSkeleton />}
 
         {!isLoading && error && (
-          <Card className="border-0 bg-card/90 shadow-xl backdrop-blur-sm">
+          <Card className="border border-border bg-card shadow-sm">
             <CardContent className="p-4 md:p-6 space-y-4">
               <ErrorBox
                 message={
@@ -1448,7 +1448,7 @@ export default function BoardDetailClient({
         )}
 
         {!isLoading && !error && item && (
-          <Card className="border-0 bg-card/90 shadow-xl backdrop-blur-sm">
+          <Card className="border border-border bg-card shadow-sm">
             <CardHeader className="space-y-3 border-b bg-muted/30">
               <div className="flex items-start gap-3">
                 <div className="flex-1 space-y-2">
@@ -1959,7 +1959,7 @@ export default function BoardDetailClient({
                           className="flex items-center justify-between rounded-lg border border-border bg-muted/50 px-3 py-2 text-xs shadow-sm dark:border-border"
                         >
                           <div className="flex min-w-0 flex-1 items-center gap-3">
-                            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md bg-primary/10 dark:bg-primary/20">
+                            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md border border-border bg-secondary">
                               <FileText className="h-4 w-4 text-primary" />
                             </div>
                             <div className="min-w-0 flex-1">

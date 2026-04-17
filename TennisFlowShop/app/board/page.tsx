@@ -129,7 +129,7 @@ function CommunityLatestCard({
   emptyText: string;
 }) {
   return (
-    <Card className="border-0 bg-card shadow-xl backdrop-blur-sm">
+    <Card className="border border-border bg-card shadow-sm">
       <CardHeader className={`${headerClassName} border-b p-4 sm:p-5 md:p-6`}>
         <CardTitle className="flex flex-wrap items-center gap-x-3 gap-y-2">
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
@@ -344,7 +344,7 @@ function NoticeCard({
   onRetry?: () => void;
 }) {
   return (
-    <Card className="border-0 bg-card shadow-xl backdrop-blur-sm h-full">
+    <Card className="border border-border bg-card shadow-sm h-full">
       <CardHeader className="bg-muted/30 border-b p-4 sm:p-5 md:p-6">
         <CardTitle className="flex flex-wrap items-center gap-x-3 gap-y-2">
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
@@ -512,7 +512,7 @@ function QnaCard({
   onRetry?: () => void;
 }) {
   return (
-    <Card className="border-0 bg-card shadow-xl backdrop-blur-sm h-full">
+    <Card className="border border-border bg-card shadow-sm h-full">
       <CardHeader className="bg-muted/30 border-b p-4 sm:p-5 md:p-6">
         <CardTitle className="flex flex-wrap items-center gap-x-3 gap-y-2">
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
@@ -626,7 +626,7 @@ function ReviewCard({
   onRetry?: () => void;
 }) {
   return (
-    <Card className="border-0 bg-card shadow-xl backdrop-blur-sm h-full">
+    <Card className="border border-border bg-card shadow-sm h-full">
       <CardHeader className="bg-muted/30 border-b p-4 sm:p-5 md:p-6">
         <CardTitle className="flex flex-wrap items-center gap-x-3 gap-y-2">
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
@@ -707,7 +707,7 @@ function ReviewCard({
 
 function CommunityIntroCard() {
   return (
-    <Card className="border-0 bg-card shadow-xl backdrop-blur-sm">
+    <Card className="border border-border bg-card shadow-sm">
       <CardHeader className="bg-muted/30 border-b p-4 sm:p-5 md:p-6">
         <CardTitle className="flex items-center justify-between">
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
@@ -851,7 +851,7 @@ export default function BoardPage() {
         {/* 헤더 섹션 */}
         <div className="text-center space-y-3 bp-md:space-y-4">
           <div className="flex items-center justify-center space-x-3 mb-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-border bg-secondary text-foreground">
               <MessageSquare className="h-6 w-6" />
             </div>
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground">
