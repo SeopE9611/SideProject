@@ -63,7 +63,7 @@ export default function UnifiedPackageCard({
 
   return (
     <Card
-      className={`group relative overflow-hidden border-0 shadow-xl transition-all duration-300 ${onSelect ? "cursor-pointer hover:-translate-y-1 hover:shadow-2xl" : ""} ${pkg.popular || selected ? "ring-2 ring-ring" : ""} ${className ?? ""}`}
+      className={`group relative overflow-hidden border border-border shadow-sm transition-all duration-300 ${onSelect ? "cursor-pointer hover:-translate-y-1 hover:shadow-lg" : ""} ${pkg.popular || selected ? "ring-2 ring-ring" : ""} ${className ?? ""}`}
       onClick={onSelect}
     >
       {pkg.popular && (

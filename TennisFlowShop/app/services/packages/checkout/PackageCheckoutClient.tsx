@@ -342,7 +342,7 @@ export default function PackageCheckoutClient({
         <div className="absolute inset-0 bg-muted/50 dark:bg-card/60"></div>
         <div className="relative container py-10 md:py-16">
           <div className="flex items-center gap-4 mb-4">
-            <div className="p-3 bg-card/20 backdrop-blur-sm rounded-full">
+            <div className="p-3 bg-secondary rounded-full">
               <CreditCard className="h-8 w-8" />
             </div>
             <div>
@@ -373,8 +373,8 @@ export default function PackageCheckoutClient({
           {/* 주문 정보 입력 폼 */}
           <div className={`lg:col-span-2 space-y-4 md:space-y-6 ${isCheckoutSubmitting ? "pointer-events-none" : ""}`} aria-busy={isCheckoutSubmitting}>
             {/* 선택된 패키지 정보 */}
-            <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border-0 shadow-xl overflow-hidden">
-              <div className="bg-primary/10 p-4 md:p-6 dark:bg-primary/20">
+            <Card className="bg-card border border-border shadow-sm overflow-hidden">
+              <div className="bg-secondary p-4 md:p-6">
                 <CardTitle className="flex items-center gap-3">
                   <Package className="h-5 w-5 text-primary" />
                   선택된 패키지
@@ -395,8 +395,8 @@ export default function PackageCheckoutClient({
             </Card>
 
             {/* 신청자 정보 */}
-            <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border-0 shadow-xl overflow-hidden">
-              <div className="bg-primary/10 p-4 md:p-6 dark:bg-primary/20">
+            <Card className="bg-card border border-border shadow-sm overflow-hidden">
+              <div className="bg-secondary p-4 md:p-6">
                 <CardTitle className="flex items-center gap-3">
                   <UserIcon className="h-5 w-5 text-primary" />
                   신청자 정보
@@ -463,7 +463,7 @@ export default function PackageCheckoutClient({
                     </div>
                   </div>
 
-                  <div className="bg-primary/10 dark:bg-primary/20 p-4 rounded-lg border border-primary/20">
+                  <div className="bg-secondary p-4 rounded-lg border border-border">
                     <div className="flex items-center space-x-2">
                       <Checkbox id="save-info" checked={saveInfo} onCheckedChange={(checked) => setSaveInfo(!!checked)} disabled={!isLoggedIn || isFrameLoading} />
                       <label htmlFor="save-info" className={`text-sm font-medium ${!isLoggedIn ? "text-muted-foreground" : "text-primary"}`}>
@@ -477,7 +477,7 @@ export default function PackageCheckoutClient({
             </Card>
 
             {/* 서비스 이용 안내 */}
-            <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border-0 shadow-xl overflow-hidden">
+            <Card className="bg-card border border-border shadow-sm overflow-hidden">
               <div className="bg-muted/50 dark:bg-muted/40 p-4 md:p-6">
                 <CardTitle className="flex items-center gap-3">
                   <Shield className="h-5 w-5 text-primary" />
@@ -486,7 +486,7 @@ export default function PackageCheckoutClient({
                 <CardDescription className="mt-2">패키지 주문 전 꼭 확인해주세요.</CardDescription>
               </div>
               <CardContent className="p-4 md:p-6 space-y-4">
-                <div className="rounded-lg border border-primary/20 bg-primary/10 dark:bg-primary/20 p-4 space-y-2 text-sm text-foreground">
+                <div className="rounded-lg border border-border bg-secondary p-4 space-y-2 text-sm text-foreground">
                   <p>• 무통장 입금 시 관리자가 확인 후 패키지를 활성화해드려요.</p>
                   <p>• 카드/간편결제시 자동으로 패키지 활성화돼요.</p>
                   <p>• 활성화 완료 후부터 패키지를 사용할 수 있어요.</p>
@@ -513,7 +513,7 @@ export default function PackageCheckoutClient({
             </Card>
 
             {/* 결제 정보 */}
-            <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border-0 shadow-xl overflow-hidden">
+            <Card className="bg-card border border-border shadow-sm overflow-hidden">
               <div className="bg-muted/50 dark:bg-muted/40 p-6">
                 <CardTitle className="flex items-center gap-3">
                   <CreditCard className="h-5 w-5 text-primary" />
@@ -530,7 +530,7 @@ export default function PackageCheckoutClient({
                       onValueChange={(v) => setPaymentMethod(tossPaymentsEnabled && v === "tosspayments" ? "tosspayments" : "bank_transfer")}
                       className="space-y-3"
                     >
-                      <div className="flex items-center space-x-3 p-4 bg-primary/10 dark:bg-primary/20 rounded-lg border-2 border-primary/20">
+                      <div className="flex items-center space-x-3 p-4 bg-secondary rounded-lg border border-border">
                         <RadioGroupItem value="bank_transfer" id="bank-transfer" disabled={isFrameLoading} />
                         <Label htmlFor="bank-transfer" className="flex-1 cursor-pointer font-medium">
                           무통장입금
@@ -588,7 +588,7 @@ export default function PackageCheckoutClient({
                         {hasInteracted && fieldErrors.depositor && <p className="mt-1 text-xs text-destructive">{fieldErrors.depositor}</p>}
                       </div>
 
-                      <div className="bg-primary/10 dark:bg-primary/20 p-3 md:p-4 rounded-lg border border-primary/20">
+                      <div className="bg-secondary p-3 md:p-4 rounded-lg border border-border">
                         <div className="flex items-center gap-2 mb-3">
                           <Shield className="h-5 w-5 text-primary" />
                           <p className="font-semibold text-foreground">무통장입금 안내</p>
@@ -626,7 +626,7 @@ export default function PackageCheckoutClient({
             </Card>
 
             {/* 주문자 동의 */}
-            <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border-0 shadow-xl overflow-hidden">
+            <Card className="bg-card border border-border shadow-sm overflow-hidden">
               <div className="bg-muted/50 dark:bg-muted/40 p-6">
                 <CardTitle className="flex items-center gap-3">
                   <Shield className="h-5 w-5 text-primary" />
@@ -635,7 +635,7 @@ export default function PackageCheckoutClient({
               </div>
               <CardContent className="p-6">
                 <div className="space-y-4">
-                  <div className="bg-primary/10 dark:bg-primary/20 p-3 md:p-4 rounded-lg border border-primary/20">
+                  <div className="bg-secondary p-3 md:p-4 rounded-lg border border-border">
                     <div className="flex items-center space-x-2">
                       <Checkbox
                         id="agree-all"
@@ -707,10 +707,10 @@ export default function PackageCheckoutClient({
           {/* 주문 요약 */}
           <div className="lg:col-span-1">
             <div className="lg:sticky lg:top-20">
-              <Card className="relative backdrop-blur-sm bg-card/90 dark:bg-card border-0 shadow-2xl overflow-hidden">
+              <Card className="relative bg-card border border-border shadow-md overflow-hidden">
                 <div className="bg-muted/60 dark:bg-muted/50 p-4 md:p-6 text-foreground">
                   <CardTitle className="flex items-center gap-3 text-xl">
-                    <div className="p-2 bg-card/20 rounded-full">
+                    <div className="p-2 bg-secondary rounded-xl">
                       <Package className="h-5 w-5" />
                     </div>
                     주문 요약
@@ -745,7 +745,7 @@ export default function PackageCheckoutClient({
                     </div>
                   </div>
 
-                  <div className="bg-primary/10 dark:bg-primary/20 p-4 rounded-lg border border-primary/20">
+                  <div className="bg-secondary p-4 rounded-lg border border-border">
                     <div className="flex items-center gap-2 text-foreground mb-2">
                       <Star className="h-4 w-4" />
                       <span className="font-semibold">패키지 혜택</span>
@@ -758,7 +758,7 @@ export default function PackageCheckoutClient({
                     </div>
                   </div>
 
-                  <div className="bg-primary/10 dark:bg-primary/20 p-4 rounded-lg border border-primary/20">
+                  <div className="bg-secondary p-4 rounded-lg border border-border">
                     <div className="flex items-center gap-2 text-foreground mb-2">
                       <Shield className="h-4 w-4" />
                       <span className="font-semibold">패키지 안내</span>

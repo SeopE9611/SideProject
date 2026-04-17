@@ -79,13 +79,13 @@ export default async function PricingPage() {
     <div className="min-h-screen bg-background">
       <HeroCourtBackdrop
         opacity="soft"
-        className="h-full w-full text-primary"
+        className="h-full w-full text-foreground"
       />
       <div className="relative z-10 max-w-7xl mx-auto px-4 py-8 md:py-12 space-y-8 md:space-y-12">
         <div className="text-center">
-          <div className="inline-flex items-center gap-2 bg-primary/10 px-4 py-2 rounded-full mb-4 md:mb-6">
-            <Wrench className="h-5 w-5 text-primary" />
-            <span className="text-sm font-semibold text-primary">
+          <div className="inline-flex items-center gap-2 bg-secondary border border-border px-4 py-2 rounded-full mb-4 md:mb-6">
+            <Wrench className="h-5 w-5 text-foreground" />
+            <span className="text-sm font-semibold text-foreground">
               장착 서비스 정책
             </span>
           </div>
@@ -104,7 +104,7 @@ export default async function PricingPage() {
               <Card key={service.name}>
                 <CardHeader className="text-center">
                   <CardTitle>{service.name}</CardTitle>
-                  <div className="text-2xl font-bold text-primary">
+                  <div className="text-2xl font-bold text-foreground">
                     {service.price}
                   </div>
                   <div className="text-sm text-muted-foreground flex items-center justify-center gap-1">
@@ -149,7 +149,7 @@ export default async function PricingPage() {
               <Card key={category.key}>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Shield className="h-5 w-5 text-primary" />
+                    <Shield className="h-5 w-5 text-foreground" />
                     {category.label}
                   </CardTitle>
                 </CardHeader>
@@ -214,7 +214,7 @@ export default async function PricingPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Shield className="h-5 w-5 text-primary" />
+                <Shield className="h-5 w-5 text-foreground" />
                 하이브리드는 조합 방식으로 안내합니다
               </CardTitle>
             </CardHeader>
