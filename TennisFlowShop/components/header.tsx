@@ -866,62 +866,65 @@ const Header = () => {
               </Link>
               <nav
                 ref={navRef}
-                className={`hidden bp-lg:flex items-center gap-1 xl:gap-1.5 ml-1 whitespace-nowrap flex-1 min-w-0 overflow-hidden ${
-                  // 메뉴가 전부 보일 때는 중앙 정렬로 넓은 화면의 빈 여백을 줄이고,
-                  // 하나라도 overflow가 생기면 왼쪽 정렬로 전환해
-                  // 첫 메뉴(스트링)가 잘리지 않게 합니다.
-                  hasOverflow ? "justify-start" : "xl:justify-center xl:pr-8 2xl:pr-10"
-                }`}
+                className="hidden bp-lg:flex items-center ml-1 whitespace-nowrap flex-1 min-w-0 overflow-hidden"
               >
-                {primaryMenuItems.map((item) => {
-                  const active = isActiveMenu(item);
-                  return (
-                    <Link
-                      key={item.name}
-                      href={item.href}
-                      className={`inline-flex shrink-0 items-center h-9 px-2.5 rounded-lg text-sm leading-none transition whitespace-nowrap ${active ? "bg-primary text-primary-foreground font-semibold" : "text-foreground hover:text-foreground hover:bg-primary/10 dark:hover:bg-primary/20"}`}
-                      aria-current={active ? "page" : undefined}
-                      aria-label={`${item.name} 페이지로 이동`}
-                    >
-                      {item.name}
-                    </Link>
-                  );
-                })}
-
-                {/* bp-lg(1200+)~1580px 미만 구간: 우측 메뉴가 검색 영역에 가려질 수 있어 '더보기'로 이동 */}
-                {overflowMenuItems.length > 0 && (
-                  <DropdownMenu modal={false} open={overflowMenuOpen} onOpenChange={setOverflowMenuOpen}>
-                    <DropdownMenuTrigger asChild>
-                      <button
-                        type="button"
-                        className="inline-flex shrink-0 items-center h-9 gap-1 px-2.5 rounded-lg text-sm leading-none transition whitespace-nowrap text-foreground hover:text-foreground hover:bg-primary/10 dark:hover:bg-primary/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                        aria-label="더보기 메뉴"
+                <div
+                  className={`flex w-full min-w-0 items-center gap-1.5 xl:gap-2 whitespace-nowrap ${
+                    // 메뉴가 전부 보일 때는 bounded width 안에서 고르게 배치하고,
+                    // overflow가 생기면 기존처럼 왼쪽 정렬로 전환해 첫 메뉴 잘림을 방지합니다.
+                    hasOverflow ? "justify-start" : "mx-auto max-w-[980px] 2xl:max-w-[1080px] justify-between"
+                  }`}
+                >
+                  {primaryMenuItems.map((item) => {
+                    const active = isActiveMenu(item);
+                    return (
+                      <Link
+                        key={item.name}
+                        href={item.href}
+                        className={`inline-flex shrink-0 items-center h-10 px-3 rounded-lg text-sm leading-none transition whitespace-nowrap ${active ? "bg-primary text-primary-foreground font-semibold" : "text-foreground hover:text-foreground hover:bg-primary/10 dark:hover:bg-primary/20"}`}
+                        aria-current={active ? "page" : undefined}
+                        aria-label={`${item.name} 페이지로 이동`}
                       >
-                        ⋯
-                        <ChevronDown className="h-4 w-4" aria-hidden="true" />
-                      </button>
-                    </DropdownMenuTrigger>
+                        {item.name}
+                      </Link>
+                    );
+                  })}
 
-                    <DropdownMenuContent align="start" sideOffset={8}>
-                      {overflowMenuItems.map((item) => {
-                        const active = isActiveMenu(item);
-                        return (
-                          <DropdownMenuItem
-                            key={item.name}
-                            className={active ? "bg-primary text-primary-foreground font-semibold" : undefined}
-                            onSelect={(e) => {
-                              e.preventDefault();
-                              setOverflowMenuOpen(false);
-                              router.push(item.href);
-                            }}
-                          >
-                            {item.name}
-                          </DropdownMenuItem>
-                        );
-                      })}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )}
+                  {/* bp-lg(1200+)~1580px 미만 구간: 우측 메뉴가 검색 영역에 가려질 수 있어 '더보기'로 이동 */}
+                  {overflowMenuItems.length > 0 && (
+                    <DropdownMenu modal={false} open={overflowMenuOpen} onOpenChange={setOverflowMenuOpen}>
+                      <DropdownMenuTrigger asChild>
+                        <button
+                          type="button"
+                          className="inline-flex shrink-0 items-center h-10 gap-1 px-3 rounded-lg text-sm leading-none transition whitespace-nowrap text-foreground hover:text-foreground hover:bg-primary/10 dark:hover:bg-primary/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                          aria-label="더보기 메뉴"
+                        >
+                          ⋯
+                          <ChevronDown className="h-4 w-4" aria-hidden="true" />
+                        </button>
+                      </DropdownMenuTrigger>
+
+                      <DropdownMenuContent align="start" sideOffset={8}>
+                        {overflowMenuItems.map((item) => {
+                          const active = isActiveMenu(item);
+                          return (
+                            <DropdownMenuItem
+                              key={item.name}
+                              className={active ? "bg-primary text-primary-foreground font-semibold" : undefined}
+                              onSelect={(e) => {
+                                e.preventDefault();
+                                setOverflowMenuOpen(false);
+                                router.push(item.href);
+                              }}
+                            >
+                              {item.name}
+                            </DropdownMenuItem>
+                          );
+                        })}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
+                </div>
               </nav>
 
               {/* <div className="max-w-md w-full">
@@ -930,21 +933,21 @@ const Header = () => {
 
               {/* 검색 (PC 전용) */}
               <div className="ml-auto shrink-0 flex justify-end">
-                <div className="min-w-[180px]" style={{ width: "clamp(220px, 24vw, 560px)" }}>
+                <div className="min-w-[180px]" style={{ width: "clamp(210px, 22vw, 520px)" }}>
                   <SearchPreview placeholder="스트링 / 라켓 검색..." className="w-full rounded-full bg-background/80 border border-border focus-within:ring-2 focus-within:ring-ring transition-all duration-200" />
                 </div>
               </div>
 
               {/* 숨은 측정 DOM: 실제 렌더 폭(텍스트/패딩/아이콘/갭)을 그대로 재기 */}
               <div ref={measureRef} className="absolute -left-[9999px] top-0 opacity-0 pointer-events-none">
-                <div data-measure-wrap className="flex items-center gap-1.5 ml-2 whitespace-nowrap">
+                <div data-measure-wrap className="flex items-center gap-1.5 xl:gap-2 ml-2 whitespace-nowrap">
                   {menuItems.map((it) => (
-                    <span key={`measure-${it.name}`} data-measure-item className="inline-flex shrink-0 items-center h-9 px-2.5 rounded-lg text-sm leading-none whitespace-nowrap font-semibold">
+                    <span key={`measure-${it.name}`} data-measure-item className="inline-flex shrink-0 items-center h-10 px-3 rounded-lg text-sm leading-none whitespace-nowrap font-semibold">
                       {it.name}
                     </span>
                   ))}
 
-                  <span data-measure-dots className="inline-flex shrink-0 items-center h-9 gap-1 px-2.5 rounded-lg text-sm leading-none whitespace-nowrap font-semibold">
+                  <span data-measure-dots className="inline-flex shrink-0 items-center h-10 gap-1 px-3 rounded-lg text-sm leading-none whitespace-nowrap font-semibold">
                     ⋯ <ChevronDown className="h-4 w-4" aria-hidden="true" />
                   </span>
                 </div>
