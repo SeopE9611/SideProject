@@ -603,7 +603,7 @@ export default function Home() {
               </div>
             </div>
             <div className="text-center">
-              <Button asChild size="tall" className="px-6 bp-sm:px-8 text-sm bp-sm:text-base">
+              <Button asChild variant="default" size="tall" className="px-6 bp-sm:px-8 text-sm bp-sm:text-base">
                 <Link href="/services/apply">
                   <Wrench className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                   지금 신청하기

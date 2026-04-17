@@ -167,7 +167,7 @@ export default function LoginGate({
 
             <CardFooter className="px-8 pb-8">
               <div className="flex flex-wrap gap-3">
-                <Button asChild variant="highlight">
+                <Button asChild variant="default">
                   <Link href={loginHref}>로그인·회원가입하기</Link>
                 </Button>
                 <Button asChild variant="outline">

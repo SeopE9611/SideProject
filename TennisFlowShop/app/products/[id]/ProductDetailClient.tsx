@@ -1158,7 +1158,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                       </div>
                       <h3 className="text-xl sm:text-2xl font-bold text-foreground">고객 리뷰</h3>
                     </div>
-                    <Button asChild variant="outline" className="border border-border/60 bg-secondary text-foreground hover:bg-secondary hover:border-border shadow-sm text-xs sm:text-sm h-9 sm:h-10">
+                    <Button asChild variant="secondary" className="text-xs sm:text-sm h-9 sm:h-10">
                       <Link href={`/reviews/write?productId=${product._id}`}>
                         <Pencil className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
                         리뷰 작성하기
@@ -1386,7 +1386,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         </div>
                         <h3 className="text-lg sm:text-xl font-bold text-foreground mb-2">아직 리뷰가 없습니다</h3>
                         <p className="text-muted-foreground mb-6 text-base sm:text-lg">첫 번째 리뷰를 작성해보세요!</p>
-                        <Button className="border border-border/60 bg-secondary text-foreground hover:bg-secondary hover:border-border shadow-sm px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base">
+                        <Button variant="secondary" className="px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base">
                           <Pencil className="h-4 w-4 mr-2" />
                           리뷰 작성하기
                         </Button>
@@ -1404,7 +1404,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     </div>
                     <h3 className="text-xl sm:text-2xl font-bold text-foreground">상품 문의</h3>
                   </div>
-                  <Button asChild className="border border-border/60 bg-secondary text-foreground hover:bg-secondary hover:border-border shadow-sm text-xs sm:text-sm h-9 sm:h-10">
+                  <Button asChild variant="secondary" className="text-xs sm:text-sm h-9 sm:h-10">
                     <Link href={`/board/qna/write?productId=${product._id}&productName=${encodeURIComponent(product.name)}`}>문의하기</Link>
                   </Button>
                 </div>
@@ -1425,7 +1425,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         </div>
                         <h4 className="text-lg sm:text-xl font-bold text-foreground mb-2">아직 문의가 없습니다</h4>
                         <p className="text-muted-foreground mb-6 text-base sm:text-lg">첫 번째 문의를 남겨보세요!</p>
-                        <Button asChild className="border border-border/60 bg-secondary text-foreground hover:bg-secondary hover:border-border shadow-sm px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base">
+                        <Button asChild variant="secondary" className="px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base">
                           <Link href={`/board/qna/write?productId=${product._id}&productName=${encodeURIComponent(product.name)}`}>문의하기</Link>
                         </Button>
                       </div>

@@ -10,17 +10,11 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default: "bg-primary text-primary-foreground shadow-sm hover:-translate-y-0.5 hover:shadow-md active:translate-y-0",
-        highlight: "bg-primary text-primary-foreground shadow-sm hover:-translate-y-0.5 hover:shadow-md active:translate-y-0",
-        accent: "bg-accent text-accent-foreground shadow-sm hover:bg-accent-hover active:bg-accent-active",
         secondary: "border border-border bg-secondary text-foreground shadow-sm hover:-translate-y-0.5 hover:shadow-md active:translate-y-0",
         outline: "border border-border bg-background text-foreground hover:bg-card hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0",
         ghost: "text-foreground hover:bg-secondary active:bg-secondary",
         elevated: "border border-border bg-card text-foreground shadow-sm hover:-translate-y-0.5 hover:shadow-md active:translate-y-0",
-        neutral: "border border-border bg-card text-foreground shadow-sm hover:-translate-y-0.5 hover:shadow-md active:translate-y-0",
-        muted: "border border-border bg-muted text-foreground shadow-sm hover:-translate-y-0.5 hover:shadow-md active:translate-y-0",
-        cardAction: "border border-border bg-card text-foreground shadow-sm hover:-translate-y-0.5 hover:shadow-md active:translate-y-0",
         destructive: "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
-        danger: "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
