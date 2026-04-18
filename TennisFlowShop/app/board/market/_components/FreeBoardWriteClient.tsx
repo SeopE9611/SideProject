@@ -697,7 +697,7 @@ export default function FreeBoardWriteClient() {
               {/* ── 섹션 1: 상품 기본 정보 ── */}
               <section className="rounded-xl border border-border bg-card shadow-sm">
                 <div className="flex items-center gap-3 border-b border-border px-5 py-4 md:px-6">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary text-foreground">
                     <Tag className="h-4 w-4" />
                   </div>
                   <div>
@@ -736,7 +736,7 @@ export default function FreeBoardWriteClient() {
                           className={cn(
                             "rounded-full border px-4 py-1.5 text-sm font-medium transition-colors",
                             category === opt.value
-                              ? "border-primary bg-primary/10 text-primary"
+                              ? "border-primary bg-secondary text-foreground"
                               : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground",
                           )}
                         >
@@ -812,7 +812,7 @@ export default function FreeBoardWriteClient() {
               {/* ── 섹션 4: 게시글 내용 ── */}
               <section className="rounded-xl border border-border bg-card shadow-sm">
                 <div className="flex items-center gap-3 border-b border-border px-5 py-4 md:px-6">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary text-foreground">
                     <FileText className="h-4 w-4" />
                   </div>
                   <div>
@@ -913,7 +913,7 @@ export default function FreeBoardWriteClient() {
                 ref={attachmentsRef}
               >
                 <div className="flex items-center gap-3 border-b border-border px-5 py-4 md:px-6">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary text-foreground">
                     <ImageIcon className="h-4 w-4" />
                   </div>
                   <div>

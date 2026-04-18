@@ -456,9 +456,9 @@ export default function FreeBoardWriteClient() {
         </div>
 
         {/* 글쓰기 카드 */}
-        <Card className="border-0 bg-card shadow-xl backdrop-blur-sm dark:bg-card">
+        <Card className="border border-border bg-card shadow-md dark:bg-card">
           <CardHeader className="flex flex-row items-center gap-3 border-b bg-muted/30">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary shadow-lg dark:bg-primary/20">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-secondary text-foreground shadow-sm">
               <MessageSquare className="h-5 w-5" />
             </div>
             <div>
@@ -493,7 +493,7 @@ export default function FreeBoardWriteClient() {
                       className={cn(
                         "rounded-full border px-3 py-1",
                         category === opt.value
-                          ? "border-border bg-primary/10 text-primary dark:border-border dark:bg-primary/20 dark:text-primary"
+                          ? "border-border bg-secondary text-foreground dark:border-border dark:bg-secondary dark:text-foreground"
                           : "border-border text-muted-foreground dark:border-border dark:text-muted-foreground",
                       )}
                     >

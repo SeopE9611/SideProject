@@ -720,7 +720,7 @@ export default function FreeBoardEditClient({ id }: Props) {
     return (
       <div className="min-h-screen bg-muted/30">
         <div className="container mx-auto px-4 py-8">
-          <Card className="border-0 bg-card shadow-xl backdrop-blur-sm dark:bg-card">
+          <Card className="border border-border bg-card shadow-md dark:bg-card">
             <CardContent className="space-y-4 p-6">
               <div className="rounded-md border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive dark:border-destructive/40 dark:bg-destructive/15">
                 해당 글을 찾을 수 없습니다. 삭제되었거나 주소가 잘못되었을 수
@@ -805,7 +805,7 @@ export default function FreeBoardEditClient({ id }: Props) {
         </div>
 
         {isLoading ? (
-          <Card className="border-0 bg-card shadow-xl backdrop-blur-sm dark:bg-card">
+          <Card className="border border-border bg-card shadow-md dark:bg-card">
             <CardHeader className="space-y-1 border-b border-border pb-4 dark:border-border">
               <CardTitle className="text-base font-semibold">글 내용 수정</CardTitle>
             </CardHeader>
@@ -882,7 +882,7 @@ export default function FreeBoardEditClient({ id }: Props) {
               )}
 
               {/* 상품 기본 정보 카드 */}
-              <Card className="border-0 bg-card shadow-xl backdrop-blur-sm dark:bg-card">
+              <Card className="border border-border bg-card shadow-md dark:bg-card">
                 <CardHeader className="space-y-1 border-b border-border pb-4 dark:border-border">
                   <CardTitle className="flex items-center gap-2 text-base font-semibold text-foreground">
                     <Package className="h-4 w-4 text-success" />
@@ -923,7 +923,7 @@ export default function FreeBoardEditClient({ id }: Props) {
                           className={cn(
                             "rounded-full border px-2 py-0.5 text-[11px]",
                             category === opt.value
-                              ? "border-border bg-primary/10 text-primary dark:border-border dark:bg-primary/20 dark:text-primary"
+                              ? "border-border bg-secondary text-foreground dark:border-border dark:bg-secondary dark:text-foreground"
                               : "border-border text-muted-foreground dark:border-border dark:text-muted-foreground",
                           )}
                         >
@@ -975,7 +975,7 @@ export default function FreeBoardEditClient({ id }: Props) {
               </Card>
 
               {/* 거래 핵심 정보 카드 */}
-              <Card className="border-0 bg-card shadow-xl backdrop-blur-sm dark:bg-card">
+              <Card className="border border-border bg-card shadow-md dark:bg-card">
                 <CardHeader className="space-y-1 border-b border-border pb-4 dark:border-border">
                   <CardTitle className="flex items-center gap-2 text-base font-semibold text-foreground">
                     <Package className="h-4 w-4 text-success" />
@@ -1002,7 +1002,7 @@ export default function FreeBoardEditClient({ id }: Props) {
               </Card>
 
               {/* 게시글 내용 카드 */}
-              <Card className="border-0 bg-card shadow-xl backdrop-blur-sm dark:bg-card">
+              <Card className="border border-border bg-card shadow-md dark:bg-card">
                 <CardHeader className="space-y-1 border-b border-border pb-4 dark:border-border">
                   <CardTitle className="flex items-center gap-2 text-base font-semibold text-foreground">
                     <MessageSquare className="h-4 w-4 text-success" />
@@ -1084,7 +1084,7 @@ export default function FreeBoardEditClient({ id }: Props) {
 
               {/* 판매 이미지 / 파일 카드 */}
               <Card
-                className="border-0 bg-card shadow-xl backdrop-blur-sm dark:bg-card"
+                className="border border-border bg-card shadow-md dark:bg-card"
                 ref={attachmentsRef}
               >
                 <CardHeader className="space-y-1 border-b border-border pb-4 dark:border-border">

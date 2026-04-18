@@ -547,7 +547,7 @@ export default function QnaWritePage() {
               </Link>
             </Button>
             <div className="flex items-center space-x-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-border bg-secondary text-foreground">
                 <MessageSquare className="h-6 w-6" />
               </div>
               <div>
@@ -561,7 +561,7 @@ export default function QnaWritePage() {
             </div>
           </div>
 
-          <Card className="border-0 bg-card/80 shadow-xl backdrop-blur-sm">
+          <Card className="border border-border bg-card shadow-md">
             <CardHeader className="bg-muted/30 border-b">
               <CardTitle className="flex items-center space-x-2">
                 <MessageSquare className="h-5 w-5 text-success" />
@@ -877,14 +877,14 @@ export default function QnaWritePage() {
                               )}
 
                               {/* 파일 크기 */}
-                              <div className="absolute left-2 bottom-2 text-[11px] px-1.5 py-0.5 rounded bg-card/85 dark:bg-card/85">
+                              <div className="absolute left-2 bottom-2 text-[11px] px-1.5 py-0.5 rounded bg-card dark:bg-card">
                                 {(file.size / 1024 / 1024).toFixed(2)} MB
                               </div>
 
                               {/* 삭제 버튼 */}
                               <button
                                 type="button"
-                                className="absolute top-1.5 right-1.5 rounded-full bg-card/95 dark:bg-card/95 shadow p-1 opacity-90 hover:opacity-100"
+                                className="absolute top-1.5 right-1.5 rounded-full bg-card dark:bg-card shadow p-1 opacity-90 hover:opacity-100"
                                 onClick={() => removeFile(index)}
                                 aria-label="첨부 제거"
                               >
@@ -894,7 +894,7 @@ export default function QnaWritePage() {
                               {/* 확대 안내 오버레이 (이미지일 때만) */}
                               {isImage && previewUrl && (
                                 <div className="pointer-events-none absolute bottom-1.5 right-1.5">
-                                  <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 rounded-full bg-overlay/50 p-1.5 backdrop-blur-[1px]">
+                                  <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 rounded-full bg-overlay/50 p-1.5 ">
                                     {/* lucide-react 사용 시 */}
                                     <svg
                                       viewBox="0 0 24 24"

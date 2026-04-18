@@ -241,7 +241,7 @@ export default function QnaDetailPage() {
                 </Link>
               </Button>
               <div className="flex items-center gap-2 sm:gap-3">
-                <div className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20">
+                <div className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-xl border border-border bg-secondary text-foreground">
                   <MessageSquare className="h-5 w-5 sm:h-6 sm:w-6" />
                 </div>
                 <div>
@@ -270,7 +270,7 @@ export default function QnaDetailPage() {
           </div>
         </div>
 
-        <Card className="shadow-xl border-0 bg-card backdrop-blur-sm dark:bg-card">
+        <Card className="shadow-md border border-border bg-card dark:bg-card">
           <CardHeader className="bg-muted/30 border-b p-4 md:p-5">
             <div className="space-y-4">
               {isLoading && (
@@ -324,7 +324,7 @@ export default function QnaDetailPage() {
                   </div>
 
                   <div className="flex items-start gap-3 mb-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary shadow-lg dark:bg-primary/20 flex-shrink-0 mt-1">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-secondary text-foreground shadow-sm flex-shrink-0 mt-1">
                       <MessageSquare className="h-5 w-5" />
                     </div>
                     <h1 className="text-2xl font-bold leading-tight text-foreground sm:text-3xl">
@@ -471,7 +471,7 @@ export default function QnaDetailPage() {
 
           {lightbox.open && (
             <div
-              className="fixed inset-0 z-50 bg-overlay/80 backdrop-blur-sm flex items-center justify-center p-4"
+              className="fixed inset-0 z-50 bg-overlay/80 flex items-center justify-center p-4"
               onClick={() => setLightbox({ open: false, src: "", alt: "" })}
               role="dialog"
               aria-modal="true"
@@ -480,7 +480,7 @@ export default function QnaDetailPage() {
                 <img
                   src={lightbox.src || "/placeholder.svg"}
                   alt={lightbox.alt}
-                  className="max-h-[85vh] max-w-[90vw] object-contain rounded-lg shadow-2xl"
+                  className="max-h-[85vh] max-w-[90vw] object-contain rounded-lg shadow-lg"
                 />
                 <button
                   onClick={() => setLightbox({ open: false, src: "", alt: "" })}
@@ -513,7 +513,7 @@ export default function QnaDetailPage() {
         </Card>
 
         {isAdmin && qna && !qna.answer && (
-          <Card className="shadow-lg border-0 bg-card backdrop-blur-sm dark:bg-card">
+          <Card className="shadow-md border border-border bg-card dark:bg-card">
             <CardHeader className="border-b border-border bg-muted/50">
               <div className="flex items-center gap-2">
                 <MessageCircle className="h-5 w-5 text-primary" />
@@ -557,7 +557,7 @@ export default function QnaDetailPage() {
         )}
 
         {qna?.answer && (
-          <Card className="shadow-lg border-2 border-border bg-muted/40 backdrop-blur-sm">
+          <Card className="shadow-lg border-2 border-border bg-muted/40">
             <CardHeader className="border-b border-border bg-muted/60">
               <div className="space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
