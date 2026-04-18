@@ -764,11 +764,11 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
           ? '이 신청은 주문에서 생성된 신청입니다. 최종 취소/운영 처리는 주문 상세와 함께 확인하세요.'
           : '이 신청은 대여에서 생성된 신청입니다. 대여 상세와 함께 전체 흐름을 확인하세요.';
 
-  const paymentMethodLabel =
+  const paymentMethodRaw =
     packageApplied
-      ? (linkedPayment?.method ?? '패키지 사용')
+      ? linkedPayment?.method
       : hasOrderLinkedPayment || hasRentalLinkedPayment
-        ? (linkedPayment?.method ?? '결제수단 확인 필요')
+        ? linkedPayment?.method
         : (linkedPayment?.method ?? '무통장입금');
 
   // 관리자용 취소 요청 정보 (주문 상세와 동일 패턴)
@@ -1378,16 +1378,18 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                   <div className="space-y-4">
                     <div className="p-3 bg-muted rounded-lg">
                       <PaymentMethodDetail
-                        method={paymentMethodLabel}
+                        method={paymentMethodRaw}
                         bankKey={linkedPayment?.bank ?? data.shippingInfo?.bank}
                         depositor={linkedPayment?.depositor ?? data.shippingInfo?.depositor}
-                        provider={linkedPayment?.provider}
+                        isPackageApplied={packageApplied}
+                        paymentProvider={linkedPayment?.provider}
                         easyPayProvider={linkedPayment?.easyPayProvider}
-                        tid={linkedPayment?.tid}
-                        cardDisplayName={linkedPayment?.cardDisplayName}
-                        cardCompany={linkedPayment?.cardCompany}
-                        cardLabel={linkedPayment?.cardLabel}
-                        approvedAt={linkedPayment?.approvedAt}
+                        paymentStatus={paymentStatus}
+                        paymentTid={linkedPayment?.tid}
+                        paymentCardDisplayName={linkedPayment?.cardDisplayName}
+                        paymentCardCompany={linkedPayment?.cardCompany}
+                        paymentCardLabel={linkedPayment?.cardLabel}
+                        paymentNiceSync={linkedPayment?.niceSync ?? null}
                       />
                     </div>
                     {/* 패키지 사용 정보 요약 */}
