@@ -1502,7 +1502,7 @@ export default function FreeBoardEditClient({ id }: Props) {
                             className={cn(
                               "flex h-4 w-4 items-center justify-center rounded-full",
                               item.ok
-                                ? "bg-primary/15 text-primary"
+                                ? "border border-border bg-background text-foreground"
                                 : "bg-muted text-muted-foreground",
                             )}
                           >
