@@ -25,11 +25,11 @@ export default function Error({
     <div className="min-h-[60vh] bg-muted/30">
       <div className="container mx-auto px-4 py-10 md:py-16">
         <div className="max-w-2xl mx-auto">
-          <Card className="relative overflow-hidden border-0 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] backdrop-blur-sm bg-card/90 dark:bg-card">
+          <Card className="relative overflow-hidden border border-border bg-card shadow-md">
             <div className="h-1.5 w-full bg-muted/30" />
 
             <CardContent className="p-6 md:p-8">
-              <div className="w-14 h-14 rounded-2xl border border-primary/20 bg-primary/10 dark:bg-primary/20 text-primary grid place-content-center shadow-lg mb-6">
+              <div className="w-14 h-14 rounded-2xl border border-border bg-secondary text-foreground grid place-content-center shadow-sm mb-6">
                 <AlertTriangle className="h-7 w-7" />
               </div>
 
@@ -76,8 +76,8 @@ export default function Error({
               </div>
             </CardFooter>
 
-            <div className="pointer-events-none absolute -top-24 -right-24 h-44 w-44 rounded-full bg-destructive/10 blur-3xl dark:bg-destructive/15" />
-            <div className="pointer-events-none absolute -bottom-20 -left-16 h-40 w-40 rounded-full bg-warning/10 blur-3xl dark:bg-warning/15" />
+            <div className="pointer-events-none absolute -top-24 -right-24 h-44 w-44 rounded-full bg-muted/40" />
+            <div className="pointer-events-none absolute -bottom-20 -left-16 h-40 w-40 rounded-full bg-muted/30" />
           </Card>
         </div>
       </div>

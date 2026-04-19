@@ -85,7 +85,7 @@ export default function SearchPreview({
                 <Link
                   key={item._id}
                   href={href}
-                  className="flex items-center gap-4 px-4 py-3 hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground transition-all group"
+                  className="flex items-center gap-4 px-4 py-3 hover:bg-secondary hover:text-foreground transition-all group"
                   onClick={() => {
                     setIsOpen(false);
                     onSelect?.(); // 바깥(=Header Sheet)에게 "선택됨" 알림
@@ -102,7 +102,7 @@ export default function SearchPreview({
                   )}
 
                   <div className="flex flex-col gap-1">
-                    <div className="text-base font-semibold text-foreground group-hover:text-primary">
+                    <div className="text-base font-semibold text-foreground group-hover:text-foreground">
                       {item.name}
                     </div>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -111,7 +111,7 @@ export default function SearchPreview({
                         {item.type === "racket" ? "중고 라켓" : "스트링"}
                       </span>
                       {typeof item.price === "number" && item.price > 0 && (
-                        <span className="text-primary">
+                        <span className="text-foreground">
                           {item.price.toLocaleString()}원
                         </span>
                       )}
@@ -124,7 +124,7 @@ export default function SearchPreview({
             <div className="flex flex-col items-center justify-center py-7 px-4 text-muted-foreground text-base min-h-[120px]">
               <SearchX className="w-10 h-10 text-muted-foreground mb-2" />
               <div>
-                <span className="font-semibold text-primary">“{query}”</span>
+                <span className="font-semibold text-foreground">“{query}”</span>
                 <span>에 대한 검색 결과가 없습니다.</span>
               </div>
             </div>

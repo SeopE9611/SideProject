@@ -23,7 +23,7 @@ export default function GlobalError({
   return (
     <html lang="ko">
       <body className="m-0 flex min-h-screen items-center justify-center bg-background p-3 text-foreground bp-sm:p-6 bp-md:p-16">
-        <Card className="relative w-full max-w-2xl overflow-hidden border border-border bg-card shadow-xl">
+        <Card className="relative w-full max-w-2xl overflow-hidden border border-border bg-card shadow-md">
           <div className="h-1.5 w-full bg-destructive" />
 
           <CardContent className="p-6 bp-sm:p-8">

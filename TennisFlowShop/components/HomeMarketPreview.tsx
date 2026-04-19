@@ -24,7 +24,7 @@ export default function HomeMarketPreview() {
       {/* Card Header */}
       <div className="flex items-center justify-between border-b border-border bg-muted/40 px-5 bp-sm:px-6 py-4 bp-sm:py-5">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary dark:bg-primary/20">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary text-foreground">
             <Tags className="h-4 w-4" />
           </div>
           <h2 className="text-base bp-sm:text-lg font-bold text-foreground">
@@ -73,7 +73,7 @@ export default function HomeMarketPreview() {
                 href={`/board/market/${p.id}`}
               >
                 <div className="flex min-w-0 flex-1 items-center gap-2.5">
-                  <span className="hidden bp-sm:inline-flex h-1.5 w-1.5 shrink-0 rounded-full bg-primary/40" />
+                  <span className="hidden bp-sm:inline-flex h-1.5 w-1.5 shrink-0 rounded-full bg-foreground/30" />
                   <span className="min-w-0 flex-1 truncate text-sm bp-sm:text-[15px] text-foreground/85 group-hover:text-foreground transition-colors">
                     {p.title}
                   </span>
