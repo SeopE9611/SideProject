@@ -12,6 +12,7 @@ interface PaymentMethodDetailProps {
   paymentCardDisplayName?: string | null;
   paymentCardCompany?: string | null;
   paymentCardLabel?: string | null;
+  approvedAt?: string | null;
   paymentNiceSync?: {
     lastSyncedAt?: string | null;
     pgStatus?: string | null;
@@ -88,6 +89,14 @@ function getCardDisplayName(params: {
   );
 }
 
+function formatApprovedAt(approvedAt?: string | null) {
+  const raw = String(approvedAt ?? '').trim();
+  if (!raw) return null;
+  const parsed = new Date(raw);
+  if (Number.isNaN(parsed.getTime())) return raw;
+  return parsed.toLocaleString("ko-KR");
+}
+
 export default function PaymentMethodDetail({
   method,
   bankKey,
@@ -100,6 +109,7 @@ export default function PaymentMethodDetail({
   paymentCardDisplayName,
   paymentCardCompany,
   paymentCardLabel,
+  approvedAt,
   paymentNiceSync,
 }: PaymentMethodDetailProps) {
   const bankInfo = bankKey ? bankLabelMap[bankKey] : null;
@@ -114,6 +124,7 @@ export default function PaymentMethodDetail({
     paymentCardLabel,
     paymentCardCompany,
   });
+  const approvedAtLabel = formatApprovedAt(approvedAt);
   const resolvedMethodLabel = isPackagePayment
     ? "패키지 사용"
     : String(method ?? "").trim();
@@ -133,6 +144,7 @@ export default function PaymentMethodDetail({
             <div className="text-sm text-muted-foreground">결제 제공사: Toss Payments</div>
             {easyPayProviderLabel && <div className="text-sm text-muted-foreground">간편결제: {easyPayProviderLabel}</div>}
             {paymentStatus && <div className="text-sm text-muted-foreground">결제 상태: {paymentStatus}</div>}
+            {approvedAtLabel && <div className="text-sm text-muted-foreground">승인 시각: {approvedAtLabel}</div>}
           </div>
         ) : isNicePayment ? (
           <div className="mt-1 rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground/90 leading-relaxed space-y-1">
@@ -141,6 +153,7 @@ export default function PaymentMethodDetail({
             <div className="text-sm text-muted-foreground">결제 제공사: NicePay</div>
             {paymentStatus && <div className="text-sm text-muted-foreground">결제 상태: {paymentStatus}</div>}
             {paymentTid && <div className="text-sm text-muted-foreground">거래 TID: {paymentTid}</div>}
+            {approvedAtLabel && <div className="text-sm text-muted-foreground">승인 시각: {approvedAtLabel}</div>}
             {paymentNiceSync?.pgStatus && <div className="text-sm text-muted-foreground">PG 상태: {paymentNiceSync.pgStatus}</div>}
             {paymentNiceSync?.lastSyncedAt && (
               <div className="text-sm text-muted-foreground">최근 동기화: {new Date(paymentNiceSync.lastSyncedAt).toLocaleString("ko-KR")}</div>

@@ -1389,6 +1389,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                         paymentCardDisplayName={linkedPayment?.cardDisplayName}
                         paymentCardCompany={linkedPayment?.cardCompany}
                         paymentCardLabel={linkedPayment?.cardLabel}
+                        approvedAt={linkedPayment?.approvedAt ?? null}
                         paymentNiceSync={linkedPayment?.niceSync ?? null}
                       />
                     </div>
