@@ -128,6 +128,11 @@ export default function PaymentMethodDetail({
   const resolvedMethodLabel = isPackagePayment
     ? "패키지 사용"
     : String(method ?? "").trim();
+  const shouldShowBankBox =
+    !isPackagePayment &&
+    !isTossPayment &&
+    !isNicePayment &&
+    !!bankInfo;
 
   return (
     <div className="space-y-2">
@@ -160,7 +165,7 @@ export default function PaymentMethodDetail({
             )}
           </div>
         ) : null}
-        {bankInfo && (
+        {shouldShowBankBox && (
           <div className="mt-1 rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground/90 leading-relaxed space-y-1">
             <div className="font-semibold text-foreground">{resolvedMethodLabel || "무통장입금"}</div>
             <div className="font-medium text-foreground">{bankInfo.label}</div>

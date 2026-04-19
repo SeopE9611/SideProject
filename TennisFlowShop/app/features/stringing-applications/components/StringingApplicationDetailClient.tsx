@@ -678,6 +678,8 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
   const packageApplied = Boolean(data.packageInfo?.applied);
   const hasOrderLinkedPayment = paymentSourceRaw.startsWith('order:') && Boolean(linkedPayment) && linkedPayment?.source === 'order';
   const hasRentalLinkedPayment = paymentSourceRaw.startsWith('rental:') && Boolean(linkedPayment) && linkedPayment?.source === 'rental';
+  const isLinkedPayment = hasOrderLinkedPayment || hasRentalLinkedPayment;
+  const useStandaloneBankFallback = !isLinkedPayment && !packageApplied;
 
   const paymentStatus =
     packageApplied
@@ -1379,8 +1381,16 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                     <div className="p-3 bg-muted rounded-lg">
                       <PaymentMethodDetail
                         method={paymentMethodRaw}
-                        bankKey={linkedPayment?.bank ?? data.shippingInfo?.bank}
-                        depositor={linkedPayment?.depositor ?? data.shippingInfo?.depositor}
+                        bankKey={
+                          useStandaloneBankFallback
+                            ? (linkedPayment?.bank ?? data.shippingInfo?.bank ?? undefined)
+                            : (linkedPayment?.bank ?? undefined)
+                        }
+                        depositor={
+                          useStandaloneBankFallback
+                            ? (linkedPayment?.depositor ?? data.shippingInfo?.depositor ?? undefined)
+                            : (linkedPayment?.depositor ?? undefined)
+                        }
                         isPackageApplied={packageApplied}
                         paymentProvider={linkedPayment?.provider}
                         easyPayProvider={linkedPayment?.easyPayProvider}
