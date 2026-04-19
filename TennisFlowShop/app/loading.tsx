@@ -6,7 +6,7 @@ export default function AppLoading() {
   return (
     <div className="min-h-[70svh] bg-muted/20 py-8">
       <SiteContainer variant="wide" className="space-y-6">
-        <section className="rounded-2xl border border-border/50 bg-card/80 p-6">
+        <section className="rounded-2xl border border-border/50 bg-card p-6">
           <Skeleton className="h-8 w-56" />
           <Skeleton className="mt-3 h-4 w-full max-w-2xl" />
           <Skeleton className="mt-2 h-4 w-3/4 max-w-xl" />

@@ -47,7 +47,7 @@ function MobileBrandGrid({ brands, onPick }: { brands: { name: string; href: str
           <Button
             key={b.name}
             variant="outline"
-            className="relative z-0 h-9 justify-center rounded-lg border-border text-sm hover:bg-primary/10 dark:hover:bg-primary/20 transition-all duration-200 bg-transparent hover:shadow-sm hover:ring-1 hover:ring-inset hover:ring-ring/40 hover:z-10 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            className="relative z-0 h-9 justify-center rounded-lg border-border text-sm hover:bg-secondary transition-all duration-200 bg-transparent hover:shadow-sm hover:ring-1 hover:ring-inset hover:ring-ring/40 hover:z-10 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             onClick={() => onPick(b.href)}
           >
             {b.name}
@@ -444,7 +444,7 @@ const Header = () => {
             <Accordion type="single">
               {/* 스트링 */}
               <AccordionItem value="strings" className="border-none">
-                <AccordionTrigger value="strings" className="py-3 px-3 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 hover:no-underline transition-all group">
+                <AccordionTrigger value="strings" className="py-3 px-3 rounded-lg hover:bg-secondary hover:no-underline transition-all group">
                   <span className="inline-flex items-center gap-2.5 text-base font-bold">
                     {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
                       <Grid2X2 className="h-4 w-4" />
@@ -455,7 +455,7 @@ const Header = () => {
                 <AccordionContent value="strings" className="pb-2 pt-1 space-y-0.5">
                   <Button
                     variant="ghost"
-                    className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-primary/10 dark:hover:bg-primary/20 transition-all relative z-0 hover:shadow-sm hover:ring-1 hover:ring-inset hover:ring-ring/40 hover:z-10 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                    className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-all relative z-0 hover:shadow-sm hover:ring-1 hover:ring-inset hover:ring-ring/40 hover:z-10 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                     onClick={() => {
                       setOpen(false);
                       router.push(NAV_LINKS.strings.root);
@@ -467,7 +467,7 @@ const Header = () => {
 
                   <Button
                     variant="ghost"
-                    className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-primary/10 dark:hover:bg-primary/20 transition-all"
+                    className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
                     onClick={() => {
                       setOpen(false);
                       router.push("/services/apply");
@@ -481,7 +481,7 @@ const Header = () => {
                   <div className="mt-2 pl-2">
                     <Accordion type="single" className="space-y-1">
                       <AccordionItem value="strings-service" className="border-none">
-                        <AccordionTrigger value="strings-service" className="px-3 py-2 text-[12px] font-semibold text-muted-foreground hover:text-foreground rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20">
+                        <AccordionTrigger value="strings-service" className="px-3 py-2 text-[12px] font-semibold text-muted-foreground hover:text-foreground rounded-lg hover:bg-secondary">
                           장착 서비스 안내
                         </AccordionTrigger>
                         <AccordionContent value="strings-service" className="pb-0">
@@ -490,7 +490,7 @@ const Header = () => {
                               <Button
                                 key={it.name}
                                 variant="ghost"
-                                className="w-full justify-between rounded-md px-3 py-1.5 text-[13px] text-muted-foreground hover:text-foreground hover:bg-primary/10 dark:hover:bg-primary/20 transition-all"
+                                className="w-full justify-between rounded-md px-3 py-1.5 text-[13px] text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
                                 onClick={() => {
                                   setOpen(false);
                                   router.push(it.href);
@@ -505,7 +505,7 @@ const Header = () => {
                       </AccordionItem>
 
                       <AccordionItem value="strings-brand" className="border-none">
-                        <AccordionTrigger value="strings-brand" className="px-3 py-2 text-[12px] font-semibold text-muted-foreground hover:text-foreground rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20">
+                        <AccordionTrigger value="strings-brand" className="px-3 py-2 text-[12px] font-semibold text-muted-foreground hover:text-foreground rounded-lg hover:bg-secondary">
                           브랜드
                         </AccordionTrigger>
                         <AccordionContent value="strings-brand" className="pb-0">
@@ -527,7 +527,7 @@ const Header = () => {
 
               {/* 게시판 */}
               <AccordionItem value="boards" className="border-none">
-                <AccordionTrigger value="boards" className="py-3 px-3 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 hover:no-underline transition-all group">
+                <AccordionTrigger value="boards" className="py-3 px-3 rounded-lg hover:bg-secondary hover:no-underline transition-all group">
                   <span className="inline-flex items-center gap-2.5 text-base font-bold">
                     {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
                       <MessageSquareText className="h-4 w-4" />
@@ -540,7 +540,7 @@ const Header = () => {
                     <Button
                       key={it.name}
                       variant="ghost"
-                      className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-primary/10 dark:hover:bg-primary/20 transition-all"
+                      className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
                       onClick={() => {
                         setOpen(false);
                         router.push(it.href);
@@ -555,7 +555,7 @@ const Header = () => {
 
               {/* 패키지 */}
               <AccordionItem value="packages" className="border-none">
-                <AccordionTrigger value="packages" className="py-3 px-3 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 hover:no-underline transition-all group">
+                <AccordionTrigger value="packages" className="py-3 px-3 rounded-lg hover:bg-secondary hover:no-underline transition-all group">
                   <span className="inline-flex items-center gap-2.5 text-base font-bold">
                     {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
                       <Gift className="h-4 w-4" />
@@ -568,7 +568,7 @@ const Header = () => {
                     <Button
                       key={it.name}
                       variant="ghost"
-                      className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-primary/10 dark:hover:bg-primary/20 transition-all"
+                      className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
                       onClick={() => {
                         setOpen(false);
                         router.push(it.href);
@@ -594,7 +594,7 @@ const Header = () => {
                 <AccordionContent value="rackets" className="pb-2 pt-1 space-y-0.5">
                   <Button
                     variant="ghost"
-                    className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-primary/10 dark:hover:bg-primary/20 transition-all"
+                    className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
                     onClick={() => {
                       setOpen(false);
                       router.push(NAV_LINKS.rackets.root);
@@ -611,7 +611,7 @@ const Header = () => {
                       <Button
                         key={b.href}
                         variant="ghost"
-                        className="w-full justify-between rounded-md px-3 py-1.5 text-[13px] text-muted-foreground hover:text-foreground hover:bg-primary/10 dark:hover:bg-primary/20 transition-all"
+                        className="w-full justify-between rounded-md px-3 py-1.5 text-[13px] text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
                         onClick={() => {
                           setOpen(false);
                           router.push(b.href);
@@ -627,7 +627,7 @@ const Header = () => {
 
               {/* 고객센터 */}
               <AccordionItem value="support" className="border-none">
-                <AccordionTrigger value="support" className="py-3 px-3 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 hover:no-underline transition-all group">
+                <AccordionTrigger value="support" className="py-3 px-3 rounded-lg hover:bg-secondary hover:no-underline transition-all group">
                   <span className="inline-flex items-center gap-2.5 text-base font-bold">
                     {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
                       <MessageSquare className="h-4 w-4" />
@@ -640,7 +640,7 @@ const Header = () => {
                     <Button
                       key={it.name}
                       variant="ghost"
-                      className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-primary/10 dark:hover:bg-primary/20 transition-all"
+                      className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
                       onClick={() => {
                         setOpen(false);
                         router.push(it.href);
@@ -656,7 +656,7 @@ const Header = () => {
           </div>
 
           {/* 하단 고정 영역(모바일) */}
-          <div className="shrink-0 border-t border-border bg-card/95 supports-[backdrop-filter]:bg-card/90 backdrop-blur px-3 pt-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] bp-sm:px-4 bp-sm:pt-4 space-y-3">
+          <div className="shrink-0 border-t border-border bg-card px-3 pt-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] bp-sm:px-4 bp-sm:pt-4 space-y-3">
             {user ? (
               <>
                 {/* 사용자 정보 카드 */}
@@ -690,7 +690,7 @@ const Header = () => {
                         </Link>
 
                         {isAdmin && (
-                          <Badge variant="success" className="border-0 px-2 py-0 text-[10px] h-5">
+                          <Badge variant="success" className="border border-border/60 px-2 py-0 text-[10px] h-5">
                             관리자
                           </Badge>
                         )}
@@ -699,12 +699,12 @@ const Header = () => {
                       {(hasKakao || hasNaver) && (
                         <div className="mt-2 flex flex-wrap gap-1.5">
                           {hasKakao && (
-                            <Badge variant={getSocialProviderBadgeSpec("kakao").variant} className="border-0 text-[10px] h-5 px-2">
+                            <Badge variant={getSocialProviderBadgeSpec("kakao").variant} className="border border-border/60 text-[10px] h-5 px-2">
                               카카오
                             </Badge>
                           )}
                           {hasNaver && (
-                            <Badge variant={getSocialProviderBadgeSpec("naver").variant} className="border-0 text-[10px] h-5 px-2">
+                            <Badge variant={getSocialProviderBadgeSpec("naver").variant} className="border border-border/60 text-[10px] h-5 px-2">
                               네이버
                             </Badge>
                           )}
@@ -719,7 +719,7 @@ const Header = () => {
                   <Button
                     variant="outline"
                     size="icon"
-                    className="relative h-10 w-full rounded-xl border-border bg-background hover:bg-primary/10 dark:hover:bg-primary/20"
+                    className="relative h-10 w-full rounded-xl border-border bg-background hover:bg-secondary"
                     onClick={() => {
                       setOpen(false);
                       router.push("/mypage");
@@ -733,7 +733,7 @@ const Header = () => {
                   <Button
                     variant="outline"
                     size="icon"
-                    className="relative h-10 w-full rounded-xl border-border bg-background hover:bg-primary/10 dark:hover:bg-primary/20"
+                    className="relative h-10 w-full rounded-xl border-border bg-background hover:bg-secondary"
                     onClick={() => {
                       setOpen(false);
                       router.push("/messages");
@@ -752,7 +752,7 @@ const Header = () => {
                   <Button
                     variant="outline"
                     size="icon"
-                    className="relative h-10 w-full rounded-xl border-border bg-background hover:bg-primary/10 dark:hover:bg-primary/20"
+                    className="relative h-10 w-full rounded-xl border-border bg-background hover:bg-secondary"
                     onClick={() => {
                       setOpen(false);
                       router.push("/cart");
@@ -818,7 +818,7 @@ const Header = () => {
           </div>
         </SheetContent>
         <header ref={headerRef as any} data-scrolled={isScrolled} className={`app-header fixed top-0 inset-x-0 z-[40] w-full isolate transition-[height] duration-300 ${isScrolled ? "h-[56px]" : "h-[72px]"}`}>
-          <div aria-hidden="true" className={`absolute left-0 right-0 top-0 z-0 pointer-events-none transition-[height,background] duration-300 ${isScrolled ? "h-[56px]" : "h-[72px]"} bg-background/70 backdrop-blur-md border-b border-border`} />
+          <div aria-hidden="true" className={`absolute left-0 right-0 top-0 z-0 pointer-events-none transition-[height,background] duration-300 ${isScrolled ? "h-[56px]" : "h-[72px]"} bg-background/95 border-b border-border`} />
           <SiteContainer
             className="bp-lg:mx-0 bp-lg:max-w-none bp-lg:px-6 xl:px-8 2xl:px-10 h-full flex items-center justify-between overflow-visible transition-transform duration-300"
             style={{
@@ -829,7 +829,7 @@ const Header = () => {
           >
             <div className="flex items-center justify-between w-full bp-lg:hidden">
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full hover:bg-primary/10 dark:hover:bg-primary/20 p-2 focus-visible:ring-2 ring-ring" aria-label="메뉴 열기">
+                <Button variant="ghost" size="icon" className="rounded-full hover:bg-secondary p-2 focus-visible:ring-2 ring-ring" aria-label="메뉴 열기">
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
@@ -841,7 +841,7 @@ const Header = () => {
 
               <div className="flex items-center gap-1.5">
                 <Link href="/cart">
-                  <Button variant="ghost" size="icon" className="relative rounded-full hover:bg-primary/10 dark:hover:bg-primary/20 p-2 focus-visible:ring-2 ring-ring" aria-label="장바구니">
+                  <Button variant="ghost" size="icon" className="relative rounded-full hover:bg-secondary p-2 focus-visible:ring-2 ring-ring" aria-label="장바구니">
                     <ShoppingCart className="h-5 w-5" />
                     {cartCount > 0 && <span className="absolute -top-1 -right-1 text-[10px] h-4 min-w-4 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold">{cartBadge}</span>}
                   </Button>
@@ -879,7 +879,7 @@ const Header = () => {
                       <Link
                         key={item.name}
                         href={item.href}
-                        className={`inline-flex shrink-0 items-center h-10 px-3 rounded-lg text-[15px] leading-none transition whitespace-nowrap ${active ? "bg-primary text-primary-foreground font-semibold" : "text-foreground hover:text-foreground hover:bg-primary/10 dark:hover:bg-primary/20"}`}
+                        className={`inline-flex shrink-0 items-center h-10 px-3 rounded-lg text-[15px] leading-none transition whitespace-nowrap ${active ? "bg-secondary text-foreground font-semibold" : "text-foreground hover:text-foreground hover:bg-secondary"}`}
                         aria-current={active ? "page" : undefined}
                         aria-label={`${item.name} 페이지로 이동`}
                       >
@@ -894,7 +894,7 @@ const Header = () => {
                       <DropdownMenuTrigger asChild>
                         <button
                           type="button"
-                          className="inline-flex shrink-0 items-center h-10 gap-1 px-3 rounded-lg text-[15px] leading-none transition whitespace-nowrap text-foreground hover:text-foreground hover:bg-primary/10 dark:hover:bg-primary/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                          className="inline-flex shrink-0 items-center h-10 gap-1 px-3 rounded-lg text-[15px] leading-none transition whitespace-nowrap text-foreground hover:text-foreground hover:bg-secondary focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                           aria-label="더보기 메뉴"
                         >
                           ⋯
@@ -908,7 +908,7 @@ const Header = () => {
                           return (
                             <DropdownMenuItem
                               key={item.name}
-                              className={active ? "bg-primary text-primary-foreground font-semibold" : undefined}
+                              className={active ? "bg-secondary text-foreground font-semibold" : undefined}
                               onSelect={(e) => {
                                 e.preventDefault();
                                 setOverflowMenuOpen(false);
@@ -954,12 +954,12 @@ const Header = () => {
               {/* 아이콘/유저 */}
               <div className="flex items-center gap-3 bp-lg:gap-4 pl-2 shrink-0">
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="bp-lg:hidden rounded-full hover:bg-primary/10 dark:hover:bg-primary/20 p-2 transition-all duration-300 focus-visible:ring-2 ring-ring" aria-label="메뉴 열기">
+                  <Button variant="ghost" size="icon" className="bp-lg:hidden rounded-full hover:bg-secondary p-2 transition-all duration-300 focus-visible:ring-2 ring-ring" aria-label="메뉴 열기">
                     <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
                 <Link href="/cart">
-                  <Button variant="ghost" size="icon" className="relative rounded-full hover:bg-primary/10 dark:hover:bg-primary/20 p-2 transition-all duration-300 focus-visible:ring-2 ring-ring" aria-label="장바구니">
+                  <Button variant="ghost" size="icon" className="relative rounded-full hover:bg-secondary p-2 transition-all duration-300 focus-visible:ring-2 ring-ring" aria-label="장바구니">
                     <ShoppingCart className="h-5 w-5" />
                     {cartCount > 0 && <span className="absolute -top-1 -right-1 text-[10px] min-w-[18px] h-[18px] px-[5px] rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold">{cartBadge}</span>}
                   </Button>

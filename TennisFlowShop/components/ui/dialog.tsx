@@ -39,7 +39,7 @@ function DialogOverlay({
       data-slot="dialog-overlay"
       className={cn(
         // 배경을 조금 더 “모달답게” + 유리 느낌(blur)
-        "fixed inset-0 z-50 bg-overlay/60 backdrop-blur-[2px]",
+        "fixed inset-0 z-50 bg-overlay/60",
         // 부드러운 페이드
         "data-[state=open]:animate-in data-[state=closed]:animate-out",
         "data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0",
@@ -64,7 +64,7 @@ function DialogContent({
           // 중앙 고정
           "fixed left-[50%] top-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 sm:max-w-lg",
           // 카드 느낌(단조로움 완화)
-          "rounded-2xl border border-border/40 bg-card/95 p-6 shadow-2xl backdrop-blur",
+          "rounded-2xl border border-border bg-card p-6 shadow-md",
           // 핵심: animate-in/out은 "transform"을 통째로 덮어써서
           // translate(-50%,-50%)로 잡아둔 센터링이 애니메이션 프레임에서 빠질 수 있음.
           // 그래서 첫 프레임에 모달 좌상단이 화면 중앙에 걸리며 "우하단→중앙"처럼 보인다.
