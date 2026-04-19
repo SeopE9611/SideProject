@@ -31,6 +31,9 @@ import { mutate } from "swr";
 // props: 주문 ID만 전달받음
 interface CancelOrderDialogProps {
   orderId: string;
+  paymentProvider?: string | null;
+  paymentMethod?: string | null;
+  paymentStatus?: string | null;
   children?: React.ReactNode;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -39,12 +42,21 @@ interface CancelOrderDialogProps {
 
 const CancelOrderDialog = ({
   orderId,
+  paymentProvider,
+  paymentStatus,
   children,
   open,
   onOpenChange,
   onSuccess,
 }: CancelOrderDialogProps) => {
   const [internalOpen, setInternalOpen] = useState(false);
+  const normalizedPaymentProvider = String(paymentProvider ?? "")
+    .trim()
+    .toLowerCase();
+  const needsRefundAccount =
+    normalizedPaymentProvider === "nicepay"
+      ? false
+      : paymentStatus === "결제완료";
 
   /**
    * 이 컴포넌트는
@@ -87,9 +99,10 @@ const CancelOrderDialog = ({
     dialogOpen &&
     (selectedReason !== undefined ||
       otherReason.trim().length > 0 ||
-      refundBank !== "" ||
-      refundAccount.trim().length > 0 ||
-      refundHolder.trim().length > 0 ||
+      (needsRefundAccount &&
+        (refundBank !== "" ||
+          refundAccount.trim().length > 0 ||
+          refundHolder.trim().length > 0)) ||
       confirmWithStringing ||
       linkedCount !== null);
   useUnsavedChangesGuard(isDirty);
@@ -121,12 +134,14 @@ const CancelOrderDialog = ({
       return;
     }
 
-    const refundValidation = validateRefundAccountInput({
-      bank: refundBank,
-      account: refundAccount,
-      holder: refundHolder,
-    });
-    if (!refundValidation.ok) {
+    const refundValidation = needsRefundAccount
+      ? validateRefundAccountInput({
+          bank: refundBank,
+          account: refundAccount,
+          holder: refundHolder,
+        })
+      : null;
+    if (needsRefundAccount && refundValidation && !refundValidation.ok) {
       showErrorToast(refundValidation.message);
       return;
     }
@@ -150,11 +165,15 @@ const CancelOrderDialog = ({
             selectedReason === "기타" ? otherReason.trim() : undefined,
           // 연결된 교체 서비스 신청도 함께 취소되도록 요청하는지 여부
           withStringing: confirmWithStringing ? true : false,
-          refundAccount: {
-            bank: refundValidation.value.bank,
-            account: refundValidation.value.account,
-            holder: refundValidation.value.holder,
-          },
+          ...(needsRefundAccount && refundValidation?.ok
+            ? {
+                refundAccount: {
+                  bank: refundValidation.value.bank,
+                  account: refundValidation.value.account,
+                  holder: refundValidation.value.holder,
+                },
+              }
+            : {}),
         }),
       });
 
@@ -302,16 +321,22 @@ const CancelOrderDialog = ({
               onChange={(e) => setOtherReason(e.target.value)}
             />
           )}
-          <RefundAccountFields
-            bank={refundBank}
-            account={refundAccount}
-            holder={refundHolder}
-            onBankChange={setRefundBank}
-            onAccountChange={setRefundAccount}
-            onHolderChange={setRefundHolder}
-            description="취소 승인 후 환불 처리 시 사용할 계좌입니다."
-            disabled={isSubmitting}
-          />
+          {needsRefundAccount ? (
+            <RefundAccountFields
+              bank={refundBank}
+              account={refundAccount}
+              holder={refundHolder}
+              onBankChange={setRefundBank}
+              onAccountChange={setRefundAccount}
+              onHolderChange={setRefundHolder}
+              description="취소 승인 후 환불 처리 시 사용할 계좌입니다."
+              disabled={isSubmitting}
+            />
+          ) : (
+            <p className="text-xs text-muted-foreground">
+              이 주문은 환불계좌 입력 없이 취소 사유만으로 요청할 수 있습니다.
+            </p>
+          )}
         </div>
 
         {/*  제출 버튼 */}

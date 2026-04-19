@@ -10,6 +10,7 @@ import {
   getAdminCancelPolicyMessage,
   isAdminCancelableOrderStatus,
 } from "@/lib/orders/cancel-refund-policy";
+import { cancelNicePaymentByTid } from "@/lib/payments/nice/server";
 
 function safeVerifyAccessToken(token?: string | null) {
   if (!token) return null;
@@ -105,6 +106,105 @@ export async function POST(
     const existingReq = existing.cancelRequest || {};
     const now = new Date();
 
+    const normalizedProvider = String(existing?.paymentInfo?.provider ?? "")
+      .trim()
+      .toLowerCase();
+    const tid = String(existing?.paymentInfo?.tid ?? "").trim();
+    const shouldCancelViaNice =
+      normalizedProvider === "nicepay" &&
+      Boolean(tid) &&
+      existing.paymentStatus === "결제완료";
+
+    let nextPaymentInfo: Record<string, any> | null = null;
+
+    if (shouldCancelViaNice) {
+      const clientKey = String(
+        process.env.NICEPAY_CLIENT_KEY ?? process.env.NICEPAY_CLIENT_ID ?? "",
+      ).trim();
+      const secretKey = String(process.env.NICEPAY_SECRET_KEY ?? "").trim();
+
+      if (!clientKey || !secretKey) {
+        return NextResponse.json(
+          {
+            ok: false,
+            errorCode: "NICE_CANCEL_CONFIG_MISSING",
+            message:
+              "NICE 취소 설정이 누락되어 취소를 진행할 수 없습니다. 환경설정을 확인해 주세요.",
+          },
+          { status: 502 },
+        );
+      }
+
+      try {
+        const cancelRaw = await cancelNicePaymentByTid({
+          tid,
+          orderId: String(existing.orderId ?? existing._id ?? ""),
+          reason: "관리자 주문 취소 승인 처리",
+          clientKey,
+          secretKey,
+        });
+
+        const resultCode = String(
+          cancelRaw.resultCode ?? cancelRaw.ResultCode ?? "",
+        ).trim();
+        const resultMsg = String(
+          cancelRaw.resultMsg ?? cancelRaw.ResultMsg ?? "",
+        ).trim();
+        if (resultCode !== "0000") {
+          return NextResponse.json(
+            {
+              ok: false,
+              errorCode: "NICE_CANCEL_FAILED",
+              message:
+                resultMsg ||
+                "NICE 결제 취소가 완료되지 않아 주문 취소를 반영할 수 없습니다.",
+              data: {
+                resultCode: resultCode || null,
+                resultMsg: resultMsg || null,
+              },
+            },
+            { status: 400 },
+          );
+        }
+
+        const canceledAt =
+          String(
+            cancelRaw.canceledAt ??
+              cancelRaw.cancelDate ??
+              cancelRaw.CancelDate ??
+              "",
+          ).trim() || now.toISOString();
+        const pgStatus = String(cancelRaw.status ?? "canceled").trim() || "canceled";
+
+        nextPaymentInfo = {
+          ...(existing.paymentInfo ?? {}),
+          status: "canceled",
+          niceSync: {
+            ...(existing.paymentInfo?.niceSync ?? {}),
+            lastSyncedAt: now.toISOString(),
+            source: "admin_cancel_approve",
+            pgStatus,
+            resultCode: resultCode || "0000",
+            resultMsg: resultMsg || null,
+            canceledAt,
+          },
+        };
+      } catch (error: any) {
+        const httpStatus = Number(error?.httpStatus ?? 0);
+        return NextResponse.json(
+          {
+            ok: false,
+            errorCode: "NICE_CANCEL_FAILED",
+            message:
+              error?.resultMsg ||
+              error?.message ||
+              "NICE 결제 취소 중 오류가 발생했습니다.",
+          },
+          { status: httpStatus >= 400 && httpStatus < 500 ? 400 : 502 },
+        );
+      }
+    }
+
     // reasonCode / reasonText 우선순위:
     // 1) 관리자 입력값 > 2) 기존 cancelRequest 값 > 3) 기본값 '기타'
     const reasonCode = inputReasonCode || existingReq.reasonCode || "기타";
@@ -125,6 +225,7 @@ export async function POST(
       status: "취소",
       paymentStatus: "결제취소",
       cancelRequest: updatedCancelRequest,
+      ...(nextPaymentInfo ? { paymentInfo: nextPaymentInfo } : {}),
     };
 
     // 기존 cancelReason / cancelReasonDetail 필드도 같이 맞춰줌

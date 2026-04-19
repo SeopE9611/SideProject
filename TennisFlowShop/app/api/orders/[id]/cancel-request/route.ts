@@ -125,14 +125,24 @@ export async function POST(
     const reasonText: string | undefined =
       typeof body.reasonText === "string" ? body.reasonText.trim() : undefined;
 
+    const normalizedProvider = String(existing.paymentInfo?.provider ?? "")
+      .trim()
+      .toLowerCase();
+    const needsRefundAccount =
+      normalizedProvider === "nicepay"
+        ? false
+        : existing.paymentStatus === "결제완료";
+
     /**
-     * 환불 계좌는 "취소 요청 시점 스냅샷"으로 저장해야 하므로
-     * body에서 반드시 검증 후 cancelRequest 내부에 넣는다.
+     * 환불 계좌는 "필요한 결제 케이스"에서만 검증/저장한다.
+     * - nicepay 결제: 미입력 허용
+     * - 결제완료(무통장 등): 입력 필수
+     * - 결제대기: 미입력 허용
      */
-    const parsedRefundAccount = RefundAccountSchema.safeParse(
-      body.refundAccount ?? null,
-    );
-    if (!parsedRefundAccount.success) {
+    const parsedRefundAccount = needsRefundAccount
+      ? RefundAccountSchema.safeParse(body.refundAccount ?? null)
+      : null;
+    if (needsRefundAccount && parsedRefundAccount && !parsedRefundAccount.success) {
       return NextResponse.json(
         {
           ok: false,
@@ -143,7 +153,10 @@ export async function POST(
         { status: 400 },
       );
     }
-    const refundAccount = parsedRefundAccount.data;
+    const refundAccount =
+      needsRefundAccount && parsedRefundAccount?.success
+        ? parsedRefundAccount.data
+        : null;
 
     // 연결된 스트링 교체 서비스 신청도 함께 취소되도록 요청하는지 여부
     const withStringing: boolean =
@@ -217,7 +230,7 @@ export async function POST(
       reasonCode: reasonCode || "기타",
       reasonText: reasonText || "",
       requestedAt: now,
-      refundAccount,
+      ...(refundAccount ? { refundAccount } : {}),
       // processedAt / processedByAdminId 는 승인/거절 시 채움
     };
 
@@ -228,7 +241,7 @@ export async function POST(
     const historyEntry = {
       status: "취소요청",
       date: now,
-      description: `고객이 주문 취소를 요청했습니다. 사유: ${descBase}${descDetail} · 환불 계좌 정보가 등록되었습니다.`,
+      description: `고객이 주문 취소를 요청했습니다. 사유: ${descBase}${descDetail}${refundAccount ? " · 환불 계좌 정보가 등록되었습니다." : ""}`,
     };
 
     // 연결된 스트링 교체 서비스 신청에도 취소 "요청" 플래그/히스토리 반영
@@ -244,13 +257,13 @@ export async function POST(
         reasonCode: cancelRequest.reasonCode,
         reasonText: cancelRequest.reasonText,
         requestedAt: now,
-        refundAccount,
+        ...(refundAccount ? { refundAccount } : {}),
       };
 
       const appHistoryEntry = {
         status: "취소요청",
         date: now,
-        description: `주문 취소 요청과 함께 교체 서비스 신청도 취소를 요청했습니다. 사유: ${cancelRequest.reasonCode}${cancelRequest.reasonText ? ` (${cancelRequest.reasonText})` : ""} · 환불 계좌 정보가 함께 전달되었습니다.`,
+        description: `주문 취소 요청과 함께 교체 서비스 신청도 취소를 요청했습니다. 사유: ${cancelRequest.reasonCode}${cancelRequest.reasonText ? ` (${cancelRequest.reasonText})` : ""}${refundAccount ? " · 환불 계좌 정보가 함께 전달되었습니다." : ""}`,
       };
 
       await stringingAppsCol.updateMany(

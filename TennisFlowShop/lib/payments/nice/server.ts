@@ -164,20 +164,28 @@ export async function getNicePaymentByTid(params: {
 
 export async function cancelNicePaymentByTid(params: {
   tid: string;
-  amount: number;
+  orderId: string;
+  cancelAmt?: number;
   reason: string;
   clientKey: string;
   secretKey: string;
   apiBaseUrl?: string;
 }): Promise<Record<string, string>> {
+  const body: Record<string, unknown> = {
+    reason: String(params.reason || "주문 취소").trim(),
+    orderId: String(params.orderId || "").trim(),
+  };
+  if (!body.orderId) throw new Error("NICE_ORDER_ID_REQUIRED");
+
+  if (typeof params.cancelAmt === "number") {
+    body.amount = toPositiveAmount(params.cancelAmt);
+  }
+
   return requestNicePayment({
     method: "POST",
     tid: params.tid,
     action: "cancel",
-    body: {
-      amount: toPositiveAmount(params.amount),
-      reason: String(params.reason || "주문 생성 실패로 인한 자동 취소").trim(),
-    },
+    body,
     clientKey: params.clientKey,
     secretKey: params.secretKey,
     apiBaseUrl: params.apiBaseUrl,
