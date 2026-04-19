@@ -97,13 +97,28 @@ function toIsoOrNull(value: unknown): string | null {
   return null;
 }
 
+function normalizeLinkedPaymentStatus(raw: unknown): string | null {
+  if (typeof raw !== 'string') return null;
+  const original = raw.trim();
+  if (!original) return null;
+  const normalized = original.toLowerCase();
+
+  if (['결제완료', 'paid', 'done', 'approved', 'success'].includes(normalized)) return '결제완료';
+  if (['결제대기', 'ready', 'pending', 'waiting'].includes(normalized)) return '결제대기';
+  if (['결제취소', '취소', 'cancelled', 'canceled'].includes(normalized)) return '결제취소';
+  if (['결제실패', '실패', 'failed', 'failure'].includes(normalized)) return '결제실패';
+
+  return original;
+}
+
 function buildLinkedPaymentFromDoc(source: Exclude<LinkedPaymentSource, 'application' | 'package' | null>, doc: any): LinkedPaymentPayload {
   const paymentInfo = (doc as any)?.paymentInfo ?? {};
   const niceSyncRaw = paymentInfo?.niceSync;
+  const normalizedStatus = normalizeLinkedPaymentStatus(doc?.paymentStatus) ?? normalizeLinkedPaymentStatus(paymentInfo?.status);
 
   return {
     source,
-    status: typeof doc?.paymentStatus === 'string' ? doc.paymentStatus : (typeof paymentInfo?.status === 'string' ? paymentInfo.status : null),
+    status: normalizedStatus,
     method: typeof paymentInfo?.method === 'string' ? paymentInfo.method : null,
     provider: typeof paymentInfo?.provider === 'string' ? paymentInfo.provider : null,
     easyPayProvider: typeof paymentInfo?.easyPayProvider === 'string' ? paymentInfo.easyPayProvider : null,
