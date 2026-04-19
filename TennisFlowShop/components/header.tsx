@@ -197,6 +197,7 @@ const Header = () => {
   }, [recomputeOverflow]);
 
   const { user, loading } = useCurrentUser();
+  const displayName = user?.name?.trim() || "회원";
   const isAdmin = user?.role === "admin";
   const { count: unreadCount, status: unreadStatus } = useUnreadMessageCount(!loading && !!user);
   const resolvedUnreadCount = unreadStatus === "ready" ? (unreadCount ?? 0) : null;
@@ -671,7 +672,7 @@ const Header = () => {
                         </Avatar> */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-foreground truncate">{user.name} 님</span>
+                        <span className="text-sm font-bold text-foreground truncate">{displayName} 님</span>
                         <Link href="/mypage?tab=points" onClick={() => setOpen(false)} className="shrink-0 inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-[11px] font-semibold tabular-nums" aria-label="포인트 보기">
                           <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-muted text-[10px] font-bold text-muted-foreground">P</span>
                           <span className="inline-flex items-center gap-1">

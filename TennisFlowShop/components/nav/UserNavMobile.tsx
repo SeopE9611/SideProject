@@ -63,6 +63,7 @@ export function UserNavMobile({ setOpen, unreadCount }: UserNavMobileProps) {
     );
   }
 
+  const displayName = user.name?.trim() || "회원";
   const socialProviders = user.socialProviders ?? [];
   const hasKakao = socialProviders.includes("kakao");
   const hasNaver = socialProviders.includes("naver");
@@ -70,7 +71,7 @@ export function UserNavMobile({ setOpen, unreadCount }: UserNavMobileProps) {
   return (
     <>
       <p className="text-sm text-center">
-        {user.name}{" "}
+        {displayName}{" "}
         {user.role === "admin" && (
           <span className="text-muted-foreground">(관리자)</span>
         )}{" "}

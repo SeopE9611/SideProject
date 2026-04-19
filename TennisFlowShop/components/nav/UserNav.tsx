@@ -73,6 +73,7 @@ export function UserNav({ unreadCount }: UserNavProps) {
   }
 
   const isAdmin = user.role === "admin";
+  const displayName = user.name?.trim() || "회원";
   const socialProviders = user.socialProviders ?? [];
   const hasKakao = socialProviders.includes("kakao");
   const hasNaver = socialProviders.includes("naver");
@@ -84,9 +85,9 @@ export function UserNav({ unreadCount }: UserNavProps) {
           <div className="flex items-center gap-1 min-w-0">
             <span
               className="text-sm min-w-0 grow max-w-[140px] sm:max-w-[180px] md:max-w-[220px] whitespace-nowrap overflow-hidden text-ellipsis"
-              title={`${user.name} 님`}
+              title={`${displayName} 님`}
             >
-              {user.name} 님
+              {displayName} 님
             </span>
 
             {isAdmin && (
