@@ -178,7 +178,7 @@ export async function cancelNicePaymentByTid(params: {
   if (!body.orderId) throw new Error("NICE_ORDER_ID_REQUIRED");
 
   if (typeof params.cancelAmt === "number") {
-    body.amount = toPositiveAmount(params.cancelAmt);
+    body.cancelAmt = toPositiveAmount(params.cancelAmt);
   }
 
   return requestNicePayment({

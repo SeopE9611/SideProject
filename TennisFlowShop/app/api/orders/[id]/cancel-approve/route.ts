@@ -135,10 +135,24 @@ export async function POST(
         );
       }
 
+      const niceOrderId =
+        typeof existing.orderId === "string" ? existing.orderId.trim() : "";
+      if (!niceOrderId) {
+        return NextResponse.json(
+          {
+            ok: false,
+            errorCode: "NICE_ORDER_ID_REQUIRED",
+            message:
+              "NICE 취소에 필요한 주문번호(orderId)가 없어 자동 취소를 진행할 수 없습니다.",
+          },
+          { status: 400 },
+        );
+      }
+
       try {
         const cancelRaw = await cancelNicePaymentByTid({
           tid,
-          orderId: String(existing.orderId ?? existing._id ?? ""),
+          orderId: niceOrderId,
           reason: "관리자 주문 취소 승인 처리",
           clientKey,
           secretKey,
