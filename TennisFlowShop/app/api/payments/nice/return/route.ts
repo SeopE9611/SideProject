@@ -1,10 +1,10 @@
-import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { ObjectId } from "mongodb";
-import clientPromise from "@/lib/mongodb";
 import { createOrder } from "@/app/features/orders/api/handlers";
-import { ensureTossPaymentSessionIndexes, tossPaymentSessions, type TossPaymentFailureStage } from "@/lib/payments/toss/session";
+import clientPromise from "@/lib/mongodb";
 import { approveNicePaymentByTid, cancelNicePaymentByTid, extractNiceCardInfo, extractNiceEasyPayProvider, summarizeNiceCardRaw } from "@/lib/payments/nice/server";
+import { ensureTossPaymentSessionIndexes, tossPaymentSessions, type TossPaymentFailureStage } from "@/lib/payments/toss/session";
+import { ObjectId } from "mongodb";
+import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 export const preferredRegion = ["icn1", "hnd1"];
@@ -107,12 +107,7 @@ async function handleNiceReturn(req: Request) {
       return NextResponse.redirect(new URL(toFailUrl("ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE", session.failureMessage || "승인 이후 주문 처리 실패 상태입니다."), req.url));
     }
     if (session.status === "approve_succeeded_auto_cancel_succeeded") {
-      return NextResponse.redirect(
-        new URL(
-          toFailUrl("ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE", "승인 후 주문 생성 실패로 자동 취소가 완료되었습니다."),
-          req.url,
-        ),
-      );
+      return NextResponse.redirect(new URL(toFailUrl("ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE", "승인 후 주문 생성 실패로 자동 취소가 완료되었습니다."), req.url));
     }
 
     const now = new Date();
@@ -302,7 +297,6 @@ async function handleNiceReturn(req: Request) {
         const canceled = await cancelNicePaymentByTid({
           tid,
           orderId,
-          cancelAmt: amount,
           reason: "승인 후 내부 주문 생성 실패로 자동 취소",
           clientKey,
           secretKey,
@@ -338,7 +332,7 @@ async function handleNiceReturn(req: Request) {
           amount,
           cancelStatus: cancelCode || "UNKNOWN",
         });
-        return { status: canceledOk ? "succeeded" as const : "failed" as const, resultCode: cancelCode, resultMsg: cancelMsg };
+        return { status: canceledOk ? ("succeeded" as const) : ("failed" as const), resultCode: cancelCode, resultMsg: cancelMsg };
       } catch (cancelError: any) {
         const cancelMsg = cancelError?.message || "자동 취소 중 오류가 발생했습니다.";
         await col.updateOne(
@@ -377,8 +371,7 @@ async function handleNiceReturn(req: Request) {
       const cookieStore = await cookies();
       const hasAccessTokenCookie = Boolean(cookieStore.get("accessToken")?.value);
       const guestModeRaw = String(process.env.GUEST_ORDER_MODE ?? "on").trim();
-      const guestMode =
-        guestModeRaw === "off" || guestModeRaw === "legacy" || guestModeRaw === "on" ? guestModeRaw : "on";
+      const guestMode = guestModeRaw === "off" || guestModeRaw === "legacy" || guestModeRaw === "on" ? guestModeRaw : "on";
       console.info("[nicepay][flow]", {
         stage: "before_create_order",
         source: "nicepay_return",
