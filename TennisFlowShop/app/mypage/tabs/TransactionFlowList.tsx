@@ -59,6 +59,8 @@ type ActivityGroup = {
     createdAt?: string;
     status: string;
     paymentStatus?: string;
+    paymentProvider?: string | null;
+    paymentMethod?: string | null;
     shippingMethod?: string;
     totalPrice: number;
     firstItemName?: string;
@@ -305,7 +307,6 @@ export default function TransactionFlowList() {
   const [shippingInfoDialogTarget, setShippingInfoDialogTarget] = useState<{ orderId: string; triggerLabel: string; shippingMethod?: string } | null>(null);
   const [isCancelApplicationSubmitting, setIsCancelApplicationSubmitting] = useState(false);
   const [withdrawingOrderCancelId, setWithdrawingOrderCancelId] = useState<string | null>(null);
-
   const getKey = (pageIndex: number, previousPageData: ActivityResponse | null) => {
     if (previousPageData && previousPageData.items && previousPageData.items.length < LIMIT) return null;
     const page = pageIndex + 1;
@@ -539,6 +540,15 @@ export default function TransactionFlowList() {
   }, [scope]);
 
   const items = useMemo(() => (data ? data.flatMap((d) => d.items) : []), [data]);
+  const cancelOrderTarget =
+    cancelOrderDialogId
+      ? items.find((group) => {
+          const id =
+            group.order?.id ??
+            (group.kind === 'order' ? group.detailTarget.id : undefined);
+          return id === cancelOrderDialogId;
+        })?.order
+      : null;
   const hasMore = useMemo(() => {
     if (!data || data.length === 0) return false;
     const last = data[data.length - 1];
@@ -1107,6 +1117,9 @@ export default function TransactionFlowList() {
           open={Boolean(cancelOrderDialogId)}
           onOpenChange={(open) => !open && setCancelOrderDialogId(null)}
           orderId={cancelOrderDialogId}
+          paymentProvider={cancelOrderTarget?.paymentProvider}
+          paymentMethod={cancelOrderTarget?.paymentMethod}
+          paymentStatus={cancelOrderTarget?.paymentStatus}
           onSuccess={async (orderId) => {
             if (!orderId) return;
             await patchOrderCancelStatus(orderId, 'requested');

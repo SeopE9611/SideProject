@@ -48,6 +48,8 @@ type ActivityOrderSummary = {
   status: string;
   userConfirmedAt: string | null;
   paymentStatus: string;
+  paymentProvider?: string | null;
+  paymentMethod?: string | null;
   shippingMethod: string;
   totalPrice: number;
   firstItemName: string;
@@ -595,6 +597,14 @@ export async function GET(req: Request) {
         status: o.status ?? '',
         userConfirmedAt: o.userConfirmedAt instanceof Date ? o.userConfirmedAt.toISOString() : typeof o.userConfirmedAt === 'string' ? o.userConfirmedAt : null,
         paymentStatus: resolveOrderPaymentStatus(o),
+        paymentProvider:
+          typeof o?.paymentInfo?.provider === 'string'
+            ? o.paymentInfo.provider
+            : null,
+        paymentMethod:
+          typeof o?.paymentInfo?.method === 'string'
+            ? o.paymentInfo.method
+            : null,
         shippingMethod: resolveOrderShippingMethod(o?.shippingInfo),
         totalPrice: calcOrderTotal(o),
         firstItemName: first?.name ?? '(상품명 없음)',

@@ -301,7 +301,8 @@ async function handleNiceReturn(req: Request) {
       try {
         const canceled = await cancelNicePaymentByTid({
           tid,
-          amount,
+          orderId,
+          cancelAmt: amount,
           reason: "승인 후 내부 주문 생성 실패로 자동 취소",
           clientKey,
           secretKey,

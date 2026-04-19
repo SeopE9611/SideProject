@@ -1557,6 +1557,9 @@ export default function OrderDetailClient({
         {cancelDialogOpen && orderDetail?._id ? (
           <CancelOrderDialog
             orderId={String(orderDetail._id)}
+            paymentProvider={orderDetail.paymentProvider}
+            paymentMethod={orderDetail.paymentMethod}
+            paymentStatus={orderDetail.paymentStatus}
             open={cancelDialogOpen}
             onOpenChange={setCancelDialogOpen}
             onSuccess={async () => {
