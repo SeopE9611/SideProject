@@ -41,16 +41,17 @@ export interface PackageOrder {
     email?: string;
   };
   paymentInfo: {
-    provider?: "manual_bank_transfer" | "tosspayments";
+    provider?: "manual_bank_transfer" | "tosspayments" | "nicepay";
     method?: string;
     bank?: string | null;
     depositor?: string | null;
     paymentKey?: string;
+    tid?: string;
     approvedAt?: Date;
     rawSummary?: {
       orderId?: string;
       totalAmount?: number;
-      card?: { issuerCode?: string; acquirerCode?: string };
+      card?: { issuerCode?: string; acquirerCode?: string; issuerName?: string; acquirerName?: string; cardName?: string };
       easyPay?: { provider?: string; amount?: number };
     };
   };

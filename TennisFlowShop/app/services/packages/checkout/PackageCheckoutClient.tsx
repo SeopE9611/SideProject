@@ -16,12 +16,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { useBackNavigationGuard } from "@/lib/hooks/useBackNavigationGuard";
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
-import { isTossPaymentsEnabled } from "@/lib/payments/provider-flags";
+import { isNicePaymentsEnabled, isTossPaymentsEnabled } from "@/lib/payments/provider-flags";
 import { Building2, Calendar, CheckCircle, CreditCard, Loader2, Mail, MessageSquare, Package, Phone, Shield, Star, UserIcon } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import PackageCheckoutButton from "./PackageCheckoutButton";
+import PackageNiceCheckoutButton from "./PackageNiceCheckoutButton";
 import PackageTossCheckoutButton from "./PackageTossCheckoutButton";
 
 // 클라이언트 유효성(UX용)
@@ -156,7 +157,8 @@ export default function PackageCheckoutClient({
 
   // 서버 선조회가 있으면 mount 후 추가 fetch 없이 즉시 화면을 안정화할 수 있다.
   const [isPackageLoading, setIsPackageLoading] = useState(packageId ? initialPackageConfigs.length === 0 : false);
-  const [paymentMethod, setPaymentMethod] = useState<"bank_transfer" | "tosspayments">("bank_transfer");
+  const [paymentMethod, setPaymentMethod] = useState<"bank_transfer" | "nicepay" | "tosspayments">("bank_transfer");
+  const nicePaymentsEnabled = isNicePaymentsEnabled();
   const tossPaymentsEnabled = isTossPaymentsEnabled();
   const [selectedBank, setSelectedBank] = useState("shinhan");
   const [name, setName] = useState(initialUser.name ?? "");
@@ -305,9 +307,14 @@ export default function PackageCheckoutClient({
   const tossBlockedByZeroAmount = !Number.isFinite(Number(selectedPackage?.price ?? 0)) || Number(selectedPackage?.price ?? 0) <= 0;
 
   useEffect(() => {
+    if (!nicePaymentsEnabled && !tossPaymentsEnabled) return;
+    if (nicePaymentsEnabled && paymentMethod === "tosspayments") {
+      setPaymentMethod("bank_transfer");
+      return;
+    }
     if (tossPaymentsEnabled || paymentMethod !== "tosspayments") return;
     setPaymentMethod("bank_transfer");
-  }, [tossPaymentsEnabled, paymentMethod]);
+  }, [nicePaymentsEnabled, tossPaymentsEnabled, paymentMethod]);
 
   if (!selectedPackage && !isPackageLoading) {
     return (
@@ -527,7 +534,15 @@ export default function PackageCheckoutClient({
                     <Label>결제 방법</Label>
                     <RadioGroup
                       value={paymentMethod}
-                      onValueChange={(v) => setPaymentMethod(tossPaymentsEnabled && v === "tosspayments" ? "tosspayments" : "bank_transfer")}
+                      onValueChange={(v) =>
+                        setPaymentMethod(
+                          v === "nicepay" && nicePaymentsEnabled
+                            ? "nicepay"
+                            : v === "tosspayments" && tossPaymentsEnabled
+                              ? "tosspayments"
+                              : "bank_transfer",
+                        )
+                      }
                       className="space-y-3"
                     >
                       <div className="flex items-center space-x-3 p-4 bg-secondary rounded-lg border border-border">
@@ -537,6 +552,15 @@ export default function PackageCheckoutClient({
                         </Label>
                         <Building2 className="h-5 w-5 text-primary" />
                       </div>
+                      {nicePaymentsEnabled && (
+                        <div className="flex items-center space-x-3 p-4 bg-muted/40 rounded-lg border-2 border-border">
+                          <RadioGroupItem value="nicepay" id="nice-payments" disabled={isFrameLoading || tossBlockedByZeroAmount} />
+                          <Label htmlFor="nice-payments" className="flex-1 cursor-pointer font-medium">
+                            카드/간편결제 (NicePG)
+                          </Label>
+                          <CreditCard className="h-5 w-5 text-primary" />
+                        </div>
+                      )}
                       {tossPaymentsEnabled && (
                         <div className="flex items-center space-x-3 p-4 bg-muted/40 rounded-lg border-2 border-border">
                           <RadioGroupItem value="tosspayments" id="toss-payments" disabled={isFrameLoading || tossBlockedByZeroAmount} />
@@ -609,7 +633,7 @@ export default function PackageCheckoutClient({
                         </ul>
                       </div>
                     </>
-                  ) : tossPaymentsEnabled ? (
+                  ) : paymentMethod === "tosspayments" && tossPaymentsEnabled ? (
                     <div className="space-y-3">
                       <TossPaymentWidget
                         amount={Number(selectedPackage?.price ?? 0)}
@@ -619,6 +643,10 @@ export default function PackageCheckoutClient({
                           setTossWidgetLoadError(loadError);
                         }}
                       />
+                    </div>
+                  ) : paymentMethod === "nicepay" && nicePaymentsEnabled ? (
+                    <div className="rounded-lg border border-border bg-secondary px-4 py-3 text-sm text-muted-foreground">
+                      Nice 결제창으로 안전하게 결제를 진행합니다. 결제 버튼을 눌러 계속 진행해주세요.
                     </div>
                   ) : null}
                 </div>
@@ -796,6 +824,20 @@ export default function PackageCheckoutClient({
                       disabled={!canSubmit}
                       widgetReady={tossWidgetReady}
                       widgetLoadError={tossWidgetLoadError}
+                      payableAmount={Number(selectedPackage.price ?? 0)}
+                      packageId={selectedPackage.id}
+                      packageName={selectedPackage.title}
+                      name={name}
+                      phone={phone}
+                      email={email}
+                      serviceRequest={serviceRequest}
+                      onBeforeSuccessNavigation={() => setIsIntentionalSuccessNavigation(true)}
+                      onSuccessNavigationAbort={() => setIsIntentionalSuccessNavigation(false)}
+                    />
+                  )}
+                  {selectedPackage && nicePaymentsEnabled && paymentMethod === "nicepay" && (
+                    <PackageNiceCheckoutButton
+                      disabled={!canSubmit}
                       payableAmount={Number(selectedPackage.price ?? 0)}
                       packageId={selectedPackage.id}
                       packageName={selectedPackage.title}
