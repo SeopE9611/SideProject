@@ -250,14 +250,13 @@ export default function LoginPageClient() {
           <div className="border-b border-border bg-secondary/60 p-4 text-foreground md:p-6">
             <div className="text-center">
               <div className="mx-auto mb-4 flex justify-center">
-                <div className="relative h-16 w-32 shrink-0 overflow-hidden">
-                  <Image src="/tennisflowmark-light.png" alt="" aria-hidden="true" fill className="object-contain dark:hidden" priority />
-                  <Image src="/tennisflowmark-dark.png" alt="" aria-hidden="true" fill className="hidden object-contain dark:block" priority />
+                <div className="relative h-20 w-20 shrink-0 overflow-hidden">
+                  <Image src="/brand/symbol-logo-light.png" alt="도깨비테니스 로고" fill className="object-contain dark:hidden" priority />
+                  <Image src="/brand/symbol-logo-dark.png" alt="도깨비테니스 로고" fill className="hidden object-contain dark:block" priority />
                 </div>
               </div>
 
-              <h1 className="text-2xl bp-sm:text-3xl font-black">도깨비테니스</h1>
-              <p className="text-foreground mt-2 font-medium">Powered by Tennis Flow</p>
+              <p className="text-foreground font-medium">로그인하여 쇼핑과 서비스를 이용해보세요</p>
             </div>
           </div>
 
