@@ -11,12 +11,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useBackNavigationGuard } from "@/lib/hooks/useBackNavigationGuard";
-import { isTossPaymentsEnabled } from "@/lib/payments/provider-flags";
+import {
+  isNicePaymentsEnabled,
+  isTossPaymentsEnabled,
+} from "@/lib/payments/provider-flags";
 import { useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
 import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { showErrorToast } from "@/lib/toast";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
+import RacketNiceCheckoutButton from "./RacketNiceCheckoutButton";
 import RacketTossCheckoutButton from "./RacketTossCheckoutButton";
 
 type RacketView = {
@@ -31,7 +35,7 @@ type RacketView = {
 
 type PickupMethod = "courier" | "visit";
 type Bank = "shinhan" | "kookmin" | "woori";
-type PaymentMethod = "bank_transfer" | "tosspayments";
+type PaymentMethod = "bank_transfer" | "nicepay" | "tosspayments";
 
 const POSTAL_RE = /^\d{5}$/;
 const onlyDigits = (v: string) => String(v ?? "").replace(/\D/g, "");
@@ -97,6 +101,7 @@ export default function RacketPurchaseCheckoutClient({
   const [bank, setBank] = useState<Bank>("shinhan");
   const [paymentMethod, setPaymentMethod] =
     useState<PaymentMethod>("bank_transfer");
+  const nicePaymentsEnabled = isNicePaymentsEnabled();
   const tossPaymentsEnabled = isTossPaymentsEnabled();
   const isVisitPickup = pickupMethod === "visit";
   const needsShippingAddress = !isVisitPickup;
@@ -112,9 +117,15 @@ export default function RacketPurchaseCheckoutClient({
   const submittingRef = useRef(false);
 
   useEffect(() => {
-    if (tossPaymentsEnabled || paymentMethod !== "tosspayments") return;
-    setPaymentMethod("bank_transfer");
-  }, [tossPaymentsEnabled, paymentMethod]);
+    if (
+      (nicePaymentsEnabled && paymentMethod === "tosspayments") ||
+      (!nicePaymentsEnabled && paymentMethod === "nicepay") ||
+      (!tossPaymentsEnabled && paymentMethod === "tosspayments")
+    ) {
+      setPaymentMethod("bank_transfer");
+      return;
+    }
+  }, [nicePaymentsEnabled, tossPaymentsEnabled, paymentMethod]);
 
   const shippingFee = useMemo(() => {
     if (pickupMethod === "visit") return 0;
@@ -297,7 +308,7 @@ export default function RacketPurchaseCheckoutClient({
     }
   }
 
-  const tossPayload = {
+  const paymentPayload = {
     racketId: racket.id,
     shippingInfo: {
       name: name.trim(),
@@ -309,6 +320,9 @@ export default function RacketPurchaseCheckoutClient({
       shippingMethod: pickupMethod,
     },
     servicePickupMethod: pickupMethod,
+    totalPrice,
+    shippingFee,
+    paymentInfo: { bank },
   };
 
   return (
@@ -383,6 +397,18 @@ export default function RacketPurchaseCheckoutClient({
               카드/간편결제 (토스)
             </label>
           )}
+          {nicePaymentsEnabled && (
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="radio"
+                name="payment-method"
+                checked={paymentMethod === "nicepay"}
+                onChange={() => setPaymentMethod("nicepay")}
+                disabled={!Number.isFinite(totalPrice) || totalPrice <= 0}
+              />
+              카드/간편결제 (NicePG)
+            </label>
+          )}
         </div>
 
         {paymentMethod === "bank_transfer" ? (
@@ -403,7 +429,7 @@ export default function RacketPurchaseCheckoutClient({
 
             <Input className="w-full text-sm" placeholder="입금자명" value={depositor} onChange={(e) => setDepositor(e.target.value)} />
           </>
-        ) : tossPaymentsEnabled ? (
+        ) : paymentMethod === "tosspayments" && tossPaymentsEnabled ? (
           <TossPaymentWidget
             amount={totalPrice}
             customerKey={`${racket.id}:${onlyDigits(phone) || "guest"}`}
@@ -427,13 +453,21 @@ export default function RacketPurchaseCheckoutClient({
           <Button className="w-full text-sm" variant="default" disabled={!canSubmitBank || submitting} onClick={onSubmitBankTransfer}>
             {submitting ? "처리 중..." : "스트링 선택으로 이동"}
           </Button>
-        ) : tossPaymentsEnabled ? (
+        ) : paymentMethod === "tosspayments" && tossPaymentsEnabled ? (
           <RacketTossCheckoutButton
             disabled={!canSubmitBase || submitting}
             widgetReady={tossWidgetReady}
             widgetLoadError={tossWidgetLoadError}
             payableAmount={totalPrice}
-            payload={tossPayload}
+            payload={paymentPayload}
+            onBeforeSuccessNavigation={() => setIsIntentionalSuccessNavigation(true)}
+            onSuccessNavigationAbort={() => setIsIntentionalSuccessNavigation(false)}
+          />
+        ) : paymentMethod === "nicepay" && nicePaymentsEnabled ? (
+          <RacketNiceCheckoutButton
+            disabled={!canSubmitBase || submitting}
+            payableAmount={totalPrice}
+            payload={paymentPayload}
             onBeforeSuccessNavigation={() => setIsIntentionalSuccessNavigation(true)}
             onSuccessNavigationAbort={() => setIsIntentionalSuccessNavigation(false)}
           />
