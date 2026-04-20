@@ -82,7 +82,7 @@ export type TossPaymentSession = {
     type?: string;
     totalAmount: number;
     approvedAt?: Date;
-    card?: { issuerCode?: string; acquirerCode?: string };
+    card?: { issuerCode?: string; acquirerCode?: string; issuerName?: string; acquirerName?: string; cardName?: string };
     easyPay?: { provider?: string; amount?: number };
   };
   nicePrepared?: {

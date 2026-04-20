@@ -145,8 +145,12 @@ export default async function PackageSuccessPage({
   const paymentInfo = packageOrder.paymentInfo;
   const paymentProvider = String(paymentInfo?.provider ?? "manual_bank_transfer");
   const isTossPayment = paymentProvider === "tosspayments";
+  const isNicePayment = paymentProvider === "nicepay";
+  const niceEasyPayProvider = String(paymentInfo?.rawSummary?.easyPay?.provider ?? "").trim();
   const paymentMethodLabel = isTossPayment
     ? `토스페이먼츠 (${String(paymentInfo?.method || "CARD")})`
+    : isNicePayment
+      ? `NicePay${niceEasyPayProvider ? ` (${niceEasyPayProvider})` : ""} (${String(paymentInfo?.method || "card")})`
     : "무통장입금";
   const isPaid = String(packageOrder.paymentStatus ?? "") === "결제완료";
 
@@ -216,7 +220,7 @@ export default async function PackageSuccessPage({
                 </h3>
               </div>
               <p className="text-muted-foreground mb-4">
-                {isTossPayment
+                {isTossPayment || isNicePayment
                   ? "결제가 완료되어 패키지가 활성화되었습니다. 바로 이용하실 수 있어요."
                   : "입금 확인 후 패키지가 활성화되며, 스트링 교체 서비스 예약이 가능합니다."}
               </p>
@@ -291,7 +295,7 @@ export default async function PackageSuccessPage({
                   </div>
                 </div>
 
-                {!isTossPayment ? (
+                {!isTossPayment && !isNicePayment ? (
                   <div className="bg-muted p-4 md:p-6 rounded-xl border border-border">
                     <div className="flex items-center gap-2 mb-4">
                       <CreditCard className="h-5 w-5 text-primary" />
@@ -324,7 +328,7 @@ export default async function PackageSuccessPage({
                   </div>
                 ) : (
                   <div className="bg-muted p-4 md:p-6 rounded-xl border border-border">
-                    <h3 className="font-bold text-primary mb-3">토스 결제 정보</h3>
+                    <h3 className="font-bold text-primary mb-3">{isNicePayment ? "Nice 결제 정보" : "토스 결제 정보"}</h3>
                     <p className="text-sm text-muted-foreground">결제 상태: 결제완료</p>
                     <p className="text-sm text-muted-foreground mt-1">
                       승인 시각: {paymentInfo?.approvedAt ? new Date(paymentInfo.approvedAt).toLocaleString("ko-KR") : "-"}
@@ -393,7 +397,7 @@ export default async function PackageSuccessPage({
                   </span>
                 </div>
                 <p className="text-sm text-muted-foreground mt-2">
-                  {isTossPayment
+                  {isTossPayment || isNicePayment
                     ? "패키지 이용료 (결제 완료, 즉시 활성화)"
                     : "패키지 이용료 (입금 확인 후 활성화)"}
                 </p>
@@ -458,11 +462,11 @@ export default async function PackageSuccessPage({
                     <CreditCard className="h-5 w-5 text-primary mt-0.5" />
                     <div>
                       <h4 className="font-semibold text-primary mb-1">
-                        {isTossPayment ? "결제 안내" : "입금 안내"}
+                        {isTossPayment || isNicePayment ? "결제 안내" : "입금 안내"}
                       </h4>
                       <p className="text-sm text-muted-foreground">
-                        {isTossPayment
-                          ? "토스 결제가 완료되어 패키지가 즉시 활성화되었습니다."
+                        {isTossPayment || isNicePayment
+                          ? `${isNicePayment ? "Nice" : "토스"} 결제가 완료되어 패키지가 즉시 활성화되었습니다.`
                           : "패키지 금액을 위 계좌로 입금해주세요. 입금 확인 후 패키지가 활성화돼요."}
                       </p>
                     </div>
