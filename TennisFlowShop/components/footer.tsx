@@ -39,14 +39,14 @@ const Footer = () => {
             {/* 브랜드 섹션 - 모바일에서 전체 너비 */}
             <div className="bp-sm:col-span-2 bp-lg:col-span-1">
               <Link href="/" className="flex items-center gap-3 mb-3 group">
-                <div className="relative h-10 w-20 shrink-0 overflow-hidden">
-                  <Image src="/DokkaebiTennisString.png" alt="" aria-hidden="true" fill className="object-contain dark:hidden" />
-                  <Image src="/tennisflowmark-dark.png" alt="" aria-hidden="true" fill className="hidden object-contain dark:block" />
+                <div className="relative h-10 w-10 shrink-0 overflow-hidden">
+                  <Image src="/brand/symbol-light.png" alt="" aria-hidden="true" fill className="object-contain dark:hidden" />
+                  <Image src="/brand/symbol-dark.png" alt="" aria-hidden="true" fill className="hidden object-contain dark:block" />
                 </div>
 
                 <div>
                   <div className="font-black text-lg bp-sm:text-xl text-primary">도깨비테니스</div>
-                  <div className="text-xs text-muted-foreground font-semibold tracking-wide whitespace-nowrap">Powered by Tennis Flow</div>
+                  <div className="text-xs text-muted-foreground font-semibold tracking-wide whitespace-nowrap">스트링 · 장착 서비스</div>
                 </div>
               </Link>
             </div>
