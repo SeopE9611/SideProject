@@ -46,7 +46,7 @@ const Footer = () => {
 
                 <div>
                   <div className="font-black text-lg bp-sm:text-xl text-primary">도깨비테니스</div>
-                  <div className="text-xs text-muted-foreground font-semibold tracking-wide whitespace-nowrap">스트링 · 장착 서비스</div>
+                  <div className="text-xs text-muted-foreground font-semibold tracking-wide whitespace-nowrap">Powered by Tennis Flow</div>
                 </div>
               </Link>
             </div>
