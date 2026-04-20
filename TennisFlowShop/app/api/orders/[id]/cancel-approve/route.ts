@@ -135,8 +135,9 @@ export async function POST(
         );
       }
 
-      const niceOrderId =
-        typeof existing.orderId === "string" ? existing.orderId.trim() : "";
+      const niceOrderId = String(
+        existing.orderId ?? existing.paymentInfo?.rawSummary?.orderId ?? "",
+      ).trim();
       if (!niceOrderId) {
         return NextResponse.json(
           {

@@ -469,6 +469,7 @@ async function handleNiceReturn(req: Request) {
         { _id: new ObjectId(mongoOrderId) },
         {
           $set: {
+            orderId,
             paymentStatus: "결제완료",
             paymentInfo: {
               provider: "nicepay",
