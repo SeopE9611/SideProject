@@ -438,7 +438,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
               <div className="mb-4 md:mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 backdrop-blur-sm dark:bg-primary/20">
                 <CheckCircle className="h-12 w-12 text-foreground" />
               </div>
-              <h1 className="text-4xl md:text-5xl font-bold mb-4">주문이 완료되었습니다!</h1>
+              <h1 className="font-brand-bold text-4xl md:text-5xl font-bold mb-4">주문이 완료되었습니다!</h1>
               <p className="mb-4 md:mb-6 text-xl text-muted-foreground">주문해주셔서 감사합니다. 아래 정보를 확인해주세요.</p>
             </div>
           </SiteContainer>

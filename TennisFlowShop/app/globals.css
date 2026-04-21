@@ -204,7 +204,7 @@ html body[data-scroll-locked] {
 
 body {
   font-family:
-    "GmarketSans",
+    "Spoqa Han Sans Neo",
     system-ui,
     -apple-system,
     "Segoe UI",
@@ -214,6 +214,65 @@ body {
     "Malgun Gothic",
     sans-serif;
   @apply bg-background text-foreground transition-colors duration-300;
+}
+
+.font-brand {
+  font-family:
+    "GmarketSans",
+    "Spoqa Han Sans Neo",
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    "Noto Sans KR",
+    "Apple SD Gothic Neo",
+    "Malgun Gothic",
+    sans-serif;
+}
+
+.font-brand-light {
+  font-family:
+    "GmarketSans",
+    "Spoqa Han Sans Neo",
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    "Noto Sans KR",
+    "Apple SD Gothic Neo",
+    "Malgun Gothic",
+    sans-serif;
+  font-weight: 300;
+}
+
+.font-brand-medium {
+  font-family:
+    "GmarketSans",
+    "Spoqa Han Sans Neo",
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    "Noto Sans KR",
+    "Apple SD Gothic Neo",
+    "Malgun Gothic",
+    sans-serif;
+  font-weight: 500;
+}
+
+.font-brand-bold {
+  font-family:
+    "GmarketSans",
+    "Spoqa Han Sans Neo",
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    "Noto Sans KR",
+    "Apple SD Gothic Neo",
+    "Malgun Gothic",
+    sans-serif;
+  font-weight: 700;
 }
 
 .scrollbar-hidden::-webkit-scrollbar {
