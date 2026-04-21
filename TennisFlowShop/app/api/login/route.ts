@@ -12,6 +12,12 @@ import { autoLinkStringingByEmail } from "@/lib/claims";
 import { baseCookie } from "@/lib/cookieOptions";
 import { ADMIN_CSRF_COOKIE_KEY } from "@/lib/admin/adminCsrf";
 import { z } from "zod";
+import {
+  AUTH_RATE_LIMIT_POLICIES,
+  enforcePublicAuthRateLimit,
+  getClientIp,
+  normalizeRateLimitIdentifier,
+} from "@/lib/auth/publicAuthRateLimit";
 
 // // JWT 비밀 키 불러오기 (환경 변수에서 설정)
 // const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET!;
@@ -38,6 +44,17 @@ const LoginBodySchema = z.object({
 });
 
 export async function POST(req: Request) {
+  const db = await getDb();
+
+  const ipRateLimited = await enforcePublicAuthRateLimit({
+    db,
+    routeId: "login",
+    scope: "ip",
+    value: getClientIp(req),
+    policy: AUTH_RATE_LIMIT_POLICIES.login.ip,
+  });
+  if (ipRateLimited) return ipRateLimited;
+
   let rawBody: unknown;
   try {
     rawBody = await req.json();
@@ -57,6 +74,20 @@ export async function POST(req: Request) {
   }
 
   const { email, password } = parsed.data;
+
+  const loginIdentifierPolicy = AUTH_RATE_LIMIT_POLICIES.login.identifier;
+  if (!loginIdentifierPolicy) {
+    return NextResponse.json({ error: "서버 오류 발생" }, { status: 500 });
+  }
+
+  const emailRateLimited = await enforcePublicAuthRateLimit({
+    db,
+    routeId: "login",
+    scope: "email",
+    value: normalizeRateLimitIdentifier("email", email),
+    policy: loginIdentifierPolicy,
+  });
+  if (emailRateLimited) return emailRateLimited;
 
   // 사용자 조회 + 비밀번호 검증
   const user = await getUserByEmail(email);
@@ -151,8 +182,6 @@ export async function POST(req: Request) {
 
   // 토큰 쿠키 세팅 직후, 자동 귀속 + 최근 로그인 기록
   try {
-    const db = await getDb();
-
     // 최근 로그인 장치 기록
     try {
       const ip =

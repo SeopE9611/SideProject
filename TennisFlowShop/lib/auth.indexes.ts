@@ -23,6 +23,17 @@ const AUTH_INDEX_SPECS: Readonly<Record<string, readonly IndexSpec[]>> = {
       keys: { userId: 1, at: -1 },
     },
   ],
+  auth_rate_limit_windows: [
+    {
+      name: "ttl_auth_rate_limit_expireAt",
+      keys: { expireAt: 1 },
+      options: { expireAfterSeconds: 0 },
+    },
+    {
+      name: "auth_rate_limit_lookup_route_key_window_desc",
+      keys: { routeId: 1, key: 1, windowStart: -1 },
+    },
+  ],
 };
 
 async function ensureCollectionIndexes(
