@@ -424,7 +424,7 @@ export default function TensionGuidePage() {
                 전문가 텐션 가이드
               </span>
             </div>
-            <h1 className="text-3xl bp-sm:text-4xl bp-md:text-5xl bp-lg:text-6xl font-bold text-foreground mb-4 bp-md:mb-6 text-balance">
+            <h1 className="font-brand-bold text-3xl bp-sm:text-4xl bp-md:text-5xl bp-lg:text-6xl font-bold text-foreground mb-4 bp-md:mb-6 text-balance">
               나에게 맞는
               <br />
               <span className="text-primary">최적의 텐션</span>을 찾아보세요
@@ -1249,7 +1249,7 @@ export default function TensionGuidePage() {
           <CardContent className="p-4 bp-sm:p-6 bp-md:p-10 bp-lg:p-12">
             <div className="flex flex-col bp-md:flex-row items-center justify-between gap-4 bp-md:gap-6">
               <div className="text-center bp-md:text-left">
-                <h3 className="text-xl bp-sm:text-2xl bp-md:text-3xl font-bold mb-2 text-foreground">
+                <h3 className="font-brand-bold text-xl bp-sm:text-2xl bp-md:text-3xl font-bold mb-2 text-foreground">
                   최적의 텐션으로 스트링 서비스를 받아보세요
                 </h3>
                 <p className="text-muted-foreground text-sm bp-md:text-base bp-lg:text-lg">
@@ -1274,7 +1274,7 @@ export default function TensionGuidePage() {
           <CardContent className="p-4 bp-sm:p-6 bp-md:p-10 bp-lg:p-12">
             <div className="flex flex-col bp-md:flex-row items-center justify-between gap-4 bp-md:gap-6">
               <div className="text-center bp-md:text-left">
-                <h3 className="text-xl bp-sm:text-2xl bp-md:text-3xl font-bold mb-2 text-foreground">
+                <h3 className="font-brand-bold text-xl bp-sm:text-2xl bp-md:text-3xl font-bold mb-2 text-foreground">
                   나에게 맞는 라켓을 찾아보세요
                 </h3>
                 <p className="text-muted-foreground text-sm bp-md:text-base bp-lg:text-lg">
