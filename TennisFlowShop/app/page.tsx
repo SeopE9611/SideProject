@@ -445,7 +445,7 @@ export default function Home() {
       <section className="py-10 bp-sm:py-12 bp-md:py-16">
         <SiteContainer>
           <div className="mb-8 bp-sm:mb-10 text-center">
-            <h2 className="text-2xl bp-sm:text-3xl font-bold text-foreground tracking-tight">빠른 메뉴</h2>
+            <h2 className="font-brand-bold text-2xl bp-sm:text-3xl font-bold text-foreground tracking-tight">빠른 메뉴</h2>
             <p className="mt-2 bp-sm:mt-3 text-sm bp-sm:text-base text-muted-foreground">원하는 서비스를 바로 이용하세요</p>
           </div>
           <div className="grid gap-4 bp-sm:gap-5 bp-md:gap-6 grid-cols-2 bp-md-only:grid-cols-4 bp-lg:grid-cols-4">
@@ -518,7 +518,7 @@ export default function Home() {
       <section ref={communitySectionRef} className="py-10 bp-sm:py-12 bp-md:py-16">
         <SiteContainer>
           <div className="mb-8 bp-sm:mb-10 text-center">
-            <h2 className="text-2xl bp-sm:text-3xl font-bold text-foreground tracking-tight">소식 & 커뮤니티</h2>
+            <h2 className="font-brand-bold text-2xl bp-sm:text-3xl font-bold text-foreground tracking-tight">소식 & 커뮤니티</h2>
             <p className="mt-2 bp-sm:mt-3 text-sm bp-sm:text-base text-muted-foreground">공지사항과 중고 거래 최신 소식을 확인하세요</p>
           </div>
           <div className="grid gap-5 bp-sm:gap-6 bp-lg:grid-cols-2">
@@ -542,7 +542,7 @@ export default function Home() {
         <SiteContainer>
           <div className={cn("p-6 bp-sm:p-8 bp-md:p-10", surfacePanelClass)}>
             <div className="mb-8 bp-sm:mb-10 text-center">
-              <h2 className="text-2xl bp-sm:text-3xl font-bold text-foreground tracking-tight">스트링 교체 프로세스</h2>
+              <h2 className="font-brand-bold text-2xl bp-sm:text-3xl font-bold text-foreground tracking-tight">스트링 교체 프로세스</h2>
               <p className="mt-2 bp-sm:mt-3 text-sm bp-sm:text-base text-muted-foreground">처음 방문해도 쉽게 이해할 수 있어요</p>
             </div>
             <div className="mb-8 bp-sm:mb-10 grid gap-6 bp-sm:gap-8 grid-cols-2 bp-lg:grid-cols-4">
@@ -605,7 +605,7 @@ export default function Home() {
       <section ref={stringsSectionRef} className="py-12 bp-sm:py-14 bp-md:py-20">
         <SiteContainer>
           <div className="mb-8 bp-sm:mb-10 text-center">
-            <h2 className="text-2xl bp-sm:text-3xl bp-md:text-4xl font-bold text-foreground tracking-tight">스트링</h2>
+            <h2 className="font-brand-bold text-2xl bp-sm:text-3xl bp-md:text-4xl font-bold text-foreground tracking-tight">스트링</h2>
             <p className="mt-2 bp-sm:mt-3 text-sm bp-sm:text-base text-muted-foreground">프로가 선택하는 테니스 스트링</p>
           </div>
           <div className="mb-8 bp-sm:mb-10">
@@ -653,7 +653,7 @@ export default function Home() {
       <section ref={racketsSectionRef} className="py-12 bp-sm:py-14 bp-md:py-20">
         <SiteContainer>
           <div className="mb-8 bp-sm:mb-10 text-center">
-            <h2 className="text-2xl bp-sm:text-3xl bp-md:text-4xl font-bold text-foreground tracking-tight">중고 라켓</h2>
+            <h2 className="font-brand-bold text-2xl bp-sm:text-3xl bp-md:text-4xl font-bold text-foreground tracking-tight">중고 라켓</h2>
             <p className="mt-2 bp-sm:mt-3 text-sm bp-sm:text-base text-muted-foreground">도깨비테니스에서 관리하는 라켓을 활용해보세요</p>
           </div>
           <div className="mb-8 bp-sm:mb-10">

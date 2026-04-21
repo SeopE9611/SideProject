@@ -436,7 +436,7 @@ const Header = () => {
                 <Image src="/brand/symbol-light.png" alt="" aria-hidden="true" fill className="object-contain dark:hidden" priority />
                 <Image src="/brand/symbol-dark.png" alt="" aria-hidden="true" fill className="hidden object-contain dark:block" priority />
               </div>
-              <div className="font-bold text-lg text-foreground whitespace-nowrap">도깨비테니스</div>
+              <div className="font-brand-bold font-bold text-lg text-foreground whitespace-nowrap">도깨비테니스</div>
             </Link>
             <div className="mt-4">
               <SearchPreview placeholder="스트링 / 라켓 검색." className="w-full rounded-lg border-border focus-within:border-border focus-within:ring-2 focus-within:ring-ring transition-colors" onSelect={() => setOpen(false)} />
@@ -842,7 +842,7 @@ const Header = () => {
                   <Image src="/brand/symbol-light.png" alt="" aria-hidden="true" fill className="object-contain dark:hidden" priority />
                   <Image src="/brand/symbol-dark.png" alt="" aria-hidden="true" fill className="hidden object-contain dark:block" priority />
                 </div>
-                <div className="font-black text-[15px] tracking-tight text-foreground group-hover:text-foreground transition-colors whitespace-nowrap">도깨비테니스</div>
+                <div className="font-brand-bold font-black text-[15px] tracking-tight text-foreground group-hover:text-foreground transition-colors whitespace-nowrap">도깨비테니스</div>
                 <div className="text-[10px] tracking-wider text-muted-foreground font-medium whitespace-nowrap">Powered by Tennis Flow</div>
               </Link>
 
@@ -862,7 +862,7 @@ const Header = () => {
                   <Image src="/brand/symbol-dark.png" alt="" aria-hidden="true" fill className="hidden object-contain dark:block" priority />
                 </div>
 
-                <div className="font-black text-lg bp-lg:text-xl tracking-tight text-foreground group-hover:text-foreground transition-colors whitespace-nowrap">도깨비테니스</div>
+                <div className="font-brand-bold font-black text-lg bp-lg:text-xl tracking-tight text-foreground group-hover:text-foreground transition-colors whitespace-nowrap">도깨비테니스</div>
               </Link>
               <nav ref={navRef} className="hidden bp-lg:flex items-center ml-1 whitespace-nowrap flex-1 min-w-0 overflow-hidden">
                 <div

@@ -123,7 +123,7 @@ export default function RentalsSuccessClient({ data }: Props) {
             <div className="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full bg-card border border-border shadow-sm">
               <CheckCircle className="h-12 w-12 text-foreground" />
             </div>
-            <h1 className="mb-4 text-4xl font-bold md:text-5xl">대여 신청 접수 완료</h1>
+            <h1 className="font-brand-bold mb-4 text-4xl font-bold md:text-5xl">대여 신청 접수 완료</h1>
             <p className="mb-6 text-xl text-success">신청이 정상 접수되었습니다. 결제 상태에 따라 출고가 진행됩니다.</p>
           </div>
         </SiteContainer>
