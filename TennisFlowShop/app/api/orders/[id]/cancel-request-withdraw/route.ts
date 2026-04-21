@@ -1,5 +1,7 @@
+import { appendAudit } from "@/lib/audit";
 import { NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
+import { buildCancelRefundSubject, recordCancelRefundSignal } from "@/lib/risk/recordCancelRefundSignal";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 import { verifyAccessToken } from "@/lib/auth.utils";
@@ -156,6 +158,45 @@ export async function POST(
         "CANCEL_REQUEST_RACE_CONDITION",
       );
     }
+
+    const subject = buildCancelRefundSubject({
+      userId: existing.userId ? existing.userId.toString() : null,
+      orderId: _id.toString(),
+    });
+
+    try {
+      await appendAudit(
+        db,
+        {
+          type: "order_cancel_request_withdrawn",
+          actorId: user.sub,
+          targetId: _id,
+          message: "주문 취소 요청 철회",
+          diff: {
+            targetType: "order",
+            orderId: _id.toString(),
+            actorRole: isAdmin ? "admin" : "user",
+            prevCancelStatus: existingReq.status ?? null,
+            nextCancelStatus: updatedCancelRequest.status,
+            orderStatus: existing.status ?? null,
+            paymentStatus: existing.paymentStatus ?? null,
+          },
+        },
+        req,
+      );
+    } catch (error) {
+      console.error("[orders/cancel-request-withdraw] appendAudit failed", error);
+    }
+
+    await recordCancelRefundSignal(db, {
+      eventType: "order_cancel_request_withdrawn",
+      subjectKey: subject.subjectKey,
+      subjectType: subject.subjectType,
+      targetType: "order",
+      targetId: _id,
+      actorRole: isAdmin ? "admin" : "user",
+      status: updatedCancelRequest.status,
+    });
 
     return NextResponse.json({
       ok: true,

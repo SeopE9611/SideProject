@@ -7,6 +7,7 @@ import { ensurePassIndexes } from "@/lib/passes.indexes";
 import { ensurePointsIndexes } from "@/lib/points.indexes";
 import { ensureRentalIndexes } from "@/lib/rentals.indexes";
 import { ensureReviewIndexes } from "@/lib/reviews.maintenance";
+import { ensureRiskIndexes } from "@/lib/risk.indexes";
 import { ensureUsedRacketsIndexes } from "@/lib/usedRackets.indexes";
 import { ensureUserIndexes } from "@/lib/users.indexes";
 import { ensureWishlistIndexes } from "@/lib/wishlist.indexes";
@@ -55,6 +56,9 @@ declare global {
 
   // 라켓 검색 인덱스 보장 상태
   var _usedRacketsIndexesReady: Promise<void> | null | undefined;
+
+  // cancel/refund 리스크 시그널 인덱스 보장 상태
+  var _riskIndexesReady: Promise<void> | null | undefined;
 }
 
 let client: MongoClient;
@@ -234,6 +238,16 @@ export async function getDb() {
     });
   }
 
+
+
+  // cancel_refund_risk_signals 인덱스 보장(1회)
+  if (!global._riskIndexesReady) {
+    global._riskIndexesReady = ensureRiskIndexes(db).catch((e) => {
+      console.error("[risk] ensureRiskIndexes failed", e);
+      global._riskIndexesReady = null;
+    });
+  }
+
   if (!global._reviewsIndexesReady) {
     global._reviewsIndexesReady = ensureReviewIndexes(db).catch((e) => {
       console.error("[reviews] ensureReviewIndexes failed", e);
@@ -253,6 +267,7 @@ export async function getDb() {
     global._adminLocksIndexesReady,
     global._adminOperationsIndexesReady,
     global._usersIndexesReady,
+    global._riskIndexesReady,
     global._reviewsIndexesReady,
   ];
 
