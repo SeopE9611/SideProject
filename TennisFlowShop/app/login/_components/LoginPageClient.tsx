@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { AlertCircle, Eye, EyeOff, Loader2, Lock, Mail, Shield } from "lucide-react";
@@ -244,7 +244,6 @@ export default function LoginPageClient() {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
-
       <div className="relative w-full max-w-6xl">
         <Card className={`mx-auto overflow-hidden border border-border bg-card shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 ${activeTab === "register" ? "max-w-4xl" : "max-w-md"}`}>
           <div className="border-b border-border bg-secondary/60 p-4 text-foreground md:p-6">
@@ -261,31 +260,36 @@ export default function LoginPageClient() {
           </div>
 
           <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 bg-muted">
-              <TabsTrigger value="login" className="data-[state=active]:bg-card dark:data-[state=active]:bg-muted data-[state=active]:shadow-md data-[state=active]:text-foreground dark:data-[state=active]:text-foreground font-semibold">
-                로그인
-              </TabsTrigger>
-              <TabsTrigger value="register" className="data-[state=active]:bg-card dark:data-[state=active]:bg-muted data-[state=active]:shadow-md data-[state=active]:text-foreground dark:data-[state=active]:text-foreground font-semibold">
-                회원가입
-              </TabsTrigger>
-            </TabsList>
+            {activeTab === "login" && (
+              <TabsContent value="login" forceMount className="p-4 md:p-6 mt-0">
+                <div className="space-y-4 md:space-y-6">
+                  <div className="text-center">
+                    <h2 className="text-2xl font-bold text-foreground">로그인</h2>
+                    <p className="text-foreground mt-2">카카오/네이버 로그인으로 빠르게 시작하거나 이메일로 로그인하세요</p>
+                  </div>
 
-            {/* 로그인 탭 */}
-            <TabsContent value="login" className="p-4 md:p-6">
-              <div className="space-y-4 md:space-y-6">
-                <div className="text-center">
-                  <h2 className="text-2xl font-bold text-foreground">로그인</h2>
-                  <p className="text-foreground mt-2">계정에 로그인하여 쇼핑을 시작하세요</p>
-                </div>
+                  <div className="space-y-3 rounded-xl border border-border/60 bg-secondary/40 p-4">
+                    <p className="text-sm font-semibold text-foreground text-center">간편 로그인</p>
+                    <SocialAuthButtons onKakaoClick={handleKakaoOAuth} onNaverClick={handleNaverOAuth} />
+                  </div>
 
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    handleLogin();
-                  }}
-                  className="space-y-4"
-                  data-cy="login-form"
-                >
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t border-border" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-card dark:bg-muted px-4 text-foreground font-medium">이메일 로그인</span>
+                    </div>
+                  </div>
+
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      handleLogin();
+                    }}
+                    className="space-y-4"
+                    data-cy="login-form"
+                  >
                   {/* {loginFormError && (
  <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive dark:border-destructive/40 dark:bg-destructive/15">
  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
@@ -382,51 +386,52 @@ export default function LoginPageClient() {
                     </Link>
                   </div>
 
-                  <Button type="submit" className="h-12 w-full font-semibold" disabled={loginLoading} data-cy="login-submit">
-                    {loginLoading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        로그인 중...
-                      </>
-                    ) : (
-                      "로그인"
-                    )}
-                  </Button>
-                </form>
+                    <Button type="submit" className="h-12 w-full font-semibold" disabled={loginLoading} data-cy="login-submit">
+                      {loginLoading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          로그인 중...
+                        </>
+                      ) : (
+                        "로그인"
+                      )}
+                    </Button>
+                  </form>
 
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t border-border" />
+                  <div className="text-center text-xs text-muted-foreground">
+                    일반 회원가입이 필요하신가요?{" "}
+                    <button
+                      type="button"
+                      onClick={() => handleTabChange("register")}
+                      className="font-medium text-foreground underline underline-offset-2 hover:text-foreground/80"
+                    >
+                      일반가입
+                    </button>
                   </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-card dark:bg-muted px-4 text-foreground font-medium">SNS 계정으로 로그인</span>
-                  </div>
-                </div>
 
-                <SocialAuthButtons onKakaoClick={handleKakaoOAuth} onNaverClick={handleNaverOAuth} />
-
-                {showGuestLookup && (
-                  <div className="text-center">
-                    <div className="mb-4 rounded-xl border border-border/60 bg-secondary/50 p-4">
-                      <div className="flex items-center justify-center gap-2 mb-3">
-                        <Shield className="h-5 w-5 text-foreground" />
-                        <p className="text-sm font-semibold text-foreground">비회원도 주문하실 수 있습니다</p>
+                  {showGuestLookup && (
+                    <div className="text-center">
+                      <div className="mb-4 rounded-xl border border-border/60 bg-secondary/50 p-4">
+                        <div className="flex items-center justify-center gap-2 mb-3">
+                          <Shield className="h-5 w-5 text-foreground" />
+                          <p className="text-sm font-semibold text-foreground">비회원도 주문하실 수 있습니다</p>
+                        </div>
+                        <Button
+                          variant="outline"
+                          className="w-full border-border text-foreground hover:bg-muted dark:hover:bg-muted bg-transparent"
+                          onClick={() => {
+                            if (!confirmLeaveIfDirty()) return;
+                            router.push("/order-lookup");
+                          }}
+                        >
+                          비회원 주문 조회하기
+                        </Button>
                       </div>
-                      <Button
-                        variant="outline"
-                        className="w-full border-border text-foreground hover:bg-muted dark:hover:bg-muted bg-transparent"
-                        onClick={() => {
-                          if (!confirmLeaveIfDirty()) return;
-                          router.push("/order-lookup");
-                        }}
-                      >
-                        비회원 주문 조회하기
-                      </Button>
                     </div>
-                  </div>
-                )}
-              </div>
-            </TabsContent>
+                  )}
+                </div>
+              </TabsContent>
+            )}
 
             <RegisterTabPanel
               isSocialOauthRegister={isSocialOauthRegister}

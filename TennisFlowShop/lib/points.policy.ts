@@ -77,7 +77,11 @@ export const SIGNUP_BONUS_CAMPAIGN_ID = (
   RAW_SIGNUP_BONUS_CAMPAIGN_ID ?? "signup_bonus"
 ).trim();
 
+// 본인인증 도입 전까지 회원가입 보너스는 정책적으로 잠정 중단
+export const SIGNUP_BONUS_TEMP_SUSPENDED = true;
+
 export function isSignupBonusActive(now = new Date()): boolean {
+  if (SIGNUP_BONUS_TEMP_SUSPENDED) return false;
   if (!SIGNUP_BONUS_ENABLED) return false;
   if (!Number.isFinite(SIGNUP_BONUS_POINTS) || SIGNUP_BONUS_POINTS <= 0)
     return false;
