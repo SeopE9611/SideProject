@@ -711,7 +711,7 @@ export default function RacketFinderClient() {
                     <label
                       key={patternOption.value}
                       className={cn(
-                        "flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm transition-all",
+                        "flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-200",
                         "bg-background/50 dark:bg-background/30 hover:bg-background/80 dark:hover:bg-background/50",
                         checked &&
                           "bg-secondary ring-1 ring-border",
@@ -749,7 +749,7 @@ export default function RacketFinderClient() {
                     <label
                       key={gripOption.value}
                       className={cn(
-                        "flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm transition-all",
+                        "flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-200",
                         "bg-background/50 dark:bg-background/30 hover:bg-background/80 dark:hover:bg-background/50",
                         checked &&
                           "bg-secondary ring-1 ring-border",
@@ -788,7 +788,7 @@ export default function RacketFinderClient() {
 
               <label
                 className={cn(
-                  "flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 transition-all",
+                  "flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 transition-[background-color,color,border-color,box-shadow,opacity] duration-200",
                   "bg-background/50 dark:bg-background/30 hover:bg-background/80 dark:hover:bg-background/50",
                   draft.strict && "bg-muted ring-1 ring-ring",
                 )}

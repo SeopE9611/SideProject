@@ -512,7 +512,7 @@ export default function TensionGuidePage() {
                           <button
                             key={option.id}
                             onClick={() => setGender(option.id as Gender)}
-                            className={`p-3 bp-sm:p-4 rounded-xl transition-all duration-200 text-left ${gender === option.id ? "bg-secondary ring-2 ring-ring shadow-sm" : "bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm"}`}
+                            className={`p-3 bp-sm:p-4 rounded-xl transition-[background-color,color,border-color,box-shadow,opacity] duration-200 text-left ${gender === option.id ? "bg-secondary ring-2 ring-ring shadow-sm" : "bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm"}`}
                           >
                             <div
                               className={`font-medium text-sm ${gender === option.id ? "text-primary" : "text-foreground"}`}
@@ -539,7 +539,7 @@ export default function TensionGuidePage() {
                             onClick={() =>
                               setSwingSpeed(option.id as SwingSpeed)
                             }
-                            className={`p-2 bp-sm:p-3 rounded-xl transition-all duration-200 ${swingSpeed === option.id ? "bg-secondary ring-2 ring-ring shadow-sm" : "bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm"}`}
+                            className={`p-2 bp-sm:p-3 rounded-xl transition-[background-color,color,border-color,box-shadow,opacity] duration-200 ${swingSpeed === option.id ? "bg-secondary ring-2 ring-ring shadow-sm" : "bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm"}`}
                           >
                             <div
                               className={`font-medium text-xs bp-sm:text-sm ${swingSpeed === option.id ? "text-primary" : "text-foreground"}`}
@@ -563,7 +563,7 @@ export default function TensionGuidePage() {
                           <button
                             key={st.id}
                             onClick={() => setStringType(st.id as StringType)}
-                            className={`p-3 bp-sm:p-4 rounded-xl transition-all duration-200 text-left ${stringType === st.id ? "bg-secondary ring-2 ring-ring shadow-sm" : "bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm"}`}
+                            className={`p-3 bp-sm:p-4 rounded-xl transition-[background-color,color,border-color,box-shadow,opacity] duration-200 text-left ${stringType === st.id ? "bg-secondary ring-2 ring-ring shadow-sm" : "bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm"}`}
                           >
                             <div className="flex items-center gap-2 mb-1">
                               <st.icon
@@ -594,7 +594,7 @@ export default function TensionGuidePage() {
                           <button
                             key={option.id}
                             onClick={() => setPlayStyle(option.id as PlayStyle)}
-                            className={`p-2 bp-sm:p-3 rounded-xl transition-all duration-200 ${playStyle === option.id ? "bg-secondary ring-2 ring-ring shadow-sm" : "bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm"}`}
+                            className={`p-2 bp-sm:p-3 rounded-xl transition-[background-color,color,border-color,box-shadow,opacity] duration-200 ${playStyle === option.id ? "bg-secondary ring-2 ring-ring shadow-sm" : "bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm"}`}
                           >
                             <div
                               className={`font-medium text-xs bp-sm:text-sm ${playStyle === option.id ? "text-primary" : "text-foreground"}`}
@@ -641,7 +641,7 @@ export default function TensionGuidePage() {
                       </div>
                       <div className="relative h-3 bp-sm:h-4 bg-muted/30 rounded-full shadow-inner">
                         <div
-                          className="absolute top-1/2 -translate-y-1/2 -translate-x-[10px] bp-sm:-translate-x-[12px] w-5 h-5 bp-sm:w-6 bp-sm:h-6 bg-card ring-2 ring-border rounded-full shadow-sm transition-all duration-500 ease-out"
+                          className="absolute top-1/2 -translate-y-1/2 -translate-x-[10px] bp-sm:-translate-x-[12px] w-5 h-5 bp-sm:w-6 bp-sm:h-6 bg-card ring-2 ring-border rounded-full shadow-sm transition-[transform,box-shadow,border-color,background-color] duration-500 ease-out"
                           style={{ left: `${gaugePosition}%` }}
                         />
                       </div>
@@ -735,7 +735,7 @@ export default function TensionGuidePage() {
                       </ul>
                     </div>
 
-                    {/* <Button asChild className="w-full bg-secondary hover:bg-secondary/90 transition-all duration-200">
+                    {/* <Button asChild className="w-full bg-secondary hover:bg-secondary/90 transition-[background-color,color,border-color,box-shadow,opacity] duration-200">
                       <Link href="/services/apply">
                         이 텐션으로 스트링 신청하기
                         <ArrowRight className="ml-2 h-4 w-4" />
@@ -788,7 +788,7 @@ export default function TensionGuidePage() {
                 return (
                   <Card
                     key={index}
-                    className={`cursor-pointer transition-all duration-300 overflow-hidden border bg-card ${isSelected ? "ring-2 ring-ring shadow-sm" : "hover:shadow-md"}`}
+                    className={`cursor-pointer transition-[background-color,color,border-color,box-shadow,opacity] duration-300 overflow-hidden border bg-card ${isSelected ? "ring-2 ring-ring shadow-sm" : "hover:shadow-md"}`}
                     onClick={() => setSelectedLevel(isSelected ? null : index)}
                   >
                     <CardHeader className="pb-3 bp-md:pb-4">
@@ -917,7 +917,7 @@ export default function TensionGuidePage() {
               {stringTypes.map((string, index) => (
                 <Card
                   key={index}
-                  className="overflow-hidden border bg-card hover:shadow-md transition-all duration-300"
+                  className="overflow-hidden border bg-card hover:shadow-md transition-[background-color,color,border-color,box-shadow,opacity] duration-300"
                 >
                   <div className={`h-1.5 bp-md:h-2 ${string.color}`} />
                   <CardHeader className="pb-3 bp-md:pb-4">

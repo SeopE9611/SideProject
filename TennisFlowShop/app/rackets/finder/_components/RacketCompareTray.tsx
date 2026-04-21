@@ -107,7 +107,7 @@ export default function RacketCompareTray() {
                         "group relative flex h-16 bp-sm:h-18 items-center gap-2 rounded-lg px-2",
                         "bg-card/80",
                         "border border-border bg-background",
-                        "transition-all duration-200",
+                        "transition-[background-color,color,border-color,box-shadow,opacity] duration-200",
                         "hover:shadow-md",
                       )}
                     >
@@ -142,7 +142,7 @@ export default function RacketCompareTray() {
                         className={cn(
                           "absolute -right-1 -top-1 inline-flex h-5 w-5 items-center justify-center rounded-full",
                           "bg-destructive/90 text-destructive-foreground",
-                          "shadow-sm transition-all duration-200",
+                          "shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-200",
                           "opacity-0 scale-90 group-hover:opacity-100 group-hover:scale-100",
                           "hover:bg-destructive/90",
                         )}

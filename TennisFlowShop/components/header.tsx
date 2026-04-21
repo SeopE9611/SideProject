@@ -47,7 +47,7 @@ function MobileBrandGrid({ brands, onPick }: { brands: { name: string; href: str
           <Button
             key={b.name}
             variant="outline"
-            className="relative z-0 h-9 justify-center rounded-lg border-border text-sm hover:bg-secondary transition-all duration-200 bg-transparent hover:shadow-sm hover:ring-1 hover:ring-inset hover:ring-ring/40 hover:z-10 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            className="relative z-0 h-9 justify-center rounded-lg border-border text-sm hover:bg-secondary transition-[background-color,color,border-color,box-shadow,opacity] duration-200 bg-transparent hover:shadow-sm hover:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             onClick={() => onPick(b.href)}
           >
             {b.name}
@@ -447,7 +447,7 @@ const Header = () => {
             <Accordion type="single">
               {/* 스트링 */}
               <AccordionItem value="strings" className="border-none">
-                <AccordionTrigger value="strings" className="py-3 px-3 rounded-lg hover:bg-secondary hover:no-underline transition-all group">
+                <AccordionTrigger value="strings" className="py-3 px-3 rounded-lg hover:bg-secondary hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group">
                   <span className="inline-flex items-center gap-2.5 text-base font-bold">
                     {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
                       <Grid2X2 className="h-4 w-4" />
@@ -458,26 +458,26 @@ const Header = () => {
                 <AccordionContent value="strings" className="pb-2 pt-1 space-y-0.5">
                   <Button
                     variant="ghost"
-                    className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-all relative z-0 hover:shadow-sm hover:ring-1 hover:ring-inset hover:ring-ring/40 hover:z-10 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                    className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-[background-color,color,border-color,box-shadow,opacity] relative z-0 hover:shadow-sm hover:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                     onClick={() => {
                       setOpen(false);
                       router.push(NAV_LINKS.strings.root);
                     }}
                   >
                     전체 보기
-                    <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
+                    <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200" />
                   </Button>
 
                   <Button
                     variant="ghost"
-                    className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
+                    className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-[background-color,color,border-color,box-shadow,opacity]"
                     onClick={() => {
                       setOpen(false);
                       router.push("/services/apply");
                     }}
                   >
                     <span className="font-semibold text-primary">장착 서비스 즉시 예약</span>
-                    <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
+                    <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200" />
                   </Button>
 
                   {/* 접어두는 하위 그룹(안내/브랜드) */}
@@ -493,14 +493,14 @@ const Header = () => {
                               <Button
                                 key={it.name}
                                 variant="ghost"
-                                className="w-full justify-between rounded-md px-3 py-1.5 text-[13px] text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
+                                className="w-full justify-between rounded-md px-3 py-1.5 text-[13px] text-muted-foreground hover:text-foreground hover:bg-secondary transition-[background-color,color,border-color,box-shadow,opacity]"
                                 onClick={() => {
                                   setOpen(false);
                                   router.push(it.href);
                                 }}
                               >
                                 {it.name}
-                                <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
+                                <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200" />
                               </Button>
                             ))}
                           </div>
@@ -530,7 +530,7 @@ const Header = () => {
 
               {/* 게시판 */}
               <AccordionItem value="boards" className="border-none">
-                <AccordionTrigger value="boards" className="py-3 px-3 rounded-lg hover:bg-secondary hover:no-underline transition-all group">
+                <AccordionTrigger value="boards" className="py-3 px-3 rounded-lg hover:bg-secondary hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group">
                   <span className="inline-flex items-center gap-2.5 text-base font-bold">
                     {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
                       <MessageSquareText className="h-4 w-4" />
@@ -543,14 +543,14 @@ const Header = () => {
                     <Button
                       key={it.name}
                       variant="ghost"
-                      className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
+                      className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-[background-color,color,border-color,box-shadow,opacity]"
                       onClick={() => {
                         setOpen(false);
                         router.push(it.href);
                       }}
                     >
                       {it.name}
-                      <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
+                      <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200" />
                     </Button>
                   ))}
                 </AccordionContent>
@@ -558,7 +558,7 @@ const Header = () => {
 
               {/* 패키지 */}
               <AccordionItem value="packages" className="border-none">
-                <AccordionTrigger value="packages" className="py-3 px-3 rounded-lg hover:bg-secondary hover:no-underline transition-all group">
+                <AccordionTrigger value="packages" className="py-3 px-3 rounded-lg hover:bg-secondary hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group">
                   <span className="inline-flex items-center gap-2.5 text-base font-bold">
                     {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
                       <Gift className="h-4 w-4" />
@@ -571,14 +571,14 @@ const Header = () => {
                     <Button
                       key={it.name}
                       variant="ghost"
-                      className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
+                      className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-[background-color,color,border-color,box-shadow,opacity]"
                       onClick={() => {
                         setOpen(false);
                         router.push(it.href);
                       }}
                     >
                       {it.name}
-                      <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
+                      <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200" />
                     </Button>
                   ))}
                 </AccordionContent>
@@ -586,7 +586,7 @@ const Header = () => {
 
               {/* 중고 라켓 */}
               <AccordionItem value="rackets" className="border-none">
-                <AccordionTrigger value="rackets" className="py-3 px-3 rounded-lg hover:no-underline transition-all group">
+                <AccordionTrigger value="rackets" className="py-3 px-3 rounded-lg hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group">
                   <span className="inline-flex items-center gap-2.5 text-base font-bold">
                     {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
                       <MdSportsTennis className="h-4 w-4" />
@@ -597,14 +597,14 @@ const Header = () => {
                 <AccordionContent value="rackets" className="pb-2 pt-1 space-y-0.5">
                   <Button
                     variant="ghost"
-                    className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
+                    className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-[background-color,color,border-color,box-shadow,opacity]"
                     onClick={() => {
                       setOpen(false);
                       router.push(NAV_LINKS.rackets.root);
                     }}
                   >
                     전체 보기
-                    <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
+                    <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200" />
                   </Button>
 
                   {/* 브랜드 서브메뉴 */}
@@ -614,7 +614,7 @@ const Header = () => {
                       <Button
                         key={b.href}
                         variant="ghost"
-                        className="w-full justify-between rounded-md px-3 py-1.5 text-[13px] text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
+                        className="w-full justify-between rounded-md px-3 py-1.5 text-[13px] text-muted-foreground hover:text-foreground hover:bg-secondary transition-[background-color,color,border-color,box-shadow,opacity]"
                         onClick={() => {
                           setOpen(false);
                           router.push(b.href);
@@ -630,7 +630,7 @@ const Header = () => {
 
               {/* 고객센터 */}
               <AccordionItem value="support" className="border-none">
-                <AccordionTrigger value="support" className="py-3 px-3 rounded-lg hover:bg-secondary hover:no-underline transition-all group">
+                <AccordionTrigger value="support" className="py-3 px-3 rounded-lg hover:bg-secondary hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group">
                   <span className="inline-flex items-center gap-2.5 text-base font-bold">
                     {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
                       <MessageSquare className="h-4 w-4" />
@@ -643,14 +643,14 @@ const Header = () => {
                     <Button
                       key={it.name}
                       variant="ghost"
-                      className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
+                      className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-[background-color,color,border-color,box-shadow,opacity]"
                       onClick={() => {
                         setOpen(false);
                         router.push(it.href);
                       }}
                     >
                       {it.name}
-                      <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
+                      <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200" />
                     </Button>
                   ))}
                 </AccordionContent>
@@ -773,7 +773,7 @@ const Header = () => {
                   {isAdmin && (
                     <Button
                       variant="secondary"
-                      className="h-10 w-full justify-center rounded-xl transition-all duration-200"
+                      className="h-10 w-full justify-center rounded-xl transition-[background-color,color,border-color,box-shadow,opacity] duration-200"
                       onClick={() => {
                         setOpen(false);
                         router.push("/admin/dashboard");
@@ -785,7 +785,7 @@ const Header = () => {
 
                   <Button
                     variant="destructive"
-                    className="h-10 w-full justify-center rounded-xl transition-all duration-200"
+                    className="h-10 w-full justify-center rounded-xl transition-[background-color,color,border-color,box-shadow,opacity] duration-200"
                     onClick={async () => {
                       // 로그아웃 직전 캐시를 선제적으로 비워
                       // 계정 전환 시 stale 포인트가 보이는 플래시를 예방합니다.
@@ -803,7 +803,7 @@ const Header = () => {
               </>
             ) : (
               <Button
-                className="h-10 w-full justify-center rounded-xl bg-primary text-primary-foreground shadow-md transition-all duration-200 hover:bg-primary/90"
+                className="h-10 w-full justify-center rounded-xl bg-primary text-primary-foreground shadow-md transition-[background-color,color,border-color,box-shadow,opacity] duration-200 hover:bg-primary/90"
                 onClick={() => {
                   setOpen(false);
                   const redirectTo = typeof window !== "undefined" ? window.location.pathname + window.location.search : "/";
@@ -931,7 +931,7 @@ const Header = () => {
               {/* 검색 (PC 전용) */}
               <div className="ml-auto shrink-0 flex justify-end">
                 <div className="min-w-[180px]" style={{ width: "clamp(210px, 22vw, 520px)" }}>
-                  <SearchPreview placeholder="스트링 / 라켓 검색..." className="w-full rounded-full bg-background/80 border border-border focus-within:ring-2 focus-within:ring-ring transition-all duration-200" />
+                  <SearchPreview placeholder="스트링 / 라켓 검색..." className="w-full rounded-full bg-background/80 border border-border focus-within:ring-2 focus-within:ring-ring transition-[background-color,color,border-color,box-shadow,opacity] duration-200" />
                 </div>
               </div>
 
@@ -953,12 +953,12 @@ const Header = () => {
               {/* 아이콘/유저 */}
               <div className="flex items-center gap-3 bp-lg:gap-4 pl-2 shrink-0">
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="bp-lg:hidden rounded-full hover:bg-secondary p-2 transition-all duration-300 focus-visible:ring-2 ring-ring" aria-label="메뉴 열기">
+                  <Button variant="ghost" size="icon" className="bp-lg:hidden rounded-full hover:bg-secondary p-2 transition-[background-color,color,border-color,box-shadow,opacity] duration-300 focus-visible:ring-2 ring-ring" aria-label="메뉴 열기">
                     <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
                 <Link href="/cart">
-                  <Button variant="ghost" size="icon" className="relative rounded-full hover:bg-secondary p-2 transition-all duration-300 focus-visible:ring-2 ring-ring" aria-label="장바구니">
+                  <Button variant="ghost" size="icon" className="relative rounded-full hover:bg-secondary p-2 transition-[background-color,color,border-color,box-shadow,opacity] duration-300 focus-visible:ring-2 ring-ring" aria-label="장바구니">
                     <ShoppingCart className="h-5 w-5" />
                     {cartCount > 0 && <span className="absolute -top-1 -right-1 text-[10px] min-w-[18px] h-[18px] px-[5px] rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold">{cartBadge}</span>}
                   </Button>
