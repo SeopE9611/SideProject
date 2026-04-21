@@ -11,7 +11,7 @@ export type TossPaymentSessionStatus =
   | "approve_succeeded_auto_cancel_succeeded"
   | "approve_succeeded_auto_cancel_failed";
 
-export type TossPaymentFlowType = "checkout_order" | "package_order" | "racket_order";
+export type TossPaymentFlowType = "checkout_order" | "package_order" | "racket_order" | "rental_order";
 
 export type TossPaymentFailureStage =
   | "session_expired_before_confirm"
@@ -39,6 +39,34 @@ export type TossPaymentSession = {
       email: string;
       serviceRequest?: string;
     };
+  };
+
+  rentalPayload?: {
+    racketId: string;
+    days: 7 | 15 | 30;
+    pointsToUse?: number;
+    servicePickupMethod?: "SELF_SEND" | "SHOP_VISIT" | "delivery" | "pickup";
+    payment?: {
+      method?: "nicepay" | "bank_transfer";
+      bank?: string;
+      depositor?: string;
+    } | null;
+    shipping?: Record<string, unknown> | null;
+    refundAccount?: {
+      bank?: string;
+      account?: string;
+      holder?: string;
+    } | null;
+    stringing?: {
+      requested?: boolean;
+      stringId?: string;
+    } | null;
+    stringingApplicationInput?: Record<string, unknown> | null;
+    guestInfo?: {
+      name?: string;
+      email?: string;
+      phone?: string;
+    } | null;
   };
   racketPayload?: {
     racketId: string;

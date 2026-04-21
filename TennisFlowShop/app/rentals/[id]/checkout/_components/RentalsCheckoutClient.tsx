@@ -21,7 +21,9 @@ import { badgeToneVariant } from "@/lib/badge-style";
 import { bankLabelMap, racketBrandLabel } from "@/lib/constants";
 import { useBackNavigationGuard } from "@/lib/hooks/useBackNavigationGuard";
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
+import RentalNiceCheckoutButton from "@/app/rentals/[id]/checkout/_components/RentalNiceCheckoutButton";
 import { loadDaumPostcode } from "@/lib/loadDaumPostcode";
+import { isNicePaymentsEnabled } from "@/lib/payments/provider-flags";
 import { showErrorToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { Building2, CheckCircle, CreditCard, Home, Loader2, Mail, MapPin, MessageSquare, Package, Phone, Shield, Truck, Undo2, UserIcon } from "lucide-react";
@@ -37,6 +39,7 @@ declare global {
 
 // 제출 직전 최종 유효성 가드
 type Bank = "shinhan" | "kookmin" | "woori";
+type PaymentMethod = "bank_transfer" | "nicepay";
 const ALLOWED_BANKS = new Set<Bank>(["shinhan", "kookmin", "woori"]);
 const POSTAL_RE = /^\d{5}$/;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -145,6 +148,8 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
 
   const [selectedBank, setSelectedBank] = useState<"shinhan" | "kookmin" | "woori" | "">("");
   const [depositor, setDepositor] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("bank_transfer");
+  const nicePaymentsEnabled = isNicePaymentsEnabled();
 
   /**
    * 스트링 교체 신청 시 결제에 포함될 금액
@@ -209,6 +214,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
         deliveryRequest,
         depositor,
         selectedBank,
+        paymentMethod,
         pointsInput,
         pointsToUse,
         useAllPoints,
@@ -233,6 +239,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
       deliveryRequest,
       depositor,
       selectedBank,
+      paymentMethod,
       pointsInput,
       pointsToUse,
       useAllPoints,
@@ -364,6 +371,13 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
       setPointsInput(String(v));
     }
   }, [maxPointsToUse]);
+
+
+  useEffect(() => {
+    if (!nicePaymentsEnabled && paymentMethod === "nicepay") {
+      setPaymentMethod("bank_transfer");
+    }
+  }, [nicePaymentsEnabled, paymentMethod]);
 
   // 우편번호 검색기
   const openPostcode = async () => {
@@ -853,61 +867,75 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                 <div className="space-y-4 md:space-y-6">
                   <div className="space-y-3">
                     <Label>결제 방법</Label>
-                    <RadioGroup defaultValue="bank-transfer" className="space-y-3">
+                    <RadioGroup value={paymentMethod} onValueChange={(v) => setPaymentMethod(v as PaymentMethod)} className="space-y-3">
                       <div className="flex items-center space-x-3 p-4 bg-background rounded-lg border-2 border-border">
-                        <RadioGroupItem value="bank-transfer" id="bank-transfer" />
+                        <RadioGroupItem value="bank_transfer" id="bank-transfer" />
                         <Label htmlFor="bank-transfer" className="flex-1 cursor-pointer font-medium">
                           무통장입금
                         </Label>
                         <Building2 className="h-5 w-5 text-foreground" />
                       </div>
+                      {nicePaymentsEnabled && (
+                        <div className="flex items-center space-x-3 p-4 bg-background rounded-lg border-2 border-border">
+                          <RadioGroupItem value="nicepay" id="nicepay" />
+                          <Label htmlFor="nicepay" className="flex-1 cursor-pointer font-medium">
+                            NicePay
+                          </Label>
+                          <CreditCard className="h-5 w-5 text-foreground" />
+                        </div>
+                      )}
                     </RadioGroup>
                   </div>
-                  <div className="space-y-3">
-                    <Label htmlFor="bank-account">입금 계좌 선택</Label>
-                    <Select value={selectedBank} onValueChange={(v) => setSelectedBank(v as any)}>
-                      <SelectTrigger id="bank-account" className="border-2 focus:border-border">
-                        <SelectValue placeholder="입금 계좌를 선택하세요" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="shinhan">
-                          신한은행 {bankLabelMap.shinhan.account} (예금주: {bankLabelMap.shinhan.holder})
-                        </SelectItem>
-                        <SelectItem value="kookmin">
-                          국민은행 {bankLabelMap.kookmin.account} (예금주: {bankLabelMap.kookmin.holder})
-                        </SelectItem>
-                        <SelectItem value="woori">
-                          우리은행 {bankLabelMap.woori.account} (예금주: {bankLabelMap.woori.holder})
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="depositor-name">입금자명</Label>
-                    <Input id="depositor-name" value={depositor} onChange={(e) => setDepositor(e.target.value)} placeholder="입금자명을 입력하세요" className="border-2 focus:border-border transition-colors" />
-                  </div>
+                  {paymentMethod === "bank_transfer" && (
+                    <>
+                      <div className="space-y-3">
+                        <Label htmlFor="bank-account">입금 계좌 선택</Label>
+                        <Select value={selectedBank} onValueChange={(v) => setSelectedBank(v as any)}>
+                          <SelectTrigger id="bank-account" className="border-2 focus:border-border">
+                            <SelectValue placeholder="입금 계좌를 선택하세요" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="shinhan">
+                              신한은행 {bankLabelMap.shinhan.account} (예금주: {bankLabelMap.shinhan.holder})
+                            </SelectItem>
+                            <SelectItem value="kookmin">
+                              국민은행 {bankLabelMap.kookmin.account} (예금주: {bankLabelMap.kookmin.holder})
+                            </SelectItem>
+                            <SelectItem value="woori">
+                              우리은행 {bankLabelMap.woori.account} (예금주: {bankLabelMap.woori.holder})
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
 
-                  <div className="bg-muted p-4 rounded-lg border border-border">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Shield className="h-5 w-5 text-primary" />
-                      <p className="font-semibold text-foreground">무통장입금 안내</p>
-                    </div>
-                    <ul className="space-y-2 text-sm text-foreground">
-                      <li className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4" />
-                        주문 후 24시간 이내에 입금해 주셔야 주문이 정상 처리됩니다.
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4" />
-                        입금자명이 주문자명과 다를 경우, 고객센터로 연락 부탁드립니다.
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4" />
-                        입금 확인 후 배송이 시작됩니다.
-                      </li>
-                    </ul>
-                  </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="depositor-name">입금자명</Label>
+                        <Input id="depositor-name" value={depositor} onChange={(e) => setDepositor(e.target.value)} placeholder="입금자명을 입력하세요" className="border-2 focus:border-border transition-colors" />
+                      </div>
+
+                      <div className="bg-muted p-4 rounded-lg border border-border">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Shield className="h-5 w-5 text-primary" />
+                          <p className="font-semibold text-foreground">무통장입금 안내</p>
+                        </div>
+                        <ul className="space-y-2 text-sm text-foreground">
+                          <li className="flex items-center gap-2">
+                            <CheckCircle className="h-4 w-4" />
+                            주문 후 24시간 이내에 입금해 주셔야 주문이 정상 처리됩니다.
+                          </li>
+                          <li className="flex items-center gap-2">
+                            <CheckCircle className="h-4 w-4" />
+                            입금자명이 주문자명과 다를 경우, 고객센터로 연락 부탁드립니다.
+                          </li>
+                          <li className="flex items-center gap-2">
+                            <CheckCircle className="h-4 w-4" />
+                            입금 확인 후 배송이 시작됩니다.
+                          </li>
+                        </ul>
+                      </div>
+                    </>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -1160,20 +1188,91 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                   </div>
                 </CardContent>
                 <CardFooter className="flex flex-col gap-4 p-4 md:p-6">
-                  <Button
-                    onClick={() => onPay(rentalStringingAdapter)}
-                    disabled={loading}
-                    className={cn("w-full h-12 bg-primary hover:bg-primary/90 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md", loading && "opacity-50 cursor-not-allowed")}
-                  >
-                    {loading ? (
-                      <span className="inline-flex items-center gap-2">
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        주문을 처리하고 있어요…
-                      </span>
-                    ) : (
-                      "결제하기"
-                    )}
-                  </Button>
+                  {paymentMethod === "bank_transfer" ? (
+                    <Button
+                      onClick={() => onPay(rentalStringingAdapter)}
+                      disabled={loading}
+                      className={cn("w-full h-12 bg-primary hover:bg-primary/90 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md", loading && "opacity-50 cursor-not-allowed")}
+                    >
+                      {loading ? (
+                        <span className="inline-flex items-center gap-2">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          주문을 처리하고 있어요…
+                        </span>
+                      ) : (
+                        "결제하기"
+                      )}
+                    </Button>
+                  ) : (
+                    <RentalNiceCheckoutButton
+                      disabled={loading}
+                      payableAmount={payableTotal}
+                      payload={{
+                        racketId: initial.racketId,
+                        days: initial.period,
+                        pointsToUse: appliedPoints,
+                        servicePickupMethod,
+                        payment: { method: "nicepay" },
+                        shipping: {
+                          name: name.trim(),
+                          phone: onlyDigits(phone),
+                          postalCode: isVisitPickup ? "" : onlyDigits(postalCode).trim(),
+                          address: isVisitPickup ? "" : address.trim(),
+                          addressDetail: isVisitPickup ? "" : addressDetail.trim(),
+                          deliveryRequest: deliveryRequest.trim(),
+                          shippingMethod: isVisitPickup ? "pickup" : "delivery",
+                        },
+                        refundAccount: {
+                          bank: refundBank,
+                          account: onlyDigits(refundAccount),
+                          holder: refundHolder.trim(),
+                        },
+                        stringing: {
+                          requested: !!requestStringing,
+                          stringId: requestStringing ? selectedString?.id : undefined,
+                        },
+                        stringingApplicationInput:
+                          requestStringing && rentalStringingAdapter
+                            ? {
+                                name: name.trim(),
+                                phone: phone.trim(),
+                                email: email.trim(),
+                                shippingInfo: {
+                                  name: name.trim(),
+                                  phone: phone.trim(),
+                                  email: email.trim(),
+                                  address: isVisitPickup ? "" : address.trim(),
+                                  addressDetail: isVisitPickup ? "" : addressDetail.trim(),
+                                  postalCode: isVisitPickup ? "" : postalCode.trim(),
+                                  depositor: depositor.trim(),
+                                  bank: selectedBank,
+                                  deliveryRequest: deliveryRequest.trim(),
+                                  collectionMethod: rentalStringingAdapter.formData.collectionMethod,
+                                },
+                                stringTypes: (rentalStringingAdapter.formData.stringTypes ?? []).filter(Boolean),
+                                customStringName: rentalStringingAdapter.formData.customStringType?.trim() || undefined,
+                                preferredDate: rentalStringingAdapter.formData.preferredDate,
+                                preferredTime: rentalStringingAdapter.formData.preferredTime,
+                                requirements: rentalStringingAdapter.formData.requirements,
+                                packageOptOut: true,
+                                lines: (rentalStringingAdapter.linesForSubmit ?? [])
+                                  .filter((line) => line?.stringProductId)
+                                  .map((line) => ({
+                                    racketType: line.racketType,
+                                    stringProductId: line.stringProductId,
+                                    stringName: line.stringName,
+                                    tensionMain: line.tensionMain,
+                                    tensionCross: line.tensionCross,
+                                    note: line.note,
+                                    mountingFee: line.mountingFee,
+                                  })),
+                              }
+                            : undefined,
+                      }}
+                      onBeforeSuccessNavigation={() => setIsIntentionalSuccessNavigation(true)}
+                      onSuccessNavigationAbort={() => setIsIntentionalSuccessNavigation(false)}
+                    />
+                  )}
                 </CardFooter>
                 {loading && (
                   <div className="absolute inset-0 z-10 cursor-wait bg-overlay/20">

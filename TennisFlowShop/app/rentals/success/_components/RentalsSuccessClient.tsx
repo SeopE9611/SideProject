@@ -43,6 +43,19 @@ type Props = {
       bank?: string | null;
       depositor?: string | null;
     } | null;
+    paymentStatus?: string | null;
+    paidAt?: string | null;
+    paymentInfo?: {
+      status?: string | null;
+      provider?: string | null;
+      method?: string | null;
+      tid?: string | null;
+      approvedAt?: string | null;
+      easyPayProvider?: string | null;
+      cardDisplayName?: string | null;
+      cardCompany?: string | null;
+      cardLabel?: string | null;
+    } | null;
     shipping?: {
       name?: string | null;
       phone?: string | null;
@@ -95,6 +108,12 @@ export default function RentalsSuccessClient({ data }: Props) {
   const refundHolder = data.refundAccount?.holder || (typeof window !== 'undefined' && sessionStorage.getItem('rentals-refund-holder')) || '';
   const refundBankInfo = refundBankKey ? (bankLabelMap as any)[refundBankKey] : null;
 
+  const isNicePaid = data.paymentInfo?.provider === 'nicepay' || data.payment?.method === 'nicepay';
+  const paymentMethodLabel = isNicePaid
+    ? data.paymentInfo?.easyPayProvider
+      ? `NicePay (${data.paymentInfo.easyPayProvider})`
+      : 'NicePay'
+    : '무통장입금';
   return (
     <div className="min-h-full bg-muted/30">
       <div className="relative overflow-hidden bg-muted/30 text-foreground">
@@ -105,7 +124,7 @@ export default function RentalsSuccessClient({ data }: Props) {
               <CheckCircle className="h-12 w-12 text-foreground" />
             </div>
             <h1 className="mb-4 text-4xl font-bold md:text-5xl">대여 신청 접수 완료</h1>
-            <p className="mb-6 text-xl text-success">입금 확인 후 결제완료로 상태가 변경되며, 이후 출고가 진행됩니다.</p>
+            <p className="mb-6 text-xl text-success">신청이 정상 접수되었습니다. 결제 상태에 따라 출고가 진행됩니다.</p>
           </div>
         </SiteContainer>
       </div>
@@ -244,28 +263,38 @@ export default function RentalsSuccessClient({ data }: Props) {
               <Separator className="my-4 md:my-6" />
 
               <div className="space-y-3">
-                <h3 className="text-lg font-bold text-foreground">입금 계좌 정보</h3>
-                <div className="rounded-lg border border-border bg-background p-4 text-sm">
-                  <p className="text-muted-foreground">아래 계좌로 입금해 주세요. 입금 확인 후 결제완료로 상태가 변경됩니다.</p>
-                  {bankInfo && (
-                    <div className="mt-4 space-y-1">
-                      <div>
-                        은행: <b>{bankInfo.label}</b>
-                      </div>
-                      <div>
-                        계좌: <b>{bankInfo.account}</b>
-                      </div>
-                      <div>
-                        예금주: <b>{bankInfo.holder}</b>
-                      </div>
-                      {depositor && (
+                <h3 className="text-lg font-bold text-foreground">결제 정보</h3>
+                {isNicePaid ? (
+                  <div className="rounded-lg border border-border bg-background p-4 text-sm space-y-1">
+                    <p className="text-muted-foreground">결제가 완료되었습니다.</p>
+                    <div>결제수단: <b>{paymentMethodLabel}</b></div>
+                    {data.paymentInfo?.approvedAt && <div>승인시각: <b>{new Date(data.paymentInfo.approvedAt).toLocaleString('ko-KR')}</b></div>}
+                    {data.paymentInfo?.cardCompany && <div>카드사: <b>{data.paymentInfo.cardCompany}</b></div>}
+                    {data.paymentInfo?.tid && <div>TID: <b>{data.paymentInfo.tid}</b></div>}
+                  </div>
+                ) : (
+                  <div className="rounded-lg border border-border bg-background p-4 text-sm">
+                    <p className="text-muted-foreground">아래 계좌로 입금해 주세요. 입금 확인 후 결제완료로 상태가 변경됩니다.</p>
+                    {bankInfo && (
+                      <div className="mt-4 space-y-1">
                         <div>
-                          입금자명: <b>{depositor}</b>
+                          은행: <b>{bankInfo.label}</b>
                         </div>
-                      )}
-                    </div>
-                  )}
-                </div>
+                        <div>
+                          계좌: <b>{bankInfo.account}</b>
+                        </div>
+                        <div>
+                          예금주: <b>{bankInfo.holder}</b>
+                        </div>
+                        {depositor && (
+                          <div>
+                            입금자명: <b>{depositor}</b>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               <Separator className="my-4 md:my-6" />
