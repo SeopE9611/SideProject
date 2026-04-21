@@ -22,10 +22,11 @@ function toAmount(value: string) {
   return Number.isFinite(amount) ? amount : 0;
 }
 
-function toFailUrl(code: string, message?: string) {
+function toFailUrl(code: string, message?: string, options?: { racketId?: string }) {
   const qs = new URLSearchParams({ code });
   if (message) qs.set("message", message);
-  return `/rackets/nice/fail?${qs.toString()}`;
+  if (options?.racketId) qs.set("racketId", options.racketId);
+  return `/rentals/nice/fail?${qs.toString()}`;
 }
 
 async function parseRequestPayload(req: Request): Promise<Record<string, string>> {
@@ -81,8 +82,15 @@ export async function POST(req: Request) {
     const col = tossPaymentSessions(db);
     const session = await col.findOne({ niceOrderId: orderId });
     if (!session) return NextResponse.redirect(new URL(toFailUrl("SESSION_NOT_FOUND", "결제 세션을 찾을 수 없습니다."), req.url));
+
+    const failOptions = {
+      racketId:
+        typeof (session.rentalPayload as { racketId?: unknown } | undefined)?.racketId === "string"
+          ? (session.rentalPayload as { racketId?: string }).racketId
+          : undefined,
+    };
     if (session.provider !== "nicepay" || session.flowType !== "rental_order") {
-      return NextResponse.redirect(new URL(toFailUrl("SESSION_NOT_FOUND", "라켓 대여 Nice 결제 세션이 아닙니다."), req.url));
+      return NextResponse.redirect(new URL(toFailUrl("SESSION_NOT_FOUND", "라켓 대여 Nice 결제 세션이 아닙니다.", failOptions), req.url));
     }
     if (session.status === "approved" && session.mongoOrderId) {
       return NextResponse.redirect(new URL(`/rentals/success?id=${encodeURIComponent(session.mongoOrderId)}`, req.url));
@@ -91,7 +99,7 @@ export async function POST(req: Request) {
     const now = new Date();
     if (session.expiresAt && session.expiresAt.getTime() < now.getTime()) {
       await col.updateOne({ _id: session._id }, { $set: { status: "failed", failureStage: "session_expired_before_confirm", failureCode: "SESSION_EXPIRED", failureMessage: "결제 세션 유효시간이 만료되었습니다.", updatedAt: now } });
-      return NextResponse.redirect(new URL(toFailUrl("SESSION_EXPIRED", "결제 세션 유효시간이 만료되었습니다."), req.url));
+      return NextResponse.redirect(new URL(toFailUrl("SESSION_EXPIRED", "결제 세션 유효시간이 만료되었습니다.", failOptions), req.url));
     }
 
     const markFailure = async (stage: TossPaymentFailureStage, code: string, message: string, includeApproveRaw?: Record<string, string>) => {
@@ -113,25 +121,25 @@ export async function POST(req: Request) {
 
     if (authResultCode !== "0000") {
       await markFailure("verify_auth", "AUTH_FAILED", authResultMsg || "인증 결제에 실패했습니다.");
-      return NextResponse.redirect(new URL(toFailUrl("AUTH_FAILED", authResultMsg || "인증 결제에 실패했습니다."), req.url));
+      return NextResponse.redirect(new URL(toFailUrl("AUTH_FAILED", authResultMsg || "인증 결제에 실패했습니다.", failOptions), req.url));
     }
 
     const prepared = session.nicePrepared || { clientId: "", orderId: "" };
     if (!tid || !authToken || !signature || !clientId || !prepared.clientId || clientId !== prepared.clientId) {
       await markFailure("verify_auth", "AUTH_FAILED", "인증 응답 필수값 검증에 실패했습니다.");
-      return NextResponse.redirect(new URL(toFailUrl("AUTH_FAILED", "인증 응답 필수값 검증에 실패했습니다."), req.url));
+      return NextResponse.redirect(new URL(toFailUrl("AUTH_FAILED", "인증 응답 필수값 검증에 실패했습니다.", failOptions), req.url));
     }
 
     if (!Number.isFinite(amount) || amount <= 0 || session.amount !== amount || prepared.orderId !== orderId) {
       await markFailure("verify_auth", "AMOUNT_MISMATCH", "결제 금액 검증에 실패했습니다.");
-      return NextResponse.redirect(new URL(toFailUrl("AMOUNT_MISMATCH", "결제 금액 검증에 실패했습니다."), req.url));
+      return NextResponse.redirect(new URL(toFailUrl("AMOUNT_MISMATCH", "결제 금액 검증에 실패했습니다.", failOptions), req.url));
     }
 
     const { clientKey, secretKey } = getApproveCredentials();
     const approveApiBase = getApproveApiBase();
     if (!clientKey || !secretKey) {
       await markFailure("approve_payment", "APPROVE_FAILED", "결제 승인 설정이 올바르지 않습니다.");
-      return NextResponse.redirect(new URL(toFailUrl("APPROVE_FAILED", "결제 승인 설정이 올바르지 않습니다."), req.url));
+      return NextResponse.redirect(new URL(toFailUrl("APPROVE_FAILED", "결제 승인 설정이 올바르지 않습니다.", failOptions), req.url));
     }
 
     let approvedRaw: Record<string, string>;
@@ -139,20 +147,20 @@ export async function POST(req: Request) {
       approvedRaw = await approveNicePaymentByTid({ tid, amount, clientKey, secretKey, apiBaseUrl: approveApiBase });
     } catch (error: any) {
       await markFailure("approve_payment", "APPROVE_FAILED", error?.message || "승인 처리에 실패했습니다.");
-      return NextResponse.redirect(new URL(toFailUrl("APPROVE_FAILED", error?.message || "승인 처리에 실패했습니다."), req.url));
+      return NextResponse.redirect(new URL(toFailUrl("APPROVE_FAILED", error?.message || "승인 처리에 실패했습니다.", failOptions), req.url));
     }
 
     const approveResultCode = pick(approvedRaw, "resultCode", "ResultCode");
     if (approveResultCode !== "0000") {
       const message = pick(approvedRaw, "resultMsg", "ResultMsg") || "승인 처리에 실패했습니다.";
       await markFailure("approve_payment", "APPROVE_FAILED", message, approvedRaw);
-      return NextResponse.redirect(new URL(toFailUrl("APPROVE_FAILED", message), req.url));
+      return NextResponse.redirect(new URL(toFailUrl("APPROVE_FAILED", message, failOptions), req.url));
     }
 
     const rentalPayload = session.rentalPayload as RentalCreatePayload | undefined;
     if (!rentalPayload?.racketId || !rentalPayload?.days) {
       await col.updateOne({ _id: session._id }, { $set: { status: "approve_succeeded_order_failed", failureStage: "create_order_after_approve", failureCode: "ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE", failureMessage: "결제 승인 후 대여 데이터를 복원하지 못했습니다.", niceAuthRaw: raw, niceApprovedRaw: approvedRaw, updatedAt: new Date() } });
-      return NextResponse.redirect(new URL(toFailUrl("ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE", "결제 승인 후 주문 처리에 실패했습니다."), req.url));
+      return NextResponse.redirect(new URL(toFailUrl("ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE", "결제 승인 후 주문 처리에 실패했습니다.", failOptions), req.url));
     }
 
     try {
@@ -215,7 +223,7 @@ export async function POST(req: Request) {
       } catch (cancelError: any) {
         await col.updateOne({ _id: session._id }, { $set: { status: "approve_succeeded_auto_cancel_failed", failureStage: "create_order_after_approve", failureCode: "ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE", failureMessage, niceAuthRaw: raw, niceApprovedRaw: approvedRaw, updatedAt: new Date(), niceAutoCancel: { attemptedAt: new Date(), resultCode: String(cancelError?.resultCode || cancelError?.code || "AUTO_CANCEL_REQUEST_ERROR"), resultMsg: cancelError?.message || "자동 취소 중 오류가 발생했습니다.", status: "failed" } } });
       }
-      return NextResponse.redirect(new URL(toFailUrl("ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE", failureMessage), req.url));
+      return NextResponse.redirect(new URL(toFailUrl("ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE", failureMessage, failOptions), req.url));
     }
   } catch (error: any) {
     return NextResponse.redirect(new URL(toFailUrl("SERVER_ERROR", error?.message || "결제 처리 중 오류가 발생했습니다."), req.url));
