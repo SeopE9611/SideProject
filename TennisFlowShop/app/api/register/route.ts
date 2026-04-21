@@ -11,6 +11,12 @@ import { grantPoints } from "@/lib/points.service";
 import { z } from "zod";
 import { getReservedDisplayNameErrorMessage } from "@/lib/reserved-display-name";
 import { getReservedEmailLocalPartErrorMessage } from "@/lib/reserved-email-localpart";
+import {
+  AUTH_RATE_LIMIT_POLICIES,
+  enforcePublicAuthRateLimit,
+  getClientIp,
+  normalizeRateLimitIdentifier,
+} from "@/lib/auth/publicAuthRateLimit";
 
 /**
  * POST /api/register
@@ -62,6 +68,17 @@ const RegisterBodySchema = z.object({
 });
 
 export async function POST(req: Request) {
+  const db = await getDb();
+
+  const ipRateLimited = await enforcePublicAuthRateLimit({
+    db,
+    routeId: "register",
+    scope: "ip",
+    value: getClientIp(req),
+    policy: AUTH_RATE_LIMIT_POLICIES.register.ip,
+  });
+  if (ipRateLimited) return ipRateLimited;
+
   let rawBody: unknown;
   try {
     rawBody = await req.json();
@@ -84,6 +101,19 @@ export async function POST(req: Request) {
   const address = parsed.data.address ?? null;
   const addressDetail = parsed.data.addressDetail ?? null;
   const postalCode = parsed.data.postalCode ?? null;
+  const registerIdentifierPolicy = AUTH_RATE_LIMIT_POLICIES.register.identifier;
+  if (!registerIdentifierPolicy) {
+    return NextResponse.json({ message: "서버 오류 발생" }, { status: 500 });
+  }
+
+  const emailRateLimited = await enforcePublicAuthRateLimit({
+    db,
+    routeId: "register",
+    scope: "email",
+    value: normalizeRateLimitIdentifier("email", email),
+    policy: registerIdentifierPolicy,
+  });
+  if (emailRateLimited) return emailRateLimited;
 
   const reservedNameError = getReservedDisplayNameErrorMessage(name);
   if (reservedNameError) {
@@ -118,7 +148,6 @@ export async function POST(req: Request) {
   }
 
   try {
-    const db = await getDb();
     const users = db.collection("users");
 
     // 3) 애플리케이션 레벨 중복 검사(낙관적)

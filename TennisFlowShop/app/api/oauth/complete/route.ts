@@ -18,6 +18,12 @@ import {
 import { grantPoints } from "@/lib/points.service";
 import { getReservedDisplayNameErrorMessage } from "@/lib/reserved-display-name";
 import { getReservedEmailLocalPartErrorMessage } from "@/lib/reserved-email-localpart";
+import {
+  AUTH_RATE_LIMIT_POLICIES,
+  enforcePublicAuthRateLimit,
+  getClientIp,
+  normalizeRateLimitIdentifier,
+} from "@/lib/auth/publicAuthRateLimit";
 
 type PendingDoc = {
   _id: string; // token
@@ -40,12 +46,35 @@ type Body = {
 };
 
 export async function POST(req: NextRequest) {
+  const db = await getDb();
+
+  const ipRateLimited = await enforcePublicAuthRateLimit({
+    db,
+    routeId: "oauth_complete",
+    scope: "ip",
+    value: getClientIp(req),
+    policy: AUTH_RATE_LIMIT_POLICIES.oauth_complete.ip,
+  });
+  if (ipRateLimited) return ipRateLimited;
+
   const body = (await req.json().catch(() => null)) as Body | null;
   if (!body?.token) {
     return NextResponse.json({ error: "token is required" }, { status: 400 });
   }
+  const oauthCompleteIdentifierPolicy =
+    AUTH_RATE_LIMIT_POLICIES.oauth_complete.identifier;
+  if (!oauthCompleteIdentifierPolicy) {
+    return NextResponse.json({ error: "server error" }, { status: 500 });
+  }
 
-  const db = await getDb();
+  const tokenRateLimited = await enforcePublicAuthRateLimit({
+    db,
+    routeId: "oauth_complete",
+    scope: "token",
+    value: normalizeRateLimitIdentifier("token", body.token),
+    policy: oauthCompleteIdentifierPolicy,
+  });
+  if (tokenRateLimited) return tokenRateLimited;
 
   const pendings = db.collection(
     "oauth_pending_signups",
