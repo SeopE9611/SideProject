@@ -1,9 +1,20 @@
+import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 import { NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
+import { buildCancelRefundSubject, recordCancelRefundSignal } from "@/lib/risk/recordCancelRefundSignal";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import jwt from "jsonwebtoken";
+
+
+
+function toReasonPreview(value: unknown, max = 200): string | null {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  return trimmed.slice(0, max);
+}
 
 function safeVerifyAccessToken(token?: string | null) {
   if (!token) return null;
@@ -103,6 +114,44 @@ export async function POST(
       $set: { cancelRequest: updatedCancelRequest },
       $push: { history: historyEntry },
     } as any);
+
+    await appendAdminAudit(
+      db,
+      {
+        type: "order_cancel_request_rejected",
+        actorId: user.sub,
+        targetId: _id,
+        message: "관리자 주문 취소 요청 거절",
+        diff: {
+          targetType: "order",
+          orderId: _id.toString(),
+          actorRole: "admin",
+          reasonCode: existingReq.reasonCode ?? null,
+          reasonTextPreview: toReasonPreview(inputReasonText),
+          prevCancelStatus: existingReq.status ?? null,
+          nextCancelStatus: updatedCancelRequest.status,
+          orderStatus: existing.status ?? null,
+          paymentStatus: existing.paymentStatus ?? null,
+        },
+      },
+      req,
+    );
+
+    const subject = buildCancelRefundSubject({
+      userId: existing.userId ? existing.userId.toString() : null,
+      orderId: _id.toString(),
+    });
+
+    await recordCancelRefundSignal(db, {
+      eventType: "order_cancel_request_rejected",
+      subjectKey: subject.subjectKey,
+      subjectType: subject.subjectType,
+      targetType: "order",
+      targetId: _id,
+      actorRole: "admin",
+      reasonCode: existingReq.reasonCode ?? null,
+      status: updatedCancelRequest.status,
+    });
 
     return NextResponse.json({ ok: true });
   } catch (error) {

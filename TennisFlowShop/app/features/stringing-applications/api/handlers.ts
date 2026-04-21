@@ -3,12 +3,15 @@ import { submitStringingApplicationCore } from '@/app/features/stringing-applica
 import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
 import { buildSlotSummaryForDate, loadStringingSettings, validateBookingWindow } from '@/app/features/stringing-applications/lib/slotEngine';
 import { normalizeOrderStatus, normalizePaymentStatus } from '@/lib/admin-ops-normalize';
+import { appendAdminAudit } from '@/lib/admin/appendAdminAudit';
+import { appendAudit } from '@/lib/audit';
 import { signApplicationAccessToken, verifyAccessToken, verifyOrderAccessToken } from '@/lib/auth.utils';
 import { RefundAccountSchema } from '@/lib/cancel-request/refund-account';
 import { normalizeEmail } from '@/lib/claims';
 import clientPromise, { getDb } from '@/lib/mongodb';
 import { normalizeOrderShippingMethod } from '@/lib/order-shipping';
 import { revertConsumption } from '@/lib/passes.service';
+import { buildCancelRefundSubject, recordCancelRefundSignal } from '@/lib/risk/recordCancelRefundSignal';
 import { calcStringingMountingFeeByProductId, calcStringingTotal } from '@/lib/pricing';
 import { normalizeEmailForSearch } from '@/lib/search-email';
 import { getStringingServicePrice } from '@/lib/stringing-prices';
@@ -88,6 +91,23 @@ function normalizeCancelStatus(raw: any): CancelStatus {
 
   // 그 외 알 수 없는 값은 안전하게 none 처리
   return 'none';
+}
+
+function toReasonPreview(value: unknown, max = 200): string | null {
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  return trimmed.slice(0, max);
+}
+
+function maskRefundAccount(account: any) {
+  if (!account || typeof account !== 'object') return null;
+  const digits = String(account.accountNumber ?? '').replace(/\D/g, '');
+  return {
+    bankLabel: typeof account.bankLabel === 'string' ? account.bankLabel : null,
+    holder: typeof account.holder === 'string' ? account.holder : null,
+    accountLast4: digits ? digits.slice(-4) : null,
+  };
 }
 
 function toIsoOrNull(value: unknown): string | null {
@@ -1000,19 +1020,64 @@ export async function handleStringingCancelRequest(req: Request, { params }: { p
     };
 
     // 5) 신청서 문서에 취소 요청 정보 + 히스토리 추가
+    const now = new Date();
+    const nextCancelRequest = {
+      status: 'requested',
+      reasonCode: reasonCode ?? 'OTHER',
+      reasonText: reasonText ?? '',
+      requestedAt: now,
+      refundAccount,
+    };
+
     await col.updateOne({ _id: new ObjectId(id) }, {
       $set: {
-        cancelRequest: {
-          status: 'requested',
-          reasonCode: reasonCode ?? 'OTHER',
-          reasonText: reasonText ?? '',
-          requestedAt: new Date(),
-          refundAccount,
-        },
+        cancelRequest: nextCancelRequest,
       },
       // history 타입이 any라서 push에 as any 한 번 감싸줌
       $push: { history: historyEntry as any },
     } as any);
+
+    const subject = buildCancelRefundSubject({
+      userId: (appDoc as any).userId ? String((appDoc as any).userId) : null,
+      applicationId: id,
+    });
+
+    try {
+      await appendAudit(
+        db,
+        {
+          type: 'stringing_cancel_request_created',
+          actorId: (appDoc as any).userId ? String((appDoc as any).userId) : undefined,
+          targetId: id,
+          message: '교체서비스 신청 취소 요청 생성',
+          diff: {
+            targetType: 'stringing_application',
+            applicationId: id,
+            actorRole: 'user',
+            reasonCode: nextCancelRequest.reasonCode,
+            reasonTextPreview: toReasonPreview(nextCancelRequest.reasonText),
+            refundAccountMasked: maskRefundAccount(nextCancelRequest.refundAccount),
+            prevCancelStatus: appDoc.cancelRequest?.status ?? null,
+            nextCancelStatus: nextCancelRequest.status,
+            applicationStatus: appDoc.status ?? null,
+          },
+        },
+        req,
+      );
+    } catch (error) {
+      console.error('[handleStringingCancelRequest] appendAudit failed', error);
+    }
+
+    await recordCancelRefundSignal(db, {
+      eventType: 'stringing_cancel_request_created',
+      subjectKey: subject.subjectKey,
+      subjectType: subject.subjectType,
+      targetType: 'stringing_application',
+      targetId: id,
+      actorRole: 'user',
+      reasonCode: nextCancelRequest.reasonCode,
+      status: nextCancelRequest.status,
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -1077,6 +1142,44 @@ export async function handleStringingCancelApprove(req: Request, { params }: { p
       $push: { history: historyEntry as any },
     } as any);
 
+    await appendAdminAudit(
+      db,
+      {
+        type: 'stringing_cancel_request_approved',
+        actorId: adminAuth.userId,
+        targetId: id,
+        message: '관리자 교체서비스 신청 취소 요청 승인',
+        diff: {
+          targetType: 'stringing_application',
+          applicationId: id,
+          actorRole: 'admin',
+          reasonCode: appDoc.cancelRequest?.reasonCode ?? null,
+          reasonTextPreview: toReasonPreview(appDoc.cancelRequest?.reasonText),
+          refundAccountMasked: maskRefundAccount(appDoc.cancelRequest?.refundAccount),
+          prevCancelStatus: appDoc.cancelRequest?.status ?? null,
+          nextCancelStatus: 'approved',
+          applicationStatus: '취소',
+        },
+      },
+      req,
+    );
+
+    const subject = buildCancelRefundSubject({
+      userId: (appDoc as any).userId ? String((appDoc as any).userId) : null,
+      applicationId: id,
+    });
+
+    await recordCancelRefundSignal(db, {
+      eventType: 'stringing_cancel_request_approved',
+      subjectKey: subject.subjectKey,
+      subjectType: subject.subjectType,
+      targetType: 'stringing_application',
+      targetId: id,
+      actorRole: 'admin',
+      reasonCode: appDoc.cancelRequest?.reasonCode ?? null,
+      status: 'approved',
+    });
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('[handleStringingCancelApprove] error', error);
@@ -1131,6 +1234,44 @@ export async function handleStringingCancelReject(req: Request, { params }: { pa
       },
       $push: { history: historyEntry as any },
     } as any);
+
+    await appendAdminAudit(
+      db,
+      {
+        type: 'stringing_cancel_request_rejected',
+        actorId: adminAuth.userId,
+        targetId: id,
+        message: '관리자 교체서비스 신청 취소 요청 거절',
+        diff: {
+          targetType: 'stringing_application',
+          applicationId: id,
+          actorRole: 'admin',
+          reasonCode: appDoc.cancelRequest?.reasonCode ?? null,
+          reasonTextPreview: toReasonPreview(trimmed ?? appDoc.cancelRequest?.reasonText),
+          refundAccountMasked: maskRefundAccount(appDoc.cancelRequest?.refundAccount),
+          prevCancelStatus: appDoc.cancelRequest?.status ?? null,
+          nextCancelStatus: 'rejected',
+          applicationStatus: appDoc.status ?? null,
+        },
+      },
+      req,
+    );
+
+    const subject = buildCancelRefundSubject({
+      userId: (appDoc as any).userId ? String((appDoc as any).userId) : null,
+      applicationId: id,
+    });
+
+    await recordCancelRefundSignal(db, {
+      eventType: 'stringing_cancel_request_rejected',
+      subjectKey: subject.subjectKey,
+      subjectType: subject.subjectType,
+      targetType: 'stringing_application',
+      targetId: id,
+      actorRole: 'admin',
+      reasonCode: appDoc.cancelRequest?.reasonCode ?? null,
+      status: 'rejected',
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {

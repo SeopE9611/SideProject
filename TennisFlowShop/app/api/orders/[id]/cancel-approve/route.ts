@@ -1,3 +1,4 @@
+import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 import { NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
@@ -11,6 +12,27 @@ import {
   isAdminCancelableOrderStatus,
 } from "@/lib/orders/cancel-refund-policy";
 import { cancelNicePaymentByTid } from "@/lib/payments/nice/server";
+import { buildCancelRefundSubject, recordCancelRefundSignal } from "@/lib/risk/recordCancelRefundSignal";
+
+
+
+function toReasonPreview(value: unknown, max = 200): string | null {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  return trimmed.slice(0, max);
+}
+
+function maskRefundAccount(account: any) {
+  if (!account || typeof account !== "object") return null;
+  const digits = String(account.accountNumber ?? "").replace(/\D/g, "");
+  return {
+    bankLabel:
+      typeof account.bankLabel === "string" ? account.bankLabel : null,
+    holder: typeof account.holder === "string" ? account.holder : null,
+    accountLast4: digits ? digits.slice(-4) : null,
+  };
+}
 
 function safeVerifyAccessToken(token?: string | null) {
   if (!token) return null;
@@ -349,6 +371,8 @@ export async function POST(
       console.error("[cancel-approve] points restore/revoke error:", e);
     }
 
+    let linkedApplicationCount = 0;
+
     // 연결된 스트링 교체 서비스 신청이 있는 경우 함께 취소 처리
     try {
       const appsCol = db.collection("stringing_applications");
@@ -357,6 +381,7 @@ export async function POST(
       const linkedApps = await appsCol
         .find({ orderId: existing._id })
         .toArray();
+      linkedApplicationCount = linkedApps.length;
 
       const now = new Date();
 
@@ -409,6 +434,46 @@ export async function POST(
         e,
       );
     }
+
+    await appendAdminAudit(
+      db,
+      {
+        type: "order_cancel_request_approved",
+        actorId: user.sub,
+        targetId: _id,
+        message: "관리자 주문 취소 요청 승인",
+        diff: {
+          targetType: "order",
+          orderId: _id.toString(),
+          actorRole: "admin",
+          reasonCode,
+          reasonTextPreview: toReasonPreview(reasonText),
+          refundAccountMasked: maskRefundAccount(existingReq.refundAccount),
+          prevCancelStatus: existingReq.status ?? null,
+          nextCancelStatus: updatedCancelRequest.status,
+          orderStatus: updateFields.status ?? existing.status ?? null,
+          paymentStatus: updateFields.paymentStatus ?? existing.paymentStatus ?? null,
+          linkedApplicationCount,
+        },
+      },
+      req,
+    );
+
+    const subject = buildCancelRefundSubject({
+      userId: existing.userId ? existing.userId.toString() : null,
+      orderId: _id.toString(),
+    });
+
+    await recordCancelRefundSignal(db, {
+      eventType: "order_cancel_request_approved",
+      subjectKey: subject.subjectKey,
+      subjectType: subject.subjectType,
+      targetType: "order",
+      targetId: _id,
+      actorRole: "admin",
+      reasonCode,
+      status: updatedCancelRequest.status,
+    });
 
     return NextResponse.json({ ok: true });
   } catch (error) {

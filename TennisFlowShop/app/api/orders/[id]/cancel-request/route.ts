@@ -1,10 +1,32 @@
+import { appendAudit } from "@/lib/audit";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { RefundAccountSchema } from "@/lib/cancel-request/refund-account";
 import clientPromise from "@/lib/mongodb";
+import { buildCancelRefundSubject, recordCancelRefundSignal } from "@/lib/risk/recordCancelRefundSignal";
 import jwt from "jsonwebtoken";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+
+
+
+function toReasonPreview(value: unknown, max = 200): string | null {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  return trimmed.slice(0, max);
+}
+
+function maskRefundAccount(account: any) {
+  if (!account || typeof account !== "object") return null;
+  const digits = String(account.accountNumber ?? "").replace(/\D/g, "");
+  return {
+    bankLabel:
+      typeof account.bankLabel === "string" ? account.bankLabel : null,
+    holder: typeof account.holder === "string" ? account.holder : null,
+    accountLast4: digits ? digits.slice(-4) : null,
+  };
+}
 
 function safeVerifyAccessToken(token?: string | null) {
   if (!token) return null;
@@ -284,6 +306,49 @@ export async function POST(
       $set: { cancelRequest },
       $push: { history: historyEntry },
     } as any);
+
+    const subject = buildCancelRefundSubject({
+      userId: existing.userId ? existing.userId.toString() : null,
+      orderId: _id.toString(),
+    });
+
+    try {
+      await appendAudit(
+        db,
+        {
+          type: "order_cancel_request_created",
+          actorId: user.sub,
+          targetId: _id,
+          message: "주문 취소 요청 생성",
+          diff: {
+            targetType: "order",
+            orderId: _id.toString(),
+            actorRole: isAdmin ? "admin" : "user",
+            reasonCode: cancelRequest.reasonCode ?? null,
+            reasonTextPreview: toReasonPreview(cancelRequest.reasonText),
+            refundAccountMasked: maskRefundAccount(cancelRequest.refundAccount),
+            prevCancelStatus: existing.cancelRequest?.status ?? null,
+            nextCancelStatus: cancelRequest.status,
+            orderStatus: existing.status ?? null,
+            paymentStatus: existing.paymentStatus ?? null,
+          },
+        },
+        req,
+      );
+    } catch (error) {
+      console.error("[orders/cancel-request] appendAudit failed", error);
+    }
+
+    await recordCancelRefundSignal(db, {
+      eventType: "order_cancel_request_created",
+      subjectKey: subject.subjectKey,
+      subjectType: subject.subjectType,
+      targetType: "order",
+      targetId: _id,
+      actorRole: isAdmin ? "admin" : "user",
+      reasonCode: cancelRequest.reasonCode ?? null,
+      status: cancelRequest.status,
+    });
 
     return NextResponse.json({ ok: true });
   } catch (error) {
