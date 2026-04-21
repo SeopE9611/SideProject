@@ -367,6 +367,23 @@ const INDEX_SPECS = {
       },
     },
   ],
+  cancel_refund_risk_signals: [
+    {
+      name: "cancel_refund_risk_subject_event_unique",
+      keys: { category: 1, subjectKey: 1, eventType: 1 },
+      options: { unique: true },
+    },
+    {
+      name: "cancel_refund_risk_lastAt_desc",
+      keys: { lastAt: -1 },
+      options: {},
+    },
+    {
+      name: "cancel_refund_risk_target_lastAt_desc",
+      keys: { targetType: 1, targetId: 1, lastAt: -1 },
+      options: {},
+    },
+  ],
   used_rackets: [
     {
       name: "status_1_createdAt_-1",
