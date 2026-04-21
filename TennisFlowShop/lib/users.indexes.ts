@@ -19,6 +19,28 @@ const USER_INDEX_SPECS: readonly IndexSpec[] = [
     name: "users_lastLoginAt_idx",
     keys: { lastLoginAt: -1 },
   },
+  {
+    name: "users_oauth_kakao_id_unique",
+    keys: { "oauth.kakao.id": 1 },
+    options: {
+      unique: true,
+      background: true,
+      partialFilterExpression: {
+        "oauth.kakao.id": { $exists: true, $type: "string" },
+      },
+    },
+  },
+  {
+    name: "users_oauth_naver_id_unique",
+    keys: { "oauth.naver.id": 1 },
+    options: {
+      unique: true,
+      background: true,
+      partialFilterExpression: {
+        "oauth.naver.id": { $exists: true, $type: "string" },
+      },
+    },
+  },
 ];
 
 export async function ensureUserIndexes(db: Db) {

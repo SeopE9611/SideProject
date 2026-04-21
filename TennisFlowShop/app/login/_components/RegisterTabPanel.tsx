@@ -474,7 +474,16 @@ export default function RegisterTabPanel({ isSocialOauthRegister, oauthProvider,
       <div className="space-y-4 md:space-y-6">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-foreground">회원가입</h2>
-          <p className="text-foreground mt-2">도깨비테니스의 회원이 되어보세요</p>
+          <p className="text-foreground mt-2">
+            {isSocialOauthRegister
+              ? "소셜 가입 완료를 위해 추가 정보를 입력해주세요."
+              : "도깨비테니스의 회원이 되어보세요"}
+          </p>
+          {isSocialOauthRegister && (
+            <p className="mt-1 text-sm text-muted-foreground">
+              입력한 정보는 배송/주문 안내와 계정 식별을 위해 사용됩니다.
+            </p>
+          )}
         </div>
 
         <form onSubmit={handleRegister} className="space-y-4 md:space-y-6">
