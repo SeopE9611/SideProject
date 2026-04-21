@@ -39,7 +39,7 @@ type StringBrandKey = (typeof STRING_BRAND_KEYS)[number];
 // 상단 배너 슬라이드 데이터
 const SLIDES = [
   {
-    img: "tennisflowmain.png",
+    img: "dokkaebibanner.png",
     // imgMobile: '',
     alt: "이벤트",
     href: "/board/notice",
@@ -47,19 +47,19 @@ const SLIDES = [
     // objectPosition: 'center 20%',
   },
   {
-    img: "tennisflowmain.png",
+    img: "dokkaebibanner.png",
     alt: "서비스",
     href: "/services",
     caption: "장착 서비스 예약",
   },
   {
-    img: "tennisflowmain.png",
+    img: "dokkaebibanner.png",
     alt: "패키지",
     href: "/services/packages",
     caption: "스트링 패키지",
   },
   {
-    img: "tennisflowmain.png",
+    img: "dokkaebibanner.png",
     alt: "라켓과 스트링 디테일",
     href: "/products",
     caption: "추천 스트링",
@@ -122,10 +122,8 @@ const PROMO_BANNERS: PromoBanner[] = (() => {
   }
 })();
 
-const surfaceCardInteractiveClass =
-  "rounded-2xl border border-border bg-card shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 hover:shadow-lg";
-const surfaceIconWrapClass =
-  "flex items-center justify-center rounded-2xl border border-border/60 bg-secondary text-foreground shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 group-hover:shadow-md";
+const surfaceCardInteractiveClass = "rounded-2xl border border-border bg-card shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 hover:shadow-lg";
+const surfaceIconWrapClass = "flex items-center justify-center rounded-2xl border border-border/60 bg-secondary text-foreground shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 group-hover:shadow-md";
 const surfacePanelClass = "rounded-3xl border border-border bg-card shadow-sm";
 const processStepSurfaceClass = "group flex flex-col items-center rounded-2xl border border-border/60 bg-background p-4 text-center shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 hover:shadow-md";
 
@@ -451,10 +449,7 @@ export default function Home() {
             <p className="mt-2 bp-sm:mt-3 text-sm bp-sm:text-base text-muted-foreground">원하는 서비스를 바로 이용하세요</p>
           </div>
           <div className="grid gap-4 bp-sm:gap-5 bp-md:gap-6 grid-cols-2 bp-md-only:grid-cols-4 bp-lg:grid-cols-4">
-            <Link
-              href="/services/apply"
-              className={cn("group flex h-full flex-col items-center gap-3 bp-sm:gap-4 p-5 bp-sm:p-6 bp-md:p-7", surfaceCardInteractiveClass)}
-            >
+            <Link href="/services/apply" className={cn("group flex h-full flex-col items-center gap-3 bp-sm:gap-4 p-5 bp-sm:p-6 bp-md:p-7", surfaceCardInteractiveClass)}>
               <div className={cn("h-12 w-12 bp-sm:h-14 bp-sm:w-14", surfaceIconWrapClass)}>
                 <Wrench className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
               </div>
@@ -464,10 +459,7 @@ export default function Home() {
               </div>
             </Link>
 
-            <Link
-              href="/services/tension-guide"
-              className={cn("group flex h-full flex-col items-center gap-3 bp-sm:gap-4 p-5 bp-sm:p-6 bp-md:p-7", surfaceCardInteractiveClass)}
-            >
+            <Link href="/services/tension-guide" className={cn("group flex h-full flex-col items-center gap-3 bp-sm:gap-4 p-5 bp-sm:p-6 bp-md:p-7", surfaceCardInteractiveClass)}>
               <div className={cn("h-12 w-12 bp-sm:h-14 bp-sm:w-14", surfaceIconWrapClass)}>
                 <BookOpen className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
               </div>
@@ -477,10 +469,7 @@ export default function Home() {
               </div>
             </Link>
 
-            <Link
-              href="/board/market"
-              className={cn("group flex h-full flex-col items-center gap-3 bp-sm:gap-4 p-5 bp-sm:p-6 bp-md:p-7", surfaceCardInteractiveClass)}
-            >
+            <Link href="/board/market" className={cn("group flex h-full flex-col items-center gap-3 bp-sm:gap-4 p-5 bp-sm:p-6 bp-md:p-7", surfaceCardInteractiveClass)}>
               <div className={cn("h-12 w-12 bp-sm:h-14 bp-sm:w-14", surfaceIconWrapClass)}>
                 <Tags className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
               </div>
@@ -490,10 +479,7 @@ export default function Home() {
               </div>
             </Link>
 
-            <Link
-              href="/board"
-              className={cn("group flex h-full flex-col items-center gap-3 bp-sm:gap-4 p-5 bp-sm:p-6 bp-md:p-7", surfaceCardInteractiveClass)}
-            >
+            <Link href="/board" className={cn("group flex h-full flex-col items-center gap-3 bp-sm:gap-4 p-5 bp-sm:p-6 bp-md:p-7", surfaceCardInteractiveClass)}>
               <div className={cn("h-12 w-12 bp-sm:h-14 bp-sm:w-14", surfaceIconWrapClass)}>
                 <MessageSquareText className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
               </div>
