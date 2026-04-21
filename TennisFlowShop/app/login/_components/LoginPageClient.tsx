@@ -246,7 +246,7 @@ export default function LoginPageClient() {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
 
       <div className="relative w-full max-w-6xl">
-        <Card className={`mx-auto overflow-hidden border border-border bg-card shadow-sm transition-all duration-300 ${activeTab === "register" ? "max-w-4xl" : "max-w-md"}`}>
+        <Card className={`mx-auto overflow-hidden border border-border bg-card shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 ${activeTab === "register" ? "max-w-4xl" : "max-w-md"}`}>
           <div className="border-b border-border bg-secondary/60 p-4 text-foreground md:p-6">
             <div className="text-center">
               <div className="mx-auto mb-4 flex justify-center">

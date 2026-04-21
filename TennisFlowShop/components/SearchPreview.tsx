@@ -72,7 +72,7 @@ export default function SearchPreview({
 
       {/* 결과창 */}
       {isOpen && query.trim() && (
-        <div className="absolute z-50 mt-2 w-full bg-card border border-border shadow-lg rounded-2xl max-h-80 overflow-y-auto transition-all">
+        <div className="absolute z-50 mt-2 w-full bg-card border border-border shadow-lg rounded-2xl max-h-80 overflow-y-auto transition-[background-color,color,border-color,box-shadow,opacity] duration-200">
           {results.length > 0 ? (
             results.map((item) => {
               // type 에 따라 이동 경로 분기
@@ -85,7 +85,7 @@ export default function SearchPreview({
                 <Link
                   key={item._id}
                   href={href}
-                  className="flex items-center gap-4 px-4 py-3 hover:bg-secondary hover:text-foreground transition-all group"
+                  className="flex items-center gap-4 px-4 py-3 hover:bg-secondary hover:text-foreground transition-colors duration-200 group"
                   onClick={() => {
                     setIsOpen(false);
                     onSelect?.(); // 바깥(=Header Sheet)에게 "선택됨" 알림

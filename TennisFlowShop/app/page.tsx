@@ -123,11 +123,11 @@ const PROMO_BANNERS: PromoBanner[] = (() => {
 })();
 
 const surfaceCardInteractiveClass =
-  "rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg";
+  "rounded-2xl border border-border bg-card shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 hover:shadow-lg";
 const surfaceIconWrapClass =
-  "flex items-center justify-center rounded-2xl border border-border/60 bg-secondary text-foreground shadow-sm transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-md";
+  "flex items-center justify-center rounded-2xl border border-border/60 bg-secondary text-foreground shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 group-hover:shadow-md";
 const surfacePanelClass = "rounded-3xl border border-border bg-card shadow-sm";
-const processStepSurfaceClass = "group flex flex-col items-center rounded-2xl border border-border/60 bg-background p-4 text-center shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md";
+const processStepSurfaceClass = "group flex flex-col items-center rounded-2xl border border-border/60 bg-background p-4 text-center shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 hover:shadow-md";
 
 export default function Home() {
   const [activeBrand, setActiveBrand] = useState<BrandKey>("all");
@@ -394,7 +394,7 @@ export default function Home() {
                   const title = (b.label ?? "").split("\n")[0] || "광고 문의";
 
                   const baseClass =
-                    "group relative block h-24 overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring/20 bp-sm:h-28 bp-md:h-32 bp-lg:h-36";
+                    "group relative block h-24 overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring/20 bp-sm:h-28 bp-md:h-32 bp-lg:h-36";
 
                   const inner = (
                     <>
@@ -520,7 +520,7 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="shrink-0 inline-flex items-center justify-center rounded-xl border border-border/70 bg-card px-5 py-2.5 text-sm bp-sm:text-base font-semibold text-foreground shadow-sm transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-md">
+              <div className="shrink-0 inline-flex items-center justify-center rounded-xl border border-border/70 bg-card px-5 py-2.5 text-sm bp-sm:text-base font-semibold text-foreground shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 group-hover:shadow-md">
                 바로가기
               </div>
             </div>
@@ -627,7 +627,7 @@ export default function Home() {
               <div className="flex items-center gap-2 bp-sm:gap-2.5 overflow-x-auto pb-2 scrollbar-hide">
                 <button
                   onClick={() => setActiveStringBrand("all")}
-                  className={`shrink-0 px-5 bp-sm:px-6 bp-md:px-7 py-2.5 bp-sm:py-3 rounded-xl text-sm bp-sm:text-base font-semibold transition-all duration-300 whitespace-nowrap ${activeStringBrand === "all" ? "bg-foreground text-background shadow-lg" : "bg-card border border-border/60 text-foreground hover:border-border hover:shadow-md"}`}
+                  className={`shrink-0 px-5 bp-sm:px-6 bp-md:px-7 py-2.5 bp-sm:py-3 rounded-xl text-sm bp-sm:text-base font-semibold transition-[background-color,color,border-color,box-shadow,opacity] duration-300 whitespace-nowrap ${activeStringBrand === "all" ? "bg-foreground text-background shadow-lg" : "bg-card border border-border/60 text-foreground hover:border-border hover:shadow-md"}`}
                 >
                   전체
                 </button>
@@ -635,7 +635,7 @@ export default function Home() {
                   <button
                     key={b.value}
                     onClick={() => setActiveStringBrand(b.value as StringBrandKey)}
-                    className={`shrink-0 px-5 bp-sm:px-6 bp-md:px-7 py-2.5 bp-sm:py-3 rounded-xl text-sm bp-sm:text-base font-semibold transition-all duration-300 whitespace-nowrap ${activeStringBrand === b.value ? "bg-foreground text-background shadow-lg" : "bg-card border border-border/60 text-foreground hover:border-border hover:shadow-md"}`}
+                    className={`shrink-0 px-5 bp-sm:px-6 bp-md:px-7 py-2.5 bp-sm:py-3 rounded-xl text-sm bp-sm:text-base font-semibold transition-[background-color,color,border-color,box-shadow,opacity] duration-300 whitespace-nowrap ${activeStringBrand === b.value ? "bg-foreground text-background shadow-lg" : "bg-card border border-border/60 text-foreground hover:border-border hover:shadow-md"}`}
                   >
                     {b.label}
                   </button>
@@ -675,7 +675,7 @@ export default function Home() {
               <div className="flex items-center gap-2 bp-sm:gap-2.5 overflow-x-auto pb-2 scrollbar-hide">
                 <button
                   onClick={() => setActiveBrand("all")}
-                  className={`shrink-0 px-5 bp-sm:px-6 bp-md:px-7 py-2.5 bp-sm:py-3 rounded-xl text-sm bp-sm:text-base font-semibold transition-all duration-300 whitespace-nowrap ${activeBrand === "all" ? "bg-foreground text-background shadow-lg" : "bg-card border border-border/60 text-foreground hover:border-border hover:shadow-md"}`}
+                  className={`shrink-0 px-5 bp-sm:px-6 bp-md:px-7 py-2.5 bp-sm:py-3 rounded-xl text-sm bp-sm:text-base font-semibold transition-[background-color,color,border-color,box-shadow,opacity] duration-300 whitespace-nowrap ${activeBrand === "all" ? "bg-foreground text-background shadow-lg" : "bg-card border border-border/60 text-foreground hover:border-border hover:shadow-md"}`}
                 >
                   전체
                 </button>
@@ -683,7 +683,7 @@ export default function Home() {
                   <button
                     key={b.value}
                     onClick={() => setActiveBrand(b.value as BrandKey)}
-                    className={`shrink-0 px-5 bp-sm:px-6 bp-md:px-7 py-2.5 bp-sm:py-3 rounded-xl text-sm bp-sm:text-base font-semibold transition-all duration-300 whitespace-nowrap ${activeBrand === b.value ? "bg-foreground text-background shadow-lg" : "bg-card border border-border/60 text-foreground hover:border-border hover:shadow-md"}`}
+                    className={`shrink-0 px-5 bp-sm:px-6 bp-md:px-7 py-2.5 bp-sm:py-3 rounded-xl text-sm bp-sm:text-base font-semibold transition-[background-color,color,border-color,box-shadow,opacity] duration-300 whitespace-nowrap ${activeBrand === b.value ? "bg-foreground text-background shadow-lg" : "bg-card border border-border/60 text-foreground hover:border-border hover:shadow-md"}`}
                   >
                     {b.label}
                   </button>
