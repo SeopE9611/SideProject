@@ -120,23 +120,18 @@ export function AccordionContent({ value, className, children }: ContentProps) {
   const ctx = React.useContext(AccordionCtx)!;
   const open = ctx.openSet.has(value);
 
-  if (!open) {
-    return (
-      <div
-        aria-hidden="true"
-        data-state="closed"
-        className={cn("max-h-0 overflow-hidden", className)}
-      />
-    );
-  }
-
   return (
     <div
-      aria-hidden="false"
-      data-state="open"
-      className={cn("max-h-none overflow-visible", className)}
+      aria-hidden={open ? "false" : "true"}
+      data-state={open ? "open" : "closed"}
+      className={cn(
+        "grid overflow-hidden transition-all duration-200 ease-out",
+        open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0 pointer-events-none",
+      )}
     >
-      <div className="pb-3">{children}</div>
+      <div className={cn("min-h-0", className)}>
+        <div className="pb-3">{children}</div>
+      </div>
     </div>
   );
 }

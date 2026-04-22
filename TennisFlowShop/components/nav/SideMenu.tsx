@@ -50,6 +50,12 @@ export default function SideMenu() {
     );
   };
 
+  const nestedGroupClass = "mt-1.5 pl-1";
+
+  const nestedTriggerClass =
+    "px-3 py-2 text-[13px] font-medium text-muted-foreground hover:text-foreground rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20";
+
+
   return (
     <aside
       className="hidden bp-lg:block fixed left-0 z-30 h-[calc(100vh-var(--header-h,4rem))] w-60 bp-lg:w-64 xl:w-72 border-r border-border bg-background backdrop-blur supports-[backdrop-filter]:bg-background/60 overflow-hidden"
@@ -76,15 +82,15 @@ export default function SideMenu() {
                 </span>
               </Link>
 
-              {/* 접어두는 하위 그룹(안내/브랜드) */}
-              <div className="mt-2 pl-2">
+              {/* 접어두는 하위 그룹(브랜드) */}
+              <div className={nestedGroupClass}>
                 <Accordion type="single" className="space-y-1">
                   {NAV_FLAGS.SHOW_BRAND_MENU && NAV_LINKS.strings.brands?.length ? (
                     <AccordionItem value="strings-brand" className="border-none">
-                      <AccordionTrigger value="strings-brand" className="px-3 py-2 text-[12px] font-semibold text-muted-foreground hover:text-foreground rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20">
+                      <AccordionTrigger value="strings-brand" className={nestedTriggerClass}>
                         브랜드
                       </AccordionTrigger>
-                      <AccordionContent value="strings-brand" className="pb-0">
+                      <AccordionContent value="strings-brand" className="pb-0 pt-1">
                         <div className="grid grid-cols-2 gap-1">
                           {NAV_LINKS.strings.brands.map((b) => (
                             <Link key={b.href} href={b.href} className={cn(brandLinkClass(b.href), "px-2 py-1 text-[12px]")}>
@@ -108,20 +114,13 @@ export default function SideMenu() {
                 </span>
               </Link>
 
-              <Link href="/services/packages" className={linkClass("/services/packages")}>
-                <span className="flex items-center justify-between">
-                  스트링 교체 할인 패키지
-                  <ChevronRight className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-[background-color,color,border-color,box-shadow,opacity] duration-200" />
-                </span>
-              </Link>
-
-              <div className="mt-2 pl-2">
+              <div className={nestedGroupClass}>
                 <Accordion type="single" className="space-y-1">
                   <AccordionItem value="strings-service" className="border-none">
-                    <AccordionTrigger value="strings-service" className="px-3 py-2 text-[12px] font-semibold text-muted-foreground hover:text-foreground rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20">
+                    <AccordionTrigger value="strings-service" className={nestedTriggerClass}>
                       장착 서비스 안내
                     </AccordionTrigger>
-                    <AccordionContent value="strings-service" className="pb-0">
+                    <AccordionContent value="strings-service" className="pb-0 pt-1">
                       <div className="space-y-0.5">
                         {NAV_LINKS.services.map((it) => (
                           <Link key={it.name} href={it.href} className={brandLinkClass(it.href)}>
@@ -136,6 +135,13 @@ export default function SideMenu() {
                   </AccordionItem>
                 </Accordion>
               </div>
+
+              <Link href="/services/packages" className={linkClass("/services/packages")}>
+                <span className="flex items-center justify-between">
+                  스트링 교체 할인 패키지
+                  <ChevronRight className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-[background-color,color,border-color,box-shadow,opacity] duration-200" />
+                </span>
+              </Link>
             </AccordionContent>
           </AccordionItem>
 
@@ -181,16 +187,26 @@ export default function SideMenu() {
 
               {/* 브랜드 서브메뉴 */}
               {NAV_FLAGS.SHOW_BRAND_MENU && NAV_LINKS.rackets.brands?.length ? (
-                <div className="mt-2 pl-2 space-y-0.5">
-                  <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-3 py-1">브랜드</div>
-                  {NAV_LINKS.rackets.brands.map((b) => (
-                    <Link key={b.href} href={b.href} className={brandLinkClass(b.href)}>
-                      <span className="flex items-center justify-between">
-                        {b.name}
-                        <ChevronRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-[background-color,color,border-color,box-shadow,opacity] duration-200" />
-                      </span>
-                    </Link>
-                  ))}
+                <div className={nestedGroupClass}>
+                  <Accordion type="single" className="space-y-1">
+                    <AccordionItem value="rackets-brand" className="border-none">
+                      <AccordionTrigger value="rackets-brand" className={nestedTriggerClass}>
+                        브랜드
+                      </AccordionTrigger>
+                      <AccordionContent value="rackets-brand" className="pb-0 pt-1">
+                        <div className="grid grid-cols-2 gap-1">
+                          {NAV_LINKS.rackets.brands.map((b) => (
+                            <Link key={b.href} href={b.href} className={cn(brandLinkClass(b.href), "px-2 py-1 text-[12px]")}>
+                              <span className="flex items-center justify-between">
+                                {b.name}
+                                <ChevronRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-[background-color,color,border-color,box-shadow,opacity] duration-200" />
+                              </span>
+                            </Link>
+                          ))}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
                 </div>
               ) : null}
             </AccordionContent>
