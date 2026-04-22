@@ -32,6 +32,8 @@ const config: Config = {
       "5xl": ["3.125rem", { lineHeight: "1.1" }],
       "6xl": ["3.875rem", { lineHeight: "1.1" }],
       "7xl": ["4.625rem", { lineHeight: "1.05" }],
+      "8xl": ["6rem", { lineHeight: "1" }],
+      "9xl": ["8rem", { lineHeight: "1" }],
     },
     extend: {
       /**
