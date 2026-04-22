@@ -28,6 +28,7 @@ import { bankLabelMap } from "@/lib/constants";
 import { useBackNavigationGuard } from "@/lib/hooks/useBackNavigationGuard";
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
 import { isNicePaymentsEnabled } from "@/lib/payments/provider-flags";
+import { ENABLE_STRING_STANDALONE_ORDER } from "@/lib/orders/string-standalone-policy";
 import { calcOrderShippingFeeWithBundlePolicy, normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { cn } from "@/lib/utils";
 import { AlertTriangle, Building2, CheckCircle, CreditCard, Home, Loader2, Mail, MapPin, MessageSquare, Package, Phone, Shield, Truck, UserIcon } from "lucide-react";
@@ -190,6 +191,19 @@ export default function CheckoutPage() {
 
   // 현재 주문 구성에 라켓이 실제로 포함되어 있는지
   const hasRacketInOrder = useMemo(() => orderItems.some((it) => it.kind === "racket"), [orderItemsKey]);
+  const hasMountableStringInCheckout = useMemo(
+    () =>
+      orderItems.some((it) => {
+        if ((it.kind ?? "product") !== "product") return false;
+        const mountingFee = mountingFeeByProductId[String(it.id)] ?? Number((it as any).mountingFee ?? 0);
+        return Number.isFinite(mountingFee) && mountingFee > 0;
+      }),
+    [orderItemsKey, mountingFeeByProductId],
+  );
+  const isStringOnlyServiceFlow =
+    !ENABLE_STRING_STANDALONE_ORDER &&
+    !hasRacketInOrder &&
+    hasMountableStringInCheckout;
 
   // next(로그인 리디렉션)에도 URL을 그대로 유지:
   // - withService=1은 "장착 서비스 포함 결제" 의도 플래그이며,
@@ -240,13 +254,21 @@ export default function CheckoutPage() {
    *   체크박스를 잠그고, 별도 링크로만 '상품만 결제' 전환을 제공하는 편이 혼란이 적음
    */
   const lockServiceMode = entryServiceLock && !isBundleCheckout;
+  const isServiceModeLocked =
+    isBundleCheckout || lockServiceMode || isStringOnlyServiceFlow;
 
   /**
    *  체크박스 라벨 문구를 "상태"에 맞게 조정
    * - lockServiceMode / isBundleCheckout에서 체크박스는 비활성화(=고정) 상태라
    *   라벨도 "선택" 뉘앙스가 아니라 "고정" 뉘앙스로 맞춤
    */
-  const withStringServiceLabel = isBundleCheckout ? "장착 서비스 포함 · 번들" : lockServiceMode ? "교체 서비스 포함 · 자동 신청" : "교체 서비스도 같이 신청";
+  const withStringServiceLabel = isBundleCheckout
+    ? "장착 서비스 포함 · 번들"
+    : isStringOnlyServiceFlow
+      ? "교체 서비스 포함 · 필수"
+      : lockServiceMode
+        ? "교체 서비스 포함 · 자동 신청"
+        : "교체 서비스도 같이 신청";
 
   /**
    * 스텝퍼 Step1 문구
@@ -261,6 +283,7 @@ export default function CheckoutPage() {
    * - URL에서 withService를 제거해 뒤로/새로고침에서도 "상품만 결제" 상태를 유지한다.
    */
   const switchToProductOnly = () => {
+    if (isStringOnlyServiceFlow) return;
     // 1) UI 상태: 서비스 OFF
     setWithStringService(false);
     // 1-1) '서비스 포함 모드 잠금'도 해제(체크박스 다시 조작 가능)
@@ -274,6 +297,14 @@ export default function CheckoutPage() {
     url.searchParams.delete("withService");
     window.history.replaceState(window.history.state, "", `${url.pathname}${url.search}${url.hash}`);
   };
+
+  useEffect(() => {
+    if (!isStringOnlyServiceFlow) return;
+    if (withStringService) return;
+    setWithStringService(true);
+    setEntryServiceLock(true);
+    initFlagsRef.current.withServiceApplied = true;
+  }, [isStringOnlyServiceFlow, withStringService]);
 
   useEffect(() => {
     let cancelled = false;
@@ -456,7 +487,11 @@ export default function CheckoutPage() {
   const [servicePickupMethod, setServicePickupMethod] = useState<ServicePickup>("SELF_SEND");
 
   // 안내문구(배송 방법에 따라 분기)
-  const serviceHelpText = deliveryMethod === "방문수령" ? "매장 방문 시 현장에서 바로 진행돼요. 보통 15~20분 정도 걸려요." : "택배로 받으시면, 수거/반송 방식으로 장착 서비스를 진행해요.";
+  const serviceHelpText = isStringOnlyServiceFlow
+    ? "스트링 단품 주문은 현재 비활성화되어 교체 서비스 포함으로만 접수할 수 있어요."
+    : deliveryMethod === "방문수령"
+      ? "매장 방문 시 현장에서 바로 진행돼요. 보통 15~20분 정도 걸려요."
+      : "택배로 받으시면, 수거/반송 방식으로 장착 서비스를 진행해요.";
 
   // 동기화: 방문수령이면 SHOP_VISIT 고정, 택배면 기본 SELF_SEND
   useEffect(() => {
@@ -1105,9 +1140,9 @@ export default function CheckoutPage() {
                         <Checkbox
                           id="withStringService"
                           checked={withStringService}
-                          disabled={isBundleCheckout || lockServiceMode}
+                          disabled={isServiceModeLocked}
                           onCheckedChange={(checked) => {
-                            if (isBundleCheckout || lockServiceMode) return;
+                            if (isServiceModeLocked) return;
                             const next = !!checked;
                             setWithStringService(next);
 
@@ -1124,16 +1159,17 @@ export default function CheckoutPage() {
                         </Label>
                       </div>
                       <p className="text-sm text-foreground ml-6">{serviceHelpText}</p>
-                      {lockServiceMode && (
+                      {(lockServiceMode || isStringOnlyServiceFlow) && (
                         <div className="ml-6 mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                           <span>
                             지금은 <span className="font-semibold text-foreground">교체 서비스 포함</span> 모드예요. 결제와 함께 교체 서비스 정보가 접수되며 장착 정보와 추가 요청도 현재 주문에 함께 저장됩니다.
                           </span>
 
-                          {/* '상품만 결제'로 바꾸고 싶을 때의 명시적 전환 버튼 */}
-                          <button type="button" className="underline underline-offset-2 hover:text-foreground" onClick={switchToProductOnly}>
-                            상품만 결제할래요
-                          </button>
+                          {!isStringOnlyServiceFlow && (
+                            <button type="button" className="underline underline-offset-2 hover:text-foreground" onClick={switchToProductOnly}>
+                              상품만 결제할래요
+                            </button>
+                          )}
                         </div>
                       )}
                       {isBundleCheckout && (

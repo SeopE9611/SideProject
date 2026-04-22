@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { badgeBaseOutlined, badgeSizeSm, getAnswerStatusBadgeSpec, getQnaCategoryBadgeSpec } from "@/lib/badge-style";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { normalizeItemShippingFee } from "@/lib/shipping-fee";
+import { ENABLE_STRING_STANDALONE_ORDER } from "@/lib/orders/string-standalone-policy";
 import { cn } from "@/lib/utils";
 import {
   Activity,
@@ -857,16 +858,18 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         </Button>
                       ) : (
                         <>
-                          <Button
-                            variant="default"
-                            size="tall"
-                            className="h-12 w-full sm:h-14"
-                            onClick={handleBuyNow}
-                            disabled={loading || stock <= 0 || quantity > stock}
-                          >
-                            <CreditCard className="mr-2 h-5 w-5" />
-                            바로 구매하기
-                          </Button>
+                          {ENABLE_STRING_STANDALONE_ORDER && (
+                            <Button
+                              variant="default"
+                              size="tall"
+                              className="h-12 w-full sm:h-14"
+                              onClick={handleBuyNow}
+                              disabled={loading || stock <= 0 || quantity > stock}
+                            >
+                              <CreditCard className="mr-2 h-5 w-5" />
+                              바로 구매하기
+                            </Button>
+                          )}
 
                           {canCheckoutWithService && (
                             <Button
@@ -1587,15 +1590,17 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
               {/* 액션 버튼 섹션 */}
               <div className="pt-3 flex gap-2">
-                <button
-                  type="button"
-                  onClick={handleBuyNow}
-                  disabled={loading || stock <= 0 || quantity > stock}
-                  className="flex-1 h-12 rounded-lg bg-foreground text-background disabled:bg-muted dark:disabled:bg-muted disabled:text-muted-foreground font-semibold text-sm transition-all duration-300 shadow-sm hover:-translate-y-0.5 hover:shadow-md disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                >
-                  <CreditCard className="h-4 w-4" />
-                  즉시 구매하기
-                </button>
+                {ENABLE_STRING_STANDALONE_ORDER && (
+                  <button
+                    type="button"
+                    onClick={handleBuyNow}
+                    disabled={loading || stock <= 0 || quantity > stock}
+                    className="flex-1 h-12 rounded-lg bg-foreground text-background disabled:bg-muted dark:disabled:bg-muted disabled:text-muted-foreground font-semibold text-sm transition-all duration-300 shadow-sm hover:-translate-y-0.5 hover:shadow-md disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    <CreditCard className="h-4 w-4" />
+                    즉시 구매하기
+                  </button>
+                )}
                 {canCheckoutWithService && (
                   <button
                     type="button"

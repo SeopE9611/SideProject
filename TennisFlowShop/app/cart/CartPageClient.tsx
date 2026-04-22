@@ -47,6 +47,7 @@ import {
   calcOrderShippingFeeWithBundlePolicy,
   normalizeItemShippingFee,
 } from "@/lib/shipping-fee";
+import { ENABLE_STRING_STANDALONE_ORDER } from "@/lib/orders/string-standalone-policy";
 import HeroCourtBackdrop from "@/components/system/HeroCourtBackdrop";
 
 // 통화 포맷 유틸 (일관성)
@@ -365,11 +366,16 @@ export default function CartPageClient() {
 
   const isBundleLocked = Boolean(bundleEditHref);
 
-  // 체크아웃 진입 URL을 "번들 완성"일 때만 withService=1로
+  const hasMountableStringOnlyFlow =
+    !ENABLE_STRING_STANDALONE_ORDER &&
+    totalRacketQty === 0 &&
+    totalMountableStringQty > 0;
+
+  // 체크아웃 진입 URL을 "번들 완성" 또는 "스트링-only 장착 대상"일 때 withService=1로
   // - isBundleLocked: 라켓 1종 + 장착 스트링 1종이 동시에 존재하고, 편집 링크까지 만들어질 정도로 번들이 성립한 상태
   // - blockServiceCheckout: 구성/수량 불일치면 장바구니에서 이미 막히는 상태
   const shouldEnterCheckoutWithService =
-    !blockServiceCheckout && isBundleLocked;
+    (!blockServiceCheckout && isBundleLocked) || hasMountableStringOnlyFlow;
   const checkoutBasePath = shouldEnterCheckoutWithService
     ? "/checkout?withService=1"
     : "/checkout";

@@ -21,6 +21,7 @@ import { z } from "zod";
 import { calcOrderShippingFeeWithBundlePolicy, normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { findOneActivePassForUser } from "@/lib/passes.service";
 import { normalizeEmailForSearch } from "@/lib/search-email";
+import { ENABLE_STRING_STANDALONE_ORDER } from "@/lib/orders/string-standalone-policy";
 
 /**
  * 서버 최종 유효성 검사 스키마(주문 생성)
@@ -628,6 +629,24 @@ export async function createOrder(
             };
           }),
         );
+
+        if (!ENABLE_STRING_STANDALONE_ORDER) {
+          const hasRacketItem = itemsWithSnapshot.some((it) => it.kind === "racket");
+          const hasMountableStringItem = itemsWithSnapshot.some(
+            (it) =>
+              it.kind === "product" && Number((it as any).mountingFee ?? 0) > 0,
+          );
+          if (
+            !hasRacketItem &&
+            hasMountableStringItem &&
+            shippingInfo?.withStringService !== true
+          ) {
+            throw new HttpError(400, {
+              error: "STRING_ONLY_ORDER_DISABLED",
+              reason: "STRING_SERVICE_REQUIRED",
+            });
+          }
+        }
 
         // 번들 수량/구성 검증(라켓 구매 + 스트링 장착 서비스)
         // - 라켓이 주문에 포함된 경우에만 강제 (보유 라켓 교체 서비스는 라켓 아이템이 없을 수 있음)
