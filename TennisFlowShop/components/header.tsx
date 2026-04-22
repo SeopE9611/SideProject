@@ -63,6 +63,11 @@ function MobileBrandGrid({ brands, onPick }: { brands: { name: string; href: str
   );
 }
 
+const mobileMenuItemClass =
+  "group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-[background-color,color,border-color,box-shadow,opacity] relative z-0 hover:shadow-sm hover:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background";
+const mobileNestedGroupClass = "mt-1.5 pl-1";
+const mobileNestedTriggerClass = "px-3 py-2 text-[13px] font-medium text-muted-foreground hover:text-foreground rounded-lg hover:bg-secondary";
+
 const Header = () => {
   const router = useRouter();
   const headerRef = useRef<HTMLDivElement>(null);
@@ -457,7 +462,7 @@ const Header = () => {
                 <AccordionContent value="strings" className="pb-2 pt-1 space-y-0.5">
                   <Button
                     variant="ghost"
-                    className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-[background-color,color,border-color,box-shadow,opacity] relative z-0 hover:shadow-sm hover:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                    className={mobileMenuItemClass}
                     onClick={() => {
                       setOpen(false);
                       router.push(NAV_LINKS.strings.root);
@@ -468,13 +473,13 @@ const Header = () => {
                   </Button>
 
                   {/* 접어두는 하위 그룹(안내/브랜드) */}
-                  <div className="mt-2 pl-2">
+                  <div className={mobileNestedGroupClass}>
                     <Accordion type="single" className="space-y-1">
                       <AccordionItem value="strings-brand" className="border-none">
-                        <AccordionTrigger value="strings-brand" className="px-3 py-2 text-[12px] font-semibold text-muted-foreground hover:text-foreground rounded-lg hover:bg-secondary">
+                        <AccordionTrigger value="strings-brand" className={mobileNestedTriggerClass}>
                           브랜드
                         </AccordionTrigger>
-                        <AccordionContent value="strings-brand" className="pb-0">
+                        <AccordionContent value="strings-brand" className="pb-0 pt-1">
                           <div className="px-1 pt-2">
                             <MobileBrandGrid
                               brands={NAV_LINKS.strings.brands}
@@ -491,7 +496,7 @@ const Header = () => {
 
                   <Button
                     variant="ghost"
-                    className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-[background-color,color,border-color,box-shadow,opacity]"
+                    className={mobileMenuItemClass}
                     onClick={() => {
                       setOpen(false);
                       router.push("/services/apply");
@@ -501,25 +506,13 @@ const Header = () => {
                     <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200" />
                   </Button>
 
-                  <Button
-                    variant="ghost"
-                    className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-[background-color,color,border-color,box-shadow,opacity]"
-                    onClick={() => {
-                      setOpen(false);
-                      router.push("/services/packages");
-                    }}
-                  >
-                    스트링 교체 할인 패키지
-                    <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200" />
-                  </Button>
-
-                  <div className="mt-2 pl-2">
+                  <div className={mobileNestedGroupClass}>
                     <Accordion type="single" className="space-y-1">
                       <AccordionItem value="strings-service" className="border-none">
-                        <AccordionTrigger value="strings-service" className="px-3 py-2 text-[12px] font-semibold text-muted-foreground hover:text-foreground rounded-lg hover:bg-secondary">
+                        <AccordionTrigger value="strings-service" className={mobileNestedTriggerClass}>
                           장착 서비스 안내
                         </AccordionTrigger>
-                        <AccordionContent value="strings-service" className="pb-0">
+                        <AccordionContent value="strings-service" className="pb-0 pt-1">
                           <div className="space-y-0.5">
                             {NAV_LINKS.services.map((it) => (
                               <Button
@@ -532,7 +525,7 @@ const Header = () => {
                                 }}
                               >
                                 {it.name}
-                                <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200" />
+                                <ChevronRight className="h-3 w-3 transition-transform duration-200" />
                               </Button>
                             ))}
                           </div>
@@ -540,6 +533,18 @@ const Header = () => {
                       </AccordionItem>
                     </Accordion>
                   </div>
+
+                  <Button
+                    variant="ghost"
+                    className={mobileMenuItemClass}
+                    onClick={() => {
+                      setOpen(false);
+                      router.push("/services/packages");
+                    }}
+                  >
+                    스트링 교체 할인 패키지
+                    <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200" />
+                  </Button>
                 </AccordionContent>
               </AccordionItem>
 
@@ -584,7 +589,7 @@ const Header = () => {
                 <AccordionContent value="rackets" className="pb-2 pt-1 space-y-0.5">
                   <Button
                     variant="ghost"
-                    className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-[background-color,color,border-color,box-shadow,opacity]"
+                    className={mobileMenuItemClass}
                     onClick={() => {
                       setOpen(false);
                       router.push(NAV_LINKS.rackets.root);
@@ -595,22 +600,25 @@ const Header = () => {
                   </Button>
 
                   {/* 브랜드 서브메뉴 */}
-                  <div className="mt-2 pl-2 space-y-0.5">
-                    <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-3 py-1">브랜드</div>
-                    {NAV_LINKS.rackets.brands.map((b) => (
-                      <Button
-                        key={b.href}
-                        variant="ghost"
-                        className="w-full justify-between rounded-md px-3 py-1.5 text-[13px] text-muted-foreground hover:text-foreground hover:bg-secondary transition-[background-color,color,border-color,box-shadow,opacity]"
-                        onClick={() => {
-                          setOpen(false);
-                          router.push(b.href);
-                        }}
-                      >
-                        {b.name}
-                        <ChevronRight className="h-3 w-3" />
-                      </Button>
-                    ))}
+                  <div className={mobileNestedGroupClass}>
+                    <Accordion type="single" className="space-y-1">
+                      <AccordionItem value="rackets-brand" className="border-none">
+                        <AccordionTrigger value="rackets-brand" className={mobileNestedTriggerClass}>
+                          브랜드
+                        </AccordionTrigger>
+                        <AccordionContent value="rackets-brand" className="pb-0 pt-1">
+                          <div className="px-1 pt-2">
+                            <MobileBrandGrid
+                              brands={NAV_LINKS.rackets.brands}
+                              onPick={(href) => {
+                                setOpen(false);
+                                router.push(href);
+                              }}
+                            />
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
                   </div>
                 </AccordionContent>
               </AccordionItem>
