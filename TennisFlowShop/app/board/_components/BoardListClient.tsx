@@ -644,9 +644,6 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <Button asChild variant="outline" size="sm">
-              <Link href="/board">게시판 홈으로</Link>
-            </Button>
 
             <Button
               type="button"

@@ -1412,9 +1412,6 @@ export default function BoardDetailClient({
             <Button asChild variant="outline" size="sm">
               <Link href={listHref}>목록으로</Link>
             </Button>
-            <Button asChild variant="outline" size="sm">
-              <Link href="/board">게시판 홈</Link>
-            </Button>
           </div>
         </div>
 

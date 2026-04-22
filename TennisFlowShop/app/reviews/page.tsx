@@ -1,5 +1,3 @@
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import ReviewsClient from "./_components/ReviewsClient";
 
 export const metadata = {
@@ -21,10 +19,6 @@ export default function ReviewsPage() {
 
           <h1 className="font-brand-bold text-lg sm:text-xl md:text-2xl font-semibold leading-tight break-keep tracking-tight text-foreground">리뷰 게시판</h1>
         </div>
-
-        <Button asChild variant="outline" size="sm" className="ml-auto shrink-0">
-          <Link href="/board">게시판 홈으로</Link>
-        </Button>
       </div>
 
       <ReviewsClient />

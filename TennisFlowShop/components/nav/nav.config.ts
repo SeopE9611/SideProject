@@ -45,7 +45,6 @@ export const NAV_LINKS = {
 
   /** 커뮤니티형 게시판(지금은 리뷰만, 앞으로 자유게시판/브랜드 게시판 등 확장 예정) */
   boards: [
-    { name: "게시판 홈", href: "/board" },
     { name: "자유 게시판", href: "/board/free" },
     { name: "중고 거래", href: "/board/market" },
     { name: "장비 사용기", href: "/board/gear" },

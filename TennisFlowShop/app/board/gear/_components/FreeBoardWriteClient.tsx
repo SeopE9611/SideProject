@@ -365,16 +365,13 @@ export default function FreeBoardWriteClient() {
             </p>
           </div>
 
-          {/* 우측 버튼들: 목록으로 / 게시판 홈 */}
+          {/* 우측 버튼들: 목록으로 */}
           <div className="flex gap-2">
             <Button asChild variant="outline" size="sm" className="gap-1">
               <Link href="/board/gear" onClick={guardLeave}>
                 <ArrowLeft className="h-4 w-4" />
                 <span>목록으로</span>
               </Link>
-            </Button>
-            <Button asChild variant="outline" size="sm">
-              <Link href="/board">게시판 홈</Link>
             </Button>
           </div>
         </div>
