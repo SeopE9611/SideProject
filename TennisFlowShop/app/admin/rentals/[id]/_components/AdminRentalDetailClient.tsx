@@ -100,6 +100,7 @@ export default function AdminRentalDetailClient() {
   const id = params?.id ?? "";
   const router = useRouter();
   const [confirming, setConfirming] = useState(false);
+  const [isSyncingNice, setIsSyncingNice] = useState(false);
 
   const { data, error, isLoading, mutate } = useSWR(
     id ? `/api/admin/rentals/${id}` : null,
@@ -193,6 +194,28 @@ export default function AdminRentalDetailClient() {
       fallbackErrorMessage: "처리 실패",
     });
     if (result) await mutate();
+  };
+
+  const onSyncNicePayment = async () => {
+    if (!id || isSyncingNice) return;
+    setIsSyncingNice(true);
+    try {
+      const res = await fetch(`/api/payments/nice/rental/sync/${id}`, {
+        method: "POST",
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || !json?.success) {
+        throw new Error(json?.error || "PG 상태 재동기화에 실패했습니다.");
+      }
+      await mutate();
+      showSuccessToast("NicePay 상태 재동기화를 완료했습니다.");
+    } catch (error: any) {
+      showErrorToast(
+        error?.message || "PG 상태 재동기화 중 오류가 발생했습니다.",
+      );
+    } finally {
+      setIsSyncingNice(false);
+    }
   };
 
   // 대여 취소 요청 승인
@@ -417,6 +440,8 @@ export default function AdminRentalDetailClient() {
     data?.paymentStatusLabel ??
     (derivePaymentStatus(data) === "paid" ? "결제완료" : "결제대기");
   const paymentSource = data?.paymentStatusSource ?? "derived";
+  const isNicePayment =
+    String(data?.paymentProvider ?? "").trim().toLowerCase() === "nicepay";
   const stringingName = data?.stringing?.name
     ? String(data.stringing.name)
     : null;
@@ -945,6 +970,23 @@ export default function AdminRentalDetailClient() {
                     <span className="text-[11px] text-muted-foreground">
                       대여 상태 기준 파생
                     </span>
+                  )}
+                  {isNicePayment && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={onSyncNicePayment}
+                      disabled={isSyncingNice}
+                    >
+                      {isSyncingNice ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          PG 상태 동기화 중...
+                        </>
+                      ) : (
+                        "PG 상태 다시 확인"
+                      )}
+                    </Button>
                   )}
                 </div>
               </CardHeader>

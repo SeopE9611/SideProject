@@ -43,10 +43,32 @@ export interface PackageOrder {
   paymentInfo: {
     provider?: "manual_bank_transfer" | "tosspayments" | "nicepay";
     method?: string;
+    status?: string | null;
     bank?: string | null;
     depositor?: string | null;
     paymentKey?: string;
     tid?: string;
+    cardDisplayName?: string | null;
+    cardCompany?: string | null;
+    cardLabel?: string | null;
+    niceCard?: {
+      displayName?: string | null;
+      cardName?: string | null;
+      issuerName?: string | null;
+      issuerCode?: string | null;
+      acquirerName?: string | null;
+      acquirerCode?: string | null;
+      cardCode?: string | null;
+    } | null;
+    niceSync?: {
+      lastSyncedAt?: string | null;
+      source?: string | null;
+      pgStatus?: string | null;
+      resultCode?: string | null;
+      resultMsg?: string | null;
+      canceledAt?: string | null;
+      cancelAmount?: number;
+    } | null;
     approvedAt?: Date;
     rawSummary?: {
       orderId?: string;

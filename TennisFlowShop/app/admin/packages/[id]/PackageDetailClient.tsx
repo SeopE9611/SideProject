@@ -236,6 +236,7 @@ export default function PackageDetailClient({
   const [showExtensionForm, setShowExtensionForm] = useState(false);
   const [isSavingExtend, setIsSavingExtend] = useState(false);
   const [isSavingAdjust, setIsSavingAdjust] = useState(false);
+  const [isSyncingNice, setIsSyncingNice] = useState(false);
 
   const [extensionData, setExtensionData] = useState({
     sessions: 0,
@@ -404,6 +405,8 @@ export default function PackageDetailClient({
   const isPaid = data.paymentStatus === "결제완료";
   const isCancelled = data.passStatus === "취소";
   const isExpired = daysLeft <= 0;
+  const isNicePayment =
+    String(data.paymentProvider ?? "").trim().toLowerCase() === "nicepay";
 
   const currentExpiryDate = data?.expiryDate ? new Date(data.expiryDate) : null;
   const baseForPreview = ((): Date => {
@@ -489,6 +492,26 @@ export default function PackageDetailClient({
       );
     } finally {
       setIsSavingAdjust(false);
+    }
+  };
+
+  const handleNiceSync = async () => {
+    if (isSyncingNice) return;
+    setIsSyncingNice(true);
+    try {
+      const res = await fetch(`/api/payments/nice/package/sync/${packageId}`, {
+        method: "POST",
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || !json?.success) {
+        throw new Error(json?.error || "PG 상태 재동기화에 실패했습니다.");
+      }
+      await mutate();
+      showSuccessToast("NicePay 상태 재동기화를 완료했습니다.");
+    } catch (e: any) {
+      showErrorToast(e?.message || "PG 상태 재동기화 중 오류가 발생했습니다.");
+    } finally {
+      setIsSyncingNice(false);
     }
   };
 
@@ -658,16 +681,37 @@ export default function PackageDetailClient({
                 />
               </div>
 
-              <div className="flex items-center justify-between p-3 rounded-lg bg-card">
-                <span className="text-sm text-muted-foreground">결제 상태</span>
-                <Badge
-                  variant={
-                    getPaymentStatusBadgeSpec(data.paymentStatus ?? "결제대기")
-                      .variant
-                  }
-                >
-                  {data.paymentStatus ?? "결제대기"}
-                </Badge>
+              <div className="p-3 rounded-lg bg-card space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">
+                    결제 상태
+                  </span>
+                  <Badge
+                    variant={
+                      getPaymentStatusBadgeSpec(data.paymentStatus ?? "결제대기")
+                        .variant
+                    }
+                  >
+                    {data.paymentStatus ?? "결제대기"}
+                  </Badge>
+                </div>
+                {isNicePayment && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleNiceSync}
+                    disabled={isSyncingNice}
+                  >
+                    {isSyncingNice ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        PG 상태 동기화 중...
+                      </>
+                    ) : (
+                      "PG 상태 다시 확인"
+                    )}
+                  </Button>
+                )}
               </div>
 
               <div className="p-3 rounded-lg bg-card">

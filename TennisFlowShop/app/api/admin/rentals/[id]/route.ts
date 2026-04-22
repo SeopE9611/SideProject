@@ -177,6 +177,22 @@ export async function GET(
     stringingReservationLabel: linkedApplicationReservationLabel,
     paymentStatusLabel: paymentMeta.label,
     paymentStatusSource: paymentMeta.source,
+    paymentStatus: doc.paymentStatus ?? null,
+    paymentMethod: doc.paymentInfo?.method ?? null,
+    paymentProvider: doc.paymentInfo?.provider ?? null,
+    paymentTid: doc.paymentInfo?.tid ?? null,
+    paymentCardDisplayName: doc.paymentInfo?.cardDisplayName ?? null,
+    paymentCardCompany:
+      doc.paymentInfo?.cardCompany ??
+      doc.paymentInfo?.niceCard?.issuerName ??
+      doc.paymentInfo?.rawSummary?.card?.issuerName ??
+      null,
+    paymentCardLabel:
+      doc.paymentInfo?.cardLabel ??
+      doc.paymentInfo?.niceCard?.cardName ??
+      doc.paymentInfo?.rawSummary?.card?.cardName ??
+      null,
+    paymentNiceSync: doc.paymentInfo?.niceSync ?? null,
     servicePickupMethod,
     pickupMethodLabel: getPickupMethodLabel(servicePickupMethod),
 

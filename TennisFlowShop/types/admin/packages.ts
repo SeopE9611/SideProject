@@ -93,6 +93,21 @@ export interface AdminPackageDetailDto {
   expiryDate: string | null;
   passStatus: AdminPackagePassStatusDetail;
   paymentStatus: AdminPackagePaymentStatus;
+  paymentMethod?: string | null;
+  paymentProvider?: string | null;
+  paymentTid?: string | null;
+  paymentCardDisplayName?: string | null;
+  paymentCardCompany?: string | null;
+  paymentCardLabel?: string | null;
+  paymentNiceSync?: {
+    lastSyncedAt?: string | null;
+    source?: string | null;
+    pgStatus?: string | null;
+    resultCode?: string | null;
+    resultMsg?: string | null;
+    canceledAt?: string | null;
+    cancelAmount?: number;
+  } | null;
   serviceType: AdminPackageServiceType;
   operationsHistory: AdminPackageOperationHistoryDto[];
   extensionHistory?: AdminPackageOperationHistoryDto[];
