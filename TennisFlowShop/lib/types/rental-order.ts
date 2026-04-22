@@ -70,6 +70,46 @@ export type RentalOrder = {
     stringingFee?: number;
     total: number; // deposit + fee + (stringPrice ?? 0) + (stringingFee ?? 0)
   };
+  paymentStatus?: string;
+  paymentInfo?: {
+    provider?: "manual_bank_transfer" | "tosspayments" | "nicepay";
+    method?: string;
+    status?: string | null;
+    tid?: string;
+    approvedAt?: string | Date;
+    cardDisplayName?: string | null;
+    cardCompany?: string | null;
+    cardLabel?: string | null;
+    niceCard?: {
+      displayName?: string | null;
+      cardName?: string | null;
+      issuerName?: string | null;
+      issuerCode?: string | null;
+      acquirerName?: string | null;
+      acquirerCode?: string | null;
+      cardCode?: string | null;
+    } | null;
+    niceSync?: {
+      lastSyncedAt?: string | null;
+      source?: string | null;
+      pgStatus?: string | null;
+      resultCode?: string | null;
+      resultMsg?: string | null;
+      canceledAt?: string | null;
+      cancelAmount?: number;
+    } | null;
+    rawSummary?: {
+      orderId?: string;
+      totalAmount?: number;
+      card?: {
+        issuerCode?: string;
+        acquirerCode?: string;
+        issuerName?: string;
+        acquirerName?: string;
+        cardName?: string;
+      };
+    };
+  };
 
   shipping?: any; // 최소형(후속 작업에서 스키마 분리)
   createdAt: string;
