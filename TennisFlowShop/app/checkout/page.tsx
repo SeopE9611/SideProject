@@ -1019,19 +1019,19 @@ export default function CheckoutPage() {
 
         <SiteContainer variant="wide" className="py-6 bp-sm:py-8">
           {isInitialLoading ? (
-            <div className="grid grid-cols-1 gap-6 bp-sm:gap-8 bp-lg:grid-cols-3 bp-lg:items-start">
+            <div className="grid grid-cols-1 gap-6 bp-sm:gap-8 bp-lg:grid-cols-3">
               <div className="bp-lg:col-span-2 space-y-4 bp-sm:space-y-6">
                 <Skeleton className="h-16 w-full rounded-xl" />
                 <Skeleton className="h-56 w-full rounded-xl" />
                 <Skeleton className="h-72 w-full rounded-xl" />
                 <Skeleton className="h-80 w-full rounded-xl" />
               </div>
-              <div className="bp-lg:col-span-1 bp-lg:self-start">
+              <div className="bp-lg:col-span-1">
                 <Skeleton className="h-[540px] w-full rounded-xl" />
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-6 bp-sm:gap-8 bp-lg:grid-cols-3 bp-lg:items-start">
+            <div className="grid grid-cols-1 gap-6 bp-sm:gap-8 bp-lg:grid-cols-3">
               {/* 주문 정보 입력 폼 */}
               <div className={cn("bp-lg:col-span-2 space-y-4 bp-sm:space-y-6", isCheckoutSubmitting && "pointer-events-none")} aria-busy={isCheckoutSubmitting}>
                 {/* 이탈 경고(고정 노출) */}
@@ -1538,9 +1538,9 @@ export default function CheckoutPage() {
               </div>
 
               {/* 주문 요약 */}
-              <div className="bp-lg:col-span-1 bp-lg:self-start">
-                <div className="bp-lg:sticky bp-lg:top-20 bp-lg:max-h-[calc(100dvh-6rem)]">
-                  <Card className="relative border border-border bg-card shadow-sm overflow-hidden bp-lg:flex bp-lg:max-h-[calc(100dvh-6rem)] bp-lg:flex-col">
+              <div className="bp-lg:col-span-1">
+                <div className="bp-lg:sticky bp-lg:top-20">
+                  <Card className="relative border border-border bg-card shadow-sm overflow-hidden">
                     <div className="border-b border-border bg-secondary/70 p-4 bp-sm:p-6 text-foreground">
                       <CardTitle className="flex items-center gap-3 text-xl">
                         <div className="rounded-xl border border-border/60 bg-secondary p-2">
@@ -1549,7 +1549,7 @@ export default function CheckoutPage() {
                         주문 요약
                       </CardTitle>
                     </div>
-                    <CardContent className="p-4 bp-sm:p-6 space-y-4 bp-sm:space-y-6 bp-lg:min-h-0 bp-lg:flex-1 bp-lg:overflow-y-auto bp-lg:overscroll-contain">
+                    <CardContent className="p-4 bp-sm:p-6 space-y-4 bp-sm:space-y-6">
                       <div className="space-y-4">
                         <div className="flex justify-between items-center">
                           <span className="text-muted-foreground">상품 금액</span>
