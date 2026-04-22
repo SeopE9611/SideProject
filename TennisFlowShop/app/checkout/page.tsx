@@ -189,21 +189,21 @@ export default function CheckoutPage() {
   // orderItems가 "결정 가능한 상태"인지(스토어 하이드레이션 전이면 빈 배열일 수 있음)
   const isOrderItemsReady = orderItems.length > 0;
 
-  // 현재 주문 구성에 라켓이 실제로 포함되어 있는지
-  const hasRacketInOrder = useMemo(() => orderItems.some((it) => it.kind === "racket"), [orderItemsKey]);
-  const hasMountableStringInCheckout = useMemo(
+  const isMountableStringOrderOnly = useMemo(
     () =>
-      orderItems.some((it) => {
+      orderItems.length > 0 &&
+      orderItems.every((it) => {
         if ((it.kind ?? "product") !== "product") return false;
-        const mountingFee = mountingFeeByProductId[String(it.id)] ?? Number((it as any).mountingFee ?? 0);
+        const mountingFee =
+          mountingFeeByProductId[String(it.id)] ??
+          Number((it as any).mountingFee ?? 0);
         return Number.isFinite(mountingFee) && mountingFee > 0;
       }),
     [orderItemsKey, mountingFeeByProductId],
   );
   const isStringOnlyServiceFlow =
     !ENABLE_STRING_STANDALONE_ORDER &&
-    !hasRacketInOrder &&
-    hasMountableStringInCheckout;
+    isMountableStringOrderOnly;
 
   // next(로그인 리디렉션)에도 URL을 그대로 유지:
   // - withService=1은 "장착 서비스 포함 결제" 의도 플래그이며,

@@ -631,14 +631,15 @@ export async function createOrder(
         );
 
         if (!ENABLE_STRING_STANDALONE_ORDER) {
-          const hasRacketItem = itemsWithSnapshot.some((it) => it.kind === "racket");
-          const hasMountableStringItem = itemsWithSnapshot.some(
-            (it) =>
-              it.kind === "product" && Number((it as any).mountingFee ?? 0) > 0,
-          );
+          const isMountableStringOnlyOrder =
+            itemsWithSnapshot.length > 0 &&
+            itemsWithSnapshot.every(
+              (it) =>
+                it.kind === "product" &&
+                Number((it as any).mountingFee ?? 0) > 0,
+            );
           if (
-            !hasRacketItem &&
-            hasMountableStringItem &&
+            isMountableStringOnlyOrder &&
             shippingInfo?.withStringService !== true
           ) {
             throw new HttpError(400, {
