@@ -129,9 +129,7 @@ export function AccordionContent({ value, className, children }: ContentProps) {
         open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0 pointer-events-none",
       )}
     >
-      <div className={cn("min-h-0", className)}>
-        <div className="pb-3">{children}</div>
-      </div>
+      <div className={cn("min-h-0", className)}>{children}</div>
     </div>
   );
 }
