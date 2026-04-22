@@ -37,8 +37,8 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
           <div className="mb-4 bp-sm:mb-6 rounded-xl border border-border bg-card p-4 bp-sm:p-5 shadow-sm">
             <div className="flex items-start justify-between gap-3 flex-wrap">
               <div className="min-w-0">
-                <p className="text-sm bp-sm:text-base font-semibold text-foreground">장착 서비스 신청용 스트링을 고르는 중이에요</p>
-                <p className="mt-1 text-xs bp-sm:text-sm text-muted-foreground leading-relaxed">결제하면 신청서가 자동으로 연결돼요.</p>
+                <p className="text-sm bp-sm:text-base font-semibold text-foreground">교체서비스 신청용 스트링을 고르는 중이에요</p>
+                <p className="mt-1 text-xs bp-sm:text-sm text-muted-foreground leading-relaxed">원하는 스트링을 선택하면 체크아웃에서 신청과 결제를 함께 진행할 수 있어요.</p>
               </div>
 
               <div className="flex w-full bp-sm:w-auto gap-2">

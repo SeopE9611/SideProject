@@ -263,12 +263,12 @@ export default function CheckoutPage() {
    *   라벨도 "선택" 뉘앙스가 아니라 "고정" 뉘앙스로 맞춤
    */
   const withStringServiceLabel = isBundleCheckout
-    ? "장착 서비스 포함 · 번들"
+    ? "교체서비스 신청 포함 · 번들"
     : isStringOnlyServiceFlow
-      ? "교체 서비스 포함 · 필수"
+      ? "교체서비스 신청 포함 · 필수"
       : lockServiceMode
-        ? "교체 서비스 포함 · 자동 신청"
-        : "교체 서비스도 같이 신청";
+        ? "교체서비스 신청 포함 · 자동"
+        : "교체서비스도 함께 신청";
 
   /**
    * 스텝퍼 Step1 문구
@@ -996,7 +996,7 @@ export default function CheckoutPage() {
                   </li>
                 </ol>
 
-                <p className="mt-2 text-xs text-muted-foreground">결제와 함께 교체 서비스 신청이 접수되며, 별도 신청서 작성 없이 현재 주문에 포함됩니다.</p>
+                <p className="mt-2 text-xs text-muted-foreground">결제와 함께 교체서비스 신청이 접수되며, 별도 신청서 작성 없이 현재 주문에 포함됩니다.</p>
               </nav>
             )}
 
