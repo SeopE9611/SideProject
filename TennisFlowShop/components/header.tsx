@@ -326,7 +326,6 @@ const Header = () => {
     ],
 
     boards: [
-      { name: "게시판 홈", href: "/board" },
       { name: "자유 게시판", href: "/board/free" },
       { name: "중고 거래", href: "/board/market" },
       { name: "장비 사용기", href: "/board/gear" },

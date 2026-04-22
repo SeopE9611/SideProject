@@ -683,9 +683,6 @@ export default function FreeBoardWriteClient() {
                 <span>목록으로</span>
               </Link>
             </Button>
-            <Button asChild variant="outline" size="sm">
-              <Link href="/board">게시판 홈</Link>
-            </Button>
           </div>
         </div>
 
