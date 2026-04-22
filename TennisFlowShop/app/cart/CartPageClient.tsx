@@ -368,8 +368,12 @@ export default function CartPageClient() {
 
   const hasMountableStringOnlyFlow =
     !ENABLE_STRING_STANDALONE_ORDER &&
-    totalRacketQty === 0 &&
-    totalMountableStringQty > 0;
+    cartItems.length > 0 &&
+    cartItems.every(
+      (it) =>
+        (it.kind ?? "product") === "product" &&
+        (mountingFeeByProductId[String(it.id)] ?? 0) > 0,
+    );
 
   // 체크아웃 진입 URL을 "번들 완성" 또는 "스트링-only 장착 대상"일 때 withService=1로
   // - isBundleLocked: 라켓 1종 + 장착 스트링 1종이 동시에 존재하고, 편집 링크까지 만들어질 정도로 번들이 성립한 상태
