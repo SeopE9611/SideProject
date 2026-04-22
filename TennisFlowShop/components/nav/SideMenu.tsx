@@ -178,7 +178,7 @@ export default function SideMenu() {
                 {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
                   <MdSportsTennis className="h-4 w-4" />
                 </div> */}
-                <span className="text-foreground">중고 라켓</span>
+                <span className="text-foreground">도깨비 인증 중고 라켓</span>
               </span>
             </AccordionTrigger>
             <AccordionContent value="rackets" className="pb-2 pt-1 space-y-0.5">
