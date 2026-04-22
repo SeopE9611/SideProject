@@ -20,6 +20,19 @@ const config: Config = {
       },
       screens: { "2xl": "1400px" },
     },
+    fontSize: {
+      xs: ["0.875rem", { lineHeight: "1.25rem" }],
+      sm: ["1rem", { lineHeight: "1.5rem" }],
+      base: ["1.125rem", { lineHeight: "1.75rem" }],
+      lg: ["1.25rem", { lineHeight: "1.75rem" }],
+      xl: ["1.375rem", { lineHeight: "1.875rem" }],
+      "2xl": ["1.625rem", { lineHeight: "2rem" }],
+      "3xl": ["2rem", { lineHeight: "2.25rem" }],
+      "4xl": ["2.375rem", { lineHeight: "2.625rem" }],
+      "5xl": ["3.125rem", { lineHeight: "1.1" }],
+      "6xl": ["3.875rem", { lineHeight: "1.1" }],
+      "7xl": ["4.625rem", { lineHeight: "1.05" }],
+    },
     extend: {
       /**
        * 반응형 기준(벤치마크: Tennis Warehouse)
