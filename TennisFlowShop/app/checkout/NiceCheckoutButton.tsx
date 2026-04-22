@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 
@@ -44,6 +44,59 @@ export default function NiceCheckoutButton({
   const [inlineError, setInlineError] = useState<string | null>(null);
   const [scriptReady, setScriptReady] = useState(false);
   const [scriptError, setScriptError] = useState<string | null>(null);
+  const popupLifecycleCleanupRef = useRef<(() => void) | null>(null);
+  const isExpectingSuccessNavigationRef = useRef(false);
+
+  const restorePageAfterNicePopup = useCallback(() => {
+    if (typeof window === "undefined") return;
+
+    const roots = [document.documentElement, document.body];
+    const resetProps = ["overflow", "overflow-x", "overflow-y", "position", "top", "left", "right", "width", "height"];
+
+    roots.forEach((root) => {
+      if (!root) return;
+      resetProps.forEach((prop) => {
+        root.style.removeProperty(prop);
+      });
+    });
+
+    requestAnimationFrame(() => {
+      window.dispatchEvent(new Event("resize"));
+    });
+  }, []);
+
+  const cleanupPopupLifecycleListeners = useCallback(() => {
+    popupLifecycleCleanupRef.current?.();
+    popupLifecycleCleanupRef.current = null;
+  }, []);
+
+  const setupPopupLifecycleListeners = useCallback(() => {
+    if (typeof window === "undefined") return;
+
+    cleanupPopupLifecycleListeners();
+
+    const restoreIfNeeded = () => {
+      if (isExpectingSuccessNavigationRef.current) return;
+      restorePageAfterNicePopup();
+      cleanupPopupLifecycleListeners();
+    };
+
+    const onFocus = () => restoreIfNeeded();
+    const onVisibilityChange = () => {
+      if (!document.hidden) restoreIfNeeded();
+    };
+    const onPageShow = () => restoreIfNeeded();
+
+    window.addEventListener("focus", onFocus, { once: true });
+    window.addEventListener("pageshow", onPageShow, { once: true });
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
+    popupLifecycleCleanupRef.current = () => {
+      window.removeEventListener("focus", onFocus);
+      window.removeEventListener("pageshow", onPageShow);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
+  }, [cleanupPopupLifecycleListeners, restorePageAfterNicePopup]);
 
   useEffect(() => {
     let mounted = true;
@@ -98,6 +151,12 @@ export default function NiceCheckoutButton({
     };
   }, []);
 
+  useEffect(() => {
+    return () => {
+      cleanupPopupLifecycleListeners();
+    };
+  }, [cleanupPopupLifecycleListeners]);
+
   const isDisabled = useMemo(() => disabled || loading || !scriptReady || !!scriptError, [disabled, loading, scriptReady, scriptError]);
 
   const handleClick = async () => {
@@ -124,6 +183,8 @@ export default function NiceCheckoutButton({
       }
 
       onBeforeSuccessNavigation?.();
+      isExpectingSuccessNavigationRef.current = true;
+      setupPopupLifecycleListeners();
       try {
         window.AUTHNICE.requestPay({
           clientId: prepJson.nice.clientId,
@@ -136,6 +197,9 @@ export default function NiceCheckoutButton({
           buyerTel: prepJson.nice.buyerTel,
           buyerEmail: prepJson.nice.buyerEmail,
           fnError: (result: any) => {
+            isExpectingSuccessNavigationRef.current = false;
+            cleanupPopupLifecycleListeners();
+            restorePageAfterNicePopup();
             onSuccessNavigationAbort?.();
             const msg = String(result?.errorMsg || result?.message || "결제가 취소되었거나 실패했습니다.");
             setInlineError(msg);
@@ -143,10 +207,15 @@ export default function NiceCheckoutButton({
           },
         });
       } catch (error) {
+        isExpectingSuccessNavigationRef.current = false;
+        cleanupPopupLifecycleListeners();
+        restorePageAfterNicePopup();
         onSuccessNavigationAbort?.();
         throw error;
       }
     } catch (error: any) {
+      isExpectingSuccessNavigationRef.current = false;
+      cleanupPopupLifecycleListeners();
       setInlineError(error?.message || "결제 요청에 실패했습니다.");
       setLoading(false);
     }
