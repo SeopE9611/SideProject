@@ -461,7 +461,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                 <div className="mb-6">
                   <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-foreground">
                     <Shield className="h-5 w-5 text-primary" />
-                    문서 정보
+                    {withStringService ? "주문/신청 정보" : "문서 정보"}
                   </h3>
                   <div className="space-y-3 rounded-lg border border-border bg-background p-4">
                     <div>

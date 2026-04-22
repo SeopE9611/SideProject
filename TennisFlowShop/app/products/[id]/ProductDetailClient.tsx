@@ -880,7 +880,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                               onClick={handleBuyNowWithService}
                             >
                               <Wrench className="mr-2 h-5 w-5" />
-                              교체 서비스 포함 구매
+                              교체서비스 신청하기
                             </Button>
                           )}
 
@@ -1608,7 +1608,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     className="flex-1 h-12 rounded-lg border border-border bg-card dark:bg-muted hover:bg-muted/50 dark:hover:bg-muted active:bg-muted dark:active:bg-muted text-foreground font-semibold text-sm transition-colors flex items-center justify-center gap-2"
                   >
                     <CreditCard className="h-4 w-4" />
-                    교체 서비스 포함 즉시 결제
+                    교체서비스 신청하기
                   </button>
                 )}
               </div>

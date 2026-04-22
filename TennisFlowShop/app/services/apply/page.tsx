@@ -1724,7 +1724,7 @@ export default function StringServiceApplyPage() {
 
           {/* Option Cards */}
           <div className="grid grid-cols-1 bp-md:grid-cols-3 gap-4 bp-sm:gap-5 bp-lg:gap-6 max-w-5xl mx-auto">
-            {/* Option 1: 스트링 구매하고 신청 */}
+            {/* Option 1: 스트링 선택 후 신청 */}
             <button
               type="button"
               onClick={() => safePush("/products?from=apply")}
@@ -1742,16 +1742,15 @@ export default function StringServiceApplyPage() {
 
               {/* Content */}
               <h3 className="text-base bp-sm:text-lg font-semibold text-foreground mb-1.5">
-                스트링 구매하고 신청
+                스트링 선택 후 신청
               </h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                체크아웃에서 서비스 포함 주문을 완료한 뒤, 연결된 주문으로
-                신청을 이어갈 수 있어요
+                체크아웃에서 교체서비스 신청과 결제를 함께 진행할 수 있어요
               </p>
 
               {/* Arrow indicator */}
               <div className="mt-5 flex items-center text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">
-                <span>스트링 보러가기</span>
+                <span>스트링 선택하러 가기</span>
                 <svg
                   className="ml-1.5 w-4 h-4 group-hover:translate-x-1 transition-transform"
                   fill="none"
@@ -1785,7 +1784,7 @@ export default function StringServiceApplyPage() {
                 라켓 고르고 신청
               </h3>
               <p className="text-sm text-muted-foreground leading-relaxed mb-5">
-                구매·대여 후 스트링까지 함께 신청해요
+                라켓 구매 또는 대여 후 스트링 선택과 교체서비스 신청을 함께 진행해요
               </p>
 
               {/* Action Buttons */}

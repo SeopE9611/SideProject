@@ -363,7 +363,7 @@ const ProductCard = React.memo(
                     disabled={isSoldOut}
                     className="h-9 sm:h-10 text-xs sm:text-sm col-span-2 sm:col-span-1 whitespace-normal leading-tight"
                   >
-                    교체 서비스 포함 결제
+                    교체서비스 신청
                   </Button>
                 )}
 
@@ -538,7 +538,7 @@ const ProductCard = React.memo(
                 onClick={handleStringServiceApply}
                 disabled={isSoldOut}
               >
-                교체 서비스 포함 결제
+                교체서비스 신청
               </Button>
             )}
           </CardFooter>
