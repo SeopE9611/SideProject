@@ -6,6 +6,7 @@ import { usePdpBundleStore } from "@/app/store/pdpBundleStore";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardTitle } from "@/components/ui/card";
+import { ENABLE_STRING_STANDALONE_ORDER } from "@/lib/orders/string-standalone-policy";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { Eye, Heart, Star } from "lucide-react";
@@ -340,16 +341,18 @@ const ProductCard = React.memo(
                   </Button>
                 </Link>
 
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={handleStringSingleBuy}
-                  disabled={isSoldOut}
-                  className="h-9 sm:h-10 text-xs sm:text-sm"
-                >
-                  {isApplyFlow ? "단품만 구매" : "단품 구매"}
-                </Button>
+                {ENABLE_STRING_STANDALONE_ORDER && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={handleStringSingleBuy}
+                    disabled={isSoldOut}
+                    className="h-9 sm:h-10 text-xs sm:text-sm"
+                  >
+                    {isApplyFlow ? "단품만 구매" : "단품 구매"}
+                  </Button>
+                )}
 
                 {canCheckoutWithService && (
                   <Button
@@ -515,15 +518,17 @@ const ProductCard = React.memo(
           </CardContent>
 
           <CardFooter className="p-2.5 bp-sm:p-3 bp-md:p-4 pt-0 grid grid-cols-1 gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full rounded-lg h-10 px-3 text-[11px] sm:text-xs whitespace-nowrap text-center"
-              onClick={handleStringSingleBuy}
-              disabled={isSoldOut}
-            >
-              {isApplyFlow ? "단품만 구매" : "단품 구매"}
-            </Button>
+            {ENABLE_STRING_STANDALONE_ORDER && (
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full rounded-lg h-10 px-3 text-[11px] sm:text-xs whitespace-nowrap text-center"
+                onClick={handleStringSingleBuy}
+                disabled={isSoldOut}
+              >
+                {isApplyFlow ? "단품만 구매" : "단품 구매"}
+              </Button>
+            )}
 
             {canCheckoutWithService && (
               <Button
