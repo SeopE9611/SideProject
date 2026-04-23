@@ -29,35 +29,38 @@ const Footer = () => {
     { name: "개인정보처리방침", href: "/privacy" },
   ];
 
+  const customerServiceLinks = customerService.filter((link) => link.name === "공지사항" || link.name === "Q&A" || link.name === "마이페이지");
+  const policyLinks = customerService.filter((link) => link.name === "이용약관" || link.name === "개인정보처리방침");
+
   return (
-    <footer className="w-full bg-card border-t border-border relative overflow-hidden mt-8 bp-sm:mt-12">
-      <div className="absolute inset-0 pointer-events-none opacity-5 bg-muted/30" />
+    <footer className="relative mt-8 w-full overflow-hidden border-t border-border bg-card bp-sm:mt-12">
+      <div className="pointer-events-none absolute inset-0 bg-muted/20 opacity-60" />
 
       <div className="bp-lg:pl-64 bp-lg:pr-8 xl:pl-72 xl:pr-12 2xl:pr-16 py-6 bp-sm:py-8">
         <SiteContainer className="bp-lg:mx-0">
           <div className="space-y-6 bp-sm:space-y-8">
-            <div className="grid grid-cols-1 bp-md:grid-cols-[1.25fr_1fr] gap-5 bp-md:gap-8 items-start">
-              <div>
-                <Link href="/" className="flex items-center gap-3 mb-3 group w-fit">
-                  <div className="relative h-10 w-10 shrink-0 overflow-hidden">
+            <div className="grid grid-cols-1 items-start gap-6 border-b border-border/80 pb-5 bp-md:grid-cols-[1.2fr_1fr] bp-md:gap-8 bp-sm:pb-6">
+              <div className="space-y-2.5">
+                <Link href="/" className="group flex w-fit items-center gap-3">
+                  <div className="relative h-10 w-10 shrink-0 overflow-hidden bp-sm:h-11 bp-sm:w-11">
                     <Image src="/brand/symbol-light.png" alt="" aria-hidden="true" fill className="object-contain dark:hidden" />
                     <Image src="/brand/symbol-dark.png" alt="" aria-hidden="true" fill className="hidden object-contain dark:block" />
                   </div>
 
-                  <div>
-                    <div className="font-brand-bold font-bold text-lg bp-sm:text-xl text-primary">도깨비테니스</div>
-                    <div className="text-[11px] text-muted-foreground/90 font-semibold tracking-wide whitespace-nowrap">Powered by Tennis Flow</div>
+                  <div className="space-y-0.5">
+                    <div className="font-brand-bold text-lg font-bold tracking-tight text-foreground bp-sm:text-xl">도깨비테니스</div>
+                    <div className="text-[10px] font-semibold tracking-[0.08em] text-muted-foreground/80">Powered by Tennis Flow</div>
                   </div>
                 </Link>
-                <p className="text-sm text-muted-foreground">테니스 스트링 쇼핑과 교체 서비스를 한 곳에서</p>
+                <p className="max-w-md text-sm leading-6 text-foreground/85">테니스 스트링 쇼핑과 교체 서비스를 한 곳에서 빠르고 정확하게 연결합니다.</p>
               </div>
 
-              <div>
-                <h3 className="text-sm bp-sm:text-base font-bold mb-3 text-foreground">핵심 바로가기</h3>
-                <ul className="grid grid-cols-2 gap-x-4 gap-y-2">
+              <div className="rounded-lg border border-border/70 bg-background/50 p-4 bp-sm:p-5">
+                <h3 className="mb-3 text-sm font-semibold text-foreground bp-sm:text-base">핵심 바로가기</h3>
+                <ul className="grid grid-cols-2 gap-x-5 gap-y-2.5">
                   {quickLinks.map((link) => (
                     <li key={link.name}>
-                      <Link href={link.href} className="text-sm text-muted-foreground hover:text-primary transition-colors duration-300">
+                      <Link href={link.href} className="inline-flex text-sm text-muted-foreground transition-colors duration-300 hover:text-primary">
                         {link.name}
                       </Link>
                     </li>
@@ -66,34 +69,37 @@ const Footer = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 bp-sm:grid-cols-2 bp-xl:grid-cols-4 gap-3 bp-sm:gap-4">
-              <section className="rounded-xl border border-border/80 bg-background/60 p-4">
-                <h3 className="text-sm bp-sm:text-base font-semibold text-foreground mb-3">고객센터</h3>
-                <div className="space-y-2.5 mb-3.5">
-                  <div className="flex items-start gap-2">
-                    <Phone className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+            <div className="grid grid-cols-1 gap-3 bp-sm:grid-cols-2 bp-sm:gap-4 bp-xl:grid-cols-4">
+              <section className="rounded-xl border border-border/80 bg-background/65 p-4 bp-sm:p-5">
+                <h3 className="mb-3 text-sm font-semibold text-foreground bp-sm:text-base">고객센터</h3>
+                <div className="mb-4 space-y-3">
+                  <div className="flex items-start gap-2.5">
+                    <Phone className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                     <div>
-                      <span className="text-sm font-semibold text-foreground block">0507-1392-3493</span>
-                      <p className="text-xs text-muted-foreground">영업 시간 내 상담 가능</p>
+                      <span className="block text-base font-bold leading-none text-foreground">0507-1392-3493</span>
+                      <p className="mt-1 text-xs text-muted-foreground">영업 시간 내 상담 가능</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Mail className="h-4 w-4 text-primary shrink-0" />
-                    <span className="text-xs text-foreground break-all">info@tennis-flow.com</span>
+                  <div className="flex items-center gap-2.5 text-xs text-muted-foreground">
+                    <Mail className="h-4 w-4 shrink-0 text-primary/90" />
+                    <span className="break-all text-foreground/85">info@tennis-flow.com</span>
                   </div>
-                  <div className="flex items-start gap-2">
-                    <Clock className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                    <div className="text-xs text-muted-foreground space-y-0.5">
+                  <div className="flex items-start gap-2.5 text-xs text-muted-foreground">
+                    <Clock className="mt-0.5 h-4 w-4 shrink-0 text-primary/90" />
+                    <div className="space-y-0.5">
                       <div>평일 10:00 - 22:00</div>
                       <div>토요일 09:00 - 18:00</div>
                       <div>일요일/공휴일 휴무</div>
                     </div>
                   </div>
                 </div>
-                <ul className="grid grid-cols-2 gap-x-2 gap-y-1.5">
-                  {customerService.map((link) => (
+                <ul className="flex flex-wrap gap-1.5 border-t border-border/70 pt-3">
+                  {customerServiceLinks.map((link) => (
                     <li key={link.name}>
-                      <Link href={link.href} className="text-xs text-muted-foreground hover:text-primary transition-colors duration-300">
+                      <Link
+                        href={link.href}
+                        className="inline-flex rounded-md border border-border/70 px-2.5 py-1.5 text-xs text-muted-foreground transition-colors duration-300 hover:border-primary/40 hover:text-primary"
+                      >
                         {link.name}
                       </Link>
                     </li>
@@ -101,39 +107,54 @@ const Footer = () => {
                 </ul>
               </section>
 
-              <section className="rounded-xl border border-border/80 bg-background/60 p-4">
-                <h3 className="text-sm bp-sm:text-base font-semibold text-foreground mb-3 flex items-center gap-2">
+              <section className="rounded-xl border border-border/70 bg-background/45 p-4 bp-sm:p-5">
+                <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground bp-sm:text-base">
                   <Truck className="h-4 w-4 text-primary" />
                   배송안내
                 </h3>
-                <ul className="space-y-1.5 text-xs text-muted-foreground leading-5">
-                  <li>택배사는 현재 운영 정책에 따라 추후 확정될 예정입니다.</li>
-                  <li>매장 도착 후 작업이 완료되면 완료 당일 발송됩니다.</li>
-                  <li>영업일 및 작업량에 따라 발송 일정은 변동될 수 있습니다.</li>
+                <ul className="space-y-2.5 text-xs leading-5 text-muted-foreground">
+                  <li className="rounded-md border border-border/60 bg-background/60 px-2.5 py-2">
+                    <span className="mr-1 font-semibold text-foreground/90">작업 완료 시</span>
+                    당일 발송
+                  </li>
+                  <li className="rounded-md border border-border/60 bg-background/60 px-2.5 py-2">
+                    <span className="mr-1 font-semibold text-foreground/90">영업일 기준</span>
+                    순차 처리
+                  </li>
+                  <li className="rounded-md border border-border/60 bg-background/60 px-2.5 py-2">
+                    <span className="mr-1 font-semibold text-foreground/90">작업량에 따라</span>
+                    일정 변동 가능
+                  </li>
                 </ul>
               </section>
 
-              <section className="rounded-xl border border-border/80 bg-muted/40 p-4">
-                <h3 className="text-sm bp-sm:text-base font-semibold text-foreground mb-3 flex items-center gap-2">
+              <section className="relative overflow-hidden rounded-xl border border-border/80 bg-muted/40 p-4 bp-sm:p-5">
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-14 border-b border-primary/15 bg-primary/[0.04]" />
+                <div className="pointer-events-none absolute -right-6 -top-6 h-20 w-20 rounded-full border border-primary/20" />
+                <div className="pointer-events-none absolute right-3 top-7 h-1.5 w-1.5 rounded-full bg-primary/30" />
+
+                <h3 className="relative mb-3 flex items-center gap-2 text-sm font-semibold text-foreground bp-sm:text-base">
                   <MapPin className="h-4 w-4 text-primary" />
                   매장 위치
                 </h3>
-                <div className="space-y-2.5">
-                  <p className="text-sm text-foreground">서울 동작구 노량진로 22 B1</p>
-                  <div className="flex items-start gap-2 text-xs text-muted-foreground">
-                    <Train className="h-3.5 w-3.5 mt-0.5 shrink-0" />
-                    <span>대방역 2번출구</span>
+                <div className="relative space-y-3">
+                  <div className="rounded-lg border border-border/70 bg-background/80 p-3">
+                    <p className="text-sm font-medium text-foreground">서울 동작구 노량진로 22 B1</p>
+                    <div className="mt-2 flex items-start gap-2 text-xs text-muted-foreground">
+                      <Train className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary/80" />
+                      <span>대방역 2번출구 도보 이동</span>
+                    </div>
                   </div>
-                  <div className="pt-2 border-t border-border/70 flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2">
                     <Link
                       href="/services/locations"
-                      className="inline-flex items-center rounded-md border border-border px-2.5 py-1.5 text-xs text-foreground hover:bg-accent transition-colors"
+                      className="inline-flex items-center rounded-md border border-border/80 bg-background px-2.5 py-1.5 text-xs text-foreground transition-colors hover:border-primary/30 hover:bg-background"
                     >
                       위치 안내 보기
                     </Link>
                     <Link
                       href="https://map.naver.com/p/entry/place/1907032343?c=15.00,0,0,0,dh&placePath=/home?from=map&fromPanelNum=1&additionalHeight=76&timestamp=202601042339&locale=ko&svcName=map_pcv5"
-                      className="inline-flex items-center gap-1 rounded-md border border-border px-2.5 py-1.5 text-xs text-foreground hover:bg-accent transition-colors"
+                      className="inline-flex items-center gap-1 rounded-md border border-primary/30 bg-primary/[0.06] px-2.5 py-1.5 text-xs text-foreground transition-colors hover:bg-primary/[0.12]"
                     >
                       네이버 지도
                       <ArrowUpRight className="h-3 w-3" />
@@ -142,16 +163,16 @@ const Footer = () => {
                 </div>
               </section>
 
-              <section className="rounded-xl border border-border/80 bg-background/60 p-4">
-                <h3 className="text-sm bp-sm:text-base font-semibold text-foreground mb-3 flex items-center gap-2">
+              <section className="rounded-xl border border-border/60 bg-background/35 p-4 bp-sm:p-5">
+                <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground bp-sm:text-base">
                   <CreditCard className="h-4 w-4 text-primary" />
                   결제안내
                 </h3>
-                <div className="space-y-1.5">
-                  <p className="text-xs text-muted-foreground">무통장 입금 계좌</p>
+                <div className="space-y-2 text-xs text-muted-foreground">
+                  <p>무통장 입금 계좌</p>
                   <p className="text-sm font-semibold text-foreground">농협 123-4567-8901-23</p>
-                  <p className="text-xs text-muted-foreground">예금주: 도깨비테니스</p>
-                  <p className="text-xs text-muted-foreground leading-5">입금 확인은 영업시간 내 순차 처리됩니다.</p>
+                  <p>예금주: 도깨비테니스</p>
+                  <p className="leading-5">입금 확인은 영업시간 내 순차 처리됩니다.</p>
                 </div>
               </section>
             </div>
@@ -159,25 +180,28 @@ const Footer = () => {
         </SiteContainer>
       </div>
 
-      <div className="border-t border-border bg-muted/30">
+      <div className="border-t border-border bg-muted/40">
         <div className="bp-lg:pl-64 bp-lg:pr-8 xl:pl-72 xl:pr-12 2xl:pr-16 py-4 bp-sm:py-5">
           <SiteContainer className="bp-lg:mx-0">
-            <div className="space-y-2 text-[11px] bp-sm:text-xs text-muted-foreground leading-5">
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                {customerService.map((link) => (
-                  <Link key={`policy-${link.name}`} href={link.href} className="hover:text-primary transition-colors duration-300">
+            <div className="space-y-2.5 text-xs leading-5 text-muted-foreground bp-sm:text-[13px]">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-border/70 pb-2">
+                {policyLinks.map((link) => (
+                  <Link key={`policy-${link.name}`} href={link.href} className="font-medium text-foreground/85 transition-colors duration-300 hover:text-primary">
                     {link.name}
                   </Link>
                 ))}
+                <Link href="/board/notice" className="transition-colors duration-300 hover:text-primary">
+                  공지사항
+                </Link>
                 {guestOrderMode === "on" && (
-                  <Link href="/order-lookup" className="hover:text-primary transition-colors duration-300">
+                  <Link href="/order-lookup" className="transition-colors duration-300 hover:text-primary">
                     주문조회
                   </Link>
                 )}
               </div>
-              <p>상호: 도깨비테니스 | 대표: 김재민 | 사업자등록번호: 329-39-01593 | 통신판매업신고: 제 2026 - 서울동작 - 0548 호</p>
-              <p>사업장 소재지: 서울특별시 동작구 여의대방로62길 16(대방동)</p>
-              <p>&copy; {new Date().getFullYear()} 도깨비테니스. All rights reserved.</p>
+              <p className="text-foreground/80">상호: 도깨비테니스 | 대표: 김재민 | 사업자등록번호: 329-39-01593 | 통신판매업신고: 제 2026 - 서울동작 - 0548 호</p>
+              <p className="text-foreground/75">사업장 소재지: 서울특별시 동작구 여의대방로62길 16(대방동)</p>
+              <p className="text-[11px] text-muted-foreground">&copy; {new Date().getFullYear()} 도깨비테니스. All rights reserved.</p>
             </div>
           </SiteContainer>
         </div>
