@@ -29,16 +29,6 @@ type NicePrepareResponse = {
   error?: string;
 };
 
-type StickyAncestorSnapshot = {
-  tag: string;
-  className: string;
-  overflow: string;
-  overflowX: string;
-  overflowY: string;
-  transform: string;
-  position: string;
-};
-
 type NicePopupDocumentSnapshot = {
   scrollX: number;
   scrollY: number;
@@ -47,7 +37,6 @@ type NicePopupDocumentSnapshot = {
   bodyStyleCssText: string;
   htmlClassName: string;
   bodyClassName: string;
-  stickyAncestors: StickyAncestorSnapshot[];
 };
 
 export default function NiceCheckoutButton({
@@ -67,18 +56,13 @@ export default function NiceCheckoutButton({
   const [scriptError, setScriptError] = useState<string | null>(null);
   const popupLifecycleCleanupRef = useRef<(() => void) | null>(null);
   const popupSnapshotRef = useRef<NicePopupDocumentSnapshot | null>(null);
-  const popupRestoreTimeoutsRef = useRef<number[]>([]);
   const popupSessionStateRef = useRef({
     didNavigateAway: false,
-    didRestore: false,
+    active: false,
+    watchdogAnimationFrameId: null as number | null,
   });
 
   const isDev = process.env.NODE_ENV !== "production";
-
-  const clearRestoreTimeouts = useCallback(() => {
-    popupRestoreTimeoutsRef.current.forEach((timeoutId) => window.clearTimeout(timeoutId));
-    popupRestoreTimeoutsRef.current = [];
-  }, []);
 
   const logDev = useCallback(
     (message: string, detail?: unknown) => {
@@ -92,29 +76,6 @@ export default function NiceCheckoutButton({
     [isDev],
   );
 
-  const readStickyAncestorSnapshot = useCallback((): StickyAncestorSnapshot[] => {
-    if (typeof window === "undefined") return [];
-    const stickyRoot = document.querySelector(".bp-lg\\:sticky");
-    if (!(stickyRoot instanceof HTMLElement)) return [];
-
-    const rows: StickyAncestorSnapshot[] = [];
-    let current: HTMLElement | null = stickyRoot;
-    while (current) {
-      const computed = window.getComputedStyle(current);
-      rows.push({
-        tag: current.tagName.toLowerCase(),
-        className: current.className,
-        overflow: computed.overflow,
-        overflowX: computed.overflowX,
-        overflowY: computed.overflowY,
-        transform: computed.transform,
-        position: computed.position,
-      });
-      current = current.parentElement;
-    }
-    return rows;
-  }, []);
-
   const capturePopupSnapshot = useCallback((): NicePopupDocumentSnapshot | null => {
     if (typeof window === "undefined") return null;
     const snapshot: NicePopupDocumentSnapshot = {
@@ -125,82 +86,123 @@ export default function NiceCheckoutButton({
       bodyStyleCssText: document.body.style.cssText,
       htmlClassName: document.documentElement.className,
       bodyClassName: document.body.className,
-      stickyAncestors: readStickyAncestorSnapshot(),
     };
     logDev("snapshot captured before AUTHNICE.requestPay", snapshot);
     return snapshot;
-  }, [logDev, readStickyAncestorSnapshot]);
+  }, [logDev]);
 
-  const restorePageAfterNicePopup = useCallback(() => {
+  const stopPopupWatchdog = useCallback(() => {
+    if (popupSessionStateRef.current.watchdogAnimationFrameId !== null) {
+      cancelAnimationFrame(popupSessionStateRef.current.watchdogAnimationFrameId);
+      popupSessionStateRef.current.watchdogAnimationFrameId = null;
+    }
+  }, []);
+
+  const startPopupWatchdog = useCallback(() => {
+    if (typeof window === "undefined") return;
+    stopPopupWatchdog();
+
+    const tick = () => {
+      const snapshot = popupSnapshotRef.current;
+      const { active, didNavigateAway } = popupSessionStateRef.current;
+      if (!snapshot || !active || didNavigateAway) {
+        popupSessionStateRef.current.watchdogAnimationFrameId = null;
+        return;
+      }
+
+      const currentScrollY = window.scrollY;
+      const currentScrollX = window.scrollX;
+      if (currentScrollY !== snapshot.scrollY || currentScrollX !== snapshot.scrollX) {
+        window.scrollTo(snapshot.scrollX, snapshot.scrollY);
+        if (document.scrollingElement) {
+          document.scrollingElement.scrollTop = snapshot.scrollY;
+          document.scrollingElement.scrollLeft = snapshot.scrollX;
+        }
+        logDev("watchdog detected scroll drift and restored", {
+          from: { x: currentScrollX, y: currentScrollY },
+          to: { x: snapshot.scrollX, y: snapshot.scrollY },
+        });
+      }
+
+      popupSessionStateRef.current.watchdogAnimationFrameId = requestAnimationFrame(tick);
+    };
+
+    popupSessionStateRef.current.watchdogAnimationFrameId = requestAnimationFrame(tick);
+  }, [logDev, stopPopupWatchdog]);
+
+  const applyBackgroundScrollLock = useCallback(() => {
+    const snapshot = popupSnapshotRef.current;
+    if (!snapshot) return;
+
+    const scrollbarWidth = Math.max(0, window.innerWidth - document.documentElement.clientWidth);
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${snapshot.scrollY}px`;
+    document.body.style.left = "0";
+    document.body.style.right = "0";
+    document.body.style.width = "100%";
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+    }
+    window.scrollTo(snapshot.scrollX, snapshot.scrollY);
+    logDev("background scroll lock applied", {
+      scrollX: window.scrollX,
+      scrollY: window.scrollY,
+      bodyTop: document.body.style.top,
+      scrollbarWidth,
+    });
+  }, [logDev]);
+
+  const unlockBackgroundScroll = useCallback(() => {
     if (typeof window === "undefined") return;
     const snapshot = popupSnapshotRef.current;
     if (!snapshot) return;
-    if (popupSessionStateRef.current.didRestore) return;
     if (popupSessionStateRef.current.didNavigateAway) return;
 
-    popupSessionStateRef.current.didRestore = true;
-    clearRestoreTimeouts();
-
-    const applyRestore = () => {
-      document.documentElement.style.cssText = snapshot.htmlStyleCssText;
-      document.body.style.cssText = snapshot.bodyStyleCssText;
-      document.documentElement.className = snapshot.htmlClassName;
-      document.body.className = snapshot.bodyClassName;
-      if (snapshot.scrollingElementScrollTop !== null && document.scrollingElement) {
-        document.scrollingElement.scrollTop = snapshot.scrollingElementScrollTop;
-      }
-      window.scrollTo(snapshot.scrollX, snapshot.scrollY);
-      window.dispatchEvent(new Event("resize"));
-    };
-
-    applyRestore();
-    requestAnimationFrame(() => {
-      applyRestore();
-      requestAnimationFrame(() => applyRestore());
+    document.documentElement.style.cssText = snapshot.htmlStyleCssText;
+    document.body.style.cssText = snapshot.bodyStyleCssText;
+    document.documentElement.className = snapshot.htmlClassName;
+    document.body.className = snapshot.bodyClassName;
+    if (snapshot.scrollingElementScrollTop !== null && document.scrollingElement) {
+      document.scrollingElement.scrollTop = snapshot.scrollingElementScrollTop;
+      document.scrollingElement.scrollLeft = snapshot.scrollX;
+    }
+    window.scrollTo(snapshot.scrollX, snapshot.scrollY);
+    requestAnimationFrame(() => window.scrollTo(snapshot.scrollX, snapshot.scrollY));
+    logDev("background scroll lock released", {
+      scrollX: window.scrollX,
+      scrollY: window.scrollY,
     });
-    const timeoutId = window.setTimeout(() => {
-      applyRestore();
-      logDev("snapshot restored after popup close", {
-        scrollX: window.scrollX,
-        scrollY: window.scrollY,
-        scrollingElementScrollTop: document.scrollingElement?.scrollTop ?? null,
-        htmlStyleCssText: document.documentElement.style.cssText,
-        bodyStyleCssText: document.body.style.cssText,
-        htmlClassName: document.documentElement.className,
-        bodyClassName: document.body.className,
-        stickyAncestors: readStickyAncestorSnapshot(),
-      });
-    }, 120);
-    popupRestoreTimeoutsRef.current.push(timeoutId);
-  }, [clearRestoreTimeouts, logDev, readStickyAncestorSnapshot]);
+  }, [logDev]);
 
   const cleanupPopupLifecycleListeners = useCallback(() => {
     popupLifecycleCleanupRef.current?.();
     popupLifecycleCleanupRef.current = null;
-  }, []);
+    stopPopupWatchdog();
+    popupSessionStateRef.current.active = false;
+  }, [stopPopupWatchdog]);
+
+  const restoreAfterPopupAbort = useCallback(() => {
+    cleanupPopupLifecycleListeners();
+    unlockBackgroundScroll();
+    onSuccessNavigationAbort?.();
+    setLoading(false);
+  }, [cleanupPopupLifecycleListeners, onSuccessNavigationAbort, unlockBackgroundScroll]);
 
   const setupPopupLifecycleListeners = useCallback(() => {
     if (typeof window === "undefined") return;
 
     cleanupPopupLifecycleListeners();
     popupSessionStateRef.current.didNavigateAway = false;
-    popupSessionStateRef.current.didRestore = false;
-
-    const observer =
-      isDev
-        ? new MutationObserver((mutationList) => {
-            const interesting = mutationList
-              .filter((mutation) => mutation.type === "attributes")
-              .map((mutation) => `${(mutation.target as Element).tagName.toLowerCase()}.${mutation.attributeName}`);
-            if (interesting.length > 0) logDev("html/body attribute mutated during popup session", interesting);
-          })
-        : null;
-    observer?.observe(document.documentElement, { attributes: true, attributeFilter: ["style", "class"] });
-    observer?.observe(document.body, { attributes: true, attributeFilter: ["style", "class"] });
+    popupSessionStateRef.current.active = true;
+    startPopupWatchdog();
 
     const restoreIfNeeded = () => {
-      restorePageAfterNicePopup();
-      cleanupPopupLifecycleListeners();
+      if (popupSessionStateRef.current.didNavigateAway) return;
+      if (!popupSessionStateRef.current.active) return;
+      logDev("popup session fallback restore triggered");
+      restoreAfterPopupAbort();
     };
 
     const onFocus = () => restoreIfNeeded();
@@ -222,14 +224,13 @@ export default function NiceCheckoutButton({
     document.addEventListener("visibilitychange", onVisibilityChange);
 
     popupLifecycleCleanupRef.current = () => {
-      observer?.disconnect();
       window.removeEventListener("focus", onFocus);
       window.removeEventListener("pageshow", onPageShow);
       window.removeEventListener("pagehide", onPageHide);
       window.removeEventListener("beforeunload", onBeforeUnload);
       document.removeEventListener("visibilitychange", onVisibilityChange);
     };
-  }, [cleanupPopupLifecycleListeners, isDev, logDev, restorePageAfterNicePopup]);
+  }, [cleanupPopupLifecycleListeners, logDev, restoreAfterPopupAbort, startPopupWatchdog]);
 
   useEffect(() => {
     let mounted = true;
@@ -287,9 +288,9 @@ export default function NiceCheckoutButton({
   useEffect(() => {
     return () => {
       cleanupPopupLifecycleListeners();
-      clearRestoreTimeouts();
+      popupSnapshotRef.current = null;
     };
-  }, [cleanupPopupLifecycleListeners, clearRestoreTimeouts]);
+  }, [cleanupPopupLifecycleListeners]);
 
   const isDisabled = useMemo(() => disabled || loading || !scriptReady || !!scriptError, [disabled, loading, scriptReady, scriptError]);
 
@@ -318,6 +319,7 @@ export default function NiceCheckoutButton({
 
       onBeforeSuccessNavigation?.();
       popupSnapshotRef.current = capturePopupSnapshot();
+      applyBackgroundScrollLock();
       setupPopupLifecycleListeners();
       try {
         window.AUTHNICE.requestPay({
@@ -331,22 +333,18 @@ export default function NiceCheckoutButton({
           buyerTel: prepJson.nice.buyerTel,
           buyerEmail: prepJson.nice.buyerEmail,
           fnError: (result: any) => {
-            cleanupPopupLifecycleListeners();
-            restorePageAfterNicePopup();
-            onSuccessNavigationAbort?.();
+            restoreAfterPopupAbort();
             const msg = String(result?.errorMsg || result?.message || "결제가 취소되었거나 실패했습니다.");
             setInlineError(msg);
-            setLoading(false);
           },
         });
       } catch (error) {
-        cleanupPopupLifecycleListeners();
-        restorePageAfterNicePopup();
-        onSuccessNavigationAbort?.();
+        restoreAfterPopupAbort();
         throw error;
       }
     } catch (error: any) {
       cleanupPopupLifecycleListeners();
+      unlockBackgroundScroll();
       setInlineError(error?.message || "결제 요청에 실패했습니다.");
       setLoading(false);
     }
