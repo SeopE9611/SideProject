@@ -24,12 +24,11 @@ const Footer = () => {
   const customerService = [
     { name: "공지사항", href: "/board/notice" },
     { name: "Q&A", href: "/board/qna" },
-    { name: "마이페이지", href: "/mypage" },
     { name: "이용약관", href: "/terms" },
     { name: "개인정보처리방침", href: "/privacy" },
   ];
 
-  const customerServiceLinks = customerService.filter((link) => link.name === "공지사항" || link.name === "Q&A" || link.name === "마이페이지");
+  const customerServiceLinks = customerService.filter((link) => link.name === "공지사항" || link.name === "Q&A");
   const policyLinks = customerService.filter((link) => link.name === "이용약관" || link.name === "개인정보처리방침");
 
   return (
@@ -82,7 +81,7 @@ const Footer = () => {
                   </div>
                   <div className="flex items-center gap-2.5 text-xs text-muted-foreground">
                     <Mail className="h-4 w-4 shrink-0 text-primary/90" />
-                    <span className="break-all text-foreground/85">info@tennis-flow.com</span>
+                    <span className="break-all text-foreground/85">korgis5813@naver.com</span>
                   </div>
                   <div className="flex items-start gap-2.5 text-xs text-muted-foreground">
                     <Clock className="mt-0.5 h-4 w-4 shrink-0 text-primary/90" />
@@ -146,10 +145,7 @@ const Footer = () => {
                     </div>
                   </div>
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-                    <Link
-                      href="/services/locations"
-                      className="inline-flex items-center text-xs font-medium text-foreground transition-colors hover:text-primary"
-                    >
+                    <Link href="/services/locations" className="inline-flex items-center text-xs font-medium text-foreground transition-colors hover:text-primary">
                       위치 안내 보기
                     </Link>
                     <Link
