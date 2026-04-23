@@ -29,6 +29,27 @@ type NicePrepareResponse = {
   error?: string;
 };
 
+type StickyAncestorSnapshot = {
+  tag: string;
+  className: string;
+  overflow: string;
+  overflowX: string;
+  overflowY: string;
+  transform: string;
+  position: string;
+};
+
+type NicePopupDocumentSnapshot = {
+  scrollX: number;
+  scrollY: number;
+  scrollingElementScrollTop: number | null;
+  htmlStyleCssText: string;
+  bodyStyleCssText: string;
+  htmlClassName: string;
+  bodyClassName: string;
+  stickyAncestors: StickyAncestorSnapshot[];
+};
+
 export default function NiceCheckoutButton({
   disabled,
   payload,
@@ -45,25 +66,113 @@ export default function NiceCheckoutButton({
   const [scriptReady, setScriptReady] = useState(false);
   const [scriptError, setScriptError] = useState<string | null>(null);
   const popupLifecycleCleanupRef = useRef<(() => void) | null>(null);
-  const isExpectingSuccessNavigationRef = useRef(false);
+  const popupSnapshotRef = useRef<NicePopupDocumentSnapshot | null>(null);
+  const popupRestoreTimeoutsRef = useRef<number[]>([]);
+  const popupSessionStateRef = useRef({
+    didNavigateAway: false,
+    didRestore: false,
+  });
+
+  const isDev = process.env.NODE_ENV !== "production";
+
+  const clearRestoreTimeouts = useCallback(() => {
+    popupRestoreTimeoutsRef.current.forEach((timeoutId) => window.clearTimeout(timeoutId));
+    popupRestoreTimeoutsRef.current = [];
+  }, []);
+
+  const logDev = useCallback(
+    (message: string, detail?: unknown) => {
+      if (!isDev) return;
+      if (detail === undefined) {
+        console.info(`[NiceCheckoutButton] ${message}`);
+        return;
+      }
+      console.info(`[NiceCheckoutButton] ${message}`, detail);
+    },
+    [isDev],
+  );
+
+  const readStickyAncestorSnapshot = useCallback((): StickyAncestorSnapshot[] => {
+    if (typeof window === "undefined") return [];
+    const stickyRoot = document.querySelector(".bp-lg\\:sticky");
+    if (!(stickyRoot instanceof HTMLElement)) return [];
+
+    const rows: StickyAncestorSnapshot[] = [];
+    let current: HTMLElement | null = stickyRoot;
+    while (current) {
+      const computed = window.getComputedStyle(current);
+      rows.push({
+        tag: current.tagName.toLowerCase(),
+        className: current.className,
+        overflow: computed.overflow,
+        overflowX: computed.overflowX,
+        overflowY: computed.overflowY,
+        transform: computed.transform,
+        position: computed.position,
+      });
+      current = current.parentElement;
+    }
+    return rows;
+  }, []);
+
+  const capturePopupSnapshot = useCallback((): NicePopupDocumentSnapshot | null => {
+    if (typeof window === "undefined") return null;
+    const snapshot: NicePopupDocumentSnapshot = {
+      scrollX: window.scrollX,
+      scrollY: window.scrollY,
+      scrollingElementScrollTop: document.scrollingElement?.scrollTop ?? null,
+      htmlStyleCssText: document.documentElement.style.cssText,
+      bodyStyleCssText: document.body.style.cssText,
+      htmlClassName: document.documentElement.className,
+      bodyClassName: document.body.className,
+      stickyAncestors: readStickyAncestorSnapshot(),
+    };
+    logDev("snapshot captured before AUTHNICE.requestPay", snapshot);
+    return snapshot;
+  }, [logDev, readStickyAncestorSnapshot]);
 
   const restorePageAfterNicePopup = useCallback(() => {
     if (typeof window === "undefined") return;
+    const snapshot = popupSnapshotRef.current;
+    if (!snapshot) return;
+    if (popupSessionStateRef.current.didRestore) return;
+    if (popupSessionStateRef.current.didNavigateAway) return;
 
-    const roots = [document.documentElement, document.body];
-    const resetProps = ["overflow", "overflow-x", "overflow-y", "position", "top", "left", "right", "width", "height"];
+    popupSessionStateRef.current.didRestore = true;
+    clearRestoreTimeouts();
 
-    roots.forEach((root) => {
-      if (!root) return;
-      resetProps.forEach((prop) => {
-        root.style.removeProperty(prop);
-      });
-    });
-
-    requestAnimationFrame(() => {
+    const applyRestore = () => {
+      document.documentElement.style.cssText = snapshot.htmlStyleCssText;
+      document.body.style.cssText = snapshot.bodyStyleCssText;
+      document.documentElement.className = snapshot.htmlClassName;
+      document.body.className = snapshot.bodyClassName;
+      if (snapshot.scrollingElementScrollTop !== null && document.scrollingElement) {
+        document.scrollingElement.scrollTop = snapshot.scrollingElementScrollTop;
+      }
+      window.scrollTo(snapshot.scrollX, snapshot.scrollY);
       window.dispatchEvent(new Event("resize"));
+    };
+
+    applyRestore();
+    requestAnimationFrame(() => {
+      applyRestore();
+      requestAnimationFrame(() => applyRestore());
     });
-  }, []);
+    const timeoutId = window.setTimeout(() => {
+      applyRestore();
+      logDev("snapshot restored after popup close", {
+        scrollX: window.scrollX,
+        scrollY: window.scrollY,
+        scrollingElementScrollTop: document.scrollingElement?.scrollTop ?? null,
+        htmlStyleCssText: document.documentElement.style.cssText,
+        bodyStyleCssText: document.body.style.cssText,
+        htmlClassName: document.documentElement.className,
+        bodyClassName: document.body.className,
+        stickyAncestors: readStickyAncestorSnapshot(),
+      });
+    }, 120);
+    popupRestoreTimeoutsRef.current.push(timeoutId);
+  }, [clearRestoreTimeouts, logDev, readStickyAncestorSnapshot]);
 
   const cleanupPopupLifecycleListeners = useCallback(() => {
     popupLifecycleCleanupRef.current?.();
@@ -74,9 +183,22 @@ export default function NiceCheckoutButton({
     if (typeof window === "undefined") return;
 
     cleanupPopupLifecycleListeners();
+    popupSessionStateRef.current.didNavigateAway = false;
+    popupSessionStateRef.current.didRestore = false;
+
+    const observer =
+      isDev
+        ? new MutationObserver((mutationList) => {
+            const interesting = mutationList
+              .filter((mutation) => mutation.type === "attributes")
+              .map((mutation) => `${(mutation.target as Element).tagName.toLowerCase()}.${mutation.attributeName}`);
+            if (interesting.length > 0) logDev("html/body attribute mutated during popup session", interesting);
+          })
+        : null;
+    observer?.observe(document.documentElement, { attributes: true, attributeFilter: ["style", "class"] });
+    observer?.observe(document.body, { attributes: true, attributeFilter: ["style", "class"] });
 
     const restoreIfNeeded = () => {
-      if (isExpectingSuccessNavigationRef.current) return;
       restorePageAfterNicePopup();
       cleanupPopupLifecycleListeners();
     };
@@ -86,17 +208,28 @@ export default function NiceCheckoutButton({
       if (!document.hidden) restoreIfNeeded();
     };
     const onPageShow = () => restoreIfNeeded();
+    const onPageHide = () => {
+      popupSessionStateRef.current.didNavigateAway = true;
+    };
+    const onBeforeUnload = () => {
+      popupSessionStateRef.current.didNavigateAway = true;
+    };
 
     window.addEventListener("focus", onFocus, { once: true });
     window.addEventListener("pageshow", onPageShow, { once: true });
+    window.addEventListener("pagehide", onPageHide, { once: true });
+    window.addEventListener("beforeunload", onBeforeUnload, { once: true });
     document.addEventListener("visibilitychange", onVisibilityChange);
 
     popupLifecycleCleanupRef.current = () => {
+      observer?.disconnect();
       window.removeEventListener("focus", onFocus);
       window.removeEventListener("pageshow", onPageShow);
+      window.removeEventListener("pagehide", onPageHide);
+      window.removeEventListener("beforeunload", onBeforeUnload);
       document.removeEventListener("visibilitychange", onVisibilityChange);
     };
-  }, [cleanupPopupLifecycleListeners, restorePageAfterNicePopup]);
+  }, [cleanupPopupLifecycleListeners, isDev, logDev, restorePageAfterNicePopup]);
 
   useEffect(() => {
     let mounted = true;
@@ -154,8 +287,9 @@ export default function NiceCheckoutButton({
   useEffect(() => {
     return () => {
       cleanupPopupLifecycleListeners();
+      clearRestoreTimeouts();
     };
-  }, [cleanupPopupLifecycleListeners]);
+  }, [cleanupPopupLifecycleListeners, clearRestoreTimeouts]);
 
   const isDisabled = useMemo(() => disabled || loading || !scriptReady || !!scriptError, [disabled, loading, scriptReady, scriptError]);
 
@@ -183,7 +317,7 @@ export default function NiceCheckoutButton({
       }
 
       onBeforeSuccessNavigation?.();
-      isExpectingSuccessNavigationRef.current = true;
+      popupSnapshotRef.current = capturePopupSnapshot();
       setupPopupLifecycleListeners();
       try {
         window.AUTHNICE.requestPay({
@@ -197,7 +331,6 @@ export default function NiceCheckoutButton({
           buyerTel: prepJson.nice.buyerTel,
           buyerEmail: prepJson.nice.buyerEmail,
           fnError: (result: any) => {
-            isExpectingSuccessNavigationRef.current = false;
             cleanupPopupLifecycleListeners();
             restorePageAfterNicePopup();
             onSuccessNavigationAbort?.();
@@ -207,14 +340,12 @@ export default function NiceCheckoutButton({
           },
         });
       } catch (error) {
-        isExpectingSuccessNavigationRef.current = false;
         cleanupPopupLifecycleListeners();
         restorePageAfterNicePopup();
         onSuccessNavigationAbort?.();
         throw error;
       }
     } catch (error: any) {
-      isExpectingSuccessNavigationRef.current = false;
       cleanupPopupLifecycleListeners();
       setInlineError(error?.message || "결제 요청에 실패했습니다.");
       setLoading(false);
