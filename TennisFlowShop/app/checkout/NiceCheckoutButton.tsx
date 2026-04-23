@@ -29,14 +29,46 @@ type NicePrepareResponse = {
   error?: string;
 };
 
+type TrackedElementSnapshot = {
+  element: Element;
+  tagName: string;
+  id: string;
+  className: string;
+  styleCssText: string;
+  computed: {
+    overflow: string;
+    overflowX: string;
+    overflowY: string;
+    transform: string;
+    filter: string;
+    contain: string;
+    perspective: string;
+    position: string;
+  };
+};
+
+type MutationChangeRecord = {
+  element: Element;
+  attributeName: "class" | "style";
+  beforeValue: string;
+  afterValue: string;
+};
+
 type NicePopupDocumentSnapshot = {
   scrollX: number;
   scrollY: number;
   scrollingElementScrollTop: number | null;
-  htmlStyleCssText: string;
-  bodyStyleCssText: string;
-  htmlClassName: string;
-  bodyClassName: string;
+  scrollingElementScrollLeft: number | null;
+  stickyChain: TrackedElementSnapshot[];
+  trackedElements: TrackedElementSnapshot[];
+};
+
+const STYLE_OR_CLASS_OBSERVER_CONFIG: MutationObserverInit = {
+  attributes: true,
+  attributeFilter: ["style", "class"],
+  attributeOldValue: true,
+  subtree: true,
+  childList: true,
 };
 
 export default function NiceCheckoutButton({
@@ -56,10 +88,11 @@ export default function NiceCheckoutButton({
   const [scriptError, setScriptError] = useState<string | null>(null);
   const popupLifecycleCleanupRef = useRef<(() => void) | null>(null);
   const popupSnapshotRef = useRef<NicePopupDocumentSnapshot | null>(null);
+  const popupMutationObserverRef = useRef<MutationObserver | null>(null);
+  const popupMutationChangesRef = useRef<MutationChangeRecord[]>([]);
   const popupSessionStateRef = useRef({
     didNavigateAway: false,
     active: false,
-    watchdogAnimationFrameId: null as number | null,
   });
 
   const isDev = process.env.NODE_ENV !== "production";
@@ -76,119 +109,271 @@ export default function NiceCheckoutButton({
     [isDev],
   );
 
+  const describeElement = useCallback((element: Element) => {
+    const classValue = element.getAttribute("class") || "";
+    const classSuffix = classValue ? `.${classValue.trim().replace(/\s+/g, ".")}` : "";
+    const idSuffix = element.id ? `#${element.id}` : "";
+    return `${element.tagName.toLowerCase()}${idSuffix}${classSuffix}`;
+  }, []);
+
+  const createElementSnapshot = useCallback((element: Element): TrackedElementSnapshot => {
+    const computedStyle = window.getComputedStyle(element);
+    return {
+      element,
+      tagName: element.tagName,
+      id: element.id,
+      className: element.getAttribute("class") || "",
+      styleCssText: element.getAttribute("style") || "",
+      computed: {
+        overflow: computedStyle.overflow,
+        overflowX: computedStyle.overflowX,
+        overflowY: computedStyle.overflowY,
+        transform: computedStyle.transform,
+        filter: computedStyle.filter,
+        contain: computedStyle.contain,
+        perspective: computedStyle.perspective,
+        position: computedStyle.position,
+      },
+    };
+  }, []);
+
+  const collectStickyAndRootCandidates = useCallback(() => {
+    const stickyElement = document.querySelector(".bp-lg\\:sticky");
+    const stickyChainElements: Element[] = [];
+    if (stickyElement) {
+      let current: Element | null = stickyElement;
+      while (current) {
+        stickyChainElements.push(current);
+        if (current === document.documentElement) break;
+        current = current.parentElement;
+      }
+    }
+
+    const appRootCandidates = new Set<Element>();
+    appRootCandidates.add(document.documentElement);
+    appRootCandidates.add(document.body);
+
+    const firstBodyChild = document.body.firstElementChild;
+    if (firstBodyChild) appRootCandidates.add(firstBodyChild);
+
+    const main = document.querySelector("main");
+    if (main) appRootCandidates.add(main);
+
+    document.querySelectorAll("[data-nextjs-scroll-focus-boundary]").forEach((el) => {
+      appRootCandidates.add(el);
+    });
+
+    const overlayCandidates = document.querySelectorAll(
+      '[id*="nice" i], [class*="nice" i], [id*="overlay" i], [class*="overlay" i], [class*="popup" i], [class*="modal" i]'
+    );
+    overlayCandidates.forEach((el) => appRootCandidates.add(el));
+
+    const trackedSet = new Set<Element>([...stickyChainElements, ...Array.from(appRootCandidates)]);
+
+    return {
+      stickyChainElements,
+      trackedElements: Array.from(trackedSet),
+    };
+  }, []);
+
   const capturePopupSnapshot = useCallback((): NicePopupDocumentSnapshot | null => {
     if (typeof window === "undefined") return null;
+
+    const { stickyChainElements, trackedElements } = collectStickyAndRootCandidates();
+    const stickyChainSnapshots = stickyChainElements.map((el) => createElementSnapshot(el));
+    const trackedSnapshots = trackedElements.map((el) => createElementSnapshot(el));
+
     const snapshot: NicePopupDocumentSnapshot = {
       scrollX: window.scrollX,
       scrollY: window.scrollY,
       scrollingElementScrollTop: document.scrollingElement?.scrollTop ?? null,
-      htmlStyleCssText: document.documentElement.style.cssText,
-      bodyStyleCssText: document.body.style.cssText,
-      htmlClassName: document.documentElement.className,
-      bodyClassName: document.body.className,
+      scrollingElementScrollLeft: document.scrollingElement?.scrollLeft ?? null,
+      stickyChain: stickyChainSnapshots,
+      trackedElements: trackedSnapshots,
     };
-    logDev("snapshot captured before AUTHNICE.requestPay", snapshot);
-    return snapshot;
-  }, [logDev]);
 
-  const stopPopupWatchdog = useCallback(() => {
-    if (popupSessionStateRef.current.watchdogAnimationFrameId !== null) {
-      cancelAnimationFrame(popupSessionStateRef.current.watchdogAnimationFrameId);
-      popupSessionStateRef.current.watchdogAnimationFrameId = null;
-    }
+    logDev(
+      "requestPay 직전 sticky ancestor chain",
+      stickyChainSnapshots.map((item) => ({
+        element: describeElement(item.element),
+        overflow: item.computed.overflow,
+        overflowX: item.computed.overflowX,
+        overflowY: item.computed.overflowY,
+        transform: item.computed.transform,
+        filter: item.computed.filter,
+        contain: item.computed.contain,
+        perspective: item.computed.perspective,
+        position: item.computed.position,
+      })),
+    );
+    logDev("requestPay 직전 tracked snapshot 수", {
+      stickyChainCount: stickyChainSnapshots.length,
+      trackedCount: trackedSnapshots.length,
+    });
+
+    return snapshot;
+  }, [collectStickyAndRootCandidates, createElementSnapshot, describeElement, logDev]);
+
+  const stopMutationObserver = useCallback(() => {
+    popupMutationObserverRef.current?.disconnect();
+    popupMutationObserverRef.current = null;
   }, []);
 
-  const startPopupWatchdog = useCallback(() => {
-    if (typeof window === "undefined") return;
-    stopPopupWatchdog();
+  const isCandidateElementForTracking = useCallback((element: Element, snapshot: NicePopupDocumentSnapshot) => {
+    if (element === document.documentElement || element === document.body) return true;
 
-    const tick = () => {
-      const snapshot = popupSnapshotRef.current;
-      const { active, didNavigateAway } = popupSessionStateRef.current;
-      if (!snapshot || !active || didNavigateAway) {
-        popupSessionStateRef.current.watchdogAnimationFrameId = null;
-        return;
-      }
+    const trackedSet = new Set(snapshot.trackedElements.map((item) => item.element));
+    if (trackedSet.has(element)) return true;
 
-      const currentScrollY = window.scrollY;
-      const currentScrollX = window.scrollX;
-      if (currentScrollY !== snapshot.scrollY || currentScrollX !== snapshot.scrollX) {
-        window.scrollTo(snapshot.scrollX, snapshot.scrollY);
-        if (document.scrollingElement) {
-          document.scrollingElement.scrollTop = snapshot.scrollY;
-          document.scrollingElement.scrollLeft = snapshot.scrollX;
-        }
-        logDev("watchdog detected scroll drift and restored", {
-          from: { x: currentScrollX, y: currentScrollY },
-          to: { x: snapshot.scrollX, y: snapshot.scrollY },
-        });
-      }
+    const classOrId = `${element.id} ${element.getAttribute("class") || ""}`.toLowerCase();
+    return /(next|root|layout|wrap|overlay|popup|modal|nice)/.test(classOrId);
+  }, []);
 
-      popupSessionStateRef.current.watchdogAnimationFrameId = requestAnimationFrame(tick);
-    };
+  const ensureTrackedSnapshot = useCallback((element: Element, snapshot: NicePopupDocumentSnapshot) => {
+    if (snapshot.trackedElements.some((item) => item.element === element)) return;
+    snapshot.trackedElements.push(createElementSnapshot(element));
+    logDev("mutation 중 신규 tracked 요소 추가", {
+      element: describeElement(element),
+      trackedCount: snapshot.trackedElements.length,
+    });
+  }, [createElementSnapshot, describeElement, logDev]);
 
-    popupSessionStateRef.current.watchdogAnimationFrameId = requestAnimationFrame(tick);
-  }, [logDev, stopPopupWatchdog]);
-
-  const applyBackgroundScrollLock = useCallback(() => {
+  const startMutationObserver = useCallback(() => {
     const snapshot = popupSnapshotRef.current;
     if (!snapshot) return;
 
-    const scrollbarWidth = Math.max(0, window.innerWidth - document.documentElement.clientWidth);
-    document.documentElement.style.overflow = "hidden";
-    document.body.style.overflow = "hidden";
-    document.body.style.position = "fixed";
-    document.body.style.top = `-${snapshot.scrollY}px`;
-    document.body.style.left = "0";
-    document.body.style.right = "0";
-    document.body.style.width = "100%";
-    if (scrollbarWidth > 0) {
-      document.body.style.paddingRight = `${scrollbarWidth}px`;
-    }
-    window.scrollTo(snapshot.scrollX, snapshot.scrollY);
-    logDev("background scroll lock applied", {
-      scrollX: window.scrollX,
-      scrollY: window.scrollY,
-      bodyTop: document.body.style.top,
-      scrollbarWidth,
-    });
-  }, [logDev]);
+    stopMutationObserver();
+    popupMutationChangesRef.current = [];
 
-  const unlockBackgroundScroll = useCallback(() => {
+    const observer = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        if (!popupSessionStateRef.current.active) continue;
+        if (mutation.type === "attributes") {
+          const attributeName = mutation.attributeName;
+          if (!attributeName || (attributeName !== "class" && attributeName !== "style")) continue;
+          const target = mutation.target;
+          if (!(target instanceof Element)) continue;
+          if (!isCandidateElementForTracking(target, snapshot)) continue;
+
+          ensureTrackedSnapshot(target, snapshot);
+          const beforeValue = mutation.oldValue || "";
+          const afterValue = target.getAttribute(attributeName) || "";
+          if (beforeValue === afterValue) continue;
+
+          popupMutationChangesRef.current.push({
+            element: target,
+            attributeName,
+            beforeValue,
+            afterValue,
+          });
+        }
+
+        if (mutation.type === "childList") {
+          mutation.addedNodes.forEach((node) => {
+            if (!(node instanceof Element)) return;
+            if (!isCandidateElementForTracking(node, snapshot)) return;
+            ensureTrackedSnapshot(node, snapshot);
+          });
+        }
+      }
+    });
+
+    observer.observe(document.body, STYLE_OR_CLASS_OBSERVER_CONFIG);
+    popupMutationObserverRef.current = observer;
+    logDev("popup session mutation observer started");
+  }, [ensureTrackedSnapshot, isCandidateElementForTracking, logDev, stopMutationObserver]);
+
+  const restoreTrackedElements = useCallback((snapshot: NicePopupDocumentSnapshot) => {
+    for (const item of snapshot.trackedElements) {
+      const { element, className, styleCssText } = item;
+      if (!element.isConnected) continue;
+
+      if (className) {
+        element.setAttribute("class", className);
+      } else {
+        element.removeAttribute("class");
+      }
+
+      if (styleCssText) {
+        element.setAttribute("style", styleCssText);
+      } else {
+        element.removeAttribute("style");
+      }
+    }
+  }, []);
+
+  const restoreDomAfterPopupAbort = useCallback(() => {
     if (typeof window === "undefined") return;
     const snapshot = popupSnapshotRef.current;
     if (!snapshot) return;
     if (popupSessionStateRef.current.didNavigateAway) return;
 
-    document.documentElement.style.cssText = snapshot.htmlStyleCssText;
-    document.body.style.cssText = snapshot.bodyStyleCssText;
-    document.documentElement.className = snapshot.htmlClassName;
-    document.body.className = snapshot.bodyClassName;
+    stopMutationObserver();
+    restoreTrackedElements(snapshot);
+
     if (snapshot.scrollingElementScrollTop !== null && document.scrollingElement) {
       document.scrollingElement.scrollTop = snapshot.scrollingElementScrollTop;
-      document.scrollingElement.scrollLeft = snapshot.scrollX;
+    }
+    if (snapshot.scrollingElementScrollLeft !== null && document.scrollingElement) {
+      document.scrollingElement.scrollLeft = snapshot.scrollingElementScrollLeft;
     }
     window.scrollTo(snapshot.scrollX, snapshot.scrollY);
-    requestAnimationFrame(() => window.scrollTo(snapshot.scrollX, snapshot.scrollY));
-    logDev("background scroll lock released", {
-      scrollX: window.scrollX,
-      scrollY: window.scrollY,
+    requestAnimationFrame(() => {
+      window.scrollTo(snapshot.scrollX, snapshot.scrollY);
+      if (snapshot.scrollingElementScrollTop !== null && document.scrollingElement) {
+        document.scrollingElement.scrollTop = snapshot.scrollingElementScrollTop;
+      }
+      if (snapshot.scrollingElementScrollLeft !== null && document.scrollingElement) {
+        document.scrollingElement.scrollLeft = snapshot.scrollingElementScrollLeft;
+      }
     });
-  }, [logDev]);
+
+    logDev(
+      "popup 종료 직후 변경된 class/style",
+      popupMutationChangesRef.current.map((entry) => ({
+        element: describeElement(entry.element),
+        attribute: entry.attributeName,
+        before: entry.beforeValue,
+        after: entry.afterValue,
+      })),
+    );
+
+    const restoredChain = snapshot.stickyChain
+      .map((entry) => {
+        if (!entry.element.isConnected) return null;
+        const computed = window.getComputedStyle(entry.element);
+        return {
+          element: describeElement(entry.element),
+          overflow: computed.overflow,
+          overflowX: computed.overflowX,
+          overflowY: computed.overflowY,
+          transform: computed.transform,
+          filter: computed.filter,
+          contain: computed.contain,
+          perspective: computed.perspective,
+          position: computed.position,
+          className: entry.element.getAttribute("class") || "",
+          styleCssText: entry.element.getAttribute("style") || "",
+        };
+      })
+      .filter(Boolean);
+
+    logDev("restore 이후 sticky ancestor chain", restoredChain);
+  }, [describeElement, logDev, restoreTrackedElements, stopMutationObserver]);
 
   const cleanupPopupLifecycleListeners = useCallback(() => {
     popupLifecycleCleanupRef.current?.();
     popupLifecycleCleanupRef.current = null;
-    stopPopupWatchdog();
+    stopMutationObserver();
     popupSessionStateRef.current.active = false;
-  }, [stopPopupWatchdog]);
+  }, [stopMutationObserver]);
 
   const restoreAfterPopupAbort = useCallback(() => {
     cleanupPopupLifecycleListeners();
-    unlockBackgroundScroll();
+    restoreDomAfterPopupAbort();
     onSuccessNavigationAbort?.();
     setLoading(false);
-  }, [cleanupPopupLifecycleListeners, onSuccessNavigationAbort, unlockBackgroundScroll]);
+  }, [cleanupPopupLifecycleListeners, onSuccessNavigationAbort, restoreDomAfterPopupAbort]);
 
   const setupPopupLifecycleListeners = useCallback(() => {
     if (typeof window === "undefined") return;
@@ -196,7 +381,7 @@ export default function NiceCheckoutButton({
     cleanupPopupLifecycleListeners();
     popupSessionStateRef.current.didNavigateAway = false;
     popupSessionStateRef.current.active = true;
-    startPopupWatchdog();
+    startMutationObserver();
 
     const restoreIfNeeded = () => {
       if (popupSessionStateRef.current.didNavigateAway) return;
@@ -230,7 +415,7 @@ export default function NiceCheckoutButton({
       window.removeEventListener("beforeunload", onBeforeUnload);
       document.removeEventListener("visibilitychange", onVisibilityChange);
     };
-  }, [cleanupPopupLifecycleListeners, logDev, restoreAfterPopupAbort, startPopupWatchdog]);
+  }, [cleanupPopupLifecycleListeners, logDev, restoreAfterPopupAbort, startMutationObserver]);
 
   useEffect(() => {
     let mounted = true;
@@ -319,8 +504,8 @@ export default function NiceCheckoutButton({
 
       onBeforeSuccessNavigation?.();
       popupSnapshotRef.current = capturePopupSnapshot();
-      applyBackgroundScrollLock();
       setupPopupLifecycleListeners();
+
       try {
         window.AUTHNICE.requestPay({
           clientId: prepJson.nice.clientId,
@@ -338,13 +523,17 @@ export default function NiceCheckoutButton({
             setInlineError(msg);
           },
         });
+
+        setTimeout(() => {
+          logDev("requestPay 호출 직후 누적 변경 수", popupMutationChangesRef.current.length);
+        }, 0);
       } catch (error) {
         restoreAfterPopupAbort();
         throw error;
       }
     } catch (error: any) {
       cleanupPopupLifecycleListeners();
-      unlockBackgroundScroll();
+      restoreDomAfterPopupAbort();
       setInlineError(error?.message || "결제 요청에 실패했습니다.");
       setLoading(false);
     }
