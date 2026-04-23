@@ -128,7 +128,7 @@ export default function StringPackagesPageClient({
               프리미엄 스트링 패키지
             </Badge>
 
-            <h1 className="font-brand-bold text-3xl sm:text-5xl md:text-7xl font-bold mb-6 text-foreground">
+            <h1 className="font-bold text-3xl sm:text-4xl md:text-5xl mb-6 text-foreground">
               스트링 교체 패키지
             </h1>
 
@@ -195,7 +195,7 @@ export default function StringPackagesPageClient({
               <Star className="w-4 h-4 mr-2" />
               맞춤형 패키지 선택
             </Badge>
-            <h2 className="font-brand-bold text-3xl sm:text-4xl md:text-5xl font-bold mb-6 text-foreground">
+            <h2 className="font-bold text-3xl sm:text-4xl md:text-4xl mb-6 text-foreground">
               스트링 교체 패키지
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
@@ -241,7 +241,7 @@ export default function StringPackagesPageClient({
               <Award className="w-4 h-4 mr-2" />
               추가 혜택
             </Badge>
-            <h2 className="font-brand-bold text-3xl sm:text-4xl md:text-5xl font-bold mb-6 text-foreground">
+            <h2 className="font-bold text-3xl sm:text-4xl md:text-4xl mb-6 text-foreground">
               패키지만의 특별한 혜택
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
@@ -278,7 +278,7 @@ export default function StringPackagesPageClient({
               <Zap className="w-4 h-4 mr-2" />
               자주 묻는 질문
             </Badge>
-            <h2 className="font-brand-bold text-3xl sm:text-4xl md:text-5xl font-bold mb-6 text-foreground">
+            <h2 className="font-bold text-3xl sm:text-4xl md:text-4xl mb-6 text-foreground">
               패키지 이용 안내
             </h2>
           </div>

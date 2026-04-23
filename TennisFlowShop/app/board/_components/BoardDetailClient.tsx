@@ -1387,7 +1387,7 @@ export default function BoardDetailClient({
               <span className="mx-1">›</span>
               <span>글 상세</span>
             </div>
-            <h1 className="font-brand-bold text-2xl font-bold tracking-tight text-foreground md:text-3xl">
+            <h1 className="font-bold text-2xl tracking-tight text-foreground md:text-3xl">
               {config.boardTitle} 글 상세
             </h1>
             <p className="mt-1 text-sm text-muted-foreground md:text-base">

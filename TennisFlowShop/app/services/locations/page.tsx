@@ -58,7 +58,7 @@ export default function LocationsPage() {
             <MapPin className="h-5 w-5 text-primary" />
             <span className="text-sm font-semibold text-primary">오프라인 매장 찾기</span>
           </div>
-          <h1 className="font-brand-bold text-3xl sm:text-4xl md:text-5xl font-bold text-foreground mb-4">매장 위치 안내</h1>
+          <h1 className="font-bold text-3xl sm:text-4xl md:text-4xl text-foreground mb-4">매장 위치 안내</h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">가까운 매장을 찾아 편리하게 서비스를 이용하세요</p>
         </div>
 
@@ -131,7 +131,7 @@ export default function LocationsPage() {
         </div>
 
         {/* <div className="mb-16">
-          <h2 className="font-brand-bold text-2xl font-bold text-foreground mb-8 text-center">예약 절차</h2>
+          <h2 className="font-bold text-2xl text-foreground mb-8 text-center">예약 절차</h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {reservationSteps.map((step, index) => (
               <Card key={index} className="text-center hover:shadow-lg transition-all duration-300">

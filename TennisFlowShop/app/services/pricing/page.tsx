@@ -89,14 +89,14 @@ export default async function PricingPage() {
               장착 서비스 정책
             </span>
           </div>
-          <h1 className="font-brand-bold text-3xl sm:text-4xl font-bold mb-3">장착 비용 안내</h1>
+          <h1 className="font-bold text-3xl sm:text-4xl mb-3">장착 비용 안내</h1>
           <p className="text-muted-foreground">
             실제 정산 정책 기준으로 요금을 안내합니다.
           </p>
         </div>
 
         <section>
-          <h2 className="font-brand-bold text-2xl font-bold mb-4 md:mb-6 text-center">
+          <h2 className="font-bold text-2xl mb-4 md:mb-6 text-center">
             장착 서비스 요금 안내
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
@@ -141,7 +141,7 @@ export default async function PricingPage() {
         </section>
 
         <section>
-          <h2 className="font-brand-bold text-2xl font-bold mb-4 md:mb-6 text-center">
+          <h2 className="font-bold text-2xl mb-4 md:mb-6 text-center">
             스트링 가격대별 안내
           </h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
@@ -208,7 +208,7 @@ export default async function PricingPage() {
         </section>
 
         <section>
-          <h2 className="font-brand-bold text-2xl font-bold mb-4 md:mb-6 text-center">
+          <h2 className="font-bold text-2xl mb-4 md:mb-6 text-center">
             하이브리드 조합 안내
           </h2>
           <Card>
