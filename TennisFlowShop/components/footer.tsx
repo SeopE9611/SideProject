@@ -70,9 +70,9 @@ const Footer = () => {
             </div>
 
             <div className="grid grid-cols-1 gap-y-6 border-b border-border/70 pb-5 bp-sm:grid-cols-2 bp-sm:gap-x-8 bp-sm:gap-y-7 bp-xl:grid-cols-[1fr_1fr_1.2fr_0.9fr] bp-sm:pb-6">
-              <section className="bp-sm:pr-2">
-                <h3 className="mb-3 text-sm font-semibold text-foreground bp-sm:text-base">고객센터</h3>
-                <div className="space-y-3.5">
+              <section className="flex flex-col items-start gap-3">
+                <h3 className="text-sm font-semibold text-foreground bp-sm:text-base">고객센터</h3>
+                <div className="w-full space-y-3.5">
                   <div className="flex items-start gap-2.5">
                     <Phone className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                     <div>
@@ -104,12 +104,12 @@ const Footer = () => {
                 </ul>
               </section>
 
-              <section className="bp-sm:pr-2">
-                <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground bp-sm:text-base">
+              <section className="flex flex-col items-start gap-3">
+                <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground bp-sm:text-base">
                   <Truck className="h-4 w-4 text-primary" />
                   배송안내
                 </h3>
-                <ul className="space-y-2 text-xs leading-5 text-muted-foreground">
+                <ul className="w-full space-y-2 text-xs leading-5 text-muted-foreground">
                   <li className="flex items-start gap-2">
                     <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-primary/70" />
                     <p>
@@ -131,13 +131,12 @@ const Footer = () => {
                 </ul>
               </section>
 
-              <section className="relative overflow-hidden border-y border-border/70 bg-background/55 px-4 py-4 bp-sm:px-5 bp-xl:mx-1">
-                <div className="pointer-events-none absolute inset-y-0 left-0 w-[42%] bg-[linear-gradient(90deg,rgba(99,102,241,0.08),rgba(99,102,241,0.02)_55%,transparent)]" />
-                <h3 className="relative mb-3 flex items-center gap-2 text-sm font-semibold text-foreground bp-sm:text-base">
+              <section className="flex flex-col items-start gap-3">
+                <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground bp-sm:text-base">
                   <MapPin className="h-4 w-4 text-primary" />
                   매장 위치
                 </h3>
-                <div className="relative space-y-3">
+                <div className="w-full space-y-3">
                   <div className="space-y-1.5 border-l border-primary/30 pl-3">
                     <p className="text-sm font-semibold text-foreground">도깨비테니스</p>
                     <p className="text-sm text-foreground/90">서울 동작구 노량진로 22 B1</p>
@@ -155,7 +154,7 @@ const Footer = () => {
                     </Link>
                     <Link
                       href="https://map.naver.com/p/entry/place/1907032343?c=15.00,0,0,0,dh&placePath=/home?from=map&fromPanelNum=1&additionalHeight=76&timestamp=202601042339&locale=ko&svcName=map_pcv5"
-                      className="inline-flex items-center gap-1 rounded-md border border-primary/35 bg-primary/[0.07] px-2.5 py-1.5 text-xs text-foreground transition-colors hover:bg-primary/[0.12]"
+                      className="inline-flex items-center gap-1 rounded-md border border-border/70 px-2.5 py-1.5 text-xs text-foreground transition-colors hover:border-primary/50 hover:text-primary"
                     >
                       네이버 지도
                       <ArrowUpRight className="h-3 w-3" />
@@ -164,12 +163,12 @@ const Footer = () => {
                 </div>
               </section>
 
-              <section className="bp-sm:pl-2">
-                <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground bp-sm:text-base">
+              <section className="flex flex-col items-start gap-3">
+                <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground bp-sm:text-base">
                   <CreditCard className="h-4 w-4 text-primary" />
                   결제안내
                 </h3>
-                <div className="space-y-1.5 text-xs leading-5 text-muted-foreground">
+                <div className="w-full space-y-1.5 text-xs leading-5 text-muted-foreground">
                   <p>무통장 입금 계좌</p>
                   <p className="text-sm font-semibold text-foreground">농협 123-4567-8901-23</p>
                   <p>예금주 도깨비테니스</p>
