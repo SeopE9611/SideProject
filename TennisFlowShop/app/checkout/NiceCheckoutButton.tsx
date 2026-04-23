@@ -147,18 +147,26 @@ export default function NiceCheckoutButton({
     active: false,
   });
 
-  const isDev = process.env.NODE_ENV !== "production";
+  const isNiceDebugEnabled = useMemo(() => {
+    if (typeof window === "undefined") return false;
+
+    const searchParams = new URLSearchParams(window.location.search);
+    const hasNiceDebugQuery = searchParams.get("niceDebug") === "1";
+    const hasNiceDebugStorage = window.localStorage.getItem("niceDebug") === "1";
+
+    return hasNiceDebugQuery || hasNiceDebugStorage;
+  }, []);
 
   const logDev = useCallback(
     (message: string, detail?: unknown, prefix: string = DEBUG_PREFIX) => {
-      if (!isDev) return;
+      if (!isNiceDebugEnabled) return;
       if (detail === undefined) {
         console.info(`${prefix} ${message}`);
         return;
       }
       console.info(`${prefix} ${message}`, detail);
     },
-    [isDev],
+    [isNiceDebugEnabled],
   );
 
   const describeElement = useCallback((element: Element) => {
