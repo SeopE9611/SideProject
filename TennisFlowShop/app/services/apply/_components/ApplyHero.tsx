@@ -10,7 +10,7 @@ export default function ApplyHero() {
         <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-secondary border border-border mb-6">
           <Wrench className="h-10 w-10" />
         </div>
-        <h1 className="text-2xl bp-sm:text-4xl md:text-5xl font-bold mb-4">
+        <h1 className="text-2xl bp-sm:text-3xl md:text-4xl font-bold mb-4">
           스트링 장착 서비스 신청
         </h1>
         <p className="text-base bp-sm:text-lg text-primary max-w-2xl mx-auto">
