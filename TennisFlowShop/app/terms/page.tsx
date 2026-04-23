@@ -100,7 +100,7 @@ export default function TermsPage() {
           </Link>
 
           <div className="space-y-4">
-            <h1 className="text-4xl font-bold tracking-tight">이용약관</h1>
+            <h1 className="text-3xl font-bold tracking-tight">이용약관</h1>
             <p className="text-muted-foreground max-w-3xl leading-relaxed">도깨비테니스 웹사이트 이용에 관한 약관입니다. 서비스 이용 전 반드시 읽어주시기 바랍니다.</p>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <RefreshCw className="h-4 w-4" />

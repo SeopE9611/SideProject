@@ -213,7 +213,7 @@ export default function OrderLookupPage() {
             <div className="inline-flex items-center justify-center w-16 h-16 bg-card rounded-full mb-6 border border-border shadow-sm">
               <Search className="w-8 h-8" />
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+            <h1 className="text-3xl md:text-4xl font-bold mb-4">
               비회원 주문 조회
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">

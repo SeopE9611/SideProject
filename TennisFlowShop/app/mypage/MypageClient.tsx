@@ -209,7 +209,7 @@ export default function MypageClient({ user }: Props) {
                 <User className="h-6 w-6 bp-sm:h-8 bp-sm:w-8" />
               </div>
               <div className="flex-1 min-w-0">
-                <h1 className="text-2xl bp-sm:text-3xl bp-lg:text-5xl font-black mb-1 text-foreground truncate">안녕하세요, {user.name}님!</h1>
+                <h1 className="text-2xl bp-sm:text-3xl bp-lg:text-4xl font-bold mb-1 text-foreground truncate">안녕하세요, {user.name}님!</h1>
                 <p className="text-sm bp-sm:text-base bp-lg:text-xl text-foreground">도깨비테니스의 회원이 되어주셔서 감사합니다</p>
               </div>
             </div>

@@ -263,7 +263,7 @@ export default function OrderDetailPage() {
               <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-full border border-border bg-secondary shadow-sm">
                 <Package className="w-8 h-8" />
               </div>
-              <h1 className="text-4xl md:text-5xl font-bold mb-4">주문 상세 정보 오류</h1>
+              <h1 className="text-3xl md:text-4xl font-bold mb-4">주문 상세 정보 오류</h1>
               <p className="text-xl text-destructive">주문 정보를 불러오는 중 문제가 발생했습니다</p>
             </div>
           </div>
@@ -374,7 +374,7 @@ export default function OrderDetailPage() {
             <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-full border border-border bg-secondary shadow-sm">
               <Package className="w-8 h-8" />
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+            <h1 className="text-3xl md:text-4xl font-bold mb-4">
               <span className="text-primary">주문</span> 상세 정보
             </h1>
             <p className="text-xl text-muted-foreground">주문번호: {order._id.slice(-8)}</p>

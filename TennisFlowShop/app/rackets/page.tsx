@@ -43,8 +43,8 @@ export default async function RacketsPage({ searchParams }: { searchParams: Prom
 
         <SiteContainer variant="wide" className="relative">
           <div className="text-center text-foreground">
-            <h1 className="text-3xl bp-sm:text-4xl bp-md:text-5xl bp-lg:text-6xl font-bold mb-3 bp-sm:mb-4 bp-md:mb-6 text-foreground leading-tight">중고 라켓</h1>
-            <p className="text-base bp-sm:text-lg bp-md:text-2xl mb-5 bp-sm:mb-6 bp-md:mb-8 text-muted-foreground max-w-3xl mx-auto leading-relaxed px-4">
+            <h1 className="text-3xl bp-sm:text-4xl bp-md:text-4xl bp-lg:text-5xl font-bold mb-3 bp-sm:mb-4 bp-md:mb-6 text-foreground leading-tight">중고 라켓</h1>
+            <p className="text-base bp-sm:text-lg bp-md:text-xl mb-5 bp-sm:mb-6 bp-md:mb-8 text-muted-foreground max-w-3xl mx-auto leading-relaxed px-4">
               도깨비테니스의 중고 라켓으로 <span className="font-medium text-primary">합리적인 가격</span>에 대여하세요.
             </p>
             <div className="mt-2 flex items-center justify-center">

@@ -269,7 +269,7 @@ export default function OrderLookupResultsPage() {
               <div className="inline-flex items-center justify-center w-16 h-16 bg-card rounded-full mb-4 md:mb-6 border border-border shadow-sm">
                 <Package className="w-8 h-8" />
               </div>
-              <h1 className="text-4xl md:text-5xl font-bold mb-4">조회 오류</h1>
+              <h1 className="text-3xl md:text-4xl font-bold mb-4">조회 오류</h1>
               <p className="text-xl text-destructive">
                 주문 정보를 불러오는 중 문제가 발생했습니다
               </p>
@@ -339,7 +339,7 @@ export default function OrderLookupResultsPage() {
             <div className="inline-flex items-center justify-center w-16 h-16 bg-card rounded-full mb-4 md:mb-6 border border-border shadow-sm">
               <CheckCircle2 className="w-8 h-8" />
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+            <h1 className="text-3xl md:text-4xl font-bold mb-4">
               주문 조회 결과
             </h1>
             <p className="text-xl text-muted-foreground">

@@ -958,7 +958,7 @@ export default function CheckoutPage() {
                 <CreditCard className="h-8 w-8" />
               </div>
               <div>
-                <h1 className="text-2xl bp-sm:text-4xl bp-md:text-5xl font-bold mb-2">주문/결제</h1>
+                <h1 className="text-2xl bp-sm:text-3xl bp-md:text-4xl font-bold mb-2">주문/결제</h1>
                 <p className="text-muted-foreground">고객님의 배송/수령/결제정보를 확인 후 주문을 완료하세요</p>
               </div>
             </div>
