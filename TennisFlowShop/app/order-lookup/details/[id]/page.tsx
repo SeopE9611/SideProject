@@ -293,7 +293,31 @@ export default function OrderDetailPage() {
   }
 
   if (!order) {
-    return null;
+    return (
+      <div className="min-h-full bg-background">
+        <div className="container mx-auto px-4 py-10 md:px-6 md:py-14">
+          <div className="mx-auto max-w-3xl">
+            <Card className="rounded-2xl border border-border/60 bg-card/90 shadow-sm">
+              <CardContent className="flex flex-col items-center py-14 text-center">
+                <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-full border border-border bg-muted">
+                  <Package className="h-7 w-7 text-muted-foreground" />
+                </div>
+                <h2 className="text-2xl font-semibold text-foreground">
+                  주문 정보를 찾을 수 없습니다.
+                </h2>
+                <p className="mt-3 text-sm text-muted-foreground md:text-base">
+                  조회 링크가 만료되었거나 주문 정보가 존재하지 않습니다.
+                </p>
+                <Button className="mt-8" onClick={handleGoBack}>
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  이전 페이지로 돌아가기
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const rawShippingMethod = order.shippingInfo?.shippingMethod ?? order.shippingInfo?.deliveryMethod;

@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { AlertCircle, Eye, EyeOff, Loader2, Lock, Mail, Shield } from "lucide-react";
@@ -27,7 +28,34 @@ function getGuestOrderModeClient(): GuestOrderMode {
 
 type LoginField = "email" | "password";
 
-const RegisterTabPanel = dynamic(() => import("@/app/login/_components/RegisterTabPanel"), { loading: () => null });
+function RegisterTabPanelSkeleton() {
+  return (
+    <div className="space-y-4">
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-20" />
+        <Skeleton className="h-10 w-full" />
+      </div>
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-24" />
+        <Skeleton className="h-10 w-full" />
+      </div>
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-16" />
+        <Skeleton className="h-10 w-full" />
+      </div>
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-24" />
+        <Skeleton className="h-10 w-full" />
+      </div>
+      <Skeleton className="h-11 w-full" />
+    </div>
+  );
+}
+
+const RegisterTabPanel = dynamic(
+  () => import("@/app/login/_components/RegisterTabPanel"),
+  { loading: () => <RegisterTabPanelSkeleton /> },
+);
 
 // fetch 응답이 JSON이 아닐 때(res.json() 파싱 실패 등)도 화면/UX가 깨지지 않도록 안전 파싱
 async function readJsonSafe(res: Response): Promise<any | null> {
