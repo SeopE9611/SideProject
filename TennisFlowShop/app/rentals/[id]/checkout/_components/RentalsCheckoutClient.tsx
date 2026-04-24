@@ -697,13 +697,13 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                     )}
                   </div>
                   <div className="flex-1">
-                    <div className="text-sm text-muted-foreground">중고 라켓</div>
+                    <div className="text-sm text-foreground/80">중고 라켓</div>
                     <h3 className="font-semibold text-foreground">{initial.racket ? `${racketBrandLabel(initial.racket.brand)} ${initial.racket.model}` : ""}</h3>
                     <div className="flex items-center gap-2 mt-1">
                       <Badge variant={badgeToneVariant("neutral")} className="px-2 py-0.5 text-xs">
                         상태 {initial.racket?.condition}
                       </Badge>
-                      <span className="text-xs text-muted-foreground">대여 기간 {initial.period}일</span>
+                      <span className="text-xs text-foreground/75">대여 기간 {initial.period}일</span>
                     </div>
                   </div>
                 </div>
@@ -726,7 +726,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                     <RadioGroupItem value="택배수령" id="rentals-delivery-courier" />
                     <Label htmlFor="rentals-delivery-courier" className="flex-1 cursor-pointer font-medium">
                       택배 수령 (자택 또는 지정 장소로 배송)
-                      <div className="text-xs text-muted-foreground mt-1">결제 완료 후 택배 발송으로 진행됩니다.</div>
+                      <div className="text-xs text-foreground/75 mt-1">결제 완료 후 택배 발송으로 진행됩니다.</div>
                     </Label>
                     <Truck className="h-5 w-5 text-primary" />
                   </div>
@@ -735,7 +735,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                     <RadioGroupItem value="방문수령" id="rentals-delivery-visit" />
                     <Label htmlFor="rentals-delivery-visit" className="flex-1 cursor-pointer font-medium">
                       오프라인 매장 방문 (도깨비테니스 샵에서 직접 수령)
-                      <div className="text-xs text-muted-foreground mt-1">스트링 교체를 함께 신청하면 방문 접수 기준으로 처리됩니다.</div>
+                      <div className="text-xs text-foreground/75 mt-1">스트링 교체를 함께 신청하면 방문 접수 기준으로 처리됩니다.</div>
                     </Label>
                     <Building2 className="h-5 w-5 text-primary" />
                   </div>
@@ -759,16 +759,16 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                   <div className="mt-3 rounded-lg border border-border p-4 bg-card">
                     {selectedString ? (
                       <div className="space-y-1">
-                        <div className="text-xs text-muted-foreground">선택된 스트링</div>
+                        <div className="text-xs text-foreground/75">선택된 스트링</div>
                         <div className="font-semibold text-foreground">{selectedString.name}</div>
-                        <div className="text-sm text-muted-foreground">
+                        <div className="text-sm text-foreground/80">
                           {selectedString.price.toLocaleString()}원 + 교체 {selectedString.mountingFee.toLocaleString()}원
                         </div>
 
-                        <div className="mt-2 text-xs text-muted-foreground">* 대여 결제 시 입력한 교체 서비스 정보가 함께 접수됩니다. (구형/예외 건만 별도 신청서 이동)</div>
+                        <div className="mt-2 text-xs text-foreground/75">* 대여 결제 시 입력한 교체 서비스 정보가 함께 접수됩니다. (구형/예외 건만 별도 신청서 이동)</div>
                       </div>
                     ) : (
-                      <div className="text-sm text-muted-foreground">
+                      <div className="text-sm text-foreground/80">
                         현재는 <b>교체 서비스 미선택</b> 상태입니다. 필요하면 "스트링 선택"을 눌러 교체 서비스를 함께 진행할 수 있습니다.
                       </div>
                     )}
@@ -945,15 +945,15 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                     <div className="rounded-lg border border-border bg-secondary/30 p-4 space-y-3">
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-semibold text-foreground">포인트 사용</span>
-                        <span className="text-xs text-muted-foreground">
+                        <span className="text-xs text-foreground/75">
                           {pointsStatus === "ready" ? `사용 가능 ${pointsAvailable.toLocaleString()}P` : pointsStatus === "loading" ? "포인트 조회 중" : pointsStatus === "error" ? "포인트 조회 실패" : "로그인 시 조회"}
                         </span>
                       </div>
 
                       {!userId ? (
-                        <div className="text-sm text-muted-foreground">로그인 시 포인트 사용이 가능합니다.</div>
+                        <div className="text-sm text-foreground/80">로그인 시 포인트 사용이 가능합니다.</div>
                       ) : pointsStatus === "loading" ? (
-                        <div className="text-sm text-muted-foreground">포인트를 불러오는 중입니다.</div>
+                        <div className="text-sm text-foreground/80">포인트를 불러오는 중입니다.</div>
                       ) : pointsStatus === "error" ? (
                         <div className="text-sm text-destructive">포인트 조회에 실패했습니다. 새로고침 후 다시 시도해주세요.</div>
                       ) : (
@@ -994,7 +994,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                             className="border-2"
                           />
 
-                          <div className="text-xs text-muted-foreground">
+                          <div className="text-xs text-foreground/75">
                             보증금({initial.deposit.toLocaleString()}원)에는 포인트가 적용되지 않습니다. (최대 {normalizePoints(maxPointsToUse).toLocaleString()}P)
                           </div>
                         </>
@@ -1151,7 +1151,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                         </div>
 
                         <div className="flex justify-between items-center">
-                          <span className="text-muted-foreground">교체 서비스비</span>
+                          <span className="text-foreground/80">교체 서비스비</span>
                           <span className="font-semibold text-lg">{stringingFee.toLocaleString()}원</span>
                         </div>
                       </>
@@ -1160,7 +1160,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                     {/* 포인트 차감 표시 */}
                     {appliedPoints > 0 && (
                       <div className="flex justify-between items-center">
-                        <span className="text-muted-foreground">포인트 사용</span>
+                        <span className="text-foreground/80">포인트 사용</span>
                         <span className="font-semibold text-lg text-destructive">- {appliedPoints.toLocaleString()}P</span>
                       </div>
                     )}

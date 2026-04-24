@@ -181,7 +181,7 @@ export default function ReviewDetailClient({ reviewId }: Props) {
             <MessageSquare className="h-6 w-6" />
           </div>
           <div>
-            <h1 className="text-4xl font-bold tracking-tight text-foreground md:text-5xl">
+            <h1 className="text-4xl font-bold tracking-normal text-foreground md:text-5xl">
               리뷰 상세 보기
             </h1>
             <p className="mt-2 text-lg text-muted-foreground">

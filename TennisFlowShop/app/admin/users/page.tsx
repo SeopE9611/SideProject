@@ -12,7 +12,7 @@ export default async function AdminUsersPage() {
             <UsersIcon className="h-6 w-6" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">
+            <h1 className="text-3xl font-bold tracking-normal text-foreground">
               회원 관리
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">

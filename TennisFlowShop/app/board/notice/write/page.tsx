@@ -613,7 +613,7 @@ export default function NoticeWritePage() {
                 <Bell className="h-6 w-6" />
               </div>
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">
+                <h1 className="text-3xl md:text-4xl font-bold tracking-normal text-foreground">
                   {editId ? "공지사항 수정" : "공지사항 작성"}
                 </h1>
                 <p className="text-lg text-muted-foreground">

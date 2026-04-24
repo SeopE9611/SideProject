@@ -252,7 +252,7 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
                 <Bell className="h-5 w-5 sm:h-6 sm:w-6" />
               </div>
               <div>
-                <h1 className="text-2xl sm:text-3xl md:text-[2rem] font-bold tracking-tight text-foreground">고객센터 · 공지사항</h1>
+                <h1 className="text-2xl sm:text-3xl md:text-[2rem] font-bold tracking-normal text-foreground">고객센터 · 공지사항</h1>
                 <p className="text-sm sm:text-base text-muted-foreground">도깨비테니스 고객센터의 주요 안내와 공지사항을 확인하실 수 있습니다.</p>
               </div>
             </div>

@@ -1119,7 +1119,7 @@ export default function BoardDetailClient({
 
     return (
       <div
-        className={`group relative rounded-xl transition-all ${isReply ? "ml-10 border-l-2 border-border bg-muted/50 pl-4 py-3 dark:border-border " : "border border-border bg-card p-5 hover:border-border hover:shadow-sm dark:hover:border-border"}`}
+        className={`group relative rounded-xl transition-[background-color,border-color,box-shadow,color,opacity] ${isReply ? "ml-10 border-l-2 border-border bg-muted/50 pl-4 py-3 dark:border-border " : "border border-border bg-card p-5 hover:border-border hover:shadow-sm dark:hover:border-border"}`}
       >
         <div className="mb-3 flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
@@ -1178,7 +1178,7 @@ export default function BoardDetailClient({
                 </DropdownMenu>
               )}
 
-              <span className="text-xs text-muted-foreground">
+              <span className="text-xs text-foreground/75">
                 {new Date(comment.createdAt).toLocaleString("ko-KR", {
                   year: "2-digit",
                   month: "2-digit",
@@ -1375,7 +1375,7 @@ export default function BoardDetailClient({
         {/* 상단 헤더 (브레드크럼 + 버튼) */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <div className="mb-1 text-sm text-muted-foreground">
+            <div className="mb-1 text-sm text-foreground/80">
               <span className="font-medium text-success">게시판</span>
               <span className="mx-1">›</span>
               <Link
@@ -1390,7 +1390,7 @@ export default function BoardDetailClient({
             <h1 className="font-bold text-2xl tracking-normal text-foreground md:text-3xl">
               {config.boardTitle} 글 상세
             </h1>
-            <p className="mt-1 text-sm text-muted-foreground md:text-base">
+            <p className="mt-1 text-sm text-foreground/80 md:text-base">
               {config.boardTitle}에 작성된 글의 상세 내용을 확인할 수 있습니다.
             </p>
           </div>
@@ -1481,7 +1481,7 @@ export default function BoardDetailClient({
                     {item.title}
                   </CardTitle>
 
-                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 text-xs text-muted-foreground md:text-sm">
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 text-xs text-foreground/75 md:text-sm">
                     {/* 작성자 */}
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -1931,7 +1931,7 @@ export default function BoardDetailClient({
                     <span className="text-sm font-semibold text-foreground">
                       첨부파일
                     </span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-foreground/75">
                       {attachments.length}개
                     </span>
                   </div>
@@ -2026,7 +2026,7 @@ export default function BoardDetailClient({
                           <div className="flex w-full items-start gap-3">
                             <Icon className="mt-0.5 h-4 w-4 shrink-0" />
                             <div className="min-w-0">
-                              <p className="text-xs text-muted-foreground">
+                              <p className="text-xs text-foreground/75">
                                 {label}
                               </p>
                               <p className="line-clamp-2 text-sm font-medium text-foreground">
@@ -2052,7 +2052,7 @@ export default function BoardDetailClient({
               </section>
 
               {/* 안내 문구 */}
-              <p className="mt-6 text-xs text-muted-foreground">
+              <p className="mt-6 text-xs text-foreground/75">
                 게시글 이용 시 커뮤니티 가이드를 준수해 주세요. 신고가 반복되는
                 경우 글이 숨김 처리될 수 있습니다.
               </p>
@@ -2071,7 +2071,7 @@ export default function BoardDetailClient({
                 <DialogContent className="max-w-md">
                   <DialogHeader>
                     <DialogTitle>이 게시글을 신고하시겠습니까?</DialogTitle>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-foreground/80">
                       허위 신고 또는 악의적 신고는 이용 제한 대상이 될 수
                       있습니다.
                     </p>
@@ -2127,7 +2127,7 @@ export default function BoardDetailClient({
 
                   <div className="space-y-2">
                     {targetComment && (
-                      <div className="rounded-md border bg-muted px-3 py-2 text-xs text-muted-foreground">
+                      <div className="rounded-md border bg-muted px-3 py-2 text-xs text-foreground/75">
                         <div className="font-medium mb-1">
                           신고 대상: {targetComment.nickname ?? "회원"}
                         </div>
@@ -2264,7 +2264,7 @@ export default function BoardDetailClient({
                 ) : (
                   <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/50 px-4 py-3.5 dark:border-border">
                     <MessageSquare className="h-5 w-5 text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-foreground/80">
                       로그인 후 댓글을 작성할 수 있습니다.
                     </p>
                   </div>
@@ -2488,7 +2488,7 @@ export default function BoardDetailClient({
                         </h3>
                         <div className="flex gap-4 md:gap-6">
                           <div className="flex-1 rounded-lg border border-border bg-muted/50 dark:bg-background/40 p-4">
-                            <div className="text-xs text-muted-foreground mb-1">
+                            <div className="text-xs text-foreground/75 mb-1">
                               작성 글
                             </div>
                             <div className="text-2xl font-semibold text-foreground">
@@ -2496,7 +2496,7 @@ export default function BoardDetailClient({
                             </div>
                           </div>
                           <div className="flex-1 rounded-lg border border-border bg-muted/50 dark:bg-background/40 p-4">
-                            <div className="text-xs text-muted-foreground mb-1">
+                            <div className="text-xs text-foreground/75 mb-1">
                               작성댓글
                             </div>
                             <div className="text-2xl font-semibold text-foreground">
@@ -2525,7 +2525,7 @@ export default function BoardDetailClient({
                               >
                                 {p.title || "(제목 없음)"}
                               </Link>
-                              <span className="shrink-0 text-xs text-muted-foreground">
+                              <span className="shrink-0 text-xs text-foreground/75">
                                 {new Date(p.createdAt).toLocaleDateString(
                                   "ko-KR",
                                 )}
@@ -2535,7 +2535,7 @@ export default function BoardDetailClient({
                         </ul>
                       </div>
                     ) : (
-                      <p className="text-sm text-muted-foreground text-center py-4">
+                      <p className="text-sm text-foreground/80 text-center py-4">
                         아직 활동 기록이 없거나, 공개 게시글이 없습니다.
                       </p>
                     )}
@@ -2544,7 +2544,7 @@ export default function BoardDetailClient({
                   {/* 테니스 탭 */}
                   <TabsContent value="tennis" className="mt-5 md:mt-6">
                     {!authorOverview?.tennisProfile ? (
-                      <div className="text-sm text-muted-foreground text-center py-8">
+                      <div className="text-sm text-foreground/80 text-center py-8">
                         작성자가 테니스 프로필을 공개하지 않았습니다.
                       </div>
                     ) : (
@@ -2556,7 +2556,7 @@ export default function BoardDetailClient({
                           </h3>
                           <div className="grid grid-cols-3 gap-4">
                             <div className="rounded-lg border border-border bg-muted/50 dark:bg-background/40 p-3">
-                              <div className="text-xs text-muted-foreground mb-1">
+                              <div className="text-xs text-foreground/75 mb-1">
                                 실력
                               </div>
                               <div className="text-sm font-medium text-foreground">
@@ -2567,7 +2567,7 @@ export default function BoardDetailClient({
                               </div>
                             </div>
                             <div className="rounded-lg border border-border bg-muted/50 dark:bg-background/40 p-3">
-                              <div className="text-xs text-muted-foreground mb-1">
+                              <div className="text-xs text-foreground/75 mb-1">
                                 사용 손
                               </div>
                               <div className="text-sm font-medium text-foreground">
@@ -2578,7 +2578,7 @@ export default function BoardDetailClient({
                               </div>
                             </div>
                             <div className="rounded-lg border border-border bg-muted/50 dark:bg-background/40 p-3">
-                              <div className="text-xs text-muted-foreground mb-1">
+                              <div className="text-xs text-foreground/75 mb-1">
                                 스타일
                               </div>
                               <div className="text-sm font-medium text-foreground">
@@ -2729,7 +2729,7 @@ export default function BoardDetailClient({
                             소개
                           </h3>
                           <div className="rounded-lg border border-border bg-muted/50 dark:bg-background/40 p-4">
-                            <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
+                            <p className="text-sm text-foreground/80 whitespace-pre-wrap leading-relaxed">
                               {authorOverview.tennisProfile.note?.trim()
                                 ? authorOverview.tennisProfile.note
                                 : "소개를 입력하지 않았습니다."}

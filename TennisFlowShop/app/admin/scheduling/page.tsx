@@ -312,7 +312,7 @@ export default function StringingSettingsPage() {
                 <Settings2 className="h-7 w-7" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold tracking-tight text-foreground">
+                <h1 className="text-3xl font-bold tracking-normal text-foreground">
                   {/* was: text-foreground */}교체 서비스 예약 · 영업일 설정
                 </h1>
                 <p className="text-sm text-muted-foreground mt-1">

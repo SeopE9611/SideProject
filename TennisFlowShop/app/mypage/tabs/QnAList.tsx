@@ -148,7 +148,7 @@ export default function QnAList() {
       {qnas.map((qna) => (
         <Card
           key={qna.id}
-          className="group relative overflow-hidden border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
+          className="group relative overflow-hidden border border-border bg-card shadow-sm transition-[box-shadow,border-color,background-color,color,opacity] duration-200 hover:shadow-lg"
         >
           <div
             className="absolute inset-0 border border-border/40 bg-secondary/30 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
@@ -194,7 +194,7 @@ export default function QnAList() {
             </div>
 
             <div className="flex items-center justify-between pt-4 border-t border-border/60 dark:border-border/60">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2 text-sm text-foreground/80">
                 <Calendar className="h-4 w-4" />
                 <span>{qna.date}</span>
               </div>
@@ -229,7 +229,7 @@ export default function QnAList() {
             더 보기
           </Button>
         ) : qnas.length ? (
-          <span className="text-sm text-muted-foreground">
+          <span className="text-sm text-foreground/80">
             마지막 페이지입니다
           </span>
         ) : null}

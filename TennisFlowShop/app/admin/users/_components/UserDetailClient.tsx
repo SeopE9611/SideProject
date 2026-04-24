@@ -705,7 +705,7 @@ export default function UserDetailClient({ id }: { id: string }) {
 
               <div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <h1 className="text-xl md:text-2xl font-bold tracking-tight">
+                  <h1 className="text-xl md:text-2xl font-bold tracking-normal">
                     {user.name ?? "(이름없음)"}
                   </h1>
                   {(() => {

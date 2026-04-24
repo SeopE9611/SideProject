@@ -24,7 +24,7 @@ type Props = {
 };
 
 const numberClass =
-  "block tabular-nums font-extrabold tracking-tight leading-none whitespace-nowrap";
+  "block tabular-nums font-extrabold tracking-normal leading-none whitespace-nowrap";
 
 // 글자 길이에 따라 '스케일'만 변경 (폰트사이즈는 고정)
 function scaleByLength(len: number) {
@@ -36,7 +36,7 @@ function scaleByLength(len: number) {
 }
 const numberBaseClass =
   "text-3xl font-bold text-foreground " +
-  "tabular-nums tracking-tight leading-none whitespace-nowrap";
+  "tabular-nums tracking-normal leading-none whitespace-nowrap";
 
 const formatFull = (n: number) => `₩${n.toLocaleString()}`;
 

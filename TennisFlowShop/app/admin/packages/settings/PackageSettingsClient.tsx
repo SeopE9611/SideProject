@@ -325,7 +325,7 @@ export default function PackageSettingsClient() {
                   <Settings className="h-8 w-8 text-foreground" />
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold tracking-tight text-foreground">
+                  <h1 className="text-3xl font-bold tracking-normal text-foreground">
                     패키지 설정
                   </h1>
                   <p className="mt-1 text-muted-foreground">

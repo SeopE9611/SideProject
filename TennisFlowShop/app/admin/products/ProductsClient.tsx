@@ -340,7 +340,7 @@ export default function ProductsClient() {
               <Package className="h-8 w-8 text-foreground" />
             </div>
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">
+              <h1 className="text-3xl md:text-4xl font-bold tracking-normal text-foreground">
                 상품 관리
               </h1>
               <p className="mt-2 text-base text-muted-foreground">

@@ -94,7 +94,7 @@
 //                     주문 목록으로 돌아가기
 //                   </Link>
 //                 </Button>
-//                 <h1 className="text-3xl font-bold tracking-tight md:text-4xl">주문 상세 정보</h1>
+//                 <h1 className="text-3xl font-bold tracking-normal md:text-4xl">주문 상세 정보</h1>
 //                 <p className="mt-1 text-muted-foreground">주문 ID: {orderId}</p>
 //               </div>
 //             </div>

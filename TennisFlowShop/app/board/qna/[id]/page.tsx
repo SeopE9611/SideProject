@@ -245,7 +245,7 @@ export default function QnaDetailPage() {
                   <MessageSquare className="h-5 w-5 sm:h-6 sm:w-6" />
                 </div>
                 <div>
-                  <h1 className="text-2xl sm:text-3xl md:text-[2rem] font-bold tracking-tight text-foreground">
+                  <h1 className="text-2xl sm:text-3xl md:text-[2rem] font-bold tracking-normal text-foreground">
                     고객센터 · Q&amp;A
                   </h1>
                   <p className="text-sm sm:text-base text-muted-foreground">

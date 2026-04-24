@@ -854,7 +854,7 @@ export default function BoardPage() {
             <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-border bg-secondary text-foreground">
               <MessageSquare className="h-6 w-6" />
             </div>
-            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">
+            <h1 className="text-3xl md:text-4xl font-bold tracking-normal text-foreground">
               게시판
             </h1>
           </div>

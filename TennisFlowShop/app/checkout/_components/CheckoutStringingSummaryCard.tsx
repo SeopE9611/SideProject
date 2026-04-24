@@ -36,7 +36,7 @@ export default function CheckoutStringingSummaryCard({ adapter }: Props) {
             <ClipboardList className="h-4 w-4 text-primary" />
             교체 서비스 요약
           </p>
-          <p className="mt-1.5 text-xs text-muted-foreground">
+          <p className="mt-1.5 text-xs text-foreground/75">
             주문과 함께 접수될 내용을 미리 확인하세요.
           </p>
         </div>

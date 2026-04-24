@@ -257,7 +257,7 @@ export default function AdminNotificationsClient() {
           <ChevronRight className="h-3.5 w-3.5" />
           <span>목록</span>
         </nav>
-        <h1 className="text-3xl font-bold tracking-tight">알림 발송함</h1>
+        <h1 className="text-3xl font-bold tracking-normal">알림 발송함</h1>
         <p className="text-sm text-muted-foreground">
           알림 발송 현황을 모니터링하고 실패한 알림을 재시도할 수 있습니다
         </p>

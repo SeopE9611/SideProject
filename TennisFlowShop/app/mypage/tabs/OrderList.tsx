@@ -409,7 +409,7 @@ export default function OrderList() {
         return (
           <Card
             key={order.id}
-            className="group relative overflow-hidden border-0 bg-card shadow-md transition-all duration-300 bp-sm:hover:shadow-xl bp-sm:hover:-translate-y-1"
+            className="group relative overflow-hidden border-0 bg-card shadow-md transition-[box-shadow,border-color,background-color,color,opacity] duration-200 bp-sm:hover:shadow-xl bp-sm:"
           >
             <div
               className="pointer-events-none absolute inset-0 bg-muted/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
@@ -444,7 +444,7 @@ export default function OrderList() {
                         </Badge>
                       ) : null}
                     </div>
-                    <div className="mt-1 flex flex-wrap items-center gap-x-1 gap-y-1 text-sm text-muted-foreground">
+                    <div className="mt-1 flex flex-wrap items-center gap-x-1 gap-y-1 text-sm text-foreground/80">
                       <Calendar className="h-3 w-3" />
                       {formatDate(order.date)}
                     </div>
@@ -486,7 +486,7 @@ export default function OrderList() {
                 <div className="flex items-center gap-3 p-3 rounded-lg bg-muted mb-4">
                   <User className="h-4 w-4 text-muted-foreground" />
                   <div>
-                    <div className="text-xs text-muted-foreground uppercase tracking-wide">
+                    <div className="text-xs text-foreground/75 uppercase tracking-wide">
                       주문자
                     </div>
                     <div className="font-medium text-foreground">
@@ -526,7 +526,7 @@ export default function OrderList() {
                         <div className="text-sm font-medium text-foreground break-words">
                           {item.name}
                         </div>
-                        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+                        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-foreground/75">
                           <span>{(item.price ?? 0).toLocaleString()}원</span>
                           <span className="text-muted-foreground">×</span>
                           <span>{item.quantity}개</span>
@@ -626,7 +626,7 @@ export default function OrderList() {
                           className={
                             stringServiceCTAKind === "apply" ||
                             stringServiceCTAKind === "add"
-                              ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-md hover:shadow-lg transition-all duration-200"
+                              ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-md hover:shadow-lg transition-[box-shadow,border-color,background-color,color,opacity] duration-200"
                               : "border-border hover:border-border hover:bg-primary/10 dark:border-border dark:hover:border-border dark:hover:bg-primary/20 bg-transparent"
                           }
                           asChild
@@ -864,7 +864,7 @@ export default function OrderList() {
             더 보기
           </Button>
         ) : items.length ? (
-          <span className="text-sm text-muted-foreground">
+          <span className="text-sm text-foreground/80">
             마지막 페이지입니다
           </span>
         ) : null}

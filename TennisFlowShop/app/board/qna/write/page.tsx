@@ -551,7 +551,7 @@ export default function QnaWritePage() {
                 <MessageSquare className="h-6 w-6" />
               </div>
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">
+                <h1 className="text-3xl md:text-4xl font-bold tracking-normal text-foreground">
                   문의하기
                 </h1>
                 <p className="text-lg text-muted-foreground">

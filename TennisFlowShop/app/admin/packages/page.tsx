@@ -703,7 +703,7 @@ export default function PackageOrdersClient() {
           </div>
           <div>
             {/* 토큰화 */}
-            <h1 className="text-4xl font-bold tracking-tight text-foreground">
+            <h1 className="text-4xl font-bold tracking-normal text-foreground">
               패키지 관리
             </h1>
             <p className="mt-2 text-lg text-muted-foreground">

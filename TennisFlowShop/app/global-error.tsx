@@ -31,7 +31,7 @@ export default function GlobalError({
               <AlertTriangle className="h-7 w-7" />
             </div>
 
-            <h1 className="mb-2 text-3xl font-extrabold tracking-tight">
+            <h1 className="mb-2 text-3xl font-extrabold tracking-normal">
               <span className="text-destructive">서비스</span>에 오류가
               발생했어요
             </h1>

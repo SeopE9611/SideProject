@@ -188,7 +188,7 @@ export default async function BoardPostDetailPage({
                   <Settings className="h-8 w-8 text-primary" />
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold tracking-tight text-foreground">
+                  <h1 className="text-3xl font-bold tracking-normal text-foreground">
                     게시물 상세 보기
                   </h1>
                   <p className="mt-1 text-muted-foreground">

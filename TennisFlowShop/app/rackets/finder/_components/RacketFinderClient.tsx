@@ -544,7 +544,7 @@ export default function RacketFinderClient() {
             <Search className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            <h1 className="text-2xl font-bold tracking-normal text-foreground">
               라켓 검색
             </h1>
             <p className="text-sm text-muted-foreground">

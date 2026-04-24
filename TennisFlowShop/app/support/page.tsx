@@ -381,7 +381,9 @@ export default function SupportPage() {
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted/30 shadow-lg">
               <Headset className="h-6 w-6 text-foreground" />
             </div>
-            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">고객센터</h1>
+            <h1 className="text-3xl md:text-4xl font-bold tracking-normal text-foreground">
+              고객센터
+            </h1>
           </div>
           <p className="text-sm md:text-base text-muted-foreground max-w-xl mx-auto">공지사항과 문의 내역을 한 곳에서 확인하고, 궁금한 점을 남겨주세요.</p>
         </div>

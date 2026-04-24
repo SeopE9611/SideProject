@@ -951,7 +951,7 @@ export default function ActivityFeed() {
                                   교체 {applicationStatusLabel(app)}
                                 </Badge>
                               )}
-                              <span className="text-xs text-muted-foreground">
+                              <span className="text-xs text-foreground/75">
                                 {formatDate(date)}
                               </span>
                             </div>
@@ -1126,7 +1126,7 @@ export default function ActivityFeed() {
                                 교체 {applicationStatusLabel(app)}
                               </Badge>
                             )}
-                            <span className="text-xs text-muted-foreground">
+                            <span className="text-xs text-foreground/75">
                               {formatDate(date)}
                             </span>
                           </div>
@@ -1200,7 +1200,7 @@ export default function ActivityFeed() {
             <h3 className="text-lg bp-sm:text-xl font-semibold text-foreground mb-2">
               표시할 활동이 없습니다
             </h3>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-foreground/80">
               필터를 조정하거나 검색어를 변경해보세요.
             </p>
           </div>
@@ -1221,7 +1221,7 @@ export default function ActivityFeed() {
                       <span className="text-sm font-semibold text-foreground">
                         {formatDayHeader(dayKey)}
                       </span>
-                      <span className="text-xs text-muted-foreground ml-2">
+                      <span className="text-xs text-foreground/75 ml-2">
                         {dayItems.length}건
                       </span>
                     </div>
@@ -1308,7 +1308,7 @@ export default function ActivityFeed() {
                                       </Badge>
                                     )}
 
-                                    <span className="text-xs text-muted-foreground">
+                                    <span className="text-xs text-foreground/75">
                                       {formatDate(date)}
                                     </span>
 
@@ -1329,12 +1329,12 @@ export default function ActivityFeed() {
                                   <h3 className="text-base bp-sm:text-lg font-bold text-foreground mb-1 truncate">
                                     {title}
                                   </h3>
-                                  <p className="text-sm text-muted-foreground">
+                                  <p className="text-sm text-foreground/80">
                                     {kindLabel(g.kind)}
                                   </p>
                                   {g.kind !== "application" &&
                                   linkedCount > 1 ? (
-                                    <p className="text-xs text-muted-foreground mt-1">
+                                    <p className="text-xs text-foreground/75 mt-1">
                                       대표 신청서 외 {linkedCount - 1}건
                                     </p>
                                   ) : null}
@@ -1598,7 +1598,7 @@ export default function ActivityFeed() {
 
       {total > 0 && flat.length > 0 && (
         <div className="text-center pt-4">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-foreground/80">
             전체 {total}건 중 {flat.length}건 로딩됨
           </p>
         </div>

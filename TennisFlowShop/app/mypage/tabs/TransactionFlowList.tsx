@@ -569,13 +569,13 @@ export default function TransactionFlowList() {
     <div className="space-y-4">
       {/* Enhanced Filter Tabs */}
       <OrdersScopeTabs activeScope={scope} />
-      {scope === 'todo' ? <p className="text-xs text-muted-foreground">해야 할 일은 구매확정·운송장 등록·교체확정·리뷰 작성처럼 지금 바로 처리할 항목만 모아 보여줍니다.</p> : null}
-      <p className="text-xs text-muted-foreground">주문 구매확정과 교체서비스 확정은 별도로 처리됩니다.</p>
+      {scope === 'todo' ? <p className="text-xs text-foreground/75">해야 할 일은 구매확정·운송장 등록·교체확정·리뷰 작성처럼 지금 바로 처리할 항목만 모아 보여줍니다.</p> : null}
+      <p className="text-xs text-foreground/75">주문 구매확정과 교체서비스 확정은 별도로 처리됩니다.</p>
       {items.length === 0 ? (
         <Card className="border-0 bg-card">
           <CardContent className="p-8 text-center">
             <Package className="mx-auto mb-3 h-8 w-8 text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-foreground/80">
               {scope === 'application'
                 ? '표시할 서비스 신청이 없습니다.'
                 : scope === 'todo'
@@ -657,7 +657,7 @@ export default function TransactionFlowList() {
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <p className="text-base font-semibold text-foreground">{displayTitle}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">
+                    <p className="mt-1 text-xs text-foreground/75">
                       {displayMetaLabel} · {displayDateLabel} {formatDate(displayDateValue)}
                       {standaloneApplicationIdMeta}
                     </p>
@@ -1065,13 +1065,13 @@ export default function TransactionFlowList() {
                             type="button"
                             className={`
         group relative flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium
-        transition-all duration-200 ease-out
+        transition-[box-shadow,border-color,background-color,color,opacity] duration-200 ease-out
         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-1
   ${isSecondaryOpen ? "border-border bg-secondary text-foreground shadow-sm" : "border-border bg-background text-muted-foreground hover:bg-card hover:text-foreground"}
       `}
                             onClick={() => setExpandedSecondaryKey((prev) => (prev === g.key ? null : g.key))}
                           >
-                            <Sparkles className={`h-3.5 w-3.5 transition-all duration-200 ${isSecondaryOpen ? 'text-primary' : 'text-muted-foreground/70 group-hover:text-primary/70'}`} />
+                            <Sparkles className={`h-3.5 w-3.5 transition-[box-shadow,border-color,background-color,color,opacity] duration-200 ${isSecondaryOpen ? 'text-primary' : 'text-muted-foreground/70 group-hover:text-primary/70'}`} />
                             <span>{isSecondaryOpen ? '기타 작업 닫기' : '기타 작업 더보기'}</span>
                             <span
                               className={`

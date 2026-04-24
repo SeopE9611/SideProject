@@ -228,7 +228,7 @@ export default function ReviewsClient() {
             <Star className="h-6 w-6 text-primary" />
           </div>
           <div>
-            <h1 className="text-4xl font-bold tracking-tight text-foreground md:text-5xl">
+            <h1 className="text-4xl font-bold tracking-normal text-foreground md:text-5xl">
               리뷰 관리
             </h1>
             <p className="mt-2 text-lg text-muted-foreground">

@@ -170,7 +170,7 @@ export default function PrivacyPage() {
           </Link>
 
           <div className="space-y-4">
-            <h1 className="text-4xl font-bold tracking-tight">개인정보처리방침</h1>
+            <h1 className="text-4xl font-bold tracking-normal">개인정보처리방침</h1>
             <p className="text-muted-foreground max-w-3xl leading-relaxed">도깨비테니스(이하 '회사')는 이용자의 개인정보를 중요시하며, 「개인정보 보호법」을 준수하기 위하여 노력하고 있습니다.</p>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <RefreshCw className="h-4 w-4" />

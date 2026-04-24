@@ -495,7 +495,7 @@ export default function ApplicationsClient() {
               <Card
                 key={app.id}
                 data-cy="mypage-application-summary-card"
-                className="group relative overflow-hidden border-0 bg-card shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+                className="group relative overflow-hidden border-0 bg-card shadow-md transition-[box-shadow,border-color,background-color,color,opacity] duration-200 hover:shadow-xl"
               >
                 <div
                   className="absolute inset-0 bg-muted/30 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
@@ -510,7 +510,7 @@ export default function ApplicationsClient() {
                       <h3 className="text-base font-semibold text-foreground">
                         {title}
                       </h3>
-                      <p className="mt-1 text-xs text-muted-foreground">
+                      <p className="mt-1 text-xs text-foreground/75">
                         {app.type} · 신청일 {formatDateTime(app.appliedAt)}
                       </p>
                     </div>
@@ -808,7 +808,7 @@ export default function ApplicationsClient() {
             더 보기
           </Button>
         ) : applications.length ? (
-          <span className="text-sm text-muted-foreground">
+          <span className="text-sm text-foreground/80">
             마지막 페이지입니다
           </span>
         ) : null}

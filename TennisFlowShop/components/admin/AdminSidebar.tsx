@@ -39,7 +39,7 @@ export default function AdminSidebar({ defaultCollapsed = false, badgeCounts = {
         )}
       >
         <div className={cn("relative flex items-center justify-between", collapsed ? "px-2 py-2" : "px-3 py-3")}>
-          {!collapsed && <div className="text-sm font-semibold tracking-tight text-foreground">도깨비테니스</div>}
+          {!collapsed && <div className="text-sm font-semibold tracking-normal text-foreground">도깨비테니스</div>}
           <button
             onClick={() => setCollapsed((v) => !v)}
             className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-border bg-card text-muted-foreground hover:bg-background dark:border-border dark:bg-card dark:text-muted-foreground"
