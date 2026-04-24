@@ -13,7 +13,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { getSocialProviderBadgeSpec } from "@/lib/badge-style";
 import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import { useUnreadMessageCount } from "@/lib/hooks/useUnreadMessageCount";
-import { ChevronDown, ChevronRight, LifeBuoy, Loader2, Mail, Menu, ShoppingCart, UserIcon } from "lucide-react";
+import { ChevronDown, ChevronRight, Headset, Loader2, Mail, Menu, ShoppingCart, UserIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -929,7 +929,10 @@ const Header = () => {
               {/* 검색 (PC 전용) */}
               <div className="justify-self-center min-w-0 w-full px-2 xl:px-4">
                 <div className="w-full max-w-[560px] xl:max-w-[640px] mx-auto">
-                  <SearchPreview placeholder="스트링 / 라켓 검색..." className="w-full rounded-full bg-background/80 border border-border focus-within:ring-2 focus-within:ring-ring transition-[background-color,color,border-color,box-shadow,opacity] duration-200" />
+                  <SearchPreview
+                    placeholder="스트링 / 라켓 검색..."
+                    className="w-full rounded-full bg-background/80 border border-border focus-within:ring-2 focus-within:ring-ring transition-[background-color,color,border-color,box-shadow,opacity] duration-200"
+                  />
                 </div>
               </div>
 
@@ -964,12 +967,17 @@ const Header = () => {
                     className="relative rounded-full hover:bg-secondary p-2 transition-[background-color,color,border-color,box-shadow,opacity] duration-300 focus-visible:ring-2 ring-ring shrink-0"
                     aria-label="고객센터"
                   >
-                    <LifeBuoy className="h-5 w-5" />
+                    <Headset className="h-12 w-12" />
                   </Button>
                 </Link>
                 <Link href="/cart">
-                  <Button variant="ghost" size="icon" className="relative rounded-full hover:bg-secondary p-2 transition-[background-color,color,border-color,box-shadow,opacity] duration-300 focus-visible:ring-2 ring-ring shrink-0" aria-label="장바구니">
-                    <ShoppingCart className="h-5 w-5" />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="relative rounded-full hover:bg-secondary p-2 transition-[background-color,color,border-color,box-shadow,opacity] duration-300 focus-visible:ring-2 ring-ring shrink-0"
+                    aria-label="장바구니"
+                  >
+                    <ShoppingCart className="h-12 w-12" />
                     {cartCount > 0 && <span className="absolute -top-1 -right-1 text-[10px] min-w-[18px] h-[18px] px-[5px] rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold">{cartBadge}</span>}
                   </Button>
                 </Link>
