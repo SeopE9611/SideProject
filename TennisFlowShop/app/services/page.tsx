@@ -289,7 +289,7 @@ export default async function ServicesPage() {
 
           <div className="grid grid-cols-1 bp-md:grid-cols-2 bp-lg:grid-cols-3 gap-6 md:gap-8">
             {stringTypes.map((type) => (
-              <Card key={type.id} className="group relative overflow-hidden border border-border shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 bg-card">
+              <Card key={type.id} className="group relative overflow-hidden border border-border shadow-sm hover:shadow-md transition-[box-shadow,border-color,background-color] duration-200 bg-card">
                 <div className="h-2 bg-muted"></div>
 
                 <CardHeader className="text-center pb-4">
@@ -389,7 +389,7 @@ export default async function ServicesPage() {
             {pricingInfo.map((item) => (
               <Card
                 key={item.service}
-                className={`relative overflow-hidden border border-border shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 ${item.popular ? "bg-card text-foreground ring-1 ring-border/60" : "bg-card"}`}
+                className={`relative overflow-hidden border border-border shadow-sm hover:shadow-md transition-[box-shadow,border-color,background-color] duration-200 ${item.popular ? "bg-card text-foreground ring-1 ring-border/60" : "bg-card"}`}
               >
                 {item.popular && <div className="absolute top-0 right-0 bg-primary text-primary-foreground px-3 py-1 text-xs font-bold rounded-bl-lg">인기</div>}
 
@@ -487,7 +487,7 @@ export default async function ServicesPage() {
               <div key={step.step} className="relative group">
                 {processSteps.indexOf(step) < processSteps.length - 1 && <div className="hidden bp-lg:block absolute top-16 left-full w-full h-0.5 bg-primary/20 dark:bg-primary/30 transform translate-x-4 z-0"></div>}
 
-                <Card className="relative z-10 text-center border border-border shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 bg-card">
+                <Card className="relative z-10 text-center border border-border shadow-sm hover:shadow-md transition-[box-shadow,border-color,background-color] duration-200 bg-card">
                   <CardContent className="p-4 bp-md:p-8">
                     <div className="relative mb-6">
                       <div className="w-20 h-20 bg-secondary rounded-full flex items-center justify-center text-primary mx-auto shadow-sm transition-shadow duration-300 group-hover:shadow-md">{step.icon}</div>
@@ -519,7 +519,7 @@ export default async function ServicesPage() {
 
           {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
             {reviews.map((review, index) => (
-              <Card key={index} className="border border-border shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 bg-card">
+              <Card key={index} className="border border-border shadow-sm hover:shadow-md transition-[box-shadow,border-color,background-color] duration-200 bg-card">
                 <CardContent className="p-5 bp-md:p-8">
                   <div className="flex items-center mb-4">
                     <Image src={review.avatar || '/placeholder.svg'} alt={review.name} width={60} height={60} className="rounded-full mr-4" />

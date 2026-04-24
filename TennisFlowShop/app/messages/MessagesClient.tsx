@@ -339,7 +339,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                           <button
                             key={m.id}
                             className={cn(
-                              "w-full rounded-lg border border-border/60 bg-card p-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-sm",
+                              "w-full rounded-lg border border-border/60 bg-card p-4 text-left transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-sm",
                               active &&
                                 "border-border bg-secondary shadow-sm",
                               !active &&
@@ -403,7 +403,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                               {isUnread && (
                                 <Badge
                                   variant="brand"
-                                  className="shrink-0 px-2 py-1 text-[10px] font-semibold leading-none"
+                                  className="shrink-0 px-2 py-1 text-xs font-semibold leading-none"
                                 >
                                   NEW
                                 </Badge>

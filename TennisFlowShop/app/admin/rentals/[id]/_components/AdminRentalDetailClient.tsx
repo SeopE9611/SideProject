@@ -490,7 +490,7 @@ export default function AdminRentalDetailClient() {
                   <Settings className="h-8 w-8 text-primary" />
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold tracking-tight text-foreground">
+                  <h1 className="text-3xl font-bold tracking-normal text-foreground">
                     대여 관리
                   </h1>
                   <p className="mt-1 text-muted-foreground">

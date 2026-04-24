@@ -96,7 +96,7 @@ function fmt(n: number | null | undefined, suffix?: string) {
 function SpecItem({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex flex-col">
-      <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+      <span className="text-xs uppercase tracking-wider text-foreground/75">
         {label}
       </span>
       <span className="text-sm font-semibold tabular-nums text-foreground">
@@ -152,7 +152,7 @@ export default function FinderRacketCard({ racket }: { racket: FinderRacket }) {
   );
 
   return (
-    <article className="group relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg">
+    <article className="group relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md">
       <div className="p-4 bp-sm:p-5">
         <div className="flex flex-col bp-sm:flex-row gap-4">
           {/* 이미지 영역 */}
@@ -309,7 +309,7 @@ export default function FinderRacketCard({ racket }: { racket: FinderRacket }) {
               )}
 
               {rentalDisabledReason && (
-                <span className="text-[11px] text-muted-foreground">
+                <span className="text-xs text-foreground/75">
                   ({rentalDisabledReason})
                 </span>
               )}

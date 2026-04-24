@@ -161,7 +161,7 @@ export default function ApplicantInfoSection({
   // 에러 텍스트는 "있을 때만" 렌더 (불필요한 상시 여백 제거)
   const errorText = (key: string) =>
     touched[key] && fieldErrors[key] ? fieldErrors[key] : "";
-  const errCls = "mt-1 px-3 text-[11px] leading-tight text-destructive";
+  const errCls = "mt-1 px-3 text-xs leading-tight text-destructive";
 
   return (
     <div className="relative space-y-5">

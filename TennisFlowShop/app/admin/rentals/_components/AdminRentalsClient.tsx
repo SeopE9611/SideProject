@@ -633,7 +633,7 @@ export default function AdminRentalsClient() {
       <div className="mx-auto max-w-7xl mb-5">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-4xl font-semibold tracking-tight">
+            <h1 className="text-4xl font-semibold tracking-normal">
               대여(라켓) 관리
             </h1>
             <p className="mt-1 text-xs text-muted-foreground">
@@ -814,7 +814,7 @@ export default function AdminRentalsClient() {
             )}
           </div>
           {/* “이 화면에서 무엇이 다른지”를 즉시 이해시키는 장치 */}
-          <div className="px-6 -mt-2 mb-2 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
+          <div className="px-6 -mt-2 mb-2 flex flex-wrap items-center gap-2 text-sm text-foreground/75">
             <Badge
               variant={getKindBadge().variant}
               className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap")}
@@ -1076,7 +1076,7 @@ export default function AdminRentalsClient() {
                                   );
                                 })()}
                                 {r.stringingApplicationStatus && (
-                                  <p className="text-[11px] text-muted-foreground">
+                                  <p className="text-sm text-foreground/75">
                                     신청 상태: {r.stringingApplicationStatus}
                                   </p>
                                 )}
@@ -1114,7 +1114,7 @@ export default function AdminRentalsClient() {
                                   </p>
                                 )}
                                 {cancelQuickSignal && (
-                                  <p className="mt-1 text-[11px] text-muted-foreground">
+                                  <p className="mt-1 text-sm text-foreground/75">
                                     {cancelQuickSignal.label === "검토 가능"
                                       ? "환불 계좌 준비가 완료되어 검토 가능합니다."
                                       : "환불 계좌 확인이 필요합니다."}
@@ -1122,7 +1122,7 @@ export default function AdminRentalsClient() {
                                 )}
                                 {cancelQuickSignal &&
                                   r.cancelRequest?.refundBankLabel && (
-                                    <p className="mt-1 text-[11px] text-muted-foreground">
+                                    <p className="mt-1 text-sm text-foreground/75">
                                       환불 은행:{" "}
                                       {r.cancelRequest.refundBankLabel}
                                     </p>
@@ -1130,48 +1130,48 @@ export default function AdminRentalsClient() {
 
                                 {/* 교체서비스 포함 안내 */}
                                 {r.withStringService && (
-                                  <p className="mt-2 text-[11px] text-muted-foreground">
+                                  <p className="mt-2 text-sm text-foreground/75">
                                     교체서비스 포함 대여입니다. (신청서 연결 시
                                     신청서에서 상태/배송을 관리합니다)
                                   </p>
                                 )}
                                 {r.stringingReceptionLabel && (
-                                  <p className="mt-1 text-[11px] text-muted-foreground">
+                                  <p className="mt-1 text-sm text-foreground/75">
                                     접수 방식: {r.stringingReceptionLabel}
                                   </p>
                                 )}
                                 {typeof r.stringingRacketCount === "number" &&
                                   r.stringingRacketCount > 0 && (
-                                    <p className="mt-1 text-[11px] text-muted-foreground">
+                                    <p className="mt-1 text-sm text-foreground/75">
                                       라인 수: {r.stringingRacketCount}개
                                     </p>
                                   )}
                                 {Array.isArray(r.stringingNames) &&
                                   r.stringingNames.length > 0 && (
-                                    <p className="mt-1 text-[11px] text-muted-foreground">
+                                    <p className="mt-1 text-sm text-foreground/75">
                                       스트링: {r.stringingNames.join(", ")}
                                     </p>
                                   )}
                                 {r.stringingTensionSummary && (
-                                  <p className="mt-1 text-[11px] text-muted-foreground">
+                                  <p className="mt-1 text-sm text-foreground/75">
                                     텐션: {r.stringingTensionSummary}
                                   </p>
                                 )}
                                 {r.stringingReservationLabel && (
-                                  <p className="mt-1 text-[11px] text-muted-foreground">
+                                  <p className="mt-1 text-sm text-foreground/75">
                                     예약: {r.stringingReservationLabel}
                                   </p>
                                 )}
-                                <p className="mt-2 text-[11px] text-muted-foreground">
+                                <p className="mt-2 text-sm text-foreground/75">
                                   시나리오:{" "}
                                   <span className="font-medium text-foreground">
                                     {flow.label}
                                   </span>
                                 </p>
-                                <p className="mt-1 text-[11px] text-muted-foreground">
+                                <p className="mt-1 text-sm text-foreground/75">
                                   수령 방법: {pickup.label}
                                 </p>
-                                <p className="mt-1 text-[11px] text-muted-foreground">
+                                <p className="mt-1 text-sm text-foreground/75">
                                   {settlement.label}
                                 </p>
                                 {warnMissingApp && (
@@ -1183,7 +1183,7 @@ export default function AdminRentalsClient() {
 
                                 {/* 신청서 연결이 있으면 툴팁에서 바로 이동 링크 제공 */}
                                 {r.stringingApplicationId && (
-                                  <p className="mt-1 text-[11px] text-muted-foreground">
+                                  <p className="mt-1 text-sm text-foreground/75">
                                     연결 신청서:{" "}
                                     <span className="font-mono">
                                       {shortenId(
@@ -1207,7 +1207,7 @@ export default function AdminRentalsClient() {
                       <TableCell className={tdClasses}>
                         <div className="flex flex-col items-center">
                           <span>{r.customer?.name || "-"}</span>
-                          <span className="text-[11px] text-muted-foreground">
+                          <span className="text-sm text-foreground/75">
                             {r.customer?.email || "-"}
                           </span>
                         </div>
@@ -1258,14 +1258,14 @@ export default function AdminRentalsClient() {
                           <span className="font-semibold">
                             {won(r.amount.total)}
                           </span>
-                          <span className="text-[10px] text-muted-foreground">
+                          <span className="text-xs text-foreground/75">
                             수수료: {won(r.amount.fee)} / 보증금:{" "}
                             {won(r.amount.deposit)}
                           </span>
                           {/* 스트링/교체비: 있을 때만 추가 노출 (대여만 한 케이스 UI 과밀 방지) */}
                           {((r.amount.stringPrice ?? 0) > 0 ||
                             (r.amount.stringingFee ?? 0) > 0) && (
-                            <span className="text-[10px] text-muted-foreground">
+                            <span className="text-xs text-foreground/75">
                               {(r.amount.stringPrice ?? 0) > 0
                                 ? `스트링: ${won(r.amount.stringPrice ?? 0)}`
                                 : ""}

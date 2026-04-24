@@ -317,7 +317,7 @@ function KpiCard({ title, value, sub, icon, trend, spark }: { title: string; val
         <div className="rounded-lg bg-primary/10 p-2 text-primary transition-colors group-hover:bg-primary/15 dark:bg-primary/20 dark:group-hover:bg-primary/25">{icon}</div>
       </CardHeader>
       <CardContent className="space-y-3">
-        <div className="text-3xl font-bold tracking-tight">{value}</div>
+        <div className="text-3xl font-bold tracking-normal">{value}</div>
         {sub && <p className="text-sm text-muted-foreground">{sub}</p>}
         <div className="flex items-end justify-between gap-3">
           {trend && (
@@ -397,7 +397,7 @@ export default function AdminDashboardClient() {
       <div className="space-y-8 pb-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="space-y-1">
-            <h1 className="text-4xl font-bold tracking-tight">관리자 대시보드</h1>
+            <h1 className="text-4xl font-bold tracking-normal">관리자 대시보드</h1>
             <p className="text-sm text-muted-foreground">최근 운영 지표를 불러오는 중입니다.</p>
           </div>
           <Button variant="outline" disabled className="shrink-0">
@@ -408,7 +408,7 @@ export default function AdminDashboardClient() {
 
         <section className="space-y-4">
           <div>
-            <h2 className="text-2xl font-semibold tracking-tight">핵심 지표</h2>
+            <h2 className="text-2xl font-semibold tracking-normal">핵심 지표</h2>
             <p className="text-sm text-muted-foreground">주요 비즈니스 메트릭</p>
           </div>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -428,7 +428,7 @@ export default function AdminDashboardClient() {
 
         <section className="space-y-4">
           <div>
-            <h2 className="text-2xl font-semibold tracking-tight">즉시 처리 필요</h2>
+            <h2 className="text-2xl font-semibold tracking-normal">즉시 처리 필요</h2>
             <p className="text-sm text-muted-foreground">긴급 대응이 필요한 항목</p>
           </div>
           <Card>
@@ -472,7 +472,7 @@ export default function AdminDashboardClient() {
     <div className="space-y-8 pb-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-1">
-          <h1 className="text-4xl font-bold tracking-tight">관리자 대시보드</h1>
+          <h1 className="text-4xl font-bold tracking-normal">관리자 대시보드</h1>
           <p className="text-sm text-muted-foreground">
             최근 {data.series.days}일 데이터 · {data.series.fromYmd} ~ {data.series.toYmd}
           </p>
@@ -485,7 +485,7 @@ export default function AdminDashboardClient() {
 
       <section className="space-y-4">
         <div>
-          <h2 className="text-2xl font-semibold tracking-tight">핵심 지표</h2>
+          <h2 className="text-2xl font-semibold tracking-normal">핵심 지표</h2>
           <p className="text-sm text-muted-foreground">주요 비즈니스 메트릭</p>
         </div>
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -523,7 +523,7 @@ export default function AdminDashboardClient() {
 
       <section className="space-y-4">
         <div>
-          <h2 className="text-2xl font-semibold tracking-tight">즉시 처리 필요</h2>
+          <h2 className="text-2xl font-semibold tracking-normal">즉시 처리 필요</h2>
           <p className="text-sm text-muted-foreground">긴급 대응이 필요한 항목</p>
         </div>
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -641,7 +641,7 @@ export default function AdminDashboardClient() {
 
       <section className="space-y-4">
         <div>
-          <h2 className="text-2xl font-semibold tracking-tight">매출 분석</h2>
+          <h2 className="text-2xl font-semibold tracking-normal">매출 분석</h2>
           <p className="text-sm text-muted-foreground">수익 트렌드 및 인기 상품</p>
         </div>
 
@@ -753,7 +753,7 @@ export default function AdminDashboardClient() {
 
       <section className="space-y-4">
         <div>
-          <h2 className="text-2xl font-semibold tracking-tight">상세 처리 대기 목록</h2>
+          <h2 className="text-2xl font-semibold tracking-normal">상세 처리 대기 목록</h2>
           <p className="text-sm text-muted-foreground">즉시 확인이 필요한 항목 상세</p>
         </div>
         <div className="grid gap-5 md:grid-cols-2">
@@ -1008,7 +1008,7 @@ export default function AdminDashboardClient() {
 
       <section className="space-y-4">
         <div>
-          <h2 className="text-2xl font-semibold tracking-tight">추가 지표</h2>
+          <h2 className="text-2xl font-semibold tracking-normal">추가 지표</h2>
           <p className="text-sm text-muted-foreground">리뷰, 포인트, 커뮤니티 활동</p>
         </div>
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
@@ -1098,7 +1098,7 @@ export default function AdminDashboardClient() {
 
       <section className="space-y-4">
         <div>
-          <h2 className="text-2xl font-semibold tracking-tight">재고 관리</h2>
+          <h2 className="text-2xl font-semibold tracking-normal">재고 관리</h2>
           <p className="text-sm text-muted-foreground">재고 부족 및 품절 상품</p>
         </div>
         <div className="grid gap-5 lg:grid-cols-2">
@@ -1167,7 +1167,7 @@ export default function AdminDashboardClient() {
 
       <section className="space-y-4">
         <div>
-          <h2 className="text-2xl font-semibold tracking-tight">최근 활동</h2>
+          <h2 className="text-2xl font-semibold tracking-normal">최근 활동</h2>
           <p className="text-sm text-muted-foreground">최신 주문 및 교체 서비스 내역</p>
         </div>
         <div className="grid gap-5 lg:grid-cols-2">
@@ -1260,7 +1260,7 @@ export default function AdminDashboardClient() {
 
       <section className="space-y-4">
         <div>
-          <h2 className="text-2xl font-semibold tracking-tight">리뷰 추이</h2>
+          <h2 className="text-2xl font-semibold tracking-normal">리뷰 추이</h2>
           <p className="text-sm text-muted-foreground">최근 14일 리뷰 작성 현황</p>
         </div>
         <Card className="border-border/40 bg-card/50 backdrop-blur">
@@ -1284,7 +1284,7 @@ export default function AdminDashboardClient() {
 
       <section className="space-y-4">
         <div>
-          <h2 className="text-2xl font-semibold tracking-tight">상태 분포</h2>
+          <h2 className="text-2xl font-semibold tracking-normal">상태 분포</h2>
           <p className="text-sm text-muted-foreground">주문, 결제, 교체 서비스 상태별 분포</p>
         </div>
         <div className="grid gap-5 lg:grid-cols-3">

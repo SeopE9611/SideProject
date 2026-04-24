@@ -96,7 +96,7 @@ function WishButton({
       className={cn(
         dim,
         "flex-shrink-0 rounded-md border shadow-md",
-        "transition-all duration-200",
+        "transition-colors duration-200",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         disabled && "cursor-not-allowed opacity-60",
         // 비활성 기본
@@ -116,7 +116,7 @@ function WishButton({
       <Heart
         className={cn(
           iconDim,
-          "transition-all duration-200 mx-auto",
+          "transition-colors duration-200 mx-auto",
           inWish ? "fill-current scale-110" : "scale-100",
         )}
       />
@@ -153,13 +153,13 @@ function RatingStars({
 }
 
 const productCardSurfaceClass =
-  "group h-full overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg";
+  "group h-full overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md";
 const productImageWrapClass =
   "relative w-full overflow-hidden rounded-t-2xl bg-secondary/40 aspect-[5/4] bp-md:aspect-square";
 const productMetaPillClass =
   "flex items-center justify-between rounded-xl border border-border/60 bg-secondary/50 px-2 py-1.5";
 const productOverlayActionClass =
-  "absolute inset-x-0 bottom-0 flex items-center gap-2 border-t border-border/60 bg-card/90 px-3 py-3 opacity-0 transition-all duration-200 group-hover:opacity-100";
+  "absolute inset-x-0 bottom-0 flex items-center gap-2 border-t border-border/60 bg-card/90 px-3 py-3 opacity-0 transition-colors duration-200 group-hover:opacity-100";
 
 type Props = {
   product: Product;
@@ -279,7 +279,7 @@ const ProductCard = React.memo(
             <div className="flex-1 p-4 bp-md:p-5">
               <div className="flex flex-col gap-3 mb-4">
                 <div className="flex-1">
-                  <div className="text-xs sm:text-sm text-muted-foreground mb-1 font-medium">
+                  <div className="text-sm text-foreground/80 mb-1 font-medium">
                     {brandLabel}
                   </div>
                   <h3 className="text-base sm:text-lg md:text-xl font-bold mb-2 text-foreground line-clamp-2">
@@ -290,7 +290,7 @@ const ProductCard = React.memo(
                       avg={ratingAvg}
                       starClassName="w-3 h-3 sm:w-4 sm:h-4"
                     />
-                    <span className="text-xs sm:text-sm text-muted-foreground">
+                    <span className="text-sm text-foreground/80">
                       ({ratingCount})
                     </span>
                   </div>
@@ -483,7 +483,7 @@ const ProductCard = React.memo(
             </div>
 
             {featureEntries.length > 0 && (
-              <div className="mb-3 grid grid-cols-2 gap-1.5 text-[11px] sm:text-xs">
+              <div className="mb-3 grid grid-cols-2 gap-1.5 text-xs sm:text-sm">
                 {featureEntries.map((feature, index) => (
                   <div
                     key={feature.key}
@@ -522,7 +522,7 @@ const ProductCard = React.memo(
               <Button
                 type="button"
                 variant="outline"
-                className="w-full rounded-lg h-10 px-3 text-[11px] sm:text-xs whitespace-nowrap text-center"
+                className="w-full rounded-lg h-10 px-3 text-xs sm:text-sm whitespace-nowrap text-center"
                 onClick={handleStringSingleBuy}
                 disabled={isSoldOut}
               >
@@ -534,7 +534,7 @@ const ProductCard = React.memo(
               <Button
                 type="button"
                 variant="outline"
-                className="w-full rounded-lg h-10 px-3 text-[11px] sm:text-xs whitespace-nowrap text-center"
+                className="w-full rounded-lg h-10 px-3 text-xs sm:text-sm whitespace-nowrap text-center"
                 onClick={handleStringServiceApply}
                 disabled={isSoldOut}
               >

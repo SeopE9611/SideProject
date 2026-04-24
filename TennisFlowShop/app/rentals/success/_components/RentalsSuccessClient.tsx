@@ -374,7 +374,7 @@ export default function RentalsSuccessClient({ data }: Props) {
 
             <CardFooter className="bg-muted/30 p-4 md:p-6">
               <div className="flex w-full flex-col gap-4 sm:flex-row">
-                <Button className="h-12 flex-1 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md" asChild>
+                <Button className="h-12 flex-1 shadow-sm transition-[box-shadow,background-color,color] duration-200 hover:shadow-md" asChild>
                   <Link href="/mypage?tab=orders" className="flex items-center gap-2">
                     <Package className="h-5 w-5" />
                     대여 내역 확인
@@ -382,14 +382,14 @@ export default function RentalsSuccessClient({ data }: Props) {
                   </Link>
                 </Button>
                 {stringingApplicationHref ? (
-                  <Button variant="outline" className="h-12 flex-1 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md" asChild>
+                  <Button variant="outline" className="h-12 flex-1 shadow-sm transition-[box-shadow,background-color,color] duration-200 hover:shadow-md" asChild>
                     <Link href={stringingApplicationHref} className="flex items-center gap-2">
                       교체 서비스 신청 내역 보기
                       <ArrowRight className="h-4 w-4" />
                     </Link>
                   </Button>
                 ) : null}
-                <Button variant="ghost" className="h-12 flex-1 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md" asChild>
+                <Button variant="ghost" className="h-12 flex-1 shadow-sm transition-[box-shadow,background-color,color] duration-200 hover:shadow-md" asChild>
                   <Link href="/rackets" className="flex items-center gap-2">
                     다른 라켓 보기
                     <ArrowRight className="h-4 w-4" />

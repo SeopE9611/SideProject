@@ -32,7 +32,7 @@ export default function HomeMarketPreview() {
           </h2>
         </div>
         <Link
-          className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs bp-sm:text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-medium text-foreground/80 transition-colors hover:bg-muted hover:text-foreground"
           href="/board/market"
         >
           더보기
@@ -74,11 +74,11 @@ export default function HomeMarketPreview() {
               >
                 <div className="flex min-w-0 flex-1 items-center gap-2.5">
                   <span className="hidden bp-sm:inline-flex h-1.5 w-1.5 shrink-0 rounded-full bg-foreground/30" />
-                  <span className="min-w-0 flex-1 truncate text-sm bp-sm:text-[15px] text-foreground/85 group-hover:text-foreground transition-colors">
+                  <span className="min-w-0 flex-1 truncate text-sm bp-sm:text-[15px] text-foreground/90 group-hover:text-foreground transition-colors">
                     {p.title}
                   </span>
                 </div>
-                <span className="shrink-0 text-[11px] bp-sm:text-xs tabular-nums text-muted-foreground">
+                <span className="shrink-0 text-xs tabular-nums text-foreground/75">
                   {new Date(p.createdAt).toLocaleDateString("ko-KR", {
                     month: "short",
                     day: "numeric",
