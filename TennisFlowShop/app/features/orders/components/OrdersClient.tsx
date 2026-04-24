@@ -711,7 +711,7 @@ export default function OrdersClient() {
             </p>
           </div>
           {/* 운영자용: “이 화면에서 뭘 보고 처리해야 하는지”를 한 번에 이해시키는 장치 */}
-          <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
+          <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-sm text-foreground/75">
             <Badge
               className={cn(
                 badgeBase,
@@ -1064,7 +1064,7 @@ export default function OrdersClient() {
                                   />
                                   {isLinkedProductOrder &&
                                     linkedApplication && (
-                                      <p className="text-[11px] text-muted-foreground">
+                                      <p className="text-sm text-foreground/75">
                                         신청 상태: {linkedApplication.status}
                                       </p>
                                     )}
@@ -1104,7 +1104,7 @@ export default function OrdersClient() {
                                     </p>
                                   )}
                                   {cancelQuickSignal && (
-                                    <p className="mt-1 text-[11px] text-muted-foreground">
+                                    <p className="mt-1 text-sm text-foreground/75">
                                       {cancelQuickSignal.label === "검토 가능"
                                         ? "환불 계좌 준비가 완료되어 검토 가능합니다."
                                         : "환불 계좌 확인이 필요합니다."}
@@ -1112,32 +1112,32 @@ export default function OrdersClient() {
                                   )}
                                   {cancelQuickSignal &&
                                     order.refundBankLabel && (
-                                      <p className="mt-1 text-[11px] text-muted-foreground">
+                                      <p className="mt-1 text-sm text-foreground/75">
                                         환불 은행: {order.refundBankLabel}
                                       </p>
                                     )}
                                   {order.__type === "stringing_application" &&
                                     order.stringSummary && (
-                                      <p className="mt-1 text-[11px] text-muted-foreground">
+                                      <p className="mt-1 text-sm text-foreground/75">
                                         장착 상품: {order.stringSummary}
                                       </p>
                                     )}
 
-                                  <p className="mt-2 text-[11px] text-muted-foreground">
+                                  <p className="mt-2 text-sm text-foreground/75">
                                     주문/신청 시나리오:{" "}
                                     <span className="font-medium text-foreground">
                                       {flow.label}
                                     </span>
                                   </p>
-                                  <p className="mt-1 text-[11px] text-muted-foreground">
+                                  <p className="mt-1 text-sm text-foreground/75">
                                     {settlement.label}
                                   </p>
-                                  <p className="mt-1 text-[11px] text-muted-foreground">
+                                  <p className="mt-1 text-sm text-foreground/75">
                                     포함 범위: 주문 + 신청 (대여 제외)
                                   </p>
 
                                   {isLinkedProductOrder && (
-                                    <p className="mt-2 text-[11px] text-muted-foreground">
+                                    <p className="mt-2 text-sm text-foreground/75">
                                       연결: 교체서비스 신청서와 통합 처리(같은
                                       테두리 색)
                                     </p>
@@ -1146,19 +1146,19 @@ export default function OrdersClient() {
                                     linkedApplication && (
                                       <>
                                         {linkedReceptionLabel && (
-                                          <p className="mt-1 text-[11px] text-muted-foreground">
+                                          <p className="mt-1 text-sm text-foreground/75">
                                             접수 방식: {linkedReceptionLabel}
                                           </p>
                                         )}
                                         {linkedApplication.stringSummary && (
-                                          <p className="mt-1 text-[11px] text-muted-foreground">
+                                          <p className="mt-1 text-sm text-foreground/75">
                                             스트링:{" "}
                                             {linkedApplication.stringSummary}
                                           </p>
                                         )}
                                         {(linkedApplication as any)
                                           ?.tensionSummary && (
-                                          <p className="mt-1 text-[11px] text-muted-foreground">
+                                          <p className="mt-1 text-sm text-foreground/75">
                                             텐션:{" "}
                                             {
                                               (linkedApplication as any)
@@ -1168,7 +1168,7 @@ export default function OrdersClient() {
                                         )}
                                         {(linkedApplication as any)
                                           ?.reservationLabel && (
-                                          <p className="mt-1 text-[11px] text-muted-foreground">
+                                          <p className="mt-1 text-sm text-foreground/75">
                                             예약:{" "}
                                             {
                                               (linkedApplication as any)
@@ -1180,7 +1180,7 @@ export default function OrdersClient() {
                                     )}
                                   {order.__type === "stringing_application" &&
                                     order.linkedOrderId && (
-                                      <p className="mt-1 text-[11px] text-muted-foreground">
+                                      <p className="mt-1 text-sm text-foreground/75">
                                         연결 주문:{" "}
                                         <span className="font-mono">
                                           {shortenId(order.linkedOrderId)}
@@ -1213,7 +1213,7 @@ export default function OrdersClient() {
                                 </span>
                               )}
                             </span>
-                            <span className="text-[11px] text-muted-foreground">
+                            <span className="text-sm text-foreground/75">
                               {order.customer.email}
                             </span>
                           </div>

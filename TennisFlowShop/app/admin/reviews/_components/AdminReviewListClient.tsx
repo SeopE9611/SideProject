@@ -423,7 +423,7 @@ export default function AdminReviewListClient() {
             <Star className="h-6 w-6" />
           </div>
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">
+            <h1 className="text-3xl md:text-4xl font-bold tracking-normal text-foreground">
               리뷰 관리
             </h1>
             <p className="mt-2 text-base text-muted-foreground">

@@ -47,8 +47,8 @@ const Footer = () => {
                   </div>
 
                   <div className="space-y-0.5">
-                    <div className="font-brand-bold text-xl font-bold tracking-tight text-foreground bp-sm:text-2xl">도깨비테니스</div>
-                    <div className="text-[10px] font-semibold tracking-[0.08em] text-muted-foreground/85">Powered by Tennis Flow</div>
+                    <div className="font-brand-bold text-xl font-bold tracking-normal text-foreground bp-sm:text-2xl">도깨비테니스</div>
+                    <div className="text-xs font-semibold tracking-[0.08em] text-foreground/75">Powered by Tennis Flow</div>
                   </div>
                 </Link>
               </div>
@@ -177,7 +177,7 @@ const Footer = () => {
                 </div>
                 <p className="text-foreground/85">상호: 도깨비테니스 | 대표: 김재민 | 사업자등록번호: 329-39-01593 | 통신판매업신고: 제 2026 - 서울동작 - 0548 호</p>
                 <p className="text-foreground/80">사업장 소재지: 서울특별시 동작구 여의대방로62길 16(대방동)</p>
-                <p className="text-[11px] text-muted-foreground">&copy; {new Date().getFullYear()} 도깨비테니스. All rights reserved.</p>
+                <p className="text-sm text-foreground/75">&copy; {new Date().getFullYear()} 도깨비테니스. All rights reserved.</p>
               </div>
 
               <Link href="/" className="group flex shrink-0 items-center gap-2.5 self-start bp-md:self-auto" aria-label="도깨비테니스 홈으로 이동">
@@ -187,8 +187,8 @@ const Footer = () => {
                 </div>
 
                 <div className="space-y-0.5 text-left">
-                  <div className="font-brand-bold text-sm font-bold tracking-tight text-foreground bp-sm:text-base">도깨비테니스</div>
-                  <div className="text-[9px] font-semibold tracking-[0.08em] text-muted-foreground/80">Powered by Tennis Flow</div>
+                  <div className="font-brand-bold text-sm font-bold tracking-normal text-foreground bp-sm:text-base">도깨비테니스</div>
+                  <div className="text-[11px] font-semibold tracking-[0.08em] text-foreground/75">Powered by Tennis Flow</div>
                 </div>
               </Link>
             </div>

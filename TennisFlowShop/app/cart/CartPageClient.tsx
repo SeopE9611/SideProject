@@ -721,11 +721,11 @@ export default function CartPageClient() {
                                 <>
                                   <Badge
                                     variant="warning"
-                                    className="mt-1 px-2 py-0.5 text-[11px] font-medium"
+                                    className="mt-1 px-2 py-0.5 text-xs font-medium"
                                   >
                                     장착 대상 스트링(정리 필요)
                                   </Badge>
-                                  <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] leading-snug text-foreground/90 dark:text-foreground">
+                                  <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs leading-snug text-foreground/90 dark:text-foreground">
                                     <span className="inline-flex items-center gap-1.5">
                                       <ArrowRight className="h-3.5 w-3.5 shrink-0" />
                                       장착 대상 스트링은 <b>1종만</b>{" "}
@@ -764,7 +764,7 @@ export default function CartPageClient() {
                                 {bundleEditHref && (
                                   <Link
                                     href={bundleEditHref}
-                                    className="mt-1 text-[11px] font-medium text-primary hover:underline dark:text-primary"
+                                    className="mt-1 text-xs font-medium text-primary hover:underline dark:text-primary"
                                   >
                                     번들 수량/스트링 변경
                                   </Link>
@@ -772,7 +772,7 @@ export default function CartPageClient() {
 
                                 {Number.isFinite(maxStock) && (
                                   <span
-                                    className={`mt-1 text-[11px] ${item.quantity >= maxStock ? "text-destructive" : "text-muted-foreground"}`}
+                                    className={`mt-1 text-xs ${item.quantity >= maxStock ? "text-destructive" : "text-muted-foreground"}`}
                                   >
                                     현재 가용 수량: {maxStock}개
                                   </span>
@@ -846,14 +846,14 @@ export default function CartPageClient() {
                                 {lockStepper && bundleEditHref ? (
                                   <Link
                                     href={bundleEditHref}
-                                    className="mt-1 text-[11px] font-medium text-primary hover:underline dark:text-primary"
+                                    className="mt-1 text-xs font-medium text-primary hover:underline dark:text-primary"
                                   >
                                     번들 수량/스트링 변경
                                   </Link>
                                 ) : (
                                   Number.isFinite(maxStock) && (
                                     <span
-                                      className={`mt-1 text-[11px] ${item.quantity >= maxStock ? "text-destructive" : "text-muted-foreground"}`}
+                                      className={`mt-1 text-xs ${item.quantity >= maxStock ? "text-destructive" : "text-muted-foreground"}`}
                                     >
                                       현재 가용 수량: {maxStock}개
                                     </span>
@@ -863,7 +863,7 @@ export default function CartPageClient() {
                             )}
 
                             <div className="order-2 ml-auto bp-sm:ml-0 text-right">
-                              <div className="text-xs text-muted-foreground">
+                              <div className="text-sm text-foreground/75">
                                 합계
                               </div>
                               <div className="tabular-nums text-lg font-semibold text-foreground">

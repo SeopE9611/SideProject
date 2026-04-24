@@ -105,7 +105,7 @@ export default function RacketsClient() {
             <Link
               key={it.id}
               href={`/rackets/${it.id}`}
-              className="group overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg"
+              className="group overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md"
             >
               <div className="relative aspect-[4/5] bg-secondary/40">
                 {it.images?.[0] ? (

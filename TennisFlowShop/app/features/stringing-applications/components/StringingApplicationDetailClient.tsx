@@ -886,7 +886,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
               <div className="flex items-center space-x-4">
                 <div className="bg-card rounded-full p-3 shadow-md">{isAdmin ? <Settings className="h-8 w-8 text-foreground" /> : <Target className="h-8 w-8 text-foreground" />}</div>
                 <div>
-                  <h1 className={cn('font-bold tracking-tight text-foreground', isAdmin ? 'text-3xl' : 'text-2xl bp-sm:text-3xl')}>{isAdmin ? '스트링 신청 관리' : '교체서비스 신청 상세'}</h1>
+                  <h1 className={cn('font-bold tracking-normal text-foreground', isAdmin ? 'text-3xl' : 'text-2xl bp-sm:text-3xl')}>{isAdmin ? '스트링 신청 관리' : '교체서비스 신청 상세'}</h1>
                   <p className="mt-1 text-muted-foreground break-all text-sm">{isAdmin ? `신청 번호: #${toShortApplicationId(data.id)}` : `신청번호: ${data.id}`}</p>
                 </div>
               </div>
@@ -1431,7 +1431,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
 
                             {/* 패스 정보가 있는 경우에만 상세 숫자 표시 */}
                             {data.packageInfo.passId && (
-                              <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-muted-foreground">
+                              <div className="mt-2 flex flex-wrap gap-2 text-sm text-foreground/75">
                                 {data.packageInfo.passTitle && <span className="font-medium">{data.packageInfo.passTitle}</span>}
                                 {typeof data.packageInfo.packageSize === 'number' && <span>총 {data.packageInfo.packageSize}회</span>}
                                 {typeof data.packageInfo.usedCount === 'number' && <span>사용 {data.packageInfo.usedCount}회</span>}
@@ -1452,12 +1452,12 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                             <Clock className="h-3.5 w-3.5 text-foreground" />
                             <span className="font-semibold">패키지 차감 이력</span>
                           </div>
-                          <span className="text-[11px] text-muted-foreground">총 {totalPackageConsumed}회</span>
+                          <span className="text-sm text-foreground/75">총 {totalPackageConsumed}회</span>
                         </div>
                         <ul className="space-y-1.5">
                           {data.packageConsumptions.map((c) => (
                             <li key={c.id} className="flex items-center justify-between">
-                              <span className="text-[11px] text-muted-foreground">
+                              <span className="text-sm text-foreground/75">
                                 {new Date(c.usedAt).toLocaleString('ko-KR', {
                                   dateStyle: 'short',
                                   timeStyle: 'short',
@@ -1465,7 +1465,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                               </span>
                               <span className="text-[11px] font-medium text-primary">
                                 {c.count ?? 1}회 사용
-                                {c.reverted && <span className="ml-1 text-[10px] text-destructive">(복원됨)</span>}
+                                {c.reverted && <span className="ml-1 text-xs text-destructive">(복원됨)</span>}
                               </span>
                             </li>
                           ))}

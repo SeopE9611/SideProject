@@ -639,7 +639,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
               <span className="mx-1">›</span>
               <span>{config.boardTitle}</span>
             </div>
-            <h1 className="font-bold text-2xl tracking-tight text-foreground md:text-3xl">{config.boardTitle}</h1>
+            <h1 className="font-bold text-2xl tracking-normal text-foreground md:text-3xl">{config.boardTitle}</h1>
             <p className="mt-1 text-sm text-foreground md:text-base">{config.boardDescription}</p>
           </div>
 

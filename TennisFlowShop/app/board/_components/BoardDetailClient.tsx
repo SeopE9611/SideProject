@@ -1387,7 +1387,7 @@ export default function BoardDetailClient({
               <span className="mx-1">›</span>
               <span>글 상세</span>
             </div>
-            <h1 className="font-bold text-2xl tracking-tight text-foreground md:text-3xl">
+            <h1 className="font-bold text-2xl tracking-normal text-foreground md:text-3xl">
               {config.boardTitle} 글 상세
             </h1>
             <p className="mt-1 text-sm text-muted-foreground md:text-base">
@@ -1641,7 +1641,7 @@ export default function BoardDetailClient({
                       <p className="mb-1 text-xs font-medium text-muted-foreground">
                         판매 가격
                       </p>
-                      <p className="text-3xl font-extrabold tracking-tight text-foreground">
+                      <p className="text-3xl font-extrabold tracking-normal text-foreground">
                         {item.marketMeta.price?.toLocaleString?.() ?? "-"}
                         <span className="ml-0.5 text-lg font-semibold">원</span>
                       </p>
@@ -1694,7 +1694,7 @@ export default function BoardDetailClient({
                     {/* 보조 메타 정보 2열 그리드 */}
                     <div className="grid grid-cols-2 divide-x divide-border text-sm md:grid-cols-4">
                       <div className="px-4 py-3 md:px-5">
-                        <p className="mb-0.5 text-[11px] text-muted-foreground">
+                        <p className="mb-0.5 text-sm text-foreground/75">
                           브랜드
                         </p>
                         <p className="font-semibold text-foreground">
@@ -1702,7 +1702,7 @@ export default function BoardDetailClient({
                         </p>
                       </div>
                       <div className="px-4 py-3 md:px-5">
-                        <p className="mb-0.5 text-[11px] text-muted-foreground">
+                        <p className="mb-0.5 text-sm text-foreground/75">
                           모델명
                         </p>
                         <p className="font-semibold text-foreground">
@@ -1713,7 +1713,7 @@ export default function BoardDetailClient({
                         </p>
                       </div>
                       <div className="px-4 py-3 md:px-5 border-t border-border md:border-t-0">
-                        <p className="mb-0.5 text-[11px] text-muted-foreground">
+                        <p className="mb-0.5 text-sm text-foreground/75">
                           카테고리
                         </p>
                         <p className="font-semibold text-foreground">
@@ -1725,7 +1725,7 @@ export default function BoardDetailClient({
                         </p>
                       </div>
                       <div className="px-4 py-3 md:px-5 border-t border-border md:border-t-0">
-                        <p className="mb-0.5 text-[11px] text-muted-foreground">
+                        <p className="mb-0.5 text-sm text-foreground/75">
                           등록일
                         </p>
                         <p className="font-semibold text-foreground">
@@ -1742,7 +1742,7 @@ export default function BoardDetailClient({
                         <span className="text-sm font-semibold text-foreground">
                           상태 설명
                         </span>
-                        <span className="text-[11px] text-muted-foreground">
+                        <span className="text-sm text-foreground/75">
                           판매자가 작성한 실물 컨디션 메모입니다.
                         </span>
                       </div>
@@ -1780,7 +1780,7 @@ export default function BoardDetailClient({
                                   key={key}
                                   className="rounded-lg border border-border bg-muted/30 px-3 py-2.5"
                                 >
-                                  <p className="text-[11px] text-muted-foreground">
+                                  <p className="text-sm text-foreground/75">
                                     {getMarketRacketFieldLabel(key)}
                                   </p>
                                   <p className="mt-0.5 text-sm font-semibold text-foreground">
@@ -1812,7 +1812,7 @@ export default function BoardDetailClient({
                                   key={key}
                                   className="rounded-lg border border-border bg-muted/30 px-3 py-2.5"
                                 >
-                                  <p className="text-[11px] text-muted-foreground">
+                                  <p className="text-sm text-foreground/75">
                                     {getMarketRacketFieldLabel(key)}
                                   </p>
                                   <p className="mt-0.5 text-sm font-semibold text-foreground">
@@ -1824,7 +1824,7 @@ export default function BoardDetailClient({
                                 </div>
                               ))}
                               <div className="rounded-lg border border-border bg-muted/30 px-3 py-2.5">
-                                <p className="text-[11px] text-muted-foreground">
+                                <p className="text-sm text-foreground/75">
                                   {getMarketRacketFieldLabel("pattern")}
                                 </p>
                                 <p className="mt-0.5 text-sm font-semibold text-foreground">
@@ -1834,7 +1834,7 @@ export default function BoardDetailClient({
                                 </p>
                               </div>
                               <div className="rounded-lg border border-border bg-muted/30 px-3 py-2.5">
-                                <p className="text-[11px] text-muted-foreground">
+                                <p className="text-sm text-foreground/75">
                                   {getMarketRacketFieldLabel("gripSize")}
                                 </p>
                                 <p className="mt-0.5 text-sm font-semibold text-foreground">
@@ -1850,7 +1850,7 @@ export default function BoardDetailClient({
                         /* 스트링 스펙 */
                         <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
                           <div className="rounded-lg border border-border bg-muted/30 px-3 py-2.5">
-                            <p className="text-[11px] text-muted-foreground">
+                            <p className="text-sm text-foreground/75">
                               재질
                             </p>
                             <p className="mt-0.5 text-sm font-semibold text-foreground">
@@ -1860,7 +1860,7 @@ export default function BoardDetailClient({
                             </p>
                           </div>
                           <div className="rounded-lg border border-border bg-muted/30 px-3 py-2.5">
-                            <p className="text-[11px] text-muted-foreground">
+                            <p className="text-sm text-foreground/75">
                               게이지
                             </p>
                             <p className="mt-0.5 text-sm font-semibold text-foreground">
@@ -1868,7 +1868,7 @@ export default function BoardDetailClient({
                             </p>
                           </div>
                           <div className="rounded-lg border border-border bg-muted/30 px-3 py-2.5">
-                            <p className="text-[11px] text-muted-foreground">
+                            <p className="text-sm text-foreground/75">
                               색상
                             </p>
                             <p className="mt-0.5 text-sm font-semibold text-foreground">
@@ -1878,7 +1878,7 @@ export default function BoardDetailClient({
                             </p>
                           </div>
                           <div className="rounded-lg border border-border bg-muted/30 px-3 py-2.5">
-                            <p className="text-[11px] text-muted-foreground">
+                            <p className="text-sm text-foreground/75">
                               길이
                             </p>
                             <p className="mt-0.5 text-sm font-semibold text-foreground">
@@ -1967,7 +1967,7 @@ export default function BoardDetailClient({
                                 {name}
                               </div>
                               {size && (
-                                <div className="text-[11px] text-muted-foreground">
+                                <div className="text-sm text-foreground/75">
                                   {size}
                                 </div>
                               )}

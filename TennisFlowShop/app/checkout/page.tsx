@@ -179,7 +179,7 @@ function FinalPaymentConfirmCard({
                 {shippingFee > 0 ? (
                   `${shippingFee.toLocaleString()}원`
                 ) : (
-                  <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">
+                  <Badge variant="outline" className="text-xs border-primary/30 text-primary">
                     무료
                   </Badge>
                 )}
@@ -194,7 +194,7 @@ function FinalPaymentConfirmCard({
               ) : serviceFee > 0 ? (
                 <span className="font-semibold">{serviceFee.toLocaleString()}원</span>
               ) : (
-                <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">
+                <Badge variant="outline" className="text-xs border-primary/30 text-primary">
                   패키지
                 </Badge>
               )}
@@ -1102,7 +1102,7 @@ export default function CheckoutPage() {
                   <CreditCard className="h-7 w-7 bp-sm:h-8 bp-sm:w-8" />
                 </div>
                 <div>
-                  <h1 className="text-2xl bp-sm:text-3xl bp-md:text-4xl font-bold tracking-tight">주문/결제</h1>
+                  <h1 className="text-2xl bp-sm:text-3xl bp-md:text-4xl font-bold tracking-normal">주문/결제</h1>
                   <p className="text-sm bp-sm:text-base text-muted-foreground mt-1">배송/수령/결제정보를 확인하고 주문을 완료하세요</p>
                 </div>
               </div>
@@ -1144,7 +1144,7 @@ export default function CheckoutPage() {
                   </div>
                 </div>
 
-                <p className="mt-3 text-xs text-muted-foreground max-w-xl">결제와 함께 교체서비스 신청이 접수되며, 별도 신청서 작성 없이 현재 주문에 포함됩니다.</p>
+                <p className="mt-3 text-sm text-foreground/80 max-w-xl">결제와 함께 교체서비스 신청이 접수되며, 별도 신청서 작성 없이 현재 주문에 포함됩니다.</p>
               </nav>
             )}
 
@@ -1186,7 +1186,7 @@ export default function CheckoutPage() {
                   </p>
                 </div>
                 {/* 주문 상품 */}
-                <Card className="group border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl transition-all duration-300 hover:shadow-xl hover:ring-border">
+                <Card className="group border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md hover:ring-border">
                   <div className="border-b border-border bg-secondary/50 p-5 bp-sm:p-6">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
@@ -1206,7 +1206,7 @@ export default function CheckoutPage() {
                     {isBundleCheckout && bundleQty !== null && (
                       <div className="mb-4 rounded-xl border border-border bg-background px-4 py-3 text-sm text-foreground dark:border-border dark:bg-card/60 dark:text-foreground">
                         <p className="font-semibold">번들 수량: {bundleQty}개</p>
-                        <p className="mt-1 text-xs text-muted-foreground">
+                        <p className="mt-1 text-sm text-foreground/80">
                           라켓/스트링 수량은 동일하게 묶여 있으며, 수량 변경은 <span className="font-medium">스트링 선택 단계</span>
                           에서만 가능합니다.
                         </p>
@@ -1246,9 +1246,9 @@ export default function CheckoutPage() {
                             <div className="min-w-0 flex-1 space-y-1.5">
                               <h3 className="font-semibold text-foreground line-clamp-2 text-sm bp-sm:text-base">{item.name}</h3>
                               <div className="flex flex-wrap items-center gap-2">
-                                <span className="inline-flex items-center gap-1 text-xs text-muted-foreground bg-muted/50 px-2 py-0.5 rounded-full">수량 {item.quantity}개</span>
+                                <span className="inline-flex items-center gap-1 text-sm text-foreground/80 bg-muted/50 px-2 py-0.5 rounded-full">수량 {item.quantity}개</span>
                                 {withStringService && serviceTargetIds.includes(String(item.id)) && (
-                                  <Badge variant="outline" className="text-[10px] bp-sm:text-[11px] border-primary/30 text-primary bg-primary/5">
+                                  <Badge variant="outline" className="text-xs border-primary/30 text-primary bg-primary/5">
                                     교체 서비스
                                   </Badge>
                                 )}
@@ -1278,7 +1278,7 @@ export default function CheckoutPage() {
                 </Card>
 
                 {/* 수령 방식 및 장착 서비스 카드 */}
-                <Card className="group border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl transition-all duration-300 hover:shadow-xl hover:ring-border">
+                <Card className="group border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md hover:ring-border">
                   <div className="border-b border-border bg-secondary/50 p-5 bp-sm:p-6">
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20">
@@ -1357,7 +1357,7 @@ export default function CheckoutPage() {
                       </div>
                       <p className="text-sm text-foreground ml-6">{serviceHelpText}</p>
                       {(lockServiceMode || isStringOnlyServiceFlow) && (
-                        <div className="ml-6 mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                        <div className="ml-6 mt-2 flex flex-wrap items-center gap-2 text-sm text-foreground/80">
                           <span>
                             지금은 <span className="font-semibold text-foreground">교체 서비스 포함</span> 모드예요. 결제와 함께 교체 서비스 정보가 접수되며 장착 정보와 추가 요청도 현재 주문에 함께 저장됩니다.
                           </span>
@@ -1405,7 +1405,7 @@ export default function CheckoutPage() {
                 </Card>
 
                 {/* 배송 정보/수령 정보 */}
-                <Card className="group border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl transition-all duration-300 hover:shadow-xl hover:ring-border">
+                <Card className="group border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md hover:ring-border">
                   <div className="border-b border-border bg-secondary/50 p-5 bp-sm:p-6">
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20">
@@ -1535,7 +1535,7 @@ export default function CheckoutPage() {
                                 이 배송지 정보를 저장
                               </label>
                             </div>
-                            {!user && <p className="text-xs text-muted-foreground ml-6 mt-1">로그인 후 배송지 정보를 저장할 수 있습니다.</p>}
+                            {!user && <p className="text-sm text-foreground/80 ml-6 mt-1">로그인 후 배송지 정보를 저장할 수 있습니다.</p>}
                           </div>
                         </>
                       )}
@@ -1546,7 +1546,7 @@ export default function CheckoutPage() {
                 {withStringService && checkoutStringingAdapter && <CheckoutStringingServiceSections withStringService={withStringService} adapter={checkoutStringingAdapter} />}
 
                 {/* 결제 정보 */}
-                <Card className="group border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl transition-all duration-300 hover:shadow-xl hover:ring-border">
+                <Card className="group border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md hover:ring-border">
                   <div className="border-b border-border bg-secondary/50 p-5 bp-sm:p-6">
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20">
@@ -1588,7 +1588,7 @@ export default function CheckoutPage() {
                             </div>
                           )}
                         </RadioGroup>
-                        {nicePaymentsEnabled && isZeroPayableAmount && <p className="text-xs text-muted-foreground">최종 결제금액이 0원인 경우 카드/간편결제를 사용할 수 없습니다.</p>}
+                        {nicePaymentsEnabled && isZeroPayableAmount && <p className="text-sm text-foreground/80">최종 결제금액이 0원인 경우 카드/간편결제를 사용할 수 없습니다.</p>}
                       </div>
 
                       {paymentMethod === "bank-transfer" && (
@@ -1714,7 +1714,7 @@ export default function CheckoutPage() {
                               <span className="text-sm text-muted-foreground">P</span>
                             </div>
                           </div>
-                          <p className="text-xs text-muted-foreground">배송비에는 적용되지 않습니다. 최대 {maxPointsToUse.toLocaleString()}P 사용 가능</p>
+                          <p className="text-sm text-foreground/80">배송비에는 적용되지 않습니다. 최대 {maxPointsToUse.toLocaleString()}P 사용 가능</p>
                         </div>
                       </div>
 
@@ -1746,7 +1746,7 @@ export default function CheckoutPage() {
                 </Card>
 
                 {/* 주문자 동의 */}
-                <Card className="group border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl transition-all duration-300 hover:shadow-xl hover:ring-border">
+                <Card className="group border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md hover:ring-border">
                   <div className="border-b border-border bg-secondary/50 p-5 bp-sm:p-6">
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20">
@@ -1817,7 +1817,7 @@ export default function CheckoutPage() {
                               />
                               <span className="text-sm font-medium text-foreground">{item.label}</span>
                             </label>
-                            <Button variant="ghost" size="sm" className="h-8 px-3 text-xs text-muted-foreground hover:text-foreground">
+                            <Button variant="ghost" size="sm" className="h-8 px-3 text-sm text-foreground/80 hover:text-foreground">
                               보기
                             </Button>
                           </div>
@@ -1867,7 +1867,7 @@ export default function CheckoutPage() {
                             <Link href="/cart" data-no-unsaved-guard onClick={onLeaveCartClick} className="inline-flex items-center justify-center rounded-md bg-muted/50 dark:bg-card/60 px-3 py-2 text-sm font-medium text-foreground hover:bg-muted">
                               장바구니로 가서 정리하기
                             </Link>
-                            <span className="text-xs text-muted-foreground">정리 후 다시 이 페이지로 돌아와 주문을 진행해주세요.</span>
+                            <span className="text-sm text-foreground/80">정리 후 다시 이 페이지로 돌아와 주문을 진행해주세요.</span>
                           </div>
                         )}
                       </div>

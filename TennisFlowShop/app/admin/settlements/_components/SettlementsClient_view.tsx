@@ -464,7 +464,7 @@ export default function SettlementsClient() {
               <ChartBar className="h-5 w-5 sm:h-6 sm:w-6" />
             </div>
             <div>
-              <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold tracking-tight text-foreground">
+              <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold tracking-normal text-foreground">
                 정산 관리
               </h1>
               <p className="mt-1 sm:mt-2 text-sm sm:text-lg text-muted-foreground">

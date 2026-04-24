@@ -63,7 +63,7 @@ export default function UnifiedPackageCard({
 
   return (
     <Card
-      className={`group relative overflow-hidden border border-border shadow-sm transition-all duration-300 ${onSelect ? "cursor-pointer hover:-translate-y-0.5 hover:shadow-md" : ""} ${pkg.popular || selected ? "ring-2 ring-ring" : ""} ${className ?? ""}`}
+      className={`group relative overflow-hidden border border-border shadow-sm transition-[box-shadow,border-color,background-color] duration-200 ${onSelect ? "cursor-pointer hover:shadow-md" : ""} ${pkg.popular || selected ? "ring-2 ring-ring" : ""} ${className ?? ""}`}
       onClick={onSelect}
     >
       {pkg.popular && (
@@ -120,20 +120,20 @@ export default function UnifiedPackageCard({
             <div className="text-xl font-bold text-foreground">
               {pkg.sessions}회
             </div>
-            <div className="text-xs text-muted-foreground">이용 회차</div>
+            <div className="text-sm text-foreground/80">이용 회차</div>
           </div>
           <div className="rounded-lg bg-muted p-3 text-center">
             <div className="text-xl font-bold text-foreground">
               {pkg.validityPeriod}
             </div>
-            <div className="text-xs text-muted-foreground">유효기간</div>
+            <div className="text-sm text-foreground/80">유효기간</div>
           </div>
           {showTotalPrice && (
             <div className="rounded-lg bg-muted p-3 text-center">
               <div className="text-xl font-bold text-foreground">
                 {pkg.price.toLocaleString()}원
               </div>
-              <div className="text-xs text-muted-foreground">총 금액</div>
+              <div className="text-sm text-foreground/80">총 금액</div>
             </div>
           )}
         </div>
@@ -192,7 +192,7 @@ export default function UnifiedPackageCard({
               </Link>
             </Button>
             {ctaHelperText ? (
-              <p className="text-center text-xs text-muted-foreground">
+              <p className="text-center text-sm text-foreground/80">
                 {ctaHelperText}
               </p>
             ) : null}

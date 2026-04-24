@@ -1197,7 +1197,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                     <Button
                       onClick={() => onPay(rentalStringingAdapter)}
                       disabled={loading}
-                      className={cn("w-full h-12 bg-primary hover:bg-primary/90 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md", loading && "opacity-50 cursor-not-allowed")}
+                      className={cn("w-full h-12 bg-primary hover:bg-primary/90 shadow-sm transition-[box-shadow,background-color,color] duration-200 hover:shadow-md", loading && "opacity-50 cursor-not-allowed")}
                     >
                       {loading ? (
                         <span className="inline-flex items-center gap-2">
