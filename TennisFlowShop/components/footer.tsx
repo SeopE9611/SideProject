@@ -39,7 +39,7 @@ const Footer = () => {
         <SiteContainer className="bp-lg:mx-0">
           <div className="space-y-6 bp-sm:space-y-8">
             <div className="grid grid-cols-1 items-start gap-5 border-b border-border/80 pb-5 bp-md:grid-cols-[1.15fr_1fr] bp-md:gap-8 bp-sm:pb-6">
-              <div className="space-y-3">
+              <div className="space-y-2.5">
                 <Link href="/" className="group flex w-fit items-center gap-3">
                   <div className="relative h-10 w-10 shrink-0 overflow-hidden bp-sm:h-11 bp-sm:w-11">
                     <Image src="/brand/symbol-light.png" alt="" aria-hidden="true" fill className="object-contain dark:hidden" />
@@ -48,15 +48,15 @@ const Footer = () => {
 
                   <div className="space-y-0.5">
                     <div className="font-brand-bold text-xl font-bold tracking-tight text-foreground bp-sm:text-2xl">도깨비테니스</div>
-                    <div className="text-[10px] font-semibold tracking-[0.08em] text-muted-foreground/80">Powered by Tennis Flow</div>
+                    <div className="text-[10px] font-semibold tracking-[0.08em] text-muted-foreground/85">Powered by Tennis Flow</div>
                   </div>
                 </Link>
-                <p className="max-w-lg text-sm leading-6 text-foreground/80">스트링 선택부터 장착 서비스 예약까지, 테니스 장비 쇼핑을 한 번에 도와드립니다.</p>
+                <p className="max-w-lg text-sm leading-6 text-foreground/85">스트링 쇼핑과 장착 서비스 예약을 한 곳에서 이용하세요.</p>
               </div>
 
               <div className="bp-md:border-l bp-md:border-border/70 bp-md:pl-8">
                 <h3 className="mb-2 text-sm font-semibold text-foreground bp-sm:text-base">핵심 바로가기</h3>
-                <ul className="grid grid-cols-2 gap-x-5 gap-y-2">
+                <ul className="grid grid-cols-2 gap-x-6 gap-y-2.5">
                   {quickLinks.map((link) => (
                     <li key={link.name}>
                       <Link href={link.href} className="inline-flex text-sm text-muted-foreground transition-colors duration-300 hover:text-primary">
@@ -71,28 +71,28 @@ const Footer = () => {
             <div className="grid grid-cols-1 gap-y-6 border-b border-border/70 pb-5 bp-sm:grid-cols-2 bp-sm:gap-x-8 bp-sm:gap-y-7 bp-xl:grid-cols-[1fr_1fr_1.2fr_0.9fr] bp-sm:pb-6">
               <section className="flex flex-col items-start gap-3">
                 <h3 className="text-sm font-semibold text-foreground bp-sm:text-base">고객센터</h3>
-                <div className="w-full space-y-3.5">
+                <div className="w-full space-y-3">
                   <div className="flex items-start gap-2.5">
                     <Phone className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                     <div>
                       <span className="block text-base font-bold leading-none text-foreground">0507-1392-3493</span>
-                      <p className="mt-1 text-xs text-muted-foreground">영업 시간 내 상담 가능</p>
+                      <p className="mt-1 text-xs text-muted-foreground/95">영업 시간 내 상담 가능</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2.5 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-2.5 text-xs text-muted-foreground/95">
                     <Mail className="h-4 w-4 shrink-0 text-primary/90" />
-                    <span className="break-all text-foreground/85">korgis5813@naver.com</span>
+                    <span className="break-all text-foreground/90">korgis5813@naver.com</span>
                   </div>
-                  <div className="flex items-start gap-2.5 text-xs text-muted-foreground">
+                  <div className="flex items-start gap-2.5 text-xs text-muted-foreground/95">
                     <Clock className="mt-0.5 h-4 w-4 shrink-0 text-primary/90" />
-                    <div className="space-y-0.5">
+                    <div className="space-y-1">
                       <div>평일 10:00 - 22:00</div>
                       <div>토요일 09:00 - 18:00</div>
                       <div>일요일/공휴일 휴무</div>
                     </div>
                   </div>
                 </div>
-                <ul className="mt-3.5 flex flex-wrap gap-x-3 gap-y-1.5 border-t border-border/60 pt-3">
+                <ul className="mt-3 flex flex-wrap gap-x-3.5 gap-y-2 border-t border-border/60 pt-3">
                   {customerServiceLinks.map((link) => (
                     <li key={link.name}>
                       <Link href={link.href} className="inline-flex text-xs text-muted-foreground transition-colors duration-300 hover:text-primary">
@@ -108,7 +108,7 @@ const Footer = () => {
                   <Truck className="h-4 w-4 text-primary" />
                   배송안내
                 </h3>
-                <ul className="w-full space-y-2 text-xs leading-5 text-muted-foreground">
+                <ul className="w-full space-y-2.5 text-xs leading-5 text-muted-foreground/95">
                   <li className="flex items-start gap-2">
                     <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-primary/70" />
                     <p>
@@ -138,18 +138,20 @@ const Footer = () => {
                 <div className="w-full space-y-3">
                   <div className="space-y-1.5 border-l border-primary/30 pl-3">
                     <p className="text-sm font-semibold text-foreground">도깨비테니스</p>
-                    <p className="text-sm text-foreground/90">서울 동작구 노량진로 22 B1</p>
-                    <div className="mt-2 flex items-start gap-2 text-xs text-muted-foreground">
+                    <p className="text-sm text-foreground/95">서울 동작구 노량진로 22 B1</p>
+                    <div className="mt-2 flex items-start gap-2 text-xs text-muted-foreground/95">
                       <Train className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary/80" />
-                      <span>대방역 2번출구 도보 이동</span>
+                      <span>대방역 2번 출구 도보 이동</span>
                     </div>
                   </div>
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                  <div className="flex flex-wrap items-center gap-x-3.5 gap-y-2">
                     <Link href="/services/locations" className="inline-flex items-center text-xs font-medium text-foreground transition-colors hover:text-primary">
                       위치 안내 보기
                     </Link>
                     <Link
                       href="https://map.naver.com/p/entry/place/1907032343?c=15.00,0,0,0,dh&placePath=/home?from=map&fromPanelNum=1&additionalHeight=76&timestamp=202601042339&locale=ko&svcName=map_pcv5"
+                      target="_blank"
+                      rel="noreferrer"
                       className="inline-flex items-center gap-1 rounded-md border border-border/70 px-2.5 py-1.5 text-xs text-foreground transition-colors hover:border-primary/50 hover:text-primary"
                     >
                       네이버 지도
@@ -164,7 +166,7 @@ const Footer = () => {
                   <CreditCard className="h-4 w-4 text-primary" />
                   결제안내
                 </h3>
-                <div className="w-full space-y-1.5 text-xs leading-5 text-muted-foreground">
+                <div className="w-full space-y-2 text-xs leading-5 text-muted-foreground/95">
                   <p>무통장 입금 계좌</p>
                   <p className="text-sm font-semibold text-foreground">농협 123-4567-8901-23</p>
                   <p>예금주 도깨비테니스</p>
@@ -179,8 +181,8 @@ const Footer = () => {
       <div className="border-t border-border bg-muted/35">
         <div className="bp-lg:pl-64 bp-lg:pr-8 xl:pl-72 xl:pr-12 2xl:pr-16 py-4 bp-sm:py-5">
           <SiteContainer className="bp-lg:mx-0">
-            <div className="space-y-2 text-xs leading-5 text-muted-foreground bp-sm:text-[13px]">
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <div className="space-y-2.5 text-xs leading-5 text-muted-foreground/95 bp-sm:text-[13px]">
+              <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1.5">
                 {policyLinks.map((link) => (
                   <Link key={`policy-${link.name}`} href={link.href} className="font-medium text-foreground/90 transition-colors duration-300 hover:text-primary">
                     {link.name}
@@ -195,9 +197,9 @@ const Footer = () => {
                   </Link>
                 )}
               </div>
-              <p className="text-foreground/80">상호: 도깨비테니스 | 대표: 김재민 | 사업자등록번호: 329-39-01593 | 통신판매업신고: 제 2026 - 서울동작 - 0548 호</p>
-              <p className="text-foreground/75">사업장 소재지: 서울특별시 동작구 여의대방로62길 16(대방동)</p>
-              <p className="text-[11px] text-muted-foreground/90">&copy; {new Date().getFullYear()} 도깨비테니스. All rights reserved.</p>
+              <p className="text-foreground/85">상호: 도깨비테니스 | 대표: 김재민 | 사업자등록번호: 329-39-01593 | 통신판매업신고: 제 2026 - 서울동작 - 0548 호</p>
+              <p className="text-foreground/80">사업장 소재지: 서울특별시 동작구 여의대방로62길 16(대방동)</p>
+              <p className="text-[11px] text-muted-foreground">&copy; {new Date().getFullYear()} 도깨비테니스. All rights reserved.</p>
             </div>
           </SiteContainer>
         </div>

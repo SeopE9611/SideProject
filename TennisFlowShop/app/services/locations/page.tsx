@@ -11,14 +11,14 @@ export default function LocationsPage() {
       name: "도깨비테니스",
       address: "서울 동작구 노량진로 22 B1",
       phone: "0507-1392-3493",
-      email: "info@tennis-flow.com",
+      email: "korgis5813@naver.com",
       hours: {
         weekday: "10:00 - 22:00",
         weekend: "09:00 - 18:00",
-        holiday: "휴무",
+        holiday: "일요일/공휴일 휴무",
       },
       services: ["스트링 장착", "텐션 가이드", "스트링 추천", "라켓 상담"],
-      transport: ["대방역 2번출구"],
+      transport: ["대방역 2번 출구"],
       isMain: true,
       specialNote: "매장에 방문하시면 친절하게 상담해드립니다.",
     },
@@ -122,7 +122,13 @@ export default function LocationsPage() {
                   </div>
 
                   <Button className="w-full" asChild>
-                    <Link href="https://map.naver.com/p/entry/place/1907032343?c=15.00,0,0,0,dh&placePath=/home?from=map&fromPanelNum=1&additionalHeight=76&timestamp=202601042339&locale=ko&svcName=map_pcv5">네이버 지도 검색</Link>
+                    <Link
+                      href="https://map.naver.com/p/entry/place/1907032343?c=15.00,0,0,0,dh&placePath=/home?from=map&fromPanelNum=1&additionalHeight=76&timestamp=202601042339&locale=ko&svcName=map_pcv5"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      네이버 지도 검색
+                    </Link>
                   </Button>
                 </CardContent>
               </Card>
