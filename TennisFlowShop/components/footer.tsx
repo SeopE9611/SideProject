@@ -36,10 +36,10 @@ const Footer = () => {
       <div className="pointer-events-none absolute inset-0 bg-muted/15 opacity-60" />
 
       <div className="bp-lg:pl-64 bp-lg:pr-8 xl:pl-72 xl:pr-12 2xl:pr-16 py-6 bp-sm:py-8">
-        <SiteContainer className="bp-lg:mx-0">
+        <SiteContainer variant="wide" className="bp-lg:mx-0">
           <div className="space-y-6 bp-sm:space-y-8">
-            <div className="grid grid-cols-1 items-start gap-5 border-b border-border/80 pb-5 bp-md:grid-cols-[1.15fr_1fr] bp-md:gap-8 bp-sm:pb-6">
-              <div className="space-y-2.5">
+            <div className="grid w-full grid-cols-1 items-start gap-5 border-b border-border/80 pb-5 bp-md:grid-cols-[1.2fr_1fr] bp-md:gap-8 bp-sm:pb-6">
+              <div className="w-full space-y-2.5">
                 <Link href="/" className="group flex w-fit items-center gap-3">
                   <div className="relative h-10 w-10 shrink-0 overflow-hidden bp-sm:h-11 bp-sm:w-11">
                     <Image src="/brand/symbol-light.png" alt="" aria-hidden="true" fill className="object-contain dark:hidden" />
@@ -54,7 +54,7 @@ const Footer = () => {
                 <p className="max-w-lg text-sm leading-6 text-foreground/85">스트링 쇼핑과 장착 서비스 예약을 한 곳에서 이용하세요.</p>
               </div>
 
-              <div className="bp-md:border-l bp-md:border-border/70 bp-md:pl-8">
+              <div className="w-full bp-md:border-l bp-md:border-border/70 bp-md:pl-8">
                 <h3 className="mb-2 text-sm font-semibold text-foreground bp-sm:text-base">핵심 바로가기</h3>
                 <ul className="grid grid-cols-2 gap-x-6 gap-y-2.5">
                   {quickLinks.map((link) => (
@@ -68,8 +68,8 @@ const Footer = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-y-6 border-b border-border/70 pb-5 bp-sm:grid-cols-2 bp-sm:gap-x-8 bp-sm:gap-y-7 bp-xl:grid-cols-[1fr_1fr_1.2fr_0.9fr] bp-sm:pb-6">
-              <section className="flex flex-col items-start gap-3">
+            <div className="grid w-full grid-cols-1 gap-y-6 border-b border-border/70 pb-5 bp-sm:grid-cols-2 bp-sm:gap-x-8 bp-sm:gap-y-7 bp-lg:grid-cols-[1.15fr_1fr_1fr_1fr] bp-lg:gap-x-9 bp-sm:pb-6">
+              <section className="flex w-full flex-col items-start gap-3">
                 <h3 className="text-sm font-semibold text-foreground bp-sm:text-base">고객센터</h3>
                 <div className="w-full space-y-3">
                   <div className="flex items-start gap-2.5">
@@ -103,7 +103,7 @@ const Footer = () => {
                 </ul>
               </section>
 
-              <section className="flex flex-col items-start gap-3">
+              <section className="flex w-full flex-col items-start gap-3">
                 <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground bp-sm:text-base">
                   <Truck className="h-4 w-4 text-primary" />
                   배송안내
@@ -130,7 +130,7 @@ const Footer = () => {
                 </ul>
               </section>
 
-              <section className="flex flex-col items-start gap-3">
+              <section className="flex w-full flex-col items-start gap-3">
                 <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground bp-sm:text-base">
                   <MapPin className="h-4 w-4 text-primary" />
                   매장 위치
@@ -161,7 +161,7 @@ const Footer = () => {
                 </div>
               </section>
 
-              <section className="flex flex-col items-start gap-3">
+              <section className="flex w-full flex-col items-start gap-3">
                 <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground bp-sm:text-base">
                   <CreditCard className="h-4 w-4 text-primary" />
                   결제안내
@@ -180,7 +180,7 @@ const Footer = () => {
 
       <div className="border-t border-border bg-muted/35">
         <div className="bp-lg:pl-64 bp-lg:pr-8 xl:pl-72 xl:pr-12 2xl:pr-16 py-4 bp-sm:py-5">
-          <SiteContainer className="bp-lg:mx-0">
+          <SiteContainer variant="wide" className="bp-lg:mx-0">
             <div className="space-y-2.5 text-xs leading-5 text-muted-foreground/95 bp-sm:text-[13px]">
               <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1.5">
                 {policyLinks.map((link) => (
