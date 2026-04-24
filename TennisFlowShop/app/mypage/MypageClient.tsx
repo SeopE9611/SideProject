@@ -3,6 +3,7 @@
 import OrdersScopeTabs, { resolveOrdersScopeContext } from "@/app/mypage/_components/OrdersScopeTabs";
 import { UserSidebar } from "@/app/mypage/orders/_components/UserSidebar";
 import SiteContainer from "@/components/layout/SiteContainer";
+import { TabPanelSkeleton } from "@/components/system/loading";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -15,24 +16,24 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import useSWR from "swr";
 
-const ApplicationDetail = dynamic(() => import("@/app/mypage/applications/_components/ApplicationDetail"), { loading: () => null });
-const OrderDetailClient = dynamic(() => import("@/app/mypage/orders/_components/OrderDetailClient"), { loading: () => null });
-const RentalsDetailClient = dynamic(() => import("@/app/mypage/rentals/_components/RentalsDetailClient"), { loading: () => null });
+const ApplicationDetail = dynamic(() => import("@/app/mypage/applications/_components/ApplicationDetail"), { loading: () => <TabPanelSkeleton rowCount={3} /> });
+const OrderDetailClient = dynamic(() => import("@/app/mypage/orders/_components/OrderDetailClient"), { loading: () => <TabPanelSkeleton rowCount={4} /> });
+const RentalsDetailClient = dynamic(() => import("@/app/mypage/rentals/_components/RentalsDetailClient"), { loading: () => <TabPanelSkeleton rowCount={3} /> });
 const MyPointsTab = dynamic(() => import("@/app/mypage/tabs/MyPointsTab"), {
-  loading: () => null,
+  loading: () => <TabPanelSkeleton rowCount={4} />,
 });
-const TransactionFlowList = dynamic(() => import("@/app/mypage/tabs/TransactionFlowList"), { loading: () => null });
+const TransactionFlowList = dynamic(() => import("@/app/mypage/tabs/TransactionFlowList"), { loading: () => <TabPanelSkeleton rowCount={5} /> });
 const PassList = dynamic(() => import("@/app/mypage/tabs/PassList"), {
-  loading: () => null,
+  loading: () => <TabPanelSkeleton rowCount={4} />,
 });
 const QnAList = dynamic(() => import("@/app/mypage/tabs/QnAList"), {
-  loading: () => null,
+  loading: () => <TabPanelSkeleton rowCount={4} />,
 });
 const ReviewList = dynamic(() => import("@/app/mypage/tabs/ReviewList"), {
-  loading: () => null,
+  loading: () => <TabPanelSkeleton rowCount={4} />,
 });
 const Wishlist = dynamic(() => import("@/app/mypage/tabs/Wishlist"), {
-  loading: () => null,
+  loading: () => <TabPanelSkeleton rowCount={4} />,
 });
 
 type Props = {
