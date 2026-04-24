@@ -158,7 +158,7 @@ export default function NiceCheckoutButton({
             결제 요청 중...
           </>
         ) : (
-          "NicePG로 결제하기"
+          "결제하기"
         )}
       </Button>
       {!scriptError && !scriptReady && <p className="text-xs text-muted-foreground">Nice 결제창 준비 중입니다. 잠시 후 다시 시도해주세요.</p>}

@@ -3,19 +3,10 @@
 import TossPaymentWidget from "@/app/checkout/TossPaymentWidget";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useBackNavigationGuard } from "@/lib/hooks/useBackNavigationGuard";
-import {
-  isNicePaymentsEnabled,
-  isTossPaymentsEnabled,
-} from "@/lib/payments/provider-flags";
 import { useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
+import { isNicePaymentsEnabled, isTossPaymentsEnabled } from "@/lib/payments/provider-flags";
 import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { showErrorToast } from "@/lib/toast";
 import { useRouter } from "next/navigation";
@@ -62,15 +53,11 @@ const getOrCreateIdemKey = (sig: string) => {
         sig?: string;
         ts?: number;
       };
-      const fresh =
-        typeof parsed.ts === "number" && Date.now() - parsed.ts < IDEM_TTL_MS;
+      const fresh = typeof parsed.ts === "number" && Date.now() - parsed.ts < IDEM_TTL_MS;
       if (fresh && parsed.sig === sig && parsed.key) return parsed.key;
     }
     const key = crypto.randomUUID();
-    window.sessionStorage.setItem(
-      IDEM_STORE_KEY,
-      JSON.stringify({ key, sig, ts: Date.now() }),
-    );
+    window.sessionStorage.setItem(IDEM_STORE_KEY, JSON.stringify({ key, sig, ts: Date.now() }));
     return key;
   } catch {
     return crypto.randomUUID();
@@ -82,11 +69,7 @@ const clearIdemKey = () => {
   } catch {}
 };
 
-export default function RacketPurchaseCheckoutClient({
-  racket,
-}: {
-  racket: RacketView;
-}) {
+export default function RacketPurchaseCheckoutClient({ racket }: { racket: RacketView }) {
   const router = useRouter();
 
   const [name, setName] = useState("");
@@ -99,8 +82,7 @@ export default function RacketPurchaseCheckoutClient({
 
   const [pickupMethod, setPickupMethod] = useState<PickupMethod>("courier");
   const [bank, setBank] = useState<Bank>("shinhan");
-  const [paymentMethod, setPaymentMethod] =
-    useState<PaymentMethod>("bank_transfer");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("bank_transfer");
   const nicePaymentsEnabled = isNicePaymentsEnabled();
   const tossPaymentsEnabled = isTossPaymentsEnabled();
   const isVisitPickup = pickupMethod === "visit";
@@ -108,20 +90,13 @@ export default function RacketPurchaseCheckoutClient({
 
   const [agree, setAgree] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [isIntentionalSuccessNavigation, setIsIntentionalSuccessNavigation] =
-    useState(false);
+  const [isIntentionalSuccessNavigation, setIsIntentionalSuccessNavigation] = useState(false);
   const [tossWidgetReady, setTossWidgetReady] = useState(false);
-  const [tossWidgetLoadError, setTossWidgetLoadError] = useState<string | null>(
-    null,
-  );
+  const [tossWidgetLoadError, setTossWidgetLoadError] = useState<string | null>(null);
   const submittingRef = useRef(false);
 
   useEffect(() => {
-    if (
-      (nicePaymentsEnabled && paymentMethod === "tosspayments") ||
-      (!nicePaymentsEnabled && paymentMethod === "nicepay") ||
-      (!tossPaymentsEnabled && paymentMethod === "tosspayments")
-    ) {
+    if ((nicePaymentsEnabled && paymentMethod === "tosspayments") || (!nicePaymentsEnabled && paymentMethod === "nicepay") || (!tossPaymentsEnabled && paymentMethod === "tosspayments")) {
       setPaymentMethod("bank_transfer");
       return;
     }
@@ -131,51 +106,17 @@ export default function RacketPurchaseCheckoutClient({
     if (pickupMethod === "visit") return 0;
     return normalizeItemShippingFee(racket.shippingFee);
   }, [pickupMethod, racket.shippingFee]);
-  const totalPrice = useMemo(
-    () => racket.price + shippingFee,
-    [racket.price, shippingFee],
-  );
+  const totalPrice = useMemo(() => racket.price + shippingFee, [racket.price, shippingFee]);
 
-  const canSubmitBase =
-    racket.status === "available" &&
-    agree &&
-    !submitting &&
-    Boolean(
-      name.trim() &&
-        phone.trim() &&
-        (!needsShippingAddress || (address.trim() && postalCode.trim())),
-    );
+  const canSubmitBase = racket.status === "available" && agree && !submitting && Boolean(name.trim() && phone.trim() && (!needsShippingAddress || (address.trim() && postalCode.trim())));
 
   const canSubmitBank = canSubmitBase && Boolean(depositor.trim());
 
   const isDirty = useMemo(() => {
-    const hasText =
-      Boolean(name) ||
-      Boolean(phone) ||
-      Boolean(address) ||
-      Boolean(addressDetail) ||
-      Boolean(postalCode) ||
-      Boolean(depositor) ||
-      Boolean(deliveryRequest);
-    const hasNonDefault =
-      pickupMethod !== "courier" ||
-      bank !== "shinhan" ||
-      agree !== false ||
-      paymentMethod !== "bank_transfer";
+    const hasText = Boolean(name) || Boolean(phone) || Boolean(address) || Boolean(addressDetail) || Boolean(postalCode) || Boolean(depositor) || Boolean(deliveryRequest);
+    const hasNonDefault = pickupMethod !== "courier" || bank !== "shinhan" || agree !== false || paymentMethod !== "bank_transfer";
     return hasText || hasNonDefault;
-  }, [
-    name,
-    phone,
-    address,
-    addressDetail,
-    postalCode,
-    depositor,
-    deliveryRequest,
-    pickupMethod,
-    bank,
-    agree,
-    paymentMethod,
-  ]);
+  }, [name, phone, address, addressDetail, postalCode, depositor, deliveryRequest, pickupMethod, bank, agree, paymentMethod]);
 
   const guardEnabled = isDirty && !isIntentionalSuccessNavigation;
   useUnsavedChangesGuard(guardEnabled);
@@ -338,21 +279,11 @@ export default function RacketPurchaseCheckoutClient({
       <div className="rounded-lg border p-4 space-y-3">
         <div className="font-semibold">라켓 접수 방식</div>
         <label className="flex items-center gap-2 text-sm">
-          <input
-            type="radio"
-            name="pickup"
-            checked={pickupMethod === "courier"}
-            onChange={() => setPickupMethod("courier")}
-          />
+          <input type="radio" name="pickup" checked={pickupMethod === "courier"} onChange={() => setPickupMethod("courier")} />
           택배 발송/수령
         </label>
         <label className="flex items-center gap-2 text-sm">
-          <input
-            type="radio"
-            name="pickup"
-            checked={pickupMethod === "visit"}
-            onChange={() => setPickupMethod("visit")}
-          />
+          <input type="radio" name="pickup" checked={pickupMethod === "visit"} onChange={() => setPickupMethod("visit")} />
           오프라인 매장 방문
         </label>
       </div>
@@ -377,36 +308,19 @@ export default function RacketPurchaseCheckoutClient({
 
         <div className="space-y-2">
           <label className="flex items-center gap-2 text-sm">
-            <input
-              type="radio"
-              name="payment-method"
-              checked={paymentMethod === "bank_transfer"}
-              onChange={() => setPaymentMethod("bank_transfer")}
-            />
+            <input type="radio" name="payment-method" checked={paymentMethod === "bank_transfer"} onChange={() => setPaymentMethod("bank_transfer")} />
             무통장입금
           </label>
           {tossPaymentsEnabled && (
             <label className="flex items-center gap-2 text-sm">
-              <input
-                type="radio"
-                name="payment-method"
-                checked={paymentMethod === "tosspayments"}
-                onChange={() => setPaymentMethod("tosspayments")}
-                disabled={!Number.isFinite(totalPrice) || totalPrice <= 0}
-              />
+              <input type="radio" name="payment-method" checked={paymentMethod === "tosspayments"} onChange={() => setPaymentMethod("tosspayments")} disabled={!Number.isFinite(totalPrice) || totalPrice <= 0} />
               카드/간편결제 (토스)
             </label>
           )}
           {nicePaymentsEnabled && (
             <label className="flex items-center gap-2 text-sm">
-              <input
-                type="radio"
-                name="payment-method"
-                checked={paymentMethod === "nicepay"}
-                onChange={() => setPaymentMethod("nicepay")}
-                disabled={!Number.isFinite(totalPrice) || totalPrice <= 0}
-              />
-              카드/간편결제 (NicePG)
+              <input type="radio" name="payment-method" checked={paymentMethod === "nicepay"} onChange={() => setPaymentMethod("nicepay")} disabled={!Number.isFinite(totalPrice) || totalPrice <= 0} />
+              카드/간편결제
             </label>
           )}
         </div>
@@ -473,11 +387,7 @@ export default function RacketPurchaseCheckoutClient({
           />
         ) : null}
 
-        {racket.status !== "available" && (
-          <div className="text-sm text-destructive">
-            현재 판매 가능한 라켓이 아닙니다. (status: {racket.status})
-          </div>
-        )}
+        {racket.status !== "available" && <div className="text-sm text-destructive">현재 판매 가능한 라켓이 아닙니다. (status: {racket.status})</div>}
       </div>
     </div>
   );

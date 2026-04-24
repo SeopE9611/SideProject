@@ -194,7 +194,7 @@ export default function PackageNiceCheckoutButton({
             결제 요청 중...
           </>
         ) : (
-          "NicePG로 결제하기"
+          "결제하기"
         )}
       </Button>
       {blockedByZeroAmount && <p className="text-xs text-muted-foreground">최종 결제금액이 0원이라 Nice 결제를 사용할 수 없습니다.</p>}

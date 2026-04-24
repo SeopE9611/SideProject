@@ -556,7 +556,7 @@ export default function PackageCheckoutClient({
                         <div className="flex items-center space-x-3 p-4 bg-muted/40 rounded-lg border-2 border-border">
                           <RadioGroupItem value="nicepay" id="nice-payments" disabled={isFrameLoading || tossBlockedByZeroAmount} />
                           <Label htmlFor="nice-payments" className="flex-1 cursor-pointer font-medium">
-                            카드/간편결제 (NicePG)
+                            카드/간편결제
                           </Label>
                           <CreditCard className="h-5 w-5 text-primary" />
                         </div>
@@ -565,7 +565,7 @@ export default function PackageCheckoutClient({
                         <div className="flex items-center space-x-3 p-4 bg-muted/40 rounded-lg border-2 border-border">
                           <RadioGroupItem value="tosspayments" id="toss-payments" disabled={isFrameLoading || tossBlockedByZeroAmount} />
                           <Label htmlFor="toss-payments" className="flex-1 cursor-pointer font-medium">
-                            카드/간편결제 (테스트)
+                            카드/간편결제
                           </Label>
                           <CreditCard className="h-5 w-5 text-primary" />
                         </div>
