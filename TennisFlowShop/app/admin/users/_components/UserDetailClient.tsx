@@ -1318,7 +1318,7 @@ function StatCard({
       href={href}
       target="_blank"
       rel="noreferrer"
-      className="hover:-translate-y-0.5 transition-transform"
+      className="rounded-xl transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md"
     >
       {content}
     </Link>
