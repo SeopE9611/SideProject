@@ -860,7 +860,7 @@ const Header = () => {
                     <Image src="/brand/symbol-dark.png" alt="" aria-hidden="true" fill className="hidden object-contain dark:block" priority />
                   </div>
 
-                  <div className="font-brand-bold font-bold text-xl xl:text-[22px] tracking-tight text-foreground group-hover:text-foreground transition-colors whitespace-nowrap">도깨비테니스</div>
+                  <div className="font-brand-bold font-bold text-xl xl:text-[22px] tracking-normal text-foreground group-hover:text-foreground transition-colors whitespace-nowrap">도깨비테니스</div>
                 </Link>
 
                 {SHOW_DESKTOP_HEADER_NAV ? (
