@@ -200,11 +200,11 @@ export default function AdminRentalDetailClient() {
     if (!id || isSyncingNice) return;
     setIsSyncingNice(true);
     try {
-      const res = await fetch(`/api/payments/nice/rental/sync/${id}`, {
-        method: "POST",
-      });
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok || !json?.success) {
+      const json = await adminMutator<{ success?: boolean; error?: string }>(
+        `/api/admin/payments/nice/rental/sync/${id}`,
+        { method: "POST" },
+      );
+      if (!json?.success) {
         throw new Error(json?.error || "PG 상태 재동기화에 실패했습니다.");
       }
       await mutate();
