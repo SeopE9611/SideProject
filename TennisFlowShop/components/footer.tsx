@@ -13,13 +13,13 @@ const Footer = () => {
   const rawMode = (process.env.GUEST_ORDER_MODE ?? "on").trim();
   const guestOrderMode = rawMode === "off" || rawMode === "legacy" || rawMode === "on" ? rawMode : "on";
 
-  const quickLinks = [
-    { name: "스트링 쇼핑", href: "/products" },
-    { name: "장착 서비스", href: "/services" },
-    { name: "패키지", href: "/services/packages" },
-    ...(guestOrderMode === "on" ? [{ name: "주문 조회", href: "/order-lookup" }] : []),
-    { name: "오프라인 매장 찾기", href: "/services/locations" },
-  ];
+  // const quickLinks = [
+  //   { name: "스트링 쇼핑", href: "/products" },
+  //   { name: "장착 서비스", href: "/services" },
+  //   { name: "패키지", href: "/services/packages" },
+  //   ...(guestOrderMode === "on" ? [{ name: "주문 조회", href: "/order-lookup" }] : []),
+  //   { name: "오프라인 매장 찾기", href: "/services/locations" },
+  // ];
 
   const customerService = [
     { name: "공지사항", href: "/board/notice" },
@@ -36,9 +36,9 @@ const Footer = () => {
       <div className="pointer-events-none absolute inset-0 bg-muted/15 opacity-60" />
 
       <div className="bp-lg:pl-64 bp-lg:pr-8 xl:pl-72 xl:pr-12 2xl:pr-16 py-6 bp-sm:py-8">
-        <SiteContainer variant="wide" className="bp-lg:mx-0">
+        <SiteContainer variant="wide">
           <div className="space-y-6 bp-sm:space-y-8">
-            <div className="grid w-full grid-cols-1 items-start gap-5 border-b border-border/80 pb-5 bp-md:grid-cols-[1.2fr_1fr] bp-md:gap-8 bp-sm:pb-6">
+            {/* <div className="grid w-full grid-cols-1 items-start gap-5 border-b border-border/80 pb-5 bp-md:grid-cols-[1.2fr_1fr] bp-md:gap-8 bp-sm:pb-6">
               <div className="w-full space-y-2.5">
                 <Link href="/" className="group flex w-fit items-center gap-3">
                   <div className="relative h-10 w-10 shrink-0 overflow-hidden bp-sm:h-11 bp-sm:w-11">
@@ -51,24 +51,10 @@ const Footer = () => {
                     <div className="text-[10px] font-semibold tracking-[0.08em] text-muted-foreground/85">Powered by Tennis Flow</div>
                   </div>
                 </Link>
-                <p className="max-w-lg text-sm leading-6 text-foreground/85">스트링 쇼핑과 장착 서비스 예약을 한 곳에서 이용하세요.</p>
               </div>
+            </div> */}
 
-              <div className="w-full bp-md:border-l bp-md:border-border/70 bp-md:pl-8">
-                <h3 className="mb-2 text-sm font-semibold text-foreground bp-sm:text-base">핵심 바로가기</h3>
-                <ul className="grid grid-cols-2 gap-x-6 gap-y-2.5">
-                  {quickLinks.map((link) => (
-                    <li key={link.name}>
-                      <Link href={link.href} className="inline-flex text-sm text-muted-foreground transition-colors duration-300 hover:text-primary">
-                        {link.name}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-
-            <div className="grid w-full grid-cols-1 gap-y-6 border-b border-border/70 pb-5 bp-sm:grid-cols-2 bp-sm:gap-x-8 bp-sm:gap-y-7 bp-lg:grid-cols-[1.15fr_1fr_1fr_1fr] bp-lg:gap-x-9 bp-sm:pb-6">
+            <div className="grid w-full grid-cols-1 gap-y-6 pb-5 bp-sm:grid-cols-2 bp-sm:gap-x-8 bp-sm:gap-y-7 bp-lg:grid-cols-[1.15fr_1fr_1fr_1fr] bp-lg:gap-x-9 bp-sm:pb-6">
               <section className="flex w-full flex-col items-start gap-3">
                 <h3 className="text-sm font-semibold text-foreground bp-sm:text-base">고객센터</h3>
                 <div className="w-full space-y-3">
@@ -92,15 +78,6 @@ const Footer = () => {
                     </div>
                   </div>
                 </div>
-                <ul className="mt-3 flex flex-wrap gap-x-3.5 gap-y-2 border-t border-border/60 pt-3">
-                  {customerServiceLinks.map((link) => (
-                    <li key={link.name}>
-                      <Link href={link.href} className="inline-flex text-xs text-muted-foreground transition-colors duration-300 hover:text-primary">
-                        {link.name}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
               </section>
 
               <section className="flex w-full flex-col items-start gap-3">
@@ -180,26 +157,40 @@ const Footer = () => {
 
       <div className="border-t border-border bg-muted/35">
         <div className="bp-lg:pl-64 bp-lg:pr-8 xl:pl-72 xl:pr-12 2xl:pr-16 py-4 bp-sm:py-5">
-          <SiteContainer variant="wide" className="bp-lg:mx-0">
-            <div className="space-y-2.5 text-xs leading-5 text-muted-foreground/95 bp-sm:text-[13px]">
-              <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1.5">
-                {policyLinks.map((link) => (
-                  <Link key={`policy-${link.name}`} href={link.href} className="font-medium text-foreground/90 transition-colors duration-300 hover:text-primary">
-                    {link.name}
+          <SiteContainer variant="wide">
+            <div className="flex flex-col gap-4 bp-md:flex-row bp-md:items-start bp-md:justify-between">
+              <div className="min-w-0 space-y-2.5 text-xs leading-5 text-muted-foreground/95 bp-sm:text-[13px]">
+                <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1.5">
+                  {policyLinks.map((link) => (
+                    <Link key={`policy-${link.name}`} href={link.href} className="font-medium text-foreground/90 transition-colors duration-300 hover:text-primary">
+                      {link.name}
+                    </Link>
+                  ))}
+                  <Link href="/board/notice" className="transition-colors duration-300 hover:text-primary">
+                    공지사항
                   </Link>
-                ))}
-                <Link href="/board/notice" className="transition-colors duration-300 hover:text-primary">
-                  공지사항
-                </Link>
-                {guestOrderMode === "on" && (
-                  <Link href="/order-lookup" className="transition-colors duration-300 hover:text-primary">
-                    주문조회
-                  </Link>
-                )}
+                  {guestOrderMode === "on" && (
+                    <Link href="/order-lookup" className="transition-colors duration-300 hover:text-primary">
+                      주문조회
+                    </Link>
+                  )}
+                </div>
+                <p className="text-foreground/85">상호: 도깨비테니스 | 대표: 김재민 | 사업자등록번호: 329-39-01593 | 통신판매업신고: 제 2026 - 서울동작 - 0548 호</p>
+                <p className="text-foreground/80">사업장 소재지: 서울특별시 동작구 여의대방로62길 16(대방동)</p>
+                <p className="text-[11px] text-muted-foreground">&copy; {new Date().getFullYear()} 도깨비테니스. All rights reserved.</p>
               </div>
-              <p className="text-foreground/85">상호: 도깨비테니스 | 대표: 김재민 | 사업자등록번호: 329-39-01593 | 통신판매업신고: 제 2026 - 서울동작 - 0548 호</p>
-              <p className="text-foreground/80">사업장 소재지: 서울특별시 동작구 여의대방로62길 16(대방동)</p>
-              <p className="text-[11px] text-muted-foreground">&copy; {new Date().getFullYear()} 도깨비테니스. All rights reserved.</p>
+
+              <Link href="/" className="group flex shrink-0 items-center gap-2.5 self-start bp-md:self-auto" aria-label="도깨비테니스 홈으로 이동">
+                <div className="relative h-8 w-8 shrink-0 overflow-hidden bp-sm:h-9 bp-sm:w-9">
+                  <Image src="/brand/symbol-light.png" alt="" aria-hidden="true" fill className="object-contain dark:hidden" />
+                  <Image src="/brand/symbol-dark.png" alt="" aria-hidden="true" fill className="hidden object-contain dark:block" />
+                </div>
+
+                <div className="space-y-0.5 text-left">
+                  <div className="font-brand-bold text-sm font-bold tracking-tight text-foreground bp-sm:text-base">도깨비테니스</div>
+                  <div className="text-[9px] font-semibold tracking-[0.08em] text-muted-foreground/80">Powered by Tennis Flow</div>
+                </div>
+              </Link>
             </div>
           </SiteContainer>
         </div>
