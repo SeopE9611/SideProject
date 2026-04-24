@@ -61,6 +61,7 @@ import {
   getMerchandisingBadgeSpec,
   getPaymentStatusBadgeSpec,
 } from "@/lib/badge-style";
+import { adminMutator } from "@/lib/admin/adminFetcher";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 
 type PackageDetail = AdminPackageDetailDto;
@@ -499,11 +500,11 @@ export default function PackageDetailClient({
     if (isSyncingNice) return;
     setIsSyncingNice(true);
     try {
-      const res = await fetch(`/api/payments/nice/package/sync/${packageId}`, {
-        method: "POST",
-      });
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok || !json?.success) {
+      const json = await adminMutator<{ success?: boolean; error?: string }>(
+        `/api/admin/payments/nice/package/sync/${packageId}`,
+        { method: "POST" },
+      );
+      if (!json?.success) {
         throw new Error(json?.error || "PG 상태 재동기화에 실패했습니다.");
       }
       await mutate();
