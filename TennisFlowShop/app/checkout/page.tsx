@@ -153,7 +153,7 @@ function FinalPaymentConfirmCard({
 }) {
   return (
     <Card className="overflow-hidden rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
-      <div className="border-b border-border bg-gradient-to-r from-secondary/80 to-secondary/40 p-5 bp-sm:p-6">
+      <div className="border-b border-border bg-secondary/50 p-5 bp-sm:p-6">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20">
             <Shield className="h-5 w-5" />
@@ -220,7 +220,7 @@ function FinalPaymentConfirmCard({
           )}
         </div>
 
-        <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+        <div className="h-px bg-border/70" />
 
         <div className="space-y-3">
           <div className="flex items-center justify-between text-sm">
@@ -1090,7 +1090,7 @@ export default function CheckoutPage() {
       <div className="min-h-full bg-background">
         <CheckoutPointsAutoAdjust user={user} isEditingPoints={isEditingPoints} useAllPoints={useAllPoints} maxPointsToUse={maxPointsToUse} pointsToUse={pointsToUse} onChangePointsToUse={setPointsToUse} />
         {/* Hero Section */}
-        <div className="relative overflow-hidden bg-gradient-to-b from-secondary/80 via-secondary/40 to-background text-foreground border-b border-border">
+        <div className="relative overflow-hidden bg-secondary/40 text-foreground border-b border-border">
           {/* 배경 패턴 */}
           <div className="absolute inset-0 bg-cross-line-pattern opacity-30" />
           <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/3 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
@@ -1127,7 +1127,7 @@ export default function CheckoutPage() {
                     <span className="font-semibold text-sm text-foreground">{stepperStep1Label}</span>
                   </div>
 
-                  <div className="h-[2px] w-8 bg-primary rounded-full" />
+                  <div className="h-[2px] w-8 bg-primary/40 rounded-full" />
 
                   {/* 2) 결제/장착 정보: 현재 페이지(현재 단계) */}
                   <div className="flex items-center gap-2.5">
@@ -1187,7 +1187,7 @@ export default function CheckoutPage() {
                 </div>
                 {/* 주문 상품 */}
                 <Card className="group border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl transition-all duration-300 hover:shadow-xl hover:ring-border">
-                  <div className="border-b border-border bg-gradient-to-r from-secondary/80 to-secondary/40 p-5 bp-sm:p-6">
+                  <div className="border-b border-border bg-secondary/50 p-5 bp-sm:p-6">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20">
@@ -1225,7 +1225,7 @@ export default function CheckoutPage() {
                       {orderItems.map((item, idx) => (
                         <div
                           key={item.id}
-                          className="group/item flex flex-col gap-4 rounded-xl border border-border/40 bg-gradient-to-br from-secondary/60 to-secondary/20 p-4 bp-sm:flex-row bp-sm:items-center bp-sm:gap-5 bp-sm:p-5 transition-all duration-200 hover:border-border hover:shadow-md hover:bg-gradient-to-br hover:from-secondary/80 hover:to-secondary/40"
+                          className="group/item flex flex-col gap-4 rounded-xl border border-border/40 bg-secondary/35 p-4 bp-sm:flex-row bp-sm:items-center bp-sm:gap-5 bp-sm:p-5 transition-all duration-200 hover:border-border hover:shadow-md hover:bg-secondary/55"
                           style={{ animationDelay: `${idx * 50}ms` }}
                         >
                           <div className="flex items-center gap-4 min-w-0 flex-1">
@@ -1279,7 +1279,7 @@ export default function CheckoutPage() {
 
                 {/* 수령 방식 및 장착 서비스 카드 */}
                 <Card className="group border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl transition-all duration-300 hover:shadow-xl hover:ring-border">
-                  <div className="border-b border-border bg-gradient-to-r from-secondary/80 to-secondary/40 p-5 bp-sm:p-6">
+                  <div className="border-b border-border bg-secondary/50 p-5 bp-sm:p-6">
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20">
                         <Truck className="h-5 w-5 text-primary" />
@@ -1308,7 +1308,7 @@ export default function CheckoutPage() {
                           <div className="text-xs bp-sm:text-sm text-muted-foreground mt-0.5">자택 또는 지정 장소로 배송</div>
                         </div>
                         <div className={cn("h-5 w-5 rounded-full border-2 flex items-center justify-center transition-all", deliveryMethod === "택배수령" ? "border-primary bg-primary" : "border-border")}>
-                          {deliveryMethod === "택배수령" && <CheckCircle className="h-3 w-3 text-primary-foreground" />}
+                          {deliveryMethod === "택배수령" && <CheckCircle className="h-3 w-3 text-primary" />}
                         </div>
                       </label>
                       <label
@@ -1327,7 +1327,7 @@ export default function CheckoutPage() {
                           <div className="text-xs bp-sm:text-sm text-muted-foreground mt-0.5">도깨비테니스 샵에서 직접 수령</div>
                         </div>
                         <div className={cn("h-5 w-5 rounded-full border-2 flex items-center justify-center transition-all", deliveryMethod === "방문수령" ? "border-primary bg-primary" : "border-border")}>
-                          {deliveryMethod === "방문수령" && <CheckCircle className="h-3 w-3 text-primary-foreground" />}
+                          {deliveryMethod === "방문수령" && <CheckCircle className="h-3 w-3 text-primary" />}
                         </div>
                       </label>
                     </RadioGroup>
@@ -1406,7 +1406,7 @@ export default function CheckoutPage() {
 
                 {/* 배송 정보/수령 정보 */}
                 <Card className="group border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl transition-all duration-300 hover:shadow-xl hover:ring-border">
-                  <div className="border-b border-border bg-gradient-to-r from-secondary/80 to-secondary/40 p-5 bp-sm:p-6">
+                  <div className="border-b border-border bg-secondary/50 p-5 bp-sm:p-6">
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20">
                         <MapPin className="h-5 w-5 text-primary" />
@@ -1547,7 +1547,7 @@ export default function CheckoutPage() {
 
                 {/* 결제 정보 */}
                 <Card className="group border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl transition-all duration-300 hover:shadow-xl hover:ring-border">
-                  <div className="border-b border-border bg-gradient-to-r from-secondary/80 to-secondary/40 p-5 bp-sm:p-6">
+                  <div className="border-b border-border bg-secondary/50 p-5 bp-sm:p-6">
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20">
                         <CreditCard className="h-5 w-5 text-primary" />
@@ -1747,7 +1747,7 @@ export default function CheckoutPage() {
 
                 {/* 주문자 동의 */}
                 <Card className="group border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl transition-all duration-300 hover:shadow-xl hover:ring-border">
-                  <div className="border-b border-border bg-gradient-to-r from-secondary/80 to-secondary/40 p-5 bp-sm:p-6">
+                  <div className="border-b border-border bg-secondary/50 p-5 bp-sm:p-6">
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20">
                         <CheckCircle className="h-5 w-5 text-primary" />
