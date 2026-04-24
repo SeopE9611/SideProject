@@ -39,26 +39,39 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { MdSportsTennis } from "react-icons/md";
 
+function StepFormSkeleton() {
+  return (
+    <Card className="border-border bg-card">
+      <CardContent className="space-y-4 p-5 md:p-6">
+        <div className="h-6 w-1/3 rounded-md bg-muted animate-pulse" />
+        <div className="h-10 w-full rounded-md bg-muted animate-pulse" />
+        <div className="h-10 w-full rounded-md bg-muted animate-pulse" />
+        <div className="h-10 w-2/3 rounded-md bg-muted animate-pulse" />
+      </CardContent>
+    </Card>
+  );
+}
+
 const Step1ApplicantInfo = dynamic(
   () => import("@/app/services/apply/_components/steps/Step1ApplicantInfo"),
-  { loading: () => null },
+  { loading: () => <StepFormSkeleton /> },
 );
 const Step2MountingInfo = dynamic(
   () => import("@/app/services/apply/_components/steps/Step2MountingInfo"),
-  { loading: () => null },
+  { loading: () => <StepFormSkeleton /> },
 );
 const Step3PaymentInfo = dynamic(
   () => import("@/app/services/apply/_components/steps/Step3PaymentInfo"),
-  { loading: () => null },
+  { loading: () => <StepFormSkeleton /> },
 );
 const Step3PaymentInfoRentalReadonly = dynamic(
   () =>
     import("@/app/services/apply/_components/steps/Step3PaymentInfoRentalReadonly"),
-  { loading: () => null },
+  { loading: () => <StepFormSkeleton /> },
 );
 const Step4FinalRequest = dynamic(
   () => import("@/app/services/apply/_components/steps/Step4FinalRequest"),
-  { loading: () => null },
+  { loading: () => <StepFormSkeleton /> },
 );
 
 interface PdpMiniProduct {
