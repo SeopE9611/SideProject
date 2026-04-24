@@ -669,7 +669,7 @@ export default function FreeBoardWriteClient() {
               <span className="mx-1">{">"}</span>
               <span className="text-foreground">상품 등록</span>
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">
+            <h1 className="text-2xl font-bold tracking-normal text-foreground md:text-3xl">
               상품 등록
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -701,7 +701,7 @@ export default function FreeBoardWriteClient() {
                     <h2 className="text-sm font-semibold text-foreground">
                       상품 기본 정보
                     </h2>
-                    <p className="text-[11px] text-muted-foreground">
+                    <p className="text-sm text-foreground/75">
                       판매할 상품의 분류와 브랜드를 선택하세요.
                     </p>
                   </div>
@@ -784,7 +784,7 @@ export default function FreeBoardWriteClient() {
                           {fieldErrors.brand}
                         </p>
                       ) : null}
-                      <p className="text-[11px] text-muted-foreground">
+                      <p className="text-sm text-foreground/75">
                         라켓/스트링 글은 브랜드 선택이 필수입니다.
                       </p>
                     </div>
@@ -816,7 +816,7 @@ export default function FreeBoardWriteClient() {
                     <h2 className="text-sm font-semibold text-foreground">
                       게시글 내용
                     </h2>
-                    <p className="text-[11px] text-muted-foreground">
+                    <p className="text-sm text-foreground/75">
                       제목과 상세 설명을 작성하세요.
                     </p>
                   </div>
@@ -850,7 +850,7 @@ export default function FreeBoardWriteClient() {
                       )}
                     />
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] text-muted-foreground">
+                      <span className="text-sm text-foreground/75">
                         {title.trim().length}/{TITLE_MAX}
                       </span>
                       {fieldErrors.title ? (
@@ -891,7 +891,7 @@ export default function FreeBoardWriteClient() {
                       }
                     />
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] text-muted-foreground">
+                      <span className="text-sm text-foreground/75">
                         {content.trim().length}/{CONTENT_MAX}
                       </span>
                       {fieldErrors.content ? (
@@ -917,7 +917,7 @@ export default function FreeBoardWriteClient() {
                     <h2 className="text-sm font-semibold text-foreground">
                       판매 이미지 / 파일
                     </h2>
-                    <p className="text-[11px] text-muted-foreground">
+                    <p className="text-sm text-foreground/75">
                       실물 사진을 첨부하면 거래 성사율이 높아집니다.
                     </p>
                   </div>
@@ -983,7 +983,7 @@ export default function FreeBoardWriteClient() {
                         <p className="text-sm text-muted-foreground">
                           파일을 드래그하거나 클릭하여 업로드
                         </p>
-                        <p className="mt-1 text-[11px] text-muted-foreground">
+                        <p className="mt-1 text-sm text-foreground/75">
                           문서 파일만 가능 (파일당 최대 {MAX_SIZE_MB}MB, 최대{" "}
                           {MAX_FILES}개)
                         </p>

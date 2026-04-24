@@ -5,16 +5,16 @@
 
 export const adminTypography = {
   body: "text-sm text-foreground",
-  bodyStrong: "text-sm font-semibold tracking-tight text-foreground",
+  bodyStrong: "text-sm font-semibold tracking-normal text-foreground",
   meta: "text-xs text-foreground/80",
-  metaMuted: "text-xs text-muted-foreground",
+  metaMuted: "text-xs text-foreground/75",
   caution: "text-xs font-medium text-primary",
   warning: "text-xs font-medium text-warning",
 
   // 공용 컴포넌트 전용 토큰 (badge / row / panel / sidebar)
   badgeLabel: "text-xs leading-[1.1]",
   rowMeta: "text-xs text-foreground/80",
-  panelTitle: "text-sm font-semibold tracking-tight text-foreground",
+  panelTitle: "text-sm font-semibold tracking-normal text-foreground",
   panelMeta: "text-xs text-foreground/80",
   sidebarSection:
     "text-xs font-semibold uppercase tracking-widest text-foreground/80",

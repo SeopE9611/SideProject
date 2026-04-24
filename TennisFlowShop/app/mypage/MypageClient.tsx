@@ -290,32 +290,32 @@ export default function MypageClient({ user }: Props) {
                   <TabsList className="h-auto w-full p-1 bg-muted grid grid-cols-3 gap-1 bp-md:grid-cols-6">
                     <TabsTrigger value="orders" className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md min-w-0">
                       <ClipboardList className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
-                      <span className="text-[11px] bp-sm:text-xs font-medium whitespace-nowrap">거래/이용 내역</span>
+                      <span className="text-xs bp-sm:text-sm font-medium whitespace-nowrap">거래/이용 내역</span>
                     </TabsTrigger>
 
                     <TabsTrigger value="wishlist" className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md min-w-0">
                       <Heart className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
-                      <span className="text-[11px] bp-sm:text-xs font-medium whitespace-nowrap">위시리스트</span>
+                      <span className="text-xs bp-sm:text-sm font-medium whitespace-nowrap">위시리스트</span>
                     </TabsTrigger>
 
                     <TabsTrigger value="reviews" className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md min-w-0">
                       <MessageSquare className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
-                      <span className="text-[11px] bp-sm:text-xs font-medium whitespace-nowrap">리뷰 관리</span>
+                      <span className="text-xs bp-sm:text-sm font-medium whitespace-nowrap">리뷰 관리</span>
                     </TabsTrigger>
 
                     <TabsTrigger value="qna" className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md min-w-0">
                       <MessageCircleQuestion className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
-                      <span className="text-[11px] bp-sm:text-xs font-medium whitespace-nowrap">Q&A 내역</span>
+                      <span className="text-xs bp-sm:text-sm font-medium whitespace-nowrap">Q&A 내역</span>
                     </TabsTrigger>
 
                     <TabsTrigger value="passes" className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md min-w-0">
                       <Ticket className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
-                      <span className="text-[11px] bp-sm:text-xs font-medium whitespace-nowrap">패키지</span>
+                      <span className="text-xs bp-sm:text-sm font-medium whitespace-nowrap">패키지</span>
                     </TabsTrigger>
 
                     <TabsTrigger value="points" className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md min-w-0">
                       <ReceiptCent className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
-                      <span className="text-[11px] bp-sm:text-xs font-medium whitespace-nowrap">적립 포인트</span>
+                      <span className="text-xs bp-sm:text-sm font-medium whitespace-nowrap">적립 포인트</span>
                     </TabsTrigger>
                   </TabsList>
                 </CardContent>
@@ -331,7 +331,7 @@ export default function MypageClient({ user }: Props) {
                       </div>
                       <div className="flex-1 min-w-0">
                         <CardTitle className="text-lg bp-sm:text-xl">거래/이용 내역</CardTitle>
-                        <CardDescription className="text-xs bp-sm:text-sm">주문·신청·대여를 한 곳에서 확인하세요.</CardDescription>
+                        <CardDescription className="text-sm text-foreground/80">주문·신청·대여를 한 곳에서 확인하세요.</CardDescription>
                       </div>
                     </div>
                   </CardHeader>
@@ -366,7 +366,7 @@ export default function MypageClient({ user }: Props) {
                       </div>
                       <div className="flex-1 min-w-0">
                         <CardTitle className="text-lg bp-sm:text-xl">위시리스트</CardTitle>
-                        <CardDescription className="text-xs bp-sm:text-sm">찜한 상품 목록을 확인하실 수 있습니다.</CardDescription>
+                        <CardDescription className="text-sm text-foreground/80">찜한 상품 목록을 확인하실 수 있습니다.</CardDescription>
                       </div>
                     </div>
                   </CardHeader>
@@ -384,7 +384,7 @@ export default function MypageClient({ user }: Props) {
                       </div>
                       <div className="flex-1 min-w-0">
                         <CardTitle className="text-lg bp-sm:text-xl">리뷰 관리</CardTitle>
-                        <CardDescription className="text-xs bp-sm:text-sm">작성한 리뷰를 확인하고 관리하실 수 있습니다.</CardDescription>
+                        <CardDescription className="text-sm text-foreground/80">작성한 리뷰를 확인하고 관리하실 수 있습니다.</CardDescription>
                       </div>
                     </div>
                   </CardHeader>
@@ -402,7 +402,7 @@ export default function MypageClient({ user }: Props) {
                       </div>
                       <div className="flex-1 min-w-0">
                         <CardTitle className="text-lg bp-sm:text-xl">Q&A 내역</CardTitle>
-                        <CardDescription className="text-xs bp-sm:text-sm">문의 내역을 확인하고 답변을 받으실 수 있습니다.</CardDescription>
+                        <CardDescription className="text-sm text-foreground/80">문의 내역을 확인하고 답변을 받으실 수 있습니다.</CardDescription>
                       </div>
                     </div>
                   </CardHeader>
@@ -420,7 +420,7 @@ export default function MypageClient({ user }: Props) {
                       </div>
                       <div className="flex-1 min-w-0">
                         <CardTitle className="text-lg bp-sm:text-xl">패키지</CardTitle>
-                        <CardDescription className="text-xs bp-sm:text-sm">보유 중인 패키지를 확인하실 수 있습니다.</CardDescription>
+                        <CardDescription className="text-sm text-foreground/80">보유 중인 패키지를 확인하실 수 있습니다.</CardDescription>
                       </div>
                     </div>
                   </CardHeader>
@@ -438,7 +438,7 @@ export default function MypageClient({ user }: Props) {
                       </div>
                       <div className="flex-1 min-w-0">
                         <CardTitle className="text-lg bp-sm:text-xl">적립 포인트</CardTitle>
-                        <CardDescription className="text-xs bp-sm:text-sm">포인트 적립 및 사용 내역을 확인하실 수 있습니다.</CardDescription>
+                        <CardDescription className="text-sm text-foreground/80">포인트 적립 및 사용 내역을 확인하실 수 있습니다.</CardDescription>
                       </div>
                     </div>
                   </CardHeader>

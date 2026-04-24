@@ -760,7 +760,7 @@ export default function FreeBoardEditClient({ id }: Props) {
               <span className="mx-1">›</span>
               <span>글 수정</span>
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">
+            <h1 className="text-2xl font-bold tracking-normal text-foreground md:text-3xl">
               중고 거래 글 수정
             </h1>
             <p className="mt-1 text-sm text-muted-foreground md:text-base">
@@ -1104,7 +1104,7 @@ export default function FreeBoardEditClient({ id }: Props) {
                   */}
                   <div className="grid gap-3 sm:grid-cols-3">
                     <div className="rounded-lg border border-border bg-muted/30 px-3 py-3">
-                      <p className="text-[11px] text-muted-foreground">
+                      <p className="text-sm text-foreground/75">
                         현재 이미지
                       </p>
                       <p className="mt-1 text-sm font-semibold text-foreground">
@@ -1112,7 +1112,7 @@ export default function FreeBoardEditClient({ id }: Props) {
                       </p>
                     </div>
                     <div className="rounded-lg border border-border bg-muted/30 px-3 py-3">
-                      <p className="text-[11px] text-muted-foreground">
+                      <p className="text-sm text-foreground/75">
                         기존 첨부 파일
                       </p>
                       <p className="mt-1 text-sm font-semibold text-foreground">
@@ -1120,7 +1120,7 @@ export default function FreeBoardEditClient({ id }: Props) {
                       </p>
                     </div>
                     <div className="rounded-lg border border-border bg-muted/30 px-3 py-3">
-                      <p className="text-[11px] text-muted-foreground">
+                      <p className="text-sm text-foreground/75">
                         새로 추가한 파일
                       </p>
                       <p className="mt-1 text-sm font-semibold text-foreground">

@@ -10,10 +10,10 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 const productCardSurfaceClass =
-  "group block h-full rounded-2xl border border-border bg-card p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg";
+  "group block h-full rounded-2xl border border-border bg-card p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7 shadow-sm transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md";
 const placeholderSurfaceClass = "h-full rounded-2xl border border-border bg-background p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7 shadow-sm";
 const moreCardSurfaceClass =
-  "group flex h-full items-center justify-center rounded-2xl border border-border bg-card p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg";
+  "group flex h-full items-center justify-center rounded-2xl border border-border bg-card p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7 shadow-sm transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md";
 const subtlePanelClass = "rounded-xl border border-border/60 bg-secondary/40";
 
 export type HItem = {
@@ -226,9 +226,9 @@ export default function HorizontalProducts({
       </div>
 
       <div className="space-y-2 bp-sm:space-y-2.5 bp-md:space-y-3">
-        <div className="text-xs bp-sm:text-sm bp-md:text-base text-muted-foreground font-medium">{p.brand}</div>
+        <div className="text-sm bp-md:text-base text-foreground/80 font-medium">{p.brand}</div>
         <h3 className="text-sm bp-sm:text-base bp-md:text-lg bp-lg:text-xl font-semibold text-foreground line-clamp-2 min-h-[2.5rem] bp-sm:min-h-[3rem] bp-md:min-h-[3.5rem] leading-snug">{p.name}</h3>
-        <div className="text-base bp-sm:text-lg bp-md:text-xl bp-lg:text-2xl font-bold text-foreground pt-1 bp-sm:pt-2 tracking-tight">
+        <div className="text-base bp-sm:text-lg bp-md:text-xl bp-lg:text-2xl font-bold text-foreground pt-1 bp-sm:pt-2 tracking-normal">
           {Number(p.price).toLocaleString()}
           <span className="text-sm bp-sm:text-base bp-md:text-lg font-medium ml-0.5">원</span>
         </div>
@@ -243,7 +243,7 @@ export default function HorizontalProducts({
       </div>
       <div className="text-center space-y-1.5">
         <div className="text-sm bp-sm:text-base bp-md:text-lg font-semibold text-foreground">준비 중</div>
-        <div className="text-xs bp-sm:text-sm bp-md:text-base text-muted-foreground">곧 상품이 업데이트됩니다.</div>
+        <div className="text-sm bp-md:text-base text-foreground/80">곧 상품이 업데이트됩니다.</div>
       </div>
     </div>
   );
@@ -270,7 +270,7 @@ export default function HorizontalProducts({
         </div>
         <div className="space-y-1 bp-sm:space-y-1.5">
           <h3 className="text-sm bp-sm:text-base bp-md:text-lg bp-lg:text-xl font-bold text-foreground">더 많은 상품</h3>
-          <p className="text-xs bp-sm:text-sm bp-md:text-base text-muted-foreground">전체 보기</p>
+          <p className="text-sm bp-md:text-base text-foreground/80">전체 보기</p>
         </div>
       </div>
     </Link>
@@ -282,7 +282,7 @@ export default function HorizontalProducts({
         <Inbox className="h-6 w-6 text-foreground" />
       </div>
       <div className="text-sm bp-sm:text-base font-semibold text-foreground">{emptyTitle ?? "등록된 상품이 없습니다"}</div>
-      <div className="mt-1 text-xs bp-sm:text-sm text-muted-foreground">{emptyDescription ?? "곧 상품이 업데이트됩니다."}</div>
+      <div className="mt-1 text-sm text-foreground/80">{emptyDescription ?? "곧 상품이 업데이트됩니다."}</div>
     </div>
   );
 
@@ -292,7 +292,7 @@ export default function HorizontalProducts({
         <AlertTriangle className="h-6 w-6 text-destructive" />
       </div>
       <div className="text-sm bp-sm:text-base font-semibold text-foreground">{errorTitle ?? "불러오지 못했어요"}</div>
-      <div className="mt-1 text-xs bp-sm:text-sm text-muted-foreground">{errorDescription ?? "네트워크 상태를 확인 후 다시 시도해 주세요."}</div>
+      <div className="mt-1 text-sm text-foreground/80">{errorDescription ?? "네트워크 상태를 확인 후 다시 시도해 주세요."}</div>
       {onRetry && (
         <Button type="button" variant="outline" size="sm" onClick={onRetry} className="mt-3 rounded-full">
           <RefreshCcw className="mr-2 h-4 w-4" />
@@ -392,7 +392,7 @@ export default function HorizontalProducts({
                 </Button>
               </div>
 
-              <p className="text-xs text-muted-foreground hidden bp-sm:block">드래그하거나 터치로 넘겨보세요</p>
+              <p className="text-sm text-foreground/80 hidden bp-sm:block">드래그하거나 터치로 넘겨보세요</p>
             </div>
           )}
         </div>

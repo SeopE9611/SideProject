@@ -40,14 +40,14 @@ export function WeatherBadge() {
       : "오늘은 컨디션 봐가면서 플레이해보세요.";
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center gap-1 border rounded-lg px-4 py-2 text-xs sm:text-sm bg-muted/30">
+    <div className="flex flex-col sm:flex-row sm:items-center gap-1 border rounded-lg px-4 py-2 text-sm bg-muted/30">
       <div className="font-medium">
         {mainTemp}{" "}
-        <span className="text-muted-foreground text-[11px] sm:text-xs">
+        <span className="text-muted-foreground text-xs sm:text-sm">
           (최저 {min} / 최고 {max})
         </span>
       </div>
-      <div className="text-muted-foreground text-[11px] sm:text-xs">
+      <div className="text-muted-foreground text-xs sm:text-sm">
         {description && `지금은 "${description}" 상태예요. `}
         {mood}
       </div>

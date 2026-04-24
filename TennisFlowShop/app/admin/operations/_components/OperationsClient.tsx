@@ -930,7 +930,7 @@ export default function OperationsClient() {
       )}
       {/* 페이지 헤더 */}
       <div className="mx-auto mb-4 max-w-[1480px] space-y-3">
-        <h1 className="text-3xl font-semibold tracking-tight lg:text-4xl">
+        <h1 className="text-3xl font-semibold tracking-normal lg:text-4xl">
           {PAGE_COPY.title}
         </h1>
         <p className="text-xs text-muted-foreground lg:text-sm">
@@ -1635,7 +1635,7 @@ export default function OperationsClient() {
                                     {isGroup ? `${g.items.length}건 그룹` : "단일 건"}
                                   </span>
                                 </div>
-                                <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground/90">
+                                <div className="flex items-center gap-1.5 text-xs text-foreground/75">
                                   <span>{docLabel}</span>
                                   <Button
                                     size="sm"
@@ -1678,14 +1678,14 @@ export default function OperationsClient() {
                                     </Button>
                                   )}
                                   <div className="min-w-0 space-y-0.5">
-                                    <p className="text-[11px] text-muted-foreground/90 leading-tight">
+                                    <p className="text-xs text-foreground/75 leading-tight">
                                       {scenarioLabel}
                                     </p>
                                     <p className="text-[13px] font-medium text-foreground/85 leading-tight">
                                       {customerPrimary}
                                     </p>
                                     {customerName && customerEmail && (
-                                      <p className="text-[11px] text-muted-foreground/90 leading-tight">
+                                      <p className="text-xs text-foreground/75 leading-tight">
                                         {customerEmail}
                                       </p>
                                     )}
@@ -1724,7 +1724,7 @@ export default function OperationsClient() {
                                       )}
                                     >
                                       <div className="overflow-hidden rounded-sm border border-border/40 bg-muted/[0.08] px-1.5 py-1">
-                                        <p className="text-[11px] text-muted-foreground/90">
+                                        <p className="text-xs text-foreground/75">
                                           {reasonSummary}
                                         </p>
                                         {shouldShowReasonBullets && (
@@ -1755,10 +1755,10 @@ export default function OperationsClient() {
                             >
                               <div className="flex flex-col items-end gap-1.5">
                                 <div className="text-right">
-                                <span className="text-[11px] text-muted-foreground/90">
+                                <span className="text-xs text-foreground/75">
                                   {isGroup ? "대표 문서 금액" : opsKindLabel(g.anchor.kind)}
                                 </span>
-                                  <p className="text-lg font-extrabold whitespace-nowrap tracking-tight">
+                                  <p className="text-lg font-extrabold whitespace-nowrap tracking-normal">
                                     {won(g.anchor.amount)}
                                   </p>
                                 </div>
@@ -1933,10 +1933,10 @@ export default function OperationsClient() {
                                             <p className="text-foreground">
                                               {toOperatorSentence(item.nextAction ?? groupGuide.nextAction)}
                                             </p>
-                                            <p className="text-[11px] text-muted-foreground/90">
+                                            <p className="text-xs text-foreground/75">
                                               결제 상태: {item.paymentLabel || "정보 없음"}
                                             </p>
-                                            <p className="text-[11px] text-muted-foreground/90">
+                                            <p className="text-xs text-foreground/75">
                                               {formatKST(item.createdAt)}
                                             </p>
                                           </div>
@@ -1944,7 +1944,7 @@ export default function OperationsClient() {
                                             <p className="font-semibold text-foreground">
                                               {won(item.amount)}
                                             </p>
-                                            <p className="text-[11px] text-muted-foreground/90">
+                                            <p className="text-xs text-foreground/75">
                                               {item.kind === "stringing_application"
                                                 ? "신청서"
                                                 : item.kind === "rental"
@@ -2126,7 +2126,7 @@ export default function OperationsClient() {
                             <p className="text-[11px] leading-snug text-muted-foreground">
                               {g.items.length > 1 ? "대표 문서 금액" : opsKindLabel(g.anchor.kind)}
                             </p>
-                            <span className="text-base font-extrabold tracking-tight text-foreground">
+                            <span className="text-base font-extrabold tracking-normal text-foreground">
                               {won(g.anchor.amount)}
                             </span>
                           </div>
