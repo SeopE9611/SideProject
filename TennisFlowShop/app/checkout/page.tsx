@@ -153,7 +153,7 @@ function FinalPaymentConfirmCard({
 }) {
   return (
     <Card className="overflow-hidden rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
-      <div className="border-b border-border bg-gradient-to-r from-secondary/80 to-secondary/40 p-5 bp-sm:p-6">
+      <div className="border-b border-border bg-secondary/40 p-5 bp-sm:p-6">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20">
             <Shield className="h-5 w-5" />
