@@ -13,7 +13,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { getSocialProviderBadgeSpec } from "@/lib/badge-style";
 import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import { useUnreadMessageCount } from "@/lib/hooks/useUnreadMessageCount";
-import { ChevronDown, ChevronRight, Headphones, Loader2, Mail, Menu, ShoppingCart, UserIcon } from "lucide-react";
+import { ChevronDown, ChevronRight, LifeBuoy, Loader2, Mail, Menu, ShoppingCart, UserIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -852,8 +852,8 @@ const Header = () => {
                 </Link>
               </div>
             </div>
-            <div className="hidden bp-lg:grid w-full min-w-0 grid-cols-[minmax(260px,1fr)_minmax(360px,640px)_minmax(360px,1fr)] items-center gap-4">
-              <div className="justify-self-start flex items-center min-w-0 gap-2">
+            <div className="hidden bp-lg:grid w-full min-w-0 grid-cols-[auto_minmax(280px,1fr)_auto] xl:grid-cols-[auto_minmax(360px,640px)_auto] items-center gap-3 xl:gap-6">
+              <div className="justify-self-start flex items-center min-w-fit shrink-0 gap-2">
                 <Link href="/" className="flex items-center gap-2 shrink-0 group" aria-label="도깨비테니스 홈">
                   <div className="relative h-11 w-11 shrink-0 overflow-hidden">
                     <Image src="/brand/symbol-light.png" alt="" aria-hidden="true" fill className="object-contain dark:hidden" priority />
@@ -927,8 +927,10 @@ const Header = () => {
               </div>
 
               {/* 검색 (PC 전용) */}
-              <div className="justify-self-center w-full max-w-[640px]">
-                <SearchPreview placeholder="스트링 / 라켓 검색..." className="w-full rounded-full bg-background/80 border border-border focus-within:ring-2 focus-within:ring-ring transition-[background-color,color,border-color,box-shadow,opacity] duration-200" />
+              <div className="justify-self-center min-w-0 w-full px-2 xl:px-4">
+                <div className="w-full max-w-[560px] xl:max-w-[640px] mx-auto">
+                  <SearchPreview placeholder="스트링 / 라켓 검색..." className="w-full rounded-full bg-background/80 border border-border focus-within:ring-2 focus-within:ring-ring transition-[background-color,color,border-color,box-shadow,opacity] duration-200" />
+                </div>
               </div>
 
               {/* 숨은 측정 DOM: 실제 렌더 폭(텍스트/패딩/아이콘/갭)을 그대로 재기 */}
@@ -949,7 +951,7 @@ const Header = () => {
               ) : null}
 
               {/* 아이콘/유저 */}
-              <div className="justify-self-end flex items-center gap-3 bp-lg:gap-4 pl-2 shrink-0">
+              <div className="justify-self-end flex items-center gap-2 xl:gap-4 min-w-fit shrink-0 pl-2">
                 <SheetTrigger asChild>
                   <Button variant="ghost" size="icon" className="bp-lg:hidden rounded-full hover:bg-secondary p-2 transition-[background-color,color,border-color,box-shadow,opacity] duration-300 focus-visible:ring-2 ring-ring" aria-label="메뉴 열기">
                     <Menu className="h-5 w-5" />
@@ -959,21 +961,21 @@ const Header = () => {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="relative rounded-full hover:bg-secondary p-2 transition-[background-color,color,border-color,box-shadow,opacity] duration-300 focus-visible:ring-2 ring-ring"
+                    className="relative rounded-full hover:bg-secondary p-2 transition-[background-color,color,border-color,box-shadow,opacity] duration-300 focus-visible:ring-2 ring-ring shrink-0"
                     aria-label="고객센터"
                   >
-                    <Headphones className="h-5 w-5" />
+                    <LifeBuoy className="h-5 w-5" />
                   </Button>
                 </Link>
                 <Link href="/cart">
-                  <Button variant="ghost" size="icon" className="relative rounded-full hover:bg-secondary p-2 transition-[background-color,color,border-color,box-shadow,opacity] duration-300 focus-visible:ring-2 ring-ring" aria-label="장바구니">
+                  <Button variant="ghost" size="icon" className="relative rounded-full hover:bg-secondary p-2 transition-[background-color,color,border-color,box-shadow,opacity] duration-300 focus-visible:ring-2 ring-ring shrink-0" aria-label="장바구니">
                     <ShoppingCart className="h-5 w-5" />
                     {cartCount > 0 && <span className="absolute -top-1 -right-1 text-[10px] min-w-[18px] h-[18px] px-[5px] rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold">{cartBadge}</span>}
                   </Button>
                 </Link>
 
                 {user && (
-                  <Button variant="ghost" className="h-9 px-3 rounded-full" asChild>
+                  <Button variant="ghost" className="h-9 px-3 rounded-full shrink-0" asChild>
                     <Link href="/mypage?tab=points" className="flex items-center gap-2">
                       <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-muted text-xs font-bold text-muted-foreground">P</span>
                       <span className="inline-flex items-center gap-1 text-sm font-semibold tabular-nums">
@@ -992,10 +994,12 @@ const Header = () => {
                   </Button>
                 )}
 
-                <div className="max-w-[140px] overflow-hidden">
+                <div className="max-w-[110px] xl:max-w-[140px] overflow-hidden shrink-0">
                   <UserNav unreadCount={resolvedUnreadCount} />
                 </div>
-                <ThemeToggle />
+                <div className="shrink-0">
+                  <ThemeToggle />
+                </div>
               </div>
             </div>
           </SiteContainer>
