@@ -780,8 +780,8 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
             </Card>
 
             {/* 배송 정보 */}
-            <Card className="bg-card border border-border shadow-sm overflow-hidden">
-              <div className="bg-card p-4 md:p-6">
+            <Card className="overflow-hidden rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
+              <div className="bg-secondary/40 p-4 md:p-6">
                 <CardTitle className="flex items-center gap-3">
                   <MapPin className="h-5 w-5 text-foreground" />
                   {isVisitPickup ? "수령/연락 정보" : "배송 정보"}
@@ -855,8 +855,8 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
               </CardContent>
             </Card>
             {/* 결제 정보 */}
-            <Card className="bg-card border border-border shadow-sm overflow-hidden">
-              <div className="bg-card p-4 md:p-6">
+            <Card className="overflow-hidden rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
+              <div className="bg-secondary/40 p-4 md:p-6">
                 <CardTitle className="flex items-center gap-3">
                   <CreditCard className="h-5 w-5 text-foreground" />
                   결제 정보
@@ -936,11 +936,76 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                       </div>
                     </>
                   )}
+
+                  <div className="space-y-3">
+                    <Label className="flex items-center gap-2">
+                      <CreditCard className="h-4 w-4 text-primary" />
+                      공통 혜택/차감
+                    </Label>
+                    <div className="rounded-lg border border-border bg-secondary/30 p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-semibold text-foreground">포인트 사용</span>
+                        <span className="text-xs text-muted-foreground">
+                          {pointsStatus === "ready" ? `사용 가능 ${pointsAvailable.toLocaleString()}P` : pointsStatus === "loading" ? "포인트 조회 중" : pointsStatus === "error" ? "포인트 조회 실패" : "로그인 시 조회"}
+                        </span>
+                      </div>
+
+                      {!userId ? (
+                        <div className="text-sm text-muted-foreground">로그인 시 포인트 사용이 가능합니다.</div>
+                      ) : pointsStatus === "loading" ? (
+                        <div className="text-sm text-muted-foreground">포인트를 불러오는 중입니다.</div>
+                      ) : pointsStatus === "error" ? (
+                        <div className="text-sm text-destructive">포인트 조회에 실패했습니다. 새로고침 후 다시 시도해주세요.</div>
+                      ) : (
+                        <>
+                          <div className="flex items-center gap-2">
+                            <Checkbox
+                              id="use-all-points"
+                              checked={useAllPoints}
+                              onCheckedChange={(v) => {
+                                const checked = !!v;
+                                setUseAllPoints(checked);
+                                if (!checked) {
+                                  setPointsToUse(0);
+                                  setPointsInput("0");
+                                }
+                              }}
+                            />
+                            <label htmlFor="use-all-points" className="text-sm text-foreground cursor-pointer">
+                              전액 사용 (보증금 제외)
+                            </label>
+                          </div>
+
+                          <Input
+                            value={pointsInput}
+                            disabled={pointsStatus !== "ready" || useAllPoints || maxPointsToUse <= 0}
+                            onChange={(e) => {
+                              const raw = e.target.value.replace(/[^\d]/g, "");
+                              setPointsInput(raw);
+                              setUseAllPoints(false);
+                              setPointsToUse(Number(raw || 0));
+                            }}
+                            onBlur={() => {
+                              const v = clampPoints(Number(pointsInput || 0));
+                              setPointsToUse(v);
+                              setPointsInput(String(v));
+                            }}
+                            placeholder="0"
+                            className="border-2"
+                          />
+
+                          <div className="text-xs text-muted-foreground">
+                            보증금({initial.deposit.toLocaleString()}원)에는 포인트가 적용되지 않습니다. (최대 {normalizePoints(maxPointsToUse).toLocaleString()}P)
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
-            <Card className="bg-card border border-border shadow-sm overflow-hidden">
-              <div className="bg-card p-4 md:p-6">
+            <Card className="overflow-hidden rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
+              <div className="bg-secondary/40 p-4 md:p-6">
                 <CardTitle className="flex items-center gap-3">
                   <Undo2 className="h-5 w-5 text-foreground" />
                   보증금 환급 계좌
@@ -980,8 +1045,8 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
             </Card>
 
             {/* 주문자 동의 */}
-            <Card className="bg-card border border-border shadow-sm overflow-hidden">
-              <div className="bg-card p-4 md:p-6">
+            <Card className="overflow-hidden rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
+              <div className="bg-secondary/40 p-4 md:p-6">
                 <CardTitle className="flex items-center gap-3">
                   <Shield className="h-5 w-5 text-destructive" />
                   주문자 동의
@@ -1056,16 +1121,16 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
             </Card>
           </div>
 
-          {/* 주문 요약 */}
+          {/* 최종 결제 확인 */}
           <div>
             <div>
-              <Card className="relative bg-card border border-border shadow-md overflow-hidden">
+              <Card className="relative overflow-hidden rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
                 <div className="p-4 md:p-6 border-b border-border bg-secondary text-foreground">
                   <CardTitle className="flex items-center gap-3 text-xl">
                     <div className="p-2 bg-card/20 rounded-full">
                       <CreditCard className="h-5 w-5" />
                     </div>
-                    결제 요약
+                    최종 결제 확인
                   </CardTitle>
                 </div>
                 <CardContent className="p-4 md:p-6 space-y-4 md:space-y-6">
@@ -1099,66 +1164,6 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                         <span className="font-semibold text-lg text-destructive">- {appliedPoints.toLocaleString()}P</span>
                       </div>
                     )}
-
-                    {/* 포인트 입력 UI (보증금 제외) */}
-                    <div className="rounded-lg border border-border p-4 bg-background space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-semibold text-foreground">포인트 사용</span>
-                        <span className="text-xs text-muted-foreground">
-                          {pointsStatus === "ready" ? `사용 가능 ${pointsAvailable.toLocaleString()}P` : pointsStatus === "loading" ? "포인트 조회 중" : pointsStatus === "error" ? "포인트 조회 실패" : "로그인 시 조회"}
-                        </span>
-                      </div>
-
-                      {!userId ? (
-                        <div className="text-sm text-muted-foreground">로그인 시 포인트 사용이 가능합니다.</div>
-                      ) : pointsStatus === "loading" ? (
-                        <div className="text-sm text-muted-foreground">포인트를 불러오는 중입니다.</div>
-                      ) : pointsStatus === "error" ? (
-                        <div className="text-sm text-destructive">포인트 조회에 실패했습니다. 새로고침 후 다시 시도해주세요.</div>
-                      ) : (
-                        <>
-                          <div className="flex items-center gap-2">
-                            <Checkbox
-                              id="use-all-points"
-                              checked={useAllPoints}
-                              onCheckedChange={(v) => {
-                                const checked = !!v;
-                                setUseAllPoints(checked);
-                                if (!checked) {
-                                  setPointsToUse(0);
-                                  setPointsInput("0");
-                                }
-                              }}
-                            />
-                            <label htmlFor="use-all-points" className="text-sm text-foreground cursor-pointer">
-                              전액 사용 (보증금 제외)
-                            </label>
-                          </div>
-
-                          <Input
-                            value={pointsInput}
-                            disabled={pointsStatus !== "ready" || useAllPoints || maxPointsToUse <= 0}
-                            onChange={(e) => {
-                              const raw = e.target.value.replace(/[^\d]/g, "");
-                              setPointsInput(raw);
-                              setUseAllPoints(false);
-                              setPointsToUse(Number(raw || 0));
-                            }}
-                            onBlur={() => {
-                              const v = clampPoints(Number(pointsInput || 0));
-                              setPointsToUse(v);
-                              setPointsInput(String(v));
-                            }}
-                            placeholder="0"
-                            className="border-2"
-                          />
-
-                          <div className="text-xs text-muted-foreground">
-                            보증금({initial.deposit.toLocaleString()}원)에는 포인트가 적용되지 않습니다. (최대 {normalizePoints(maxPointsToUse).toLocaleString()}P)
-                          </div>
-                        </>
-                      )}
-                    </div>
 
                     <Separator />
                     <div className="flex justify-between items-center text-xl font-bold">
