@@ -1,5 +1,5 @@
 import SiteContainer from "@/components/layout/SiteContainer";
-import { ArrowUpRight, Clock, CreditCard, Mail, MapPin, Phone, Train, Truck } from "lucide-react";
+import { ArrowUpRight, Clock, CreditCard, Facebook, Instagram, Mail, MapPin, Phone, Train, Truck } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -31,6 +31,24 @@ const Footer = () => {
   const customerServiceLinks = customerService.filter((link) => link.name === "공지사항" || link.name === "Q&A");
   const policyLinks = customerService.filter((link) => link.name === "이용약관" || link.name === "개인정보처리방침");
 
+  const snsLinks = [
+    {
+      name: "인스타그램",
+      href: "https://www.instagram.com/",
+      Icon: Instagram,
+    },
+    {
+      name: "페이스북",
+      href: "https://www.facebook.com/",
+      Icon: Facebook,
+    },
+    {
+      name: "밴드",
+      href: "https://band.us/",
+      Icon: null,
+    },
+  ];
+
   return (
     <footer className="relative mt-8 w-full overflow-hidden border-t border-border bg-card bp-sm:mt-12">
       <div className="pointer-events-none absolute inset-0 bg-muted/15 opacity-60" />
@@ -54,8 +72,8 @@ const Footer = () => {
               </div>
             </div> */}
 
-            <div className="grid w-full grid-cols-1 gap-y-6 pb-5 bp-sm:grid-cols-2 bp-sm:gap-x-8 bp-sm:gap-y-7 bp-lg:grid-cols-[1.15fr_1fr_1fr_1fr] bp-lg:gap-x-9 bp-sm:pb-6">
-              <section className="flex w-full flex-col items-start gap-3">
+            <div className="grid w-full grid-cols-1 gap-y-6 pb-5 bp-sm:grid-cols-2 bp-sm:gap-x-8 bp-sm:gap-y-7 bp-lg:grid-cols-[1.15fr_1fr_1fr_1fr] bp-lg:gap-x-8 bp-xl:grid-cols-[1.15fr_1fr_1fr_1fr_0.85fr] bp-sm:pb-6">
+              <section className="flex min-w-0 w-full flex-col items-start gap-3">
                 <h3 className="text-sm font-semibold text-foreground bp-sm:text-base">고객센터</h3>
                 <div className="w-full space-y-3">
                   <div className="flex items-start gap-2.5">
@@ -80,7 +98,7 @@ const Footer = () => {
                 </div>
               </section>
 
-              <section className="flex w-full flex-col items-start gap-3">
+              <section className="flex min-w-0 w-full flex-col items-start gap-3">
                 <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground bp-sm:text-base">
                   <Truck className="h-4 w-4 text-primary" />
                   배송안내
@@ -107,7 +125,7 @@ const Footer = () => {
                 </ul>
               </section>
 
-              <section className="flex w-full flex-col items-start gap-3">
+              <section className="flex min-w-0 w-full flex-col items-start gap-3">
                 <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground bp-sm:text-base">
                   <MapPin className="h-4 w-4 text-primary" />
                   매장 위치
@@ -138,7 +156,7 @@ const Footer = () => {
                 </div>
               </section>
 
-              <section className="flex w-full flex-col items-start gap-3">
+              <section className="flex min-w-0 w-full flex-col items-start gap-3">
                 <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground bp-sm:text-base">
                   <CreditCard className="h-4 w-4 text-primary" />
                   결제안내
@@ -150,6 +168,18 @@ const Footer = () => {
                   <p>입금 확인은 영업시간 내 순차 처리됩니다.</p>
                 </div>
               </section>
+
+              <section className="flex min-w-0 w-full flex-col items-start gap-3">
+                <h3 className="text-sm font-semibold text-foreground bp-sm:text-base">SNS</h3>
+                <div className="flex flex-col items-start gap-2.5">
+                  {snsLinks.map(({ name, href, Icon }) => (
+                    <Link key={name} href={href} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground/95 transition-colors hover:text-primary">
+                      {Icon ? <Icon className="h-4 w-4 shrink-0 text-primary/90" /> : <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-sm bg-primary/10 text-[10px] font-bold text-primary">B</span>}
+                      <span>{name}</span>
+                    </Link>
+                  ))}
+                </div>
+              </section>
             </div>
           </div>
         </SiteContainer>
@@ -158,7 +188,7 @@ const Footer = () => {
       <div className="border-t border-border bg-muted/35">
         <div className="bp-lg:pl-64 bp-lg:pr-8 xl:pl-72 xl:pr-12 2xl:pr-16 py-4 bp-sm:py-5">
           <SiteContainer variant="wide">
-            <div className="flex flex-col gap-4 bp-md:flex-row bp-md:items-start bp-md:justify-between">
+            <div className="flex flex-col gap-4 bp-md:flex-row bp-md:items-center bp-md:justify-between">
               <div className="min-w-0 space-y-2.5 text-xs leading-5 text-muted-foreground/95 bp-sm:text-[13px]">
                 <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1.5">
                   {policyLinks.map((link) => (
@@ -180,15 +210,15 @@ const Footer = () => {
                 <p className="text-[11px] text-muted-foreground">&copy; {new Date().getFullYear()} 도깨비테니스. All rights reserved.</p>
               </div>
 
-              <Link href="/" className="group flex shrink-0 items-center gap-2.5 self-start bp-md:self-auto" aria-label="도깨비테니스 홈으로 이동">
-                <div className="relative h-8 w-8 shrink-0 overflow-hidden bp-sm:h-9 bp-sm:w-9">
+              <Link href="/" className="group flex shrink-0 items-center gap-4 self-start bp-md:self-center" aria-label="도깨비테니스 홈으로 이동">
+                <div className="relative h-14 w-14 shrink-0 overflow-hidden bp-sm:h-16 bp-sm:w-16">
                   <Image src="/brand/symbol-light.png" alt="" aria-hidden="true" fill className="object-contain dark:hidden" />
                   <Image src="/brand/symbol-dark.png" alt="" aria-hidden="true" fill className="hidden object-contain dark:block" />
                 </div>
 
-                <div className="space-y-0.5 text-left">
-                  <div className="font-brand-bold text-sm font-bold tracking-tight text-foreground bp-sm:text-base">도깨비테니스</div>
-                  <div className="text-[9px] font-semibold tracking-[0.08em] text-muted-foreground/80">Powered by Tennis Flow</div>
+                <div className="space-y-1.5 text-left">
+                  <div className="font-brand-bold text-xl font-bold tracking-tight text-foreground bp-sm:text-2xl">도깨비테니스</div>
+                  <div className="text-[11px] font-semibold tracking-[0.08em] text-muted-foreground/80 bp-sm:text-xs">Powered by Tennis Flow</div>
                 </div>
               </Link>
             </div>
