@@ -14,7 +14,7 @@ import SiteContainer from "@/components/layout/SiteContainer";
 import LoginGate from "@/components/system/LoginGate";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -122,6 +122,60 @@ function CheckoutPointsAutoAdjust({
   }, [user, useAllPoints, maxPointsToUse, pointsToUse, isEditingPoints, onChangePointsToUse]);
 
   return null;
+}
+
+function FinalPaymentConfirmCard({
+  orderItemsCount,
+  withStringService,
+  appliedPoints,
+  payableTotalPrice,
+}: {
+  orderItemsCount: number;
+  withStringService: boolean;
+  appliedPoints: number;
+  payableTotalPrice: number;
+}) {
+  return (
+    <Card className="border-2 border-primary/20 bg-card shadow-sm overflow-hidden">
+      <div className="border-b border-border bg-secondary/50 p-4 bp-sm:p-5">
+        <CardTitle className="flex items-center gap-2 text-base bp-sm:text-lg">
+          <Shield className="h-5 w-5 text-primary" />
+          최종 결제 확인
+        </CardTitle>
+      </div>
+      <CardContent className="space-y-4 p-4 bp-sm:p-5">
+        <div className="space-y-2 text-sm">
+          <div className="flex items-center justify-between">
+            <span className="text-muted-foreground">주문 상품</span>
+            <span className="font-medium">{orderItemsCount}개</span>
+          </div>
+          {withStringService && (
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground">교체 서비스</span>
+              <Badge variant="secondary" className="text-xs">
+                포함
+              </Badge>
+            </div>
+          )}
+          {appliedPoints > 0 && (
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground">포인트 사용</span>
+              <span className="font-medium text-destructive">-{appliedPoints.toLocaleString()}원</span>
+            </div>
+          )}
+        </div>
+
+        <Separator />
+
+        <div className="flex items-center justify-between">
+          <span className="text-base font-bold">결제 예정 금액</span>
+          <span className="text-2xl font-bold text-primary">{payableTotalPrice.toLocaleString()}원</span>
+        </div>
+
+        <p className="text-xs text-muted-foreground">위 내용을 확인하셨다면 아래 결제 버튼을 눌러주세요.</p>
+      </CardContent>
+    </Card>
+  );
 }
 
 // 유효성(클라 UI용) - 서버는 별도로 강제
@@ -1558,11 +1612,115 @@ export default function CheckoutPage() {
                     </div>
                   </CardContent>
                 </Card>
+
+                <FinalPaymentConfirmCard orderItemsCount={orderItems.length} withStringService={withStringService} appliedPoints={appliedPoints} payableTotalPrice={payableTotalPrice} />
+
+                <Card className="relative border border-border bg-card shadow-sm overflow-hidden">
+                  <CardContent className="flex flex-col gap-4 p-4 bp-sm:p-6 shrink-0">
+                    {(fieldErrors.items || fieldErrors.bundle || (isMountingFeeReady && fieldErrors.composition)) && (
+                      <div className="w-full rounded-lg border border-destructive/30 bg-destructive/15 p-3 text-sm text-destructive dark:bg-destructive/20">
+                        <p className="font-semibold mb-1">확인 필요</p>
+                        {fieldErrors.items && <p>• {fieldErrors.items}</p>}
+                        {fieldErrors.bundle && <p>• {fieldErrors.bundle}</p>}
+                        {fieldErrors.composition && (
+                          <p>
+                            • {fieldErrors.composition}{" "}
+                            {mode !== "buynow" && (
+                              <Link href="/cart" data-no-unsaved-guard onClick={onLeaveCartClick} className="underline underline-offset-2">
+                                (장바구니에서 정리)
+                              </Link>
+                            )}
+                          </p>
+                        )}
+                        {fieldErrors.composition && mode !== "buynow" && (
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            <Link href="/cart" data-no-unsaved-guard onClick={onLeaveCartClick} className="inline-flex items-center justify-center rounded-md bg-muted/50 dark:bg-card/60 px-3 py-2 text-sm font-medium text-foreground hover:bg-muted">
+                              장바구니로 가서 정리하기
+                            </Link>
+                            <span className="text-xs text-muted-foreground">정리 후 다시 이 페이지로 돌아와 주문을 진행해주세요.</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {paymentMethod === "bank-transfer" ? (
+                      <CheckoutButton
+                        disabled={!canSubmit}
+                        name={name}
+                        phone={phone}
+                        email={email}
+                        postalCode={postalCode}
+                        address={address}
+                        addressDetail={addressDetail}
+                        depositor={depositor}
+                        totalPrice={totalPrice}
+                        shippingFee={shippingFee}
+                        selectedBank={selectedBank}
+                        deliveryRequest={deliveryRequest}
+                        saveAddress={saveAddress}
+                        deliveryMethod={deliveryMethod}
+                        serviceTargetIds={serviceTargetIds}
+                        withStringService={withStringService}
+                        servicePickupMethod={servicePickupMethod}
+                        items={orderItems}
+                        serviceFee={finalServiceFee}
+                        pointsToUse={appliedPoints}
+                        stringingApplicationInput={stringingApplicationInput}
+                        onSubmittingChange={setIsCheckoutSubmitting}
+                        onBeforeSuccessNavigation={() => setIsIntentionalSuccessNavigation(true)}
+                        onSuccessNavigationAbort={() => setIsIntentionalSuccessNavigation(false)}
+                      />
+                    ) : nicePaymentsEnabled && !isZeroPayableAmount ? (
+                      <NiceCheckoutButton
+                        disabled={!canSubmit}
+                        onBeforeSuccessNavigation={() => setIsIntentionalSuccessNavigation(true)}
+                        onSuccessNavigationAbort={() => setIsIntentionalSuccessNavigation(false)}
+                        payload={{
+                          items: orderItems.map((item) => ({ productId: item.id, quantity: item.quantity, kind: item.kind ?? "product" })),
+                          shippingInfo: {
+                            name: name.trim(),
+                            phone: phone.replace(/\D/g, ""),
+                            address: address.trim(),
+                            addressDetail: addressDetail.trim(),
+                            postalCode: postalCode.replace(/\D/g, ""),
+                            depositor: "나이스결제",
+                            deliveryRequest: deliveryRequest.trim(),
+                            deliveryMethod,
+                            withStringService,
+                          },
+                          paymentInfo: { method: "나이스페이" },
+                          totalPrice,
+                          shippingFee,
+                          serviceFee: finalServiceFee,
+                          pointsToUse: appliedPoints,
+                          guestInfo: !user ? { name: name.trim(), phone: phone.replace(/\D/g, ""), email: email.trim().toLowerCase() } : undefined,
+                          isStringServiceApplied: withStringService,
+                          servicePickupMethod,
+                          stringingApplicationInput: withStringService && stringingApplicationInput ? stringingApplicationInput : undefined,
+                        }}
+                      />
+                    ) : null}
+                    <Button variant="outline" className="w-full border-2 hover:bg-background dark:hover:bg-muted bg-transparent" asChild>
+                      <Link href="/cart" data-no-unsaved-guard onClick={onLeaveCartClick}>
+                        장바구니로 돌아가기
+                      </Link>
+                    </Button>
+                  </CardContent>
+                  {isCheckoutSubmitting && (
+                    <div className="absolute inset-0 z-10 cursor-wait bg-overlay/10 backdrop-blur-[2px]">
+                      <div className="absolute inset-0 grid place-items-center">
+                        <div className="flex items-center gap-3 rounded-xl bg-card/90 px-4 py-3 shadow">
+                          <Loader2 className="h-5 w-5 animate-spin" />
+                          <span className="text-sm">주문을 처리하고 있어요…</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </Card>
               </div>
 
               {/* 주문 요약 */}
               <div className="bp-lg:col-span-1">
-                <div className="bp-lg:sticky bp-lg:top-20">
+                <div>
                   <Card className="relative border border-border bg-card shadow-sm overflow-hidden">
                     <div className="border-b border-border bg-secondary/70 p-4 bp-sm:p-6 text-foreground">
                       <CardTitle className="flex items-center gap-3 text-xl">
@@ -1724,108 +1882,6 @@ export default function CheckoutPage() {
                         )}
                       </div>
                     </CardContent>
-                    <CardFooter className="flex flex-col gap-4 p-4 bp-sm:p-6 shrink-0">
-                      {(fieldErrors.items || fieldErrors.bundle || (isMountingFeeReady && fieldErrors.composition)) && (
-                        <div className="w-full rounded-lg border border-destructive/30 bg-destructive/15 p-3 text-sm text-destructive dark:bg-destructive/20">
-                          <p className="font-semibold mb-1">확인 필요</p>
-                          {fieldErrors.items && <p>• {fieldErrors.items}</p>}
-                          {fieldErrors.bundle && <p>• {fieldErrors.bundle}</p>}
-                          {fieldErrors.composition && (
-                            <p>
-                              • {fieldErrors.composition}{" "}
-                              {mode !== "buynow" && (
-                                <Link href="/cart" data-no-unsaved-guard onClick={onLeaveCartClick} className="underline underline-offset-2">
-                                  (장바구니에서 정리)
-                                </Link>
-                              )}
-                            </p>
-                          )}
-                          {/* CTA 강화: composition 에러면 "장바구니로 가서 정리하기"를 버튼으로도 제공
- - 단, 즉시구매(buynow) 흐름에서는 장바구니에 담기지 않을 수 있어 CTA를 숨긴다.
- */}
-                          {fieldErrors.composition && mode !== "buynow" && (
-                            <div className="mt-3 flex flex-wrap gap-2">
-                              <Link href="/cart" data-no-unsaved-guard onClick={onLeaveCartClick} className="inline-flex items-center justify-center rounded-md bg-muted/50 dark:bg-card/60 px-3 py-2 text-sm font-medium text-foreground hover:bg-muted">
-                                장바구니로 가서 정리하기
-                              </Link>
-                              <span className="text-xs text-muted-foreground">정리 후 다시 이 페이지로 돌아와 주문을 진행해주세요.</span>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                      {paymentMethod === "bank-transfer" ? (
-                        <CheckoutButton
-                          disabled={!canSubmit}
-                          name={name}
-                          phone={phone}
-                          email={email}
-                          postalCode={postalCode}
-                          address={address}
-                          addressDetail={addressDetail}
-                          depositor={depositor}
-                          totalPrice={totalPrice}
-                          shippingFee={shippingFee}
-                          selectedBank={selectedBank}
-                          deliveryRequest={deliveryRequest}
-                          saveAddress={saveAddress}
-                          deliveryMethod={deliveryMethod}
-                          serviceTargetIds={serviceTargetIds}
-                          withStringService={withStringService}
-                          servicePickupMethod={servicePickupMethod}
-                          items={orderItems}
-                          serviceFee={finalServiceFee}
-                          pointsToUse={appliedPoints}
-                          stringingApplicationInput={stringingApplicationInput}
-                          onSubmittingChange={setIsCheckoutSubmitting}
-                          onBeforeSuccessNavigation={() => setIsIntentionalSuccessNavigation(true)}
-                          onSuccessNavigationAbort={() => setIsIntentionalSuccessNavigation(false)}
-                        />
-                      ) : nicePaymentsEnabled && !isZeroPayableAmount ? (
-                        <NiceCheckoutButton
-                          disabled={!canSubmit}
-                          onBeforeSuccessNavigation={() => setIsIntentionalSuccessNavigation(true)}
-                          onSuccessNavigationAbort={() => setIsIntentionalSuccessNavigation(false)}
-                          payload={{
-                            items: orderItems.map((item) => ({ productId: item.id, quantity: item.quantity, kind: item.kind ?? "product" })),
-                            shippingInfo: {
-                              name: name.trim(),
-                              phone: phone.replace(/\D/g, ""),
-                              address: address.trim(),
-                              addressDetail: addressDetail.trim(),
-                              postalCode: postalCode.replace(/\D/g, ""),
-                              depositor: "나이스결제",
-                              deliveryRequest: deliveryRequest.trim(),
-                              deliveryMethod,
-                              withStringService,
-                            },
-                            paymentInfo: { method: "나이스페이" },
-                            totalPrice,
-                            shippingFee,
-                            serviceFee: finalServiceFee,
-                            pointsToUse: appliedPoints,
-                            guestInfo: !user ? { name: name.trim(), phone: phone.replace(/\D/g, ""), email: email.trim().toLowerCase() } : undefined,
-                            isStringServiceApplied: withStringService,
-                            servicePickupMethod,
-                            stringingApplicationInput: withStringService && stringingApplicationInput ? stringingApplicationInput : undefined,
-                          }}
-                        />
-                      ) : null}
-                      <Button variant="outline" className="w-full border-2 hover:bg-background dark:hover:bg-muted bg-transparent" asChild>
-                        <Link href="/cart" data-no-unsaved-guard onClick={onLeaveCartClick}>
-                          장바구니로 돌아가기
-                        </Link>
-                      </Button>
-                    </CardFooter>
-                    {isCheckoutSubmitting && (
-                      <div className="absolute inset-0 z-10 cursor-wait bg-overlay/10 backdrop-blur-[2px]">
-                        <div className="absolute inset-0 grid place-items-center">
-                          <div className="flex items-center gap-3 rounded-xl bg-card/90 px-4 py-3 shadow">
-                            <Loader2 className="h-5 w-5 animate-spin" />
-                            <span className="text-sm">주문을 처리하고 있어요…</span>
-                          </div>
-                        </div>
-                      </div>
-                    )}
                   </Card>
                 </div>
               </div>
