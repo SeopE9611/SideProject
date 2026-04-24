@@ -1,7 +1,11 @@
 "use client";
 
 import { badgeVariants } from "@/components/ui/badge";
-import { usedBadgeMeta, type UsedBadgeKind } from "@/lib/badge-style";
+import {
+  usedBadgeMeta,
+  type BadgeSurface,
+  type UsedBadgeKind,
+} from "@/lib/badge-style";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -9,6 +13,7 @@ type Props = {
   state: string; // 상태코드(e.g. 'available', 'A' 등)
   className?: string;
   as?: "span" | "div";
+  surface?: BadgeSurface;
 };
 
 export default function StatusBadge({
@@ -16,9 +21,10 @@ export default function StatusBadge({
   state,
   className = "",
   as = "span",
+  surface = "inline",
 }: Props) {
   const Comp = as;
-  const meta = usedBadgeMeta(kind, state);
+  const meta = usedBadgeMeta(kind, state, surface);
 
   return (
     <Comp

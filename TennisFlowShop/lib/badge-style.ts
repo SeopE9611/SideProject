@@ -9,20 +9,42 @@ export const badgeBaseOutlined = `${badgeBase} border border-border bg-backgroun
 
 const SEMANTIC_BADGE = {
   neutral: "bg-card text-foreground border border-border dark:bg-card",
-  info: "bg-info text-info-foreground border border-info",
-  success: "bg-success text-success-foreground border border-success",
-  warning: "bg-warning text-warning-foreground border border-warning",
+  info: "bg-info/10 text-info border border-info/45 dark:bg-info/18 dark:border-info/55 dark:text-info",
+  success:
+    "bg-success/10 text-success border border-success/45 dark:bg-success/18 dark:border-success/55 dark:text-success",
+  warning:
+    "bg-warning/12 text-warning border border-warning/50 dark:bg-warning/20 dark:border-warning/55 dark:text-warning",
   danger:
-    "bg-destructive text-destructive-foreground border border-destructive",
-  brand: "bg-primary text-primary-foreground border border-primary",
+    "bg-destructive/10 text-destructive border border-destructive/45 dark:bg-destructive/18 dark:border-destructive/55 dark:text-destructive",
+  brand:
+    "bg-primary/10 text-primary border border-primary/40 dark:bg-primary/18 dark:border-primary/55 dark:text-primary",
   destructive:
-    "bg-destructive text-destructive-foreground border border-destructive",
+    "bg-destructive/10 text-destructive border border-destructive/45 dark:bg-destructive/18 dark:border-destructive/55 dark:text-destructive",
 } as const;
 
 export type BadgeSemanticTone = keyof typeof SEMANTIC_BADGE;
 
 export function badgeToneClass(tone: BadgeSemanticTone) {
   return SEMANTIC_BADGE[tone];
+}
+
+const IMAGE_BADGE_SURFACE =
+  "border bg-background/95 shadow-sm backdrop-blur-sm dark:bg-card/95";
+
+const IMAGE_BADGE = {
+  neutral: `${IMAGE_BADGE_SURFACE} border-border text-foreground`,
+  info: `${IMAGE_BADGE_SURFACE} border-info/55 text-info`,
+  success: `${IMAGE_BADGE_SURFACE} border-success/55 text-success`,
+  warning: `${IMAGE_BADGE_SURFACE} border-warning/60 text-warning`,
+  danger: `${IMAGE_BADGE_SURFACE} border-destructive/60 text-destructive`,
+  brand: `${IMAGE_BADGE_SURFACE} border-primary/55 text-primary`,
+  destructive: `${IMAGE_BADGE_SURFACE} border-destructive/60 text-destructive`,
+} as const;
+
+export type BadgeSurface = "inline" | "image";
+
+export function imageBadgeClass(tone: BadgeSemanticTone) {
+  return IMAGE_BADGE[tone];
 }
 
 export const SEMANTIC_BADGE_VARIANT = {
@@ -557,58 +579,56 @@ export const attachFileColor = SEMANTIC_BADGE.neutral;
 export type UsedBadgeKind = "rental" | "condition";
 
 const USED_BADGE_PROMINENT = {
-  rentalAvailable:
-    "border border-success bg-success text-success-foreground",
-  rentalUnavailable:
-    "border border-destructive bg-destructive text-destructive-foreground",
-  rentalRented:
-    "border border-border bg-muted text-foreground",
-  rentalPending:
-    "border border-info bg-info text-info-foreground",
-  conditionA:
-    "border border-success bg-success text-success-foreground",
-  conditionB:
-    "border border-info bg-info text-info-foreground",
-  conditionC:
-    "border border-warning bg-warning text-warning-foreground",
-  conditionD:
-    "border border-destructive bg-destructive text-destructive-foreground",
+  rentalAvailable: "success",
+  rentalUnavailable: "danger",
+  rentalRented: "neutral",
+  rentalPending: "info",
+  conditionA: "success",
+  conditionB: "info",
+  conditionC: "warning",
+  conditionD: "danger",
 } as const;
 
 const USED_BADGE_META: Record<
   UsedBadgeKind,
-  Record<string, { label: string; className: string }>
+  Record<string, { label: string; tone: BadgeSemanticTone }>
 > = {
   rental: {
     available: {
       label: "대여 가능",
-      className: USED_BADGE_PROMINENT.rentalAvailable,
+      tone: USED_BADGE_PROMINENT.rentalAvailable,
     },
     unavailable: {
       label: "대여 불가",
-      className: USED_BADGE_PROMINENT.rentalUnavailable,
+      tone: USED_BADGE_PROMINENT.rentalUnavailable,
     },
-    rented: { label: "대여 중", className: USED_BADGE_PROMINENT.rentalRented },
+    rented: { label: "대여 중", tone: USED_BADGE_PROMINENT.rentalRented },
     pending: {
       label: "예약 대기",
-      className: USED_BADGE_PROMINENT.rentalPending,
+      tone: USED_BADGE_PROMINENT.rentalPending,
     },
   },
   condition: {
-    A: { label: "최상", className: USED_BADGE_PROMINENT.conditionA },
-    B: { label: "양호", className: USED_BADGE_PROMINENT.conditionB },
-    C: { label: "보통", className: USED_BADGE_PROMINENT.conditionC },
-    D: { label: "하", className: USED_BADGE_PROMINENT.conditionD },
+    A: { label: "최상", tone: USED_BADGE_PROMINENT.conditionA },
+    B: { label: "양호", tone: USED_BADGE_PROMINENT.conditionB },
+    C: { label: "보통", tone: USED_BADGE_PROMINENT.conditionC },
+    D: { label: "하", tone: USED_BADGE_PROMINENT.conditionD },
   },
 };
 
-export function usedBadgeMeta(kind: UsedBadgeKind, state: string) {
-  return (
-    USED_BADGE_META[kind]?.[state] ?? {
-      label: state,
-      className: SEMANTIC_BADGE.neutral,
-    }
-  );
+export function usedBadgeMeta(
+  kind: UsedBadgeKind,
+  state: string,
+  surface: BadgeSurface = "inline",
+) {
+  const meta = USED_BADGE_META[kind]?.[state];
+  const tone = meta?.tone ?? "neutral";
+  return {
+    label: meta?.label ?? state,
+    tone,
+    className:
+      surface === "image" ? imageBadgeClass(tone) : badgeToneClass(tone),
+  };
 }
 
 export type BoardBadgeKind = "free" | "market" | "gear";

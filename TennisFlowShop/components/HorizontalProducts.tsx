@@ -219,8 +219,8 @@ export default function HorizontalProducts({
 
         {(typeof p.rentalEnabled === "boolean" || p.condition) && (
           <div className="absolute top-2.5 left-2.5 right-2.5 bp-sm:top-3 bp-sm:left-3 bp-sm:right-3 flex items-center gap-2 z-10">
-            {typeof p.rentalEnabled === "boolean" && !p.rentalEnabled && <StatusBadge kind="rental" state="unavailable" />}
-            {p.condition && <StatusBadge kind="condition" state={p.condition} />}
+            {typeof p.rentalEnabled === "boolean" && !p.rentalEnabled && <StatusBadge kind="rental" state="unavailable" surface="image" />}
+            {p.condition && <StatusBadge kind="condition" state={p.condition} surface="image" />}
           </div>
         )}
       </div>

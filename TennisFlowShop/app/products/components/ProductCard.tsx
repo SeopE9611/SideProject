@@ -270,7 +270,7 @@ const ProductCard = React.memo(
               {product.isNew && (
                 <Badge
                   variant="info"
-                  className="absolute right-2 top-2 shadow-sm"
+                  className="absolute right-2 top-2 border bg-background/95 shadow-sm backdrop-blur-sm dark:bg-card/95"
                 >
                   NEW
                 </Badge>
@@ -418,7 +418,7 @@ const ProductCard = React.memo(
             {product.isNew && (
               <Badge
                 variant="info"
-                className="absolute right-2 sm:right-3 top-2 sm:top-3 text-xs shadow-sm z-10"
+                className="absolute right-2 sm:right-3 top-2 sm:top-3 z-10 border bg-background/95 text-xs shadow-sm backdrop-blur-sm dark:bg-card/95"
               >
                 NEW
               </Badge>

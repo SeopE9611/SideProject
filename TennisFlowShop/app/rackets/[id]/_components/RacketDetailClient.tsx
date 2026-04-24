@@ -502,8 +502,13 @@ export default function RacketDetailClient({
                   </>
                 )}
                 <div className="absolute top-4 left-4 flex gap-2">
-                  <Badge variant="brand">중고</Badge>
-                  <StatusBadge kind="rental" state={rentalState} />
+                  <Badge
+                    variant="brand"
+                    className="border bg-background/95 shadow-sm backdrop-blur-sm dark:bg-card/95"
+                  >
+                    중고
+                  </Badge>
+                  <StatusBadge kind="rental" state={rentalState} surface="image" />
                 </div>
               </div>
             </Card>

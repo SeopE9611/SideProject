@@ -14,7 +14,7 @@ import {
 } from "@/app/store/racketCompareStore";
 import { useMemo } from "react";
 import { Scale, ShoppingCart, Info } from "lucide-react";
-import { badgeToneVariant } from "@/lib/badge-style";
+import { badgeToneVariant, imageBadgeClass } from "@/lib/badge-style";
 
 const RentDialog = dynamic(
   () => import("@/app/rackets/[id]/_components/RentDialog"),
@@ -61,30 +61,15 @@ function conditionLabel(condition?: string | null) {
   if (!condition) return null;
   const c = condition.toUpperCase();
   if (c === "A")
-    return {
-      label: "A",
-      desc: "최상",
-      className:
-        "bg-secondary text-foreground ring-1 ring-border",
-    };
+    return { label: "A", desc: "최상", className: imageBadgeClass("success") };
   if (c === "B")
-    return {
-      label: "B",
-      desc: "상",
-      className:
-        "bg-secondary text-foreground ring-1 ring-border",
-    };
+    return { label: "B", desc: "상", className: imageBadgeClass("info") };
   if (c === "C")
-    return {
-      label: "C",
-      desc: "보통",
-      className:
-        "bg-muted text-muted-foreground ring-1 ring-ring dark:bg-muted dark:text-muted-foreground",
-    };
+    return { label: "C", desc: "보통", className: imageBadgeClass("warning") };
   return {
     label: c,
     desc: "",
-    className: "bg-muted text-muted-foreground ring-1 ring-muted",
+    className: imageBadgeClass("neutral"),
   };
 }
 
