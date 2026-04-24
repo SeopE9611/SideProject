@@ -546,7 +546,7 @@ export default function TensionGuidePage() {
                             >
                               {option.label}
                             </div>
-                            <div className="text-[10px] bp-sm:text-xs text-muted-foreground mt-1 hidden bp-sm:block">
+                            <div className="text-xs text-foreground/80 mt-1 hidden bp-sm:block">
                               {option.desc}
                             </div>
                           </button>
@@ -601,7 +601,7 @@ export default function TensionGuidePage() {
                             >
                               {option.label}
                             </div>
-                            <div className="text-[10px] bp-sm:text-xs text-muted-foreground mt-1 hidden bp-sm:block">
+                            <div className="text-xs text-foreground/80 mt-1 hidden bp-sm:block">
                               {option.desc}
                             </div>
                           </button>
@@ -961,19 +961,16 @@ export default function TensionGuidePage() {
                         </h4>
                         <ul className="space-y-2">
                           {string.pros.map((pro: StringPro, i: number) => (
-                            <li
-                              key={i}
-                              className="text-[10px] bp-sm:text-xs text-muted-foreground flex items-start gap-2"
-                            >
+                            <li key={i} className="text-xs text-foreground/80 flex items-start gap-2">
                               <div className="w-1 h-1 bg-foreground/50 rounded-full flex-shrink-0 mt-1.5" />
                               {typeof pro === "string" ? (
                                 <span>{pro}</span>
                               ) : (
                                 <div>
-                                  <p className="font-semibold text-foreground text-[11px] bp-sm:text-xs">
+                                  <p className="font-semibold text-foreground text-xs bp-sm:text-sm">
                                     {pro.title}
                                   </p>
-                                  <p className="text-muted-foreground">
+                                  <p className="text-foreground/80">
                                     {pro.description}
                                   </p>
                                 </div>
@@ -991,7 +988,7 @@ export default function TensionGuidePage() {
                           <p className="text-xs bp-md:text-sm font-medium text-foreground mb-0.5 bp-md:mb-1">
                             텐션 조정 팁
                           </p>
-                          <p className="text-[10px] bp-sm:text-xs text-muted-foreground">
+                          <p className="text-xs bp-sm:text-sm text-foreground/80">
                             {string.adjustment}
                           </p>
                         </div>
@@ -1000,7 +997,7 @@ export default function TensionGuidePage() {
 
                     <div className="flex items-center gap-2 pt-1 bp-md:pt-2">
                       <Target className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-muted-foreground" />
-                      <span className="text-[10px] bp-sm:text-xs text-muted-foreground">
+                      <span className="text-xs bp-sm:text-sm text-foreground/80">
                         추천: {string.bestFor}
                       </span>
                     </div>
