@@ -8,30 +8,24 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
-        neutral: "border-border bg-card text-foreground dark:bg-card/90",
-        info: "border-info/45 bg-info/15 text-info dark:border-info/55 dark:bg-info/22",
-        success:
-          "border-success/45 bg-success/15 text-success dark:border-success/55 dark:bg-success/24",
-        warning:
-          "border-warning/45 bg-warning/15 text-warning dark:border-warning/55 dark:bg-warning/26",
+        neutral: "border-border bg-card text-foreground dark:bg-card",
+        info: "border-info bg-info text-info-foreground",
+        success: "border-success bg-success text-success-foreground",
+        warning: "border-warning bg-warning text-warning-foreground",
         danger:
-          "border-destructive/45 bg-destructive/15 text-destructive dark:border-destructive/55 dark:bg-destructive/24",
-        brand:
-          "border-primary/45 bg-primary/15 text-primary dark:border-primary/55 dark:bg-primary/24",
+          "border-destructive bg-destructive text-destructive-foreground",
+        brand: "border-primary bg-primary text-primary-foreground",
         secondary:
           "border-border/80 bg-muted/80 text-muted-foreground dark:bg-muted/55 dark:text-foreground",
         outline: "border-border bg-background text-foreground",
 
         // Legacy aliases kept for gradual migration.
-        default: "border-border bg-card text-foreground dark:bg-card/90",
-        highlight:
-          "border-primary/45 bg-primary/15 text-primary dark:border-primary/55 dark:bg-primary/24",
+        default: "border-border bg-card text-foreground dark:bg-card",
+        highlight: "border-primary bg-primary text-primary-foreground",
         destructive:
-          "border-destructive/45 bg-destructive/15 text-destructive dark:border-destructive/55 dark:bg-destructive/24",
-        product:
-          "border-info/45 bg-info/15 text-info dark:border-info/55 dark:bg-info/22",
-        service:
-          "border-warning/45 bg-warning/15 text-warning dark:border-warning/55 dark:bg-warning/26",
+          "border-destructive bg-destructive text-destructive-foreground",
+        product: "border-info bg-info text-info-foreground",
+        service: "border-warning bg-warning text-warning-foreground",
       },
     },
     defaultVariants: {

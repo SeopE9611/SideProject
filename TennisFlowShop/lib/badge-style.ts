@@ -8,18 +8,15 @@ export const badgeBase = "inline-flex items-center gap-1 font-normal";
 export const badgeBaseOutlined = `${badgeBase} border border-border bg-background`;
 
 const SEMANTIC_BADGE = {
-  neutral: "bg-card text-foreground border border-border dark:bg-card/90",
-  info: "bg-info/15 text-info border border-info/45 dark:bg-info/22 dark:border-info/55",
-  success:
-    "bg-success/15 text-success border border-success/45 dark:bg-success/24 dark:border-success/55",
-  warning:
-    "bg-warning/15 text-warning border border-warning/45 dark:bg-warning/26 dark:border-warning/55",
+  neutral: "bg-card text-foreground border border-border dark:bg-card",
+  info: "bg-info text-info-foreground border border-info",
+  success: "bg-success text-success-foreground border border-success",
+  warning: "bg-warning text-warning-foreground border border-warning",
   danger:
-    "bg-destructive/15 text-destructive border border-destructive/45 dark:bg-destructive/24 dark:border-destructive/55",
-  brand:
-    "bg-primary/15 text-primary border border-primary/45 dark:bg-primary/24 dark:border-primary/55",
+    "bg-destructive text-destructive-foreground border border-destructive",
+  brand: "bg-primary text-primary-foreground border border-primary",
   destructive:
-    "bg-destructive/15 text-destructive border border-destructive/45 dark:bg-destructive/24 dark:border-destructive/55",
+    "bg-destructive text-destructive-foreground border border-destructive",
 } as const;
 
 export type BadgeSemanticTone = keyof typeof SEMANTIC_BADGE;
