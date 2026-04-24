@@ -74,8 +74,8 @@ type NicePopupDocumentSnapshot = {
   scrollingElementScrollLeft: number | null;
   stickyElement: Element | null;
   stickyParentChainPaths: string[];
-  stickyChain: TrackedElementSnapshot[];
-  trackedElements: TrackedElementSnapshot[];
+  htmlSnapshot: TrackedElementSnapshot | null;
+  bodySnapshot: TrackedElementSnapshot | null;
 };
 
 type ElementRuntimeMetrics = {
@@ -140,7 +140,6 @@ export default function NiceCheckoutButton({
   const popupSnapshotRef = useRef<NicePopupDocumentSnapshot | null>(null);
   const popupMutationObserverRef = useRef<MutationObserver | null>(null);
   const popupMutationChangesRef = useRef<MutationChangeRecord[]>([]);
-  const popupRootCauseSnapshotsRef = useRef<TrackedElementSnapshot[]>([]);
   const popupAuditTimerRef = useRef<number | null>(null);
   const popupSessionStateRef = useRef({
     didNavigateAway: false,
@@ -281,41 +280,16 @@ export default function NiceCheckoutButton({
         current = current.parentElement;
       }
     }
-
-    const appRootCandidates = new Set<Element>();
-    appRootCandidates.add(document.documentElement);
-    appRootCandidates.add(document.body);
-
-    const firstBodyChild = document.body.firstElementChild;
-    if (firstBodyChild) appRootCandidates.add(firstBodyChild);
-
-    const main = document.querySelector("main");
-    if (main) appRootCandidates.add(main);
-
-    document.querySelectorAll("[data-nextjs-scroll-focus-boundary]").forEach((el) => {
-      appRootCandidates.add(el);
-    });
-
-    const overlayCandidates = document.querySelectorAll(
-      '[id*="nice" i], [class*="nice" i], [id*="overlay" i], [class*="overlay" i], [class*="popup" i], [class*="modal" i]'
-    );
-    overlayCandidates.forEach((el) => appRootCandidates.add(el));
-
-    const trackedSet = new Set<Element>([...stickyChainElements, ...Array.from(appRootCandidates)]);
-
     return {
       stickyChainElements,
-      trackedElements: Array.from(trackedSet),
     };
   }, []);
 
   const capturePopupSnapshot = useCallback((): NicePopupDocumentSnapshot | null => {
     if (typeof window === "undefined") return null;
 
-    const { stickyChainElements, trackedElements } = collectStickyAndRootCandidates();
+    const { stickyChainElements } = collectStickyAndRootCandidates();
     const stickyElement = stickyChainElements[0] ?? null;
-    const stickyChainSnapshots = stickyChainElements.map((el) => createElementSnapshot(el));
-    const trackedSnapshots = trackedElements.map((el) => createElementSnapshot(el));
     const stickyParentChainPaths = stickyChainElements.map((el) => buildElementPath(el));
 
     const snapshot: NicePopupDocumentSnapshot = {
@@ -325,13 +299,15 @@ export default function NiceCheckoutButton({
       scrollingElementScrollLeft: document.scrollingElement?.scrollLeft ?? null,
       stickyElement,
       stickyParentChainPaths,
-      stickyChain: stickyChainSnapshots,
-      trackedElements: trackedSnapshots,
+      htmlSnapshot: createElementSnapshot(document.documentElement),
+      bodySnapshot: createElementSnapshot(document.body),
     };
 
     logDev(
       "requestPay 직전 sticky ancestor chain",
-      stickyChainSnapshots.map((item) => ({
+      stickyChainElements.map((element) => {
+        const item = createElementSnapshot(element);
+        return {
         elementPath: buildElementPath(item.element),
         overflow: item.computed.overflow,
         overflowX: item.computed.overflowX,
@@ -342,12 +318,13 @@ export default function NiceCheckoutButton({
         perspective: item.computed.perspective,
         position: item.computed.position,
         rect: item.rect,
-      })),
+      };
+      }),
       CHAIN_PREFIX,
     );
-    logDev("requestPay 직전 tracked snapshot 수", {
-      stickyChainCount: stickyChainSnapshots.length,
-      trackedCount: trackedSnapshots.length,
+    logDev("requestPay 직전 html/body baseline snapshot", {
+      html: snapshot.htmlSnapshot?.computed,
+      body: snapshot.bodySnapshot?.computed,
     }, DEBUG_PREFIX);
 
     return snapshot;
@@ -358,16 +335,6 @@ export default function NiceCheckoutButton({
     popupMutationObserverRef.current = null;
   }, []);
 
-  const isCandidateElementForTracking = useCallback((element: Element, snapshot: NicePopupDocumentSnapshot) => {
-    if (element === document.documentElement || element === document.body) return true;
-
-    const trackedSet = new Set(snapshot.trackedElements.map((item) => item.element));
-    if (trackedSet.has(element)) return true;
-
-    const classOrId = `${element.id} ${element.getAttribute("class") || ""}`.toLowerCase();
-    return /(next|root|layout|wrap|overlay|popup|modal|nice)/.test(classOrId);
-  }, []);
-
   const getElementCategories = useCallback((element: Element, snapshot: NicePopupDocumentSnapshot) => {
     const categories: string[] = [];
     if (element === document.documentElement) categories.push("html");
@@ -375,7 +342,6 @@ export default function NiceCheckoutButton({
     if (element === document.body.firstElementChild) categories.push("root");
     if (element === document.querySelector("main")) categories.push("main");
     if (snapshot.stickyElement && element === snapshot.stickyElement) categories.push("sticky");
-    if (snapshot.stickyChain.some((item) => item.element === element)) categories.push("sticky-ancestor");
     if (!categories.length) categories.push("self");
     return categories;
   }, []);
@@ -388,14 +354,30 @@ export default function NiceCheckoutButton({
     }));
   }, []);
 
-  const ensureTrackedSnapshot = useCallback((element: Element, snapshot: NicePopupDocumentSnapshot) => {
-    if (snapshot.trackedElements.some((item) => item.element === element)) return;
-    snapshot.trackedElements.push(createElementSnapshot(element));
-    logDev("mutation 중 신규 tracked 요소 추가", {
-      element: describeElement(element),
-      trackedCount: snapshot.trackedElements.length,
-    }, MUTATION_PREFIX);
-  }, [createElementSnapshot, describeElement, logDev]);
+  const restoreCriticalPropsToBaseline = useCallback((
+    element: Element,
+    baseline: TrackedElementSnapshot,
+    label: "body" | "html",
+  ) => {
+    const currentComputed = window.getComputedStyle(element);
+    const restoredProps: (typeof STICKY_CRITICAL_PROPS)[number][] = [];
+    STICKY_CRITICAL_PROPS.forEach((prop) => {
+      if (currentComputed[prop] === baseline.computed[prop]) return;
+      (element as HTMLElement).style[prop] = baseline.computed[prop];
+      restoredProps.push(prop);
+    });
+
+    if (!restoredProps.length) return;
+
+    logDev(
+      `${label} critical props restored`,
+      {
+        elementPath: buildElementPath(element),
+        restoredProps,
+      },
+      `[checkout:nice-fix] ${label} critical props restored`,
+    );
+  }, [buildElementPath, logDev]);
 
   const startMutationObserver = useCallback(() => {
     const snapshot = popupSnapshotRef.current;
@@ -403,8 +385,6 @@ export default function NiceCheckoutButton({
 
     stopMutationObserver();
     popupMutationChangesRef.current = [];
-    popupRootCauseSnapshotsRef.current = [];
-
     const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
         if (!popupSessionStateRef.current.active) continue;
@@ -413,9 +393,17 @@ export default function NiceCheckoutButton({
           if (!attributeName || (attributeName !== "class" && attributeName !== "style")) continue;
           const target = mutation.target;
           if (!(target instanceof Element)) continue;
-          if (!isCandidateElementForTracking(target, snapshot)) continue;
+          const isBody = target === document.body;
+          const isHtml = target === document.documentElement;
+          if (!isBody && !isHtml) {
+            logDev("html/body 외 mutation 감지 (무시)", {
+              kind: "attr",
+              targetPath: buildElementPath(target),
+              changedAttr: attributeName,
+            }, MUTATION_PREFIX);
+            continue;
+          }
 
-          ensureTrackedSnapshot(target, snapshot);
           const beforeValue = mutation.oldValue || "";
           const afterValue = target.getAttribute(attributeName) || "";
           if (beforeValue === afterValue) continue;
@@ -427,16 +415,10 @@ export default function NiceCheckoutButton({
             afterValue,
           });
 
-          const beforeSnapshot = snapshot.trackedElements.find((item) => item.element === target) ?? createElementSnapshot(target);
+          const beforeSnapshot = isBody ? snapshot.bodySnapshot : snapshot.htmlSnapshot;
+          if (!beforeSnapshot) continue;
           const afterMetrics = captureRuntimeMetrics(target);
           const criticalDiff = getCriticalDiff(beforeSnapshot.computed, afterMetrics.computed);
-          const isStickyAncestor = snapshot.stickyChain.some((entry) => entry.element === target);
-          const isHtml = target === document.documentElement;
-          const hasStickyCriticalDiff = criticalDiff.length > 0;
-
-          if (hasStickyCriticalDiff && (isHtml || isStickyAncestor) && !popupRootCauseSnapshotsRef.current.some((entry) => entry.element === target)) {
-            popupRootCauseSnapshotsRef.current.push(beforeSnapshot);
-          }
 
           logDev("runtime mutation 감지", {
             kind: "attr",
@@ -452,7 +434,6 @@ export default function NiceCheckoutButton({
             criticalDiff,
             baselineRect: beforeSnapshot.rect,
             currentRect: afterMetrics.rect,
-            isStickyAncestorChainElement: isStickyAncestor,
             categories: getElementCategories(target, snapshot),
           }, MUTATION_PREFIX);
           if (criticalDiff.length > 0) {
@@ -461,6 +442,7 @@ export default function NiceCheckoutButton({
               targetPath: buildElementPath(target),
               criticalDiff,
             }, CRITICAL_PREFIX);
+            restoreCriticalPropsToBaseline(target, beforeSnapshot, isBody ? "body" : "html");
           }
         }
 
@@ -493,7 +475,7 @@ export default function NiceCheckoutButton({
               kind: "child-removed",
               timestamp: Date.now(),
               removedNodePath: describeElement(node),
-              wasStickyAncestor: snapshot.stickyChain.some((entry) => entry.element === node),
+              wasStickyAncestor: false,
             }, MUTATION_PREFIX);
           });
         }
@@ -511,33 +493,13 @@ export default function NiceCheckoutButton({
     captureRuntimeMetrics,
     createElementSnapshot,
     describeElement,
-    ensureTrackedSnapshot,
     getCriticalDiff,
     getElementCategories,
     getParentChainElements,
-    isCandidateElementForTracking,
     logDev,
+    restoreCriticalPropsToBaseline,
     stopMutationObserver,
   ]);
-
-  const restoreRootCauseElements = useCallback(() => {
-    for (const item of popupRootCauseSnapshotsRef.current) {
-      const { element, className, styleCssText } = item;
-      if (!element.isConnected) continue;
-
-      if (className) {
-        element.setAttribute("class", className);
-      } else {
-        element.removeAttribute("class");
-      }
-
-      if (styleCssText) {
-        element.setAttribute("style", styleCssText);
-      } else {
-        element.removeAttribute("style");
-      }
-    }
-  }, []);
 
   const restoreDomAfterPopupAbort = useCallback(() => {
     if (typeof window === "undefined") return;
@@ -546,7 +508,12 @@ export default function NiceCheckoutButton({
     if (popupSessionStateRef.current.didNavigateAway) return;
 
     stopMutationObserver();
-    restoreRootCauseElements();
+    if (snapshot.bodySnapshot?.element.isConnected) {
+      restoreCriticalPropsToBaseline(snapshot.bodySnapshot.element, snapshot.bodySnapshot, "body");
+    }
+    if (snapshot.htmlSnapshot?.element.isConnected) {
+      restoreCriticalPropsToBaseline(snapshot.htmlSnapshot.element, snapshot.htmlSnapshot, "html");
+    }
 
     if (snapshot.scrollingElementScrollTop !== null && document.scrollingElement) {
       document.scrollingElement.scrollTop = snapshot.scrollingElementScrollTop;
@@ -575,28 +542,7 @@ export default function NiceCheckoutButton({
       })),
     );
 
-    const restoredChain = snapshot.stickyChain
-      .map((entry) => {
-        if (!entry.element.isConnected) return null;
-        const computed = window.getComputedStyle(entry.element);
-        return {
-          element: describeElement(entry.element),
-          overflow: computed.overflow,
-          overflowX: computed.overflowX,
-          overflowY: computed.overflowY,
-          transform: computed.transform,
-          filter: computed.filter,
-          contain: computed.contain,
-          perspective: computed.perspective,
-          position: computed.position,
-          className: entry.element.getAttribute("class") || "",
-          styleCssText: entry.element.getAttribute("style") || "",
-        };
-      })
-      .filter(Boolean);
-
-    logDev("restore 이후 sticky ancestor chain", restoredChain);
-  }, [describeElement, logDev, restoreRootCauseElements, stopMutationObserver]);
+  }, [describeElement, logDev, restoreCriticalPropsToBaseline, stopMutationObserver]);
 
   const cleanupPopupLifecycleListeners = useCallback(() => {
     popupLifecycleCleanupRef.current?.();
@@ -620,13 +566,8 @@ export default function NiceCheckoutButton({
     const currentChainElements = getParentChainElements(stickyElement);
     const currentChainPaths = currentChainElements.map((el) => buildElementPath(el));
     const baselineChainPaths = snapshot.stickyParentChainPaths;
-    const baselineChainElements = snapshot.stickyChain.map((item) => item.element);
-    const insertedWrappers = currentChainElements
-      .filter((el) => !baselineChainElements.includes(el))
-      .map((el) => buildElementPath(el));
-    const removedAncestors = baselineChainElements
-      .filter((el) => !currentChainElements.includes(el))
-      .map((el) => buildElementPath(el));
+    const insertedWrappers = currentChainPaths.filter((path) => !baselineChainPaths.includes(path));
+    const removedAncestors = baselineChainPaths.filter((path) => !currentChainPaths.includes(path));
     const stickyRect = stickyElement.getBoundingClientRect();
     logDev(label, {
       timestamp: Date.now(),
@@ -817,14 +758,6 @@ export default function NiceCheckoutButton({
           const stickyMetrics = stickyElement ? captureRuntimeMetrics(stickyElement) : null;
           logDev("requestPay 이후 500ms 분석", {
             changedCount: popupMutationChangesRef.current.length,
-            rootCauseCount: popupRootCauseSnapshotsRef.current.length,
-            rootCauseElements: popupRootCauseSnapshotsRef.current.map((entry) => ({
-              element: describeElement(entry.element),
-              beforeClass: entry.className,
-              beforeStyle: entry.styleCssText,
-              beforeComputed: entry.computed,
-              beforeRect: entry.rect,
-            })),
             stickyMetrics,
           }, DEBUG_PREFIX);
           popupAuditTimerRef.current = null;
