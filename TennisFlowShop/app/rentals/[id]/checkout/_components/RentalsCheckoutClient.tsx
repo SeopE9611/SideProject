@@ -674,8 +674,8 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
       </div>
 
       <SiteContainer variant="wide" className="py-6 md:py-8">
-        <div className="grid grid-cols-1 gap-6 md:gap-8 bp-lg:grid-cols-3">
-          <div className={cn("bp-lg:col-span-2 space-y-4 md:space-y-6", loading && "pointer-events-none")} aria-busy={loading}>
+        <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 md:gap-8">
+          <div className={cn("space-y-4 md:space-y-6", loading && "pointer-events-none")} aria-busy={loading}>
             {/* 대여 상품 정보 */}
             <Card className="bg-card border border-border shadow-sm overflow-hidden">
               <div className="bg-muted border-b border-border p-4 md:p-6">
@@ -1057,8 +1057,8 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
           </div>
 
           {/* 주문 요약 */}
-          <div className="bp-lg:col-span-1">
-            <div className="bp-lg:sticky bp-lg:top-20">
+          <div>
+            <div>
               <Card className="relative bg-card border border-border shadow-md overflow-hidden">
                 <div className="p-4 md:p-6 border-b border-border bg-secondary text-foreground">
                   <CardTitle className="flex items-center gap-3 text-xl">

@@ -166,6 +166,7 @@ export async function POST(req: Request) {
     try {
       const card = extractNiceCardInfo(approvedRaw);
       const easyPayProvider = extractNiceEasyPayProvider(approvedRaw);
+      const rentalPayloadAny = rentalPayload as Record<string, any>;
       const rental = await createRentalOrderCore({
         db,
         client,
@@ -180,6 +181,14 @@ export async function POST(req: Request) {
           paidAt: new Date(),
           paymentStatus: "결제완료",
           paymentInfo: {
+            ...(rentalPayloadAny?.paymentInfo && typeof rentalPayloadAny.paymentInfo === "object" ? (rentalPayloadAny.paymentInfo as Record<string, unknown>) : {}),
+            originalTotal: Number(rentalPayloadAny?.originalTotal ?? session.amount ?? amount ?? 0),
+            pointsUsed: Number(rentalPayloadAny?.pointsToUse ?? 0),
+            deposit: Number(rentalPayloadAny?.amount?.deposit ?? 0),
+            rentalFee: Number(rentalPayloadAny?.amount?.fee ?? 0),
+            stringPrice: Number(rentalPayloadAny?.amount?.stringPrice ?? 0),
+            serviceFee: Number(rentalPayloadAny?.amount?.stringingFee ?? 0),
+            total: Number(session.amount ?? amount ?? 0),
             status: "결제완료",
             provider: "nicepay",
             method: pick(approvedRaw, "payMethod", "PayMethod") || "card",

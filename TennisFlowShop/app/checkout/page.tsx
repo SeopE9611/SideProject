@@ -123,29 +123,39 @@ function FinalPaymentConfirmCard({
   subtotal,
   shippingFee,
   serviceFee,
+  baseServiceFee,
+  packageUsage,
   withStringService,
   appliedPoints,
   totalPrice,
   payableTotalPrice,
   isShippingFeeReady,
   isMountingFeeReady,
+  paymentMethod,
+  selectedBank,
+  depositor,
 }: {
   orderItemsCount: number;
   subtotal: number;
   shippingFee: number;
   serviceFee: number;
+  baseServiceFee: number;
+  packageUsage: PackageUsageResult | null;
   withStringService: boolean;
   appliedPoints: number;
   totalPrice: number;
   payableTotalPrice: number;
   isShippingFeeReady: boolean;
   isMountingFeeReady: boolean;
+  paymentMethod: "bank-transfer" | "nicepay";
+  selectedBank: string;
+  depositor: string;
 }) {
   return (
-    <Card className="border-0 bg-gradient-to-br from-primary/5 via-card to-secondary/30 shadow-xl shadow-primary/[0.08] ring-2 ring-primary/20 overflow-hidden rounded-2xl">
-      <div className="border-b border-primary/10 bg-primary/10 p-5 bp-sm:p-6">
+    <Card className="overflow-hidden rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
+      <div className="border-b border-border bg-gradient-to-r from-secondary/80 to-secondary/40 p-5 bp-sm:p-6">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/30">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20">
             <Shield className="h-5 w-5" />
           </div>
           <div>
@@ -190,6 +200,18 @@ function FinalPaymentConfirmCard({
               )}
             </div>
           )}
+          {withStringService && packageUsage?.canApplyPackage && (
+            <div className="flex items-center justify-between py-1">
+              <span className="text-muted-foreground">패키지 적용</span>
+              <span className="font-semibold">{packageUsage.usingPackage ? "적용됨" : "미사용"}</span>
+            </div>
+          )}
+          {withStringService && packageUsage?.usingPackage && baseServiceFee > 0 && (
+            <div className="flex items-center justify-between py-1">
+              <span className="text-muted-foreground">패키지 차감 서비스비</span>
+              <span className="font-semibold text-destructive">-{baseServiceFee.toLocaleString()}원</span>
+            </div>
+          )}
           {appliedPoints > 0 && (
             <div className="flex items-center justify-between py-1">
               <span className="text-muted-foreground">포인트 사용</span>
@@ -205,7 +227,7 @@ function FinalPaymentConfirmCard({
             <span className="text-muted-foreground">합계</span>
             {!isShippingFeeReady ? <Skeleton className="h-5 w-24 rounded" /> : <span className="font-semibold">{totalPrice.toLocaleString()}원</span>}
           </div>
-          <div className="flex items-center justify-between bg-primary/10 rounded-xl p-4 -mx-1">
+          <div className="flex items-center justify-between rounded-xl bg-primary/10 p-4 -mx-1">
             <span className="text-base bp-sm:text-lg font-bold">결제 예정 금액</span>
             {!isShippingFeeReady ? (
               <Skeleton className="h-9 w-32 rounded" />
@@ -217,8 +239,14 @@ function FinalPaymentConfirmCard({
             )}
           </div>
         </div>
-
-        <p className="text-xs text-muted-foreground text-center pt-1">위 내용을 확인하셨다면 아래 결제 버튼을 눌러주세요</p>
+        <div className="space-y-2 rounded-xl border border-border/70 bg-secondary/20 p-3 text-xs text-foreground">
+          <p>결제수단: {paymentMethod === "bank-transfer" ? "무통장입금" : "NICE 카드/간편결제"}</p>
+          {paymentMethod === "bank-transfer" ? (
+            <p className="text-muted-foreground">입금 계좌: {bankLabelMap[selectedBank as keyof typeof bankLabelMap]?.account ?? selectedBank} / 입금자명: {depositor.trim() || "미입력"}</p>
+          ) : (
+            <p className="text-muted-foreground">아래 버튼 클릭 후 NICE 인증 결제창에서 결제를 완료해주세요.</p>
+          )}
+        </div>
       </CardContent>
     </Card>
   );
@@ -1138,22 +1166,16 @@ export default function CheckoutPage() {
         </div>
 
         <SiteContainer variant="wide" className="py-6 bp-sm:py-10">
+          <div className="mx-auto w-full max-w-6xl">
           {isInitialLoading ? (
-            <div className="grid grid-cols-1 gap-8 bp-lg:grid-cols-12">
-              <div className="bp-lg:col-span-7 xl:col-span-8 space-y-6">
+            <div className="space-y-6">
                 <Skeleton className="h-20 w-full rounded-2xl" />
                 <Skeleton className="h-64 w-full rounded-2xl" />
                 <Skeleton className="h-80 w-full rounded-2xl" />
                 <Skeleton className="h-96 w-full rounded-2xl" />
-              </div>
-              <div className="bp-lg:col-span-5 xl:col-span-4">
-                <Skeleton className="h-[480px] w-full rounded-2xl" />
-              </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-8 bp-lg:grid-cols-12">
-              {/* 왼쪽: 주문 정보 입력 폼 */}
-              <div className={cn("bp-lg:col-span-7 xl:col-span-8 space-y-6", isCheckoutSubmitting && "pointer-events-none")} aria-busy={isCheckoutSubmitting}>
+            <div className={cn("space-y-6", isCheckoutSubmitting && "pointer-events-none")} aria-busy={isCheckoutSubmitting}>
                 {/* 이탈 경고(고정 노출) */}
                 <div className="flex items-start gap-3 rounded-2xl border border-warning/30 bg-warning/5 px-4 py-3 text-sm text-foreground shadow-sm">
                   <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-warning/15">
@@ -1569,7 +1591,7 @@ export default function CheckoutPage() {
                         {nicePaymentsEnabled && isZeroPayableAmount && <p className="text-xs text-muted-foreground">최종 결제금액이 0원인 경우 카드/간편결제를 사용할 수 없습니다.</p>}
                       </div>
 
-                      {paymentMethod === "bank-transfer" ? (
+                      {paymentMethod === "bank-transfer" && (
                         <>
                           <div className="space-y-3">
                             <Label htmlFor="bank-account">입금 계좌 선택</Label>
@@ -1604,98 +1626,6 @@ export default function CheckoutPage() {
                             <div className="min-h-[16px]">{showDepositorError && <p className="text-xs text-destructive">{fieldErrors.depositor}</p>}</div>
                           </div>
 
-                          {/* 포인트 사용 - 결제정보 내 통합 */}
-                          <div className="space-y-3">
-                            <Label className="flex items-center gap-2">
-                              <CreditCard className="h-4 w-4 text-primary" />
-                              포인트 사용
-                            </Label>
-                            <div className="rounded-lg border border-border bg-secondary/30 p-4 space-y-3">
-                              <div className="flex justify-between items-center text-sm">
-                                <span className="text-muted-foreground">사용 가능 포인트</span>
-                                <span className="font-semibold">{user ? (pointsFetchError ? "-" : pointsAvailable === null ? "-" : `${pointsAvailable.toLocaleString()}P`) : "로그인 필요"}</span>
-                              </div>
-
-                              {user && pointsFetchError && <p className="text-xs text-destructive">포인트 정보를 불러오지 못했습니다.</p>}
-                              {user && !pointsFetchError && resolvedPointsDebt > 0 && <p className="text-xs text-destructive">회수 예정 포인트(채무): {resolvedPointsDebt.toLocaleString()}P → 적립금이 먼저 상계됩니다.</p>}
-
-                              <div className="flex items-center justify-between gap-3">
-                                <div className="flex items-center gap-2 text-sm">
-                                  <Checkbox
-                                    id="useAllPoints"
-                                    checked={useAllPoints}
-                                    onCheckedChange={(checked) => setUseAllPoints(Boolean(checked))}
-                                    disabled={!isShippingFeeReady || !user || !!pointsFetchError || pointsAvailable === null || resolvedPointsAvailable <= 0 || maxPointsToUse <= 0}
-                                  />
-                                  <Label htmlFor="useAllPoints" className="text-sm font-medium cursor-pointer">
-                                    전액 사용
-                                  </Label>
-                                </div>
-
-                                <div className="flex items-center gap-2 text-sm">
-                                  <Input
-                                    type="text"
-                                    inputMode="numeric"
-                                    pattern="[0-9]*"
-                                    min={0}
-                                    step={POINT_UNIT}
-                                    max={maxPointsToUse}
-                                    className="w-24 text-right h-9"
-                                    value={pointsInput}
-                                    disabled={!isShippingFeeReady || !user || !!pointsFetchError || pointsAvailable === null || resolvedPointsAvailable <= 0 || maxPointsToUse <= 0 || useAllPoints}
-                                    onFocus={(e) => {
-                                      setIsEditingPoints(true);
-                                      const el = e.currentTarget;
-                                      if (pointsInput === "0") setPointsInput("");
-                                      setTimeout(() => {
-                                        if (el && typeof el.select === "function") el.select();
-                                      }, 0);
-                                    }}
-                                    onChange={(e) => {
-                                      const onlyDigits = e.target.value.replace(/[^\d]/g, "");
-                                      setPointsInput(onlyDigits);
-                                      setUseAllPoints(false);
-                                      const n = Number(onlyDigits);
-                                      setPointsToUse(Number.isFinite(n) ? Math.floor(n) : 0);
-                                    }}
-                                    onBlur={(e) => {
-                                      setIsEditingPoints(false);
-                                      const rawText = e.currentTarget.value ?? "";
-                                      const onlyDigits = String(rawText).replace(/[^\d]/g, "");
-                                      const raw = Number(onlyDigits || "0");
-                                      const safe = Number.isFinite(raw) ? Math.floor(raw) : 0;
-                                      const normalized = Math.floor(safe / POINT_UNIT) * POINT_UNIT;
-                                      const clamped = Math.max(0, Math.min(normalized, maxPointsToUse));
-                                      setPointsInput(String(clamped));
-                                      setPointsToUse(clamped);
-                                    }}
-                                  />
-                                  <span className="text-sm text-muted-foreground">P</span>
-                                </div>
-                              </div>
-
-                              <p className="text-xs text-muted-foreground">배송비에는 적용되지 않습니다. 최대 {maxPointsToUse.toLocaleString()}P 사용 가능</p>
-                            </div>
-                          </div>
-
-                          {withStringService && checkoutStringingAdapter && (
-                            <CheckoutStringingPaymentAddon
-                              packagePreview={checkoutStringingAdapter.packagePreview}
-                              packageRemaining={checkoutStringingAdapter.packageRemaining}
-                              requiredPassCount={checkoutStringingAdapter.requiredPassCount}
-                              canApplyPackage={checkoutStringingAdapter.canApplyPackage}
-                              usingPackage={checkoutStringingAdapter.usingPackage}
-                              packageInsufficient={checkoutStringingAdapter.packageInsufficient}
-                              packageOptOut={!!checkoutStringingAdapter.formData.packageOptOut}
-                              onPackageOptOutChange={(next) => {
-                                checkoutStringingAdapter.setFormData((prev) => ({
-                                  ...prev,
-                                  packageOptOut: next,
-                                }));
-                              }}
-                            />
-                          )}
-
                           <div className="bg-muted p-4 rounded-lg border border-border">
                             <div className="flex items-center gap-2 mb-3">
                               <Shield className="h-5 w-5 text-primary" />
@@ -1717,7 +1647,96 @@ export default function CheckoutPage() {
                             </ul>
                           </div>
                         </>
-                      ) : nicePaymentsEnabled && !isZeroPayableAmount ? (
+                      )}
+
+                      <div className="space-y-3">
+                        <Label className="flex items-center gap-2">
+                          <CreditCard className="h-4 w-4 text-primary" />
+                          포인트/혜택 적용
+                        </Label>
+                        <div className="rounded-lg border border-border bg-secondary/30 p-4 space-y-3">
+                          <div className="flex justify-between items-center text-sm">
+                            <span className="text-muted-foreground">사용 가능 포인트</span>
+                            <span className="font-semibold">{user ? (pointsFetchError ? "-" : pointsAvailable === null ? "-" : `${pointsAvailable.toLocaleString()}P`) : "로그인 필요"}</span>
+                          </div>
+                          {user && pointsFetchError && <p className="text-xs text-destructive">포인트 정보를 불러오지 못했습니다.</p>}
+                          {user && !pointsFetchError && resolvedPointsDebt > 0 && <p className="text-xs text-destructive">회수 예정 포인트(채무): {resolvedPointsDebt.toLocaleString()}P → 적립금이 먼저 상계됩니다.</p>}
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-2 text-sm">
+                              <Checkbox
+                                id="useAllPoints"
+                                checked={useAllPoints}
+                                onCheckedChange={(checked) => setUseAllPoints(Boolean(checked))}
+                                disabled={!isShippingFeeReady || !user || !!pointsFetchError || pointsAvailable === null || resolvedPointsAvailable <= 0 || maxPointsToUse <= 0}
+                              />
+                              <Label htmlFor="useAllPoints" className="text-sm font-medium cursor-pointer">
+                                전액 사용
+                              </Label>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm">
+                              <Input
+                                type="text"
+                                inputMode="numeric"
+                                pattern="[0-9]*"
+                                min={0}
+                                step={POINT_UNIT}
+                                max={maxPointsToUse}
+                                className="w-24 text-right h-9"
+                                value={pointsInput}
+                                disabled={!isShippingFeeReady || !user || !!pointsFetchError || pointsAvailable === null || resolvedPointsAvailable <= 0 || maxPointsToUse <= 0 || useAllPoints}
+                                onFocus={(e) => {
+                                  setIsEditingPoints(true);
+                                  const el = e.currentTarget;
+                                  if (pointsInput === "0") setPointsInput("");
+                                  setTimeout(() => {
+                                    if (el && typeof el.select === "function") el.select();
+                                  }, 0);
+                                }}
+                                onChange={(e) => {
+                                  const onlyDigits = e.target.value.replace(/[^\d]/g, "");
+                                  setPointsInput(onlyDigits);
+                                  setUseAllPoints(false);
+                                  const n = Number(onlyDigits);
+                                  setPointsToUse(Number.isFinite(n) ? Math.floor(n) : 0);
+                                }}
+                                onBlur={(e) => {
+                                  setIsEditingPoints(false);
+                                  const rawText = e.currentTarget.value ?? "";
+                                  const onlyDigits = String(rawText).replace(/[^\d]/g, "");
+                                  const raw = Number(onlyDigits || "0");
+                                  const safe = Number.isFinite(raw) ? Math.floor(raw) : 0;
+                                  const normalized = Math.floor(safe / POINT_UNIT) * POINT_UNIT;
+                                  const clamped = Math.max(0, Math.min(normalized, maxPointsToUse));
+                                  setPointsInput(String(clamped));
+                                  setPointsToUse(clamped);
+                                }}
+                              />
+                              <span className="text-sm text-muted-foreground">P</span>
+                            </div>
+                          </div>
+                          <p className="text-xs text-muted-foreground">배송비에는 적용되지 않습니다. 최대 {maxPointsToUse.toLocaleString()}P 사용 가능</p>
+                        </div>
+                      </div>
+
+                      {withStringService && checkoutStringingAdapter && (
+                        <CheckoutStringingPaymentAddon
+                          packagePreview={checkoutStringingAdapter.packagePreview}
+                          packageRemaining={checkoutStringingAdapter.packageRemaining}
+                          requiredPassCount={checkoutStringingAdapter.requiredPassCount}
+                          canApplyPackage={checkoutStringingAdapter.canApplyPackage}
+                          usingPackage={checkoutStringingAdapter.usingPackage}
+                          packageInsufficient={checkoutStringingAdapter.packageInsufficient}
+                          packageOptOut={!!checkoutStringingAdapter.formData.packageOptOut}
+                          onPackageOptOutChange={(next) => {
+                            checkoutStringingAdapter.setFormData((prev) => ({
+                              ...prev,
+                              packageOptOut: next,
+                            }));
+                          }}
+                        />
+                      )}
+
+                      {paymentMethod === "nicepay" && nicePaymentsEnabled && !isZeroPayableAmount ? (
                         <div className="space-y-3">
                           <p className="text-sm text-muted-foreground">Nice 인증결제창에서 인증을 마치면 서버 승인 후 주문이 생성됩니다.</p>
                         </div>
@@ -1813,12 +1832,17 @@ export default function CheckoutPage() {
                   subtotal={subtotal}
                   shippingFee={shippingFee}
                   serviceFee={finalServiceFee}
+                  baseServiceFee={baseServiceFee}
+                  packageUsage={checkoutPackageUsage}
                   withStringService={withStringService}
                   appliedPoints={appliedPoints}
                   totalPrice={totalPrice}
                   payableTotalPrice={payableTotalPrice}
                   isShippingFeeReady={isShippingFeeReady}
                   isMountingFeeReady={isMountingFeeReady}
+                  paymentMethod={paymentMethod}
+                  selectedBank={selectedBank}
+                  depositor={depositor}
                 />
 
                 <Card className="relative border border-border bg-card shadow-sm overflow-hidden">
@@ -1922,151 +1946,9 @@ export default function CheckoutPage() {
                     </div>
                   )}
                 </Card>
-              </div>
-
-              {/* 오른쪽: 주문 요약 (Sticky) */}
-              <div className="bp-lg:col-span-5 xl:col-span-4">
-                <div className="sticky top-24 space-y-5">
-                  {/* 주문 요약 카드 */}
-                  <Card className="border-0 bg-gradient-to-b from-card to-secondary/20 shadow-xl shadow-foreground/[0.05] ring-1 ring-border/50 overflow-hidden rounded-2xl">
-                    <div className="border-b border-border bg-primary/5 p-5">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-                          <CreditCard className="h-5 w-5" />
-                        </div>
-                        <div>
-                          <CardTitle className="text-lg font-bold">주문 요약</CardTitle>
-                          <CardDescription className="mt-0.5 text-xs">결제 전 최종 확인</CardDescription>
-                        </div>
-                      </div>
-                    </div>
-                    <CardContent className="p-5 space-y-5">
-                      {/* 상품 목록 미니 */}
-                      <div className="space-y-2">
-                        {orderItems.slice(0, 3).map((item) => (
-                          <div key={item.id} className="flex items-center gap-3 text-sm">
-                            <div className="h-10 w-10 shrink-0 rounded-lg overflow-hidden ring-1 ring-border/50">
-                              <Image src={item.image || "/placeholder.svg?height=40&width=40&query=product"} alt={item.name} width={40} height={40} className="h-full w-full object-cover" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="font-medium truncate text-xs">{item.name}</p>
-                              <p className="text-xs text-muted-foreground">x{item.quantity}</p>
-                            </div>
-                            <span className="font-semibold text-xs shrink-0">{(item.price * item.quantity).toLocaleString()}원</span>
-                          </div>
-                        ))}
-                        {orderItems.length > 3 && <p className="text-xs text-muted-foreground text-center pt-1">외 {orderItems.length - 3}개 상품</p>}
-                      </div>
-
-                      <Separator />
-
-                      {/* 금액 요약 */}
-                      <div className="space-y-3 text-sm">
-                        <div className="flex justify-between items-center">
-                          <span className="text-muted-foreground">상품 금액</span>
-                          <span className="font-medium">{subtotal.toLocaleString()}원</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-muted-foreground">배송비</span>
-                          {!isShippingFeeReady ? (
-                            <Skeleton className="h-5 w-16 rounded" />
-                          ) : (
-                            <span className="font-medium">
-                              {shippingFee > 0 ? (
-                                `${shippingFee.toLocaleString()}원`
-                              ) : (
-                                <Badge variant="secondary" className="text-[10px]">
-                                  무료
-                                </Badge>
-                              )}
-                            </span>
-                          )}
-                        </div>
-                        {withStringService && (
-                          <div className="flex justify-between items-center">
-                            <span className="text-muted-foreground">교체 서비스</span>
-                            {!isMountingFeeReady ? (
-                              <Skeleton className="h-5 w-20 rounded" />
-                            ) : finalServiceFee > 0 ? (
-                              <span className="font-medium">{finalServiceFee.toLocaleString()}원</span>
-                            ) : (
-                              <Badge variant="secondary" className="text-[10px]">
-                                패키지
-                              </Badge>
-                            )}
-                          </div>
-                        )}
-                        {appliedPoints > 0 && (
-                          <div className="flex justify-between items-center">
-                            <span className="text-muted-foreground">포인트 사용</span>
-                            <span className="font-medium text-destructive">-{appliedPoints.toLocaleString()}원</span>
-                          </div>
-                        )}
-                      </div>
-
-                      <Separator />
-
-                      {/* 최종 결제 금액 */}
-                      <div className="space-y-2">
-                        <div className="flex justify-between items-center text-sm">
-                          <span className="text-muted-foreground">합계</span>
-                          {!isShippingFeeReady ? <Skeleton className="h-5 w-20 rounded" /> : <span className="font-medium">{totalPrice.toLocaleString()}원</span>}
-                        </div>
-                        <div className="flex justify-between items-center pt-2">
-                          <span className="font-bold text-base">결제 예정 금액</span>
-                          {!isShippingFeeReady ? (
-                            <Skeleton className="h-8 w-28 rounded" />
-                          ) : (
-                            <span className="text-2xl font-bold text-primary">
-                              {payableTotalPrice.toLocaleString()}
-                              <span className="text-sm font-medium ml-0.5">원</span>
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* 안내 사항 */}
-                  <div className="rounded-2xl border border-border/50 bg-secondary/30 p-4 space-y-3">
-                    <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                      <Shield className="h-4 w-4 text-primary" />
-                      주문 안내
-                    </div>
-                    <ul className="space-y-2 text-xs text-muted-foreground">
-                      {paymentMethod === "bank-transfer" ? (
-                        <>
-                          <li className="flex items-start gap-2">
-                            <span className="shrink-0 mt-0.5 h-1 w-1 rounded-full bg-muted-foreground" />
-                            주문 완료 후 입금 대기 상태로 등록됩니다
-                          </li>
-                          <li className="flex items-start gap-2">
-                            <span className="shrink-0 mt-0.5 h-1 w-1 rounded-full bg-muted-foreground" />
-                            {needsShippingAddress ? "입금 확인 후 배송이 시작됩니다" : "입금 확인 후 매장 수령 준비가 시작됩니다"}
-                          </li>
-                          <li className="flex items-start gap-2">
-                            <span className="shrink-0 mt-0.5 h-1 w-1 rounded-full bg-muted-foreground" />
-                            24시간 이내 입금 부탁드립니다
-                          </li>
-                        </>
-                      ) : (
-                        <>
-                          <li className="flex items-start gap-2">
-                            <span className="shrink-0 mt-0.5 h-1 w-1 rounded-full bg-muted-foreground" />
-                            결제 승인 후 주문이 완료됩니다
-                          </li>
-                          <li className="flex items-start gap-2">
-                            <span className="shrink-0 mt-0.5 h-1 w-1 rounded-full bg-muted-foreground" />
-                            {needsShippingAddress ? "결제 완료 후 배송 준비가 시작됩니다" : "결제 완료 후 매장 수령 준비가 시작됩니다"}
-                          </li>
-                        </>
-                      )}
-                    </ul>
-                  </div>
-                </div>
-              </div>
             </div>
           )}
+          </div>
         </SiteContainer>
       </div>
     );

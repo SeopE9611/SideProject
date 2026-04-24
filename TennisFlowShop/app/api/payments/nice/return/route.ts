@@ -465,45 +465,53 @@ async function handleNiceReturn(req: Request) {
         rawSummaryEasyPay: Boolean(easyPayProvider),
       });
       console.info("[nicepay][flow]", { stage: "before_order_update", tid, orderId, mongoOrderId });
+      const existingOrder = await db.collection("orders").findOne({ _id: new ObjectId(mongoOrderId) });
+      const prevPaymentInfo = (existingOrder?.paymentInfo ?? {}) as Record<string, unknown>;
+      const mergedPaymentInfo = {
+        ...prevPaymentInfo,
+        provider: "nicepay",
+        method: pick(approvedRaw, "payMethod", "PayMethod") || "card",
+        status: pick(approvedRaw, "status") || "paid",
+        tid,
+        approvedAt: pick(approvedRaw, "paidAt") || new Date().toISOString(),
+        cardDisplayName: niceCard?.displayName || undefined,
+        cardCompany: niceCard?.issuerName || undefined,
+        cardLabel: niceCard?.cardName || undefined,
+        niceCard: niceCard || undefined,
+        rawSummary: {
+          orderId,
+          resultCode,
+          resultMsg: pick(approvedRaw, "resultMsg", "ResultMsg"),
+          goodsName: pick(approvedRaw, "goodsName", "GoodsName"),
+          card: niceCard
+            ? {
+                cardName: niceCard.cardName ?? undefined,
+                issuerName: niceCard.issuerName ?? undefined,
+                issuerCode: niceCard.issuerCode ?? undefined,
+                acquirerName: niceCard.acquirerName ?? undefined,
+                acquirerCode: niceCard.acquirerCode ?? undefined,
+                cardCode: niceCard.cardCode ?? undefined,
+              }
+            : undefined,
+          easyPay: easyPayProvider ? { provider: easyPayProvider } : undefined,
+        },
+        niceSync: {
+          lastSyncedAt: new Date().toISOString(),
+          source: "approve_return",
+        },
+        total: Number(prevPaymentInfo.total ?? existingOrder?.totalPrice ?? amount ?? 0),
+        originalTotal: Number(prevPaymentInfo.originalTotal ?? existingOrder?.originalTotal ?? existingOrder?.totalPrice ?? amount ?? 0),
+        pointsUsed: Number(prevPaymentInfo.pointsUsed ?? existingOrder?.pointsUsed ?? 0),
+        shippingFee: Number(prevPaymentInfo.shippingFee ?? existingOrder?.shippingFee ?? 0),
+        serviceFee: Number(prevPaymentInfo.serviceFee ?? existingOrder?.serviceFee ?? 0),
+      };
       const orderUpdateResult = await db.collection("orders").updateOne(
         { _id: new ObjectId(mongoOrderId) },
         {
           $set: {
             orderId,
             paymentStatus: "결제완료",
-            paymentInfo: {
-              provider: "nicepay",
-              method: pick(approvedRaw, "payMethod", "PayMethod") || "card",
-              status: pick(approvedRaw, "status") || "paid",
-              tid,
-              total: amount,
-              approvedAt: pick(approvedRaw, "paidAt") || new Date().toISOString(),
-              cardDisplayName: niceCard?.displayName || undefined,
-              cardCompany: niceCard?.issuerName || undefined,
-              cardLabel: niceCard?.cardName || undefined,
-              niceCard: niceCard || undefined,
-              rawSummary: {
-                orderId,
-                resultCode,
-                resultMsg: pick(approvedRaw, "resultMsg", "ResultMsg"),
-                goodsName: pick(approvedRaw, "goodsName", "GoodsName"),
-                card: niceCard
-                  ? {
-                      cardName: niceCard.cardName ?? undefined,
-                      issuerName: niceCard.issuerName ?? undefined,
-                      issuerCode: niceCard.issuerCode ?? undefined,
-                      acquirerName: niceCard.acquirerName ?? undefined,
-                      acquirerCode: niceCard.acquirerCode ?? undefined,
-                      cardCode: niceCard.cardCode ?? undefined,
-                    }
-                  : undefined,
-                easyPay: easyPayProvider ? { provider: easyPayProvider } : undefined,
-              },
-              niceSync: {
-                lastSyncedAt: new Date().toISOString(),
-                source: "approve_return",
-              },
-            },
+            paymentInfo: mergedPaymentInfo,
             updatedAt: new Date(),
           },
         },

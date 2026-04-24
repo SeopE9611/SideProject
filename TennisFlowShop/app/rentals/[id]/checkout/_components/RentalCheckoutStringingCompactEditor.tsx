@@ -40,6 +40,7 @@ export default function RentalCheckoutStringingCompactEditor({ adapter }: Props)
     visitSlotCountUi,
     visitDurationMinutesUi,
     visitTimeRange,
+    completion,
   } = adapter;
 
   const isVisit = formData.collectionMethod === "visit";
@@ -93,22 +94,25 @@ export default function RentalCheckoutStringingCompactEditor({ adapter }: Props)
     if (cross) setBulkTensionCross(cross);
     applyBulkToAllLines({ main, cross });
   }, [applyBulkToAllLines, linesForSubmit]);
+  const lineConfiguredDone = completion.lineConfiguredCount === completion.totalLineCount && completion.totalLineCount > 0;
+  const defaultOpenValue = lineConfiguredDone ? "" : "detail";
 
   return (
     <Accordion
       type="single"
-      defaultValue=""
-      className="overflow-visible rounded-xl border border-border/90 bg-background px-4 py-1.5"
+      defaultValue={defaultOpenValue}
+      className="overflow-visible rounded-xl border border-border/90 bg-background px-4 py-2"
     >
       <AccordionItem value="detail" className="border-none">
         <AccordionTrigger
           value="detail"
-          className="group rounded-md py-3.5 text-sm font-medium transition-colors hover:bg-muted/40"
+          className="group rounded-xl border border-primary/30 bg-primary/5 px-4 py-3.5 text-sm font-semibold transition-colors hover:bg-primary/10"
         >
           <span className="inline-flex items-center gap-2">
             <Settings2 className="h-4 w-4 text-primary/80" />
-            상세 설정 열기
+            라켓별 교체서비스 상세 설정하기
           </span>
+          <span className={lineConfiguredDone ? "text-xs text-primary" : "text-xs text-warning"}>{lineConfiguredDone ? "설정 완료" : "설정 필요"}</span>
         </AccordionTrigger>
         <AccordionContent value="detail" className="space-y-7 pb-5">
           <section className="space-y-4 rounded-lg border border-border/70 bg-muted/10 p-4">
