@@ -1743,10 +1743,6 @@ export default function StringServiceApplyPage() {
               onClick={() => safePush("/products?from=apply")}
               className="group relative bg-card rounded-2xl p-5 bp-sm:p-6 text-left border border-border hover:border-border transition-all duration-200 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
-              {/* Recommended Badge */}
-              <div className="absolute -top-2.5 left-5">
-                <Badge variant="brand">추천</Badge>
-              </div>
 
               {/* Icon */}
               <div className="w-12 h-12 bp-sm:w-14 bp-sm:h-14 rounded-xl bg-background flex items-center justify-center mb-4 group-hover:bg-muted transition-colors">
@@ -1782,10 +1778,7 @@ export default function StringServiceApplyPage() {
 
             {/* Option 2: 라켓 고르고 신청 */}
             <div className="relative bg-card rounded-2xl p-5 bp-sm:p-6 text-left border border-border hover:border-border transition-all duration-200 hover:shadow-lg">
-              {/* Recommended Badge */}
-              <div className="absolute -top-2.5 left-5">
-                <Badge variant="brand">추천</Badge>
-              </div>
+  
 
               {/* Icon */}
               <div className="w-12 h-12 bp-sm:w-14 bp-sm:h-14 rounded-xl bg-background flex items-center justify-center mb-4">
