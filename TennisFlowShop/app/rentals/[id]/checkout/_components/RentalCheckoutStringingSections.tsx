@@ -22,14 +22,16 @@ export default function RentalCheckoutStringingSections({
   if (!withStringService) return null;
 
   return (
-    <Card className="border border-border/90 bg-card shadow-sm">
-      <div className="border-b border-border bg-muted/30 px-5 py-4.5">
-        <CardTitle className="flex items-center gap-2 text-[15px] font-semibold">
-          <Wrench className="h-4 w-4 text-primary" />
+    <Card className="group overflow-hidden rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 transition-all duration-300 hover:shadow-xl hover:ring-border">
+      <div className="border-b border-border bg-secondary/40 p-5 bp-sm:p-6">
+        <CardTitle className="flex items-center gap-3 text-lg font-bold bp-sm:text-xl">
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20">
+            <Wrench className="h-5 w-5 text-primary" />
+          </span>
           교체 서비스 옵션
         </CardTitle>
       </div>
-      <CardContent className="space-y-5 p-5">
+      <CardContent className="space-y-5 p-5 bp-sm:p-6">
         <RentalCheckoutStringingSummaryCard adapter={adapter} />
         <RentalCheckoutStringingCompactEditor adapter={adapter} />
       </CardContent>

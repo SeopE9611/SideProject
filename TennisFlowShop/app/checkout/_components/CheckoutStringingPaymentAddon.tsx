@@ -32,15 +32,17 @@ export default function CheckoutStringingPaymentAddon({
   onPackageOptOutChange,
 }: Props) {
   return (
-    <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-4">
+    <div className="space-y-4 rounded-xl border border-border/70 bg-secondary/20 p-4 bp-sm:p-5">
       <div className="space-y-2">
         <p className="text-sm font-medium text-foreground flex items-center gap-2">
           <Info className="h-4 w-4 text-primary" />
           교체 서비스는 이번 주문과 함께 접수됩니다.
         </p>
         <p className="text-xs text-muted-foreground">
-          아래 은행/입금자명은 상품 + 교체 서비스 전체 주문 기준입니다.
+          선택한 결제수단 기준으로 상품과 교체서비스 전체 주문에 적용됩니다.
         </p>
+        <p className="text-xs text-muted-foreground">패키지를 사용하지 않으면 교체서비스 비용이 결제금액에 포함됩니다.</p>
+        <p className="text-xs text-muted-foreground">패키지를 사용하면 보유 횟수에서 차감되고 결제금액에서 교체서비스 비용이 제외됩니다.</p>
       </div>
 
       <div

@@ -29,7 +29,7 @@ export default function RentalCheckoutStringingSummaryCard({ adapter }: Props) {
       : "기본 설정을 확인하면 접수 준비가 완료됩니다.";
 
   return (
-    <div className="space-y-4 rounded-xl border border-border bg-card px-4 py-5 bp-sm:px-5">
+    <div className="space-y-4 rounded-xl border border-border/70 bg-secondary/20 px-4 py-5 bp-sm:px-5">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="flex items-center gap-2 text-sm font-semibold text-foreground">
@@ -60,7 +60,7 @@ export default function RentalCheckoutStringingSummaryCard({ adapter }: Props) {
         <p><span className="text-muted-foreground">추가 요청:</span> <span className="font-medium">{summary.requestPreview}</span></p>
       </div>
 
-      <div className="rounded-lg border border-border/70 bg-secondary/40 p-3">
+      <div className="rounded-lg border border-border/70 bg-background/80 p-3">
         <p className="mb-2 text-[11px] font-medium tracking-wide text-muted-foreground">
           진행 상태
         </p>
