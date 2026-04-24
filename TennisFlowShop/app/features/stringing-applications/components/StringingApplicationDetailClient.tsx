@@ -887,7 +887,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                 <div className="bg-card rounded-full p-3 shadow-md">{isAdmin ? <Settings className="h-8 w-8 text-foreground" /> : <Target className="h-8 w-8 text-foreground" />}</div>
                 <div>
                   <h1 className={cn('font-bold tracking-normal text-foreground', isAdmin ? 'text-3xl' : 'text-2xl bp-sm:text-3xl')}>{isAdmin ? '스트링 신청 관리' : '교체서비스 신청 상세'}</h1>
-                  <p className="mt-1 text-muted-foreground break-all text-sm">{isAdmin ? `신청 번호: #${toShortApplicationId(data.id)}` : `신청번호: ${data.id}`}</p>
+                  <p className="mt-1 break-all text-sm text-foreground/80">{isAdmin ? `신청 번호: #${toShortApplicationId(data.id)}` : `신청번호: ${data.id}`}</p>
                 </div>
               </div>
               <TooltipProvider>

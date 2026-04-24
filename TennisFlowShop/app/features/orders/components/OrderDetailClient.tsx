@@ -782,7 +782,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                   <h1 className="text-3xl font-bold tracking-normal text-foreground">
                     주문 관리
                   </h1>
-                  <p className="mt-1 text-muted-foreground">
+                  <p className="mt-1 text-foreground/80">
                     주문 ID: {orderDetail._id}
                   </p>
                 </div>

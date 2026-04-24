@@ -61,7 +61,7 @@ export default function CheckoutStringingSummaryCard({ adapter }: Props) {
       </div>
 
       <div className="rounded-lg border border-border/70 bg-background/70 p-3">
-        <p className="mb-2 text-[11px] font-medium tracking-wide text-muted-foreground">
+        <p className="mb-2 text-xs font-medium tracking-wide text-foreground/75">
           진행 상태
         </p>
         <div className="flex flex-wrap gap-2 text-xs">
