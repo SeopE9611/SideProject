@@ -1428,7 +1428,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                                   ? "등록됨"
                                   : "미등록"}
                               </p>
-                              <p className="mt-1 text-muted-foreground">
+                              <p className="mt-1 text-foreground/80">
                                 운송장:{" "}
                                 {latestLinkedApplication.shippingInfo?.selfShip
                                   ?.trackingNo ?? "미등록"}
