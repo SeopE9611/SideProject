@@ -13,7 +13,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { getSocialProviderBadgeSpec } from "@/lib/badge-style";
 import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import { useUnreadMessageCount } from "@/lib/hooks/useUnreadMessageCount";
-import { ChevronDown, ChevronRight, Loader2, Mail, Menu, ShoppingCart, UserIcon } from "lucide-react";
+import { ChevronDown, ChevronRight, Headphones, Loader2, Mail, Menu, ShoppingCart, UserIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -21,6 +21,8 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 
 /** 재질 카테고리(스트링 타입) 노출 온/오프 */
 const SHOW_MATERIAL_MENU = false;
+/** PC 헤더 상단 nav 임시 노출 온/오프 (복구용 플래그) */
+const SHOW_DESKTOP_HEADER_NAV = false;
 
 /**
  * 헤더 포인트는 "네비게이션마다" 재조회할 필요가 없습니다.
@@ -850,108 +852,119 @@ const Header = () => {
                 </Link>
               </div>
             </div>
-            <div className="hidden bp-lg:flex items-center w-full min-w-0 gap-1 bp-lg:gap-2">
-              <Link href="/" className="flex items-center gap-2 shrink-0 group" aria-label="도깨비테니스 홈">
-                <div className="relative h-10 w-10 shrink-0 overflow-hidden">
-                  <Image src="/brand/symbol-light.png" alt="" aria-hidden="true" fill className="object-contain dark:hidden" priority />
-                  <Image src="/brand/symbol-dark.png" alt="" aria-hidden="true" fill className="hidden object-contain dark:block" priority />
-                </div>
+            <div className="hidden bp-lg:grid w-full min-w-0 grid-cols-[minmax(260px,1fr)_minmax(360px,640px)_minmax(360px,1fr)] items-center gap-4">
+              <div className="justify-self-start flex items-center min-w-0 gap-2">
+                <Link href="/" className="flex items-center gap-2 shrink-0 group" aria-label="도깨비테니스 홈">
+                  <div className="relative h-11 w-11 shrink-0 overflow-hidden">
+                    <Image src="/brand/symbol-light.png" alt="" aria-hidden="true" fill className="object-contain dark:hidden" priority />
+                    <Image src="/brand/symbol-dark.png" alt="" aria-hidden="true" fill className="hidden object-contain dark:block" priority />
+                  </div>
 
-                <div className="font-brand-bold font-bold text-lg bp-lg:text-xl tracking-normal text-foreground group-hover:text-foreground transition-colors whitespace-nowrap">도깨비테니스</div>
-              </Link>
-              <nav ref={navRef} className="hidden bp-lg:flex items-center ml-1 whitespace-nowrap flex-1 min-w-0 overflow-hidden">
-                <div
-                  className={`flex w-full min-w-0 items-center gap-1.5 xl:gap-2 whitespace-nowrap ${
-                    // 메뉴가 전부 보일 때는 bounded width를 조금 더 줄여
-                    // 간격이 과하게 벌어지지 않게 정리합니다.
-                    hasOverflow ? "justify-start" : "mx-auto max-w-[780px] 2xl:max-w-[860px] justify-between"
-                  }`}
-                >
-                  {primaryMenuItems.map((item) => {
-                    const active = isActiveMenu(item);
-                    return (
-                      <Link
-                        key={item.name}
-                        href={item.href}
-                        className={`inline-flex shrink-0 items-center h-10 px-3 rounded-lg text-[15px] leading-none transition whitespace-nowrap ${active ? "bg-secondary text-foreground font-semibold" : "text-foreground hover:text-foreground hover:bg-secondary"}`}
-                        aria-current={active ? "page" : undefined}
-                        aria-label={`${item.name} 페이지로 이동`}
-                      >
-                        {item.name}
-                      </Link>
-                    );
-                  })}
+                  <div className="font-brand-bold font-bold text-xl xl:text-[22px] tracking-tight text-foreground group-hover:text-foreground transition-colors whitespace-nowrap">도깨비테니스</div>
+                </Link>
 
-                  {/* bp-lg(1200+)~1580px 미만 구간: 우측 메뉴가 검색 영역에 가려질 수 있어 '더보기'로 이동 */}
-                  {overflowMenuItems.length > 0 && (
-                    <DropdownMenu modal={false} open={overflowMenuOpen} onOpenChange={setOverflowMenuOpen}>
-                      <DropdownMenuTrigger asChild>
-                        <button
-                          type="button"
-                          className="inline-flex shrink-0 items-center h-10 gap-1 px-3 rounded-lg text-[15px] leading-none transition whitespace-nowrap text-foreground hover:text-foreground hover:bg-secondary focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                          aria-label="더보기 메뉴"
-                        >
-                          ⋯
-                          <ChevronDown className="h-4 w-4" aria-hidden="true" />
-                        </button>
-                      </DropdownMenuTrigger>
+                {SHOW_DESKTOP_HEADER_NAV ? (
+                  <nav ref={navRef} className="hidden bp-lg:flex items-center ml-1 whitespace-nowrap flex-1 min-w-0 overflow-hidden">
+                    <div
+                      className={`flex w-full min-w-0 items-center gap-1.5 xl:gap-2 whitespace-nowrap ${
+                        // 메뉴가 전부 보일 때는 bounded width를 조금 더 줄여
+                        // 간격이 과하게 벌어지지 않게 정리합니다.
+                        hasOverflow ? "justify-start" : "mx-auto max-w-[780px] 2xl:max-w-[860px] justify-between"
+                      }`}
+                    >
+                      {primaryMenuItems.map((item) => {
+                        const active = isActiveMenu(item);
+                        return (
+                          <Link
+                            key={item.name}
+                            href={item.href}
+                            className={`inline-flex shrink-0 items-center h-10 px-3 rounded-lg text-[15px] leading-none transition whitespace-nowrap ${active ? "bg-secondary text-foreground font-semibold" : "text-foreground hover:text-foreground hover:bg-secondary"}`}
+                            aria-current={active ? "page" : undefined}
+                            aria-label={`${item.name} 페이지로 이동`}
+                          >
+                            {item.name}
+                          </Link>
+                        );
+                      })}
 
-                      <DropdownMenuContent align="start" sideOffset={8}>
-                        {overflowMenuItems.map((item) => {
-                          const active = isActiveMenu(item);
-                          return (
-                            <DropdownMenuItem
-                              key={item.name}
-                              className={active ? "bg-secondary text-foreground font-semibold" : undefined}
-                              onSelect={(e) => {
-                                e.preventDefault();
-                                setOverflowMenuOpen(false);
-                                router.push(item.href);
-                              }}
+                      {/* bp-lg(1200+)~1580px 미만 구간: 우측 메뉴가 검색 영역에 가려질 수 있어 '더보기'로 이동 */}
+                      {overflowMenuItems.length > 0 && (
+                        <DropdownMenu modal={false} open={overflowMenuOpen} onOpenChange={setOverflowMenuOpen}>
+                          <DropdownMenuTrigger asChild>
+                            <button
+                              type="button"
+                              className="inline-flex shrink-0 items-center h-10 gap-1 px-3 rounded-lg text-[15px] leading-none transition whitespace-nowrap text-foreground hover:text-foreground hover:bg-secondary focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                              aria-label="더보기 메뉴"
                             >
-                              {item.name}
-                            </DropdownMenuItem>
-                          );
-                        })}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  )}
-                </div>
-              </nav>
+                              ⋯
+                              <ChevronDown className="h-4 w-4" aria-hidden="true" />
+                            </button>
+                          </DropdownMenuTrigger>
 
-              {/* <div className="max-w-md w-full">
-              <WeatherBadge />
-            </div> */}
+                          <DropdownMenuContent align="start" sideOffset={8}>
+                            {overflowMenuItems.map((item) => {
+                              const active = isActiveMenu(item);
+                              return (
+                                <DropdownMenuItem
+                                  key={item.name}
+                                  className={active ? "bg-secondary text-foreground font-semibold" : undefined}
+                                  onSelect={(e) => {
+                                    e.preventDefault();
+                                    setOverflowMenuOpen(false);
+                                    router.push(item.href);
+                                  }}
+                                >
+                                  {item.name}
+                                </DropdownMenuItem>
+                              );
+                            })}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
+                    </div>
+                  </nav>
+                ) : null}
+              </div>
 
               {/* 검색 (PC 전용) */}
-              <div className="ml-auto shrink-0 flex justify-end">
-                <div className="min-w-[180px]" style={{ width: "clamp(210px, 22vw, 520px)" }}>
-                  <SearchPreview placeholder="스트링 / 라켓 검색..." className="w-full rounded-full bg-background/80 border border-border focus-within:ring-2 focus-within:ring-ring transition-[background-color,color,border-color,box-shadow,opacity] duration-200" />
-                </div>
+              <div className="justify-self-center w-full max-w-[640px]">
+                <SearchPreview placeholder="스트링 / 라켓 검색..." className="w-full rounded-full bg-background/80 border border-border focus-within:ring-2 focus-within:ring-ring transition-[background-color,color,border-color,box-shadow,opacity] duration-200" />
               </div>
 
               {/* 숨은 측정 DOM: 실제 렌더 폭(텍스트/패딩/아이콘/갭)을 그대로 재기 */}
-              <div ref={measureRef} className="absolute -left-[9999px] top-0 opacity-0 pointer-events-none">
-                <div data-measure-wrap className="flex items-center gap-1.5 xl:gap-2 ml-2 whitespace-nowrap">
-                  {menuItems.map((it) => (
-                    <span key={`measure-${it.name}`} data-measure-item className="inline-flex shrink-0 items-center h-10 px-3 rounded-lg text-[15px] leading-none whitespace-nowrap font-semibold">
-                      {it.name}
-                    </span>
-                  ))}
+              {SHOW_DESKTOP_HEADER_NAV ? (
+                <div ref={measureRef} className="absolute -left-[9999px] top-0 opacity-0 pointer-events-none">
+                  <div data-measure-wrap className="flex items-center gap-1.5 xl:gap-2 ml-2 whitespace-nowrap">
+                    {menuItems.map((it) => (
+                      <span key={`measure-${it.name}`} data-measure-item className="inline-flex shrink-0 items-center h-10 px-3 rounded-lg text-[15px] leading-none whitespace-nowrap font-semibold">
+                        {it.name}
+                      </span>
+                    ))}
 
-                  <span data-measure-dots className="inline-flex shrink-0 items-center h-10 gap-1 px-3 rounded-lg text-[15px] leading-none whitespace-nowrap font-semibold">
-                    ⋯ <ChevronDown className="h-4 w-4" aria-hidden="true" />
-                  </span>
+                    <span data-measure-dots className="inline-flex shrink-0 items-center h-10 gap-1 px-3 rounded-lg text-[15px] leading-none whitespace-nowrap font-semibold">
+                      ⋯ <ChevronDown className="h-4 w-4" aria-hidden="true" />
+                    </span>
+                  </div>
                 </div>
-              </div>
+              ) : null}
 
               {/* 아이콘/유저 */}
-              <div className="flex items-center gap-3 bp-lg:gap-4 pl-2 shrink-0">
+              <div className="justify-self-end flex items-center gap-3 bp-lg:gap-4 pl-2 shrink-0">
                 <SheetTrigger asChild>
                   <Button variant="ghost" size="icon" className="bp-lg:hidden rounded-full hover:bg-secondary p-2 transition-[background-color,color,border-color,box-shadow,opacity] duration-300 focus-visible:ring-2 ring-ring" aria-label="메뉴 열기">
                     <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
+                <Link href="/support">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="relative rounded-full hover:bg-secondary p-2 transition-[background-color,color,border-color,box-shadow,opacity] duration-300 focus-visible:ring-2 ring-ring"
+                    aria-label="고객센터"
+                  >
+                    <Headphones className="h-5 w-5" />
+                  </Button>
+                </Link>
                 <Link href="/cart">
                   <Button variant="ghost" size="icon" className="relative rounded-full hover:bg-secondary p-2 transition-[background-color,color,border-color,box-shadow,opacity] duration-300 focus-visible:ring-2 ring-ring" aria-label="장바구니">
                     <ShoppingCart className="h-5 w-5" />
