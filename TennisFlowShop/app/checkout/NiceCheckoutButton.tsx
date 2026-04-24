@@ -141,9 +141,12 @@ export default function NiceCheckoutButton({
   const popupMutationObserverRef = useRef<MutationObserver | null>(null);
   const popupMutationChangesRef = useRef<MutationChangeRecord[]>([]);
   const popupAuditTimerRef = useRef<number | null>(null);
+  const popupRestoreTimerRef = useRef<number | null>(null);
   const popupSessionStateRef = useRef({
     didNavigateAway: false,
     active: false,
+    abortRequested: false,
+    restoreFinalized: false,
   });
 
   const isNiceDebugEnabled = useMemo(() => {
@@ -507,7 +510,6 @@ export default function NiceCheckoutButton({
     if (!snapshot) return;
     if (popupSessionStateRef.current.didNavigateAway) return;
 
-    stopMutationObserver();
     if (snapshot.bodySnapshot?.element.isConnected) {
       restoreCriticalPropsToBaseline(snapshot.bodySnapshot.element, snapshot.bodySnapshot, "body");
     }
@@ -542,7 +544,16 @@ export default function NiceCheckoutButton({
       })),
     );
 
-  }, [describeElement, logDev, restoreCriticalPropsToBaseline, stopMutationObserver]);
+  }, [describeElement, logDev, restoreCriticalPropsToBaseline]);
+
+  const getNiceWindowLayer = useCallback((): Element | null => {
+    if (typeof document === "undefined") return null;
+    return document.getElementById("windowLayer");
+  }, []);
+
+  const isNiceLayerOpen = useCallback(() => {
+    return !!getNiceWindowLayer();
+  }, [getNiceWindowLayer]);
 
   const cleanupPopupLifecycleListeners = useCallback(() => {
     popupLifecycleCleanupRef.current?.();
@@ -551,9 +562,11 @@ export default function NiceCheckoutButton({
       window.clearTimeout(popupAuditTimerRef.current);
       popupAuditTimerRef.current = null;
     }
-    stopMutationObserver();
-    popupSessionStateRef.current.active = false;
-  }, [stopMutationObserver]);
+    if (popupRestoreTimerRef.current !== null) {
+      window.clearTimeout(popupRestoreTimerRef.current);
+      popupRestoreTimerRef.current = null;
+    }
+  }, []);
 
   const logStickyChainDiff = useCallback((label: string) => {
     const snapshot = popupSnapshotRef.current;
@@ -589,12 +602,44 @@ export default function NiceCheckoutButton({
     }, CHAIN_PREFIX);
   }, [buildElementPath, getParentChainElements, logDev]);
 
-  const restoreAfterPopupAbort = useCallback(() => {
+  const finalizePopupAbortRestore = useCallback((reason: string) => {
+    if (popupSessionStateRef.current.restoreFinalized) return;
+    popupSessionStateRef.current.restoreFinalized = true;
+
     cleanupPopupLifecycleListeners();
     restoreDomAfterPopupAbort();
+    stopMutationObserver();
+    popupSessionStateRef.current.active = false;
+    popupSessionStateRef.current.abortRequested = false;
+    logDev("finalize restore executed", { reason });
     onSuccessNavigationAbort?.();
     setLoading(false);
-  }, [cleanupPopupLifecycleListeners, onSuccessNavigationAbort, restoreDomAfterPopupAbort]);
+  }, [cleanupPopupLifecycleListeners, logDev, onSuccessNavigationAbort, restoreDomAfterPopupAbort, stopMutationObserver]);
+
+  const scheduleRestoreWhenLayerClosed = useCallback((reason: string) => {
+    if (!popupSessionStateRef.current.active) return;
+    popupSessionStateRef.current.abortRequested = true;
+
+    const checkLayerClosed = () => {
+      if (!popupSessionStateRef.current.active) return;
+      if (popupSessionStateRef.current.restoreFinalized) return;
+      if (popupSessionStateRef.current.didNavigateAway) return;
+
+      if (isNiceLayerOpen()) {
+        logDev("layer still open, skip restore", { reason });
+        popupRestoreTimerRef.current = window.setTimeout(checkLayerClosed, 50);
+        return;
+      }
+
+      logDev("layer closed, finalize restore", { reason });
+      finalizePopupAbortRestore(reason);
+    };
+
+    if (popupRestoreTimerRef.current !== null) {
+      window.clearTimeout(popupRestoreTimerRef.current);
+    }
+    popupRestoreTimerRef.current = window.setTimeout(checkLayerClosed, 0);
+  }, [finalizePopupAbortRestore, isNiceLayerOpen, logDev]);
 
   const setupPopupLifecycleListeners = useCallback(() => {
     if (typeof window === "undefined") return;
@@ -602,20 +647,24 @@ export default function NiceCheckoutButton({
     cleanupPopupLifecycleListeners();
     popupSessionStateRef.current.didNavigateAway = false;
     popupSessionStateRef.current.active = true;
+    popupSessionStateRef.current.abortRequested = false;
+    popupSessionStateRef.current.restoreFinalized = false;
     startMutationObserver();
 
-    const restoreIfNeeded = () => {
-      if (popupSessionStateRef.current.didNavigateAway) return;
-      if (!popupSessionStateRef.current.active) return;
-      logDev("popup session fallback restore triggered");
-      restoreAfterPopupAbort();
+    const recheckLayerOnReturn = (event: "focus" | "visibilitychange" | "pageshow") => {
+      logDev("focus/visibility/pageshow received", {
+        event,
+        hidden: document.hidden,
+        abortRequested: popupSessionStateRef.current.abortRequested,
+      });
+      scheduleRestoreWhenLayerClosed(event);
     };
 
-    const onFocus = () => restoreIfNeeded();
+    const onFocus = () => recheckLayerOnReturn("focus");
     const onVisibilityChange = () => {
-      if (!document.hidden) restoreIfNeeded();
+      if (!document.hidden) recheckLayerOnReturn("visibilitychange");
     };
-    const onPageShow = () => restoreIfNeeded();
+    const onPageShow = () => recheckLayerOnReturn("pageshow");
     const onPageHide = () => {
       popupSessionStateRef.current.didNavigateAway = true;
     };
@@ -623,8 +672,8 @@ export default function NiceCheckoutButton({
       popupSessionStateRef.current.didNavigateAway = true;
     };
 
-    window.addEventListener("focus", onFocus, { once: true });
-    window.addEventListener("pageshow", onPageShow, { once: true });
+    window.addEventListener("focus", onFocus);
+    window.addEventListener("pageshow", onPageShow);
     window.addEventListener("pagehide", onPageHide, { once: true });
     window.addEventListener("beforeunload", onBeforeUnload, { once: true });
     document.addEventListener("visibilitychange", onVisibilityChange);
@@ -636,7 +685,7 @@ export default function NiceCheckoutButton({
       window.removeEventListener("beforeunload", onBeforeUnload);
       document.removeEventListener("visibilitychange", onVisibilityChange);
     };
-  }, [cleanupPopupLifecycleListeners, logDev, restoreAfterPopupAbort, startMutationObserver]);
+  }, [cleanupPopupLifecycleListeners, logDev, scheduleRestoreWhenLayerClosed, startMutationObserver]);
 
   useEffect(() => {
     let mounted = true;
@@ -739,7 +788,8 @@ export default function NiceCheckoutButton({
           buyerTel: prepJson.nice.buyerTel,
           buyerEmail: prepJson.nice.buyerEmail,
           fnError: (result: any) => {
-            restoreAfterPopupAbort();
+            logDev("fnError received, waiting for layer close", result);
+            scheduleRestoreWhenLayerClosed("fnError");
             const msg = String(result?.errorMsg || result?.message || "결제가 취소되었거나 실패했습니다.");
             setInlineError(msg);
           },
@@ -763,7 +813,7 @@ export default function NiceCheckoutButton({
           popupAuditTimerRef.current = null;
         }, 500);
       } catch (error) {
-        restoreAfterPopupAbort();
+        finalizePopupAbortRestore("requestPay throw");
         throw error;
       }
     } catch (error: any) {
