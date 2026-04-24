@@ -39,8 +39,31 @@ import { useSearchParams } from "next/navigation";
 import type { MouseEvent as ReactMouseEvent } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-const CheckoutStringingServiceSections = dynamic(() => import("@/app/checkout/_components/CheckoutStringingServiceSections"), { loading: () => null });
-const CheckoutStringingPaymentAddon = dynamic(() => import("@/app/checkout/_components/CheckoutStringingPaymentAddon"), { loading: () => null });
+const CheckoutStringingSectionFallback = () => (
+  <div className="space-y-4 rounded-xl border border-border/50 bg-card p-4 bp-sm:p-5">
+    <Skeleton className="h-6 w-40" />
+    <Skeleton className="h-4 w-72 max-w-full" />
+    <Skeleton className="h-10 w-full" />
+    <Skeleton className="h-10 w-full" />
+  </div>
+);
+
+const CheckoutStringingAddonFallback = () => (
+  <div className="rounded-xl border border-border/50 bg-card p-4 bp-sm:p-5">
+    <Skeleton className="h-6 w-36" />
+    <Skeleton className="mt-3 h-4 w-64 max-w-full" />
+    <Skeleton className="mt-4 h-10 w-full" />
+  </div>
+);
+
+const CheckoutStringingServiceSections = dynamic(
+  () => import("@/app/checkout/_components/CheckoutStringingServiceSections"),
+  { loading: () => <CheckoutStringingSectionFallback /> },
+);
+const CheckoutStringingPaymentAddon = dynamic(
+  () => import("@/app/checkout/_components/CheckoutStringingPaymentAddon"),
+  { loading: () => <CheckoutStringingAddonFallback /> },
+);
 
 declare global {
   interface Window {
