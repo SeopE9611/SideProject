@@ -159,7 +159,7 @@ export default function StringPackagesPageClient({
               <Button
                 size="lg"
                 variant="default"
-                className="shadow-sm hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-300"
+                className="shadow-sm hover:shadow-md transition-[box-shadow,border-color,background-color] duration-200"
                 asChild
               >
                 <Link href="#packages">
@@ -253,7 +253,7 @@ export default function StringPackagesPageClient({
             {additionalBenefits.map((benefit, index) => (
               <div
                 key={index}
-                className="group bg-secondary rounded-2xl p-4 md:p-8 border border-border/20 hover:border-border/40 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5"
+                className="group bg-secondary rounded-2xl p-4 md:p-8 border border-border/20 hover:border-border/40 transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md"
               >
                 <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 bg-secondary text-foreground transition-shadow duration-300 group-hover:shadow-sm">
                   {benefit.icon}

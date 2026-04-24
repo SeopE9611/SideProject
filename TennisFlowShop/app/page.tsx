@@ -407,7 +407,7 @@ export default function Home() {
 
                       <div className="relative z-10 flex h-full items-center justify-center p-4 text-center">
                         <div className="text-foreground">
-                          <div className="text-lg bp-sm:text-xl bp-md:text-2xl font-bold leading-tight tracking-tight">{title}</div>
+                          <div className="text-lg bp-sm:text-xl bp-md:text-2xl font-bold leading-tight tracking-normal">{title}</div>
                         </div>
                       </div>
                     </>
@@ -445,7 +445,7 @@ export default function Home() {
       <section className="py-10 bp-sm:py-12 bp-md:py-16">
         <SiteContainer>
           <div className="mb-8 bp-sm:mb-10 text-center">
-            <h2 className="font-brand-bold text-2xl bp-sm:text-3xl font-bold text-foreground tracking-tight">빠른 메뉴</h2>
+            <h2 className="font-brand-bold text-2xl bp-sm:text-3xl font-bold text-foreground tracking-normal">빠른 메뉴</h2>
             <p className="mt-2 bp-sm:mt-3 text-sm bp-sm:text-base text-muted-foreground">원하는 서비스를 바로 이용하세요</p>
           </div>
           <div className="grid gap-4 bp-sm:gap-5 bp-md:gap-6 grid-cols-2 bp-md-only:grid-cols-4 bp-lg:grid-cols-4">
@@ -455,7 +455,7 @@ export default function Home() {
               </div>
               <div className="text-center">
                 <h3 className="text-sm bp-sm:text-base font-semibold text-foreground">교체 서비스 신청</h3>
-                <p className="mt-1 bp-sm:mt-1.5 text-xs bp-sm:text-sm line-clamp-2 text-muted-foreground">라켓/스트링 선택 후 한 번에</p>
+                <p className="mt-1 bp-sm:mt-1.5 text-sm line-clamp-2 text-foreground/80">라켓/스트링 선택 후 한 번에</p>
               </div>
             </Link>
 
@@ -465,7 +465,7 @@ export default function Home() {
               </div>
               <div className="text-center">
                 <h3 className="text-sm bp-sm:text-base font-semibold text-foreground">장착/텐션 가이드</h3>
-                <p className="mt-1 bp-sm:mt-1.5 text-xs bp-sm:text-sm line-clamp-2 text-muted-foreground">초보도 쉽게 고르기</p>
+                <p className="mt-1 bp-sm:mt-1.5 text-sm line-clamp-2 text-foreground/80">초보도 쉽게 고르기</p>
               </div>
             </Link>
 
@@ -475,7 +475,7 @@ export default function Home() {
               </div>
               <div className="text-center">
                 <h3 className="text-sm bp-sm:text-base font-semibold text-foreground">중고 거래</h3>
-                <p className="mt-1 bp-sm:mt-1.5 text-xs bp-sm:text-sm line-clamp-2 text-muted-foreground">라켓/스트링/장비 거래</p>
+                <p className="mt-1 bp-sm:mt-1.5 text-sm line-clamp-2 text-foreground/80">라켓/스트링/장비 거래</p>
               </div>
             </Link>
 
@@ -485,7 +485,7 @@ export default function Home() {
               </div>
               <div className="text-center">
                 <h3 className="text-sm bp-sm:text-base font-semibold text-foreground">커뮤니티</h3>
-                <p className="mt-1 bp-sm:mt-1.5 text-xs bp-sm:text-sm line-clamp-2 text-muted-foreground">리뷰·자유·사용기</p>
+                <p className="mt-1 bp-sm:mt-1.5 text-sm line-clamp-2 text-foreground/80">리뷰·자유·사용기</p>
               </div>
             </Link>
           </div>
@@ -518,7 +518,7 @@ export default function Home() {
       <section ref={communitySectionRef} className="py-10 bp-sm:py-12 bp-md:py-16">
         <SiteContainer>
           <div className="mb-8 bp-sm:mb-10 text-center">
-            <h2 className="font-brand-bold text-2xl bp-sm:text-3xl font-bold text-foreground tracking-tight">소식 & 커뮤니티</h2>
+            <h2 className="font-brand-bold text-2xl bp-sm:text-3xl font-bold text-foreground tracking-normal">소식 & 커뮤니티</h2>
             <p className="mt-2 bp-sm:mt-3 text-sm bp-sm:text-base text-muted-foreground">공지사항과 중고 거래 최신 소식을 확인하세요</p>
           </div>
           <div className="grid gap-5 bp-sm:gap-6 bp-lg:grid-cols-2">
@@ -542,7 +542,7 @@ export default function Home() {
         <SiteContainer>
           <div className={cn("p-6 bp-sm:p-8 bp-md:p-10", surfacePanelClass)}>
             <div className="mb-8 bp-sm:mb-10 text-center">
-              <h2 className="font-brand-bold text-2xl bp-sm:text-3xl font-bold text-foreground tracking-tight">스트링 교체 프로세스</h2>
+              <h2 className="font-brand-bold text-2xl bp-sm:text-3xl font-bold text-foreground tracking-normal">스트링 교체 프로세스</h2>
               <p className="mt-2 bp-sm:mt-3 text-sm bp-sm:text-base text-muted-foreground">처음 방문해도 쉽게 이해할 수 있어요</p>
             </div>
             <div className="mb-8 bp-sm:mb-10 grid gap-6 bp-sm:gap-8 grid-cols-2 bp-lg:grid-cols-4">
@@ -554,7 +554,7 @@ export default function Home() {
                   <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-foreground text-background flex items-center justify-center text-xs font-bold">1</div>
                 </div>
                 <h3 className="mb-1 bp-sm:mb-1.5 text-sm bp-sm:text-base font-semibold text-foreground">신청서 작성</h3>
-                <p className="text-xs bp-sm:text-sm text-muted-foreground">라켓/스트링/옵션 선택</p>
+                <p className="text-sm text-foreground/80">라켓/스트링/옵션 선택</p>
               </div>
               <div className={processStepSurfaceClass}>
                 <div className="relative mb-3 bp-sm:mb-4">
@@ -564,7 +564,7 @@ export default function Home() {
                   <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-foreground text-background flex items-center justify-center text-xs font-bold">2</div>
                 </div>
                 <h3 className="mb-1 bp-sm:mb-1.5 text-sm bp-sm:text-base font-semibold text-foreground">방문/택배</h3>
-                <p className="text-xs bp-sm:text-sm text-muted-foreground">방문 예약 또는 택배 발송</p>
+                <p className="text-sm text-foreground/80">방문 예약 또는 택배 발송</p>
               </div>
 
               <div className={processStepSurfaceClass}>
@@ -575,7 +575,7 @@ export default function Home() {
                   <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-foreground text-background flex items-center justify-center text-xs font-bold">3</div>
                 </div>
                 <h3 className="mb-1 bp-sm:mb-1.5 text-sm bp-sm:text-base font-semibold text-foreground">작업 진행</h3>
-                <p className="text-xs bp-sm:text-sm text-muted-foreground">장착/텐션 세팅 후 검수</p>
+                <p className="text-sm text-foreground/80">장착/텐션 세팅 후 검수</p>
               </div>
 
               <div className={processStepSurfaceClass}>
@@ -586,7 +586,7 @@ export default function Home() {
                   <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-foreground text-background flex items-center justify-center text-xs font-bold">4</div>
                 </div>
                 <h3 className="mb-1 bp-sm:mb-1.5 text-sm bp-sm:text-base font-semibold text-foreground">수령</h3>
-                <p className="text-xs bp-sm:text-sm text-muted-foreground">방문 수령 또는 배송</p>
+                <p className="text-sm text-foreground/80">방문 수령 또는 배송</p>
               </div>
             </div>
             <div className="text-center">
@@ -605,7 +605,7 @@ export default function Home() {
       <section ref={stringsSectionRef} className="py-12 bp-sm:py-14 bp-md:py-20">
         <SiteContainer>
           <div className="mb-8 bp-sm:mb-10 text-center">
-            <h2 className="font-brand-bold text-2xl bp-sm:text-3xl bp-md:text-4xl font-bold text-foreground tracking-tight">스트링</h2>
+            <h2 className="font-brand-bold text-2xl bp-sm:text-3xl bp-md:text-4xl font-bold text-foreground tracking-normal">스트링</h2>
             <p className="mt-2 bp-sm:mt-3 text-sm bp-sm:text-base text-muted-foreground">프로가 선택하는 테니스 스트링</p>
           </div>
           <div className="mb-8 bp-sm:mb-10">
@@ -653,7 +653,7 @@ export default function Home() {
       <section ref={racketsSectionRef} className="py-12 bp-sm:py-14 bp-md:py-20">
         <SiteContainer>
           <div className="mb-8 bp-sm:mb-10 text-center">
-            <h2 className="font-brand-bold text-2xl bp-sm:text-3xl bp-md:text-4xl font-bold text-foreground tracking-tight">중고 라켓</h2>
+            <h2 className="font-brand-bold text-2xl bp-sm:text-3xl bp-md:text-4xl font-bold text-foreground tracking-normal">중고 라켓</h2>
             <p className="mt-2 bp-sm:mt-3 text-sm bp-sm:text-base text-muted-foreground">도깨비테니스에서 관리하는 라켓을 활용해보세요</p>
           </div>
           <div className="mb-8 bp-sm:mb-10">

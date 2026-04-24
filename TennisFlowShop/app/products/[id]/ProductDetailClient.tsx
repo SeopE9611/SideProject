@@ -769,7 +769,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   {/* 브랜드와 제품명 */}
                   <div>
                     <span className="inline-block text-sm sm:text-base text-muted-foreground font-medium mb-2">{BRAND_MAP[(product?.brand ?? "").toLowerCase()] ?? product.brand}</span>
-                    <h1 className="text-xl sm:text-2xl bp-lg:text-3xl font-bold text-foreground leading-tight tracking-tight">{product.name}</h1>
+                    <h1 className="text-xl sm:text-2xl bp-lg:text-3xl font-bold text-foreground leading-tight tracking-normal">{product.name}</h1>
                     <div className="mt-3 flex items-center gap-3">
                       <div className="flex items-center gap-0.5">
                         {[...Array(5)].map((_, i) => (
@@ -784,7 +784,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
                   <div className="space-y-3">
                     <div className="flex items-baseline gap-3 flex-wrap">
-                      <span className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
+                      <span className="text-3xl sm:text-4xl font-bold text-foreground tracking-normal">
                         {product.price.toLocaleString()}
                         <span className="text-xl sm:text-2xl font-medium ml-0.5">원</span>
                       </span>
@@ -1456,7 +1456,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                         </Badge>
                                       </div>
                                       <div className="font-semibold text-foreground truncate hover:text-foreground text-sm sm:text-base">{q.title}</div>
-                                      <div className="flex items-center gap-3 sm:gap-4 text-xs text-muted-foreground">
+                                      <div className="flex items-center gap-3 sm:gap-4 text-sm text-foreground/75">
                                         <span>{q.authorName ?? "익명"}</span>
                                         <span>{fmtDate(q.createdAt)}</span>
                                       </div>
@@ -1502,12 +1502,12 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   {/* 실제 관련 상품 */}
                   {relatedFiltered.map((rp: any) => (
                     <Link key={rp._id} href={`/products/${rp._id}`}>
-                      <Card className="h-full overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 group border border-border">
+                      <Card className="h-full overflow-hidden transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md group border border-border">
                         <div className="relative aspect-square overflow-hidden bg-muted/30">
                           <img src={rp.images?.[0] || "/placeholder.svg"} alt={rp.name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
                         </div>
                         <CardContent className="p-3 sm:p-4">
-                          <div className="text-xs text-muted-foreground mb-0.5 sm:mb-1">{BRAND_MAP[rp.brand] ?? rp.brand}</div>
+                          <div className="text-sm text-foreground/75 mb-0.5 sm:mb-1">{BRAND_MAP[rp.brand] ?? rp.brand}</div>
                           <div className="font-medium line-clamp-2 mb-1.5 sm:mb-2 text-sm sm:text-base group-hover:text-foreground transition-colors">{rp.name}</div>
                           <div className="font-bold text-foreground text-sm sm:text-base">{Number(rp.price).toLocaleString()}원</div>
                         </CardContent>
@@ -1552,7 +1552,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   <div className="text-sm font-semibold text-foreground truncate leading-tight">{product.name}</div>
                   <div className="mt-1 flex items-baseline gap-2">
                     <span className="text-lg font-bold text-foreground">{qtyTotal.toLocaleString()}원</span>
-                    {typeof product?.mountingFee === "number" && product.mountingFee > 0 && <span className="text-xs text-muted-foreground">+서비스 {product.mountingFee.toLocaleString()}원</span>}
+                    {typeof product?.mountingFee === "number" && product.mountingFee > 0 && <span className="text-sm text-foreground/75">+서비스 {product.mountingFee.toLocaleString()}원</span>}
                   </div>
                 </div>
 
@@ -1595,7 +1595,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     type="button"
                     onClick={handleBuyNow}
                     disabled={loading || stock <= 0 || quantity > stock}
-                    className="flex-1 h-12 rounded-lg bg-foreground text-background disabled:bg-muted dark:disabled:bg-muted disabled:text-muted-foreground font-semibold text-sm transition-all duration-300 shadow-sm hover:-translate-y-0.5 hover:shadow-md disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="flex-1 h-12 rounded-lg bg-foreground text-background disabled:bg-muted dark:disabled:bg-muted disabled:text-muted-foreground font-semibold text-sm transition-[box-shadow,background-color,color] duration-200 shadow-sm hover:shadow-md disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     <CreditCard className="h-4 w-4" />
                     즉시 구매하기

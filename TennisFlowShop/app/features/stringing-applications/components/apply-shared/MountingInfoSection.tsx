@@ -543,7 +543,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
               )}
 
               {(isOrderSlotBlocked || lineCount >= orderRemainingSlots) && (
-                <p className="mt-2 text-[11px] text-muted-foreground">
+                <p className="mt-2 text-sm text-foreground/75">
                   * 이 신청서는{" "}
                   <span className="font-medium">현재 주문 기준</span>으로만
                   진행됩니다. 추가 구매는 새 주문으로 진행되며, 이 신청서에는
@@ -767,7 +767,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                               !lockOrderUseQty && (
                                 <Badge
                                   variant="outline"
-                                  className="h-7 px-2 text-[10px] leading-none"
+                                  className="h-7 px-2 text-xs leading-none"
                                   title={
                                     isLimitedByRemaining
                                       ? "남은 교체 가능 횟수 기준으로 제한됩니다."
@@ -783,7 +783,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                     })}
                   </div>
                   {lockOrderUseQty && (
-                    <p className="text-[11px] text-muted-foreground">
+                    <p className="text-sm text-foreground/75">
                       * 번들(라켓+스트링) 주문은 주문 수량과 자동 동기화되며,
                       여기서 변경할 수 없습니다.
                     </p>
@@ -799,7 +799,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
               )}
               {/* 주문 기반 진입: 입금 안내*/}
               {orderId && order && lineCount > 0 && (
-                <div className="mt-3 rounded-md border border-border bg-muted/40 p-3 text-[11px] text-muted-foreground">
+                <div className="mt-3 rounded-md border border-border bg-muted/40 p-3 text-sm text-foreground/75">
                   <p>
                     최종 결제 금액은 우측 요금 요약의{" "}
                     <span className="font-semibold">
@@ -884,7 +884,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                   </div>
 
                   {typeof maxNonOrderQty === "number" && (
-                    <p className="text-[11px] text-muted-foreground">
+                    <p className="text-sm text-foreground/75">
                       사용 개수는{" "}
                       <span className="font-semibold">{maxNonOrderQty}개</span>
                       를 초과할 수 없습니다
@@ -899,7 +899,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
 
               {/* 주문 기반 진입 + 스트링 1개만 선택 시 상세 안내 */}
               {orderId && selectedOrderItem && lineCount === 1 && (
-                <div className="mt-1 text-[11px] text-muted-foreground space-y-1">
+                <div className="mt-1 text-sm text-foreground/75 space-y-1">
                   {(() => {
                     // 스트링 금액: PDP 통합모드면 pdpStringPrice 우선, 아니면 주문 item 가격 사용
                     const stringPrice = isCombinedPdpMode
@@ -947,7 +947,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                 </div>
                 <div className="flex-1 text-[12px] leading-relaxed">
                   <div className="mb-1 flex flex-wrap items-center gap-2">
-                    <span className="text-base font-semibold tracking-tight text-foreground">
+                    <span className="text-base font-semibold tracking-normal text-foreground">
                       패키지 사용 가능 여부
                     </span>
 
@@ -1118,7 +1118,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                       className="text-sm resize-none border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
                       placeholder="예: 전부 동일 텐션으로 부탁드립니다. / 오버그립 제거하지 말아주세요 등"
                     />
-                    <p className="text-[11px] text-muted-foreground">
+                    <p className="text-sm text-foreground/75">
                       ※ 공통 메모를 비워두면 기존 라켓별 메모는 유지됩니다.
                     </p>
                   </div>
@@ -1257,7 +1257,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                         : `약 ${visitDurationMinutesUi}분`}{" "}
                       ({visitSlotCountUi}슬롯)
                     </p>
-                    <p className="mt-0.5 text-[11px] text-muted-foreground leading-relaxed">
+                    <p className="mt-0.5 text-sm text-foreground/75 leading-relaxed">
                       선택하신 시간부터 연속으로 작업이 진행되며,&nbsp; 해당
                       시간대에는 다른 예약이 불가능합니다.
                     </p>

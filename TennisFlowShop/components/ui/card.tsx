@@ -8,7 +8,7 @@ const cardVariants = cva("rounded-2xl border border-border bg-card text-card-for
       default: "",
       elevated: "shadow-md",
       interactive:
-        "transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg",
+        "transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md",
       // 하위 호환
       outline: "",
       ghost: "border-0 bg-transparent shadow-none",
@@ -70,7 +70,7 @@ const CardTitle = React.forwardRef<
   <h3
     ref={ref}
     className={cn(
-      "text-xl font-semibold leading-tight tracking-tight",
+      "text-xl font-semibold leading-tight tracking-normal",
       className,
     )}
     {...props}
@@ -84,7 +84,7 @@ const CardDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <p
     ref={ref}
-    className={cn("text-sm text-muted-foreground", className)}
+    className={cn("text-sm text-foreground/80", className)}
     {...props}
   />
 ));

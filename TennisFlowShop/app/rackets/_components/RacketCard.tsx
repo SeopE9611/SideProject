@@ -173,7 +173,7 @@ const RacketCard = React.memo(
 
     if (viewMode === "list") {
       return (
-        <Card className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg relative">
+        <Card className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md relative">
           <div className="absolute inset-0 opacity-5 dark:opacity-10">
             <svg className="w-full h-full" viewBox="0 0 400 200" fill="none">
               <rect
@@ -338,7 +338,7 @@ const RacketCard = React.memo(
 
     // grid view
     return (
-      <Card className="group h-full overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg relative">
+      <Card className="group h-full overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md relative">
         <div className="absolute top-0 left-0 right-0 h-1 bg-muted/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
         <div className="relative w-full aspect-[4/3] bp-md:aspect-square overflow-hidden">

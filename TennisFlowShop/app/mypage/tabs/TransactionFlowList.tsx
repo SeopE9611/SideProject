@@ -649,7 +649,7 @@ export default function TransactionFlowList() {
             (displayKind === 'application' && (displayApplication ?? g.application)?.cancelStatus === 'requested');
 
           return (
-            <Card key={g.key} className="group relative overflow-hidden border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
+            <Card key={g.key} className="group relative overflow-hidden border border-border bg-card shadow-sm transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md">
               <div className="absolute inset-0 border border-border/40 bg-secondary/30 opacity-0 transition-opacity duration-300 group-hover:opacity-100" style={{ padding: '1px' }}>
                 <div className="h-full w-full rounded-lg bg-card" />
               </div>
@@ -692,28 +692,28 @@ export default function TransactionFlowList() {
                       <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
                         <CreditCard className="h-4 w-4 text-muted-foreground" />
                         <div>
-                          <p className="text-xs uppercase tracking-wide text-muted-foreground">결제 금액</p>
+                          <p className="text-sm uppercase tracking-wide text-foreground/75">결제 금액</p>
                           <p className="font-medium text-foreground">{formatAmount(g.order?.totalPrice)}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
                         <Package className="h-4 w-4 text-muted-foreground" />
                         <div>
-                          <p className="text-xs uppercase tracking-wide text-muted-foreground">주문 상태</p>
+                          <p className="text-sm uppercase tracking-wide text-foreground/75">주문 상태</p>
                           <p className="font-medium text-foreground">{orderDisplayStatusLabel}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
                         <Wallet className="h-4 w-4 text-muted-foreground" />
                         <div>
-                          <p className="text-xs uppercase tracking-wide text-muted-foreground">결제 상태</p>
+                          <p className="text-sm uppercase tracking-wide text-foreground/75">결제 상태</p>
                           <p className="font-medium text-foreground">{getMypagePaymentStatusLabel(g.order?.paymentStatus)}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
                         <Truck className="h-4 w-4 text-muted-foreground" />
                         <div>
-                          <p className="text-xs uppercase tracking-wide text-muted-foreground">수령 방법</p>
+                          <p className="text-sm uppercase tracking-wide text-foreground/75">수령 방법</p>
                           <p className="font-medium text-foreground">{orderShippingMethodLabel(g.order?.shippingMethod)}</p>
                         </div>
                       </div>
@@ -725,28 +725,28 @@ export default function TransactionFlowList() {
                       <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
                         <CreditCard className="h-4 w-4 text-muted-foreground" />
                         <div>
-                          <p className="text-xs uppercase tracking-wide text-muted-foreground">대여 금액</p>
+                          <p className="text-sm uppercase tracking-wide text-foreground/75">대여 금액</p>
                           <p className="font-medium text-foreground">{formatAmount(g.rental?.totalAmount)}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
                         <Calendar className="h-4 w-4 text-muted-foreground" />
                         <div>
-                          <p className="text-xs uppercase tracking-wide text-muted-foreground">대여 기간</p>
+                          <p className="text-sm uppercase tracking-wide text-foreground/75">대여 기간</p>
                           <p className="font-medium text-foreground">{typeof g.rental?.days === 'number' ? `${g.rental.days}일` : '-'}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
                         <Truck className="h-4 w-4 text-muted-foreground" />
                         <div>
-                          <p className="text-xs uppercase tracking-wide text-muted-foreground">{getRentalShippingStatusMeta(g.rental).label}</p>
+                          <p className="text-sm uppercase tracking-wide text-foreground/75">{getRentalShippingStatusMeta(g.rental).label}</p>
                           <p className="font-medium text-foreground">{getRentalShippingStatusMeta(g.rental).value}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
                         <Undo2 className="h-4 w-4 text-muted-foreground" />
                         <div>
-                          <p className="text-xs uppercase tracking-wide text-muted-foreground">반납 상태</p>
+                          <p className="text-sm uppercase tracking-wide text-foreground/75">반납 상태</p>
                           <p className="font-medium text-foreground">{getRentalReturnStatusLabel(g.rental?.status)}</p>
                         </div>
                       </div>
@@ -758,28 +758,28 @@ export default function TransactionFlowList() {
                       <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
                         <Package className="h-4 w-4 text-muted-foreground" />
                         <div>
-                          <p className="text-xs uppercase tracking-wide text-muted-foreground">접수 방식</p>
+                          <p className="text-sm uppercase tracking-wide text-foreground/75">접수 방식</p>
                           <p className="font-medium text-foreground">{getApplicationCollectionLabel(displayApplication)}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
                         <Truck className="h-4 w-4 text-muted-foreground" />
                         <div>
-                          <p className="text-xs uppercase tracking-wide text-muted-foreground">운송장 상태</p>
+                          <p className="text-sm uppercase tracking-wide text-foreground/75">운송장 상태</p>
                           <p className="font-medium text-foreground">{getApplicationTrackingLabel(displayApplication)}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
                         <Wrench className="h-4 w-4 text-muted-foreground" />
                         <div>
-                          <p className="text-xs uppercase tracking-wide text-muted-foreground">진행 단계</p>
+                          <p className="text-sm uppercase tracking-wide text-foreground/75">진행 단계</p>
                           <p className="font-medium text-foreground">{displayUserStatusLabel}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
                         <Link2 className="h-4 w-4 text-muted-foreground" />
                         <div>
-                          <p className="text-xs uppercase tracking-wide text-muted-foreground">연계 원본</p>
+                          <p className="text-sm uppercase tracking-wide text-foreground/75">연계 원본</p>
                           <p className="font-medium text-foreground">
                             {getApplicationOriginLabel(displayApplication)}
                             {displayApplication?.orderId ? ` · #${shortId(displayApplication.orderId) ?? '-'}` : ''}

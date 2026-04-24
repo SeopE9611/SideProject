@@ -779,7 +779,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                   <Settings className="h-8 w-8 text-primary" />
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold tracking-tight text-foreground">
+                  <h1 className="text-3xl font-bold tracking-normal text-foreground">
                     주문 관리
                   </h1>
                   <p className="mt-1 text-muted-foreground">
@@ -912,7 +912,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                   {shippingMethodBadge.label}
                 </Badge>
                 {isShippingManagedByApplication && (
-                  <p className="mt-1 text-[11px] text-muted-foreground">
+                  <p className="mt-1 text-sm text-foreground/75">
                     운송장/배송 등록은 신청서에서 관리
                   </p>
                 )}
