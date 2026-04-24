@@ -1,5 +1,5 @@
 import SiteContainer from "@/components/layout/SiteContainer";
-import { ArrowUpRight, Clock, CreditCard, Facebook, Instagram, Mail, MapPin, Phone, Train, Truck } from "lucide-react";
+import { ArrowUpRight, Clock, CreditCard, Mail, MapPin, Phone, Train, Truck } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -30,24 +30,6 @@ const Footer = () => {
 
   const customerServiceLinks = customerService.filter((link) => link.name === "공지사항" || link.name === "Q&A");
   const policyLinks = customerService.filter((link) => link.name === "이용약관" || link.name === "개인정보처리방침");
-
-  const snsLinks = [
-    {
-      name: "인스타그램",
-      href: "https://www.instagram.com/",
-      Icon: Instagram,
-    },
-    {
-      name: "페이스북",
-      href: "https://www.facebook.com/",
-      Icon: Facebook,
-    },
-    {
-      name: "밴드",
-      href: "https://band.us/",
-      Icon: null,
-    },
-  ];
 
   return (
     <footer className="relative mt-8 w-full overflow-hidden border-t border-border bg-card bp-sm:mt-12">
@@ -171,14 +153,7 @@ const Footer = () => {
 
               <section className="flex min-w-0 w-full flex-col items-start gap-3">
                 <h3 className="text-sm font-semibold text-foreground bp-sm:text-base">SNS</h3>
-                <div className="flex flex-col items-start gap-2.5">
-                  {snsLinks.map(({ name, href, Icon }) => (
-                    <Link key={name} href={href} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground/95 transition-colors hover:text-primary">
-                      {Icon ? <Icon className="h-4 w-4 shrink-0 text-primary/90" /> : <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-sm bg-primary/10 text-[10px] font-bold text-primary">B</span>}
-                      <span>{name}</span>
-                    </Link>
-                  ))}
-                </div>
+                <p className="text-xs text-foreground/80">공식 SNS 계정 확인 후 노출 예정</p>
               </section>
             </div>
           </div>
@@ -217,7 +192,7 @@ const Footer = () => {
                 </div>
 
                 <div className="space-y-1.5 text-left">
-                  <div className="font-brand-bold text-xl font-bold tracking-tight text-foreground bp-sm:text-2xl">도깨비테니스</div>
+                  <div className="font-brand-bold text-xl font-bold tracking-normal text-foreground bp-sm:text-2xl">도깨비테니스</div>
                   <div className="text-[11px] font-semibold tracking-[0.08em] text-muted-foreground/80 bp-sm:text-xs">Powered by Tennis Flow</div>
                 </div>
               </Link>
