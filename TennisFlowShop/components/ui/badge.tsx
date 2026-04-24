@@ -9,23 +9,30 @@ const badgeVariants = cva(
     variants: {
       variant: {
         neutral: "border-border bg-card text-foreground dark:bg-card",
-        info: "border-info bg-info text-info-foreground",
-        success: "border-success bg-success text-success-foreground",
-        warning: "border-warning bg-warning text-warning-foreground",
+        info:
+          "border-info/45 bg-info/10 text-info dark:border-info/55 dark:bg-info/18 dark:text-info",
+        success:
+          "border-success/45 bg-success/10 text-success dark:border-success/55 dark:bg-success/18 dark:text-success",
+        warning:
+          "border-warning/50 bg-warning/12 text-warning dark:border-warning/55 dark:bg-warning/20 dark:text-warning",
         danger:
-          "border-destructive bg-destructive text-destructive-foreground",
-        brand: "border-primary bg-primary text-primary-foreground",
+          "border-destructive/45 bg-destructive/10 text-destructive dark:border-destructive/55 dark:bg-destructive/18 dark:text-destructive",
+        brand:
+          "border-primary/40 bg-primary/10 text-primary dark:border-primary/55 dark:bg-primary/18 dark:text-primary",
         secondary:
           "border-border/80 bg-muted/80 text-muted-foreground dark:bg-muted/55 dark:text-foreground",
         outline: "border-border bg-background text-foreground",
 
         // Legacy aliases kept for gradual migration.
         default: "border-border bg-card text-foreground dark:bg-card",
-        highlight: "border-primary bg-primary text-primary-foreground",
+        highlight:
+          "border-primary/40 bg-primary/10 text-primary dark:border-primary/55 dark:bg-primary/18 dark:text-primary",
         destructive:
-          "border-destructive bg-destructive text-destructive-foreground",
-        product: "border-info bg-info text-info-foreground",
-        service: "border-warning bg-warning text-warning-foreground",
+          "border-destructive/45 bg-destructive/10 text-destructive dark:border-destructive/55 dark:bg-destructive/18 dark:text-destructive",
+        product:
+          "border-info/45 bg-info/10 text-info dark:border-info/55 dark:bg-info/18 dark:text-info",
+        service:
+          "border-warning/50 bg-warning/12 text-warning dark:border-warning/55 dark:bg-warning/20 dark:text-warning",
       },
     },
     defaultVariants: {
