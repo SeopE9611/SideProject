@@ -38,11 +38,11 @@ export default function CheckoutStringingPaymentAddon({
           <Info className="h-4 w-4 text-primary" />
           교체 서비스는 이번 주문과 함께 접수됩니다.
         </p>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-foreground/75">
           선택한 결제수단 기준으로 상품과 교체서비스 전체 주문에 적용됩니다.
         </p>
-        <p className="text-xs text-muted-foreground">패키지를 사용하지 않으면 교체서비스 비용이 결제금액에 포함됩니다.</p>
-        <p className="text-xs text-muted-foreground">패키지를 사용하면 보유 횟수에서 차감되고 결제금액에서 교체서비스 비용이 제외됩니다.</p>
+        <p className="text-xs text-foreground/75">패키지를 사용하지 않으면 교체서비스 비용이 결제금액에 포함됩니다.</p>
+        <p className="text-xs text-foreground/75">패키지를 사용하면 보유 횟수에서 차감되고 결제금액에서 교체서비스 비용이 제외됩니다.</p>
       </div>
 
       <div
@@ -102,7 +102,7 @@ export default function CheckoutStringingPaymentAddon({
                 잔여 횟수가 충분하여 패키지가 자동으로 적용됩니다.
               </p>
             ) : (
-              <p className="text-xs text-muted-foreground mt-2">
+              <p className="text-xs text-foreground/75 mt-2">
                 이번 주문에 적용 가능한 교체 횟수가 없어 일반 결제로 접수됩니다.
               </p>
             )}
@@ -116,7 +116,7 @@ export default function CheckoutStringingPaymentAddon({
                 />
                 <Label
                   htmlFor="checkout-package-optout"
-                  className="cursor-pointer text-xs text-muted-foreground"
+                  className="cursor-pointer text-xs text-foreground/75"
                 >
                   이번 주문에서는 패키지 사용 안 함
                 </Label>
@@ -124,7 +124,7 @@ export default function CheckoutStringingPaymentAddon({
             )}
           </>
         ) : (
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-foreground/75">
             사용 가능한 교체 패키지가 없어 이번 주문의 교체 서비스는 일반 결제로
             접수됩니다.
           </p>

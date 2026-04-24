@@ -31,7 +31,7 @@ export default function Error({
           <div className="mb-4 grid h-12 w-12 place-content-center rounded-xl bg-destructive text-destructive-foreground">
             <AlertTriangle className="h-6 w-6" />
           </div>
-          <CardTitle className="text-2xl font-bold tracking-tight">
+          <CardTitle className="text-2xl font-bold tracking-normal">
             처리 중 오류가 발생했어요
           </CardTitle>
           <p className="text-sm text-muted-foreground">

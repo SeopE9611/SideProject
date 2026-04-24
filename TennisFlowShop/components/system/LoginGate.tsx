@@ -141,7 +141,7 @@ export default function LoginGate({
                 <LogIn className="h-7 w-7" />
               </div>
 
-              <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight mb-2">
+              <h1 className="text-2xl md:text-3xl font-extrabold tracking-normal mb-2">
                 <span className="text-primary">로그인</span>이 필요합니다.
               </h1>
               <p className="text-muted-foreground">{v.description}</p>

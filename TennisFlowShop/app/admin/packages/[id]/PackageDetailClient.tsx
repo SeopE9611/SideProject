@@ -532,7 +532,7 @@ export default function PackageDetailClient({
                 <PackageIcon className="h-7 w-7 text-foreground" />
               </div>
               <div>
-                <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
+                <h1 className="text-2xl md:text-3xl font-bold tracking-normal">
                   패키지 상세 관리
                 </h1>
                 <p className="mt-1 text-sm text-muted-foreground">

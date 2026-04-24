@@ -1160,7 +1160,7 @@ export default function UsersClient() {
                               <span className="font-medium truncate">
                                 {u.name || "(이름없음)"}
                               </span>
-                              <div className="flex items-center gap-1 text-[11px] text-muted-foreground min-w-0">
+                              <div className="flex items-center gap-1 text-xs text-foreground/75 min-w-0">
                                 <span className="truncate">{u.email}</span>
                                 <button
                                   className="shrink-0 inline-flex h-4 w-4 items-center justify-center rounded hover:bg-background"
@@ -1269,7 +1269,7 @@ export default function UsersClient() {
                           >
                             <div className="flex flex-col items-center leading-tight">
                               <span className="text-[12px]">{joined.date}</span>
-                              <span className="text-[11px] text-muted-foreground">
+                              <span className="text-xs text-foreground/75">
                                 {last.time ? `${last.date} ${last.time}` : "-"}
                               </span>
                             </div>

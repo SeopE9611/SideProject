@@ -365,7 +365,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialLoadE
                 <MessageSquare className="h-5 w-5" />
               </div>
               <div>
-                <h1 className="text-2xl sm:text-3xl md:text-[2rem] font-bold tracking-tight text-foreground">고객센터 · Q&amp;A</h1>
+                <h1 className="text-2xl sm:text-3xl md:text-[2rem] font-bold tracking-normal text-foreground">고객센터 · Q&amp;A</h1>
                 <p className="text-sm sm:text-base text-muted-foreground">도깨비테니스 고객센터에서 궁금한 점을 문의하고, 답변을 받아보실 수 있습니다.</p>
               </div>
             </div>

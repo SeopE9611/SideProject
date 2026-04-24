@@ -169,7 +169,7 @@ export default function AdminRacketEditClient({ id }: { id: string }) {
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h2 className="text-3xl font-bold tracking-tight">라켓 수정</h2>
+                    <h2 className="text-3xl font-bold tracking-normal">라켓 수정</h2>
                     <StockChip id={data.id} total={data.quantity ?? 1} />
                   </div>
                   <p className="text-muted-foreground">

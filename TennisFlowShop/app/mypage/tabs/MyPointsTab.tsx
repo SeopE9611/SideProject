@@ -191,7 +191,7 @@ export default function MyPointsTab() {
                   <p className="text-xs font-medium text-primary">
                     보유 포인트
                   </p>
-                  <p className="text-xl bp-sm:text-2xl bp-lg:text-3xl font-black tracking-tight">
+                  <p className="text-xl bp-sm:text-2xl bp-lg:text-3xl font-black tracking-normal">
                     {pointsBalance === null ? "-" : `${fmt(pointsBalance)}P`}
                   </p>
                   {typeof pointsDebt === "number" &&

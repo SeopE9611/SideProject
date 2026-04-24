@@ -17,7 +17,7 @@ export default function ReviewsPage() {
             <span>리뷰 게시판</span>
           </div>
 
-          <h1 className="font-bold text-lg sm:text-xl md:text-2xl leading-tight break-keep tracking-tight text-foreground">리뷰 게시판</h1>
+          <h1 className="font-bold text-lg sm:text-xl md:text-2xl leading-tight break-keep tracking-normal text-foreground">리뷰 게시판</h1>
         </div>
       </div>
 

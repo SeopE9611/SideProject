@@ -121,7 +121,7 @@ export default function CheckoutStringingCompactEditor({ adapter }: Props) {
             {isVisit ? (
               <div className="grid grid-cols-1 gap-4 bp-sm:grid-cols-2">
                 <div className="space-y-2.5">
-                  <Label htmlFor="checkout-preferred-date" className="text-xs text-muted-foreground">희망 날짜</Label>
+                  <Label htmlFor="checkout-preferred-date" className="text-xs text-foreground/75">희망 날짜</Label>
                   <Input
                     id="checkout-preferred-date"
                     type="date"
@@ -135,7 +135,7 @@ export default function CheckoutStringingCompactEditor({ adapter }: Props) {
                 <div className="space-y-2.5 rounded-lg border border-border/70 bg-background/90 p-3.5">
                   <div className="space-y-1">
                     <Label htmlFor="checkout-preferred-time" className="text-xs font-medium text-foreground">희망 시간</Label>
-                    <p className="text-[11px] text-muted-foreground">가능한 시간대 중 한 슬롯을 선택해주세요.</p>
+                    <p className="text-xs text-foreground/75">가능한 시간대 중 한 슬롯을 선택해주세요.</p>
                   </div>
                   <TimeSlotSelector
                     selected={formData.preferredTime}
@@ -165,7 +165,7 @@ export default function CheckoutStringingCompactEditor({ adapter }: Props) {
                             : `약 ${visitDurationMinutesUi}분`}{" "}
                           ({visitSlotCountUi}슬롯)
                         </p>
-                        <p className="mt-1 text-[11px] text-muted-foreground">
+                        <p className="mt-1 text-xs text-foreground/75">
                           선택한 시간부터 연속 작업이 진행됩니다.
                         </p>
                       </div>
@@ -173,7 +173,7 @@ export default function CheckoutStringingCompactEditor({ adapter }: Props) {
                 </div>
               </div>
             ) : (
-              <p className="text-xs text-muted-foreground">현재 접수 방식은 방문 예약이 필요하지 않습니다.</p>
+              <p className="text-xs text-foreground/75">현재 접수 방식은 방문 예약이 필요하지 않습니다.</p>
             )}
           </section>
 
@@ -187,7 +187,7 @@ export default function CheckoutStringingCompactEditor({ adapter }: Props) {
                       <Sparkles className="h-3.5 w-3.5 text-primary/80" />
                       빠른 설정
                     </p>
-                    <p className="mt-0.5 text-[11px] text-muted-foreground">
+                    <p className="mt-0.5 text-xs text-foreground/75">
                       여러 자루에 동일한 텐션/메모를 한 번에 적용합니다.
                     </p>
                   </div>
@@ -240,7 +240,7 @@ export default function CheckoutStringingCompactEditor({ adapter }: Props) {
                 <div key={line.id} className="space-y-3.5 rounded-lg border border-border/80 bg-background p-4">
                   <div className="space-y-1">
                     <p className="text-xs font-semibold text-foreground">라켓 {index + 1}</p>
-                    <p className="text-[11px] text-muted-foreground">{line.stringName}</p>
+                    <p className="text-xs text-foreground/75">{line.stringName}</p>
                   </div>
                   <div className="grid grid-cols-1 gap-2.5 bp-sm:grid-cols-3">
                     <Input
@@ -288,7 +288,7 @@ export default function CheckoutStringingCompactEditor({ adapter }: Props) {
               placeholder="예: 선호 텐션 느낌, 작업 시 확인할 사항"
               className="min-h-[98px] px-3 py-2.5"
             />
-            <p className="text-xs text-muted-foreground">필요한 경우에만 간단히 남겨주세요.</p>
+            <p className="text-xs text-foreground/75">필요한 경우에만 간단히 남겨주세요.</p>
           </section>
         </AccordionContent>
       </AccordionItem>

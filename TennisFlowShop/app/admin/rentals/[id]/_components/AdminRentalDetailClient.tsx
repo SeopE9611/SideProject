@@ -478,7 +478,7 @@ export default function AdminRentalDetailClient() {
     <div className="min-h-screen bg-muted/30 dark:bg-muted/30">
       <div className="container py-6 lg:py-8">
         {isLoading ? (
-          <div className="mx-auto mb-4 w-full max-w-[1500px] rounded-lg border border-border bg-muted/30 px-4 py-2 text-sm text-muted-foreground">
+          <div className="mx-auto mb-4 w-full max-w-[1500px] rounded-lg border border-border bg-muted/30 px-4 py-2 text-sm text-foreground/80">
             최신 상태를 확인하고 있습니다...
           </div>
         ) : null}
@@ -586,7 +586,7 @@ export default function AdminRentalDetailClient() {
                 <p className="text-lg font-semibold text-foreground">
                   {data.days}일
                 </p>
-                <p className="mt-1 text-xs text-muted-foreground">
+                <p className="mt-1 text-xs text-foreground/75">
                   수령 방법: {pickupMethodLabel}
                 </p>
               </div>
@@ -922,7 +922,7 @@ export default function AdminRentalDetailClient() {
          */}
                   <div className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border/60">
                     <div>
-                      <p className="text-sm text-muted-foreground">브랜드</p>
+                      <p className="text-sm text-foreground/80">브랜드</p>
                       <p className="font-semibold text-foreground">
                         {racketBrandLabel(data.brand)}
                       </p>
@@ -930,7 +930,7 @@ export default function AdminRentalDetailClient() {
                   </div>
                   <div className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border/60">
                     <div>
-                      <p className="text-sm text-muted-foreground">모델</p>
+                      <p className="text-sm text-foreground/80">모델</p>
                       <p className="font-semibold text-foreground">
                         {data.model}
                       </p>
@@ -938,7 +938,7 @@ export default function AdminRentalDetailClient() {
                   </div>
                   <div className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border/60">
                     <div>
-                      <p className="text-sm text-muted-foreground">대여 기간</p>
+                      <p className="text-sm text-foreground/80">대여 기간</p>
                       <p className="font-semibold text-foreground">
                         {data.days}일
                       </p>
@@ -967,7 +967,7 @@ export default function AdminRentalDetailClient() {
                     );
                   })()}
                   {paymentSource === "derived" && (
-                    <span className="text-[11px] text-muted-foreground">
+                    <span className="text-xs text-foreground/75">
                       대여 상태 기준 파생
                     </span>
                   )}
@@ -994,7 +994,7 @@ export default function AdminRentalDetailClient() {
                 <div className="space-y-4">
                   <div className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border/60">
                     <div>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-foreground/80">
                         대여 수수료
                       </p>
                       <p className="font-semibold text-foreground">
@@ -1004,7 +1004,7 @@ export default function AdminRentalDetailClient() {
                   </div>
                   <div className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border/60">
                     <div>
-                      <p className="text-sm text-muted-foreground">보증금</p>
+                      <p className="text-sm text-foreground/80">보증금</p>
                       <p className="font-semibold text-foreground">
                         {won(data.amount?.deposit)}
                       </p>
@@ -1015,7 +1015,7 @@ export default function AdminRentalDetailClient() {
                     <div className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border/60">
                       <Package className="h-4 w-4 text-muted-foreground" />
                       <div>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-foreground/80">
                           스트링 상품
                         </p>
                         <p className="font-semibold text-foreground">
@@ -1030,7 +1030,7 @@ export default function AdminRentalDetailClient() {
                     <div className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border/60">
                       <Wrench className="h-4 w-4 text-muted-foreground" />
                       <div>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-foreground/80">
                           교체 서비스비
                         </p>
                         <p className="font-semibold text-foreground">
@@ -1041,7 +1041,7 @@ export default function AdminRentalDetailClient() {
                   )}
                   <div className="flex items-center space-x-3 p-3 bg-muted/30 rounded-lg border border-border/50">
                     <div>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-foreground/80">
                         총 결제 금액
                       </p>
                       <p className="text-xl font-bold text-primary dark:text-foreground">
@@ -1061,7 +1061,7 @@ export default function AdminRentalDetailClient() {
                               <p className="text-sm font-semibold text-foreground">
                                 취소 요청 시 제출한 환불 계좌
                               </p>
-                              <p className="mt-1 text-xs text-muted-foreground">
+                              <p className="mt-1 text-xs text-foreground/75">
                                 취소 요청 시 고객이 제출한 환불 계좌입니다. 환불
                                 처리 전 이 계좌를 우선 검토하세요.
                               </p>
@@ -1134,7 +1134,7 @@ export default function AdminRentalDetailClient() {
                           <p className="text-sm font-medium text-foreground">
                             보증금 환불 계좌
                           </p>
-                          <p className="mt-1 text-xs text-muted-foreground">
+                          <p className="mt-1 text-xs text-foreground/75">
                             기존에 등록된 보증금 환불 계좌입니다. 취소 요청
                             계좌가 없을 때 참고용으로 확인하세요.
                           </p>
@@ -1340,7 +1340,7 @@ export default function AdminRentalDetailClient() {
                 <div className="flex items-start space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border/60">
                   <Calendar className="h-4 w-4 text-muted-foreground mt-1" />
                   <div>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-foreground/80">
                       {isVisitPickup ? "방문 수령 처리(out)" : "대여 시작"}
                     </p>
                     <p className="font-semibold text-foreground">
@@ -1351,7 +1351,7 @@ export default function AdminRentalDetailClient() {
                 <div className="flex items-start space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border/60">
                   <Calendar className="h-4 w-4 text-muted-foreground mt-1" />
                   <div>
-                    <p className="text-sm text-muted-foreground">반납 예정</p>
+                    <p className="text-sm text-foreground/80">반납 예정</p>
                     <p className="font-semibold text-foreground">
                       {data.dueAt ? formatDate(data.dueAt) : "-"}
                     </p>
@@ -1360,7 +1360,7 @@ export default function AdminRentalDetailClient() {
                 <div className="flex items-start space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border/60">
                   <Calendar className="h-4 w-4 text-muted-foreground mt-1" />
                   <div>
-                    <p className="text-sm text-muted-foreground">반납 완료</p>
+                    <p className="text-sm text-foreground/80">반납 완료</p>
                     <p className="font-semibold text-foreground">
                       {data.returnedAt ? formatDate(data.returnedAt) : "-"}
                     </p>
@@ -1369,7 +1369,7 @@ export default function AdminRentalDetailClient() {
                 <div className="flex items-start space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border/60">
                   <CreditCard className="h-4 w-4 text-muted-foreground mt-1" />
                   <div>
-                    <p className="text-sm text-muted-foreground">보증금 환불</p>
+                    <p className="text-sm text-foreground/80">보증금 환불</p>
                     <p className="font-semibold text-foreground">
                       {data.depositRefundedAt
                         ? formatDate(data.depositRefundedAt)

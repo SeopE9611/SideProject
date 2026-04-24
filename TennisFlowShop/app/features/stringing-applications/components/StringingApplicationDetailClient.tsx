@@ -861,7 +861,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
           )}
         >
           {isLoading ? (
-            <div className="mx-auto w-full max-w-[1500px] rounded-lg border border-border bg-muted/30 px-4 py-2 text-sm text-muted-foreground">
+            <div className="mx-auto w-full max-w-[1500px] rounded-lg border border-border bg-muted/30 px-4 py-2 text-sm text-foreground/80">
               최신 상태를 확인하고 있습니다...
             </div>
           ) : null}
@@ -1064,7 +1064,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                   <Truck className="h-4 w-4 text-muted-foreground" />
                   <span className="font-medium">반환 방식</span>
                   <Badge className={`${badgeBase} ${badgeSizeSm} whitespace-nowrap ${shippingMethodBadge.color}`}>{shippingMethodBadge.label}</Badge>
-                  {shippingMethodBadge.label === '선택 없음' && <span className="text-xs text-muted-foreground">반환 방식이 아직 선택되지 않았습니다.</span>}
+                  {shippingMethodBadge.label === '선택 없음' && <span className="text-xs text-foreground/75">반환 방식이 아직 선택되지 않았습니다.</span>}
                 </div>
               )}
             </div>
@@ -1072,7 +1072,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
             {!isAdmin && (
               <div className="mt-4 rounded-lg border border-border bg-muted/30 p-3">
                 <p className="text-sm font-semibold text-foreground">진행 단계</p>
-                <p className="mt-1 text-xs text-muted-foreground">
+                <p className="mt-1 text-xs text-foreground/75">
                   현재 단계: <span className="font-medium text-foreground">{userProgressSteps[currentStepIndex]?.label ?? '접수완료'}</span>
                 </p>
                 <div className="mt-2 flex flex-wrap gap-2">
@@ -1134,7 +1134,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                     <div className="space-y-3">
                       <div>
                         <p className="text-sm font-semibold text-foreground">신청 진행 상태</p>
-                        <p className="mt-1 text-xs text-muted-foreground">현재 신청서의 진행 단계를 확인하고 필요한 경우 상태를 변경합니다.</p>
+                        <p className="mt-1 text-xs text-foreground/75">현재 신청서의 진행 단계를 확인하고 필요한 경우 상태를 변경합니다.</p>
                       </div>
 
                       <div className="max-w-[280px]">
@@ -1151,7 +1151,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                         />
                       </div>
 
-                      <div className="text-xs text-muted-foreground space-y-1">
+                      <div className="text-xs text-foreground/75 space-y-1">
                         {isCancelled ? (
                           <p>취소된 신청서입니다. 상태 변경 및 추가 운영 액션이 제한됩니다.</p>
                         ) : isCancelRequested ? (
@@ -1170,12 +1170,12 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                     <div className="space-y-3">
                       <div>
                         <p className="text-sm font-semibold text-foreground">운영 액션</p>
-                        <p className="mt-1 text-xs text-muted-foreground">취소 요청 처리와 관리자 후속 조치를 진행합니다.</p>
+                        <p className="mt-1 text-xs text-foreground/75">취소 요청 처리와 관리자 후속 조치를 진행합니다.</p>
                       </div>
 
                       <div className="flex min-h-[40px] flex-wrap items-center gap-2">
                         {isCancelled ? (
-                          <div className="rounded-md border border-border bg-muted px-3 py-2 text-sm text-muted-foreground">
+                          <div className="rounded-md border border-border bg-muted px-3 py-2 text-sm text-foreground/80">
                             취소된 신청서입니다. 추가 액션이 불가능합니다.
                           </div>
                         ) : isCancelRequested && !hasOrderCancelRequested ? (
@@ -1189,7 +1189,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                             </Button>
                           </>
                         ) : (
-                          <div className="rounded-md border border-border bg-muted px-3 py-2 text-sm text-muted-foreground">
+                          <div className="rounded-md border border-border bg-muted px-3 py-2 text-sm text-foreground/80">
                             {hasOrderCancelRequested
                               ? '연결 주문에 취소 요청이 있어 주문 상세에서 최종 처리해야 합니다.'
                               : '현재 진행 가능한 관리자 취소 액션이 없습니다.'}
@@ -1206,7 +1206,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
               ) : (
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   {/* 왼쪽: 안내 문구 */}
-                  <div className="text-sm text-muted-foreground">
+                  <div className="text-sm text-foreground/80">
                     {isCancelled && <span className="italic">취소된 신청서입니다. 상태 변경 및 취소가 불가능합니다.</span>}
 
                     {!isCancelled && isCancelRequested && <span className="italic">취소 요청 처리 중입니다. 관리자 확인 후 결과가 반영됩니다.</span>}
@@ -1289,7 +1289,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                     <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
                       <User className="h-4 w-4 text-muted-foreground" />
                       <div>
-                        <p className="text-sm text-muted-foreground">이름</p>
+                        <p className="text-sm text-foreground/80">이름</p>
                         <p className="font-semibold text-foreground">{data.customer.name ?? '정보 없음'}</p>
                       </div>
                     </div>
@@ -1297,7 +1297,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                     <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
                       <Mail className="h-4 w-4 text-muted-foreground" />
                       <div>
-                        <p className="text-sm text-muted-foreground">이메일</p>
+                        <p className="text-sm text-foreground/80">이메일</p>
                         <p className="font-semibold text-foreground">{data.customer.email ?? '정보 없음'}</p>
                       </div>
                     </div>
@@ -1305,7 +1305,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                     <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
                       <Phone className="h-4 w-4 text-muted-foreground" />
                       <div>
-                        <p className="text-sm text-muted-foreground">전화번호</p>
+                        <p className="text-sm text-foreground/80">전화번호</p>
                         <p className="font-semibold text-foreground">{data.customer?.phone ?? '정보 없음'}</p>
                       </div>
                     </div>
@@ -1313,11 +1313,11 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                     <div className="flex items-start space-x-3 p-3 bg-muted rounded-lg">
                       <MapPin className="h-4 w-4 text-muted-foreground mt-1" />
                       <div>
-                        <p className="text-sm text-muted-foreground">{customerAddressLabel}</p>
+                        <p className="text-sm text-foreground/80">{customerAddressLabel}</p>
                         <p className="font-semibold text-foreground">{customerAddressValue}</p>
-                        {!isVisit && data.customer?.addressDetail && <p className="text-sm text-muted-foreground mt-1">{data.customer.addressDetail}</p>}
+                        {!isVisit && data.customer?.addressDetail && <p className="text-sm text-foreground/80 mt-1">{data.customer.addressDetail}</p>}
                         {customerAddressSubValue && (
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-sm text-foreground/80">
                             {customerAddressSubLabel}: {customerAddressSubValue}
                           </p>
                         )}
@@ -1475,7 +1475,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
 
                     <div className="flex items-center space-x-3 p-3 bg-primary/10 rounded-lg border border-primary/20 dark:bg-primary/20">
                       <div>
-                        <p className="text-sm text-muted-foreground">결제 금액</p>
+                        <p className="text-sm text-foreground/80">결제 금액</p>
                         <p className="text-xl font-bold text-primary dark:text-foreground">{data.totalPrice.toLocaleString()}원</p>
                       </div>
                     </div>
@@ -1537,7 +1537,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                         <span className="font-medium">라켓별 장착 정보</span>
                       </div>
                       <div className="space-y-3 rounded-xl border border-border/70 bg-muted/40 p-3">
-                        <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground sm:grid-cols-4">
+                        <div className="grid grid-cols-2 gap-2 text-xs text-foreground/75 sm:grid-cols-4">
                           <p>라켓 {lineSummary.racketCount}자루</p>
                           <p>스트링 {lineSummary.stringTypeCount}종</p>
                           <p>텐션 입력 {lineSummary.tensionFilledCount}자루</p>
@@ -1581,7 +1581,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                               )}
 
                               {/* 라켓별 메모 */}
-                              {line.note && <p className="mt-2 text-xs text-muted-foreground leading-relaxed">메모: {line.note}</p>}
+                              {line.note && <p className="mt-2 text-xs text-foreground/75 leading-relaxed">메모: {line.note}</p>}
                             </div>
                           ))}
                         </div>
@@ -1612,7 +1612,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                             <div className="pr-2">
                               <p className="font-medium text-foreground truncate">{item.name}</p>
                             </div>
-                            <div className="text-center text-xs text-muted-foreground">x {item.quantity}개</div>
+                            <div className="text-center text-xs text-foreground/75">x {item.quantity}개</div>
                             <div className="text-right text-foreground">{item.price.toLocaleString()}원</div>
                             <div className="text-right font-semibold text-foreground">{item.subtotal.toLocaleString()}원</div>
                           </div>
@@ -1720,7 +1720,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                   {/* 자가 발송(사용자 → 매장) */}
                   <div className="rounded-lg border border-dashed border-border p-4">
                     <p className="text-sm font-semibold text-foreground">라켓 발송 정보</p>
-                    <p className="mt-1 text-xs text-muted-foreground">매장으로 보내는 라켓의 택배 정보를 확인합니다.</p>
+                    <p className="mt-1 text-xs text-foreground/75">매장으로 보내는 라켓의 택배 정보를 확인합니다.</p>
                     {data.shippingInfo?.selfShip?.trackingNo ? (
                       <div className="mt-2 space-y-1 text-sm text-foreground">
                         <p>택배사: {data.shippingInfo.selfShip.courier || '미입력'}</p>
@@ -1733,7 +1733,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                         <p>발송일: {data.shippingInfo.selfShip.shippedAt ? new Date(data.shippingInfo.selfShip.shippedAt).toLocaleDateString('ko-KR') : '-'}</p>
                       </div>
                     ) : (
-                      <p className="mt-2 text-sm text-muted-foreground">등록된 라켓 발송 정보가 없습니다.</p>
+                      <p className="mt-2 text-sm text-foreground/80">등록된 라켓 발송 정보가 없습니다.</p>
                     )}
                   </div>
 
@@ -1757,12 +1757,12 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                           <>
                             <p>배송 방식: {shippingMethod ? orderShippingMethodLabel(shippingMethod) : '미입력'}</p>
                             <p>예정일: {data.shippingInfo?.estimatedDate ? new Date(data.shippingInfo.estimatedDate).toLocaleDateString('ko-KR') : '-'}</p>
-                            <p className="text-xs text-muted-foreground">운송장 번호는 발급되지 않는 배송 방식입니다.</p>
+                            <p className="text-xs text-foreground/75">운송장 번호는 발급되지 않는 배송 방식입니다.</p>
                           </>
                         )}
                       </div>
                     ) : (
-                      <p className="mt-2 text-sm text-muted-foreground">등록된 반송 운송장 정보가 없습니다.</p>
+                      <p className="mt-2 text-sm text-foreground/80">등록된 반송 운송장 정보가 없습니다.</p>
                     )}
                   </div>
                 </CardContent>
@@ -1788,7 +1788,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                       </div>
                       <div className="flex-1">
                         <p className="text-sm font-medium text-foreground">신청 접수</p>
-                        <p className="text-sm text-muted-foreground">{data?.requestedAt ? new Date(data.requestedAt).toLocaleString('ko-KR') : '-'}</p>
+                        <p className="text-sm text-foreground/80">{data?.requestedAt ? new Date(data.requestedAt).toLocaleString('ko-KR') : '-'}</p>
                       </div>
                     </div>
 
@@ -1801,9 +1801,9 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                         <div className="flex-1">
                           <p className="text-sm font-medium text-foreground">라켓 발송 완료</p>
                           {/* 날짜 */}
-                          <p className="mt-1 text-sm text-muted-foreground">{selfShip.shippedAt ? new Date(selfShip.shippedAt).toLocaleDateString('ko-KR') : '운송장 번호가 등록되었습니다.'}</p>
+                          <p className="mt-1 text-sm text-foreground/80">{selfShip.shippedAt ? new Date(selfShip.shippedAt).toLocaleDateString('ko-KR') : '운송장 번호가 등록되었습니다.'}</p>
                           {/* 택배사 + 운송장번호 + 조회 링크 */}
-                          <p className="mt-1 text-sm text-muted-foreground">
+                          <p className="mt-1 text-sm text-foreground/80">
                             {(selfShip.courier || '택배사 미입력') + ' · '}
                             <a href={buildTrackingUrl(selfShip.courier, selfShip.trackingNo) ?? '#'} target="_blank" rel="noreferrer" className="underline underline-offset-2">
                               {selfShip.trackingNo}
@@ -1820,8 +1820,8 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                         </div>
                         <div className="flex-1">
                           <p className="text-sm font-medium text-foreground">반송 운송장 등록</p>
-                          <p className="mt-1 text-sm text-muted-foreground">{invoice.shippedAt ? new Date(invoice.shippedAt).toLocaleDateString('ko-KR') : '고객에게 발송을 위한 운송장 번호가 등록되었습니다.'}</p>
-                          <p className="mt-1 text-sm text-muted-foreground">
+                          <p className="mt-1 text-sm text-foreground/80">{invoice.shippedAt ? new Date(invoice.shippedAt).toLocaleDateString('ko-KR') : '고객에게 발송을 위한 운송장 번호가 등록되었습니다.'}</p>
+                          <p className="mt-1 text-sm text-foreground/80">
                             {getCourierLabel(invoice.courier) + ' · '}
                             <a href={buildTrackingUrl(invoice.courier, invoice.trackingNumber) ?? '#'} target="_blank" rel="noreferrer" className="underline underline-offset-2">
                               {invoice.trackingNumber}
@@ -1838,8 +1838,8 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                       </div>
                       <div className="flex-1">
                         <p className="text-sm font-medium text-foreground">현재 상태</p>
-                        <p className="text-sm text-muted-foreground">{data?.status ? `현재 상태: ${data.status}` : '상태 정보가 없습니다.'}</p>
-                        {data?.updatedAt && <p className="mt-1 text-xs text-muted-foreground">마지막 변경: {new Date(data.updatedAt).toLocaleString('ko-KR')}</p>}
+                        <p className="text-sm text-foreground/80">{data?.status ? `현재 상태: ${data.status}` : '상태 정보가 없습니다.'}</p>
+                        {data?.updatedAt && <p className="mt-1 text-xs text-foreground/75">마지막 변경: {new Date(data.updatedAt).toLocaleString('ko-KR')}</p>}
                       </div>
                     </div>
                   </div>
@@ -1875,7 +1875,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
         >
           <DialogContent className="max-w-md">
             <DialogTitle className="text-lg font-semibold">취소 요청 거절</DialogTitle>
-            <p className="mt-2 text-sm text-muted-foreground">고객의 신청 취소 요청을 거절하는 사유를 입력해 주세요. 이 내용은 처리 이력에 기록되어 나중에 참고할 수 있습니다.</p>
+            <p className="mt-2 text-sm text-foreground/80">고객의 신청 취소 요청을 거절하는 사유를 입력해 주세요. 이 내용은 처리 이력에 기록되어 나중에 참고할 수 있습니다.</p>
 
             <div className="mt-4 space-y-2">
               <label className="block text-sm font-medium text-foreground">거절 사유 (선택 입력)</label>

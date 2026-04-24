@@ -200,7 +200,7 @@ export default function RentalsList() {
         return (
           <Card
             key={r.id}
-            className={`group relative overflow-hidden border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg ${r.stringingApplicationId || r.withStringService ? "ring-1 ring-ring/50" : ""}`}
+            className={`group relative overflow-hidden border border-border bg-card shadow-sm transition-[box-shadow,border-color,background-color,color,opacity] duration-200 hover:shadow-lg ${r.stringingApplicationId || r.withStringService ? "ring-1 ring-ring/50" : ""}`}
           >
             <div
               className="absolute inset-0 border border-border/40 bg-secondary/30 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
@@ -215,7 +215,7 @@ export default function RentalsList() {
                   <h3 className="text-base font-semibold text-foreground">
                     {rentalTitle}
                   </h3>
-                  <p className="mt-1 text-xs text-muted-foreground">
+                  <p className="mt-1 text-xs text-foreground/75">
                     대여 기간 {r.days}일
                     {rentalMetaDate
                       ? ` · 최근 업데이트 ${formatDate(rentalMetaDate)}`
@@ -403,7 +403,7 @@ export default function RentalsList() {
             더 보기
           </Button>
         ) : flat.length ? (
-          <span className="text-sm text-muted-foreground">
+          <span className="text-sm text-foreground/80">
             마지막 페이지입니다
           </span>
         ) : null}

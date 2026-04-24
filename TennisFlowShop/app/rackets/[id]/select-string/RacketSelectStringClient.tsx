@@ -267,7 +267,7 @@ export default function RacketSelectStringClient({
         className="py-8 bp-md:py-12 space-y-8 bp-md:space-y-10"
       >
         <div className="text-center space-y-3 max-w-2xl mx-auto">
-          <h1 className="text-2xl bp-md:text-4xl font-bold tracking-tight text-foreground">
+          <h1 className="text-2xl bp-md:text-4xl font-bold tracking-normal text-foreground">
             스트링 선택
           </h1>
 

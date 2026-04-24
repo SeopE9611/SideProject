@@ -625,7 +625,7 @@ export default function OrdersClient() {
     <div className="container py-4 lg:py-5">
       {/* 제목 및 설명 */}
       <div className="mx-auto mb-4 max-w-[1440px]">
-        <h1 className="text-4xl font-semibold tracking-tight">
+        <h1 className="text-4xl font-semibold tracking-normal">
           주문·신청 관리
         </h1>
         <p className="mt-1 text-xs text-muted-foreground">

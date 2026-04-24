@@ -160,18 +160,18 @@ function FinalPaymentConfirmCard({
           </div>
           <div>
             <CardTitle className="text-lg bp-sm:text-xl font-bold">최종 결제 확인</CardTitle>
-            <p className="text-xs bp-sm:text-sm text-muted-foreground mt-0.5">주문 내역을 확인 후 결제를 진행해주세요</p>
+            <p className="text-xs bp-sm:text-sm text-foreground/80 mt-0.5">주문 내역을 확인 후 결제를 진행해주세요</p>
           </div>
         </div>
       </div>
       <CardContent className="space-y-5 p-5 bp-sm:p-6">
         <div className="space-y-3 text-sm">
           <div className="flex items-center justify-between py-1">
-            <span className="text-muted-foreground">주문 상품 ({orderItemsCount}개)</span>
+            <span className="text-foreground/80">주문 상품 ({orderItemsCount}개)</span>
             <span className="font-semibold">{subtotal.toLocaleString()}원</span>
           </div>
           <div className="flex items-center justify-between py-1">
-            <span className="text-muted-foreground">배송비</span>
+            <span className="text-foreground/80">배송비</span>
             {!isShippingFeeReady ? (
               <Skeleton className="h-5 w-16 rounded" />
             ) : (
@@ -188,7 +188,7 @@ function FinalPaymentConfirmCard({
           </div>
           {withStringService && (
             <div className="flex items-center justify-between py-1">
-              <span className="text-muted-foreground">교체 서비스비</span>
+              <span className="text-foreground/80">교체 서비스비</span>
               {!isMountingFeeReady ? (
                 <Skeleton className="h-5 w-20 rounded" />
               ) : serviceFee > 0 ? (
@@ -202,19 +202,19 @@ function FinalPaymentConfirmCard({
           )}
           {withStringService && packageUsage?.canApplyPackage && (
             <div className="flex items-center justify-between py-1">
-              <span className="text-muted-foreground">패키지 적용</span>
+              <span className="text-foreground/80">패키지 적용</span>
               <span className="font-semibold">{packageUsage.usingPackage ? "적용됨" : "미사용"}</span>
             </div>
           )}
           {withStringService && packageUsage?.usingPackage && baseServiceFee > 0 && (
             <div className="flex items-center justify-between py-1">
-              <span className="text-muted-foreground">패키지 차감 서비스비</span>
+              <span className="text-foreground/80">패키지 차감 서비스비</span>
               <span className="font-semibold text-destructive">-{baseServiceFee.toLocaleString()}원</span>
             </div>
           )}
           {appliedPoints > 0 && (
             <div className="flex items-center justify-between py-1">
-              <span className="text-muted-foreground">포인트 사용</span>
+              <span className="text-foreground/80">포인트 사용</span>
               <span className="font-semibold text-destructive">-{appliedPoints.toLocaleString()}원</span>
             </div>
           )}
@@ -224,7 +224,7 @@ function FinalPaymentConfirmCard({
 
         <div className="space-y-3">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">합계</span>
+            <span className="text-foreground/90">합계</span>
             {!isShippingFeeReady ? <Skeleton className="h-5 w-24 rounded" /> : <span className="font-semibold">{totalPrice.toLocaleString()}원</span>}
           </div>
           <div className="flex items-center justify-between rounded-xl bg-primary/10 p-4 -mx-1">
@@ -1140,7 +1140,7 @@ export default function CheckoutPage() {
                   {/* 3) 접수 완료: 결제와 함께 서비스 신청이 함께 접수됨 */}
                   <div className="flex items-center gap-2.5">
                     <span className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-border bg-secondary text-muted-foreground text-sm font-bold">3</span>
-                    <span className="font-medium text-sm text-muted-foreground">접수 완료</span>
+                    <span className="font-medium text-sm text-foreground/80">접수 완료</span>
                   </div>
                 </div>
 
@@ -1225,12 +1225,12 @@ export default function CheckoutPage() {
                       {orderItems.map((item, idx) => (
                         <div
                           key={item.id}
-                          className="group/item flex flex-col gap-4 rounded-xl border border-border/40 bg-secondary/35 p-4 bp-sm:flex-row bp-sm:items-center bp-sm:gap-5 bp-sm:p-5 transition-all duration-200 hover:border-border hover:shadow-md hover:bg-secondary/55"
+                          className="group/item flex flex-col gap-4 rounded-xl border border-border/40 bg-secondary/35 p-4 bp-sm:flex-row bp-sm:items-center bp-sm:gap-5 bp-sm:p-5 transition-[background-color,border-color,box-shadow,color,opacity] duration-200 hover:border-border hover:shadow-md hover:bg-secondary/55"
                           style={{ animationDelay: `${idx * 50}ms` }}
                         >
                           <div className="flex items-center gap-4 min-w-0 flex-1">
                             <div className="relative shrink-0">
-                              <div className="overflow-hidden rounded-xl ring-2 ring-border/50 group-hover/item:ring-primary/30 transition-all">
+                              <div className="overflow-hidden rounded-xl ring-2 ring-border/50 group-hover/item:ring-primary/30 transition-[background-color,border-color,box-shadow,color,opacity]">
                                 <Image
                                   src={item.image || "/placeholder.svg?height=80&width=80&query=tennis+product"}
                                   alt={item.name}
@@ -1268,7 +1268,7 @@ export default function CheckoutPage() {
 
                     {/* 상품 금액 소계 */}
                     <div className="mt-5 pt-5 border-t border-dashed border-border/60 flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">상품 금액 합계</span>
+                      <span className="text-sm text-foreground/80">상품 금액 합계</span>
                       <span className="text-xl font-bold text-foreground">
                         {subtotal.toLocaleString()}
                         <span className="text-sm font-medium text-muted-foreground ml-0.5">원</span>
@@ -1295,7 +1295,7 @@ export default function CheckoutPage() {
                       <label
                         htmlFor="택배수령"
                         className={cn(
-                          "flex items-center gap-4 p-4 bp-sm:p-5 rounded-xl border-2 cursor-pointer transition-all duration-200",
+                          "flex items-center gap-4 p-4 bp-sm:p-5 rounded-xl border-2 cursor-pointer transition-[background-color,border-color,box-shadow,color,opacity] duration-200",
                           deliveryMethod === "택배수령" ? "border-primary bg-primary/5 shadow-sm" : "border-border/50 hover:border-border hover:bg-secondary/30",
                         )}
                       >
@@ -1305,16 +1305,16 @@ export default function CheckoutPage() {
                         </div>
                         <div className="flex-1">
                           <div className="font-semibold text-sm bp-sm:text-base">택배 발송/수령</div>
-                          <div className="text-xs bp-sm:text-sm text-muted-foreground mt-0.5">자택 또는 지정 장소로 배송</div>
+                          <div className="text-xs bp-sm:text-sm text-foreground/80 mt-0.5">자택 또는 지정 장소로 배송</div>
                         </div>
-                        <div className={cn("h-5 w-5 rounded-full border-2 flex items-center justify-center transition-all", deliveryMethod === "택배수령" ? "border-primary bg-primary" : "border-border")}>
+                        <div className={cn("h-5 w-5 rounded-full border-2 flex items-center justify-center transition-[background-color,border-color,box-shadow,color,opacity]", deliveryMethod === "택배수령" ? "border-primary bg-primary" : "border-border")}>
                           {deliveryMethod === "택배수령" && <CheckCircle className="h-3 w-3 text-primary" />}
                         </div>
                       </label>
                       <label
                         htmlFor="방문수령"
                         className={cn(
-                          "flex items-center gap-4 p-4 bp-sm:p-5 rounded-xl border-2 cursor-pointer transition-all duration-200",
+                          "flex items-center gap-4 p-4 bp-sm:p-5 rounded-xl border-2 cursor-pointer transition-[background-color,border-color,box-shadow,color,opacity] duration-200",
                           deliveryMethod === "방문수령" ? "border-primary bg-primary/5 shadow-sm" : "border-border/50 hover:border-border hover:bg-secondary/30",
                         )}
                       >
@@ -1324,9 +1324,9 @@ export default function CheckoutPage() {
                         </div>
                         <div className="flex-1">
                           <div className="font-semibold text-sm bp-sm:text-base">오프라인 매장 방문</div>
-                          <div className="text-xs bp-sm:text-sm text-muted-foreground mt-0.5">도깨비테니스 샵에서 직접 수령</div>
+                          <div className="text-xs bp-sm:text-sm text-foreground/80 mt-0.5">도깨비테니스 샵에서 직접 수령</div>
                         </div>
-                        <div className={cn("h-5 w-5 rounded-full border-2 flex items-center justify-center transition-all", deliveryMethod === "방문수령" ? "border-primary bg-primary" : "border-border")}>
+                        <div className={cn("h-5 w-5 rounded-full border-2 flex items-center justify-center transition-[background-color,border-color,box-shadow,color,opacity]", deliveryMethod === "방문수령" ? "border-primary bg-primary" : "border-border")}>
                           {deliveryMethod === "방문수령" && <CheckCircle className="h-3 w-3 text-primary" />}
                         </div>
                       </label>
@@ -1377,7 +1377,7 @@ export default function CheckoutPage() {
                         </p>
                       )}
                       {/* 서비스 ON일 때만 세부 방식 표시 */}
-                      <div className={cn("transition-all duration-300 ease-in-out overflow-hidden", withStringService ? "opacity-100 max-h-[300px] mt-3" : "opacity-0 max-h-0")}>
+                      <div className={cn("transition-[max-height,opacity,margin] duration-300 ease-in-out overflow-hidden", withStringService ? "opacity-100 max-h-[300px] mt-3" : "opacity-0 max-h-0")}>
                         {withStringService &&
                           (deliveryMethod === "방문수령" ? (
                             // 방문 수령: 매장 방문 접수 고정(선택 불가 안내)
@@ -1432,7 +1432,7 @@ export default function CheckoutPage() {
                             onBlur={() => touchField("name")}
                             placeholder="수령인 이름을 입력하세요"
                             className={cn(
-                              "h-11 rounded-xl border-border/50 bg-secondary/30 focus:bg-card focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all duration-200",
+                              "h-11 rounded-xl border-border/50 bg-secondary/30 focus:bg-card focus:border-primary focus:ring-2 focus:ring-primary/10 transition-[background-color,border-color,box-shadow,color,opacity] duration-200",
                               showNameError && "border-destructive/50 focus:border-destructive focus:ring-destructive/10",
                             )}
                           />
@@ -1451,7 +1451,7 @@ export default function CheckoutPage() {
                             onBlur={() => touchField("email")}
                             placeholder="example@naver.com"
                             className={cn(
-                              "h-11 rounded-xl border-border/50 bg-secondary/30 focus:bg-card focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all duration-200",
+                              "h-11 rounded-xl border-border/50 bg-secondary/30 focus:bg-card focus:border-primary focus:ring-2 focus:ring-primary/10 transition-[background-color,border-color,box-shadow,color,opacity] duration-200",
                               showEmailError && "border-destructive/50 focus:border-destructive focus:ring-destructive/10",
                             )}
                           />
@@ -1470,7 +1470,7 @@ export default function CheckoutPage() {
                             placeholder="연락처를 입력하세요 ('-' 제외)"
                             inputMode="numeric"
                             className={cn(
-                              "h-11 rounded-xl border-border/50 bg-secondary/30 focus:bg-card focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all duration-200",
+                              "h-11 rounded-xl border-border/50 bg-secondary/30 focus:bg-card focus:border-primary focus:ring-2 focus:ring-primary/10 transition-[background-color,border-color,box-shadow,color,opacity] duration-200",
                               showPhoneError && "border-destructive/50 focus:border-destructive focus:ring-destructive/10",
                             )}
                           />
@@ -1711,7 +1711,7 @@ export default function CheckoutPage() {
                                   setPointsToUse(clamped);
                                 }}
                               />
-                              <span className="text-sm text-muted-foreground">P</span>
+                              <span className="text-sm text-foreground/80">P</span>
                             </div>
                           </div>
                           <p className="text-sm text-foreground/80">배송비에는 적용되지 않습니다. 최대 {maxPointsToUse.toLocaleString()}P 사용 가능</p>
@@ -1738,7 +1738,7 @@ export default function CheckoutPage() {
 
                       {paymentMethod === "nicepay" && nicePaymentsEnabled && !isZeroPayableAmount ? (
                         <div className="space-y-3">
-                          <p className="text-sm text-muted-foreground">Nice 인증결제창에서 인증을 마치면 서버 승인 후 주문이 생성됩니다.</p>
+                          <p className="text-sm text-foreground/80">Nice 인증결제창에서 인증을 마치면 서버 승인 후 주문이 생성됩니다.</p>
                         </div>
                       ) : null}
                     </div>
@@ -1762,7 +1762,7 @@ export default function CheckoutPage() {
                     <div className="space-y-5">
                       <label
                         htmlFor="agree-all"
-                        className={cn("flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all duration-200", agreeAll ? "border-primary bg-primary/5" : "border-border/50 hover:border-border hover:bg-secondary/30")}
+                        className={cn("flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-[background-color,border-color,box-shadow,color,opacity] duration-200", agreeAll ? "border-primary bg-primary/5" : "border-border/50 hover:border-border hover:bg-secondary/30")}
                       >
                         <Checkbox
                           id="agree-all"
@@ -1802,7 +1802,7 @@ export default function CheckoutPage() {
                         ].map((item, index) => (
                           <div
                             key={item.id}
-                            className={cn("flex items-center justify-between rounded-xl border p-3 bp-sm:p-4 transition-all duration-200", item.state ? "border-primary/30 bg-primary/5" : "border-border/40 bg-secondary/20 hover:bg-secondary/40")}
+                            className={cn("flex items-center justify-between rounded-xl border p-3 bp-sm:p-4 transition-[background-color,border-color,box-shadow,color,opacity] duration-200", item.state ? "border-primary/30 bg-primary/5" : "border-border/40 bg-secondary/20 hover:bg-secondary/40")}
                           >
                             <label htmlFor={item.id} className="flex items-center gap-3 cursor-pointer flex-1">
                               <Checkbox

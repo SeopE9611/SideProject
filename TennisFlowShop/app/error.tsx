@@ -33,7 +33,7 @@ export default function Error({
                 <AlertTriangle className="h-7 w-7" />
               </div>
 
-              <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight mb-2">
+              <h1 className="text-2xl md:text-3xl font-extrabold tracking-normal mb-2">
                 <span className="text-destructive">문제</span>가 발생했어요
               </h1>
               <p className="text-muted-foreground">
