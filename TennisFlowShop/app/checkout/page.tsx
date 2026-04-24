@@ -1537,6 +1537,93 @@ export default function CheckoutPage() {
                   </CardContent>
                 </Card>
 
+                {/* 포인트 사용 */}
+                <Card className="border border-border bg-card shadow-sm overflow-hidden">
+                  <div className="bg-card p-4 bp-sm:p-6">
+                    <CardTitle className="flex items-center gap-3 text-base bp-sm:text-lg">
+                      <CreditCard className="h-5 w-5 text-foreground" />
+                      포인트 사용
+                    </CardTitle>
+                    <CardDescription className="mt-2">보유 포인트를 이번 주문 결제 금액에 적용할 수 있습니다.</CardDescription>
+                  </div>
+                  <CardContent className="p-3 bp-sm:p-4 bp-lg:p-6">
+                    <div className="rounded-lg border border-border bg-background p-3 bp-sm:p-4">
+                      <div className="flex justify-between items-center">
+                        <span className="text-muted-foreground">사용 가능 포인트</span>
+                        <span className="font-semibold">{user ? (pointsFetchError ? "-" : pointsAvailable === null ? "-" : `${pointsAvailable.toLocaleString()}P`) : "로그인 필요"}</span>
+                      </div>
+
+                      {user && pointsFetchError && <p className="mt-1 text-xs text-destructive">포인트 정보를 불러오지 못했습니다.</p>}
+
+                      {user && !pointsFetchError && resolvedPointsDebt > 0 && <p className="mt-1 text-xs text-destructive">회수 예정 포인트(채무): {resolvedPointsDebt.toLocaleString()}P → 적립금이 먼저 상계됩니다.</p>}
+
+                      <div className="mt-3 flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2 text-sm">
+                          <Checkbox
+                            id="useAllPoints"
+                            checked={useAllPoints}
+                            onCheckedChange={(checked) => setUseAllPoints(Boolean(checked))}
+                            disabled={!isShippingFeeReady || !user || !!pointsFetchError || pointsAvailable === null || resolvedPointsAvailable <= 0 || maxPointsToUse <= 0}
+                          />
+                          <Label htmlFor="useAllPoints" className="text-sm font-medium">
+                            전액 사용
+                          </Label>
+                        </div>
+
+                        <div className="flex items-center gap-2 text-sm">
+                          <Input
+                            type="text"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            min={0}
+                            step={POINT_UNIT}
+                            max={maxPointsToUse}
+                            className="w-28 text-right"
+                            value={pointsInput}
+                            disabled={!isShippingFeeReady || !user || !!pointsFetchError || pointsAvailable === null || resolvedPointsAvailable <= 0 || maxPointsToUse <= 0 || useAllPoints}
+                            onFocus={(e) => {
+                              setIsEditingPoints(true);
+                              const el = e.currentTarget;
+
+                              if (pointsInput === "0") setPointsInput("");
+
+                              setTimeout(() => {
+                                if (el && typeof el.select === "function") el.select();
+                              }, 0);
+                            }}
+                            onChange={(e) => {
+                              // 숫자만 허용
+                              const onlyDigits = e.target.value.replace(/[^\d]/g, "");
+                              setPointsInput(onlyDigits);
+                              setUseAllPoints(false);
+                              const n = Number(onlyDigits);
+                              setPointsToUse(Number.isFinite(n) ? Math.floor(n) : 0);
+                            }}
+                            onBlur={(e) => {
+                              setIsEditingPoints(false);
+
+                              // blur 시점에 최종 보정: 숫자만 → 정수 → 100P 단위 → 최대치(clamp)
+                              const rawText = e.currentTarget.value ?? "";
+                              const onlyDigits = String(rawText).replace(/[^\d]/g, "");
+                              const raw = Number(onlyDigits || "0");
+                              const safe = Number.isFinite(raw) ? Math.floor(raw) : 0;
+
+                              const normalized = Math.floor(safe / POINT_UNIT) * POINT_UNIT;
+                              const clamped = Math.max(0, Math.min(normalized, maxPointsToUse));
+
+                              setPointsInput(String(clamped));
+                              setPointsToUse(clamped);
+                            }}
+                          />
+                          <span className="text-sm text-muted-foreground">P</span>
+                        </div>
+                      </div>
+
+                      <p className="mt-2 text-xs text-muted-foreground">배송비에는 적용되지 않습니다. 최대 {maxPointsToUse.toLocaleString()}P 사용 가능</p>
+                    </div>
+                  </CardContent>
+                </Card>
+
                 {/* 주문자 동의 */}
                 <Card className="border border-border bg-card shadow-sm overflow-hidden">
                   <div className="bg-card p-4 bp-sm:p-6">
@@ -1768,81 +1855,6 @@ export default function CheckoutPage() {
                           </div>
                         )}
 
-                        {/* 포인트 사용(로그인 유저만) */}
-                        <div className="mt-2 bg-background p-3 bp-sm:p-4 rounded-lg border border-border">
-                          <div className="flex justify-between items-center">
-                            <span className="text-muted-foreground">사용 가능 포인트</span>
-                            <span className="font-semibold">{user ? (pointsFetchError ? "-" : pointsAvailable === null ? "-" : `${pointsAvailable.toLocaleString()}P`) : "로그인 필요"}</span>
-                          </div>
-
-                          {user && pointsFetchError && <p className="mt-1 text-xs text-destructive">포인트 정보를 불러오지 못했습니다.</p>}
-
-                          {user && !pointsFetchError && resolvedPointsDebt > 0 && <p className="mt-1 text-xs text-destructive">회수 예정 포인트(채무): {resolvedPointsDebt.toLocaleString()}P → 적립금이 먼저 상계됩니다.</p>}
-
-                          <div className="mt-3 flex items-center justify-between gap-3">
-                            <div className="flex items-center gap-2 text-sm">
-                              <Checkbox
-                                id="useAllPoints"
-                                checked={useAllPoints}
-                                onCheckedChange={(checked) => setUseAllPoints(Boolean(checked))}
-                                disabled={!isShippingFeeReady || !user || !!pointsFetchError || pointsAvailable === null || resolvedPointsAvailable <= 0 || maxPointsToUse <= 0}
-                              />
-                              <Label htmlFor="useAllPoints" className="text-sm font-medium">
-                                전액 사용
-                              </Label>
-                            </div>
-
-                            <div className="flex items-center gap-2 text-sm">
-                              <Input
-                                type="text"
-                                inputMode="numeric"
-                                pattern="[0-9]*"
-                                min={0}
-                                step={POINT_UNIT}
-                                max={maxPointsToUse}
-                                className="w-28 text-right"
-                                value={pointsInput}
-                                disabled={!isShippingFeeReady || !user || !!pointsFetchError || pointsAvailable === null || resolvedPointsAvailable <= 0 || maxPointsToUse <= 0 || useAllPoints}
-                                onFocus={(e) => {
-                                  setIsEditingPoints(true);
-                                  const el = e.currentTarget;
-
-                                  if (pointsInput === "0") setPointsInput("");
-
-                                  setTimeout(() => {
-                                    if (el && typeof el.select === "function") el.select();
-                                  }, 0);
-                                }}
-                                onChange={(e) => {
-                                  // 숫자만 허용
-                                  const onlyDigits = e.target.value.replace(/[^\d]/g, "");
-                                  setPointsInput(onlyDigits);
-                                  setUseAllPoints(false);
-                                  const n = Number(onlyDigits);
-                                  setPointsToUse(Number.isFinite(n) ? Math.floor(n) : 0);
-                                }}
-                                onBlur={(e) => {
-                                  setIsEditingPoints(false);
-
-                                  // blur 시점에 최종 보정: 숫자만 → 정수 → 100P 단위 → 최대치(clamp)
-                                  const rawText = e.currentTarget.value ?? "";
-                                  const onlyDigits = String(rawText).replace(/[^\d]/g, "");
-                                  const raw = Number(onlyDigits || "0");
-                                  const safe = Number.isFinite(raw) ? Math.floor(raw) : 0;
-
-                                  const normalized = Math.floor(safe / POINT_UNIT) * POINT_UNIT;
-                                  const clamped = Math.max(0, Math.min(normalized, maxPointsToUse));
-
-                                  setPointsInput(String(clamped));
-                                  setPointsToUse(clamped);
-                                }}
-                              />
-                              <span className="text-sm text-muted-foreground">P</span>
-                            </div>
-                          </div>
-
-                          <p className="mt-2 text-xs text-muted-foreground">배송비에는 적용되지 않습니다. 최대 {maxPointsToUse.toLocaleString()}P 사용 가능</p>
-                        </div>
                         {appliedPoints > 0 && (
                           <div className="flex justify-between items-center">
                             <span className="text-muted-foreground">포인트 사용(예정)</span>
