@@ -559,21 +559,49 @@ export const attachFileColor = SEMANTIC_BADGE.neutral;
 /** ---------------------- Used Rackets 배지(대여/상태) ---------------------- */
 export type UsedBadgeKind = "rental" | "condition";
 
+const USED_BADGE_PROMINENT = {
+  rentalAvailable:
+    "border border-success bg-success text-success-foreground",
+  rentalUnavailable:
+    "border border-destructive bg-destructive text-destructive-foreground",
+  rentalRented:
+    "border border-border bg-muted text-foreground",
+  rentalPending:
+    "border border-info bg-info text-info-foreground",
+  conditionA:
+    "border border-success bg-success text-success-foreground",
+  conditionB:
+    "border border-info bg-info text-info-foreground",
+  conditionC:
+    "border border-warning bg-warning text-warning-foreground",
+  conditionD:
+    "border border-destructive bg-destructive text-destructive-foreground",
+} as const;
+
 const USED_BADGE_META: Record<
   UsedBadgeKind,
   Record<string, { label: string; className: string }>
 > = {
   rental: {
-    available: { label: "대여 가능", className: SEMANTIC_BADGE.success },
-    unavailable: { label: "대여 불가", className: SEMANTIC_BADGE.destructive },
-    rented: { label: "대여 중", className: SEMANTIC_BADGE.neutral },
-    pending: { label: "예약 대기", className: SEMANTIC_BADGE.info },
+    available: {
+      label: "대여 가능",
+      className: USED_BADGE_PROMINENT.rentalAvailable,
+    },
+    unavailable: {
+      label: "대여 불가",
+      className: USED_BADGE_PROMINENT.rentalUnavailable,
+    },
+    rented: { label: "대여 중", className: USED_BADGE_PROMINENT.rentalRented },
+    pending: {
+      label: "예약 대기",
+      className: USED_BADGE_PROMINENT.rentalPending,
+    },
   },
   condition: {
-    A: { label: "최상", className: SEMANTIC_BADGE.success },
-    B: { label: "양호", className: SEMANTIC_BADGE.info },
-    C: { label: "보통", className: SEMANTIC_BADGE.neutral },
-    D: { label: "하", className: SEMANTIC_BADGE.destructive },
+    A: { label: "최상", className: USED_BADGE_PROMINENT.conditionA },
+    B: { label: "양호", className: USED_BADGE_PROMINENT.conditionB },
+    C: { label: "보통", className: USED_BADGE_PROMINENT.conditionC },
+    D: { label: "하", className: USED_BADGE_PROMINENT.conditionD },
   },
 };
 

@@ -964,20 +964,22 @@ const Header = () => {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="relative rounded-full hover:bg-secondary p-2 transition-[background-color,color,border-color,box-shadow,opacity] duration-300 focus-visible:ring-2 ring-ring shrink-0"
+                    className="relative h-10 w-10 rounded-full hover:bg-secondary p-0 transition-[background-color,color,border-color,box-shadow,opacity] duration-300 focus-visible:ring-2 ring-ring shrink-0"
                     aria-label="고객센터"
+                    title="고객센터"
                   >
-                    <Headset className="h-12 w-12" />
+                    <Headset className="!h-5 !w-5" />
                   </Button>
                 </Link>
                 <Link href="/cart">
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="relative rounded-full hover:bg-secondary p-2 transition-[background-color,color,border-color,box-shadow,opacity] duration-300 focus-visible:ring-2 ring-ring shrink-0"
+                    className="relative h-10 w-10 rounded-full hover:bg-secondary p-0 transition-[background-color,color,border-color,box-shadow,opacity] duration-300 focus-visible:ring-2 ring-ring shrink-0"
                     aria-label="장바구니"
+                    title="장바구니"
                   >
-                    <ShoppingCart className="h-12 w-12" />
+                    <ShoppingCart className="!h-5 !w-5" />
                     {cartCount > 0 && <span className="absolute -top-1 -right-1 text-[10px] min-w-[18px] h-[18px] px-[5px] rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold">{cartBadge}</span>}
                   </Button>
                 </Link>

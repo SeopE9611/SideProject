@@ -36,6 +36,7 @@ import {
 import { getAdminErrorMessage } from "@/lib/admin/adminFetcher";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { racketBrandLabel } from "@/lib/constants";
+import { usedBadgeMeta } from "@/lib/badge-style";
 import {
   AlertTriangle,
   CheckCircle,
@@ -115,12 +116,17 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 function ConditionBadge({ condition }: { condition: string }) {
-  const labels: Record<string, string> = {
+  const meta = usedBadgeMeta("condition", condition);
+  const labelMap: Record<string, string> = {
     A: "A급 (최상)",
     B: "B급 (양호)",
     C: "C급 (보통)",
   };
-  return <Badge variant="outline">{labels[condition] || condition}</Badge>;
+  return (
+    <Badge className={meta.className}>
+      {labelMap[condition] || meta.label}
+    </Badge>
+  );
 }
 
 export default function AdminRacketsClient() {
@@ -450,8 +456,10 @@ export default function AdminRacketsClient() {
                           </TableCell>
                           <TableCell className="text-center">
                             <Badge
-                              variant={
-                                item.rental?.enabled ? "default" : "outline"
+                              className={
+                                item.rental?.enabled
+                                  ? usedBadgeMeta("rental", "available").className
+                                  : usedBadgeMeta("rental", "unavailable").className
                               }
                             >
                               {item.rental?.enabled ? "가능" : "불가"}
