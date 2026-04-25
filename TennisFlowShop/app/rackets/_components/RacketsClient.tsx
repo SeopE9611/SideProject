@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Badge } from "@/components/ui/badge";
+import StatusBadge from "@/components/badges/StatusBadge";
 
 // 간단 fetcher (쿠키 포함 필요 시 credentials 옵션)
 const fetcher = (url: string) =>
@@ -122,12 +122,9 @@ export default function RacketsClient() {
                   </div>
                 )}
                 {it.rental?.enabled === false && (
-                  <Badge
-                    variant="destructive"
-                    className="absolute top-2 left-2 shadow"
-                  >
-                    대여 불가
-                  </Badge>
+                  <div className="absolute top-2 left-2 shadow">
+                    <StatusBadge kind="rental" state="unavailable" surface="image" />
+                  </div>
                 )}
               </div>
               <div className="p-3 space-y-1">

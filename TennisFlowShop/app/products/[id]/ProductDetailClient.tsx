@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { badgeBaseOutlined, badgeSizeSm, getAnswerStatusBadgeSpec, getQnaCategoryBadgeSpec } from "@/lib/badge-style";
+import { badgeBaseOutlined, badgeSizeSm, getAnswerStatusBadgeSpec, getQnaCategoryBadgeSpec, imageBadgeClass } from "@/lib/badge-style";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { ENABLE_STRING_STANDALONE_ORDER } from "@/lib/orders/string-standalone-policy";
@@ -735,10 +735,10 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   </>
                 )}
                 <div className="absolute top-4 sm:top-5 left-4 sm:left-5 flex gap-2 sm:gap-2.5">
-                  <Badge variant="brand" className="text-xs px-3 py-1 rounded-lg shadow-sm">
+                  <Badge className={cn("text-xs px-3 py-1 rounded-lg shadow-sm", imageBadgeClass("brand"))}>
                     NEW
                   </Badge>
-                  <Badge variant="info" className="text-xs px-3 py-1 rounded-lg shadow-sm">
+                  <Badge className={cn("text-xs px-3 py-1 rounded-lg shadow-sm", imageBadgeClass("info"))}>
                     정품
                   </Badge>
                 </div>
