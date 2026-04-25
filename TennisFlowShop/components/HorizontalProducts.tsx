@@ -27,7 +27,7 @@ export type HItem = {
   href?: string;
   condition?: "A" | "B" | "C" | "D";
   rentalEnabled?: boolean;
-  merchandisingBadges?: Array<"NEW" | "정품">;
+  merchandisingBadges?: Array<"품절" | "SALE" | "NEW" | "추천" | "입고예정">;
 };
 
 type Props = {
@@ -229,7 +229,17 @@ export default function HorizontalProducts({
                 key={`${p._id}-${label}`}
                 className={cn(
                   "text-xs px-2.5 py-0.5 rounded-md shadow-sm",
-                  imageBadgeClass(label === "NEW" ? "brand" : "info"),
+                  imageBadgeClass(
+                    label === "품절"
+                      ? "danger"
+                      : label === "SALE"
+                        ? "warning"
+                        : label === "NEW"
+                          ? "brand"
+                          : label === "추천"
+                            ? "success"
+                            : "info",
+                  ),
                 )}
               >
                 {label}
