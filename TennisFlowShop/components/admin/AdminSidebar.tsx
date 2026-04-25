@@ -96,8 +96,6 @@ export default function AdminSidebar({ defaultCollapsed = false, badgeCounts = {
               </ul>
             </div>
           ))}
-
-          <div className={cn("mt-6 px-3", adminTypography.sidebarFooter, collapsed && "px-0 text-center")}>v1.0 • 관리자</div>
         </nav>
       </aside>
     </TooltipProvider>
