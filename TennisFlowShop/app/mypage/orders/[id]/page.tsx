@@ -3,6 +3,12 @@ import OrderDetailClient from "@/app/mypage/orders/_components/OrderDetailClient
 import { getCurrentUser } from "@/lib/hooks/get-current-user";
 import { redirect } from "next/navigation";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "주문 상세",
+};
+
 export default async function OrderDetailPage({
   params,
 }: {

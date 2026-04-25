@@ -10,8 +10,13 @@ import {
 } from "@/app/services/packages/_lib/packageVariant";
 import { loadPackageSettings } from "@/app/features/packages/api/db";
 import { cookies } from "next/headers";
+import type { Metadata } from "next";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { findBlockingPackageOrderByUserId } from "@/lib/package-order-ownership";
+
+export const metadata: Metadata = {
+  title: "스트링 교체 할인 패키지",
+};
 
 export const dynamic = "force-dynamic";
 

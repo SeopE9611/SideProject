@@ -4,6 +4,11 @@ import {
   getRacketActiveCountPayload,
   getRacketDetailPayload,
 } from "@/lib/racket-detail.server";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "중고 라켓 상세",
+};
 
 export const dynamic = "force-dynamic";
 

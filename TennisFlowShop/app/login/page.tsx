@@ -2,6 +2,12 @@ import LoginPageClient from "@/app/login/_components/LoginPageClient";
 import { getCurrentUser } from "@/lib/hooks/get-current-user";
 import { redirect } from "next/navigation";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "로그인",
+};
+
 type SearchParams = Record<string, string | string[] | undefined>;
 
 type PageProps = {

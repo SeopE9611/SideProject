@@ -1,5 +1,11 @@
 import AdminRacketEditClient from "@/app/admin/rackets/[id]/edit/_components/AdminRacketEditClient";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "중고 라켓 수정",
+};
+
 export const dynamic = "force-dynamic";
 export default async function Page({
   params,

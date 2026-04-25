@@ -1,5 +1,11 @@
 import { redirect } from "next/navigation";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "서비스 신청 관리",
+};
+
 /**
  * 과거 경로 호환용 페이지입니다.
  * - 교체 서비스 신청서는 이제 /admin/orders에서 일반 주문과 함께 통합 관리합니다.

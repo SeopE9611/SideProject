@@ -6,6 +6,12 @@ import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "라켓 구매",
+};
+
 export default async function RacketPurchasePage({
   params,
 }: {

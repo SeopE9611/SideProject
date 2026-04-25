@@ -2,6 +2,12 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "테니스 아카데미",
+};
+
 export default function AcademyPage() {
   return (
     <main className="min-h-screen bg-background px-6 py-16">

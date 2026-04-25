@@ -6,10 +6,11 @@ import { getCurrentUser } from "@/lib/hooks/get-current-user";
 import { logInfo } from "@/lib/logger";
 import { UserCog2Icon } from "lucide-react";
 import { headers } from "next/headers";
+import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
-export const metadata = {
-  title: "관리자 페이지 - 도깨비테니스",
+export const metadata: Metadata = {
+  title: "관리자 페이지",
 };
 
 function canBypassAdminGuard(requestHeaders: Headers): boolean {

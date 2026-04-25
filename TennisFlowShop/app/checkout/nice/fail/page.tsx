@@ -2,6 +2,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "결제 실패",
+};
+
 const FAIL_GUIDE_MAP: Record<
   string,
   {

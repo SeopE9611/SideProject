@@ -1,6 +1,12 @@
-"use client";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { Metadata } from "next";
+import HomePageClient from "./HomePageClient";
 
+export const metadata: Metadata = {
+  title: "홈",
+};
+
+export default function Page() {
+  return <HomePageClient />;
 import HeroSlider from "@/components/HeroSlider";
 import HorizontalProducts, { type HItem } from "@/components/HorizontalProducts";
 import SiteContainer from "@/components/layout/SiteContainer";

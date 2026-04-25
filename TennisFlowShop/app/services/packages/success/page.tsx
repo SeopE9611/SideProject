@@ -15,6 +15,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import type { Metadata } from "next";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { bankLabelMap } from "@/lib/constants";
 import clientPromise from "@/lib/mongodb";
@@ -32,6 +33,10 @@ import {
   Shield,
   Star,
 } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "패키지 결제 완료",
+};
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 import Link from "next/link";

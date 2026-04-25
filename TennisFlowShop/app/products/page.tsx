@@ -4,6 +4,12 @@ import HeroCourtBackdrop from "@/components/system/HeroCourtBackdrop";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "스트링",
+};
+
 type SearchParams = Record<string, string | string[] | undefined>;
 
 export default async function ProductsPage({ searchParams }: { searchParams: Promise<SearchParams> }) {

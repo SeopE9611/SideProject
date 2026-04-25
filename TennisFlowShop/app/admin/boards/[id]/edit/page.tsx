@@ -1,6 +1,12 @@
 import { notFound } from "next/navigation";
 import AdminBoardEditClient from "./AdminBoardEditClient";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "게시글 수정",
+};
+
 function normalizeBoardIdentifier(id: string) {
   const raw = String(id ?? "").trim();
   if (!raw) return null;

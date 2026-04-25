@@ -5,6 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Clock, MapPin, Phone, Train } from "lucide-react";
 import Link from "next/link";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "장착 가능 매장",
+};
+
 export default function LocationsPage() {
   const locations = [
     {

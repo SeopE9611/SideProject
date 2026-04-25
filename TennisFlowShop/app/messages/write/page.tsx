@@ -4,6 +4,12 @@ import { getCurrentUser } from "@/lib/hooks/get-current-user";
 import { redirect } from "next/navigation";
 import MessageWriteClient from "@/app/messages/write/MessageWriteClient";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "쪽지 작성",
+};
+
 type SearchParams = { to?: string };
 
 export default async function MessageWritePage({
