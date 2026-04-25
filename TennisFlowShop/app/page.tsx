@@ -24,15 +24,50 @@ type ApiProduct = {
   price: number;
   images?: string[];
   brand?: string;
-  isNew?: boolean;
-  isGenuine?: boolean;
-  genuine?: boolean;
-  authentic?: boolean;
   material?: "polyester" | "hybrid" | string;
-  inventory?: { isFeatured?: boolean; isNew?: boolean; isGenuine?: boolean; genuine?: boolean; authentic?: boolean };
+  inventory?: {
+    isFeatured?: boolean;
+    isNew?: boolean;
+    isSale?: boolean;
+    salePrice?: number;
+    status?: "instock" | "outofstock" | "backorder" | string;
+    stock?: number;
+    lowStock?: number;
+    manageStock?: boolean;
+    allowBackorder?: boolean;
+  };
 };
 
-const isTruthyBadgeField = (value: unknown) => value === true || value === "true" || value === 1;
+type MerchandisingBadge = "품절" | "SALE" | "NEW" | "추천" | "입고예정";
+
+const isTruthyBadgeField = (value: unknown) =>
+  value === true || value === "true" || value === 1;
+
+function getMerchandisingBadges(product: ApiProduct): MerchandisingBadge[] {
+  const inventory = product.inventory;
+  const stock = Number(inventory?.stock ?? 0);
+  const salePrice = Number(inventory?.salePrice ?? 0);
+
+  const isOutOfStock =
+    inventory?.status === "outofstock" ||
+    (isTruthyBadgeField(inventory?.manageStock) && stock <= 0);
+  const isSale = isTruthyBadgeField(inventory?.isSale) && salePrice > 0;
+  const isNew = isTruthyBadgeField(inventory?.isNew);
+  const isFeatured = isTruthyBadgeField(inventory?.isFeatured);
+  const isBackorder =
+    inventory?.status === "backorder" &&
+    (isTruthyBadgeField(inventory?.allowBackorder) ||
+      !isTruthyBadgeField(inventory?.manageStock));
+
+  const badges: MerchandisingBadge[] = [];
+  if (isOutOfStock) badges.push("품절");
+  if (isSale) badges.push("SALE");
+  if (isNew) badges.push("NEW");
+  if (isFeatured) badges.push("추천");
+  if (isBackorder) badges.push("입고예정");
+
+  return badges.slice(0, 2);
+}
 
 //  'all' + constants 기반 브랜드 키
 const BRAND_KEYS = ["all", ...RACKET_BRANDS.map((b) => b.value as string)] as const;
@@ -340,15 +375,6 @@ export default function Home() {
   const premiumItems: HItem[] = useMemo(
     () =>
       premiumItemsSource.map((p) => {
-        const isNewBadge = isTruthyBadgeField(p.inventory?.isNew) || isTruthyBadgeField(p.isNew);
-        const isGenuineBadge =
-          isTruthyBadgeField(p.inventory?.isGenuine) ||
-          isTruthyBadgeField(p.inventory?.genuine) ||
-          isTruthyBadgeField(p.inventory?.authentic) ||
-          isTruthyBadgeField(p.isGenuine) ||
-          isTruthyBadgeField(p.genuine) ||
-          isTruthyBadgeField(p.authentic);
-
         return {
           _id: p._id,
           name: p.name,
@@ -356,7 +382,7 @@ export default function Home() {
           images: p.images ?? [],
           brand: stringBrandLabel(p.brand),
           href: `/products/${p._id}`,
-          merchandisingBadges: [isNewBadge ? "NEW" : null, isGenuineBadge ? "정품" : null].filter((badge): badge is "NEW" | "정품" => Boolean(badge)),
+          merchandisingBadges: getMerchandisingBadges(p),
         };
       }),
     [premiumItemsSource],
