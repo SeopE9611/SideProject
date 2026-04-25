@@ -7,6 +7,12 @@ import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "대여 완료",
+};
+
 export const dynamic = "force-dynamic";
 
 type SuccessSearchParams = {

@@ -1,6 +1,12 @@
 import { ArrowLeft, Ban, Building2, FileText, MessageSquare, RefreshCw, Scale, Shield, UserCheck } from "lucide-react";
 import Link from "next/link";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "이용약관",
+};
+
 export default function TermsPage() {
   const termsSections = [
     {

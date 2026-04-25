@@ -2,6 +2,12 @@ import AdminReviewListClient from "@/app/admin/reviews/_components/AdminReviewLi
 import AdminReviewMaintenancePanel from "@/app/admin/reviews/_components/AdminReviewMaintenancePanel";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "리뷰 관리",
+};
+
 export default function ReviewsPage() {
   return (
     <div className="p-6">

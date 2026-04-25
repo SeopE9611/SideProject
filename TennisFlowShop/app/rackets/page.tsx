@@ -5,6 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import Link from "next/link";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "중고 라켓",
+};
+
 type SearchParams = Record<string, string | string[] | undefined>;
 
 export default async function RacketsPage({ searchParams }: { searchParams: Promise<SearchParams> }) {

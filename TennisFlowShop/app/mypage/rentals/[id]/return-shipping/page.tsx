@@ -3,6 +3,12 @@ import LoginGate from "@/components/system/LoginGate";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { cookies } from "next/headers";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "반납 배송 등록",
+};
+
 export default async function Page({
   params,
 }: {

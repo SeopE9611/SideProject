@@ -1,5 +1,11 @@
 import { redirect } from "next/navigation";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "알림 관리",
+};
+
 type SP = Record<string, string | string[] | undefined>;
 
 export default async function AdminNotificationsPage({

@@ -4,6 +4,12 @@ import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "스트링 상세",
+};
+
 // verifyAccessToken은 throw 가능 → 안전하게 null 처리(500 방지)
 function safeVerifyAccessToken(token?: string) {
   if (!token) return null;

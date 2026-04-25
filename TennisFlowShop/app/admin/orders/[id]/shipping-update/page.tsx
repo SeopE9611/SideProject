@@ -2,11 +2,16 @@ import ShippingFormClient from "./ShippingFormClient";
 import { headers } from "next/headers";
 import Link from "next/link";
 import { Store, Truck } from "lucide-react";
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import {
   hasAnyRegisteredFulfillmentField,
   isVisitPickupOrder,
 } from "@/lib/order-shipping";
+
+export const metadata: Metadata = {
+  title: "배송 정보 수정",
+};
 
 type StringingApplicationLite = {
   id?: string;

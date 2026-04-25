@@ -1,5 +1,11 @@
 import ReviewDetailClient from "@/app/admin/reviews/[id]/ReviewDetailClient";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "리뷰 상세",
+};
+
 interface Props {
   params: Promise<{ id: string }>;
 }

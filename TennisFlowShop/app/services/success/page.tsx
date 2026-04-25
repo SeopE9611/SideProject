@@ -17,6 +17,12 @@ import { cookies } from "next/headers";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "서비스 신청 완료",
+};
+
 interface Props {
   searchParams: Promise<{
     applicationId?: string;

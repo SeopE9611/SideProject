@@ -8,6 +8,12 @@ import { COURIER_PICKUP_FEE, CUSTOM_STRING_MOUNTING_FEE } from "@/lib/stringing-
 import { ArrowRight, Award, Calendar, CheckCircle, Clock, HelpCircle, PhoneCall, Shield, Star, Target, Trophy, Users, Zap } from "lucide-react";
 import Link from "next/link";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "장착 서비스",
+};
+
 export default async function ServicesPage() {
   const { primarySummaries, otherSummary, hybridGuide } = await getStringingPricingView();
   // 스트링 유형 데이터

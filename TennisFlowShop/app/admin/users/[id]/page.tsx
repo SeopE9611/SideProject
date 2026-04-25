@@ -1,5 +1,11 @@
 import UserDetailClient from "@/app/admin/users/_components/UserDetailClient";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "회원 상세",
+};
+
 export default async function AdminUserDetailPage({
   params,
 }: {

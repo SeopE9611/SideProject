@@ -8,8 +8,13 @@ import {
   CUSTOM_STRING_MOUNTING_FEE,
   STRINGING_POLICY_TEXT,
 } from "@/lib/stringing-pricing-policy";
+import type { Metadata } from "next";
 import { Check, Clock, Shield, Truck, Wrench, Zap } from "lucide-react";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "서비스 가격 안내",
+};
 
 const won = (n: number | null) =>
   n == null ? "데이터 없음" : `${n.toLocaleString("ko-KR")}원`;

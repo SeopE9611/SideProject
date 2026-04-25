@@ -6,6 +6,12 @@ import { verifyAccessToken } from "@/lib/auth.utils";
 import { cookies } from "next/headers";
 import LoginGate from "@/components/system/LoginGate";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "라켓 주문 스트링 선택",
+};
+
 // verifyAccessToken은 throw 가능 → 안전하게 null 처리(500 방지)
 function safeVerifyAccessToken(token?: string) {
   if (!token) return null;

@@ -12,6 +12,12 @@ import jwt from "jsonwebtoken";
 import { ObjectId } from "mongodb";
 import { getDb } from "@/lib/mongodb";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "패키지 결제",
+};
+
 function resolveCheckoutAuthPayload(accessToken?: string, refreshToken?: string) {
   // 1) 우선 accessToken을 사용한다.
   const accessPayload = accessToken ? verifyAccessToken(accessToken) : null;

@@ -2,6 +2,12 @@ import { getCurrentUser } from "@/lib/hooks/get-current-user";
 import { redirect } from "next/navigation";
 import MyPageClient from "@/app/mypage/MypageClient";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "마이페이지",
+};
+
 type SearchParams = Record<string, string | string[] | undefined>;
 
 type PageProps = {

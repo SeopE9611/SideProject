@@ -8,11 +8,16 @@ import {
   Settings,
   User,
 } from "lucide-react";
+import type { Metadata } from "next";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { sanitizeHtml } from "@/lib/sanitize";
 import { AdminFetchError, adminFetcher } from "@/lib/admin/adminFetcher";
 import BoardDetailActions from "./BoardDetailActions";
+
+export const metadata: Metadata = {
+  title: "게시글 상세",
+};
 
 type BoardPostDetail = {
   id: string;

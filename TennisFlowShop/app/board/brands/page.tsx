@@ -5,7 +5,7 @@ import { Grid2X2 } from "lucide-react";
 import Link from "next/link";
 
 export const metadata = {
-  title: "브랜드별 게시판 (준비중) | 도깨비테니스",
+  title: "브랜드별 게시판 (준비중)",
   description: "라켓/스트링 브랜드별 사용 후기를 나누는 게시판입니다. 현재 준비 중입니다.",
   alternates: { canonical: "/board/brands" },
 };

@@ -18,6 +18,12 @@ import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "주문 완료",
+};
+
 type PopulatedItem = {
   name: string;
   price: number;
