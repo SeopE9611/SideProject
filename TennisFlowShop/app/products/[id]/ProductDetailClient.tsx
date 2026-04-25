@@ -71,6 +71,43 @@ const ReviewEditDialog = dynamic(() => import("./ReviewEditDialog"), {
 
 const detailSurfaceSubtleInnerClass = "rounded-xl border border-border/60 bg-secondary/50";
 const detailSurfaceInfoItemClass = "flex items-center gap-3 rounded-xl border border-border/60 bg-secondary/40 p-3";
+type ProductBadge = "품절" | "SALE" | "NEW" | "추천" | "입고예정";
+
+const isTruthyBadgeField = (value: unknown) =>
+  value === true || value === "true" || value === 1;
+
+function getProductDetailBadges(product: any): ProductBadge[] {
+  const inventory = product?.inventory;
+  const stock = Number(inventory?.stock ?? 0);
+  const salePrice = Number(inventory?.salePrice ?? 0);
+
+  const isOutOfStock =
+    inventory?.status === "outofstock" ||
+    (isTruthyBadgeField(inventory?.manageStock) && stock <= 0);
+  const isSale = isTruthyBadgeField(inventory?.isSale) && salePrice > 0;
+  const isNew = isTruthyBadgeField(inventory?.isNew);
+  const isFeatured = isTruthyBadgeField(inventory?.isFeatured);
+  const isBackorder = inventory?.status === "backorder";
+
+  const badges: ProductBadge[] = [];
+  if (isOutOfStock) badges.push("품절");
+  if (isSale) badges.push("SALE");
+  if (isNew) badges.push("NEW");
+  if (isFeatured) badges.push("추천");
+  if (isBackorder) badges.push("입고예정");
+
+  return badges.slice(0, 3);
+}
+
+function getProductBadgeTone(
+  badge: ProductBadge,
+): Parameters<typeof imageBadgeClass>[0] {
+  if (badge === "품절") return "danger";
+  if (badge === "SALE") return "warning";
+  if (badge === "NEW") return "brand";
+  if (badge === "추천") return "success";
+  return "info";
+}
 
 export default function ProductDetailClient({ product }: { product: any }) {
   // 방어: 간헐적으로 images/reviews가 undefined인 데이터가 섞이면 상세페이지가 바로 크래시 나는 현상 대비
@@ -678,6 +715,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
   };
 
   const averageRating = reviewsLen > 0 ? reviews.reduce((sum: number, review: any) => sum + (Number(review?.rating) || 0), 0) / reviewsLen : 0;
+  const merchandisingBadges = getProductDetailBadges(product);
 
   // 수량 버튼 상태
   const canDec = quantity > 1;
@@ -734,14 +772,21 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     </Button>
                   </>
                 )}
-                <div className="absolute top-4 sm:top-5 left-4 sm:left-5 flex gap-2 sm:gap-2.5">
-                  <Badge className={cn("text-xs px-3 py-1 rounded-lg shadow-sm", imageBadgeClass("brand"))}>
-                    NEW
-                  </Badge>
-                  <Badge className={cn("text-xs px-3 py-1 rounded-lg shadow-sm", imageBadgeClass("info"))}>
-                    정품
-                  </Badge>
-                </div>
+                {merchandisingBadges.length > 0 && (
+                  <div className="absolute top-4 sm:top-5 left-4 sm:left-5 flex flex-wrap gap-2 sm:gap-2.5">
+                    {merchandisingBadges.map((badge) => (
+                      <Badge
+                        key={`${product?._id ?? product?.name}-${badge}`}
+                        className={cn(
+                          "text-xs px-3 py-1 rounded-lg shadow-sm",
+                          imageBadgeClass(getProductBadgeTone(badge)),
+                        )}
+                      >
+                        {badge}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
               </div>
             </Card>
 
