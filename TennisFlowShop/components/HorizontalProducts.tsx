@@ -1,7 +1,9 @@
 "use client";
 
 import StatusBadge from "@/components/badges/StatusBadge";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { imageBadgeClass } from "@/lib/badge-style";
 import { cn } from "@/lib/utils";
 import type { EmblaCarouselType, EmblaOptionsType } from "embla-carousel";
 import useEmblaCarousel from "embla-carousel-react";
@@ -25,6 +27,7 @@ export type HItem = {
   href?: string;
   condition?: "A" | "B" | "C" | "D";
   rentalEnabled?: boolean;
+  merchandisingBadges?: Array<"NEW" | "정품">;
 };
 
 type Props = {
@@ -217,10 +220,21 @@ export default function HorizontalProducts({
           <div className="flex items-center justify-center h-full text-3xl bp-sm:text-4xl bp-md:text-5xl font-bold text-muted-foreground/50">{(p.brand ?? "D").charAt(0)}</div>
         )}
 
-        {(typeof p.rentalEnabled === "boolean" || p.condition) && (
+        {((typeof p.rentalEnabled === "boolean" || p.condition) || (p.merchandisingBadges?.length ?? 0) > 0) && (
           <div className="absolute top-2.5 left-2.5 right-2.5 bp-sm:top-3 bp-sm:left-3 bp-sm:right-3 flex items-center gap-2 z-10">
             {typeof p.rentalEnabled === "boolean" && !p.rentalEnabled && <StatusBadge kind="rental" state="unavailable" surface="image" />}
             {p.condition && <StatusBadge kind="condition" state={p.condition} surface="image" />}
+            {(p.merchandisingBadges ?? []).slice(0, 2).map((label) => (
+              <Badge
+                key={`${p._id}-${label}`}
+                className={cn(
+                  "text-xs px-2.5 py-0.5 rounded-md shadow-sm",
+                  imageBadgeClass(label === "NEW" ? "brand" : "info"),
+                )}
+              >
+                {label}
+              </Badge>
+            ))}
           </div>
         )}
       </div>
