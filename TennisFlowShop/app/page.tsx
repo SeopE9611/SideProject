@@ -24,9 +24,15 @@ type ApiProduct = {
   price: number;
   images?: string[];
   brand?: string;
+  isNew?: boolean;
+  isGenuine?: boolean;
+  genuine?: boolean;
+  authentic?: boolean;
   material?: "polyester" | "hybrid" | string;
-  inventory?: { isFeatured?: boolean };
+  inventory?: { isFeatured?: boolean; isNew?: boolean; isGenuine?: boolean; genuine?: boolean; authentic?: boolean };
 };
+
+const isTruthyBadgeField = (value: unknown) => value === true || value === "true" || value === 1;
 
 //  'all' + constants 기반 브랜드 키
 const BRAND_KEYS = ["all", ...RACKET_BRANDS.map((b) => b.value as string)] as const;
@@ -333,14 +339,26 @@ export default function Home() {
   // HorizontalProducts 매핑 (브랜드 라벨 표시)
   const premiumItems: HItem[] = useMemo(
     () =>
-      premiumItemsSource.map((p) => ({
-        _id: p._id,
-        name: p.name,
-        price: p.price,
-        images: p.images ?? [],
-        brand: stringBrandLabel(p.brand),
-        href: `/products/${p._id}`,
-      })),
+      premiumItemsSource.map((p) => {
+        const isNewBadge = isTruthyBadgeField(p.inventory?.isNew) || isTruthyBadgeField(p.isNew);
+        const isGenuineBadge =
+          isTruthyBadgeField(p.inventory?.isGenuine) ||
+          isTruthyBadgeField(p.inventory?.genuine) ||
+          isTruthyBadgeField(p.inventory?.authentic) ||
+          isTruthyBadgeField(p.isGenuine) ||
+          isTruthyBadgeField(p.genuine) ||
+          isTruthyBadgeField(p.authentic);
+
+        return {
+          _id: p._id,
+          name: p.name,
+          price: p.price,
+          images: p.images ?? [],
+          brand: stringBrandLabel(p.brand),
+          href: `/products/${p._id}`,
+          merchandisingBadges: [isNewBadge ? "NEW" : null, isGenuineBadge ? "정품" : null].filter((badge): badge is "NEW" | "정품" => Boolean(badge)),
+        };
+      }),
     [premiumItemsSource],
   );
 
