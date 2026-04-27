@@ -8,6 +8,7 @@ import PaymentEditForm from "@/app/features/orders/components/PaymentEditForm";
 import PaymentMethodDetail from "@/app/features/orders/components/PaymentMethodDetail";
 import RequestEditForm from "@/app/features/orders/components/RequestEditForm";
 import AdminCancelRequestCard from "@/components/admin/AdminCancelRequestCard";
+import AdminConfirmDialog from "@/components/admin/AdminConfirmDialog";
 import { LinkedDocItem } from "@/components/admin/LinkedDocsCard";
 import LinkedFlowStageCard from "@/components/admin/LinkedFlowStageCard";
 import AsyncState from "@/components/system/AsyncState";
@@ -277,6 +278,8 @@ interface Props {
   orderId: string;
 }
 
+type CancelRequestConfirmAction = "approveCancel" | "rejectCancel";
+
 export default function OrderDetailClient({ orderId }: Props) {
   const router = useRouter();
 
@@ -333,6 +336,8 @@ export default function OrderDetailClient({ orderId }: Props) {
 
   const [isProcessingCancelRequest, setIsProcessingCancelRequest] =
     useState(false);
+  const [confirmAction, setConfirmAction] =
+    useState<CancelRequestConfirmAction | null>(null);
 
   useEffect(() => {
     if (orderDetail && orderDetail.status !== localStatus) {
@@ -669,11 +674,6 @@ export default function OrderDetailClient({ orderId }: Props) {
       return;
     }
 
-    const ok = window.confirm(
-      "이 주문의 취소 요청을 승인하시겠습니까?\n주문과 연결된 모든 교체 서비스 신청이 함께 취소됩니다.",
-    );
-    if (!ok) return;
-
     setIsProcessingCancelRequest(true);
     try {
       const existingReq: any = (orderDetail as any).cancelRequest ?? {};
@@ -716,9 +716,6 @@ export default function OrderDetailClient({ orderId }: Props) {
         "취소 요청 거절 사유를 입력하세요.\n(선택 입력, 비워두면 사유 없이 기록됩니다.)",
       ) ?? "";
 
-    const ok = window.confirm("이 주문의 취소 요청을 거절하시겠습니까?");
-    if (!ok) return;
-
     setIsProcessingCancelRequest(true);
     try {
       const res = await fetch(`/api/orders/${orderId}/cancel-reject`, {
@@ -744,6 +741,16 @@ export default function OrderDetailClient({ orderId }: Props) {
     } finally {
       setIsProcessingCancelRequest(false);
     }
+  };
+
+  const handleConfirmCancelRequestAction = () => {
+    if (confirmAction === "approveCancel") {
+      void handleApproveCancelRequest();
+    }
+    if (confirmAction === "rejectCancel") {
+      void handleRejectCancelRequest();
+    }
+    setConfirmAction(null);
   };
 
   const handleShippingUpdate = () => {
@@ -1078,7 +1085,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                           <Button
                             size="sm"
                             variant="destructive"
-                            onClick={handleApproveCancelRequest}
+                            onClick={() => setConfirmAction("approveCancel")}
                             disabled={
                               isProcessingCancelRequest || !isCancelableByPolicy
                             }
@@ -1088,7 +1095,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={handleRejectCancelRequest}
+                            onClick={() => setConfirmAction("rejectCancel")}
                             disabled={isProcessingCancelRequest}
                           >
                             취소 거절
@@ -1105,6 +1112,37 @@ export default function OrderDetailClient({ orderId }: Props) {
                     </div>
                   </div>
                 </div>
+
+                <AdminConfirmDialog
+                  open={confirmAction !== null}
+                  title={
+                    confirmAction === "approveCancel"
+                      ? "취소 요청을 승인할까요?"
+                      : "취소 요청을 거절할까요?"
+                  }
+                  description={
+                    confirmAction === "approveCancel"
+                      ? "고객의 주문 취소 요청을 승인합니다.\n결제 수단에 따라 PG 취소 또는 환불 처리가 함께 진행될 수 있습니다.\n처리 후 상태가 변경되므로 주문 정보와 환불 정보를 확인해주세요."
+                      : "고객의 주문 취소 요청을 거절합니다.\n주문은 기존 처리 흐름을 유지하며, 고객에게 상태 변경이 안내될 수 있습니다."
+                  }
+                  severity={confirmAction === "approveCancel" ? "danger" : "default"}
+                  confirmText={
+                    confirmAction === "approveCancel" ? "취소 승인" : "취소 거절"
+                  }
+                  onOpenChange={(open) => {
+                    if (!open) {
+                      setConfirmAction(null);
+                    }
+                  }}
+                  onConfirm={handleConfirmCancelRequestAction}
+                  onCancel={() => setConfirmAction(null)}
+                  eventKey={
+                    confirmAction === "approveCancel"
+                      ? "admin-order-cancel-approve-confirm"
+                      : "admin-order-cancel-reject-confirm"
+                  }
+                  eventMeta={{ orderId }}
+                />
               </div>
             </CardContent>
 
