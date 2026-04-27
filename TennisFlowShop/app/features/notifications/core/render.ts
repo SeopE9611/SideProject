@@ -66,7 +66,7 @@ function buildICS(app: ApplicationCtx): string | undefined {
   return [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//Tennis Flow//Stringing//KR",
+    "PRODID:-//DokkaebiTennis//Stringing//KR",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
     "BEGIN:VEVENT",

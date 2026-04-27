@@ -423,7 +423,7 @@ export default function SettlementsClient() {
     const csv = "\ufeff" + lines;
 
     const fileName = makeCsvFilename(
-      `테니스플로우_정산스냅샷_${minYm}-${maxYm}`,
+      `도깨비테니스_정산스냅샷_${minYm}-${maxYm}`,
     );
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
@@ -1833,7 +1833,7 @@ export default function SettlementsClient() {
                         const a = document.createElement("a");
                         a.href = url;
                         const fileName = makeCsvFilename(
-                          `테니스플로우_정산실시간_${live.range.from}~${live.range.to}`,
+                          `도깨비테니스_정산실시간_${live.range.from}~${live.range.to}`,
                         );
                         a.download = fileName;
                         a.click();
