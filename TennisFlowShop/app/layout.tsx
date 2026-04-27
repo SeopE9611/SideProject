@@ -35,10 +35,10 @@ declare global {
 
 export const metadata: Metadata = {
   title: {
-    default: "테니스 플로우",
-    template: "%s | 테니스 플로우",
+    default: "도깨비테니스",
+    template: "%s | 도깨비테니스",
   },
-  description: "테니스 스트링, 라켓, 장착 서비스, 대여 서비스를 제공하는 테니스 전문 쇼핑몰입니다.",
+  description: "도깨비테니스는 테니스 스트링, 라켓, 장착 서비스, 대여 서비스를 제공하는 테니스 전문 쇼핑몰입니다.",
   icons: {
     icon: [{ url: "/brand/symbol-dark.png", type: "image/png" }],
     shortcut: ["/brand/symbol-dark.png"],
