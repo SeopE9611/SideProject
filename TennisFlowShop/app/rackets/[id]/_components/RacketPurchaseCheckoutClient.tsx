@@ -71,6 +71,7 @@ const clearIdemKey = () => {
 
 export default function RacketPurchaseCheckoutClient({ racket }: { racket: RacketView }) {
   const router = useRouter();
+  const racketId = String(racket.id ?? "").trim();
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -268,6 +269,21 @@ export default function RacketPurchaseCheckoutClient({ racket }: { racket: Racke
 
   return (
     <div className="mx-auto max-w-2xl space-y-6 p-4">
+      <div className="rounded-2xl border border-border bg-muted/30 p-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-1">
+            <p className="text-sm font-semibold text-foreground">새로운 라켓 구매 흐름을 이용할 수 있어요</p>
+            <p className="text-sm text-muted-foreground">
+              라켓과 스트링을 함께 선택한 뒤 한 번에 결제하는 새 흐름을 권장합니다. 기존 결제 진행 중이거나 복구 링크로 들어오신 경우에는 현재 화면에서 계속 진행할 수 있어요.
+            </p>
+            <p className="text-xs text-muted-foreground">현재 화면에서도 기존 결제 흐름은 계속 사용할 수 있습니다.</p>
+          </div>
+          <Button type="button" size="sm" className="shrink-0" disabled={!racketId} onClick={() => router.push(`/rackets/${racketId}/select-string`)}>
+            스트링 선택 후 구매로 이동
+          </Button>
+        </div>
+      </div>
+
       <div className="rounded-lg border p-4">
         <div className="text-lg font-semibold">라켓 구매</div>
         <div className="mt-2 text-sm text-muted-foreground">
