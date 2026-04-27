@@ -297,7 +297,7 @@ export default function OrderLookupPage() {
                       id="email"
                       name="email"
                       type="email"
-                      placeholder="example@tennisflow.com"
+                      placeholder="example@dokkaebitennis.com"
                       value={formData.email}
                       onChange={handleChange}
                       required
