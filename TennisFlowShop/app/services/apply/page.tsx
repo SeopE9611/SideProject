@@ -1785,7 +1785,7 @@ export default function StringServiceApplyPage() {
 
             {/* Option 2: 라켓 고르고 신청 */}
             <div className="relative bg-card rounded-2xl p-5 bp-sm:p-6 text-left border border-border hover:border-border transition-all duration-200 hover:shadow-lg">
-  
+
 
               {/* Icon */}
               <div className="w-12 h-12 bp-sm:w-14 bp-sm:h-14 rounded-xl bg-background flex items-center justify-center mb-4">
@@ -1808,14 +1808,14 @@ export default function StringServiceApplyPage() {
                   onClick={() => safePush("/rackets?from=apply")}
                   className="flex-1 px-3 py-2 bp-sm:py-2.5 text-sm font-medium rounded-lg bg-background text-foreground hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                  라켓 구매하러 가기
+                  라켓 구매
                 </button>
                 <button
                   type="button"
                   onClick={() => safePush("/rackets?from=apply&rentOnly=1")}
                   className="flex-1 px-3 py-2 bp-sm:py-2.5 text-sm font-medium rounded-lg bg-background text-foreground hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                  라켓 대여하러 가기
+                  라켓 대여
                 </button>
               </div>
             </div>
