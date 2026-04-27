@@ -87,9 +87,7 @@ export function UserActivityTabsSection({
               right={
                 r?.createdAt ? new Date(r.createdAt).toLocaleDateString() : ""
               }
-              href={
-                r?._id || r?.id ? `/admin/reviews/${r._id || r.id}` : undefined
-              }
+              href="/admin/reviews"
             />
           )}
         />
