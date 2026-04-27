@@ -96,7 +96,6 @@ export const SIDEBAR_SECTIONS: SidebarSection[] = [
   {
     label: "기타",
     items: [
-      { title: "클래스 관리", href: "/admin/classes", icon: CalendarClock },
       { title: "게시판 관리", href: "/admin/boards", icon: MessageCircle },
       { title: "설정", href: "/admin/settings", icon: Settings },
     ],
