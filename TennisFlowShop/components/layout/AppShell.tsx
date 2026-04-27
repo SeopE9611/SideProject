@@ -23,6 +23,7 @@ const HIDE_SIDEMENU_PREFIXES = [
 ];
 
 const HIDE_SIDEMENU_EXACT_PATHS = new Set([
+  "/services/success",
   "/services/packages/checkout",
   "/services/packages/success",
   "/services/packages/nice/fail",
@@ -35,7 +36,10 @@ const HIDE_SIDEMENU_EXACT_PATHS = new Set([
   "/rackets/toss/success",
 ]);
 
-const HIDE_SIDEMENU_PATTERNS = [/^\/rentals\/[^/]+\/checkout$/];
+const HIDE_SIDEMENU_PATTERNS = [
+  /^\/rentals\/[^/]+\/checkout$/,
+  /^\/rackets\/[^/]+\/purchase$/,
+];
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
