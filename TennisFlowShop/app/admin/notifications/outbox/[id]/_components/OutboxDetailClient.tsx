@@ -20,6 +20,7 @@ import AsyncState from "@/components/system/AsyncState";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { adminMutator } from "@/lib/admin/adminFetcher";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { badgeToneVariant } from "@/lib/badge-style";
@@ -176,16 +177,16 @@ export default function OutboxDetailClient({ id }: { id: string }) {
 
   async function post(url: string, label: string) {
     try {
-      const res = await fetch(url, { method: "POST" });
-      const json = await res.json().catch(() => null);
-      if (!res.ok || json?.ok === false) {
-        showErrorToast(json?.error || `${label} 실패`);
-        return;
-      }
+      const json = await adminMutator<{ ok?: boolean; error?: string }>(url, {
+        method: "POST",
+      });
+      if (json?.ok === false) throw new Error(json?.error || `${label} 실패`);
       showSuccessToast(label);
       await mutate();
-    } catch {
-      showErrorToast(`${label} 실패`);
+    } catch (error: unknown) {
+      showErrorToast(
+        error instanceof Error ? error.message : `${label} 실패`,
+      );
     }
   }
 

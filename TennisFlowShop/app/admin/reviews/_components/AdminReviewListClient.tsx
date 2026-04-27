@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/tooltip";
 
 import { Switch } from "@/components/ui/switch";
+import { adminMutator } from "@/lib/admin/adminFetcher";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import type {
@@ -246,11 +247,9 @@ export default function AdminReviewListClient() {
       false,
     );
     try {
-      const res = await fetch(`/api/admin/reviews/${id}`, {
+      await adminMutator(`/api/admin/reviews/${id}`, {
         method: "DELETE",
-        credentials: "include",
       });
-      if (!res.ok) throw new Error("삭제 실패");
       showSuccessToast("삭제되었습니다.");
     } catch (error: unknown) {
       await mutate(() => snapshot, false);
@@ -274,9 +273,8 @@ export default function AdminReviewListClient() {
     try {
       await Promise.allSettled(
         selected.map((id) =>
-          fetch(`/api/admin/reviews/${id}`, {
+          adminMutator(`/api/admin/reviews/${id}`, {
             method: "DELETE",
-            credentials: "include",
           }),
         ),
       );
@@ -314,13 +312,11 @@ export default function AdminReviewListClient() {
         const part = selected.slice(i, i + CHUNK);
         await Promise.all(
           part.map(async (id) => {
-            const res = await fetch(`/api/admin/reviews/${id}`, {
+            await adminMutator(`/api/admin/reviews/${id}`, {
               method: "PATCH",
-              credentials: "include",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ status: next }),
             });
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
           }),
         );
       }
@@ -354,13 +350,11 @@ export default function AdminReviewListClient() {
       false,
     );
     try {
-      const res = await fetch(`/api/admin/reviews/${it._id}`, {
+      await adminMutator(`/api/admin/reviews/${it._id}`, {
         method: "PATCH",
-        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: next }),
       });
-      if (!res.ok) throw new Error();
       showSuccessToast(
         next === "hidden"
           ? "리뷰를 비공개로 변경했습니다."
