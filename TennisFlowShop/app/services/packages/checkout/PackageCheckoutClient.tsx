@@ -381,9 +381,7 @@ export default function PackageCheckoutClient({
       </div>
 
       <div className="container py-8">
-        <div className="grid grid-cols-1 gap-6 lg:gap-8 lg:grid-cols-3">
-          {/* 주문 정보 입력 폼 */}
-          <div className={`lg:col-span-2 space-y-4 md:space-y-6 ${isCheckoutSubmitting ? "pointer-events-none" : ""}`} aria-busy={isCheckoutSubmitting}>
+        <div className={`mx-auto max-w-4xl space-y-4 md:space-y-6 ${isCheckoutSubmitting ? "pointer-events-none" : ""}`} aria-busy={isCheckoutSubmitting}>
             {/* 선택된 패키지 정보 */}
             <Card className="bg-card border border-border shadow-sm overflow-hidden">
               <div className="bg-secondary p-4 md:p-6">
@@ -740,144 +738,175 @@ export default function PackageCheckoutClient({
                 </div>
               </CardContent>
             </Card>
-          </div>
 
-          {/* 주문 요약 */}
-          <div className="lg:col-span-1">
-            <div className="lg:sticky lg:top-20">
-              <Card className="relative bg-card border border-border shadow-md overflow-hidden">
-                <div className="bg-muted/60 dark:bg-muted/50 p-4 md:p-6 text-foreground">
-                  <CardTitle className="flex items-center gap-3 text-xl">
-                    <div className="p-2 bg-secondary rounded-xl">
-                      <Package className="h-5 w-5" />
-                    </div>
-                    주문 요약
-                  </CardTitle>
+            {/* 최종 결제 확인 */}
+            <Card className="relative bg-card border border-border shadow-md overflow-hidden">
+              <div className="bg-muted/60 dark:bg-muted/50 p-4 md:p-6 text-foreground">
+                <CardTitle className="flex items-center gap-3 text-xl">
+                  <div className="p-2 bg-secondary rounded-xl">
+                    <Package className="h-5 w-5" />
+                  </div>
+                  최종 결제 확인
+                </CardTitle>
+                <CardDescription className="mt-2">패키지 구성과 결제 정보를 확인한 뒤 결제를 진행해주세요.</CardDescription>
+              </div>
+              <CardContent className="p-4 md:p-6 space-y-4 md:space-y-6">
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">패키지</span>
+                    <span className="font-semibold">{selectedPackage?.title ?? "-"}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">구성</span>
+                    <span className="font-semibold">{selectedPackage ? `${selectedPackage.sessions}회` : "-"}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">패키지 금액</span>
+                    <span className="font-semibold text-lg">{selectedPackage ? `${selectedPackage.price.toLocaleString()}원` : "-"}</span>
+                  </div>
+
+                  {hasDiscount && (
+                    <>
+                      <div className="flex justify-between items-center">
+                        <span className="text-muted-foreground">정가</span>
+                        <span className="text-muted-foreground line-through">{selectedPackage!.originalPrice!.toLocaleString()}원</span>
+                      </div>
+
+                      <div className="flex justify-between items-center">
+                        <span className="text-muted-foreground">할인 금액</span>
+                        <span className="text-primary font-semibold">-{discountAmount.toLocaleString()}원</span>
+                      </div>
+                    </>
+                  )}
                 </div>
-                <CardContent className="p-4 md:p-6 space-y-4 md:space-y-6">
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">패키지 금액</span>
-                      <span className="font-semibold text-lg">{selectedPackage ? `${selectedPackage.price.toLocaleString()}원` : "-"}</span>
-                    </div>
 
-                    {hasDiscount && (
+                <Separator />
+
+                <div className="bg-secondary p-4 rounded-lg border border-border">
+                  <div className="flex items-center gap-2 text-foreground mb-2">
+                    <CreditCard className="h-4 w-4" />
+                    <span className="font-semibold">결제수단 요약</span>
+                  </div>
+                  <div className="text-sm text-foreground space-y-1">
+                    <p>
+                      •{" "}
+                      {paymentMethod === "bank_transfer"
+                        ? "무통장 입금"
+                        : paymentMethod === "tosspayments"
+                          ? "Toss 결제"
+                          : "NicePay 결제"}
+                    </p>
+                    {paymentMethod === "bank_transfer" && (
                       <>
-                        <div className="flex justify-between items-center">
-                          <span className="text-muted-foreground">정가</span>
-                          <span className="text-muted-foreground line-through">{selectedPackage!.originalPrice!.toLocaleString()}원</span>
-                        </div>
-
-                        <div className="flex justify-between items-center">
-                          <span className="text-muted-foreground">할인 금액</span>
-                          <span className="text-primary font-semibold">-{discountAmount.toLocaleString()}원</span>
-                        </div>
+                        <p>• 선택 은행: {bankLabelMap[selectedBank as keyof typeof bankLabelMap]?.label ?? selectedBank}</p>
+                        <p>• 계좌번호: {bankLabelMap[selectedBank as keyof typeof bankLabelMap]?.account ?? "-"}</p>
+                        <p>• 예금주: {bankLabelMap[selectedBank as keyof typeof bankLabelMap]?.holder ?? "-"}</p>
+                        <p>• 입금자명: {depositor.trim() || "미입력"}</p>
                       </>
                     )}
-
-                    <Separator />
-
-                    <div className="flex justify-between items-center text-xl font-bold">
-                      <span>총 결제 금액</span>
-                      <span className="text-primary">{selectedPackage ? `${selectedPackage.price.toLocaleString()}원` : "-"}</span>
-                    </div>
                   </div>
-
-                  <div className="bg-secondary p-4 rounded-lg border border-border">
-                    <div className="flex items-center gap-2 text-foreground mb-2">
-                      <Star className="h-4 w-4" />
-                      <span className="font-semibold">패키지 혜택</span>
-                    </div>
-                    <div className="text-sm text-foreground space-y-1">
-                      <p>• {selectedPackage ? `${selectedPackage.sessions}회 스트링 교체 서비스` : "패키지 정보를 확인 중입니다."}</p>
-                      <p>• 유효기간: {selectedPackage?.validityPeriod ?? "-"}</p>
-                      <p>• 회당 {perSessionPrice.toLocaleString()}원</p>
-                      {selectedPackage?.discount && <p>• {selectedPackage.discount}% 할인 적용</p>}
-                    </div>
-                  </div>
-
-                  <div className="bg-secondary p-4 rounded-lg border border-border">
-                    <div className="flex items-center gap-2 text-foreground mb-2">
-                      <Shield className="h-4 w-4" />
-                      <span className="font-semibold">패키지 안내</span>
-                    </div>
-                    <div className="text-sm text-muted-foreground space-y-1">
-                      <p>• 입금 확인 후 패키지가 활성화됩니다.</p>
-                      <p>• 예약은 전화 또는 온라인으로 가능합니다.</p>
-                      <p>• 유효기간 내에 모든 횟수를 이용해주세요.</p>
-                    </div>
-                  </div>
-                </CardContent>
-                <div className="flex flex-col gap-3 md:gap-4 p-4 md:p-6">
-                  {ownershipBlockedMessage && <p className="text-sm rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-destructive">{ownershipBlockedMessage}</p>}
-                  {hasInteracted && agreeTerms && agreePrivacy && agreeRefund && !isFormValid && <p className="text-xs text-destructive">필수 입력칸을 확인해주세요. (이름/이메일/연락처/결제수단별 필수값)</p>}
-                  {selectedPackage && paymentMethod === "bank_transfer" && (
-                    <PackageCheckoutButton
-                      disabled={!canSubmit}
-                      ownershipBlockedMessage={ownershipBlockedMessage}
-                      packageInfo={selectedPackage}
-                      name={name}
-                      phone={phone}
-                      email={email}
-                      depositor={depositor}
-                      selectedBank={selectedBank}
-                      serviceRequest={serviceRequest}
-                      saveInfo={saveInfo}
-                      isLoggedIn={isLoggedIn}
-                      onSubmittingChange={setIsCheckoutSubmitting}
-                      onBeforeSuccessNavigation={() => setIsIntentionalSuccessNavigation(true)}
-                      onSuccessNavigationAbort={() => setIsIntentionalSuccessNavigation(false)}
-                    />
-                  )}
-                  {selectedPackage && tossPaymentsEnabled && paymentMethod === "tosspayments" && (
-                    <PackageTossCheckoutButton
-                      disabled={!canSubmit}
-                      widgetReady={tossWidgetReady}
-                      widgetLoadError={tossWidgetLoadError}
-                      payableAmount={Number(selectedPackage.price ?? 0)}
-                      packageId={selectedPackage.id}
-                      packageName={selectedPackage.title}
-                      name={name}
-                      phone={phone}
-                      email={email}
-                      serviceRequest={serviceRequest}
-                      onBeforeSuccessNavigation={() => setIsIntentionalSuccessNavigation(true)}
-                      onSuccessNavigationAbort={() => setIsIntentionalSuccessNavigation(false)}
-                    />
-                  )}
-                  {selectedPackage && nicePaymentsEnabled && paymentMethod === "nicepay" && (
-                    <PackageNiceCheckoutButton
-                      disabled={!canSubmit}
-                      payableAmount={Number(selectedPackage.price ?? 0)}
-                      packageId={selectedPackage.id}
-                      packageName={selectedPackage.title}
-                      name={name}
-                      phone={phone}
-                      email={email}
-                      serviceRequest={serviceRequest}
-                      onBeforeSuccessNavigation={() => setIsIntentionalSuccessNavigation(true)}
-                      onSuccessNavigationAbort={() => setIsIntentionalSuccessNavigation(false)}
-                    />
-                  )}
-                  <Button variant="outline" className="w-full border-2" asChild>
-                    <Link href="/services/packages" onClick={onLeavePageClick}>
-                      패키지 선택으로 돌아가기
-                    </Link>
-                  </Button>
                 </div>
-                {isCheckoutSubmitting && (
-                  <div className="absolute inset-0 z-10 cursor-wait bg-overlay/10 backdrop-blur-[2px]">
-                    <div className="absolute inset-0 grid place-items-center">
-                      <div className="flex items-center gap-3 rounded-xl bg-card/90 px-4 py-3 shadow">
-                        <Loader2 className="h-5 w-5 animate-spin" />
-                        <span className="text-sm">패키지 주문을 처리하고 있어요…</span>
-                      </div>
+
+                <div className="bg-secondary p-4 rounded-lg border border-border">
+                  <div className="flex items-center gap-2 text-foreground mb-2">
+                    <Star className="h-4 w-4" />
+                    <span className="font-semibold">패키지 혜택</span>
+                  </div>
+                  <div className="text-sm text-foreground space-y-1">
+                    <p>• {selectedPackage ? `${selectedPackage.sessions}회 스트링 교체 서비스` : "패키지 정보를 확인 중입니다."}</p>
+                    <p>• 유효기간: {selectedPackage?.validityPeriod ?? "-"}</p>
+                    <p>• 회당 {perSessionPrice.toLocaleString()}원</p>
+                    {selectedPackage?.discount && <p>• {selectedPackage.discount}% 할인 적용</p>}
+                  </div>
+                </div>
+
+                <div className="bg-secondary p-4 rounded-lg border border-border">
+                  <div className="flex items-center gap-2 text-foreground mb-2">
+                    <Shield className="h-4 w-4" />
+                    <span className="font-semibold">패키지 안내</span>
+                  </div>
+                  <div className="text-sm text-muted-foreground space-y-1">
+                    <p>• 입금 확인 후 패키지가 활성화됩니다.</p>
+                    <p>• 예약은 전화 또는 온라인으로 가능합니다.</p>
+                    <p>• 유효기간 내에 모든 횟수를 이용해주세요.</p>
+                  </div>
+                </div>
+
+                <Separator />
+
+                <div className="flex justify-between items-center text-xl font-bold">
+                  <span>총 결제 금액</span>
+                  <span className="text-primary">{selectedPackage ? `${selectedPackage.price.toLocaleString()}원` : "-"}</span>
+                </div>
+              </CardContent>
+              <div className="flex flex-col gap-3 md:gap-4 p-4 md:p-6">
+                {ownershipBlockedMessage && <p className="text-sm rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-destructive">{ownershipBlockedMessage}</p>}
+                {hasInteracted && agreeTerms && agreePrivacy && agreeRefund && !isFormValid && <p className="text-xs text-destructive">필수 입력칸을 확인해주세요. (이름/이메일/연락처/결제수단별 필수값)</p>}
+                {selectedPackage && paymentMethod === "bank_transfer" && (
+                  <PackageCheckoutButton
+                    disabled={!canSubmit}
+                    ownershipBlockedMessage={ownershipBlockedMessage}
+                    packageInfo={selectedPackage}
+                    name={name}
+                    phone={phone}
+                    email={email}
+                    depositor={depositor}
+                    selectedBank={selectedBank}
+                    serviceRequest={serviceRequest}
+                    saveInfo={saveInfo}
+                    isLoggedIn={isLoggedIn}
+                    onSubmittingChange={setIsCheckoutSubmitting}
+                    onBeforeSuccessNavigation={() => setIsIntentionalSuccessNavigation(true)}
+                    onSuccessNavigationAbort={() => setIsIntentionalSuccessNavigation(false)}
+                  />
+                )}
+                {selectedPackage && tossPaymentsEnabled && paymentMethod === "tosspayments" && (
+                  <PackageTossCheckoutButton
+                    disabled={!canSubmit}
+                    widgetReady={tossWidgetReady}
+                    widgetLoadError={tossWidgetLoadError}
+                    payableAmount={Number(selectedPackage.price ?? 0)}
+                    packageId={selectedPackage.id}
+                    packageName={selectedPackage.title}
+                    name={name}
+                    phone={phone}
+                    email={email}
+                    serviceRequest={serviceRequest}
+                    onBeforeSuccessNavigation={() => setIsIntentionalSuccessNavigation(true)}
+                    onSuccessNavigationAbort={() => setIsIntentionalSuccessNavigation(false)}
+                  />
+                )}
+                {selectedPackage && nicePaymentsEnabled && paymentMethod === "nicepay" && (
+                  <PackageNiceCheckoutButton
+                    disabled={!canSubmit}
+                    payableAmount={Number(selectedPackage.price ?? 0)}
+                    packageId={selectedPackage.id}
+                    packageName={selectedPackage.title}
+                    name={name}
+                    phone={phone}
+                    email={email}
+                    serviceRequest={serviceRequest}
+                    onBeforeSuccessNavigation={() => setIsIntentionalSuccessNavigation(true)}
+                    onSuccessNavigationAbort={() => setIsIntentionalSuccessNavigation(false)}
+                  />
+                )}
+                <Button variant="outline" className="w-full border-2" asChild>
+                  <Link href="/services/packages" onClick={onLeavePageClick}>
+                    패키지 선택으로 돌아가기
+                  </Link>
+                </Button>
+              </div>
+              {isCheckoutSubmitting && (
+                <div className="absolute inset-0 z-10 cursor-wait bg-overlay/10 backdrop-blur-[2px]">
+                  <div className="absolute inset-0 grid place-items-center">
+                    <div className="flex items-center gap-3 rounded-xl bg-card/90 px-4 py-3 shadow">
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                      <span className="text-sm">패키지 주문을 처리하고 있어요…</span>
                     </div>
                   </div>
-                )}
-              </Card>
-            </div>
-          </div>
+                </div>
+              )}
+            </Card>
         </div>
       </div>
     </div>
