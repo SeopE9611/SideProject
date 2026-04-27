@@ -62,7 +62,7 @@ function buildICS(app: ApplicationCtx): string | undefined {
   const endMm = endH === 23 && Number(mm) > 0 ? "59" : mm;
   const dtend = `DTEND;TZID=Asia/Seoul:${date}T${endHh}${endMm}00`;
 
-  const uid = `stringing-${app.applicationId}@tennis-flow`;
+  const uid = `stringing-${app.applicationId}@dokkaebitennis.com`;
   return [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
