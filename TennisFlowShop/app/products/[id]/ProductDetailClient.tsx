@@ -316,6 +316,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const qtyTotal = unitPrice * quantity;
   const serviceTotal = qtyTotal + Number(product?.mountingFee ?? 0);
   const canCheckoutWithService = typeof product?.mountingFee === "number" && product.mountingFee > 0;
+  const isApplyFlow = searchParams.get("from") === "apply";
+  const serviceCtaLabel = isApplyFlow ? "이 스트링으로 교체서비스 신청하기" : "교체서비스 신청하기";
 
   // 브라우저 뒤/앞으로 가기 시에도 URL 변화에 맞춰 동기화
   useEffect(() => {
@@ -918,14 +920,14 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
                           {canCheckoutWithService && (
                             <Button
-                              variant="secondary"
+                              variant={isApplyFlow ? "default" : "secondary"}
                               size="tall"
                               className="h-12 w-full gap-2 sm:h-14"
                               disabled={loading || quantity > stock}
                               onClick={handleBuyNowWithService}
                             >
                               <Wrench className="mr-2 h-5 w-5" />
-                              교체서비스 신청하기
+                              {serviceCtaLabel}
                             </Button>
                           )}
 
@@ -1650,10 +1652,15 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   <button
                     type="button"
                     onClick={handleBuyNowWithService}
-                    className="flex-1 h-12 rounded-lg border border-border bg-card dark:bg-muted hover:bg-muted/50 dark:hover:bg-muted active:bg-muted dark:active:bg-muted text-foreground font-semibold text-sm transition-colors flex items-center justify-center gap-2"
+                    className={cn(
+                      "flex-1 h-12 rounded-lg font-semibold text-sm transition-colors flex items-center justify-center gap-2",
+                      isApplyFlow
+                        ? "bg-foreground text-background shadow-sm hover:opacity-90 active:opacity-80"
+                        : "border border-border bg-card dark:bg-muted hover:bg-muted/50 dark:hover:bg-muted active:bg-muted dark:active:bg-muted text-foreground",
+                    )}
                   >
-                    <CreditCard className="h-4 w-4" />
-                    교체서비스 신청하기
+                    <Wrench className="h-4 w-4" />
+                    {serviceCtaLabel}
                   </button>
                 )}
               </div>
