@@ -1,34 +1,24 @@
 "use client";
 
-import {
-  FormEvent,
-  useRef,
-  useState,
-  ChangeEvent,
-  useMemo,
-  useEffect,
-} from "react";
+import { ArrowLeft, Loader2, Upload, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { MessageSquare, ArrowLeft, Loader2, Upload, X } from "lucide-react";
+import { ChangeEvent, FormEvent, useMemo, useRef, useState } from "react";
 
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
 import ImageUploader from "@/components/admin/ImageUploader";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { supabase } from "@/lib/supabase";
 import SiteContainer from "@/components/layout/SiteContainer";
-import { showErrorToast, showSuccessToast } from "@/lib/toast";
-import { useBackNavigationGuard } from "@/lib/hooks/useBackNavigationGuard";
-import {
-  UNSAVED_CHANGES_MESSAGE,
-  useUnsavedChangesGuard,
-} from "@/lib/hooks/useUnsavedChangesGuard";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 import { communityFetch } from "@/lib/community/communityFetch.client";
+import { useBackNavigationGuard } from "@/lib/hooks/useBackNavigationGuard";
+import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
+import { supabase } from "@/lib/supabase";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import { cn } from "@/lib/utils";
 
 export const CATEGORY_OPTIONS = [
   { value: "general", label: "자유" },
@@ -46,8 +36,7 @@ const TITLE_MAX = 80;
 const CONTENT_MIN = 10;
 const CONTENT_MAX = 5000;
 const hasHtmlLike = (s: string) => /<[^>]+>/.test(s);
-const hasScriptLike = (s: string) =>
-  /<\s*script/i.test(s) || /javascript\s*:/i.test(s);
+const hasScriptLike = (s: string) => /<\s*script/i.test(s) || /javascript\s*:/i.test(s);
 
 type FieldKey = "category" | "title" | "content" | "attachments";
 type FieldErrors = Partial<Record<FieldKey, string>>;
@@ -143,11 +132,7 @@ export default function FreeBoardWriteClient() {
     }
   };
 
-  const setInlineError = (
-    key: FieldKey,
-    msg: string,
-    formMsg = "입력값을 확인해 주세요.",
-  ) => {
+  const setInlineError = (key: FieldKey, msg: string, formMsg = "입력값을 확인해 주세요.") => {
     setFieldErrors((prev) => ({ ...prev, [key]: msg }));
     setErrorMsg(formMsg);
     requestAnimationFrame(() => focusField(key));
@@ -174,33 +159,23 @@ export default function FreeBoardWriteClient() {
     if (!c) errs.content = "내용을 입력해 주세요.";
 
     if (!errs.title) {
-      if (t.length < TITLE_MIN)
-        errs.title = `제목은 ${TITLE_MIN}자 이상 입력해 주세요.`;
-      else if (t.length > TITLE_MAX)
-        errs.title = `제목은 ${TITLE_MAX}자 이내로 입력해 주세요.`;
+      if (t.length < TITLE_MIN) errs.title = `제목은 ${TITLE_MIN}자 이상 입력해 주세요.`;
+      else if (t.length > TITLE_MAX) errs.title = `제목은 ${TITLE_MAX}자 이내로 입력해 주세요.`;
     }
     if (!errs.content) {
-      if (c.length < CONTENT_MIN)
-        errs.content = `내용은 ${CONTENT_MIN}자 이상 입력해 주세요.`;
-      else if (c.length > CONTENT_MAX)
-        errs.content = `내용은 ${CONTENT_MAX}자 이내로 입력해 주세요.`;
+      if (c.length < CONTENT_MIN) errs.content = `내용은 ${CONTENT_MIN}자 이상 입력해 주세요.`;
+      else if (c.length > CONTENT_MAX) errs.content = `내용은 ${CONTENT_MAX}자 이내로 입력해 주세요.`;
     }
 
     // 스크립트/HTML 유사 입력 방어: 해당 필드에 귀속
-    if (!errs.title && hasScriptLike(t))
-      errs.title = "스크립트로 의심되는 입력이 포함되어 저장할 수 없습니다.";
-    if (!errs.content && hasScriptLike(c))
-      errs.content = "스크립트로 의심되는 입력이 포함되어 저장할 수 없습니다.";
-    if (!errs.title && hasHtmlLike(t))
-      errs.title = "HTML 태그는 사용할 수 없습니다.";
-    if (!errs.content && hasHtmlLike(c))
-      errs.content = "HTML 태그는 사용할 수 없습니다.";
+    if (!errs.title && hasScriptLike(t)) errs.title = "스크립트로 의심되는 입력이 포함되어 저장할 수 없습니다.";
+    if (!errs.content && hasScriptLike(c)) errs.content = "스크립트로 의심되는 입력이 포함되어 저장할 수 없습니다.";
+    if (!errs.title && hasHtmlLike(t)) errs.title = "HTML 태그는 사용할 수 없습니다.";
+    if (!errs.content && hasHtmlLike(c)) errs.content = "HTML 태그는 사용할 수 없습니다.";
 
     // 이미지 업로더 max=5이지만, 제출 직전 한 번 더 방어
-    if (images.length > 5)
-      errs.attachments = "이미지는 최대 5장까지만 업로드할 수 있어요.";
-    if (selectedFiles.length > MAX_FILES)
-      errs.attachments = `파일은 최대 ${MAX_FILES}개까지만 업로드할 수 있어요.`;
+    if (images.length > 5) errs.attachments = "이미지는 최대 5장까지만 업로드할 수 있어요.";
+    if (selectedFiles.length > MAX_FILES) errs.attachments = `파일은 최대 ${MAX_FILES}개까지만 업로드할 수 있어요.`;
 
     return errs;
   };
@@ -214,39 +189,26 @@ export default function FreeBoardWriteClient() {
 
     // 개수 제한
     if (selectedFiles.length + files.length > MAX_FILES) {
-      setInlineError(
-        "attachments",
-        `파일은 최대 ${MAX_FILES}개까지만 업로드할 수 있어요.`,
-        "첨부 파일을 확인해 주세요.",
-      );
+      setInlineError("attachments", `파일은 최대 ${MAX_FILES}개까지만 업로드할 수 있어요.`, "첨부 파일을 확인해 주세요.");
       return;
     }
 
     // 용량 제한
     const tooLarge = files.find((f) => f.size > MAX_SIZE_MB * 1024 * 1024);
     if (tooLarge) {
-      setInlineError(
-        "attachments",
-        `파일당 ${MAX_SIZE_MB}MB를 초과할 수 없어요.`,
-        "첨부 파일을 확인해 주세요.",
-      );
+      setInlineError("attachments", `파일당 ${MAX_SIZE_MB}MB를 초과할 수 없어요.`, "첨부 파일을 확인해 주세요.");
       return;
     }
 
     // 이미지 파일 방지 (이미지는 이미지 탭에서만)
     const hasImage = files.some((f) => f.type?.startsWith("image/"));
     if (hasImage) {
-      setInlineError(
-        "attachments",
-        '이미지 파일은 "이미지 업로드" 탭에서 업로드해 주세요.',
-        "첨부 파일을 확인해 주세요.",
-      );
+      setInlineError("attachments", '이미지 파일은 "이미지 업로드" 탭에서 업로드해 주세요.', "첨부 파일을 확인해 주세요.");
       return;
     }
 
     // 드롭 업로드는 accept를 우회할 수 있으므로, 문서 allowlist를 추가로 방어
-    const extOk = (name: string) =>
-      /\.(pdf|docx?|xlsx?|xls|pptx?|ppt|hwp|hwpx|txt)$/i.test(name);
+    const extOk = (name: string) => /\.(pdf|docx?|xlsx?|xls|pptx?|ppt|hwp|hwpx|txt)$/i.test(name);
     const ALLOWED_MIME = new Set<string>([
       "application/pdf",
       "application/msword",
@@ -258,15 +220,9 @@ export default function FreeBoardWriteClient() {
       "text/plain",
       // HWP/HWPX는 브라우저/OS별로 mime이 비어있거나 제각각이라 확장자 기반을 주로 사용
     ]);
-    const invalid = files.find(
-      (f) => !(ALLOWED_MIME.has(f.type) || extOk(f.name)),
-    );
+    const invalid = files.find((f) => !(ALLOWED_MIME.has(f.type) || extOk(f.name)));
     if (invalid) {
-      setInlineError(
-        "attachments",
-        "문서 파일(PDF/DOC/DOCX/XLS/XLSX/PPT/PPTX/HWP/HWPX/TXT)만 업로드할 수 있어요.",
-        "첨부 파일을 확인해 주세요.",
-      );
+      setInlineError("attachments", "문서 파일(PDF/DOC/DOCX/XLS/XLSX/PPT/PPTX/HWP/HWPX/TXT)만 업로드할 수 있어요.", "첨부 파일을 확인해 주세요.");
       return;
     }
 
@@ -347,9 +303,7 @@ export default function FreeBoardWriteClient() {
       submitRef.current = true;
       setIsSubmitting(true);
 
-      let attachments:
-        | { name: string; url: string; size?: number }[]
-        | undefined;
+      let attachments: { name: string; url: string; size?: number }[] | undefined;
 
       if (selectedFiles.length > 0) {
         setIsUploadingFiles(true);
@@ -386,8 +340,7 @@ export default function FreeBoardWriteClient() {
       }
 
       if (!res.ok || !data?.ok) {
-        const msg =
-          data?.error ?? "글 작성에 실패했습니다. 잠시 후 다시 시도해 주세요.";
+        const msg = data?.error ?? "글 작성에 실패했습니다. 잠시 후 다시 시도해 주세요.";
         setErrorMsg(msg);
         // 서버/네트워크류는 토스트 유지(UX 일관성)
         showErrorToast(msg);
@@ -400,9 +353,7 @@ export default function FreeBoardWriteClient() {
       router.refresh();
     } catch (err) {
       console.error(err);
-      setErrorMsg(
-        "글 작성 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
-      );
+      setErrorMsg("글 작성 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
     } finally {
       setIsSubmitting(false);
       submitRef.current = false;
@@ -411,10 +362,7 @@ export default function FreeBoardWriteClient() {
 
   return (
     <div className="min-h-screen bg-muted/30">
-      <SiteContainer
-        variant="wide"
-        className="space-y-6 py-6 bp-sm:py-8 bp-md:space-y-8 bp-md:py-10"
-      >
+      <SiteContainer variant="wide" className="space-y-6 py-6 bp-sm:py-8 bp-md:space-y-8 bp-md:py-10">
         {/* 상단 헤더 영역 */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -422,23 +370,14 @@ export default function FreeBoardWriteClient() {
             <div className="mb-1 text-sm text-muted-foreground">
               <span className="font-medium text-success">게시판</span>
               <span className="mx-1">›</span>
-              <Link
-                href="/board/free"
-                onClick={guardLeave}
-                className="text-muted-foreground underline-offset-2 hover:underline dark:text-muted-foreground"
-              >
+              <Link href="/board/free" onClick={guardLeave} className="text-muted-foreground underline-offset-2 hover:underline dark:text-muted-foreground">
                 자유 게시판
               </Link>
               <span className="mx-1">›</span>
               <span>글쓰기</span>
             </div>
-            <h1 className="text-2xl font-bold tracking-normal text-foreground md:text-3xl">
-              자유 게시판 글쓰기
-            </h1>
-            <p className="mt-1 text-sm text-muted-foreground md:text-base">
-              테니스 관련 질문, 정보 공유, 후기, 잡담 등 다양한 이야기를
-              자유롭게 남겨 보세요.
-            </p>
+            <h1 className="text-2xl font-bold tracking-normal text-foreground md:text-3xl">자유 게시판 글쓰기</h1>
+            <p className="mt-1 text-sm text-muted-foreground md:text-base">테니스 관련 질문, 정보 공유, 후기, 잡담 등 다양한 이야기를 자유롭게 남겨 보세요.</p>
           </div>
 
           {/* 우측 버튼들: 목록으로 */}
@@ -455,16 +394,23 @@ export default function FreeBoardWriteClient() {
         {/* 글쓰기 카드 */}
         <Card className="border border-border bg-card shadow-md dark:bg-card">
           <CardHeader className="flex flex-row items-center gap-3 border-b bg-muted/30">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-secondary text-foreground shadow-sm">
-              <MessageSquare className="h-5 w-5" />
-            </div>
-            <div>
-              <CardTitle className="text-base md:text-lg">
-                자유 게시판 글 작성
-              </CardTitle>
-              <p className="mt-1 text-xs text-muted-foreground md:text-sm">
-                다른 이용자들이 함께 볼 수 있다는 점을 고려해, 예의를 지키는
-                표현을 사용해 주세요.
+            {/* 제목 입력 */}
+            <div className="space-y-2">
+              <Label htmlFor="title">제목</Label>
+              <Input
+                id="title"
+                ref={titleRef}
+                value={title}
+                onChange={(e) => {
+                  setTitle(e.target.value);
+                  if (fieldErrors.title) setFieldErrors((prev) => ({ ...prev, title: undefined }));
+                }}
+                disabled={isSubmitting}
+                maxLength={TITLE_MAX}
+              />
+              {fieldErrors.title ? <p className="text-xs text-destructive">{fieldErrors.title}</p> : null}
+              <p className="text-xs text-muted-foreground">
+                {title.trim().length}/{TITLE_MAX}
               </p>
             </div>
           </CardHeader>
@@ -489,44 +435,14 @@ export default function FreeBoardWriteClient() {
                       }}
                       className={cn(
                         "rounded-full border px-3 py-1",
-                        category === opt.value
-                          ? "border-border bg-secondary text-foreground dark:border-border dark:bg-secondary dark:text-foreground"
-                          : "border-border text-muted-foreground dark:border-border dark:text-muted-foreground",
+                        category === opt.value ? "border-border bg-secondary text-foreground dark:border-border dark:bg-secondary dark:text-foreground" : "border-border text-muted-foreground dark:border-border dark:text-muted-foreground",
                       )}
                     >
                       {opt.label}
                     </button>
                   ))}
                 </div>
-                {fieldErrors.category ? (
-                  <p className="text-xs text-destructive">
-                    {fieldErrors.category}
-                  </p>
-                ) : null}
-              </div>
-              {/* 제목 입력 */}
-              <div className="space-y-2">
-                <Label htmlFor="title">제목</Label>
-                <Input
-                  id="title"
-                  ref={titleRef}
-                  value={title}
-                  onChange={(e) => {
-                    setTitle(e.target.value);
-                    if (fieldErrors.title)
-                      setFieldErrors((prev) => ({ ...prev, title: undefined }));
-                  }}
-                  disabled={isSubmitting}
-                  maxLength={TITLE_MAX}
-                />
-                {fieldErrors.title ? (
-                  <p className="text-xs text-destructive">
-                    {fieldErrors.title}
-                  </p>
-                ) : null}
-                <p className="text-xs text-muted-foreground">
-                  {title.trim().length}/{TITLE_MAX}
-                </p>
+                {fieldErrors.category ? <p className="text-xs text-destructive">{fieldErrors.category}</p> : null}
               </div>
 
               {/* 내용 입력 */}
@@ -548,29 +464,18 @@ export default function FreeBoardWriteClient() {
                   disabled={isSubmitting}
                   maxLength={CONTENT_MAX}
                 />
-                {fieldErrors.content ? (
-                  <p className="text-xs text-destructive">
-                    {fieldErrors.content}
-                  </p>
-                ) : null}
+                {fieldErrors.content ? <p className="text-xs text-destructive">{fieldErrors.content}</p> : null}
                 <p className="text-xs text-muted-foreground">
                   {content.trim().length}/{CONTENT_MAX}
                 </p>
 
-                <p className="mt-1 text-xs text-muted-foreground">
-                  신청/주문 문의 등 개인 정보가 필요한 내용은 고객센터 Q&amp;A
-                  게시판을 활용해 주세요.
-                </p>
+                <p className="mt-1 text-xs text-muted-foreground">신청/주문 문의 등 개인 정보가 필요한 내용은 고객센터 Q&amp;A 게시판을 활용해 주세요.</p>
               </div>
 
               {/* 첨부 영역: 이미지 / 파일 탭 */}
               <div className="space-y-3" ref={attachmentsRef}>
                 <Label>첨부 (선택)</Label>
-                {fieldErrors.attachments ? (
-                  <p className="text-xs text-destructive">
-                    {fieldErrors.attachments}
-                  </p>
-                ) : null}
+                {fieldErrors.attachments ? <p className="text-xs text-destructive">{fieldErrors.attachments}</p> : null}
                 <Tabs defaultValue="image" className="w-full">
                   <TabsList className="grid w-full grid-cols-2">
                     <TabsTrigger value="image">이미지 업로드</TabsTrigger>
@@ -579,17 +484,8 @@ export default function FreeBoardWriteClient() {
 
                   {/* 이미지 업로드 탭 */}
                   <TabsContent value="image" className="pt-4 space-y-2">
-                    <p className="text-xs text-muted-foreground">
-                      최대 5장까지 업로드할 수 있으며, 첫 번째 이미지가 대표로
-                      사용됩니다.
-                    </p>
-                    <ImageUploader
-                      value={images}
-                      onChange={setImages}
-                      max={5}
-                      folder="community/posts"
-                      onUploadingChange={setIsUploadingImages}
-                    />
+                    <p className="text-xs text-muted-foreground">최대 5장까지 업로드할 수 있으며, 첫 번째 이미지가 대표로 사용됩니다.</p>
+                    <ImageUploader value={images} onChange={setImages} max={5} folder="community/posts" onUploadingChange={setIsUploadingImages} />
                   </TabsContent>
 
                   {/* 파일 업로드 탭 */}
@@ -615,13 +511,9 @@ export default function FreeBoardWriteClient() {
                       }}
                     >
                       <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                      <p className="text-sm text-muted-foreground">
-                        클릭하여 파일을 선택하거나, 이 영역으로 드래그하여
-                        업로드할 수 있어요.
-                      </p>
+                      <p className="text-sm text-muted-foreground">클릭하여 파일을 선택하거나, 이 영역으로 드래그하여 업로드할 수 있어요.</p>
                       <p className="mt-1 text-xs text-muted-foreground">
-                        이미지 파일은 이미지 탭에서 업로드해 주세요. (파일당
-                        최대 {MAX_SIZE_MB}MB, 최대 {MAX_FILES}개)
+                        이미지 파일은 이미지 탭에서 업로드해 주세요. (파일당 최대 {MAX_SIZE_MB}MB, 최대 {MAX_FILES}개)
                       </p>
                       <Button
                         type="button"
@@ -636,14 +528,7 @@ export default function FreeBoardWriteClient() {
                         <Upload className="h-4 w-4 mr-2" />
                         파일 선택
                       </Button>
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        multiple
-                        accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.hwp,.hwpx,.txt"
-                        className="sr-only"
-                        onChange={handleFileInputChange}
-                      />
+                      <input ref={fileInputRef} type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.hwp,.hwpx,.txt" className="sr-only" onChange={handleFileInputChange} />
                     </div>
 
                     {/* 선택된 파일 카드 목록 */}
@@ -654,20 +539,12 @@ export default function FreeBoardWriteClient() {
                         </p>
                         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                           {selectedFiles.map((file, index) => (
-                            <div
-                              key={`${file.name}-${index}`}
-                              className="group relative flex flex-col justify-between rounded-lg bg-card px-3 py-2 shadow-sm hover:shadow-md ring-1 ring-ring hover:ring-2 hover:ring-ring transition"
-                            >
+                            <div key={`${file.name}-${index}`} className="group relative flex flex-col justify-between rounded-lg bg-card px-3 py-2 shadow-sm hover:shadow-md ring-1 ring-ring hover:ring-2 hover:ring-ring transition">
                               <div className="flex-1 flex flex-col gap-1 text-xs">
-                                <span
-                                  className="font-medium truncate"
-                                  title={file.name}
-                                >
+                                <span className="font-medium truncate" title={file.name}>
                                   {file.name}
                                 </span>
-                                <span className="text-muted-foreground">
-                                  {(file.size / 1024 / 1024).toFixed(2)} MB
-                                </span>
+                                <span className="text-muted-foreground">{(file.size / 1024 / 1024).toFixed(2)} MB</span>
                               </div>
 
                               <button
@@ -688,25 +565,10 @@ export default function FreeBoardWriteClient() {
 
               {/* 버튼 영역 */}
               <div className="flex items-center justify-end gap-2 pt-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  disabled={
-                    isSubmitting || isUploadingImages || isUploadingFiles
-                  }
-                  onClick={handleCancel}
-                >
+                <Button type="button" variant="outline" size="sm" disabled={isSubmitting || isUploadingImages || isUploadingFiles} onClick={handleCancel}>
                   취소
                 </Button>
-                <Button
-                  type="submit"
-                  size="sm"
-                  className={cn("gap-2")}
-                  disabled={
-                    isSubmitting || isUploadingImages || isUploadingFiles
-                  }
-                >
+                <Button type="submit" size="sm" className={cn("gap-2")} disabled={isSubmitting || isUploadingImages || isUploadingFiles}>
                   {isSubmitting ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />

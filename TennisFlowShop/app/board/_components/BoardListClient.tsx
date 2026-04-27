@@ -1,24 +1,24 @@
-'use client';
+"use client";
 
-import { ChevronDown, ChevronUp, Eye, ImageIcon, MessageSquare, PackageSearch, Paperclip, Plus, RotateCcw, Search, SlidersHorizontal, ThumbsUp, X } from 'lucide-react';
-import dynamic from 'next/dynamic';
-import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
-import useSWR from 'swr';
+import { ChevronDown, ChevronUp, Eye, ImageIcon, MessageSquare, PackageSearch, Paperclip, Plus, RotateCcw, Search, SlidersHorizontal, ThumbsUp, X } from "lucide-react";
+import dynamic from "next/dynamic";
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+import useSWR from "swr";
 
-import type { BoardTypeConfig } from '@/app/board/_components/board-config';
-import { getCategoryBadgeText } from '@/app/board/_components/board-config';
-import ErrorBox from '@/app/board/_components/ErrorBox';
-import PinnedNoticeStrip from '@/app/board/_components/PinnedNoticeStrip';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import AsyncState from '@/components/system/AsyncState';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Skeleton } from '@/components/ui/skeleton';
-import { badgeSizeSm, getBoardCategoryTone } from '@/lib/badge-style';
-import { boardFetcher, parseApiError } from '@/lib/fetchers/boardFetcher';
-import { useCurrentUser } from '@/lib/hooks/useCurrentUser';
+import type { BoardTypeConfig } from "@/app/board/_components/board-config";
+import { getCategoryBadgeText } from "@/app/board/_components/board-config";
+import ErrorBox from "@/app/board/_components/ErrorBox";
+import PinnedNoticeStrip from "@/app/board/_components/PinnedNoticeStrip";
+import AsyncState from "@/components/system/AsyncState";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Skeleton } from "@/components/ui/skeleton";
+import { badgeSizeSm, getBoardCategoryTone } from "@/lib/badge-style";
+import { boardFetcher, parseApiError } from "@/lib/fetchers/boardFetcher";
+import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import {
   MARKET_CONDITION_GRADE_OPTIONS,
   MARKET_RACKET_GRIP_SIZE_OPTIONS,
@@ -33,12 +33,12 @@ import {
   getMarketStringColorLabel,
   getMarketStringLengthLabel,
   getMarketStringMaterialLabel,
-} from '@/lib/market';
-import { showErrorToast } from '@/lib/toast';
-import type { CommunityPost } from '@/lib/types/community';
-import { useRouter, useSearchParams } from 'next/navigation';
+} from "@/lib/market";
+import { showErrorToast } from "@/lib/toast";
+import type { CommunityPost } from "@/lib/types/community";
+import { useRouter, useSearchParams } from "next/navigation";
 
-const MessageComposeDialog = dynamic(() => import('@/app/messages/_components/MessageComposeDialog'), {
+const MessageComposeDialog = dynamic(() => import("@/app/messages/_components/MessageComposeDialog"), {
   loading: () => null,
 });
 
@@ -62,77 +62,77 @@ type NoticePinnedResponse = {
 };
 
 const MARKET_FILTER_KEYS = [
-  'saleStatus',
-  'conditionGrade',
-  'minPrice',
-  'maxPrice',
-  'modelKeyword',
-  'gripSize',
-  'pattern',
-  'material',
-  'gauge',
-  'color',
-  'length',
-  'minWeight',
-  'maxWeight',
-  'minBalance',
-  'maxBalance',
-  'minHeadSize',
-  'maxHeadSize',
-  'minSwingWeight',
-  'maxSwingWeight',
-  'minStiffnessRa',
-  'maxStiffnessRa',
+  "saleStatus",
+  "conditionGrade",
+  "minPrice",
+  "maxPrice",
+  "modelKeyword",
+  "gripSize",
+  "pattern",
+  "material",
+  "gauge",
+  "color",
+  "length",
+  "minWeight",
+  "maxWeight",
+  "minBalance",
+  "maxBalance",
+  "minHeadSize",
+  "maxHeadSize",
+  "minSwingWeight",
+  "maxSwingWeight",
+  "minStiffnessRa",
+  "maxStiffnessRa",
 ] as const;
 
 type MarketFilterKey = (typeof MARKET_FILTER_KEYS)[number];
 type MarketFilterDraft = Record<MarketFilterKey, string>;
 
-const EMPTY_MARKET_FILTER_DRAFT: MarketFilterDraft = MARKET_FILTER_KEYS.reduce((acc, key) => ({ ...acc, [key]: '' }), {} as MarketFilterDraft);
+const EMPTY_MARKET_FILTER_DRAFT: MarketFilterDraft = MARKET_FILTER_KEYS.reduce((acc, key) => ({ ...acc, [key]: "" }), {} as MarketFilterDraft);
 
-const PRICE_FILTER_KEYS = new Set<MarketFilterKey>(['minPrice', 'maxPrice']);
+const PRICE_FILTER_KEYS = new Set<MarketFilterKey>(["minPrice", "maxPrice"]);
 
-const stripNonDigits = (value: string) => value.replace(/[^\d]/g, '');
+const stripNonDigits = (value: string) => value.replace(/[^\d]/g, "");
 
 const formatPriceInput = (value: string) => {
   const digitsOnly = stripNonDigits(value);
-  if (!digitsOnly) return '';
-  return Number(digitsOnly).toLocaleString('ko-KR');
+  if (!digitsOnly) return "";
+  return Number(digitsOnly).toLocaleString("ko-KR");
 };
 
 const normalizePriceQueryValue = (value: string) => stripNonDigits(value);
 
 const fmtDateTime = (v: string | Date) =>
   new Date(v)
-    .toLocaleDateString('ko-KR', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
+    .toLocaleDateString("ko-KR", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
     })
-    .replace(/\.\s/g, '.')
-    .replace(/\.$/, '');
+    .replace(/\.\s/g, ".")
+    .replace(/\.$/, "");
 
-const boardListMobileTitleClampClass = 'line-clamp-2 font-medium leading-snug text-foreground';
-const boardListMobileMetaWrapClass = 'mt-1.5 flex flex-wrap items-center justify-between gap-2 text-xs text-foreground/75';
+const boardListMobileTitleClampClass = "line-clamp-2 font-medium leading-snug text-foreground";
+const boardListMobileMetaWrapClass = "mt-1.5 flex flex-wrap items-center justify-between gap-2 text-xs text-foreground/75";
 
 // 판매상태 배지 variant 매핑
-function saleStatusBadgeVariant(status?: string | null): 'success' | 'warning' | 'neutral' {
-  if (status === 'selling') return 'success';
-  if (status === 'reserved') return 'warning';
-  return 'neutral';
+function saleStatusBadgeVariant(status?: string | null): "success" | "warning" | "neutral" {
+  if (status === "selling") return "success";
+  if (status === "reserved") return "warning";
+  return "neutral";
 }
 
 // 등급 배지 variant 매핑
-function conditionGradeBadgeVariant(grade?: string | null): 'brand' | 'info' | 'neutral' | 'warning' {
-  if (grade === 'S') return 'brand';
-  if (grade === 'A') return 'info';
-  if (grade === 'B') return 'neutral';
-  return 'warning';
+function conditionGradeBadgeVariant(grade?: string | null): "brand" | "info" | "neutral" | "warning" {
+  if (grade === "S") return "brand";
+  if (grade === "A") return "info";
+  if (grade === "B") return "neutral";
+  return "warning";
 }
 
 // 공통 폼 컨트롤 스타일
-const selectClass = 'h-8 w-full rounded-md border border-border bg-background px-2.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-ring';
-const inputClass = 'h-8 w-full rounded-md border border-border bg-background px-2.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring';
+const selectClass = "h-8 w-full rounded-md border border-border bg-background px-2.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-ring";
+const inputClass = "h-8 w-full rounded-md border border-border bg-background px-2.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring";
 
 // 범위형 필터 그룹 컴포넌트
 function RangeFilterGroup({
@@ -140,8 +140,8 @@ function RangeFilterGroup({
   unit,
   minValue,
   maxValue,
-  minPlaceholder = '최소',
-  maxPlaceholder = '최대',
+  minPlaceholder = "최소",
+  maxPlaceholder = "최대",
   onMinChange,
   onMaxChange,
   formatValue,
@@ -195,8 +195,8 @@ function FilterSelectGroup({ label, value, onChange, placeholder, options }: { l
       <select className={selectClass} value={value} onChange={(e) => onChange(e.target.value)}>
         <option value="">{placeholder}</option>
         {options.map((o) => {
-          const val = typeof o === 'string' ? o : o.value;
-          const lab = typeof o === 'string' ? o : o.label;
+          const val = typeof o === "string" ? o : o.value;
+          const lab = typeof o === "string" ? o : o.label;
           return (
             <option key={val} value={val}>
               {lab}
@@ -221,69 +221,69 @@ function FilterInputGroup({ label, value, onChange, placeholder }: { label: stri
 // 적용된 필터 칩 데이터 생성
 function getActiveFilterChips(searchParams: URLSearchParams): { key: string; label: string }[] {
   const chips: { key: string; label: string }[] = [];
-  const saleStatus = searchParams.get('saleStatus');
+  const saleStatus = searchParams.get("saleStatus");
   if (saleStatus)
     chips.push({
-      key: 'saleStatus',
+      key: "saleStatus",
       label: `${getMarketSaleStatusLabel(saleStatus)}`,
     });
-  const conditionGrade = searchParams.get('conditionGrade');
-  if (conditionGrade) chips.push({ key: 'conditionGrade', label: `등급 ${conditionGrade}` });
-  const minPrice = searchParams.get('minPrice');
-  const maxPrice = searchParams.get('maxPrice');
+  const conditionGrade = searchParams.get("conditionGrade");
+  if (conditionGrade) chips.push({ key: "conditionGrade", label: `등급 ${conditionGrade}` });
+  const minPrice = searchParams.get("minPrice");
+  const maxPrice = searchParams.get("maxPrice");
   if (minPrice && maxPrice)
     chips.push({
-      key: 'price',
+      key: "price",
       label: `${Number(minPrice).toLocaleString()}~${Number(maxPrice).toLocaleString()}원`,
     });
   else if (minPrice)
     chips.push({
-      key: 'minPrice',
+      key: "minPrice",
       label: `${Number(minPrice).toLocaleString()}원 이상`,
     });
   else if (maxPrice)
     chips.push({
-      key: 'maxPrice',
+      key: "maxPrice",
       label: `${Number(maxPrice).toLocaleString()}원 이하`,
     });
-  const modelKeyword = searchParams.get('modelKeyword');
-  if (modelKeyword) chips.push({ key: 'modelKeyword', label: `"${modelKeyword}"` });
-  const gripSize = searchParams.get('gripSize');
-  if (gripSize) chips.push({ key: 'gripSize', label: `그립 ${gripSize}` });
-  const pattern = searchParams.get('pattern');
-  if (pattern) chips.push({ key: 'pattern', label: `패턴 ${pattern}` });
-  const material = searchParams.get('material');
+  const modelKeyword = searchParams.get("modelKeyword");
+  if (modelKeyword) chips.push({ key: "modelKeyword", label: `"${modelKeyword}"` });
+  const gripSize = searchParams.get("gripSize");
+  if (gripSize) chips.push({ key: "gripSize", label: `그립 ${gripSize}` });
+  const pattern = searchParams.get("pattern");
+  if (pattern) chips.push({ key: "pattern", label: `패턴 ${pattern}` });
+  const material = searchParams.get("material");
   if (material)
     chips.push({
-      key: 'material',
+      key: "material",
       label: getMarketStringMaterialLabel(material),
     });
-  const gauge = searchParams.get('gauge');
-  if (gauge) chips.push({ key: 'gauge', label: `게이지 ${gauge}` });
-  const color = searchParams.get('color');
-  if (color) chips.push({ key: 'color', label: getMarketStringColorLabel(color) });
-  const length = searchParams.get('length');
-  if (length) chips.push({ key: 'length', label: getMarketStringLengthLabel(length) });
-  const minWeight = searchParams.get('minWeight');
-  const maxWeight = searchParams.get('maxWeight');
+  const gauge = searchParams.get("gauge");
+  if (gauge) chips.push({ key: "gauge", label: `게이지 ${gauge}` });
+  const color = searchParams.get("color");
+  if (color) chips.push({ key: "color", label: getMarketStringColorLabel(color) });
+  const length = searchParams.get("length");
+  if (length) chips.push({ key: "length", label: getMarketStringLengthLabel(length) });
+  const minWeight = searchParams.get("minWeight");
+  const maxWeight = searchParams.get("maxWeight");
   if (minWeight || maxWeight)
     chips.push({
-      key: 'weight',
-      label: `무게 ${minWeight || ''}~${maxWeight || ''}g`,
+      key: "weight",
+      label: `무게 ${minWeight || ""}~${maxWeight || ""}g`,
     });
-  const minBalance = searchParams.get('minBalance');
-  const maxBalance = searchParams.get('maxBalance');
+  const minBalance = searchParams.get("minBalance");
+  const maxBalance = searchParams.get("maxBalance");
   if (minBalance || maxBalance)
     chips.push({
-      key: 'balance',
-      label: `밸런스 ${minBalance || ''}~${maxBalance || ''}mm`,
+      key: "balance",
+      label: `밸런스 ${minBalance || ""}~${maxBalance || ""}mm`,
     });
-  const minHeadSize = searchParams.get('minHeadSize');
-  const maxHeadSize = searchParams.get('maxHeadSize');
+  const minHeadSize = searchParams.get("minHeadSize");
+  const maxHeadSize = searchParams.get("maxHeadSize");
   if (minHeadSize || maxHeadSize)
     chips.push({
-      key: 'headSize',
-      label: `헤드 ${minHeadSize || ''}~${maxHeadSize || ''}sq in`,
+      key: "headSize",
+      label: `헤드 ${minHeadSize || ""}~${maxHeadSize || ""}sq in`,
     });
   return chips;
 }
@@ -313,16 +313,16 @@ function ListSkeleton() {
 export default function BoardListClient({ config }: { config: BoardTypeConfig }) {
   // 페이지 상태
   const [page, setPage] = useState(1);
-  const [pageJump, setPageJump] = useState('');
+  const [pageJump, setPageJump] = useState("");
 
   // 정렬 상태
-  const [sort, setSort] = useState<'latest' | 'views' | 'likes'>('latest');
+  const [sort, setSort] = useState<"latest" | "views" | "likes">("latest");
 
   const { user, loading } = useCurrentUser();
   const router = useRouter();
   const searchParams = useSearchParams();
   const pageParam = useMemo(() => {
-    const rawPage = searchParams.get('page');
+    const rawPage = searchParams.get("page");
     const parsedPage = rawPage ? Number.parseInt(rawPage, 10) : 1;
     return Number.isFinite(parsedPage) && parsedPage > 0 ? parsedPage : 1;
   }, [searchParams]);
@@ -332,7 +332,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
     return currentListQuery ? `${base}?${currentListQuery}` : base;
   };
 
-  const { data: pinnedNoticeData } = useSWR<NoticePinnedResponse>('/api/boards?type=notice&page=1&limit=5', boardFetcher, {
+  const { data: pinnedNoticeData } = useSWR<NoticePinnedResponse>("/api/boards?type=notice&page=1&limit=5", boardFetcher, {
     revalidateOnFocus: false,
     keepPreviousData: true,
   });
@@ -359,53 +359,53 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
 
   const openCompose = (toUserId: string, toName?: string | null) => {
     if (!user) {
-      showErrorToast('로그인 후 이용할 수 있습니다.');
-      const redirectTo = typeof window !== 'undefined' ? window.location.pathname + window.location.search : config.routePrefix;
+      showErrorToast("로그인 후 이용할 수 있습니다.");
+      const redirectTo = typeof window !== "undefined" ? window.location.pathname + window.location.search : config.routePrefix;
       router.push(`/login?next=${encodeURIComponent(redirectTo)}`);
       return;
     }
 
-    const safeName = (toName ?? '').trim() || '회원';
+    const safeName = (toName ?? "").trim() || "회원";
 
     setComposeTo({ id: toUserId, name: safeName });
     setComposeOpen(true);
   };
 
-  const rawBrandParam = searchParams.get('brand');
-  const brandParam = typeof rawBrandParam === 'string' ? rawBrandParam : null;
+  const rawBrandParam = searchParams.get("brand");
+  const brandParam = typeof rawBrandParam === "string" ? rawBrandParam : null;
 
-  const [brand, setBrand] = useState<string>(brandParam ?? '');
+  const [brand, setBrand] = useState<string>(brandParam ?? "");
 
   useEffect(() => {
-    setBrand(brandParam ?? '');
+    setBrand(brandParam ?? "");
   }, [brandParam]);
 
   // 사용자의 게시물 검색
-  const authorId = searchParams.get('authorId');
-  const authorName = searchParams.get('authorName');
+  const authorId = searchParams.get("authorId");
+  const authorName = searchParams.get("authorName");
 
   // 검색어 & 검색 타입 (URL 기준)
-  const qParam = searchParams.get('q') ?? '';
-  const rawSearchType = searchParams.get('searchType');
-  const searchTypeParam: 'title' | 'author' | 'title_content' = rawSearchType === 'title' || rawSearchType === 'author' || rawSearchType === 'title_content' ? rawSearchType : 'title_content'; // 기본값: 제목+내용
+  const qParam = searchParams.get("q") ?? "";
+  const rawSearchType = searchParams.get("searchType");
+  const searchTypeParam: "title" | "author" | "title_content" = rawSearchType === "title" || rawSearchType === "author" || rawSearchType === "title_content" ? rawSearchType : "title_content"; // 기본값: 제목+내용
 
   // 검색 입력 상태 (폼에서 사용하는 값)
   const [searchText, setSearchText] = useState(qParam);
-  const [searchType, setSearchType] = useState<'title' | 'author' | 'title_content'>(searchTypeParam);
+  const [searchType, setSearchType] = useState<"title" | "author" | "title_content">(searchTypeParam);
 
   // 카테고리 (URL 기준)
-  const rawCategoryParam = searchParams.get('category');
+  const rawCategoryParam = searchParams.get("category");
   const categoryParam = rawCategoryParam && config.categoryMap[rawCategoryParam] ? rawCategoryParam : null;
 
   // UI에서 사용할 카테고리 상태 (전체 포함)
-  const [category, setCategory] = useState<string>(categoryParam ?? 'all');
+  const [category, setCategory] = useState<string>(categoryParam ?? "all");
 
   // URL의 category가 바뀌면 상태도 동기화
   useEffect(() => {
     if (categoryParam) {
       setCategory(categoryParam);
     } else {
-      setCategory('all');
+      setCategory("all");
     }
   }, [categoryParam]);
 
@@ -426,10 +426,10 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
   // market 필터는 controlled state로 동기화합니다.
   // URL -> draft 동기화를 유지해 reset/apply 직후 입력값이 즉시 일치하도록 보장합니다.
   useEffect(() => {
-    if (config.boardType !== 'market') return;
+    if (config.boardType !== "market") return;
     const nextDraft: MarketFilterDraft = { ...EMPTY_MARKET_FILTER_DRAFT };
     MARKET_FILTER_KEYS.forEach((key) => {
-      const rawValue = searchParams.get(key) ?? '';
+      const rawValue = searchParams.get(key) ?? "";
       nextDraft[key] = PRICE_FILTER_KEYS.has(key) ? formatPriceInput(rawValue) : rawValue;
     });
     setMarketFilterDraft(nextDraft);
@@ -441,12 +441,12 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
     setCategory(next);
 
     const sp = new URLSearchParams(searchParams.toString());
-    if (next === 'all') sp.delete('category');
-    else sp.set('category', next);
-    sp.delete('page');
+    if (next === "all") sp.delete("category");
+    else sp.set("category", next);
+    sp.delete("page");
 
     // 라켓/스트링이 아니면 brand 제거
-    if (!config.brandOptionsByCategory || !config.brandOptionsByCategory[next]) sp.delete('brand');
+    if (!config.brandOptionsByCategory || !config.brandOptionsByCategory[next]) sp.delete("brand");
 
     router.push(`${config.routePrefix}?${sp.toString()}`);
   };
@@ -454,7 +454,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
   // market 필터 적용 시 URL/page/local state를 동시에 맞춥니다.
   // page=1 고정은 필터 변화 후 첫 페이지부터 결과를 보는 UX를 위한 계약입니다.
   const pushMarketFilters = (sp: URLSearchParams, nextDraft?: MarketFilterDraft) => {
-    sp.set('page', '1');
+    sp.set("page", "1");
     setPage(1);
     if (nextDraft) setMarketFilterDraft(nextDraft);
     router.push(`${config.routePrefix}?${sp.toString()}`);
@@ -468,7 +468,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
     const hasMaxPrice = Number.isFinite(maxPrice) && maxPrice > 0;
 
     if (hasMinPrice && hasMaxPrice && minPrice > maxPrice) {
-      showErrorToast('최소가격은 최대가격보다 클 수 없습니다.');
+      showErrorToast("최소가격은 최대가격보다 클 수 없습니다.");
       return;
     }
 
@@ -494,9 +494,9 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
 
     const sp = new URLSearchParams(searchParams.toString());
 
-    if (!nextBrand) sp.delete('brand');
-    else sp.set('brand', nextBrand);
-    sp.delete('page');
+    if (!nextBrand) sp.delete("brand");
+    else sp.set("brand", nextBrand);
+    sp.delete("page");
 
     router.push(`${config.routePrefix}?${sp.toString()}`);
   };
@@ -513,26 +513,26 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
   });
 
   if (brandParam && categoryParam && config.brandOptionsByCategory?.[categoryParam]) {
-    qs.set('brand', brandParam);
+    qs.set("brand", brandParam);
   }
 
   if (authorId) {
-    qs.set('authorId', authorId);
+    qs.set("authorId", authorId);
   }
 
   // 카테고리 필터
   if (categoryParam) {
-    qs.set('category', categoryParam);
+    qs.set("category", categoryParam);
   }
 
   // 검색 쿼리 반영
   if (qParam) {
-    qs.set('q', qParam);
-    qs.set('searchType', searchTypeParam);
+    qs.set("q", qParam);
+    qs.set("searchType", searchTypeParam);
   }
 
   // market 전용 필터는 URLSearchParams를 그대로 API 쿼리에 전달
-  if (config.boardType === 'market') {
+  if (config.boardType === "market") {
     MARKET_FILTER_KEYS.forEach((k) => {
       const v = searchParams.get(k);
       if (v) qs.set(k, v);
@@ -545,16 +545,16 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
     const params = new URLSearchParams(searchParams.toString());
 
     if (searchText.trim()) {
-      params.set('q', searchText.trim());
-      params.set('searchType', searchType);
+      params.set("q", searchText.trim());
+      params.set("searchType", searchType);
     } else {
       // 빈 검색어면 검색 관련 파라미터 제거
-      params.delete('q');
-      params.delete('searchType');
+      params.delete("q");
+      params.delete("searchType");
     }
 
     // 검색/해제 시 목록 시작 지점을 예측 가능하게 1페이지로 고정
-    params.delete('page');
+    params.delete("page");
 
     router.push(`${config.routePrefix}?${params.toString()}`);
     setPage(1); // 검색하면 1페이지부터 다시
@@ -562,13 +562,13 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
 
   const handleSearchReset = () => {
     const params = new URLSearchParams(searchParams.toString());
-    params.delete('q');
-    params.delete('searchType');
-    params.delete('page');
+    params.delete("q");
+    params.delete("searchType");
+    params.delete("page");
 
     router.push(`${config.routePrefix}?${params.toString()}`);
-    setSearchText('');
-    setSearchType('title_content');
+    setSearchText("");
+    setSearchType("title_content");
     setPage(1);
   };
 
@@ -578,13 +578,13 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
   // 로딩/에러/성공을 분리해서 헤더 수치가 0건처럼 먼저 보이지 않게 처리
   const hasDataError = Boolean(error);
   const hasResolvedData = !isLoading && !hasDataError && Boolean(data);
-  const hasResolvedTotal = hasResolvedData && typeof data?.total === 'number';
+  const hasResolvedTotal = hasResolvedData && typeof data?.total === "number";
 
   const items = hasResolvedData ? (data?.items ?? []) : [];
   const total = hasResolvedTotal ? data!.total : null;
   const shouldShowEmptyState = hasResolvedData && items.length === 0;
   const shouldShowRows = hasResolvedData && items.length > 0;
-  const activeMarketFilterCount = useMemo(() => MARKET_FILTER_KEYS.filter((key) => (searchParams.get(key) ?? '').trim() !== '').length, [searchParams]);
+  const activeMarketFilterCount = useMemo(() => MARKET_FILTER_KEYS.filter((key) => (searchParams.get(key) ?? "").trim() !== "").length, [searchParams]);
 
   // total이 확정된 경우에만 실제 페이지 수를 계산하고, 미확정 상태에서는 내부 보수값(1)만 사용
   const totalPages = hasResolvedTotal ? Math.max(1, Math.ceil((total ?? 0) / PAGE_LIMIT)) : 1;
@@ -597,8 +597,8 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
     setPage(clampedPage);
 
     const params = new URLSearchParams(searchParams.toString());
-    if (clampedPage <= 1) params.delete('page');
-    else params.set('page', String(clampedPage));
+    if (clampedPage <= 1) params.delete("page");
+    else params.set("page", String(clampedPage));
 
     const queryString = params.toString();
     const nextUrl = queryString ? `${config.routePrefix}?${queryString}` : config.routePrefix;
@@ -613,7 +613,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
     const parsed = Number.parseInt(pageJump, 10);
     if (Number.isNaN(parsed)) return;
     movePage(parsed);
-    setPageJump('');
+    setPageJump("");
   };
 
   return (
@@ -644,7 +644,6 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
           </div>
 
           <div className="flex flex-wrap gap-2">
-
             <Button
               type="button"
               size="sm"
@@ -653,7 +652,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
               onClick={() => {
                 if (!user) {
                   // 비회원: 로그인 페이지로 이동
-                  const redirectTo = typeof window !== 'undefined' ? window.location.pathname + window.location.search : config.routePrefix;
+                  const redirectTo = typeof window !== "undefined" ? window.location.pathname + window.location.search : config.routePrefix;
                   router.push(`/login?next=${encodeURIComponent(redirectTo)}`);
                   return;
                 }
@@ -671,19 +670,12 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
         <Card className="border bg-card shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between gap-3 border-b border-border bg-muted/30 px-4 py-3 sm:px-6">
             <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-secondary text-foreground">
-                <MessageSquare className="h-4 w-4" />
-              </div>
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-secondary text-foreground">{/* <MessageSquare className="h-4 w-4" /> */}</div>
               <div>
                 <CardTitle className="text-sm font-semibold md:text-base">{config.boardTitle}</CardTitle>
                 <p className="mt-0.5 text-xs text-foreground/75">{config.cardDescription}</p>
               </div>
             </div>
-            {hasResolvedTotal && (total ?? 0) > 0 && (
-              <Badge variant="secondary" className="hidden items-center gap-1 px-2.5 py-0.5 text-xs sm:inline-flex">
-                <span className="font-semibold tabular-nums">{(total ?? 0).toLocaleString()}</span>건
-              </Badge>
-            )}
           </CardHeader>
 
           <CardContent className="p-4 sm:p-6 space-y-4">
@@ -692,30 +684,30 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
               <div className="flex flex-col gap-3">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <div className="text-xs text-foreground/75">
-                    총 <span className="font-semibold">{hasResolvedTotal ? (total ?? 0).toLocaleString() : '-'}</span>
+                    총 <span className="font-semibold">{hasResolvedTotal ? (total ?? 0).toLocaleString() : "-"}</span>
                     개의 글이 있습니다.
                   </div>
                   <div className="flex items-center gap-2 text-xs">
                     <span className="hidden text-muted-foreground sm:inline">정렬:</span>
                     <div className="inline-flex overflow-hidden rounded-md border border-border bg-background">
                       {[
-                        { value: 'latest', label: '최신순' },
-                        { value: 'views', label: '조회순' },
-                        { value: 'likes', label: '추천순' },
+                        { value: "latest", label: "최신순" },
+                        { value: "views", label: "조회순" },
+                        { value: "likes", label: "추천순" },
                       ].map((opt) => (
                         <button
                           key={opt.value}
                           type="button"
                           onClick={() => {
-                            setSort(opt.value as 'latest' | 'views' | 'likes');
+                            setSort(opt.value as "latest" | "views" | "likes");
                             setPage(1);
                           }}
                           className={[
-                            'px-3 py-1.5 text-xs sm:text-[13px]',
-                            'transition-colors',
-                            'border-r border-border last:border-r-0',
-                            sort === opt.value ? 'bg-secondary text-foreground' : 'bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground',
-                          ].join(' ')}
+                            "px-3 py-1.5 text-xs sm:text-[13px]",
+                            "transition-colors",
+                            "border-r border-border last:border-r-0",
+                            sort === opt.value ? "bg-secondary text-foreground" : "bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground",
+                          ].join(" ")}
                         >
                           {opt.label}
                         </button>
@@ -727,18 +719,14 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                 {/* 카테고리 필터 */}
                 <div className="flex flex-wrap items-center gap-2 text-xs">
                   <span className="text-foreground">분류:</span>
-                  {[{ value: 'all', label: '전체' }, ...config.categories].map((cat) => {
+                  {[{ value: "all", label: "전체" }, ...config.categories].map((cat) => {
                     const active = category === cat.value;
                     return (
                       <button
                         key={cat.value}
                         type="button"
                         onClick={() => handleCategoryChange(cat.value as any)}
-                        className={[
-                          'rounded-full border px-3 py-1',
-                          'transition-colors',
-                          active ? 'border-border bg-secondary text-foreground' : 'border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground',
-                        ].join(' ')}
+                        className={["rounded-full border px-3 py-1", "transition-colors", active ? "border-border bg-secondary text-foreground" : "border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground"].join(" ")}
                       >
                         {cat.label}
                       </button>
@@ -748,16 +736,14 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                 {config.brandOptionsByCategory?.[category] && (
                   <div className="flex flex-wrap items-center gap-2 text-xs">
                     <span className="text-foreground">브랜드:</span>
-                    {[{ value: '', label: '전체' }, ...config.brandOptionsByCategory[category]].map((o) => {
+                    {[{ value: "", label: "전체" }, ...config.brandOptionsByCategory[category]].map((o) => {
                       const active = brand === o.value;
                       return (
                         <button
                           key={o.value}
                           type="button"
                           onClick={() => handleBrandChange(o.value)}
-                          className={['rounded-full border px-3 py-1 transition-colors', active ? 'border-border bg-secondary text-foreground' : 'border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground'].join(
-                            ' ',
-                          )}
+                          className={["rounded-full border px-3 py-1 transition-colors", active ? "border-border bg-secondary text-foreground" : "border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground"].join(" ")}
                         >
                           {o.label}
                         </button>
@@ -766,7 +752,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                   </div>
                 )}
 
-                {config.boardType === 'market' && (
+                {config.boardType === "market" && (
                   <div className="rounded-lg border border-border bg-card">
                     {/* 필터 헤더 */}
                     <button type="button" className="flex w-full items-center justify-between px-4 py-2.5 md:cursor-default" onClick={() => setIsMarketFilterOpen((prev) => !prev)}>
@@ -786,7 +772,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                               resetMarketFilters();
                             }}
                             onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
+                              if (e.key === "Enter") {
                                 e.stopPropagation();
                                 resetMarketFilters();
                               }
@@ -815,7 +801,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                     )}
 
                     {/* 필터 본문 */}
-                    <div className={[isMarketFilterOpen ? 'block' : 'hidden', 'border-t border-border md:block'].join(' ')}>
+                    <div className={[isMarketFilterOpen ? "block" : "hidden", "border-t border-border md:block"].join(" ")}>
                       {/* ── 기본 필터 섹션 ── */}
                       <div className="px-4 py-3">
                         <div className="mb-3 flex items-center gap-2">
@@ -873,7 +859,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                       </div>
 
                       {/* ── 라켓 카테고리 필터 ── */}
-                      {category === 'racket' && (
+                      {category === "racket" && (
                         <div className="border-t border-border bg-muted/20 px-4 py-3">
                           <div className="mb-3 flex items-center gap-2">
                             <div className="h-1 w-1 rounded-full bg-info" />
@@ -979,7 +965,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                       )}
 
                       {/* ── 스트링 카테고리 필터 ── */}
-                      {category === 'string' && (
+                      {category === "string" && (
                         <div className="border-t border-border bg-muted/20 px-4 py-3">
                           <div className="mb-3 flex items-center gap-2">
                             <div className="h-1 w-1 rounded-full bg-info" />
@@ -1064,7 +1050,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
 
                       {/* ── 필터 액션 바 ── */}
                       <div className="flex items-center justify-between border-t border-border bg-muted/30 px-4 py-2">
-                        <span className="text-xs text-foreground/75">{activeMarketFilterCount > 0 ? `${activeMarketFilterCount}개 조건 적용됨` : '조건을 선택하고 적용하세요'}</span>
+                        <span className="text-xs text-foreground/75">{activeMarketFilterCount > 0 ? `${activeMarketFilterCount}개 조건 적용됨` : "조건을 선택하고 적용하세요"}</span>
                         <div className="flex items-center gap-2">
                           <Button type="button" variant="ghost" size="sm" className="h-7 gap-1 px-2 text-xs text-foreground/75" onClick={resetMarketFilters}>
                             <RotateCcw className="h-3 w-3" />
@@ -1083,7 +1069,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
             )}
             {authorId && (
               <div className="flex items-center gap-2 text-sm">
-                <span>현재: {authorName ? `${authorName}님의 글` : '특정 작성자 글'} 보는 중</span>
+                <span>현재: {authorName ? `${authorName}님의 글` : "특정 작성자 글"} 보는 중</span>
                 <Button
                   variant="outline"
                   size="sm"
@@ -1106,8 +1092,8 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                   kind="empty"
                   variant="card"
                   icon={<PackageSearch className="h-4 w-4" />}
-                  title={qParam ? '검색 결과가 없습니다' : activeMarketFilterCount > 0 ? '조건에 맞는 매물이 없습니다' : '아직 등록된 글이 없습니다'}
-                  description={qParam ? '검색어를 바꾸거나 전체 글 보기로 돌아가 다시 확인해 보세요' : activeMarketFilterCount > 0 ? '필터 조건을 변경하거나 초기화해 보세요' : config.emptyDescription}
+                  title={qParam ? "검색 결과가 없습니다" : activeMarketFilterCount > 0 ? "조건에 맞는 매물이 없습니다" : "아직 등록된 글이 없습니다"}
+                  description={qParam ? "검색어를 바꾸거나 전체 글 보기로 돌아가 다시 확인해 보세요" : activeMarketFilterCount > 0 ? "필터 조건을 변경하거나 초기화해 보세요" : config.emptyDescription}
                 />
                 <div className="mt-2 flex w-full flex-wrap items-center justify-center gap-2 sm:w-auto sm:justify-start">
                   {qParam && (
@@ -1135,7 +1121,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                 {/* 데스크탑: 테이블형 리스트 */}
                 <div className="hidden text-sm md:block">
                   {/* 헤더 행 */}
-                  {config.boardType === 'market' ? (
+                  {config.boardType === "market" ? (
                     <div className="grid grid-cols-[44px_64px_minmax(0,1fr)_110px_72px_90px_88px_52px] items-center border-b border-border bg-muted/40 px-3 py-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
                       <div className="text-center">No.</div>
                       <div className="text-center">분류</div>
@@ -1166,22 +1152,22 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                   {/* 데이터 행들 */}
                   <div className="divide-y divide-border/60">
                     {items.map((post) => {
-                      const isMarket = config.boardType === 'market';
-                      const isSold = post.marketMeta?.saleStatus === 'sold';
+                      const isMarket = config.boardType === "market";
+                      const isSold = post.marketMeta?.saleStatus === "sold";
 
                       return isMarket ? (
                         <Link
                           key={post.id}
                           href={buildDetailHref(post.postNo ?? post.id)}
-                          className={['group grid grid-cols-[44px_64px_minmax(0,1fr)_110px_72px_90px_88px_52px] items-center px-3 py-2.5 text-sm transition-colors', isSold ? 'opacity-45 hover:opacity-65' : 'hover:bg-muted/40'].join(' ')}
+                          className={["group grid grid-cols-[44px_64px_minmax(0,1fr)_110px_72px_90px_88px_52px] items-center px-3 py-2.5 text-sm transition-colors", isSold ? "opacity-45 hover:opacity-65" : "hover:bg-muted/40"].join(" ")}
                         >
                           {/* 번호 */}
-                          <div className="text-center text-[11px] tabular-nums text-muted-foreground">{typeof post.postNo === 'number' ? post.postNo : '-'}</div>
+                          <div className="text-center text-[11px] tabular-nums text-muted-foreground">{typeof post.postNo === "number" ? post.postNo : "-"}</div>
 
                           {/* 분류 뱃지 */}
                           <div className="flex items-center justify-center">
                             <Badge variant={getBoardCategoryTone(config.boardType, post.category)} className="px-1.5 py-0 text-[10px] leading-4">
-                              {config.categoryMap[post.category ?? ''] ? getCategoryBadgeText(config.categoryMap[post.category ?? '']) : '분류'}
+                              {config.categoryMap[post.category ?? ""] ? getCategoryBadgeText(config.categoryMap[post.category ?? ""]) : "분류"}
                             </Badge>
                           </div>
 
@@ -1241,7 +1227,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                                     e.stopPropagation();
                                   }}
                                 >
-                                  {post.nickname || '회원'}
+                                  {post.nickname || "회원"}
                                 </button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="start" className="w-44">
@@ -1250,7 +1236,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                                     e.preventDefault();
                                     e.stopPropagation();
                                     if (!post.userId) return;
-                                    router.push(`${config.routePrefix}?authorId=${post.userId}&authorName=${encodeURIComponent(post.nickname ?? '')}`);
+                                    router.push(`${config.routePrefix}?authorId=${post.userId}&authorName=${encodeURIComponent(post.nickname ?? "")}`);
                                   }}
                                 >
                                   이 작성자의 글 보기
@@ -1261,7 +1247,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                                       e.preventDefault();
                                       e.stopPropagation();
                                       if (!user) {
-                                        const redirectTo = typeof window !== 'undefined' ? window.location.pathname + window.location.search : config.routePrefix;
+                                        const redirectTo = typeof window !== "undefined" ? window.location.pathname + window.location.search : config.routePrefix;
                                         router.push(`/login?next=${encodeURIComponent(redirectTo)}`);
                                         return;
                                       }
@@ -1299,14 +1285,14 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                       ) : (
                         <Link key={post.id} href={buildDetailHref(post.postNo ?? post.id)} className="grid grid-cols-[60px_80px_minmax(0,1fr)_120px_140px_70px_70px_70px] items-center px-4 py-3 text-sm transition-colors hover:bg-muted/50">
                           {/* 번호 */}
-                          <div className="text-center text-xs tabular-nums text-muted-foreground">{typeof post.postNo === 'number' ? post.postNo : '-'}</div>
+                          <div className="text-center text-xs tabular-nums text-muted-foreground">{typeof post.postNo === "number" ? post.postNo : "-"}</div>
 
                           {/* 분류 뱃지 */}
                           <div className="flex flex-col items-center justify-center gap-1">
                             <Badge variant={getBoardCategoryTone(config.boardType, post.category)} className={badgeSizeSm}>
-                              {config.categoryMap[post.category ?? ''] ? getCategoryBadgeText(config.categoryMap[post.category ?? '']) : '분류 없음'}
+                              {config.categoryMap[post.category ?? ""] ? getCategoryBadgeText(config.categoryMap[post.category ?? ""]) : "분류 없음"}
                             </Badge>
-                            {config.brandOptionsByCategory?.[post.category ?? ''] && post.brand ? <span className="text-xs text-foreground/75">{getMarketBrandLabel(post.brand)}</span> : null}
+                            {config.brandOptionsByCategory?.[post.category ?? ""] && post.brand ? <span className="text-xs text-foreground/75">{getMarketBrandLabel(post.brand)}</span> : null}
                           </div>
 
                           {/* 제목 */}
@@ -1331,7 +1317,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                                     e.stopPropagation();
                                   }}
                                 >
-                                  {post.nickname || '회원'}
+                                  {post.nickname || "회원"}
                                 </button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="start" className="w-44">
@@ -1340,7 +1326,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                                     e.preventDefault();
                                     e.stopPropagation();
                                     if (!post.userId) return;
-                                    const authorName = post.nickname ?? '';
+                                    const authorName = post.nickname ?? "";
                                     router.push(`${config.routePrefix}?authorId=${post.userId}&authorName=${encodeURIComponent(authorName)}`);
                                   }}
                                 >
@@ -1352,7 +1338,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                                       e.preventDefault();
                                       e.stopPropagation();
                                       if (!user) {
-                                        const redirectTo = typeof window !== 'undefined' ? window.location.pathname + window.location.search : config.routePrefix;
+                                        const redirectTo = typeof window !== "undefined" ? window.location.pathname + window.location.search : config.routePrefix;
                                         router.push(`/login?next=${encodeURIComponent(redirectTo)}`);
                                         return;
                                       }
@@ -1398,11 +1384,11 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                 {/* 모바일: 카드형 리스트 */}
                 <div className="space-y-2 md:hidden">
                   {items.map((post) => {
-                    const isMarket = config.boardType === 'market';
-                    const isSold = post.marketMeta?.saleStatus === 'sold';
+                    const isMarket = config.boardType === "market";
+                    const isSold = post.marketMeta?.saleStatus === "sold";
 
                     return isMarket ? (
-                      <Link key={post.id} href={buildDetailHref(post.postNo ?? post.id)} className={['block rounded-lg border border-border bg-card px-3 py-3 transition-colors active:bg-muted/30', isSold ? 'opacity-45' : ''].join(' ')}>
+                      <Link key={post.id} href={buildDetailHref(post.postNo ?? post.id)} className={["block rounded-lg border border-border bg-card px-3 py-3 transition-colors active:bg-muted/30", isSold ? "opacity-45" : ""].join(" ")}>
                         {/* 상단: 가격 + 상태/등급 뱃지 */}
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-1.5">
@@ -1412,7 +1398,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                               </Badge>
                             )}
                             <Badge variant={getBoardCategoryTone(config.boardType, post.category)} className="px-1.5 py-0 text-[10px] leading-4">
-                              {config.categoryMap[post.category ?? ''] ? getCategoryBadgeText(config.categoryMap[post.category ?? '']) : '분류'}
+                              {config.categoryMap[post.category ?? ""] ? getCategoryBadgeText(config.categoryMap[post.category ?? ""]) : "분류"}
                             </Badge>
                             {post.marketMeta?.conditionGrade && (
                               <Badge variant={conditionGradeBadgeVariant(post.marketMeta.conditionGrade)} className="px-1 py-0 text-[10px] leading-3.5">
@@ -1440,15 +1426,15 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                         {post.marketMeta && (post.brand || post.marketMeta.racketSpec?.modelName || post.marketMeta.stringSpec?.modelName) && (
                           <div className="mt-1 text-xs text-foreground/75">
                             {post.brand && <span className="font-medium">{getMarketBrandLabel(post.brand)}</span>}
-                            {post.brand && (post.marketMeta.racketSpec?.modelName || post.marketMeta.stringSpec?.modelName) && ' '}
-                            <span className="text-muted-foreground/70">{post.marketMeta.racketSpec?.modelName ?? post.marketMeta.stringSpec?.modelName ?? ''}</span>
+                            {post.brand && (post.marketMeta.racketSpec?.modelName || post.marketMeta.stringSpec?.modelName) && " "}
+                            <span className="text-muted-foreground/70">{post.marketMeta.racketSpec?.modelName ?? post.marketMeta.stringSpec?.modelName ?? ""}</span>
                           </div>
                         )}
 
                         {/* 하단 메타 */}
                         <div className="mt-2 flex flex-wrap items-center justify-between gap-2 border-t border-border/40 pt-1.5 text-[10px] leading-relaxed text-muted-foreground">
                           <span>
-                            {post.nickname || '회원'} &middot; {fmtDateTime(post.createdAt)}
+                            {post.nickname || "회원"} &middot; {fmtDateTime(post.createdAt)}
                           </span>
                           <div className="flex items-center gap-1.5 tabular-nums">
                             <span className="flex items-center gap-0.5">
@@ -1466,9 +1452,9 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                       <Link key={post.id} href={buildDetailHref(post.postNo ?? post.id)} className="block rounded-lg border border-border bg-card px-3 py-2.5 transition-colors hover:border-primary/30 active:bg-muted/40">
                         {/* 1줄: 번호 + 분류 뱃지 */}
                         <div className="flex items-center gap-2 text-xs text-foreground/75">
-                          <span className="text-[11px] tabular-nums">{typeof post.postNo === 'number' ? post.postNo : '-'}</span>
+                          <span className="text-[11px] tabular-nums">{typeof post.postNo === "number" ? post.postNo : "-"}</span>
                           <Badge variant={getBoardCategoryTone(config.boardType, post.category)} className={badgeSizeSm}>
-                            {config.categoryMap[post.category ?? ''] ? getCategoryBadgeText(config.categoryMap[post.category ?? '']) : '분류 없음'}
+                            {config.categoryMap[post.category ?? ""] ? getCategoryBadgeText(config.categoryMap[post.category ?? ""]) : "분류 없음"}
                           </Badge>
                         </div>
 
@@ -1482,8 +1468,8 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                         {/* 3줄: 작성자/날짜 + 카운트들 */}
                         <div className={boardListMobileMetaWrapClass}>
                           <div className="flex min-w-0 flex-wrap items-center gap-1.5">
-                            <span>{post.nickname || '회원'}</span>
-                            <span className="text-border">{'|'}</span>
+                            <span>{post.nickname || "회원"}</span>
+                            <span className="text-border">{"|"}</span>
                             <span>{fmtDateTime(post.createdAt)}</span>
                           </div>
                           <div className="flex items-center gap-2 tabular-nums leading-none">
@@ -1512,7 +1498,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                     <form onSubmit={handleSearchSubmit} className="flex flex-col gap-2 rounded-lg border border-border bg-muted/30 px-3 py-3 sm:flex-row sm:items-center">
                       <select
                         value={searchType}
-                        onChange={(e) => setSearchType(e.target.value as 'title' | 'author' | 'title_content')}
+                        onChange={(e) => setSearchType(e.target.value as "title" | "author" | "title_content")}
                         className="h-9 w-full rounded-md border border-border bg-background px-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring sm:w-32"
                       >
                         <option value="title_content">제목+내용</option>
@@ -1553,7 +1539,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
 
                         {/* 페이지 번호들: 현재 페이지 중심 3개 노출 */}
                         {visiblePages.map((pageNumber) => (
-                          <Button key={pageNumber} variant={pageNumber === page ? 'default' : 'outline'} size="sm" className="h-10 w-10" onClick={() => movePage(pageNumber)} type="button">
+                          <Button key={pageNumber} variant={pageNumber === page ? "default" : "outline"} size="sm" className="h-10 w-10" onClick={() => movePage(pageNumber)} type="button">
                             {pageNumber}
                           </Button>
                         ))}
