@@ -198,6 +198,11 @@ const ProductCard = React.memo(
     const canCheckoutWithService =
       typeof product.mountingFee === "number" && product.mountingFee > 0;
     const featureEntries = getFeatureEntries(product.features);
+    const serviceCtaLabel = isApplyFlow
+      ? viewMode === "list"
+        ? "이 스트링으로 교체서비스 신청"
+        : "이 스트링으로 신청"
+      : "교체서비스 신청";
 
     const detailHref = isApplyFlow
       ? `/products/${product._id}?from=apply`
@@ -330,9 +335,22 @@ const ProductCard = React.memo(
               )}
 
               <div className="grid grid-cols-2 bp-sm:flex gap-2">
+                {isApplyFlow && canCheckoutWithService && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="default"
+                    onClick={handleStringServiceApply}
+                    disabled={isSoldOut}
+                    className="h-9 sm:h-10 text-xs sm:text-sm col-span-2 sm:col-span-1 whitespace-normal leading-tight"
+                  >
+                    {serviceCtaLabel}
+                  </Button>
+                )}
+
                 <Link href={detailHref} className="bp-sm:flex-1">
                   <Button
-                    variant="default"
+                    variant={isApplyFlow ? "outline" : "default"}
                     size="sm"
                     className="w-full h-9 sm:h-10 text-xs sm:text-sm"
                   >
@@ -354,7 +372,7 @@ const ProductCard = React.memo(
                   </Button>
                 )}
 
-                {canCheckoutWithService && (
+                {!isApplyFlow && canCheckoutWithService && (
                   <Button
                     type="button"
                     size="sm"
@@ -363,7 +381,7 @@ const ProductCard = React.memo(
                     disabled={isSoldOut}
                     className="h-9 sm:h-10 text-xs sm:text-sm col-span-2 sm:col-span-1 whitespace-normal leading-tight"
                   >
-                    교체서비스 신청
+                    {serviceCtaLabel}
                   </Button>
                 )}
 
@@ -518,6 +536,18 @@ const ProductCard = React.memo(
           </CardContent>
 
           <CardFooter className="p-2.5 bp-sm:p-3 bp-md:p-4 pt-0 grid grid-cols-1 gap-2">
+            {isApplyFlow && canCheckoutWithService && (
+              <Button
+                type="button"
+                variant="default"
+                className="w-full rounded-lg h-10 px-3 text-xs sm:text-sm whitespace-nowrap text-center"
+                onClick={handleStringServiceApply}
+                disabled={isSoldOut}
+              >
+                {serviceCtaLabel}
+              </Button>
+            )}
+
             {ENABLE_STRING_STANDALONE_ORDER && (
               <Button
                 type="button"
@@ -530,7 +560,7 @@ const ProductCard = React.memo(
               </Button>
             )}
 
-            {canCheckoutWithService && (
+            {!isApplyFlow && canCheckoutWithService && (
               <Button
                 type="button"
                 variant="outline"
@@ -538,7 +568,7 @@ const ProductCard = React.memo(
                 onClick={handleStringServiceApply}
                 disabled={isSoldOut}
               >
-                교체서비스 신청
+                {serviceCtaLabel}
               </Button>
             )}
           </CardFooter>
