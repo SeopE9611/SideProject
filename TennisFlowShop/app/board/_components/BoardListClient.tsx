@@ -670,7 +670,6 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
         <Card className="border bg-card shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between gap-3 border-b border-border bg-muted/30 px-4 py-3 sm:px-6">
             <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-secondary text-foreground">{/* <MessageSquare className="h-4 w-4" /> */}</div>
               <div>
                 <CardTitle className="text-sm font-semibold md:text-base">{config.boardTitle}</CardTitle>
                 <p className="mt-0.5 text-xs text-foreground/75">{config.cardDescription}</p>
