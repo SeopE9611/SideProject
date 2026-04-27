@@ -1728,10 +1728,12 @@ export default function StringServiceApplyPage() {
           {/* Section Header */}
           <div className="text-center mb-8 bp-sm:mb-10">
             <h2 className="text-xl bp-sm:text-2xl font-semibold text-foreground">
-              어떤 방식으로 진행할까요?
+              교체서비스 신청 방법을 선택해주세요
             </h2>
             <p className="mt-2 text-muted-foreground text-sm bp-sm:text-base">
-              원하는 방식을 선택해주세요
+              처음 신청이라면 스트링 또는 라켓을 먼저 고르는 흐름을 추천해요.
+              이미 주문/대여 이력이 있다면 아래 내역에서 이어서 진행할 수
+              있어요.
             </p>
           </div>
 
@@ -1743,6 +1745,10 @@ export default function StringServiceApplyPage() {
               onClick={() => safePush("/products?from=apply")}
               className="group relative bg-card rounded-2xl p-5 bp-sm:p-6 text-left border border-border hover:border-border transition-all duration-200 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
+              {/* Badge */}
+              <div className="absolute -top-2.5 left-5">
+                <Badge variant="secondary">추천</Badge>
+              </div>
 
               {/* Icon */}
               <div className="w-12 h-12 bp-sm:w-14 bp-sm:h-14 rounded-xl bg-background flex items-center justify-center mb-4 group-hover:bg-muted transition-colors">
@@ -1751,15 +1757,16 @@ export default function StringServiceApplyPage() {
 
               {/* Content */}
               <h3 className="text-base bp-sm:text-lg font-semibold text-foreground mb-1.5">
-                스트링 선택 후 신청
+                스트링도 함께 구매하고 신청
               </h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                체크아웃에서 교체서비스 신청과 결제를 함께 진행할 수 있어요
+                스트링을 고른 뒤 체크아웃에서 장착 서비스 신청과 결제를 한
+                번에 진행해요.
               </p>
 
               {/* Arrow indicator */}
               <div className="mt-5 flex items-center text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">
-                <span>스트링 선택하러 가기</span>
+                <span>스트링 고르기</span>
                 <svg
                   className="ml-1.5 w-4 h-4 group-hover:translate-x-1 transition-transform"
                   fill="none"
@@ -1787,10 +1794,11 @@ export default function StringServiceApplyPage() {
 
               {/* Content */}
               <h3 className="text-base bp-sm:text-lg font-semibold text-foreground mb-1.5">
-                라켓 고르고 신청
+                라켓 구매/대여와 함께 신청
               </h3>
               <p className="text-sm text-muted-foreground leading-relaxed mb-5">
-                라켓 구매 또는 대여 후 스트링 선택과 교체서비스 신청을 함께 진행해요
+                라켓을 먼저 고른 뒤 스트링 선택과 장착 신청까지 이어서
+                진행해요.
               </p>
 
               {/* Action Buttons */}
@@ -1800,14 +1808,14 @@ export default function StringServiceApplyPage() {
                   onClick={() => safePush("/rackets?from=apply")}
                   className="flex-1 px-3 py-2 bp-sm:py-2.5 text-sm font-medium rounded-lg bg-background text-foreground hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                  라켓 구매
+                  라켓 구매하러 가기
                 </button>
                 <button
                   type="button"
                   onClick={() => safePush("/rackets?from=apply&rentOnly=1")}
                   className="flex-1 px-3 py-2 bp-sm:py-2.5 text-sm font-medium rounded-lg bg-background text-foreground hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                  라켓 대여
+                  라켓 대여하러 가기
                 </button>
               </div>
             </div>
@@ -1830,18 +1838,19 @@ export default function StringServiceApplyPage() {
 
               {/* Content */}
               <h3 className="text-base bp-sm:text-lg font-semibold text-foreground mb-1.5">
-                신청서만 작성
+                보유 라켓/보유 스트링으로 신청
               </h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                이미 라켓·스트링이 있다면 바로 작성해요
+                이미 가지고 있는 라켓과 스트링이 있다면 신청서만 작성할 수
+                있어요.
               </p>
               <p className="mt-1 text-xs text-primary">
-                금액·결제정보 자동 반영 없음
+                필요한 비용은 신청 내용 확인 후 안내됩니다.
               </p>
 
               {/* Arrow indicator */}
               <div className="mt-4 flex items-center text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">
-                <span>단독 신청하기</span>
+                <span>신청서 작성하기</span>
                 <svg
                   className="ml-1.5 w-4 h-4 group-hover:translate-x-1 transition-transform"
                   fill="none"
@@ -1876,9 +1885,10 @@ export default function StringServiceApplyPage() {
                 />
               </svg>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                일반적인 서비스 포함 주문은 체크아웃에서 함께 접수됩니다. 이
-                페이지는 기존 주문 연결, 남은 대상 추가 신청, 단독 신청에
-                사용됩니다.
+                일반적인 상품·라켓 구매 흐름에서는 체크아웃에서 교체서비스
+                신청이 함께 접수됩니다. 이 페이지에서는 기존 주문/대여 내역을
+                이어서 신청하거나, 보유 라켓·보유 스트링으로 단독 신청할 수
+                있어요.
               </p>
             </div>
           </div>
@@ -1917,11 +1927,12 @@ export default function StringServiceApplyPage() {
                       />
                     </svg>
                     <h3 className="text-base bp-sm:text-lg font-semibold text-foreground">
-                      내 주문/대여 내역에서 이어서
+                      이미 주문/대여한 내역에서 이어서 신청
                     </h3>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    마이페이지에서 주문/대여를 선택하면 신청서로 자동 연결돼요
+                    구매하거나 대여한 라켓·스트링이 있다면 마이페이지 내역에서
+                    선택해 신청서를 자동으로 채울 수 있어요.
                   </p>
                 </div>
                 <div className="flex gap-2">
