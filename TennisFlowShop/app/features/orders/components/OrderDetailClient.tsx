@@ -12,6 +12,16 @@ import AdminConfirmDialog from "@/components/admin/AdminConfirmDialog";
 import { LinkedDocItem } from "@/components/admin/LinkedDocsCard";
 import LinkedFlowStageCard from "@/components/admin/LinkedFlowStageCard";
 import AsyncState from "@/components/system/AsyncState";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,7 +32,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
 import { inferNextActionForOperationGroup } from "@/lib/admin/next-action-guidance";
 import {
   isApplicationClosedForLinkedAutomation,
@@ -338,6 +350,8 @@ export default function OrderDetailClient({ orderId }: Props) {
     useState(false);
   const [confirmAction, setConfirmAction] =
     useState<CancelRequestConfirmAction | null>(null);
+  const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
+  const [rejectMemo, setRejectMemo] = useState("");
 
   useEffect(() => {
     if (orderDetail && orderDetail.status !== localStatus) {
@@ -711,11 +725,6 @@ export default function OrderDetailClient({ orderId }: Props) {
   const handleRejectCancelRequest = async () => {
     if (!orderId) return;
 
-    const adminMemo =
-      window.prompt(
-        "취소 요청 거절 사유를 입력하세요.\n(선택 입력, 비워두면 사유 없이 기록됩니다.)",
-      ) ?? "";
-
     setIsProcessingCancelRequest(true);
     try {
       const res = await fetch(`/api/orders/${orderId}/cancel-reject`, {
@@ -723,7 +732,7 @@ export default function OrderDetailClient({ orderId }: Props) {
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
-          adminMemo: adminMemo.trim() || undefined,
+          adminMemo: rejectMemo.trim() || undefined,
         }),
       });
 
@@ -734,6 +743,8 @@ export default function OrderDetailClient({ orderId }: Props) {
 
       await mutateOrder();
       await mutateHistory();
+      setRejectMemo("");
+      setIsRejectDialogOpen(false);
       showSuccessToast("주문 취소 요청을 거절했습니다.");
     } catch (err: any) {
       console.error(err);
@@ -746,9 +757,6 @@ export default function OrderDetailClient({ orderId }: Props) {
   const handleConfirmCancelRequestAction = () => {
     if (confirmAction === "approveCancel") {
       void handleApproveCancelRequest();
-    }
-    if (confirmAction === "rejectCancel") {
-      void handleRejectCancelRequest();
     }
     setConfirmAction(null);
   };
@@ -1095,7 +1103,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => setConfirmAction("rejectCancel")}
+                            onClick={() => setIsRejectDialogOpen(true)}
                             disabled={isProcessingCancelRequest}
                           >
                             취소 거절
@@ -1114,21 +1122,11 @@ export default function OrderDetailClient({ orderId }: Props) {
                 </div>
 
                 <AdminConfirmDialog
-                  open={confirmAction !== null}
-                  title={
-                    confirmAction === "approveCancel"
-                      ? "취소 요청을 승인할까요?"
-                      : "취소 요청을 거절할까요?"
-                  }
-                  description={
-                    confirmAction === "approveCancel"
-                      ? "고객의 주문 취소 요청을 승인합니다.\n결제 수단에 따라 PG 취소 또는 환불 처리가 함께 진행될 수 있습니다.\n처리 후 상태가 변경되므로 주문 정보와 환불 정보를 확인해주세요."
-                      : "고객의 주문 취소 요청을 거절합니다.\n주문은 기존 처리 흐름을 유지하며, 고객에게 상태 변경이 안내될 수 있습니다."
-                  }
-                  severity={confirmAction === "approveCancel" ? "danger" : "default"}
-                  confirmText={
-                    confirmAction === "approveCancel" ? "취소 승인" : "취소 거절"
-                  }
+                  open={confirmAction === "approveCancel"}
+                  title="취소 요청을 승인할까요?"
+                  description="고객의 주문 취소 요청을 승인합니다.\n결제 수단에 따라 PG 취소 또는 환불 처리가 함께 진행될 수 있습니다.\n처리 후 상태가 변경되므로 주문 정보와 환불 정보를 확인해주세요."
+                  severity="danger"
+                  confirmText="취소 승인"
                   onOpenChange={(open) => {
                     if (!open) {
                       setConfirmAction(null);
@@ -1136,13 +1134,62 @@ export default function OrderDetailClient({ orderId }: Props) {
                   }}
                   onConfirm={handleConfirmCancelRequestAction}
                   onCancel={() => setConfirmAction(null)}
-                  eventKey={
-                    confirmAction === "approveCancel"
-                      ? "admin-order-cancel-approve-confirm"
-                      : "admin-order-cancel-reject-confirm"
-                  }
+                  eventKey="admin-order-cancel-approve-confirm"
                   eventMeta={{ orderId }}
                 />
+
+                <AlertDialog
+                  open={isRejectDialogOpen}
+                  onOpenChange={(open) => {
+                    setIsRejectDialogOpen(open);
+                    if (!open && !isProcessingCancelRequest) {
+                      setRejectMemo("");
+                    }
+                  }}
+                >
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>취소 요청을 거절할까요?</AlertDialogTitle>
+                      <AlertDialogDescription className="whitespace-pre-line">
+                        고객의 주문 취소 요청을 거절합니다.
+                        {"\n"}
+                        주문은 기존 처리 흐름을 유지하며, 필요한 경우 거절 사유를
+                        남길 수 있습니다.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <div className="space-y-2">
+                      <Label htmlFor="cancel-reject-memo">
+                        거절 사유{" "}
+                        <span className="text-xs text-muted-foreground">
+                          (선택)
+                        </span>
+                      </Label>
+                      <Textarea
+                        id="cancel-reject-memo"
+                        placeholder="예) 이미 출고 준비가 완료되어 취소가 어렵습니다."
+                        value={rejectMemo}
+                        onChange={(event) => setRejectMemo(event.target.value)}
+                        disabled={isProcessingCancelRequest}
+                      />
+                    </div>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel disabled={isProcessingCancelRequest}>
+                        취소
+                      </AlertDialogCancel>
+                      <AlertDialogAction
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        onClick={(event) => {
+                          event.preventDefault();
+                          if (isProcessingCancelRequest) return;
+                          void handleRejectCancelRequest();
+                        }}
+                        disabled={isProcessingCancelRequest}
+                      >
+                        취소 거절
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </CardContent>
 
