@@ -1786,20 +1786,23 @@ export default function CheckoutPage() {
                             label: "이용약관 동의 (필수)",
                             state: agreeTerms,
                             setState: setAgreeTerms,
+                            href: "/terms",
                           },
                           {
                             id: "agree-privacy",
                             label: "개인정보 수집 및 이용 동의 (필수)",
                             state: agreePrivacy,
                             setState: setAgreePrivacy,
+                            href: "/privacy",
                           },
                           {
                             id: "agree-refund",
                             label: "환불 규정 동의 (필수)",
                             state: agreeRefund,
                             setState: setAgreeRefund,
+                            href: "/terms",
                           },
-                        ].map((item, index) => (
+                        ].map((item) => (
                           <div
                             key={item.id}
                             className={cn("flex items-center justify-between rounded-xl border p-3 bp-sm:p-4 transition-[background-color,border-color,box-shadow,color,opacity] duration-200", item.state ? "border-primary/30 bg-primary/5" : "border-border/40 bg-secondary/20 hover:bg-secondary/40")}
@@ -1817,8 +1820,10 @@ export default function CheckoutPage() {
                               />
                               <span className="text-sm font-medium text-foreground">{item.label}</span>
                             </label>
-                            <Button variant="ghost" size="sm" className="h-8 px-3 text-sm text-foreground/80 hover:text-foreground">
-                              보기
+                            <Button variant="ghost" size="sm" className="h-8 px-3 text-sm text-foreground/80 hover:text-foreground" asChild>
+                              <Link href={item.href} target="_blank" rel="noopener noreferrer">
+                                보기
+                              </Link>
                             </Button>
                           </div>
                         ))}

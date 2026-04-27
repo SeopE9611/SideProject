@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
+import { bankLabelMap } from "@/lib/constants";
 import { useBackNavigationGuard } from "@/lib/hooks/useBackNavigationGuard";
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
 import { isNicePaymentsEnabled, isTossPaymentsEnabled } from "@/lib/payments/provider-flags";
@@ -188,6 +189,10 @@ export default function PackageCheckoutClient({
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [agreePrivacy, setAgreePrivacy] = useState(false);
   const [agreeRefund, setAgreeRefund] = useState(false);
+  const bankOptionLabel = (key: "shinhan" | "kookmin" | "woori") => {
+    const bank = bankLabelMap[key];
+    return `${bank.label} ${bank.account} (예금주: ${bank.holder})`;
+  };
 
   const [prefillDone] = useState(true);
   const [ownershipBlockedMessage] = useState<string | null>(initialOwnershipBlockedMessage);
@@ -589,9 +594,9 @@ export default function PackageCheckoutClient({
                             <SelectValue placeholder="입금 계좌를 선택하세요" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="shinhan">신한은행 123-456-789012 (예금주: 테니스플로우)</SelectItem>
-                            <SelectItem value="kookmin">국민은행 123-45-6789-012 (예금주: 테니스플로우)</SelectItem>
-                            <SelectItem value="woori">우리은행 1234-567-890123 (예금주: 테니스플로우)</SelectItem>
+                            <SelectItem value="shinhan">{bankOptionLabel("shinhan")}</SelectItem>
+                            <SelectItem value="kookmin">{bankOptionLabel("kookmin")}</SelectItem>
+                            <SelectItem value="woori">{bankOptionLabel("woori")}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -690,20 +695,23 @@ export default function PackageCheckoutClient({
                         label: "이용약관 동의 (필수)",
                         state: agreeTerms,
                         setState: setAgreeTerms,
+                        href: "/terms",
                       },
                       {
                         id: "agree-privacy",
                         label: "개인정보 수집 및 이용 동의 (필수)",
                         state: agreePrivacy,
                         setState: setAgreePrivacy,
+                        href: "/privacy",
                       },
                       {
                         id: "agree-refund",
                         label: "환불 규정 동의 (필수)",
                         state: agreeRefund,
                         setState: setAgreeRefund,
+                        href: "/terms",
                       },
-                    ].map((item, index) => (
+                    ].map((item) => (
                       <div key={item.id} className="flex items-center justify-between p-3 bg-muted/40 dark:bg-muted/30 rounded-lg">
                         <div className="flex items-center space-x-2">
                           <Checkbox
@@ -721,8 +729,10 @@ export default function PackageCheckoutClient({
                             {item.label}
                           </label>
                         </div>
-                        <Button variant="link" size="sm" className="h-auto p-0 text-primary hover:text-primary">
-                          보기
+                        <Button variant="link" size="sm" className="h-auto p-0 text-primary hover:text-primary" asChild>
+                          <Link href={item.href} target="_blank" rel="noopener noreferrer">
+                            보기
+                          </Link>
                         </Button>
                       </div>
                     ))}

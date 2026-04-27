@@ -28,6 +28,7 @@ import { showErrorToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { Building2, CheckCircle, CreditCard, Home, Loader2, Mail, MapPin, MessageSquare, Package, Phone, Shield, Truck, Undo2, UserIcon } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -1080,20 +1081,23 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                         label: "이용약관 동의 (필수)",
                         state: agreeTerms,
                         setState: setAgreeTerms,
+                        href: "/terms",
                       },
                       {
                         id: "agree-privacy",
                         label: "개인정보 수집 및 이용 동의 (필수)",
                         state: agreePrivacy,
                         setState: setAgreePrivacy,
+                        href: "/privacy",
                       },
                       {
                         id: "agree-refund",
                         label: "환불 규정 동의 (필수)",
                         state: agreeRefund,
                         setState: setAgreeRefund,
+                        href: "/terms",
                       },
-                    ].map((item, index) => (
+                    ].map((item) => (
                       <div key={item.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                         <div className="flex items-center space-x-2">
                           <Checkbox
@@ -1110,8 +1114,10 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                             {item.label}
                           </label>
                         </div>
-                        <Button variant="link" size="sm" className="h-auto p-0 text-foreground hover:text-foreground">
-                          보기
+                        <Button variant="link" size="sm" className="h-auto p-0 text-foreground hover:text-foreground" asChild>
+                          <Link href={item.href} target="_blank" rel="noopener noreferrer">
+                            보기
+                          </Link>
                         </Button>
                       </div>
                     ))}
