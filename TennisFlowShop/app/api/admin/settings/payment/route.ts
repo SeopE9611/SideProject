@@ -12,6 +12,50 @@ import {
 
 const DOC_ID = "adminPaymentSettings";
 
+type NicepayMode = "sandbox" | "production" | "unknown";
+
+function inferNicepayMode(apiBaseRaw: string): NicepayMode {
+  const apiBase = apiBaseRaw.trim().toLowerCase();
+  if (!apiBase) return "unknown";
+  if (
+    apiBase.includes("sandbox") ||
+    apiBase.includes("test") ||
+    apiBase.includes("staging") ||
+    apiBase.includes("dev")
+  ) {
+    return "sandbox";
+  }
+  if (apiBase.includes("api.nicepay.co.kr")) return "production";
+  return "unknown";
+}
+
+function getNicepayMeta() {
+  const approveApiBase = String(process.env.NICEPAY_APPROVE_API_BASE ?? "").trim();
+  const hasClientId = Boolean(
+    String(
+      process.env.NICEPAY_CLIENT_KEY ?? process.env.NICEPAY_CLIENT_ID ?? "",
+    ).trim(),
+  );
+  const hasSecretKey = Boolean(String(process.env.NICEPAY_SECRET_KEY ?? "").trim());
+  const enabledRaw = String(
+    process.env.NEXT_PUBLIC_ENABLE_NICE_PAYMENTS ??
+      process.env.ENABLE_NICE_PAYMENTS ??
+      "",
+  )
+    .trim()
+    .toLowerCase();
+  const enabled = ["1", "true", "yes", "on"].includes(enabledRaw);
+
+  return {
+    provider: "NICEPay" as const,
+    enabled,
+    mode: inferNicepayMode(approveApiBase),
+    approveApiBase: approveApiBase || null,
+    hasClientId,
+    hasSecretKey,
+  };
+}
+
 export async function GET(req: Request) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
@@ -30,6 +74,7 @@ export async function GET(req: Request) {
       meta: {
         hasPaypalSecret: Boolean(data.paypalSecret),
         hasStripeSecretKey: Boolean(data.stripeSecretKey),
+        nicepay: getNicepayMeta(),
       },
     },
     { status: 200, headers: { "Cache-Control": "no-store" } },
@@ -105,6 +150,7 @@ export async function PATCH(req: Request) {
       meta: {
         hasPaypalSecret: Boolean(toSave.paypalSecret),
         hasStripeSecretKey: Boolean(toSave.stripeSecretKey),
+        nicepay: getNicepayMeta(),
       },
     },
     { status: 200, headers: { "Cache-Control": "no-store" } },
