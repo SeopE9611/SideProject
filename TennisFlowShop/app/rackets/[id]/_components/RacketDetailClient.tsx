@@ -617,7 +617,7 @@ export default function RacketDetailClient({
                         }
                       >
                         <ShoppingCart className="mr-2 h-4 w-4" />
-                        {soldOut ? "품절(구매 불가)" : "구매하기"}
+                        {soldOut ? "품절(구매 불가)" : "스트링 선택 후 구매"}
                       </Button>
 
                       {racket?.rental?.enabled ? (
@@ -1287,7 +1287,7 @@ export default function RacketDetailClient({
                 className={`flex-1 h-12 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 ${canBuy ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground cursor-not-allowed"}`}
               >
                 <ShoppingCart className="h-4 w-4" />
-                {soldOut ? "품절(구매 불가)" : "구매하기"}
+                {soldOut ? "품절(구매 불가)" : "스트링 선택 후 구매"}
               </button>
               {racket?.rental?.enabled && !soldOut && racketId !== "" ? (
                 <div className="flex-1 min-w-0">
