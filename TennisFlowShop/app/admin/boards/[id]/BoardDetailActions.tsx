@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { Pencil, Trash2, EyeOff, Eye } from "lucide-react";
 import { toast } from "sonner";
@@ -13,6 +14,11 @@ type BoardDetailActionsProps = {
   currentStatus: "public" | "published" | "hidden" | "deleted" | string;
 };
 
+const AdminConfirmDialog = dynamic(
+  () => import("@/components/admin/AdminConfirmDialog"),
+  { loading: () => null },
+);
+
 export default function BoardDetailActions({
   postId,
   currentStatus,
@@ -21,6 +27,7 @@ export default function BoardDetailActions({
   const [pendingAction, setPendingAction] = useState<
     "publish" | "hide" | "delete" | null
   >(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   const runStatusChange = async (nextStatus: "public" | "hidden") => {
     setPendingAction(nextStatus === "public" ? "publish" : "hide");
@@ -48,11 +55,6 @@ export default function BoardDetailActions({
   };
 
   const runDelete = async () => {
-    const ok = window.confirm(
-      "정말로 이 게시물을 삭제하시겠습니까? 삭제 후 복구할 수 없습니다.",
-    );
-    if (!ok) return;
-
     setPendingAction("delete");
     try {
       await adminMutator<{ ok?: boolean }>(
@@ -109,11 +111,24 @@ export default function BoardDetailActions({
       <Button
         disabled={pendingAction !== null}
         variant="destructive"
-        onClick={runDelete}
+        onClick={() => setDeleteConfirmOpen(true)}
       >
         <Trash2 className="mr-2 h-4 w-4" />
         {pendingAction === "delete" ? "삭제 중..." : "삭제"}
       </Button>
+
+      <AdminConfirmDialog
+        open={deleteConfirmOpen}
+        onOpenChange={setDeleteConfirmOpen}
+        onConfirm={() => {
+          void runDelete();
+        }}
+        title="정말 삭제할까요?"
+        description="삭제 후에는 게시물이 목록과 화면에서 사라질 수 있으며, 복구가 어려울 수 있습니다."
+        confirmText="삭제"
+        severity="danger"
+        eventKey="admin-board-delete-confirm"
+      />
     </div>
   );
 }

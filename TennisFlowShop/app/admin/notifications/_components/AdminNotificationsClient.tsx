@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import dynamic from "next/dynamic";
 
 import {
   Card,
@@ -54,6 +55,7 @@ type Status = "all" | "queued" | "failed" | "sent";
 type OutboxItem = AdminOutboxListItemDto;
 type PageRes = AdminOutboxListResponseDto;
 type OutboxDetail = AdminOutboxDetailResponseDto;
+type ConfirmActionType = "retry" | "force";
 
 function getErrorMessage(error: unknown, fallback: string) {
   if (error instanceof Error && error.message) return error.message;
@@ -67,6 +69,10 @@ function asRecord(value: unknown): Record<string, unknown> {
 }
 
 const LIMIT = 10;
+const AdminConfirmDialog = dynamic(
+  () => import("@/components/admin/AdminConfirmDialog"),
+  { loading: () => null },
+);
 
 function useDebounced<T>(value: T, delay = 350) {
   const [debounced, setDebounced] = useState(value);
@@ -172,6 +178,10 @@ export default function AdminNotificationsClient() {
   const [detailId, setDetailId] = useState<string | null>(null);
   const [detail, setDetail] = useState<OutboxDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<{
+    id: string;
+    type: ConfirmActionType;
+  } | null>(null);
 
   const openDetail = async (id: string) => {
     setDetailOpen(true);
@@ -219,6 +229,10 @@ export default function AdminNotificationsClient() {
     },
     [mutate],
   );
+
+  const openConfirm = (id: string, type: ConfirmActionType) => {
+    setConfirmAction({ id, type });
+  };
 
   const isServerCountsSupported = Boolean(data?.counts);
   const stats = useMemo(() => {
@@ -605,7 +619,7 @@ export default function AdminNotificationsClient() {
                           <Button
                             size="sm"
                             variant="destructive"
-                            onClick={() => doRetry(it.id)}
+                            onClick={() => openConfirm(it.id, "retry")}
                             className="gap-2"
                           >
                             <RefreshCcw className="h-3.5 w-3.5" />
@@ -616,7 +630,7 @@ export default function AdminNotificationsClient() {
                         {it.status === "queued" && (
                           <Button
                             size="sm"
-                            onClick={() => doForce(it.id)}
+                            onClick={() => openConfirm(it.id, "force")}
                             className="gap-2"
                           >
                             <Send className="h-3.5 w-3.5" />
@@ -729,7 +743,7 @@ export default function AdminNotificationsClient() {
             {detailId && detail?.status === "failed" && (
               <Button
                 variant="destructive"
-                onClick={() => doRetry(detailId)}
+                onClick={() => openConfirm(detailId, "retry")}
                 className="gap-2"
               >
                 <RefreshCcw className="h-4 w-4" />
@@ -737,7 +751,7 @@ export default function AdminNotificationsClient() {
               </Button>
             )}
             {detailId && detail?.status === "queued" && (
-              <Button onClick={() => doForce(detailId)} className="gap-2">
+              <Button onClick={() => openConfirm(detailId, "force")} className="gap-2">
                 <Send className="h-4 w-4" />
                 강제 발송
               </Button>
@@ -760,6 +774,40 @@ export default function AdminNotificationsClient() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AdminConfirmDialog
+        open={confirmAction !== null}
+        onOpenChange={(open) => {
+          if (!open) setConfirmAction(null);
+        }}
+        onConfirm={() => {
+          if (!confirmAction) return;
+          const action = confirmAction;
+          setConfirmAction(null);
+          if (action.type === "retry") {
+            void doRetry(action.id);
+            return;
+          }
+          void doForce(action.id);
+        }}
+        title={
+          confirmAction?.type === "retry"
+            ? "알림 재시도를 실행할까요?"
+            : "알림을 강제 발송할까요?"
+        }
+        description={
+          confirmAction?.type === "retry"
+            ? "실패한 알림을 즉시 재시도합니다. 고객에게 실제 알림이 발송될 수 있습니다."
+            : "대기 중인 알림을 즉시 강제 발송합니다. 고객에게 실제 알림이 발송될 수 있습니다."
+        }
+        confirmText={confirmAction?.type === "retry" ? "재시도" : "강제 발송"}
+        severity="danger"
+        eventKey={
+          confirmAction?.type === "retry"
+            ? "admin-notifications-outbox-retry-confirm"
+            : "admin-notifications-outbox-force-confirm"
+        }
+      />
     </div>
   );
 }

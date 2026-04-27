@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import useSWR from "swr";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 
 import {
   ArrowLeft,
@@ -25,6 +26,7 @@ import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { badgeToneVariant } from "@/lib/badge-style";
 import type { AdminOutboxDetailResponseDto } from "@/types/admin/notifications";
+type ConfirmActionType = "retry" | "force";
 
 type OutboxDetailViewModel = {
   id: string;
@@ -146,6 +148,11 @@ function StatusBadge({ status }: { status?: string }) {
   return <Badge variant={badgeToneVariant(tone)}>{s}</Badge>;
 }
 
+const AdminConfirmDialog = dynamic(
+  () => import("@/components/admin/AdminConfirmDialog"),
+  { loading: () => null },
+);
+
 export default function OutboxDetailClient({ id }: { id: string }) {
   const { data, error, isLoading, mutate } =
     useSWR<AdminOutboxDetailResponseDto>(
@@ -155,6 +162,9 @@ export default function OutboxDetailClient({ id }: { id: string }) {
     );
 
   const [busy, setBusy] = useState<"retry" | "force" | null>(null);
+  const [confirmAction, setConfirmAction] = useState<ConfirmActionType | null>(
+    null,
+  );
 
   const vm = useMemo(() => mapApiToViewModel(data, id), [data, id]);
   const channels = vm?.channels ?? [];
@@ -206,7 +216,8 @@ export default function OutboxDetailClient({ id }: { id: string }) {
   }
 
   return (
-    <div className="mx-auto w-full max-w-5xl p-4 md:p-6 space-y-4">
+    <>
+      <div className="mx-auto w-full max-w-5xl p-4 md:p-6 space-y-4">
       <div className="space-y-2">
         <nav
           className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground"
@@ -268,7 +279,7 @@ export default function OutboxDetailClient({ id }: { id: string }) {
           <Button
             className="gap-2"
             disabled={busy !== null || !vm || vm.status !== "failed"}
-            onClick={doRetry}
+            onClick={() => setConfirmAction("retry")}
           >
             {busy === "retry" ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -281,7 +292,7 @@ export default function OutboxDetailClient({ id }: { id: string }) {
           <Button
             className="gap-2"
             disabled={busy !== null || !vm || vm.status !== "queued"}
-            onClick={doForce}
+            onClick={() => setConfirmAction("force")}
           >
             {busy === "force" ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -558,6 +569,39 @@ export default function OutboxDetailClient({ id }: { id: string }) {
           </Tabs>
         </CardContent>
       </Card>
-    </div>
+      </div>
+      <AdminConfirmDialog
+        open={confirmAction !== null}
+        onOpenChange={(open) => {
+          if (!open) setConfirmAction(null);
+        }}
+        onConfirm={() => {
+          const action = confirmAction;
+          setConfirmAction(null);
+          if (action === "retry") {
+            void doRetry();
+            return;
+          }
+          void doForce();
+        }}
+        title={
+          confirmAction === "retry"
+            ? "알림 재시도를 실행할까요?"
+            : "알림을 강제 발송할까요?"
+        }
+        description={
+          confirmAction === "retry"
+            ? "실패한 알림을 즉시 재시도합니다. 고객에게 실제 알림이 발송될 수 있습니다."
+            : "대기 중인 알림을 즉시 강제 발송합니다. 고객에게 실제 알림이 발송될 수 있습니다."
+        }
+        confirmText={confirmAction === "retry" ? "재시도" : "강제 발송"}
+        severity="danger"
+        eventKey={
+          confirmAction === "retry"
+            ? "admin-outbox-detail-retry-confirm"
+            : "admin-outbox-detail-force-confirm"
+        }
+      />
+    </>
   );
 }
