@@ -26,6 +26,25 @@ import type {
   UserSettings,
 } from "@/types/admin/settings";
 
+type NicepayMode = "sandbox" | "production" | "unknown";
+type NicepayMeta = {
+  provider: "NICEPay";
+  enabled: boolean;
+  mode: NicepayMode;
+  approveApiBase: string | null;
+  hasClientId: boolean;
+  hasSecretKey: boolean;
+};
+
+const DEFAULT_NICEPAY_META: NicepayMeta = {
+  provider: "NICEPay",
+  enabled: false,
+  mode: "unknown",
+  approveApiBase: null,
+  hasClientId: false,
+  hasSecretKey: false,
+};
+
 const AUTH_ERROR_MESSAGES = {
   unauthorized: "로그인이 만료되었습니다. 다시 로그인 후 시도해주세요.",
   forbidden: "관리자 권한이 없어 이 설정을 변경할 수 없습니다.",
@@ -46,6 +65,7 @@ export function useAdminSettings() {
   const [paymentMeta, setPaymentMeta] = useState({
     hasPaypalSecret: false,
     hasStripeSecretKey: false,
+    nicepay: DEFAULT_NICEPAY_META,
   });
   const [pendingTab, setPendingTab] = useState<SettingsTab | null>(null);
 
@@ -125,6 +145,28 @@ export function useAdminSettings() {
     onSuccess((await res.json()) as SettingsApiResponse<T>);
   };
 
+  const readNicepayMeta = (meta: Record<string, unknown> | undefined): NicepayMeta => {
+    const candidate = meta?.nicepay;
+    if (!candidate || typeof candidate !== "object") return DEFAULT_NICEPAY_META;
+    const raw = candidate as Record<string, unknown>;
+    const mode = raw.mode;
+    const safeMode: NicepayMode =
+      mode === "sandbox" || mode === "production" || mode === "unknown"
+        ? mode
+        : "unknown";
+    return {
+      provider: "NICEPay",
+      enabled: Boolean(raw.enabled),
+      mode: safeMode,
+      approveApiBase:
+        typeof raw.approveApiBase === "string" && raw.approveApiBase.trim()
+          ? raw.approveApiBase
+          : null,
+      hasClientId: Boolean(raw.hasClientId),
+      hasSecretKey: Boolean(raw.hasSecretKey),
+    };
+  };
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -156,6 +198,7 @@ export function useAdminSettings() {
             setPaymentMeta({
               hasPaypalSecret: Boolean(json?.meta?.hasPaypalSecret),
               hasStripeSecretKey: Boolean(json?.meta?.hasStripeSecretKey),
+              nicepay: readNicepayMeta(json.meta),
             });
           }),
         ]);
@@ -263,6 +306,7 @@ export function useAdminSettings() {
       setPaymentMeta({
         hasPaypalSecret: Boolean(json?.meta?.hasPaypalSecret),
         hasStripeSecretKey: Boolean(json?.meta?.hasStripeSecretKey),
+        nicepay: readNicepayMeta(json.meta),
       });
       showSuccessToast("결제 설정이 저장되었습니다.");
     } catch (error: unknown) {
