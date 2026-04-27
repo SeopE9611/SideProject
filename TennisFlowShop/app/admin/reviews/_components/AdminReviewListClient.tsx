@@ -267,27 +267,47 @@ export default function AdminReviewListClient() {
 
   const doBulkDelete = async () => {
     if (!selected.length) return;
+    const targetIds = [...selected];
     const snapshot = data;
     await mutate(
       (pages?: Page[]) =>
         pages
           ? pages.map((p) => ({
               ...p,
-              items: p.items.filter((r) => !selected.includes(r._id)),
+              items: p.items.filter((r) => !targetIds.includes(r._id)),
             }))
           : pages,
       false,
     );
     try {
-      await Promise.allSettled(
-        selected.map((id) =>
+      const results = await Promise.allSettled(
+        targetIds.map((id) =>
           adminMutator(`/api/admin/reviews/${id}`, {
             method: "DELETE",
           }),
         ),
       );
-      setSelected([]);
-      showSuccessToast("선택 항목을 삭제했습니다.");
+
+      const failedIds = targetIds.filter(
+        (_id, index) => results[index]?.status === "rejected",
+      );
+      const failedCount = failedIds.length;
+
+      if (failedCount === 0) {
+        setSelected([]);
+        showSuccessToast("선택 항목을 삭제했습니다.");
+        return;
+      }
+
+      await mutate();
+      setSelected(failedIds);
+
+      if (failedCount === targetIds.length) {
+        showErrorToast("선택한 리뷰 삭제에 실패했습니다.");
+        return;
+      }
+
+      showErrorToast("일부 리뷰 삭제에 실패했습니다. 목록을 다시 불러왔습니다.");
     } catch {
       await mutate(() => snapshot, false);
       showErrorToast("일부 항목 삭제에 실패했습니다.");
