@@ -431,7 +431,7 @@ export default function PackageDetailClient({
 
     setIsSavingExtend(true);
     try {
-      const res = await fetch(`/api/admin/package-orders/${packageId}/extend`, {
+      await adminMutator(`/api/admin/package-orders/${packageId}/extend`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -440,10 +440,6 @@ export default function PackageDetailClient({
           reason: extensionData.reason,
         }),
       });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err?.error || "연장에 실패했습니다.");
-      }
       await mutate();
       showSuccessToast("패키지가 연장되었습니다.");
       setShowExtensionForm(false);
@@ -467,7 +463,7 @@ export default function PackageDetailClient({
 
     setIsSavingAdjust(true);
     try {
-      const res = await fetch(
+      await adminMutator(
         `/api/admin/package-orders/${packageId}/adjust-sessions`,
         {
           method: "POST",
@@ -479,10 +475,6 @@ export default function PackageDetailClient({
           }),
         },
       );
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err?.error || "횟수 조절에 실패했습니다.");
-      }
       await mutate();
       showSuccessToast("횟수가 조절되었습니다.");
       setEditingSessions(false);

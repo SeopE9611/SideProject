@@ -26,6 +26,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
+import { adminMutator } from "@/lib/admin/adminFetcher";
 import { buildQueryString } from "@/lib/admin/urlQuerySync";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { useAdminListQueryState } from "@/lib/admin/useAdminListQueryState";
@@ -192,14 +193,9 @@ export default function AdminNotificationsClient() {
   const doRetry = useCallback(
     async (id: string) => {
       try {
-        const res = await fetch(`/api/admin/notifications/outbox/${id}/retry`, {
+        await adminMutator(`/api/admin/notifications/outbox/${id}/retry`, {
           method: "POST",
-          credentials: "include",
         });
-        if (!res.ok) {
-          const t = await res.text();
-          throw new Error(t || "재시도 실패");
-        }
         showSuccessToast("재시도 요청을 처리했습니다.");
         await mutate();
       } catch (error: unknown) {
@@ -212,14 +208,9 @@ export default function AdminNotificationsClient() {
   const doForce = useCallback(
     async (id: string) => {
       try {
-        const res = await fetch(`/api/admin/notifications/outbox/${id}/force`, {
+        await adminMutator(`/api/admin/notifications/outbox/${id}/force`, {
           method: "POST",
-          credentials: "include",
         });
-        if (!res.ok) {
-          const t = await res.text();
-          throw new Error(t || "강제 발송 실패");
-        }
         showSuccessToast("강제 발송을 시도했습니다.");
         await mutate();
       } catch (error: unknown) {

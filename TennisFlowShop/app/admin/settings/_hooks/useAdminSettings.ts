@@ -13,6 +13,7 @@ import {
   siteSettingsSchema,
   userSettingsSchema,
 } from "@/lib/admin-settings";
+import { AdminFetchError, adminMutator } from "@/lib/admin/adminFetcher";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { UNSAVED_CHANGES_MESSAGE } from "@/lib/hooks/useUnsavedChangesGuard";
 import type {
@@ -177,19 +178,35 @@ export function useAdminSettings() {
     endpoint: string,
     payload: unknown,
   ) => {
-    const res = await fetch(endpoint, {
-      method: "PATCH",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    if (!res.ok) {
-      const nextError = await parseTabError(res);
-      setTabError(tab, nextError);
-      throw new Error(nextError.message);
+    try {
+      const json = await adminMutator<SettingsApiResponse<unknown>>(endpoint, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      clearTabError(tab);
+      return json;
+    } catch (error: unknown) {
+      if (error instanceof AdminFetchError) {
+        if (error.status === 401) {
+          const nextError = {
+            type: "unauthorized" as const,
+            message: AUTH_ERROR_MESSAGES.unauthorized,
+          };
+          setTabError(tab, nextError);
+          throw new Error(nextError.message);
+        }
+        if (error.status === 403) {
+          const nextError = {
+            type: "forbidden" as const,
+            message: AUTH_ERROR_MESSAGES.forbidden,
+          };
+          setTabError(tab, nextError);
+          throw new Error(nextError.message);
+        }
+      }
+      throw error;
     }
-    clearTabError(tab);
-    return res.json();
   };
 
   const onSubmitSiteSettings = async (data: SiteSettings) => {

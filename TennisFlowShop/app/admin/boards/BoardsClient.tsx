@@ -42,6 +42,7 @@ import {
   buildAdminBoardDetailUrl,
   buildBoardPublicUrl,
 } from "@/lib/board-public-url-policy";
+import { adminMutator } from "@/lib/admin/adminFetcher";
 import {
   adminPostVisibilityBadgeVariant,
   adminReportStatusBadgeVariant,
@@ -309,12 +310,11 @@ export default function BoardsClient() {
   const togglePostVisibility = async (p: PostItem) => {
     try {
       const next = p.status === "public" ? "hidden" : "public";
-      const res = await fetch(`/api/admin/community/posts/${p.id}/status`, {
+      await adminMutator(`/api/admin/community/posts/${p.id}/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: next }),
       });
-      if (!res.ok) throw new Error(await res.text());
       showSuccessToast(
         next === "hidden"
           ? "게시글을 숨김 처리했습니다."
@@ -331,12 +331,11 @@ export default function BoardsClient() {
     action: "resolve" | "reject" | "resolve_hide_target",
   ) => {
     try {
-      const res = await fetch(`/api/admin/community/reports/${r.id}/status`, {
+      await adminMutator(`/api/admin/community/reports/${r.id}/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action }),
       });
-      if (!res.ok) throw new Error(await res.text());
       showSuccessToast("신고 처리가 완료되었습니다.");
       mutateReports();
       // 대상 숨김까지 했다면 게시글 목록도 최신화하는 게 안전
