@@ -61,6 +61,10 @@ const ReviewPhotoDialog = dynamic(
   () => import("@/app/reviews/_components/ReviewPhotoDialog"),
   { loading: () => null },
 );
+const AdminConfirmDialog = dynamic(
+  () => import("@/components/admin/AdminConfirmDialog"),
+  { loading: () => null },
+);
 
 function mapApiToViewModel(page: Page | null): Page | null {
   if (!page) return null;
@@ -222,6 +226,10 @@ export default function AdminReviewListClient() {
 
   // ---- 선택/삭제 ----
   const [selected, setSelected] = useState<string[]>([]);
+  const [pendingDeleteReviewId, setPendingDeleteReviewId] = useState<
+    string | null
+  >(null);
+  const [confirmBulkDeleteOpen, setConfirmBulkDeleteOpen] = useState(false);
   const toggleSelectAll = (checked: boolean) =>
     setSelected(checked ? rows.map((r) => r._id) : []);
   const toggleSelectOne = (id: string, checked: boolean) =>
@@ -820,7 +828,7 @@ export default function AdminReviewListClient() {
                         <DropdownMenuItem
                           onPointerDown={(e) => e.stopPropagation()}
                           className="text-destructive focus:text-destructive cursor-pointer"
-                          onSelect={() => doDelete(r._id)}
+                          onSelect={() => setPendingDeleteReviewId(r._id)}
                         >
                           <Trash2 className="mr-2 h-4 w-4" />
                           <span>삭제</span>
@@ -903,7 +911,7 @@ export default function AdminReviewListClient() {
               <Button
                 variant="destructive"
                 size="sm"
-                onClick={doBulkDelete}
+                onClick={() => setConfirmBulkDeleteOpen(true)}
                 className="h-8 px-3"
               >
                 선택 삭제
@@ -1063,10 +1071,9 @@ export default function AdminReviewListClient() {
               </Button>
               <Button
                 variant="destructive"
-                onClick={async () => {
+                onClick={() => {
                   if (!detail) return;
-                  await doDelete(detail._id);
-                  setDetail(null);
+                  setPendingDeleteReviewId(detail._id);
                 }}
               >
                 <Trash2 className="h-4 w-4 mr-1" /> 삭제
@@ -1125,6 +1132,39 @@ export default function AdminReviewListClient() {
           ))}
         </div>
       )}
+
+      <AdminConfirmDialog
+        open={pendingDeleteReviewId !== null}
+        onOpenChange={(open) => {
+          if (!open) setPendingDeleteReviewId(null);
+        }}
+        onConfirm={() => {
+          const reviewId = pendingDeleteReviewId;
+          if (!reviewId) return;
+          if (detail?._id === reviewId) setDetail(null);
+          setPendingDeleteReviewId(null);
+          void doDelete(reviewId);
+        }}
+        title="리뷰를 삭제할까요?"
+        description="삭제된 리뷰는 고객 화면과 관리자 목록에서 사라질 수 있습니다."
+        confirmText="삭제"
+        severity="danger"
+        eventKey="admin-review-list-delete-confirm"
+      />
+
+      <AdminConfirmDialog
+        open={confirmBulkDeleteOpen}
+        onOpenChange={setConfirmBulkDeleteOpen}
+        onConfirm={() => {
+          setConfirmBulkDeleteOpen(false);
+          void doBulkDelete();
+        }}
+        title="선택한 리뷰를 삭제할까요?"
+        description={`선택한 ${selected.length}개 리뷰는 고객 화면과 관리자 목록에서 사라질 수 있습니다.`}
+        confirmText="선택 삭제"
+        severity="danger"
+        eventKey="admin-review-list-bulk-delete-confirm"
+      />
     </div>
   );
 }
