@@ -935,7 +935,7 @@ export default function PackageDetailClient({
               <CardHeader>
                 <CardTitle>패키지 연장</CardTitle>
                 <CardDescription>
-                  패키지의 유효기간을 연장합니다.
+                  고객의 이용 가능 기간이 변경됩니다. 연장 일수와 사유를 확인한 뒤 진행해주세요.
                 </CardDescription>
               </CardHeader>
               <CardContent
@@ -1030,7 +1030,7 @@ export default function PackageDetailClient({
                       <Loader2 className="mr-1 h-4 w-4 animate-spin" /> 저장 중…
                     </>
                   ) : (
-                    "저장"
+                    "연장"
                   )}
                 </Button>
               </CardFooter>
@@ -1045,7 +1045,7 @@ export default function PackageDetailClient({
               <CardHeader>
                 <CardTitle>횟수 조절</CardTitle>
                 <CardDescription>
-                  패키지의 남은 횟수를 조절합니다.
+                  고객의 이용 가능 횟수가 변경됩니다. 변경 전/후 값과 사유를 확인한 뒤 진행해주세요.
                 </CardDescription>
               </CardHeader>
               <CardContent
@@ -1147,7 +1147,7 @@ export default function PackageDetailClient({
                       <Loader2 className="mr-1 h-4 w-4 animate-spin" /> 저장 중…
                     </>
                   ) : (
-                    "저장"
+                    "조정"
                   )}
                 </Button>
               </CardFooter>

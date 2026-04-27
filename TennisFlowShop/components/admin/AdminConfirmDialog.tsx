@@ -23,6 +23,7 @@ interface AdminConfirmDialogProps {
   severity?: ConfirmSeverity;
   confirmText?: string;
   cancelText?: string;
+  confirmDisabled?: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: () => void;
   onCancel?: () => void;
@@ -50,6 +51,7 @@ export default function AdminConfirmDialog({
   severity = "default",
   confirmText = "확인",
   cancelText = "취소",
+  confirmDisabled = false,
   onOpenChange,
   onConfirm,
   onCancel,
@@ -92,6 +94,7 @@ export default function AdminConfirmDialog({
         <AlertDialogFooter>
           <AlertDialogCancel>{cancelText}</AlertDialogCancel>
           <AlertDialogAction
+            disabled={confirmDisabled}
             className={
               severity === "danger"
                 ? "bg-destructive text-destructive-foreground hover:bg-destructive/90"

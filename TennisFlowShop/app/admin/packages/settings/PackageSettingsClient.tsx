@@ -871,7 +871,7 @@ export default function PackageSettingsClient() {
         }}
         severity="danger"
         title="패키지를 삭제할까요?"
-        description="삭제 후에는 되돌릴 수 없습니다. 운영 중인 패키지인지 확인한 뒤 진행해 주세요."
+        description="삭제 후에는 판매 설정 목록에서 사라질 수 있으며, 복구가 어려울 수 있습니다. 운영 중인 패키지인지 확인한 뒤 진행해 주세요."
         confirmText="삭제"
         cancelText="취소"
         eventKey="admin-package-settings-delete-confirm"

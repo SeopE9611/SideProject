@@ -116,13 +116,21 @@ export default function AdminRentalDetailClient() {
     | null
     | "approveCancel"
     | "rejectCancel"
+    | "confirmPayment"
     | "out"
     | "return"
     | "refundMark"
     | "refundClear"
   >(null);
   const [pendingAction, setPendingAction] = useState<
-    null | "out" | "return" | "refundMark" | "refundClear"
+    | null
+    | "approveCancel"
+    | "rejectCancel"
+    | "confirmPayment"
+    | "out"
+    | "return"
+    | "refundMark"
+    | "refundClear"
   >(null);
 
   const isBusy = busyAction !== null;
@@ -284,7 +292,34 @@ export default function AdminRentalDetailClient() {
         : "택배 발송");
 
   const pendingDialogConfig =
-    pendingAction === "out"
+    pendingAction === "approveCancel"
+      ? {
+          title: "대여 취소 요청을 승인할까요?",
+          description:
+            "고객의 대여 취소 요청을 승인합니다. 결제 수단에 따라 PG 취소 또는 환불 처리가 함께 진행될 수 있습니다.",
+          confirmText: "취소 승인",
+          eventKey: "admin-rental-detail-cancel-approve-confirm",
+          eventMeta: { rentalId: id, currentStatus: data?.status },
+        }
+      : pendingAction === "rejectCancel"
+        ? {
+            title: "대여 취소 요청을 거절할까요?",
+            description:
+              "고객의 대여 취소 요청을 거절합니다. 대여 주문은 기존 처리 흐름을 유지합니다.",
+            confirmText: "취소 거절",
+            eventKey: "admin-rental-detail-cancel-reject-confirm",
+            eventMeta: { rentalId: id, currentStatus: data?.status },
+          }
+        : pendingAction === "confirmPayment"
+          ? {
+              title: "결제 완료 처리할까요?",
+              description:
+                "무통장 대여 주문의 결제 상태를 결제완료(paid)로 변경합니다. 입금 여부를 확인한 뒤 진행해주세요.",
+              confirmText: "결제 완료 처리",
+              eventKey: "admin-rental-detail-payment-confirm",
+              eventMeta: { rentalId: id, currentStatus: data?.status },
+            }
+          : pendingAction === "out"
       ? {
           title: isVisitPickup
             ? "방문 수령 처리할까요?"
@@ -329,6 +364,18 @@ export default function AdminRentalDetailClient() {
     setPendingAction(null);
     setBusyAction(actionToRun);
     try {
+      if (actionToRun === "approveCancel") {
+        await onApproveCancel();
+        return;
+      }
+      if (actionToRun === "rejectCancel") {
+        await onRejectCancel();
+        return;
+      }
+      if (actionToRun === "confirmPayment") {
+        await onConfirmPayment();
+        return;
+      }
       if (actionToRun === "out") {
         await onOut();
         return;
@@ -606,14 +653,9 @@ export default function AdminRentalDetailClient() {
                       size="sm"
                       className="bg-primary hover:bg-primary/90 text-primary-foreground"
                       disabled={isBusy}
-                      onClick={async () => {
+                      onClick={() => {
                         if (isBusy) return;
-                        setBusyAction("approveCancel");
-                        try {
-                          await onApproveCancel();
-                        } finally {
-                          setBusyAction(null);
-                        }
+                        setPendingAction("approveCancel");
                       }}
                     >
                       {busyAction === "approveCancel"
@@ -626,14 +668,9 @@ export default function AdminRentalDetailClient() {
                       variant="outline"
                       className="border-border text-primary hover:bg-muted"
                       disabled={isBusy}
-                      onClick={async () => {
+                      onClick={() => {
                         if (isBusy) return;
-                        setBusyAction("rejectCancel");
-                        try {
-                          await onRejectCancel();
-                        } finally {
-                          setBusyAction(null);
-                        }
+                        setPendingAction("rejectCancel");
                       }}
                     >
                       {busyAction === "rejectCancel"
@@ -787,7 +824,10 @@ export default function AdminRentalDetailClient() {
                     size="sm"
                     className="h-9 bg-primary text-primary-foreground hover:bg-primary/90"
                     disabled={isBusy || confirming}
-                    onClick={onConfirmPayment}
+                    onClick={() => {
+                      if (isBusy || confirming) return;
+                      setPendingAction("confirmPayment");
+                    }}
                   >
                     {confirming ? (
                       <>
@@ -881,6 +921,7 @@ export default function AdminRentalDetailClient() {
               description={pendingDialogConfig.description}
               confirmText={pendingDialogConfig.confirmText}
               cancelText="취소"
+              confirmDisabled={isBusy || confirming}
               eventKey={pendingDialogConfig.eventKey}
               eventMeta={pendingDialogConfig.eventMeta}
             />
