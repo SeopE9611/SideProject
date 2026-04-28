@@ -525,7 +525,7 @@ function QnaCard({
             <Button asChild variant="ghost" size="sm">
               <Link href="/board/qna/write">
                 <Plus className="h-4 w-4 mr-1" />
-                질문하기
+                Q&A 문의하기
               </Link>
             </Button>
             <Button asChild variant="ghost" size="sm">
@@ -721,8 +721,8 @@ function CommunityIntroCard() {
 
       <CardContent className="p-4 md:p-6 space-y-4 text-sm text-muted-foreground">
         <p>
-          자유게시판, 중고거래, 장비 사용기, 리뷰까지 한 곳에서 빠르게 둘러볼 수
-          있어요.
+          자유게시판, 중고거래, 장비 사용기 등 사용자 커뮤니티 공간을 한 곳에서
+          둘러볼 수 있어요.
         </p>
 
         <div className="grid gap-2 sm:grid-cols-4">
@@ -733,7 +733,7 @@ function CommunityIntroCard() {
             className="w-full justify-between"
           >
             <Link href="/reviews">
-              <span>리뷰</span>
+              <span>구매·서비스 후기</span>
               <ArrowRight className="h-3 w-3 ml-1" />
             </Link>
           </Button>
@@ -745,7 +745,7 @@ function CommunityIntroCard() {
             className="w-full justify-between"
           >
             <Link href="/board/free">
-              <span>자유</span>
+              <span>자유게시판</span>
               <ArrowRight className="h-3 w-3 ml-1" />
             </Link>
           </Button>
@@ -757,7 +757,7 @@ function CommunityIntroCard() {
             className="w-full justify-between"
           >
             <Link href="/board/market">
-              <span>중고</span>
+              <span>중고거래</span>
               <ArrowRight className="h-3 w-3 ml-1" />
             </Link>
           </Button>
@@ -769,7 +769,7 @@ function CommunityIntroCard() {
             className="w-full justify-between"
           >
             <Link href="/board/gear">
-              <span>사용기</span>
+              <span>장비 사용기</span>
               <ArrowRight className="h-3 w-3 ml-1" />
             </Link>
           </Button>
@@ -859,7 +859,8 @@ export default function BoardPage() {
             </h1>
           </div>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            리뷰와 커뮤니티 게시판의 최신글을 한 곳에서 확인해 보세요.
+            자유게시판, 중고거래, 장비 사용기 중심의 커뮤니티 최신글을 한 곳에서
+            확인해 보세요.
           </p>
         </div>
 

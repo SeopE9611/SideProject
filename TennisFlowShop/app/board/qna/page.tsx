@@ -3,19 +3,19 @@ import type { Metadata } from "next";
 import QnaPageClient from "./_components/QnaPageClient";
 
 export const metadata: Metadata = {
-  title: "Q&A 게시판",
-  description: "상품, 주문, 배송, 환불 등 고객 문의와 답변을 확인할 수 있는 Q&A 게시판입니다.",
+  title: "고객센터 Q&A",
+  description: "상품, 주문, 배송, 환불, 교체서비스 이용 중 궁금한 내용을 문의하고 답변을 확인할 수 있습니다.",
   alternates: { canonical: "/board/qna" },
   openGraph: {
-    title: "Q&A 게시판",
-    description: "상품, 주문, 배송, 환불 등 고객 문의와 답변을 확인할 수 있는 Q&A 게시판입니다.",
+    title: "고객센터 Q&A",
+    description: "상품, 주문, 배송, 환불, 교체서비스 이용 중 궁금한 내용을 문의하고 답변을 확인할 수 있습니다.",
     url: "/board/qna",
     type: "website",
   },
   twitter: {
     card: "summary",
-    title: "Q&A 게시판",
-    description: "상품, 주문, 배송, 환불 등 고객 문의와 답변을 확인할 수 있는 Q&A 게시판입니다.",
+    title: "고객센터 Q&A",
+    description: "상품, 주문, 배송, 환불, 교체서비스 이용 중 궁금한 내용을 문의하고 답변을 확인할 수 있습니다.",
   },
 };
 

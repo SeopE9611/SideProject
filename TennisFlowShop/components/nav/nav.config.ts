@@ -39,15 +39,15 @@ export const NAV_LINKS = {
   packages: [{ name: "패키지 안내", href: "/services/packages" }],
   support: [
     { name: "고객센터 홈", href: "/support" },
-    { name: "공지사항", href: "/board/notice" },
-    { name: "Q&A", href: "/board/qna" },
+    { name: "고객센터 공지사항", href: "/board/notice" },
+    { name: "Q&A 문의", href: "/board/qna" },
   ],
 
   /** 커뮤니티형 게시판(지금은 리뷰만, 앞으로 자유게시판/브랜드 게시판 등 확장 예정) */
   boards: [
-    { name: "자유 게시판", href: "/board/free" },
-    { name: "중고 거래", href: "/board/market" },
+    { name: "자유게시판", href: "/board/free" },
+    { name: "중고거래", href: "/board/market" },
     { name: "장비 사용기", href: "/board/gear" },
-    { name: "리뷰 게시판", href: "/reviews" },
+    { name: "리뷰", href: "/reviews" },
   ],
 } as const;

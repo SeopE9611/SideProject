@@ -114,7 +114,7 @@ function NoticeCard({ items, isAdmin, isLoading, error, onRetry }: { items: Noti
         <CardTitle className="flex flex-wrap items-center gap-x-3 gap-y-2">
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             <Bell className="h-5 w-5 text-primary" />
-            <span className="text-lg sm:text-xl md:text-2xl font-semibold leading-tight break-keep">공지사항</span>
+            <span className="text-lg sm:text-xl md:text-2xl font-semibold leading-tight break-keep">고객센터 공지사항</span>
           </div>
           <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
             {isAdmin && (
@@ -127,7 +127,7 @@ function NoticeCard({ items, isAdmin, isLoading, error, onRetry }: { items: Noti
             )}
             <Button asChild size="sm" variant="ghost" className="h-8 px-2 sm:px-3 whitespace-nowrap">
               <Link href="/board/notice">
-                전체보기
+                공지사항 확인하기
                 <ArrowRight className="ml-1 h-4 w-4" />
               </Link>
             </Button>
@@ -217,18 +217,18 @@ function QnaCard({ items, viewerId, isAdmin, isLoading, error, onRetry }: { item
         <CardTitle className="flex flex-wrap items-center gap-x-3 gap-y-2">
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             <MessageSquare className="h-5 w-5 text-success" />
-            <span className="text-lg sm:text-xl md:text-2xl font-semibold leading-tight break-keep">Q&amp;A</span>
+            <span className="text-lg sm:text-xl md:text-2xl font-semibold leading-tight break-keep">Q&amp;A 문의</span>
           </div>
           <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
             <Button asChild size="sm" variant="ghost" className="h-8 px-2 sm:px-3 whitespace-nowrap">
               <Link href="/board/qna/write">
                 <Plus className="h-4 w-4 mr-1" />
-                질문하기
+                Q&amp;A 문의하기
               </Link>
             </Button>
             <Button asChild size="sm" variant="ghost" className="h-8 px-2 sm:px-3 whitespace-nowrap">
               <Link href="/board/qna">
-                전체보기
+                전체 문의 보기
                 <ArrowRight className="ml-1 h-4 w-4" />
               </Link>
             </Button>
@@ -385,7 +385,7 @@ export default function SupportPage() {
               고객센터
             </h1>
           </div>
-          <p className="text-sm md:text-base text-muted-foreground max-w-xl mx-auto">공지사항과 문의 내역을 한 곳에서 확인하고, 궁금한 점을 남겨주세요.</p>
+          <p className="text-sm md:text-base text-muted-foreground max-w-xl mx-auto">공지사항과 Q&amp;A를 통해 서비스 이용 중 필요한 도움을 확인하고, 궁금한 내용은 문의를 남길 수 있어요.</p>
         </div>
 
         {/* 카드 2열 레이아웃 */}
