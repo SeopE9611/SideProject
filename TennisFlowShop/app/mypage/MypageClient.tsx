@@ -231,11 +231,16 @@ export default function MypageClient({ user }: Props) {
                 <div className="text-xl bp-sm:text-2xl font-bold mb-1">{summaryLoading ? <Skeleton className="mx-auto h-7 w-10" /> : (summary?.ordersCount ?? "-")}</div>
                 <div className="text-xs bp-sm:text-sm text-muted-foreground">상품 주문</div>
               </div>
-              <div className="bg-muted rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 text-center border border-border col-span-2 bp-lg:col-span-1">
-                <ListTodo className="h-6 w-6 bp-sm:h-8 bp-sm:w-8 mx-auto mb-2 bp-sm:mb-3 text-primary" />
+              <button
+                type="button"
+                onClick={() => router.push("/mypage?tab=orders&scope=todo", { scroll: false })}
+                className="group bg-muted rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 text-center border border-border col-span-2 bp-lg:col-span-1 transition-colors hover:bg-muted/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2"
+                aria-label="해야 할 일 목록으로 이동"
+              >
+                <ListTodo className="h-6 w-6 bp-sm:h-8 bp-sm:w-8 mx-auto mb-2 bp-sm:mb-3 text-primary transition-transform group-hover:scale-105" />
                 <div className="text-xl bp-sm:text-2xl font-bold mb-1">{summaryLoading ? <Skeleton className="mx-auto h-7 w-10" /> : (summary?.todoCount ?? "-")}</div>
-                <div className="text-xs bp-sm:text-sm text-muted-foreground">해야 할 일</div>
-              </div>
+                <div className="text-xs bp-sm:text-sm text-muted-foreground group-hover:text-foreground">해야 할 일</div>
+              </button>
             </div>
             {hasSummaryError ? <p className="mt-3 text-xs text-muted-foreground">일부 지표를 불러오지 못해 숫자를 "-"로 표시하고 있어요. 잠시 후 다시 확인해 주세요.</p> : null}
           </div>
