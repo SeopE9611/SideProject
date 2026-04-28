@@ -3,6 +3,7 @@ import clientPromise from "@/lib/mongodb";
 import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 import { ObjectId } from "mongodb";
+import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 
 /**
  * body: { action?: 'mark' | 'clear' }  // 기본: 'mark'
@@ -68,6 +69,38 @@ export async function POST(
       { _id: new ObjectId(id) },
       { $set: { depositRefundedAt: now, updatedAt: new Date() } },
     );
+    await appendAdminAudit(
+      db,
+      {
+        type: "rental.deposit_refund.mark",
+        actorId: guard.admin._id,
+        targetId: new ObjectId(id),
+        message: "대여 보증금 환불 완료 마크",
+        diff: {
+          targetType: "rental",
+          action: "mark",
+          actorEmail: guard.admin.email ?? null,
+          actorName: guard.admin.name ?? null,
+          actorRole: guard.admin.role ?? null,
+          before: {
+            depositRefundedAt: doc.depositRefundedAt ?? null,
+            depositRefunded: Boolean(doc.depositRefundedAt),
+            depositRefundAmount: doc.depositRefundAmount ?? null,
+            paymentStatus: doc.paymentStatus ?? null,
+            refundStatus: doc.refundStatus ?? null,
+          },
+          after: {
+            depositRefundedAt: now,
+            depositRefunded: true,
+            depositRefundAmount: doc.depositRefundAmount ?? null,
+            paymentStatus: doc.paymentStatus ?? null,
+            refundStatus: doc.refundStatus ?? null,
+          },
+          rentalOrderId: String(doc.orderId ?? doc.orderNumber ?? id),
+        },
+      },
+      req,
+    );
     return NextResponse.json({ ok: true, id, depositRefundedAt: now });
   } else {
     if (!doc.depositRefundedAt)
@@ -75,6 +108,38 @@ export async function POST(
     await c.updateOne(
       { _id: new ObjectId(id) },
       { $unset: { depositRefundedAt: "" }, $set: { updatedAt: new Date() } },
+    );
+    await appendAdminAudit(
+      db,
+      {
+        type: "rental.deposit_refund.clear",
+        actorId: guard.admin._id,
+        targetId: new ObjectId(id),
+        message: "대여 보증금 환불 완료 마크 해제",
+        diff: {
+          targetType: "rental",
+          action: "clear",
+          actorEmail: guard.admin.email ?? null,
+          actorName: guard.admin.name ?? null,
+          actorRole: guard.admin.role ?? null,
+          before: {
+            depositRefundedAt: doc.depositRefundedAt ?? null,
+            depositRefunded: Boolean(doc.depositRefundedAt),
+            depositRefundAmount: doc.depositRefundAmount ?? null,
+            paymentStatus: doc.paymentStatus ?? null,
+            refundStatus: doc.refundStatus ?? null,
+          },
+          after: {
+            depositRefundedAt: null,
+            depositRefunded: false,
+            depositRefundAmount: doc.depositRefundAmount ?? null,
+            paymentStatus: doc.paymentStatus ?? null,
+            refundStatus: doc.refundStatus ?? null,
+          },
+          rentalOrderId: String(doc.orderId ?? doc.orderNumber ?? id),
+        },
+      },
+      req,
     );
     return NextResponse.json({ ok: true, id, depositRefundedAt: null });
   }

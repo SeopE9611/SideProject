@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { requireAdmin } from "@/lib/admin.guard";
 import { extractNiceCardInfo, getNicePaymentByTid, summarizeNiceCardRaw } from "@/lib/payments/nice/server";
+import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 
 function pick(raw: Record<string, string>, ...keys: string[]) {
   for (const key of keys) {
@@ -123,6 +124,24 @@ export async function POST(_req: Request, { params }: { params: Promise<{ rental
     const cancelAmount = Math.floor(Number(pick(pgRaw, "cancAmt", "cancelAmount", "cancelAmt")) || 0);
     const canceledAt = pick(pgRaw, "canceledAt", "cancelledAt", "cancelDate", "cancelDt");
     const nowIso = new Date().toISOString();
+    const beforeSummary = {
+      paymentStatus: String((rental as any)?.paymentStatus ?? "").trim() || null,
+      status: String((rental as any)?.status ?? "").trim() || null,
+      niceSync: {
+        lastSyncedAt: (rental as any)?.paymentInfo?.niceSync?.lastSyncedAt ?? null,
+        pgStatus: (rental as any)?.paymentInfo?.niceSync?.pgStatus ?? null,
+        resultCode: (rental as any)?.paymentInfo?.niceSync?.resultCode ?? null,
+      },
+      paymentInfo: {
+        provider: String((rental as any)?.paymentInfo?.provider ?? "").trim() || null,
+        method: String((rental as any)?.paymentInfo?.method ?? "").trim() || null,
+        hasTid: Boolean(String((rental as any)?.paymentInfo?.tid ?? "").trim()),
+      },
+    };
+    const changed =
+      beforeSummary.paymentStatus !== mapped.nextPaymentStatus ||
+      String((rental as any)?.paymentInfo?.status ?? "").trim() !== String(mapped.nextPaymentInfoStatus ?? "").trim() ||
+      beforeSummary.niceSync.pgStatus !== (pgStatus || null);
 
     const updateResult = await db.collection("rental_orders").updateOne(
       { _id: new ObjectId(rentalId) },
@@ -158,6 +177,44 @@ export async function POST(_req: Request, { params }: { params: Promise<{ rental
           updatedAt: new Date().toISOString(),
         },
       },
+    );
+    await appendAdminAudit(
+      db,
+      {
+        type: "rental.payment.nice_sync",
+        actorId: guard.admin._id,
+        targetId: new ObjectId(rentalId),
+        message: "대여 NICEPay 수동 동기화 실행",
+        diff: {
+          targetType: "rental",
+          actorEmail: guard.admin.email ?? null,
+          actorName: guard.admin.name ?? null,
+          actorRole: guard.admin.role ?? null,
+          before: beforeSummary,
+          after: {
+            paymentStatus: mapped.nextPaymentStatus,
+            status: String((rental as any)?.status ?? "").trim() || null,
+            niceSync: {
+              lastSyncedAt: nowIso,
+              pgStatus: pgStatus || null,
+              resultCode: resultCode || "0000",
+            },
+            paymentInfo: {
+              provider: String((rental as any)?.paymentInfo?.provider ?? "").trim() || null,
+              method: String((rental as any)?.paymentInfo?.method ?? "").trim() || null,
+              hasTid: Boolean(tid),
+            },
+          },
+          syncResult: resultCode && resultCode !== "0000" ? "failure" : "success",
+          pgResultCode: resultCode || "0000",
+          pgStatus: pgStatus || null,
+          changed,
+          orderId: String((rental as any)?.orderId ?? "").trim() || null,
+          tid,
+          modifiedCount: updateResult.modifiedCount,
+        },
+      },
+      _req,
     );
 
     return NextResponse.json({
