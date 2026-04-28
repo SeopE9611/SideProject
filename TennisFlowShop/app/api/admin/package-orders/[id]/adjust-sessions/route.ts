@@ -8,6 +8,7 @@ import { ObjectId as OID } from "mongodb";
 import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 import { isCountEnded, shouldRestoreActive } from "@/lib/pass-status";
+import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 
 type PassHistoryItem = {
   _id: OID;
@@ -169,6 +170,44 @@ export async function POST(
     );
 
     const freshPass = await passes.findOne({ _id: passDoc._id });
+    await appendAdminAudit(
+      db,
+      {
+        type: "package.sessions.adjust",
+        actorId: guard.admin._id,
+        targetId: _id,
+        message: "패키지 잔여 횟수 조정",
+        diff: {
+          targetType: "packageOrder",
+          actorEmail: guard.admin.email ?? null,
+          actorName: guard.admin.name ?? null,
+          actorRole: guard.admin.role ?? null,
+          before: {
+            remainingCount: prev,
+            usedCount: Number((passDoc as any).usedCount ?? 0),
+            totalCount: Number((passDoc as any).totalCount ?? 0),
+            status: passDoc.status ?? null,
+          },
+          after: {
+            remainingCount: Number(freshPass?.remainingCount ?? next),
+            usedCount: Number(
+              (freshPass as any)?.usedCount ?? (passDoc as any).usedCount ?? 0,
+            ),
+            totalCount: Number(
+              (freshPass as any)?.totalCount ?? (passDoc as any).totalCount ?? 0,
+            ),
+            status: String(freshPass?.status ?? nextStatus ?? passDoc.status),
+          },
+          servicePassId: String(passDoc._id),
+          customerId: String((pkgOrder as any).userId ?? ""),
+          packageName: (pkgOrder as any).packageSnapshot?.name ?? null,
+          packageType: (pkgOrder as any).packageSnapshot?.type ?? null,
+          delta,
+          reason: reason || null,
+        },
+      },
+      req,
+    );
     return NextResponse.json({ ok: true, pass: freshPass });
   } catch (e) {
     console.error("[POST /api/package-orders/:id/adjust-sessions] error", e);

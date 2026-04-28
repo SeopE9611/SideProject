@@ -8,6 +8,7 @@ import {
   adminValidationError,
   zodIssuesToDetails,
 } from "@/lib/admin/adminApiError";
+import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 
 const MAX_BULK_IDS = 200;
 
@@ -176,6 +177,41 @@ export async function POST(req: Request) {
     const r = await col.updateMany({ _id: { $in: eligible } }, { $set });
     modifiedCount = r.modifiedCount;
   }
+
+  const limitedTargetIds = deduped.slice(0, 50);
+  await appendAdminAudit(
+    db,
+    {
+      type: `users.bulk.${op}`,
+      actorId: guard.admin._id,
+      targetId: "bulk",
+      message: `회원 일괄 처리 실행(${op})`,
+      diff: {
+        targetType: "users",
+        actorEmail: guard.admin.email ?? null,
+        actorName: guard.admin.name ?? null,
+        actorRole: guard.admin.role ?? null,
+        before: {
+          action: op,
+          targetCount: deduped.length,
+          eligibleCount: eligible.length,
+          alreadyCount: already.length,
+          incompatibleCount: incompatible.length,
+        },
+        after: {
+          modifiedCount,
+          foundCount: docs.length,
+          eligibleCount: eligible.length,
+          alreadyCount: already.length,
+          incompatibleCount: incompatible.length,
+        },
+        action: op,
+        targetUserIds: limitedTargetIds,
+        targetUserIdsTotalCount: deduped.length,
+      },
+    },
+    req,
+  );
 
   // 7) 상세 결과 함께 반환
   return NextResponse.json({
