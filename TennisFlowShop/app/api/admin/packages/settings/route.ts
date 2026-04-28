@@ -10,12 +10,21 @@ import {
 } from "@/app/features/packages/api/db";
 import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
+import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 
 export const dynamic = "force-dynamic";
 
 function toNumberSafe(v: unknown, fallback: number) {
   const n = Number(v);
   return Number.isFinite(n) ? n : fallback;
+}
+
+function summarizePackageSettings(packageConfigs: PackageConfig[]) {
+  return {
+    packageCount: packageConfigs.length,
+    activePackageCount: packageConfigs.filter((pkg) => pkg.isActive).length,
+    packageIds: packageConfigs.map((pkg) => pkg.id).slice(0, 20),
+  };
 }
 
 export async function GET(req: Request) {
@@ -110,7 +119,49 @@ export async function PUT(req: Request) {
       ),
     };
 
+    const beforeSettings = await loadPackageSettings();
     await savePackageSettings({ packageConfigs, generalSettings });
+
+    const beforeSummary = summarizePackageSettings(beforeSettings.packageConfigs);
+    const afterSummary = summarizePackageSettings(packageConfigs);
+    const beforeById = new Map(
+      beforeSettings.packageConfigs.map((pkg) => [pkg.id, pkg]),
+    );
+    const afterById = new Map(packageConfigs.map((pkg) => [pkg.id, pkg]));
+    const addedCount = packageConfigs.filter((pkg) => !beforeById.has(pkg.id)).length;
+    const removedCount = beforeSettings.packageConfigs.filter(
+      (pkg) => !afterById.has(pkg.id),
+    ).length;
+    const updatedCount = packageConfigs.filter((pkg) => {
+      const before = beforeById.get(pkg.id);
+      return before && JSON.stringify(before) !== JSON.stringify(pkg);
+    }).length;
+    const priceChangedCount = packageConfigs.filter((pkg) => {
+      const before = beforeById.get(pkg.id);
+      return before ? before.price !== pkg.price : false;
+    }).length;
+    await appendAdminAudit(
+      guard.db,
+      {
+        type: "package.settings.update",
+        actorId: guard.admin._id,
+        message: "관리자 패키지 설정 변경",
+        diff: {
+          targetType: "packageSettings",
+          targetScope: "packages.settings",
+          before: beforeSummary,
+          after: afterSummary,
+          metadata: {
+            changedKeys: ["packageConfigs", "generalSettings"],
+            addedCount,
+            removedCount,
+            updatedCount,
+            priceChangedCount,
+          },
+        },
+      },
+      req,
+    );
 
     return NextResponse.json({ ok: true });
   } catch (e) {
