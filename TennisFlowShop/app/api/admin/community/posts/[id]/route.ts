@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
+import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 import {
   normalizeSanitizedContent,
   sanitizeHtml,
@@ -22,6 +23,21 @@ type EditableCommunityPost = {
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
+
+function summarizeCommunityPost(doc: EditableCommunityPost | null) {
+  const safe = doc ?? ({} as EditableCommunityPost);
+  return {
+    title: typeof safe.title === "string" ? safe.title : "",
+    type: typeof safe.type === "string" ? safe.type : undefined,
+    category: typeof safe.category === "string" ? safe.category : undefined,
+    status: typeof safe.status === "string" ? safe.status : undefined,
+    isPinned: typeof (safe as any).isPinned === "boolean" ? (safe as any).isPinned : undefined,
+    authorId: safe.userId ? String(safe.userId) : undefined,
+    attachmentCount: Array.isArray((safe as any).attachments)
+      ? (safe as any).attachments.length
+      : 0,
+  };
+}
 
 /**
  * 관리자 게시글 조회 API
@@ -144,6 +160,11 @@ export async function PATCH(
   }
 
   const col = db.collection<EditableCommunityPost>("community_posts");
+  const beforeDoc = await col.findOne({ _id: new ObjectId(id) });
+  if (!beforeDoc) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
   const result = await col.findOneAndUpdate(
     { _id: new ObjectId(id) },
     {
@@ -160,6 +181,48 @@ export async function PATCH(
   if (!result) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
+
+  const before = summarizeCommunityPost(beforeDoc);
+  const after = summarizeCommunityPost({
+    ...beforeDoc,
+    title,
+    category,
+    content: sanitizedContent,
+    updatedAt: new Date(),
+  });
+  await appendAdminAudit(
+    db,
+    {
+      type: "community.post.update",
+      actorId: guard.admin._id,
+      targetId: id,
+      message: "관리자 게시글 수정",
+      diff: {
+        targetType: "communityPost",
+        before: {
+          title: before.title,
+          type: before.type,
+          category: before.category,
+          status: before.status,
+          isPinned: before.isPinned,
+        },
+        after: {
+          title: after.title,
+          type: after.type,
+          category: after.category,
+          status: after.status,
+          isPinned: after.isPinned,
+        },
+        metadata: {
+          changedKeys: ["title", "category", "content"],
+          contentChanged: (beforeDoc.content ?? "") !== sanitizedContent,
+          attachmentCountBefore: before.attachmentCount,
+          attachmentCountAfter: after.attachmentCount,
+        },
+      },
+    },
+    req,
+  );
 
   return NextResponse.json({ ok: true, id: String(result._id) });
 }
@@ -179,11 +242,38 @@ export async function DELETE(
     return NextResponse.json({ error: "Invalid id" }, { status: 400 });
 
   const col = db.collection("community_posts");
+  const beforeDoc = (await col.findOne({ _id: new ObjectId(id) })) as EditableCommunityPost | null;
+  if (!beforeDoc) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
   const result = await col.deleteOne({ _id: new ObjectId(id) });
 
   if (!result.deletedCount) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
+
+  const before = summarizeCommunityPost(beforeDoc);
+  await appendAdminAudit(
+    db,
+    {
+      type: "community.post.delete",
+      actorId: guard.admin._id,
+      targetId: id,
+      message: "관리자 게시글 삭제",
+      diff: {
+        targetType: "communityPost",
+        before: {
+          title: before.title,
+          type: before.type,
+          category: before.category,
+          status: before.status,
+          authorId: before.authorId,
+        },
+        after: { deleted: true },
+      },
+    },
+    req,
+  );
 
   return NextResponse.json({ ok: true });
 }

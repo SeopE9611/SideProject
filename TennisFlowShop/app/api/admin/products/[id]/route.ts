@@ -3,6 +3,7 @@ import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 import { getHangulInitials } from "@/lib/hangul-utils";
 import { getDb } from "@/lib/mongodb";
 import { normalizeItemShippingFee } from "@/lib/shipping-fee";
+import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 import type {
   AdminProductMutationResponseDto,
   AdminProductUpdateRequestDto,
@@ -27,6 +28,25 @@ function asNumber(value: unknown): number {
 function asStringArray(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
   return value.filter((item): item is string => typeof item === "string");
+}
+
+function toProductAuditSnapshot(doc: Record<string, unknown> | null) {
+  const safe = doc ?? {};
+  const inventory = asRecord(safe.inventory);
+  return {
+    name: asString(safe.name),
+    brand: asString(safe.brand),
+    price: typeof safe.price === "number" ? safe.price : null,
+    stock: typeof inventory?.stock === "number" ? inventory.stock : null,
+    status: asString(safe.status) || undefined,
+    isActive:
+      typeof safe.isActive === "boolean" ? (safe.isActive as boolean) : undefined,
+    isPublished:
+      typeof safe.isPublished === "boolean"
+        ? (safe.isPublished as boolean)
+        : undefined,
+    imageCount: Array.isArray(safe.images) ? safe.images.length : 0,
+  };
 }
 
 function parseUpdateRequest(raw: unknown): AdminProductUpdateRequestDto | null {
@@ -135,6 +155,9 @@ export async function PUT(
     };
 
     const db = await getDb();
+    const beforeDoc = (await db
+      .collection("products")
+      .findOne({ _id: new ObjectId(id) })) as Record<string, unknown> | null;
     const result = await db
       .collection("products")
       .updateOne({ _id: new ObjectId(id) }, { $set: updateData });
@@ -144,6 +167,48 @@ export async function PUT(
         { status: 500 },
       );
     }
+
+    const afterDoc = (await db
+      .collection("products")
+      .findOne({ _id: new ObjectId(id) })) as Record<string, unknown> | null;
+    const before = toProductAuditSnapshot(beforeDoc);
+    const after = toProductAuditSnapshot(afterDoc);
+    await appendAdminAudit(
+      db,
+      {
+        type: "product.update",
+        actorId: guard.admin._id,
+        targetId: id,
+        message: "관리자 상품 수정",
+        diff: {
+          targetType: "product",
+          before: {
+            name: before.name,
+            brand: before.brand,
+            price: before.price,
+            stock: before.stock,
+            status: before.status,
+            isActive: before.isActive,
+            isPublished: before.isPublished,
+          },
+          after: {
+            name: after.name,
+            brand: after.brand,
+            price: after.price,
+            stock: after.stock,
+            status: after.status,
+            isActive: after.isActive,
+            isPublished: after.isPublished,
+          },
+          metadata: {
+            changedKeys: Object.keys(updateData),
+            imageCountBefore: before.imageCount,
+            imageCountAfter: after.imageCount,
+          },
+        },
+      },
+      req,
+    );
 
     const responseDto: AdminProductMutationResponseDto = {
       message: "상품이 성공적으로 업데이트되었습니다.",
@@ -169,6 +234,9 @@ export async function DELETE(
 
   try {
     const db = await getDb();
+    const beforeDoc = (await db.collection("products").findOne({
+      _id: new ObjectId(id),
+    })) as Record<string, unknown> | null;
     const result = await db
       .collection("products")
       .updateOne(
@@ -182,6 +250,31 @@ export async function DELETE(
         { status: 404 },
       );
     }
+    const before = toProductAuditSnapshot(beforeDoc);
+    await appendAdminAudit(
+      db,
+      {
+        type: "product.delete",
+        actorId: guard.admin._id,
+        targetId: id,
+        message: "관리자 상품 삭제",
+        diff: {
+          targetType: "product",
+          before: {
+            name: before.name,
+            brand: before.brand,
+            price: before.price,
+            stock: before.stock,
+            status: before.status,
+            isActive: before.isActive,
+            isPublished: before.isPublished,
+          },
+          after: { deleted: true },
+          metadata: { softDelete: true },
+        },
+      },
+      req,
+    );
     return NextResponse.json(
       { message: "상품이 삭제되었습니다." },
       { status: 200 },

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
 import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
+import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 import {
   ensureReviewIndexes,
   dedupActiveReviews,
@@ -78,6 +79,44 @@ export async function POST(req: Request) {
       result.rebuildSummary = await rebuildProductRatingSummary(db);
     }
 
+    const dedupResult =
+      result.dedup && typeof result.dedup === "object" ? result.dedup : {};
+    const rebuildResult =
+      result.rebuildSummary && typeof result.rebuildSummary === "object"
+        ? result.rebuildSummary
+        : {};
+    const affectedCount =
+      Number((dedupResult as any).affectedCount ?? 0) +
+      Number((rebuildResult as any).affectedCount ?? 0);
+    await appendAdminAudit(
+      guard.db,
+      {
+        type: "review.maintenance.run",
+        actorId: guard.admin._id,
+        message: "리뷰 maintenance 실행",
+        diff: {
+          targetType: "reviewMaintenance",
+          targetScope: "reviews.maintenance",
+          before: {
+            affectedCountPreview: affectedCount,
+          },
+          after: {
+            affectedCount,
+            fixedCount: Number((dedupResult as any).fixedCount ?? 0),
+            deletedCount: Number((dedupResult as any).deletedCount ?? 0),
+            skippedCount: Number((dedupResult as any).skippedCount ?? 0),
+          },
+          metadata: {
+            mode: action ?? "all",
+            dryRun: false,
+            criteria: { lockKey: "reviews_maintenance" },
+            resultKeys: Object.keys(result),
+          },
+        },
+      },
+      req,
+    );
+
     return NextResponse.json({ ok: true, result });
   } catch (e: any) {
     return NextResponse.json(
@@ -128,6 +167,30 @@ export async function DELETE(req: Request) {
   await locks.updateOne(
     { key: "reviews_maintenance" },
     { $set: { lockedUntil: new Date(0) } },
+  );
+  await appendAdminAudit(
+    guard.db,
+    {
+      type: "review.maintenance.delete",
+      actorId: guard.admin._id,
+      message: "리뷰 maintenance 락 강제 해제",
+      diff: {
+        targetType: "reviewMaintenance",
+        targetScope: "reviews.maintenance",
+        after: {
+          affectedCount: 1,
+          fixedCount: 0,
+          deletedCount: 0,
+          skippedCount: 0,
+        },
+        metadata: {
+          mode: "force_unlock",
+          dryRun: false,
+          criteria: { lockKey: "reviews_maintenance" },
+        },
+      },
+    },
+    req,
   );
   return NextResponse.json({ ok: true });
 }

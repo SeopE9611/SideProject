@@ -9,6 +9,20 @@ import {
 import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
+import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
+
+function toRacketAuditSnapshot(doc: any) {
+  return {
+    brand: typeof doc?.brand === "string" ? doc.brand : "",
+    model: typeof doc?.model === "string" ? doc.model : "",
+    status: typeof doc?.status === "string" ? doc.status : "",
+    condition: typeof doc?.condition === "string" ? doc.condition : "",
+    price: typeof doc?.price === "number" ? doc.price : null,
+    rentalAvailable:
+      typeof doc?.rental?.enabled === "boolean" ? doc.rental.enabled : false,
+    quantity: typeof doc?.quantity === "number" ? doc.quantity : null,
+  };
+}
 
 // GET - 단일 조회
 export async function GET(
@@ -158,11 +172,37 @@ export async function PATCH(
     }
   }
 
+  const beforeDoc = await db
+    .collection("used_rackets")
+    .findOne({ _id: new ObjectId(id) });
+  if (!beforeDoc)
+    return NextResponse.json({ message: "Not Found" }, { status: 404 });
+
   const res = await db
     .collection("used_rackets")
     .updateOne({ _id: new ObjectId(id) }, { $set: set });
   if (!res.matchedCount)
     return NextResponse.json({ message: "Not Found" }, { status: 404 });
+  const before = toRacketAuditSnapshot(beforeDoc);
+  const after = toRacketAuditSnapshot(set);
+  await appendAdminAudit(
+    db,
+    {
+      type: "racket.update",
+      actorId: guard.admin._id,
+      targetId: id,
+      message: "관리자 라켓 수정",
+      diff: {
+        targetType: "racket",
+        before,
+        after,
+        metadata: {
+          changedKeys: Object.keys(set),
+        },
+      },
+    },
+    req,
+  );
   return NextResponse.json({ ok: true });
 }
 
@@ -181,10 +221,30 @@ export async function DELETE(
   if (!ObjectId.isValid(id)) {
     return NextResponse.json({ message: "Bad Request" }, { status: 400 });
   }
+  const beforeDoc = await db
+    .collection("used_rackets")
+    .findOne({ _id: new ObjectId(id) });
+  if (!beforeDoc)
+    return NextResponse.json({ message: "Not Found" }, { status: 404 });
   const res = await db
     .collection("used_rackets")
     .deleteOne({ _id: new ObjectId(id) });
   if (!res.deletedCount)
     return NextResponse.json({ message: "Not Found" }, { status: 404 });
+  await appendAdminAudit(
+    db,
+    {
+      type: "racket.delete",
+      actorId: guard.admin._id,
+      targetId: id,
+      message: "관리자 라켓 삭제",
+      diff: {
+        targetType: "racket",
+        before: toRacketAuditSnapshot(beforeDoc),
+        after: { deleted: true },
+      },
+    },
+    req,
+  );
   return NextResponse.json({ ok: true });
 }

@@ -8,6 +8,7 @@ import {
 import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
+import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 
 export const dynamic = "force-dynamic";
 
@@ -205,5 +206,32 @@ export async function POST(req: Request) {
   }
 
   const res = await db.collection("used_rackets").insertOne(doc as any);
+  await appendAdminAudit(
+    db,
+    {
+      type: "racket.create",
+      actorId: guard.admin._id,
+      targetId: res.insertedId,
+      message: "관리자 라켓 등록",
+      diff: {
+        targetType: "racket",
+        after: {
+          brand: doc.brand,
+          model: doc.model,
+          name: doc.model,
+          status: doc.status,
+          condition: doc.condition,
+          price: doc.price,
+          rentalAvailable: doc.rental?.enabled ?? false,
+          quantity: doc.quantity,
+        },
+        metadata: {
+          createdKeys: Object.keys(doc),
+          imageCount: Array.isArray(doc.images) ? doc.images.length : 0,
+        },
+      },
+    },
+    req,
+  );
   return NextResponse.json({ ok: true, id: res.insertedId.toString() });
 }

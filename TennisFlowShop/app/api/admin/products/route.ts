@@ -3,6 +3,7 @@ import { Filter, Sort, Document } from "mongodb";
 import { getDb } from "@/lib/mongodb";
 import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
+import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 import type {
   AdminProductsListRequestDto,
@@ -17,6 +18,25 @@ type ProductDoc = Record<string, unknown>;
 const DEFAULT_PAGE = 1;
 const DEFAULT_PAGE_SIZE = 10;
 const MAX_PAGE_SIZE = 100;
+
+function toAuditProductSnapshot(doc: Record<string, unknown>) {
+  const inventory = asRecord(doc.inventory);
+  const imageCount = Array.isArray(doc.images) ? doc.images.length : 0;
+  return {
+    name: typeof doc.name === "string" ? doc.name : "",
+    brand: typeof doc.brand === "string" ? doc.brand : "",
+    price: typeof doc.price === "number" ? doc.price : null,
+    salePrice: typeof doc.salePrice === "number" ? doc.salePrice : undefined,
+    discountPrice:
+      typeof doc.discountPrice === "number" ? doc.discountPrice : undefined,
+    stock: typeof inventory?.stock === "number" ? inventory.stock : null,
+    status: typeof doc.status === "string" ? doc.status : undefined,
+    isActive: typeof doc.isActive === "boolean" ? doc.isActive : undefined,
+    isPublished:
+      typeof doc.isPublished === "boolean" ? doc.isPublished : undefined,
+    imageCount,
+  };
+}
 
 function asRecord(value: unknown): Record<string, unknown> | null {
   if (typeof value !== "object" || value === null || Array.isArray(value))
@@ -308,6 +328,41 @@ export async function POST(req: NextRequest) {
         price: requestDto.price,
         shippingFee: requestDto.shippingFee,
       });
+
+    const createdDoc = {
+      ...requestDto.raw,
+      name: requestDto.name,
+      price: requestDto.price,
+    } as Record<string, unknown>;
+    const afterSnapshot = toAuditProductSnapshot(createdDoc);
+    await appendAdminAudit(
+      db,
+      {
+        type: "product.create",
+        actorId: guard.admin._id,
+        targetId: result.insertedId,
+        message: "관리자 상품 등록",
+        diff: {
+          targetType: "product",
+          after: {
+            name: afterSnapshot.name,
+            brand: afterSnapshot.brand,
+            price: afterSnapshot.price,
+            salePrice: afterSnapshot.salePrice,
+            discountPrice: afterSnapshot.discountPrice,
+            stock: afterSnapshot.stock,
+            status: afterSnapshot.status,
+            isActive: afterSnapshot.isActive,
+            isPublished: afterSnapshot.isPublished,
+          },
+          metadata: {
+            createdKeys: Object.keys(requestDto.raw),
+            imageCount: afterSnapshot.imageCount,
+          },
+        },
+      },
+      req,
+    );
 
     return NextResponse.json(
       { message: "상품 등록 완료", id: result.insertedId.toString() },
