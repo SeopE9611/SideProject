@@ -833,6 +833,21 @@ export default function FilterableProductList({
                 })}
               </div>
 
+              {hasMore && (
+                <div className="mt-6 flex justify-center">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={loadMore}
+                    disabled={isFetchingMore}
+                    className="min-w-[140px]"
+                    aria-label="상품 더 불러오기"
+                  >
+                    {isFetchingMore ? "불러오는 중..." : "상품 더 보기"}
+                  </Button>
+                </div>
+              )}
+
               {/* 추가 로딩 표시 */}
               {isFetchingMore && (
                 <div
@@ -842,6 +857,12 @@ export default function FilterableProductList({
                   <div className="h-4 w-4 rounded-full border-2 border-border border-t-transparent animate-spin" />
                   <Skeleton className="h-4 w-24" />
                 </div>
+              )}
+
+              {!hasMore && productsList.length > 0 && (
+                <p className="mt-6 text-center text-sm text-muted-foreground">
+                  모든 상품을 불러왔습니다.
+                </p>
               )}
             </>
           )}
