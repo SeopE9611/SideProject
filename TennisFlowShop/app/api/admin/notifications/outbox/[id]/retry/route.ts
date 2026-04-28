@@ -51,6 +51,10 @@ export async function POST(
     {
       projection: {
         status: 1,
+        retries: 1,
+        error: 1,
+        templateKey: 1,
+        template: 1,
         channels: 1,
         rendered: 1,
       },
