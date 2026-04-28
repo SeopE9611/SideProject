@@ -284,6 +284,22 @@ export default function FilterableRacketList({
   }, [rackets, sortOption, priceMin, priceMax]);
 
   const products = racketsList();
+  const [visibleCount, setVisibleCount] = useState(6);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const hasMore = products.length > visibleCount;
+  const visibleProducts = useMemo(
+    () => products.slice(0, visibleCount),
+    [products, visibleCount],
+  );
+
+  const loadMore = useCallback(() => {
+    if (isLoadingMore || !hasMore) return;
+    setIsLoadingMore(true);
+    window.setTimeout(() => {
+      setVisibleCount((prev) => Math.min(prev + 6, products.length));
+      setIsLoadingMore(false);
+    }, 120);
+  }, [isLoadingMore, hasMore, products.length]);
 
   // 검색 제출
   const handleSearchSubmit = useCallback(() => {
@@ -319,6 +335,11 @@ export default function FilterableRacketList({
   const handleClearInput = useCallback(() => {
     setSearchQuery("");
   }, []);
+
+  useEffect(() => {
+    setVisibleCount(6);
+    setIsLoadingMore(false);
+  }, [filterKey, sortOption, priceMin, priceMax]);
 
   // draft를 현재 applied(selected) 값으로 동기화 (Sheet 열 때/취소할 때)
   const syncDraftFromApplied = useCallback(() => {
@@ -399,6 +420,21 @@ export default function FilterableRacketList({
     mql.addEventListener("change", onChange);
     return () => mql.removeEventListener("change", onChange);
   }, [showFilters, cancelFiltersSheet]);
+
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const sentinelRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      if (isLoadingMore) return;
+      if (observerRef.current) observerRef.current.disconnect();
+      observerRef.current = new IntersectionObserver((entries) => {
+        if (entries[0]?.isIntersecting && hasMore) {
+          loadMore();
+        }
+      });
+      if (node) observerRef.current.observe(node);
+    },
+    [isLoadingMore, hasMore, loadMore],
+  );
 
   // active filter 개수
   const priceChanged = priceMin !== null || priceMax !== null;
@@ -553,7 +589,7 @@ export default function FilterableRacketList({
                       <Skeleton className="inline-block h-5 w-10 align-middle" />
                     ) : (
                       <span className="ml-2 text-sm text-muted-foreground">
-                        (표시중 {products.length}개)
+                        (표시중 {visibleProducts.length}개)
                       </span>
                     )}
                   </>
@@ -570,7 +606,7 @@ export default function FilterableRacketList({
                       <Skeleton className="inline-block h-5 w-10 align-middle" />
                     ) : (
                       <span className="ml-2 text-sm text-muted-foreground">
-                        (표시중 {products.length}개)
+                        (표시중 {visibleProducts.length}개)
                       </span>
                     )}
                   </>
@@ -691,7 +727,7 @@ export default function FilterableRacketList({
                   : "grid-cols-1",
               )}
             >
-              {products.map((racket) => (
+              {visibleProducts.map((racket) => (
                 <RacketCard
                   key={racket.id}
                   racket={racket}
@@ -702,6 +738,31 @@ export default function FilterableRacketList({
                 />
               ))}
             </div>
+          )}
+
+          {!showInlineLoadingSkeleton && !error && products.length > 0 && (
+            <>
+              {hasMore && (
+                <div className="mt-6 flex justify-center">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={loadMore}
+                    disabled={isLoadingMore}
+                    className="min-w-[140px]"
+                    aria-label="라켓 더 불러오기"
+                  >
+                    {isLoadingMore ? "불러오는 중..." : "라켓 더 보기"}
+                  </Button>
+                </div>
+              )}
+              <div ref={sentinelRef} className="h-1 w-full" aria-hidden />
+              {!hasMore && (
+                <p className="mt-6 text-center text-sm text-muted-foreground">
+                  모든 라켓을 불러왔습니다.
+                </p>
+              )}
+            </>
           )}
         </div>
       </div>
