@@ -95,6 +95,15 @@ const AdminConfirmDialog = dynamic(
   { loading: () => null },
 );
 
+type RentalPendingAction =
+  | "approveCancel"
+  | "rejectCancel"
+  | "confirmPayment"
+  | "out"
+  | "return"
+  | "refundMark"
+  | "refundClear";
+
 export default function AdminRentalDetailClient() {
   const params = useParams<{ id: string }>();
   const id = params?.id ?? "";
@@ -112,26 +121,12 @@ export default function AdminRentalDetailClient() {
   );
   const isVisitPickup = data?.servicePickupMethod === "SHOP_VISIT";
 
-  const [busyAction, setBusyAction] = useState<
-    | null
-    | "approveCancel"
-    | "rejectCancel"
-    | "confirmPayment"
-    | "out"
-    | "return"
-    | "refundMark"
-    | "refundClear"
-  >(null);
-  const [pendingAction, setPendingAction] = useState<
-    | null
-    | "approveCancel"
-    | "rejectCancel"
-    | "confirmPayment"
-    | "out"
-    | "return"
-    | "refundMark"
-    | "refundClear"
-  >(null);
+  const [busyAction, setBusyAction] = useState<RentalPendingAction | null>(
+    null,
+  );
+  const [pendingAction, setPendingAction] = useState<RentalPendingAction | null>(
+    null,
+  );
 
   const isBusy = busyAction !== null;
   // 무통장 결제완료 처리: created → paid 전이
@@ -356,6 +351,19 @@ export default function AdminRentalDetailClient() {
                 eventMeta: { rentalId: id, currentStatus: data?.status },
               }
             : null;
+
+  const getPendingActionSeverity = (
+    action: RentalPendingAction | null,
+  ): "default" | "danger" => {
+    switch (action) {
+      case "approveCancel":
+      case "refundMark":
+      case "refundClear":
+        return "danger";
+      default:
+        return "default";
+    }
+  };
 
   const handleConfirmPendingAction = async () => {
     if (!pendingAction || isBusy) return;
@@ -916,7 +924,7 @@ export default function AdminRentalDetailClient() {
               }}
               onCancel={() => setPendingAction(null)}
               onConfirm={handleConfirmPendingAction}
-              severity="danger"
+              severity={getPendingActionSeverity(pendingAction)}
               title={pendingDialogConfig.title}
               description={pendingDialogConfig.description}
               confirmText={pendingDialogConfig.confirmText}
