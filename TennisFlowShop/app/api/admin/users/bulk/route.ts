@@ -184,10 +184,10 @@ export async function POST(req: Request) {
     {
       type: `users.bulk.${op}`,
       actorId: guard.admin._id,
-      targetId: "bulk",
       message: `회원 일괄 처리 실행(${op})`,
       diff: {
         targetType: "users",
+        targetScope: "bulk",
         actorEmail: guard.admin.email ?? null,
         actorName: guard.admin.name ?? null,
         actorRole: guard.admin.role ?? null,
