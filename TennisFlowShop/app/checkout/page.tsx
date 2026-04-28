@@ -1182,7 +1182,7 @@ export default function CheckoutPage() {
                     <AlertTriangle className="h-4 w-4 text-warning" />
                   </div>
                   <p className="leading-relaxed pt-1">
-                    <span className="font-semibold">주의:</span> 작성 중에 다른 페이지로 이동하거나 새로고침하면 입력한 내용이 <span className="font-semibold">초기화될 수 있습니다.</span>
+                    입력한 내용은 결제 완료 전까지 유지되며, 새로고침하거나 다른 페이지로 이동하면 일부 정보가 초기화될 수 있어요.
                   </p>
                 </div>
                 {/* 주문 상품 */}
