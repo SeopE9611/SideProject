@@ -19,6 +19,7 @@ import {
   UNSAVED_CHANGES_MESSAGE,
   useUnsavedChangesGuard,
 } from "@/lib/hooks/useUnsavedChangesGuard";
+import { cn } from "@/lib/utils";
 import {
   ArrowLeft,
   Clock,
@@ -37,6 +38,10 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const onlyDigits = (v: string) => v.replace(/\D/g, "");
 const isValidKoreanPhoneDigits = (digits: string) =>
   digits.length === 10 || digits.length === 11;
+type LookupNotice =
+  | { type: "error"; message: string }
+  | { type: "empty"; message: string }
+  | null;
 
 export default function OrderLookupPage() {
   const router = useRouter();
@@ -50,6 +55,7 @@ export default function OrderLookupPage() {
     email: "",
     phone: "",
   });
+  const [lookupNotice, setLookupNotice] = useState<LookupNotice>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // 비회원 주문 조회(게스트) UI 노출 여부(클라)
@@ -99,6 +105,7 @@ export default function OrderLookupPage() {
     if (errors[name as keyof typeof errors]) {
       setErrors((prev) => ({ ...prev, [name]: "" }));
     }
+    setLookupNotice(null);
   };
 
   const validateForm = () => {
@@ -179,12 +186,14 @@ export default function OrderLookupPage() {
 
       // 400(유효성 실패)도 여기로 들어오므로, success/ok 기준으로 분기
       if (!res.ok || !data?.success) {
-        alert(data?.error ?? "요청 값이 올바르지 않습니다.");
+        setLookupNotice({
+          type: "error",
+          message: data?.error ?? "입력하신 정보를 확인한 뒤 다시 조회해주세요.",
+        });
         return;
       }
 
       if (data.orders.length > 0) {
-        alert(`총 ${data.orders.length}개의 주문을 찾았습니다.`);
         // results 페이지에도 "정규화된 값"을 넘김
         const qs = new URLSearchParams();
         qs.set("name", normalizedName);
@@ -193,11 +202,18 @@ export default function OrderLookupPage() {
 
         router.push(`/order-lookup/results?${qs.toString()}`);
       } else {
-        alert("조회된 주문이 없습니다.");
+        setLookupNotice({
+          type: "empty",
+          message:
+            "조회된 주문이 없습니다. 입력하신 이름, 이메일, 전화번호를 다시 확인해주세요.",
+        });
       }
     } catch (error) {
       console.error("주문 조회 중 오류 발생:", error);
-      alert("주문 조회 중 오류가 발생했습니다. 다시 시도해주세요.");
+      setLookupNotice({
+        type: "error",
+        message: "주문 조회 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -365,6 +381,24 @@ export default function OrderLookupPage() {
               </CardContent>
 
               <CardFooter className="flex flex-col gap-3 md:gap-4 pt-2 pb-6 md:pb-8">
+                {lookupNotice && (
+                  <div
+                    className={cn(
+                      "w-full rounded-lg border p-4 text-sm",
+                      lookupNotice.type === "error"
+                        ? "border-destructive/40 bg-destructive/5 text-destructive"
+                        : "border-border bg-muted/40 text-foreground",
+                    )}
+                    role={lookupNotice.type === "error" ? "alert" : "status"}
+                  >
+                    <p className="font-medium">
+                      {lookupNotice.type === "empty"
+                        ? "주문을 찾지 못했어요"
+                        : "조회 안내"}
+                    </p>
+                    <p className="mt-1 text-sm">{lookupNotice.message}</p>
+                  </div>
+                )}
                 <Button
                   type="submit"
                   size="lg"
