@@ -86,8 +86,8 @@ export const GEAR_BOARD_CONFIG: BoardTypeConfig = {
   boardType: "gear",
   routePrefix: "/board/gear",
   boardTitle: "장비 사용기",
-  boardDescription: "테니스 장비 사용기를 작성하는 공간입니다.",
-  cardDescription: "라켓, 스트링 테니스화 등 자유롭게 사용기를 남겨 보세요.",
+  boardDescription: "직접 사용해본 라켓과 스트링, 테니스 장비 경험을 공유하는 커뮤니티 공간입니다.",
+  cardDescription: "라켓, 스트링, 테니스화 등 장비 사용 경험을 자유롭게 공유해 보세요.",
   errorMessage: "장비 사용기 게시판을 불러오는 중 오류가 발생했습니다.",
   emptyDescription: "첫 번째 글을 작성해 보세요.",
   categories: [

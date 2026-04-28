@@ -38,7 +38,7 @@ export const menuSections: MenuSection[] = [
   },
   {
     id: "boards",
-    title: "고객센터 · 게시판",
+    title: "고객센터 · 커뮤니티",
     icon: "board",
     links: [
       // 고객센터 영역
@@ -47,11 +47,11 @@ export const menuSections: MenuSection[] = [
         href: "/support",
       },
       {
-        name: "공지사항",
+        name: "고객센터 공지사항",
         href: "/board/notice",
       },
       {
-        name: "Q&A",
+        name: "Q&A 문의",
         href: "/board/qna",
       },
 
@@ -61,11 +61,11 @@ export const menuSections: MenuSection[] = [
         href: "/board",
       },
       {
-        name: "자유 게시판",
+        name: "자유게시판",
         href: "/board/free",
       },
       {
-        name: "중고 거래",
+        name: "중고거래",
         href: "/board/market",
       },
       {
@@ -73,7 +73,7 @@ export const menuSections: MenuSection[] = [
         href: "/board/gear",
       },
       {
-        name: "리뷰 게시판",
+        name: "리뷰",
         href: "/reviews",
       },
     ],

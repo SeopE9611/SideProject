@@ -22,13 +22,13 @@ const Footer = () => {
   // ];
 
   const customerService = [
-    { name: "공지사항", href: "/board/notice" },
-    { name: "Q&A", href: "/board/qna" },
+    { name: "고객센터 공지사항", href: "/board/notice" },
+    { name: "Q&A 문의", href: "/board/qna" },
     { name: "이용약관", href: "/terms" },
     { name: "개인정보처리방침", href: "/privacy" },
   ];
 
-  const customerServiceLinks = customerService.filter((link) => link.name === "공지사항" || link.name === "Q&A");
+  const customerServiceLinks = customerService.filter((link) => link.name === "고객센터 공지사항" || link.name === "Q&A 문의");
   const policyLinks = customerService.filter((link) => link.name === "이용약관" || link.name === "개인정보처리방침");
 
   const snsLinks = [
@@ -197,7 +197,7 @@ const Footer = () => {
                     </Link>
                   ))}
                   <Link href="/board/notice" className="transition-colors duration-300 hover:text-primary">
-                    공지사항
+                    고객센터 공지사항
                   </Link>
                   {guestOrderMode === "on" && (
                     <Link href="/order-lookup" className="transition-colors duration-300 hover:text-primary">
