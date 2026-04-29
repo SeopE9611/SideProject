@@ -13,6 +13,7 @@ import { normalizeCollection } from '@/app/features/stringing-applications/lib/c
 import { getStringingAddressReadLabels, orderShippingMethodLabel } from '@/app/features/stringing-applications/lib/fulfillment-labels';
 import { useStringingStore } from '@/app/store/stringingStore';
 import AdminCancelRequestCard from '@/components/admin/AdminCancelRequestCard';
+import AdminInternalNotesCard from '@/components/admin/AdminInternalNotesCard';
 import LinkedDocsCard, { LinkedDocItem } from '@/components/admin/LinkedDocsCard';
 import SiteContainer from '@/components/layout/SiteContainer';
 import ServiceReviewCTA from '@/components/reviews/ServiceReviewCTA';
@@ -1856,6 +1857,11 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                     historyMutateRef.current = mutateFn;
                   }}
                 />
+              </div>
+            )}
+            {isAdmin && applicationId && (
+              <div className="mt-6">
+                <AdminInternalNotesCard targetType="stringingApplication" targetId={applicationId} />
               </div>
             )}
           </div>
