@@ -564,18 +564,26 @@ export default function OrderLookupResultsPage() {
                   <h3 className="text-2xl font-semibold text-foreground mb-4">
                     조회된 주문이 없습니다
                   </h3>
-                  <p className="text-muted-foreground text-center mb-6 md:mb-8 max-w-md">
-                    입력하신 정보와 일치하는 주문 내역이 없습니다.
-                    <br />
-                    주문 시 입력한 정보를 다시 확인해주세요.
+                  <p className="text-muted-foreground text-center mb-3 max-w-xl">
+                    입력하신 정보와 일치하는 비회원 주문을 찾지 못했습니다.
+                    주문 시 입력한 이름, 이메일, 전화번호가 정확한지 확인한 뒤 다시 조회해주세요.
                   </p>
-                  <Button
-                    onClick={handleGoBack}
-                    className="bg-primary text-primary-foreground hover:bg-primary/90"
-                  >
-                    <ArrowLeft className="w-4 h-4 mr-2" />
-                    주문 조회 페이지로 돌아가기
-                  </Button>
+                  <p className="text-sm text-muted-foreground text-center mb-6 md:mb-8 max-w-xl">
+                    주문 완료 후 시간이 오래 지나지 않았다면 잠시 후 다시 시도해볼 수 있어요.
+                    계속 조회되지 않는 경우 고객센터 Q&A로 문의해주세요.
+                  </p>
+                  <div className="flex w-full max-w-md flex-col gap-3 sm:flex-row sm:justify-center">
+                    <Button
+                      onClick={handleGoBack}
+                      className="bg-primary text-primary-foreground hover:bg-primary/90"
+                    >
+                      <ArrowLeft className="w-4 h-4 mr-2" />
+                      다시 조회하기
+                    </Button>
+                    <Button asChild variant="outline" className="border-border">
+                      <Link href="/board/qna/write">고객센터 문의하기</Link>
+                    </Button>
+                  </div>
                 </div>
               )}
             </CardContent>
