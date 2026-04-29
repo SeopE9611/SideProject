@@ -13,6 +13,7 @@ import {
   ClipboardList,
   Bell,
   Inbox,
+  History,
 } from "lucide-react";
 import { MdSportsTennis } from "react-icons/md";
 
@@ -97,6 +98,7 @@ export const SIDEBAR_SECTIONS: SidebarSection[] = [
     label: "기타",
     items: [
       { title: "게시판 관리", href: "/admin/boards", icon: MessageCircle },
+      { title: "감사 로그", href: "/admin/audit", icon: History },
       { title: "설정", href: "/admin/settings", icon: Settings },
     ],
   },
