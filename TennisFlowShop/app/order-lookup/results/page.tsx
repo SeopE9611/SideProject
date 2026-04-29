@@ -44,6 +44,7 @@ import {
   getOrderStatusLabelForDisplay,
   isVisitPickupOrder,
 } from "@/lib/order-shipping";
+import { getGuestOrderNextActionText } from "@/app/order-lookup/_lib/guestOrderNextAction";
 import { getCommonOrderStatusLabel } from "@/lib/status-labels/base";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -391,6 +392,15 @@ export default function OrderLookupResultsPage() {
                     const isVisitPickup = isVisitPickupOrder(
                       order.shippingInfo,
                     );
+                    const displayStatus = getLookupOrderStatusLabel(
+                      order.status,
+                      order.shippingInfo,
+                    );
+                    const nextActionText = getGuestOrderNextActionText({
+                      status: order.status,
+                      displayStatus,
+                      shippingLike: order.shippingInfo,
+                    });
 
                     return (
                       <Card
@@ -427,20 +437,17 @@ export default function OrderLookupResultsPage() {
                                 )}
                                 className="gap-1 px-3 py-1.5 text-sm font-medium"
                               >
-                                {getStatusIcon(
-                                  getLookupOrderStatusLabel(
-                                    order.status,
-                                    order.shippingInfo,
-                                  ),
-                                  isVisitPickupOrder(order.shippingInfo),
-                                )}
-                                {getLookupOrderStatusLabel(
-                                  order.status,
-                                  order.shippingInfo,
-                                )}
+                                {getStatusIcon(displayStatus, isVisitPickup)}
+                                {displayStatus}
                               </Badge>
                             </div>
                           </div>
+
+                          {nextActionText && (
+                            <div className="mb-4 rounded-lg bg-muted/40 px-3 py-2 text-xs text-muted-foreground md:mb-6">
+                              {nextActionText}
+                            </div>
+                          )}
 
                           {/* Order Details Grid */}
                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-4 md:mb-6">

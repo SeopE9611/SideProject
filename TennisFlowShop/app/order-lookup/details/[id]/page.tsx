@@ -12,6 +12,7 @@ import { badgeToneVariant, getOrderStatusTone } from "@/lib/badge-style";
 import { bankLabelMap } from "@/lib/constants";
 import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from "@/lib/order-shipping";
 import { getCommonApplicationStatusLabel, getCommonOrderStatusLabel } from "@/lib/status-labels/base";
+import { getGuestOrderNextActionText } from "@/app/order-lookup/_lib/guestOrderNextAction";
 import { ArrowLeft, Calendar, CheckCircle, Clock, CreditCard, MapPin, Package, Phone, Shield, ShoppingBag, Store, Truck, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -351,6 +352,12 @@ export default function OrderDetailPage() {
   const shippingCardTitle = orderShippingReadLabels.sectionTitle;
   const shippingAddressLabel = orderShippingReadLabels.primaryLabel;
   const shippingAddressValue = isVisitPickup ? orderShippingReadLabels.primaryValue : order.shippingInfo.address;
+  const displayStatus = getLookupOrderStatusLabel(order.status, order.shippingInfo);
+  const nextActionText = getGuestOrderNextActionText({
+    status: order.status,
+    displayStatus,
+    shippingLike: order.shippingInfo,
+  });
   const trackingNumber = order.shippingInfo?.invoice?.trackingNumber ?? order.trackingNumber;
   const canTrack = !isVisitPickup && Boolean(trackingNumber);
   const isUnsupportedCourier =
@@ -426,9 +433,9 @@ export default function OrderDetailPage() {
             </h1>
             <p className="text-xl text-muted-foreground">주문번호: {order._id.slice(-8)}</p>
             <div className="mt-4">
-              <Badge variant={badgeToneVariant(getOrderStatusTone(getLookupOrderStatusLabel(order.status, order.shippingInfo)))} className="gap-2 px-4 py-2 text-lg font-semibold">
-                {getStatusIcon(getLookupOrderStatusLabel(order.status, order.shippingInfo), isVisitPickup)}
-                {getLookupOrderStatusLabel(order.status, order.shippingInfo)}
+              <Badge variant={badgeToneVariant(getOrderStatusTone(displayStatus))} className="gap-2 px-4 py-2 text-lg font-semibold">
+                {getStatusIcon(displayStatus, isVisitPickup)}
+                {displayStatus}
               </Badge>
             </div>
           </div>
@@ -444,6 +451,13 @@ export default function OrderDetailPage() {
               주문 목록으로 돌아가기
             </Button>
           </div>
+
+          {nextActionText && (
+            <div className="mb-6 rounded-xl border border-border bg-muted/30 p-4 md:mb-8">
+              <p className="text-sm font-medium text-foreground">현재 진행 안내</p>
+              <p className="mt-1 text-sm text-muted-foreground">{nextActionText}</p>
+            </div>
+          )}
 
           {/* String Service Alert */}
           {order.shippingInfo?.withStringService && (
