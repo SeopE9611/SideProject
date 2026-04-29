@@ -12,6 +12,8 @@ type StringRecommendResultCardProps = {
 
 export default function StringRecommendResultCard({ result, rank }: StringRecommendResultCardProps) {
   const { product } = result;
+  const productHref = `/products/${product.id}?from=apply`;
+
   return (
     <Card className="rounded-2xl">
       <CardHeader className="space-y-3">
@@ -47,10 +49,15 @@ export default function StringRecommendResultCard({ result, rank }: StringRecomm
         </div>
       </CardContent>
       <CardFooter className="flex-col items-start gap-2">
-        <Button asChild className="w-full" type="button">
-          <Link href={`/products/${product.id}?from=apply`}>상세 보기</Link>
-        </Button>
-        <p className="text-xs text-muted-foreground">상세 페이지에서 스트링 정보 확인 후 교체서비스 신청을 진행할 수 있어요.</p>
+        <div className="mt-1 w-full space-y-2">
+          <Button asChild className="w-full">
+            <Link href={productHref}>이 스트링으로 교체서비스 신청</Link>
+          </Button>
+          <Button asChild variant="outline" className="w-full">
+            <Link href={productHref}>상세 보기</Link>
+          </Button>
+        </div>
+        <p className="text-xs text-muted-foreground">상세 페이지에서 스트링 정보를 확인한 뒤 교체서비스 신청을 이어서 진행할 수 있어요.</p>
       </CardFooter>
     </Card>
   );
