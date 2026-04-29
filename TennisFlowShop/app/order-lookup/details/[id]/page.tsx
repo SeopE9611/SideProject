@@ -178,7 +178,7 @@ export default function OrderDetailPage() {
         if (data.success && data.order) {
           setOrder(data.order);
         } else {
-          setError("해당 주문을 찾을 수 없습니다.");
+          setError("주문 정보를 확인할 수 없습니다.");
         }
       } catch (err) {
         console.error("주문 상세 정보 조회 중 오류 발생:", err);
@@ -277,12 +277,25 @@ export default function OrderDetailPage() {
                   <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-full border border-border bg-muted text-foreground">
                     <Package className="w-8 h-8 text-primary" />
                   </div>
-                  <h3 className="text-xl font-semibold text-foreground mb-4">오류가 발생했습니다</h3>
-                  <p className="text-destructive mb-8 max-w-md">{error}</p>
-                  <Button onClick={handleGoBack}>
-                    <ArrowLeft className="w-4 h-4 mr-2" />
-                    이전 페이지로 돌아가기
-                  </Button>
+                  <h3 className="text-xl font-semibold text-foreground mb-4">주문 정보를 확인할 수 없습니다</h3>
+                  <p className="text-muted-foreground mb-3 max-w-md">
+                    조회 정보가 만료되었거나 주문 시 입력한 정보와 일치하지 않을 수 있어요.
+                  </p>
+                  <p className="text-muted-foreground mb-8 max-w-md">
+                    다시 조회하거나 고객센터로 문의해주세요.
+                  </p>
+                  <p className="mb-8 text-sm text-muted-foreground">{error}</p>
+                  <div className="flex flex-col gap-3 sm:flex-row">
+                    <Button asChild>
+                      <Link href="/order-lookup">
+                        <ArrowLeft className="w-4 h-4 mr-2" />
+                        주문 다시 조회하기
+                      </Link>
+                    </Button>
+                    <Button asChild variant="outline">
+                      <Link href="/board/qna/write">고객센터 문의하기</Link>
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -303,15 +316,25 @@ export default function OrderDetailPage() {
                   <Package className="h-7 w-7 text-muted-foreground" />
                 </div>
                 <h2 className="text-2xl font-semibold text-foreground">
-                  주문 정보를 찾을 수 없습니다.
+                  주문 정보를 확인할 수 없습니다.
                 </h2>
                 <p className="mt-3 text-sm text-muted-foreground md:text-base">
-                  조회 링크가 만료되었거나 주문 정보가 존재하지 않습니다.
+                  조회 정보가 만료되었거나 주문 시 입력한 정보와 일치하지 않을 수 있어요.
                 </p>
-                <Button className="mt-8" onClick={handleGoBack}>
-                  <ArrowLeft className="mr-2 h-4 w-4" />
-                  이전 페이지로 돌아가기
-                </Button>
+                <p className="mt-2 text-sm text-muted-foreground md:text-base">
+                  다시 조회하거나 고객센터로 문의해주세요.
+                </p>
+                <div className="mt-8 flex w-full max-w-md flex-col gap-3 sm:flex-row sm:justify-center">
+                  <Button asChild>
+                    <Link href="/order-lookup">
+                      <ArrowLeft className="mr-2 h-4 w-4" />
+                      주문 다시 조회하기
+                    </Link>
+                  </Button>
+                  <Button asChild variant="outline">
+                    <Link href="/board/qna/write">고객센터 문의하기</Link>
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </div>

@@ -205,7 +205,7 @@ export default function OrderLookupPage() {
         setLookupNotice({
           type: "empty",
           message:
-            "조회된 주문이 없습니다. 입력하신 이름, 이메일, 전화번호를 다시 확인해주세요.",
+            "입력하신 이름, 이메일, 전화번호가 주문 시 작성한 정보와 일치하는지 다시 확인해주세요. 비회원 주문은 주문 시 입력한 정보가 정확히 일치해야 조회할 수 있어요.",
         });
       }
     } catch (error) {
@@ -394,9 +394,20 @@ export default function OrderLookupPage() {
                     <p className="font-medium">
                       {lookupNotice.type === "empty"
                         ? "주문을 찾지 못했어요"
-                        : "조회 안내"}
+                        : "조회 중 문제가 발생했어요"}
                     </p>
                     <p className="mt-1 text-sm">{lookupNotice.message}</p>
+                    {lookupNotice.type === "empty" && (
+                      <p className="mt-3 text-sm text-muted-foreground">
+                        계속 조회되지 않는다면
+                        <Link
+                          href="/board/qna/write"
+                          className="ml-1 font-medium text-primary hover:underline"
+                        >
+                          고객센터 Q&A로 문의해주세요.
+                        </Link>
+                      </p>
+                    )}
                   </div>
                 )}
                 <Button
