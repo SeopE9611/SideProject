@@ -274,6 +274,62 @@ const getTodoPrimaryReason = (group: ActivityGroup): string | null => {
   return null;
 };
 
+
+const getFlowNextActionText = (group: ActivityGroup, opts?: { prefersApplicationView?: boolean; todoPrimaryReason?: string | null }): string | null => {
+  if (opts?.todoPrimaryReason) {
+    const todoMessageMap: Record<string, string> = {
+      '구매확정 필요': '상품을 받으셨다면 구매확정을 진행해주세요.',
+      '운송장 등록 필요': '운송장 정보를 등록해주세요.',
+      '교체확정 필요': '작업 내용을 확인하고 확정해주세요.',
+      '리뷰 작성 필요': '상품 사용 후기를 작성해주세요.',
+      '교체서비스 신청 필요': '교체서비스 신청을 이어서 진행해주세요.',
+    };
+    return todoMessageMap[opts.todoPrimaryReason] ?? null;
+  }
+
+  const viewKind: ActivityGroup['kind'] = opts?.prefersApplicationView && group.application ? 'application' : group.kind;
+
+  if (viewKind === 'order') {
+    const normalized = getMypageNormalizedStatus(group.order?.status);
+    if (normalized === '취소요청') return '취소 요청이 접수되었습니다. 처리 결과를 기다려주세요.';
+    if (normalized === '취소') return '취소가 완료되었습니다.';
+    if (normalized === '환불') return '환불 처리가 완료되었거나 진행 상태를 확인할 수 있습니다.';
+    if (normalized === '대기중') return '결제를 완료해주세요.';
+    if (normalized === '결제완료') return '상품 준비 중입니다. 잠시만 기다려주세요.';
+    if (normalized === '처리중') return '상품을 준비하고 있습니다. 준비가 끝나면 배송 또는 수령 안내가 진행됩니다.';
+    if (normalized === '배송중') {
+      return isVisitPickupOrder({ shippingMethod: group.order?.shippingMethod })
+        ? '수령 준비 상태를 확인해주세요.'
+        : '배송 정보를 확인해주세요.';
+    }
+    if (normalized === '배송완료') return '상품을 받으셨다면 구매확정을 진행해주세요.';
+    if (normalized === '구매확정') return '사용 후 리뷰를 작성해주세요.';
+    return null;
+  }
+
+  if (viewKind === 'rental') {
+    const normalized = getMypageNormalizedStatus(group.rental?.status);
+    if (normalized === '취소') return '취소가 완료되었습니다.';
+    if (normalized === '대기중') return '결제를 완료해주세요.';
+    if (normalized === '결제완료') return '출고 또는 수령 준비 중입니다.';
+    if (normalized === '대여중') return '대여 중입니다. 반납 일정을 확인해주세요.';
+    if (normalized === '반납완료') return '반납이 완료되었습니다.';
+    if (!group.rental?.stringingApplicationId && group.rental?.withStringService) return '교체서비스 신청을 이어서 진행해주세요.';
+    if ((group.rental?.applicationSummaries ?? []).length > 0) return '해당 신청서의 진행 정보를 확인해주세요.';
+    return null;
+  }
+
+  const app = group.application;
+  const normalized = getMypageNormalizedStatus(app?.status);
+  if (normalized === '취소') return '취소가 완료되었습니다.';
+  if (normalized === '접수완료') return '접수가 완료되었습니다. 검토를 기다려주세요.';
+  if (normalized === '검토 중') return '신청 내용을 확인 중입니다. 안내를 기다려주세요.';
+  if (normalized === '승인') return '신청이 확인되었습니다. 다음 안내를 기다려주세요.';
+  if (normalized === '처리중' || normalized === '작업 중') return '작업이 진행 중입니다. 완료 안내를 기다려주세요.';
+  if (normalized === '교체완료') return '작업 내용을 확인하고 확정해주세요.';
+  if (normalized === '거절') return '신청이 반려되었습니다. 자세한 내용은 고객센터로 문의해주세요.';
+  return null;
+};
 const canShowOrderShippingInfo = (status?: string | null) => {
   const normalized = getMypageNormalizedStatus(status);
   return normalized === '배송중' || normalized === '배송완료' || normalized === '구매확정';
@@ -621,6 +677,7 @@ export default function TransactionFlowList() {
           const normalizedMetaLabel = normalizeLabel(FLOW_TYPE_META_LABEL[g.flowType]);
           const normalizedFlowLabel = normalizeLabel(g.flowLabel);
           const todoPrimaryReason = scope === 'todo' || scope === 'all' ? getTodoPrimaryReason(g) : null;
+          const nextActionText = getFlowNextActionText(g, { prefersApplicationView, todoPrimaryReason });
           const flowKindBadgeLabel = prefersApplicationView ? '서비스 신청' : g.kind === 'order' ? '주문' : g.kind === 'rental' ? '대여' : '서비스 신청';
           const linkedFlowBadgeLabel = !prefersApplicationView && (g.flowType === 'order_plus_stringing' || g.flowType === 'rental_plus_stringing') ? '교체서비스 연결' : null;
           const shouldShowFlowBadge =
@@ -685,6 +742,8 @@ export default function TransactionFlowList() {
                     </Badge>
                   ) : null}
                 </div>
+
+                {nextActionText ? <p className="mt-1 text-xs text-muted-foreground">{nextActionText}</p> : null}
 
                 <div className="grid grid-cols-1 gap-3 rounded-xl border border-border/50 bg-muted/30 p-3 bp-sm:grid-cols-2 bp-lg:grid-cols-4">
                   {displayKind === 'order' ? (
