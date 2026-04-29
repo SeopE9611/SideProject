@@ -6,6 +6,7 @@ import {
   deriveShippingStatus,
 } from "@/app/features/rentals/utils/status";
 import AdminCancelRequestCard from "@/components/admin/AdminCancelRequestCard";
+import AdminInternalNotesCard from "@/components/admin/AdminInternalNotesCard";
 import LinkedDocsCard, {
   LinkedDocItem,
 } from "@/components/admin/LinkedDocsCard";
@@ -1433,6 +1434,9 @@ export default function AdminRentalDetailClient() {
             id={id}
             servicePickupMethod={servicePickupMethod}
           />
+          {data?.id ? (
+            <AdminInternalNotesCard targetType="rental" targetId={data.id} />
+          ) : null}
         </div>
       </div>
     </div>
