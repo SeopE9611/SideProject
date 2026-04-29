@@ -9,6 +9,7 @@ import PaymentMethodDetail from "@/app/features/orders/components/PaymentMethodD
 import RequestEditForm from "@/app/features/orders/components/RequestEditForm";
 import AdminCancelRequestCard from "@/components/admin/AdminCancelRequestCard";
 import AdminConfirmDialog from "@/components/admin/AdminConfirmDialog";
+import AdminInternalNotesCard from "@/components/admin/AdminInternalNotesCard";
 import { LinkedDocItem } from "@/components/admin/LinkedDocsCard";
 import LinkedFlowStageCard from "@/components/admin/LinkedFlowStageCard";
 import AsyncState from "@/components/system/AsyncState";
@@ -1916,6 +1917,12 @@ export default function OrderDetailClient({ orderId }: Props) {
               )}
             </Card>
           )}
+
+          <AdminInternalNotesCard
+            targetType="order"
+            targetId={orderDetail._id}
+            className="xl:col-span-6"
+          />
 
           {/* 처리 이력 */}
           <Card className="overflow-hidden border-0 bg-muted/30 shadow-xl ring-ring xl:col-span-6">
