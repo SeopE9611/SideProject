@@ -34,6 +34,19 @@ type AuditListResponse = {
 };
 
 const PAGE_SIZE = 20;
+const NOTE_TYPE_LABEL: Record<string, string> = {
+  "note.create": "내부 메모 작성",
+  "note.update": "내부 메모 수정",
+  "note.delete": "내부 메모 삭제",
+};
+
+const QUICK_TYPE_FILTERS = [
+  { label: "전체", value: "" },
+  { label: "내부 메모", value: "note." },
+  { label: "메모 작성", value: "note.create" },
+  { label: "메모 수정", value: "note.update" },
+  { label: "메모 삭제", value: "note.delete" },
+] as const;
 
 function formatDateTime(value?: string | null) {
   if (!value) return "-";
@@ -88,6 +101,10 @@ export default function AdminAuditClient() {
   const [draftType, setDraftType] = useState(state.type);
 
   const applyFilters = () => patchState({ q: draftQ, type: draftType });
+  const applyQuickTypeFilter = (nextType: string) => {
+    setDraftType(nextType);
+    patchState({ type: nextType, page: 1 });
+  };
   const resetFilters = () => {
     setDraftQ("");
     setDraftType("");
@@ -103,6 +120,19 @@ export default function AdminAuditClient() {
             <Input placeholder="type (예: users.update)" value={draftType} onChange={(e) => setDraftType(e.target.value)} />
             <Button onClick={applyFilters} className="gap-2"><Search className="h-4 w-4" />검색</Button>
             <Button variant="outline" onClick={resetFilters}>초기화</Button>
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {QUICK_TYPE_FILTERS.map((filter) => (
+              <Button
+                key={filter.label}
+                type="button"
+                size="sm"
+                variant={state.type === filter.value ? "default" : "outline"}
+                onClick={() => applyQuickTypeFilter(filter.value)}
+              >
+                {filter.label}
+              </Button>
+            ))}
           </div>
         </CardContent>
       </Card>
@@ -120,6 +150,7 @@ export default function AdminAuditClient() {
               <CardContent className="space-y-2 py-4">
                 <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                   <Badge variant="secondary" className="font-mono text-[11px]">{item.type}</Badge>
+                  {NOTE_TYPE_LABEL[item.type] ? <Badge variant="outline">{NOTE_TYPE_LABEL[item.type]}</Badge> : null}
                   <span>{formatDateTime(item.createdAt)}</span>
                   {item.requestId ? <span className="font-mono">req: {item.requestId}</span> : null}
                 </div>
