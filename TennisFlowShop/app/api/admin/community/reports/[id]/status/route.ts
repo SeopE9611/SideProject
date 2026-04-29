@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { ClientSession, Db, ObjectId } from "mongodb";
 import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
+import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 import type {
   CommunityReportDocument,
   CommunityReportModerationTargetOutcome,
@@ -339,6 +340,43 @@ export async function PATCH(
         { status: 422 },
       );
     }
+
+    await appendAdminAudit(
+      db,
+      {
+        type: "community.report.status",
+        actorId: admin._id,
+        targetId: reportId,
+        message: "관리자 커뮤니티 신고 처리",
+        diff: {
+          before: {
+            status: report.status ?? null,
+            targetStatus: targetBeforeStatus ?? null,
+          },
+          after: {
+            status: nextStatus,
+            targetStatus: targetAfterStatus ?? null,
+          },
+          metadata: {
+            action,
+            resolution: nextStatus,
+            reportReason: report.reason ?? null,
+            targetType: report.targetType ?? null,
+            targetId:
+              report.targetType === "post"
+                ? report.postId?.toString() ?? null
+                : report.commentId?.toString() ?? null,
+            actor: {
+              id: String(admin._id),
+              email: admin.email ?? null,
+              name: admin.name ?? null,
+              role: admin.role ?? "admin",
+            },
+          },
+        },
+      },
+      req,
+    );
 
     return NextResponse.json({ ok: true });
   };
