@@ -448,6 +448,13 @@ const INDEX_SPECS = {
       options: { unique: true },
     },
   ],
+  admin_notes: [
+    {
+      name: "admin_notes_target_createdAt_idx",
+      keys: { targetType: 1, targetId: 1, createdAt: -1 },
+      options: {},
+    },
+  ],
   admin_locks: [
     {
       name: "admin_locks_key_unique",
