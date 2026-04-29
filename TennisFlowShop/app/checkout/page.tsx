@@ -1800,7 +1800,7 @@ export default function CheckoutPage() {
                             label: "환불 규정 동의 (필수)",
                             state: agreeRefund,
                             setState: setAgreeRefund,
-                            href: "/terms",
+                            href: "/refund-policy",
                           },
                         ].map((item) => (
                           <div
