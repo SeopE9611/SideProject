@@ -1,4 +1,5 @@
 import { ensureAdminLocksIndexes } from "@/lib/adminLocks.indexes";
+import { ensureAdminNotesIndexes } from "@/lib/adminNotes.indexes";
 import { ensureAdminOperationsIndexes } from "@/lib/adminOperations.indexes";
 import { ensureAuthIndexes } from "@/lib/auth.indexes";
 import { ensureBoardIndexes } from "@/lib/boards.indexes";
@@ -41,6 +42,9 @@ declare global {
 
   // 운영통합센터(admin operations) 검색 인덱스 보장 상태
   var _adminOperationsIndexesReady: Promise<void> | null | undefined;
+
+  // 관리자 내부 메모 인덱스 보장 상태
+  var _adminNotesIndexesReady: Promise<void> | null | undefined;
 
   // boards 컬렉션 인덱스 보장 상태
   var _boardsIndexesReady: Promise<void> | null | undefined;
@@ -230,6 +234,14 @@ export async function getDb() {
     );
   }
 
+  // admin_notes 인덱스 보장(1회)
+  if (!global._adminNotesIndexesReady) {
+    global._adminNotesIndexesReady = ensureAdminNotesIndexes(db).catch((e) => {
+      console.error("[admin_notes] ensureAdminNotesIndexes failed", e);
+      global._adminNotesIndexesReady = null;
+    });
+  }
+
   // users 인덱스 보장(1회)
   if (!global._usersIndexesReady) {
     global._usersIndexesReady = ensureUserIndexes(db).catch((e) => {
@@ -266,6 +278,7 @@ export async function getDb() {
     global._wishlistIndexesReady,
     global._adminLocksIndexesReady,
     global._adminOperationsIndexesReady,
+    global._adminNotesIndexesReady,
     global._usersIndexesReady,
     global._riskIndexesReady,
     global._reviewsIndexesReady,
