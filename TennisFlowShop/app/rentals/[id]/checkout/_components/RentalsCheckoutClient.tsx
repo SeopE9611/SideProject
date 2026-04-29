@@ -1095,7 +1095,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                         label: "환불 규정 동의 (필수)",
                         state: agreeRefund,
                         setState: setAgreeRefund,
-                        href: "/terms",
+                        href: "/refund-policy",
                       },
                     ].map((item) => (
                       <div key={item.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
