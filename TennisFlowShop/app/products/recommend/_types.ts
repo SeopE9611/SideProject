@@ -51,3 +51,44 @@ export type RecommendQuestion = {
   description?: string;
   options: RecommendQuestionOption[];
 };
+
+export type RecommendableProduct = {
+  id: string;
+  name: string;
+  brand?: string;
+  price: number;
+  image?: string;
+  material?: string;
+  gauge?: string;
+  mountingFee?: number;
+  shippingFee?: number;
+  features?: {
+    power?: number;
+    control?: number;
+    spin?: number;
+    durability?: number;
+    comfort?: number;
+  };
+  tags?: Partial<Record<"beginner" | "intermediate" | "advanced" | "baseline" | "serveVolley" | "allCourt" | "power", boolean>>;
+  inventory?: {
+    stock?: number;
+    status?: string;
+    manageStock?: boolean;
+    allowBackorder?: boolean;
+  };
+};
+
+export type TensionRange = {
+  min: number;
+  max: number;
+  label: string;
+  note: string;
+};
+
+export type RecommendedStringProduct = {
+  product: RecommendableProduct;
+  score: number;
+  reasons: string[];
+  tensionRange: TensionRange;
+  badges: string[];
+};
