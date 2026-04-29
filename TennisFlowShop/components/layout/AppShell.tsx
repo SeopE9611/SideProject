@@ -65,7 +65,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         <div
           className={cn(
             "w-full px-0 bp-lg:pr-8 xl:pr-12 2xl:pr-16",
-            showSideMenu ? "bp-lg:pl-64 xl:pl-72" : "bp-lg:pl-0 xl:pl-0",
+            showSideMenu ? "bp-lg:pl-72 xl:pl-80" : "bp-lg:pl-0 xl:pl-0",
           )}
         >
           {children}
