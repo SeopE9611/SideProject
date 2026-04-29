@@ -85,6 +85,7 @@ import { adminMutator } from "@/lib/admin/adminFetcher";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { runAdminActionWithToast } from "@/lib/admin/adminActionHelpers";
 import { loadDaumPostcode } from "@/lib/loadDaumPostcode";
+import AdminInternalNotesCard from "@/components/admin/AdminInternalNotesCard";
 
 // 변경이력 포맷터 유틸
 const AUDIT_LABELS: Record<string, string> = {
@@ -861,6 +862,8 @@ export default function UserDetailClient({ id }: { id: string }) {
                 />
               </SectionBody>
             </Section>
+
+            <AdminInternalNotesCard targetType="user" targetId={user.id} />
 
             {/* 보안 & 최근 활동 */}
             <Section>
