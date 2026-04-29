@@ -166,7 +166,66 @@ type AuditLog = {
   detail?: string;
   at: string;
   by?: string;
+  actorId?: unknown;
+  actorName?: string | null;
+  actorEmail?: string | null;
+  actorRole?: string | null;
+  diff?: {
+    actorName?: string | null;
+    actorEmail?: string | null;
+    actorRole?: string | null;
+    metadata?: {
+      actor?: {
+        id?: unknown;
+        name?: string | null;
+        email?: string | null;
+        role?: string | null;
+      } | null;
+    } | null;
+  } | null;
 };
+
+function normalizeActorId(value: unknown): string | null {
+  if (typeof value === "string") return value;
+  if (value && typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    if (typeof record.$oid === "string") return record.$oid;
+    if (typeof record.toString === "function") {
+      const stringified = record.toString();
+      if (typeof stringified === "string" && stringified !== "[object Object]") {
+        return stringified;
+      }
+    }
+  }
+  return null;
+}
+
+function getAuditActorDisplay(log: AuditLog): { label: string; title?: string } {
+  const actor = log?.diff?.metadata?.actor;
+  const name = actor?.name ?? log?.diff?.actorName ?? log?.actorName ?? null;
+  const email = actor?.email ?? log?.diff?.actorEmail ?? log?.actorEmail ?? null;
+  const role = actor?.role ?? log?.diff?.actorRole ?? log?.actorRole ?? null;
+  const actorId = normalizeActorId(actor?.id) ?? normalizeActorId(log?.actorId) ?? normalizeActorId(log?.by);
+
+  const principal = name
+    ? email
+      ? `${name} <${email}>`
+      : name
+    : email;
+
+  if (principal) {
+    return {
+      label: role ? `${principal} · ${role}` : principal,
+    };
+  }
+
+  if (actorId) {
+    const shortId = actorId.length > 12 ? `${actorId.slice(0, 4)}...${actorId.slice(-4)}` : actorId;
+    return { label: `actorId: ${shortId}`, title: actorId };
+  }
+
+  return { label: "알 수 없음" };
+}
 
 export default function UserDetailClient({ id }: { id: string }) {
   const router = useRouter();
@@ -998,7 +1057,7 @@ export default function UserDetailClient({ id }: { id: string }) {
                   render={(log: AuditLog) => (
                     <Row
                       title={log.action}
-                      subtitle={humanizeAuditDetail(log.action, log.detail)}
+                      subtitle={[getAuditActorDisplay(log).label, humanizeAuditDetail(log.action, log.detail)].filter(Boolean).join(" · ")}
                       right={new Date(log.at).toLocaleString("ko-KR", {
                         dateStyle: "short",
                         timeStyle: "short",
