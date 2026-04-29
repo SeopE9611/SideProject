@@ -198,6 +198,12 @@ export async function PATCH(
         after,
         metadata: {
           changedKeys: Object.keys(set),
+          actor: {
+            id: String(guard.admin._id),
+            email: guard.admin.email ?? null,
+            name: guard.admin.name ?? null,
+            role: guard.admin.role ?? "admin",
+          },
         },
       },
     },
@@ -242,6 +248,14 @@ export async function DELETE(
         targetType: "racket",
         before: toRacketAuditSnapshot(beforeDoc),
         after: { deleted: true },
+        metadata: {
+          actor: {
+            id: String(guard.admin._id),
+            email: guard.admin.email ?? null,
+            name: guard.admin.name ?? null,
+            role: guard.admin.role ?? "admin",
+          },
+        },
       },
     },
     req,

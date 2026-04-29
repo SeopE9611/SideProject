@@ -227,6 +227,12 @@ export async function POST(req: Request) {
         },
         metadata: {
           createdKeys: Object.keys(doc),
+          actor: {
+            id: String(guard.admin._id),
+            email: guard.admin.email ?? null,
+            name: guard.admin.name ?? null,
+            role: guard.admin.role ?? "admin",
+          },
           imageCount: Array.isArray(doc.images) ? doc.images.length : 0,
         },
       },

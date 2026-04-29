@@ -108,6 +108,12 @@ export async function POST(req: Request) {
           },
           metadata: {
             mode: action ?? "all",
+            actor: {
+              id: String(guard.admin._id),
+              email: guard.admin.email ?? null,
+              name: guard.admin.name ?? null,
+              role: guard.admin.role ?? "admin",
+            },
             dryRun: false,
             criteria: { lockKey: "reviews_maintenance" },
             resultKeys: Object.keys(result),
@@ -185,6 +191,12 @@ export async function DELETE(req: Request) {
         },
         metadata: {
           mode: "force_unlock",
+          actor: {
+            id: String(guard.admin._id),
+            email: guard.admin.email ?? null,
+            name: guard.admin.name ?? null,
+            role: guard.admin.role ?? "admin",
+          },
           dryRun: false,
           criteria: { lockKey: "reviews_maintenance" },
         },

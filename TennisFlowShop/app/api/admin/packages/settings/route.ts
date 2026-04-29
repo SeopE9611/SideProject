@@ -153,6 +153,12 @@ export async function PUT(req: Request) {
           after: afterSummary,
           metadata: {
             changedKeys: ["packageConfigs", "generalSettings"],
+            actor: {
+              id: String(guard.admin._id),
+              email: guard.admin.email ?? null,
+              name: guard.admin.name ?? null,
+              role: guard.admin.role ?? "admin",
+            },
             addedCount,
             removedCount,
             updatedCount,

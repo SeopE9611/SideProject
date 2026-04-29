@@ -1190,6 +1190,14 @@ export async function handleStringingCancelApprove(req: Request, { params }: { p
           targetType: 'stringing_application',
           applicationId: id,
           actorRole: 'admin',
+          metadata: {
+            actor: {
+              id: String(adminAuth.userId),
+              email: null,
+              name: null,
+              role: 'admin',
+            },
+          },
           reasonCode: appDoc.cancelRequest?.reasonCode ?? null,
           reasonTextPreview: toReasonPreview(appDoc.cancelRequest?.reasonText),
           refundAccountMasked: maskRefundAccount(appDoc.cancelRequest?.refundAccount),
@@ -1283,6 +1291,14 @@ export async function handleStringingCancelReject(req: Request, { params }: { pa
           targetType: 'stringing_application',
           applicationId: id,
           actorRole: 'admin',
+          metadata: {
+            actor: {
+              id: String(adminAuth.userId),
+              email: null,
+              name: null,
+              role: 'admin',
+            },
+          },
           reasonCode: appDoc.cancelRequest?.reasonCode ?? null,
           reasonTextPreview: toReasonPreview(trimmed ?? appDoc.cancelRequest?.reasonText),
           refundAccountMasked: maskRefundAccount(appDoc.cancelRequest?.refundAccount),

@@ -357,6 +357,12 @@ export async function POST(req: NextRequest) {
           },
           metadata: {
             createdKeys: Object.keys(requestDto.raw),
+            actor: {
+              id: String(guard.admin._id),
+              email: guard.admin.email ?? null,
+              name: guard.admin.name ?? null,
+              role: guard.admin.role ?? "admin",
+            },
             imageCount: afterSnapshot.imageCount,
           },
         },

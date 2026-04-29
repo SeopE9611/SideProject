@@ -202,6 +202,12 @@ export async function PUT(
           },
           metadata: {
             changedKeys: Object.keys(updateData),
+            actor: {
+              id: String(guard.admin._id),
+              email: guard.admin.email ?? null,
+              name: guard.admin.name ?? null,
+              role: guard.admin.role ?? "admin",
+            },
             imageCountBefore: before.imageCount,
             imageCountAfter: after.imageCount,
           },
@@ -270,7 +276,15 @@ export async function DELETE(
             isPublished: before.isPublished,
           },
           after: { deleted: true },
-          metadata: { softDelete: true },
+          metadata: {
+            softDelete: true,
+            actor: {
+              id: String(guard.admin._id),
+              email: guard.admin.email ?? null,
+              name: guard.admin.name ?? null,
+              role: guard.admin.role ?? "admin",
+            },
+          },
         },
       },
       req,
