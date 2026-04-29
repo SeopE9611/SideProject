@@ -859,6 +859,11 @@ export async function handleUpdateApplicationStatus(req: Request, context: { par
 
   // MongoDB 연결
   const db = adminAuth.db;
+  const actorId = ObjectId.isValid(adminAuth.userId) ? new ObjectId(adminAuth.userId) : adminAuth.userId;
+  const beforeAppDoc = await db.collection('stringing_applications').findOne({ _id: new ObjectId(id) });
+  if (!beforeAppDoc) {
+    return NextResponse.json({ error: '신청서를 찾을 수 없습니다.' }, { status: 404 });
+  }
 
   // description 따로 준비
   const description = `신청서 상태가 [${status}]로 변경되었습니다.`;
@@ -918,6 +923,38 @@ export async function handleUpdateApplicationStatus(req: Request, context: { par
   });
 
   const adminDetailUrl = `${process.env.NEXT_PUBLIC_BASE_URL || ''}/admin/applications/stringing/${id}`; //
+
+  await appendAdminAudit(
+    db,
+    {
+      type: 'stringing_application.update',
+      actorId,
+      targetId: new ObjectId(id),
+      message: '관리자 스트링잉 신청 상태 변경',
+      diff: {
+        before: {
+          status: beforeAppDoc?.status ?? null,
+          paymentStatus: normalizeLinkedPaymentStatus(beforeAppDoc?.paymentStatus ?? null),
+          serviceType: beforeAppDoc?.serviceType ?? null,
+        },
+        after: {
+          status,
+          paymentStatus: normalizeLinkedPaymentStatus(appDoc?.paymentStatus ?? null),
+          serviceType: appDoc?.serviceType ?? null,
+        },
+        metadata: {
+          changedKeys: ['status'],
+          actor: {
+            id: String(adminAuth.userId),
+            email: null,
+            name: null,
+            role: 'admin',
+          },
+        },
+      },
+    },
+    req,
+  );
 
   //   알림: 상태 변경 (사용자 메일 + 운영자 슬랙)
   if (status !== '취소') {

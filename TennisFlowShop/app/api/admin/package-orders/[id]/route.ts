@@ -6,6 +6,7 @@ import { ServicePass } from "@/lib/types/pass";
 import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 import { markPackageOrderPaid } from "@/lib/package-orders/mark-paid";
+import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 
 function normalizePassStatus(
   status: ServicePass["status"],
@@ -124,6 +125,47 @@ export async function PATCH(
         },
       );
     }
+    const afterDoc = await packageOrders.findOne({ _id });
+    await appendAdminAudit(
+      db,
+      {
+        type: "package_order.update",
+        actorId: guard.admin._id,
+        targetId: _id,
+        message: "관리자 패키지 주문 상태/결제상태 수정",
+        diff: {
+          before: {
+            status: pkgOrder.status ?? null,
+            paymentStatus: prevPayment,
+            expiresAt: null,
+            usedCount: null,
+            remainingCount: null,
+            totalCount: pkgOrder.packageInfo?.sessions ?? null,
+          },
+          after: {
+            status: afterDoc?.status ?? statusStr ?? null,
+            paymentStatus:
+              afterDoc?.paymentStatus ?? (willSetPayment ? paymentToSet : prevPayment),
+            expiresAt: null,
+            usedCount: null,
+            remainingCount: null,
+            totalCount:
+              afterDoc?.packageInfo?.sessions ?? pkgOrder.packageInfo?.sessions ?? null,
+          },
+          metadata: {
+            changedKeys: ["status", ...(willSetPayment ? ["paymentStatus"] : [])],
+            reason: reason || null,
+            actor: {
+              id: String(guard.admin._id),
+              email: guard.admin.email ?? null,
+              name: guard.admin.name ?? null,
+              role: guard.admin.role ?? "admin",
+            },
+          },
+        },
+      },
+      request,
+    );
     /**
      * 주문/결제 상태에 따라 연결된 패스 상태 동기화
      * - 결제완료가 아니면: paused(결제취소는 cancelled)

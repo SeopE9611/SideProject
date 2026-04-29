@@ -8,6 +8,7 @@ import type { ServicePass } from "@/lib/types/pass";
 import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 import { shouldRestoreActive } from "@/lib/pass-status";
+import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 
 type PassHistoryItem = {
   _id: OID;
@@ -188,6 +189,47 @@ export async function POST(
     );
 
     const freshPass = await passes.findOne({ _id: passDoc._id });
+
+    await appendAdminAudit(
+      db,
+      {
+        type: "package.expiration.extend",
+        actorId: guard.admin._id,
+        targetId: _id,
+        message: "관리자 패키지 만료일 연장",
+        diff: {
+          before: {
+            expiresAt: currentExpiry?.toISOString() ?? null,
+            status: passDoc.status ?? null,
+            remainingCount: passDoc.remainingCount ?? null,
+          },
+          after: {
+            expiresAt: nextExpiry.toISOString(),
+            status: shouldActivate ? "active" : (passDoc.status ?? null),
+            remainingCount: freshPass?.remainingCount ?? passDoc.remainingCount ?? null,
+          },
+          metadata: {
+            servicePassId: passDoc._id.toString(),
+            packageOrderId: _id.toString(),
+            userId: pkgOrder.userId ? String(pkgOrder.userId) : null,
+            extendDays: daysAdded,
+            reason: reason || null,
+            packageName: pkgOrder.packageInfo?.title ?? null,
+            packageType: pkgOrder.packageInfo?.sessions
+              ? `${pkgOrder.packageInfo.sessions}회권`
+              : null,
+            actor: {
+              id: String(guard.admin._id),
+              email: guard.admin.email ?? null,
+              name: guard.admin.name ?? null,
+              role: guard.admin.role ?? "admin",
+            },
+          },
+        },
+      },
+      req,
+    );
+
     return NextResponse.json({ ok: true, pass: freshPass });
   } catch (e) {
     console.error("[POST /api/package-orders/:id/extend] error", e);
