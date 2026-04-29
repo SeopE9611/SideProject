@@ -58,6 +58,12 @@ export async function PATCH(
         after: { status },
         metadata: {
           reason: typeof body?.reason === "string" ? body.reason : undefined,
+          actor: {
+            id: String(guard.admin._id),
+            email: guard.admin.email ?? null,
+            name: guard.admin.name ?? null,
+            role: guard.admin.role ?? "admin",
+          },
           title: typeof beforeDoc.title === "string" ? beforeDoc.title : "",
           boardType:
             typeof beforeDoc.type === "string"

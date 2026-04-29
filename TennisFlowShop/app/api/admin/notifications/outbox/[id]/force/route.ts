@@ -121,6 +121,14 @@ export async function POST(
           actorEmail: guard.admin.email ?? null,
           actorName: guard.admin.name ?? null,
           actorRole: guard.admin.role ?? null,
+          metadata: {
+            actor: {
+              id: String(guard.admin._id),
+              email: guard.admin.email ?? null,
+              name: guard.admin.name ?? null,
+              role: guard.admin.role ?? "admin",
+            },
+          },
           before,
           after: {
             status: afterDoc?.status ?? null,

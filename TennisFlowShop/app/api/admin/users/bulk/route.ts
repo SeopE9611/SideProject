@@ -191,6 +191,14 @@ export async function POST(req: Request) {
         actorEmail: guard.admin.email ?? null,
         actorName: guard.admin.name ?? null,
         actorRole: guard.admin.role ?? null,
+        metadata: {
+          actor: {
+            id: String(guard.admin._id),
+            email: guard.admin.email ?? null,
+            name: guard.admin.name ?? null,
+            role: guard.admin.role ?? "admin",
+          },
+        },
         before: {
           action: op,
           targetCount: deduped.length,

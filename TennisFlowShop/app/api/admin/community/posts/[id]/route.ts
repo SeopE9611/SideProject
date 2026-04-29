@@ -215,6 +215,12 @@ export async function PATCH(
         },
         metadata: {
           changedKeys: ["title", "category", "content"],
+          actor: {
+            id: String(guard.admin._id),
+            email: guard.admin.email ?? null,
+            name: guard.admin.name ?? null,
+            role: guard.admin.role ?? "admin",
+          },
           contentChanged: (beforeDoc.content ?? "") !== sanitizedContent,
           attachmentCountBefore: before.attachmentCount,
           attachmentCountAfter: after.attachmentCount,
@@ -270,6 +276,14 @@ export async function DELETE(
           authorId: before.authorId,
         },
         after: { deleted: true },
+        metadata: {
+          actor: {
+            id: String(guard.admin._id),
+            email: guard.admin.email ?? null,
+            name: guard.admin.name ?? null,
+            role: guard.admin.role ?? "admin",
+          },
+        },
       },
     },
     req,
