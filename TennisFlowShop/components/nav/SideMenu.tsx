@@ -31,36 +31,36 @@ export default function SideMenu() {
   const linkClass = (href: string) => {
     const isActive = isActiveHref(href);
     return cn(
-      "group relative z-0 block rounded-lg px-3 py-2 text-sm font-medium transition-[background-color,color,border-color,box-shadow,opacity] duration-200",
+      "group relative z-0 block rounded-lg px-3.5 py-2.5 text-[15px] font-semibold transition-[background-color,color,border-color,box-shadow,opacity] duration-200",
       "hover:bg-primary/10 dark:hover:bg-primary/20",
       "hover:shadow-sm hover:z-10",
       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-      isActive ? "bg-primary/10 text-foreground border border-primary/20 shadow-sm dark:bg-primary/20" : "text-muted-foreground hover:text-foreground",
+      isActive ? "bg-primary/10 text-foreground border border-primary/20 shadow-sm dark:bg-primary/20" : "text-foreground/85 hover:text-foreground",
     );
   };
 
   const brandLinkClass = (href: string) => {
     const isActive = isActiveHref(href);
     return cn(
-      "group relative z-0 block rounded-md px-3 py-1.5 text-[13px] transition-[background-color,color,border-color,box-shadow,opacity] duration-200",
+      "group relative z-0 block rounded-md px-3 py-2 text-[14px] transition-[background-color,color,border-color,box-shadow,opacity] duration-200",
       "hover:bg-muted",
       "hover:shadow-sm hover:z-10",
       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-      isActive ? "bg-muted text-foreground font-medium shadow-sm" : "text-muted-foreground hover:text-foreground",
+      isActive ? "bg-muted text-foreground font-medium shadow-sm" : "text-foreground/80 hover:text-foreground",
     );
   };
 
   const nestedGroupClass = "mt-1.5 pl-1";
 
-  const nestedTriggerClass = "px-3 py-2 text-[13px] font-medium text-muted-foreground hover:text-foreground rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20";
+  const nestedTriggerClass = "px-3.5 py-2 text-[14px] font-semibold text-foreground/80 hover:text-foreground rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20";
 
   return (
     <aside
-      className="hidden bp-lg:block fixed left-0 z-30 h-[calc(100vh-var(--header-h,4rem))] w-60 bp-lg:w-64 xl:w-72 border-r border-border bg-background backdrop-blur supports-[backdrop-filter]:bg-background/60 overflow-hidden"
+      className="hidden bp-lg:block fixed left-0 z-30 h-[calc(100vh-var(--header-h,4rem))] w-72 bp-lg:w-72 xl:w-80 border-r border-border bg-background backdrop-blur supports-[backdrop-filter]:bg-background/60 overflow-hidden"
       style={{ top: "var(--header-h, 4rem)" }}
       aria-label="사이드 내비게이션"
     >
-      <div className="h-full overflow-y-auto scrollbar-hide p-4 space-y-1">
+      <div className="h-full overflow-y-auto scrollbar-hide px-5 py-4 space-y-1.5">
         <Accordion type="multiple" defaultValue={["strings", "rackets", "support", "boards"]}>
           <Link href="/services/apply" className={linkClass("/services/apply")}>
             <span className="flex items-center justify-between font-semibold text-primary">
@@ -70,8 +70,8 @@ export default function SideMenu() {
           </Link>
           {/* 스트링 */}
           <AccordionItem value="strings" className="border-none">
-            <AccordionTrigger value="strings" className="py-3 px-3 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group">
-              <span className="inline-flex items-center gap-2.5 text-base font-bold">
+            <AccordionTrigger value="strings" className="py-3.5 px-3.5 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group">
+              <span className="inline-flex items-center gap-2.5 text-lg font-bold">
                 {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
                   <Grid2X2 className="h-4 w-4" />
                 </div> */}
@@ -97,7 +97,7 @@ export default function SideMenu() {
                       <AccordionContent value="strings-brand" className="pb-0 pt-1">
                         <div className="grid grid-cols-2 gap-1">
                           {NAV_LINKS.strings.brands.map((b) => (
-                            <Link key={b.href} href={b.href} className={cn(brandLinkClass(b.href), "px-2 py-1 text-[12px]")}>
+                            <Link key={b.href} href={b.href} className={cn(brandLinkClass(b.href), "px-2.5 py-1.5 text-[13px]")}>
                               <span className="flex items-center justify-between">
                                 {b.name}
                                 <ChevronRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-[background-color,color,border-color,box-shadow,opacity] duration-200" />
@@ -144,8 +144,8 @@ export default function SideMenu() {
 
           {/* 게시판 */}
           <AccordionItem value="boards" className="border-none">
-            <AccordionTrigger value="boards" className="py-3 px-3 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group">
-              <span className="inline-flex items-center gap-2.5 text-base font-bold">
+            <AccordionTrigger value="boards" className="py-3.5 px-3.5 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group">
+              <span className="inline-flex items-center gap-2.5 text-lg font-bold">
                 {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
                   <MessageSquareText className="h-4 w-4" />
                 </div> */}
@@ -166,8 +166,8 @@ export default function SideMenu() {
 
           {/* 중고 라켓 */}
           <AccordionItem value="rackets" className="border-none">
-            <AccordionTrigger value="rackets" className="py-3 px-3 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group">
-              <span className="inline-flex items-center gap-2.5 text-base font-bold">
+            <AccordionTrigger value="rackets" className="py-3.5 px-3.5 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group">
+              <span className="inline-flex items-center gap-2.5 text-lg font-bold">
                 {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
                   <MdSportsTennis className="h-4 w-4" />
                 </div> */}
@@ -193,7 +193,7 @@ export default function SideMenu() {
                       <AccordionContent value="rackets-brand" className="pb-0 pt-1">
                         <div className="grid grid-cols-2 gap-1">
                           {NAV_LINKS.rackets.brands.map((b) => (
-                            <Link key={b.href} href={b.href} className={cn(brandLinkClass(b.href), "px-2 py-1 text-[12px]")}>
+                            <Link key={b.href} href={b.href} className={cn(brandLinkClass(b.href), "px-2.5 py-1.5 text-[13px]")}>
                               <span className="flex items-center justify-between">
                                 {b.name}
                                 <ChevronRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-[background-color,color,border-color,box-shadow,opacity] duration-200" />
@@ -211,8 +211,8 @@ export default function SideMenu() {
 
           {/* 고객센터 */}
           <AccordionItem value="support" className="border-none">
-            <AccordionTrigger value="support" className="py-3 px-3 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group">
-              <span className="inline-flex items-center gap-2.5 text-base font-bold">
+            <AccordionTrigger value="support" className="py-3.5 px-3.5 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group">
+              <span className="inline-flex items-center gap-2.5 text-lg font-bold">
                 {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
                   <MessageSquare className="h-4 w-4" />
                 </div> */}
