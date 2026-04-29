@@ -2,6 +2,7 @@ import FilterableProductList from "@/app/products/components/FilterableProductLi
 import SiteContainer from "@/components/layout/SiteContainer";
 import HeroCourtBackdrop from "@/components/system/HeroCourtBackdrop";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
 
 import type { Metadata } from "next";
@@ -39,6 +40,22 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
       </div>
 
       <SiteContainer variant="wide" className="py-6 bp-sm:py-8 bp-md:py-12">
+        <Card className="mb-4 border-border bg-muted/30 bp-sm:mb-6">
+          <CardContent className="flex flex-col gap-4 p-4 md:flex-row md:items-center md:justify-between">
+            <div className="space-y-1">
+              <p className="text-sm font-semibold text-foreground">
+                어떤 스트링이 맞을지 모르겠나요?
+              </p>
+              <p className="text-sm text-muted-foreground">
+                간단한 질문에 답하면 플레이 성향에 맞는 스트링 선택 방향을 확인할 수 있어요.
+              </p>
+            </div>
+            <Button asChild className="shrink-0">
+              <Link href="/products/recommend">스트링 추천받기</Link>
+            </Button>
+          </CardContent>
+        </Card>
+
         {from === "apply" && (
           <div className="mb-4 bp-sm:mb-6 rounded-xl border border-border bg-card p-4 bp-sm:p-5 shadow-sm">
             <div className="flex items-start justify-between gap-3 flex-wrap">
