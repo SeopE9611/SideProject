@@ -250,6 +250,18 @@ export default async function ServicesPage() {
                   </div>
                 </div>
 
+                <Card className="mt-6 border-border bg-muted/30 md:mt-8">
+                  <CardContent className="flex flex-col gap-4 p-4 md:flex-row md:items-center md:justify-between">
+                    <div className="space-y-1 text-left">
+                      <p className="text-sm font-semibold text-foreground">스트링 선택이 어렵다면 추천 도우미를 이용해보세요</p>
+                      <p className="text-sm text-muted-foreground">플레이 성향과 예산을 기준으로 나에게 맞는 스트링 선택 방향을 확인할 수 있어요.</p>
+                    </div>
+                    <Button asChild className="shrink-0">
+                      <Link href="/products/recommend">스트링 추천 도우미</Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+
                 <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center mt-6 md:mt-8">
                   <Button variant="outline" asChild>
                     <Link href="/board/qna">

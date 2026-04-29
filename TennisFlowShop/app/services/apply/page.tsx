@@ -21,6 +21,7 @@ import dynamic from "next/dynamic";
 import { useReservedSlots } from "@/app/services/apply/_hooks/useReservedSlots";
 import LoginGate from "@/components/system/LoginGate";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useBackNavigationGuard } from "@/lib/hooks/useBackNavigationGuard";
 import {
@@ -35,6 +36,7 @@ import {
 import { loadDaumPostcode } from "@/lib/loadDaumPostcode";
 import type { Order } from "@/lib/types/order";
 import { File, Grid2X2 } from "lucide-react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { MdSportsTennis } from "react-icons/md";
@@ -1866,6 +1868,24 @@ export default function StringServiceApplyPage() {
                 </svg>
               </div>
             </button>
+          </div>
+
+          <div className="mt-6 bp-sm:mt-8 max-w-5xl mx-auto">
+            <Card className="border-border bg-muted/30">
+              <CardContent className="flex flex-col gap-4 p-4 md:flex-row md:items-center md:justify-between">
+                <div className="space-y-1">
+                  <p className="text-sm font-semibold text-foreground">
+                    어떤 스트링을 골라야 할지 고민된다면
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    먼저 추천 도우미로 플레이 성향에 맞는 스트링을 확인한 뒤 교체서비스 신청을 이어갈 수 있어요.
+                  </p>
+                </div>
+                <Button asChild className="shrink-0">
+                  <Link href="/products/recommend">스트링 추천받기</Link>
+                </Button>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Info Banner */}
