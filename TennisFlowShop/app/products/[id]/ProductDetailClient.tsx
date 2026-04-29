@@ -964,27 +964,6 @@ export default function ProductDetailClient({ product }: { product: any }) {
                       )}
                     </div>
                   </div>
-
-                  <div className="pt-5 sm:pt-6 border-t border-border/60">
-                    <h3 className="font-semibold text-base sm:text-lg mb-4 flex items-center">
-                      <Truck className="mr-2.5 h-5 w-5 text-foreground" />
-                      배송 정보
-                    </h3>
-                    <div className="grid gap-2.5 sm:gap-3">
-                      <div className={detailSurfaceInfoItemClass}>
-                        <Check className="h-4 w-4 sm:h-5 sm:w-5 text-foreground shrink-0" />
-                        <span className="text-sm sm:text-base">{productShippingLabel}</span>
-                      </div>
-                      <div className={detailSurfaceInfoItemClass}>
-                        <Check className="h-4 w-4 sm:h-5 sm:w-5 text-foreground shrink-0" />
-                        <span className="text-sm sm:text-base">오후 2시 이전 주문 시 당일 출고</span>
-                      </div>
-                      <div className={detailSurfaceInfoItemClass}>
-                        <Check className="h-4 w-4 sm:h-5 sm:w-5 text-foreground shrink-0" />
-                        <span className="text-sm sm:text-base">장착 서비스 신청 시 1-2일 추가</span>
-                      </div>
-                    </div>
-                  </div>
                 </div>
               </CardContent>
             </Card>
