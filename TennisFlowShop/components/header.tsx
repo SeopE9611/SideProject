@@ -864,7 +864,7 @@ const Header = () => {
                 </Link>
                 <Link
                   href="/services/apply"
-                  className="hidden bp-lg:inline-flex shrink-0 items-center rounded-full border border-border bg-background px-4 py-2 text-[15px] font-semibold text-foreground hover:bg-secondary transition-[background-color,color,border-color,box-shadow,opacity] whitespace-nowrap"
+                  className="hidden bp-lg:inline-flex shrink-0 items-center border border-border bg-background px-4 py-2 text-[15px] font-semibold text-foreground hover:bg-secondary transition-[background-color,color,border-color,box-shadow,opacity] whitespace-nowrap"
                 >
                   장착 서비스 즉시 예약
                 </Link>
