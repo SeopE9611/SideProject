@@ -49,7 +49,7 @@ export default function ServiceReviewCTA({
     return (
       <Button size="sm" variant="secondary" className={className} disabled>
         <Check className="mr-1 h-4 w-4" />
-        작성 완료
+        이미 교체서비스 후기를 남겼어요
       </Button>
     );
   }
@@ -68,7 +68,7 @@ export default function ServiceReviewCTA({
     <Button size="sm" variant="default" className={className} asChild>
       <Link href={href}>
         <MessageSquarePlus className="mr-1 h-4 w-4" />
-        서비스 리뷰 작성하기
+        교체서비스 후기 작성하기
       </Link>
     </Button>
   );

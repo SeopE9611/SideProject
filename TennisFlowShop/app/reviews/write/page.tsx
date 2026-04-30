@@ -663,16 +663,16 @@ export default function ReviewWritePage() {
   // 헤더 텍스트
   const title =
     mode === "product"
-      ? "스트링 상품 리뷰 작성"
+      ? "스트링 상품 후기 작성"
       : mode === "service"
-        ? "서비스 리뷰 작성"
-        : "잘못된 접근";
+        ? "서비스 후기 작성"
+        : "작성할 후기를 찾을 수 없어요";
   const subtitle =
     mode === "product"
       ? "구매하신 스트링 상품에 대한 솔직한 후기를 남겨주세요."
       : mode === "service"
         ? "스트링 교체 서비스 이용 후기를 남겨주세요."
-        : "리뷰 작성 경로가 올바르지 않습니다.";
+        : "후기는 구매확정 또는 서비스 완료 후 작성할 수 있어요. 마이페이지에서 작성 가능한 주문이나 신청 내역을 다시 확인해주세요.";
 
   const badge =
     state === "loading"
@@ -680,11 +680,11 @@ export default function ReviewWritePage() {
       : state === "already"
         ? "이미 작성한 대상입니다"
         : state === "notPurchased"
-          ? "구매/이용 이력이 없습니다"
+          ? "아직 후기를 작성할 수 없어요"
           : state === "unauthorized"
             ? "로그인이 필요합니다"
             : state === "invalid"
-              ? "작성 불가"
+              ? "작성할 후기를 찾을 수 없어요"
               : state === "error"
                 ? "오류"
                 : null;
@@ -1322,7 +1322,7 @@ export default function ReviewWritePage() {
                     <div className="text-sm text-primary">
                       {state === "notPurchased" && (
                         <div>
-                          구매/이용 이력이 확인되어야 작성할 수 있어요.
+                          아직 후기를 작성할 수 없어요. 상품 수령 후 구매확정이 완료되면 후기를 남길 수 있어요.
                           <button
                             type="button"
                             onClick={() =>
@@ -1339,14 +1339,13 @@ export default function ReviewWritePage() {
                             }
                             className="underline underline-offset-2 hover:opacity-80 font-medium"
                           >
-                            관련 페이지로 이동
+                            마이페이지에서 진행 상태 확인
                           </button>
                         </div>
                       )}
                       {state === "already" && (
                         <div>
-                          이미 작성하신 대상이에요. 변경/삭제는 마이페이지 &gt;
-                          나의 리뷰에서 관리해 주세요.
+                          이미 후기를 남긴 항목입니다. 해당 주문 또는 서비스에 대한 후기가 이미 등록되어 있어요.
                         </div>
                       )}
                     </div>
@@ -1365,7 +1364,7 @@ export default function ReviewWritePage() {
                       ? "제품 상세 이동"
                       : mode === "service"
                         ? "서비스 소개"
-                        : "리뷰 홈"}
+                        : "리뷰 목록 보기"}
                   </Button>
                   <Button
                     type="button"
@@ -1377,7 +1376,7 @@ export default function ReviewWritePage() {
                     }
                     className="rounded-xl shadow-sm order-3 sm:order-2"
                   >
-                    주문 목록으로
+                    마이페이지로 이동
                   </Button>
                   <Button
                     data-cy="submit-review"
@@ -1394,17 +1393,19 @@ export default function ReviewWritePage() {
                 {mode === "invalid" && (
                   <div className="text-center py-6 text-sm text-foreground">
                     <div className="font-medium text-foreground mb-2">
-                      도움이 필요하신가요?
+                      작성할 후기를 찾을 수 없어요
                     </div>
                     <div className="space-x-4">
                       <button
                         type="button"
                         onClick={() =>
-                          confirmLeaveIfDirty(() => router.replace("/services"))
+                          confirmLeaveIfDirty(() =>
+                            router.replace("/mypage?tab=orders&scope=todo"),
+                          )
                         }
                         className="underline underline-offset-2 hover:opacity-80 text-foreground"
                       >
-                        스트링 서비스 소개
+                        마이페이지로 이동
                       </button>
                       <span>·</span>
                       <button
@@ -1414,7 +1415,7 @@ export default function ReviewWritePage() {
                         }
                         className="underline underline-offset-2 hover:opacity-80 text-foreground"
                       >
-                        리뷰 모아보기
+                        리뷰 목록 보기
                       </button>
                     </div>
                   </div>
