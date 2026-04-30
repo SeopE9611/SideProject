@@ -62,12 +62,6 @@ export default function SideMenu() {
     >
       <div className="h-full overflow-y-auto scrollbar-hide px-5 py-4 space-y-1.5">
         <Accordion type="multiple" defaultValue={["strings", "rackets", "support", "boards"]}>
-          <Link href="/services/apply" className={linkClass("/services/apply")}>
-            <span className="flex items-center justify-between font-semibold text-primary">
-              장착 서비스 즉시 예약
-              <ChevronRight className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-[background-color,color,border-color,box-shadow,opacity] duration-200" />
-            </span>
-          </Link>
           {/* 스트링 */}
           <AccordionItem value="strings" className="border-none">
             <AccordionTrigger value="strings" className="py-3.5 px-3.5 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group">

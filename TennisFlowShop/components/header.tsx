@@ -853,14 +853,20 @@ const Header = () => {
               </div>
             </div>
             <div className="hidden bp-lg:grid w-full min-w-0 grid-cols-[auto_minmax(280px,1fr)_auto] xl:grid-cols-[auto_minmax(360px,640px)_auto] items-center gap-3 xl:gap-6">
-              <div className="justify-self-start flex items-center min-w-fit shrink-0 gap-2">
+              <div className="justify-self-start flex items-center min-w-fit shrink-0 gap-4">
                 <Link href="/" className="flex items-center gap-2 shrink-0 group" aria-label="도깨비테니스 홈">
-                  <div className="relative h-12 w-12 xl:h-14 xl:w-14 shrink-0 overflow-hidden">
+                  <div className="relative h-12 w-12 xl:h-14 xl:w-14 2xl:h-[60px] 2xl:w-[60px] shrink-0 overflow-hidden">
                     <Image src="/brand/symbol-light.png" alt="" aria-hidden="true" fill className="object-contain dark:hidden" priority />
                     <Image src="/brand/symbol-dark.png" alt="" aria-hidden="true" fill className="hidden object-contain dark:block" priority />
                   </div>
 
-                  <div className="font-brand-bold font-bold text-2xl xl:text-[26px] tracking-normal text-foreground group-hover:text-foreground transition-colors whitespace-nowrap">도깨비테니스</div>
+                  <div className="font-brand-bold font-bold text-2xl xl:text-[28px] tracking-normal text-foreground group-hover:text-foreground transition-colors whitespace-nowrap">도깨비테니스</div>
+                </Link>
+                <Link
+                  href="/services/apply"
+                  className="hidden bp-lg:inline-flex shrink-0 items-center rounded-full border border-border bg-background px-4 py-2 text-[15px] font-semibold text-foreground hover:bg-secondary transition-[background-color,color,border-color,box-shadow,opacity] whitespace-nowrap"
+                >
+                  장착 서비스 즉시 예약
                 </Link>
 
                 {SHOW_DESKTOP_HEADER_NAV ? (
