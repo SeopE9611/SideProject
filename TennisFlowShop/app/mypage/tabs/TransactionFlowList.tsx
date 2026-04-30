@@ -257,7 +257,7 @@ const getTodoPrimaryReason = (group: ActivityGroup): string | null => {
     if (isApplicationTrackingNeeded(actionableApplication)) return '운송장 등록 필요';
     if (isApplicationConfirmNeeded(actionableApplication)) return '교체확정 필요';
     const isConfirmed = Boolean(group.order?.userConfirmedAt) || getMypageNormalizedStatus(group.order?.status) === '구매확정';
-    if (isConfirmed && (group.order?.reviewPendingCount ?? 0) > 0) return '리뷰 작성 필요';
+    if (isConfirmed && (group.order?.reviewPendingCount ?? 0) > 0) return '후기를 남길 수 있어요';
     return null;
   }
 
@@ -281,7 +281,7 @@ const getFlowNextActionText = (group: ActivityGroup, opts?: { prefersApplication
       '구매확정 필요': '상품을 받으셨다면 구매확정을 진행해주세요.',
       '운송장 등록 필요': '운송장 정보를 등록해주세요.',
       '교체확정 필요': '작업 내용을 확인하고 확정해주세요.',
-      '리뷰 작성 필요': '상품 사용 후기를 작성해주세요.',
+      '후기를 남길 수 있어요': '상품 사용 후기를 남겨 다른 사용자에게 도움을 줄 수 있어요.',
       '교체서비스 신청 필요': '교체서비스 신청을 이어서 진행해주세요.',
     };
     return todoMessageMap[opts.todoPrimaryReason] ?? null;
@@ -303,7 +303,7 @@ const getFlowNextActionText = (group: ActivityGroup, opts?: { prefersApplication
         : '배송 정보를 확인해주세요.';
     }
     if (normalized === '배송완료') return '상품을 받으셨다면 구매확정을 진행해주세요.';
-    if (normalized === '구매확정') return '사용 후 리뷰를 작성해주세요.';
+    if (normalized === '구매확정') return '구매확정된 상품의 후기를 남길 수 있어요.';
     return null;
   }
 
@@ -625,7 +625,7 @@ export default function TransactionFlowList() {
     <div className="space-y-4">
       {/* Enhanced Filter Tabs */}
       <OrdersScopeTabs activeScope={scope} />
-      {scope === 'todo' ? <p className="text-xs text-foreground/75">해야 할 일은 구매확정·운송장 등록·교체확정·리뷰 작성처럼 지금 바로 처리할 항목만 모아 보여줍니다.</p> : null}
+      {scope === 'todo' ? <p className="text-xs text-foreground/75">해야 할 일은 구매확정·운송장 등록·교체확정·후기 남기기처럼 지금 바로 처리할 항목만 모아 보여줍니다.</p> : null}
       <p className="text-xs text-foreground/75">주문 구매확정과 교체서비스 확정은 별도로 처리됩니다.</p>
       {items.length === 0 ? (
         <Card className="border-0 bg-card">
