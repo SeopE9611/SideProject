@@ -853,7 +853,7 @@ const Header = () => {
               </div>
             </div>
             <div className="hidden bp-lg:grid w-full min-w-0 grid-cols-[auto_minmax(280px,1fr)_auto] xl:grid-cols-[auto_minmax(360px,640px)_auto] items-center gap-3 xl:gap-6">
-              <div className="justify-self-start flex items-center min-w-fit shrink-0 gap-4">
+              <div className="justify-self-start flex items-center min-w-fit shrink-0 gap-8">
                 <Link href="/" className="flex items-center gap-2 shrink-0 group" aria-label="도깨비테니스 홈">
                   <div className="relative h-12 w-12 xl:h-14 xl:w-14 2xl:h-[60px] 2xl:w-[60px] shrink-0 overflow-hidden">
                     <Image src="/brand/symbol-light.png" alt="" aria-hidden="true" fill className="object-contain dark:hidden" priority />
@@ -864,7 +864,7 @@ const Header = () => {
                 </Link>
                 <Link
                   href="/services/apply"
-                  className="hidden bp-lg:inline-flex shrink-0 items-center border border-border bg-background px-4 py-2 text-[15px] font-semibold text-foreground hover:bg-secondary transition-[background-color,color,border-color,box-shadow,opacity] whitespace-nowrap"
+                  className="hidden bp-lg:inline-flex h-10 shrink-0 items-center justify-center rounded-xl border border-border bg-secondary/70 px-4 text-sm font-bold text-foreground shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] hover:bg-secondary whitespace-nowrap"
                 >
                   장착 서비스 즉시 예약
                 </Link>
