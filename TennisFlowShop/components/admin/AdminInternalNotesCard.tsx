@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import useSWR from "swr";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import AdminConfirmDialog from "@/components/admin/AdminConfirmDialog";
 import { adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
@@ -23,7 +24,24 @@ export default function AdminInternalNotesCard({ targetType, targetId, className
   const [isCreating, setIsCreating] = useState(false);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const key = useMemo(() => `/api/admin/notes?targetType=${encodeURIComponent(targetType)}&targetId=${encodeURIComponent(targetId)}&page=1&limit=20`, [targetType, targetId]);
+  const [draftQ, setDraftQ] = useState("");
+  const [draftAuthor, setDraftAuthor] = useState("");
+  const [page, setPage] = useState(1);
+  const [q, setQ] = useState("");
+  const [author, setAuthor] = useState("");
+  const key = useMemo(() => {
+    const params = new URLSearchParams({
+      targetType,
+      targetId,
+      page: String(page),
+      limit: "20",
+    });
+    const trimmedQ = q.trim();
+    const trimmedAuthor = author.trim();
+    if (trimmedQ) params.set("q", trimmedQ);
+    if (trimmedAuthor) params.set("author", trimmedAuthor);
+    return `/api/admin/notes?${params.toString()}`;
+  }, [targetType, targetId, page, q, author]);
   const { data, error, isValidating, mutate } = useSWR<NotesResponse>(key, authenticatedSWRFetcher, { revalidateOnFocus: false, revalidateOnReconnect: false });
 
   const onCreate = async () => {
@@ -65,6 +83,20 @@ export default function AdminInternalNotesCard({ targetType, targetId, className
     finally { setDeletingId(null); }
   };
 
+  const onSearch = () => {
+    setQ(draftQ.trim());
+    setAuthor(draftAuthor.trim());
+    setPage(1);
+  };
+
+  const onReset = () => {
+    setDraftQ("");
+    setDraftAuthor("");
+    setQ("");
+    setAuthor("");
+    setPage(1);
+  };
+
   return (
     <Card className={cn("border-0 bg-muted/30 shadow-xl", className)}>
       <CardHeader>
@@ -75,6 +107,16 @@ export default function AdminInternalNotesCard({ targetType, targetId, className
         <div className="space-y-2">
           <Textarea value={draft} onChange={(e) => setDraft(e.target.value)} maxLength={2000} placeholder="예) 고객이 전화로 배송 일정 변경을 요청함" />
           <div className="flex justify-end"><Button onClick={onCreate} disabled={!draft.trim() || isCreating}>{isCreating ? "저장 중..." : "저장"}</Button></div>
+        </div>
+        <div className="space-y-2 rounded-md border bg-background/50 p-3">
+          <div className="grid gap-2 md:grid-cols-2">
+            <Input value={draftQ} onChange={(e) => setDraftQ(e.target.value)} placeholder="메모 내용 또는 작성자 검색" maxLength={100} />
+            <Input value={draftAuthor} onChange={(e) => setDraftAuthor(e.target.value)} placeholder="작성자 이름/이메일" maxLength={100} />
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={onReset}>초기화</Button>
+            <Button onClick={onSearch}>검색</Button>
+          </div>
         </div>
 
         {error ? <p className="text-sm text-destructive">내부 메모를 불러오지 못했습니다.</p> : null}
@@ -103,6 +145,13 @@ export default function AdminInternalNotesCard({ targetType, targetId, className
             </div>
           ))}
         </div>
+        {data && data.totalPages > 1 ? (
+          <div className="flex items-center justify-end gap-2">
+            <Button variant="outline" size="sm" onClick={() => setPage((prev) => Math.max(1, prev - 1))} disabled={page <= 1 || isValidating}>이전</Button>
+            <span className="text-xs text-muted-foreground">{data.page} / {data.totalPages}</span>
+            <Button variant="outline" size="sm" onClick={() => setPage((prev) => Math.min(data.totalPages, prev + 1))} disabled={page >= data.totalPages || isValidating}>다음</Button>
+          </div>
+        ) : null}
       </CardContent>
       <AdminConfirmDialog open={Boolean(deleteId)} onOpenChange={(o) => !o && setDeleteId(null)} title="내부 메모 삭제" description="삭제한 메모는 목록에서 사라집니다. 계속할까요?" severity="danger" confirmText={deletingId ? "삭제 중..." : "삭제"} confirmDisabled={Boolean(deletingId)} onConfirm={onDelete} />
     </Card>

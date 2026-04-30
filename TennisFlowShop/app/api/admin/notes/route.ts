@@ -9,6 +9,8 @@ const TARGET_COLLECTION_MAP: Record<AllowedTargetType, string> = { order: "order
 const MAX_BODY_LENGTH = 2000;
 const parseTargetType = (v: unknown): AllowedTargetType | null => (typeof v === "string" && v in TARGET_COLLECTION_MAP ? (v as AllowedTargetType) : null);
 const parseObjectId = (v: unknown): ObjectId | null => (typeof v === "string" && ObjectId.isValid(v) ? new ObjectId(v) : null);
+const normalizeQueryText = (v: unknown) => (typeof v === "string" ? v.trim().slice(0, 100) : "");
+const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 const mapNoteItem = (doc: any) => ({ id: String(doc._id), targetType: doc.targetType, targetId: String(doc.targetId), body: doc.body, createdBy: doc.createdBy ? String(doc.createdBy) : null, createdByEmail: doc.createdByEmail ?? null, createdByName: doc.createdByName ?? null, createdByRole: doc.createdByRole ?? null, createdAt: doc.createdAt instanceof Date ? doc.createdAt.toISOString() : null, updatedAt: doc.updatedAt instanceof Date ? doc.updatedAt.toISOString() : null, editedAt: doc.editedAt instanceof Date ? doc.editedAt.toISOString() : null });
 
@@ -25,7 +27,28 @@ export async function GET(req: Request) {
   const page = Math.max(1, Number.parseInt(url.searchParams.get("page") || "1", 10) || 1);
   const limit = Math.min(50, Math.max(1, Number.parseInt(url.searchParams.get("limit") || "20", 10) || 20));
   const skip = (page - 1) * limit;
-  const query = { targetType, targetId, isDeleted: { $ne: true } };
+  const q = normalizeQueryText(url.searchParams.get("q"));
+  const author = normalizeQueryText(url.searchParams.get("author"));
+  const andConditions: Record<string, unknown>[] = [{ targetType, targetId, isDeleted: { $ne: true } }];
+
+  if (q.length >= 1) {
+    const regex = new RegExp(escapeRegex(q), "i");
+    andConditions.push({
+      $or: [{ body: regex }, { createdByEmail: regex }, { createdByName: regex }],
+    });
+  }
+
+  if (author.length >= 1) {
+    const authorRegex = new RegExp(escapeRegex(author), "i");
+    andConditions.push({
+      $or: [{ createdByEmail: authorRegex }, { createdByName: authorRegex }],
+    });
+    if (ObjectId.isValid(author)) {
+      andConditions.push({ createdBy: new ObjectId(author) });
+    }
+  }
+
+  const query = andConditions.length === 1 ? andConditions[0] : { $and: andConditions };
   const coll = guard.db.collection("admin_notes");
   const [docs, total] = await Promise.all([coll.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit).toArray(), coll.countDocuments(query)]);
   return NextResponse.json({ success: true, items: docs.map(mapNoteItem), page, limit, total, totalPages: Math.max(1, Math.ceil(total / limit)) }, { headers: { "Cache-Control": "no-store" } });
