@@ -2,89 +2,31 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
-  badgeBase,
-  badgeSizeSm,
-  badgeToneVariant,
-  getPaymentStatusBadgeSpec,
-  getRentalStatusBadgeSpec,
-} from "@/lib/badge-style";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { badgeBase, badgeSizeSm, badgeToneVariant, getPaymentStatusBadgeSpec, getRentalStatusBadgeSpec } from "@/lib/badge-style";
 import { shortenId } from "@/lib/shorten";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
-import {
-  AlertTriangle,
-  ChevronDown,
-  Copy,
-  Eye,
-  MoreHorizontal,
-  Package,
-  Search,
-  Truck,
-} from "lucide-react";
-import Link from "next/link";
+import { AlertTriangle, ChevronDown, Copy, Eye, MoreHorizontal, Package, Search, Truck } from "lucide-react";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 // import CleanupCreatedButton from '@/app/admin/rentals/_components/CleanupCreatedButton';
-import {
-  derivePaymentStatus,
-  deriveShippingStatus,
-} from "@/app/features/rentals/utils/status";
+import { derivePaymentStatus, deriveShippingStatus } from "@/app/features/rentals/utils/status";
 import { AdminBadgeRow, BadgeItem } from "@/components/admin/AdminBadgeRow";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { runAdminActionWithToast } from "@/lib/admin/adminActionHelpers";
-import {
-  adminMutator,
-  ensureAdminMutationSucceeded,
-  getAdminErrorMessage,
-} from "@/lib/admin/adminFetcher";
-import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
+import { adminMutator, ensureAdminMutationSucceeded, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
 import { racketBrandLabel } from "@/lib/constants";
+import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { adminRichTooltipClass } from "@/lib/tooltip-style";
-import type {
-  AdminRentalListItemDto,
-  AdminRentalPaymentFilter,
-  AdminRentalShippingFilter,
-  AdminRentalsListResponseDto,
-} from "@/types/admin/rentals";
+import type { AdminRentalListItemDto, AdminRentalPaymentFilter, AdminRentalShippingFilter, AdminRentalsListResponseDto } from "@/types/admin/rentals";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 type RentalRow = AdminRentalListItemDto & {
@@ -95,13 +37,7 @@ type RentalRow = AdminRentalListItemDto & {
 };
 
 const PAY_FILTERS: AdminRentalPaymentFilter[] = ["all", "unpaid", "paid"];
-const SHIP_FILTERS: AdminRentalShippingFilter[] = [
-  "all",
-  "none",
-  "outbound-set",
-  "return-set",
-  "both-set",
-];
+const SHIP_FILTERS: AdminRentalShippingFilter[] = ["all", "none", "outbound-set", "return-set", "both-set"];
 
 function toIsoOrNull(value: string | Date | null | undefined): string | null {
   if (!value) return null;
@@ -135,15 +71,10 @@ const rentalStatusLabels: Record<string, string> = {
   canceled: "취소됨",
 };
 
-const AdminConfirmDialog = dynamic(
-  () => import("@/components/admin/AdminConfirmDialog"),
-  { loading: () => null },
-);
+const AdminConfirmDialog = dynamic(() => import("@/components/admin/AdminConfirmDialog"), { loading: () => null });
 
 export default function AdminRentalsClient() {
-  function getCancelQuickSignal(
-    cancelRequest: RentalRow["cancelRequest"],
-  ): {
+  function getCancelQuickSignal(cancelRequest: RentalRow["cancelRequest"]): {
     label: "계좌확인 필요" | "검토 가능";
     variant: ReturnType<typeof badgeToneVariant>;
   } | null {
@@ -185,10 +116,7 @@ export default function AdminRentalsClient() {
     6: "F6 대여",
     7: "F7 대여+신청",
   };
-  const FLOW_BADGE_VARIANT: Record<
-    Flow,
-    ReturnType<typeof badgeToneVariant>
-  > = {
+  const FLOW_BADGE_VARIANT: Record<Flow, ReturnType<typeof badgeToneVariant>> = {
     6: badgeToneVariant("neutral"),
     7: badgeToneVariant("info"),
   };
@@ -212,10 +140,7 @@ export default function AdminRentalsClient() {
 
   function getPickupBadge(r: RentalRow) {
     const label = r.pickupMethodLabel ?? "택배 발송";
-    const variant =
-      r.servicePickupMethod === "SHOP_VISIT"
-        ? badgeToneVariant("brand")
-        : badgeToneVariant("neutral");
+    const variant = r.servicePickupMethod === "SHOP_VISIT" ? badgeToneVariant("brand") : badgeToneVariant("neutral");
     return { label, variant };
   }
 
@@ -229,23 +154,14 @@ export default function AdminRentalsClient() {
     rentalId: string;
   }>(null);
   const [status, setStatus] = useState<string>("");
-    const [from, setFrom] = useState<string>("");
+  const [from, setFrom] = useState<string>("");
   const [to, setTo] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState("");
 
   const initialPay = searchParams.get("pay");
-  const [payFilter, setPayFilter] = useState<AdminRentalPaymentFilter>(
-    initialPay && PAY_FILTERS.includes(initialPay as AdminRentalPaymentFilter)
-      ? (initialPay as AdminRentalPaymentFilter)
-      : "all",
-  );
+  const [payFilter, setPayFilter] = useState<AdminRentalPaymentFilter>(initialPay && PAY_FILTERS.includes(initialPay as AdminRentalPaymentFilter) ? (initialPay as AdminRentalPaymentFilter) : "all");
   const initialShip = searchParams.get("ship");
-  const [shipFilter, setShipFilter] = useState<AdminRentalShippingFilter>(
-    initialShip &&
-      SHIP_FILTERS.includes(initialShip as AdminRentalShippingFilter)
-      ? (initialShip as AdminRentalShippingFilter)
-      : "all",
-  );
+  const [shipFilter, setShipFilter] = useState<AdminRentalShippingFilter>(initialShip && SHIP_FILTERS.includes(initialShip as AdminRentalShippingFilter) ? (initialShip as AdminRentalShippingFilter) : "all");
   const [page, setPage] = useState(1);
   const [sortBy, setSortBy] = useState<"date" | "total">("date");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
@@ -269,13 +185,8 @@ export default function AdminRentalsClient() {
 
     if (queryText) setSearchTerm(queryText);
     if (statusParam) setStatus(statusParam);
-    if (payParam && PAY_FILTERS.includes(payParam as AdminRentalPaymentFilter))
-      setPayFilter(payParam as AdminRentalPaymentFilter);
-    if (
-      shipParam &&
-      SHIP_FILTERS.includes(shipParam as AdminRentalShippingFilter)
-    )
-      setShipFilter(shipParam as AdminRentalShippingFilter);
+    if (payParam && PAY_FILTERS.includes(payParam as AdminRentalPaymentFilter)) setPayFilter(payParam as AdminRentalPaymentFilter);
+    if (shipParam && SHIP_FILTERS.includes(shipParam as AdminRentalShippingFilter)) setShipFilter(shipParam as AdminRentalShippingFilter);
     if (fromParam) setFrom(fromParam);
     if (toParam) setTo(toParam);
     if (!Number.isNaN(pageParam) && pageParam > 0) setPage(pageParam);
@@ -306,14 +217,7 @@ export default function AdminRentalsClient() {
   if (searchTerm.trim()) qs.set("q", searchTerm.trim());
   if (from) qs.set("from", from);
   if (to) qs.set("to", to);
-  const sort =
-    sortBy === "date"
-      ? sortDirection === "asc"
-        ? "createdAt"
-        : "-createdAt"
-      : sortDirection === "asc"
-        ? "total"
-        : "-total";
+  const sort = sortBy === "date" ? (sortDirection === "asc" ? "createdAt" : "-createdAt") : sortDirection === "asc" ? "total" : "-total";
   qs.set("sort", sort);
   function formatYMD(d: Date) {
     const y = d.getFullYear();
@@ -322,6 +226,7 @@ export default function AdminRentalsClient() {
     return `${y}-${m}-${day}`;
   }
   function setPreset(range: "today" | "7d" | "30d" | "thisMonth") {
+    setPage(1);
     const now = new Date();
     let f = new Date();
     let t = new Date();
@@ -348,12 +253,7 @@ export default function AdminRentalsClient() {
     const url = new URL(window.location.href);
 
     const setParam = (key: string, value?: string | number | null) => {
-      if (
-        value === undefined ||
-        value === null ||
-        value === "" ||
-        value === "all"
-      ) {
+      if (value === undefined || value === null || value === "" || value === "all") {
         url.searchParams.delete(key);
       } else {
         url.searchParams.set(key, String(value));
@@ -369,10 +269,7 @@ export default function AdminRentalsClient() {
     setParam("page", page === 1 ? undefined : page);
     setParam("sort", sort);
 
-    router.replace(
-      url.pathname +
-        (url.searchParams.toString() ? `?${url.searchParams.toString()}` : ""),
-    );
+    router.replace(url.pathname + (url.searchParams.toString() ? `?${url.searchParams.toString()}` : ""));
   }
 
   /** 화면의 필터 상태를 기본값으로 되돌리고, URL 쿼리도 함께 제거 */
@@ -393,17 +290,7 @@ export default function AdminRentalsClient() {
   useEffect(() => {
     const timer = setTimeout(updateURLFromFilterState, 200);
     return () => clearTimeout(timer);
-  }, [
-    searchTerm,
-    status,
-    payFilter,
-    shipFilter,
-    from,
-    to,
-    page,
-    sortBy,
-    sortDirection,
-  ]);
+  }, [searchTerm, status, payFilter, shipFilter, from, to, page, sortBy, sortDirection]);
 
   const {
     data: apiData,
@@ -417,10 +304,7 @@ export default function AdminRentalsClient() {
   // 3차 보완: API 응답 미확정(undefined)과 실제 빈 목록을 분리한다.
   const hasResolvedData = !!apiData;
   const hasDataError = !!error;
-  const data = useMemo(
-    () => (apiData ? mapApiToViewModel(apiData) : null),
-    [apiData],
-  );
+  const data = useMemo(() => (apiData ? mapApiToViewModel(apiData) : null), [apiData]);
   const commonErrorMessage = error ? getAdminErrorMessage(error) : null;
 
   useEffect(() => {
@@ -429,18 +313,11 @@ export default function AdminRentalsClient() {
 
   const rentals = data?.items ?? [];
 
-  const shouldShowActualEmpty =
-    hasResolvedData && !hasDataError && (data?.items.length ?? 0) === 0;
-  const shouldShowSearchEmpty =
-    hasResolvedData &&
-    !hasDataError &&
-    (Boolean(searchTerm.trim()) ||
-      Boolean(status) ||
-      payFilter !== "all" ||
-      shipFilter !== "all" ||
-      Boolean(from) ||
-      Boolean(to)) &&
-    (data?.items.length ?? 0) === 0;
+  const hasActiveFilters = Boolean(searchTerm.trim()) || Boolean(status) || payFilter !== "all" || shipFilter !== "all" || Boolean(from) || Boolean(to);
+
+  const shouldShowActualEmpty = hasResolvedData && !hasDataError && !hasActiveFilters && (data?.items.length ?? 0) === 0;
+
+  const shouldShowSearchEmpty = hasResolvedData && !hasDataError && hasActiveFilters && (data?.items.length ?? 0) === 0;
 
   const markRefund = async (id: string, mark: boolean) => {
     if (busyId) return;
@@ -451,14 +328,11 @@ export default function AdminRentalsClient() {
       message?: string;
     }>({
       action: async () => {
-        const json = await adminMutator<{ ok?: boolean; message?: string }>(
-          `/api/admin/rentals/${encodeURIComponent(id)}/deposit/refund`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action: mark ? "mark" : "clear" }),
-          },
-        );
+        const json = await adminMutator<{ ok?: boolean; message?: string }>(`/api/admin/rentals/${encodeURIComponent(id)}/deposit/refund`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: mark ? "mark" : "clear" }),
+        });
         ensureAdminMutationSucceeded(json, "처리 실패");
         return json;
       },
@@ -490,6 +364,7 @@ export default function AdminRentalsClient() {
   };
 
   const handleSort = (key: "date" | "total") => {
+    setPage(1);
     if (sortBy === key) {
       setSortDirection((dir) => (dir === "asc" ? "desc" : "asc"));
     } else {
@@ -508,11 +383,7 @@ export default function AdminRentalsClient() {
       hour12: false,
     }).format(new Date(dateString));
 
-  function getPaginationItems(
-    page: number,
-    totalPages: number,
-    delta = 2,
-  ): (number | string)[] {
+  function getPaginationItems(page: number, totalPages: number, delta = 2): (number | string)[] {
     if (totalPages <= 1) return [1];
     const items: (number | string)[] = [1];
     const left = Math.max(2, page - delta);
@@ -524,23 +395,15 @@ export default function AdminRentalsClient() {
     return items;
   }
 
-  const totalPages = data
-    ? Math.max(1, Math.ceil(data.total / pageSize))
-    : null;
-  const thClasses =
-    "px-4 py-2 text-center align-middle border-b border-border font-semibold text-foreground";
+  const totalPages = data ? Math.max(1, Math.ceil(data.total / pageSize)) : null;
+  const thClasses = "px-4 py-2 text-center align-middle border-b border-border font-semibold text-foreground";
   const tdClasses = "px-3 py-4 align-middle text-center";
 
   function PaymentBadge({ item }: { item: RentalRow }) {
-    const paymentLabel =
-      item.paymentStatusLabel ??
-      (derivePaymentStatus(item) === "paid" ? "결제완료" : "결제대기");
+    const paymentLabel = item.paymentStatusLabel ?? (derivePaymentStatus(item) === "paid" ? "결제완료" : "결제대기");
     const pay = getPaymentStatusBadgeSpec(paymentLabel);
     return (
-      <Badge
-        variant={pay.variant}
-        className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap")}
-      >
+      <Badge variant={pay.variant} className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap")}>
         {paymentLabel}
       </Badge>
     );
@@ -548,11 +411,7 @@ export default function AdminRentalsClient() {
 
   function ShippingBadge({ item }: { item: RentalRow }) {
     if (item.servicePickupMethod === "SHOP_VISIT") {
-      return (
-        <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] bg-primary/10 text-primary dark:bg-primary/20">
-          운송장 불필요
-        </span>
-      );
+      return <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] bg-primary/10 text-primary dark:bg-primary/20">운송장 불필요</span>;
     }
 
     const s = deriveShippingStatus(item);
@@ -560,20 +419,11 @@ export default function AdminRentalsClient() {
       none: ["운송장 없음", "bg-background text-foreground"],
       "outbound-set": ["출고 운송장", "bg-muted text-foreground"],
       "return-set": ["반납 운송장", "bg-muted text-foreground"],
-      "both-set": [
-        "왕복 운송장",
-        "bg-primary/10 text-primary dark:bg-primary/20",
-      ],
+      "both-set": ["왕복 운송장", "bg-primary/10 text-primary dark:bg-primary/20"],
     } as const;
 
     const [label, cls] = map[s];
-    return (
-      <span
-        className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] ${cls}`}
-      >
-        {label}
-      </span>
-    );
+    return <span className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] ${cls}`}>{label}</span>;
   }
 
   return (
@@ -581,13 +431,8 @@ export default function AdminRentalsClient() {
       <div className="mx-auto max-w-7xl mb-5">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-4xl font-semibold tracking-normal">
-              대여(라켓) 관리
-            </h1>
-            <p className="mt-1 text-xs text-muted-foreground">
-              라켓 대여를 관리합니다. 교체서비스 포함 대여는 “신청서 연결”로
-              표시됩니다.
-            </p>
+            <h1 className="text-4xl font-semibold tracking-normal">대여(라켓) 관리</h1>
+            <p className="mt-1 text-xs text-muted-foreground">라켓 대여를 관리합니다. 교체서비스 포함 대여는 “신청서 연결”로 표시됩니다.</p>
           </div>
           {/* 유지보수: created 청소 버튼 */}
           {/* <CleanupCreatedButton hours={2} /> */}
@@ -597,10 +442,7 @@ export default function AdminRentalsClient() {
       <Card className="mb-5 rounded-xl border-border bg-card shadow-md px-6 py-5">
         <CardHeader className="pb-3">
           <CardTitle>필터 및 검색</CardTitle>
-          <CardDescription className="text-xs">
-            대여 상태와 날짜로 필터링하거나 대여 ID, 고객명, 이메일, 브랜드,
-            모델로 검색하세요.
-          </CardDescription>
+          <CardDescription className="text-xs">대여 상태와 날짜로 필터링하거나 대여 ID, 고객명, 이메일, 브랜드, 모델로 검색하세요.</CardDescription>
         </CardHeader>
 
         <CardContent className="space-y-3">
@@ -620,11 +462,7 @@ export default function AdminRentalsClient() {
               />
             </div>
 
-            <Button
-              variant="outline"
-              className="shrink-0"
-              onClick={resetAllFiltersAndURL}
-            >
+            <Button variant="outline" className="shrink-0" onClick={resetAllFiltersAndURL}>
               필터 초기화
             </Button>
           </div>
@@ -657,8 +495,7 @@ export default function AdminRentalsClient() {
                 value={payFilter}
                 onValueChange={(v) => {
                   setPage(1);
-                  if (PAY_FILTERS.includes(v as AdminRentalPaymentFilter))
-                    setPayFilter(v as AdminRentalPaymentFilter);
+                  if (PAY_FILTERS.includes(v as AdminRentalPaymentFilter)) setPayFilter(v as AdminRentalPaymentFilter);
                 }}
               >
                 <SelectTrigger>
@@ -676,8 +513,7 @@ export default function AdminRentalsClient() {
                 value={shipFilter}
                 onValueChange={(v) => {
                   setPage(1);
-                  if (SHIP_FILTERS.includes(v as AdminRentalShippingFilter))
-                    setShipFilter(v as AdminRentalShippingFilter);
+                  if (SHIP_FILTERS.includes(v as AdminRentalShippingFilter)) setShipFilter(v as AdminRentalShippingFilter);
                 }}
               >
                 <SelectTrigger>
@@ -746,12 +582,8 @@ export default function AdminRentalsClient() {
           <div className="flex items-center justify-between">
             {hasResolvedData && !hasDataError && data ? (
               <>
-                <CardTitle className="text-base font-medium">
-                  대여 목록
-                </CardTitle>
-                <p className="text-xs text-muted-foreground">
-                  총 {data.total}개의 대여
-                </p>
+                <CardTitle className="text-base font-medium">대여 목록</CardTitle>
+                <p className="text-xs text-muted-foreground">총 {data.total}개의 대여</p>
               </>
             ) : (
               <>
@@ -762,114 +594,49 @@ export default function AdminRentalsClient() {
           </div>
           {/* “이 화면에서 무엇이 다른지”를 즉시 이해시키는 장치 */}
           <div className="px-6 -mt-2 mb-2 flex flex-wrap items-center gap-2 text-sm text-foreground/75">
-            <Badge
-              variant={getKindBadge().variant}
-              className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap")}
-            >
+            <Badge variant={getKindBadge().variant} className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap")}>
               {getKindBadge().label}
             </Badge>
-            <Badge
-              variant="outline"
-              className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap")}
-            >
+            <Badge variant="outline" className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap")}>
               단독
             </Badge>
-            <Badge
-              variant="brand"
-              className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap")}
-            >
+            <Badge variant="brand" className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap")}>
               교체서비스 포함
             </Badge>
-            <Badge
-              variant="info"
-              className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap")}
-            >
+            <Badge variant="info" className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap")}>
               신청서 연결
             </Badge>
-            <Badge
-              variant={FLOW_BADGE_VARIANT[6]}
-              className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap")}
-            >
+            <Badge variant={FLOW_BADGE_VARIANT[6]} className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap")}>
               {FLOW_SHORT[6]}
             </Badge>
-            <Badge
-              variant={FLOW_BADGE_VARIANT[7]}
-              className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap")}
-            >
+            <Badge variant={FLOW_BADGE_VARIANT[7]} className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap")}>
               {FLOW_SHORT[7]}
             </Badge>
-            <Badge
-              variant={getSettlementBadge().variant}
-              className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap")}
-            >
+            <Badge variant={getSettlementBadge().variant} className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap")}>
               {getSettlementBadge().label}
             </Badge>
-            <span className="ml-1">
-              • 신청서 연결이 있으면 신청서 상세로 바로 이동할 수 있습니다
-            </span>
+            <span className="ml-1">• 신청서 연결이 있으면 신청서 상세로 바로 이동할 수 있습니다</span>
           </div>
         </CardHeader>
         <CardContent className="overflow-x-auto md:overflow-x-visible scrollbar-hidden relative pr-2 md:pr-0">
           <Table className="w-full table-auto border-separate [border-spacing-block:0.5rem] [border-spacing-inline:0] text-xs">
             <TableHeader className="sticky top-0 bg-background shadow-sm">
               <TableRow>
-                <TableHead className={cn(thClasses, "w-[140px]")}>
-                  대여 ID
-                </TableHead>
-                <TableHead className={cn(thClasses, "text-center")}>
-                  고객
-                </TableHead>
-                <TableHead className={cn(thClasses, "text-center")}>
-                  라켓
-                </TableHead>
-                <TableHead
-                  onClick={() => handleSort("date")}
-                  className={cn(
-                    thClasses,
-                    "w-36 cursor-pointer select-none transition-colors hover:text-primary",
-                    sortBy === "date" && "text-primary",
-                  )}
-                >
+                <TableHead className={cn(thClasses, "w-[140px]")}>대여 ID</TableHead>
+                <TableHead className={cn(thClasses, "text-center")}>고객</TableHead>
+                <TableHead className={cn(thClasses, "text-center")}>라켓</TableHead>
+                <TableHead onClick={() => handleSort("date")} className={cn(thClasses, "w-36 cursor-pointer select-none transition-colors hover:text-primary", sortBy === "date" && "text-primary")}>
                   대여일
-                  <ChevronDown
-                    className={cn(
-                      "inline ml-1 w-3 h-3 text-muted-foreground transition-transform",
-                      sortBy === "date" &&
-                        sortDirection === "desc" &&
-                        "rotate-180",
-                    )}
-                  />
+                  <ChevronDown className={cn("inline ml-1 w-3 h-3 text-muted-foreground transition-transform", sortBy === "date" && sortDirection === "desc" && "rotate-180")} />
                 </TableHead>
-                <TableHead className={cn(thClasses, "text-center")}>
-                  기간
-                </TableHead>
-                <TableHead className={cn(thClasses, "text-center")}>
-                  상태
-                </TableHead>
-                <TableHead className={cn(thClasses, "text-center")}>
-                  결제 상태 / 출고 상태
-                </TableHead>
-                <TableHead
-                  onClick={() => handleSort("total")}
-                  className={cn(
-                    thClasses,
-                    "text-center cursor-pointer select-none",
-                    sortBy === "total" && "text-primary",
-                  )}
-                >
+                <TableHead className={cn(thClasses, "text-center")}>기간</TableHead>
+                <TableHead className={cn(thClasses, "text-center")}>상태</TableHead>
+                <TableHead className={cn(thClasses, "text-center")}>결제 상태 / 출고 상태</TableHead>
+                <TableHead onClick={() => handleSort("total")} className={cn(thClasses, "text-center cursor-pointer select-none", sortBy === "total" && "text-primary")}>
                   금액
-                  <ChevronDown
-                    className={cn(
-                      "inline ml-1 w-3 h-3 text-muted-foreground transition-transform",
-                      sortBy === "total" &&
-                        sortDirection === "desc" &&
-                        "rotate-180",
-                    )}
-                  />
+                  <ChevronDown className={cn("inline ml-1 w-3 h-3 text-muted-foreground transition-transform", sortBy === "total" && sortDirection === "desc" && "rotate-180")} />
                 </TableHead>
-                <TableHead className={cn(thClasses, "text-center")}>
-                  …
-                </TableHead>
+                <TableHead className={cn(thClasses, "text-center")}>…</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -894,9 +661,7 @@ export default function AdminRentalsClient() {
                   <TableCell colSpan={9} className={tdClasses}>
                     <div className="flex flex-col items-center gap-2">
                       <Search className="h-8 w-8 text-muted-foreground/50" />
-                      <p className="text-sm text-muted-foreground">
-                        불러올 대여 주문이 없습니다.
-                      </p>
+                      <p className="text-sm text-muted-foreground">불러올 대여 주문이 없습니다.</p>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -915,16 +680,10 @@ export default function AdminRentalsClient() {
                   const flow = getFlowBadge(r);
                   const settlement = getSettlementBadge();
                   const pickup = getPickupBadge(r);
-                  const warnMissingApp =
-                    !!r.withStringService && !r.stringingApplicationId;
-                  const cancelQuickSignal = getCancelQuickSignal(
-                    r.cancelRequest,
-                  );
+                  const warnMissingApp = !!r.withStringService && !r.stringingApplicationId;
+                  const cancelQuickSignal = getCancelQuickSignal(r.cancelRequest);
                   return (
-                    <TableRow
-                      key={rid || `row-${idx}`}
-                      className="hover:bg-muted/50 transition-colors"
-                    >
+                    <TableRow key={rid || `row-${idx}`} className="hover:bg-muted/50 transition-colors">
                       <TableCell className={cn(tdClasses, "pl-6")}>
                         <TooltipProvider delayDuration={10}>
                           <Tooltip>
@@ -934,22 +693,13 @@ export default function AdminRentalsClient() {
                                 className="inline-flex flex-col items-start gap-1 max-w-[140px] cursor-pointer"
                                 onClick={() => {
                                   navigator.clipboard.writeText(rid);
-                                  showSuccessToast(
-                                    "대여 ID가 클립보드에 복사되었습니다.",
-                                  );
+                                  showSuccessToast("대여 ID가 클립보드에 복사되었습니다.");
                                 }}
                               >
                                 <div className="inline-flex items-center gap-1 w-full truncate">
                                   {/* 취소요청 들어온 대여만 경고 아이콘 표시 */}
-                                  {r.cancelRequest?.status === "requested" && (
-                                    <AlertTriangle
-                                      className="h-3.5 w-3.5 text-primary shrink-0"
-                                      aria-label="취소 요청된 대여"
-                                    />
-                                  )}
-                                  <span className="inline-block truncate">
-                                    {shortenId(rid)}
-                                  </span>
+                                  {r.cancelRequest?.status === "requested" && <AlertTriangle className="h-3.5 w-3.5 text-primary shrink-0" aria-label="취소 요청된 대여" />}
+                                  <span className="inline-block truncate">{shortenId(rid)}</span>
                                 </div>
 
                                 {/* 단독/교체서비스 포함/신청서 연결 여부 */}
@@ -1000,27 +750,13 @@ export default function AdminRentalsClient() {
                                       title: "정산 앵커",
                                     },
                                   ];
-                                  return (
-                                    <AdminBadgeRow
-                                      maxVisible={3}
-                                      items={items}
-                                    />
-                                  );
+                                  return <AdminBadgeRow maxVisible={3} items={items} />;
                                 })()}
-                                {r.stringingApplicationStatus && (
-                                  <p className="text-sm text-foreground/75">
-                                    신청 상태: {r.stringingApplicationStatus}
-                                  </p>
-                                )}
+                                {r.stringingApplicationStatus && <p className="text-sm text-foreground/75">신청 상태: {r.stringingApplicationStatus}</p>}
                               </button>
                             </TooltipTrigger>
 
-                            <TooltipContent
-                              side="top"
-                              align="center"
-                              sideOffset={6}
-                              className={adminRichTooltipClass}
-                            >
+                            <TooltipContent side="top" align="center" sideOffset={6} className={adminRichTooltipClass}>
                               <div>
                                 <div className="flex items-center gap-2">
                                   <span className="font-mono">{rid}</span>
@@ -1030,9 +766,7 @@ export default function AdminRentalsClient() {
                                     className="h-6 w-6"
                                     onClick={() => {
                                       navigator.clipboard.writeText(rid);
-                                      showSuccessToast(
-                                        "대여 ID가 클립보드에 복사되었습니다.",
-                                      );
+                                      showSuccessToast("대여 ID가 클립보드에 복사되었습니다.");
                                     }}
                                   >
                                     <Copy className="w-4 h-4" />
@@ -1040,92 +774,29 @@ export default function AdminRentalsClient() {
                                   </Button>
                                 </div>
 
-                                {r.cancelRequest?.status === "requested" && (
-                                  <p className="mt-2 text-sm text-primary">
-                                    취소 요청이 접수된 항목입니다.
-                                  </p>
-                                )}
-                                {cancelQuickSignal && (
-                                  <p className="mt-1 text-sm text-foreground/75">
-                                    {cancelQuickSignal.label === "검토 가능"
-                                      ? "환불 계좌 준비가 완료되어 검토 가능합니다."
-                                      : "환불 계좌 확인이 필요합니다."}
-                                  </p>
-                                )}
-                                {cancelQuickSignal &&
-                                  r.cancelRequest?.refundBankLabel && (
-                                    <p className="mt-1 text-sm text-foreground/75">
-                                      환불 은행:{" "}
-                                      {r.cancelRequest.refundBankLabel}
-                                    </p>
-                                  )}
+                                {r.cancelRequest?.status === "requested" && <p className="mt-2 text-sm text-primary">취소 요청이 접수된 항목입니다.</p>}
+                                {cancelQuickSignal && <p className="mt-1 text-sm text-foreground/75">{cancelQuickSignal.label === "검토 가능" ? "환불 계좌 준비가 완료되어 검토 가능합니다." : "환불 계좌 확인이 필요합니다."}</p>}
+                                {cancelQuickSignal && r.cancelRequest?.refundBankLabel && <p className="mt-1 text-sm text-foreground/75">환불 은행: {r.cancelRequest.refundBankLabel}</p>}
 
                                 {/* 교체서비스 포함 안내 */}
-                                {r.withStringService && (
-                                  <p className="mt-2 text-sm text-foreground/75">
-                                    교체서비스 포함 대여입니다. (신청서 연결 시
-                                    신청서에서 상태/배송을 관리합니다)
-                                  </p>
-                                )}
-                                {r.stringingReceptionLabel && (
-                                  <p className="mt-1 text-sm text-foreground/75">
-                                    접수 방식: {r.stringingReceptionLabel}
-                                  </p>
-                                )}
-                                {typeof r.stringingRacketCount === "number" &&
-                                  r.stringingRacketCount > 0 && (
-                                    <p className="mt-1 text-sm text-foreground/75">
-                                      라인 수: {r.stringingRacketCount}개
-                                    </p>
-                                  )}
-                                {Array.isArray(r.stringingNames) &&
-                                  r.stringingNames.length > 0 && (
-                                    <p className="mt-1 text-sm text-foreground/75">
-                                      스트링: {r.stringingNames.join(", ")}
-                                    </p>
-                                  )}
-                                {r.stringingTensionSummary && (
-                                  <p className="mt-1 text-sm text-foreground/75">
-                                    텐션: {r.stringingTensionSummary}
-                                  </p>
-                                )}
-                                {r.stringingReservationLabel && (
-                                  <p className="mt-1 text-sm text-foreground/75">
-                                    예약: {r.stringingReservationLabel}
-                                  </p>
-                                )}
+                                {r.withStringService && <p className="mt-2 text-sm text-foreground/75">교체서비스 포함 대여입니다. (신청서 연결 시 신청서에서 상태/배송을 관리합니다)</p>}
+                                {r.stringingReceptionLabel && <p className="mt-1 text-sm text-foreground/75">접수 방식: {r.stringingReceptionLabel}</p>}
+                                {typeof r.stringingRacketCount === "number" && r.stringingRacketCount > 0 && <p className="mt-1 text-sm text-foreground/75">라인 수: {r.stringingRacketCount}개</p>}
+                                {Array.isArray(r.stringingNames) && r.stringingNames.length > 0 && <p className="mt-1 text-sm text-foreground/75">스트링: {r.stringingNames.join(", ")}</p>}
+                                {r.stringingTensionSummary && <p className="mt-1 text-sm text-foreground/75">텐션: {r.stringingTensionSummary}</p>}
+                                {r.stringingReservationLabel && <p className="mt-1 text-sm text-foreground/75">예약: {r.stringingReservationLabel}</p>}
                                 <p className="mt-2 text-sm text-foreground/75">
-                                  시나리오:{" "}
-                                  <span className="font-medium text-foreground">
-                                    {flow.label}
-                                  </span>
+                                  시나리오: <span className="font-medium text-foreground">{flow.label}</span>
                                 </p>
-                                <p className="mt-1 text-sm text-foreground/75">
-                                  수령 방법: {pickup.label}
-                                </p>
-                                <p className="mt-1 text-sm text-foreground/75">
-                                  {settlement.label}
-                                </p>
-                                {warnMissingApp && (
-                                  <p className="mt-2 text-[11px] text-primary">
-                                    주의: 교체서비스 포함인데 신청서 연결이
-                                    없습니다.
-                                  </p>
-                                )}
+                                <p className="mt-1 text-sm text-foreground/75">수령 방법: {pickup.label}</p>
+                                <p className="mt-1 text-sm text-foreground/75">{settlement.label}</p>
+                                {warnMissingApp && <p className="mt-2 text-[11px] text-primary">주의: 교체서비스 포함인데 신청서 연결이 없습니다.</p>}
 
                                 {/* 신청서 연결이 있으면 툴팁에서 바로 이동 링크 제공 */}
                                 {r.stringingApplicationId && (
                                   <p className="mt-1 text-sm text-foreground/75">
-                                    연결 신청서:{" "}
-                                    <span className="font-mono">
-                                      {shortenId(
-                                        String(r.stringingApplicationId),
-                                      )}
-                                    </span>{" "}
-                                    <Link
-                                      href={`/admin/applications/stringing/${encodeURIComponent(String(r.stringingApplicationId))}`}
-                                      className="ml-1 underline underline-offset-2 text-primary"
-                                    >
+                                    연결 신청서: <span className="font-mono">{shortenId(String(r.stringingApplicationId))}</span>{" "}
+                                    <Link href={`/admin/applications/stringing/${encodeURIComponent(String(r.stringingApplicationId))}`} className="ml-1 underline underline-offset-2 text-primary">
                                       신청서 보기
                                     </Link>
                                   </p>
@@ -1139,17 +810,12 @@ export default function AdminRentalsClient() {
                       <TableCell className={tdClasses}>
                         <div className="flex flex-col items-center">
                           <span>{r.customer?.name || "-"}</span>
-                          <span className="text-sm text-foreground/75">
-                            {r.customer?.email || "-"}
-                          </span>
+                          <span className="text-sm text-foreground/75">{r.customer?.email || "-"}</span>
                         </div>
                       </TableCell>
                       <TableCell className={tdClasses}>
                         {rid ? (
-                          <Link
-                            href={`/admin/rentals/${rid}`}
-                            className="underline-offset-2 hover:underline font-medium"
-                          >
+                          <Link href={`/admin/rentals/${rid}`} className="underline-offset-2 hover:underline font-medium">
                             {racketBrandLabel(r.brand)} {r.model}
                           </Link>
                         ) : (
@@ -1158,22 +824,13 @@ export default function AdminRentalsClient() {
                           </span>
                         )}
                       </TableCell>
-                      <TableCell className="w-36 truncate whitespace-nowrap">
-                        {r.createdAt ? formatDate(r.createdAt) : "-"}
-                      </TableCell>
+                      <TableCell className="w-36 truncate whitespace-nowrap">{r.createdAt ? formatDate(r.createdAt) : "-"}</TableCell>
                       <TableCell className={tdClasses}>{r.days}일</TableCell>
                       <TableCell className={tdClasses}>
                         {(() => {
                           const spec = getRentalStatusBadgeSpec(r.status);
                           return (
-                            <Badge
-                              variant={spec.variant}
-                              className={cn(
-                                badgeBase,
-                                badgeSizeSm,
-                                "whitespace-nowrap",
-                              )}
-                            >
+                            <Badge variant={spec.variant} className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap")}>
                               {rentalStatusLabels[r.status] || r.status}
                             </Badge>
                           );
@@ -1187,27 +844,16 @@ export default function AdminRentalsClient() {
                       </TableCell>
                       <TableCell className={tdClasses}>
                         <div className="flex flex-col items-center">
-                          <span className="font-semibold">
-                            {won(r.amount.total)}
-                          </span>
+                          <span className="font-semibold">{won(r.amount.total)}</span>
                           <span className="text-xs text-foreground/75">
-                            수수료: {won(r.amount.fee)} / 보증금:{" "}
-                            {won(r.amount.deposit)}
+                            수수료: {won(r.amount.fee)} / 보증금: {won(r.amount.deposit)}
                           </span>
                           {/* 스트링/교체비: 있을 때만 추가 노출 (대여만 한 케이스 UI 과밀 방지) */}
-                          {((r.amount.stringPrice ?? 0) > 0 ||
-                            (r.amount.stringingFee ?? 0) > 0) && (
+                          {((r.amount.stringPrice ?? 0) > 0 || (r.amount.stringingFee ?? 0) > 0) && (
                             <span className="text-xs text-foreground/75">
-                              {(r.amount.stringPrice ?? 0) > 0
-                                ? `스트링: ${won(r.amount.stringPrice ?? 0)}`
-                                : ""}
-                              {(r.amount.stringPrice ?? 0) > 0 &&
-                              (r.amount.stringingFee ?? 0) > 0
-                                ? " / "
-                                : ""}
-                              {(r.amount.stringingFee ?? 0) > 0
-                                ? `교체비: ${won(r.amount.stringingFee ?? 0)}`
-                                : ""}
+                              {(r.amount.stringPrice ?? 0) > 0 ? `스트링: ${won(r.amount.stringPrice ?? 0)}` : ""}
+                              {(r.amount.stringPrice ?? 0) > 0 && (r.amount.stringingFee ?? 0) > 0 ? " / " : ""}
+                              {(r.amount.stringingFee ?? 0) > 0 ? `교체비: ${won(r.amount.stringingFee ?? 0)}` : ""}
                             </span>
                           )}
                         </div>
@@ -1215,11 +861,7 @@ export default function AdminRentalsClient() {
                       <TableCell className={tdClasses}>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-6 w-6"
-                            >
+                            <Button variant="ghost" size="icon" className="h-6 w-6">
                               <MoreHorizontal className="h-3.5 w-3.5" />
                             </Button>
                           </DropdownMenuTrigger>
@@ -1232,11 +874,8 @@ export default function AdminRentalsClient() {
                             </DropdownMenuItem>
                             {r.stringingApplicationId && (
                               <DropdownMenuItem asChild>
-                                <Link
-                                  href={`/admin/applications/stringing/${encodeURIComponent(String(r.stringingApplicationId))}`}
-                                >
-                                  <Eye className="mr-2 h-4 w-4" /> 연결 신청서
-                                  보기
+                                <Link href={`/admin/applications/stringing/${encodeURIComponent(String(r.stringingApplicationId))}`}>
+                                  <Eye className="mr-2 h-4 w-4" /> 연결 신청서 보기
                                 </Link>
                               </DropdownMenuItem>
                             )}
@@ -1295,39 +934,21 @@ export default function AdminRentalsClient() {
 
           {!hasDataError && totalPages && totalPages > 1 && (
             <div className="mt-6 flex justify-center items-center gap-1 flex-wrap">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page <= 1}
-              >
+              <Button size="sm" variant="outline" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1}>
                 이전
               </Button>
               {getPaginationItems(page, totalPages).map((it, idx) =>
                 typeof it === "number" ? (
-                  <Button
-                    key={`page-${it}`}
-                    size="sm"
-                    variant={it === page ? "default" : "outline"}
-                    onClick={() => setPage(it)}
-                  >
+                  <Button key={`page-${it}`} size="sm" variant={it === page ? "default" : "outline"} onClick={() => setPage(it)}>
                     {it}
                   </Button>
                 ) : (
-                  <span
-                    key={`dots-${idx}`}
-                    className="px-2 text-muted-foreground"
-                  >
+                  <span key={`dots-${idx}`} className="px-2 text-muted-foreground">
                     …
                   </span>
                 ),
               )}
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setPage((p) => Math.min(totalPages ?? 1, p + 1))}
-                disabled={!totalPages || page >= totalPages}
-              >
+              <Button size="sm" variant="outline" onClick={() => setPage((p) => Math.min(totalPages ?? 1, p + 1))} disabled={!totalPages || page >= totalPages}>
                 다음
               </Button>
             </div>
@@ -1351,13 +972,7 @@ export default function AdminRentalsClient() {
           await markRefund(action.rentalId, action.type === "refundMark");
         }}
         severity="danger"
-        title={
-          pendingAction?.type === "return"
-            ? "반납 처리할까요?"
-            : pendingAction?.type === "refundMark"
-              ? "보증금 환불 처리할까요?"
-              : "보증금 환불 처리를 해제할까요?"
-        }
+        title={pendingAction?.type === "return" ? "반납 처리할까요?" : pendingAction?.type === "refundMark" ? "보증금 환불 처리할까요?" : "보증금 환불 처리를 해제할까요?"}
         description={
           pendingAction?.type === "return"
             ? "선택한 대여 건의 상태가 반납완료(returned)로 변경됩니다."
@@ -1365,21 +980,9 @@ export default function AdminRentalsClient() {
               ? "선택한 대여 건을 보증금 환불 완료 상태로 기록합니다."
               : "선택한 대여 건의 보증금 환불 완료 기록을 해제합니다."
         }
-        confirmText={
-          pendingAction?.type === "return"
-            ? "반납 처리"
-            : pendingAction?.type === "refundMark"
-              ? "환불 처리"
-              : "환불 해제"
-        }
+        confirmText={pendingAction?.type === "return" ? "반납 처리" : pendingAction?.type === "refundMark" ? "환불 처리" : "환불 해제"}
         cancelText="취소"
-        eventKey={
-          pendingAction?.type === "return"
-            ? "admin-rentals-return-confirm"
-            : pendingAction?.type === "refundMark"
-              ? "admin-rentals-refund-mark-confirm"
-              : "admin-rentals-refund-clear-confirm"
-        }
+        eventKey={pendingAction?.type === "return" ? "admin-rentals-return-confirm" : pendingAction?.type === "refundMark" ? "admin-rentals-refund-mark-confirm" : "admin-rentals-refund-clear-confirm"}
         eventMeta={{ rentalId: pendingAction?.rentalId }}
       />
     </div>
