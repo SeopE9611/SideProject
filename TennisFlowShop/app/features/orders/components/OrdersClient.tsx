@@ -440,6 +440,7 @@ export default function OrdersClient() {
 
   // 필터 리셋
   const resetFilters = () => {
+    setPage(1);
     setSearchTerm("");
     setStatusFilter("all");
     setTypeFilter("all");
