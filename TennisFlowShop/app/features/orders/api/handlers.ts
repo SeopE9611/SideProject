@@ -1034,6 +1034,9 @@ export async function getOrders(req: NextRequest): Promise<Response> {
   const customerType = sp.get("customerType") || "all"; // member | guest | all
   const cancel = sp.get("cancel") || "all"; // all | requested | approved | rejected
   const dateYmd = sp.get("date") || ""; // "YYYY-MM-DD" (OrdersClient에서 KST로 보냄)
+  const rawSort = sp.get("sort") || "-date";
+  const allowedSorts = new Set(["date", "-date", "total", "-total"]);
+  const sort = allowedSorts.has(rawSort) ? rawSort : "-date";
 
   // KST 기준 YYYY-MM-DD 변환 (클라 DateFilter와 동일 기준 맞추기)
   const toKstYmd = (input: any) => {
@@ -1095,8 +1098,30 @@ export async function getOrders(req: NextRequest): Promise<Response> {
     );
   });
 
-  // 2) 필터된 결과에 대해 페이징
-  const paged = filtered.slice(skip, skip + limit);
+  const safeTime = (value: any) => {
+    const time = new Date(value).getTime();
+    return Number.isFinite(time) ? time : 0;
+  };
+
+  // 2) 서버 정렬 적용 (전체 필터 결과 기준)
+  const sorted = [...filtered].sort((a: any, b: any) => {
+    if (sort === "date") {
+      return safeTime(a?.date ?? a?.createdAt) - safeTime(b?.date ?? b?.createdAt);
+    }
+    if (sort === "-date") {
+      return safeTime(b?.date ?? b?.createdAt) - safeTime(a?.date ?? a?.createdAt);
+    }
+    if (sort === "total") {
+      return (Number(a?.total) || 0) - (Number(b?.total) || 0);
+    }
+    if (sort === "-total") {
+      return (Number(b?.total) || 0) - (Number(a?.total) || 0);
+    }
+    return 0;
+  });
+
+  // 3) 정렬된 결과에 대해 페이징
+  const paged = sorted.slice(skip, skip + limit);
   const total = filtered.length;
   // 응답 반환
 

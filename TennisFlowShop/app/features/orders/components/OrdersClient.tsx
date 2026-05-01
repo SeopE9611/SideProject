@@ -121,11 +121,14 @@ export default function OrdersClient() {
   // 고급 검색 토글 상태
   const [showAdvanced, setShowAdvanced] = useState(false);
 
-  // 정렬 상태
-  const [sortBy, setSortBy] = useState<"customer" | "date" | "total" | null>(
-    null,
-  );
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  // 정렬 상태 (서버 정렬 기준)
+  const [sortBy, setSortBy] = useState<"date" | "total">("date");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+
+  const serverSort = useMemo(() => {
+    const prefix = sortDirection === "desc" ? "-" : "";
+    return `${prefix}${sortBy}`;
+  }, [sortBy, sortDirection]);
 
   // 날짜 필터 상태
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
@@ -152,6 +155,7 @@ export default function OrdersClient() {
     if (customerTypeFilter !== "all")
       sp.set("customerType", customerTypeFilter);
     if (cancelFilter !== "all") sp.set("cancel", cancelFilter);
+    sp.set("sort", serverSort);
 
     // 날짜는 KST 기준 YYYY-MM-DD로 보내는 게 안전함(UTC toISOString 오차 방지)
     if (selectedDate) {
@@ -176,6 +180,7 @@ export default function OrdersClient() {
     customerTypeFilter,
     cancelFilter,
     selectedDate,
+    serverSort,
   ]);
 
   /**
@@ -194,6 +199,8 @@ export default function OrdersClient() {
     customerTypeFilter,
     cancelFilter,
     selectedDate,
+    sortBy,
+    sortDirection,
   ]);
 
   useEffect(() => {
@@ -219,76 +226,6 @@ export default function OrdersClient() {
   // 데이터 준비: data.items, data.total
   const orders = data?.items ?? []; // 현재 페이지 항목 배열
   const totalPages = Math.max(1, Math.ceil((data?.total ?? 0) / limit));
-
-  // 검색 / 필터링 로직
-  const filteredOrders = orders.filter((order) => {
-    // 검색어 매치: ID, 고객명, 이메일
-    const searchMatch =
-      order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.customer.email.toLowerCase().includes(searchTerm.toLowerCase());
-
-    // 상태 필터 매치
-    const statusMatch = statusFilter === "all" || order.status === statusFilter;
-    const typeMatch = typeFilter === "all" || order.type === typeFilter;
-    const paymentMatch =
-      paymentFilter === "all" || order.paymentStatus === paymentFilter;
-    const cancelMatch =
-      cancelFilter === "all" || order.cancelStatus === cancelFilter;
-
-    // 고객 유형 필터: 회원/비회원
-    const customerTypeMatch =
-      customerTypeFilter === "all" ||
-      (customerTypeFilter === "member" && order.userId) ||
-      (customerTypeFilter === "guest" && !order.userId);
-
-    // 운송장 상태 필터
-    const shippingMatch =
-      shippingFilter === "all" ||
-      getShippingBadge(order).label === shippingFilter;
-
-    // 날짜 필터
-    const matchDate =
-      !selectedDate ||
-      new Date(order.date).toDateString() === selectedDate.toDateString();
-
-    return (
-      searchMatch &&
-      statusMatch &&
-      typeMatch &&
-      paymentMatch &&
-      cancelMatch &&
-      shippingMatch &&
-      customerTypeMatch &&
-      matchDate
-    );
-  });
-
-  // 정렬 로직
-  const sortedOrders = [...filteredOrders].sort((a, b) => {
-    if (!sortBy) return 0;
-    let aValue: string | number = "";
-    let bValue: string | number = "";
-
-    switch (sortBy) {
-      case "customer":
-        aValue = a.customer.name.toLowerCase();
-        bValue = b.customer.name.toLowerCase();
-        break;
-      case "date":
-        aValue = new Date(a.date).getTime();
-        bValue = new Date(b.date).getTime();
-        break;
-      case "total":
-        aValue = a.total;
-        bValue = b.total;
-        break;
-    }
-
-    if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
-    if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
-    return 0;
-  });
 
   // 제한형 페이지 네이션
   function getPaginationItems(
@@ -511,10 +448,12 @@ export default function OrdersClient() {
     setCustomerTypeFilter("all");
     setCancelFilter("all");
     setSelectedDate(undefined);
+    setSortBy("date");
+    setSortDirection("desc");
   };
 
   // 정렬 헤더 클릭 핸들러
-  const handleSort = (key: "customer" | "date" | "total") => {
+  const handleSort = (key: "date" | "total") => {
     if (sortBy === key) {
       setSortDirection((dir) => (dir === "asc" ? "desc" : "asc"));
     } else {
@@ -776,24 +715,7 @@ export default function OrdersClient() {
                 <TableHead className={cn(thClasses, "w-[140px]")}>
                   주문 ID
                 </TableHead>
-                <TableHead
-                  onClick={() => handleSort("customer")}
-                  className={cn(
-                    thClasses,
-                    "text-center cursor-pointer select-none transition-colors hover:text-primary",
-                    sortBy === "customer" && "text-primary",
-                  )}
-                >
-                  고객
-                  <ChevronDown
-                    className={cn(
-                      "inline ml-1 w-3 h-3 text-muted-foreground transition-transform",
-                      sortBy === "customer" &&
-                        sortDirection === "desc" &&
-                        "rotate-180",
-                    )}
-                  />
-                </TableHead>
+                <TableHead className={cn(thClasses, "text-center")}>고객</TableHead>
                 <TableHead className={cn(thClasses, "w-36")}>
                   <div className="flex items-center justify-center gap-2">
                     <span
@@ -903,14 +825,8 @@ export default function OrdersClient() {
                     />
                   </TableCell>
                 </TableRow>
-              ) : sortedOrders.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={10} className={tdClasses}>
-                    검색 결과가 없습니다.
-                  </TableCell>
-                </TableRow>
               ) : (
-                groupLinkedOrders(sortedOrders).map((group, groupIdx) => {
+                groupLinkedOrders(orders).map((group, groupIdx) => {
                   // 이 그룹이 "상품 주문 + 교체서비스 신청서" 묶음인지 체크
                   const hasStringingAppInGroup = group.some(
                     (o) => o.__type === "stringing_application",
