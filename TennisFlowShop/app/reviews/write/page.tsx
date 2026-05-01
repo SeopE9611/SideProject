@@ -1327,14 +1327,7 @@ export default function ReviewWritePage() {
                             type="button"
                             onClick={() =>
                               confirmLeaveIfDirty(() => {
-                                if (mode === "product" && resolvedProductId) {
-                                  router.replace(
-                                    currentMeta?.href ??
-                                      `/products/${resolvedProductId}`,
-                                  );
-                                  return;
-                                }
-                                router.replace("/services");
+                                router.replace("/mypage?tab=orders");
                               })
                             }
                             className="underline underline-offset-2 hover:opacity-80 font-medium"
