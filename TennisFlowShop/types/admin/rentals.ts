@@ -13,6 +13,7 @@ export type AdminRentalShippingFilter =
   | "both-set";
 
 export interface AdminRentalsListRequestDto {
+  q: string;
   page: number;
   pageSize: number;
   pay: AdminRentalPaymentFilter;
@@ -21,6 +22,7 @@ export interface AdminRentalsListRequestDto {
   brand: string;
   from: string;
   to: string;
+  /** server allowlist: createdAt | -createdAt | total | -total */
   sort: string;
 }
 
