@@ -1638,12 +1638,6 @@ export default function CheckoutPage() {
                           }}
                         />
                       )}
-
-                      {paymentMethod === "nicepay" && nicePaymentsEnabled && !isZeroPayableAmount ? (
-                        <div className="space-y-3">
-                          <p className="text-sm text-foreground/80">Nice 인증결제창에서 인증을 마치면 서버 승인 후 주문이 생성됩니다.</p>
-                        </div>
-                      ) : null}
                     </div>
                   </CardContent>
                 </Card>
