@@ -4,7 +4,6 @@ import NiceCheckoutButton from "@/app/checkout/NiceCheckoutButton";
 import CheckoutStringingRuntimeBridge from "@/app/checkout/_components/CheckoutStringingRuntimeBridge";
 import type { StringingApplicationInput } from "@/app/features/stringing-applications/api/submit-core";
 import type useCheckoutStringingServiceAdapter from "@/app/features/stringing-applications/hooks/useCheckoutStringingServiceAdapter";
-import { collectionMethodLabel } from "@/app/features/stringing-applications/lib/fulfillment-labels";
 import { applyPackageToServiceFee, resolvePackageUsage, type PackageUsageResult } from "@/app/features/stringing-applications/lib/package-pricing";
 import { useAuthStore, type User } from "@/app/store/authStore";
 import { useBuyNowStore } from "@/app/store/buyNowStore";
@@ -31,7 +30,7 @@ import { ENABLE_STRING_STANDALONE_ORDER } from "@/lib/orders/string-standalone-p
 import { isNicePaymentsEnabled } from "@/lib/payments/provider-flags";
 import { calcOrderShippingFeeWithBundlePolicy, normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { cn } from "@/lib/utils";
-import { AlertTriangle, Building2, CheckCircle, CreditCard, Home, Loader2, Mail, MapPin, MessageSquare, Package, Phone, Shield, Truck, UserIcon } from "lucide-react";
+import { AlertTriangle, Building2, Check, CheckCircle, CreditCard, Home, Loader2, Mail, MapPin, MessageSquare, Package, Phone, Shield, Truck, UserIcon } from "lucide-react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
@@ -403,14 +402,6 @@ export default function CheckoutPage() {
    *   체크박스를 잠그고, 별도 링크로만 '상품만 결제' 전환을 제공하는 편이 혼란이 적음
    */
   const lockServiceMode = entryServiceLock && !isBundleCheckout;
-  const isServiceModeLocked = isBundleCheckout || lockServiceMode || isStringOnlyServiceFlow;
-
-  /**
-   *  체크박스 라벨 문구를 "상태"에 맞게 조정
-   * - lockServiceMode / isBundleCheckout에서 체크박스는 비활성화(=고정) 상태라
-   *   라벨도 "선택" 뉘앙스가 아니라 "고정" 뉘앙스로 맞춤
-   */
-  const withStringServiceLabel = isBundleCheckout ? "교체서비스 신청 포함 · 번들" : isStringOnlyServiceFlow ? "교체서비스 신청 포함 · 필수" : lockServiceMode ? "교체서비스 신청 포함 · 자동" : "교체서비스도 함께 신청";
 
   /**
    * 스텝퍼 Step1 문구
@@ -418,27 +409,6 @@ export default function CheckoutPage() {
    * - 그 외: 장바구니 기반 구성 후 결제(=구성 완료)
    */
   const stepperStep1Label = mode === "buynow" ? "스트링 선택" : "장바구니 구성";
-
-  /**
-   * '상품만 결제'로 전환 (서비스 모드 해제)
-   * - 초기 withService=1 자동 적용(useEffect)이 다시 켜지지 않도록 플래그를 확정하고,
-   * - URL에서 withService를 제거해 뒤로/새로고침에서도 "상품만 결제" 상태를 유지한다.
-   */
-  const switchToProductOnly = () => {
-    if (isStringOnlyServiceFlow) return;
-    // 1) UI 상태: 서비스 OFF
-    setWithStringService(false);
-    // 1-1) '서비스 포함 모드 잠금'도 해제(체크박스 다시 조작 가능)
-    setEntryServiceLock(false);
-
-    // 2) URL 기반 초기 자동 적용(useEffect)이 다시 켜지지 않도록 확정
-    initFlagsRef.current.withServiceApplied = true;
-
-    // 3) URL에서 withService 제거(새로고침/뒤로가기에도 유지)
-    const url = new URL(window.location.href);
-    url.searchParams.delete("withService");
-    window.history.replaceState(window.history.state, "", `${url.pathname}${url.search}${url.hash}`);
-  };
 
   useEffect(() => {
     if (!isStringOnlyServiceFlow) return;
@@ -627,13 +597,6 @@ export default function CheckoutPage() {
   // (UI에서는 COURIER_VISIT 선택지를 숨김)
   type ServicePickup = "SELF_SEND" | "COURIER_VISIT" | "SHOP_VISIT";
   const [servicePickupMethod, setServicePickupMethod] = useState<ServicePickup>("SELF_SEND");
-
-  // 안내문구(배송 방법에 따라 분기)
-  const serviceHelpText = isStringOnlyServiceFlow
-    ? "스트링 단품 주문은 현재 비활성화되어 교체 서비스 포함으로만 접수할 수 있어요."
-    : deliveryMethod === "방문수령"
-      ? "매장 방문 시 현장에서 바로 진행돼요. 보통 15~20분 정도 걸려요."
-      : "택배로 받으시면, 수거/반송 방식으로 장착 서비스를 진행해요.";
 
   // 동기화: 방문수령이면 SHOP_VISIT 고정, 택배면 기본 SELF_SEND
   useEffect(() => {
@@ -1291,7 +1254,7 @@ export default function CheckoutPage() {
                     </div>
                   </div>
                   <CardContent className="p-5 bp-sm:p-6 space-y-5">
-                    <RadioGroup defaultValue="택배수령" onValueChange={(value) => setDeliveryMethod(value as "택배수령" | "방문수령")} className="grid gap-3">
+                    <RadioGroup value={deliveryMethod} onValueChange={(value) => setDeliveryMethod(value as "택배수령" | "방문수령")} className="grid gap-3">
                       <label
                         htmlFor="택배수령"
                         className={cn(
@@ -1310,10 +1273,10 @@ export default function CheckoutPage() {
                         <div
                           className={cn(
                             "h-5 w-5 rounded-full border-2 flex items-center justify-center transition-[background-color,border-color,box-shadow,color,opacity]",
-                            deliveryMethod === "택배수령" ? "border-primary bg-primary" : "border-border",
+                            deliveryMethod === "택배수령" ? "border-primary bg-primary text-primary-foreground" : "border-border bg-transparent",
                           )}
                         >
-                          {deliveryMethod === "택배수령" && <CheckCircle className="h-3 w-3 text-success" />}
+                          {deliveryMethod === "택배수령" && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
                         </div>
                       </label>
                       <label
@@ -1334,83 +1297,13 @@ export default function CheckoutPage() {
                         <div
                           className={cn(
                             "h-5 w-5 rounded-full border-2 flex items-center justify-center transition-[background-color,border-color,box-shadow,color,opacity]",
-                            deliveryMethod === "방문수령" ? "border-primary bg-primary" : "border-border",
+                            deliveryMethod === "방문수령" ? "border-primary bg-primary text-primary-foreground" : "border-border bg-transparent",
                           )}
                         >
-                          {deliveryMethod === "방문수령" && <CheckCircle className="h-3 w-3 text-primary" />}
+                          {deliveryMethod === "방문수령" && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
                         </div>
                       </label>
                     </RadioGroup>
-
-                    <div className="rounded-xl border border-border bg-secondary/40 p-4">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <Checkbox
-                          id="withStringService"
-                          checked={withStringService}
-                          disabled={isServiceModeLocked}
-                          onCheckedChange={(checked) => {
-                            if (isServiceModeLocked) return;
-                            const next = !!checked;
-                            setWithStringService(next);
-
-                            // 사용자가 OFF로 내리면 URL에서 withService 제거
-                            if (!next) {
-                              const url = new URL(window.location.href);
-                              url.searchParams.delete("withService");
-                              window.history.replaceState(window.history.state, "", `${url.pathname}${url.search}${url.hash}`);
-                            }
-                          }}
-                        />
-                        <Label htmlFor="withStringService" className="font-medium text-foreground">
-                          {withStringServiceLabel}
-                        </Label>
-                      </div>
-                      <p className="text-sm text-foreground ml-6">{serviceHelpText}</p>
-                      {(lockServiceMode || isStringOnlyServiceFlow) && (
-                        <div className="ml-6 mt-2 flex flex-wrap items-center gap-2 text-sm text-foreground/80">
-                          <span>
-                            지금은 <span className="font-semibold text-foreground">교체 서비스 포함</span> 모드예요. 결제와 함께 교체 서비스 정보가 접수되며 장착 정보와 추가 요청도 현재 주문에 함께 저장됩니다.
-                          </span>
-
-                          {!isStringOnlyServiceFlow && (
-                            <button type="button" className="underline underline-offset-2 hover:text-foreground" onClick={switchToProductOnly}>
-                              상품만 결제할래요
-                            </button>
-                          )}
-                        </div>
-                      )}
-                      {isBundleCheckout && (
-                        <p className="text-sm text-foreground ml-6 mt-1">
-                          번들 주문은 장착 서비스 포함이 <span className="font-semibold">고정</span>이며, 번들 수량은 <span className="font-semibold">{bundleQty}개</span>로 <span className="font-semibold">고정</span>됩니다. 수량 변경은{" "}
-                          <span className="font-semibold">스트링 선택 단계</span>
-                          에서만 가능합니다.
-                        </p>
-                      )}
-                      {/* 서비스 ON일 때만 세부 방식 표시 */}
-                      <div className={cn("transition-[max-height,opacity,margin] duration-300 ease-in-out overflow-hidden", withStringService ? "opacity-100 max-h-[300px] mt-3" : "opacity-0 max-h-0")}>
-                        {withStringService &&
-                          (deliveryMethod === "방문수령" ? (
-                            // 방문 수령: 매장 방문 접수 고정(선택 불가 안내)
-                            <div className="ml-7 mt-2 text-sm">
-                              <span className="rounded border border-border bg-card px-2 py-1 text-foreground">{collectionMethodLabel("visit")}로 진행됩니다.</span>
-                            </div>
-                          ) : (
-                            // 택배 수령: **선택지는 자가 발송만** 노출
-                            <div className="ml-7 mt-2 grid gap-2 text-sm">
-                              <label className="flex items-center gap-2 text-base bp-sm:text-lg">
-                                <input type="radio" name="pickup" checked={servicePickupMethod === "SELF_SEND"} onChange={() => setServicePickupMethod("SELF_SEND")} />
-                                <span>자가 발송 (편의점/우체국 등 직접 발송)</span>
-                              </label>
-                              {/* 기사 방문 수거 옵션은 잠정 비노출
- <label className="flex items-center gap-2 text-base bp-sm:text-lg">
- <input type="radio" name="pickup" checked={servicePickupMethod === 'COURIER_VISIT'} onChange={() => setServicePickupMethod('COURIER_VISIT')} />
- <span>택배 기사 방문 수거 (+3,000원 예상)</span>
- </label>
- */}
-                            </div>
-                          ))}
-                      </div>
-                    </div>
                   </CardContent>
                 </Card>
 
