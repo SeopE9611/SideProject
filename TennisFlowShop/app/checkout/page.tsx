@@ -242,7 +242,9 @@ function FinalPaymentConfirmCard({
         <div className="space-y-2 rounded-xl border border-border/70 bg-secondary/20 p-3 text-xs text-foreground">
           <p>결제수단: {paymentMethod === "bank-transfer" ? "무통장입금" : "NICE 카드/간편결제"}</p>
           {paymentMethod === "bank-transfer" ? (
-            <p className="text-muted-foreground">입금 계좌: {bankLabelMap[selectedBank as keyof typeof bankLabelMap]?.account ?? selectedBank} / 입금자명: {depositor.trim() || "미입력"}</p>
+            <p className="text-muted-foreground">
+              입금 계좌: {bankLabelMap[selectedBank as keyof typeof bankLabelMap]?.account ?? selectedBank} / 입금자명: {depositor.trim() || "미입력"}
+            </p>
           ) : (
             <p className="text-muted-foreground">아래 버튼 클릭 후 NICE 인증 결제창에서 결제를 완료해주세요.</p>
           )}
@@ -1144,7 +1146,7 @@ export default function CheckoutPage() {
                   </div>
                 </div>
 
-                <p className="mt-3 text-sm text-foreground/80 max-w-xl">결제와 함께 교체서비스 신청이 접수되며, 별도 신청서 작성 없이 현재 주문에 포함됩니다.</p>
+                <p className="mt-3 max-w-2xl break-keep text-sm leading-relaxed text-foreground/80">결제와 함께 교체서비스 신청이 접수되며, 별도 신청서 작성 없이 현재 주문에 포함됩니다.</p>
               </nav>
             )}
 
@@ -1167,23 +1169,21 @@ export default function CheckoutPage() {
 
         <SiteContainer variant="wide" className="py-6 bp-sm:py-10">
           <div className="mx-auto w-full max-w-6xl">
-          {isInitialLoading ? (
-            <div className="space-y-6">
+            {isInitialLoading ? (
+              <div className="space-y-6">
                 <Skeleton className="h-20 w-full rounded-2xl" />
                 <Skeleton className="h-64 w-full rounded-2xl" />
                 <Skeleton className="h-80 w-full rounded-2xl" />
                 <Skeleton className="h-96 w-full rounded-2xl" />
-            </div>
-          ) : (
-            <div className={cn("space-y-6", isCheckoutSubmitting && "pointer-events-none")} aria-busy={isCheckoutSubmitting}>
+              </div>
+            ) : (
+              <div className={cn("space-y-6", isCheckoutSubmitting && "pointer-events-none")} aria-busy={isCheckoutSubmitting}>
                 {/* 이탈 경고(고정 노출) */}
                 <div className="flex items-start gap-3 rounded-2xl border border-warning/30 bg-warning/5 px-4 py-3 text-sm text-foreground shadow-sm">
                   <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-warning/15">
                     <AlertTriangle className="h-4 w-4 text-warning" />
                   </div>
-                  <p className="leading-relaxed pt-1">
-                    입력한 내용은 결제 완료 전까지 유지되며, 새로고침하거나 다른 페이지로 이동하면 일부 정보가 초기화될 수 있어요.
-                  </p>
+                  <p className="leading-relaxed pt-1">입력한 내용은 결제 완료 전까지 유지되며, 새로고침하거나 다른 페이지로 이동하면 일부 정보가 초기화될 수 있어요.</p>
                 </div>
                 {/* 주문 상품 */}
                 <Card className="group border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md hover:ring-border">
@@ -1307,8 +1307,13 @@ export default function CheckoutPage() {
                           <div className="font-semibold text-sm bp-sm:text-base">택배 발송/수령</div>
                           <div className="text-xs bp-sm:text-sm text-foreground/80 mt-0.5">자택 또는 지정 장소로 배송</div>
                         </div>
-                        <div className={cn("h-5 w-5 rounded-full border-2 flex items-center justify-center transition-[background-color,border-color,box-shadow,color,opacity]", deliveryMethod === "택배수령" ? "border-primary bg-primary" : "border-border")}>
-                          {deliveryMethod === "택배수령" && <CheckCircle className="h-3 w-3 text-primary" />}
+                        <div
+                          className={cn(
+                            "h-5 w-5 rounded-full border-2 flex items-center justify-center transition-[background-color,border-color,box-shadow,color,opacity]",
+                            deliveryMethod === "택배수령" ? "border-primary bg-primary" : "border-border",
+                          )}
+                        >
+                          {deliveryMethod === "택배수령" && <CheckCircle className="h-3 w-3 text-success" />}
                         </div>
                       </label>
                       <label
@@ -1326,7 +1331,12 @@ export default function CheckoutPage() {
                           <div className="font-semibold text-sm bp-sm:text-base">오프라인 매장 방문</div>
                           <div className="text-xs bp-sm:text-sm text-foreground/80 mt-0.5">도깨비테니스 샵에서 직접 수령</div>
                         </div>
-                        <div className={cn("h-5 w-5 rounded-full border-2 flex items-center justify-center transition-[background-color,border-color,box-shadow,color,opacity]", deliveryMethod === "방문수령" ? "border-primary bg-primary" : "border-border")}>
+                        <div
+                          className={cn(
+                            "h-5 w-5 rounded-full border-2 flex items-center justify-center transition-[background-color,border-color,box-shadow,color,opacity]",
+                            deliveryMethod === "방문수령" ? "border-primary bg-primary" : "border-border",
+                          )}
+                        >
                           {deliveryMethod === "방문수령" && <CheckCircle className="h-3 w-3 text-primary" />}
                         </div>
                       </label>
@@ -1762,7 +1772,10 @@ export default function CheckoutPage() {
                     <div className="space-y-5">
                       <label
                         htmlFor="agree-all"
-                        className={cn("flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-[background-color,border-color,box-shadow,color,opacity] duration-200", agreeAll ? "border-primary bg-primary/5" : "border-border/50 hover:border-border hover:bg-secondary/30")}
+                        className={cn(
+                          "flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-[background-color,border-color,box-shadow,color,opacity] duration-200",
+                          agreeAll ? "border-primary bg-primary/5" : "border-border/50 hover:border-border hover:bg-secondary/30",
+                        )}
                       >
                         <Checkbox
                           id="agree-all"
@@ -1805,7 +1818,10 @@ export default function CheckoutPage() {
                         ].map((item) => (
                           <div
                             key={item.id}
-                            className={cn("flex items-center justify-between rounded-xl border p-3 bp-sm:p-4 transition-[background-color,border-color,box-shadow,color,opacity] duration-200", item.state ? "border-primary/30 bg-primary/5" : "border-border/40 bg-secondary/20 hover:bg-secondary/40")}
+                            className={cn(
+                              "flex items-center justify-between rounded-xl border p-3 bp-sm:p-4 transition-[background-color,border-color,box-shadow,color,opacity] duration-200",
+                              item.state ? "border-primary/30 bg-primary/5" : "border-border/40 bg-secondary/20 hover:bg-secondary/40",
+                            )}
                           >
                             <label htmlFor={item.id} className="flex items-center gap-3 cursor-pointer flex-1">
                               <Checkbox
@@ -1951,8 +1967,8 @@ export default function CheckoutPage() {
                     </div>
                   )}
                 </Card>
-            </div>
-          )}
+              </div>
+            )}
           </div>
         </SiteContainer>
       </div>
