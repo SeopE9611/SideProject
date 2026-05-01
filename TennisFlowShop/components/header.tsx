@@ -504,7 +504,7 @@ const Header = () => {
                       router.push("/services/apply");
                     }}
                   >
-                    <span className="font-semibold text-primary">장착 서비스 즉시 예약</span>
+                    <span className="font-semibold text-primary">교체서비스 시작하기</span>
                     <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200" />
                   </Button>
 
@@ -866,7 +866,7 @@ const Header = () => {
                   href="/services/apply"
                   className="hidden bp-lg:inline-flex h-10 shrink-0 items-center justify-center rounded-xl border border-border bg-secondary/70 px-4 text-sm font-bold text-foreground shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] hover:bg-secondary whitespace-nowrap"
                 >
-                  장착 서비스 즉시 예약
+                  교체서비스 시작하기
                 </Link>
 
                 {SHOW_DESKTOP_HEADER_NAV ? (

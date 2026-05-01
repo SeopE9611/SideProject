@@ -102,7 +102,7 @@ const SLIDES = [
     img: "dokkaebibanner.png",
     alt: "서비스",
     href: "/services",
-    caption: "장착 서비스 예약",
+    caption: "교체서비스 시작하기",
   },
   {
     img: "dokkaebibanner.png",
@@ -508,8 +508,8 @@ const premiumItems: HItem[] = useMemo(
                 <Wrench className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
               </div>
               <div className="text-center">
-                <h3 className="text-sm bp-sm:text-base font-semibold text-foreground">교체 서비스 신청</h3>
-                <p className="mt-1 bp-sm:mt-1.5 text-sm line-clamp-2 text-foreground/80">라켓/스트링 선택 후 한 번에</p>
+                <h3 className="text-sm bp-sm:text-base font-semibold text-foreground">교체서비스 시작하기</h3>
+                <p className="mt-1 bp-sm:mt-1.5 text-sm line-clamp-2 text-foreground/80">내 상황에 맞는 신청 방식 선택</p>
               </div>
             </Link>
 
@@ -607,8 +607,8 @@ const premiumItems: HItem[] = useMemo(
                   </div>
                   <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-foreground text-background flex items-center justify-center text-xs font-bold">1</div>
                 </div>
-                <h3 className="mb-1 bp-sm:mb-1.5 text-sm bp-sm:text-base font-semibold text-foreground">신청서 작성</h3>
-                <p className="text-sm text-foreground/80">라켓/스트링/옵션 선택</p>
+                <h3 className="mb-1 bp-sm:mb-1.5 text-sm bp-sm:text-base font-semibold text-foreground">신청 방식 선택</h3>
+                <p className="text-sm text-foreground/80">스트링 구매·라켓 구매/대여·보유 장비 중 선택</p>
               </div>
               <div className={processStepSurfaceClass}>
                 <div className="relative mb-3 bp-sm:mb-4">
@@ -647,7 +647,7 @@ const premiumItems: HItem[] = useMemo(
               <Button asChild variant="default" size="tall" className="px-6 bp-sm:px-8 text-sm bp-sm:text-base">
                 <Link href="/services/apply">
                   <Wrench className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
-                  지금 신청하기
+                  교체서비스 시작하기
                 </Link>
               </Button>
             </div>
