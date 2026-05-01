@@ -1730,10 +1730,10 @@ export default function StringServiceApplyPage() {
           {/* Section Header */}
           <div className="text-center mb-8 bp-sm:mb-10">
             <h2 className="text-xl bp-sm:text-2xl font-semibold text-foreground">
-              교체서비스 신청 방법을 선택해주세요
+              어떤 방식으로 교체서비스를 신청하시겠어요?
             </h2>
             <p className="mt-2 text-muted-foreground text-sm bp-sm:text-base">
-              처음 신청이라면 스트링 또는 라켓을 먼저 고르는 흐름을 추천해요.
+              상황에 맞는 신청 방식을 선택하면 필요한 정보만 이어서 입력할 수 있습니다.
               이미 주문/대여 이력이 있다면 아래 내역에서 이어서 진행할 수
               있어요.
             </p>
@@ -1762,8 +1762,7 @@ export default function StringServiceApplyPage() {
                 스트링도 함께 구매하고 신청
               </h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                스트링을 고른 뒤 체크아웃에서 장착 서비스 신청과 결제를 한
-                번에 진행해요.
+                새 스트링을 고른 뒤 교체서비스까지 한 번에 신청합니다.
               </p>
 
               {/* Arrow indicator */}
@@ -1799,8 +1798,7 @@ export default function StringServiceApplyPage() {
                 라켓 구매/대여와 함께 신청
               </h3>
               <p className="text-sm text-muted-foreground leading-relaxed mb-5">
-                라켓을 먼저 고른 뒤 스트링 선택과 장착 신청까지 이어서
-                진행해요.
+                라켓 구매 또는 대여 흐름에서 스트링 선택과 교체서비스를 함께 진행합니다.
               </p>
 
               {/* Action Buttons */}
@@ -1843,8 +1841,7 @@ export default function StringServiceApplyPage() {
                 보유 라켓/보유 스트링으로 신청
               </h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                이미 가지고 있는 라켓과 스트링이 있다면 신청서만 작성할 수
-                있어요.
+                이미 가지고 있는 라켓이나 스트링으로 교체서비스를 신청합니다.
               </p>
               <p className="mt-1 text-xs text-primary">
                 필요한 비용은 신청 내용 확인 후 안내됩니다.
@@ -1852,7 +1849,7 @@ export default function StringServiceApplyPage() {
 
               {/* Arrow indicator */}
               <div className="mt-4 flex items-center text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">
-                <span>신청서 작성하기</span>
+                <span>보유 장비로 신청하기</span>
                 <svg
                   className="ml-1.5 w-4 h-4 group-hover:translate-x-1 transition-transform"
                   fill="none"

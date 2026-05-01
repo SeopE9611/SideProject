@@ -183,9 +183,9 @@ export default async function ServicesPage() {
               <div className="bg-card border-b border-border/60 p-6 md:p-8 text-center text-foreground">
                 <h2 className="font-bold text-3xl sm:text-4xl mb-4">예약 안내</h2>
                 <p className="text-xl text-muted-foreground">
-                  스트링 장착 서비스는 예약제로 운영됩니다.
+                  교체서비스는 신청 후 접수/확인 순서로 진행됩니다.
                   <br />
-                  아래 방법을 통해 편리하게 예약해 주세요.
+                  아래 방식 중 내 상황에 맞는 흐름으로 시작해 주세요.
                 </p>
               </div>
 
@@ -212,7 +212,7 @@ export default async function ServicesPage() {
                     <Button variant="default" className="w-full" asChild>
                       <Link href="/services/apply">
                         <Calendar className="w-4 h-4 mr-2" />
-                        교체 신청하러 가기
+                        신청 방식 선택하기
                       </Link>
                     </Button>
                   </div>
