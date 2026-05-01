@@ -229,8 +229,7 @@ export default function AdminRentalsClient() {
     rentalId: string;
   }>(null);
   const [status, setStatus] = useState<string>("");
-  const [brand, setBrand] = useState<string>("");
-  const [from, setFrom] = useState<string>("");
+    const [from, setFrom] = useState<string>("");
   const [to, setTo] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -248,10 +247,8 @@ export default function AdminRentalsClient() {
       : "all",
   );
   const [page, setPage] = useState(1);
-  const [sortBy, setSortBy] = useState<"customer" | "date" | "total" | null>(
-    null,
-  );
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [sortBy, setSortBy] = useState<"date" | "total">("date");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const pageSize = 20;
   // 쿼리 → 상태 1회 동기화(직접 새로고침 대비)
   /** URL 쿼리스트링을 읽어 현재 화면의 필터 상태로 반영 */
@@ -268,11 +265,7 @@ export default function AdminRentalsClient() {
     const fromParam = get("from");
     const toParam = get("to");
     const pageParam = Number(searchParams.get("page") ?? 1);
-    const sortByParam =
-      (searchParams.get("sortBy") as "customer" | "date" | "total" | null) ??
-      null;
-    const orderParam =
-      (searchParams.get("order") as "asc" | "desc" | null) ?? null;
+    const sortParam = searchParams.get("sort") ?? "";
 
     if (queryText) setSearchTerm(queryText);
     if (statusParam) setStatus(statusParam);
@@ -286,8 +279,19 @@ export default function AdminRentalsClient() {
     if (fromParam) setFrom(fromParam);
     if (toParam) setTo(toParam);
     if (!Number.isNaN(pageParam) && pageParam > 0) setPage(pageParam);
-    if (sortByParam) setSortBy(sortByParam);
-    if (orderParam) setSortDirection(orderParam);
+    if (sortParam === "createdAt") {
+      setSortBy("date");
+      setSortDirection("asc");
+    } else if (sortParam === "-createdAt") {
+      setSortBy("date");
+      setSortDirection("desc");
+    } else if (sortParam === "total") {
+      setSortBy("total");
+      setSortDirection("asc");
+    } else if (sortParam === "-total") {
+      setSortBy("total");
+      setSortDirection("desc");
+    }
   }
 
   useEffect(() => {
@@ -299,8 +303,18 @@ export default function AdminRentalsClient() {
   if (shipFilter !== "all") qs.set("ship", shipFilter);
   if (status) qs.set("status", status);
 
+  if (searchTerm.trim()) qs.set("q", searchTerm.trim());
   if (from) qs.set("from", from);
   if (to) qs.set("to", to);
+  const sort =
+    sortBy === "date"
+      ? sortDirection === "asc"
+        ? "createdAt"
+        : "-createdAt"
+      : sortDirection === "asc"
+        ? "total"
+        : "-total";
+  qs.set("sort", sort);
   function formatYMD(d: Date) {
     const y = d.getFullYear();
     const m = String(d.getMonth() + 1).padStart(2, "0");
@@ -353,8 +367,7 @@ export default function AdminRentalsClient() {
     setParam("from", from);
     setParam("to", to);
     setParam("page", page === 1 ? undefined : page);
-    setParam("sortBy", sortBy ?? undefined);
-    setParam("order", sortDirection ?? undefined);
+    setParam("sort", sort);
 
     router.replace(
       url.pathname +
@@ -366,14 +379,13 @@ export default function AdminRentalsClient() {
   function resetAllFiltersAndURL() {
     setSearchTerm("");
     setStatus("");
-    setBrand(""); // 사용 중이면 유지, 아니면 제거해도 무방
     setFrom("");
     setTo("");
     setPayFilter("all");
     setShipFilter("all");
     setPage(1);
-    setSortBy(null);
-    setSortDirection("asc");
+    setSortBy("date");
+    setSortDirection("desc");
     router.replace(pathname); // 쿼리 전부 제거
   }
 
@@ -415,67 +427,20 @@ export default function AdminRentalsClient() {
     if (commonErrorMessage) showErrorToast(commonErrorMessage);
   }, [commonErrorMessage]);
 
-  const filteredRentals = (data?.items ?? []).filter((rental) => {
-    const searchMatch =
-      rental.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      rental.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      rental.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      rental.customer?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      rental.customer?.email.toLowerCase().includes(searchTerm.toLowerCase());
-    return searchMatch;
-  });
+  const rentals = data?.items ?? [];
 
-  const viewItems = (data?.items ?? []).filter((r) => {
-    const pay = derivePaymentStatus(r);
-    const ship = deriveShippingStatus(r);
-    const okPay = payFilter === "all" ? true : payFilter === pay;
-    const okShip = shipFilter === "all" ? true : shipFilter === ship;
-    // 기존 검색어 필터와 결합
-    const q = searchTerm.toLowerCase();
-    const searchMatch =
-      (r.id || "").toLowerCase().includes(q) ||
-      (r.stringingApplicationId || "").toLowerCase().includes(q) ||
-      (r.brand || "").toLowerCase().includes(q) ||
-      (r.model || "").toLowerCase().includes(q) ||
-      (r.customer?.name || "").toLowerCase().includes(q) ||
-      (r.customer?.email || "").toLowerCase().includes(q);
-
-    return okPay && okShip && searchMatch;
-  });
-
-  const sortedRentals = [...viewItems].sort((a, b) => {
-    if (!sortBy) return 0;
-    let aValue: string | number = "";
-    let bValue: string | number = "";
-
-    switch (sortBy) {
-      case "customer":
-        aValue = (a.customer?.name || "").toLowerCase();
-        bValue = (b.customer?.name || "").toLowerCase();
-        break;
-      case "date":
-        aValue = new Date(a.createdAt || 0).getTime();
-        bValue = new Date(b.createdAt || 0).getTime();
-        break;
-      case "total":
-        aValue = a.amount.total;
-        bValue = b.amount.total;
-        break;
-    }
-
-    if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
-    if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
-    return 0;
-  });
-
-  const hasSourceItems = hasResolvedData && (data?.items.length ?? 0) > 0;
   const shouldShowActualEmpty =
     hasResolvedData && !hasDataError && (data?.items.length ?? 0) === 0;
   const shouldShowSearchEmpty =
     hasResolvedData &&
     !hasDataError &&
-    hasSourceItems &&
-    sortedRentals.length === 0;
+    (Boolean(searchTerm.trim()) ||
+      Boolean(status) ||
+      payFilter !== "all" ||
+      shipFilter !== "all" ||
+      Boolean(from) ||
+      Boolean(to)) &&
+    (data?.items.length ?? 0) === 0;
 
   const markRefund = async (id: string, mark: boolean) => {
     if (busyId) return;
@@ -524,24 +489,7 @@ export default function AdminRentalsClient() {
     if (result) mutate();
   };
 
-  const resetFilters = () => {
-    setSearchTerm("");
-    setStatus("");
-    setBrand("");
-    setFrom("");
-    setTo("");
-    setPayFilter("all");
-    setShipFilter("all");
-    const u = new URL(window.location.href);
-    u.searchParams.delete("pay");
-    u.searchParams.delete("ship");
-    router.replace(
-      u.pathname +
-        (u.searchParams.toString() ? "?" + u.searchParams.toString() : ""),
-    );
-  };
-
-  const handleSort = (key: "customer" | "date" | "total") => {
+  const handleSort = (key: "date" | "total") => {
     if (sortBy === key) {
       setSortDirection((dir) => (dir === "asc" ? "desc" : "asc"));
     } else {
@@ -718,9 +666,8 @@ export default function AdminRentalsClient() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">결제(전체)</SelectItem>
-                  <SelectItem value="pending">결제대기</SelectItem>
+                  <SelectItem value="unpaid">결제대기</SelectItem>
                   <SelectItem value="paid">결제완료</SelectItem>
-                  <SelectItem value="refunded">환불</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -869,23 +816,8 @@ export default function AdminRentalsClient() {
                 <TableHead className={cn(thClasses, "w-[140px]")}>
                   대여 ID
                 </TableHead>
-                <TableHead
-                  onClick={() => handleSort("customer")}
-                  className={cn(
-                    thClasses,
-                    "text-center cursor-pointer select-none transition-colors hover:text-primary",
-                    sortBy === "customer" && "text-primary",
-                  )}
-                >
+                <TableHead className={cn(thClasses, "text-center")}>
                   고객
-                  <ChevronDown
-                    className={cn(
-                      "inline ml-1 w-3 h-3 text-muted-foreground transition-transform",
-                      sortBy === "customer" &&
-                        sortDirection === "desc" &&
-                        "rotate-180",
-                    )}
-                  />
                 </TableHead>
                 <TableHead className={cn(thClasses, "text-center")}>
                   라켓
@@ -975,7 +907,7 @@ export default function AdminRentalsClient() {
                   </TableCell>
                 </TableRow>
               ) : (
-                sortedRentals.map((r, idx) => {
+                rentals.map((r, idx) => {
                   const rid = r.id;
                   const kind = getKindBadge();
                   const svc = getServiceBadge(r);

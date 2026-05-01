@@ -87,6 +87,7 @@ function parseIntParam(
 }
 
 const querySchema = z.object({
+  q: z.string().default(""),
   pay: z.enum(["all", "paid", "unpaid"]).default("all"),
   ship: z
     .enum(["all", "outbound-set", "return-set", "both-set", "none"])
@@ -107,6 +108,7 @@ export async function GET(req: Request) {
 
   const sp = new URL(req.url).searchParams;
   const parsed = querySchema.parse({
+    q: sp.get("q") ?? "",
     pay: sp.get("pay") ?? "all",
     ship: sp.get("ship") ?? "all",
     page: parseIntParam(sp.get("page"), {
@@ -178,12 +180,46 @@ export async function GET(req: Request) {
     q.createdAt = createdAtCond;
   }
 
-  const sortKey =
-    parsed.sort.startsWith("-") || parsed.sort.startsWith("+")
-      ? parsed.sort.slice(1)
-      : parsed.sort;
-  const sortDir: 1 | -1 = parsed.sort.startsWith("-") ? -1 : 1;
-  const sort = { [sortKey]: sortDir } as Record<string, 1 | -1>;
+  const searchText = parsed.q.trim();
+  if (searchText) {
+    const escaped = searchText.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const regex = new RegExp(escaped, "i");
+    const searchOr: Filter<Document>[] = [
+      { brand: { $regex: regex } },
+      { model: { $regex: regex } },
+      { "guest.name": { $regex: regex } },
+      { "guest.email": { $regex: regex } },
+      { stringingApplicationId: { $regex: regex } },
+    ];
+
+    if (ObjectId.isValid(searchText)) {
+      const oid = new ObjectId(searchText);
+      searchOr.push({ _id: oid });
+      searchOr.push({ stringingApplicationId: oid });
+    }
+
+    const matchedUsers = await db
+      .collection("users")
+      .find({
+        $or: [{ name: { $regex: regex } }, { email: { $regex: regex } }],
+      })
+      .project({ _id: 1 })
+      .toArray();
+    const matchedUserIds = matchedUsers.map((u) => u._id).filter(Boolean);
+    if (matchedUserIds.length > 0) {
+      searchOr.push({ userId: { $in: matchedUserIds } });
+    }
+
+    q.$and = (q.$and ?? []).concat([{ $or: searchOr }]);
+  }
+
+  const sortAllowlist: Record<string, Record<string, 1 | -1>> = {
+    createdAt: { createdAt: 1 },
+    "-createdAt": { createdAt: -1 },
+    total: { "amount.total": 1 },
+    "-total": { "amount.total": -1 },
+  };
+  const sort = sortAllowlist[parsed.sort] ?? sortAllowlist["-createdAt"];
 
   const docs = await db
     .collection("rental_orders")
