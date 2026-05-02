@@ -111,7 +111,7 @@ export default function CheckoutStringingCompactEditor({ adapter }: Props) {
         >
           <span className="inline-flex items-center gap-2">
             <Settings2 className="h-4 w-4 text-primary/80" />
-            라켓별 교체서비스 상세 설정하기
+            라켓별 교체서비스 정보 설정하기
           </span>
           <span className={lineConfiguredDone ? "text-xs text-primary" : "text-xs text-warning"}>{lineConfiguredDone ? "설정 완료" : "설정 필요"}</span>
         </AccordionTrigger>
