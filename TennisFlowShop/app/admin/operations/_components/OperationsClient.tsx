@@ -8,6 +8,7 @@ import {
   ClipboardCheck,
   Copy,
   Eye,
+  Inbox,
   Link2,
   Search,
   Siren,
@@ -49,6 +50,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AsyncState from "@/components/system/AsyncState";
 import { opsKindLabel } from "@/lib/admin-ops-taxonomy";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
@@ -103,7 +105,7 @@ function amountMeaningText(item: OpItem) {
 const PAGE_COPY = {
   title: "운영 통합 센터",
   description:
-    "오늘 처리할 항목을 빠르게 고르고, 바로 액션할 수 있도록 정리한 화면입니다.",
+    "오늘 처리해야 할 주문·신청·대여 업무를 우선순위 기준으로 확인합니다.",
   dailyTodoTitle: "오늘 해야 할 일",
   dailyTodoLabels: {
     urgent: "긴급",
@@ -929,27 +931,25 @@ export default function OperationsClient() {
         />
       )}
       {/* 페이지 헤더 */}
-      <div className="mx-auto mb-4 max-w-[1480px] space-y-3">
-        <h1 className="text-3xl font-semibold tracking-normal lg:text-4xl">
-          {PAGE_COPY.title}
-        </h1>
-        <p className="text-xs text-muted-foreground lg:text-sm">
-          {PAGE_COPY.description}
-        </p>
-        <div className="flex flex-wrap items-center gap-2">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="h-7 px-2 text-xs"
-            onClick={() => setShowActionsGuide((prev) => !prev)}
-          >
-            {showActionsGuide ? "도움말 닫기" : "도움말 보기"}
-          </Button>
-          <p className="text-xs text-muted-foreground/90">
-            우선순위: 상태 → 시나리오 → 고객 → 제목 → 다음 처리
-          </p>
-        </div>
+      <div className="mx-auto max-w-[1480px]">
+        <AdminPageHeader
+          title={PAGE_COPY.title}
+          description={PAGE_COPY.description}
+          icon={Inbox}
+          scope="처리 필요 업무 중심"
+          helperText="주문·신청·대여의 연결 상태와 다음 액션을 함께 확인합니다."
+          actions={
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2 text-xs"
+              onClick={() => setShowActionsGuide((prev) => !prev)}
+            >
+              {showActionsGuide ? "도움말 닫기" : "도움말 보기"}
+            </Button>
+          }
+        />
 
         {showActionsGuide && (
           <div className="grid grid-cols-1 gap-1.5 rounded-lg border border-border/70 bg-muted/20 p-2 bp-sm:grid-cols-2 bp-lg:grid-cols-4">

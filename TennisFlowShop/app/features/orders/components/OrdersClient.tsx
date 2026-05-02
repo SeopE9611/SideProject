@@ -10,6 +10,7 @@ import ApplicationStatusBadge from "@/app/features/stringing-applications/compon
 import { useOrderStore } from "@/app/store/orderStore";
 import { useStringingStore } from "@/app/store/stringingStore";
 import { AdminBadgeRow } from "@/components/admin/AdminBadgeRow";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -72,6 +73,7 @@ import {
   Copy,
   Eye,
   MoreHorizontal,
+  PackageSearch,
   Search,
   Truck,
   X,
@@ -564,10 +566,14 @@ export default function OrdersClient() {
   return (
     <div className="container py-4 lg:py-5">
       {/* 제목 및 설명 */}
-      <div className="mx-auto mb-4 max-w-[1440px]">
-        <h1 className="text-4xl font-semibold tracking-normal">
-          주문·신청 관리
-        </h1>
+      <div className="mx-auto max-w-[1440px]">
+        <AdminPageHeader
+          title="주문·신청 관리"
+          description="상품 주문과 교체서비스 신청서를 검색하고 상태·결제·배송 정보를 관리합니다."
+          icon={PackageSearch}
+          scope="범위: 상품 주문 + 교체서비스 신청"
+          helperText="대여 주문은 /admin/rentals에서 별도로 관리합니다."
+        />
         <p className="mt-1 text-xs text-muted-foreground">
           {ADMIN_SCOPE_TEXT}. (통합건은 같은 색 테두리로 묶여 표시됩니다)
         </p>

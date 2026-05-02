@@ -39,8 +39,8 @@ export default function FinalRequestSection({
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-secondary mb-4">
           <CheckCircle className="h-8 w-8 text-foreground" />
         </div>
-        <h2 className="text-2xl font-bold mb-2">추가 요청</h2>
-        <p className="text-muted-foreground">추가 요청사항을 입력해주세요</p>
+        <h2 className="text-2xl font-bold mb-2">요청사항</h2>
+        <p className="text-muted-foreground">장착 관련 요청사항을 남겨주세요</p>
       </div>
 
       {/* 안내 배너: 주문/회원 기반일 때 */}
