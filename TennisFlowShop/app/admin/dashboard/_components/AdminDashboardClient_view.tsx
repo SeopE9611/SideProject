@@ -9,6 +9,7 @@ import { Area, AreaChart, Bar, CartesianGrid, Cell, Pie, PieChart, BarChart as R
 import useSWR from "swr";
 
 import AsyncState from "@/components/system/AsyncState";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -395,16 +396,19 @@ export default function AdminDashboardClient() {
   if (isLoading) {
     return (
       <div className="space-y-8 pb-8">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div className="space-y-1">
-            <h1 className="text-4xl font-bold tracking-normal">관리자 대시보드</h1>
-            <p className="text-sm text-muted-foreground">최근 운영 지표를 불러오는 중입니다.</p>
-          </div>
-          <Button variant="outline" disabled className="shrink-0">
-            <Activity className="mr-2 h-4 w-4" />
-            새로고침
-          </Button>
-        </div>
+        <AdminPageHeader
+          title="관리자 대시보드"
+          description="매출, 주문, 신청, 대여, 재고, 리뷰 상태를 한눈에 확인합니다."
+          icon={Activity}
+          scope="범위: 전체 운영 요약"
+          helperText="세부 처리는 운영 통합 센터와 각 관리 페이지에서 진행합니다."
+          actions={(
+            <Button variant="outline" disabled className="shrink-0">
+              <Activity className="mr-2 h-4 w-4" />
+              새로고침
+            </Button>
+          )}
+        />
 
         <section className="space-y-4">
           <div>
@@ -470,18 +474,19 @@ export default function AdminDashboardClient() {
 
   return (
     <div className="space-y-8 pb-8">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="space-y-1">
-          <h1 className="text-4xl font-bold tracking-normal">관리자 대시보드</h1>
-          <p className="text-sm text-muted-foreground">
-            최근 {data.series.days}일 데이터 · {data.series.fromYmd} ~ {data.series.toYmd}
-          </p>
-        </div>
-        <Button variant="outline" onClick={() => mutate()} className="shrink-0">
-          <Activity className="mr-2 h-4 w-4" />
-          새로고침
-        </Button>
-      </div>
+      <AdminPageHeader
+        title="관리자 대시보드"
+        description="매출, 주문, 신청, 대여, 재고, 리뷰 상태를 한눈에 확인합니다."
+        icon={Activity}
+        scope="범위: 전체 운영 요약"
+        helperText={`세부 처리는 운영 통합 센터와 각 관리 페이지에서 진행합니다. · 최근 ${data.series.days}일 (${data.series.fromYmd} ~ ${data.series.toYmd})`}
+        actions={(
+          <Button variant="outline" onClick={() => mutate()} className="shrink-0">
+            <Activity className="mr-2 h-4 w-4" />
+            새로고침
+          </Button>
+        )}
+      />
 
       <section className="space-y-4">
         <div>
