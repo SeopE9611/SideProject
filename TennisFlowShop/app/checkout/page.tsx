@@ -1468,64 +1468,6 @@ export default function CheckoutPage() {
                   </div>
                   <CardContent className="p-5 bp-sm:p-6">
                     <div className="space-y-6">
-                      {paymentMethod === "bank-transfer" && (
-                        <>
-                          <div className="space-y-3">
-                            <Label htmlFor="bank-account">입금 계좌 선택</Label>
-                            <Select value={selectedBank} onValueChange={setSelectedBank}>
-                              <SelectTrigger className="border-2 focus:border-border">
-                                <SelectValue placeholder="입금 계좌를 선택하세요" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="shinhan">
-                                  신한은행 {bankLabelMap.shinhan.account} (예금주: {bankLabelMap.shinhan.holder})
-                                </SelectItem>
-                                <SelectItem value="kookmin">
-                                  국민은행 {bankLabelMap.kookmin.account} (예금주: {bankLabelMap.kookmin.holder})
-                                </SelectItem>
-                                <SelectItem value="woori">
-                                  우리은행 {bankLabelMap.woori.account} (예금주: {bankLabelMap.woori.holder})
-                                </SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label htmlFor="depositor-name">입금자명</Label>
-                            <Input
-                              id="depositor-name"
-                              value={depositor}
-                              onChange={(e) => setDepositor(e.target.value)}
-                              onBlur={() => touchField("depositor")}
-                              placeholder="입금자명을 입력하세요"
-                              className={cn("border-2 focus:border-border transition-colors", showDepositorError && "border-destructive/30 focus:border-destructive/30")}
-                            />
-                            <div className="min-h-[16px]">{showDepositorError && <p className="text-xs text-destructive">{fieldErrors.depositor}</p>}</div>
-                          </div>
-
-                          <div className="bg-muted p-4 rounded-lg border border-border">
-                            <div className="flex items-center gap-2 mb-3">
-                              <Shield className="h-5 w-5 text-primary" />
-                              <p className="font-semibold text-foreground">무통장입금 안내</p>
-                            </div>
-                            <ul className="space-y-2 text-sm text-foreground">
-                              <li className="flex items-center gap-2 text-base bp-sm:text-lg">
-                                <CheckCircle className="h-4 w-4" />
-                                주문 후 24시간 이내에 입금해 주셔야 주문이 정상 처리됩니다.
-                              </li>
-                              <li className="flex items-center gap-2 text-base bp-sm:text-lg">
-                                <CheckCircle className="h-4 w-4" />
-                                입금자명이 주문자명과 다를 경우, 고객센터로 연락 부탁드립니다.
-                              </li>
-                              <li className="flex items-center gap-2 text-base bp-sm:text-lg">
-                                <CheckCircle className="h-4 w-4" />
-                                {needsShippingAddress ? "입금 확인 후 배송이 시작됩니다." : "입금 확인 후 매장 수령 준비가 시작됩니다."}
-                              </li>
-                            </ul>
-                          </div>
-                        </>
-                      )}
-
                       <div className="space-y-3">
                         <Label className="flex items-center gap-2">
                           <CreditCard className="h-4 w-4 text-primary" />
@@ -1643,6 +1585,64 @@ export default function CheckoutPage() {
                         </RadioGroup>
                         {nicePaymentsEnabled && isZeroPayableAmount && <p className="text-sm text-foreground/80">최종 결제금액이 0원인 경우 카드/간편결제를 사용할 수 없습니다.</p>}
                       </div>
+
+                      {paymentMethod === "bank-transfer" && (
+                        <>
+                          <div className="space-y-3">
+                            <Label htmlFor="bank-account">입금 계좌 선택</Label>
+                            <Select value={selectedBank} onValueChange={setSelectedBank}>
+                              <SelectTrigger className="border-2 focus:border-border">
+                                <SelectValue placeholder="입금 계좌를 선택하세요" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="shinhan">
+                                  신한은행 {bankLabelMap.shinhan.account} (예금주: {bankLabelMap.shinhan.holder})
+                                </SelectItem>
+                                <SelectItem value="kookmin">
+                                  국민은행 {bankLabelMap.kookmin.account} (예금주: {bankLabelMap.kookmin.holder})
+                                </SelectItem>
+                                <SelectItem value="woori">
+                                  우리은행 {bankLabelMap.woori.account} (예금주: {bankLabelMap.woori.holder})
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="depositor-name">입금자명</Label>
+                            <Input
+                              id="depositor-name"
+                              value={depositor}
+                              onChange={(e) => setDepositor(e.target.value)}
+                              onBlur={() => touchField("depositor")}
+                              placeholder="입금자명을 입력하세요"
+                              className={cn("border-2 focus:border-border transition-colors", showDepositorError && "border-destructive/30 focus:border-destructive/30")}
+                            />
+                            <div className="min-h-[16px]">{showDepositorError && <p className="text-xs text-destructive">{fieldErrors.depositor}</p>}</div>
+                          </div>
+
+                          <div className="bg-muted p-4 rounded-lg border border-border">
+                            <div className="flex items-center gap-2 mb-3">
+                              <Shield className="h-5 w-5 text-primary" />
+                              <p className="font-semibold text-foreground">무통장입금 안내</p>
+                            </div>
+                            <ul className="space-y-2 text-sm text-foreground">
+                              <li className="flex items-center gap-2 text-base bp-sm:text-lg">
+                                <CheckCircle className="h-4 w-4" />
+                                주문 후 24시간 이내에 입금해 주셔야 주문이 정상 처리됩니다.
+                              </li>
+                              <li className="flex items-center gap-2 text-base bp-sm:text-lg">
+                                <CheckCircle className="h-4 w-4" />
+                                입금자명이 주문자명과 다를 경우, 고객센터로 연락 부탁드립니다.
+                              </li>
+                              <li className="flex items-center gap-2 text-base bp-sm:text-lg">
+                                <CheckCircle className="h-4 w-4" />
+                                {needsShippingAddress ? "입금 확인 후 배송이 시작됩니다." : "입금 확인 후 매장 수령 준비가 시작됩니다."}
+                              </li>
+                            </ul>
+                          </div>
+                        </>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
