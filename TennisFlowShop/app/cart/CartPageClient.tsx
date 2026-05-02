@@ -316,8 +316,8 @@ export default function CartPageClient() {
 
   // CTA/토스트 문구를 한 곳에서 관리 (서버 INVALID_COMPOSITION 기준과 동일)
   const serviceBlockToastMessage = blockServiceCheckoutByComposition
-    ? `구성 오류: 라켓 1종 + 장착 스트링 1종만 가능해요. (현재 라켓 ${racketLineCount}종 / 장착 스트링 ${mountableStringLineCount}종)`
-    : `수량 오류: 라켓 ${totalRacketQty}개 / 장착 스트링 ${totalMountableStringQty}개 → 수량을 맞춰주세요.`;
+    ? "교체서비스 신청은 라켓 1종과 장착 스트링 1종 조합으로 진행돼요. 장바구니에서 구성을 정리한 뒤 다시 진행해주세요."
+    : `라켓 1개당 장착 스트링 1개가 필요해요. 현재 라켓 ${totalRacketQty}개 / 장착 스트링 ${totalMountableStringQty}개입니다.`;
 
   // 번들(라켓 + 장착 가능 스트링)인 경우: 장바구니에서는 "수량 스테퍼"를 잠그고
   // 스트링 선택 화면에서만 수량/스트링을 함께 바꾸도록 UX를 고정한다.
@@ -426,7 +426,7 @@ export default function CartPageClient() {
       bundleLockedIds.length === 2 &&
       (idsToRemove.has(bundleLockedIds[0]) ||
         idsToRemove.has(bundleLockedIds[1]))
-        ? "\n(번들 상품은 구성품이 함께 삭제됩니다.)"
+        ? "\n(번들 구성품은 함께 삭제됩니다.)"
         : "";
 
     if (
@@ -479,7 +479,7 @@ export default function CartPageClient() {
       prev.filter((id) => !cleanupRemoveIds.includes(id)),
     );
 
-    showSuccessToast?.("장착 대상 스트링을 1종으로 정리했어요.");
+    showSuccessToast?.("교체서비스에 사용할 스트링을 1종으로 정리했어요.");
 
     // 상태 정리 + 닫기
     setCleanupDialogOpen(false);
@@ -489,7 +489,7 @@ export default function CartPageClient() {
 
   return (
     <div className="min-h-full bg-background">
-      {/* 장착 대상 스트링 정리 확인 다이얼로그 */}
+      {/* 교체서비스 스트링 정리 확인 다이얼로그 */}
       <AlertDialog
         open={cleanupDialogOpen}
         onOpenChange={(open) => {
@@ -503,13 +503,13 @@ export default function CartPageClient() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="text-lg font-semibold">
-              장착 대상 스트링 정리
+              교체서비스 스트링 정리
             </AlertDialogTitle>
             <AlertDialogDescription asChild>
               <div className="space-y-2 text-sm text-muted-foreground">
                 <p>
-                  장착 대상 스트링은 <span className="font-medium">1종만</span>{" "}
-                  가능합니다.
+                  교체서비스에 사용할 스트링은{" "}
+                  <span className="font-medium">1종만</span> 선택할 수 있어요.
                 </p>
                 <p>
                   남길 스트링(선택):{" "}
@@ -723,13 +723,13 @@ export default function CartPageClient() {
                                     variant="warning"
                                     className="mt-1 px-2 py-0.5 text-xs font-medium"
                                   >
-                                    장착 대상 스트링(정리 필요)
+                                    교체서비스에 사용할 스트링
                                   </Badge>
                                   <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs leading-snug text-foreground/90 dark:text-foreground">
                                     <span className="inline-flex items-center gap-1.5">
                                       <ArrowRight className="h-3.5 w-3.5 shrink-0" />
-                                      장착 대상 스트링은 <b>1종만</b>{" "}
-                                      남겨주세요. (나머지는 삭제)
+                                      교체서비스에 사용할 스트링은{" "}
+                                      <b>1종만</b> 선택할 수 있어요.
                                     </span>
                                     <button
                                       type="button"
@@ -762,12 +762,17 @@ export default function CartPageClient() {
 
                                 {/* 번들 변경 링크: 라켓/스트링 양쪽에 보여줘도 UX가 덜 헷갈림 */}
                                 {bundleEditHref && (
-                                  <Link
-                                    href={bundleEditHref}
-                                    className="mt-1 text-xs font-medium text-primary hover:underline dark:text-primary"
-                                  >
-                                    번들 수량/스트링 변경
-                                  </Link>
+                                  <>
+                                    <Link
+                                      href={bundleEditHref}
+                                      className="mt-1 text-xs font-medium text-primary hover:underline dark:text-primary"
+                                    >
+                                      번들 수량/스트링 변경
+                                    </Link>
+                                    <p className="mt-1 max-w-[220px] text-center text-[11px] leading-snug text-muted-foreground">
+                                      라켓과 장착 스트링 수량은 함께 맞춰야 해서 스트링 선택 화면에서 변경할 수 있어요.
+                                    </p>
+                                  </>
                                 )}
 
                                 {Number.isFinite(maxStock) && (
@@ -844,12 +849,17 @@ export default function CartPageClient() {
                                 </div>
 
                                 {lockStepper && bundleEditHref ? (
-                                  <Link
-                                    href={bundleEditHref}
-                                    className="mt-1 text-xs font-medium text-primary hover:underline dark:text-primary"
-                                  >
-                                    번들 수량/스트링 변경
-                                  </Link>
+                                  <>
+                                    <Link
+                                      href={bundleEditHref}
+                                      className="mt-1 text-xs font-medium text-primary hover:underline dark:text-primary"
+                                    >
+                                      번들 수량/스트링 변경
+                                    </Link>
+                                    <p className="mt-1 max-w-[220px] text-center text-[11px] leading-snug text-muted-foreground">
+                                      라켓과 장착 스트링 수량은 함께 맞춰야 해서 스트링 선택 화면에서 변경할 수 있어요.
+                                    </p>
+                                  </>
                                 ) : (
                                   Number.isFinite(maxStock) && (
                                     <span
@@ -882,8 +892,8 @@ export default function CartPageClient() {
                               }
                               title={
                                 lockStepper
-                                  ? "번들 구성품은 개별 삭제가 아니라 묶음(라켓+스트링)으로 함께 삭제됩니다."
-                                  : undefined
+                                    ? "라켓과 장착 스트링이 함께 담긴 구성이라 둘 중 하나만 삭제할 수 없어요."
+                                    : undefined
                               }
                               onClick={() => {
                                 // 번들(라켓/장착 스트링) 라인에서 삭제를 누르면
@@ -1029,21 +1039,53 @@ export default function CartPageClient() {
                   <CardFooter className="flex flex-col items-stretch gap-3 p-4 bp-sm:p-6 pt-0">
                     {blockServiceCheckout ? (
                       <>
+                        {blockServiceCheckoutByComposition && (
+                          <div className="w-full rounded-lg border border-border bg-muted p-3 text-sm text-foreground dark:border-border dark:bg-muted dark:text-foreground space-y-1.5">
+                            <p className="font-semibold">
+                              교체서비스 신청 구성을 정리해주세요.
+                            </p>
+                            <p>
+                              교체서비스 신청은 라켓 1종과 장착 스트링 1종 조합으로 진행됩니다.
+                            </p>
+                            <p>
+                              현재 라켓{" "}
+                              <span className="font-semibold">
+                                {racketLineCount}종
+                              </span>{" "}
+                              / 장착 스트링{" "}
+                              <span className="font-semibold">
+                                {mountableStringLineCount}종
+                              </span>
+                            </p>
+                            {mountableStringLineCount > 1 && (
+                              <p>
+                                상품 목록에서 남길 스트링의 ‘이 스트링만 남기기’를 눌러 1종만 남겨주세요.
+                              </p>
+                            )}
+                            {mountableStringLineCount === 0 && (
+                              <p>라켓에 장착할 스트링을 먼저 선택해주세요.</p>
+                            )}
+                            {racketLineCount !== 1 && (
+                              <p>
+                                교체서비스 신청은 한 번에 라켓 1종 기준으로 진행됩니다.
+                              </p>
+                            )}
+                          </div>
+                        )}
                         {blockServiceCheckoutByQty && (
                           <div className="w-full rounded-lg border border-border bg-muted p-3 text-sm text-foreground dark:border-border dark:bg-muted dark:text-foreground">
-                            라켓 수량(
-                            <span className="font-semibold">
-                              {totalRacketQty}개
-                            </span>
-                            )과 장착 스트링 수량(
+                            라켓 1개당 장착 스트링 1개가 필요합니다.
+                            <br />
+                            현재 라켓{" "}
+                            <span className="font-semibold">{totalRacketQty}개</span>{" "}
+                            / 장착 스트링{" "}
                             <span className="font-semibold">
                               {totalMountableStringQty}개
                             </span>
-                            )이 다릅니다.
-                            <br />
+                            입니다.
                             <span className="mt-1 inline-flex items-center gap-1.5">
                               <ArrowRight className="h-3.5 w-3.5 shrink-0" />
-                              수량을 맞춘 뒤 주문해 주세요.
+                              아래 ‘번들 수량/스트링 변경’에서 수량을 함께 맞춰주세요.
                             </span>
                           </div>
                         )}
@@ -1168,15 +1210,43 @@ export default function CartPageClient() {
               </div>
               {blockServiceCheckout ? (
                 <div className="space-y-2">
+                  {blockServiceCheckoutByComposition && (
+                    <div className="rounded-lg border border-border bg-muted p-3 text-sm text-foreground dark:border-border dark:bg-muted dark:text-foreground space-y-1.5">
+                      <p className="font-semibold">
+                        교체서비스 신청 구성을 정리해주세요.
+                      </p>
+                      <p>
+                        교체서비스 신청은 라켓 1종과 장착 스트링 1종 조합으로 진행됩니다.
+                      </p>
+                      <p>
+                        현재 라켓 <span className="font-semibold">{racketLineCount}종</span>{" "}
+                        / 장착 스트링{" "}
+                        <span className="font-semibold">
+                          {mountableStringLineCount}종
+                        </span>
+                      </p>
+                      {mountableStringLineCount > 1 && (
+                        <p>
+                          상품 목록에서 남길 스트링의 ‘이 스트링만 남기기’를 눌러 1종만 남겨주세요.
+                        </p>
+                      )}
+                      {mountableStringLineCount === 0 && (
+                        <p>라켓에 장착할 스트링을 먼저 선택해주세요.</p>
+                      )}
+                      {racketLineCount !== 1 && (
+                        <p>교체서비스 신청은 한 번에 라켓 1종 기준으로 진행됩니다.</p>
+                      )}
+                    </div>
+                  )}
                   {blockServiceCheckoutByQty && (
                     <div className="rounded-lg border border-border bg-muted p-3 text-sm text-foreground dark:border-border dark:bg-muted dark:text-foreground">
-                      라켓 수량(
-                      <span className="font-semibold">{totalRacketQty}개</span>
-                      )과 장착 스트링 수량(
+                      라켓 1개당 장착 스트링 1개가 필요합니다. 현재 라켓{" "}
+                      <span className="font-semibold">{totalRacketQty}개</span> / 장착
+                      스트링{" "}
                       <span className="font-semibold">
                         {totalMountableStringQty}개
                       </span>
-                      )이 다릅니다. 수량을 맞춘 뒤 주문해 주세요.
+                      입니다. 아래 ‘번들 수량/스트링 변경’에서 수량을 함께 맞춰주세요.
                     </div>
                   )}
                   {bundleEditHref ? (
