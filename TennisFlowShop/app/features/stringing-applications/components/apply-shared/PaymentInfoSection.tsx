@@ -38,7 +38,7 @@ export default function PaymentInfoSection({
           <CreditCard className="h-8 w-8 text-foreground" />
         </div>
         <h2 className="text-2xl font-bold mb-2">결제 정보</h2>
-        <p className="text-muted-foreground">결제 방법을 선택해주세요</p>
+        <p className="text-muted-foreground">패키지와 입금 정보를 확인해주세요</p>
       </div>
 
       {/* 패키지 자동 적용 안내/옵트아웃 */}

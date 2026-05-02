@@ -169,8 +169,8 @@ export default function ApplicantInfoSection({
         <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-secondary mb-4">
           <User className="h-8 w-8 text-foreground" />
         </div>
-        <h2 className="text-2xl font-bold mb-2">신청자 정보</h2>
-        <p className="text-muted-foreground">정확한 정보를 입력해주세요</p>
+        <h2 className="text-2xl font-bold mb-2">신청자/수령 정보</h2>
+        <p className="text-muted-foreground">연락처와 수령·수거 방식을 입력해주세요</p>
       </div>
 
       {/* 기본 정보: 2열 */}
