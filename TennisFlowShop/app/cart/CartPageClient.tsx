@@ -1085,7 +1085,9 @@ export default function CartPageClient() {
                             입니다.
                             <span className="mt-1 inline-flex items-center gap-1.5">
                               <ArrowRight className="h-3.5 w-3.5 shrink-0" />
-                              아래 ‘번들 수량/스트링 변경’에서 수량을 함께 맞춰주세요.
+                              {bundleEditHref
+                                ? "아래 ‘번들 수량/스트링 변경’에서 수량을 함께 맞춰주세요."
+                                : "먼저 교체서비스 신청 구성을 정리한 뒤 수량을 다시 확인해주세요."}
                             </span>
                           </div>
                         )}
@@ -1246,7 +1248,10 @@ export default function CartPageClient() {
                       <span className="font-semibold">
                         {totalMountableStringQty}개
                       </span>
-                      입니다. 아래 ‘번들 수량/스트링 변경’에서 수량을 함께 맞춰주세요.
+                      입니다.{" "}
+                      {bundleEditHref
+                        ? "아래 ‘번들 수량/스트링 변경’에서 수량을 함께 맞춰주세요."
+                        : "먼저 교체서비스 신청 구성을 정리한 뒤 수량을 다시 확인해주세요."}
                     </div>
                   )}
                   {bundleEditHref ? (
