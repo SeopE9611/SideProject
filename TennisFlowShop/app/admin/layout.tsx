@@ -1,10 +1,8 @@
 import AdminMobileMenu from "@/components/admin/AdminMobileMenu";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AccessDenied from "@/components/system/AccessDenied";
-import HeroCourtBackdrop from "@/components/system/HeroCourtBackdrop";
 import { getCurrentUser } from "@/lib/hooks/get-current-user";
 import { logInfo } from "@/lib/logger";
-import { UserCog2Icon } from "lucide-react";
 import { headers } from "next/headers";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
@@ -75,31 +73,13 @@ export default async function AdminLayout({ children }: { children: ReactNode })
 
   return (
     <div className="flex min-h-full flex-col bg-muted/30">
-      <div className="relative overflow-hidden bg-muted/30 text-foreground">
-        <div className="absolute inset-0 bg-overlay/10"></div>
-        <HeroCourtBackdrop className="h-full w-full text-primary opacity-[0.10] dark:opacity-[0.12]" />
-        <div className="relative container py-9 lg:py-11">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="p-3 bg-card backdrop-blur-sm rounded-2xl shadow-lg">
-              <UserCog2Icon className="h-8 w-8" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-black mb-1.5 lg:text-4xl">관리자 페이지</h1>
-              <p className="text-muted-foreground">
-                관리자 전용 페이지 입니다.
-                <span className="font-medium text-primary"> 상품 및 주문관리</span>를 진행해보세요.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="mx-auto flex w-full max-w-[1800px] flex-1 gap-4 px-3 py-4 bp-md:px-4 lg:px-5 xl:gap-6 xl:px-6">
+      <div className="mx-auto flex w-full max-w-[1800px] flex-1 gap-4 px-3 pb-10 pt-5 bp-md:px-4 lg:px-5 xl:gap-6 xl:px-6">
         <div className="hidden xl:block">
           <AdminSidebar defaultCollapsed />
         </div>
 
         <main className="min-w-0 flex-1">
-          <div className="mb-3 xl:hidden">
+          <div className="mb-4 xl:hidden">
             <AdminMobileMenu />
           </div>
           {children}
