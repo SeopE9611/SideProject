@@ -149,9 +149,6 @@ export default function LoginGate({ next, variant = "default" }: { next: string;
                 </Button>
               </div>
             </CardFooter>
-
-            <div className="pointer-events-none absolute -top-24 -right-24 h-44 w-44 rounded-full bg-primary/25" />
-            <div className="pointer-events-none absolute -bottom-20 -left-16 h-40 w-40 rounded-full bg-muted/60" />
           </Card>
         </div>
       </div>
