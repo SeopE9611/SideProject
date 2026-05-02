@@ -20,6 +20,7 @@ import useSWR from "swr";
 // import CleanupCreatedButton from '@/app/admin/rentals/_components/CleanupCreatedButton';
 import { derivePaymentStatus, deriveShippingStatus } from "@/app/features/rentals/utils/status";
 import { AdminBadgeRow, BadgeItem } from "@/components/admin/AdminBadgeRow";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { runAdminActionWithToast } from "@/lib/admin/adminActionHelpers";
 import { adminMutator, ensureAdminMutationSucceeded, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
@@ -428,15 +429,16 @@ export default function AdminRentalsClient() {
 
   return (
     <div className="container py-6">
-      <div className="mx-auto max-w-7xl mb-5">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl font-semibold tracking-normal">대여(라켓) 관리</h1>
-            <p className="mt-1 text-xs text-muted-foreground">라켓 대여를 관리합니다. 교체서비스 포함 대여는 “신청서 연결”로 표시됩니다.</p>
-          </div>
-          {/* 유지보수: created 청소 버튼 */}
-          {/* <CleanupCreatedButton hours={2} /> */}
-        </div>
+      <div className="mx-auto max-w-7xl">
+        <AdminPageHeader
+          title="대여 관리"
+          description="라켓 대여 주문의 결제, 출고, 반납, 보증금, 연결 신청서를 관리합니다."
+          icon={Truck}
+          scope="범위: 라켓 대여 주문"
+          helperText="교체서비스가 포함된 대여는 신청서 연결 상태로 확인합니다."
+        />
+        {/* 유지보수: created 청소 버튼 */}
+        {/* <CleanupCreatedButton hours={2} /> */}
       </div>
 
       <Card className="mb-5 rounded-xl border-border bg-card shadow-md px-6 py-5">
