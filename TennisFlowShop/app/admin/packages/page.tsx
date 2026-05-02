@@ -16,6 +16,7 @@ import {
   type ServiceType,
   type SortKey,
 } from "@/app/admin/packages/_lib/packagesPageConfig";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -697,20 +698,13 @@ export default function PackageOrdersClient() {
     <div className="min-h-screen bg-muted/30 dark:bg-muted/30">
       <div className="container py-6">
         {/* 제목 및 설명 */}
-        <div className="flex items-center space-x-3 mb-6">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20">
-            <Package className="h-6 w-6" />
-          </div>
-          <div>
-            {/* 토큰화 */}
-            <h1 className="text-4xl font-bold tracking-normal text-foreground">
-              패키지 관리
-            </h1>
-            <p className="mt-2 text-lg text-muted-foreground">
-              스트링 교체 서비스 패키지 주문을 관리하고 처리하세요.
-            </p>
-          </div>
-        </div>
+        <AdminPageHeader
+          title="패키지 관리"
+          description="고객이 구매한 스트링 패키지 이용권의 결제 상태, 잔여 횟수, 만료일을 관리합니다."
+          icon={Package}
+          scope="범위: 구매된 패키지 이용권"
+          helperText="패키지 상품 구성은 패키지 설정에서 관리합니다."
+        />
 
         {/* 통계 카드 */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">

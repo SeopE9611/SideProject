@@ -5,27 +5,21 @@ export const metadata: Metadata = {
 };
 
 // app/admin/users/page.tsx
-import UsersClient from "./_components/UsersClient";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { Users as UsersIcon } from "lucide-react";
+import UsersClient from "./_components/UsersClient";
 
 export default async function AdminUsersPage() {
   return (
     <div className="p-6">
       <div className="mx-auto max-w-7xl">
-        {/* 타이틀 */}
-        <div className="flex items-center gap-3 mb-6">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20">
-            <UsersIcon className="h-6 w-6" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold tracking-normal text-foreground">
-              회원 관리
-            </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              가입한 모든 회원 정보를 확인하고 관리합니다.
-            </p>
-          </div>
-        </div>
+        <AdminPageHeader
+          title="회원 관리"
+          description="회원의 계정 상태, 연락처, 포인트, 최근 활동을 확인하고 CS 대응에 필요한 정보를 관리합니다."
+          icon={UsersIcon}
+          scope="범위: 회원 계정 및 고객 정보"
+          helperText="주문·신청·리뷰·세션 내역은 회원 상세에서 확인합니다."
+        />
 
         {/* 목록 */}
         <UsersClient />
