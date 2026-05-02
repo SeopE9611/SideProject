@@ -326,9 +326,9 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-secondary text-foreground mb-4">
           <ClipboardList className="h-8 w-8" />
         </div>
-        <h2 className="text-2xl font-bold mb-2">장착 정보</h2>
+        <h2 className="text-2xl font-bold mb-2">라켓·스트링 정보</h2>
         <p className="text-muted-foreground">
-          라켓과 스트링 정보를 선택해주세요
+          장착할 라켓과 스트링 정보를 입력해주세요
         </p>
       </div>
 
