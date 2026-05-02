@@ -40,6 +40,7 @@ import { usedBadgeMeta } from "@/lib/badge-style";
 import {
   AlertTriangle,
   CheckCircle,
+  ClipboardList,
   Edit,
   Eye,
   MoreVertical,
@@ -50,8 +51,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { MdSportsTennis } from "react-icons/md";
 import useSWR from "swr";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
 
 function StockChip({ id, total }: { id: string; total: number }) {
   const { data } = useSWR<{ ok: boolean; available: number }>(
@@ -206,21 +207,13 @@ export default function AdminRacketsClient() {
   return (
     <div className={["min-h-screen", "bg-background"].join(" ")}>
       <div className="container py-8 px-6">
-        <div className="mb-6">
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="bg-card rounded-full p-3 shadow-md">
-              <MdSportsTennis className="h-8 w-8 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold tracking-normal text-foreground">
-                중고 라켓 관리
-              </h1>
-              <p className="mt-2 text-base text-muted-foreground">
-                중고 라켓 재고를 효율적으로 관리하세요
-              </p>
-            </div>
-          </div>
-        </div>
+        <AdminPageHeader
+          title="라켓 관리"
+          description="중고·대여용 라켓의 상태, 가격, 이미지, 판매 가능 여부를 관리합니다."
+          icon={ClipboardList}
+          scope="범위: 등록된 라켓"
+          helperText="실제 대여 주문 처리는 대여 관리에서 진행합니다."
+        />
 
         <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8 shrink-0">
           {[

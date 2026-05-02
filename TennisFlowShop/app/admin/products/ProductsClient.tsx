@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   MoreHorizontal,
   Package,
+  PackageSearch,
   Plus,
   Search,
   TriangleAlert,
@@ -51,6 +52,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { runAdminActionWithToast } from "@/lib/admin/adminActionHelpers";
 import { adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
@@ -334,21 +336,13 @@ export default function ProductsClient() {
             {commonErrorMessage}
           </div>
         )}
-        <div className="mb-2">
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="bg-card rounded-full p-3 shadow-md">
-              <Package className="h-8 w-8 text-foreground" />
-            </div>
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold tracking-normal text-foreground">
-                상품 관리
-              </h1>
-              <p className="mt-2 text-base text-muted-foreground">
-                테니스 스트링 상품을 효율적으로 관리하세요
-              </p>
-            </div>
-          </div>
-        </div>
+        <AdminPageHeader
+          title="상품 관리"
+          description="스트링 상품의 가격, 재고, 배송비, 공개 상태를 관리합니다."
+          icon={PackageSearch}
+          scope="범위: 스트링 상품"
+          helperText="라켓 상품은 라켓 관리에서 별도로 관리합니다."
+        />
 
         <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8 shrink-0">
           {[

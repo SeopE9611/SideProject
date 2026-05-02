@@ -9,10 +9,12 @@ import {
   Save,
   Package,
   Settings,
+  Settings2,
   Plus,
   Trash2,
   Edit3,
 } from "lucide-react";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -317,22 +319,13 @@ export default function PackageSettingsClient() {
     <>
       <div className="min-h-screen bg-muted/30">
         <div className="container py-6">
-          {/* 헤더 */}
-          <div className="bg-muted/30 rounded-2xl p-8 border border-border shadow-lg mb-8">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-center space-x-4">
-                <div className="bg-card rounded-full p-3 shadow-md">
-                  <Settings className="h-8 w-8 text-foreground" />
-                </div>
-                <div>
-                  <h1 className="text-3xl font-bold tracking-normal text-foreground">
-                    패키지 설정
-                  </h1>
-                  <p className="mt-1 text-muted-foreground">
-                    스트링 패키지 상품의 가격과 설정을 관리합니다
-                  </p>
-                </div>
-              </div>
+          <AdminPageHeader
+            title="패키지 설정"
+            description="판매할 스트링 패키지 상품의 횟수, 가격, 혜택, 활성 상태를 설정합니다."
+            icon={Settings2}
+            scope="범위: 패키지 상품 구성"
+            helperText="구매된 이용권과 사용 이력은 패키지 관리에서 확인합니다."
+            actions={
               <Button
                 variant="outline"
                 size="sm"
@@ -344,8 +337,8 @@ export default function PackageSettingsClient() {
                   패키지 관리로 돌아가기
                 </Link>
               </Button>
-            </div>
-          </div>
+            }
+          />
 
           <Tabs defaultValue="packages" className="space-y-8">
             <Card className="border-0 shadow-2xl bg-card backdrop-blur-sm">

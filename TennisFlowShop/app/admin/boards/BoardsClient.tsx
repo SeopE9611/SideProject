@@ -38,6 +38,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import {
   buildAdminBoardDetailUrl,
   buildBoardPublicUrl,
@@ -348,6 +349,13 @@ export default function BoardsClient() {
   return (
     <TooltipProvider>
       <div className="space-y-6 p-6">
+        <AdminPageHeader
+          title="게시판 관리"
+          description="커뮤니티 게시글과 신고 내역을 확인하고 공개 상태를 관리합니다."
+          icon={MessageSquare}
+          scope="범위: 게시글 + 신고"
+          helperText="고정 공지와 게시글 상세 수정은 각 게시글 화면에서 처리합니다."
+        />
         <div className="grid gap-5 md:grid-cols-4">
           <Card className="border-border/40 bg-card/50 backdrop-blur hover:border-border/60 transition-all duration-200">
             <CardContent className="p-6">
@@ -423,7 +431,7 @@ export default function BoardsClient() {
         <Card className="border-border/40 bg-card/50 backdrop-blur">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-6">
             <div>
-              <CardTitle className="text-2xl">게시판 관리</CardTitle>
+              <CardTitle className="text-2xl">게시글·신고 목록</CardTitle>
               <p className="text-sm text-muted-foreground mt-1">
                 커뮤니티 게시글 및 신고 관리
               </p>
