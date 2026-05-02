@@ -29,7 +29,7 @@ export default function CheckoutStringingServiceSections({
           <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20">
             <Wrench className="h-5 w-5 text-primary" />
           </span>
-          교체 서비스 옵션
+          교체서비스 옵션
         </CardTitle>
       </div>
       <CardContent className="space-y-5 p-5 bp-sm:p-6">

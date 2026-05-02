@@ -23,7 +23,7 @@ export default function CheckoutStringingSummaryCard({ adapter }: Props) {
     completion.lineConfiguredCount === completion.totalLineCount &&
     completion.totalLineCount > 0;
   const statusMessage = completion.isReadyToSubmit
-    ? "현재 설정으로 주문과 함께 교체 서비스가 접수됩니다."
+    ? "현재 설정으로 주문과 함께 교체서비스가 접수됩니다."
     : completion.needsVisitReservation && !completion.hasReservation
       ? "방문 예약만 완료하면 접수 준비가 완료됩니다."
       : "추가 요청 없이 현재 설정으로 접수됩니다.";
@@ -34,7 +34,7 @@ export default function CheckoutStringingSummaryCard({ adapter }: Props) {
         <div>
           <p className="flex items-center gap-2 text-sm font-semibold text-foreground">
             <ClipboardList className="h-4 w-4 text-primary" />
-            교체 서비스 요약
+            교체서비스 요약
           </p>
           <p className="mt-1.5 text-xs text-foreground/75">
             주문과 함께 접수될 내용을 미리 확인하세요.
@@ -56,7 +56,7 @@ export default function CheckoutStringingSummaryCard({ adapter }: Props) {
         {reservationLabel && (
           <p><span className="text-muted-foreground">예약 정보:</span> <span className="font-medium">{reservationLabel}</span></p>
         )}
-        <p><span className="text-muted-foreground">교체 서비스 비용:</span> <span className="font-medium">{summary.priceLabel}</span></p>
+        <p><span className="text-muted-foreground">교체서비스 비용:</span> <span className="font-medium">{summary.priceLabel}</span></p>
         <p><span className="text-muted-foreground">추가 요청:</span> <span className="font-medium">{summary.requestPreview}</span></p>
       </div>
 

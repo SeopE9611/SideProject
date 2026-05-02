@@ -187,7 +187,7 @@ function FinalPaymentConfirmCard({
           </div>
           {withStringService && (
             <div className="flex items-center justify-between py-1">
-              <span className="text-foreground/80">교체 서비스비</span>
+              <span className="text-foreground/80">교체서비스 비용</span>
               {!isMountingFeeReady ? (
                 <Skeleton className="h-5 w-20 rounded" />
               ) : serviceFee > 0 ? (
@@ -221,7 +221,7 @@ function FinalPaymentConfirmCard({
 
         <div className="h-px bg-border/70" />
 
-        <div className="space-y-3">
+          <div className="space-y-3">
           <div className="flex items-center justify-between text-sm">
             <span className="text-foreground/90">합계</span>
             {!isShippingFeeReady ? <Skeleton className="h-5 w-24 rounded" /> : <span className="font-semibold">{totalPrice.toLocaleString()}원</span>}
@@ -238,6 +238,11 @@ function FinalPaymentConfirmCard({
             )}
           </div>
         </div>
+        {withStringService && (
+          <p className="rounded-lg border border-border/70 bg-secondary/20 px-3 py-2 text-xs text-foreground/85">
+            결제 완료 후 교체서비스 신청 정보가 함께 접수됩니다.
+          </p>
+        )}
         <div className="space-y-2 rounded-xl border border-border/70 bg-secondary/20 p-3 text-xs text-foreground">
           <p>결제수단: {paymentMethod === "bank-transfer" ? "무통장입금" : "NICE 카드/간편결제"}</p>
           {paymentMethod === "bank-transfer" ? (
@@ -1212,7 +1217,7 @@ export default function CheckoutPage() {
                                 <span className="inline-flex items-center gap-1 text-sm text-foreground/80 bg-muted/50 px-2 py-0.5 rounded-full">수량 {item.quantity}개</span>
                                 {withStringService && serviceTargetIds.includes(String(item.id)) && (
                                   <Badge variant="outline" className="text-xs border-primary/30 text-primary bg-primary/5">
-                                    교체 서비스
+                                    교체서비스
                                   </Badge>
                                 )}
                               </div>
@@ -1248,8 +1253,8 @@ export default function CheckoutPage() {
                         <Truck className="h-5 w-5 text-primary" />
                       </div>
                       <div>
-                        <CardTitle className="text-lg bp-sm:text-xl font-bold">상품 접수 예약 방식</CardTitle>
-                        <CardDescription className="mt-0.5 text-xs bp-sm:text-sm">상품을 어떻게 예약하실지 선택해주세요</CardDescription>
+                        <CardTitle className="text-lg bp-sm:text-xl font-bold">수령/배송 방법</CardTitle>
+                        <CardDescription className="mt-0.5 text-xs bp-sm:text-sm">상품을 받을 방법을 선택해주세요</CardDescription>
                       </div>
                     </div>
                   </div>
@@ -1457,43 +1462,12 @@ export default function CheckoutPage() {
                       </div>
                       <div>
                         <CardTitle className="text-lg bp-sm:text-xl font-bold">결제 정보</CardTitle>
-                        <CardDescription className="mt-0.5 text-xs bp-sm:text-sm">결제 방법을 선택하고 필요한 정보를 입력해주세요</CardDescription>
+                        <CardDescription className="mt-0.5 text-xs bp-sm:text-sm">혜택 적용 내역을 확인하고 결제 방법을 선택해주세요</CardDescription>
                       </div>
                     </div>
                   </div>
                   <CardContent className="p-5 bp-sm:p-6">
                     <div className="space-y-6">
-                      <div className="space-y-3">
-                        <Label>결제 방법</Label>
-                        <RadioGroup
-                          value={paymentMethod}
-                          onValueChange={(v) => {
-                            if (!nicePaymentsEnabled && v === "nicepay") return;
-                            if (v === "nicepay" && isZeroPayableAmount) return;
-                            setPaymentMethod(v as "bank-transfer" | "nicepay");
-                          }}
-                          className="space-y-3"
-                        >
-                          <div className="flex items-center space-x-3 p-4 bg-background rounded-lg border-2 border-border">
-                            <RadioGroupItem value="bank-transfer" id="bank-transfer" />
-                            <Label htmlFor="bank-transfer" className="flex-1 cursor-pointer font-medium">
-                              무통장입금
-                            </Label>
-                            <Building2 className="h-5 w-5 text-foreground" />
-                          </div>
-                          {nicePaymentsEnabled && (
-                            <div className={cn("flex items-center space-x-3 p-4 bg-background rounded-lg border-2 border-border", isZeroPayableAmount && "opacity-60")}>
-                              <RadioGroupItem value="nicepay" id="nicepay" disabled={isZeroPayableAmount} />
-                              <Label htmlFor="nicepay" className={cn("flex-1 cursor-pointer font-medium", isZeroPayableAmount && "cursor-not-allowed text-muted-foreground")}>
-                                카드/간편결제
-                              </Label>
-                              <CreditCard className="h-5 w-5 text-foreground" />
-                            </div>
-                          )}
-                        </RadioGroup>
-                        {nicePaymentsEnabled && isZeroPayableAmount && <p className="text-sm text-foreground/80">최종 결제금액이 0원인 경우 카드/간편결제를 사용할 수 없습니다.</p>}
-                      </div>
-
                       {paymentMethod === "bank-transfer" && (
                         <>
                           <div className="space-y-3">
@@ -1555,7 +1529,7 @@ export default function CheckoutPage() {
                       <div className="space-y-3">
                         <Label className="flex items-center gap-2">
                           <CreditCard className="h-4 w-4 text-primary" />
-                          포인트/혜택 적용
+                          할인 및 혜택
                         </Label>
                         <div className="rounded-lg border border-border bg-secondary/30 p-4 space-y-3">
                           <div className="flex justify-between items-center text-sm">
@@ -1638,6 +1612,37 @@ export default function CheckoutPage() {
                           }}
                         />
                       )}
+
+                      <div className="space-y-3">
+                        <Label>결제 방법</Label>
+                        <RadioGroup
+                          value={paymentMethod}
+                          onValueChange={(v) => {
+                            if (!nicePaymentsEnabled && v === "nicepay") return;
+                            if (v === "nicepay" && isZeroPayableAmount) return;
+                            setPaymentMethod(v as "bank-transfer" | "nicepay");
+                          }}
+                          className="space-y-3"
+                        >
+                          <div className="flex items-center space-x-3 p-4 bg-background rounded-lg border-2 border-border">
+                            <RadioGroupItem value="bank-transfer" id="bank-transfer" />
+                            <Label htmlFor="bank-transfer" className="flex-1 cursor-pointer font-medium">
+                              무통장입금
+                            </Label>
+                            <Building2 className="h-5 w-5 text-foreground" />
+                          </div>
+                          {nicePaymentsEnabled && (
+                            <div className={cn("flex items-center space-x-3 p-4 bg-background rounded-lg border-2 border-border", isZeroPayableAmount && "opacity-60")}>
+                              <RadioGroupItem value="nicepay" id="nicepay" disabled={isZeroPayableAmount} />
+                              <Label htmlFor="nicepay" className={cn("flex-1 cursor-pointer font-medium", isZeroPayableAmount && "cursor-not-allowed text-muted-foreground")}>
+                                카드/간편결제
+                              </Label>
+                              <CreditCard className="h-5 w-5 text-foreground" />
+                            </div>
+                          )}
+                        </RadioGroup>
+                        {nicePaymentsEnabled && isZeroPayableAmount && <p className="text-sm text-foreground/80">최종 결제금액이 0원인 경우 카드/간편결제를 사용할 수 없습니다.</p>}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
