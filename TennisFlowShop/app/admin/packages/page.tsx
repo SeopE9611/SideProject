@@ -17,6 +17,7 @@ import {
   type SortKey,
 } from "@/app/admin/packages/_lib/packagesPageConfig";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import { adminSurface } from "@/components/admin/admin-typography";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -708,7 +709,7 @@ export default function PackageOrdersClient() {
 
         {/* 통계 카드 */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
-          <Card className="border-0 bg-card/80 shadow-lg backdrop-blur-sm">
+          <Card className={adminSurface.kpiCard}>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -726,7 +727,7 @@ export default function PackageOrdersClient() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 bg-card/80 shadow-lg backdrop-blur-sm">
+          <Card className={adminSurface.kpiCard}>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -744,7 +745,7 @@ export default function PackageOrdersClient() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 bg-card/80 shadow-lg backdrop-blur-sm">
+          <Card className={adminSurface.kpiCard}>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -764,7 +765,7 @@ export default function PackageOrdersClient() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 bg-card/80 shadow-lg backdrop-blur-sm">
+          <Card className={adminSurface.kpiCard}>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -784,7 +785,7 @@ export default function PackageOrdersClient() {
         </div>
 
         {/* 필터 및 검색 카드 */}
-        <Card className="mb-6 border-0 bg-card/80 shadow-lg backdrop-blur-sm">
+        <Card className={cn("mb-6", adminSurface.filterCard)}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Filter className="h-5 w-5" />
@@ -909,7 +910,7 @@ export default function PackageOrdersClient() {
         </Card>
 
         {/* 패키지 목록 테이블 */}
-        <Card className="border-0 bg-card/80 shadow-lg backdrop-blur-sm">
+        <Card className={adminSurface.tableCard}>
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>패키지 목록</CardTitle>

@@ -20,6 +20,7 @@ import useSWR from "swr";
 // import CleanupCreatedButton from '@/app/admin/rentals/_components/CleanupCreatedButton';
 import { derivePaymentStatus, deriveShippingStatus } from "@/app/features/rentals/utils/status";
 import { AdminBadgeRow, BadgeItem } from "@/components/admin/AdminBadgeRow";
+import { adminSurface } from "@/components/admin/admin-typography";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { runAdminActionWithToast } from "@/lib/admin/adminActionHelpers";
@@ -441,7 +442,7 @@ export default function AdminRentalsClient() {
         {/* <CleanupCreatedButton hours={2} /> */}
       </div>
 
-      <Card className="mb-5 rounded-xl border-border bg-card shadow-md px-6 py-5">
+      <Card className={cn("mb-5 px-6 py-5", adminSurface.filterCard)}>
         <CardHeader className="pb-3">
           <CardTitle>필터 및 검색</CardTitle>
           <CardDescription className="text-xs">대여 상태와 날짜로 필터링하거나 대여 ID, 고객명, 이메일, 브랜드, 모델로 검색하세요.</CardDescription>
@@ -579,7 +580,7 @@ export default function AdminRentalsClient() {
         </CardContent>
       </Card>
 
-      <Card className="rounded-xl border-border bg-card shadow-md px-4 py-5">
+      <Card className={cn("px-4 py-5", adminSurface.tableCard)}>
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             {hasResolvedData && !hasDataError && data ? (
@@ -622,7 +623,7 @@ export default function AdminRentalsClient() {
         </CardHeader>
         <CardContent className="overflow-x-auto md:overflow-x-visible scrollbar-hidden relative pr-2 md:pr-0">
           <Table className="w-full table-auto border-separate [border-spacing-block:0.5rem] [border-spacing-inline:0] text-xs">
-            <TableHeader className="sticky top-0 bg-background shadow-sm">
+            <TableHeader className={cn("sticky top-0", adminSurface.tableHeader)}>
               <TableRow>
                 <TableHead className={cn(thClasses, "w-[140px]")}>대여 ID</TableHead>
                 <TableHead className={cn(thClasses, "text-center")}>고객</TableHead>

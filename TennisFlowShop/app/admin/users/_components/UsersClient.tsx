@@ -21,6 +21,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { adminSurface } from "@/components/admin/admin-typography";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -732,7 +733,7 @@ export default function UsersClient() {
 
       <FiltersSection>
         {/* 검색/필터 바 */}
-        <div className="border-0 bg-card/80 shadow-lg backdrop-blur-sm rounded-xl p-4 sm:p-6 mb-4">
+        <div className={cn(adminSurface.filterCard, "mb-4")}>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="relative w-full max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -1014,7 +1015,7 @@ export default function UsersClient() {
       </BulkActionsSection>
 
       <TableSection>
-        <div className="border-0 bg-card/80 shadow-lg backdrop-blur-sm rounded-xl max-w-[1120px] mx-auto">
+        <div className={cn(adminSurface.tableCard, "max-w-[1120px] mx-auto")}>
           <div className="flex items-center justify-between px-4 sm:px-5 pt-4">
             <h2 className="text-lg font-semibold text-foreground">회원 목록</h2>
             <p className="text-sm text-muted-foreground">
@@ -1039,7 +1040,7 @@ export default function UsersClient() {
                   <col style={{ width: "64px" }} />
                   <col style={{ width: "44px" }} />
                 </colgroup>
-                <TableHeader className="sticky top-0 z-10 bg-background backdrop-blur shadow-[inset_0_-1px_0_rgba(0,0,0,0.04)]">
+                <TableHeader className={cn("sticky top-0 z-10", adminSurface.tableHeader)}>
                   <TableRow>
                     <TableHead className={cn(th, "w-[40px] px-0")}>
                       <Checkbox
