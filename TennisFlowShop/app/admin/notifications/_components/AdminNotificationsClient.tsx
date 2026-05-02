@@ -24,6 +24,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
 
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
@@ -249,6 +250,19 @@ export default function AdminNotificationsClient() {
   return (
     <div className="space-y-6">
       <div className="space-y-2">
+        <AdminPageHeader
+          title="알림 발송함"
+          description="시스템 알림 발송 내역을 확인하고 실패한 알림을 재시도합니다."
+          icon={Send}
+          scope="범위: 관리자 알림 Outbox"
+          helperText="상태별 집계와 발송 실패 사유를 함께 확인합니다."
+          actions={
+            <div className="flex flex-wrap items-center gap-2">
+              <Button variant="secondary" size="sm">목록</Button>
+              <Button variant="outline" size="sm" className="border-border/40" disabled>상세 (항목 선택)</Button>
+            </div>
+          }
+        />
         <nav
           className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground"
           aria-label="알림 관리 breadcrumb"
@@ -262,23 +276,6 @@ export default function AdminNotificationsClient() {
           <ChevronRight className="h-3.5 w-3.5" />
           <span>목록</span>
         </nav>
-        <h1 className="text-3xl font-bold tracking-normal">알림 발송함</h1>
-        <p className="text-sm text-muted-foreground">
-          알림 발송 현황을 모니터링하고 실패한 알림을 재시도할 수 있습니다
-        </p>
-        <div className="flex flex-wrap items-center gap-2">
-          <Button variant="secondary" size="sm">
-            목록
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-border/40"
-            disabled
-          >
-            상세 (항목 선택)
-          </Button>
-        </div>
       </div>
 
       <div className="flex items-center gap-2">

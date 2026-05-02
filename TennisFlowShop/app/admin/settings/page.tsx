@@ -4,6 +4,7 @@ import { Globe, User, Mail, CreditCard, Shield } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import AdminConfirmDialog from "@/components/admin/AdminConfirmDialog";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
 import { useAdminSettings } from "./_hooks/useAdminSettings";
 import { SiteSettingsTab } from "./_components/SiteSettingsTab";
@@ -16,18 +17,16 @@ export default function SettingsPage() {
   useUnsavedChangesGuard(vm.isDirtyAny && !vm.isSubmittingAny);
 
   return (
-    <div className="min-h-screen bg-muted/30">
-      <div className="container py-10">
+    <div>
+      <div className="container py-0">
         <div className="mx-auto max-w-6xl space-y-6">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full bg-muted/30 px-4 py-1.5 mb-4">
-              <Shield className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium text-primary">
-                관리자 설정
-              </span>
-            </div>
-            <h1 className="text-4xl font-bold">시스템 설정</h1>
-          </div>
+          <AdminPageHeader
+            title="시스템 설정"
+            description="사이트, 사용자, 이메일, 결제 설정을 관리합니다."
+            icon={Shield}
+            scope="범위: 전역 운영 설정"
+            helperText="변경 내용은 저장 전까지 적용되지 않으며, 탭 이동 시 확인 절차가 유지됩니다."
+          />
 
           <Tabs
             value={vm.activeTab}
