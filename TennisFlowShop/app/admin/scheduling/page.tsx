@@ -30,6 +30,7 @@ import { Switch } from "@/components/ui/switch";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AsyncState from "@/components/system/AsyncState";
 import { showErrorToast, showInfoToast, showSuccessToast } from "@/lib/toast";
 import { adminMutator } from "@/lib/admin/adminFetcher";
@@ -306,21 +307,13 @@ export default function StringingSettingsPage() {
       <div className="min-h-screen bg-background p-8">
         {/* 스타일 표준화: tint/surface */}
         <div className="mx-auto max-w-7xl">
-          <div className="mb-8">
-            <div className="flex items-center gap-4 mb-3">
-              <div className="rounded-2xl bg-primary/10 p-3 text-primary shadow-lg dark:bg-primary/20">
-                <Settings2 className="h-7 w-7" />
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold tracking-normal text-foreground">
-                  {/* was: text-foreground */}교체 서비스 예약 · 영업일 설정
-                </h1>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {/* was: text-muted-foreground */}영업일 및 예약 슬롯 관리
-                </p>
-              </div>
-            </div>
-          </div>
+          <AdminPageHeader
+            title="예약 · 영업일 설정"
+            description="교체서비스 예약 가능 시간, 영업 요일, 휴무일, 예외일을 관리합니다."
+            icon={CalendarDays}
+            scope="범위: 교체서비스 예약 슬롯"
+            helperText="운영 정책 변경은 실제 예약 가능 시간에 즉시 영향을 줄 수 있습니다."
+          />
 
           <div className="mb-8 overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
             <div className="flex items-start gap-4 p-6">

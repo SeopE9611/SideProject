@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/tooltip";
 
 import { Switch } from "@/components/ui/switch";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { adminMutator } from "@/lib/admin/adminFetcher";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
@@ -438,22 +439,13 @@ export default function AdminReviewListClient() {
 
   return (
     <div className="space-y-6">
-      {/* 헤더 */}
-      <div className="mb-2">
-        <div className="flex items-center space-x-3 mb-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20">
-            <Star className="h-6 w-6" />
-          </div>
-          <div>
-            <h1 className="text-3xl md:text-4xl font-bold tracking-normal text-foreground">
-              리뷰 관리
-            </h1>
-            <p className="mt-2 text-base text-muted-foreground">
-              고객 리뷰를 관리하고 서비스 품질을 향상시키세요
-            </p>
-          </div>
-        </div>
-      </div>
+      <AdminPageHeader
+        title="리뷰 관리"
+        description="고객 리뷰의 공개 상태, 별점, 사진, 삭제 여부를 관리합니다."
+        icon={Star}
+        scope="범위: 상품·서비스 리뷰"
+        helperText="유지보수 작업은 별도 탭에서 신중하게 실행합니다."
+      />
 
       {/* KPI */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">

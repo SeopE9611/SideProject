@@ -5,6 +5,7 @@
 import KpiCard from "@/app/admin/settlements/_components/KpiCard";
 import { makeCsvFilename } from "@/app/admin/settlements/_lib/settlementExport";
 import { Badge } from "@/components/ui/badge";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   DropdownMenu,
@@ -458,21 +459,13 @@ export default function SettlementsClient() {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
-        <div className="mb-6 sm:mb-8">
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary shadow-lg dark:bg-primary/20">
-              <ChartBar className="h-5 w-5 sm:h-6 sm:w-6" />
-            </div>
-            <div>
-              <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold tracking-normal text-foreground">
-                정산 관리
-              </h1>
-              <p className="mt-1 sm:mt-2 text-sm sm:text-lg text-muted-foreground">
-                월별 정산 스냅샷 및 실시간 집계를 관리하고 분석하세요
-              </p>
-            </div>
-          </div>
-        </div>
+        <AdminPageHeader
+          title="정산 관리"
+          description="월별 매출, 환불, 순매출 스냅샷을 생성하고 관리합니다."
+          icon={ChartBar}
+          scope="범위: 주문·신청·대여·패키지 정산"
+          helperText="스냅샷은 운영 마감 기준으로 사용되며 필요 시 재생성할 수 있습니다."
+        />
 
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6 mb-8">
           {/* 전체 정산 월 (기존 카드 유지) */}
