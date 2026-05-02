@@ -21,3 +21,16 @@ export const adminTypography = {
   sidebarCount: "text-xs font-medium",
   sidebarFooter: "text-xs text-foreground/80",
 } as const;
+
+
+export const adminSurface = {
+  card: "rounded-2xl border border-border/70 bg-card shadow-sm",
+  cardMuted: "rounded-2xl border border-border/70 bg-muted/30 shadow-sm",
+  filterCard: "rounded-2xl border border-border/70 bg-card p-4 shadow-sm sm:p-5",
+  tableCard: "overflow-hidden rounded-2xl border border-border/70 bg-card shadow-sm",
+  tableHeader: "bg-muted/40",
+  stickyToolbar:
+    "rounded-2xl border border-border/70 bg-card/95 shadow-sm supports-[backdrop-filter]:bg-card/95",
+  kpiCard:
+    "rounded-2xl border border-border/70 bg-card p-4 shadow-sm transition-colors hover:border-border",
+} as const;

@@ -11,6 +11,7 @@ import { useOrderStore } from "@/app/store/orderStore";
 import { useStringingStore } from "@/app/store/stringingStore";
 import { AdminBadgeRow } from "@/components/admin/AdminBadgeRow";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import { adminSurface } from "@/components/admin/admin-typography";
 import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -580,7 +581,7 @@ export default function OrdersClient() {
       </div>
 
       {/* 필터 및 검색 카드 */}
-      <Card className="mb-4 rounded-xl border-border bg-card px-4 py-4 shadow-md lg:px-5">
+      <Card className={cn("mb-4 px-4 py-4 lg:px-5", adminSurface.filterCard)}>
         <CardHeader className="pb-2.5">
           <CardTitle>필터 및 검색</CardTitle>
           <CardDescription className="text-xs">
@@ -648,7 +649,7 @@ export default function OrdersClient() {
       </Card>
 
       {/* 주문 목록 테이블 */}
-      <Card className="rounded-xl border-border bg-card px-4 py-4 shadow-md lg:px-5">
+      <Card className={cn("px-4 py-4 lg:px-5", adminSurface.tableCard)}>
         <CardHeader className="pb-2 pt-1">
           <div className="flex items-center justify-between">
             <CardTitle className="text-base font-medium">주문 목록</CardTitle>
@@ -717,7 +718,7 @@ export default function OrdersClient() {
         </CardHeader>
         <CardContent className="relative min-h-[420px] overflow-x-auto scrollbar-hidden pr-2 md:overflow-x-visible md:pr-0">
           <Table className="w-full table-auto border-separate text-xs [border-spacing-block:0.4rem] [border-spacing-inline:0]">
-            <TableHeader className="sticky top-0 bg-muted dark:bg-card shadow-sm">
+            <TableHeader className={cn("sticky top-0", adminSurface.tableHeader)}>
               <TableRow>
                 <TableHead className={cn(thClasses, "w-[140px]")}>
                   주문 ID

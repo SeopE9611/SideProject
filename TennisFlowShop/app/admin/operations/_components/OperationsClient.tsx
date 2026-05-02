@@ -51,6 +51,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import { adminSurface } from "@/components/admin/admin-typography";
 import AsyncState from "@/components/system/AsyncState";
 import { opsKindLabel } from "@/lib/admin-ops-taxonomy";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
@@ -1093,7 +1094,7 @@ export default function OperationsClient() {
       <div
         className={cn(
           "top-3 z-30 mb-4 transition-all duration-200",
-          isFilterScrolled && "drop-shadow-xl",
+          isFilterScrolled && "shadow-sm",
         )}
       >
         <Card
@@ -1103,7 +1104,7 @@ export default function OperationsClient() {
               ? "bg-warning/5 border-warning/20 dark:bg-warning/10 dark:border-warning/30"
               : "bg-card",
             isFilterScrolled &&
-              "bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/90",
+              adminSurface.stickyToolbar,
           )}
         >
           <CardHeader className="flex flex-row items-start justify-between gap-3 pb-2">
