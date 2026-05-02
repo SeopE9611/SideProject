@@ -1,17 +1,13 @@
 "use client";
 
+import { LogIn, Shield, ShoppingCart, Star, Ticket, Truck } from "lucide-react";
 import Link from "next/link";
-import { LogIn, Ticket, Shield, Star, ShoppingCart, Truck } from "lucide-react";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 
-export type LoginGateVariant =
-  | "packages"
-  | "checkout"
-  | "orderLookup"
-  | "default";
+export type LoginGateVariant = "packages" | "checkout" | "orderLookup" | "default";
 
 type Perk = {
   icon: React.ReactNode;
@@ -73,11 +69,9 @@ function variantCopy(variant: LoginGateVariant) {
       minHeight: "min-h-[60vh]",
       description: (
         <>
-          현재 <span className="font-medium">비회원 주문 조회</span>는
-          중단되었습니다.
+          현재 <span className="font-medium">비회원 주문 조회</span>는 중단되었습니다.
           <br />
-          로그인 후 <span className="font-medium">마이페이지</span>에서
-          주문내역을 확인해주세요.
+          로그인 후 <span className="font-medium">마이페이지</span>에서 주문내역을 확인해주세요.
         </>
       ),
       perks: [
@@ -119,13 +113,7 @@ function variantCopy(variant: LoginGateVariant) {
   };
 }
 
-export default function LoginGate({
-  next,
-  variant = "default",
-}: {
-  next: string;
-  variant?: LoginGateVariant;
-}) {
+export default function LoginGate({ next, variant = "default" }: { next: string; variant?: LoginGateVariant }) {
   const v = variantCopy(variant);
   const loginHref = `/login?next=${encodeURIComponent(next)}`;
 
@@ -133,7 +121,7 @@ export default function LoginGate({
     <div className={`${v.minHeight} bg-background`}>
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-2xl mx-auto">
-          <Card className="relative overflow-hidden border-0 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] backdrop-blur-sm bg-card/90 dark:bg-card/85">
+          <Card className="relative overflow-hidden border-0 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] bg-card/90 dark:bg-card/85">
             <div className="h-1.5 w-full bg-primary" />
 
             <CardContent className="p-8">
@@ -146,22 +134,8 @@ export default function LoginGate({
               </h1>
               <p className="text-muted-foreground">{v.description}</p>
 
-              <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {v.perks.map((p) => (
-                  <div
-                    key={p.text}
-                    className="flex items-center gap-2 rounded-xl bg-card p-3 shadow-sm ring-1 ring-border/70"
-                  >
-                    {p.icon}
-                    <span className="text-sm">{p.text}</span>
-                  </div>
-                ))}
-              </div>
-
               <div className="mt-4">
-                <Badge variant="highlight">
-                  로그인 후 원래 페이지로 자동 복귀
-                </Badge>
+                <Badge variant="highlight">로그인 후 원래 페이지로 자동 복귀</Badge>
               </div>
             </CardContent>
 
@@ -176,8 +150,8 @@ export default function LoginGate({
               </div>
             </CardFooter>
 
-            <div className="pointer-events-none absolute -top-24 -right-24 h-44 w-44 rounded-full bg-primary/25 blur-3xl" />
-            <div className="pointer-events-none absolute -bottom-20 -left-16 h-40 w-40 rounded-full bg-muted/60 blur-3xl" />
+            <div className="pointer-events-none absolute -top-24 -right-24 h-44 w-44 rounded-full bg-primary/25" />
+            <div className="pointer-events-none absolute -bottom-20 -left-16 h-40 w-40 rounded-full bg-muted/60" />
           </Card>
         </div>
       </div>
