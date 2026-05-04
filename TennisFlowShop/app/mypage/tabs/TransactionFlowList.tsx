@@ -625,7 +625,7 @@ export default function TransactionFlowList() {
     <div className="space-y-4">
       {/* Enhanced Filter Tabs */}
       <OrdersScopeTabs activeScope={scope} />
-      {scope === 'todo' ? <p className="text-xs text-foreground/75">해야 할 일은 구매확정·운송장 등록·교체확정·후기 남기기처럼 지금 바로 처리할 항목만 모아 보여줍니다.</p> : null}
+      {scope === 'todo' ? <p className="text-xs text-foreground/75">구매확정, 운송장 등록, 교체확정, 후기 작성처럼 지금 처리할 수 있는 항목만 모아 보여줍니다.</p> : null}
       <p className="text-xs text-foreground/75">주문 구매확정과 교체서비스 확정은 별도로 처리됩니다.</p>
       {items.length === 0 ? (
         <Card className="border-0 bg-card">
@@ -743,7 +743,20 @@ export default function TransactionFlowList() {
                   ) : null}
                 </div>
 
-                {nextActionText ? <p className="mt-1 text-xs text-muted-foreground">{nextActionText}</p> : null}
+                {todoPrimaryReason && nextActionText ? (
+                  <div className="rounded-xl border border-border/60 bg-secondary/40 p-3 bp-sm:p-4">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Badge variant="secondary" className="text-[11px]">
+                        해야 할 일
+                      </Badge>
+                    </div>
+                    <p className="mt-2 text-sm font-semibold text-foreground">{todoPrimaryReason}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">{nextActionText}</p>
+                    <p className="mt-2 text-xs text-muted-foreground">아래 버튼에서 바로 처리할 수 있어요.</p>
+                  </div>
+                ) : nextActionText ? (
+                  <p className="mt-1 text-xs text-muted-foreground">{nextActionText}</p>
+                ) : null}
 
                 <div className="grid grid-cols-1 gap-3 rounded-xl border border-border/50 bg-muted/30 p-3 bp-sm:grid-cols-2 bp-lg:grid-cols-4">
                   {displayKind === 'order' ? (
