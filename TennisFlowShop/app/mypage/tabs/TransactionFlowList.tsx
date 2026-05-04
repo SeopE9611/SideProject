@@ -280,8 +280,8 @@ const getFlowNextActionText = (group: ActivityGroup, opts?: { prefersApplication
     const todoMessageMap: Record<string, string> = {
       '구매확정 필요': '상품을 받으셨다면 구매확정을 진행해주세요.',
       '운송장 등록 필요': '운송장 정보를 등록해주세요.',
-      '교체확정 필요': '작업 내용을 확인하고 확정해주세요.',
-      '후기를 남길 수 있어요': '상품 사용 후기를 남겨 다른 사용자에게 도움을 줄 수 있어요.',
+      '교체확정 필요': '작업 내용을 확인하고 교체확정을 진행해주세요.',
+      '후기를 남길 수 있어요': '구매확정된 상품은 후기를 작성할 수 있어요.',
       '교체서비스 신청 필요': '교체서비스 신청을 이어서 진행해주세요.',
     };
     return todoMessageMap[opts.todoPrimaryReason] ?? null;
@@ -293,9 +293,9 @@ const getFlowNextActionText = (group: ActivityGroup, opts?: { prefersApplication
     const normalized = getMypageNormalizedStatus(group.order?.status);
     if (normalized === '취소요청') return '취소 요청이 접수되었습니다. 처리 결과를 기다려주세요.';
     if (normalized === '취소') return '취소가 완료되었습니다.';
-    if (normalized === '환불') return '환불 처리가 완료되었거나 진행 상태를 확인할 수 있습니다.';
+    if (normalized === '환불' || normalized === '환불 처리중') return '환불 진행 상태를 확인해주세요.';
     if (normalized === '대기중') return '결제를 완료해주세요.';
-    if (normalized === '결제완료') return '상품 준비 중입니다. 잠시만 기다려주세요.';
+    if (normalized === '결제완료') return '결제가 완료되었습니다. 상품 준비를 기다려주세요.';
     if (normalized === '처리중') return '상품을 준비하고 있습니다. 준비가 끝나면 배송 또는 수령 안내가 진행됩니다.';
     if (normalized === '배송중') {
       return isVisitPickupOrder({ shippingMethod: group.order?.shippingMethod })
@@ -303,15 +303,15 @@ const getFlowNextActionText = (group: ActivityGroup, opts?: { prefersApplication
         : '배송 정보를 확인해주세요.';
     }
     if (normalized === '배송완료') return '상품을 받으셨다면 구매확정을 진행해주세요.';
-    if (normalized === '구매확정') return '구매확정된 상품의 후기를 남길 수 있어요.';
+    if (normalized === '구매확정') return '구매확정된 상품은 후기를 작성할 수 있어요.';
     return null;
   }
 
   if (viewKind === 'rental') {
     const normalized = getMypageNormalizedStatus(group.rental?.status);
-    if (normalized === '취소') return '취소가 완료되었습니다.';
+    if (normalized === '취소') return '대여가 취소되었습니다.';
     if (normalized === '대기중') return '결제를 완료해주세요.';
-    if (normalized === '결제완료') return '출고 또는 수령 준비 중입니다.';
+    if (normalized === '결제완료') return '대여 상품 출고 또는 수령 준비 중입니다.';
     if (normalized === '대여중') return '대여 중입니다. 반납 일정을 확인해주세요.';
     if (normalized === '반납완료') return '반납이 완료되었습니다.';
     if (!group.rental?.stringingApplicationId && group.rental?.withStringService) return '교체서비스 신청을 이어서 진행해주세요.';
@@ -321,12 +321,12 @@ const getFlowNextActionText = (group: ActivityGroup, opts?: { prefersApplication
 
   const app = group.application;
   const normalized = getMypageNormalizedStatus(app?.status);
-  if (normalized === '취소') return '취소가 완료되었습니다.';
-  if (normalized === '접수완료') return '접수가 완료되었습니다. 검토를 기다려주세요.';
+  if (normalized === '취소') return '신청이 취소되었습니다.';
+  if (normalized === '접수완료') return '신청이 접수되었습니다. 검토를 기다려주세요.';
   if (normalized === '검토 중') return '신청 내용을 확인 중입니다. 안내를 기다려주세요.';
   if (normalized === '승인') return '신청이 확인되었습니다. 다음 안내를 기다려주세요.';
-  if (normalized === '처리중' || normalized === '작업 중') return '작업이 진행 중입니다. 완료 안내를 기다려주세요.';
-  if (normalized === '교체완료') return '작업 내용을 확인하고 확정해주세요.';
+  if (normalized === '처리중' || normalized === '작업 중') return '교체서비스 작업이 진행 중입니다. 완료 안내를 기다려주세요.';
+  if (normalized === '교체완료') return '작업 내용을 확인하고 교체확정을 진행해주세요.';
   if (normalized === '거절') return '신청이 반려되었습니다. 자세한 내용은 고객센터로 문의해주세요.';
   return null;
 };

@@ -51,7 +51,7 @@ export function getGuestOrderNextActionText(input: GuestOrderNextActionInput): s
     normalized === "결제완료" ||
     normalized === "결제 완료"
   ) {
-    return "상품 준비 중입니다. 잠시만 기다려주세요.";
+    return "결제가 완료되었습니다. 상품 준비를 기다려주세요.";
   }
 
   if (
@@ -85,7 +85,7 @@ export function getGuestOrderNextActionText(input: GuestOrderNextActionInput): s
     normalized === "배송 완료" ||
     normalized === "방문 수령 완료"
   ) {
-    return "상품 수령 후 주문 상세에서 진행 상태를 확인해주세요.";
+    return "상품을 받으셨다면 주문 상세에서 상태를 확인해주세요.";
   }
 
   if (
@@ -126,7 +126,7 @@ export function getGuestOrderNextActionText(input: GuestOrderNextActionInput): s
     normalized === "환불 완료" ||
     normalized === "환불 처리중"
   ) {
-    return "환불 처리가 완료되었거나 진행 상태를 확인할 수 있습니다.";
+    return "환불 진행 상태를 확인해주세요.";
   }
 
   return null;
