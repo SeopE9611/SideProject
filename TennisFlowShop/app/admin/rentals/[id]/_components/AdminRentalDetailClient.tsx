@@ -10,6 +10,7 @@ import AdminInternalNotesCard from "@/components/admin/AdminInternalNotesCard";
 import LinkedDocsCard, {
   LinkedDocItem,
 } from "@/components/admin/LinkedDocsCard";
+import { adminSurface } from "@/components/admin/admin-typography";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -539,17 +540,17 @@ export default function AdminRentalDetailClient() {
           </div>
         ) : null}
         <div className="mx-auto w-full max-w-[1500px] space-y-6 lg:space-y-8">
-          <div className="mb-6 rounded-2xl border border-border bg-muted/30 p-5 shadow-lg lg:mb-8 lg:p-6">
+          <div className={cn("mb-6 p-5 lg:mb-8 lg:p-6", adminSurface.cardMuted)}>
             <div className="mb-5 flex flex-col gap-3 lg:mb-6 lg:gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center space-x-4">
                 <div className="bg-card rounded-full p-3 shadow-md">
                   <Settings className="h-8 w-8 text-primary" />
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold tracking-normal text-foreground">
+                  <h1 className="text-2xl font-semibold tracking-normal text-foreground lg:text-3xl">
                     대여 관리
                   </h1>
-                  <p className="mt-1 text-muted-foreground">
+                  <p className="mt-1 text-sm text-foreground/75">
                     대여 ID: {data.id}
                   </p>
                 </div>

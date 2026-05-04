@@ -86,6 +86,7 @@ import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher"
 import { runAdminActionWithToast } from "@/lib/admin/adminActionHelpers";
 import { loadDaumPostcode } from "@/lib/loadDaumPostcode";
 import AdminInternalNotesCard from "@/components/admin/AdminInternalNotesCard";
+import { adminSurface } from "@/components/admin/admin-typography";
 
 // 변경이력 포맷터 유틸
 const AUDIT_LABELS: Record<string, string> = {
@@ -739,9 +740,8 @@ export default function UserDetailClient({ id }: { id: string }) {
         {/* 히어로 헤더 */}
         <div
           className={cn(
-            "mb-6 rounded-2xl border overflow-hidden shadow-sm",
-            "bg-card dark:bg-card/40",
-            "border-border",
+            "mb-6 overflow-hidden",
+            adminSurface.card,
           )}
         >
           <div className="flex items-start justify-between gap-4 px-5 py-4">
@@ -765,7 +765,7 @@ export default function UserDetailClient({ id }: { id: string }) {
 
               <div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <h1 className="text-xl md:text-2xl font-bold tracking-normal">
+                  <h1 className="text-2xl font-semibold tracking-normal text-foreground lg:text-3xl">
                     {user.name ?? "(이름없음)"}
                   </h1>
                   {(() => {
@@ -779,7 +779,7 @@ export default function UserDetailClient({ id }: { id: string }) {
                   <StatusBadge status={statusKey(user)} />
                 </div>
 
-                <div className="mt-1 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+                <div className="mt-1 flex flex-wrap items-center gap-3 text-sm text-foreground/75">
                   <div className="inline-flex items-center gap-1">
                     <Mail className="h-3.5 w-3.5" />
                     <button
@@ -919,7 +919,7 @@ export default function UserDetailClient({ id }: { id: string }) {
                       ))}
                     </div>
                   ) : (
-                    <div className="p-3 text-sm text-muted-foreground">
+                    <div className="p-3 text-sm text-foreground/75">
                       최근 로그인 기록이 없습니다.
                     </div>
                   )}
@@ -1399,7 +1399,7 @@ function MiniList<T>({
   empty: string;
 }) {
   if (!items?.length) {
-    return <div className="text-sm text-muted-foreground">{empty}</div>;
+    return <div className="text-sm text-foreground/75">{empty}</div>;
   }
   return (
     <ul className="divide-y divide-border">
