@@ -22,6 +22,7 @@ import {
 import { cn } from "@/lib/utils";
 import {
   ArrowLeft,
+  CheckCircle2,
   Clock,
   Mail,
   Package,
@@ -205,7 +206,7 @@ export default function OrderLookupPage() {
         setLookupNotice({
           type: "empty",
           message:
-            "입력하신 이름, 이메일, 전화번호가 주문 시 작성한 정보와 일치하는지 다시 확인해주세요. 비회원 주문은 주문 시 입력한 정보가 정확히 일치해야 조회할 수 있어요.",
+            "입력하신 정보와 주문 시 입력한 정보가 정확히 일치하는지 확인한 뒤 다시 조회해주세요.",
         });
       }
     } catch (error) {
@@ -377,6 +378,29 @@ export default function OrderLookupPage() {
                       </p>
                     </div>
                   </div>
+                  <div className="mt-4 border-t border-border pt-4 text-sm">
+                    <p className="font-medium text-foreground mb-2">조회 전 확인해주세요</p>
+                    <ul className="space-y-1.5 text-muted-foreground">
+                      <li className="flex items-start gap-2">
+                        <CheckCircle2 className="mt-0.5 h-4 w-4 text-primary" />
+                        <span>비회원 주문은 주문 시 입력한 이름과 이메일이 정확히 일치해야 조회할 수 있습니다.</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <CheckCircle2 className="mt-0.5 h-4 w-4 text-primary" />
+                        <span>전화번호를 입력한 경우 주문 시 전화번호와도 일치해야 합니다.</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <CheckCircle2 className="mt-0.5 h-4 w-4 text-primary" />
+                        <span>최근 6개월 이내 주문만 조회됩니다.</span>
+                      </li>
+                    </ul>
+                    <ul className="mt-3 space-y-1.5 text-muted-foreground">
+                      <li>• 주문자 이름에 띄어쓰기나 오타가 없는지 확인해주세요.</li>
+                      <li>• 주문 당시 사용한 이메일 주소를 입력해주세요.</li>
+                      <li>• 전화번호는 입력했다면 숫자만 10~11자리로 입력해주세요.</li>
+                      <li>• 주문 완료 직후라면 잠시 후 다시 조회해주세요.</li>
+                    </ul>
+                  </div>
                 </div>
               </CardContent>
 
@@ -398,15 +422,23 @@ export default function OrderLookupPage() {
                     </p>
                     <p className="mt-1 text-sm">{lookupNotice.message}</p>
                     {lookupNotice.type === "empty" && (
-                      <p className="mt-3 text-sm text-muted-foreground">
-                        계속 조회되지 않는다면
-                        <Link
-                          href="/board/qna/write"
-                          className="ml-1 font-medium text-primary hover:underline"
-                        >
-                          고객센터 Q&A로 문의해주세요.
-                        </Link>
-                      </p>
+                      <>
+                        <ul className="mt-3 space-y-1.5 text-sm text-muted-foreground">
+                          <li>• 주문자 이름에 띄어쓰기나 오타가 없는지 확인해주세요.</li>
+                          <li>• 주문 당시 사용한 이메일 주소인지 확인해주세요.</li>
+                          <li>• 전화번호를 입력했다면 주문 당시 번호와 같은지 확인해주세요.</li>
+                          <li>• 최근 6개월 이내 주문인지 확인해주세요.</li>
+                        </ul>
+                        <p className="mt-3 text-sm text-muted-foreground">
+                          계속 조회되지 않는다면
+                          <Link
+                            href="/board/qna/write"
+                            className="ml-1 font-medium text-primary hover:underline"
+                          >
+                            고객센터 Q&A로 문의해주세요.
+                          </Link>
+                        </p>
+                      </>
                     )}
                   </div>
                 )}
