@@ -1130,8 +1130,6 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
             </Card>
           )}
 
-          {!isAdmin && linkedDocs.length > 0 && <LinkedDocsCard docs={linkedDocs} description={linkedDocsDescription} className="mb-4" />}
-
           {/* 상태 카드 */}
           <Card className={cn(detailCardClass, 'mb-6 bp-sm:mb-8')}>
             <CardHeader className={detailCardHeaderClass}>
@@ -1254,6 +1252,9 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
               )}
             </CardContent>
           </Card>
+
+          {!isAdmin && linkedDocs.length > 0 && <LinkedDocsCard docs={linkedDocs} description={linkedDocsDescription} className="mb-4" />}
+
           <div className={detailGridClass}>
             {/* 고객 정보 */}
             <Card className={cn(detailCardClass, isAdmin && 'xl:col-span-6')}>
