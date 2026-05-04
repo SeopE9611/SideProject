@@ -639,7 +639,7 @@ function ReviewCard({
             <Button asChild variant="ghost" size="sm">
               <Link href="/reviews/write">
                 <Plus className="h-4 w-4 mr-1" />
-                리뷰쓰기
+                후기 작성
               </Link>
             </Button>
             <Button asChild variant="ghost" size="sm">
@@ -721,7 +721,7 @@ function CommunityIntroCard() {
 
       <CardContent className="p-4 md:p-6 space-y-4 text-sm text-muted-foreground">
         <p>
-          자유게시판, 중고거래, 장비 사용기 등 사용자 커뮤니티 공간을 한 곳에서
+          자유게시판, 중고거래, 장비 사용기, 구매·서비스 후기를 한 곳에서
           둘러볼 수 있어요.
         </p>
 
@@ -855,12 +855,11 @@ export default function BoardPage() {
               <MessageSquare className="h-6 w-6" />
             </div>
             <h1 className="text-3xl md:text-4xl font-bold tracking-normal text-foreground">
-              게시판
+              커뮤니티
             </h1>
           </div>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            자유게시판, 중고거래, 장비 사용기 중심의 커뮤니티 최신글을 한 곳에서
-            확인해 보세요.
+            자유게시판, 중고거래, 장비 사용기, 리뷰를 한 곳에서 확인하는 커뮤니티 공간입니다.
           </p>
         </div>
 

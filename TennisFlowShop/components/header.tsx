@@ -405,7 +405,7 @@ const Header = () => {
     { name: "고객센터", href: "/support" },
 
     // 앞으로 커뮤니티(리뷰, 자유게시판 등) 허브가 될 /board
-    { name: "게시판", href: "/board", hasMegaMenu: true, isBoardMenu: true },
+    { name: "커뮤니티", href: "/board", hasMegaMenu: true, isBoardMenu: true },
     { name: "라켓 검색", href: "/rackets/finder", hasMegaMenu: false },
   ];
 
@@ -557,7 +557,7 @@ const Header = () => {
                     {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
                       <MessageSquareText className="h-4 w-4" />
                     </div> */}
-                    <span className="text-foreground">게시판</span>
+                    <span className="text-foreground">커뮤니티</span>
                   </span>
                 </AccordionTrigger>
                 <AccordionContent value="boards" className="pb-2 pt-1 space-y-0.5">
