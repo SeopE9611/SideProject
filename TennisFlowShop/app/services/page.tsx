@@ -191,7 +191,7 @@ export default async function ServicesPage() {
 
               <CardContent className="p-5 bp-md:p-8">
                 <div className="grid grid-cols-1 bp-md:grid-cols-2 gap-4 bp-md:gap-8 mb-6 bp-md:mb-8">
-                  <div className="text-center p-4 md:p-6 border border-border rounded-xl hover:shadow-lg transition-shadow duration-300">
+                  <div className="text-center p-4 md:p-6 border border-border rounded-xl hover:shadow-md transition-[box-shadow,border-color,background-color] duration-200">
                     <div className="w-20 h-20 bg-secondary rounded-full flex items-center justify-center text-primary mx-auto mb-4">
                       <PhoneCall className="h-10 w-10" />
                     </div>
@@ -201,7 +201,7 @@ export default async function ServicesPage() {
                     <p className="text-sm text-muted-foreground">운영 시간: 평일 10:00 - 22:00, 토요일 09:00 - 18:00</p>
                   </div>
 
-                  <div className="text-center p-4 md:p-6 border border-border rounded-xl hover:shadow-lg transition-shadow duration-300">
+                  <div className="text-center p-4 md:p-6 border border-border rounded-xl hover:shadow-md transition-[box-shadow,border-color,background-color] duration-200">
                     <div className="w-20 h-20 bg-secondary rounded-full flex items-center justify-center text-primary mx-auto mb-4">
                       <Calendar className="h-10 w-10" />
                     </div>
@@ -560,7 +560,7 @@ export default async function ServicesPage() {
           </div> */}
 
           <div className="text-center">
-            <Button size="lg" variant="default" className="shadow-sm hover:shadow-md transition-all duration-300" asChild>
+            <Button size="lg" variant="default" className="shadow-sm hover:shadow-md transition-[background-color,color,border-color,box-shadow,opacity] duration-200" asChild>
               {/* <Link href="/reviews/write?service=stringing"> */}
               <Link href="/reviews">
                 <Star className="w-5 h-5 mr-2" />

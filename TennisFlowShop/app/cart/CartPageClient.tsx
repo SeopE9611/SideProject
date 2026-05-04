@@ -573,7 +573,7 @@ export default function CartPageClient() {
                 <span>총 {cartItems.length}개 상품</span>
               </div>
               <div className="flex items-center gap-2">
-                <Star className="h-4 w-4 text-warning" />
+                <Star className="h-4 w-4 text-destructive" />
                 <span>상품별 배송비 정책이 적용됩니다.</span>
               </div>
             </div>
@@ -981,7 +981,7 @@ export default function CartPageClient() {
                       <div className="rounded-2xl bg-card/20 p-2 shadow-lg">
                         <Package className="h-5 w-5" />
                       </div>
-                      주문 요약
+                      최종 주문 요약
                     </CardTitle>
                   </div>
                   <CardContent className="space-y-5 bp-sm:space-y-6 p-4 bp-sm:p-6">

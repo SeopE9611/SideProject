@@ -220,7 +220,7 @@ function QnaCard({ items, viewerId, isAdmin, isLoading, error, onRetry }: { item
             <span className="text-lg sm:text-xl md:text-2xl font-semibold leading-tight break-keep">Q&amp;A 문의</span>
           </div>
           <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
-            <Button asChild size="sm" variant="ghost" className="h-8 px-2 sm:px-3 whitespace-nowrap">
+            <Button asChild size="sm" variant="default" className="h-8 px-2 sm:px-3 whitespace-nowrap">
               <Link href="/board/qna/write">
                 <Plus className="h-4 w-4 mr-1" />
                 Q&amp;A 문의하기
