@@ -385,7 +385,7 @@ export default function SupportPage() {
               고객센터
             </h1>
           </div>
-          <p className="text-sm md:text-base text-muted-foreground max-w-xl mx-auto">공지사항과 Q&amp;A를 통해 서비스 이용 중 필요한 도움을 확인하고, 궁금한 내용은 문의를 남길 수 있어요.</p>
+          <p className="text-sm md:text-base text-muted-foreground max-w-xl mx-auto">서비스 이용 중 필요한 안내를 확인하고, 궁금한 내용은 Q&amp;A 문의로 남겨주세요.</p>
         </div>
 
         {/* 카드 2열 레이아웃 */}
