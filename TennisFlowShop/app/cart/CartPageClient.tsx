@@ -1,37 +1,10 @@
 "use client";
 
-import Link from "next/link";
-import Image from "next/image";
-import {
-  Minus,
-  Plus,
-  Trash2,
-  ShoppingBag,
-  ArrowRight,
-  Star,
-  Package,
-  Truck,
-  Shield,
-  PackageOpen,
-  Loader2,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useCartStore } from "@/app/store/cartStore";
-import { useAuthStore, type User } from "@/app/store/authStore";
-import { getMyInfo } from "@/lib/auth.client";
-import { useEffect, useMemo, useState } from "react";
-import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import WishlistSidebar from "@/app/cart/_components/WishlistSidebar";
+import { useAuthStore, type User } from "@/app/store/authStore";
+import { useCartStore } from "@/app/store/cartStore";
 import SiteContainer from "@/components/layout/SiteContainer";
+import HeroCourtBackdrop from "@/components/system/HeroCourtBackdrop";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -43,12 +16,37 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+import { getMyInfo } from "@/lib/auth.client";
+import { ENABLE_STRING_STANDALONE_ORDER } from "@/lib/orders/string-standalone-policy";
 import {
   calcOrderShippingFeeWithBundlePolicy,
   normalizeItemShippingFee,
 } from "@/lib/shipping-fee";
-import { ENABLE_STRING_STANDALONE_ORDER } from "@/lib/orders/string-standalone-policy";
-import HeroCourtBackdrop from "@/components/system/HeroCourtBackdrop";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import {
+  ArrowRight,
+  Loader2,
+  Minus,
+  Package,
+  PackageOpen,
+  Plus,
+  ShoppingBag,
+  Star,
+  Trash2
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 
 // 통화 포맷 유틸 (일관성)
 const formatKRW = (n: number) => n.toLocaleString("ko-KR");
@@ -573,7 +571,7 @@ export default function CartPageClient() {
                 <span>총 {cartItems.length}개 상품</span>
               </div>
               <div className="flex items-center gap-2">
-                <Star className="h-4 w-4 text-destructive" />
+                <Star className="h-4 w-4 text-warning" />
                 <span>상품별 배송비 정책이 적용됩니다.</span>
               </div>
             </div>
