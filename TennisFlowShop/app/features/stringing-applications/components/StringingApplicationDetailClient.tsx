@@ -1115,6 +1115,23 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
             )}
           </div>
 
+          {isAdmin && linkedDocs.length > 0 && <LinkedDocsCard docs={linkedDocs} description={linkedDocsDescription} className="mb-4" />}
+
+          {isAdmin && (data.orderId || data.rentalId) && (
+            <Card className="mb-8 border border-primary/20 bg-primary/5">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base">연결 업무 기준 관리자 할 일</CardTitle>
+                <CardDescription>{linkedContextLabel} 문맥에서 현재 단계와 다음 액션을 안내합니다.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-1 text-sm">
+                <p className="text-muted-foreground">현재 단계: {appGuide.stage}</p>
+                <p className="font-medium">다음 할 일: {appGuide.nextAction}</p>
+              </CardContent>
+            </Card>
+          )}
+
+          {!isAdmin && linkedDocs.length > 0 && <LinkedDocsCard docs={linkedDocs} description={linkedDocsDescription} className="mb-4" />}
+
           {/* 상태 카드 */}
           <Card className={cn(detailCardClass, 'mb-6 bp-sm:mb-8')}>
             <CardHeader className={detailCardHeaderClass}>
@@ -1237,22 +1254,6 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
               )}
             </CardContent>
           </Card>
-          {/* 연결 문서(공용 카드) */}
-          {linkedDocs.length > 0 && <LinkedDocsCard docs={linkedDocs} description={linkedDocsDescription} className="mb-4" />}
-
-          {isAdmin && (data.orderId || data.rentalId) && (
-            <Card className="mb-8 border border-primary/20 bg-primary/5">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">연결 업무 기준 관리자 할 일</CardTitle>
-                <CardDescription>{linkedContextLabel} 문맥에서 현재 단계와 다음 액션을 안내합니다.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-1 text-sm">
-                <p className="text-muted-foreground">현재 단계: {appGuide.stage}</p>
-                <p className="font-medium">다음 할 일: {appGuide.nextAction}</p>
-              </CardContent>
-            </Card>
-          )}
-
           <div className={detailGridClass}>
             {/* 고객 정보 */}
             <Card className={cn(detailCardClass, isAdmin && 'xl:col-span-6')}>
@@ -1847,6 +1848,11 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                 </CardContent>
               </Card>
             )}
+            {isAdmin && applicationId && (
+              <div className="mt-6">
+                <AdminInternalNotesCard targetType="stringingApplication" targetId={applicationId} />
+              </div>
+            )}
             {/* 처리 이력 */}
             {applicationId && (
               <div className="mt-6">
@@ -1857,11 +1863,6 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                     historyMutateRef.current = mutateFn;
                   }}
                 />
-              </div>
-            )}
-            {isAdmin && applicationId && (
-              <div className="mt-6">
-                <AdminInternalNotesCard targetType="stringingApplication" targetId={applicationId} />
               </div>
             )}
           </div>
