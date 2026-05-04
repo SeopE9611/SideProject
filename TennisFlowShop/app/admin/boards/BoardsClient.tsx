@@ -39,6 +39,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import { adminSurface } from "@/components/admin/admin-typography";
+import { cn } from "@/lib/utils";
 import {
   buildAdminBoardDetailUrl,
   buildBoardPublicUrl,
@@ -357,7 +359,7 @@ export default function BoardsClient() {
           helperText="고정 공지와 게시글 상세 수정은 각 게시글 화면에서 처리합니다."
         />
         <div className="grid gap-5 md:grid-cols-4">
-          <Card className="border-border/40 bg-card/50 backdrop-blur hover:border-border/60 transition-all duration-200">
+          <Card className={adminSurface.kpiCard}>
             <CardContent className="p-6">
               <div className="flex items-center gap-4">
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary/20">
@@ -373,7 +375,7 @@ export default function BoardsClient() {
             </CardContent>
           </Card>
 
-          <Card className="border-border/40 bg-card/50 backdrop-blur hover:border-border/60 transition-all duration-200">
+          <Card className={adminSurface.kpiCard}>
             <CardContent className="p-6">
               <div className="flex items-center gap-4">
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary/20">
@@ -391,7 +393,7 @@ export default function BoardsClient() {
             </CardContent>
           </Card>
 
-          <Card className="border-border/40 bg-card/50 backdrop-blur hover:border-border/60 transition-all duration-200">
+          <Card className={adminSurface.kpiCard}>
             <CardContent className="p-6">
               <div className="flex items-center gap-4">
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-destructive dark:bg-destructive/15">
@@ -409,7 +411,7 @@ export default function BoardsClient() {
             </CardContent>
           </Card>
 
-          <Card className="border-border/40 bg-card/50 backdrop-blur hover:border-border/60 transition-all duration-200">
+          <Card className={adminSurface.kpiCard}>
             <CardContent className="p-6">
               <div className="flex items-center gap-4">
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
@@ -528,7 +530,7 @@ export default function BoardsClient() {
                       {(posts ?? []).map((p) => (
                         <Card
                           key={p.id}
-                          className="group border-border/40 bg-background/50 backdrop-blur hover:border-border/60 hover:shadow-md transition-all duration-200"
+                          className={cn("group", adminSurface.tableCard)}
                         >
                           <CardContent className="p-5">
                             {/**
@@ -858,7 +860,7 @@ export default function BoardsClient() {
                         return (
                           <Card
                             key={r.id}
-                            className={`group border-border/40 bg-background/50 backdrop-blur hover:border-border/60 hover:shadow-md transition-all duration-200 ${isPending ? "border-warning/50 bg-warning/10 dark:bg-warning/15" : ""}`}
+                            className={cn("group", adminSurface.tableCard, isPending ? "border-warning/50 bg-warning/10 dark:bg-warning/15" : "")}
                           >
                             <CardContent className="p-5">
                               <div className="space-y-4">

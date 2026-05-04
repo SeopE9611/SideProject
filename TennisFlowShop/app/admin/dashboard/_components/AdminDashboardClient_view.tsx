@@ -10,6 +10,8 @@ import useSWR from "swr";
 
 import AsyncState from "@/components/system/AsyncState";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import { adminSurface } from "@/components/admin/admin-typography";
+import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -312,7 +314,7 @@ function InteractiveDonutChart({ data, labelFormatter }: { data: Array<{ label: 
 
 function KpiCard({ title, value, sub, icon, trend, spark }: { title: string; value: string; sub?: string; icon: ReactNode; trend?: string; spark?: ReactNode }) {
   return (
-    <Card className="group relative overflow-hidden border-border/40 bg-card/50 backdrop-blur transition-all hover:border-border/60 hover:shadow-md">
+    <Card className={cn("group relative overflow-hidden", adminSurface.kpiCard)}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
         <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
         <div className="rounded-lg bg-primary/10 p-2 text-primary transition-colors group-hover:bg-primary/15 dark:bg-primary/20 dark:group-hover:bg-primary/25">{icon}</div>
@@ -570,7 +572,7 @@ export default function AdminDashboardClient() {
             </CardContent>
           </Card>
 
-          <Card className="border-border/40 bg-card/50 backdrop-blur transition-all hover:border-border/60 hover:shadow-md">
+          <Card className={adminSurface.tableCard}>
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-2 text-base font-semibold">
                 <div className="rounded-full bg-primary/10 p-1.5 dark:bg-primary/20">
@@ -594,7 +596,7 @@ export default function AdminDashboardClient() {
             </CardContent>
           </Card>
 
-          <Card className="border-border/40 bg-card/50 backdrop-blur transition-all hover:border-border/60 hover:shadow-md">
+          <Card className={adminSurface.tableCard}>
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-2 text-base font-semibold">
                 <div className="rounded-full bg-primary/10 p-1.5 dark:bg-primary/20">
@@ -618,7 +620,7 @@ export default function AdminDashboardClient() {
             </CardContent>
           </Card>
 
-          <Card className="border-border/40 bg-card/50 backdrop-blur transition-all hover:border-border/60 hover:shadow-md">
+          <Card className={adminSurface.tableCard}>
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-2 text-base font-semibold">
                 <div className="rounded-full bg-primary/10 p-1.5 dark:bg-primary/20">

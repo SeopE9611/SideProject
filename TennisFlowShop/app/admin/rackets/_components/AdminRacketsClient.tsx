@@ -53,6 +53,8 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import useSWR from "swr";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import { adminSurface } from "@/components/admin/admin-typography";
+import { cn } from "@/lib/utils";
 
 function StockChip({ id, total }: { id: string; total: number }) {
   const { data } = useSWR<{ ok: boolean; available: number }>(
@@ -244,7 +246,7 @@ export default function AdminRacketsClient() {
           ].map((c, i) => (
             <Card
               key={i}
-              className="shadow-xl bg-muted/30 border border-border"
+              className={adminSurface.kpiCard}
             >
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
@@ -267,7 +269,7 @@ export default function AdminRacketsClient() {
           ))}
         </section>
 
-        <Card className="shadow-xl bg-muted/30 border border-border flex-1 min-h-0 flex flex-col">
+        <Card className={cn(adminSurface.tableCard, "flex-1 min-h-0 flex flex-col")}>
           <CardHeader className="bg-muted/30 border-b border-border pb-4 shrink-0">
             <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
               <div>

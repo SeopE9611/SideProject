@@ -15,6 +15,7 @@ import {
   Edit3,
 } from "lucide-react";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import { adminSurface } from "@/components/admin/admin-typography";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -46,6 +47,7 @@ import { adminMutator } from "@/lib/admin/adminFetcher";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { runAdminActionWithToast } from "@/lib/admin/adminActionHelpers";
 import { getMerchandisingBadgeSpec } from "@/lib/badge-style";
+import { cn } from "@/lib/utils";
 
 type PackageSettingsResponse = {
   packageConfigs?: PackageConfig[];
@@ -249,7 +251,7 @@ export default function PackageSettingsClient() {
     return (
       <div className="min-h-screen bg-muted/30">
         <div className="container py-6">
-          <div className="mb-8 rounded-2xl border border-border bg-muted/30 p-8 shadow-lg">
+          <div className={cn("mb-8 p-8", adminSurface.cardMuted)}>
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-4">
                 <Skeleton className="h-14 w-14 rounded-full" />
@@ -263,7 +265,7 @@ export default function PackageSettingsClient() {
           </div>
 
           <div className="space-y-8">
-            <Card className="border-0 bg-card shadow-2xl">
+            <Card className={adminSurface.card}>
               <CardContent className="p-6">
                 <div className="grid grid-cols-2 gap-2">
                   <Skeleton className="h-16 w-full" />
@@ -277,7 +279,7 @@ export default function PackageSettingsClient() {
               <Skeleton className="h-4 w-80" />
               <div className="grid gap-6 md:grid-cols-2">
                 {Array.from({ length: 4 }).map((_, index) => (
-                  <Card key={index} className="border-0 bg-card shadow-lg">
+                  <Card key={index} className={adminSurface.card}>
                     <CardHeader className="space-y-2">
                       <Skeleton className="h-6 w-40" />
                       <Skeleton className="h-4 w-24" />
@@ -329,7 +331,7 @@ export default function PackageSettingsClient() {
               <Button
                 variant="outline"
                 size="sm"
-                className="bg-card backdrop-blur-sm border-border hover:bg-muted"
+                className="bg-card border-border hover:bg-muted"
                 asChild
               >
                 <Link href="/admin/packages">
@@ -341,7 +343,7 @@ export default function PackageSettingsClient() {
           />
 
           <Tabs defaultValue="packages" className="space-y-8">
-            <Card className="border-0 shadow-2xl bg-card backdrop-blur-sm">
+            <Card className={adminSurface.card}>
               <CardContent className="p-6">
                 <TabsList className="grid w-full grid-cols-2 h-auto p-1 bg-background">
                   <TabsTrigger
@@ -388,7 +390,7 @@ export default function PackageSettingsClient() {
                     .map((pkg) => (
                       <Card
                         key={pkg.id}
-                        className="border-0 bg-card shadow-lg backdrop-blur-sm"
+                        className={adminSurface.card}
                       >
                         <CardHeader className="bg-muted/30 border-b">
                           <div className="flex items-center justify-between">
@@ -681,7 +683,7 @@ export default function PackageSettingsClient() {
 
             {/* 일반 설정 */}
             <TabsContent value="general">
-              <Card className="border-0 bg-card shadow-lg backdrop-blur-sm">
+              <Card className={adminSurface.card}>
                 <CardHeader className="bg-muted/30 border-b">
                   <CardTitle className="flex items-center space-x-2">
                     <Settings className="h-5 w-5 text-success" />

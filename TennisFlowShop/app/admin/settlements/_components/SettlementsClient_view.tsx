@@ -6,6 +6,7 @@ import KpiCard from "@/app/admin/settlements/_components/KpiCard";
 import { makeCsvFilename } from "@/app/admin/settlements/_lib/settlementExport";
 import { Badge } from "@/components/ui/badge";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import { adminSurface } from "@/components/admin/admin-typography";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   DropdownMenu,
@@ -26,6 +27,7 @@ import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher"
 import { badgeToneVariant, type BadgeSemanticTone } from "@/lib/badge-style";
 import { formatKRWCard, formatKRWFull } from "@/lib/money";
 import { showErrorToast, showInfoToast, showSuccessToast } from "@/lib/toast";
+import { cn } from "@/lib/utils";
 import type {
   SettlementDiff,
   SettlementLiveResponse,
@@ -469,7 +471,7 @@ export default function SettlementsClient() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6 mb-8">
           {/* 전체 정산 월 (기존 카드 유지) */}
-          <Card className="border-0 bg-card/80 shadow-xl backdrop-blur-sm transition-all duration-200 hover:shadow-2xl hover:scale-105 overflow-hidden">
+          <Card className={cn(adminSurface.kpiCard, "overflow-hidden")}>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -528,7 +530,7 @@ export default function SettlementsClient() {
           />
         </div>
 
-        <div className="border-b bg-card/80 backdrop-blur-sm rounded-t-2xl shadow-lg overflow-x-auto">
+        <div className="border-b rounded-t-2xl overflow-x-auto bg-card">
           <div className="px-4 sm:px-6 flex gap-1 min-w-max">
             <button
               onClick={() => setTab("snapshot")}
@@ -563,7 +565,7 @@ export default function SettlementsClient() {
         {/* 스냅샷 탭 */}
         {tab === "snapshot" && (
           <div className="space-y-6">
-            <Card className="border-0 bg-card/80 shadow-xl backdrop-blur-sm">
+            <Card className={adminSurface.card}>
               <CardContent className="p-4 sm:p-6">
                 <div className="flex flex-col gap-4">
                   <div className="w-full">
@@ -674,11 +676,11 @@ export default function SettlementsClient() {
               </CardContent>
             </Card>
 
-            <Card className="border-0 bg-card/80 shadow-xl backdrop-blur-sm overflow-visible max-w-6xl mx-auto">
+            <Card className={cn(adminSurface.tableCard, "overflow-visible max-w-6xl mx-auto")}>
               {/* 데스크탑 */}
               <div className="hidden md:block overflow-x-auto">
                 <div className="min-w-[980px]">
-                  <div className="sticky top-0 z-10 backdrop-blur-sm bg-muted border-b border-border">
+                  <div className="sticky top-0 z-10 bg-muted border-b border-border">
                     <div
                       className="grid gap-3 p-5 text-sm font-semibold text-foreground"
                       style={{
@@ -1054,7 +1056,7 @@ export default function SettlementsClient() {
                             statusMap[String(row.yyyymm)] === "stale" &&
                             diffMap[String(row.yyyymm)] && (
                               <div className="mx-5 mb-5 rounded-2xl border-2 border-destructive/40 bg-destructive/10 dark:bg-destructive/15 shadow-xl max-h-[60vh] overflow-auto overscroll-auto">
-                                <div className="p-4 border-b border-destructive/40 bg-card/50 backdrop-blur-sm flex items-center justify-between">
+                                <div className="p-4 border-b border-destructive/40 bg-card flex items-center justify-between">
                                   <div className="flex items-center gap-2">
                                     <AlertTriangle className="w-5 h-5 text-destructive" />
                                     <span className="font-semibold text-sm text-destructive">
@@ -1519,7 +1521,7 @@ export default function SettlementsClient() {
                         statusMap[String(row.yyyymm)] === "stale" &&
                         diffMap[String(row.yyyymm)] && (
                           <div className="mt-4 rounded-xl border-2 border-destructive/40 bg-destructive/10 dark:bg-destructive/15 overflow-hidden">
-                            <div className="p-3 border-b border-destructive/40 bg-card/50 backdrop-blur-sm flex items-center justify-between">
+                            <div className="p-3 border-b border-destructive/40 bg-card flex items-center justify-between">
                               <div className="flex items-center gap-2">
                                 <AlertTriangle className="w-4 h-4 text-destructive" />
                                 <span className="font-semibold text-xs text-destructive">
@@ -1702,7 +1704,7 @@ export default function SettlementsClient() {
         {/* 실시간 탭 */}
         {tab === "live" && (
           <div className="space-y-6">
-            <Card className="border-0 bg-card/80 shadow-xl backdrop-blur-sm">
+            <Card className={adminSurface.card}>
               <CardContent className="p-4 sm:p-6">
                 <div className="flex flex-col gap-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1849,7 +1851,7 @@ export default function SettlementsClient() {
             </Card>
 
             {live && (
-              <Card className="border-0 bg-card/80 shadow-xl backdrop-blur-sm overflow-visible">
+              <Card className={cn(adminSurface.tableCard, "overflow-visible")}>
                 <div className="hidden md:block overflow-x-auto">
                   <div className="min-w-[640px]">
                     <div className="bg-muted border-b border-border">

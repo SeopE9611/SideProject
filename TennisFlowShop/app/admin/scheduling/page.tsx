@@ -31,6 +31,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import { adminSurface } from "@/components/admin/admin-typography";
+import { cn } from "@/lib/utils";
 import AsyncState from "@/components/system/AsyncState";
 import { showErrorToast, showInfoToast, showSuccessToast } from "@/lib/toast";
 import { adminMutator } from "@/lib/admin/adminFetcher";
@@ -377,7 +379,7 @@ export default function StringingSettingsPage() {
           </div>
 
           <div className="grid gap-6 lg:grid-cols-2 mb-6">
-            <Card className="overflow-hidden rounded-3xl border border-border bg-card shadow-xl">
+            <Card className={cn("overflow-hidden", adminSurface.card)}>
               <CardHeader className="border-b border-border bg-card pb-4">
                 <CardTitle className="flex items-center gap-3 text-lg font-semibold text-foreground">
                   <div className="rounded-xl bg-primary/10 p-2 text-primary dark:bg-primary/20">
@@ -508,7 +510,7 @@ export default function StringingSettingsPage() {
               </CardContent>
             </Card>
 
-            <Card className="overflow-hidden rounded-3xl border border-border bg-card shadow-xl">
+            <Card className={cn("overflow-hidden", adminSurface.card)}>
               <CardHeader className="border-b border-border bg-card pb-4">
                 <CardTitle className="flex items-center gap-3 text-lg font-semibold text-foreground">
                   <div className="rounded-xl bg-muted p-2">
@@ -615,7 +617,7 @@ export default function StringingSettingsPage() {
             </Card>
           </div>
 
-          <Card className="overflow-hidden rounded-3xl border border-border bg-card shadow-xl">
+          <Card className={cn("overflow-hidden", adminSurface.card)}>
             <CardHeader className="border-b border-border bg-card pb-4">
               <CardTitle className="flex items-center gap-3 text-lg font-semibold text-foreground">
                 <div className="rounded-xl bg-muted p-2">

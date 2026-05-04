@@ -33,6 +33,7 @@ import {
 
 import { Switch } from "@/components/ui/switch";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import { adminSurface } from "@/components/admin/admin-typography";
 import { adminMutator } from "@/lib/admin/adminFetcher";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
@@ -449,7 +450,7 @@ export default function AdminReviewListClient() {
 
       {/* KPI */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        <Card className="border-0 bg-card shadow hover:shadow-md transition">
+        <Card className={adminSurface.kpiCard}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -462,7 +463,7 @@ export default function AdminReviewListClient() {
             </div>
           </CardContent>
         </Card>
-        <Card className="border-0 bg-card shadow hover:shadow-md transition">
+        <Card className={adminSurface.kpiCard}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -477,7 +478,7 @@ export default function AdminReviewListClient() {
             </div>
           </CardContent>
         </Card>
-        <Card className="border-0 bg-card shadow hover:shadow-md transition">
+        <Card className={adminSurface.kpiCard}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -490,7 +491,7 @@ export default function AdminReviewListClient() {
             </div>
           </CardContent>
         </Card>
-        <Card className="border-0 bg-card shadow hover:shadow-md transition">
+        <Card className={adminSurface.kpiCard}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -505,7 +506,7 @@ export default function AdminReviewListClient() {
             </div>
           </CardContent>
         </Card>
-        <Card className="border-0 bg-card shadow hover:shadow-md transition">
+        <Card className={adminSurface.kpiCard}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>

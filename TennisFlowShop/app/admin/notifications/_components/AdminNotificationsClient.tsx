@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import { adminSurface } from "@/components/admin/admin-typography";
 
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
@@ -289,7 +290,7 @@ export default function AdminNotificationsClient() {
       </div>
 
       <div className="grid gap-5 md:grid-cols-3">
-        <Card className="border-border/40 bg-card/50 backdrop-blur transition-all hover:border-border/60 hover:shadow-md">
+        <Card className={adminSurface.kpiCard}>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
@@ -314,7 +315,7 @@ export default function AdminNotificationsClient() {
           </CardContent>
         </Card>
 
-        <Card className="border-border/40 bg-card/50 backdrop-blur transition-all hover:border-border/60 hover:shadow-md">
+        <Card className={adminSurface.kpiCard}>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
@@ -339,7 +340,7 @@ export default function AdminNotificationsClient() {
           </CardContent>
         </Card>
 
-        <Card className="border-border/40 bg-card/50 backdrop-blur transition-all hover:border-border/60 hover:shadow-md">
+        <Card className={adminSurface.kpiCard}>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
@@ -476,7 +477,7 @@ export default function AdminNotificationsClient() {
               (rows ?? []).map((it) => (
                 <Card
                   key={it.id}
-                  className="group border-border/40 bg-card/30 backdrop-blur transition-all hover:border-border/60 hover:shadow-md"
+                  className={cn("group", adminSurface.tableCard)}
                 >
                   <CardContent className="p-5">
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
