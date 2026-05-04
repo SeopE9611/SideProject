@@ -53,6 +53,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import { adminSurface } from "@/components/admin/admin-typography";
 import { runAdminActionWithToast } from "@/lib/admin/adminActionHelpers";
 import { adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
@@ -371,7 +372,7 @@ export default function ProductsClient() {
               bgColor: "bg-muted",
             },
           ].map((c, i) => (
-            <Card key={i} className="shadow-xl bg-card border border-border">
+            <Card key={i} className={adminSurface.kpiCard}>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -393,7 +394,7 @@ export default function ProductsClient() {
           ))}
         </section>
 
-        <Card className="shadow-xl bg-card border border-border flex-1 min-h-0 flex flex-col">
+        <Card className={cn(adminSurface.tableCard, "flex-1 min-h-0 flex flex-col")}>
           <CardHeader className="bg-muted/50 border-b border-border pb-4 shrink-0">
             <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
               <div>
