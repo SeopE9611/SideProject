@@ -741,7 +741,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
               <span className="text-muted-foreground/50">/</span>
               <span className="text-foreground font-medium truncate max-w-[150px] sm:max-w-none">{product.name}</span>
             </div>
-            <Button variant="ghost" className="text-muted-foreground hover:text-foreground hover:bg-muted/50 px-3 py-2 h-auto text-sm rounded-xl transition-all duration-300" onClick={() => router.back()}>
+            <Button variant="ghost" className="text-muted-foreground hover:text-foreground hover:bg-muted/50 px-3 py-2 h-auto text-sm rounded-xl transition-[background-color,color,border-color,box-shadow,opacity] duration-200" onClick={() => router.back()}>
               <ArrowLeft className="mr-1.5 h-4 w-4" />
               뒤로
             </Button>
@@ -760,7 +760,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="absolute left-3 top-1/2 -translate-y-1/2 h-10 w-10 sm:h-12 sm:w-12 bg-card/90 text-foreground border border-border/60 shadow-lg hover:bg-card hover:shadow-xl hover:scale-105 rounded-xl transition-all duration-300"
+                      className="absolute left-3 top-1/2 -translate-y-1/2 h-10 w-10 sm:h-12 sm:w-12 bg-card/90 text-foreground border border-border/60 shadow-lg hover:bg-card hover:shadow-md rounded-xl transition-[background-color,color,border-color,box-shadow,opacity] duration-200"
                       onClick={prevImage}
                     >
                       <ChevronLeft className="h-5 w-5" />
@@ -768,7 +768,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="absolute right-3 top-1/2 -translate-y-1/2 h-10 w-10 sm:h-12 sm:w-12 bg-card/90 text-foreground border border-border/60 shadow-lg hover:bg-card hover:shadow-xl hover:scale-105 rounded-xl transition-all duration-300"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 h-10 w-10 sm:h-12 sm:w-12 bg-card/90 text-foreground border border-border/60 shadow-lg hover:bg-card hover:shadow-md rounded-xl transition-[background-color,color,border-color,box-shadow,opacity] duration-200"
                       onClick={nextImage}
                     >
                       <ChevronRight className="h-5 w-5" />
@@ -1064,7 +1064,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
               <TabsList className="w-full grid grid-cols-2 md:grid-cols-4 h-auto gap-1 sm:gap-1.5 bg-muted/30 rounded-none p-1 sm:p-1.5 border-b border-border/60">
                 <TabsTrigger
                   value="description"
-                  className="min-w-0 h-12 sm:h-14 md:h-16 px-3 text-sm sm:text-base md:text-lg font-medium truncate rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-lg data-[state=active]:text-foreground transition-all duration-300"
+                  className="min-w-0 h-12 sm:h-14 md:h-16 px-3 text-sm sm:text-base md:text-lg font-medium truncate rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-md data-[state=active]:text-foreground transition-[background-color,color,border-color,box-shadow,opacity] duration-200"
                 >
                   <FileText className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
                   <span className="hidden sm:inline">상품 설명</span>
@@ -1072,7 +1072,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 </TabsTrigger>
                 <TabsTrigger
                   value="specifications"
-                  className="min-w-0 h-12 sm:h-14 md:h-16 px-3 text-sm sm:text-base md:text-lg font-medium truncate rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-lg data-[state=active]:text-foreground transition-all duration-300"
+                  className="min-w-0 h-12 sm:h-14 md:h-16 px-3 text-sm sm:text-base md:text-lg font-medium truncate rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-md data-[state=active]:text-foreground transition-[background-color,color,border-color,box-shadow,opacity] duration-200"
                 >
                   <Settings className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
                   <span className="hidden sm:inline">상세 스펙</span>
@@ -1080,7 +1080,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 </TabsTrigger>
                 <TabsTrigger
                   value="reviews"
-                  className="min-w-0 h-12 sm:h-14 md:h-16 px-3 text-sm sm:text-base md:text-lg font-medium truncate rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-lg data-[state=active]:text-foreground transition-all duration-300"
+                  className="min-w-0 h-12 sm:h-14 md:h-16 px-3 text-sm sm:text-base md:text-lg font-medium truncate rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-md data-[state=active]:text-foreground transition-[background-color,color,border-color,box-shadow,opacity] duration-200"
                 >
                   <Star className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
                   <span className="hidden sm:inline">리뷰</span>
@@ -1089,7 +1089,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 </TabsTrigger>
                 <TabsTrigger
                   value="qna"
-                  className="min-w-0 h-12 sm:h-14 md:h-16 px-3 text-sm sm:text-base md:text-lg font-medium truncate rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-lg data-[state=active]:text-foreground transition-all duration-300"
+                  className="min-w-0 h-12 sm:h-14 md:h-16 px-3 text-sm sm:text-base md:text-lg font-medium truncate rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-md data-[state=active]:text-foreground transition-[background-color,color,border-color,box-shadow,opacity] duration-200"
                 >
                   <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
                   <span className="hidden sm:inline">문의</span>
@@ -1463,7 +1463,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                       <div className="space-y-3 sm:space-y-4">
                         {qnas.map((q: any) => (
                           <Link key={q._id} href={`/board/qna/${q._id}`}>
-                            <Card className="hover:shadow-lg transition-all duration-200 hover:scale-[1.01] border-border">
+                            <Card className="hover:shadow-md transition-[background-color,color,border-color,box-shadow,opacity] duration-200 border-border">
                               <CardContent className="p-4 sm:p-5">
                                 <div className="flex items-start justify-between">
                                   <div className="flex-1 min-w-0">

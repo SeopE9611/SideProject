@@ -1473,7 +1473,7 @@ export default function CheckoutPage() {
                           <CreditCard className="h-4 w-4 text-primary" />
                           할인 및 혜택
                         </Label>
-                        <div className="rounded-lg border border-border bg-secondary/30 p-4 space-y-3">
+                        <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-3">
                           <div className="flex justify-between items-center text-sm">
                             <span className="text-muted-foreground">사용 가능 포인트</span>
                             <span className="font-semibold">{user ? (pointsFetchError ? "-" : pointsAvailable === null ? "-" : `${pointsAvailable.toLocaleString()}P`) : "로그인 필요"}</span>
@@ -1656,7 +1656,7 @@ export default function CheckoutPage() {
                       </div>
                       <div>
                         <CardTitle className="text-lg bp-sm:text-xl font-bold">주문자 동의</CardTitle>
-                        <CardDescription className="mt-0.5 text-xs bp-sm:text-sm">결제를 진행하기 위해 아래 약관에 동의해주세요</CardDescription>
+                        <CardDescription className="mt-0.5 text-xs bp-sm:text-sm">최종 결제를 진행하기 위해 아래 약관에 동의해주세요</CardDescription>
                       </div>
                     </div>
                   </div>
