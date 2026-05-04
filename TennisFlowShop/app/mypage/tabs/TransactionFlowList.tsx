@@ -291,7 +291,7 @@ const getFlowNextActionText = (group: ActivityGroup, opts?: { prefersApplication
 
   if (viewKind === 'order') {
     const normalized = getMypageNormalizedStatus(group.order?.status);
-    if (normalized === '취소요청') return '취소 요청이 접수되었습니다. 처리 결과를 기다려주세요.';
+    if (normalized === '취소요청' || normalized === '취소 요청') return '취소 요청이 접수되었습니다. 처리 결과를 기다려주세요.';
     if (normalized === '취소') return '취소가 완료되었습니다.';
     if (normalized === '환불' || normalized === '환불 처리중') return '환불 진행 상태를 확인해주세요.';
     if (normalized === '대기중') return '결제를 완료해주세요.';
