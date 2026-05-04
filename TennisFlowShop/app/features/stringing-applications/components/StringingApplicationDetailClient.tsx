@@ -25,6 +25,7 @@ import { Dialog, DialogClose, DialogContent, DialogTitle, DialogTrigger } from '
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { inferNextActionForOperationItem } from '@/lib/admin/next-action-guidance';
+import { adminSurface } from '@/components/admin/admin-typography';
 import { badgeBase, badgeSizeSm, badgeToneClass, getPaymentStatusBadgeSpec, getShippingMethodBadge } from '@/lib/badge-style';
 import { buildAdminCancelRequestView, normalizeAdminCancelRequestStatus } from '@/lib/cancel-request/admin-cancel-request-view';
 import { readCancelRequestError } from '@/lib/cancel-request/refund-account-client';
@@ -870,9 +871,9 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
           {/* 헤더 */}
           <div
             className={cn(
-              'rounded-2xl shadow-lg mb-6 bp-sm:mb-8',
+              'mb-6 rounded-2xl bp-sm:mb-8',
               isAdmin
-                ? 'border border-border bg-muted/30 p-5 lg:p-6'
+                ? cn('p-5 lg:p-6', adminSurface.cardMuted)
                 : 'bg-muted/30 border border-border p-4 bp-sm:p-6 bp-md:p-8',
             )}
           >
@@ -887,14 +888,14 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
               <div className="flex items-center space-x-4">
                 <div className="bg-card rounded-full p-3 shadow-md">{isAdmin ? <Settings className="h-8 w-8 text-foreground" /> : <Target className="h-8 w-8 text-foreground" />}</div>
                 <div>
-                  <h1 className={cn('font-bold tracking-normal text-foreground', isAdmin ? 'text-3xl' : 'text-2xl bp-sm:text-3xl')}>{isAdmin ? '스트링 신청 관리' : '교체서비스 신청 상세'}</h1>
-                  <p className="mt-1 break-all text-sm text-foreground/80">{isAdmin ? `신청 번호: #${toShortApplicationId(data.id)}` : `신청번호: ${data.id}`}</p>
+                  <h1 className={cn('tracking-normal text-foreground', isAdmin ? 'text-2xl font-semibold lg:text-3xl' : 'text-2xl font-bold bp-sm:text-3xl')}>{isAdmin ? '스트링 신청 관리' : '교체서비스 신청 상세'}</h1>
+                  <p className="mt-1 break-all text-sm text-foreground/75">{isAdmin ? `신청 번호: #${toShortApplicationId(data.id)}` : `신청번호: ${data.id}`}</p>
                 </div>
               </div>
               <TooltipProvider>
                 <div className="flex flex-wrap items-center gap-2 sm:justify-end">
                   <Link href={backUrl} className="basis-full sm:basis-auto sm:mr-1">
-                    <Button variant="outline" size="sm" className="w-full bg-card/70 backdrop-blur-sm border-border hover:bg-primary/10 dark:hover:bg-primary/20 sm:w-auto">
+                    <Button variant="outline" size="sm" className="w-full border-border bg-card hover:bg-primary/10 sm:w-auto">
                       <ArrowLeft className="w-4 h-4 mr-2" />
                       신청 목록으로 돌아가기
                     </Button>
@@ -905,7 +906,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                     <Link
                       href={inboundTrackingHref}
                     >
-                      <Button variant="outline" size="sm" className="bg-card/70 backdrop-blur-sm border-border hover:bg-muted dark:bg-card/60 dark:hover:bg-secondary/60">
+                      <Button variant="outline" size="sm" className="border-border bg-card hover:bg-muted">
                         <Truck className="w-4 h-4 mr-2" />
                         {hasTracking ? '라켓 발송 수정' : '라켓 발송 등록'}
                       </Button>
@@ -914,7 +915,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
 
                   {/* 관리자: 매장 발송 운송장 등록/수정 버튼 */}
                   {isAdmin && (
-                    <Button asChild variant="outline" size="sm" className="bg-card/70 backdrop-blur-sm border-border hover:bg-muted dark:bg-card/60 dark:hover:bg-secondary/60">
+                    <Button asChild variant="outline" size="sm" className="border-border bg-card hover:bg-muted">
                       <Link href={`/admin/applications/stringing/${data.id}/shipping-update`}>
                         <Truck className="mr-1 h-4 w-4" />
                         {invoice?.trackingNumber ? '반송 운송장 수정' : '반송 운송장 등록'}
@@ -934,8 +935,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                               ? 'opacity-50 cursor-not-allowed'
                               : isEditMode
                                 ? ''
-                                : 'bg-card/70 backdrop-blur-sm border-border hover:bg-muted \
- dark:bg-card/60 dark:hover:bg-secondary/60'
+                                : 'border-border bg-card hover:bg-muted'
                           }
                           onClick={() => {
                             if (!isEditableAllowed) return;

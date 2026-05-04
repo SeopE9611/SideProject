@@ -38,6 +38,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { adminSurface } from "@/components/admin/admin-typography";
 import { cn } from "@/lib/utils";
 import useSWR from "swr";
 import { parseISO, isValid, format } from "date-fns";
@@ -517,17 +518,17 @@ export default function PackageDetailClient({
           </div>
         ) : null}
         {/* 헤더 카드 */}
-        <div className="rounded-2xl p-6 md:p-8 border shadow-lg mb-8 bg-card/80 border-border dark:bg-card dark:border-border">
+        <div className={cn("mb-8 p-6 md:p-8", adminSurface.card)}>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
             <div className="flex items-center gap-4">
               <div className="rounded-xl p-3 bg-card">
                 <PackageIcon className="h-7 w-7 text-foreground" />
               </div>
               <div>
-                <h1 className="text-2xl md:text-3xl font-bold tracking-normal">
+                <h1 className="text-2xl font-semibold tracking-normal text-foreground lg:text-3xl">
                   패키지 상세 관리
                 </h1>
-                <p className="mt-1 text-sm text-muted-foreground">
+                <p className="mt-1 text-sm text-foreground/75">
                   패키지 ID: {data.id}
                 </p>
               </div>
@@ -601,7 +602,7 @@ export default function PackageDetailClient({
 
         <div className="grid gap-6 md:grid-cols-2">
           {/* 고객 정보 */}
-          <Card className="border-border bg-card/80 shadow-lg dark:bg-card dark:border-border">
+          <Card className={adminSurface.card}>
             <CardHeader className="border-b border-border">
               <CardTitle className="flex items-center gap-2">
                 <User className="h-5 w-5 text-foreground" />
@@ -646,7 +647,7 @@ export default function PackageDetailClient({
           </Card>
 
           {/* 패키지 상태 */}
-          <Card className="border-border bg-card/80 shadow-lg dark:bg-card dark:border-border">
+          <Card className={adminSurface.card}>
             <CardHeader className="border-b border-border">
               <CardTitle className="flex items-center justify-between">
                 <span className="flex items-center gap-2">

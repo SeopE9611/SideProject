@@ -70,6 +70,7 @@ import {
   type TrackingSWRFetcherError,
 } from "@/lib/fetchers/trackingSWRFetcher";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import { adminSurface } from "@/components/admin/admin-typography";
 import { cn } from "@/lib/utils";
 import {
   ArrowLeft,
@@ -788,17 +789,17 @@ export default function OrderDetailClient({ orderId }: Props) {
       <div className="container py-6 space-y-6 lg:py-8">
         <div className="mx-auto w-full max-w-[1500px]">
           {/* 개선된 관리자 헤더 */}
-          <div className="mb-6 rounded-2xl border border-border bg-muted/30 p-5 shadow-lg lg:p-6">
+          <div className={cn("mb-6 p-5 lg:p-6", adminSurface.cardMuted)}>
             <div className="mb-4 flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
               <div className="flex items-center space-x-4">
                 <div className="bg-card rounded-full p-3 shadow-md">
                   <Settings className="h-8 w-8 text-primary" />
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold tracking-normal text-foreground">
+                  <h1 className="text-2xl font-semibold tracking-normal text-foreground lg:text-3xl">
                     주문 관리
                   </h1>
-                  <p className="mt-1 text-foreground/80">
+                  <p className="mt-1 text-sm text-foreground/75">
                     주문 ID: {orderDetail._id}
                   </p>
                 </div>
@@ -807,7 +808,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-9 bg-card/70 backdrop-blur-sm border-border hover:bg-muted dark:bg-card/60 dark:border-border dark:hover:bg-muted"
+                  className="h-9 border-border bg-card hover:bg-muted"
                   asChild
                 >
                   <Link href="/admin/orders">
@@ -822,8 +823,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                   className={
                     isEditMode
                       ? ""
-                      : "bg-card/70 backdrop-blur-sm border-border hover:bg-muted \
- dark:bg-card/60 dark:border-border dark:hover:bg-muted"
+                      : "border-border bg-card hover:bg-muted"
                   }
                 >
                   <Pencil className="mr-1 h-4 w-4" />
@@ -1514,7 +1514,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                                   ? "등록됨"
                                   : "미등록"}
                               </p>
-                              <p className="mt-1 text-foreground/80">
+                              <p className="mt-1 text-sm text-foreground/75">
                                 운송장:{" "}
                                 {latestLinkedApplication.shippingInfo?.selfShip
                                   ?.trackingNo ?? "미등록"}
