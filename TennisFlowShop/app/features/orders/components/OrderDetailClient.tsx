@@ -1011,8 +1011,8 @@ export default function OrderDetailClient({ orderId }: Props) {
 
             {/* 연결 문서 + 최신 접수 요약 통합 */}
             {linkedDocs.length > 0 && (
-              <div className="m-3.5">
-                <Card className="border border-border/60 bg-card/70">
+              <div className="mb-6">
+                <Card className={adminSurface.card}>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-base">연결 문맥 요약</CardTitle>
                     <CardDescription>
@@ -1926,8 +1926,8 @@ export default function OrderDetailClient({ orderId }: Props) {
           />
 
           {/* 처리 이력 */}
-          <Card className="overflow-hidden border-0 bg-muted/30 shadow-xl ring-ring xl:col-span-6">
-            <CardHeader className="bg-muted/30 border-b">
+          <Card className={cn("overflow-hidden xl:col-span-6", adminSurface.tableCard)}>
+            <CardHeader className="border-b bg-muted/30">
               <CardTitle className="flex items-center space-x-2">
                 <Calendar className="h-5 w-5 text-primary" />
                 <span>주문 이력</span>
