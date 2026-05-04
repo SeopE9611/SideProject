@@ -600,6 +600,84 @@ export default function PackageDetailClient({
           </div>
         </div>
 
+        <Card className={cn("border-border bg-card/80 dark:bg-card dark:border-border", adminSurface.tableCard)}>
+          <CardHeader className="border-b border-border">
+            <CardTitle className="flex items-center gap-2">
+              <History className="h-5 w-5 text-primary" />
+              잔여 횟수/만료/사용 이력
+            </CardTitle>
+            <CardDescription>
+              패키지 횟수가 차감된 신청서 목록과 현재 사용 흐름을 먼저 확인하세요.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-6">
+            {usageHistory.length === 0 && !usageLoading ? (
+              <p className="text-center text-muted-foreground py-8">
+                사용 내역이 없습니다.
+              </p>
+            ) : (
+              <div className="space-y-4">
+                {usageHistory.map((u) => (
+                  <div
+                    key={u.id}
+                    className="border rounded-lg p-4 transition-colors border-border bg-card hover:bg-background dark:border-border dark:bg-card dark:hover:bg-card"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Badge
+                            variant={getMerchandisingBadgeSpec("discount").variant}
+                            className="text-xs"
+                          >
+                            -{u.sessionsUsed}회 차감
+                          </Badge>
+                        </div>
+                        <p className="font-medium mb-1">{u.summary}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {u.applicationSummary || `신청서 #${u.applicationId.slice(-6)}`}
+                        </p>
+                        {u.adminNote && (
+                          <p className="text-sm text-foreground mt-1">
+                            관리자 메모: {u.adminNote}
+                          </p>
+                        )}
+                      </div>
+                      <Button variant="ghost" size="sm" asChild>
+                        <Link
+                          href={`/admin/applications/stringing/${u.applicationId}`}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          상세 보기
+                        </Link>
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+                <div className="pt-2 flex justify-center">
+                  {usageHasMore ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => void loadUsageHistory(true)}
+                      disabled={usageLoading}
+                    >
+                      {usageLoading ? (
+                        <>
+                          <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                          불러오는 중
+                        </>
+                      ) : (
+                        "더보기"
+                      )}
+                    </Button>
+                  ) : null}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         <div className="grid gap-6 md:grid-cols-2">
           {/* 고객 정보 */}
           <Card className={adminSurface.card}>
@@ -792,87 +870,6 @@ export default function PackageDetailClient({
                 </Button>
               </CardFooter>
             )}
-          </Card>
-
-          {/* 사용 내역 */}
-          <Card className="md:col-span-2 border-border bg-card/80 shadow-lg dark:bg-card dark:border-border">
-            <CardHeader className="border-b border-border">
-              <CardTitle className="flex items-center gap-2">
-                <History className="h-5 w-5 text-primary" />
-                사용 내역
-              </CardTitle>
-              <CardDescription>
-                패키지 횟수가 차감된 신청서 목록입니다.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-6">
-              {usageHistory.length === 0 && !usageLoading ? (
-                <p className="text-center text-muted-foreground py-8">
-                  사용 내역이 없습니다.
-                </p>
-              ) : (
-                <div className="space-y-4">
-                  {usageHistory.map((u) => (
-                    <div
-                      key={u.id}
-                      className="border rounded-lg p-4 transition-colors border-border bg-card hover:bg-background dark:border-border dark:bg-card dark:hover:bg-card"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Badge
-                              variant={
-                                getMerchandisingBadgeSpec("discount").variant
-                              }
-                              className="text-xs"
-                            >
-                              -{u.sessionsUsed}회 차감
-                            </Badge>
-                          </div>
-                          <p className="font-medium mb-1">{u.summary}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {u.applicationSummary || `신청서 #${u.applicationId.slice(-6)}`}
-                          </p>
-                          {u.adminNote && (
-                            <p className="text-sm text-foreground mt-1">
-                              관리자 메모: {u.adminNote}
-                            </p>
-                          )}
-                        </div>
-                        <Button variant="ghost" size="sm" asChild>
-                          <Link
-                            href={`/admin/applications/stringing/${u.applicationId}`}
-                            target="_blank"
-                            rel="noreferrer"
-                          >
-                            상세 보기
-                          </Link>
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                  <div className="pt-2 flex justify-center">
-                    {usageHasMore ? (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => void loadUsageHistory(true)}
-                        disabled={usageLoading}
-                      >
-                        {usageLoading ? (
-                          <>
-                            <Loader2 className="mr-1 h-4 w-4 animate-spin" />
-                            불러오는 중
-                          </>
-                        ) : (
-                          "더보기"
-                        )}
-                      </Button>
-                    ) : null}
-                  </div>
-                </div>
-              )}
-            </CardContent>
           </Card>
 
           {/* 운영 내역 */}
