@@ -699,9 +699,9 @@ export default function AdminRentalDetailClient() {
               <LinkedDocsCard
                 docs={linkedDocs}
                 description="이 대여는 교체서비스 신청서와 연결되어 있습니다. 교체서비스 진행/상태는 신청서에서 확인하세요."
-                className="border-0 shadow-xl ring-1 ring-ring"
+                className={adminSurface.card}
               />
-              <Card className="border-0 shadow-xl ring-1 ring-ring bg-primary/5">
+              <Card className={cn(adminSurface.card, "bg-primary/5")}>
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base">연결 업무 가이드</CardTitle>
                   <CardDescription>
@@ -1431,13 +1431,13 @@ export default function AdminRentalDetailClient() {
               </div>
             </CardContent>
           </Card>
+          {data?.id ? (
+            <AdminInternalNotesCard targetType="rental" targetId={data.id} />
+          ) : null}
           <AdminRentalHistory
             id={id}
             servicePickupMethod={servicePickupMethod}
           />
-          {data?.id ? (
-            <AdminInternalNotesCard targetType="rental" targetId={data.id} />
-          ) : null}
         </div>
       </div>
     </div>
