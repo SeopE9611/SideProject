@@ -1728,7 +1728,7 @@ export default function StringServiceApplyPage() {
         {/* Main Content */}
         <div className="px-3 bp-sm:px-4 bp-md:px-6 bp-lg:px-6 mx-auto bp-lg:max-w-[1200px] py-8 bp-sm:py-12 bp-lg:py-16">
           {/* Section Header */}
-          <div className="text-center mb-8 bp-sm:mb-10">
+          <div className="text-center mb-6 bp-sm:mb-8">
             <h2 className="text-xl bp-sm:text-2xl font-semibold text-foreground">
               어떤 방식으로 교체서비스를 신청하시겠어요?
             </h2>
@@ -1737,6 +1737,54 @@ export default function StringServiceApplyPage() {
               이미 주문/대여 이력이 있다면 아래 내역에서 이어서 진행할 수
               있어요.
             </p>
+          </div>
+
+          <div className="max-w-5xl mx-auto mb-6 bp-sm:mb-8">
+            <Card className="rounded-xl border-border bg-card">
+              <CardContent className="p-4 bp-sm:p-5 bp-md:p-6">
+                <h3 className="text-base bp-sm:text-lg font-semibold text-foreground">
+                  내 상황에 맞는 신청 방식을 선택해주세요
+                </h3>
+                <p className="mt-2 text-sm bp-sm:text-base text-muted-foreground leading-relaxed">
+                  스트링을 새로 구매할지, 라켓 구매/대여와 함께 진행할지, 보유 장비로 신청할지에 따라 가장 알맞은 흐름으로 안내해드려요.
+                </p>
+
+                <ul className="mt-4 space-y-4">
+                  <li className="rounded-lg border border-border/70 bg-muted/30 p-3 bp-sm:p-4">
+                    <p className="text-sm bp-sm:text-base font-semibold text-foreground">
+                      스트링을 새로 구매하려면
+                    </p>
+                    <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
+                      “스트링도 함께 구매하고 신청”을 선택하세요. 새 스트링을 고른 뒤 결제와 함께 교체서비스 신청이 접수됩니다.
+                    </p>
+                  </li>
+                  <li className="rounded-lg border border-border/70 bg-muted/30 p-3 bp-sm:p-4">
+                    <p className="text-sm bp-sm:text-base font-semibold text-foreground">
+                      라켓 구매나 대여도 함께 진행하려면
+                    </p>
+                    <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
+                      “라켓 구매/대여와 함께 신청”을 선택하세요. 라켓과 스트링을 함께 선택한 뒤 결제 단계에서 신청이 함께 접수됩니다.
+                    </p>
+                  </li>
+                  <li className="rounded-lg border border-border/70 bg-muted/30 p-3 bp-sm:p-4">
+                    <p className="text-sm bp-sm:text-base font-semibold text-foreground">
+                      이미 라켓이나 스트링을 가지고 있다면
+                    </p>
+                    <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
+                      “보유 라켓/보유 스트링으로 신청”을 선택하세요. 가지고 있는 장비 정보를 입력해 신청서를 작성합니다.
+                    </p>
+                  </li>
+                  <li className="rounded-lg border border-border/70 bg-muted/30 p-3 bp-sm:p-4">
+                    <p className="text-sm bp-sm:text-base font-semibold text-foreground">
+                      패키지권을 사용하려면
+                    </p>
+                    <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
+                      보유한 패키지권은 신청/결제 단계에서 적용 여부를 확인하세요.
+                    </p>
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Option Cards */}
