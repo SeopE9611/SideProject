@@ -12,6 +12,7 @@ export async function GET(req: Request) {
   const phone = (url.searchParams.get("phone") || "").trim();
   const email = (url.searchParams.get("email") || "").trim();
   const q = [name, phone, email].find(Boolean) || "";
+  if (!q) return NextResponse.json({ onlineUsers: [], offlineCustomers: [] });
   const regex = q ? new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i") : null;
   const phoneNormalized = normalizePhone(phone || q);
   const emailLower = normalizeEmail(email || q);

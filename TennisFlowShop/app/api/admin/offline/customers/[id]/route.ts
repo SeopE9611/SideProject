@@ -14,6 +14,16 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   const csrf = verifyAdminCsrf(req); if (!csrf.ok) return csrf.res;
   const _id = oid((await ctx.params).id); if (!_id) return NextResponse.json({ message: "invalid id" }, { status: 400 });
   const body = await req.json().catch(()=>null); const parsed = offlineCustomerPatchSchema.safeParse(body); if (!parsed.success) return NextResponse.json({ message: "invalid body" }, { status: 400 });
+  const nextName = parsed.data.name ?? undefined;
+  const nextPhone = parsed.data.phone ?? undefined;
+  if (nextName || nextPhone) {
+    const current = await guard.db.collection("offline_customers").findOne({ _id }, { projection: { name: 1, phone: 1 } });
+    if (!current) return NextResponse.json({ message: "not found" }, { status: 404 });
+    const name = nextName ?? String(current.name || "");
+    const phoneNormalized = normalizePhone(nextPhone ?? String(current.phone || ""));
+    const duplicate = await guard.db.collection("offline_customers").findOne({ _id: { $ne: _id }, name, phoneNormalized }, { projection: { _id: 1 } });
+    if (duplicate) return NextResponse.json({ message: "duplicate", existingId: String((duplicate as any)._id) }, { status: 409 });
+  }
   const set: Record<string, any> = { updatedAt: new Date(), updatedBy: guard.admin._id };
   if (parsed.data.name) set.name = parsed.data.name;
   if (parsed.data.phone) { set.phone = parsed.data.phone; set.phoneNormalized = normalizePhone(parsed.data.phone); }
