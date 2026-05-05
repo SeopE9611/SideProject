@@ -5,6 +5,7 @@ import StatusBadge from "@/components/badges/StatusBadge";
 import SiteContainer from "@/components/layout/SiteContainer";
 import MaskedBlock from "@/components/reviews/MaskedBlock";
 import HeroCourtBackdrop from "@/components/system/HeroCourtBackdrop";
+import RecentViewedItems from "@/components/recent-viewed/RecentViewedItems";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { racketStockBadgeVariant } from "@/lib/badge-style";
 import { gripSizeLabel, racketBrandLabel, stringPatternLabel } from "@/lib/constants";
 import { normalizeItemShippingFee } from "@/lib/shipping-fee";
+import { addRecentViewedItem } from "@/lib/recent-viewed";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { ArrowLeft, Calendar, ChevronLeft, ChevronRight, Eye, EyeOff, FileText, Loader2, MoreHorizontal, Pencil, Scale, Settings, ShoppingCart, Star, Trash2 } from "lucide-react";
 import dynamic from "next/dynamic";
@@ -69,6 +71,21 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
   const canBuy = !soldOut && racketId !== "";
   const racketShippingFee = normalizeItemShippingFee(racket?.shippingFee);
   const racketShippingLabel = racketShippingFee > 0 ? `${racketShippingFee.toLocaleString()}원 배송비` : "무료배송";
+  const brandLabel = racketBrandLabel(racket?.brand);
+
+  useEffect(() => {
+    if (!racketId || !racket?.model) return;
+    const safePrice = Number(racket?.price);
+    addRecentViewedItem({
+      type: "racket",
+      id: racketId,
+      name: `${brandLabel} ${racket.model}`.trim(),
+      subtitle: racket?.condition ? `상태 ${racket.condition}` : "라켓",
+      image: racket?.images?.[0],
+      href: `/rackets/${racketId}`,
+      price: Number.isFinite(safePrice) ? safePrice : null,
+    });
+  }, [brandLabel, racket?.condition, racket?.images, racket?.model, racket?.price, racketId]);
 
   // 리뷰 탭 표시를 위한 데이터
   // - racket API에서 reviews/reviewSummary를 함께 내려주도록 되어 있어야 함
@@ -493,7 +510,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                           </Button>
                         ) : (
                           <div className="flex-1 min-w-0">
-                            <RentDialog id={racketId} rental={racket.rental} brand={racketBrandLabel(racket.brand)} model={racket.model} autoOpen={autoOpen} full />
+                            <RentDialog id={racketId} rental={racket.rental} brand={brandLabel} model={racket.model} autoOpen={autoOpen} full />
                           </div>
                         )
                       ) : (
@@ -859,6 +876,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
             </Tabs>
           </CardContent>
         </Card>
+        <RecentViewedItems currentType="racket" currentId={racketId} />
       </SiteContainer>
 
       {/* 모달성 리뷰 UI는 필요 시점에만 로드 */}
@@ -904,7 +922,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
               </button>
               {racket?.rental?.enabled && !soldOut && racketId !== "" ? (
                 <div className="flex-1 min-w-0">
-                  <RentDialog id={racketId} rental={racket.rental} brand={racketBrandLabel(racket.brand)} model={racket.model} autoOpen={autoOpen} full />
+                  <RentDialog id={racketId} rental={racket.rental} brand={brandLabel} model={racket.model} autoOpen={autoOpen} full />
                 </div>
               ) : (
                 <button type="button" disabled className="flex-1 h-12 rounded-lg border border-border bg-muted dark:bg-card text-muted-foreground font-semibold text-sm cursor-not-allowed flex items-center justify-center gap-2">
