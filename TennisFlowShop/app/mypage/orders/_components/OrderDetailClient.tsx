@@ -591,13 +591,20 @@ export default function OrderDetailClient({
   const paymentDone = paymentDoneKeywords.some(
     (keyword) => normalizedPaymentStatus.includes(keyword) || paymentLabel.includes(keyword),
   );
-  const preparationDone = ["processing", "preparing", "paid", "shipped", "delivered", "confirmed", "completed", "배송준비", "배송중", "배송완료", "구매확정", "처리중", "결제완료"].some((keyword) =>
+  const isPreparing = ["processing", "preparing", "배송준비", "배송준비중", "처리중"].some(
+    (keyword) => normalizedStatus.includes(keyword),
+  );
+  const isShipped = ["shipped", "배송중"].some((keyword) =>
     normalizedStatus.includes(keyword),
   );
-  const shippingDone = ["shipped", "delivered", "confirmed", "completed", "배송중", "배송완료", "구매확정", "완료"].some((keyword) =>
+  const isDelivered = ["delivered", "배송완료"].some((keyword) =>
     normalizedStatus.includes(keyword),
   );
-  const completionDone = Boolean(orderDetail?.userConfirmedAt) || ["confirmed", "completed", "구매확정"].some((keyword) => normalizedStatus.includes(keyword));
+  const isCompleted =
+    Boolean(orderDetail?.userConfirmedAt) ||
+    ["confirmed", "completed", "구매확정"].some((keyword) =>
+      normalizedStatus.includes(keyword),
+    );
 
   const timelineSteps: TimelineStep[] = [
     {
@@ -613,19 +620,19 @@ export default function OrderDetailClient({
     {
       title: "상품 준비",
       description: "주문 상품을 출고 또는 수령 준비 상태로 진행합니다.",
-      state: preparationDone ? "done" : paymentDone ? "active" : "waiting",
+      state: isShipped || isDelivered || isCompleted ? "done" : paymentDone || isPreparing ? "active" : "waiting",
     },
     {
       title: isVisitPickup ? "수령 준비" : "배송/수령 진행",
       description: isVisitPickup
         ? "매장 수령 준비 상태를 확인해주세요."
         : "배송 정보를 확인해주세요.",
-      state: shippingDone ? "done" : preparationDone ? "active" : "waiting",
+      state: isDelivered || isCompleted ? "done" : isShipped ? "active" : "waiting",
     },
     {
       title: "완료/구매확정",
       description: "주문 이용이 마무리된 단계입니다.",
-      state: completionDone ? "done" : shippingDone ? "active" : "waiting",
+      state: isCompleted ? "done" : isDelivered ? "active" : "waiting",
     },
   ];
 
