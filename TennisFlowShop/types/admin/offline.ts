@@ -1,0 +1,19 @@
+export type OfflineKind = "stringing" | "package_sale" | "etc";
+export type OfflineStatus = "received" | "in_progress" | "completed" | "picked_up" | "canceled";
+export type OfflinePaymentStatus = "pending" | "paid" | "refunded";
+export type OfflinePaymentMethod = "cash" | "card" | "bank_transfer" | "etc";
+
+export interface OfflineCustomerDto {
+  id: string;
+  linkedUserId?: string | null;
+  name: string;
+  phone: string;
+  phoneMasked?: string;
+  email?: string | null;
+  memo?: string;
+  tags?: string[];
+  source: "offline_admin";
+  stats?: { visitCount: number; totalPaid: number; totalServiceCount: number; lastVisitedAt?: string };
+  createdAt?: string;
+  updatedAt?: string;
+}

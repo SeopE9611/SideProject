@@ -11,6 +11,7 @@ import { ensureReviewIndexes } from "@/lib/reviews.maintenance";
 import { ensureRiskIndexes } from "@/lib/risk.indexes";
 import { ensureUsedRacketsIndexes } from "@/lib/usedRackets.indexes";
 import { ensureUserIndexes } from "@/lib/users.indexes";
+import { ensureOfflineIndexes } from "@/lib/offline/offline.repository";
 import { ensureWishlistIndexes } from "@/lib/wishlist.indexes";
 import { MongoClient } from "mongodb";
 
@@ -63,6 +64,7 @@ declare global {
 
   // cancel/refund 리스크 시그널 인덱스 보장 상태
   var _riskIndexesReady: Promise<void> | null | undefined;
+  var _offlineIndexesReady: Promise<void> | null | undefined;
 }
 
 let client: MongoClient;
@@ -260,6 +262,14 @@ export async function getDb() {
     });
   }
 
+
+  if (!global._offlineIndexesReady) {
+    global._offlineIndexesReady = ensureOfflineIndexes(db).catch((e) => {
+      console.error("[offline] ensureOfflineIndexes failed", e);
+      global._offlineIndexesReady = null;
+    });
+  }
+
   if (!global._reviewsIndexesReady) {
     global._reviewsIndexesReady = ensureReviewIndexes(db).catch((e) => {
       console.error("[reviews] ensureReviewIndexes failed", e);
@@ -282,6 +292,7 @@ export async function getDb() {
     global._usersIndexesReady,
     global._riskIndexesReady,
     global._reviewsIndexesReady,
+    global._offlineIndexesReady,
   ];
 
   // 운영 환경 최적화(Production non-blocking 정책):
