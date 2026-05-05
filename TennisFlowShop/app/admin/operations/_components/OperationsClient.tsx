@@ -310,8 +310,76 @@ const QUICK_VIEWS: Array<{
   { key: "paymentCheck", label: "결제 확인", description: "결제 확인·입금 확인이 필요한 건을 확인합니다." },
   { key: "shippingMissing", label: "배송 누락", description: "배송/운송장 확인이 필요한 건을 확인합니다." },
   { key: "rentalDue", label: "반납 예정", description: "반납 확인이 필요한 대여 업무를 확인합니다." },
-  { key: "linkedReview", label: "연결 확인", description: "문서 간 연결 상태 점검이 필요한 건을 확인합니다." },
+  { key: "linkedReview", label: "연결된 업무", description: "주문·신청·대여가 함께 묶인 운영 업무를 확인합니다." },
 ];
+
+function normalizeText(value?: string | null) {
+  return (value ?? "").toLowerCase().trim();
+}
+
+function appendQuickViewParam(params: URLSearchParams, view: OperationsQuickView) {
+  if (view === "all") {
+    params.delete("view");
+    return;
+  }
+  params.set("view", view);
+}
+
+function isTodayQueueGroup(group: { groupQueueBucket: string }) {
+  return ["urgent", "caution", "pending"].includes(group.groupQueueBucket);
+}
+
+function isCancelRequestedGroup(group: { items: OpItem[] }) {
+  return group.items.some((item) => item.cancel?.status === "requested");
+}
+
+function hasPaymentCheckNeeded(group: { items: OpItem[] }) {
+  const excludeKeywords = ["결제완료", "환불완료", "취소완료"];
+  const includeKeywords = ["결제대기", "입금대기", "미입금", "입금 확인", "결제 확인", "동기화 필요"];
+  return group.items.some((item) => {
+    const statusText = `${item.statusDisplayLabel ?? ""} ${item.statusLabel ?? ""}`;
+    if (excludeKeywords.some((word) => statusText.includes(word))) return false;
+    const paymentStatus = normalizeText(item.stage);
+    if (paymentStatus.includes("pending") || paymentStatus.includes("unpaid")) return true;
+    const combined = `${item.paymentLabel ?? ""} ${statusText} ${item.nextAction ?? ""}`;
+    return includeKeywords.some((word) => combined.includes(word));
+  });
+}
+
+function hasShippingMissing(group: { items: OpItem[] }) {
+  const excludeKeywords = ["배송완료", "수령완료", "방문 수령 완료", "반납완료"];
+  const includeKeywords = ["운송장", "배송 등록", "운송장 등록", "배송 필요", "발송 필요", "출고 필요", "배송 누락"];
+  return group.items.some((item) => {
+    const statusText = `${item.statusDisplayLabel ?? ""} ${item.statusLabel ?? ""}`;
+    if (excludeKeywords.some((word) => statusText.includes(word))) return false;
+    const warnText = (item.warnReasons ?? []).join(" ");
+    const nextActionText = item.nextAction ?? "";
+    const combined = `${statusText} ${warnText} ${nextActionText}`;
+    const needsTracking = item.hasShippingInfo === false || item.hasOutboundTracking === false;
+    if (needsTracking && includeKeywords.some((word) => combined.includes(word))) return true;
+    return includeKeywords.some((word) => warnText.includes(word) || nextActionText.includes(word));
+  });
+}
+
+function hasRentalDue(group: { items: OpItem[] }) {
+  const includeStageKeywords = ["overdue", "duesoon", "returndue", "active", "ongoing"];
+  const includeStatusKeywords = ["대여중", "반납대기", "반납예정"];
+  const includeActionKeywords = ["반납 확인", "반납확인", "반납 예정", "반납 필요"];
+  const excludeKeywords = ["반납완료", "완료", "환불완료"];
+  return group.items.some((item) => {
+    if (item.kind !== "rental") return false;
+    const combined = `${item.statusDisplayLabel ?? ""} ${item.statusLabel ?? ""} ${item.nextAction ?? ""}`;
+    if (excludeKeywords.some((word) => combined.includes(word))) return false;
+    const stage = normalizeText(item.stage);
+    if (includeStageKeywords.some((word) => stage.includes(word))) return true;
+    if (includeStatusKeywords.some((word) => combined.includes(word))) return true;
+    return includeActionKeywords.some((word) => (item.nextAction ?? "").includes(word));
+  });
+}
+
+function isLinkedWorkGroup(group: { items: OpItem[] }) {
+  return group.items.some((item) => Boolean(item.related)) || group.items.length > 1;
+}
 
 const PRESET_CONFIG: Record<
   PresetKey,
@@ -662,10 +730,8 @@ export default function OperationsClient() {
       setWarnSort,
       setPage,
     });
-    if (viewFromUrl) {
-      const matched = QUICK_VIEWS.find((view) => view.key === viewFromUrl);
-      if (matched) setActiveQuickView(matched.key);
-    }
+    const matched = QUICK_VIEWS.find((view) => view.key === viewFromUrl);
+    setActiveQuickView(matched?.key ?? "all");
     setInputValue((prev) => (queryFromUrl === q ? prev : queryFromUrl));
   }, [sp]);
 
@@ -786,24 +852,17 @@ export default function OperationsClient() {
       const items = group.items ?? [];
       switch (activeQuickView) {
         case "today":
-          return group.groupQueueBucket === "urgent" || group.groupQueueBucket === "caution" || group.groupQueueBucket === "pending";
+          return isTodayQueueGroup(group);
         case "cancelRequests":
-          return items.some((item) => item.cancel?.status === "requested");
+          return isCancelRequestedGroup(group);
         case "paymentCheck":
-          return items.some((item) => {
-            const payment = `${item.paymentLabel ?? ""} ${item.statusDisplayLabel ?? ""} ${item.statusLabel ?? ""}`.toLowerCase();
-            return payment.includes("pending") || payment.includes("unpaid") || payment.includes("결제대기") || payment.includes("입금대기") || payment.includes("확인");
-          });
+          return hasPaymentCheckNeeded(group);
         case "shippingMissing":
-          return items.some((item) => {
-            const nextAction = `${item.nextAction ?? ""}`.toLowerCase();
-            const signalReasons = (item.warnReasons ?? []).join(" ").toLowerCase();
-            return nextAction.includes("배송") || nextAction.includes("운송장") || signalReasons.includes("배송") || signalReasons.includes("운송장");
-          });
+          return hasShippingMissing(group);
         case "rentalDue":
-          return items.some((item) => item.kind === "rental" && (`${item.statusDisplayLabel ?? item.statusLabel ?? ""}`.includes("반납") || `${item.nextAction ?? ""}`.includes("반납")));
+          return hasRentalDue(group);
         case "linkedReview":
-          return items.some((item) => Boolean(item.related)) || group.items.length > 1;
+          return isLinkedWorkGroup(group);
         default:
           return true;
       }
@@ -835,8 +894,12 @@ export default function OperationsClient() {
       warnSort,
       page,
     });
-    return qs ? `${pathname}?${qs}` : pathname;
+    const params = new URLSearchParams(qs);
+    appendQuickViewParam(params, activeQuickView);
+    const nextQs = params.toString();
+    return nextQs ? `${pathname}?${nextQs}` : pathname;
   }, [
+    activeQuickView,
     flow,
     integrated,
     kind,
@@ -907,8 +970,7 @@ export default function OperationsClient() {
   function applyQuickView(view: OperationsQuickView) {
     setActiveQuickView(view);
     const nextParams = new URLSearchParams(sp.toString());
-    if (view === "all") nextParams.delete("view");
-    else nextParams.set("view", view);
+    appendQuickViewParam(nextParams, view);
     const nextQuery = nextParams.toString();
     replaceNoScroll(nextQuery ? `${pathname}?${nextQuery}` : pathname);
   }
@@ -2088,10 +2150,26 @@ export default function OperationsClient() {
                           <div className="flex flex-col items-center gap-2">
                             <Search className="h-8 w-8 text-muted-foreground/50" />
                             <p className="text-sm text-muted-foreground">
-                              {onlyWarn
-                                ? "주의(실제 오류) 조건에 해당하는 결과가 없습니다."
-                                : "결과가 없습니다."}
+                              {activeQuickView !== "all"
+                                ? "선택한 빠른 보기에 해당하는 운영 업무가 없습니다."
+                                : onlyWarn
+                                  ? "주의(실제 오류) 조건에 해당하는 결과가 없습니다."
+                                  : "결과가 없습니다."}
                             </p>
+                            {activeQuickView !== "all" && (
+                              <p className="text-xs text-muted-foreground/80">
+                                다른 빠른 보기를 선택하거나 전체 보기로 돌아가세요.
+                              </p>
+                            )}
+                            {activeQuickView !== "all" && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => applyQuickView("all")}
+                              >
+                                전체 보기
+                              </Button>
+                            )}
                           </div>
                         </TableCell>
                       </TableRow>
@@ -2419,7 +2497,26 @@ export default function OperationsClient() {
 
                 {shouldShowEmptyState && (
                   <div className="rounded-md border border-dashed border-border px-3 py-10 text-center text-sm text-muted-foreground">
-                    표시할 항목이 없습니다.
+                    <p>
+                      {activeQuickView !== "all"
+                        ? "선택한 빠른 보기에 해당하는 운영 업무가 없습니다."
+                        : "표시할 항목이 없습니다."}
+                    </p>
+                    {activeQuickView !== "all" && (
+                      <>
+                        <p className="mt-1 text-xs text-muted-foreground/80">
+                          다른 빠른 보기를 선택하거나 전체 보기로 돌아가세요.
+                        </p>
+                        <Button
+                          className="mt-3"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => applyQuickView("all")}
+                        >
+                          전체 보기
+                        </Button>
+                      </>
+                    )}
                   </div>
                 )}
               </div>
