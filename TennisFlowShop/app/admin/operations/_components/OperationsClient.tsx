@@ -416,6 +416,64 @@ type QuickActionTarget = {
   label: string;
 };
 
+type OperationsSlaLevel = "normal" | "watch" | "urgent";
+
+function getElapsedHours(value?: string | null) {
+  if (!value) return null;
+  const time = new Date(value).getTime();
+  if (!Number.isFinite(time)) return null;
+
+  const diffMs = Date.now() - time;
+  if (diffMs < 0) return 0;
+
+  return Math.floor(diffMs / (1000 * 60 * 60));
+}
+
+function formatElapsedText(hours: number | null) {
+  if (hours === null) return null;
+  if (hours < 1) return "1시간 미만";
+  if (hours < 24) return `${hours}시간 경과`;
+
+  const days = Math.floor(hours / 24);
+  const restHours = hours % 24;
+  if (restHours === 0) return `${days}일 경과`;
+  return `${days}일 ${restHours}시간 경과`;
+}
+
+function resolveOperationsSlaLevel(group: { groupQueueBucket: string; items: OpItem[]; createdAt: string | null }): OperationsSlaLevel {
+  const hours = getElapsedHours(group.createdAt);
+  if (group.groupQueueBucket === "urgent") return "urgent";
+
+  const hasCancel = isCancelRequestedGroup(group);
+  const hasPayment = hasPaymentCheckNeeded(group);
+  const hasShipping = hasShippingMissing(group);
+  const hasRental = hasRentalDue(group);
+  const hasBucketWatch = group.groupQueueBucket === "caution" || group.groupQueueBucket === "pending";
+
+  if (hours === null) return hasBucketWatch ? "watch" : "normal";
+
+  if (hasCancel) {
+    if (hours >= 24) return "urgent";
+    if (hours >= 6) return "watch";
+  }
+
+  if (hasPayment || hasShipping || hasRental) {
+    if (hours >= 48) return "urgent";
+    if (hours >= 24) return "watch";
+  }
+
+  if (hours >= 72) return "urgent";
+  if (hours >= 24 || hasBucketWatch) return "watch";
+  return "normal";
+}
+
+function getSlaBadgeMeta(level: OperationsSlaLevel, elapsedText: string | null) {
+  if (!elapsedText) return null;
+  if (level === "urgent") return { label: `긴급 · ${elapsedText}`, className: "border-warning/40 bg-warning/10 text-warning" };
+  if (level === "watch") return { label: `확인 · ${elapsedText}`, className: "border-info/40 bg-info/10 text-info" };
+  return { label: elapsedText, className: "border-border bg-muted/40 text-foreground/70" };
+}
+
 const MEANINGFUL_QUICK_ACTION_LABELS = new Set(["취소 검토", "계좌 확인", "신청서 확인", "배송 확인", "대여 확인", "주문 확인"]);
 
 function resolveQuickActionTarget(
@@ -1330,6 +1388,14 @@ export default function OperationsClient() {
                       const docLabel = `${opsKindLabel(g.anchor.kind)} · ${shortenId(g.anchor.id)}`;
                       const scenarioLabel = flowLabelText(g.anchor);
                       const createdAtLabel = formatKST(g.anchor.createdAt ?? g.createdAt);
+                      const elapsedHours = getElapsedHours(g.createdAt ?? g.anchor.createdAt);
+                      const elapsedText = formatElapsedText(elapsedHours);
+                      const slaLevel = resolveOperationsSlaLevel({
+                        groupQueueBucket: g.groupQueueBucket,
+                        items: g.items,
+                        createdAt: g.createdAt ?? g.anchor.createdAt,
+                      });
+                      const slaMeta = getSlaBadgeMeta(slaLevel, elapsedText);
                       const headline = statusHeadlineOf(g.anchor);
                       const quickActionTarget = resolveQuickActionTarget(
                         {
@@ -1384,6 +1450,15 @@ export default function OperationsClient() {
                                   </Button>
                                 </div>
                                 <p className="text-xs text-foreground/85 leading-tight">접수 {createdAtLabel}</p>
+                                {slaMeta ? (
+                                  <Badge
+                                    title="접수 시점 기준 경과 시간입니다. 긴급/확인은 운영 우선순위 기준으로 표시됩니다."
+                                    variant="outline"
+                                    className={cn(badgeBase, badgeSizeSm, slaMeta.className)}
+                                  >
+                                    {slaMeta.label}
+                                  </Badge>
+                                ) : null}
                               </div>
                             </TableCell>
 
@@ -1574,6 +1649,14 @@ export default function OperationsClient() {
                   const customerPrimary = customerName || customerEmail || "-";
                   const scenarioLabel = flowLabelText(g.anchor);
                   const createdAtLabel = formatKST(g.anchor.createdAt ?? g.createdAt);
+                  const elapsedHours = getElapsedHours(g.createdAt ?? g.anchor.createdAt);
+                  const elapsedText = formatElapsedText(elapsedHours);
+                  const slaLevel = resolveOperationsSlaLevel({
+                    groupQueueBucket: g.groupQueueBucket,
+                    items: g.items,
+                    createdAt: g.createdAt ?? g.anchor.createdAt,
+                  });
+                  const slaMeta = getSlaBadgeMeta(slaLevel, elapsedText);
                   const headline = statusHeadlineOf(g.anchor);
                   const quickActionTarget = resolveQuickActionTarget(
                     {
@@ -1618,6 +1701,15 @@ export default function OperationsClient() {
                             </Button>
                           </div>
                           <p className="text-xs leading-snug text-foreground/75">접수 {createdAtLabel}</p>
+                          {slaMeta ? (
+                            <Badge
+                              title="접수 시점 기준 경과 시간입니다. 긴급/확인은 운영 우선순위 기준으로 표시됩니다."
+                              variant="outline"
+                              className={cn(badgeBase, badgeSizeSm, slaMeta.className)}
+                            >
+                              {slaMeta.label}
+                            </Badge>
+                          ) : null}
                         </div>
 
                         <div className="flex items-baseline justify-between gap-2">
