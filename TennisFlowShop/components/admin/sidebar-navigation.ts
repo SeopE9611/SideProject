@@ -4,6 +4,7 @@ import {
   PackageSearch,
   Boxes,
   Users,
+  Store,
   CalendarClock,
   MessageCircle,
   Settings,
@@ -86,6 +87,7 @@ export const SIDEBAR_SECTIONS: SidebarSection[] = [
     label: "고객",
     items: [
       { title: "회원 관리", href: "/admin/users", icon: Users, key: "users" },
+      { title: "오프라인 관리", href: "/admin/offline", icon: Store },
       {
         title: "리뷰 관리",
         href: "/admin/reviews",
