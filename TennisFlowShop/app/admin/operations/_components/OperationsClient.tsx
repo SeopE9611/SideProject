@@ -290,6 +290,28 @@ function statusHeadlineOf(item: OpItem) {
 }
 
 type PresetKey = "paymentMismatch" | "integratedReview" | "singleApplication";
+type OperationsQuickView =
+  | "all"
+  | "today"
+  | "cancelRequests"
+  | "paymentCheck"
+  | "shippingMissing"
+  | "rentalDue"
+  | "linkedReview";
+
+const QUICK_VIEWS: Array<{
+  key: OperationsQuickView;
+  label: string;
+  description: string;
+}> = [
+  { key: "all", label: "전체", description: "모든 운영 업무를 확인합니다." },
+  { key: "today", label: "오늘 처리", description: "오늘 우선 확인해야 할 업무를 확인합니다." },
+  { key: "cancelRequests", label: "취소 요청", description: "취소 요청 접수 건을 확인합니다." },
+  { key: "paymentCheck", label: "결제 확인", description: "결제 확인·입금 확인이 필요한 건을 확인합니다." },
+  { key: "shippingMissing", label: "배송 누락", description: "배송/운송장 확인이 필요한 건을 확인합니다." },
+  { key: "rentalDue", label: "반납 예정", description: "반납 확인이 필요한 대여 업무를 확인합니다." },
+  { key: "linkedReview", label: "연결 확인", description: "문서 간 연결 상태 점검이 필요한 건을 확인합니다." },
+];
 
 const PRESET_CONFIG: Record<
   PresetKey,
@@ -611,6 +633,8 @@ export default function OperationsClient() {
   const [displayDensity, setDisplayDensity] = useState<"default" | "compact">(
     "default",
   );
+  const [activeQuickView, setActiveQuickView] =
+    useState<OperationsQuickView>("all");
   const [shareLinkCopied, setShareLinkCopied] = useState(false);
   const defaultPageSize = 50;
   // 주의(오류)만 보기에서는 "놓침"을 줄이기 위해 조회 범위를 넓힘(표시/운영 안전 목적)
@@ -627,6 +651,7 @@ export default function OperationsClient() {
   // 1) 최초 1회: URL → 상태 주입(새로고침 대응)
   useEffect(() => {
     const queryFromUrl = sp.get("q") ?? "";
+    const viewFromUrl = sp.get("view");
     initOperationsStateFromQuery(sp, {
       setQ,
       setKind,
@@ -637,6 +662,10 @@ export default function OperationsClient() {
       setWarnSort,
       setPage,
     });
+    if (viewFromUrl) {
+      const matched = QUICK_VIEWS.find((view) => view.key === viewFromUrl);
+      if (matched) setActiveQuickView(matched.key);
+    }
     setInputValue((prev) => (queryFromUrl === q ? prev : queryFromUrl));
   }, [sp]);
 
@@ -751,7 +780,37 @@ export default function OperationsClient() {
       };
     });
   }, [groups]);
-  const shouldShowEmptyState = hasResolvedGroups && groupsToRender.length === 0;
+  const quickViewFilteredGroups = useMemo(() => {
+    if (activeQuickView === "all") return groupsToRender;
+    return groupsToRender.filter((group) => {
+      const items = group.items ?? [];
+      switch (activeQuickView) {
+        case "today":
+          return group.groupQueueBucket === "urgent" || group.groupQueueBucket === "caution" || group.groupQueueBucket === "pending";
+        case "cancelRequests":
+          return items.some((item) => item.cancel?.status === "requested");
+        case "paymentCheck":
+          return items.some((item) => {
+            const payment = `${item.paymentLabel ?? ""} ${item.statusDisplayLabel ?? ""} ${item.statusLabel ?? ""}`.toLowerCase();
+            return payment.includes("pending") || payment.includes("unpaid") || payment.includes("결제대기") || payment.includes("입금대기") || payment.includes("확인");
+          });
+        case "shippingMissing":
+          return items.some((item) => {
+            const nextAction = `${item.nextAction ?? ""}`.toLowerCase();
+            const signalReasons = (item.warnReasons ?? []).join(" ").toLowerCase();
+            return nextAction.includes("배송") || nextAction.includes("운송장") || signalReasons.includes("배송") || signalReasons.includes("운송장");
+          });
+        case "rentalDue":
+          return items.some((item) => item.kind === "rental" && (`${item.statusDisplayLabel ?? item.statusLabel ?? ""}`.includes("반납") || `${item.nextAction ?? ""}`.includes("반납")));
+        case "linkedReview":
+          return items.some((item) => Boolean(item.related)) || group.items.length > 1;
+        default:
+          return true;
+      }
+    });
+  }, [activeQuickView, groupsToRender]);
+  const shouldShowEmptyState =
+    hasResolvedGroups && quickViewFilteredGroups.length === 0;
   const shouldShowGlobalError = Boolean(error) && !Array.isArray(data?.groups);
 
   const todayTodoCount: AdminOperationsSummary | null =
@@ -759,8 +818,8 @@ export default function OperationsClient() {
 
   // 펼칠 수 있는 그룹(통합 묶음)만 추림
   const expandableGroupKeys = useMemo(
-    () => groupsToRender.filter((g) => g.items.length > 1).map((g) => g.key),
-    [groupsToRender],
+    () => quickViewFilteredGroups.filter((g) => g.items.length > 1).map((g) => g.key),
+    [quickViewFilteredGroups],
   );
   const hasExpandableGroups = expandableGroupKeys.length > 0;
   const isAllExpanded =
@@ -836,6 +895,7 @@ export default function OperationsClient() {
     setOnlyWarn(false);
     setWarnFilter("all");
     setWarnSort("default");
+    setActiveQuickView("all");
     setPage(1);
     /**
      * reset도 URL을 초기화하지만,
@@ -843,6 +903,14 @@ export default function OperationsClient() {
      * (만약 reset 시에는 위로 올리고 싶다면 이 줄만 scroll:true로 분리하면 됨)
      */
     router.replace(pathname, { scroll: false });
+  }
+  function applyQuickView(view: OperationsQuickView) {
+    setActiveQuickView(view);
+    const nextParams = new URLSearchParams(sp.toString());
+    if (view === "all") nextParams.delete("view");
+    else nextParams.set("view", view);
+    const nextQuery = nextParams.toString();
+    replaceNoScroll(nextQuery ? `${pathname}?${nextQuery}` : pathname);
   }
 
   function clearPresetMode() {
@@ -895,6 +963,10 @@ export default function OperationsClient() {
     if (warnSort !== "default") count += 1;
     return count;
   }, [flow, integrated, kind, onlyWarn, q, warnFilter, warnSort]);
+  const activeQuickViewMeta = useMemo(
+    () => QUICK_VIEWS.find((view) => view.key === activeQuickView) ?? QUICK_VIEWS[0],
+    [activeQuickView],
+  );
 
   const activeKpi = useMemo(() => {
     if (warnFilter === "warn") return "urgent";
@@ -1033,6 +1105,29 @@ export default function OperationsClient() {
           </Card>
         </div>
         <div className="rounded-xl border border-border bg-card p-3">
+          <div className={cn(adminSurface.filterCard, "mb-3 p-3 sm:p-3")}>
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+              <div>
+                <p className="text-sm font-medium text-foreground">빠른 보기</p>
+                <p className="mt-1 text-xs text-foreground/70">
+                  {activeQuickViewMeta.description}
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {QUICK_VIEWS.map((view) => (
+                  <Button
+                    key={view.key}
+                    type="button"
+                    size="sm"
+                    variant={activeQuickView === view.key ? "default" : "outline"}
+                    onClick={() => applyQuickView(view.key)}
+                  >
+                    {view.label}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          </div>
           <p className="text-sm font-semibold text-foreground">업무 모드 전환</p>
           <div className="mt-2 flex flex-wrap gap-2">
             <Button
@@ -1507,7 +1602,7 @@ export default function OperationsClient() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {groupsToRender.map((g, idx) => {
+                    {quickViewFilteredGroups.map((g, idx) => {
                       const isGroup = g.items.length > 1;
                       const isOpen = !!openGroups[g.key];
                       const anchorKey = `${g.anchor.kind}:${g.anchor.id}`;
@@ -2006,7 +2101,7 @@ export default function OperationsClient() {
               </div>
 
               <div className="space-y-3 bp-lg:hidden">
-                {groupsToRender.map((g) => {
+                {quickViewFilteredGroups.map((g) => {
                   const warn = g.warn;
                   const isOpen = !!openGroups[g.key];
                   const reviewReasons = collectReviewReasons(g);
