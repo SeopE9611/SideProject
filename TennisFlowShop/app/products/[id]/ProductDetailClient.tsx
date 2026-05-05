@@ -4,6 +4,7 @@ import type { User } from "@/app/store/authStore";
 import { useBuyNowStore } from "@/app/store/buyNowStore";
 import { type CartItem, useCartStore } from "@/app/store/cartStore";
 import SiteContainer from "@/components/layout/SiteContainer";
+import RecentViewedItems from "@/components/recent-viewed/RecentViewedItems";
 import MaskedBlock from "@/components/reviews/MaskedBlock";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { badgeBaseOutlined, badgeSizeSm, getAnswerStatusBadgeSpec, getQnaCategoryBadgeSpec, imageBadgeClass } from "@/lib/badge-style";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { normalizeItemShippingFee } from "@/lib/shipping-fee";
+import { addRecentViewedItem } from "@/lib/recent-viewed";
 import { ENABLE_STRING_STANDALONE_ORDER } from "@/lib/orders/string-standalone-policy";
 import { cn } from "@/lib/utils";
 import {
@@ -717,6 +719,22 @@ export default function ProductDetailClient({ product }: { product: any }) {
     setSelectedImageIndex((prev) => (prev - 1 + images.length) % images.length);
   };
 
+  const productId = String(product?._id ?? product?.id ?? "");
+  const productBrandLabel = BRAND_MAP[(product?.brand ?? "").toLowerCase()] ?? product?.brand ?? "스트링";
+
+  useEffect(() => {
+    if (!productId || !product?.name) return;
+    addRecentViewedItem({
+      type: "product",
+      id: productId,
+      name: product.name,
+      subtitle: productBrandLabel || "스트링",
+      image: images?.[0],
+      href: `/products/${productId}`,
+      price: Number.isFinite(Number(product?.price)) ? Number(product.price) : null,
+    });
+  }, [images, product?.name, product?.price, productBrandLabel, productId]);
+
   const averageRating = reviewsLen > 0 ? reviews.reduce((sum: number, review: any) => sum + (Number(review?.rating) || 0), 0) / reviewsLen : 0;
   const merchandisingBadges = getProductDetailBadges(product);
 
@@ -816,7 +834,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 <div className="space-y-5 sm:space-y-6">
                   {/* 브랜드와 제품명 */}
                   <div>
-                    <span className="inline-block text-sm sm:text-base text-muted-foreground font-medium mb-2">{BRAND_MAP[(product?.brand ?? "").toLowerCase()] ?? product.brand}</span>
+                    <span className="inline-block text-sm sm:text-base text-muted-foreground font-medium mb-2">{productBrandLabel}</span>
                     <h1 className="text-xl sm:text-2xl bp-lg:text-3xl font-bold text-foreground leading-tight tracking-normal">{product.name}</h1>
                     <div className="mt-3 flex items-center gap-3">
                       <div className="flex items-center gap-0.5">
@@ -1557,6 +1575,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
               )}
             </CardContent>
           </Card>
+
+          <RecentViewedItems currentType="product" currentId={productId} />
 
           {/* 리뷰 수정 다이얼로그도 열릴 때만 로드 */}
           {editOpen && editing && <ReviewEditDialog open={editOpen} editForm={editForm} hoverRating={hoverRating} onClose={closeEdit} onSubmit={submitEdit} onChangeForm={setEditForm} onChangeHoverRating={setHoverRating} />}
