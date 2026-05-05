@@ -1074,38 +1074,6 @@ export default function OrderDetailClient({ orderId }: Props) {
             />
           )}
 
-          <Card className={cn("mb-6", getNextActionCardClass(nextActionGuide.tone))}>
-            <CardHeader className="pb-3">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <CardTitle className="text-base font-semibold">지금 처리할 일</CardTitle>
-                  <CardDescription className="mt-1 text-sm text-foreground/75">
-                    {nextActionGuide.title}
-                  </CardDescription>
-                </div>
-                <Badge variant="outline" className="w-fit">
-                  {nextActionGuide.tone === "urgent"
-                    ? "긴급"
-                    : nextActionGuide.tone === "warning"
-                      ? "확인 필요"
-                      : nextActionGuide.tone === "success"
-                        ? "정상"
-                        : "안내"}
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <p className="text-sm leading-relaxed text-foreground/80">
-                {nextActionGuide.description}
-              </p>
-              {nextActionGuide.actionHref && nextActionGuide.actionLabel ? (
-                <Button asChild size="sm" variant="outline">
-                  <Link href={nextActionGuide.actionHref}>{nextActionGuide.actionLabel}</Link>
-                </Button>
-              ) : null}
-            </CardContent>
-          </Card>
-
             {/* 연결 문서 + 최신 접수 요약 통합 */}
             {linkedDocs.length > 0 && (
               <div className="mb-6">
@@ -1273,6 +1241,38 @@ export default function OrderDetailClient({ orderId }: Props) {
                 </Card>
               </div>
             )}
+
+          <Card className={cn("mb-6", getNextActionCardClass(nextActionGuide.tone))}>
+            <CardHeader className="pb-3">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <CardTitle className="text-base font-semibold">지금 처리할 일</CardTitle>
+                  <CardDescription className="mt-1 text-sm text-foreground/75">
+                    {nextActionGuide.title}
+                  </CardDescription>
+                </div>
+                <Badge variant="outline" className="w-fit">
+                  {nextActionGuide.tone === "urgent"
+                    ? "긴급"
+                    : nextActionGuide.tone === "warning"
+                      ? "확인 필요"
+                      : nextActionGuide.tone === "success"
+                        ? "정상"
+                        : "안내"}
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-sm leading-relaxed text-foreground/80">
+                {nextActionGuide.description}
+              </p>
+              {nextActionGuide.actionHref && nextActionGuide.actionLabel ? (
+                <Button asChild size="sm" variant="outline">
+                  <Link href={nextActionGuide.actionHref}>{nextActionGuide.actionLabel}</Link>
+                </Button>
+              ) : null}
+            </CardContent>
+          </Card>
 
           {/* 주문 상태 및 요약 */}
           <Card className={cn("mb-6 overflow-hidden", adminSurface.cardMuted)}>
