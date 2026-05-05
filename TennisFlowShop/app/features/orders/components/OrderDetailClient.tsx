@@ -1345,7 +1345,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                         운영 액션
                       </p>
                       <p className="mt-1 text-xs text-foreground/75">
-                        취소 요청 처리 및 관리자 취소를 진행합니다.
+                        고객 요청 기반 취소 승인/거절 또는 관리자 직접 취소를 진행합니다. 처리 전 환불 계좌·결제 상태를 먼저 확인해주세요.
                       </p>
                     </div>
 
@@ -1390,7 +1390,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                 <AdminConfirmDialog
                   open={confirmAction === "approveCancel"}
                   title="취소 요청을 승인할까요?"
-                  description="고객의 주문 취소 요청을 승인합니다.\n결제 수단에 따라 PG 취소 또는 환불 처리가 함께 진행될 수 있습니다.\n처리 후 상태가 변경되므로 주문 정보와 환불 정보를 확인해주세요."
+                  description="고객의 주문 취소 요청을 승인합니다.\n결제 수단에 따라 PG 취소 또는 환불 처리가 함께 진행될 수 있습니다.\n처리 후 주문/결제 상태가 변경되므로 환불 계좌와 결제 상태를 먼저 확인해주세요."
                   severity="danger"
                   confirmText="취소 승인"
                   onOpenChange={(open) => {
@@ -1420,7 +1420,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                         고객의 주문 취소 요청을 거절합니다.
                         {"\n"}
                         주문은 기존 처리 흐름을 유지하며, 필요한 경우 거절 사유를
-                        남길 수 있습니다.
+                        남겨 처리 이력으로 관리할 수 있습니다.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <div className="space-y-2">

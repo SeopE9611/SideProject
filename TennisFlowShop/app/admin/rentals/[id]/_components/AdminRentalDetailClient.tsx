@@ -307,7 +307,7 @@ export default function AdminRentalDetailClient() {
       ? {
           title: "대여 취소 요청을 승인할까요?",
           description:
-            "고객의 대여 취소 요청을 승인합니다. 결제 수단에 따라 PG 취소 또는 환불 처리가 함께 진행될 수 있습니다.",
+            "고객의 대여 취소 요청을 승인합니다. 결제 수단에 따라 PG 취소 또는 환불 처리가 함께 진행될 수 있으며, 처리 후 상태가 변경됩니다. 보증금/환불 정보와 출고 상태, 결제 상태를 먼저 확인해주세요.",
           confirmText: "취소 승인",
           eventKey: "admin-rental-detail-cancel-approve-confirm",
           eventMeta: { rentalId: id, currentStatus: data?.status },
@@ -316,7 +316,7 @@ export default function AdminRentalDetailClient() {
         ? {
             title: "대여 취소 요청을 거절할까요?",
             description:
-              "고객의 대여 취소 요청을 거절합니다. 대여 주문은 기존 처리 흐름을 유지합니다.",
+              "고객의 대여 취소 요청을 거절합니다. 대여 주문은 기존 처리 흐름을 유지하며, 필요한 경우 거절 사유를 남겨 운영 이력으로 관리해주세요.",
             confirmText: "취소 거절",
             eventKey: "admin-rental-detail-cancel-reject-confirm",
             eventMeta: { rentalId: id, currentStatus: data?.status },
@@ -353,7 +353,7 @@ export default function AdminRentalDetailClient() {
         : pendingAction === "refundMark"
           ? {
               title: "보증금 환불 처리할까요?",
-              description: "이 작업은 보증금 환불 완료 상태로 기록됩니다.",
+              description: "반납 상태와 라켓 상태를 확인한 뒤 보증금 환불 처리를 진행합니다. 처리 후 운영 이력에 남으므로 환불 계좌/결제 수단과 실제 환불 여부를 함께 확인해주세요.",
               confirmText: "환불 처리",
               eventKey: "admin-rental-detail-refund-mark-confirm",
               eventMeta: { rentalId: id, currentStatus: data?.status },
@@ -361,7 +361,7 @@ export default function AdminRentalDetailClient() {
           : pendingAction === "refundClear"
             ? {
                 title: "보증금 환불 처리를 해제할까요?",
-                description: "이 작업은 환불 완료 기록을 해제합니다.",
+                description: "환불 완료 기록을 해제합니다. 이미 실제 환불이 진행되지 않았는지와 환불 이력 정합성을 먼저 확인해주세요.",
                 confirmText: "환불 해제",
                 eventKey: "admin-rental-detail-refund-clear-confirm",
                 eventMeta: { rentalId: id, currentStatus: data?.status },
@@ -587,8 +587,8 @@ export default function AdminRentalDetailClient() {
           : needsDepositRefund
             ? {
                 tone: "warning",
-                title: "보증금 환불 확인",
-                description: "반납 완료 건의 보증금 환불 처리 여부를 확인하세요.",
+              title: "보증금 환불 확인",
+              description: "반납 상태·라켓 상태·환불 계좌를 확인한 뒤 보증금 환불 처리 여부를 판단하세요.",
               }
             : linkedDocs.length > 0
               ? {
@@ -925,7 +925,7 @@ export default function AdminRentalDetailClient() {
             <CardHeader className="bg-muted/30 border-b pb-3">
               <CardTitle>대여 상태 관리</CardTitle>
               <CardDescription>
-                대여 상태를 변경하거나 보증금 환불을 처리할 수 있습니다.
+                대여 상태 변경 및 보증금 환불은 처리 후 이력에 남습니다. 반납/라켓 상태와 환불 정보를 확인한 뒤 진행하세요.
               </CardDescription>
             </CardHeader>
             <CardFooter className="pt-4">
