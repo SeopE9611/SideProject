@@ -2003,14 +2003,14 @@ export default function StringServiceApplyPage() {
                 <div className="flex gap-2">
                   <button
                     type="button"
-                    onClick={() => safePush("/mypage?tab=orders")}
+                    onClick={() => safePush("/mypage?tab=orders&scope=order")}
                     className="flex-1 bp-sm:flex-none px-4 py-2.5 text-sm font-medium rounded-lg border border-border text-foreground hover:bg-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     주문 내역
                   </button>
                   <button
                     type="button"
-                    onClick={() => safePush("/mypage?tab=orders")}
+                    onClick={() => safePush("/mypage?tab=orders&scope=rental")}
                     className="flex-1 bp-sm:flex-none px-4 py-2.5 text-sm font-medium rounded-lg border border-border text-foreground hover:bg-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     대여 내역
