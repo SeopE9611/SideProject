@@ -262,6 +262,46 @@ function getCancelRequestLabel(order: any): string | null {
   }
 }
 
+
+
+type TimelineStepState = "done" | "active" | "waiting";
+
+type TimelineStep = {
+  title: string;
+  description: string;
+  state: TimelineStepState;
+};
+
+const paymentDoneKeywords = ["paid", "결제완료", "결제 완료", "완료"];
+
+const getTimelineStateLabel = (state: TimelineStepState) => {
+  if (state === "done") return "완료";
+  if (state === "active") return "진행 중";
+  return "대기";
+};
+
+const getTimelineStepTone = (state: TimelineStepState) => {
+  if (state === "done") {
+    return {
+      wrapper: "border border-success/30 bg-success/10 text-success",
+      badge: "bg-success/15 text-success",
+      Icon: CheckCircle,
+    };
+  }
+  if (state === "active") {
+    return {
+      wrapper: "border border-primary/30 bg-primary/10 text-primary",
+      badge: "bg-primary/15 text-primary",
+      Icon: Clock,
+    };
+  }
+  return {
+    wrapper: "border border-border bg-muted/50 text-muted-foreground",
+    badge: "bg-muted text-muted-foreground",
+    Icon: Clock,
+  };
+};
+
 export default function OrderDetailClient({
   orderId,
   backUrl,
@@ -542,6 +582,56 @@ export default function OrderDetailClient({
   const selfShipTrackingNoLabel = selfShipInfo?.trackingNo?.trim() || "미등록";
 
   // 취소 요청 상태/라벨 계산
+  const normalizedStatus = String(orderDetail?.status ?? "").trim().toLowerCase();
+  const rawPaymentStatus = String(orderDetail?.paymentStatus ?? "").trim();
+  const normalizedPaymentStatus = rawPaymentStatus.toLowerCase();
+  const paymentLabel = getCommonOrderStatusLabel(rawPaymentStatus) ?? rawPaymentStatus;
+
+  const receivedDone = Boolean(orderDetail?.date);
+  const paymentDone = paymentDoneKeywords.some(
+    (keyword) => normalizedPaymentStatus.includes(keyword) || paymentLabel.includes(keyword),
+  );
+  const preparationDone = ["processing", "preparing", "paid", "shipped", "delivered", "confirmed", "completed", "배송준비", "배송중", "배송완료", "구매확정", "처리중", "결제완료"].some((keyword) =>
+    normalizedStatus.includes(keyword),
+  );
+  const shippingDone = ["shipped", "delivered", "confirmed", "completed", "배송중", "배송완료", "구매확정", "완료"].some((keyword) =>
+    normalizedStatus.includes(keyword),
+  );
+  const completionDone = Boolean(orderDetail?.userConfirmedAt) || ["confirmed", "completed", "구매확정"].some((keyword) => normalizedStatus.includes(keyword));
+
+  const timelineSteps: TimelineStep[] = [
+    {
+      title: "주문 접수",
+      description: "주문이 정상적으로 접수되었습니다.",
+      state: receivedDone ? "done" : "waiting",
+    },
+    {
+      title: "결제 확인",
+      description: "결제 상태를 확인하고 다음 절차를 준비합니다.",
+      state: paymentDone ? "done" : receivedDone ? "active" : "waiting",
+    },
+    {
+      title: "상품 준비",
+      description: "주문 상품을 출고 또는 수령 준비 상태로 진행합니다.",
+      state: preparationDone ? "done" : paymentDone ? "active" : "waiting",
+    },
+    {
+      title: isVisitPickup ? "수령 준비" : "배송/수령 진행",
+      description: isVisitPickup
+        ? "매장 수령 준비 상태를 확인해주세요."
+        : "배송 정보를 확인해주세요.",
+      state: shippingDone ? "done" : preparationDone ? "active" : "waiting",
+    },
+    {
+      title: "완료/구매확정",
+      description: "주문 이용이 마무리된 단계입니다.",
+      state: completionDone ? "done" : shippingDone ? "active" : "waiting",
+    },
+  ];
+
+  const shouldShowStringingTimelineHint = Boolean(
+    orderDetail?.shippingInfo?.withStringService || primaryStringingAppId,
+  );
   const cancelLabel = getCancelRequestLabel(orderDetail);
   const cancelStatus = (orderDetail as any)?.cancelRequest?.status;
   const canWithdrawCancelRequest = cancelStatus === "requested";
@@ -1166,6 +1256,49 @@ export default function OrderDetailClient({
                 </Button>
               </CardFooter>
             )}
+          </Card>
+
+
+          <Card className="rounded-xl border border-border bg-card shadow-md">
+            <CardHeader className="border-b border-border/60 bg-muted/30 rounded-t-xl">
+              <CardTitle>주문 진행 타임라인</CardTitle>
+              <CardDescription>
+                주문 접수부터 결제, 준비, 배송/수령, 완료까지의 흐름을 확인할 수 있습니다.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3 pt-5">
+              {timelineSteps.map((step, index) => {
+                const tone = getTimelineStepTone(step.state);
+                const Icon = step.state === "active" && !isVisitPickup && step.title.includes("배송") ? Truck : tone.Icon;
+                return (
+                  <div key={step.title} className="rounded-xl border border-border/70 bg-muted/30 p-3">
+                    <div className="flex items-start gap-3">
+                      <div className={cn("mt-0.5 flex h-8 w-8 items-center justify-center rounded-full", tone.wrapper)}>
+                        <Icon className="h-4 w-4" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="font-medium text-foreground">{index + 1}. {step.title}</p>
+                          <Badge className={cn("px-2 py-0.5 text-xs", tone.badge)}>{getTimelineStateLabel(step.state)}</Badge>
+                        </div>
+                        <p className="mt-1 text-sm text-muted-foreground">{step.description}</p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+              <div className="space-y-1 text-xs text-muted-foreground">
+                <p>이 타임라인은 현재 상태 기준 안내입니다.</p>
+                <p>자세한 변경 기록은 아래 처리 이력에서 확인할 수 있습니다.</p>
+                {shouldShowStringingTimelineHint && (
+                  <p>
+                    {primaryStringingAppId
+                      ? "연결된 신청 상세에서 교체서비스 진행 상태를 확인해주세요."
+                      : "교체서비스가 포함된 주문은 신청 상세에서 작업 진행 상태를 함께 확인할 수 있습니다."}
+                  </p>
+                )}
+              </div>
+            </CardContent>
           </Card>
 
           {/* 배송 정보 */}
