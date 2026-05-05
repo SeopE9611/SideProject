@@ -427,7 +427,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
 
   // 관리자: 취소 요청 승인
   const handleAdminApproveCancel = () => {
-    if (!confirm('이 신청의 취소 요청을 승인하시겠습니까?')) return;
+    if (!confirm('취소 요청을 승인할까요?\n고객의 교체서비스 신청 취소 요청을 승인합니다.\n처리 후 신청 상태가 변경되며 연결 주문·패키지 사용 이력·결제 상태에 영향을 줄 수 있으니 연결 문서를 먼저 확인해주세요.')) return;
 
     startTransition(async () => {
       try {
@@ -1278,7 +1278,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                     <div className="space-y-3">
                       <div>
                         <p className="text-sm font-semibold text-foreground">운영 액션</p>
-                        <p className="mt-1 text-xs text-foreground/75">취소 요청 처리와 관리자 후속 조치를 진행합니다.</p>
+                        <p className="mt-1 text-xs text-foreground/75">고객 취소 요청 승인/거절을 처리합니다. 처리 후 신청 상태와 연결 주문·패키지 이력이 변경될 수 있으니 처리 전 확인해주세요.</p>
                       </div>
 
                       <div className="flex min-h-[40px] flex-wrap items-center gap-2">
@@ -1974,8 +1974,8 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
           }}
         >
           <DialogContent className="max-w-md">
-            <DialogTitle className="text-lg font-semibold">취소 요청 거절</DialogTitle>
-            <p className="mt-2 text-sm text-foreground/80">고객의 신청 취소 요청을 거절하는 사유를 입력해 주세요. 이 내용은 처리 이력에 기록되어 나중에 참고할 수 있습니다.</p>
+            <DialogTitle className="text-lg font-semibold">취소 요청을 거절할까요?</DialogTitle>
+            <p className="mt-2 text-sm text-foreground/80">고객의 교체서비스 신청 취소 요청을 거절합니다. 신청은 기존 처리 흐름을 유지하며, 필요한 경우 거절 사유를 남겨 처리 이력으로 관리할 수 있습니다.</p>
 
             <div className="mt-4 space-y-2">
               <label className="block text-sm font-medium text-foreground">거절 사유 (선택 입력)</label>
