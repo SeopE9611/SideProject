@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin.guard";
-import { buildCustomerSearchFilter, sanitizeCustomer } from "@/lib/offline/offline.repository";
+import { sanitizeCustomer } from "@/lib/offline/offline.repository";
 import { normalizePhone, normalizeEmail } from "@/lib/offline/normalizers";
+
+const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 export async function GET(req: Request) {
   const guard = await requireAdmin(req);
@@ -11,19 +13,28 @@ export async function GET(req: Request) {
   const name = (url.searchParams.get("name") || "").trim();
   const phone = (url.searchParams.get("phone") || "").trim();
   const email = (url.searchParams.get("email") || "").trim();
-  const q = [name, phone, email].find(Boolean) || "";
-  if (!q) return NextResponse.json({ onlineUsers: [], offlineCustomers: [] });
-  const regex = q ? new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i") : null;
-  const phoneNormalized = normalizePhone(phone || q);
-  const emailLower = normalizeEmail(email || q);
-  const userOr: Record<string, unknown>[] = [];
-  if (regex) userOr.push({ name: regex }, { email: regex }, { phone: regex });
-  if (phoneNormalized) userOr.push({ phone: new RegExp(phoneNormalized) });
-  if (emailLower) userOr.push({ email: emailLower });
+
+  if (!name && !phone && !email) return NextResponse.json({ onlineUsers: [], offlineCustomers: [] });
+
+  const normalizedPhone = normalizePhone(phone);
+  const emailLower = normalizeEmail(email);
+
+  const userAnd: Record<string, unknown>[] = [];
+  if (name) userAnd.push({ name: new RegExp(escapeRegex(name), "i") });
+  if (phone) {
+    const phoneRegex = new RegExp(escapeRegex(phone), "i");
+    userAnd.push(normalizedPhone ? { $or: [{ phone: phoneRegex }, { phone: new RegExp(normalizedPhone) }] } : { phone: phoneRegex });
+  }
+  if (email) userAnd.push({ email: new RegExp(escapeRegex(email), "i") });
+
+  const offlineAnd: Record<string, unknown>[] = [];
+  if (name) offlineAnd.push({ name: new RegExp(escapeRegex(name), "i") });
+  if (normalizedPhone) offlineAnd.push({ phoneNormalized: { $regex: normalizedPhone } });
+  if (emailLower) offlineAnd.push({ emailLower: { $regex: escapeRegex(emailLower), $options: "i" } });
 
   const [onlineUsers, offlineCustomers] = await Promise.all([
-    db.collection("users").find(userOr.length ? { $or: userOr } : {}, { projection: { name: 1, email: 1, phone: 1 } }).limit(20).toArray(),
-    db.collection("offline_customers").find(buildCustomerSearchFilter(q), { projection: { name: 1, phone: 1, email: 1, linkedUserId: 1, createdAt: 1, updatedAt: 1 } }).sort({ updatedAt: -1 }).limit(20).toArray(),
+    db.collection("users").find(userAnd.length ? { $and: userAnd } : {}, { projection: { name: 1, email: 1, phone: 1 } }).limit(20).toArray(),
+    db.collection("offline_customers").find(offlineAnd.length ? { $and: offlineAnd } : {}, { projection: { name: 1, phone: 1, email: 1, linkedUserId: 1, createdAt: 1, updatedAt: 1 } }).sort({ updatedAt: -1 }).limit(20).toArray(),
   ]);
 
   return NextResponse.json({
