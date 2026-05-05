@@ -196,6 +196,20 @@ interface ApplicationDetail {
   needsInboundTracking?: boolean;
   orderHasRacket?: boolean;
 }
+type AdminNextActionTone = 'urgent' | 'warning' | 'info' | 'success';
+type AdminNextActionGuide = {
+  tone: AdminNextActionTone;
+  title: string;
+  description: string;
+  actionLabel?: string;
+  actionHref?: string;
+};
+const getNextActionCardClass = (tone: AdminNextActionTone) => {
+  if (tone === 'urgent') return 'border-warning/40 bg-warning/10';
+  if (tone === 'warning') return 'border-info/40 bg-info/10';
+  if (tone === 'success') return 'border-border/70 bg-muted/30';
+  return adminSurface.cardMuted;
+};
 
 // 스트링 교체 서비스용 택배사 라벨/URL 헬퍼
 const stringingCourierLabelMap: Record<string, string> = {
@@ -828,6 +842,53 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
     paymentLabel: paymentStatus,
     hasInboundTracking: hasTracking,
   });
+  const lowerStatus = String(data.status ?? '').toLowerCase();
+  const hasCancelRequest = normalizeAdminCancelRequestStatus(data.cancelRequest?.status) === 'requested';
+  const hasLinkedDocs = linkedDocs.length > 0;
+  const needsShippingCheck = isCourierShipping && !invoice?.trackingNumber;
+  const nextActionGuide: AdminNextActionGuide = hasCancelRequest
+    ? {
+        tone: 'urgent',
+        title: '취소 요청 검토 필요',
+        description: '취소 요청 카드 기준으로 승인/거절 여부를 먼저 판단하세요.',
+      }
+    : hasLinkedDocs
+      ? {
+          tone: 'info',
+          title: '연결 문서 먼저 확인',
+          description: '연결 문서의 결제/배송 흐름을 확인한 뒤 상태를 변경하세요.',
+        }
+      : lowerStatus.includes('접수') || lowerStatus.includes('검토')
+        ? {
+            tone: 'warning',
+            title: '신청 내용 검토 필요',
+            description: '요청 스트링/장력/수령 방식을 확인한 뒤 작업 단계를 진행하세요.',
+          }
+        : lowerStatus.includes('작업')
+          ? {
+              tone: 'info',
+              title: '교체 진행 상태 확인',
+              description: '작업 진행 상태와 수령/배송 준비 상태를 함께 점검하세요.',
+            }
+          : lowerStatus.includes('교체완료') || lowerStatus === '완료'
+            ? {
+                tone: 'success',
+                title: '완료 처리 및 이력 확인',
+                description: '완료 처리 후 연결 문서 반영 여부와 변경 이력을 확인하세요.',
+              }
+            : needsShippingCheck
+              ? {
+                  tone: 'warning',
+                  title: '배송 정보 확인',
+                  description: '고객 반환 배송에 필요한 운송장 정보 입력 여부를 확인하세요.',
+                  actionLabel: '배송 정보 등록/수정',
+                  actionHref: `/admin/applications/stringing/${data.id}/shipping-update`,
+                }
+              : {
+                  tone: 'success',
+                  title: '추가 조치 필요 없음',
+                  description: '현재 기준으로 즉시 필요한 추가 조치는 없습니다.',
+                };
 
   const linkedContextLabel = data.rentalId ? '대여 + 신청 연결 업무' : data.orderId ? '주문 + 신청 연결 업무' : '단독 신청 업무';
 
@@ -1126,6 +1187,37 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
               <CardContent className="space-y-1 text-sm">
                 <p className="text-muted-foreground">현재 단계: {appGuide.stage}</p>
                 <p className="font-medium">다음 할 일: {appGuide.nextAction}</p>
+              </CardContent>
+            </Card>
+          )}
+          {isAdmin && (
+            <Card className={cn('mb-6', getNextActionCardClass(nextActionGuide.tone))}>
+              <CardHeader className="pb-3">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <CardTitle className="text-base font-semibold">지금 처리할 일</CardTitle>
+                    <CardDescription className="mt-1 text-sm text-foreground/75">
+                      {nextActionGuide.title}
+                    </CardDescription>
+                  </div>
+                  <Badge variant="outline" className="w-fit">
+                    {nextActionGuide.tone === 'urgent'
+                      ? '긴급'
+                      : nextActionGuide.tone === 'warning'
+                        ? '확인 필요'
+                        : nextActionGuide.tone === 'success'
+                          ? '정상'
+                          : '안내'}
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <p className="text-sm leading-relaxed text-foreground/80">{nextActionGuide.description}</p>
+                {nextActionGuide.actionHref && nextActionGuide.actionLabel ? (
+                  <Button asChild size="sm" variant="outline">
+                    <Link href={nextActionGuide.actionHref}>{nextActionGuide.actionLabel}</Link>
+                  </Button>
+                ) : null}
               </CardContent>
             </Card>
           )}
