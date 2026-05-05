@@ -13,6 +13,7 @@ import { normalizeCollection } from '@/app/features/stringing-applications/lib/c
 import { getStringingAddressReadLabels, orderShippingMethodLabel } from '@/app/features/stringing-applications/lib/fulfillment-labels';
 import { useStringingStore } from '@/app/store/stringingStore';
 import AdminCancelRequestCard from '@/components/admin/AdminCancelRequestCard';
+import AdminConfirmDialog from '@/components/admin/AdminConfirmDialog';
 import AdminInternalNotesCard from '@/components/admin/AdminInternalNotesCard';
 import LinkedDocsCard, { LinkedDocItem } from '@/components/admin/LinkedDocsCard';
 import SiteContainer from '@/components/layout/SiteContainer';
@@ -327,6 +328,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
 
   // 관리자: 취소 요청 거절 모달 상태
+  const [isApproveCancelDialogOpen, setIsApproveCancelDialogOpen] = useState(false);
   const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
   const [isRejectSubmitting, setIsRejectSubmitting] = useState(false);
@@ -427,8 +429,6 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
 
   // 관리자: 취소 요청 승인
   const handleAdminApproveCancel = () => {
-    if (!confirm('취소 요청을 승인할까요?\n고객의 교체서비스 신청 취소 요청을 승인합니다.\n처리 후 신청 상태가 변경되며 연결 주문·패키지 사용 이력·결제 상태에 영향을 줄 수 있으니 연결 문서를 먼저 확인해주세요.')) return;
-
     startTransition(async () => {
       try {
         const res = await fetch(`/api/applications/stringing/${applicationId}/cancel-approve`, {
@@ -1288,7 +1288,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                           </div>
                         ) : isCancelRequested && !hasOrderCancelRequested ? (
                           <>
-                            <Button size="sm" variant="destructive" onClick={handleAdminApproveCancel} disabled={isPending}>
+                            <Button size="sm" variant="destructive" onClick={() => setIsApproveCancelDialogOpen(true)} disabled={isPending}>
                               <XCircle className="mr-1 h-4 w-4" />
                               취소 승인
                             </Button>
@@ -1962,6 +1962,24 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
         </div>
       </SiteContainer>
       </div>
+
+      {isAdmin && (
+        <AdminConfirmDialog
+          open={isApproveCancelDialogOpen}
+          title="취소 요청을 승인할까요?"
+          description={"고객의 교체서비스 신청 취소 요청을 승인합니다.\n연결된 주문·패키지 사용 이력·결제 상태에 영향을 줄 수 있으므로 연결 문서와 결제 상태를 먼저 확인해주세요.\n처리 후 신청 상태가 변경되며, 관련 처리 이력에 남습니다."}
+          severity="danger"
+          confirmText="취소 승인"
+          onOpenChange={setIsApproveCancelDialogOpen}
+          onConfirm={() => {
+            void handleAdminApproveCancel();
+          }}
+          onCancel={() => setIsApproveCancelDialogOpen(false)}
+          eventKey="admin-stringing-cancel-approve-confirm"
+          eventMeta={{ applicationId: data?.id ?? applicationId }}
+        />
+      )}
+
       {/* 관리자: 취소 요청 거절 모달 */}
       {isAdmin && (
         <Dialog
