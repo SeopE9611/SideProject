@@ -461,20 +461,21 @@ export default function OrderDetailPage() {
 
   const receivedDone = Boolean(order.createdAt);
   const paymentDone = normalizedStatus.includes("paid") || normalizedStatus.includes("결제완료") || paymentSource.includes("card") || paymentSource.includes("결제");
-  const preparationDone = ["processing", "preparing", "paid", "shipped", "delivered", "confirmed", "배송준비", "배송중", "배송완료", "구매확정", "처리중", "결제완료"].some((keyword) => normalizedStatus.includes(keyword));
-  const shippingDone = ["shipped", "delivered", "confirmed", "completed", "배송중", "배송완료", "구매확정", "완료"].some((keyword) => normalizedStatus.includes(keyword));
-  const completionDone = ["confirmed", "completed", "구매확정"].some((keyword) => normalizedStatus.includes(keyword));
+  const isPreparing = ["processing", "preparing", "배송준비", "배송준비중", "처리중"].some((keyword) => normalizedStatus.includes(keyword));
+  const isShipped = ["shipped", "배송중"].some((keyword) => normalizedStatus.includes(keyword));
+  const isDelivered = ["delivered", "배송완료"].some((keyword) => normalizedStatus.includes(keyword));
+  const isCompleted = ["confirmed", "completed", "구매확정"].some((keyword) => normalizedStatus.includes(keyword));
 
   const timelineSteps: TimelineStep[] = [
     { title: "주문 접수", description: "주문이 정상적으로 접수되었습니다.", state: receivedDone ? "done" : "waiting" },
     { title: "결제 확인", description: "결제 상태를 확인하고 다음 절차를 준비합니다.", state: paymentDone ? "done" : receivedDone ? "active" : "waiting" },
-    { title: "상품 준비", description: "주문 상품을 출고 또는 수령 준비 상태로 진행합니다.", state: preparationDone ? "done" : paymentDone ? "active" : "waiting" },
+    { title: "상품 준비", description: "주문 상품을 출고 또는 수령 준비 상태로 진행합니다.", state: isShipped || isDelivered || isCompleted ? "done" : paymentDone || isPreparing ? "active" : "waiting" },
     {
       title: isVisitPickup ? "수령 준비" : "배송/수령 진행",
       description: isVisitPickup ? "매장 수령 준비 상태를 확인해주세요." : "배송 정보를 확인해주세요.",
-      state: shippingDone ? "done" : preparationDone ? "active" : "waiting",
+      state: isDelivered || isCompleted ? "done" : isShipped ? "active" : "waiting",
     },
-    { title: "완료/구매확정", description: "주문 이용이 마무리된 단계입니다.", state: completionDone ? "done" : shippingDone ? "active" : "waiting" },
+    { title: "완료/구매확정", description: "주문 이용이 마무리된 단계입니다.", state: isCompleted ? "done" : isDelivered ? "active" : "waiting" },
   ];
 
   const shouldShowStringingTimelineHint = Boolean(order.shippingInfo?.withStringService || hasStringingApplication);
@@ -549,12 +550,12 @@ export default function OrderDetailPage() {
               })}
               <div className="space-y-1 text-xs text-muted-foreground">
                 <p>이 타임라인은 현재 상태 기준 안내입니다.</p>
-                <p>자세한 변경 기록은 아래 처리 이력에서 확인할 수 있습니다.</p>
+                <p>주문 정보와 배송/수령 정보에서 세부 상태를 함께 확인할 수 있습니다.</p>
                 {shouldShowStringingTimelineHint && (
                   <p>
                     {hasStringingApplication
-                      ? "연결된 신청 상세에서 교체서비스 진행 상태를 확인해주세요."
-                      : "교체서비스가 포함된 주문은 신청 상세에서 작업 진행 상태를 함께 확인할 수 있습니다."}
+                      ? "아래 교체서비스 접수 요약에서 진행 상태를 확인해주세요."
+                      : "교체서비스가 포함된 주문은 접수 후 이 화면의 요약에서 작업 진행 상태를 확인할 수 있습니다."}
                   </p>
                 )}
               </div>
