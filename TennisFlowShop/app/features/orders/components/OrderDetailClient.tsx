@@ -227,6 +227,21 @@ interface OrderDetail {
     } | null;
   }[];
 }
+type AdminNextActionTone = "urgent" | "warning" | "info" | "success";
+type AdminNextActionGuide = {
+  tone: AdminNextActionTone;
+  title: string;
+  description: string;
+  actionLabel?: string;
+  actionHref?: string;
+};
+
+const getNextActionCardClass = (tone: AdminNextActionTone) => {
+  if (tone === "urgent") return "border-warning/40 bg-warning/10";
+  if (tone === "warning") return "border-info/40 bg-info/10";
+  if (tone === "success") return "border-border/70 bg-muted/30";
+  return adminSurface.cardMuted;
+};
 
 type OrderTrackingResponse =
   | {
@@ -660,6 +675,56 @@ export default function OrderDetailClient({ orderId }: Props) {
         ]
       : []),
   ]);
+  const lowerPayment = String(orderDetail.paymentStatus ?? "").toLowerCase();
+  const needsPaymentCheck =
+    lowerPayment.includes("대기") ||
+    lowerPayment.includes("입금") ||
+    lowerPayment.includes("미입금") ||
+    lowerPayment.includes("pending");
+  const needsShippingInfo =
+    !isShippingManagedByApplication &&
+    !isVisitPickup &&
+    !hasAnyRegisteredFulfillmentField(orderDetail.shippingInfo);
+  const isDoneLikeStatus = ["완료", "구매확정", "취소", "cancel", "confirmed"].some(
+    (token) => String(localStatus ?? "").toLowerCase().includes(token.toLowerCase()),
+  );
+  const nextActionGuide: AdminNextActionGuide = isCancelRequested
+    ? {
+        tone: "urgent",
+        title: "취소 요청 검토 필요",
+        description: "취소 요청 카드에서 승인/거절 여부를 먼저 판단하세요.",
+      }
+    : needsPaymentCheck
+      ? {
+          tone: "warning",
+          title: "결제 상태 확인 필요",
+          description: "입금/결제 반영 여부를 확인한 뒤 다음 처리 단계를 진행하세요.",
+        }
+      : needsShippingInfo
+        ? {
+            tone: "warning",
+            title: "배송 정보 등록 필요",
+            description: "결제 확인 후 운송장 또는 수령 방식을 등록하세요.",
+            actionLabel: "배송 정보 등록/수정",
+            actionHref: `/admin/orders/${orderId}/shipping-update`,
+          }
+        : linkedDocs.length > 0 || Boolean(orderDetail.stringingApplicationId)
+          ? {
+              tone: "info",
+              title: "연결 신청서 확인",
+              description: "연결 문서를 먼저 확인한 뒤 상태 변경을 진행하세요.",
+            }
+          : orderGuide.stage || isDoneLikeStatus
+            ? {
+                tone: "success",
+                title: "처리 이력 확인",
+                description: "상세 처리 이력과 최근 변경 내역을 확인하세요.",
+              }
+            : {
+                tone: "success",
+                title: "추가 조치 필요 없음",
+                description: "현재 기준으로 즉시 필요한 선행 조치는 없습니다.",
+              };
 
   // 취소 성공 시 호출되는 콜백
   const handleCancelSuccess = async (reason: string, detail?: string) => {
@@ -1008,6 +1073,38 @@ export default function OrderDetailClient({ orderId }: Props) {
               }}
             />
           )}
+
+          <Card className={cn("mb-6", getNextActionCardClass(nextActionGuide.tone))}>
+            <CardHeader className="pb-3">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <CardTitle className="text-base font-semibold">지금 처리할 일</CardTitle>
+                  <CardDescription className="mt-1 text-sm text-foreground/75">
+                    {nextActionGuide.title}
+                  </CardDescription>
+                </div>
+                <Badge variant="outline" className="w-fit">
+                  {nextActionGuide.tone === "urgent"
+                    ? "긴급"
+                    : nextActionGuide.tone === "warning"
+                      ? "확인 필요"
+                      : nextActionGuide.tone === "success"
+                        ? "정상"
+                        : "안내"}
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-sm leading-relaxed text-foreground/80">
+                {nextActionGuide.description}
+              </p>
+              {nextActionGuide.actionHref && nextActionGuide.actionLabel ? (
+                <Button asChild size="sm" variant="outline">
+                  <Link href={nextActionGuide.actionHref}>{nextActionGuide.actionLabel}</Link>
+                </Button>
+              ) : null}
+            </CardContent>
+          </Card>
 
             {/* 연결 문서 + 최신 접수 요약 통합 */}
             {linkedDocs.length > 0 && (

@@ -105,6 +105,20 @@ type RentalPendingAction =
   | "return"
   | "refundMark"
   | "refundClear";
+type AdminNextActionTone = "urgent" | "warning" | "info" | "success";
+type AdminNextActionGuide = {
+  tone: AdminNextActionTone;
+  title: string;
+  description: string;
+  actionLabel?: string;
+  actionHref?: string;
+};
+const getNextActionCardClass = (tone: AdminNextActionTone) => {
+  if (tone === "urgent") return "border-warning/40 bg-warning/10";
+  if (tone === "warning") return "border-info/40 bg-info/10";
+  if (tone === "success") return "border-border/70 bg-muted/30";
+  return adminSurface.cardMuted;
+};
 
 export default function AdminRentalDetailClient() {
   const params = useParams<{ id: string }>();
@@ -530,6 +544,63 @@ export default function AdminRentalDetailClient() {
     paymentLabel,
     hasOutboundTracking: Boolean(data?.shipping?.outbound?.trackingNumber),
   });
+  const lowerStatus = String(data.status ?? "").toLowerCase();
+  const lowerPayment = String(paymentLabel ?? "").toLowerCase();
+  const hasCancelRequested = cancelInfo?.status === "requested";
+  const needsPaymentCheck =
+    lowerPayment.includes("대기") ||
+    lowerPayment.includes("입금") ||
+    lowerPayment.includes("미입금") ||
+    lowerPayment.includes("pending");
+  const isBeforeOut = lowerStatus === "pending" || lowerStatus === "paid";
+  const needsReturnCheck =
+    lowerStatus === "out" &&
+    (Boolean(data?.rentalEndDate) || Boolean(data?.shipping?.inbound?.trackingNumber));
+  const needsDepositRefund =
+    lowerStatus === "returned" && data?.depositRefunded !== true;
+  const nextActionGuide: AdminNextActionGuide = hasCancelRequested
+    ? {
+        tone: "urgent",
+        title: "취소 요청 검토 필요",
+        description: "취소 요청 카드 기준으로 승인/거절을 우선 검토하세요.",
+      }
+    : needsPaymentCheck
+      ? {
+          tone: "warning",
+          title: "결제 상태 확인 필요",
+          description: "입금/결제 반영 여부를 확인한 뒤 출고 여부를 판단하세요.",
+        }
+      : isBeforeOut
+        ? {
+            tone: "warning",
+            title: "출고 처리 필요",
+            description: "결제 상태와 배송 정보를 확인한 뒤 출고 처리를 진행하세요.",
+            actionLabel: "출고 운송장 등록/수정",
+            actionHref: isVisitPickup ? undefined : `/admin/rentals/${id}/shipping-update`,
+          }
+        : needsReturnCheck
+          ? {
+              tone: "info",
+              title: "반납 확인 필요",
+              description: "반납 운송장과 라켓 상태를 확인한 뒤 반납 처리를 진행하세요.",
+            }
+          : needsDepositRefund
+            ? {
+                tone: "warning",
+                title: "보증금 환불 확인",
+                description: "반납 완료 건의 보증금 환불 처리 여부를 확인하세요.",
+              }
+            : linkedDocs.length > 0
+              ? {
+                  tone: "info",
+                  title: "연결 신청서 확인",
+                  description: "연결 신청서 상태를 확인한 뒤 후속 처리를 진행하세요.",
+                }
+              : {
+                  tone: "success",
+                  title: "추가 조치 필요 없음",
+                  description: "현재 기준으로 즉시 필요한 추가 조치는 없습니다.",
+                };
 
   return (
     <div className="min-h-screen bg-muted/30 dark:bg-muted/30">
@@ -719,6 +790,37 @@ export default function AdminRentalDetailClient() {
               </Card>
             </>
           )}
+          <Card className={cn("mb-6", getNextActionCardClass(nextActionGuide.tone))}>
+            <CardHeader className="pb-3">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <CardTitle className="text-base font-semibold">지금 처리할 일</CardTitle>
+                  <CardDescription className="mt-1 text-sm text-foreground/75">
+                    {nextActionGuide.title}
+                  </CardDescription>
+                </div>
+                <Badge variant="outline" className="w-fit">
+                  {nextActionGuide.tone === "urgent"
+                    ? "긴급"
+                    : nextActionGuide.tone === "warning"
+                      ? "확인 필요"
+                      : nextActionGuide.tone === "success"
+                        ? "정상"
+                        : "안내"}
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-sm leading-relaxed text-foreground/80">
+                {nextActionGuide.description}
+              </p>
+              {nextActionGuide.actionHref && nextActionGuide.actionLabel ? (
+                <Button asChild size="sm" variant="outline">
+                  <Link href={nextActionGuide.actionHref}>{nextActionGuide.actionLabel}</Link>
+                </Button>
+              ) : null}
+            </CardContent>
+          </Card>
 
           {hasStringingSummary && (
             <Card className="border-0 shadow-xl ring-1 ring-ring bg-muted/30">
