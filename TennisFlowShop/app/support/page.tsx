@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { badgeBaseOutlined, badgeSizeSm, getAnswerStatusBadgeSpec, getNoticeCategoryBadgeSpec, getQnaCategoryBadgeSpec } from "@/lib/badge-style";
 import { ArrowRight, Bell, Eye, Headset, ImageIcon, Lock, MessageSquare, Paperclip, Pin, Plus } from "lucide-react";
 import Link from "next/link";
+import SupportFaqSearch from "@/app/support/_components/SupportFaqSearch";
 import { useState } from "react";
 import useSWR from "swr";
 
@@ -387,6 +388,8 @@ export default function SupportPage() {
           </div>
           <p className="text-sm md:text-base text-muted-foreground max-w-xl mx-auto">서비스 이용 중 필요한 안내를 확인하고, 궁금한 내용은 Q&amp;A 문의로 남겨주세요.</p>
         </div>
+
+        <SupportFaqSearch />
 
         {/* 카드 2열 레이아웃 */}
         <div className="grid md:grid-cols-2 gap-4 md:gap-8 items-start">
