@@ -3,6 +3,23 @@ export type OfflineStatus = "received" | "in_progress" | "completed" | "picked_u
 export type OfflinePaymentStatus = "pending" | "paid" | "refunded";
 export type OfflinePaymentMethod = "cash" | "card" | "bank_transfer" | "etc";
 
+export type OfflineLinkedUser = {
+  id: string;
+  name?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  phoneMasked?: string | null;
+};
+
+export type OfflineLinkCandidate = OfflineLinkedUser & {
+  match: {
+    name: boolean;
+    phone: boolean;
+    email: boolean;
+  };
+  alreadyLinkedOfflineCustomerId?: string | null;
+};
+
 export interface OfflineCustomerDto {
   id: string;
   linkedUserId?: string | null;
