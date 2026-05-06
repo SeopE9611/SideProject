@@ -24,7 +24,6 @@ export default async function ServicesPage() {
       description: "강력한 파워와 반발력을 제공하는 스트링",
       features: ["최대한의 파워 제공", "부드러운 타구감", "관절에 부담이 적음", "낮은 장력에서도 충분한 반발력"],
       recommended: ["파워 중심의 플레이 스타일", "어깨나 팔꿈치에 부담을 줄이고 싶은 분", "초보자 및 중급자", "자연스러운 스윙으로 힘을 얻고 싶은 분"],
-      image: "/placeholder.svg?height=300&width=300&text=Power+String",
       examples: ["바볼랏 VS 터치", "윌슨 NXT", "테크니화이버 X-One"],
       icon: <Zap className="h-8 w-8" />,
       performance: { power: 95, control: 70, spin: 75, durability: 80 },
@@ -35,7 +34,6 @@ export default async function ServicesPage() {
       description: "정확한 컨트롤과 스핀을 위한 스트링",
       features: ["최대한의 스핀 생성", "정확한 볼 컨트롤", "내구성이 우수함", "중상급자용 하드 히팅에 적합"],
       recommended: ["컨트롤과 스핀 중심의 플레이 스타일", "강한 스트로크로 공격하는 플레이어", "중급자 및 상급자", "정확한 샷 배치를 중요시하는 분"],
-      image: "/placeholder.svg?height=300&width=300&text=Control+String",
       examples: ["바볼랏 RPM 블라스트", "솔린코 투어바이트", "폴리스타 스트라이크"],
       icon: <Target className="h-8 w-8" />,
       performance: { power: 75, control: 95, spin: 90, durability: 85 },
@@ -46,7 +44,6 @@ export default async function ServicesPage() {
       description: "파워와 컨트롤의 균형 잡힌 성능",
       features: ["파워와 컨트롤의 균형", "중간 정도의 타구감", "다양한 플레이 스타일에 적합", "하이브리드 구성으로 활용 가능"],
       recommended: ["올라운드 플레이 스타일", "다양한 샷을 구사하는 플레이어", "파워와 컨트롤 모두 중요시하는 분", "모든 수준의 플레이어"],
-      image: "/placeholder.svg?height=300&width=300&text=Balance+String",
       examples: ["럭실론 프로 스트링", "윌슨 레볼루션", "테크니화이버 멀티필"],
       icon: <Trophy className="h-8 w-8" />,
       performance: { power: 85, control: 85, spin: 80, durability: 90 },
@@ -79,14 +76,6 @@ export default async function ServicesPage() {
       duration: "45-60분",
       popular: false,
     },
-    // {
-    //   service: '급행 서비스(서비스 X)',
-    //   price: 0,
-    //   description: '현재 해당 서비스는 이용하실 수 없습니다.',
-    //   icon: <Zap className="h-6 w-6" />,
-    //   duration: '1시간 이내',
-    //   popular: false,
-    // },
   ];
 
   // 추가 서비스 정보
@@ -136,30 +125,6 @@ export default async function ServicesPage() {
       title: "품질 확인 및 마무리",
       description: "장착 후 텐션과 패턴을 확인하고 완벽한 상태로 마무리합니다.",
       icon: <CheckCircle className="h-8 w-8" />,
-    },
-  ];
-
-  const reviews = [
-    {
-      name: "김재민",
-      role: "메창",
-      rating: 5,
-      comment: "프로 수준의 정확한 장력과 세심한 작업으로 스트링 장착해주셔서 경기력이 크게 향상되었습니다. 특히 스핀이 잘 걸리는 스트링 추천에 매우 만족합니다.",
-      avatar: "/placeholder.svg?height=60&width=60&text=김테니스",
-    },
-    {
-      name: "윤형섭",
-      role: "백수",
-      rating: 5,
-      comment: "테니스를 시작한 지 얼마 안 된 초보자였는데, 친절하게 스트링과 장력에 대해 상세히 설명해주셨어요. 덕분에 테니스에 더 재미를 붙이게 되었습니다!",
-      avatar: "/placeholder.svg?height=60&width=60&text=박초보",
-    },
-    {
-      name: "죡팡",
-      role: "메붕이",
-      rating: 5,
-      comment: "하이브리드 조합을 추천받아 사용해봤는데, 정말 제 플레이 스타일에 딱 맞았습니다. 장착 후 실력이 눈에 띄게 향상되어 대회에서도 좋은 성적을 거둘 수 있었습니다.",
-      avatar: "/placeholder.svg?height=60&width=60&text=이프로",
     },
   ];
 
@@ -521,12 +486,6 @@ export default async function ServicesPage() {
         </div>
       </section>
 
-      {/* 예약 안내 섹션 */}
-      {/* <section className="py-12 bp-md:py-16 bp-lg:py-20 bg-background relative overflow-hidden" id="booking">
-        <div className="absolute top-10 left-10 w-32 h-32 bg-secondary rounded-full blur-xl "></div>
-        <div className="absolute bottom-10 right-10 w-24 h-24 bg-muted rounded-full blur-lg"></div>
-      </section> */}
-
       {/* 고객 후기 섹션 */}
       <section className="py-12 bp-md:py-16 bp-lg:py-20 bg-muted/40">
         <div className="container">
@@ -535,33 +494,8 @@ export default async function ServicesPage() {
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">도깨비테니스 스트링 서비스를 경험한 후기를 확인해보세요</p>
           </div>
 
-          {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-            {reviews.map((review, index) => (
-              <Card key={index} className="border border-border shadow-sm hover:shadow-md transition-[box-shadow,border-color,background-color] duration-200 bg-card">
-                <CardContent className="p-5 bp-md:p-8">
-                  <div className="flex items-center mb-4">
-                    <Image src={review.avatar || '/placeholder.svg'} alt={review.name} width={60} height={60} className="rounded-full mr-4" />
-                    <div>
-                      <h4 className="font-bold text-lg">{review.name}</h4>
-                      <p className="text-sm text-muted-foreground">{review.role}</p>
-                    </div>
-                  </div>
-
-                  <div className="flex mb-4">
-                    {[...Array(review.rating)].map((_, i) => (
-                      <Star key={i} className="h-5 w-5 fill-primary text-primary" />
-                    ))}
-                  </div>
-
-                  <blockquote className="text-muted-foreground italic leading-relaxed">"{review.comment}"</blockquote>
-                </CardContent>
-              </Card>
-            ))}
-          </div> */}
-
           <div className="text-center">
             <Button size="lg" variant="default" className="shadow-sm hover:shadow-md transition-[background-color,color,border-color,box-shadow,opacity] duration-200" asChild>
-              {/* <Link href="/reviews/write?service=stringing"> */}
               <Link href="/reviews">
                 <Star className="w-5 h-5 mr-2" />
                 서비스 후기 보기
