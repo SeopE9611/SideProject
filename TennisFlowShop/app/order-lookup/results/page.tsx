@@ -548,7 +548,7 @@ export default function OrderLookupResultsPage() {
                                       <TooltipTrigger asChild>
                                         <div className="inline-flex h-10 items-center justify-center rounded-md border border-border bg-secondary px-4 py-2 text-sm font-semibold text-foreground cursor-default">
                                           <CheckCircle2 className="w-4 h-4 mr-2" />
-                                          교체 서비스 신청서 접수 완료
+                                          교체서비스 신청서 접수 완료
                                         </div>
                                       </TooltipTrigger>
                                       <TooltipContent

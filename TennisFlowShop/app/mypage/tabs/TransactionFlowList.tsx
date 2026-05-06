@@ -1068,7 +1068,7 @@ export default function TransactionFlowList() {
                           priority: 2,
                           node: (
                             <Button key="rental-apply-stringing" asChild size="sm">
-                              <Link href={`/services/apply?rentalId=${rentalId}`}>교체 신청하기</Link>
+                              <Link href={`/services/apply?rentalId=${rentalId}`}>교체서비스 신청하기</Link>
                             </Button>
                           ),
                         });
