@@ -396,12 +396,12 @@ export default function OrderList() {
               : null;
         const stringServiceCTALabel =
           stringServiceCTAKind === "add"
-            ? "추가 신청"
+            ? "교체서비스 추가 신청하기"
             : stringServiceCTAKind === "view"
               ? "교체서비스 보기"
               : stringServiceCTAKind === "done"
-                ? "교체 신청 완료"
-                : "교체 신청";
+                ? "교체서비스 신청 완료"
+                : "교체서비스 신청하기";
 
         // 모바일 보조 CTA: "교체 신청" 또는 "교체서비스 보기" 중 하나라도 있으면 2버튼 레이아웃
         const showMobileSecondCTA = Boolean(stringServiceCTAHref);
@@ -797,7 +797,7 @@ export default function OrderList() {
                               className="flex items-center gap-2"
                             >
                               <ArrowRight className="h-4 w-4" />
-                              교체 신청
+                              교체서비스 신청하기
                             </Link>
                           </DropdownMenuItem>
                         )

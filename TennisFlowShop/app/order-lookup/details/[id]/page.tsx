@@ -590,7 +590,7 @@ export default function OrderDetailPage() {
                       <CheckCircle className="w-6 h-6" />
                     </div>
                     <div>
-                      <h3 className="mb-1 font-semibold text-foreground">교체 서비스 신청서 접수 완료</h3>
+                      <h3 className="mb-1 font-semibold text-foreground">교체서비스 신청서 접수 완료</h3>
                       <p className="text-foreground">
                         {isVisitPickup ? "이미 접수된 신청서가 존재합니다. 방문 수령 시 접수된 내용에 따라 현장 장착이 진행됩니다." : "이미 접수된 신청서가 존재합니다. 택배 장착 서비스는 접수된 내용에 따라 수거/반송으로 진행됩니다."}
                       </p>
@@ -605,7 +605,7 @@ export default function OrderDetailPage() {
           {order.shippingInfo?.withStringService && hasStringingApplication && latestStringingApplication && (
             <Card className="mb-6 border border-border bg-card md:mb-8">
               <CardHeader className="pb-3">
-                <CardTitle className="text-base">교체 서비스 접수 요약</CardTitle>
+                <CardTitle className="text-base">교체서비스 접수 요약</CardTitle>
               </CardHeader>
               <CardContent className="grid gap-2 text-sm">
                 <p className="text-muted-foreground">

@@ -319,7 +319,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const serviceTotal = qtyTotal + Number(product?.mountingFee ?? 0);
   const canCheckoutWithService = typeof product?.mountingFee === "number" && product.mountingFee > 0;
   const isApplyFlow = searchParams.get("from") === "apply";
-  const serviceCtaLabel = isApplyFlow ? "이 스트링으로 교체서비스 신청하기" : "교체서비스 시작하기";
+  const serviceCtaLabel = isApplyFlow ? "이 스트링으로 교체서비스 신청하기" : "교체서비스 신청하기";
   const shouldEmphasizeServiceCta = isApplyFlow || !ENABLE_STRING_STANDALONE_ORDER;
 
   // 브라우저 뒤/앞으로 가기 시에도 URL 변화에 맞춰 동기화

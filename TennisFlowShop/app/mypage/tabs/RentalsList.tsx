@@ -239,7 +239,7 @@ export default function RentalsList() {
 
               <div className="flex flex-wrap items-center gap-2 text-xs">
                 {r.stringingApplicationId ? (
-                  <Badge variant="outline">교체 신청서 연결됨</Badge>
+                  <Badge variant="outline">교체서비스 신청서 연결됨</Badge>
                 ) : null}
                 {!r.stringingApplicationId && r.withStringService ? (
                   <Badge variant="outline">교체 서비스 포함</Badge>
@@ -358,7 +358,7 @@ export default function RentalsList() {
                       href={`/services/apply?rentalId=${r.id}`}
                       className="inline-flex items-center gap-1"
                     >
-                      교체 신청하기
+                      교체서비스 신청하기
                       <ArrowRight className="h-3 w-3" />
                     </Link>
                   </Button>
