@@ -21,7 +21,15 @@ const KIND_LABELS = { stringing: "스트링 작업", package_sale: "패키지 �
 const RECORD_STATUS_LABELS = { received: "접수", in_progress: "작업중", completed: "완료", picked_up: "수령완료", canceled: "취소" } as const;
 const PAYMENT_STATUS_LABELS = { pending: "미결제", paid: "결제완료", refunded: "환불" } as const;
 const PAYMENT_METHOD_LABELS = { cash: "현금", card: "카드", bank_transfer: "계좌이체", etc: "기타" } as const;
+const RECORDS_LIMIT = 20;
+const EMPTY_RECORD_FILTERS = { from: "", to: "", name: "", phone: "", kind: "", status: "", paymentStatus: "", paymentMethod: "" };
 
+function toDateInputValue(value: string | Date | null | undefined): string {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toISOString().slice(0, 10);
+}
 
 function formatCurrency(value: number | null | undefined): string {
   return `${Number(value ?? 0).toLocaleString("ko-KR")}원`;
@@ -54,7 +62,10 @@ export default function OfflineAdminClient() {
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [saveMessageType, setSaveMessageType] = useState<"success" | "error" | null>(null);
   const [editingRecord, setEditingRecord] = useState<any | null>(null);
-  const [editForm, setEditForm] = useState({ status: "received", paymentStatus: "pending", paymentMethod: "cash", paymentAmount: 0, memo: "" });
+  const [editForm, setEditForm] = useState({ kind: "stringing", occurredAt: "", racketName: "", stringName: "", tensionMain: "", tensionCross: "", status: "received", paymentStatus: "pending", paymentMethod: "cash", paymentAmount: 0, memo: "" });
+  const [recordFilters, setRecordFilters] = useState(EMPTY_RECORD_FILTERS);
+  const [submittedRecordFilters, setSubmittedRecordFilters] = useState(EMPTY_RECORD_FILTERS);
+  const [recordsPage, setRecordsPage] = useState(1);
   const [editMessage, setEditMessage] = useState<string | null>(null);
   const [isEditingSubmit, setIsEditingSubmit] = useState(false);
 
@@ -66,8 +77,14 @@ export default function OfflineAdminClient() {
     ? `/api/admin/offline/lookup?name=${encodeURIComponent(submittedQuery.name)}&phone=${encodeURIComponent(submittedQuery.phone)}&email=${encodeURIComponent(submittedQuery.email)}`
     : null;
 
+  const recordParams = new URLSearchParams({ page: String(recordsPage), limit: String(RECORDS_LIMIT) });
+  Object.entries(submittedRecordFilters).forEach(([filterKey, value]) => {
+    if (value.trim()) recordParams.set(filterKey, value.trim());
+  });
+  const recordsKey = `/api/admin/offline/records?${recordParams.toString()}`;
+
   const { data, isLoading: searchLoading, mutate } = useSWR<{ onlineUsers: any[]; offlineCustomers: any[] }>(key, authenticatedSWRFetcher);
-  const { data: records, isLoading: recordsLoading, mutate: mutateRecords } = useSWR<{ items: any[] }>("/api/admin/offline/records", authenticatedSWRFetcher);
+  const { data: records, isLoading: recordsLoading, mutate: mutateRecords } = useSWR<{ items: any[]; page?: number; limit?: number; total?: number; totalPages?: number }>(recordsKey, authenticatedSWRFetcher);
 
   async function selectOfflineCustomer(id: string) {
     const res = (await authenticatedSWRFetcher(`/api/admin/offline/customers/${id}`)) as { item: OfflineCustomerDto };
@@ -77,6 +94,9 @@ export default function OfflineAdminClient() {
   const onlineItems = data?.onlineUsers ?? [];
   const offlineItems = data?.offlineCustomers ?? [];
   const hasSearchResult = onlineItems.length > 0 || offlineItems.length > 0;
+  const recordsTotal = records?.total ?? records?.items?.length ?? 0;
+  const recordsTotalPages = records?.totalPages ?? (recordsTotal > 0 ? Math.ceil(recordsTotal / RECORDS_LIMIT) : 0);
+  const currentRecordsPage = records?.page ?? recordsPage;
 
   return (
     <div className="space-y-4">
@@ -336,7 +356,30 @@ export default function OfflineAdminClient() {
           <CardTitle>최근 오프라인 작업/매출</CardTitle>
           <CardDescription>최근 등록된 오프라인 작업과 매출 기록입니다.</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
+          <form
+            className="rounded-md border p-3 space-y-3"
+            onSubmit={(e) => {
+              e.preventDefault();
+              setSubmittedRecordFilters({ ...recordFilters });
+              setRecordsPage(1);
+            }}
+          >
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">
+              <div className="space-y-1.5"><Label htmlFor="record-from">시작일</Label><Input id="record-from" type="date" value={recordFilters.from} onChange={(e) => setRecordFilters({ ...recordFilters, from: e.target.value })} /></div>
+              <div className="space-y-1.5"><Label htmlFor="record-to">종료일</Label><Input id="record-to" type="date" value={recordFilters.to} onChange={(e) => setRecordFilters({ ...recordFilters, to: e.target.value })} /></div>
+              <div className="space-y-1.5"><Label htmlFor="record-name">고객명</Label><Input id="record-name" value={recordFilters.name} onChange={(e) => setRecordFilters({ ...recordFilters, name: e.target.value })} /></div>
+              <div className="space-y-1.5"><Label htmlFor="record-phone">휴대폰 번호</Label><Input id="record-phone" value={recordFilters.phone} onChange={(e) => setRecordFilters({ ...recordFilters, phone: e.target.value })} /></div>
+              <div className="space-y-1.5"><Label htmlFor="record-kind">작업 유형</Label><select id="record-kind" className="h-10 w-full rounded-md border bg-background px-3" value={recordFilters.kind} onChange={(e) => setRecordFilters({ ...recordFilters, kind: e.target.value })}><option value="">전체</option>{Object.entries(KIND_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></div>
+              <div className="space-y-1.5"><Label htmlFor="record-status">작업 상태</Label><select id="record-status" className="h-10 w-full rounded-md border bg-background px-3" value={recordFilters.status} onChange={(e) => setRecordFilters({ ...recordFilters, status: e.target.value })}><option value="">전체</option>{Object.entries(RECORD_STATUS_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></div>
+              <div className="space-y-1.5"><Label htmlFor="record-payment-status">결제 상태</Label><select id="record-payment-status" className="h-10 w-full rounded-md border bg-background px-3" value={recordFilters.paymentStatus} onChange={(e) => setRecordFilters({ ...recordFilters, paymentStatus: e.target.value })}><option value="">전체</option>{Object.entries(PAYMENT_STATUS_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></div>
+              <div className="space-y-1.5"><Label htmlFor="record-payment-method">결제수단</Label><select id="record-payment-method" className="h-10 w-full rounded-md border bg-background px-3" value={recordFilters.paymentMethod} onChange={(e) => setRecordFilters({ ...recordFilters, paymentMethod: e.target.value })}><option value="">전체</option>{Object.entries(PAYMENT_METHOD_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></div>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={() => { setRecordFilters(EMPTY_RECORD_FILTERS); setSubmittedRecordFilters(EMPTY_RECORD_FILTERS); setRecordsPage(1); }}>초기화</Button>
+              <Button type="submit">검색</Button>
+            </div>
+          </form>
           {recordsLoading ? <p className="text-sm">불러오는 중...</p> : null}
           {!recordsLoading && !(records?.items?.length) ? <p className="text-sm">아직 등록된 오프라인 작업/매출 기록이 없습니다.</p> : null}
           {!!records?.items?.length && (
@@ -357,13 +400,20 @@ export default function OfflineAdminClient() {
                       <td className="px-2 py-2">{formatCurrency(r.payment?.amount)}</td>
                       <td className="px-2 py-2"><Badge variant="outline">{PAYMENT_STATUS_LABELS[r.payment?.status as keyof typeof PAYMENT_STATUS_LABELS] ?? r.payment?.status}</Badge></td>
                       <td className="px-2 py-2"><Badge variant="outline">{RECORD_STATUS_LABELS[r.status as keyof typeof RECORD_STATUS_LABELS] ?? r.status}</Badge></td>
-                      <td className="px-2 py-2"><div className="flex flex-wrap gap-2">{r.offlineCustomerId ? <Button asChild size="sm" variant="secondary"><Link href={`/admin/offline/customers/${r.offlineCustomerId}`}>고객 상세</Link></Button> : null}<Button size="sm" variant="outline" onClick={() => { setEditingRecord(r); setEditForm({ status: r.status, paymentStatus: r.payment?.status ?? "pending", paymentMethod: r.payment?.method ?? "cash", paymentAmount: Number(r.payment?.amount ?? 0), memo: r.memo ?? "" }); setEditMessage(null); }}>수정</Button></div></td>
+                      <td className="px-2 py-2"><div className="flex flex-wrap gap-2">{r.offlineCustomerId ? <Button asChild size="sm" variant="secondary"><Link href={`/admin/offline/customers/${r.offlineCustomerId}`}>고객 상세</Link></Button> : null}<Button size="sm" variant="outline" onClick={() => { const line = Array.isArray(r.lines) ? r.lines[0] ?? {} : {}; setEditingRecord(r); setEditForm({ kind: r.kind ?? "stringing", occurredAt: toDateInputValue(r.occurredAt), racketName: line.racketName ?? "", stringName: line.stringName ?? "", tensionMain: line.tensionMain ?? "", tensionCross: line.tensionCross ?? "", status: r.status, paymentStatus: r.payment?.status ?? "pending", paymentMethod: r.payment?.method ?? "cash", paymentAmount: Number(r.payment?.amount ?? 0), memo: r.memo ?? "" }); setEditMessage(null); }}>수정</Button></div></td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
           )}
+          <div className="flex flex-col gap-2 rounded-md border p-3 text-sm md:flex-row md:items-center md:justify-between">
+            <p>현재 {currentRecordsPage} / {Math.max(recordsTotalPages, 1)} 페이지 · 전체 {recordsTotal.toLocaleString("ko-KR")}건</p>
+            <div className="flex gap-2">
+              <Button type="button" size="sm" variant="outline" disabled={recordsLoading || currentRecordsPage <= 1 || recordsTotalPages <= 1} onClick={() => setRecordsPage((page) => Math.max(1, page - 1))}>이전</Button>
+              <Button type="button" size="sm" variant="outline" disabled={recordsLoading || recordsTotalPages <= 1 || currentRecordsPage >= recordsTotalPages} onClick={() => setRecordsPage((page) => page + 1)}>다음</Button>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
@@ -373,15 +423,32 @@ export default function OfflineAdminClient() {
           <CardContent className="space-y-3">
             <div className="text-sm space-y-1">
               <p>고객명: <span className="font-medium">{editingRecord.customerName}</span> ({editingRecord.customerPhoneMasked})</p>
-              <p>작업 유형: {KIND_LABELS[editingRecord.kind as keyof typeof KIND_LABELS] ?? editingRecord.kind}</p>
-              <p>작업 내용: {formatLineSummary(editingRecord.lines)}</p>
-              <p>등록일: {formatDate(editingRecord.occurredAt)}</p>
+              <p>현재 작업 내용: {formatLineSummary(editingRecord.lines)}</p>
             </div>
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-              <div><Label>작업 상태</Label><select className="h-10 w-full rounded-md border bg-background px-3" value={editForm.status} onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}>{Object.entries(RECORD_STATUS_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></div>
-              <div><Label>결제 상태</Label><select className="h-10 w-full rounded-md border bg-background px-3" value={editForm.paymentStatus} onChange={(e) => setEditForm({ ...editForm, paymentStatus: e.target.value })}>{Object.entries(PAYMENT_STATUS_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></div>
-              <div><Label>결제수단</Label><select className="h-10 w-full rounded-md border bg-background px-3" value={editForm.paymentMethod} onChange={(e) => setEditForm({ ...editForm, paymentMethod: e.target.value })}>{Object.entries(PAYMENT_METHOD_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></div>
-              <div><Label>결제 금액</Label><Input type="number" value={editForm.paymentAmount} onChange={(e) => setEditForm({ ...editForm, paymentAmount: Number(e.target.value) })} /></div>
+            <div className="rounded-md border p-3 space-y-3">
+              <p className="font-medium">기본 정보</p>
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                <div><Label>작업 유형</Label><select className="h-10 w-full rounded-md border bg-background px-3" value={editForm.kind} onChange={(e) => setEditForm({ ...editForm, kind: e.target.value })}>{Object.entries(KIND_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></div>
+                <div><Label>작업일</Label><Input type="date" value={editForm.occurredAt} onChange={(e) => setEditForm({ ...editForm, occurredAt: e.target.value })} /></div>
+              </div>
+            </div>
+            <div className="rounded-md border p-3 space-y-3">
+              <p className="font-medium">작업 정보</p>
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                <div><Label>라켓명</Label><Input value={editForm.racketName} onChange={(e) => setEditForm({ ...editForm, racketName: e.target.value })} /></div>
+                <div><Label>스트링명</Label><Input value={editForm.stringName} onChange={(e) => setEditForm({ ...editForm, stringName: e.target.value })} /></div>
+                <div><Label>메인 텐션</Label><Input value={editForm.tensionMain} onChange={(e) => setEditForm({ ...editForm, tensionMain: e.target.value })} /></div>
+                <div><Label>크로스 텐션</Label><Input value={editForm.tensionCross} onChange={(e) => setEditForm({ ...editForm, tensionCross: e.target.value })} /></div>
+              </div>
+            </div>
+            <div className="rounded-md border p-3 space-y-3">
+              <p className="font-medium">상태/결제 정보</p>
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                <div><Label>작업 상태</Label><select className="h-10 w-full rounded-md border bg-background px-3" value={editForm.status} onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}>{Object.entries(RECORD_STATUS_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></div>
+                <div><Label>결제 상태</Label><select className="h-10 w-full rounded-md border bg-background px-3" value={editForm.paymentStatus} onChange={(e) => setEditForm({ ...editForm, paymentStatus: e.target.value })}>{Object.entries(PAYMENT_STATUS_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></div>
+                <div><Label>결제수단</Label><select className="h-10 w-full rounded-md border bg-background px-3" value={editForm.paymentMethod} onChange={(e) => setEditForm({ ...editForm, paymentMethod: e.target.value })}>{Object.entries(PAYMENT_METHOD_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></div>
+                <div><Label>결제 금액</Label><Input type="number" value={editForm.paymentAmount} onChange={(e) => setEditForm({ ...editForm, paymentAmount: Number(e.target.value) })} /></div>
+              </div>
             </div>
             <div><Label>작업 메모</Label><textarea className="w-full rounded-md border p-2" value={editForm.memo} onChange={(e) => setEditForm({ ...editForm, memo: e.target.value })} /></div>
             {editMessage && <p className="text-sm text-destructive">{editMessage}</p>}
@@ -392,7 +459,18 @@ export default function OfflineAdminClient() {
                 setIsEditingSubmit(true);
                 setEditMessage(null);
                 try {
-                  await adminMutator(`/api/admin/offline/records/${editingRecord.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: editForm.status, payment: { status: editForm.paymentStatus, method: editForm.paymentMethod, amount: Number(editForm.paymentAmount || 0) }, memo: editForm.memo }) });
+                  await adminMutator(`/api/admin/offline/records/${editingRecord.id}`, {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      kind: editForm.kind,
+                      occurredAt: editForm.occurredAt ? new Date(`${editForm.occurredAt}T00:00:00.000Z`).toISOString() : undefined,
+                      status: editForm.status,
+                      lines: [{ racketName: editForm.racketName, stringName: editForm.stringName, tensionMain: editForm.tensionMain, tensionCross: editForm.tensionCross }],
+                      payment: { status: editForm.paymentStatus, method: editForm.paymentMethod, amount: Number(editForm.paymentAmount || 0) },
+                      memo: editForm.memo,
+                    }),
+                  });
                   await mutateRecords();
                   setEditingRecord(null);
                 } catch (e: any) {
