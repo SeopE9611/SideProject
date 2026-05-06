@@ -30,7 +30,7 @@ import { ENABLE_STRING_STANDALONE_ORDER } from "@/lib/orders/string-standalone-p
 import { isNicePaymentsEnabled } from "@/lib/payments/provider-flags";
 import { calcOrderShippingFeeWithBundlePolicy, normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { cn } from "@/lib/utils";
-import { AlertTriangle, Building2, Check, CheckCircle, CreditCard, Home, Loader2, Mail, MapPin, MessageSquare, Package, Phone, Shield, Truck, UserIcon } from "lucide-react";
+import { Building2, Check, CheckCircle, CreditCard, Home, Info, Loader2, Mail, MapPin, MessageSquare, Package, Phone, Shield, Truck, UserIcon } from "lucide-react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
@@ -1146,15 +1146,37 @@ export default function CheckoutPage() {
               </div>
             ) : (
               <div className={cn("space-y-6", isCheckoutSubmitting && "pointer-events-none")} aria-busy={isCheckoutSubmitting}>
-                {/* 이탈 경고(고정 노출) */}
-                <div className="flex items-start gap-3 rounded-2xl border border-warning/30 bg-warning/5 px-4 py-3 text-sm text-foreground shadow-sm">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-warning/15">
-                    <AlertTriangle className="h-4 w-4 text-warning" />
+                <nav aria-label="주문서 작성 순서" className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+                  <p className="text-sm font-semibold text-foreground">주문서 작성 순서</p>
+                  <div className="mt-3 flex flex-nowrap gap-2 overflow-x-auto whitespace-nowrap pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                    {[
+                      { href: "#checkout-order-items", label: "주문 상품" },
+                      { href: "#checkout-delivery-method", label: "수령·배송" },
+                      { href: "#checkout-recipient-info", label: "배송·연락 정보" },
+                      { href: "#checkout-payment-info", label: "결제·혜택" },
+                      { href: "#checkout-agreements", label: "약관 동의" },
+                      { href: "#checkout-final-confirm", label: "최종 확인" },
+                    ].map((item) => (
+                      <a
+                        key={item.href}
+                        href={item.href}
+                        className="shrink-0 rounded-full border border-border bg-secondary/40 px-3.5 py-2 text-xs font-medium text-foreground/80 transition-colors hover:border-primary/40 hover:bg-primary/5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 bp-sm:text-sm"
+                      >
+                        {item.label}
+                      </a>
+                    ))}
                   </div>
-                  <p className="leading-relaxed pt-1">입력한 내용은 결제 완료 전까지 유지되며, 새로고침하거나 다른 페이지로 이동하면 일부 정보가 초기화될 수 있어요.</p>
+                </nav>
+
+                {/* 작성 안내(고정 노출) */}
+                <div className="flex items-start gap-3 rounded-2xl border border-border bg-secondary/40 px-4 py-3 text-sm text-foreground shadow-sm">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted/60 ring-1 ring-border/60">
+                    <Info className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                  <p className="leading-relaxed pt-1">작성 중인 정보는 현재 화면에서 유지됩니다. 결제 전에는 새로고침이나 다른 페이지 이동을 피해주세요.</p>
                 </div>
                 {/* 주문 상품 */}
-                <Card className="group border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md hover:ring-border">
+                <Card id="checkout-order-items" className="group scroll-mt-24 border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md hover:ring-border">
                   <div className="border-b border-border bg-secondary/50 p-5 bp-sm:p-6">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
@@ -1246,7 +1268,7 @@ export default function CheckoutPage() {
                 </Card>
 
                 {/* 수령 방식 및 장착 서비스 카드 */}
-                <Card className="group border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md hover:ring-border">
+                <Card id="checkout-delivery-method" className="group scroll-mt-24 border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md hover:ring-border">
                   <div className="border-b border-border bg-secondary/50 p-5 bp-sm:p-6">
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20">
@@ -1313,7 +1335,7 @@ export default function CheckoutPage() {
                 </Card>
 
                 {/* 배송 정보/수령 정보 */}
-                <Card className="group border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md hover:ring-border">
+                <Card id="checkout-recipient-info" className="group scroll-mt-24 border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md hover:ring-border">
                   <div className="border-b border-border bg-secondary/50 p-5 bp-sm:p-6">
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20">
@@ -1454,7 +1476,7 @@ export default function CheckoutPage() {
                 {withStringService && checkoutStringingAdapter && <CheckoutStringingServiceSections withStringService={withStringService} adapter={checkoutStringingAdapter} />}
 
                 {/* 결제 정보 */}
-                <Card className="group border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md hover:ring-border">
+                <Card id="checkout-payment-info" className="group scroll-mt-24 border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md hover:ring-border">
                   <div className="border-b border-border bg-secondary/50 p-5 bp-sm:p-6">
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20">
@@ -1648,7 +1670,7 @@ export default function CheckoutPage() {
                 </Card>
 
                 {/* 주문자 동의 */}
-                <Card className="group border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md hover:ring-border">
+                <Card id="checkout-agreements" className="group scroll-mt-24 border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md hover:ring-border">
                   <div className="border-b border-border bg-secondary/50 p-5 bp-sm:p-6">
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20">
@@ -1740,23 +1762,25 @@ export default function CheckoutPage() {
                   </CardContent>
                 </Card>
 
-                <FinalPaymentConfirmCard
-                  orderItemsCount={orderItems.length}
-                  subtotal={subtotal}
-                  shippingFee={shippingFee}
-                  serviceFee={finalServiceFee}
-                  baseServiceFee={baseServiceFee}
-                  packageUsage={checkoutPackageUsage}
-                  withStringService={withStringService}
-                  appliedPoints={appliedPoints}
-                  totalPrice={totalPrice}
-                  payableTotalPrice={payableTotalPrice}
-                  isShippingFeeReady={isShippingFeeReady}
-                  isMountingFeeReady={isMountingFeeReady}
-                  paymentMethod={paymentMethod}
-                  selectedBank={selectedBank}
-                  depositor={depositor}
-                />
+                <div id="checkout-final-confirm" className="scroll-mt-24">
+                  <FinalPaymentConfirmCard
+                    orderItemsCount={orderItems.length}
+                    subtotal={subtotal}
+                    shippingFee={shippingFee}
+                    serviceFee={finalServiceFee}
+                    baseServiceFee={baseServiceFee}
+                    packageUsage={checkoutPackageUsage}
+                    withStringService={withStringService}
+                    appliedPoints={appliedPoints}
+                    totalPrice={totalPrice}
+                    payableTotalPrice={payableTotalPrice}
+                    isShippingFeeReady={isShippingFeeReady}
+                    isMountingFeeReady={isMountingFeeReady}
+                    paymentMethod={paymentMethod}
+                    selectedBank={selectedBank}
+                    depositor={depositor}
+                  />
+                </div>
 
                 <Card className="relative border border-border bg-card shadow-sm overflow-hidden">
                   <CardContent className="flex flex-col gap-4 p-4 bp-sm:p-6 shrink-0">
