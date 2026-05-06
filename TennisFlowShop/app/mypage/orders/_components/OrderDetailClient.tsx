@@ -979,16 +979,17 @@ export default function OrderDetailClient({
                     </div>
                   </div>
                   <div className="flex justify-center bp-md:justify-end">
-                    <Link
-                      className="w-full bp-sm:max-w-xs bp-md:w-auto"
-                      href={`/services/apply?orderId=${orderDetail._id}`}
+                    <Button
+                      asChild
+                      variant="default"
+                      className="w-full bp-sm:max-w-xs bp-md:w-auto shadow-lg"
                     >
-                      <Button variant="default" className="w-full shadow-lg">
+                      <Link href={`/services/apply?orderId=${orderDetail._id}`}>
                         {hasSubmittedStringingApplication
                           ? "교체서비스 추가 신청하기"
                           : "교체서비스 신청하기"}
-                      </Button>
-                    </Link>
+                      </Link>
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -1054,17 +1055,15 @@ export default function OrderDetailClient({
                                   텐션: {app.tensionSummary}
                                 </p>
                               )}
-                              <Link
-                                className="w-full bp-sm:w-auto"
-                                href={getApplicationHref(app.id)}
+                              <Button
+                                asChild
+                                variant="outline"
+                                className="h-7 w-full px-2 text-xs bp-sm:w-auto"
                               >
-                                <Button
-                                  variant="outline"
-                                  className="h-7 px-2 text-xs"
-                                >
+                                <Link href={getApplicationHref(app.id)}>
                                   신청 상세
-                                </Button>
-                              </Link>
+                                </Link>
+                              </Button>
                             </div>
                           ))}
                         </div>
@@ -1075,17 +1074,15 @@ export default function OrderDetailClient({
                   <div className="flex items-center gap-2">
                     {/* [호환용] 리스트가 없고, 대표 신청 ID만 있는 경우 단일 버튼 유지 */}
                     {!hasLinkedStringingApps && primaryStringingAppId && (
-                      <Link
-                        className="w-full bp-sm:w-auto"
-                        href={getApplicationHref(primaryStringingAppId)}
+                      <Button
+                        asChild
+                        variant="outline"
+                        className="w-full border-border bg-transparent text-success dark:border-border dark:text-success dark:hover:bg-success/15 bp-sm:w-auto"
                       >
-                        <Button
-                          variant="outline"
-                          className="border-border text-success dark:border-border dark:text-success dark:hover:bg-success/15 bg-transparent"
-                        >
+                        <Link href={getApplicationHref(primaryStringingAppId)}>
                           신청 상세 보기
-                        </Button>
-                      </Link>
+                        </Link>
+                      </Button>
                     )}
 
                     {primaryStringingAppId && (
@@ -1116,17 +1113,15 @@ export default function OrderDetailClient({
                       </p>
                     </div>
                   </div>
-                  <Link
-                    className="w-full bp-sm:w-auto"
-                    href="/mypage?tab=reviews"
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="w-full border-border hover:bg-primary/10 dark:hover:bg-primary/20 bp-sm:w-auto"
                   >
-                    <Button
-                      variant="outline"
-                      className="border-border hover:bg-primary/10 dark:hover:bg-primary/20"
-                    >
+                    <Link href="/mypage?tab=reviews">
                       리뷰 관리로 이동
-                    </Button>
-                  </Link>
+                    </Link>
+                  </Button>
                 </div>
               ) : (
                 <div className="bg-warning/10 dark:bg-warning/15 border border-border rounded-xl p-4 shadow-sm flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:p-6">
@@ -1467,15 +1462,13 @@ export default function OrderDetailClient({
                           있어요.
                         </p>
                       </div>
-                      <Link
-                        href={inboundShippingHref ?? "#"}
-                      >
-                        <Button size="sm" variant="outline" className="h-8">
+                      <Button asChild size="sm" variant="outline" className="h-8">
+                        <Link href={inboundShippingHref ?? "#"}>
                           {hasSelfShipTracking
                             ? "라켓 발송 수정"
                             : "라켓 발송 등록"}
-                        </Button>
-                      </Link>
+                        </Link>
+                      </Button>
                     </div>
 
                     <div className="mt-3 grid gap-2 text-sm text-foreground bp-sm:grid-cols-2">
@@ -1608,23 +1601,27 @@ export default function OrderDetailClient({
                       <div className="mt-2">
                         {canShowReviewCTA &&
                           (reviewedMap[item.id] ? (
-                            <Link
+                            <Button
+                              asChild
+                              size="sm"
+                              variant="secondary"
                               className="w-full bp-sm:w-auto"
-                              href={`/products/${item.id}?tab=reviews`}
                             >
-                              <Button size="sm" variant="secondary">
+                              <Link href={`/products/${item.id}?tab=reviews`}>
                                 리뷰 상세 보기
-                              </Button>
-                            </Link>
+                              </Link>
+                            </Button>
                           ) : (
-                            <Link
+                            <Button
+                              asChild
+                              size="sm"
+                              variant="outline"
                               className="w-full bp-sm:w-auto"
-                              href={`/reviews/write?productId=${item.id}&orderId=${orderDetail._id}`}
                             >
-                              <Button size="sm" variant="outline">
+                              <Link href={`/reviews/write?productId=${item.id}&orderId=${orderDetail._id}`}>
                                 리뷰 작성하기
-                              </Button>
-                            </Link>
+                              </Link>
+                            </Button>
                           ))}
                       </div>
                     </div>
