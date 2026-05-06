@@ -125,7 +125,7 @@ export default function OfflineAdminClient() {
                 <p className="text-sm">검색 결과가 없습니다. 신규 오프라인 고객으로 등록할 수 있습니다.</p>
               )}
 
-              {submittedQuery && !searchLoading && (<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {submittedQuery && !searchLoading && hasSearchResult && (<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <p className="font-medium">온라인 회원 결과</p>
