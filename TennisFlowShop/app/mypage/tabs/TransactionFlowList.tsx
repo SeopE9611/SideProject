@@ -625,23 +625,41 @@ export default function TransactionFlowList() {
     <div className="space-y-4">
       {/* Enhanced Filter Tabs */}
       <OrdersScopeTabs activeScope={scope} />
-      {scope === 'todo' ? <p className="text-xs text-foreground/75">구매확정, 운송장 등록, 교체확정, 후기 작성처럼 지금 처리할 수 있는 항목만 모아 보여줍니다.</p> : null}
+      {scope === 'todo' ? (
+        <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 ring-1 ring-primary/10 dark:bg-primary/10 bp-sm:p-4">
+          <div className="flex items-start gap-3">
+            <div className="mt-0.5 rounded-full bg-background/70 p-1.5 text-primary ring-1 ring-primary/15">
+              <Sparkles className="h-4 w-4" />
+            </div>
+            <div className="min-w-0 space-y-1">
+              <p className="text-sm font-semibold text-foreground">해야 할 일만 모아봤어요</p>
+              <p className="text-xs leading-relaxed text-foreground/75">구매확정, 운송장 등록, 교체확정, 후기 작성처럼 지금 바로 처리할 수 있는 항목입니다.</p>
+              <p className="text-xs leading-relaxed text-muted-foreground">각 항목 아래 버튼으로 바로 처리할 수 있습니다.</p>
+            </div>
+          </div>
+        </div>
+      ) : null}
       <p className="text-xs text-foreground/75">주문 구매확정과 교체서비스 확정은 별도로 처리됩니다.</p>
       {items.length === 0 ? (
         <Card className="border-0 bg-card">
           <CardContent className="p-8 text-center">
             <Package className="mx-auto mb-3 h-8 w-8 text-muted-foreground" />
-            <p className="text-sm text-foreground/80">
-              {scope === 'application'
-                ? '표시할 서비스 신청이 없습니다.'
-                : scope === 'todo'
-                  ? '지금 처리할 항목이 없습니다.'
+            {scope === 'todo' ? (
+              <div className="space-y-1">
+                <p className="text-sm font-semibold text-foreground/90">지금 처리할 일이 없습니다.</p>
+                <p className="text-sm text-muted-foreground">주문, 장착서비스, 대여 진행 중 필요한 작업이 생기면 이곳에 표시됩니다.</p>
+              </div>
+            ) : (
+              <p className="text-sm text-foreground/80">
+                {scope === 'application'
+                  ? '표시할 서비스 신청이 없습니다.'
                   : scope === 'rental'
                     ? '표시할 대여 내역이 없습니다.'
                     : scope === 'order'
                       ? '표시할 주문 내역이 없습니다.'
                       : '표시할 거래/이용 내역이 없습니다.'}
-            </p>
+              </p>
+            )}
           </CardContent>
         </Card>
       ) : (
@@ -744,7 +762,13 @@ export default function TransactionFlowList() {
                 </div>
 
                 {todoPrimaryReason && nextActionText ? (
-                  <div className="rounded-xl border border-border/60 bg-secondary/40 p-3 bp-sm:p-4">
+                  <div
+                    className={`rounded-xl border p-3 bp-sm:p-4 ${
+                      scope === 'todo'
+                        ? 'border-primary/30 bg-primary/5 ring-1 ring-primary/10 dark:bg-primary/10'
+                        : 'border-border/60 bg-secondary/40'
+                    }`}
+                  >
                     <div className="flex flex-wrap items-center gap-2">
                       <Badge variant="secondary" className="text-[11px]">
                         해야 할 일

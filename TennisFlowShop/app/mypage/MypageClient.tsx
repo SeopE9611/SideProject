@@ -190,6 +190,9 @@ export default function MypageClient({ user }: Props) {
     sectionHeader: "border-b border-border bg-secondary/70 p-4 bp-sm:p-6",
     iconSurface: "rounded-xl border border-border/60 bg-secondary p-2.5 bp-sm:rounded-2xl bp-sm:p-3",
   };
+  const todoCount = summary?.todoCount ?? 0;
+  const hasTodoItems = !summaryLoading && todoCount > 0;
+  const todoCardDescription = hasTodoItems ? "확인하고 바로 처리하기" : "현재 추가 작업 없음";
 
   return (
     <div className="min-h-full bg-background">
@@ -234,12 +237,17 @@ export default function MypageClient({ user }: Props) {
               <button
                 type="button"
                 onClick={() => router.push("/mypage?tab=orders&scope=todo", { scroll: false })}
-                className="group bg-muted rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 text-center border border-border col-span-2 bp-lg:col-span-1 transition-colors hover:bg-muted/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2"
-                aria-label="해야 할 일 목록으로 이동"
+                className={`group rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 text-center border col-span-2 bp-lg:col-span-1 transition-[background-color,border-color,box-shadow,transform] ${
+                  hasTodoItems
+                    ? "border-primary/30 bg-primary/5 shadow-sm ring-1 ring-primary/10 hover:bg-primary/10 dark:bg-primary/10 dark:hover:bg-primary/15"
+                    : "border-border bg-muted hover:bg-muted/80"
+                } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2`}
+                aria-label="지금 처리할 일 목록으로 이동"
               >
                 <ListTodo className="h-6 w-6 bp-sm:h-8 bp-sm:w-8 mx-auto mb-2 bp-sm:mb-3 text-primary transition-transform group-hover:scale-105" />
                 <div className="text-xl bp-sm:text-2xl font-bold mb-1">{summaryLoading ? <Skeleton className="mx-auto h-7 w-10" /> : (summary?.todoCount ?? "-")}</div>
                 <div className="text-xs bp-sm:text-sm text-muted-foreground group-hover:text-foreground">지금 처리할 일</div>
+                {summaryLoading ? <Skeleton className="mx-auto mt-2 h-3 w-24" /> : <div className="mt-1 text-[11px] font-medium text-foreground/75 bp-sm:text-xs">{todoCardDescription}</div>}
               </button>
             </div>
             {hasSummaryError ? <p className="mt-3 text-xs text-muted-foreground">일부 지표를 불러오지 못해 숫자를 "-"로 표시하고 있어요. 잠시 후 다시 확인해 주세요.</p> : null}
