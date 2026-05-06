@@ -6,6 +6,7 @@ import { appendAudit } from "@/lib/audit";
 import { offlineCustomerPatchSchema } from "@/lib/offline/validators";
 import { maskPhone, normalizeEmail, normalizePhone } from "@/lib/offline/normalizers";
 import { sanitizeCustomer } from "@/lib/offline/offline.repository";
+import { getPointsBalance } from "@/lib/points.service";
 
 const oid = (id: string) => (ObjectId.isValid(id) ? new ObjectId(id) : null);
 
@@ -34,6 +35,12 @@ function sanitizeRecord(doc: Record<string, any>) {
     lines: Array.isArray(doc.lines) ? doc.lines : [],
     lineSummary: formatLineSummary(doc.lines),
     payment: doc.payment ?? null,
+    points: {
+      earn: typeof doc.points?.earn === "number" ? doc.points.earn : null,
+      use: typeof doc.points?.use === "number" ? doc.points.use : null,
+      grantTxId: doc.points?.grantTxId ? String(doc.points.grantTxId) : null,
+      deductTxId: doc.points?.deductTxId ? String(doc.points.deductTxId) : null,
+    },
     memo: doc.memo ?? "",
     createdAt: doc.createdAt instanceof Date ? doc.createdAt.toISOString() : doc.createdAt ?? null,
     updatedAt: doc.updatedAt instanceof Date ? doc.updatedAt.toISOString() : doc.updatedAt ?? null,
@@ -51,13 +58,16 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
   if (!doc) return NextResponse.json({ message: "not found" }, { status: 404 });
 
   const linkedUserId = doc.linkedUserId instanceof ObjectId ? doc.linkedUserId : null;
-  const linkedUser = linkedUserId
-    ? await guard.db.collection("users").findOne({ _id: linkedUserId }, { projection: { name: 1, email: 1, phone: 1 } })
-    : null;
+  const [linkedUser, linkedUserPointsBalance] = linkedUserId
+    ? await Promise.all([
+      guard.db.collection("users").findOne({ _id: linkedUserId }, { projection: { name: 1, email: 1, phone: 1, pointsBalance: 1 } }),
+      getPointsBalance(guard.db, linkedUserId),
+    ])
+    : [null, null] as const;
   const records = await guard.db.collection("offline_service_records")
     .find(
       { offlineCustomerId: _id },
-      { projection: { offlineCustomerId: 1, kind: 1, status: 1, occurredAt: 1, customerSnapshot: 1, lines: 1, payment: 1, memo: 1, createdAt: 1, updatedAt: 1 } },
+      { projection: { offlineCustomerId: 1, kind: 1, status: 1, occurredAt: 1, customerSnapshot: 1, lines: 1, payment: 1, points: 1, memo: 1, createdAt: 1, updatedAt: 1 } },
     )
     .sort({ occurredAt: -1, createdAt: -1 })
     .limit(50)
@@ -74,6 +84,7 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
           email: linkedUser.email ?? null,
           phone: linkedUser.phone ?? null,
           phoneMasked: linkedUser.phone ? maskPhone(String(linkedUser.phone)) : null,
+          pointsBalance: linkedUserPointsBalance,
         }
         : null,
     },
