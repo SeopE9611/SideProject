@@ -449,19 +449,22 @@ export default function RentalsDetailClient({
           <div className="sm:ml-auto flex flex-wrap items-center gap-2 sm:justify-end">
             {/* 교체 서비스 CTA */}
             {applicationHref ? (
-              <Link href={applicationHref}>
-                <Button className="gap-2">
+              <Button asChild className="gap-2">
+                <Link href={applicationHref}>
                   <Wrench className="h-4 w-4" />
                   교체서비스 보기
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             ) : canApplyStringService ? (
-              <Link href={applyHref}>
-                <Button className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-md hover:shadow-lg transition-all duration-200">
+              <Button
+                asChild
+                className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-md hover:shadow-lg duration-200"
+              >
+                <Link href={applyHref}>
                   <Wrench className="h-4 w-4" />
-                  교체 신청하기
-                </Button>
-              </Link>
+                  교체서비스 신청하기
+                </Link>
+              </Button>
             ) : null}
 
             {data?.status === "out" && (
@@ -661,12 +664,12 @@ export default function RentalsDetailClient({
             )}
             {applicationHref && (
               <div className="pt-2">
-                <Link href={applicationHref}>
-                  <Button variant="outline" className="gap-2">
+                <Button asChild variant="outline" className="gap-2">
+                  <Link href={applicationHref}>
                     <Wrench className="h-4 w-4" />
                     신청 상세 이동
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
               </div>
             )}
           </CardContent>
