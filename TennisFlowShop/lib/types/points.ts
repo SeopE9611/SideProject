@@ -31,6 +31,8 @@ export type PointTransaction = {
     orderId?: ObjectId;
     reviewId?: ObjectId;
     adminId?: ObjectId;
+    offlineRecordId?: ObjectId;
+    offlineCustomerId?: ObjectId;
   };
   reason?: string;
   createdAt: Date;

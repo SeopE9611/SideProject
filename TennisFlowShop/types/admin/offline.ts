@@ -9,6 +9,14 @@ export type OfflineLinkedUser = {
   email?: string | null;
   phone?: string | null;
   phoneMasked?: string | null;
+  pointsBalance?: number | null;
+};
+
+export type OfflineRecordPoints = {
+  earn?: number | null;
+  use?: number | null;
+  grantTxId?: string | null;
+  deductTxId?: string | null;
 };
 
 export type OfflineLinkCandidate = OfflineLinkedUser & {

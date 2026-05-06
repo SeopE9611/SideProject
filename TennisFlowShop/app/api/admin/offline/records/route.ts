@@ -66,6 +66,12 @@ function serializeRecord(d: Record<string, any>) {
     lines: d.lines || [],
     memo: d.memo || "",
     payment: d.payment,
+    points: {
+      earn: typeof d.points?.earn === "number" ? d.points.earn : null,
+      use: typeof d.points?.use === "number" ? d.points.use : null,
+      grantTxId: d.points?.grantTxId ? String(d.points.grantTxId) : null,
+      deductTxId: d.points?.deductTxId ? String(d.points.deductTxId) : null,
+    },
     status: d.status,
     createdAt: d.createdAt instanceof Date ? d.createdAt.toISOString() : d.createdAt ?? null,
     updatedAt: d.updatedAt instanceof Date ? d.updatedAt.toISOString() : d.updatedAt ?? null,
@@ -124,7 +130,7 @@ export async function GET(req: Request) {
   if (paymentMethod.filter) and.push({ "payment.method": paymentMethod.filter });
 
   const filter = and.length ? { $and: and } : {};
-  const projection = { offlineCustomerId: 1, customerSnapshot: 1, kind: 1, occurredAt: 1, createdAt: 1, updatedAt: 1, status: 1, payment: 1, lines: 1, memo: 1 };
+  const projection = { offlineCustomerId: 1, customerSnapshot: 1, kind: 1, occurredAt: 1, createdAt: 1, updatedAt: 1, status: 1, payment: 1, points: 1, lines: 1, memo: 1 };
   const total = await guard.db.collection("offline_service_records").countDocuments(filter);
   const items = await guard.db
     .collection("offline_service_records")

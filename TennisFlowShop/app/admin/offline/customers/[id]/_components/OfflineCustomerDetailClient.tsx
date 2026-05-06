@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { adminFetcher, adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
-import type { OfflineCustomerDto, OfflineKind, OfflineLinkCandidate, OfflineLinkedUser, OfflinePaymentMethod, OfflinePaymentStatus, OfflineStatus } from "@/types/admin/offline";
+import type { OfflineCustomerDto, OfflineKind, OfflineLinkCandidate, OfflineLinkedUser, OfflinePaymentMethod, OfflinePaymentStatus, OfflineRecordPoints, OfflineStatus } from "@/types/admin/offline";
 
 type OfflineRecord = {
   id: string;
@@ -23,6 +23,7 @@ type OfflineRecord = {
   lines?: Array<{ racketName?: string; stringName?: string; tensionMain?: string; tensionCross?: string }>;
   lineSummary?: string;
   payment?: { status?: OfflinePaymentStatus; method?: OfflinePaymentMethod; amount?: number | null } | null;
+  points?: OfflineRecordPoints | null;
   memo?: string | null;
   createdAt?: string | null;
   updatedAt?: string | null;
@@ -42,6 +43,10 @@ const PAYMENT_METHOD_LABELS = { cash: "현금", card: "카드", bank_transfer: "
 
 function formatCurrency(value: number | null | undefined): string {
   return `${Number(value ?? 0).toLocaleString("ko-KR")}원`;
+}
+
+function formatPoints(value: number | null | undefined): string {
+  return `${Number(value ?? 0).toLocaleString("ko-KR")}P`;
 }
 
 function formatDate(value?: string | Date | null): string {
@@ -91,8 +96,37 @@ function translateLinkError(error: unknown): string {
   return LINK_ERROR_MESSAGES[message] ?? message ?? "온라인 회원 연결에 실패했습니다.";
 }
 
-function MatchBadge({ active, children }: { active: boolean; children: ReactNode }) {
-  return active ? <Badge variant="secondary">{children}</Badge> : <Badge variant="outline" className="text-muted-foreground">{children} 불일치</Badge>;
+function MatchBadge({ active, label }: { active: boolean; label: string }) {
+  return active ? (
+    <Badge variant="secondary">{label} 일치</Badge>
+  ) : (
+    <Badge variant="outline" className="text-muted-foreground">
+      {label} 불일치
+    </Badge>
+  );
+}
+
+type PointFormState = {
+  grantAmount: string;
+  grantReason: string;
+  useAmount: string;
+  useReason: string;
+  message?: string | null;
+  messageType?: "success" | "error" | null;
+};
+
+const POINT_ERROR_MESSAGES: Record<string, string> = {
+  "linked user required": "온라인 회원과 연결된 고객만 포인트를 처리할 수 있습니다.",
+  "invalid amount": "포인트 금액은 1 이상이어야 합니다.",
+  "insufficient points": "보유 포인트가 부족합니다.",
+  "points already granted for this record": "이미 이 기록에 포인트 적립이 처리되었습니다.",
+  "points already deducted for this record": "이미 이 기록에 포인트 사용이 처리되었습니다.",
+  "points transaction failed": "포인트 처리에 실패했습니다.",
+};
+
+function translatePointError(error: unknown): string {
+  const message = getAdminErrorMessage(error);
+  return POINT_ERROR_MESSAGES[message] ?? message ?? "포인트 처리에 실패했습니다.";
 }
 
 export default function OfflineCustomerDetailClient({ id }: { id: string }) {
@@ -106,6 +140,8 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
   const [linkMessageType, setLinkMessageType] = useState<"success" | "error" | null>(null);
   const [linkingUserId, setLinkingUserId] = useState<string | null>(null);
   const [isUnlinking, setIsUnlinking] = useState(false);
+  const [pointForms, setPointForms] = useState<Record<string, PointFormState>>({});
+  const [processingPointKey, setProcessingPointKey] = useState<string | null>(null);
 
   const candidateKey = submittedCandidateQuery
     ? `/api/admin/offline/customers/${id}/link-candidates?name=${encodeURIComponent(submittedCandidateQuery.name)}&phone=${encodeURIComponent(submittedCandidateQuery.phone)}&email=${encodeURIComponent(submittedCandidateQuery.email)}`
@@ -119,6 +155,51 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
   const pendingCount = records.filter((record) => record.payment?.status === "pending").length;
   const refundedCount = records.filter((record) => record.payment?.status === "refunded").length;
   const candidates = candidatesData?.items ?? [];
+  const pointBalance = item?.linkedUser?.pointsBalance ?? null;
+
+  function updatePointForm(recordId: string, patch: Partial<PointFormState>) {
+    setPointForms((prev) => {
+      const current = prev[recordId] ?? { grantAmount: "", grantReason: "", useAmount: "", useReason: "" };
+      return {
+        ...prev,
+        [recordId]: { ...current, ...patch },
+      };
+    });
+  }
+
+  async function handleRecordPoints(recordId: string, mode: "grant" | "deduct") {
+    const form = pointForms[recordId];
+    const amountText = mode === "grant" ? form?.grantAmount : form?.useAmount;
+    const reasonText = mode === "grant" ? form?.grantReason : form?.useReason;
+    const amount = Number(amountText);
+    if (!Number.isFinite(amount) || !Number.isInteger(amount) || amount < 1) {
+      updatePointForm(recordId, { message: "포인트 금액은 1 이상이어야 합니다.", messageType: "error" });
+      return;
+    }
+
+    const actionLabel = mode === "grant" ? "적립" : "사용";
+    if (!window.confirm(`이 기록에 ${formatPoints(amount)} ${actionLabel} 처리를 진행하시겠습니까?`)) return;
+
+    setProcessingPointKey(`${recordId}:${mode}`);
+    updatePointForm(recordId, { message: null, messageType: null });
+    try {
+      await adminMutator(`/api/admin/offline/records/${recordId}/points/${mode}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount, reason: reasonText?.trim() || undefined }),
+      });
+      updatePointForm(recordId, {
+        ...(mode === "grant" ? { grantAmount: "", grantReason: "" } : { useAmount: "", useReason: "" }),
+        message: `포인트 ${actionLabel} 처리가 완료되었습니다.`,
+        messageType: "success",
+      });
+      await mutateDetail();
+    } catch (err) {
+      updatePointForm(recordId, { message: translatePointError(err), messageType: "error" });
+    } finally {
+      setProcessingPointKey(null);
+    }
+  }
 
   async function handleLinkUser(userId: string) {
     if (!window.confirm("이 온라인 회원을 현재 오프라인 고객과 연결하시겠습니까?")) return;
@@ -316,9 +397,9 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                             </Button>
                           </div>
                           <div className="flex flex-wrap gap-1.5">
-                            <MatchBadge active={candidate.match.name}>이름 일치</MatchBadge>
-                            <MatchBadge active={candidate.match.phone}>휴대폰 일치</MatchBadge>
-                            <MatchBadge active={candidate.match.email}>이메일 일치</MatchBadge>
+                            <MatchBadge active={candidate.match.name} label="이름" />
+                            <MatchBadge active={candidate.match.phone} label="휴대폰" />
+                            <MatchBadge active={candidate.match.email} label="이메일" />
                           </div>
                           {isLinkedToOther ? <p className="text-xs text-destructive">이미 다른 오프라인 고객({candidate.alreadyLinkedOfflineCustomerId})과 연결된 회원입니다.</p> : null}
                         </div>
@@ -332,6 +413,25 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>포인트</CardTitle>
+          <CardDescription>온라인 회원과 연결된 고객의 포인트 조회 및 오프라인 기록 기준 처리 상태입니다.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3 text-sm">
+          {item.linkedUserId ? (
+            <>
+              <DetailRow label="현재 포인트 잔액" value={<span className="text-lg font-semibold">{formatPoints(pointBalance)}</span>} />
+              <p className="text-muted-foreground">오프라인 작업 기록에서 포인트 적립/사용을 처리할 수 있습니다.</p>
+              <p className="text-xs text-muted-foreground">포인트 사용 시 실제 결제금액은 필요에 따라 기존 record 수정 UI에서 별도로 수정하세요.</p>
+              <p className="text-xs text-muted-foreground">포인트 처리 취소는 후속 단계에서 지원 예정입니다. 잘못 처리한 경우 관리자 포인트 조정 기능을 사용하세요.</p>
+            </>
+          ) : (
+            <p className="text-muted-foreground">온라인 회원과 연결된 고객만 포인트 조회/사용/적립이 가능합니다.</p>
+          )}
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
@@ -368,22 +468,95 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                     <th className="px-2 py-2">결제 상태</th>
                     <th className="px-2 py-2">작업 상태</th>
                     <th className="px-2 py-2">메모</th>
+                    <th className="px-2 py-2">포인트</th>
                     <th className="px-2 py-2">관리</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {records.map((record) => (
-                    <tr key={record.id} className="border-b align-top">
-                      <td className="px-2 py-2">{formatDate(record.occurredAt)}</td>
-                      <td className="px-2 py-2">{KIND_LABELS[record.kind] ?? record.kind}</td>
-                      <td className="px-2 py-2">{record.lineSummary || formatLineSummary(record.lines)}</td>
-                      <td className="px-2 py-2">{formatCurrency(record.payment?.amount)}</td>
-                      <td className="px-2 py-2"><Badge variant="outline">{record.payment?.status ? PAYMENT_STATUS_LABELS[record.payment.status] : "-"}</Badge><p className="mt-1 text-xs text-muted-foreground">{record.payment?.method ? PAYMENT_METHOD_LABELS[record.payment.method] : "-"}</p></td>
-                      <td className="px-2 py-2"><Badge variant="outline">{RECORD_STATUS_LABELS[record.status] ?? record.status}</Badge></td>
-                      <td className="max-w-xs px-2 py-2">{record.memo || "-"}</td>
-                      <td className="px-2 py-2"><Button asChild size="sm" variant="outline"><Link href="/admin/offline">오프라인 관리에서 수정</Link></Button></td>
-                    </tr>
-                  ))}
+                  {records.map((record) => {
+                    const form = pointForms[record.id] ?? { grantAmount: "", grantReason: "", useAmount: "", useReason: "" };
+                    const hasGrant = !!record.points?.grantTxId;
+                    const hasDeduct = !!record.points?.deductTxId;
+                    const canProcessPoints = !!item.linkedUserId;
+                    return (
+                      <tr key={record.id} className="border-b align-top">
+                        <td className="px-2 py-2">{formatDate(record.occurredAt)}</td>
+                        <td className="px-2 py-2">{KIND_LABELS[record.kind] ?? record.kind}</td>
+                        <td className="px-2 py-2">{record.lineSummary || formatLineSummary(record.lines)}</td>
+                        <td className="px-2 py-2">{formatCurrency(record.payment?.amount)}</td>
+                        <td className="px-2 py-2"><Badge variant="outline">{record.payment?.status ? PAYMENT_STATUS_LABELS[record.payment.status] : "-"}</Badge><p className="mt-1 text-xs text-muted-foreground">{record.payment?.method ? PAYMENT_METHOD_LABELS[record.payment.method] : "-"}</p></td>
+                        <td className="px-2 py-2"><Badge variant="outline">{RECORD_STATUS_LABELS[record.status] ?? record.status}</Badge></td>
+                        <td className="max-w-xs px-2 py-2">{record.memo || "-"}</td>
+                        <td className="min-w-72 px-2 py-2">
+                          <div className="space-y-3">
+                            <div className="flex flex-wrap gap-1.5">
+                              <Badge variant={hasGrant ? "secondary" : "outline"}>적립 {formatPoints(record.points?.earn)}</Badge>
+                              <Badge variant={hasDeduct ? "secondary" : "outline"}>사용 {formatPoints(record.points?.use)}</Badge>
+                            </div>
+                            {!canProcessPoints ? <p className="text-xs text-muted-foreground">온라인 회원과 연결된 고객만 포인트를 처리할 수 있습니다.</p> : null}
+                            <div className="grid gap-2 md:grid-cols-2">
+                              <div className="space-y-1.5 rounded-md border p-2">
+                                <Label htmlFor={`grant-points-${record.id}`} className="text-xs">적립 포인트</Label>
+                                <Input
+                                  id={`grant-points-${record.id}`}
+                                  inputMode="numeric"
+                                  value={form.grantAmount}
+                                  onChange={(e) => updatePointForm(record.id, { grantAmount: e.target.value })}
+                                  placeholder="예: 1000"
+                                  disabled={!canProcessPoints || hasGrant}
+                                />
+                                <Input
+                                  value={form.grantReason}
+                                  onChange={(e) => updatePointForm(record.id, { grantReason: e.target.value })}
+                                  placeholder="사유(선택)"
+                                  disabled={!canProcessPoints || hasGrant}
+                                />
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  className="w-full"
+                                  onClick={() => handleRecordPoints(record.id, "grant")}
+                                  disabled={!canProcessPoints || hasGrant || processingPointKey === `${record.id}:grant`}
+                                >
+                                  {hasGrant ? "적립 완료" : processingPointKey === `${record.id}:grant` ? "적립 처리 중..." : "적립 처리"}
+                                </Button>
+                              </div>
+                              <div className="space-y-1.5 rounded-md border p-2">
+                                <Label htmlFor={`deduct-points-${record.id}`} className="text-xs">사용 포인트</Label>
+                                <Input
+                                  id={`deduct-points-${record.id}`}
+                                  inputMode="numeric"
+                                  value={form.useAmount}
+                                  onChange={(e) => updatePointForm(record.id, { useAmount: e.target.value })}
+                                  placeholder="예: 1000"
+                                  disabled={!canProcessPoints || hasDeduct}
+                                />
+                                <Input
+                                  value={form.useReason}
+                                  onChange={(e) => updatePointForm(record.id, { useReason: e.target.value })}
+                                  placeholder="사유(선택)"
+                                  disabled={!canProcessPoints || hasDeduct}
+                                />
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="outline"
+                                  className="w-full"
+                                  onClick={() => handleRecordPoints(record.id, "deduct")}
+                                  disabled={!canProcessPoints || hasDeduct || processingPointKey === `${record.id}:deduct`}
+                                >
+                                  {hasDeduct ? "사용 완료" : processingPointKey === `${record.id}:deduct` ? "사용 처리 중..." : "사용 처리"}
+                                </Button>
+                              </div>
+                            </div>
+                            <p className="text-xs text-muted-foreground">포인트 사용은 결제금액을 자동 변경하지 않습니다.</p>
+                            {form.message ? <p className={form.messageType === "error" ? "text-xs text-destructive" : "text-xs text-foreground"}>{form.message}</p> : null}
+                          </div>
+                        </td>
+                        <td className="px-2 py-2"><Button asChild size="sm" variant="outline"><Link href="/admin/offline">오프라인 관리에서 수정</Link></Button></td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
