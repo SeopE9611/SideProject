@@ -30,7 +30,7 @@ export async function GET() {
   // 공지 5개 (고정 우선)
   const notices = await col
     .aggregate([
-      { $match: { type: "notice", status: "published" } },
+      { $match: { type: "notice", status: "published", category: { $ne: "이벤트" } } },
       { $sort: { isPinned: -1, createdAt: -1 } },
       { $limit: 5 },
 
@@ -108,6 +108,15 @@ export async function GET() {
       // 목록에 불필요한 필드 제외
       { $project: { content: 0, attachments: 0, attachmentsArr: 0 } },
     ])
+    .toArray();
+
+
+  // 이벤트 5개 (기존 notice 타입 + 이벤트 카테고리)
+  const events = await col
+    .find({ type: "notice", status: "published", category: "이벤트" })
+    .sort({ isPinned: -1, createdAt: -1 })
+    .limit(5)
+    .project({ content: 0, attachments: 0 })
     .toArray();
 
   // QnA 5개 (최신순) — 필요하면 뱃지용 필드 추가
@@ -218,7 +227,7 @@ export async function GET() {
   );
 
   return NextResponse.json(
-    { ok: true, version: API_VERSION, notices, qna },
+    { ok: true, version: API_VERSION, notices, events, qna },
     { headers: { "Cache-Control": "no-store" } },
   );
 }

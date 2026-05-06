@@ -36,8 +36,8 @@ async function fetchNotices(opts: { page: number; limit: number; q: string; fiel
       // URL 쿼리(검색/필드)를 서버 프리로드에도 동일하게 반영
       q,
       field,
-      // 카테고리/상품 필터는 현재 공지 UI에서 사용하지 않으므로 제외
-      // category: null,
+      // 이벤트는 별도 /board/event 게시판에서 노출하므로 공지 목록에서는 제외
+      excludeCategory: "이벤트",
       // productId: null,
     });
 

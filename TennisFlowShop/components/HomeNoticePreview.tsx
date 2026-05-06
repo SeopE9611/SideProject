@@ -15,7 +15,7 @@ export default function HomeNoticePreview() {
   const { data, error, isLoading, mutate } = useSWR<{
     ok: boolean;
     items: Notice[];
-  }>("/api/boards?type=notice&limit=5", fetcher);
+  }>("/api/boards?type=notice&excludeCategory=event&limit=5", fetcher);
   const items = data?.ok ? data.items : [];
   const hasError = Boolean(error) || (data && !data.ok);
 

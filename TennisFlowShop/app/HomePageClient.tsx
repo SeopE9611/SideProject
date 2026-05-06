@@ -94,7 +94,7 @@ const SLIDES = [
     img: "dokkaebibanner.png",
     // imgMobile: '',
     alt: "이벤트",
-    href: "/board/notice",
+    href: "/board/event",
     caption: "신규 입고 & 이벤트",
     // objectPosition: 'center 20%',
   },

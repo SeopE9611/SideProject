@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { badgeBaseOutlined, badgeSizeSm, getAnswerStatusBadgeSpec, getNoticeCategoryBadgeSpec, getQnaCategoryBadgeSpec } from "@/lib/badge-style";
-import { ArrowRight, Bell, Eye, Headset, ImageIcon, Lock, MessageSquare, Paperclip, Pin, Plus } from "lucide-react";
+import { ArrowRight, Bell, Eye, Gift, Headset, ImageIcon, Lock, MessageSquare, Paperclip, Pin, Plus } from "lucide-react";
 import Link from "next/link";
 import SupportFaqSearch from "@/app/support/_components/SupportFaqSearch";
 import { useState } from "react";
@@ -40,7 +40,7 @@ type QnaItem = {
   hasFile?: boolean;
 };
 
-type BoardsMainRes = { ok?: boolean; notices?: NoticeItem[]; qna?: QnaItem[] };
+type BoardsMainRes = { ok?: boolean; notices?: NoticeItem[]; events?: NoticeItem[]; qna?: QnaItem[] };
 type MeRes = { id?: string; role?: string };
 
 async function fetcher<T>(url: string): Promise<T> {
@@ -107,28 +107,37 @@ function ErrorBox({ message = "데이터를 불러오는 중 오류가 발생했
 
 // ---------------------- 공지 카드 ----------------------
 
-function NoticeCard({ items, isAdmin, isLoading, error, onRetry }: { items: NoticeItem[]; isAdmin?: boolean; isLoading?: boolean; error?: any; onRetry?: () => void }) {
+function NoticeCard({ items, isAdmin, isLoading, error, onRetry, mode = "notice" }: { items: NoticeItem[]; isAdmin?: boolean; isLoading?: boolean; error?: any; onRetry?: () => void; mode?: "notice" | "event" }) {
   const supportQuery = "from=support&returnTo=%2Fsupport";
+  const isEventMode = mode === "event";
+  const basePath = isEventMode ? "/board/event" : "/board/notice";
+  const writePath = isEventMode ? "/board/event/write" : "/board/notice/write";
+  const cardTitle = isEventMode ? "이벤트" : "고객센터 공지사항";
+  const writeLabel = isEventMode ? "이벤트 쓰기" : "공지 쓰기";
+  const listLabel = isEventMode ? "이벤트 확인하기" : "공지사항 확인하기";
+  const emptyTitle = isEventMode ? "등록된 이벤트가 없습니다." : "등록된 공지가 없습니다.";
+  const emptyDescription = isEventMode ? "새 이벤트가 등록되면 이곳에서 바로 확인할 수 있어요." : "새 소식이 등록되면 이곳에서 바로 확인할 수 있어요.";
+  const HeaderIcon = isEventMode ? Gift : Bell;
   return (
     <Card className="border border-border bg-card shadow-sm h-full">
       <CardHeader className="bg-muted/30 border-b p-4 sm:p-5 md:p-6">
         <CardTitle className="flex flex-wrap items-center gap-x-3 gap-y-2">
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-            <Bell className="h-5 w-5 text-primary" />
-            <span className="text-lg sm:text-xl md:text-2xl font-semibold leading-tight break-keep">고객센터 공지사항</span>
+            <HeaderIcon className="h-5 w-5 text-primary" />
+            <span className="text-lg sm:text-xl md:text-2xl font-semibold leading-tight break-keep">{cardTitle}</span>
           </div>
           <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
             {isAdmin && (
               <Button asChild size="sm" variant="ghost" className="h-8 px-2 sm:px-3 border-border whitespace-nowrap">
-                <Link href="/board/notice/write">
+                <Link href={writePath}>
                   <Plus className="h-4 w-4 mr-1" />
-                  공지 쓰기
+                  {writeLabel}
                 </Link>
               </Button>
             )}
             <Button asChild size="sm" variant="ghost" className="h-8 px-2 sm:px-3 whitespace-nowrap">
-              <Link href="/board/notice">
-                공지사항 확인하기
+              <Link href={basePath}>
+                {listLabel}
                 <ArrowRight className="ml-1 h-4 w-4" />
               </Link>
             </Button>
@@ -142,7 +151,7 @@ function NoticeCard({ items, isAdmin, isLoading, error, onRetry }: { items: Noti
           ) : isLoading ? (
             <FiveLineSkeleton />
           ) : items.length === 0 ? (
-            <AsyncState kind="empty" variant="card" title="등록된 공지가 없습니다." description="새 소식이 등록되면 이곳에서 바로 확인할 수 있어요." />
+            <AsyncState kind="empty" variant="card" title={emptyTitle} description={emptyDescription} />
           ) : (
             items.map((notice) => (
               <div key={notice._id} className="border-b border-border last:border-0 pb-4 last:pb-0">
@@ -164,7 +173,7 @@ function NoticeCard({ items, isAdmin, isLoading, error, onRetry }: { items: Noti
                         )}
 
                         {/* 말줄임 제목 (부모 flex-1 + min-w-0 중요) */}
-                        <Link href={`/board/notice/${notice._id}?${supportQuery}`} className={`${supportMobileTitleClampClass} text-foreground transition-colors hover:text-foreground`}>
+                        <Link href={`${basePath}/${notice._id}?${supportQuery}`} className={`${supportMobileTitleClampClass} text-foreground transition-colors hover:text-foreground`}>
                           {notice.title}
                         </Link>
                       </div>
@@ -362,6 +371,7 @@ export default function SupportPage() {
   // 공지/Q&A 묶어서 가져오는 기존 API 재사용
   const { data, error, isLoading, mutate } = useSWR<BoardsMainRes>("/api/boards/main", fetcher);
   const notices = data?.notices ?? [];
+  const events = data?.events ?? [];
   const qnas = data?.qna ?? [];
 
   // 관리자 여부 확인 (공지 쓰기 버튼 제어)
@@ -392,8 +402,9 @@ export default function SupportPage() {
         <SupportFaqSearch />
 
         {/* 카드 2열 레이아웃 */}
-        <div className="grid md:grid-cols-2 gap-4 md:gap-8 items-start">
+        <div className="grid md:grid-cols-3 gap-4 md:gap-6 items-start">
           <NoticeCard items={notices} isAdmin={isAdmin} isLoading={isLoading} error={error} onRetry={() => mutate()} />
+          <NoticeCard mode="event" items={events} isAdmin={isAdmin} isLoading={isLoading} error={error} onRetry={() => mutate()} />
           <QnaCard items={qnas} viewerId={viewerId} isAdmin={isAdmin} isLoading={isLoading} error={error} onRetry={() => mutate()} />
         </div>
       </div>
