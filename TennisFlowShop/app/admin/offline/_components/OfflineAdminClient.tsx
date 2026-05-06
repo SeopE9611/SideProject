@@ -30,6 +30,20 @@ function formatDate(value: string | Date): string {
   return new Intl.DateTimeFormat("ko-KR", { year: "numeric", month: "numeric", day: "numeric" }).format(new Date(value));
 }
 
+function formatLineSummary(lines?: Array<{ racketName?: string; stringName?: string; tensionMain?: string; tensionCross?: string }>): string {
+  if (!Array.isArray(lines) || lines.length === 0) return "작업 내용 미입력";
+  const summary = lines
+    .map((line) => {
+      const main = String(line.tensionMain ?? "").trim();
+      const cross = String(line.tensionCross ?? "").trim();
+      const tension = main || cross ? `${main || "-"}/${cross || "-"}` : "";
+      return [String(line.racketName ?? "").trim(), String(line.stringName ?? "").trim(), tension].filter(Boolean).join(" · ");
+    })
+    .filter(Boolean)
+    .join(", ");
+  return summary || "작업 내용 미입력";
+}
+
 export default function OfflineAdminClient() {
   const [query, setQuery] = useState({ name: "", phone: "", email: "" });
   const [submittedQuery, setSubmittedQuery] = useState<{ name: string; phone: string; email: string } | null>(null);
@@ -37,6 +51,11 @@ export default function OfflineAdminClient() {
   const [searchMessage, setSearchMessage] = useState<string | null>(null);
   const [registerMessage, setRegisterMessage] = useState<string | null>(null);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
+  const [saveMessageType, setSaveMessageType] = useState<"success" | "error" | null>(null);
+  const [editingRecord, setEditingRecord] = useState<any | null>(null);
+  const [editForm, setEditForm] = useState({ status: "received", paymentStatus: "pending", paymentMethod: "cash", paymentAmount: 0, memo: "" });
+  const [editMessage, setEditMessage] = useState<string | null>(null);
+  const [isEditingSubmit, setIsEditingSubmit] = useState(false);
 
   const [form, setForm] = useState({ kind: "stringing", status: "received", racketName: "", stringName: "", tensionMain: "", tensionCross: "", memo: "", amount: 0, method: "cash", payStatus: "pending" });
   const [newCustomer, setNewCustomer] = useState({ name: "", phone: "", email: "", memo: "" });
@@ -101,12 +120,12 @@ export default function OfflineAdminClient() {
 
               {!submittedQuery && <p className="text-sm">검색어를 입력한 뒤 고객을 조회하세요.</p>}
               {searchMessage && <p className="text-sm text-foreground">{searchMessage}</p>}
-              {searchLoading && <p className="text-sm">검색 중...</p>}
+              {submittedQuery && searchLoading && <p className="text-sm">검색 중...</p>}
               {submittedQuery && !searchLoading && !hasSearchResult && (
                 <p className="text-sm">검색 결과가 없습니다. 신규 오프라인 고객으로 등록할 수 있습니다.</p>
               )}
 
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {submittedQuery && !searchLoading && (<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <p className="font-medium">온라인 회원 결과</p>
@@ -144,7 +163,7 @@ export default function OfflineAdminClient() {
                     </div>
                   ))}
                 </div>
-              </div>
+              </div>)}
             </CardContent>
           </Card>
 
@@ -254,7 +273,7 @@ export default function OfflineAdminClient() {
                 </div>
               </div>
 
-              {saveMessage && <p className="text-sm text-foreground">{saveMessage}</p>}
+              {saveMessage && <p className={`text-sm rounded-md border px-3 py-2 ${saveMessageType === "success" ? "border-border text-foreground" : "border-destructive/40 text-destructive"}`}>{saveMessage}</p>}
               <Button
                 disabled={isSubmitting || !selected}
                 onClick={async () => {
@@ -262,6 +281,7 @@ export default function OfflineAdminClient() {
                   try {
                     setIsSubmitting(true);
                     setSaveMessage(null);
+                    setSaveMessageType(null);
                     let offlineCustomerId = selected.source === "offline" ? selected.offlineCustomerId : selected.offlineCustomerId;
                     if (selected.source === "online" && !offlineCustomerId) {
                       const ensured = (await adminMutator("/api/admin/offline/customers/ensure", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: selected.userId }) })) as { item: OfflineCustomerDto };
@@ -270,6 +290,7 @@ export default function OfflineAdminClient() {
                     }
                     if (!offlineCustomerId) {
                       setSaveMessage("오프라인 고객 연결에 실패했습니다.");
+                      setSaveMessageType("error");
                       return;
                     }
                     await adminMutator("/api/admin/offline/records", {
@@ -286,11 +307,14 @@ export default function OfflineAdminClient() {
                       }),
                     });
                     setForm({ kind: "stringing", status: "received", racketName: "", stringName: "", tensionMain: "", tensionCross: "", memo: "", amount: 0, method: "cash", payStatus: "pending" });
+                    setSaveMessage("오프라인 작업/매출 기록이 저장되었습니다.");
+                    setSaveMessageType("success");
                     mutateRecords();
                   } catch (e: any) {
                     const message = String(e?.message || "");
                     if (message.includes("휴대폰 번호")) setSaveMessage("온라인 회원에 휴대폰 번호가 없어 오프라인 명부 연결이 필요합니다.");
                     else setSaveMessage(message || "오프라인 작업 저장에 실패했습니다.");
+                    setSaveMessageType("error");
                   } finally {
                     setIsSubmitting(false);
                   }
@@ -316,7 +340,7 @@ export default function OfflineAdminClient() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b text-left">
-                    <th className="px-2 py-2">날짜</th><th className="px-2 py-2">고객</th><th className="px-2 py-2">유형</th><th className="px-2 py-2">작업 내용</th><th className="px-2 py-2">금액</th><th className="px-2 py-2">결제</th><th className="px-2 py-2">상태</th>
+                    <th className="px-2 py-2">날짜</th><th className="px-2 py-2">고객</th><th className="px-2 py-2">유형</th><th className="px-2 py-2">작업 내용</th><th className="px-2 py-2">금액</th><th className="px-2 py-2">결제</th><th className="px-2 py-2">상태</th><th className="px-2 py-2">관리</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -325,10 +349,11 @@ export default function OfflineAdminClient() {
                       <td className="px-2 py-2">{formatDate(r.occurredAt)}</td>
                       <td className="px-2 py-2"><p className="font-medium">{r.customerName}</p><p className="text-xs text-muted-foreground">{r.customerPhoneMasked}</p></td>
                       <td className="px-2 py-2">{KIND_LABELS[r.kind as keyof typeof KIND_LABELS] ?? r.kind}</td>
-                      <td className="px-2 py-2">{r.lineSummary || "-"}</td>
+                      <td className="px-2 py-2">{formatLineSummary(r.lines)}</td>
                       <td className="px-2 py-2">{formatCurrency(r.payment?.amount)}</td>
                       <td className="px-2 py-2"><Badge variant="outline">{PAYMENT_STATUS_LABELS[r.payment?.status as keyof typeof PAYMENT_STATUS_LABELS] ?? r.payment?.status}</Badge></td>
                       <td className="px-2 py-2"><Badge variant="outline">{RECORD_STATUS_LABELS[r.status as keyof typeof RECORD_STATUS_LABELS] ?? r.status}</Badge></td>
+                      <td className="px-2 py-2"><Button size="sm" variant="outline" onClick={() => { setEditingRecord(r); setEditForm({ status: r.status, paymentStatus: r.payment?.status ?? "pending", paymentMethod: r.payment?.method ?? "cash", paymentAmount: Number(r.payment?.amount ?? 0), memo: r.memo ?? "" }); setEditMessage(null); }}>수정</Button></td>
                     </tr>
                   ))}
                 </tbody>
@@ -337,6 +362,45 @@ export default function OfflineAdminClient() {
           )}
         </CardContent>
       </Card>
+
+      {editingRecord && (
+        <Card>
+          <CardHeader><CardTitle>최근 기록 수정</CardTitle></CardHeader>
+          <CardContent className="space-y-3">
+            <div className="text-sm space-y-1">
+              <p>고객명: <span className="font-medium">{editingRecord.customerName}</span> ({editingRecord.customerPhoneMasked})</p>
+              <p>작업 유형: {KIND_LABELS[editingRecord.kind as keyof typeof KIND_LABELS] ?? editingRecord.kind}</p>
+              <p>작업 내용: {formatLineSummary(editingRecord.lines)}</p>
+              <p>등록일: {formatDate(editingRecord.occurredAt)}</p>
+            </div>
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+              <div><Label>작업 상태</Label><select className="h-10 w-full rounded-md border bg-background px-3" value={editForm.status} onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}>{Object.entries(RECORD_STATUS_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></div>
+              <div><Label>결제 상태</Label><select className="h-10 w-full rounded-md border bg-background px-3" value={editForm.paymentStatus} onChange={(e) => setEditForm({ ...editForm, paymentStatus: e.target.value })}>{Object.entries(PAYMENT_STATUS_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></div>
+              <div><Label>결제수단</Label><select className="h-10 w-full rounded-md border bg-background px-3" value={editForm.paymentMethod} onChange={(e) => setEditForm({ ...editForm, paymentMethod: e.target.value })}>{Object.entries(PAYMENT_METHOD_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></div>
+              <div><Label>결제 금액</Label><Input type="number" value={editForm.paymentAmount} onChange={(e) => setEditForm({ ...editForm, paymentAmount: Number(e.target.value) })} /></div>
+            </div>
+            <div><Label>작업 메모</Label><textarea className="w-full rounded-md border p-2" value={editForm.memo} onChange={(e) => setEditForm({ ...editForm, memo: e.target.value })} /></div>
+            {editMessage && <p className="text-sm text-destructive">{editMessage}</p>}
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" onClick={() => { setEditingRecord(null); setEditMessage(null); }}>취소</Button>
+              <Button disabled={isEditingSubmit} onClick={async () => {
+                if (!editingRecord || isEditingSubmit) return;
+                setIsEditingSubmit(true);
+                setEditMessage(null);
+                try {
+                  await adminMutator(`/api/admin/offline/records/${editingRecord.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: editForm.status, payment: { status: editForm.paymentStatus, method: editForm.paymentMethod, amount: Number(editForm.paymentAmount || 0) }, memo: editForm.memo }) });
+                  await mutateRecords();
+                  setEditingRecord(null);
+                } catch (e: any) {
+                  setEditMessage(String(e?.message || "수정 저장에 실패했습니다."));
+                } finally {
+                  setIsEditingSubmit(false);
+                }
+              }}>{isEditingSubmit ? "저장 중..." : "수정 저장"}</Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
