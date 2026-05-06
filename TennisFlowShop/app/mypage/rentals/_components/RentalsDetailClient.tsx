@@ -412,7 +412,7 @@ export default function RentalsDetailClient({
       }
     : null;
   const nextTodo = canApplyStringService
-    ? { label: "교체서비스 신청", ctaLabel: "교체 신청하기", ctaHref: applyHref }
+    ? { label: "교체서비스 신청", ctaLabel: "교체서비스 신청하기", ctaHref: applyHref }
     : data?.status === "out"
       ? {
           label: data?.shipping?.return?.trackingNumber
