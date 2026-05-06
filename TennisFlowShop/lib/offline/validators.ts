@@ -15,6 +15,8 @@ export const offlineCustomerCreateSchema = z.object({
 
 export const offlineCustomerPatchSchema = offlineCustomerCreateSchema.partial();
 
+const dateInputSchema = z.union([z.string().refine((value) => !Number.isNaN(new Date(value).getTime()), "invalid date"), z.date()]);
+
 const paymentSchema = z.object({
   status: z.enum(["pending", "paid", "refunded"]),
   method: z.enum(["cash", "card", "bank_transfer", "etc"]),
@@ -26,7 +28,7 @@ export const offlineRecordCreateSchema = z.object({
   offlineCustomerId: z.string().trim().refine((v) => ObjectId.isValid(v), "invalid object id"),
   userId: z.string().optional().nullable(),
   kind: z.enum(["stringing", "package_sale", "etc"]),
-  occurredAt: z.string().datetime().optional(),
+  occurredAt: dateInputSchema.optional(),
   status: z.enum(["received", "in_progress", "completed", "picked_up", "canceled"]),
   lines: z.array(z.object({
     racketName: z.string().optional(),
@@ -46,7 +48,7 @@ export const offlineRecordCreateSchema = z.object({
 export const offlineRecordPatchSchema = z.object({
   userId: z.string().optional().nullable(),
   kind: z.enum(["stringing", "package_sale", "etc"]).optional(),
-  occurredAt: z.string().datetime().optional(),
+  occurredAt: dateInputSchema.optional(),
   status: z.enum(["received", "in_progress", "completed", "picked_up", "canceled"]).optional(),
   lines: z.array(z.object({
     racketName: z.string().optional(),
@@ -55,7 +57,7 @@ export const offlineRecordPatchSchema = z.object({
     tensionMain: z.string().optional(),
     tensionCross: z.string().optional(),
     note: z.string().optional(),
-    mountingFee: z.number().finite().optional(),
+    mountingFee: z.union([z.string(), z.number().finite()]).optional(),
   })).optional(),
   payment: paymentSchema.partial().optional(),
   memo: z.string().max(2000).optional(),
