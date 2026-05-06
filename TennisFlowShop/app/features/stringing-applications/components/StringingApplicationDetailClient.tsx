@@ -955,23 +955,26 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
               </div>
               <TooltipProvider>
                 <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-                  <Link href={backUrl} className="basis-full sm:basis-auto sm:mr-1">
-                    <Button variant="outline" size="sm" className="w-full border-border bg-card hover:bg-primary/10 sm:w-auto">
+                  <Button
+                    asChild
+                    variant="outline"
+                    size="sm"
+                    className="basis-full border-border bg-card hover:bg-primary/10 sm:basis-auto sm:mr-1 sm:w-auto"
+                  >
+                    <Link href={backUrl}>
                       <ArrowLeft className="w-4 h-4 mr-2" />
                       신청 목록으로 돌아가기
-                    </Button>
-                  </Link>
+                    </Link>
+                  </Button>
 
                   {/* 사용자: 자가발송 운송장 등록/수정 버튼 */}
                   {!isAdmin && needsInboundTracking && (
-                    <Link
-                      href={inboundTrackingHref}
-                    >
-                      <Button variant="outline" size="sm" className="border-border bg-card hover:bg-muted">
+                    <Button asChild variant="outline" size="sm" className="border-border bg-card hover:bg-muted">
+                      <Link href={inboundTrackingHref}>
                         <Truck className="w-4 h-4 mr-2" />
                         {hasTracking ? '라켓 발송 수정' : '라켓 발송 등록'}
-                      </Button>
-                    </Link>
+                      </Link>
+                    </Button>
                   )}
 
                   {/* 관리자: 매장 발송 운송장 등록/수정 버튼 */}
