@@ -48,6 +48,7 @@ export type BoardListParams = {
 
   // 필터
   category?: string | null;
+  excludeCategory?: string | null;
   productId?: string | null;
 
   // QnA 전용: 답변 상태 필터
@@ -69,6 +70,7 @@ export async function getBoardList(
     q = "",
     field = "all",
     category,
+    excludeCategory,
     productId,
     answer,
   } = params;
@@ -83,6 +85,8 @@ export async function getBoardList(
   // 2) 카테고리 필터
   if (category) {
     filter.category = category;
+  } else if (excludeCategory) {
+    filter.category = { $ne: excludeCategory };
   }
 
   // 3) 상품 필터 (QnA 전용)

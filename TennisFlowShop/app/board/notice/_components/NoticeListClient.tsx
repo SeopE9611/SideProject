@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { badgeBaseOutlined, badgeSizeSm, getNoticeCategoryBadgeSpec } from "@/lib/badge-style";
 import { boardFetcher, parseApiError } from "@/lib/fetchers/boardFetcher";
 import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
-import { ArrowLeft, Bell, Eye, ImageIcon, Paperclip, Pin, Plus, Search } from "lucide-react";
+import { ArrowLeft, Bell, Eye, Gift, ImageIcon, Paperclip, Pin, Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -27,24 +27,25 @@ type Props = {
   initialPage?: number;
   initialKeyword?: string;
   initialField?: "all" | "title" | "content" | "title_content";
+  mode?: "notice" | "event";
 };
 
-function AdminNoticeWriteButton() {
+function AdminNoticeWriteButton({ href, label }: { href: string; label: string }) {
   const { user, loading } = useCurrentUser();
 
   if (loading || user?.role !== "admin") return null;
 
   return (
     <Button asChild size="sm" variant="outline" className="h-9 sm:h-10 text-sm sm:text-base">
-      <Link href="/board/notice/write">
+      <Link href={href}>
         <Plus className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
-        작성하기
+        {label}
       </Link>
     </Button>
   );
 }
 
-export default function NoticeListClient({ initialItems, initialTotal, initialLoadError, initialErrorMessage, initialPage = 1, initialKeyword = "", initialField = "all" }: Props) {
+export default function NoticeListClient({ initialItems, initialTotal, initialLoadError, initialErrorMessage, initialPage = 1, initialKeyword = "", initialField = "all", mode = "notice" }: Props) {
   type NoticeItem = {
     _id: string;
     title: string;
@@ -68,6 +69,19 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
     page: number;
     limit: number;
   };
+
+  const isEventMode = mode === "event";
+  const listBasePath = isEventMode ? "/board/event" : "/board/notice";
+  const writeHref = isEventMode ? "/board/event/write" : "/board/notice/write";
+  const writeLabel = isEventMode ? "이벤트 작성" : "작성하기";
+  const pageTitle = isEventMode ? "고객센터 · 이벤트" : "고객센터 · 공지사항";
+  const pageDescription = isEventMode ? "할인, 프로모션, 행사 소식을 확인하세요." : "도깨비테니스 고객센터의 주요 안내와 공지사항을 확인하실 수 있습니다.";
+  const listTitle = isEventMode ? "이벤트 목록" : "공지사항 목록";
+  const emptyTitle = isEventMode ? "등록된 이벤트가 없습니다." : "등록된 공지사항이 없습니다.";
+  const emptyDescription = isEventMode ? "새 이벤트가 등록되면 이곳에서 가장 먼저 안내해 드릴게요." : "새 소식이 등록되면 이곳에서 가장 먼저 안내해 드릴게요.";
+  const allListLabel = isEventMode ? "전체 이벤트 보기" : "전체 공지 보기";
+  const filterParam = isEventMode ? { key: "category", value: "event" } : { key: "excludeCategory", value: "event" };
+  const HeaderIcon = isEventMode ? Gift : Bell;
 
   const fmt = (v: string | Date) =>
     new Date(v)
@@ -124,7 +138,7 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
   };
 
   const buildDetailHref = (noticeId: string) => {
-    const base = `/board/notice/${noticeId}`;
+    const base = `${listBasePath}/${noticeId}`;
     const listQuery = buildListQueryFromState();
     return listQuery ? `${base}?${listQuery}` : base;
   };
@@ -146,6 +160,7 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
   // 목록 불러오기 (검색 파라미터 포함)
   const qs = new URLSearchParams({
     type: "notice",
+    [filterParam.key]: filterParam.value,
     page: String(page),
     limit: String(limit),
   });
@@ -158,6 +173,7 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
   const key = `/api/boards?${qs.toString()}`;
   const initialQs = new URLSearchParams({
     type: "notice",
+    [filterParam.key]: filterParam.value,
     page: String(initialPage),
     limit: String(limit),
   });
@@ -249,11 +265,11 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
 
             <div className="flex items-center space-x-2 sm:space-x-3">
               <div className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-xl border border-border bg-secondary text-foreground">
-                <Bell className="h-5 w-5 sm:h-6 sm:w-6" />
+                <HeaderIcon className="h-5 w-5 sm:h-6 sm:w-6" />
               </div>
               <div>
-                <h1 className="text-2xl sm:text-3xl md:text-[2rem] font-bold tracking-normal text-foreground">고객센터 · 공지사항</h1>
-                <p className="text-sm sm:text-base text-muted-foreground">도깨비테니스 고객센터의 주요 안내와 공지사항을 확인하실 수 있습니다.</p>
+                <h1 className="text-2xl sm:text-3xl md:text-[2rem] font-bold tracking-normal text-foreground">{pageTitle}</h1>
+                <p className="text-sm sm:text-base text-muted-foreground">{pageDescription}</p>
               </div>
             </div>
           </div>
@@ -263,8 +279,8 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
           <CardHeader className="bg-muted/30 border-b p-4 sm:p-5 md:p-6">
             <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div className="flex items-center space-x-2 sm:space-x-3">
-                <Bell className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-                <span className="text-lg sm:text-xl md:text-2xl">공지사항 목록</span>
+                <HeaderIcon className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+                <span className="text-lg sm:text-xl md:text-2xl">{listTitle}</span>
               </div>
 
               <div className={noticeMobileActionGroupClass}>
@@ -323,7 +339,7 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
                   {isBusy && <div className="h-4 w-4 border-2 border-border/30 border-t-primary-foreground rounded-full animate-spin mr-2" />}
                   검색
                 </Button>
-                <AdminNoticeWriteButton />
+                <AdminNoticeWriteButton href={writeHref} label={writeLabel} />
               </div>
             </CardTitle>
           </CardHeader>
@@ -339,7 +355,7 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
               )}
               {!shouldShowLoadingState && !hasDataError && shouldShowActualEmptyState && (
                 <div className="space-y-3">
-                  <AsyncState kind="empty" variant="card" title="등록된 공지사항이 없습니다." description="새 소식이 등록되면 이곳에서 가장 먼저 안내해 드릴게요." />
+                  <AsyncState kind="empty" variant="card" title={emptyTitle} description={emptyDescription} />
                   <div className="mt-3">
                     <Button asChild variant="outline" size="sm">
                       <Link href="/support">고객센터 홈으로</Link>
@@ -368,7 +384,7 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
                         });
                       }}
                     >
-                      전체 공지 보기
+                      {allListLabel}
                     </Button>
                   </div>
                 </div>

@@ -291,6 +291,7 @@ export async function GET(req: NextRequest) {
   const typeParam = url.searchParams.get("type");
   const kindParam = url.searchParams.get("kind");
   const rawCategory = url.searchParams.get("category"); // string | null
+  const rawExcludeCategory = url.searchParams.get("excludeCategory"); // string | null
   const productId = url.searchParams.get("productId");
   const answerRaw = url.searchParams.get("answer") || "";
 
@@ -456,9 +457,14 @@ export async function GET(req: NextRequest) {
 
   // 타입별 카테고리 정규화
   let category: string | null = null;
+  let excludeCategory: string | null = null;
   if (type === "notice") {
     const n = normalizeNoticeCategory(rawCategory);
     if (n) category = n; // 공지는 라벨('일반','이벤트' 등)로 저장됨
+
+    // category가 있으면 category 우선: excludeCategory는 목록 쿼리에서 무시됩니다.
+    const excluded = normalizeNoticeCategory(rawExcludeCategory);
+    if (excluded) excludeCategory = excluded;
   } else if (type === "qna") {
     const n = normalizeCategory(rawCategory); // 코드/라벨 → QnA 라벨로
     if (n) category = n as QnaCategory;
@@ -471,6 +477,7 @@ export async function GET(req: NextRequest) {
     extra: {
       type: typeParam,
       category: rawCategory,
+      excludeCategory: rawExcludeCategory,
       productId,
       answer: answerRaw,
       page,
@@ -494,6 +501,7 @@ export async function GET(req: NextRequest) {
     q,
     field,
     category,
+    excludeCategory,
     productId: productId || null,
     answer,
   });
