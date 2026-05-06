@@ -7,6 +7,7 @@ import { offlineCustomerPatchSchema } from "@/lib/offline/validators";
 import { maskPhone, normalizeEmail, normalizePhone } from "@/lib/offline/normalizers";
 import { sanitizeCustomer } from "@/lib/offline/offline.repository";
 import { getPointsBalance } from "@/lib/points.service";
+import { isCountEnded, isTimeExpired } from "@/lib/pass-status";
 
 const oid = (id: string) => (ObjectId.isValid(id) ? new ObjectId(id) : null);
 
@@ -42,8 +43,37 @@ function sanitizeRecord(doc: Record<string, any>) {
       deductTxId: doc.points?.deductTxId ? String(doc.points.deductTxId) : null,
     },
     memo: doc.memo ?? "",
+    packageUsage: {
+      passId: doc.packageUsage?.passId ? String(doc.packageUsage.passId) : null,
+      usedCount: typeof doc.packageUsage?.usedCount === "number" ? doc.packageUsage.usedCount : null,
+      consumptionId: doc.packageUsage?.consumptionId ? String(doc.packageUsage.consumptionId) : null,
+    },
     createdAt: doc.createdAt instanceof Date ? doc.createdAt.toISOString() : doc.createdAt ?? null,
     updatedAt: doc.updatedAt instanceof Date ? doc.updatedAt.toISOString() : doc.updatedAt ?? null,
+  };
+}
+
+function sanitizePass(doc: Record<string, any>, now = new Date()) {
+  const remainingCount = Number(doc.remainingCount ?? 0);
+  const totalCount = Number(doc.packageSize ?? 0);
+  const expiredByCount = isCountEnded(remainingCount);
+  const expiredByTime = isTimeExpired(doc.expiresAt, now);
+  const status = doc.status === "active" && expiredByCount
+    ? "ended"
+    : doc.status === "active" && expiredByTime
+      ? "expired"
+      : doc.status;
+  const packageName = doc.meta?.planTitle ?? "교체 서비스 패키지";
+  return {
+    id: String(doc._id),
+    name: packageName,
+    packageName,
+    status,
+    totalCount,
+    usedCount: typeof doc.usedCount === "number" ? doc.usedCount : null,
+    remainingCount,
+    expiresAt: doc.expiresAt instanceof Date ? doc.expiresAt.toISOString() : doc.expiresAt ?? null,
+    createdAt: doc.createdAt instanceof Date ? doc.createdAt.toISOString() : doc.createdAt ?? null,
   };
 }
 
@@ -64,10 +94,22 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
       getPointsBalance(guard.db, linkedUserId),
     ])
     : [null, null] as const;
+  const now = new Date();
+  const passes = linkedUserId && linkedUser
+    ? await guard.db.collection("service_passes")
+      .find(
+        { userId: linkedUserId },
+        { projection: { packageSize: 1, usedCount: 1, remainingCount: 1, status: 1, expiresAt: 1, createdAt: 1, meta: 1 } },
+      )
+      .sort({ status: 1, expiresAt: 1, createdAt: -1 })
+      .limit(100)
+      .toArray()
+    : [];
+
   const records = await guard.db.collection("offline_service_records")
     .find(
       { offlineCustomerId: _id },
-      { projection: { offlineCustomerId: 1, kind: 1, status: 1, occurredAt: 1, customerSnapshot: 1, lines: 1, payment: 1, points: 1, memo: 1, createdAt: 1, updatedAt: 1 } },
+      { projection: { offlineCustomerId: 1, kind: 1, status: 1, occurredAt: 1, customerSnapshot: 1, lines: 1, payment: 1, points: 1, packageUsage: 1, memo: 1, createdAt: 1, updatedAt: 1 } },
     )
     .sort({ occurredAt: -1, createdAt: -1 })
     .limit(50)
@@ -89,6 +131,7 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
         : null,
     },
     records: records.map((record) => sanitizeRecord(record as any)),
+    passes: passes.map((pass) => sanitizePass(pass as any, now)),
   });
 }
 export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }> }) {
