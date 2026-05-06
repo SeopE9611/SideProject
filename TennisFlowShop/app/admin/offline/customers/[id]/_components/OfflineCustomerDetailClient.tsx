@@ -2,13 +2,17 @@
 
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { useState } from "react";
 import useSWR from "swr";
 import { ArrowLeft, History } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
-import type { OfflineCustomerDto, OfflineKind, OfflinePaymentMethod, OfflinePaymentStatus, OfflineStatus } from "@/types/admin/offline";
+import { adminFetcher, adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
+import type { OfflineCustomerDto, OfflineKind, OfflineLinkCandidate, OfflineLinkedUser, OfflinePaymentMethod, OfflinePaymentStatus, OfflineStatus } from "@/types/admin/offline";
 
 type OfflineRecord = {
   id: string;
@@ -26,7 +30,7 @@ type OfflineRecord = {
 
 type OfflineCustomerDetail = OfflineCustomerDto & {
   phoneNormalized?: string | null;
-  linkedUser?: { id: string; name?: string | null; email?: string | null; phone?: string | null } | null;
+  linkedUser?: OfflineLinkedUser | null;
 };
 
 type DetailResponse = { item: OfflineCustomerDetail; records?: OfflineRecord[] };
@@ -70,8 +74,43 @@ function DetailRow({ label, value }: { label: string; value: ReactNode }) {
   );
 }
 
+
+type LinkCandidatesResponse = { items: OfflineLinkCandidate[] };
+
+const LINK_ERROR_MESSAGES: Record<string, string> = {
+  "customer not found": "오프라인 고객을 찾을 수 없습니다.",
+  "user not found": "온라인 회원을 찾을 수 없습니다.",
+  "customer already linked to another user": "이미 다른 온라인 회원과 연결된 오프라인 고객입니다.",
+  "user already linked to another offline customer": "이미 다른 오프라인 고객과 연결된 온라인 회원입니다.",
+  "invalid userId": "온라인 회원 ID가 올바르지 않습니다.",
+  "invalid customer id": "오프라인 고객 ID가 올바르지 않습니다.",
+};
+
+function translateLinkError(error: unknown): string {
+  const message = getAdminErrorMessage(error);
+  return LINK_ERROR_MESSAGES[message] ?? message ?? "온라인 회원 연결에 실패했습니다.";
+}
+
+function MatchBadge({ active, children }: { active: boolean; children: ReactNode }) {
+  return active ? <Badge variant="secondary">{children}</Badge> : <Badge variant="outline" className="text-muted-foreground">{children} 불일치</Badge>;
+}
+
 export default function OfflineCustomerDetailClient({ id }: { id: string }) {
-  const { data, error, isLoading } = useSWR<DetailResponse>(`/api/admin/offline/customers/${id}`, authenticatedSWRFetcher, {
+  const { data, error, isLoading, mutate: mutateDetail } = useSWR<DetailResponse>(`/api/admin/offline/customers/${id}`, authenticatedSWRFetcher, {
+    revalidateOnFocus: false,
+  });
+  const [candidateQuery, setCandidateQuery] = useState({ name: "", phone: "", email: "" });
+  const [submittedCandidateQuery, setSubmittedCandidateQuery] = useState<{ name: string; phone: string; email: string } | null>(null);
+  const [candidateMessage, setCandidateMessage] = useState<string | null>(null);
+  const [linkMessage, setLinkMessage] = useState<string | null>(null);
+  const [linkMessageType, setLinkMessageType] = useState<"success" | "error" | null>(null);
+  const [linkingUserId, setLinkingUserId] = useState<string | null>(null);
+  const [isUnlinking, setIsUnlinking] = useState(false);
+
+  const candidateKey = submittedCandidateQuery
+    ? `/api/admin/offline/customers/${id}/link-candidates?name=${encodeURIComponent(submittedCandidateQuery.name)}&phone=${encodeURIComponent(submittedCandidateQuery.phone)}&email=${encodeURIComponent(submittedCandidateQuery.email)}`
+    : null;
+  const { data: candidatesData, isLoading: candidatesLoading, mutate: mutateCandidates } = useSWR<LinkCandidatesResponse>(candidateKey, adminFetcher, {
     revalidateOnFocus: false,
   });
 
@@ -79,6 +118,50 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
   const records = data?.records ?? [];
   const pendingCount = records.filter((record) => record.payment?.status === "pending").length;
   const refundedCount = records.filter((record) => record.payment?.status === "refunded").length;
+  const candidates = candidatesData?.items ?? [];
+
+  async function handleLinkUser(userId: string) {
+    if (!window.confirm("이 온라인 회원을 현재 오프라인 고객과 연결하시겠습니까?")) return;
+    setLinkingUserId(userId);
+    setLinkMessage(null);
+    setLinkMessageType(null);
+    try {
+      await adminMutator(`/api/admin/offline/customers/${id}/link`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      });
+      setLinkMessage("온라인 회원과 연결했습니다.");
+      setLinkMessageType("success");
+      await mutateDetail();
+      await mutateCandidates();
+    } catch (err) {
+      setLinkMessage(translateLinkError(err));
+      setLinkMessageType("error");
+    } finally {
+      setLinkingUserId(null);
+    }
+  }
+
+  async function handleUnlinkUser() {
+    if (!window.confirm("온라인 회원 연결을 해제하시겠습니까? 기존 오프라인 기록은 삭제되지 않습니다.")) return;
+    setIsUnlinking(true);
+    setLinkMessage(null);
+    setLinkMessageType(null);
+    try {
+      await adminMutator(`/api/admin/offline/customers/${id}/link`, { method: "DELETE" });
+      setLinkMessage("온라인 회원 연결을 해제했습니다.");
+      setLinkMessageType("success");
+      setSubmittedCandidateQuery(null);
+      await mutateDetail();
+    } catch (err) {
+      setLinkMessage(translateLinkError(err));
+      setLinkMessageType("error");
+    } finally {
+      setIsUnlinking(false);
+    }
+  }
+
 
   if (isLoading) {
     return <Card><CardContent className="py-10 text-sm">오프라인 고객 상세 정보를 불러오는 중입니다...</CardContent></Card>;
@@ -138,23 +221,114 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
         <Card>
           <CardHeader>
             <CardTitle>온라인 회원 연결 상태</CardTitle>
+            <CardDescription>온라인 회원과 오프라인 고객을 관리자가 직접 확인한 뒤 연결합니다.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3 text-sm">
+          <CardContent className="space-y-4 text-sm">
             {item.linkedUserId ? (
               <>
-                <Badge variant="secondary">온라인 회원과 연결됨</Badge>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge variant="secondary">온라인 회원과 연결됨</Badge>
+                  {!item.linkedUser ? <Badge variant="outline">회원 정보 없음</Badge> : null}
+                </div>
+                <p className="text-muted-foreground">이 연결은 향후 포인트/패키지 연동 기준으로 사용됩니다.</p>
                 <DetailRow label="회원명" value={item.linkedUser?.name || "회원 정보 없음"} />
                 <DetailRow label="회원 이메일" value={item.linkedUser?.email || "-"} />
-                <DetailRow label="회원 휴대폰" value={item.linkedUser?.phone || "-"} />
-                <p className="text-xs text-muted-foreground">linkedUserId: {item.linkedUserId}</p>
+                <DetailRow label="회원 휴대폰" value={item.linkedUser?.phoneMasked || item.linkedUser?.phone || "-"} />
+                <p className="break-all text-xs text-muted-foreground">linkedUserId: {item.linkedUserId}</p>
+                <Button type="button" variant="destructive" size="sm" onClick={handleUnlinkUser} disabled={isUnlinking}>
+                  {isUnlinking ? "연결 해제 중..." : "연결 해제"}
+                </Button>
               </>
             ) : (
               <>
                 <Badge variant="outline">온라인 회원 미연결</Badge>
                 <p className="text-muted-foreground">포인트/패키지 연동은 온라인 회원 연결 후 사용할 수 있습니다.</p>
+                <form
+                  className="space-y-3 rounded-md border p-3"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    setCandidateMessage(null);
+                    setLinkMessage(null);
+                    if (!candidateQuery.name.trim() && !candidateQuery.phone.trim() && !candidateQuery.email.trim()) {
+                      setCandidateMessage("검색어를 하나 이상 입력해 주세요.");
+                      setSubmittedCandidateQuery(null);
+                      return;
+                    }
+                    setSubmittedCandidateQuery({ ...candidateQuery });
+                  }}
+                >
+                  <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-1">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="link-candidate-name">이름</Label>
+                      <Input id="link-candidate-name" value={candidateQuery.name} onChange={(e) => setCandidateQuery({ ...candidateQuery, name: e.target.value })} />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="link-candidate-phone">휴대폰 번호</Label>
+                      <Input id="link-candidate-phone" value={candidateQuery.phone} onChange={(e) => setCandidateQuery({ ...candidateQuery, phone: e.target.value })} />
+                    </div>
+                    <div className="space-y-1.5 md:col-span-2 lg:col-span-1">
+                      <Label htmlFor="link-candidate-email">이메일</Label>
+                      <Input id="link-candidate-email" type="email" value={candidateQuery.email} onChange={(e) => setCandidateQuery({ ...candidateQuery, email: e.target.value })} />
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Button type="submit" size="sm">검색</Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setCandidateQuery({ name: "", phone: "", email: "" });
+                        setSubmittedCandidateQuery(null);
+                        setCandidateMessage(null);
+                        setLinkMessage(null);
+                      }}
+                    >
+                      초기화
+                    </Button>
+                  </div>
+                </form>
+                {!submittedCandidateQuery && !candidateMessage ? <p>온라인 회원을 검색해 이 오프라인 고객과 연결할 수 있습니다.</p> : null}
+                {candidateMessage ? <p className="text-sm text-destructive">{candidateMessage}</p> : null}
+                {submittedCandidateQuery && candidatesLoading ? <p>회원 검색 중...</p> : null}
+                {submittedCandidateQuery && !candidatesLoading && candidates.length === 0 ? <p>검색 결과가 없습니다.</p> : null}
+                {submittedCandidateQuery && !candidatesLoading && candidates.length > 0 ? (
+                  <div className="space-y-2">
+                    {candidates.map((candidate) => {
+                      const isLinkedToCurrent = candidate.alreadyLinkedOfflineCustomerId === item.id;
+                      const isLinkedToOther = !!candidate.alreadyLinkedOfflineCustomerId && !isLinkedToCurrent;
+                      return (
+                        <div key={candidate.id} className="space-y-2 rounded-md border p-3">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0">
+                              <p className="font-medium">{candidate.name || "이름 없음"}</p>
+                              <p className="break-all text-muted-foreground">{candidate.email || "이메일 없음"}</p>
+                              <p className="text-muted-foreground">{candidate.phoneMasked || "휴대폰 없음"}</p>
+                              <p className="break-all text-xs text-muted-foreground">회원 ID: {candidate.id}</p>
+                            </div>
+                            <Button
+                              type="button"
+                              size="sm"
+                              onClick={() => handleLinkUser(candidate.id)}
+                              disabled={isLinkedToOther || isLinkedToCurrent || linkingUserId === candidate.id}
+                            >
+                              {isLinkedToCurrent ? "현재 연결됨" : linkingUserId === candidate.id ? "연결 중..." : "연결"}
+                            </Button>
+                          </div>
+                          <div className="flex flex-wrap gap-1.5">
+                            <MatchBadge active={candidate.match.name}>이름 일치</MatchBadge>
+                            <MatchBadge active={candidate.match.phone}>휴대폰 일치</MatchBadge>
+                            <MatchBadge active={candidate.match.email}>이메일 일치</MatchBadge>
+                          </div>
+                          {isLinkedToOther ? <p className="text-xs text-destructive">이미 다른 오프라인 고객({candidate.alreadyLinkedOfflineCustomerId})과 연결된 회원입니다.</p> : null}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : null}
               </>
             )}
-            <p className="text-xs text-muted-foreground">연결 관리는 후속 단계에서 지원 예정입니다.</p>
+            {linkMessage ? <p className={linkMessageType === "error" ? "text-sm text-destructive" : "text-sm text-foreground"}>{linkMessage}</p> : null}
           </CardContent>
         </Card>
       </div>

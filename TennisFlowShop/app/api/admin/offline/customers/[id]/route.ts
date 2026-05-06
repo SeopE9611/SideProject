@@ -4,7 +4,7 @@ import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 import { appendAudit } from "@/lib/audit";
 import { offlineCustomerPatchSchema } from "@/lib/offline/validators";
-import { normalizeEmail, normalizePhone } from "@/lib/offline/normalizers";
+import { maskPhone, normalizeEmail, normalizePhone } from "@/lib/offline/normalizers";
 import { sanitizeCustomer } from "@/lib/offline/offline.repository";
 
 const oid = (id: string) => (ObjectId.isValid(id) ? new ObjectId(id) : null);
@@ -68,7 +68,13 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
       ...sanitizeCustomer(doc as any),
       phoneNormalized: doc.phoneNormalized ?? null,
       linkedUser: linkedUser
-        ? { id: String(linkedUser._id), name: linkedUser.name || "", email: linkedUser.email ?? null, phone: linkedUser.phone ?? null }
+        ? {
+          id: String(linkedUser._id),
+          name: linkedUser.name || "",
+          email: linkedUser.email ?? null,
+          phone: linkedUser.phone ?? null,
+          phoneMasked: linkedUser.phone ? maskPhone(String(linkedUser.phone)) : null,
+        }
         : null,
     },
     records: records.map((record) => sanitizeRecord(record as any)),
