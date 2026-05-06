@@ -159,7 +159,7 @@ const productImageWrapClass =
 const productMetaPillClass =
   "flex items-center justify-between rounded-xl border border-border/60 bg-secondary/50 px-2 py-1.5";
 const productOverlayActionClass =
-  "absolute inset-x-0 bottom-0 flex items-center gap-2 border-t border-border/60 bg-card/90 px-3 py-3 opacity-0 transition-colors duration-200 group-hover:opacity-100";
+  "absolute inset-x-0 bottom-0 flex items-center gap-2 border-t border-border/60 bg-card/90 px-3 py-3 opacity-0 transition-colors duration-200 group-hover:opacity-100 group-focus-within:opacity-100";
 
 type Props = {
   product: Product;
@@ -348,16 +348,17 @@ const ProductCard = React.memo(
                   </Button>
                 )}
 
-                <Link href={detailHref} className="bp-sm:flex-1">
-                  <Button
-                    variant={isApplyFlow ? "outline" : "default"}
-                    size="sm"
-                    className="w-full h-9 sm:h-10 text-xs sm:text-sm"
-                  >
+                <Button
+                  asChild
+                  variant={isApplyFlow ? "outline" : "default"}
+                  size="sm"
+                  className="bp-sm:flex-1 w-full h-9 sm:h-10 text-xs sm:text-sm"
+                >
+                  <Link href={detailHref}>
                     <Eye className="w-3 h-3 bp-sm:w-4 bp-sm:h-4 mr-1.5" />
                     상세 보기
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
 
                 {ENABLE_STRING_STANDALONE_ORDER && (
                   <Button
@@ -418,10 +419,14 @@ const ProductCard = React.memo(
 
     // ─── 그리드 뷰 ────────────────────────────────────────────────────────────
     return (
-      <Link href={detailHref}>
-        <Card className={productCardSurfaceClass}>
-          {/* 이미지 영역 */}
-          <div className={productImageWrapClass}>
+      <Card className={productCardSurfaceClass}>
+        {/* 이미지 영역 */}
+        <div className={productImageWrapClass}>
+          <Link
+            href={detailHref}
+            aria-label={`${product.name} 상세 보기`}
+            className="absolute inset-0 block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          >
             <Image
               src={
                 (product.images?.[0] as string) ||
@@ -432,60 +437,67 @@ const ProductCard = React.memo(
               sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
               className="object-cover group-hover:scale-105 transition-transform duration-300"
             />
+          </Link>
 
-            {product.isNew && (
-              <Badge
-                variant="info"
-                className="absolute right-2 sm:right-3 top-2 sm:top-3 z-10 border bg-background/95 text-xs shadow-sm backdrop-blur-sm dark:bg-card/95"
-              >
-                NEW
-              </Badge>
-            )}
+          {product.isNew && (
+            <Badge
+              variant="info"
+              className="absolute right-2 sm:right-3 top-2 sm:top-3 z-10 border bg-background/95 text-xs shadow-sm backdrop-blur-sm dark:bg-card/95"
+            >
+              NEW
+            </Badge>
+          )}
 
-            {/* ─── 호버 오버레이: 투명 없음, 단색 불투명 배경 ─────────────────
-                라이트: 흰색 베이스 / 다크: 짙은 카드색 베이스
-                opacity-0 → opacity-100 전환만 사용, bg-overlay 제거
-            ──────────────────────────────────────────────────────────────── */}
-            <div className={productOverlayActionClass}>
-              {/* 상세보기 버튼 */}
-              <Button
-                size="sm"
-                variant="default"
-                className="h-8 flex-1 text-xs shadow-sm sm:h-9 sm:text-sm"
-                onClick={(e) => e.stopPropagation()}
-              >
+          {/* ─── 호버 오버레이: 투명 없음, 단색 불투명 배경 ─────────────────
+              라이트: 흰색 베이스 / 다크: 짙은 카드색 베이스
+              opacity-0 → opacity-100 전환만 사용, bg-overlay 제거
+          ──────────────────────────────────────────────────────────────── */}
+          <div className={cn(productOverlayActionClass, "z-20")}>
+            {/* 상세보기 버튼 */}
+            <Button
+              asChild
+              size="sm"
+              variant="default"
+              className="h-8 flex-1 text-xs shadow-sm sm:h-9 sm:text-sm"
+            >
+              <Link href={detailHref}>
                 <Eye className="w-3 h-3 bp-sm:w-4 bp-sm:h-4 mr-1" />
                 상세 보기
-              </Button>
+              </Link>
+            </Button>
 
-              {/* 위시리스트 버튼
-                  라이트: 기본은 흰 배경 + 테두리, 호버/활성화 시 rose 계열로 전환
-                  다크: 기본은 zinc 배경, 호버/활성화 시 rose 계열
-              */}
-              <WishButton
-                inWish={inWish}
-                disabled={isWishUnknown}
-                onToggle={async (e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  try {
-                    await toggle(product._id);
-                    showSuccessToast(
-                      inWish
-                        ? "위시리스트에서 제거했습니다."
-                        : "위시리스트에 추가했습니다.",
-                    );
-                  } catch {
-                    showErrorToast("처리 중 오류가 발생했습니다.");
-                  }
-                }}
-                size="sm"
-              />
-            </div>
+            {/* 위시리스트 버튼
+                라이트: 기본은 흰 배경 + 테두리, 호버/활성화 시 rose 계열로 전환
+                다크: 기본은 zinc 배경, 호버/활성화 시 rose 계열
+            */}
+            <WishButton
+              inWish={inWish}
+              disabled={isWishUnknown}
+              onToggle={async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                try {
+                  await toggle(product._id);
+                  showSuccessToast(
+                    inWish
+                      ? "위시리스트에서 제거했습니다."
+                      : "위시리스트에 추가했습니다.",
+                  );
+                } catch {
+                  showErrorToast("처리 중 오류가 발생했습니다.");
+                }
+              }}
+              size="sm"
+            />
           </div>
+        </div>
 
-          {/* 카드 콘텐츠 */}
-          <CardContent className="p-3 sm:p-4">
+        {/* 카드 콘텐츠 */}
+        <CardContent className="p-3 sm:p-4">
+          <Link
+            href={detailHref}
+            className="block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          >
             <div className="text-xs text-muted-foreground mb-1.5 font-medium">
               {brandLabel}
             </div>
@@ -533,47 +545,47 @@ const ProductCard = React.memo(
                 {product.price.toLocaleString()}원
               </div>
             </div>
-          </CardContent>
+          </Link>
+        </CardContent>
 
-          <CardFooter className="p-2.5 bp-sm:p-3 bp-md:p-4 pt-0 grid grid-cols-1 gap-2">
-            {isApplyFlow && canCheckoutWithService && (
-              <Button
-                type="button"
-                variant="default"
-                className="w-full rounded-lg h-10 px-3 text-xs sm:text-sm whitespace-nowrap text-center"
-                onClick={handleStringServiceApply}
-                disabled={isSoldOut}
-              >
-                {serviceCtaLabel}
-              </Button>
-            )}
+        <CardFooter className="p-2.5 bp-sm:p-3 bp-md:p-4 pt-0 grid grid-cols-1 gap-2">
+          {isApplyFlow && canCheckoutWithService && (
+            <Button
+              type="button"
+              variant="default"
+              className="w-full rounded-lg h-10 px-3 text-xs sm:text-sm whitespace-nowrap text-center"
+              onClick={handleStringServiceApply}
+              disabled={isSoldOut}
+            >
+              {serviceCtaLabel}
+            </Button>
+          )}
 
-            {ENABLE_STRING_STANDALONE_ORDER && (
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full rounded-lg h-10 px-3 text-xs sm:text-sm whitespace-nowrap text-center"
-                onClick={handleStringSingleBuy}
-                disabled={isSoldOut}
-              >
-                {isApplyFlow ? "단품만 구매" : "단품 구매"}
-              </Button>
-            )}
+          {ENABLE_STRING_STANDALONE_ORDER && (
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full rounded-lg h-10 px-3 text-xs sm:text-sm whitespace-nowrap text-center"
+              onClick={handleStringSingleBuy}
+              disabled={isSoldOut}
+            >
+              {isApplyFlow ? "단품만 구매" : "단품 구매"}
+            </Button>
+          )}
 
-            {!isApplyFlow && canCheckoutWithService && (
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full rounded-lg h-10 px-3 text-xs sm:text-sm whitespace-nowrap text-center"
-                onClick={handleStringServiceApply}
-                disabled={isSoldOut}
-              >
-                {serviceCtaLabel}
-              </Button>
-            )}
-          </CardFooter>
-        </Card>
-      </Link>
+          {!isApplyFlow && canCheckoutWithService && (
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full rounded-lg h-10 px-3 text-xs sm:text-sm whitespace-nowrap text-center"
+              onClick={handleStringServiceApply}
+              disabled={isSoldOut}
+            >
+              {serviceCtaLabel}
+            </Button>
+          )}
+        </CardFooter>
+      </Card>
     );
   },
   (prev, next) =>
