@@ -19,6 +19,24 @@ export type OfflineRecordPoints = {
   deductTxId?: string | null;
 };
 
+export type OfflineRecordPackageUsage = {
+  passId?: string | null;
+  usedCount?: number | null;
+  consumptionId?: string | null;
+};
+
+export type OfflineServicePassSummary = {
+  id: string;
+  name?: string | null;
+  packageName?: string | null;
+  status?: string | null;
+  totalCount?: number | null;
+  usedCount?: number | null;
+  remainingCount?: number | null;
+  expiresAt?: string | null;
+  createdAt?: string | null;
+};
+
 export type OfflineLinkCandidate = OfflineLinkedUser & {
   match: {
     name: boolean;

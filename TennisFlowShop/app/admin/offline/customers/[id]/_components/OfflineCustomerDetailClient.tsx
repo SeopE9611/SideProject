@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { adminFetcher, adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
-import type { OfflineCustomerDto, OfflineKind, OfflineLinkCandidate, OfflineLinkedUser, OfflinePaymentMethod, OfflinePaymentStatus, OfflineRecordPoints, OfflineStatus } from "@/types/admin/offline";
+import type { OfflineCustomerDto, OfflineKind, OfflineLinkCandidate, OfflineLinkedUser, OfflinePaymentMethod, OfflinePaymentStatus, OfflineRecordPackageUsage, OfflineRecordPoints, OfflineServicePassSummary, OfflineStatus } from "@/types/admin/offline";
 
 type OfflineRecord = {
   id: string;
@@ -24,6 +24,7 @@ type OfflineRecord = {
   lineSummary?: string;
   payment?: { status?: OfflinePaymentStatus; method?: OfflinePaymentMethod; amount?: number | null } | null;
   points?: OfflineRecordPoints | null;
+  packageUsage?: OfflineRecordPackageUsage | null;
   memo?: string | null;
   createdAt?: string | null;
   updatedAt?: string | null;
@@ -34,7 +35,7 @@ type OfflineCustomerDetail = OfflineCustomerDto & {
   linkedUser?: OfflineLinkedUser | null;
 };
 
-type DetailResponse = { item: OfflineCustomerDetail; records?: OfflineRecord[] };
+type DetailResponse = { item: OfflineCustomerDetail; records?: OfflineRecord[]; passes?: OfflineServicePassSummary[] };
 
 const KIND_LABELS = { stringing: "스트링 작업", package_sale: "패키지 판매", etc: "기타" } as const;
 const RECORD_STATUS_LABELS = { received: "접수", in_progress: "작업중", completed: "완료", picked_up: "수령완료", canceled: "취소" } as const;
@@ -115,6 +116,39 @@ type PointFormState = {
   messageType?: "success" | "error" | null;
 };
 
+type PackageFormState = {
+  passId: string;
+  message?: string | null;
+  messageType?: "success" | "error" | null;
+};
+
+const PACKAGE_ERROR_MESSAGES: Record<string, string> = {
+  "linked user required": "온라인 회원과 연결된 고객만 패키지를 사용할 수 있습니다.",
+  "user not found": "연결된 온라인 회원 정보를 찾을 수 없어 패키지를 사용할 수 없습니다.",
+  "pass not found": "선택한 패키지를 찾을 수 없습니다.",
+  "pass does not belong to linked user": "선택한 패키지는 이 고객의 패키지가 아닙니다.",
+  "pass is not usable": "선택한 패키지는 사용할 수 없습니다.",
+  "no remaining pass count": "잔여 횟수가 부족합니다.",
+  "package already used for this record": "이미 이 기록에 패키지가 사용 처리되었습니다.",
+  "package consumption failed": "패키지 사용 처리에 실패했습니다.",
+};
+
+function translatePackageError(error: unknown): string {
+  const message = getAdminErrorMessage(error);
+  return PACKAGE_ERROR_MESSAGES[message] ?? message ?? "패키지 사용 처리에 실패했습니다.";
+}
+
+function getPassLabel(pass?: OfflineServicePassSummary | null) {
+  if (!pass) return "선택한 패키지";
+  return pass.packageName || pass.name || "교체 서비스 패키지";
+}
+
+function isUsablePass(pass: OfflineServicePassSummary) {
+  const expiresAt = pass.expiresAt ? new Date(pass.expiresAt) : null;
+  const isExpired = expiresAt ? expiresAt.getTime() <= Date.now() : true;
+  return pass.status === "active" && Number(pass.remainingCount ?? 0) > 0 && !isExpired;
+}
+
 const POINT_ERROR_MESSAGES: Record<string, string> = {
   "linked user required": "온라인 회원과 연결된 고객만 포인트를 처리할 수 있습니다.",
   "invalid amount": "포인트 금액은 1 이상이어야 합니다.",
@@ -142,6 +176,8 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
   const [isUnlinking, setIsUnlinking] = useState(false);
   const [pointForms, setPointForms] = useState<Record<string, PointFormState>>({});
   const [processingPointKey, setProcessingPointKey] = useState<string | null>(null);
+  const [packageForms, setPackageForms] = useState<Record<string, PackageFormState>>({});
+  const [processingPackageRecordId, setProcessingPackageRecordId] = useState<string | null>(null);
 
   const candidateKey = submittedCandidateQuery
     ? `/api/admin/offline/customers/${id}/link-candidates?name=${encodeURIComponent(submittedCandidateQuery.name)}&phone=${encodeURIComponent(submittedCandidateQuery.phone)}&email=${encodeURIComponent(submittedCandidateQuery.email)}`
@@ -156,6 +192,9 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
   const refundedCount = records.filter((record) => record.payment?.status === "refunded").length;
   const candidates = candidatesData?.items ?? [];
   const pointBalance = item?.linkedUser?.pointsBalance ?? null;
+  const passes = data?.passes ?? [];
+  const canUseLinkedFeatures = !!item?.linkedUserId && !!item?.linkedUser;
+  const usablePasses = passes.filter(isUsablePass);
 
   function updatePointForm(recordId: string, patch: Partial<PointFormState>) {
     setPointForms((prev) => {
@@ -198,6 +237,43 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
       updatePointForm(recordId, { message: translatePointError(err), messageType: "error" });
     } finally {
       setProcessingPointKey(null);
+    }
+  }
+
+  function updatePackageForm(recordId: string, patch: Partial<PackageFormState>) {
+    setPackageForms((prev) => ({
+      ...prev,
+      [recordId]: { ...(prev[recordId] ?? { passId: usablePasses[0]?.id ?? "" }), ...patch },
+    }));
+  }
+
+  async function handleRecordPackageUse(recordId: string) {
+    if (!canUseLinkedFeatures) {
+      updatePackageForm(recordId, { message: "온라인 회원과 연결된 고객만 패키지를 사용할 수 있습니다.", messageType: "error" });
+      return;
+    }
+    const selectedPassId = packageForms[recordId]?.passId || usablePasses[0]?.id || "";
+    const selectedPass = passes.find((pass) => pass.id === selectedPassId);
+    if (!selectedPassId || !selectedPass) {
+      updatePackageForm(recordId, { message: "사용 가능한 패키지가 없습니다.", messageType: "error" });
+      return;
+    }
+    if (!window.confirm(`${getPassLabel(selectedPass)} 1회를 이 오프라인 작업에 사용 처리하시겠습니까?`)) return;
+
+    setProcessingPackageRecordId(recordId);
+    updatePackageForm(recordId, { passId: selectedPassId, message: null, messageType: null });
+    try {
+      await adminMutator(`/api/admin/offline/records/${recordId}/package/use`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ passId: selectedPassId, usedCount: 1 }),
+      });
+      updatePackageForm(recordId, { passId: selectedPassId, message: "패키지 1회 사용 처리가 완료되었습니다.", messageType: "success" });
+      await mutateDetail();
+    } catch (err) {
+      updatePackageForm(recordId, { passId: selectedPassId, message: translatePackageError(err), messageType: "error" });
+    } finally {
+      setProcessingPackageRecordId(null);
     }
   }
 
@@ -420,7 +496,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
           <CardDescription>온라인 회원과 연결된 고객의 포인트 조회 및 오프라인 기록 기준 처리 상태입니다.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3 text-sm">
-          {item.linkedUserId ? (
+          {canUseLinkedFeatures ? (
             <>
               <DetailRow label="현재 포인트 잔액" value={<span className="text-lg font-semibold">{formatPoints(pointBalance)}</span>} />
               <p className="text-muted-foreground">오프라인 작업 기록에서 포인트 적립/사용을 처리할 수 있습니다.</p>
@@ -428,7 +504,43 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
               <p className="text-xs text-muted-foreground">포인트 처리 취소는 후속 단계에서 지원 예정입니다. 잘못 처리한 경우 관리자 포인트 조정 기능을 사용하세요.</p>
             </>
           ) : (
-            <p className="text-muted-foreground">온라인 회원과 연결된 고객만 포인트 조회/사용/적립이 가능합니다.</p>
+            <div className="space-y-2">
+              <p className="text-muted-foreground">온라인 회원과 연결된 고객만 포인트 조회/사용/적립이 가능합니다.</p>
+              {item.linkedUserId && !item.linkedUser ? <p className="text-xs text-destructive">연결된 온라인 회원 정보를 찾을 수 없어 포인트를 처리할 수 없습니다.</p> : null}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+
+
+      <Card>
+        <CardHeader>
+          <CardTitle>패키지/서비스권</CardTitle>
+          <CardDescription>온라인 회원과 연결된 고객의 보유 패키지/서비스권을 조회합니다.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3 text-sm">
+          {!canUseLinkedFeatures ? (
+            <p className="text-muted-foreground">온라인 회원과 연결된 고객만 보유 패키지 조회 및 사용 처리가 가능합니다.</p>
+          ) : passes.length === 0 ? (
+            <p className="text-muted-foreground">보유 패키지/서비스권이 없습니다.</p>
+          ) : (
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+              {passes.map((pass) => {
+                const usable = isUsablePass(pass);
+                return (
+                  <div key={pass.id} className={usable ? "rounded-md border border-primary/30 bg-primary/5 p-3" : "rounded-md border bg-muted/30 p-3 text-muted-foreground"}>
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="font-medium text-foreground">{getPassLabel(pass)}</p>
+                      <Badge variant={usable ? "secondary" : "outline"}>{usable ? "사용 가능" : pass.status || "비활성"}</Badge>
+                    </div>
+                    <p className="mt-2">잔여 {Number(pass.remainingCount ?? 0).toLocaleString("ko-KR")} / {Number(pass.totalCount ?? 0).toLocaleString("ko-KR")}회</p>
+                    <p>사용 {Number(pass.usedCount ?? 0).toLocaleString("ko-KR")}회</p>
+                    <p>만료일 {formatDate(pass.expiresAt)}</p>
+                  </div>
+                );
+              })}
+            </div>
           )}
         </CardContent>
       </Card>
@@ -469,6 +581,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                     <th className="px-2 py-2">작업 상태</th>
                     <th className="px-2 py-2">메모</th>
                     <th className="px-2 py-2">포인트</th>
+                    <th className="px-2 py-2">패키지</th>
                     <th className="px-2 py-2">관리</th>
                   </tr>
                 </thead>
@@ -477,7 +590,15 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                     const form = pointForms[record.id] ?? { grantAmount: "", grantReason: "", useAmount: "", useReason: "" };
                     const hasGrant = !!record.points?.grantTxId;
                     const hasDeduct = !!record.points?.deductTxId;
-                    const canProcessPoints = !!item.linkedUserId;
+                    const canProcessPoints = canUseLinkedFeatures;
+                    const pointUnavailableMessage = item.linkedUserId && !item.linkedUser
+                      ? "연결된 온라인 회원 정보를 찾을 수 없어 포인트를 처리할 수 없습니다."
+                      : "온라인 회원과 연결된 고객만 포인트를 처리할 수 있습니다.";
+                    const packageUsage = record.packageUsage;
+                    const hasPackageUsage = !!packageUsage?.passId || !!packageUsage?.consumptionId;
+                    const usedPass = passes.find((pass) => pass.id === packageUsage?.passId);
+                    const packageForm = packageForms[record.id] ?? { passId: usablePasses[0]?.id ?? "" };
+                    const canUsePackageForRecord = canUseLinkedFeatures && !hasPackageUsage && usablePasses.length > 0;
                     return (
                       <tr key={record.id} className="border-b align-top">
                         <td className="px-2 py-2">{formatDate(record.occurredAt)}</td>
@@ -493,7 +614,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                               <Badge variant={hasGrant ? "secondary" : "outline"}>적립 {formatPoints(record.points?.earn)}</Badge>
                               <Badge variant={hasDeduct ? "secondary" : "outline"}>사용 {formatPoints(record.points?.use)}</Badge>
                             </div>
-                            {!canProcessPoints ? <p className="text-xs text-muted-foreground">온라인 회원과 연결된 고객만 포인트를 처리할 수 있습니다.</p> : null}
+                            {!canProcessPoints ? <p className="text-xs text-muted-foreground">{pointUnavailableMessage}</p> : null}
                             <div className="grid gap-2 md:grid-cols-2">
                               <div className="space-y-1.5 rounded-md border p-2">
                                 <Label htmlFor={`grant-points-${record.id}`} className="text-xs">적립 포인트</Label>
@@ -551,6 +672,51 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                             </div>
                             <p className="text-xs text-muted-foreground">포인트 사용은 결제금액을 자동 변경하지 않습니다.</p>
                             {form.message ? <p className={form.messageType === "error" ? "text-xs text-destructive" : "text-xs text-foreground"}>{form.message}</p> : null}
+                          </div>
+                        </td>
+                        <td className="min-w-64 px-2 py-2">
+                          <div className="space-y-2">
+                            {hasPackageUsage ? (
+                              <div className="space-y-1">
+                                <Badge variant="secondary">패키지 1회 사용 완료</Badge>
+                                <p className="text-xs text-muted-foreground">{getPassLabel(usedPass)} {Number(packageUsage?.usedCount ?? 1)}회 사용</p>
+                                {packageUsage?.consumptionId ? <p className="break-all text-xs text-muted-foreground">consumptionId: {packageUsage.consumptionId}</p> : null}
+                              </div>
+                            ) : (
+                              <Badge variant="outline">패키지 미사용</Badge>
+                            )}
+                            {!canUseLinkedFeatures ? <p className="text-xs text-muted-foreground">온라인 회원과 연결된 고객만 패키지를 사용할 수 있습니다.</p> : null}
+                            {canUseLinkedFeatures && usablePasses.length === 0 && !hasPackageUsage ? <p className="text-xs text-muted-foreground">사용 가능한 패키지가 없습니다.</p> : null}
+                            {!hasPackageUsage && canUseLinkedFeatures && usablePasses.length > 0 ? (
+                              <div className="space-y-2 rounded-md border p-2">
+                                <Label htmlFor={`package-pass-${record.id}`} className="text-xs">사용할 패키지</Label>
+                                <select
+                                  id={`package-pass-${record.id}`}
+                                  className="w-full rounded-md border bg-background px-2 py-2 text-sm"
+                                  value={packageForm.passId}
+                                  onChange={(event) => updatePackageForm(record.id, { passId: event.target.value })}
+                                  disabled={!canUsePackageForRecord || processingPackageRecordId === record.id}
+                                >
+                                  {usablePasses.map((pass) => (
+                                    <option key={pass.id} value={pass.id}>
+                                      {getPassLabel(pass)} · 잔여 {Number(pass.remainingCount ?? 0)}회
+                                    </option>
+                                  ))}
+                                </select>
+                                <p className="text-xs text-muted-foreground">이 기록에 패키지 1회를 사용 처리합니다. 결제금액은 자동 변경되지 않습니다.</p>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="outline"
+                                  className="w-full"
+                                  onClick={() => handleRecordPackageUse(record.id)}
+                                  disabled={!canUsePackageForRecord || processingPackageRecordId === record.id}
+                                >
+                                  {processingPackageRecordId === record.id ? "패키지 사용 처리 중..." : "패키지 사용"}
+                                </Button>
+                              </div>
+                            ) : null}
+                            {packageForm.message ? <p className={packageForm.messageType === "error" ? "text-xs text-destructive" : "text-xs text-foreground"}>{packageForm.message}</p> : null}
                           </div>
                         </td>
                         <td className="px-2 py-2"><Button asChild size="sm" variant="outline"><Link href="/admin/offline">오프라인 관리에서 수정</Link></Button></td>
