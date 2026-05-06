@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import useSWR from "swr";
 import { Badge } from "@/components/ui/badge";
@@ -158,7 +159,7 @@ export default function OfflineAdminClient() {
                           <p className="text-muted-foreground">{c.phoneMasked}</p>
                           {c.email ? <p className="text-muted-foreground">{c.email}</p> : null}
                         </div>
-                        <Button size="sm" variant="outline" onClick={() => selectOfflineCustomer(c.id)}>선택</Button>
+                        <div className="flex shrink-0 flex-col gap-2"><Button size="sm" variant="outline" onClick={() => selectOfflineCustomer(c.id)}>선택</Button><Button asChild size="sm" variant="secondary"><Link href={`/admin/offline/customers/${c.id}`}>상세</Link></Button></div>
                       </div>
                     </div>
                   ))}
@@ -183,7 +184,10 @@ export default function OfflineAdminClient() {
                   <p>휴대폰: {maskPhone(selected.phone)}</p>
                   <p>이메일: {selected.email || "-"}</p>
                   {selected.offlineCustomerId ? <p className="text-xs text-muted-foreground">오프라인 고객 ID: {selected.offlineCustomerId}</p> : null}
-                  <Button type="button" variant="outline" size="sm" onClick={() => setSelected(null)}>선택 해제</Button>
+                  <div className="flex flex-wrap gap-2">
+                    {selected.offlineCustomerId ? <Button asChild type="button" variant="secondary" size="sm"><Link href={`/admin/offline/customers/${selected.offlineCustomerId}`}>고객 상세 보기</Link></Button> : null}
+                    <Button type="button" variant="outline" size="sm" onClick={() => setSelected(null)}>선택 해제</Button>
+                  </div>
                 </div>
               )}
             </CardContent>
@@ -347,13 +351,13 @@ export default function OfflineAdminClient() {
                   {(records?.items || []).map((r: any) => (
                     <tr key={r.id} className="border-b align-top">
                       <td className="px-2 py-2">{formatDate(r.occurredAt)}</td>
-                      <td className="px-2 py-2"><p className="font-medium">{r.customerName}</p><p className="text-xs text-muted-foreground">{r.customerPhoneMasked}</p></td>
+                      <td className="px-2 py-2"><p className="font-medium">{r.offlineCustomerId ? <Link className="underline-offset-4 hover:underline" href={`/admin/offline/customers/${r.offlineCustomerId}`}>{r.customerName}</Link> : r.customerName}</p><p className="text-xs text-muted-foreground">{r.customerPhoneMasked}</p></td>
                       <td className="px-2 py-2">{KIND_LABELS[r.kind as keyof typeof KIND_LABELS] ?? r.kind}</td>
                       <td className="px-2 py-2">{formatLineSummary(r.lines)}</td>
                       <td className="px-2 py-2">{formatCurrency(r.payment?.amount)}</td>
                       <td className="px-2 py-2"><Badge variant="outline">{PAYMENT_STATUS_LABELS[r.payment?.status as keyof typeof PAYMENT_STATUS_LABELS] ?? r.payment?.status}</Badge></td>
                       <td className="px-2 py-2"><Badge variant="outline">{RECORD_STATUS_LABELS[r.status as keyof typeof RECORD_STATUS_LABELS] ?? r.status}</Badge></td>
-                      <td className="px-2 py-2"><Button size="sm" variant="outline" onClick={() => { setEditingRecord(r); setEditForm({ status: r.status, paymentStatus: r.payment?.status ?? "pending", paymentMethod: r.payment?.method ?? "cash", paymentAmount: Number(r.payment?.amount ?? 0), memo: r.memo ?? "" }); setEditMessage(null); }}>수정</Button></td>
+                      <td className="px-2 py-2"><div className="flex flex-wrap gap-2">{r.offlineCustomerId ? <Button asChild size="sm" variant="secondary"><Link href={`/admin/offline/customers/${r.offlineCustomerId}`}>고객 상세</Link></Button> : null}<Button size="sm" variant="outline" onClick={() => { setEditingRecord(r); setEditForm({ status: r.status, paymentStatus: r.payment?.status ?? "pending", paymentMethod: r.payment?.method ?? "cash", paymentAmount: Number(r.payment?.amount ?? 0), memo: r.memo ?? "" }); setEditMessage(null); }}>수정</Button></div></td>
                     </tr>
                   ))}
                 </tbody>
