@@ -107,7 +107,7 @@ async function handleNiceRacketReturn(req: Request) {
     }
 
     const fallbackPath = session.racketPayload?.racketId
-      ? `/rackets/${encodeURIComponent(session.racketPayload.racketId)}/purchase`
+      ? `/rackets/${encodeURIComponent(session.racketPayload.racketId)}/purchase?recovery=1`
       : "/rackets";
 
     if (session.provider !== "nicepay" || session.flowType !== "racket_order") {
