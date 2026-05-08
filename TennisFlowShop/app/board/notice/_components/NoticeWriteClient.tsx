@@ -278,9 +278,32 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
     },
   );
 
+  const isEditRouteMismatch =
+    !!editId &&
+    !!detail?.item &&
+    (isEventMode
+      ? detail.item.category !== "이벤트"
+      : detail.item.category === "이벤트");
+
+  useEffect(() => {
+    if (!editId || !detail?.item || !isEditRouteMismatch) return;
+    const targetBase =
+      detail.item.category === "이벤트"
+        ? "/board/event/write"
+        : "/board/notice/write";
+    router.replace(`${targetBase}?id=${encodeURIComponent(editId)}`);
+  }, [editId, detail?.item, isEditRouteMismatch, router]);
+
   // 프리필: 상세 응답을 코드값으로 역변환해서 넣는다.
   useEffect(() => {
-    if (!editId || !detail?.item || prefilledRef.current) return;
+    if (
+      !editId ||
+      !detail?.item ||
+      prefilledRef.current ||
+      isEditRouteMismatch
+    ) {
+      return;
+    }
     const p = detail.item;
     const code = NOTICE_CODE_BY_LABEL[p.category as string] ?? "general";
 
@@ -319,7 +342,7 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
     setRemovedPaths([]);
     if (fileInputRef.current) fileInputRef.current.value = "";
     prefilledRef.current = true; // 두 번 다시 프리필하지 않음
-  }, [editId, detail, fixedCategoryCode]);
+  }, [editId, detail, fixedCategoryCode, isEditRouteMismatch]);
 
   const MAX = 5; // 공지: 5개
   const MAX_MB = 10; // 공지: 10MB
