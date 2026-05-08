@@ -458,9 +458,9 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                 <CardTitle className="flex items-center gap-3 text-2xl">
                   <Package className="h-6 w-6 text-primary" />
                   주문 정보
-                  {withStringService && <span className="rounded-full border border-border px-2 py-0.5 text-xs font-medium text-muted-foreground">교체 서비스 포함</span>}
+                  {withStringService && <span className="rounded-full border border-border px-2 py-0.5 text-xs font-medium text-muted-foreground">교체서비스 포함</span>}
                 </CardTitle>
-                <CardDescription className="mt-2 text-muted-foreground">주문 및 교체 서비스 진행 정보를 한 번에 확인하세요.</CardDescription>
+                <CardDescription className="mt-2 text-muted-foreground">주문 및 교체서비스 진행 정보를 한 번에 확인하세요.</CardDescription>
               </div>
               <CardContent className="p-4 md:p-6">
                 {/* 문서 정보 */}
@@ -478,13 +478,13 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                     </div>
                     {withStringService && hasSubmittedApplication && representativeStringingApplicationId && (
                       <div>
-                        <span className="text-sm text-muted-foreground">교체 서비스 신청 번호:</span>{' '}
+                        <span className="text-sm text-muted-foreground">교체서비스 신청 번호:</span>{' '}
                         <span className="font-mono font-semibold text-foreground">{representativeStringingApplicationId}</span>
                       </div>
                     )}
                     {withStringService && (
                       <p className="text-sm text-muted-foreground">
-                        {hasSubmittedApplication ? '주문과 함께 교체 서비스 신청이 접수되었습니다.' : '현재 주문에 교체 서비스가 포함되어 있습니다.'}
+                        {hasSubmittedApplication ? '주문과 함께 교체서비스 신청이 접수되었습니다.' : '현재 주문에 교체서비스가 포함되어 있습니다.'}
                       </p>
                     )}
                     {withStringService && hasSubmittedApplication && stringingApplicationHref ? (
@@ -636,7 +636,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                     <div className="mb-6">
                       <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-foreground">
                         <Package className="h-5 w-5 text-primary" />
-                        교체 서비스 정보
+                        교체서비스 정보
                       </h3>
                       {hasSubmittedApplication && stringingSummary ? (
                         <div className="space-y-2 rounded-lg border border-border bg-background p-4 text-sm text-foreground">
@@ -684,7 +684,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                                   </p>
                                 )}
                                 <p>
-                                  <span className="text-muted-foreground">교체 서비스 비용:</span> <span className="font-semibold text-primary">0원 처리</span>
+                                  <span className="text-muted-foreground">교체서비스 비용:</span> <span className="font-semibold text-primary">0원 처리</span>
                                 </p>
                               </>
                             ) : (
@@ -692,9 +692,9 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                                 <p>
                                   <span className="text-muted-foreground">패키지 사용:</span> <span className="font-semibold">적용 안 됨</span>
                                 </p>
-                                <p className="text-muted-foreground">사용 가능한 패키지가 없거나 이번 주문에 패키지가 적용되지 않아 교체 서비스 비용이 일반 결제로 반영되었습니다.</p>
+                                <p className="text-muted-foreground">사용 가능한 패키지가 없거나 이번 주문에 패키지가 적용되지 않아 교체서비스 비용이 일반 결제로 반영되었습니다.</p>
                                 <p>
-                                  <span className="text-muted-foreground">교체 서비스 비용:</span>{' '}
+                                  <span className="text-muted-foreground">교체서비스 비용:</span>{' '}
                                   <span className="font-semibold">{formatPrice(stringingSummary.serviceFeeAfter ?? normalizedServiceFee)}원</span>
                                 </p>
                               </>
@@ -767,7 +767,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
 
                     {withStringService && (
                       <div className="flex justify-between items-center">
-                        <span className="text-muted-foreground">교체 서비스 비용</span>
+                        <span className="text-muted-foreground">교체서비스 비용</span>
                         <span className="font-semibold">{formatPrice(normalizedServiceFee)}원</span>
                       </div>
                     )}

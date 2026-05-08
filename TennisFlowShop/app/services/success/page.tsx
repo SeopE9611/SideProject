@@ -382,7 +382,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                           <span>{rentalStringPrice.toLocaleString()}원</span>
                         </div>
                         <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">교체 서비스</span>
+                          <span className="text-muted-foreground">교체서비스</span>
                           <span>{rentalStringingFee.toLocaleString()}원</span>
                         </div>
                         <div className="flex justify-between items-center border-t pt-3">
@@ -395,7 +395,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                         {[racketSubtotal > 0 ? `라켓 ${racketSubtotal.toLocaleString()}원` : null, stringSubtotal > 0 ? `스트링 ${stringSubtotal.toLocaleString()}원` : null, `교체비 ${serviceSubtotal.toLocaleString()}원`].filter(Boolean).join(" + ")}
                       </p>
                     ) : (
-                      <p className="mt-2 text-sm text-muted-foreground">교체 서비스 비용 기준</p>
+                      <p className="mt-2 text-sm text-muted-foreground">교체서비스 비용 기준</p>
                     )}
                     {application.packageApplied && <p className="mt-2 text-sm text-foreground">패키지 적용으로 입금 불필요</p>}
                   </div>
@@ -446,7 +446,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                           <span>{rentalStringPrice.toLocaleString()}원</span>
                         </div>
                         <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">교체 서비스</span>
+                          <span className="text-muted-foreground">교체서비스</span>
                           <span>{rentalStringingFee.toLocaleString()}원</span>
                         </div>
 
@@ -487,7 +487,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                           <span>{Number(stringSubtotal).toLocaleString()}원</span>
                         </div>
                         <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">교체 서비스</span>
+                          <span className="text-muted-foreground">교체서비스</span>
                           <span>{Number(serviceSubtotal).toLocaleString()}원</span>
                         </div>
 

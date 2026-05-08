@@ -483,7 +483,7 @@ export default async function PackageSuccessPage({
                         사용 안내
                       </h4>
                       <p className="text-sm text-muted-foreground">
-                        활성화 완료 후부터 패키지를 사용할 수 있고 교체 서비스
+                        활성화 완료 후부터 패키지를 사용할 수 있고 교체서비스
                         신청이 완료되면 이용 횟수가 1회 차감돼요.
                       </p>
                     </div>

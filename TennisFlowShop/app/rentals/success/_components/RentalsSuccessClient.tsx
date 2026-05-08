@@ -145,9 +145,9 @@ export default function RentalsSuccessClient({ data }: Props) {
               <CardTitle className="flex items-center gap-3 text-2xl">
                 <Package className="h-6 w-6 text-primary" />
                 대여 정보
-                {withService && <span className="rounded-full border border-border px-2 py-0.5 text-xs font-medium text-muted-foreground">교체 서비스 포함</span>}
+                {withService && <span className="rounded-full border border-border px-2 py-0.5 text-xs font-medium text-muted-foreground">교체서비스 포함</span>}
               </CardTitle>
-              <CardDescription className="mt-2 text-lg">접수된 대여 및 교체 서비스 정보를 함께 확인하세요.</CardDescription>
+              <CardDescription className="mt-2 text-lg">접수된 대여 및 교체서비스 정보를 함께 확인하세요.</CardDescription>
             </div>
             <CardContent className="p-4 md:p-6">
               <div className="space-y-4 rounded-lg border border-border bg-muted/20 p-4 text-sm">
@@ -156,7 +156,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                 </p>
                 {withService && stringingApplicationId && (
                   <p>
-                    <span className="text-muted-foreground">교체 서비스 신청 번호:</span>{' '}
+                    <span className="text-muted-foreground">교체서비스 신청 번호:</span>{' '}
                     <span className="font-mono font-semibold text-foreground">{stringingApplicationId}</span>
                   </p>
                 )}
@@ -165,7 +165,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                 </p>
                 {withService && (
                   <p>
-                    <span className="text-muted-foreground">교체 서비스 상태:</span>{' '}
+                    <span className="text-muted-foreground">교체서비스 상태:</span>{' '}
                     <span className="font-semibold text-foreground">
                       {stringingApplied ? data.applicationSummary?.status || '접수완료' : '접수 확인 중'}
                     </span>
@@ -198,7 +198,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                 <>
                   <Separator className="my-4 md:my-6" />
                   <div className="space-y-3">
-                    <h3 className="text-lg font-bold text-foreground">교체 서비스 정보</h3>
+                    <h3 className="text-lg font-bold text-foreground">교체서비스 정보</h3>
                     <div className="space-y-2 rounded-lg border border-border bg-background p-4 text-sm">
                       <p>
                         <span className="text-muted-foreground">접수 방식:</span> <span className="font-semibold text-foreground">{data.applicationSummary.receptionLabel}</span>
@@ -246,7 +246,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                 )}
                 {data.stringingFee > 0 && (
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">교체 서비스</span>
+                    <span className="text-muted-foreground">교체서비스</span>
                     <span className="text-lg font-semibold">{data.stringingFee.toLocaleString()}원</span>
                   </div>
                 )}
@@ -384,7 +384,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                 {stringingApplicationHref ? (
                   <Button variant="outline" className="h-12 flex-1 shadow-sm transition-[box-shadow,background-color,color] duration-200 hover:shadow-md" asChild>
                     <Link href={stringingApplicationHref} className="flex items-center gap-2">
-                      교체 서비스 신청 내역 보기
+                      교체서비스 신청 내역 보기
                       <ArrowRight className="h-4 w-4" />
                     </Link>
                   </Button>
