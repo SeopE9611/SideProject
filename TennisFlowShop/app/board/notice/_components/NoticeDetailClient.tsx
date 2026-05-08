@@ -98,14 +98,16 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
   );
 
   const notice = data?.item;
+  const isCurrentModeMatched = notice
+    ? isEventMode === (notice.category === "이벤트")
+    : false;
 
   useEffect(() => {
     if (!notice?._id) return;
-    const isEventPost = notice.category === "이벤트";
-    if (isEventMode !== isEventPost) {
+    if (!isCurrentModeMatched) {
       router.replace(`${otherDetailBasePath}/${notice._id}`);
     }
-  }, [isEventMode, notice?._id, notice?.category, otherDetailBasePath, router]);
+  }, [isCurrentModeMatched, notice?._id, otherDetailBasePath, router]);
 
   // 조회수 +1은 "정석 설계"로 POST /view에서만 처리
   // - 새로고침/재진입 연타는 서버(30분 디듀프)가 막아줌
@@ -115,6 +117,7 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
     if (!id) return;
     if (error) return;
     if (!notice?._id) return;
+    if (!isCurrentModeMatched) return;
     if (viewedIdRef.current === String(id)) return;
     viewedIdRef.current = String(id);
 
@@ -135,7 +138,7 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
         );
       }
     })();
-  }, [id, error, notice?._id, mutate]);
+  }, [id, error, notice?._id, isCurrentModeMatched, mutate]);
 
   // 에러 메시지를 "제목/본문"으로 분리
   const errorTitle = (() => {
