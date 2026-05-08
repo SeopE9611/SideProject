@@ -7,7 +7,7 @@
 //    - 어떤 환경은 { value: doc|null } 를, 어떤 환경은 doc|null 을 반환.
 //    - => 공통 헬퍼로 updatedDoc 추출.
 
-import type { Db, ObjectId } from "mongodb";
+import type { ClientSession, Db, ObjectId } from "mongodb";
 import { ObjectId as OID } from "mongodb";
 import type { ServicePass, ServicePassConsumption } from "@/lib/types/pass";
 import {
@@ -121,6 +121,7 @@ export async function consumePass(
   passId: ObjectId,
   applicationId: ObjectId,
   count: number = 1,
+  options: { session?: ClientSession } = {},
 ) {
   const passes = db.collection<ServicePass>("service_passes");
   const consumptions = db.collection<ServicePassConsumption>(
@@ -128,11 +129,12 @@ export async function consumePass(
   );
   const packageOrders = db.collection("packageOrders"); // ← 주문 컬렉션
   const now = new Date();
+  const sessionOptions = options.session ? { session: options.session } : undefined;
 
   // 1) 먼저 패스를 읽어서 연결된 orderId 확인
   const passDoc = await passes.findOne(
     { _id: passId },
-    { projection: { _id: 1, orderId: 1 } as any },
+    { projection: { _id: 1, orderId: 1 } as any, ...sessionOptions },
   );
   if (!passDoc) {
     throw Object.assign(new Error("PASS_NOT_FOUND"), {
@@ -145,7 +147,7 @@ export async function consumePass(
   if (passDoc.orderId) {
     const order = await packageOrders.findOne(
       { _id: passDoc.orderId as any },
-      { projection: { paymentStatus: 1 } as any },
+      { projection: { paymentStatus: 1 } as any, ...sessionOptions },
     );
     if (!order || order.paymentStatus !== "결제완료") {
       throw Object.assign(new Error("ORDER_NOT_PAID"), {
@@ -163,7 +165,7 @@ export async function consumePass(
     usedAt: now,
     count,
     createdAt: now,
-  });
+  }, sessionOptions);
 
   // 4) 차감 기록(redemptions) 원소 타입 맞춰 준비
   const redemption: ServicePass["redemptions"][number] = {
@@ -185,7 +187,7 @@ export async function consumePass(
       $push: { redemptions: { $each: [redemption] } },
       $set: { updatedAt: now },
     },
-    { returnDocument: "after" } as any,
+    { returnDocument: "after", ...sessionOptions } as any,
   );
 
   const updatedDoc = (
@@ -194,7 +196,7 @@ export async function consumePass(
 
   if (!updatedDoc) {
     // 차감 실패 시 소비 로그 롤백 시도
-    await consumptions.deleteOne({ passId, applicationId });
+    await consumptions.deleteOne({ passId, applicationId }, sessionOptions);
     throw new Error("PASS_CONSUME_FAILED");
   }
 
@@ -202,6 +204,7 @@ export async function consumePass(
     await passes.updateOne(
       { _id: updatedDoc._id },
       { $set: { status: "expired", updatedAt: now } },
+      sessionOptions,
     );
     updatedDoc.status = "expired";
   }

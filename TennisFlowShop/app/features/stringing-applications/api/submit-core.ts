@@ -335,7 +335,7 @@ export async function submitStringingApplicationCore({
     });
 
     if (pass && packageUsage.usingPackage) {
-      await consumePass(db, pass._id, applicationId, packageUseCount);
+      await consumePass(db, pass._id, applicationId, packageUseCount, { session });
       packageApplied = true;
       packagePassId = pass._id;
       packageRedeemedAt = new Date();
