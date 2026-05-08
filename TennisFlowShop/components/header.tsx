@@ -329,6 +329,7 @@ const Header = () => {
     support: [
       { name: "고객센터 홈", href: "/support" },
       { name: "고객센터 공지사항", href: "/board/notice" },
+      { name: "이벤트", href: "/board/event" },
       { name: "Q&A 문의", href: "/board/qna" },
     ],
 
