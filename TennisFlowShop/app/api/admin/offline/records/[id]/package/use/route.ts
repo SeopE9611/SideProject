@@ -1,13 +1,30 @@
 import { NextResponse } from "next/server";
-import { ObjectId } from "mongodb";
+import { ObjectId, type ClientSession } from "mongodb";
 import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 import { appendAudit } from "@/lib/audit";
 import { consumePass } from "@/lib/passes.service";
 import { isTimeExpired } from "@/lib/pass-status";
-import type { ServicePass } from "@/lib/types/pass";
+import type { ServicePass, ServicePassConsumption } from "@/lib/types/pass";
 
 const toObjectId = (value: string) => (ObjectId.isValid(value) ? new ObjectId(value) : null);
+
+class PackageUseError extends Error {
+  constructor(
+    public status: number,
+    message: string,
+    public cause?: unknown,
+  ) {
+    super(message);
+  }
+}
+
+const emptyPackageUsageFilter = {
+  $and: [
+    { $or: [{ "packageUsage.passId": { $exists: false } }, { "packageUsage.passId": null }, { "packageUsage.passId": "" }] },
+    { $or: [{ "packageUsage.consumptionId": { $exists: false } }, { "packageUsage.consumptionId": null }, { "packageUsage.consumptionId": "" }] },
+  ],
+};
 
 function serializeRecord(doc: Record<string, any>) {
   return {
@@ -42,6 +59,15 @@ function isDuplicateKeyError(err: unknown) {
   return typeof err === "object" && err !== null && "code" in err && (err as { code?: unknown }).code === 11000;
 }
 
+function mapConsumeError(err: any): PackageUseError {
+  const code = err?.code || err?.message;
+  if (code === "PASS_NOT_FOUND") return new PackageUseError(404, "pass not found", err);
+  if (code === "ORDER_NOT_PAID" || code === "PASS_CONSUME_FAILED") return new PackageUseError(409, "package consumption failed", err);
+  if (isDuplicateKeyError(err)) return new PackageUseError(409, "package already used for this record", err);
+  console.error("[offline package use] consumption failed", err);
+  return new PackageUseError(500, "package consumption failed", err);
+}
+
 export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
@@ -61,94 +87,100 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
   }
 
   const records = guard.db.collection("offline_service_records");
-  const record = await records.findOne({ _id: recordId });
-  if (!record) return NextResponse.json({ message: "record not found" }, { status: 404 });
+  const session = guard.db.client.startSession();
+  let updatedPass: ServicePass | null = null;
+  let updatedRecord: Record<string, any> | null = null;
+  let consumption: Pick<ServicePassConsumption, "_id" | "count"> | null = null;
+  let offlineCustomerId: ObjectId | null = null;
+  let linkedUserId: ObjectId | null = null;
+  let previousPackageUsage: { passId: string | null; usedCount: number | null; consumptionId: string | null } | null = null;
 
-  const previousPackageUsage = {
-    passId: record.packageUsage?.passId ? String(record.packageUsage.passId) : null,
-    usedCount: typeof record.packageUsage?.usedCount === "number" ? record.packageUsage.usedCount : null,
-    consumptionId: record.packageUsage?.consumptionId ? String(record.packageUsage.consumptionId) : null,
-  };
-  if (previousPackageUsage.passId || previousPackageUsage.consumptionId) {
-    return NextResponse.json({ message: "package already used for this record" }, { status: 409 });
-  }
-
-  const offlineCustomerId = record.offlineCustomerId instanceof ObjectId ? record.offlineCustomerId : null;
-  if (!offlineCustomerId) return NextResponse.json({ message: "offline customer not found" }, { status: 404 });
-
-  const customer = await guard.db.collection("offline_customers").findOne({ _id: offlineCustomerId }, { projection: { linkedUserId: 1 } });
-  if (!customer) return NextResponse.json({ message: "offline customer not found" }, { status: 404 });
-
-  const linkedUserId = customer.linkedUserId instanceof ObjectId ? customer.linkedUserId : null;
-  if (!linkedUserId) return NextResponse.json({ message: "linked user required" }, { status: 400 });
-
-  const user = await guard.db.collection("users").findOne({ _id: linkedUserId }, { projection: { _id: 1 } });
-  if (!user) return NextResponse.json({ message: "user not found" }, { status: 404 });
-
-  const pass = await guard.db.collection<ServicePass>("service_passes").findOne({ _id: passId });
-  if (!pass) return NextResponse.json({ message: "pass not found" }, { status: 404 });
-  if (!pass.userId || String(pass.userId) !== String(linkedUserId)) {
-    return NextResponse.json({ message: "pass does not belong to linked user" }, { status: 403 });
-  }
-  if (pass.status !== "active" || !pass.expiresAt || isTimeExpired(pass.expiresAt)) {
-    return NextResponse.json({ message: "pass is not usable" }, { status: 409 });
-  }
-  if (Number(pass.remainingCount ?? 0) < usedCount) {
-    return NextResponse.json({ message: "no remaining pass count" }, { status: 409 });
-  }
-
-  const now = new Date();
-  const claimResult = await records.updateOne(
-    {
-      _id: recordId,
-      $and: [
-        { $or: [{ "packageUsage.passId": { $exists: false } }, { "packageUsage.passId": null }, { "packageUsage.passId": "" }] },
-        { $or: [{ "packageUsage.consumptionId": { $exists: false } }, { "packageUsage.consumptionId": null }, { "packageUsage.consumptionId": "" }] },
-      ],
-    },
-    { $set: { "packageUsage.passId": passId, "packageUsage.usedCount": usedCount, "packageUsage.consumptionId": null, updatedAt: now, updatedBy: guard.admin._id } },
-  );
-  if (claimResult.matchedCount === 0) {
-    return NextResponse.json({ message: "package already used for this record" }, { status: 409 });
-  }
-
-  let updatedPass: ServicePass;
   try {
-    updatedPass = await consumePass(guard.db, passId, recordId, usedCount);
-  } catch (err: any) {
-    await records.updateOne(
-      { _id: recordId, "packageUsage.passId": passId, "packageUsage.consumptionId": null },
-      { $unset: { packageUsage: "" }, $set: { updatedAt: new Date(), updatedBy: guard.admin._id } },
-    );
-    const code = err?.code || err?.message;
-    if (code === "PASS_NOT_FOUND") return NextResponse.json({ message: "pass not found" }, { status: 404 });
-    if (code === "ORDER_NOT_PAID" || code === "PASS_CONSUME_FAILED") return NextResponse.json({ message: "package consumption failed" }, { status: 409 });
-    if (isDuplicateKeyError(err)) return NextResponse.json({ message: "package already used for this record" }, { status: 409 });
-    console.error("[offline package use] consumption failed", err);
+    await session.withTransaction(async () => {
+      const record = await records.findOne({ _id: recordId }, { session });
+      if (!record) throw new PackageUseError(404, "record not found");
+
+      previousPackageUsage = {
+        passId: record.packageUsage?.passId ? String(record.packageUsage.passId) : null,
+        usedCount: typeof record.packageUsage?.usedCount === "number" ? record.packageUsage.usedCount : null,
+        consumptionId: record.packageUsage?.consumptionId ? String(record.packageUsage.consumptionId) : null,
+      };
+      if (previousPackageUsage.passId || previousPackageUsage.consumptionId) {
+        throw new PackageUseError(409, "package already used for this record");
+      }
+
+      offlineCustomerId = record.offlineCustomerId instanceof ObjectId ? record.offlineCustomerId : null;
+      if (!offlineCustomerId) throw new PackageUseError(404, "offline customer not found");
+
+      const customer = await guard.db.collection("offline_customers").findOne({ _id: offlineCustomerId }, { projection: { linkedUserId: 1 }, session });
+      if (!customer) throw new PackageUseError(404, "offline customer not found");
+
+      linkedUserId = customer.linkedUserId instanceof ObjectId ? customer.linkedUserId : null;
+      if (!linkedUserId) throw new PackageUseError(400, "linked user required");
+
+      const user = await guard.db.collection("users").findOne({ _id: linkedUserId }, { projection: { _id: 1 }, session });
+      if (!user) throw new PackageUseError(404, "user not found");
+
+      const pass = await guard.db.collection<ServicePass>("service_passes").findOne({ _id: passId }, { session });
+      if (!pass) throw new PackageUseError(404, "pass not found");
+      if (!pass.userId || String(pass.userId) !== String(linkedUserId)) {
+        throw new PackageUseError(403, "pass does not belong to linked user");
+      }
+      if (pass.status !== "active" || !pass.expiresAt || isTimeExpired(pass.expiresAt)) {
+        throw new PackageUseError(409, "pass is not usable");
+      }
+      if (Number(pass.remainingCount ?? 0) < usedCount) {
+        throw new PackageUseError(409, "no remaining pass count");
+      }
+
+      try {
+        updatedPass = await consumePass(guard.db, passId, recordId, usedCount, { session });
+      } catch (err: any) {
+        throw mapConsumeError(err);
+      }
+
+      consumption = await guard.db.collection<ServicePassConsumption>("service_pass_consumptions").findOne(
+        { passId, applicationId: recordId, $or: [{ reverted: { $exists: false } }, { reverted: false }] } as any,
+        { projection: { _id: 1, count: 1 }, session },
+      );
+      if (!consumption) {
+        throw new PackageUseError(500, "package consumption failed");
+      }
+
+      const now = new Date();
+      const updateResult = await records.updateOne(
+        { _id: recordId, ...emptyPackageUsageFilter },
+        { $set: { "packageUsage.passId": passId, "packageUsage.usedCount": usedCount, "packageUsage.consumptionId": consumption._id, updatedAt: now, updatedBy: guard.admin._id } },
+        { session },
+      );
+      if (updateResult.matchedCount === 0) {
+        throw new PackageUseError(409, "package already used for this record");
+      }
+
+      updatedRecord = await records.findOne({ _id: recordId }, { session });
+      if (!updatedRecord) throw new PackageUseError(404, "record not found");
+    });
+  } catch (err) {
+    if (err instanceof PackageUseError) {
+      return NextResponse.json({ message: err.message }, { status: err.status });
+    }
+    console.error("[offline package use] transaction failed", err);
+    return NextResponse.json({ message: "package consumption failed" }, { status: 500 });
+  } finally {
+    await session.endSession();
+  }
+
+  if (!updatedRecord || !updatedPass || !consumption || !offlineCustomerId || !linkedUserId) {
+    console.error("[offline package use] transaction completed without response payload", { recordId: String(recordId), passId: String(passId) });
     return NextResponse.json({ message: "package consumption failed" }, { status: 500 });
   }
 
-  const consumption = await guard.db.collection("service_pass_consumptions").findOne(
-    { passId, applicationId: recordId },
-    { projection: { _id: 1, count: 1 } },
-  );
-  if (!consumption) {
-    return NextResponse.json({ message: "package consumption failed" }, { status: 500 });
-  }
-
-  const nextPackageUsage = { passId, usedCount, consumptionId: consumption._id };
-  const updateResult = await records.updateOne(
-    { _id: recordId, "packageUsage.passId": passId, "packageUsage.consumptionId": null },
-    { $set: { "packageUsage.consumptionId": consumption._id, updatedAt: new Date(), updatedBy: guard.admin._id } },
-  );
-  if (updateResult.matchedCount === 0) {
-    console.error("[offline package use] record update failed after consumption", { recordId: String(recordId), passId: String(passId), consumptionId: String(consumption._id) });
-    return NextResponse.json({ message: "package consumption failed" }, { status: 500 });
-  }
-
-  const updatedRecord = await records.findOne({ _id: recordId });
-  if (!updatedRecord) return NextResponse.json({ message: "record not found" }, { status: 404 });
-
+  const finalRecord = updatedRecord as Record<string, any>;
+  const finalPass = updatedPass as ServicePass;
+  const finalConsumption = consumption as Pick<ServicePassConsumption, "_id" | "count">;
+  const finalOfflineCustomerId = offlineCustomerId as ObjectId;
+  const finalLinkedUserId = linkedUserId as ObjectId;
+  const nextPackageUsage = { passId, usedCount, consumptionId: finalConsumption._id };
   await appendAudit(guard.db, {
     type: "offline_record_package_use",
     actorId: guard.admin._id,
@@ -156,11 +188,11 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     message: "오프라인 기록 패키지 사용 처리",
     diff: {
       offlineRecordId: String(recordId),
-      offlineCustomerId: String(offlineCustomerId),
-      linkedUserId: String(linkedUserId),
+      offlineCustomerId: String(finalOfflineCustomerId),
+      linkedUserId: String(finalLinkedUserId),
       passId: String(passId),
       usedCount,
-      consumptionId: String(consumption._id),
+      consumptionId: String(finalConsumption._id),
       previousPackageUsage,
       nextPackageUsage: {
         passId: String(nextPackageUsage.passId),
@@ -171,8 +203,8 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
   }, req);
 
   return NextResponse.json({
-    item: serializeRecord(updatedRecord as any),
-    pass: serializePass(updatedPass),
-    consumption: { id: String(consumption._id), usedCount: Number(consumption.count ?? usedCount) },
+    item: serializeRecord(finalRecord as any),
+    pass: serializePass(finalPass),
+    consumption: { id: String(finalConsumption._id), usedCount: Number(finalConsumption.count ?? usedCount) },
   });
 }

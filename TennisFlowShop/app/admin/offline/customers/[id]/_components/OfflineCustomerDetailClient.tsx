@@ -131,6 +131,7 @@ const PACKAGE_ERROR_MESSAGES: Record<string, string> = {
   "no remaining pass count": "잔여 횟수가 부족합니다.",
   "package already used for this record": "이미 이 기록에 패키지가 사용 처리되었습니다.",
   "package consumption failed": "패키지 사용 처리에 실패했습니다.",
+  "package consumed but offline record update failed": "패키지는 차감됐지만 기록 연결에 실패했습니다. 관리자에게 보정이 필요합니다.",
 };
 
 function translatePackageError(error: unknown): string {
@@ -680,7 +681,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                               <div className="space-y-1">
                                 <Badge variant="secondary">패키지 1회 사용 완료</Badge>
                                 <p className="text-xs text-muted-foreground">{getPassLabel(usedPass)} {Number(packageUsage?.usedCount ?? 1)}회 사용</p>
-                                {packageUsage?.consumptionId ? <p className="break-all text-xs text-muted-foreground">consumptionId: {packageUsage.consumptionId}</p> : null}
+                                {packageUsage?.consumptionId ? <p className="break-all text-xs text-muted-foreground">consumptionId: {packageUsage.consumptionId}</p> : <p className="text-xs text-destructive">패키지 사용 상태를 복구해야 합니다.</p>}
                               </div>
                             ) : (
                               <Badge variant="outline">패키지 미사용</Badge>
