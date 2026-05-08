@@ -37,6 +37,18 @@ export type OfflineServicePassSummary = {
   createdAt?: string | null;
 };
 
+export type OfflinePackageSaleSummary = {
+  id: string;
+  packageName?: string | null;
+  sessions?: number | null;
+  price?: number | null;
+  paymentMethod?: OfflinePaymentMethod | string | null;
+  paymentStatus?: string | null;
+  paidAt?: string | null;
+  createdAt?: string | null;
+  source?: string | null;
+};
+
 export type OfflineLinkCandidate = OfflineLinkedUser & {
   match: {
     name: boolean;

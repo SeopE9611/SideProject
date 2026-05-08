@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { adminFetcher, adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
-import type { OfflineCustomerDto, OfflineKind, OfflineLinkCandidate, OfflineLinkedUser, OfflinePaymentMethod, OfflinePaymentStatus, OfflineRecordPackageUsage, OfflineRecordPoints, OfflineServicePassSummary, OfflineStatus } from "@/types/admin/offline";
+import type { OfflineCustomerDto, OfflineKind, OfflineLinkCandidate, OfflineLinkedUser, OfflinePaymentMethod, OfflinePackageSaleSummary, OfflinePaymentStatus, OfflineRecordPackageUsage, OfflineRecordPoints, OfflineServicePassSummary, OfflineStatus } from "@/types/admin/offline";
 
 type OfflineRecord = {
   id: string;
@@ -35,7 +35,7 @@ type OfflineCustomerDetail = OfflineCustomerDto & {
   linkedUser?: OfflineLinkedUser | null;
 };
 
-type DetailResponse = { item: OfflineCustomerDetail; records?: OfflineRecord[]; passes?: OfflineServicePassSummary[] };
+type DetailResponse = { item: OfflineCustomerDetail; records?: OfflineRecord[]; passes?: OfflineServicePassSummary[]; packageSales?: OfflinePackageSaleSummary[] };
 
 const KIND_LABELS = { stringing: "스트링 작업", package_sale: "패키지 판매", etc: "기타" } as const;
 const RECORD_STATUS_LABELS = { received: "접수", in_progress: "작업중", completed: "완료", picked_up: "수령완료", canceled: "취소" } as const;
@@ -82,6 +82,37 @@ function DetailRow({ label, value }: { label: string; value: ReactNode }) {
 
 
 type LinkCandidatesResponse = { items: OfflineLinkCandidate[] };
+
+type PackageConfigOption = {
+  id: string;
+  name: string;
+  sessions: number;
+  price: number;
+  validityDays: number;
+  isActive: boolean;
+};
+
+type PackageSettingsResponse = { packageConfigs?: PackageConfigOption[] };
+
+type OfflinePackageSellFormState = {
+  packageTypeId: string;
+  packageName: string;
+  sessions: string;
+  validityDays: string;
+  price: string;
+  paymentMethod: OfflinePaymentMethod;
+  memo: string;
+};
+
+const INITIAL_PACKAGE_SELL_FORM: OfflinePackageSellFormState = {
+  packageTypeId: "",
+  packageName: "",
+  sessions: "",
+  validityDays: "365",
+  price: "0",
+  paymentMethod: "cash",
+  memo: "",
+};
 
 const LINK_ERROR_MESSAGES: Record<string, string> = {
   "customer not found": "오프라인 고객을 찾을 수 없습니다.",
@@ -139,6 +170,25 @@ function translatePackageError(error: unknown): string {
   return PACKAGE_ERROR_MESSAGES[message] ?? message ?? "패키지 사용 처리에 실패했습니다.";
 }
 
+const PACKAGE_SELL_ERROR_MESSAGES: Record<string, string> = {
+  "customer not found": "오프라인 고객을 찾을 수 없습니다.",
+  "linked user required": "온라인 회원과 연결된 고객만 패키지를 판매/발급할 수 있습니다.",
+  "user not found": "연결된 온라인 회원 정보를 찾을 수 없어 패키지를 판매/발급할 수 없습니다.",
+  "invalid package name": "패키지명을 입력해주세요.",
+  "invalid sessions": "이용 횟수는 1 이상이어야 합니다.",
+  "invalid price": "판매 금액은 0원 이상이어야 합니다.",
+  "invalid payment method": "결제수단을 확인해주세요.",
+  "invalid validity days": "유효기간 일수는 1 이상이어야 합니다.",
+  "invalid package option": "선택한 패키지 옵션을 사용할 수 없습니다.",
+  "package order creation failed": "패키지 주문 생성에 실패했습니다.",
+  "package pass issuance failed": "패키지 판매/발급에 실패했습니다.",
+};
+
+function translatePackageSellError(error: unknown): string {
+  const message = getAdminErrorMessage(error);
+  return PACKAGE_SELL_ERROR_MESSAGES[message] ?? message ?? "패키지 판매/발급에 실패했습니다.";
+}
+
 function getPassLabel(pass?: OfflineServicePassSummary | null) {
   if (!pass) return "선택한 패키지";
   return pass.packageName || pass.name || "교체 서비스 패키지";
@@ -179,11 +229,18 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
   const [processingPointKey, setProcessingPointKey] = useState<string | null>(null);
   const [packageForms, setPackageForms] = useState<Record<string, PackageFormState>>({});
   const [processingPackageRecordId, setProcessingPackageRecordId] = useState<string | null>(null);
+  const [packageSellForm, setPackageSellForm] = useState<OfflinePackageSellFormState>(INITIAL_PACKAGE_SELL_FORM);
+  const [isSellingPackage, setIsSellingPackage] = useState(false);
+  const [packageSellMessage, setPackageSellMessage] = useState<string | null>(null);
+  const [packageSellMessageType, setPackageSellMessageType] = useState<"success" | "error" | null>(null);
 
   const candidateKey = submittedCandidateQuery
     ? `/api/admin/offline/customers/${id}/link-candidates?name=${encodeURIComponent(submittedCandidateQuery.name)}&phone=${encodeURIComponent(submittedCandidateQuery.phone)}&email=${encodeURIComponent(submittedCandidateQuery.email)}`
     : null;
   const { data: candidatesData, isLoading: candidatesLoading, mutate: mutateCandidates } = useSWR<LinkCandidatesResponse>(candidateKey, adminFetcher, {
+    revalidateOnFocus: false,
+  });
+  const { data: packageSettings } = useSWR<PackageSettingsResponse>("/api/admin/packages/settings", adminFetcher, {
     revalidateOnFocus: false,
   });
 
@@ -194,6 +251,8 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
   const candidates = candidatesData?.items ?? [];
   const pointBalance = item?.linkedUser?.pointsBalance ?? null;
   const passes = data?.passes ?? [];
+  const packageSales = data?.packageSales ?? [];
+  const packageOptions = (packageSettings?.packageConfigs ?? []).filter((pkg) => pkg.isActive);
   const canUseLinkedFeatures = !!item?.linkedUserId && !!item?.linkedUser;
   const usablePasses = passes.filter(isUsablePass);
 
@@ -275,6 +334,87 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
       updatePackageForm(recordId, { passId: selectedPassId, message: translatePackageError(err), messageType: "error" });
     } finally {
       setProcessingPackageRecordId(null);
+    }
+  }
+
+  function updatePackageSellForm(patch: Partial<OfflinePackageSellFormState>) {
+    setPackageSellForm((prev) => ({ ...prev, ...patch }));
+  }
+
+  function handlePackageOptionChange(packageTypeId: string) {
+    const selected = packageOptions.find((pkg) => pkg.id === packageTypeId);
+    if (!selected) {
+      updatePackageSellForm({ packageTypeId });
+      return;
+    }
+    updatePackageSellForm({
+      packageTypeId: selected.id,
+      packageName: selected.name,
+      sessions: String(selected.sessions),
+      validityDays: String(selected.validityDays),
+      price: String(selected.price),
+    });
+  }
+
+  async function handlePackageSell() {
+    if (!canUseLinkedFeatures) {
+      setPackageSellMessage("온라인 회원과 연결된 고객만 패키지를 판매/발급할 수 있습니다.");
+      setPackageSellMessageType("error");
+      return;
+    }
+    const packageName = packageSellForm.packageName.trim();
+    const sessions = Number(packageSellForm.sessions);
+    const validityDays = packageSellForm.validityDays.trim() ? Number(packageSellForm.validityDays) : undefined;
+    const price = Number(packageSellForm.price);
+    if (!packageName) {
+      setPackageSellMessage("패키지명을 입력해주세요.");
+      setPackageSellMessageType("error");
+      return;
+    }
+    if (!Number.isInteger(sessions) || sessions < 1) {
+      setPackageSellMessage("이용 횟수는 1 이상이어야 합니다.");
+      setPackageSellMessageType("error");
+      return;
+    }
+    if (!Number.isFinite(price) || price < 0) {
+      setPackageSellMessage("판매 금액은 0원 이상이어야 합니다.");
+      setPackageSellMessageType("error");
+      return;
+    }
+    if (validityDays !== undefined && (!Number.isInteger(validityDays) || validityDays < 1)) {
+      setPackageSellMessage("유효기간 일수는 1 이상이어야 합니다.");
+      setPackageSellMessageType("error");
+      return;
+    }
+    if (!window.confirm("이 고객에게 오프라인 결제 완료 패키지를 발급하시겠습니까?")) return;
+
+    setIsSellingPackage(true);
+    setPackageSellMessage(null);
+    setPackageSellMessageType(null);
+    try {
+      await adminMutator(`/api/admin/offline/customers/${id}/packages/sell`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          packageTypeId: packageSellForm.packageTypeId || undefined,
+          packageName,
+          sessions,
+          validityDays,
+          price,
+          paymentMethod: packageSellForm.paymentMethod,
+          paymentStatus: "paid",
+          memo: packageSellForm.memo.trim() || undefined,
+        }),
+      });
+      setPackageSellMessage("패키지 판매 및 발급이 완료되었습니다.");
+      setPackageSellMessageType("success");
+      setPackageSellForm(INITIAL_PACKAGE_SELL_FORM);
+      await mutateDetail();
+    } catch (err) {
+      setPackageSellMessage(translatePackageSellError(err));
+      setPackageSellMessageType("error");
+    } finally {
+      setIsSellingPackage(false);
     }
   }
 
@@ -543,6 +683,127 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
               })}
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>오프라인 패키지 판매</CardTitle>
+          <CardDescription>매장에서 결제 완료된 패키지권을 온라인 회원 계정에 발급합니다.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4 text-sm">
+          {!canUseLinkedFeatures ? (
+            <p className="text-muted-foreground">온라인 회원과 연결된 고객만 패키지 판매/발급이 가능합니다.</p>
+          ) : (
+            <div className="space-y-4 rounded-md border p-3">
+              {packageOptions.length > 0 ? (
+                <div className="space-y-1.5">
+                  <Label htmlFor="offline-package-option">패키지 옵션</Label>
+                  <select
+                    id="offline-package-option"
+                    className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+                    value={packageSellForm.packageTypeId}
+                    onChange={(event) => handlePackageOptionChange(event.target.value)}
+                    disabled={isSellingPackage}
+                  >
+                    <option value="">수동 입력</option>
+                    {packageOptions.map((pkg) => (
+                      <option key={pkg.id} value={pkg.id}>
+                        {pkg.name} · {Number(pkg.sessions).toLocaleString("ko-KR")}회 · {formatCurrency(pkg.price)} · {Number(pkg.validityDays).toLocaleString("ko-KR")}일
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-muted-foreground">옵션 선택 시 패키지명, 횟수, 유효기간, 판매 금액을 자동 입력합니다.</p>
+                </div>
+              ) : null}
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="offline-package-name">패키지명</Label>
+                  <Input id="offline-package-name" value={packageSellForm.packageName} onChange={(e) => updatePackageSellForm({ packageName: e.target.value })} disabled={isSellingPackage} placeholder="예: 10회권" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="offline-package-sessions">이용 횟수 / 세션 수</Label>
+                  <Input id="offline-package-sessions" type="number" min={1} step={1} value={packageSellForm.sessions} onChange={(e) => updatePackageSellForm({ sessions: e.target.value })} disabled={isSellingPackage} placeholder="예: 10" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="offline-package-validity">유효기간 일수</Label>
+                  <Input id="offline-package-validity" type="number" min={1} step={1} value={packageSellForm.validityDays} onChange={(e) => updatePackageSellForm({ validityDays: e.target.value })} disabled={isSellingPackage} placeholder="예: 365" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="offline-package-price">판매 금액</Label>
+                  <Input id="offline-package-price" type="number" min={0} step={1000} value={packageSellForm.price} onChange={(e) => updatePackageSellForm({ price: e.target.value })} disabled={isSellingPackage} placeholder="예: 100000" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="offline-package-payment-method">결제수단</Label>
+                  <select
+                    id="offline-package-payment-method"
+                    className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+                    value={packageSellForm.paymentMethod}
+                    onChange={(event) => updatePackageSellForm({ paymentMethod: event.target.value as OfflinePaymentMethod })}
+                    disabled={isSellingPackage}
+                  >
+                    <option value="cash">현금</option>
+                    <option value="card">카드</option>
+                    <option value="bank_transfer">계좌이체</option>
+                    <option value="etc">기타</option>
+                  </select>
+                </div>
+                <div className="space-y-1.5 md:col-span-2 lg:col-span-3">
+                  <Label htmlFor="offline-package-memo">메모</Label>
+                  <textarea
+                    id="offline-package-memo"
+                    className="min-h-20 w-full rounded-md border bg-background px-3 py-2 text-sm"
+                    value={packageSellForm.memo}
+                    onChange={(e) => updatePackageSellForm({ memo: e.target.value })}
+                    disabled={isSellingPackage}
+                    placeholder="오프라인 판매 메모(선택)"
+                  />
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center gap-3">
+                <Button type="button" onClick={handlePackageSell} disabled={isSellingPackage}>
+                  {isSellingPackage ? "패키지 판매/발급 중..." : "패키지 판매/발급"}
+                </Button>
+                <p className="text-xs text-muted-foreground">판매는 service_pass 발급만 처리하며, 특정 오프라인 기록에 자동 사용 처리하지 않습니다.</p>
+              </div>
+            </div>
+          )}
+          {packageSellMessage ? <p className={packageSellMessageType === "error" ? "text-sm text-destructive" : "text-sm text-foreground"}>{packageSellMessage}</p> : null}
+          <div className="space-y-2">
+            <p className="font-medium">패키지 판매 내역</p>
+            {packageSales.length === 0 ? (
+              <p className="text-muted-foreground">표시할 패키지 판매 내역이 없습니다.</p>
+            ) : (
+              <div className="overflow-x-auto rounded-md border">
+                <table className="w-full min-w-[720px] text-left text-sm">
+                  <thead className="bg-muted/50 text-xs text-muted-foreground">
+                    <tr>
+                      <th className="px-3 py-2">패키지</th>
+                      <th className="px-3 py-2">횟수</th>
+                      <th className="px-3 py-2">금액</th>
+                      <th className="px-3 py-2">결제수단</th>
+                      <th className="px-3 py-2">결제상태</th>
+                      <th className="px-3 py-2">결제일</th>
+                      <th className="px-3 py-2">출처</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {packageSales.map((sale) => (
+                      <tr key={sale.id} className="border-t">
+                        <td className="px-3 py-2 font-medium">{sale.packageName || "교체 서비스 패키지"}</td>
+                        <td className="px-3 py-2">{Number(sale.sessions ?? 0).toLocaleString("ko-KR")}회</td>
+                        <td className="px-3 py-2">{formatCurrency(sale.price)}</td>
+                        <td className="px-3 py-2">{PAYMENT_METHOD_LABELS[sale.paymentMethod as OfflinePaymentMethod] ?? sale.paymentMethod ?? "-"}</td>
+                        <td className="px-3 py-2">{sale.paymentStatus || "-"}</td>
+                        <td className="px-3 py-2">{formatDate(sale.paidAt || sale.createdAt)}</td>
+                        <td className="px-3 py-2">{sale.source === "offline_admin" ? "오프라인 판매" : sale.source || "온라인/기존"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
 
