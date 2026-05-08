@@ -77,6 +77,20 @@ function sanitizePass(doc: Record<string, any>, now = new Date()) {
   };
 }
 
+function sanitizePackageSale(doc: Record<string, any>) {
+  return {
+    id: String(doc._id),
+    packageName: doc.packageInfo?.title ?? "교체 서비스 패키지",
+    sessions: typeof doc.packageInfo?.sessions === "number" ? doc.packageInfo.sessions : Number(doc.packageInfo?.sessions ?? 0),
+    price: typeof doc.totalPrice === "number" ? doc.totalPrice : Number(doc.packageInfo?.price ?? 0),
+    paymentMethod: doc.meta?.paymentMethod ?? doc.paymentInfo?.method ?? null,
+    paymentStatus: doc.paymentStatus ?? null,
+    paidAt: doc.paymentInfo?.approvedAt instanceof Date ? doc.paymentInfo.approvedAt.toISOString() : doc.meta?.paidAt ?? null,
+    createdAt: doc.createdAt instanceof Date ? doc.createdAt.toISOString() : doc.createdAt ?? null,
+    source: doc.meta?.source ?? null,
+  };
+}
+
 export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
@@ -95,16 +109,26 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
     ])
     : [null, null] as const;
   const now = new Date();
-  const passes = linkedUserId && linkedUser
-    ? await guard.db.collection("service_passes")
-      .find(
-        { userId: linkedUserId },
-        { projection: { packageSize: 1, usedCount: 1, remainingCount: 1, status: 1, expiresAt: 1, createdAt: 1, meta: 1 } },
-      )
-      .sort({ status: 1, expiresAt: 1, createdAt: -1 })
-      .limit(100)
-      .toArray()
-    : [];
+  const [passes, packageSales] = linkedUserId && linkedUser
+    ? await Promise.all([
+      guard.db.collection("service_passes")
+        .find(
+          { userId: linkedUserId },
+          { projection: { packageSize: 1, usedCount: 1, remainingCount: 1, status: 1, expiresAt: 1, createdAt: 1, meta: 1 } },
+        )
+        .sort({ status: 1, expiresAt: 1, createdAt: -1 })
+        .limit(100)
+        .toArray(),
+      guard.db.collection("packageOrders")
+        .find(
+          { userId: linkedUserId },
+          { projection: { packageInfo: 1, totalPrice: 1, paymentInfo: 1, paymentStatus: 1, createdAt: 1, meta: 1 } },
+        )
+        .sort({ createdAt: -1, _id: -1 })
+        .limit(20)
+        .toArray(),
+    ])
+    : [[], []] as const;
 
   const records = await guard.db.collection("offline_service_records")
     .find(
@@ -132,6 +156,7 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
     },
     records: records.map((record) => sanitizeRecord(record as any)),
     passes: passes.map((pass) => sanitizePass(pass as any, now)),
+    packageSales: packageSales.map((sale) => sanitizePackageSale(sale as any)),
   });
 }
 export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }> }) {
