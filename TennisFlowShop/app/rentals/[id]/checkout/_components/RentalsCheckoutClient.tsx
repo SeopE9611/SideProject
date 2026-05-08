@@ -410,7 +410,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
     }
 
     if (requestStringing && !rentalStringingAdapter) {
-      showErrorToast("교체 서비스 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.");
+      showErrorToast("교체서비스 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.");
       return;
     }
 
@@ -766,11 +766,11 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                           {selectedString.price.toLocaleString()}원 + 교체 {selectedString.mountingFee.toLocaleString()}원
                         </div>
 
-                        <div className="mt-2 text-xs text-foreground/75">* 대여 결제 시 입력한 교체 서비스 정보가 함께 접수됩니다. (구형/예외 건만 별도 신청서 이동)</div>
+                        <div className="mt-2 text-xs text-foreground/75">* 대여 결제 시 입력한 교체서비스 정보가 함께 접수됩니다. (구형/예외 건만 별도 신청서 이동)</div>
                       </div>
                     ) : (
                       <div className="text-sm text-foreground/80">
-                        현재는 <b>교체 서비스 미선택</b> 상태입니다. 필요하면 "스트링 선택"을 눌러 교체 서비스를 함께 진행할 수 있습니다.
+                        현재는 <b>교체서비스 미선택</b> 상태입니다. 필요하면 "스트링 선택"을 눌러 교체서비스를 함께 진행할 수 있습니다.
                       </div>
                     )}
                   </div>
@@ -1157,7 +1157,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                         </div>
 
                         <div className="flex justify-between items-center">
-                          <span className="text-foreground/80">교체 서비스비</span>
+                          <span className="text-foreground/80">교체서비스비</span>
                           <span className="font-semibold text-lg">{stringingFee.toLocaleString()}원</span>
                         </div>
                       </>
