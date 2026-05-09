@@ -277,7 +277,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialLoadE
     return () => window.removeEventListener("popstate", onPopState);
   }, []);
 
-  const { data: pinnedNoticeData } = useSWR<NoticePinnedResponse>("/api/boards?type=notice&page=1&limit=5", (url) => boardFetcher<NoticePinnedResponse>(url), {
+  const { data: pinnedNoticeData } = useSWR<NoticePinnedResponse>("/api/boards?type=notice&excludeCategory=event&page=1&limit=5", (url) => boardFetcher<NoticePinnedResponse>(url), {
     revalidateOnFocus: false,
     keepPreviousData: true,
   });

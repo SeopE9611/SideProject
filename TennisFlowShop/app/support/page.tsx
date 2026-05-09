@@ -118,6 +118,8 @@ function NoticeCard({ items, isAdmin, isLoading, error, onRetry, mode = "notice"
   const emptyTitle = isEventMode ? "등록된 이벤트가 없습니다." : "등록된 공지가 없습니다.";
   const emptyDescription = isEventMode ? "새 이벤트가 등록되면 이곳에서 바로 확인할 수 있어요." : "새 소식이 등록되면 이곳에서 바로 확인할 수 있어요.";
   const HeaderIcon = isEventMode ? Gift : Bell;
+  const loadErrorMessage = isEventMode ? "이벤트 불러오기에 실패했습니다." : "공지 불러오기에 실패했습니다.";
+  const pinnedLabel = isEventMode ? "고정 이벤트" : "고정 공지";
   return (
     <Card className="border border-border bg-card shadow-sm h-full">
       <CardHeader className="bg-muted/30 border-b p-4 sm:p-5 md:p-6">
@@ -147,7 +149,7 @@ function NoticeCard({ items, isAdmin, isLoading, error, onRetry, mode = "notice"
       <CardContent className="p-4 md:p-6">
         <div className="space-y-4">
           {error ? (
-            <ErrorBox message="공지 불러오기에 실패했습니다." onRetry={onRetry} />
+            <ErrorBox message={loadErrorMessage} onRetry={onRetry} />
           ) : isLoading ? (
             <FiveLineSkeleton />
           ) : items.length === 0 ? (
@@ -167,7 +169,7 @@ function NoticeCard({ items, isAdmin, isLoading, error, onRetry, mode = "notice"
                         )}
 
                         {notice.isPinned && (
-                          <Badge variant="brand" className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`} title="고정 공지" aria-label="고정 공지">
+                          <Badge variant="brand" className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`} title={pinnedLabel} aria-label={pinnedLabel}>
                             <Pin className="h-3 w-3" />
                           </Badge>
                         )}

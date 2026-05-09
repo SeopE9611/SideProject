@@ -332,7 +332,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
     return currentListQuery ? `${base}?${currentListQuery}` : base;
   };
 
-  const { data: pinnedNoticeData } = useSWR<NoticePinnedResponse>("/api/boards?type=notice&page=1&limit=5", boardFetcher, {
+  const { data: pinnedNoticeData } = useSWR<NoticePinnedResponse>("/api/boards?type=notice&excludeCategory=event&page=1&limit=5", boardFetcher, {
     revalidateOnFocus: false,
     keepPreviousData: true,
   });
