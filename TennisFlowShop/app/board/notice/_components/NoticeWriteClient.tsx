@@ -752,7 +752,7 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
                   id="content"
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  placeholder="공지사항 내용을 작성해주세요"
+                  placeholder={isEventMode ? "이벤트 내용을 작성해주세요" : "공지사항 내용을 작성해주세요"}
                   className="min-h-[300px] bg-card text-base resize-none"
                 />
               </div>

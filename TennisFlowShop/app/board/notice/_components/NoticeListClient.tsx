@@ -203,7 +203,10 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
     revalidateOnReconnect: false,
     revalidateOnMount: fallbackData ? false : true,
   });
-  const listError = parseApiError(error, "공지 목록을 불러오지 못했습니다.");
+  const listLoadErrorMessage = isEventMode ? "이벤트 목록을 불러오지 못했습니다." : "공지 목록을 불러오지 못했습니다.";
+  const searchEmptyDescription = isEventMode ? "검색어를 바꾸거나 전체 이벤트 목록으로 돌아가 확인해 보세요." : "검색어를 바꾸거나 전체 공지 목록으로 돌아가 확인해 보세요.";
+  const pinnedLabel = isEventMode ? "고정 이벤트" : "고정 공지";
+  const listError = parseApiError(error, listLoadErrorMessage);
   // 초기(SSR fallback)에서의 revalidate는 "로딩 UI"로 취급하지 않기
   const isBusy = key !== initialKey && (isLoading || isValidating);
 
@@ -347,9 +350,9 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
             <div className="space-y-3.5 sm:space-y-4">
               {!shouldShowLoadingState && hasDataError && (
                 <ErrorBox
-                  message={hasPreloadError ? initialErrorMessage || "공지 목록을 불러오지 못했습니다." : listError.message}
+                  message={hasPreloadError ? initialErrorMessage || listLoadErrorMessage : listError.message}
                   status={hasPreloadError ? 500 : listError.status}
-                  fallbackMessage="공지 목록을 불러오지 못했습니다."
+                  fallbackMessage={listLoadErrorMessage}
                   onRetry={() => mutate()}
                 />
               )}
@@ -365,7 +368,7 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
               )}
               {!shouldShowLoadingState && !hasDataError && !shouldShowActualEmptyState && shouldShowSearchEmptyState && (
                 <div className="space-y-3">
-                  <AsyncState kind="empty" variant="card" title="검색 결과가 없습니다." description="검색어를 바꾸거나 전체 공지 목록으로 돌아가 확인해 보세요." />
+                  <AsyncState kind="empty" variant="card" title="검색 결과가 없습니다." description={searchEmptyDescription} />
                   <div className="mt-3">
                     <Button
                       type="button"
@@ -411,7 +414,7 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
                                   )}
 
                                   {notice.isPinned && (
-                                    <Badge variant="brand" className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`} title="고정 공지" aria-label="고정 공지">
+                                    <Badge variant="brand" className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`} title={pinnedLabel} aria-label={pinnedLabel}>
                                       <Pin className="h-3 w-3" />
                                     </Badge>
                                   )}
