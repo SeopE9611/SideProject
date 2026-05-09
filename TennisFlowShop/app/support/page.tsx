@@ -21,7 +21,6 @@ import {
   getQnaCategoryBadgeSpec,
 } from "@/lib/badge-style";
 import {
-  ArrowRight,
   Bell,
   Eye,
   Gift,
@@ -31,7 +30,6 @@ import {
   MessageSquare,
   Paperclip,
   Pin,
-  Plus,
 } from "lucide-react";
 import Link from "next/link";
 import SupportFaqSearch from "@/app/support/_components/SupportFaqSearch";
@@ -119,8 +117,10 @@ const fmt = (v: string | Date) =>
     })
     .replace(/\.\s/g, ".")
     .replace(/\.$/, "");
-const supportCardHeaderTitleClass = "flex min-w-0 items-center gap-2 sm:gap-3";
-const supportCardHeaderActionClass = "mt-3 flex flex-wrap items-center gap-2";
+const supportCardHeaderClass =
+  "flex-row items-center justify-between gap-2 space-y-0 bg-muted/30 border-b p-3 sm:p-4";
+const supportCardHeaderTitleClass = "flex min-w-0 items-center gap-2";
+const supportCardHeaderActionClass = "flex shrink-0 items-center gap-1";
 const supportMobileTitleClampClass =
   "min-w-0 flex-1 line-clamp-2 text-sm font-semibold leading-snug sm:line-clamp-1 sm:text-base";
 const supportMobileMetaWrapClass =
@@ -206,10 +206,10 @@ function NoticeCard({
   const pinnedLabel = isEventMode ? "고정 이벤트" : "고정 공지";
   return (
     <Card className="border border-border bg-card shadow-sm h-full">
-      <CardHeader className="bg-muted/30 border-b p-4 sm:p-5 md:p-6">
+      <CardHeader className={supportCardHeaderClass}>
         <CardTitle className={supportCardHeaderTitleClass}>
-          <HeaderIcon className="h-5 w-5 shrink-0 text-primary" />
-          <span className="min-w-0 text-lg font-semibold leading-tight break-keep sm:text-xl md:text-2xl">
+          <HeaderIcon className="h-4 w-4 shrink-0 text-primary" />
+          <span className="min-w-0 truncate text-base font-semibold leading-tight break-keep sm:text-lg">
             {cardTitle}
           </span>
         </CardTitle>
@@ -219,11 +219,13 @@ function NoticeCard({
               asChild
               size="sm"
               variant="ghost"
-              className="min-h-9 px-3 border-border whitespace-nowrap"
+              className="h-8 px-2.5 text-xs border-border whitespace-nowrap"
             >
-              <Link href={writePath}>
-                <Plus className="h-4 w-4 mr-1" />
-                {writeLabel}
+              <Link href={writePath} aria-label={writeLabel} title={writeLabel}>
+                <span className="lg:hidden" aria-hidden="true">
+                  +
+                </span>
+                <span className="hidden lg:inline">+ {writeLabel}</span>
               </Link>
             </Button>
           )}
@@ -231,11 +233,13 @@ function NoticeCard({
             asChild
             size="sm"
             variant="ghost"
-            className="min-h-9 px-3 whitespace-nowrap"
+            className="h-8 px-2.5 text-xs whitespace-nowrap"
           >
-            <Link href={basePath}>
-              {listLabel}
-              <ArrowRight className="ml-1 h-4 w-4" />
+            <Link href={basePath} aria-label={listLabel} title={listLabel}>
+              <span className="lg:hidden" aria-hidden="true">
+                →
+              </span>
+              <span className="hidden lg:inline">{listLabel} →</span>
             </Link>
           </Button>
         </div>
@@ -380,10 +384,10 @@ function QnaCard({
 
   return (
     <Card className="border border-border bg-card shadow-sm h-full">
-      <CardHeader className="bg-muted/30 border-b p-4 sm:p-5 md:p-6">
+      <CardHeader className={supportCardHeaderClass}>
         <CardTitle className={supportCardHeaderTitleClass}>
-          <MessageSquare className="h-5 w-5 shrink-0 text-success" />
-          <span className="min-w-0 text-lg font-semibold leading-tight break-keep sm:text-xl md:text-2xl">
+          <MessageSquare className="h-4 w-4 shrink-0 text-success" />
+          <span className="min-w-0 truncate text-base font-semibold leading-tight break-keep sm:text-lg">
             Q&amp;A 문의
           </span>
         </CardTitle>
@@ -392,22 +396,30 @@ function QnaCard({
             asChild
             size="sm"
             variant="default"
-            className="min-h-9 px-3 whitespace-nowrap"
+            className="h-8 px-2.5 text-xs whitespace-nowrap"
           >
-            <Link href="/board/qna/write">
-              <Plus className="h-4 w-4 mr-1" />
-              Q&amp;A 문의하기
+            <Link
+              href="/board/qna/write"
+              aria-label="Q&A 문의하기"
+              title="Q&A 문의하기"
+            >
+              <span className="lg:hidden" aria-hidden="true">
+                +
+              </span>
+              <span className="hidden lg:inline">+ Q&amp;A 문의하기</span>
             </Link>
           </Button>
           <Button
             asChild
             size="sm"
             variant="ghost"
-            className="min-h-9 px-3 whitespace-nowrap"
+            className="h-8 px-2.5 text-xs whitespace-nowrap"
           >
-            <Link href="/board/qna">
-              전체 보기
-              <ArrowRight className="ml-1 h-4 w-4" />
+            <Link href="/board/qna" aria-label="전체 보기" title="전체 보기">
+              <span className="lg:hidden" aria-hidden="true">
+                →
+              </span>
+              <span className="hidden lg:inline">전체 보기 →</span>
             </Link>
           </Button>
         </div>
