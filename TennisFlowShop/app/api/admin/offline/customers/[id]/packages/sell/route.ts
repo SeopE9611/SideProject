@@ -18,10 +18,10 @@ const PAYMENT_METHOD_LABELS = {
 
 const sellSchema = z.object({
   packageTypeId: z.string().trim().min(1).max(100).optional(),
-  packageName: z.string().trim().min(1, "invalid package name").max(100),
-  sessions: z.number().int().min(1, "invalid sessions"),
+  packageName: z.string().trim().min(1, "invalid package name").max(100).optional(),
+  sessions: z.number().int().min(1, "invalid sessions").optional(),
   validityDays: z.number().int().min(1, "invalid validity days").optional(),
-  price: z.number().finite().min(0, "invalid price"),
+  price: z.number().finite().min(0, "invalid price").optional(),
   paymentMethod: z.enum(["cash", "card", "bank_transfer", "etc"]),
   paymentStatus: z.literal("paid"),
   paidAt: z.string().datetime().optional(),
@@ -42,6 +42,71 @@ function issueMessage(parsed: ReturnType<typeof sellSchema.safeParse>) {
   if (fields.validityDays?.length) return "invalid validity days";
   if (fields.paymentStatus?.length) return "invalid payment status";
   return "invalid body";
+}
+
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : String(error ?? "unknown error");
+}
+
+async function markOfflineIssueFailed(params: {
+  db: any;
+  req: Request;
+  packageOrderId: ObjectId;
+  adminId: ObjectId;
+  customerId: ObjectId;
+  linkedUserId: ObjectId;
+  error: unknown;
+}) {
+  const failedAt = new Date();
+  const errorMessage = getErrorMessage(params.error);
+
+  try {
+    await params.db.collection("packageOrders").updateOne(
+      { _id: params.packageOrderId },
+      {
+        $set: {
+          updatedAt: failedAt,
+          "meta.offlineIssueStatus": "issue_failed",
+          "meta.offlineIssueError": errorMessage,
+          "meta.offlineIssueFailedAt": failedAt,
+          "meta.requiresOfflineIssueReconcile": true,
+        },
+        $push: {
+          history: {
+            status: "발급실패",
+            date: failedAt,
+            description: `오프라인 패키지 발급 실패 / 관리자 보정 필요 / 오류: ${errorMessage}`,
+          },
+        },
+      },
+    );
+  } catch (updateError) {
+    console.error("[offline package sell] issue failure reconcile marker failed", updateError);
+  }
+
+  try {
+    await appendAudit(
+      params.db,
+      {
+        type: "offline_package_issue_failed",
+        actorId: params.adminId,
+        targetId: params.packageOrderId,
+        message: "오프라인 패키지 발급 실패",
+        diff: {
+          offlineCustomerId: String(params.customerId),
+          linkedUserId: String(params.linkedUserId),
+          packageOrderId: String(params.packageOrderId),
+          offlineIssueStatus: "issue_failed",
+          requiresOfflineIssueReconcile: true,
+          error: errorMessage,
+          failedAt: failedAt.toISOString(),
+        },
+      },
+      params.req,
+    );
+  } catch (auditError) {
+    console.error("[offline package sell] issue failure audit failed", auditError);
+  }
 }
 
 function serializePass(doc: Record<string, any>) {
@@ -86,22 +151,34 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
   if (!linkedUser) return NextResponse.json({ message: "user not found" }, { status: 404 });
 
   const input = parsed.data;
-  let packageTypeId = input.packageTypeId || `offline-${input.sessions}-sessions`;
-  let packageName = input.packageName;
-  let sessions = input.sessions;
-  let validityDays = input.validityDays ?? 365;
-  let price = input.price;
+  let packageTypeId: string;
+  let packageName: string;
+  let sessions: number;
+  let validityDays: number;
+  let price: number;
 
   if (input.packageTypeId) {
     const { packageConfigs } = await loadPackageSettings();
     const config = packageConfigs.find((pkg) => pkg.id === input.packageTypeId);
-    if (!config || !config.isActive) {
+    if (!config) {
+      return NextResponse.json({ message: "package option not found" }, { status: 400 });
+    }
+    if (!config.isActive) {
       return NextResponse.json({ message: "invalid package option" }, { status: 400 });
     }
     packageTypeId = config.id;
-    packageName = input.packageName || config.name;
+    packageName = config.name;
+    sessions = config.sessions;
+    validityDays = config.validityDays;
+    price = config.price;
+  } else {
+    if (!input.packageName) return NextResponse.json({ message: "invalid package name" }, { status: 400 });
+    if (!input.sessions) return NextResponse.json({ message: "invalid sessions" }, { status: 400 });
+    if (input.price === undefined) return NextResponse.json({ message: "invalid price" }, { status: 400 });
+    packageTypeId = `offline-${input.sessions}-sessions`;
+    packageName = input.packageName;
     sessions = input.sessions;
-    validityDays = input.validityDays ?? config.validityDays;
+    validityDays = input.validityDays ?? 365;
     price = input.price;
   }
 
@@ -188,11 +265,31 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     });
   } catch (error) {
     console.error("[offline package sell] mark paid failed", error);
-    return NextResponse.json({ message: "package pass issuance failed" }, { status: 500 });
+    await markOfflineIssueFailed({
+      db: guard.db,
+      req,
+      packageOrderId,
+      adminId: guard.admin._id,
+      customerId,
+      linkedUserId,
+      error,
+    });
+    return NextResponse.json({ message: "package order created but pass issuance failed" }, { status: 500 });
   }
 
   const pass = await guard.db.collection("service_passes").findOne({ orderId: packageOrderId });
-  if (!pass) return NextResponse.json({ message: "package pass issuance failed" }, { status: 500 });
+  if (!pass) {
+    await markOfflineIssueFailed({
+      db: guard.db,
+      req,
+      packageOrderId,
+      adminId: guard.admin._id,
+      customerId,
+      linkedUserId,
+      error: new Error("package pass issuance failed"),
+    });
+    return NextResponse.json({ message: "package order created but pass issuance failed" }, { status: 500 });
+  }
 
   await appendAudit(
     guard.db,

@@ -47,6 +47,7 @@ export type OfflinePackageSaleSummary = {
   paidAt?: string | null;
   createdAt?: string | null;
   source?: string | null;
+  sourceLabel?: string | null;
 };
 
 export type OfflineLinkCandidate = OfflineLinkedUser & {
