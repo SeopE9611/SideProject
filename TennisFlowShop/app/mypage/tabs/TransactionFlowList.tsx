@@ -647,7 +647,7 @@ export default function TransactionFlowList() {
             {scope === 'todo' ? (
               <div className="space-y-1">
                 <p className="text-sm font-semibold text-foreground/90">지금 처리할 일이 없습니다.</p>
-                <p className="text-sm text-muted-foreground">주문, 장착서비스, 대여 진행 중 필요한 작업이 생기면 이곳에 표시됩니다.</p>
+                <p className="text-sm text-muted-foreground">주문, 교체서비스, 대여 진행 중 필요한 작업이 생기면 이곳에 표시됩니다.</p>
               </div>
             ) : (
               <p className="text-sm text-foreground/80">

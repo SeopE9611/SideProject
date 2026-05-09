@@ -150,7 +150,7 @@ const getOrderCompositionTitle = (order: Order) => {
   else if (hasString) baseTitle = "스트링 주문";
 
   if (order.shippingInfo?.withStringService) {
-    return `${baseTitle} + 교체 서비스 포함`;
+    return `${baseTitle} + 교체서비스 포함`;
   }
 
   return baseTitle;

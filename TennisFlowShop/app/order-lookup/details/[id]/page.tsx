@@ -572,7 +572,7 @@ export default function OrderDetailPage() {
                       <ShoppingBag className="w-6 h-6 text-foreground" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-semibold text-foreground mb-2">스트링 장착 서비스 신청 가능</h3>
+                      <h3 className="font-semibold text-foreground mb-2">교체서비스 신청 가능</h3>
                       <p className="text-muted-foreground mb-4">
                         {isVisitPickup
                           ? "이 주문은 스트링 장착 서비스가 포함되어 있습니다. 방문 수령 시 현장 장착으로 진행되며, 아직 접수된 신청서가 없어 신청을 진행할 수 있습니다."
@@ -580,7 +580,7 @@ export default function OrderDetailPage() {
                       </p>
                       <Link href={`/services/apply?orderId=${order._id}`} className="inline-flex items-center rounded-lg border border-border bg-secondary px-4 py-2 font-semibold text-foreground transition-colors hover:bg-secondary/80">
                         <ShoppingBag className="w-4 h-4 mr-2" />
-                        {isVisitPickup ? "스트링 장착 서비스 신청하기" : "택배 장착 서비스 신청하기"}
+                        {isVisitPickup ? "교체서비스 신청하기" : "교체서비스 신청하기"}
                       </Link>
                     </div>
                   </div>

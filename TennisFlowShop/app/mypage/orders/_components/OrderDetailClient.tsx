@@ -966,13 +966,13 @@ export default function OrderDetailClient({
                       </p>
                       {stringServiceItemCount > 1 && (
                         <p className="mt-1 text-xs text-warning">
-                          (상품 기준으로는 교체 서비스 대상 스트링이{" "}
+                          (상품 기준으로는 교체서비스 대상 스트링이{" "}
                           {stringServiceItemCount}개 포함되어 있습니다.)
                         </p>
                       )}
                       {hasSubmittedStringingApplication && (
                         <p className="mt-1 text-xs text-warning">
-                          이미 교체 서비스 접수가 완료된 주문이며, 남은 대상에
+                          이미 교체서비스 접수가 완료된 주문이며, 남은 대상에
                           한해 추가 신청이 가능합니다.
                         </p>
                       )}
@@ -1002,10 +1002,10 @@ export default function OrderDetailClient({
                     </div>
                     <div>
                       <p className="font-semibold text-success">
-                        이 주문으로 교체 서비스 신청이 완료되었습니다.
+                        이 주문으로 교체서비스 신청이 완료되었습니다.
                       </p>
                       <p className="text-sm text-success">
-                        이 주문에는 교체 서비스 대상 스트링이{" "}
+                        이 주문에는 교체서비스 대상 스트링이{" "}
                         <span className="font-semibold">
                           {stringServiceItemCount}개
                         </span>{" "}

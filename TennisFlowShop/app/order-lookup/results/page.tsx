@@ -525,8 +525,8 @@ export default function OrderLookupResultsPage() {
                                   <div className="flex flex-col items-end gap-2">
                                     <p className="text-xs text-muted-foreground">
                                       {isVisitPickup
-                                        ? "방문수령 주문의 장착 신청이 가능합니다."
-                                        : "택배 기반 장착 서비스 신청이 가능합니다."}
+                                        ? "방문수령 주문의 교체서비스 신청이 가능합니다."
+                                        : "택배 기반 교체서비스 신청이 가능합니다."}
                                     </p>
                                     <Button
                                       className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-sm transition-all duration-200 hover:shadow-md"
@@ -538,8 +538,8 @@ export default function OrderLookupResultsPage() {
                                     >
                                       <ShoppingBag className="w-4 h-4 mr-2" />
                                       {isVisitPickup
-                                        ? "스트링 장착 신청"
-                                        : "택배 장착 서비스 신청"}
+                                        ? "교체서비스 신청하기"
+                                        : "교체서비스 신청하기"}
                                     </Button>
                                   </div>
                                 ) : (
