@@ -843,7 +843,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                 </>
               ) : (
                 <>
-                  <p className="text-sm text-muted-foreground">포인트/패키지 연동은 온��인 회원 연결 후 사용할 수 있습니다.</p>
+                  <p className="text-sm text-muted-foreground">포인트/패키지 연동은 온라인 회원 연결 후 사용할 수 있습니다.</p>
 
                   {/* Search Form */}
                   <form
