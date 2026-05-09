@@ -175,13 +175,13 @@ function StatCard({ label, value, icon: Icon, variant = "default" }: { label: st
 
 function StatusBadge({ status, labels }: { status: string; labels: Record<string, string> }) {
   const statusStyles: Record<string, string> = {
-    received: "bg-blue-500/10 text-blue-600 border-blue-500/20",
-    in_progress: "bg-amber-500/10 text-amber-600 border-amber-500/20",
-    completed: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
+    received: "bg-info/10 text-info border-info/20",
+    in_progress: "bg-warning/10 text-warning border-warning/20",
+    completed: "bg-success/10 text-success border-success/20",
     picked_up: "bg-primary/10 text-primary border-primary/20",
     canceled: "bg-muted text-muted-foreground border-border",
-    pending: "bg-amber-500/10 text-amber-600 border-amber-500/20",
-    paid: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
+    pending: "bg-warning/10 text-warning border-warning/20",
+    paid: "bg-success/10 text-success border-success/20",
     refunded: "bg-destructive/10 text-destructive border-destructive/20",
   };
   return <span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium ${statusStyles[status] || "bg-muted text-muted-foreground border-border"}`}>{labels[status] || status}</span>;
@@ -189,7 +189,7 @@ function StatusBadge({ status, labels }: { status: string; labels: Record<string
 
 function Message({ type, children }: { type: "success" | "error" | "info"; children: ReactNode }) {
   const styles = {
-    success: "bg-emerald-500/10 text-emerald-700 border-emerald-500/20",
+    success: "bg-success/10 text-success border-success/20",
     error: "bg-destructive/10 text-destructive border-destructive/20",
     info: "bg-primary/10 text-primary border-primary/20",
   };
@@ -720,7 +720,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
       </div>
 
       {/* Customer Quick Info Banner */}
-      <div className="rounded-xl border border-primary/20 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 p-5">
+      <div className="rounded-xl border border-primary/20 bg-primary/5 p-5">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-4">
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/20 text-primary">
@@ -744,7 +744,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {item.linkedUserId ? (
-              <Badge className="bg-emerald-500/10 text-emerald-700 border-emerald-500/20">
+              <Badge className="bg-success/10 text-success border-success/20">
                 <Link2 className="mr-1.5 h-3.5 w-3.5" />
                 온라인 연결됨
               </Badge>
@@ -810,7 +810,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
               description="포인트/패키지 연동을 위한 회원 연결"
               action={
                 item.linkedUserId ? (
-                  <Badge className="bg-emerald-500/10 text-emerald-700 border-emerald-500/20">연결됨</Badge>
+                  <Badge className="bg-success/10 text-success border-success/20">연결됨</Badge>
                 ) : (
                   <Badge variant="outline" className="text-muted-foreground">
                     미연결
@@ -822,9 +822,9 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
               {item.linkedUserId ? (
                 <>
                   {/* Linked User Info */}
-                  <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-4">
+                  <div className="rounded-lg border border-success/20 bg-success/5 p-4">
                     <div className="flex items-start gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-600">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-success/20 text-success">
                         <User className="h-5 w-5" />
                       </div>
                       <div className="flex-1 min-w-0">
@@ -909,7 +909,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                         return (
                           <div
                             key={candidate.id}
-                            className={`rounded-lg border p-4 transition-colors ${isLinkedToOther ? "border-destructive/30 bg-destructive/5" : isLinkedToCurrent ? "border-emerald-500/30 bg-emerald-500/5" : "border-border/40 hover:bg-muted/30"}`}
+                            className={`rounded-lg border p-4 transition-colors ${isLinkedToOther ? "border-destructive/30 bg-destructive/5" : isLinkedToCurrent ? "border-success/30 bg-success/5" : "border-border/40 hover:bg-muted/30"}`}
                           >
                             <div className="flex items-start justify-between gap-3">
                               <div className="min-w-0 flex-1">
@@ -1016,7 +1016,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
               icon={Package}
               title="패키지/서비스권"
               description="보유 패키지 현황"
-              action={canUseLinkedFeatures && usablePasses.length > 0 ? <Badge className="bg-emerald-500/10 text-emerald-700 border-emerald-500/20">{usablePasses.length}개 사용 가능</Badge> : null}
+              action={canUseLinkedFeatures && usablePasses.length > 0 ? <Badge className="bg-success/10 text-success border-success/20">{usablePasses.length}개 사용 가능</Badge> : null}
             />
             <div className="p-6">
               {!canUseLinkedFeatures ? (
@@ -1033,7 +1033,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                       <div key={pass.id} className={`rounded-lg border p-4 transition-colors ${usable ? "border-primary/30 bg-primary/5 hover:bg-primary/10" : "border-border/40 bg-muted/20 text-muted-foreground"}`}>
                         <div className="flex items-start justify-between gap-2">
                           <p className="font-medium text-foreground">{getPassLabel(pass)}</p>
-                          <Badge variant={usable ? "secondary" : "outline"} className={usable ? "bg-emerald-500/10 text-emerald-700" : ""}>
+                          <Badge variant={usable ? "secondary" : "outline"} className={usable ? "bg-success/10 text-success" : ""}>
                             {usable ? "사용 가능" : pass.status || "비활성"}
                           </Badge>
                         </div>
@@ -1286,10 +1286,10 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                           <div className="space-y-3">
                             <h4 className="text-sm font-medium text-foreground">포인트</h4>
                             <div className="flex flex-wrap gap-2">
-                              <Badge variant={hasGrant ? "secondary" : "outline"} className={hasGrant ? "bg-emerald-500/10 text-emerald-700" : ""}>
+                              <Badge variant={hasGrant ? "secondary" : "outline"} className={hasGrant ? "bg-success/10 text-success" : ""}>
                                 적립 {formatPoints(record.points?.earn)}
                               </Badge>
-                              <Badge variant={hasDeduct ? "secondary" : "outline"} className={hasDeduct ? "bg-amber-500/10 text-amber-700" : ""}>
+                              <Badge variant={hasDeduct ? "secondary" : "outline"} className={hasDeduct ? "bg-warning/10 text-warning" : ""}>
                                 사용 {formatPoints(record.points?.use)}
                               </Badge>
                             </div>
@@ -1336,8 +1336,8 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                           <div className="space-y-3">
                             <h4 className="text-sm font-medium text-foreground">패키지</h4>
                             {hasPackageUsage ? (
-                              <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3">
-                                <Badge className="bg-emerald-500/10 text-emerald-700 border-emerald-500/20">
+                              <div className="rounded-lg border border-success/30 bg-success/5 p-3">
+                                <Badge className="bg-success/10 text-success border-success/20">
                                   <Check className="mr-1.5 h-3.5 w-3.5" />
                                   패키지 1회 사용 완료
                                 </Badge>
