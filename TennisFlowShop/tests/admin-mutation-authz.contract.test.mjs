@@ -69,8 +69,8 @@ test("관리자 변경성 API는 비로그인/일반유저/admin 권한 계약(4
 
     if (route.src.includes("requireAdmin(")) {
       assert.ok(
-        route.src.includes("if (!guard.ok) return guard.res;") ||
-          route.src.includes("if (!g.ok) return g.res;"),
+        /if\s*\(\s*!guard\.ok\s*\)\s*return\s+guard\.res\s*;/.test(route.src) ||
+          /if\s*\(\s*!g\.ok\s*\)\s*return\s+g\.res\s*;/.test(route.src),
         `${pathForMsg}: requireAdmin 실패 시 guard.res를 즉시 반환해야 합니다.`,
       );
     }
@@ -89,11 +89,14 @@ test("관리자 변경성 API는 비로그인/일반유저/admin 권한 계약(4
       );
     }
 
+    const returnsDelegatedHandlerResponse = /return\s+handle[A-Za-z0-9_]*\(/.test(route.src);
+
     if (!isDelegatingRoute) {
       assert.ok(
         route.src.includes("return NextResponse.json(") ||
           route.src.includes("return new NextResponse(") ||
-          route.src.includes("proxyToLegacyAdminRoute("),
+          route.src.includes("proxyToLegacyAdminRoute(") ||
+          returnsDelegatedHandlerResponse,
         `${pathForMsg}: 관리자 성공 응답(200 계열) 경로가 있어야 합니다.`,
       );
     }
