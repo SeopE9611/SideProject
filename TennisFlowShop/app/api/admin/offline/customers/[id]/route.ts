@@ -77,7 +77,14 @@ function sanitizePass(doc: Record<string, any>, now = new Date()) {
   };
 }
 
+function getPackageSaleSourceLabel(doc: Record<string, any>) {
+  if (doc.meta?.source === "offline_admin" || doc.meta?.channel === "offline") return "오프라인 판매";
+  if (doc.meta?.source === "online" || doc.paymentInfo?.provider) return "온라인/기존 주문";
+  return "기타";
+}
+
 function sanitizePackageSale(doc: Record<string, any>) {
+  const source = doc.meta?.source ?? null;
   return {
     id: String(doc._id),
     packageName: doc.packageInfo?.title ?? "교체 서비스 패키지",
@@ -87,7 +94,8 @@ function sanitizePackageSale(doc: Record<string, any>) {
     paymentStatus: doc.paymentStatus ?? null,
     paidAt: doc.paymentInfo?.approvedAt instanceof Date ? doc.paymentInfo.approvedAt.toISOString() : doc.meta?.paidAt ?? null,
     createdAt: doc.createdAt instanceof Date ? doc.createdAt.toISOString() : doc.createdAt ?? null,
-    source: doc.meta?.source ?? null,
+    source,
+    sourceLabel: getPackageSaleSourceLabel(doc),
   };
 }
 

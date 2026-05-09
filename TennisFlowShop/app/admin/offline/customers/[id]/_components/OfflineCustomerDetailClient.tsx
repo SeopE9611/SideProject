@@ -179,8 +179,10 @@ const PACKAGE_SELL_ERROR_MESSAGES: Record<string, string> = {
   "invalid price": "판매 금액은 0원 이상이어야 합니다.",
   "invalid payment method": "결제수단을 확인해주세요.",
   "invalid validity days": "유효기간 일수는 1 이상이어야 합니다.",
+  "package option not found": "선택한 패키지 옵션을 찾을 수 없습니다.",
   "invalid package option": "선택한 패키지 옵션을 사용할 수 없습니다.",
   "package order creation failed": "패키지 주문 생성에 실패했습니다.",
+  "package order created but pass issuance failed": "패키지 주문은 생성됐지만 이용권 발급에 실패했습니다. 관리자 보정이 필요합니다.",
   "package pass issuance failed": "패키지 판매/발급에 실패했습니다.",
 };
 
@@ -255,6 +257,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
   const packageOptions = (packageSettings?.packageConfigs ?? []).filter((pkg) => pkg.isActive);
   const canUseLinkedFeatures = !!item?.linkedUserId && !!item?.linkedUser;
   const usablePasses = passes.filter(isUsablePass);
+  const isPackageOptionSelected = !!packageSellForm.packageTypeId;
 
   function updatePointForm(recordId: string, patch: Partial<PointFormState>) {
     setPointForms((prev) => {
@@ -713,25 +716,25 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                       </option>
                     ))}
                   </select>
-                  <p className="text-xs text-muted-foreground">옵션 선택 시 패키지명, 횟수, 유효기간, 판매 금액을 자동 입력합니다.</p>
+                  <p className="text-xs text-muted-foreground">옵션 선택 시 패키지명, 횟수, 유효기간, 판매 금액을 자동 입력하며 서버 설정값 기준으로 저장됩니다. 직접 수정하려면 수동 입력을 선택하세요.</p>
                 </div>
               ) : null}
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
                 <div className="space-y-1.5">
                   <Label htmlFor="offline-package-name">패키지명</Label>
-                  <Input id="offline-package-name" value={packageSellForm.packageName} onChange={(e) => updatePackageSellForm({ packageName: e.target.value })} disabled={isSellingPackage} placeholder="예: 10회권" />
+                  <Input id="offline-package-name" value={packageSellForm.packageName} onChange={(e) => updatePackageSellForm({ packageName: e.target.value })} disabled={isSellingPackage || isPackageOptionSelected} placeholder="예: 10회권" />
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="offline-package-sessions">이용 횟수 / 세션 수</Label>
-                  <Input id="offline-package-sessions" type="number" min={1} step={1} value={packageSellForm.sessions} onChange={(e) => updatePackageSellForm({ sessions: e.target.value })} disabled={isSellingPackage} placeholder="예: 10" />
+                  <Input id="offline-package-sessions" type="number" min={1} step={1} value={packageSellForm.sessions} onChange={(e) => updatePackageSellForm({ sessions: e.target.value })} disabled={isSellingPackage || isPackageOptionSelected} placeholder="예: 10" />
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="offline-package-validity">유효기간 일수</Label>
-                  <Input id="offline-package-validity" type="number" min={1} step={1} value={packageSellForm.validityDays} onChange={(e) => updatePackageSellForm({ validityDays: e.target.value })} disabled={isSellingPackage} placeholder="예: 365" />
+                  <Input id="offline-package-validity" type="number" min={1} step={1} value={packageSellForm.validityDays} onChange={(e) => updatePackageSellForm({ validityDays: e.target.value })} disabled={isSellingPackage || isPackageOptionSelected} placeholder="예: 365" />
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="offline-package-price">판매 금액</Label>
-                  <Input id="offline-package-price" type="number" min={0} step={1000} value={packageSellForm.price} onChange={(e) => updatePackageSellForm({ price: e.target.value })} disabled={isSellingPackage} placeholder="예: 100000" />
+                  <Input id="offline-package-price" type="number" min={0} step={1000} value={packageSellForm.price} onChange={(e) => updatePackageSellForm({ price: e.target.value })} disabled={isSellingPackage || isPackageOptionSelected} placeholder="예: 100000" />
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="offline-package-payment-method">결제수단</Label>
@@ -770,9 +773,9 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
           )}
           {packageSellMessage ? <p className={packageSellMessageType === "error" ? "text-sm text-destructive" : "text-sm text-foreground"}>{packageSellMessage}</p> : null}
           <div className="space-y-2">
-            <p className="font-medium">패키지 판매 내역</p>
+            <p className="font-medium">패키지 판매/주문 내역</p>
             {packageSales.length === 0 ? (
-              <p className="text-muted-foreground">표시할 패키지 판매 내역이 없습니다.</p>
+              <p className="text-muted-foreground">표시할 패키지 판매/주문 내역이 없습니다.</p>
             ) : (
               <div className="overflow-x-auto rounded-md border">
                 <table className="w-full min-w-[720px] text-left text-sm">
@@ -796,7 +799,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                         <td className="px-3 py-2">{PAYMENT_METHOD_LABELS[sale.paymentMethod as OfflinePaymentMethod] ?? sale.paymentMethod ?? "-"}</td>
                         <td className="px-3 py-2">{sale.paymentStatus || "-"}</td>
                         <td className="px-3 py-2">{formatDate(sale.paidAt || sale.createdAt)}</td>
-                        <td className="px-3 py-2">{sale.source === "offline_admin" ? "오프라인 판매" : sale.source || "온라인/기존"}</td>
+                        <td className="px-3 py-2"><Badge variant={sale.source === "offline_admin" ? "secondary" : "outline"}>{sale.sourceLabel || (sale.source === "offline_admin" ? "오프라인 판매" : "온라인/기존 주문")}</Badge></td>
                       </tr>
                     ))}
                   </tbody>
