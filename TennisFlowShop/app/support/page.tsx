@@ -4,10 +4,35 @@ import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import { badgeBaseOutlined, badgeSizeSm, getAnswerStatusBadgeSpec, getNoticeCategoryBadgeSpec, getQnaCategoryBadgeSpec } from "@/lib/badge-style";
-import { ArrowRight, Bell, Eye, Gift, Headset, ImageIcon, Lock, MessageSquare, Paperclip, Pin, Plus } from "lucide-react";
+import {
+  badgeBaseOutlined,
+  badgeSizeSm,
+  getAnswerStatusBadgeSpec,
+  getNoticeCategoryBadgeSpec,
+  getQnaCategoryBadgeSpec,
+} from "@/lib/badge-style";
+import {
+  ArrowRight,
+  Bell,
+  Eye,
+  Gift,
+  Headset,
+  ImageIcon,
+  Lock,
+  MessageSquare,
+  Paperclip,
+  Pin,
+  Plus,
+} from "lucide-react";
 import Link from "next/link";
 import SupportFaqSearch from "@/app/support/_components/SupportFaqSearch";
 import { useState } from "react";
@@ -40,7 +65,12 @@ type QnaItem = {
   hasFile?: boolean;
 };
 
-type BoardsMainRes = { ok?: boolean; notices?: NoticeItem[]; events?: NoticeItem[]; qna?: QnaItem[] };
+type BoardsMainRes = {
+  ok?: boolean;
+  notices?: NoticeItem[];
+  events?: NoticeItem[];
+  qna?: QnaItem[];
+};
 type MeRes = { id?: string; role?: string };
 
 async function fetcher<T>(url: string): Promise<T> {
@@ -48,7 +78,13 @@ async function fetcher<T>(url: string): Promise<T> {
   const data = (await res.json().catch(() => null)) as any;
 
   if (!res.ok) {
-    const message = typeof data === "object" && data !== null && "error" in data && typeof (data as { error?: unknown }).error === "string" ? (data as { error: string }).error : `${res.status} ${res.statusText}`;
+    const message =
+      typeof data === "object" &&
+      data !== null &&
+      "error" in data &&
+      typeof (data as { error?: unknown }).error === "string"
+        ? (data as { error: string }).error
+        : `${res.status} ${res.statusText}`;
     throw new Error(message);
   }
 
@@ -63,7 +99,12 @@ async function fetcherAllow401<T>(url: string): Promise<T | null> {
   if (res.status === 401) return null;
 
   if (!res.ok) {
-    const message = typeof data === "object" && data !== null && typeof (data as { error: string }).error === "string" ? (data as { error: string }).error : `${res.status} ${res.statusText}`;
+    const message =
+      typeof data === "object" &&
+      data !== null &&
+      typeof (data as { error: string }).error === "string"
+        ? (data as { error: string }).error
+        : `${res.status} ${res.statusText}`;
     throw new Error(message);
   }
 
@@ -78,16 +119,24 @@ const fmt = (v: string | Date) =>
     })
     .replace(/\.\s/g, ".")
     .replace(/\.$/, "");
-const supportMobileTitleClampClass = "flex-1 min-w-0 line-clamp-2 text-sm font-semibold leading-snug sm:line-clamp-1 sm:text-base";
-const supportMobileMetaWrapClass = "flex flex-wrap items-center gap-x-3.5 gap-y-1 text-xs text-muted-foreground";
+const supportCardHeaderTitleClass = "flex min-w-0 items-center gap-2 sm:gap-3";
+const supportCardHeaderActionClass = "mt-3 flex flex-wrap items-center gap-2";
+const supportMobileTitleClampClass =
+  "min-w-0 flex-1 line-clamp-2 text-sm font-semibold leading-snug sm:line-clamp-1 sm:text-base";
+const supportMobileMetaWrapClass =
+  "flex flex-wrap items-center gap-x-3.5 gap-y-1 text-xs text-muted-foreground";
 const supportMobileActionBadgeWrapClass = "shrink-0 self-start";
-const supportQnaInlineTitleClass = "min-w-0 flex-1 truncate text-sm font-semibold leading-snug sm:text-base";
+const supportQnaInlineTitleClass =
+  "min-w-0 flex-1 line-clamp-2 text-sm font-semibold leading-snug sm:line-clamp-1 sm:text-base";
 
 function FiveLineSkeleton() {
   return (
     <div className="space-y-4">
       {[...Array(5)].map((_, i) => (
-        <div key={i} className="border-b border-border last:border-0 pb-4 last:pb-0">
+        <div
+          key={i}
+          className="border-b border-border last:border-0 pb-4 last:pb-0"
+        >
           <div className="space-y-2">
             <Skeleton className="h-5 w-3/4" />
             <div className="flex items-center space-x-4">
@@ -101,50 +150,95 @@ function FiveLineSkeleton() {
   );
 }
 
-function ErrorBox({ message = "데이터를 불러오는 중 오류가 발생했습니다.", onRetry }: { message?: string; onRetry?: () => void }) {
-  return <AsyncState kind="error" variant="inline" title={message} onAction={onRetry} />;
+function ErrorBox({
+  message = "데이터를 불러오는 중 오류가 발생했습니다.",
+  onRetry,
+}: {
+  message?: string;
+  onRetry?: () => void;
+}) {
+  return (
+    <AsyncState
+      kind="error"
+      variant="inline"
+      title={message}
+      onAction={onRetry}
+    />
+  );
 }
 
 // ---------------------- 공지 카드 ----------------------
 
-function NoticeCard({ items, isAdmin, isLoading, error, onRetry, mode = "notice" }: { items: NoticeItem[]; isAdmin?: boolean; isLoading?: boolean; error?: any; onRetry?: () => void; mode?: "notice" | "event" }) {
+function NoticeCard({
+  items,
+  isAdmin,
+  isLoading,
+  error,
+  onRetry,
+  mode = "notice",
+}: {
+  items: NoticeItem[];
+  isAdmin?: boolean;
+  isLoading?: boolean;
+  error?: any;
+  onRetry?: () => void;
+  mode?: "notice" | "event";
+}) {
   const supportQuery = "from=support&returnTo=%2Fsupport";
   const isEventMode = mode === "event";
   const basePath = isEventMode ? "/board/event" : "/board/notice";
   const writePath = isEventMode ? "/board/event/write" : "/board/notice/write";
   const cardTitle = isEventMode ? "이벤트" : "고객센터 공지사항";
   const writeLabel = isEventMode ? "이벤트 쓰기" : "공지 쓰기";
-  const listLabel = isEventMode ? "이벤트 확인하기" : "공지사항 확인하기";
-  const emptyTitle = isEventMode ? "등록된 이벤트가 없습니다." : "등록된 공지가 없습니다.";
-  const emptyDescription = isEventMode ? "새 이벤트가 등록되면 이곳에서 바로 확인할 수 있어요." : "새 소식이 등록되면 이곳에서 바로 확인할 수 있어요.";
+  const listLabel = "전체 보기";
+  const emptyTitle = isEventMode
+    ? "등록된 이벤트가 없습니다."
+    : "등록된 공지가 없습니다.";
+  const emptyDescription = isEventMode
+    ? "새로운 이벤트가 등록되면 이곳에 표시됩니다."
+    : "새 소식이 등록되면 이곳에서 바로 확인할 수 있어요.";
+  const shouldShowEventHint =
+    isEventMode && items.length > 0 && items.length < 3;
   const HeaderIcon = isEventMode ? Gift : Bell;
-  const loadErrorMessage = isEventMode ? "이벤트 불러오기에 실패했습니다." : "공지 불러오기에 실패했습니다.";
+  const loadErrorMessage = isEventMode
+    ? "이벤트 불러오기에 실패했습니다."
+    : "공지 불러오기에 실패했습니다.";
   const pinnedLabel = isEventMode ? "고정 이벤트" : "고정 공지";
   return (
     <Card className="border border-border bg-card shadow-sm h-full">
       <CardHeader className="bg-muted/30 border-b p-4 sm:p-5 md:p-6">
-        <CardTitle className="flex flex-wrap items-center gap-x-3 gap-y-2">
-          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-            <HeaderIcon className="h-5 w-5 text-primary" />
-            <span className="text-lg sm:text-xl md:text-2xl font-semibold leading-tight break-keep">{cardTitle}</span>
-          </div>
-          <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
-            {isAdmin && (
-              <Button asChild size="sm" variant="ghost" className="h-8 px-2 sm:px-3 border-border whitespace-nowrap">
-                <Link href={writePath}>
-                  <Plus className="h-4 w-4 mr-1" />
-                  {writeLabel}
-                </Link>
-              </Button>
-            )}
-            <Button asChild size="sm" variant="ghost" className="h-8 px-2 sm:px-3 whitespace-nowrap">
-              <Link href={basePath}>
-                {listLabel}
-                <ArrowRight className="ml-1 h-4 w-4" />
+        <CardTitle className={supportCardHeaderTitleClass}>
+          <HeaderIcon className="h-5 w-5 shrink-0 text-primary" />
+          <span className="min-w-0 text-lg font-semibold leading-tight break-keep sm:text-xl md:text-2xl">
+            {cardTitle}
+          </span>
+        </CardTitle>
+        <div className={supportCardHeaderActionClass}>
+          {isAdmin && (
+            <Button
+              asChild
+              size="sm"
+              variant="ghost"
+              className="min-h-9 px-3 border-border whitespace-nowrap"
+            >
+              <Link href={writePath}>
+                <Plus className="h-4 w-4 mr-1" />
+                {writeLabel}
               </Link>
             </Button>
-          </div>
-        </CardTitle>
+          )}
+          <Button
+            asChild
+            size="sm"
+            variant="ghost"
+            className="min-h-9 px-3 whitespace-nowrap"
+          >
+            <Link href={basePath}>
+              {listLabel}
+              <ArrowRight className="ml-1 h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
       </CardHeader>
       <CardContent className="p-4 md:p-6">
         <div className="space-y-4">
@@ -153,60 +247,107 @@ function NoticeCard({ items, isAdmin, isLoading, error, onRetry, mode = "notice"
           ) : isLoading ? (
             <FiveLineSkeleton />
           ) : items.length === 0 ? (
-            <AsyncState kind="empty" variant="card" title={emptyTitle} description={emptyDescription} />
+            <AsyncState
+              kind="empty"
+              variant="card"
+              title={emptyTitle}
+              description={emptyDescription}
+            />
           ) : (
-            items.map((notice) => (
-              <div key={notice._id} className="border-b border-border last:border-0 pb-4 last:pb-0">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1 min-w-0">
-                    {/* 제목 줄 */}
-                    <div className="mb-1 flex flex-wrap items-start justify-between gap-2">
-                      <div className="flex items-center gap-2 flex-wrap min-w-0">
-                        {!!notice.category && (
-                          <Badge variant={getNoticeCategoryBadgeSpec(notice.category).variant} className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`} title={notice.category ?? undefined}>
-                            {notice.category}
-                          </Badge>
-                        )}
+            <>
+              {items.map((notice) => (
+                <div
+                  key={notice._id}
+                  className="border-b border-border last:border-0 pb-4 last:pb-0"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1 min-w-0">
+                      {/* 제목 줄 */}
+                      <div className="mb-1 flex min-w-0 items-start gap-2">
+                        <div className="flex shrink-0 flex-wrap items-center gap-1.5 pt-0.5">
+                          {!!notice.category && (
+                            <Badge
+                              variant={
+                                getNoticeCategoryBadgeSpec(notice.category)
+                                  .variant
+                              }
+                              className={`${badgeBaseOutlined} ${badgeSizeSm}`}
+                              title={notice.category ?? undefined}
+                            >
+                              {notice.category}
+                            </Badge>
+                          )}
 
-                        {notice.isPinned && (
-                          <Badge variant="brand" className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`} title={pinnedLabel} aria-label={pinnedLabel}>
-                            <Pin className="h-3 w-3" />
-                          </Badge>
-                        )}
+                          {notice.isPinned && (
+                            <Badge
+                              variant="brand"
+                              className={`${badgeBaseOutlined} ${badgeSizeSm}`}
+                              title={pinnedLabel}
+                              aria-label={pinnedLabel}
+                            >
+                              <Pin className="h-3 w-3" />
+                            </Badge>
+                          )}
+                        </div>
 
                         {/* 말줄임 제목 (부모 flex-1 + min-w-0 중요) */}
-                        <Link href={`${basePath}/${notice._id}?${supportQuery}`} className={`${supportMobileTitleClampClass} text-foreground transition-colors hover:text-foreground`}>
+                        <Link
+                          href={`${basePath}/${notice._id}?${supportQuery}`}
+                          className={`${supportMobileTitleClampClass} text-foreground transition-colors hover:text-foreground`}
+                          title={notice.title}
+                        >
                           {notice.title}
                         </Link>
                       </div>
-                    </div>
 
-                    {/* 메타 정보 */}
-                    <div className={supportMobileMetaWrapClass}>
-                      <span>{fmt(notice.createdAt)}</span>
-                      <span className="inline-flex items-center gap-1">
-                        <Eye className="h-3.5 w-3.5" />
-                        {notice.viewCount ?? 0}
-                      </span>
-                      {(notice.hasImage || notice.hasFile) && (
-                        <span className="flex items-center gap-1.5" aria-label="첨부 정보">
-                          {notice.hasImage && (
-                            <span title="이미지 첨부" aria-label="이미지 첨부">
-                              <ImageIcon className="h-3.5 w-3.5" aria-hidden="true" />
-                            </span>
-                          )}
-                          {notice.hasFile && (
-                            <span title="첨부파일 있음" aria-label="첨부파일 있음">
-                              <Paperclip className="h-3.5 w-3.5" aria-hidden="true" />
-                            </span>
-                          )}
+                      {/* 메타 정보 */}
+                      <div className={supportMobileMetaWrapClass}>
+                        <span>{fmt(notice.createdAt)}</span>
+                        <span className="inline-flex items-center gap-1">
+                          <Eye className="h-3.5 w-3.5" />
+                          {notice.viewCount ?? 0}
                         </span>
-                      )}
+                        {(notice.hasImage || notice.hasFile) && (
+                          <span
+                            className="flex items-center gap-1.5"
+                            aria-label="첨부 정보"
+                          >
+                            {notice.hasImage && (
+                              <span
+                                title="이미지 첨부"
+                                aria-label="이미지 첨부"
+                              >
+                                <ImageIcon
+                                  className="h-3.5 w-3.5"
+                                  aria-hidden="true"
+                                />
+                              </span>
+                            )}
+                            {notice.hasFile && (
+                              <span
+                                title="첨부파일 있음"
+                                aria-label="첨부파일 있음"
+                              >
+                                <Paperclip
+                                  className="h-3.5 w-3.5"
+                                  aria-hidden="true"
+                                />
+                              </span>
+                            )}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))
+              ))}
+              {shouldShowEventHint && (
+                <div className="rounded-lg border border-dashed border-border bg-muted/20 px-4 py-3 text-sm text-muted-foreground">
+                  진행 중인 이벤트를 확인해보세요. 새로운 이벤트가 등록되면
+                  이곳에 함께 표시됩니다.
+                </div>
+              )}
+            </>
           )}
         </div>
       </CardContent>
@@ -216,7 +357,21 @@ function NoticeCard({ items, isAdmin, isLoading, error, onRetry, mode = "notice"
 
 // ---------------------- Q&A 카드 ----------------------
 
-function QnaCard({ items, viewerId, isAdmin, isLoading, error, onRetry }: { items: QnaItem[]; viewerId?: string | null; isAdmin?: boolean; isLoading?: boolean; error?: any; onRetry?: () => void }) {
+function QnaCard({
+  items,
+  viewerId,
+  isAdmin,
+  isLoading,
+  error,
+  onRetry,
+}: {
+  items: QnaItem[];
+  viewerId?: string | null;
+  isAdmin?: boolean;
+  isLoading?: boolean;
+  error?: any;
+  onRetry?: () => void;
+}) {
   const [secretBlock, setSecretBlock] = useState<{
     open: boolean;
     item?: QnaItem;
@@ -226,29 +381,42 @@ function QnaCard({ items, viewerId, isAdmin, isLoading, error, onRetry }: { item
   return (
     <Card className="border border-border bg-card shadow-sm h-full">
       <CardHeader className="bg-muted/30 border-b p-4 sm:p-5 md:p-6">
-        <CardTitle className="flex flex-wrap items-center gap-x-3 gap-y-2">
-          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-            <MessageSquare className="h-5 w-5 text-success" />
-            <span className="text-lg sm:text-xl md:text-2xl font-semibold leading-tight break-keep">Q&amp;A 문의</span>
-          </div>
-          <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
-            <Button asChild size="sm" variant="default" className="h-8 px-2 sm:px-3 whitespace-nowrap">
-              <Link href="/board/qna/write">
-                <Plus className="h-4 w-4 mr-1" />
-                Q&amp;A 문의하기
-              </Link>
-            </Button>
-            <Button asChild size="sm" variant="ghost" className="h-8 px-2 sm:px-3 whitespace-nowrap">
-              <Link href="/board/qna">
-                전체 문의 보기
-                <ArrowRight className="ml-1 h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
+        <CardTitle className={supportCardHeaderTitleClass}>
+          <MessageSquare className="h-5 w-5 shrink-0 text-success" />
+          <span className="min-w-0 text-lg font-semibold leading-tight break-keep sm:text-xl md:text-2xl">
+            Q&amp;A 문의
+          </span>
         </CardTitle>
+        <div className={supportCardHeaderActionClass}>
+          <Button
+            asChild
+            size="sm"
+            variant="default"
+            className="min-h-9 px-3 whitespace-nowrap"
+          >
+            <Link href="/board/qna/write">
+              <Plus className="h-4 w-4 mr-1" />
+              Q&amp;A 문의하기
+            </Link>
+          </Button>
+          <Button
+            asChild
+            size="sm"
+            variant="ghost"
+            className="min-h-9 px-3 whitespace-nowrap"
+          >
+            <Link href="/board/qna">
+              전체 보기
+              <ArrowRight className="ml-1 h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
       </CardHeader>
       <CardContent className="p-4 md:p-6">
-        <Dialog open={secretBlock.open} onOpenChange={(open) => setSecretBlock((p) => ({ ...p, open }))}>
+        <Dialog
+          open={secretBlock.open}
+          onOpenChange={(open) => setSecretBlock((p) => ({ ...p, open }))}
+        >
           <DialogContent>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
@@ -257,9 +425,18 @@ function QnaCard({ items, viewerId, isAdmin, isLoading, error, onRetry }: { item
               </DialogTitle>
               <DialogDescription className="space-y-2">
                 <span className="block">
-                  이 문의는 <b>비밀글</b>로 등록되어 <b>작성자와 관리자만</b> 확인할 수 있습니다.
+                  이 문의는 <b>비밀글</b>로 등록되어 <b>작성자와 관리자만</b>{" "}
+                  확인할 수 있습니다.
                 </span>
-                {!viewerId ? <span className="block">작성자 계정이라면 로그인 후 다시 확인해 주세요.</span> : <span className="block">현재 계정으로는 이 문의를 열람할 수 없습니다.</span>}
+                {!viewerId ? (
+                  <span className="block">
+                    작성자 계정이라면 로그인 후 다시 확인해 주세요.
+                  </span>
+                ) : (
+                  <span className="block">
+                    현재 계정으로는 이 문의를 열람할 수 없습니다.
+                  </span>
+                )}
               </DialogDescription>
             </DialogHeader>
             <DialogFooter className="flex-wrap gap-2 sm:justify-end">
@@ -271,7 +448,11 @@ function QnaCard({ items, viewerId, isAdmin, isLoading, error, onRetry }: { item
               </Button>
               {!viewerId && secretBlock.item?._id && (
                 <Button asChild>
-                  <Link href={`/login?next=${encodeURIComponent(`/board/qna/${secretBlock.item._id}?${supportQuery}`)}`}>로그인하고 확인</Link>
+                  <Link
+                    href={`/login?next=${encodeURIComponent(`/board/qna/${secretBlock.item._id}?${supportQuery}`)}`}
+                  >
+                    로그인하고 확인
+                  </Link>
                 </Button>
               )}
             </DialogFooter>
@@ -279,14 +460,25 @@ function QnaCard({ items, viewerId, isAdmin, isLoading, error, onRetry }: { item
         </Dialog>
         <div className="space-y-4">
           {error ? (
-            <ErrorBox message="Q&A 불러오기에 실패했습니다." onRetry={onRetry} />
+            <ErrorBox
+              message="Q&A 불러오기에 실패했습니다."
+              onRetry={onRetry}
+            />
           ) : isLoading ? (
             <FiveLineSkeleton />
           ) : items.length === 0 ? (
-            <AsyncState kind="empty" variant="card" title="등록된 문의가 없습니다." description="궁금한 점이 있다면 첫 문의를 남겨주세요." />
+            <AsyncState
+              kind="empty"
+              variant="card"
+              title="등록된 문의가 없습니다."
+              description="궁금한 점이 있다면 첫 문의를 남겨주세요."
+            />
           ) : (
             items.map((qna) => {
-              const canOpenSecret = !qna.isSecret || !!isAdmin || (viewerId && qna.authorId && viewerId === qna.authorId);
+              const canOpenSecret =
+                !qna.isSecret ||
+                !!isAdmin ||
+                (viewerId && qna.authorId && viewerId === qna.authorId);
 
               const RowInner = (
                 <div className="border-b border-border last:border-0 pb-4 last:pb-0">
@@ -294,25 +486,44 @@ function QnaCard({ items, viewerId, isAdmin, isLoading, error, onRetry }: { item
                     <div className="flex-1 min-w-0">
                       {/* 제목 줄 */}
                       <div className="mb-1 flex items-start gap-2">
-                        <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
-                          <Badge variant={getQnaCategoryBadgeSpec(qna.category ?? undefined).variant} className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`} title={qna.category ?? undefined}>
+                        <div className="flex min-w-0 flex-1 items-start gap-2 overflow-hidden">
+                          <Badge
+                            variant={
+                              getQnaCategoryBadgeSpec(qna.category ?? undefined)
+                                .variant
+                            }
+                            className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`}
+                            title={qna.category ?? undefined}
+                          >
                             {qna.category ?? "일반문의"}
                           </Badge>
 
                           {qna.isSecret && (
-                            <Badge variant="secondary" className="shrink-0 text-xs inline-flex items-center gap-1">
+                            <Badge
+                              variant="secondary"
+                              className="shrink-0 text-xs inline-flex items-center gap-1"
+                            >
                               <Lock className="h-3 w-3" />
                               비밀글
                             </Badge>
                           )}
 
-                          <span className={`${supportQnaInlineTitleClass} text-foreground`} title={qna.title}>
+                          <span
+                            className={`${supportQnaInlineTitleClass} text-foreground`}
+                            title={qna.title}
+                          >
                             {qna.title}
                           </span>
                         </div>
 
                         <div className={supportMobileActionBadgeWrapClass}>
-                          <Badge variant={getAnswerStatusBadgeSpec(!!qna.answer).variant} className={`${badgeBaseOutlined} ${badgeSizeSm}`} title={qna.answer ? "답변 완료" : "답변 대기"}>
+                          <Badge
+                            variant={
+                              getAnswerStatusBadgeSpec(!!qna.answer).variant
+                            }
+                            className={`${badgeBaseOutlined} ${badgeSizeSm}`}
+                            title={qna.answer ? "답변 완료" : "답변 대기"}
+                          >
                             {qna.answer ? "답변 완료" : "답변 대기"}
                           </Badge>
                         </div>
@@ -326,15 +537,30 @@ function QnaCard({ items, viewerId, isAdmin, isLoading, error, onRetry }: { item
                           답변 {qna.answer ? 1 : 0}개
                         </span>
                         {(qna.hasImage || qna.hasFile) && (
-                          <span className="flex items-center gap-1.5" aria-label="첨부 정보">
+                          <span
+                            className="flex items-center gap-1.5"
+                            aria-label="첨부 정보"
+                          >
                             {qna.hasImage && (
-                              <span title="이미지 첨부" aria-label="이미지 첨부">
-                                <ImageIcon className="h-3.5 w-3.5" aria-hidden="true" />
+                              <span
+                                title="이미지 첨부"
+                                aria-label="이미지 첨부"
+                              >
+                                <ImageIcon
+                                  className="h-3.5 w-3.5"
+                                  aria-hidden="true"
+                                />
                               </span>
                             )}
                             {qna.hasFile && (
-                              <span title="첨부파일 있음" aria-label="첨부파일 있음">
-                                <Paperclip className="h-3.5 w-3.5" aria-hidden="true" />
+                              <span
+                                title="첨부파일 있음"
+                                aria-label="첨부파일 있음"
+                              >
+                                <Paperclip
+                                  className="h-3.5 w-3.5"
+                                  aria-hidden="true"
+                                />
                               </span>
                             )}
                           </span>
@@ -347,7 +573,12 @@ function QnaCard({ items, viewerId, isAdmin, isLoading, error, onRetry }: { item
               // 비밀글 + 권한 없음: 상세로 안 보내고 모달로 1차 차단
               if (qna.isSecret && !canOpenSecret) {
                 return (
-                  <button key={qna._id} type="button" className="block w-full text-left" onClick={() => setSecretBlock({ open: true, item: qna })}>
+                  <button
+                    key={qna._id}
+                    type="button"
+                    className="block w-full text-left"
+                    onClick={() => setSecretBlock({ open: true, item: qna })}
+                  >
                     {RowInner}
                   </button>
                 );
@@ -355,7 +586,11 @@ function QnaCard({ items, viewerId, isAdmin, isLoading, error, onRetry }: { item
 
               // 권한 있거나 일반글: 상세로 이동
               return (
-                <Link key={qna._id} href={`/board/qna/${qna._id}?${supportQuery}`} className="block">
+                <Link
+                  key={qna._id}
+                  href={`/board/qna/${qna._id}?${supportQuery}`}
+                  className="block"
+                >
                   {RowInner}
                 </Link>
               );
@@ -371,7 +606,10 @@ function QnaCard({ items, viewerId, isAdmin, isLoading, error, onRetry }: { item
 
 export default function SupportPage() {
   // 공지/Q&A 묶어서 가져오는 기존 API 재사용
-  const { data, error, isLoading, mutate } = useSWR<BoardsMainRes>("/api/boards/main", fetcher);
+  const { data, error, isLoading, mutate } = useSWR<BoardsMainRes>(
+    "/api/boards/main",
+    fetcher,
+  );
   const notices = data?.notices ?? [];
   const events = data?.events ?? [];
   const qnas = data?.qna ?? [];
@@ -398,16 +636,39 @@ export default function SupportPage() {
               고객센터
             </h1>
           </div>
-          <p className="text-sm md:text-base text-muted-foreground max-w-xl mx-auto">서비스 이용 중 필요한 안내를 확인하고, 궁금한 내용은 Q&amp;A 문의로 남겨주세요.</p>
+          <p className="text-sm md:text-base text-muted-foreground max-w-xl mx-auto">
+            서비스 이용 중 필요한 안내를 확인하고, 궁금한 내용은 Q&amp;A 문의로
+            남겨주세요.
+          </p>
         </div>
 
         <SupportFaqSearch />
 
-        {/* 카드 2열 레이아웃 */}
-        <div className="grid md:grid-cols-3 gap-4 md:gap-6 items-start">
-          <NoticeCard items={notices} isAdmin={isAdmin} isLoading={isLoading} error={error} onRetry={() => mutate()} />
-          <NoticeCard mode="event" items={events} isAdmin={isAdmin} isLoading={isLoading} error={error} onRetry={() => mutate()} />
-          <QnaCard items={qnas} viewerId={viewerId} isAdmin={isAdmin} isLoading={isLoading} error={error} onRetry={() => mutate()} />
+        {/* 고객센터 하단 카드: 모바일 1열, 중간 폭 2열, 넓은 화면 3열 */}
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-3 items-start">
+          <NoticeCard
+            items={notices}
+            isAdmin={isAdmin}
+            isLoading={isLoading}
+            error={error}
+            onRetry={() => mutate()}
+          />
+          <NoticeCard
+            mode="event"
+            items={events}
+            isAdmin={isAdmin}
+            isLoading={isLoading}
+            error={error}
+            onRetry={() => mutate()}
+          />
+          <QnaCard
+            items={qnas}
+            viewerId={viewerId}
+            isAdmin={isAdmin}
+            isLoading={isLoading}
+            error={error}
+            onRetry={() => mutate()}
+          />
         </div>
       </div>
     </div>
