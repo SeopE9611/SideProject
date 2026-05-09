@@ -440,7 +440,7 @@ export default function RentalsDetailClient({
                 {data.stringingApplicationId ? (
                   <Badge variant="info">신청서 연결됨</Badge>
                 ) : withStringService ? (
-                  <Badge variant="info">교체 서비스 포함</Badge>
+                  <Badge variant="info">교체서비스 포함</Badge>
                 ) : null}
               </div>
             </div>
@@ -705,7 +705,7 @@ export default function RentalsDetailClient({
                   <Wrench className="h-4 w-4 text-muted-foreground" />
                   <div className="flex-1">
                     <p className="text-sm text-foreground/80">
-                      교체 서비스비
+                      교체서비스 비용
                     </p>
                     <p className="font-semibold text-foreground">
                       {stringingFee.toLocaleString()}원

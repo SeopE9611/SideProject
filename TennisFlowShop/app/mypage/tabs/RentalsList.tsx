@@ -242,7 +242,7 @@ export default function RentalsList() {
                   <Badge variant="outline">교체서비스 신청서 연결됨</Badge>
                 ) : null}
                 {!r.stringingApplicationId && r.withStringService ? (
-                  <Badge variant="outline">교체 서비스 포함</Badge>
+                  <Badge variant="outline">교체서비스 포함</Badge>
                 ) : null}
                 <Badge variant="outline">
                   {r.hasReturnShipping
@@ -307,7 +307,7 @@ export default function RentalsList() {
                     <Package className="h-4 w-4 text-muted-foreground" />
                     <div>
                       <div className="text-xs uppercase tracking-wide text-muted-foreground">
-                        교체 서비스
+                        교체서비스 비용
                       </div>
                       <div className="font-medium text-foreground">
                         {stringingFee.toLocaleString()}원
