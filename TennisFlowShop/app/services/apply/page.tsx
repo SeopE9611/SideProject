@@ -1726,7 +1726,7 @@ export default function StringServiceApplyPage() {
         <ApplyHero />
 
         {/* Main Content */}
-        <div className="px-3 bp-sm:px-4 bp-md:px-6 bp-lg:px-6 mx-auto bp-lg:max-w-[1200px] py-8 bp-sm:py-12 bp-lg:py-16">
+        <div className="px-3 bp-sm:px-4 bp-md:px-6 bp-lg:px-6 mx-auto bp-lg:max-w-[1200px] bp-xl:max-w-7xl py-8 bp-sm:py-12 bp-lg:py-16">
           {/* Section Header */}
           <div className="text-center mb-6 bp-sm:mb-8">
             <h2 className="text-xl bp-sm:text-2xl font-semibold text-foreground">
@@ -1738,7 +1738,7 @@ export default function StringServiceApplyPage() {
           </div>
 
           {/* Option Cards */}
-          <div className="grid grid-cols-1 bp-md:grid-cols-2 bp-lg:grid-cols-4 gap-4 bp-sm:gap-5 bp-lg:gap-6 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 bp-md:grid-cols-2 bp-xl:grid-cols-4 gap-4 bp-sm:gap-5 bp-lg:gap-6 max-w-7xl mx-auto">
             {/* Option 1: 스트링 선택 후 신청 */}
             <button
               type="button"
@@ -1754,7 +1754,7 @@ export default function StringServiceApplyPage() {
               </div>
 
               <div className="flex-1">
-                <h3 className="text-base bp-sm:text-lg font-semibold text-foreground mb-1.5">
+                <h3 className="text-base bp-sm:text-lg font-semibold leading-snug break-keep text-foreground mb-1.5">
                   스트링도 새로 구매하고 신청
                 </h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
@@ -1787,7 +1787,7 @@ export default function StringServiceApplyPage() {
               </div>
 
               <div className="flex-1">
-                <h3 className="text-base bp-sm:text-lg font-semibold text-foreground mb-1.5">
+                <h3 className="text-base bp-sm:text-lg font-semibold leading-snug break-keep text-foreground mb-1.5">
                   라켓 구매/대여와 함께 신청
                 </h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
@@ -1828,7 +1828,7 @@ export default function StringServiceApplyPage() {
               </div>
 
               <div className="flex-1">
-                <h3 className="text-base bp-sm:text-lg font-semibold text-foreground mb-1.5">
+                <h3 className="text-base bp-sm:text-lg font-semibold leading-snug break-keep text-foreground mb-1.5">
                   보유 라켓/보유 스트링으로 신청
                 </h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
@@ -1876,7 +1876,7 @@ export default function StringServiceApplyPage() {
               </div>
 
               <div className="flex-1">
-                <h3 className="text-base bp-sm:text-lg font-semibold text-foreground mb-1.5">
+                <h3 className="text-base bp-sm:text-lg font-semibold leading-snug break-keep text-foreground mb-1.5">
                   기존 주문/대여에서 이어서 신청
                 </h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
