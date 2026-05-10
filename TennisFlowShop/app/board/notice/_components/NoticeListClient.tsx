@@ -36,9 +36,9 @@ function AdminNoticeWriteButton({ href, label }: { href: string; label: string }
   if (loading || user?.role !== "admin") return null;
 
   return (
-    <Button asChild size="sm" variant="outline" className="h-9 sm:h-10 text-sm sm:text-base">
+    <Button asChild size="sm" variant="outline" className="h-9 w-full shrink-0 whitespace-nowrap text-sm sm:h-10 sm:w-auto sm:text-base">
       <Link href={href}>
-        <Plus className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
+        <Plus className="mr-1.5 h-4 w-4 shrink-0 sm:mr-2 sm:h-5 sm:w-5" />
         {label}
       </Link>
     </Button>
@@ -94,7 +94,6 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
       .replace(/\.$/, "");
   const noticeMobileTitleClampClass = "flex-1 min-w-0 line-clamp-2 text-sm font-semibold leading-snug sm:line-clamp-1 sm:text-base";
   const noticeMobileMetaWrapClass = "flex flex-wrap items-center gap-x-3.5 gap-y-1 text-xs text-muted-foreground";
-  const noticeMobileActionGroupClass = "flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto";
 
   // 목록 불러오기 (핀 우선 + 최신, 서버에서 정렬됨)
   // 입력용 상태 (타이핑 중)
@@ -279,72 +278,73 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
         </div>
 
         <Card className="border border-border bg-card shadow-sm">
-          <CardHeader className="bg-muted/30 border-b p-4 sm:p-5 md:p-6">
-            <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-              <div className="flex items-center space-x-2 sm:space-x-3">
-                <HeaderIcon className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-                <span className="text-lg sm:text-xl md:text-2xl">{listTitle}</span>
+          <CardHeader className="space-y-4 border-b bg-muted/30 p-4 sm:p-5 md:p-6">
+            <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+                <HeaderIcon className="h-5 w-5 shrink-0 text-primary sm:h-6 sm:w-6" />
+                <CardTitle className="whitespace-nowrap break-keep text-lg font-bold sm:text-xl md:text-2xl">{listTitle}</CardTitle>
               </div>
 
-              <div className={noticeMobileActionGroupClass}>
-                <Select value={inputField} onValueChange={(v) => setInputField(v as any)}>
-                  <SelectTrigger className="w-full sm:w-[140px] bg-card text-sm sm:text-base h-9 sm:h-10">
-                    <SelectValue placeholder="검색 조건" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">전체</SelectItem>
-                    <SelectItem value="title">제목</SelectItem>
-                    <SelectItem value="content">내용</SelectItem>
-                    <SelectItem value="title_content">제목+내용</SelectItem>
-                  </SelectContent>
-                </Select>
-                <div className="relative flex-1 sm:flex-initial">
-                  <Search className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
-                  <Input
-                    type="search"
-                    placeholder="검색어를 입력하세요"
-                    className="w-full sm:w-[220px] pl-10 sm:pl-12 bg-card text-sm sm:text-base h-9 sm:h-10"
-                    value={inputKeyword}
-                    onChange={(e) => setInputKeyword(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        const nextPage = 1;
-                        setPage(nextPage);
-                        setKeyword(inputKeyword);
-                        setField(inputField);
-                        pushUrlFromState({
-                          page: nextPage,
-                          keyword: inputKeyword,
-                          field: inputField,
-                        });
-                      }
-                    }}
-                  />
-                </div>
-                <Button
-                  type="button"
-                  onClick={() => {
-                    const nextPage = 1;
-                    setPage(nextPage);
-                    setKeyword(inputKeyword);
-                    setField(inputField);
-                    pushUrlFromState({
-                      page: nextPage,
-                      keyword: inputKeyword,
-                      field: inputField,
-                    });
+              <AdminNoticeWriteButton href={writeHref} label={writeLabel} />
+            </div>
+
+            <div className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-[160px_minmax(0,1fr)_auto] sm:items-center lg:max-w-3xl">
+              <Select value={inputField} onValueChange={(v) => setInputField(v as any)}>
+                <SelectTrigger className="h-9 w-full bg-card text-sm sm:h-10 sm:text-base">
+                  <SelectValue placeholder="검색 조건" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">전체</SelectItem>
+                  <SelectItem value="title">제목</SelectItem>
+                  <SelectItem value="content">내용</SelectItem>
+                  <SelectItem value="title_content">제목+내용</SelectItem>
+                </SelectContent>
+              </Select>
+              <div className="relative min-w-0">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground sm:left-4 sm:h-5 sm:w-5" />
+                <Input
+                  type="search"
+                  placeholder="검색어를 입력하세요"
+                  className="h-9 w-full min-w-0 bg-card pl-10 text-sm sm:h-10 sm:pl-12 sm:text-base"
+                  value={inputKeyword}
+                  onChange={(e) => setInputKeyword(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      const nextPage = 1;
+                      setPage(nextPage);
+                      setKeyword(inputKeyword);
+                      setField(inputField);
+                      pushUrlFromState({
+                        page: nextPage,
+                        keyword: inputKeyword,
+                        field: inputField,
+                      });
+                    }
                   }}
-                  size="sm"
-                  variant="outline"
-                  className="h-9 sm:h-10 text-sm sm:text-base"
-                  disabled={isBusy}
-                >
-                  {isBusy && <div className="h-4 w-4 border-2 border-border/30 border-t-primary-foreground rounded-full animate-spin mr-2" />}
-                  검색
-                </Button>
-                <AdminNoticeWriteButton href={writeHref} label={writeLabel} />
+                />
               </div>
-            </CardTitle>
+              <Button
+                type="button"
+                onClick={() => {
+                  const nextPage = 1;
+                  setPage(nextPage);
+                  setKeyword(inputKeyword);
+                  setField(inputField);
+                  pushUrlFromState({
+                    page: nextPage,
+                    keyword: inputKeyword,
+                    field: inputField,
+                  });
+                }}
+                size="sm"
+                variant="outline"
+                className="h-9 w-full shrink-0 whitespace-nowrap text-sm sm:h-10 sm:w-auto sm:text-base"
+                disabled={isBusy}
+              >
+                {isBusy && <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-border/30 border-t-primary-foreground" />}
+                검색
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="p-4 sm:p-5 md:p-6">
             <div className="space-y-3.5 sm:space-y-4">
