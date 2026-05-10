@@ -43,11 +43,19 @@ function sanitizeRecord(doc: Record<string, any>) {
       deductTxId: doc.points?.deductTxId ? String(doc.points.deductTxId) : null,
     },
     memo: doc.memo ?? "",
-    packageUsage: {
-      passId: doc.packageUsage?.passId ? String(doc.packageUsage.passId) : null,
-      usedCount: typeof doc.packageUsage?.usedCount === "number" ? doc.packageUsage.usedCount : null,
-      consumptionId: doc.packageUsage?.consumptionId ? String(doc.packageUsage.consumptionId) : null,
-    },
+    packageUsage: doc.packageUsage
+      ? {
+          passId: doc.packageUsage?.passId ? String(doc.packageUsage.passId) : null,
+          usedCount: typeof doc.packageUsage?.usedCount === "number" ? doc.packageUsage.usedCount : null,
+          consumptionId: doc.packageUsage?.consumptionId ? String(doc.packageUsage.consumptionId) : null,
+          reverted: typeof doc.packageUsage?.reverted === "boolean" ? doc.packageUsage.reverted : null,
+          revertedAt: doc.packageUsage?.revertedAt instanceof Date ? doc.packageUsage.revertedAt.toISOString() : doc.packageUsage?.revertedAt ?? null,
+          revertedBy: doc.packageUsage?.revertedBy ? String(doc.packageUsage.revertedBy) : null,
+          revertReason: doc.packageUsage?.revertReason ?? null,
+          revertedConsumptionId: doc.packageUsage?.revertedConsumptionId ? String(doc.packageUsage.revertedConsumptionId) : null,
+          isReverted: Boolean(doc.packageUsage?.revertedAt || doc.packageUsage?.reverted),
+        }
+      : null,
     createdAt: doc.createdAt instanceof Date ? doc.createdAt.toISOString() : doc.createdAt ?? null,
     updatedAt: doc.updatedAt instanceof Date ? doc.updatedAt.toISOString() : doc.updatedAt ?? null,
   };

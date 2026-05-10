@@ -216,11 +216,13 @@ export async function revertConsumption(
   db: Db,
   passId: ObjectId,
   applicationId: ObjectId,
+  options: { session?: ClientSession } = {},
 ) {
   const passes = db.collection<ServicePass>("service_passes");
   const consumptions = db.collection<ServicePassConsumption>(
     "service_pass_consumptions",
   );
+  const sessionOptions = options.session ? { session: options.session } : undefined;
 
   // 아직 되돌리지 않은 소비 로그 조회
   const log = await consumptions.findOne(
@@ -230,7 +232,7 @@ export async function revertConsumption(
       // 이미 되돌린 기록은 건너뛴다
       $or: [{ reverted: { $exists: false } }, { reverted: false }],
     } as any,
-    { projection: { count: 1 } as any },
+    { projection: { count: 1 } as any, ...sessionOptions },
   );
 
   // 소비 로그가 없으면 (이미 되돌렸거나, 애초에 패키지 미사용) → 아무 것도 하지 않음
@@ -247,6 +249,7 @@ export async function revertConsumption(
         reverted: true,
       },
     },
+    sessionOptions,
   );
 
   // 패스 문서에서 usedCount / remainingCount를 count 만큼 되돌리고,
@@ -263,12 +266,13 @@ export async function revertConsumption(
         updatedAt: new Date(),
       },
     },
+    sessionOptions,
   );
 
   const now = new Date();
   const updatedPass = await passes.findOne(
     { _id: passId },
-    { projection: { remainingCount: 1, status: 1, expiresAt: 1, orderId: 1 } as any },
+    { projection: { remainingCount: 1, status: 1, expiresAt: 1, orderId: 1 } as any, ...sessionOptions },
   );
   if (!updatedPass) return;
 
@@ -277,7 +281,7 @@ export async function revertConsumption(
         .collection("packageOrders")
         .findOne(
           { _id: updatedPass.orderId as any },
-          { projection: { paymentStatus: 1 } as any },
+          { projection: { paymentStatus: 1 } as any, ...sessionOptions },
         )
     : null;
   if (
@@ -292,6 +296,7 @@ export async function revertConsumption(
     await passes.updateOne(
       { _id: passId },
       { $set: { status: "active", updatedAt: now, remainingValidityMs: null } },
+      sessionOptions,
     );
   }
 }
