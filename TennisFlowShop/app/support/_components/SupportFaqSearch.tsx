@@ -244,7 +244,7 @@ export default function SupportFaqSearch() {
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             <Button asChild size="sm">
-              <Link href="/board/qna/write">Q&A 문의하기</Link>
+              <Link href="/board/qna/write">문의하기</Link>
             </Button>
             <Button asChild size="sm" variant="outline">
               <Link href="/board/qna">전체 문의 보기</Link>

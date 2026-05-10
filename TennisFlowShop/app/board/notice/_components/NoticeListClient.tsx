@@ -73,7 +73,7 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
   const isEventMode = mode === "event";
   const listBasePath = isEventMode ? "/board/event" : "/board/notice";
   const writeHref = isEventMode ? "/board/event/write" : "/board/notice/write";
-  const writeLabel = isEventMode ? "이벤트 작성" : "작성하기";
+  const writeLabel = isEventMode ? "글 작성" : "작성하기";
   const pageTitle = isEventMode ? "고객센터 · 이벤트" : "고객센터 · 공지사항";
   const pageDescription = isEventMode ? "할인, 프로모션, 행사 소식을 확인하세요." : "도깨비테니스 고객센터의 주요 안내와 공지사항을 확인하실 수 있습니다.";
   const listTitle = isEventMode ? "이벤트 목록" : "공지사항 목록";

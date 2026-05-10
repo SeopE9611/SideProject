@@ -358,7 +358,7 @@ function NoticeCard({
               <Button asChild variant="ghost" size="sm">
                 <Link href="/board/notice/write">
                   <Plus className="h-4 w-4 mr-1" />
-                  공지 쓰기
+                  글 쓰기
                 </Link>
               </Button>
             )}
@@ -525,7 +525,7 @@ function QnaCard({
             <Button asChild variant="ghost" size="sm">
               <Link href="/board/qna/write">
                 <Plus className="h-4 w-4 mr-1" />
-                Q&A 문의하기
+                문의하기
               </Link>
             </Button>
             <Button asChild variant="ghost" size="sm">

@@ -189,7 +189,7 @@ function NoticeCard({
   const basePath = isEventMode ? "/board/event" : "/board/notice";
   const writePath = isEventMode ? "/board/event/write" : "/board/notice/write";
   const cardTitle = isEventMode ? "이벤트" : "고객센터 공지사항";
-  const writeLabel = isEventMode ? "이벤트 쓰기" : "공지 쓰기";
+  const writeLabel = isEventMode ? "글 쓰기" : "공지 쓰기";
   const listLabel = "전체 보기";
   const emptyTitle = isEventMode
     ? "등록된 이벤트가 없습니다."
@@ -400,8 +400,8 @@ function QnaCard({
           >
             <Link
               href="/board/qna/write"
-              aria-label="Q&A 문의하기"
-              title="Q&A 문의하기"
+              aria-label="문의하기"
+              title="문의하기"
             >
               <span className="lg:hidden" aria-hidden="true">
                 +
