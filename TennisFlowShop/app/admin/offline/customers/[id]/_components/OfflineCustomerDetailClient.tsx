@@ -308,8 +308,10 @@ function translateLinkError(error: unknown): string {
 type PointFormState = {
   grantAmount: string;
   grantReason: string;
+  grantRevertReason: string;
   useAmount: string;
   useReason: string;
+  deductRevertReason: string;
   message?: string | null;
   messageType?: "success" | "error" | null;
 };
@@ -403,6 +405,13 @@ const POINT_ERROR_MESSAGES: Record<string, string> = {
   "insufficient points": "보유 포인트가 부족합니다.",
   "points already granted for this record": "이미 이 기록에 포인트 적립이 처리되었습니다.",
   "points already deducted for this record": "이미 이 기록에 포인트 사용이 처리되었습니다.",
+  "points grant not found": "포인트 적립 이력이 없습니다.",
+  "points deduction not found": "포인트 사용 이력이 없습니다.",
+  "points grant already reverted": "이미 취소된 포인트 적립입니다.",
+  "points deduction already reverted": "이미 취소된 포인트 사용입니다.",
+  "revert reason required": "포인트 취소 사유를 입력해주세요.",
+  "insufficient points to revert grant": "보유 포인트가 부족해 적립 취소를 할 수 없습니다.",
+  "points revert failed": "포인트 취소에 실패했습니다.",
   "points transaction failed": "포인트 처리에 실패했습니다.",
 };
 
@@ -484,7 +493,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
 
   function updatePointForm(recordId: string, patch: Partial<PointFormState>) {
     setPointForms((prev) => {
-      const current = prev[recordId] ?? { grantAmount: "", grantReason: "", useAmount: "", useReason: "" };
+      const current = prev[recordId] ?? { grantAmount: "", grantReason: "", grantRevertReason: "", useAmount: "", useReason: "", deductRevertReason: "" };
       return {
         ...prev,
         [recordId]: { ...current, ...patch },
@@ -521,6 +530,43 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
       await mutateDetail();
     } catch (err) {
       updatePointForm(recordId, { message: translatePointError(err), messageType: "error" });
+    } finally {
+      setProcessingPointKey(null);
+    }
+  }
+
+  async function handleRecordPointRevert(recordId: string, mode: "grant" | "deduct") {
+    const form = pointForms[recordId];
+    const reason = (mode === "grant" ? form?.grantRevertReason : form?.deductRevertReason)?.trim() || "";
+    if (!reason) {
+      updatePointForm(recordId, { message: "포인트 취소 사유를 입력해주세요.", messageType: "error" });
+      return;
+    }
+
+    const confirmMessage = mode === "grant"
+      ? "이 오프라인 작업의 포인트 적립을 취소하고 회원 포인트를 회수하시겠습니까?"
+      : "이 오프라인 작업의 포인트 사용을 취소하고 회원 포인트를 복구하시겠습니까?";
+    if (!window.confirm(confirmMessage)) return;
+
+    setProcessingPointKey(`${recordId}:${mode}-revert`);
+    updatePointForm(recordId, { message: null, messageType: null });
+    try {
+      await adminMutator(`/api/admin/offline/records/${recordId}/points/${mode}/revert`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason }),
+      });
+      updatePointForm(recordId, {
+        ...(mode === "grant" ? { grantRevertReason: "" } : { deductRevertReason: "" }),
+        message: mode === "grant" ? "포인트 적립 취소가 완료되었습니다." : "포인트 사용 취소가 완료되었습니다.",
+        messageType: "success",
+      });
+      await mutateDetail();
+    } catch (err) {
+      updatePointForm(recordId, {
+        message: translatePointError(err) || (mode === "grant" ? "포인트 적립 취소에 실패했습니다." : "포인트 사용 취소에 실패했습니다."),
+        messageType: "error",
+      });
     } finally {
       setProcessingPointKey(null);
     }
@@ -1091,7 +1137,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
               {canUseLinkedFeatures ? (
                 <div className="space-y-3">
                   <p className="text-sm text-muted-foreground">오프라인 작업 기록에서 포인트 적립/사용을 처리할 수 있습니다.</p>
-                  <p className="text-xs text-muted-foreground">포인트 사용 시 실제 결제금액은 별도로 수정하세요. 포인트 처리 취소는 후속 단계에서 지원 예정입니다.</p>
+                  <p className="text-xs text-muted-foreground">포인트 사용 시 실제 결제금액은 별도로 수정하세요. 취소된 포인트 처리는 같은 기록에서 다시 처리할 수 없습니다.</p>
                 </div>
               ) : (
                 <div className="rounded-lg border border-border/40 bg-muted/20 p-4">
@@ -1354,9 +1400,11 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
           ) : (
             <div className="space-y-3">
               {records.map((record) => {
-                const form = pointForms[record.id] ?? { grantAmount: "", grantReason: "", useAmount: "", useReason: "" };
+                const form = pointForms[record.id] ?? { grantAmount: "", grantReason: "", grantRevertReason: "", useAmount: "", useReason: "", deductRevertReason: "" };
                 const hasGrant = !!record.points?.grantTxId;
                 const hasDeduct = !!record.points?.deductTxId;
+                const isGrantReverted = Boolean(record.points?.grantRevertedAt || record.points?.grantRevertTxId);
+                const isDeductReverted = Boolean(record.points?.deductRevertedAt || record.points?.deductRevertTxId);
                 const canProcessPoints = canUseLinkedFeatures;
                 const pointUnavailableMessage = item.linkedUserId && !item.linkedUser ? "연결된 온라인 회원 정보를 찾을 수 없어 포인트를 처리할 수 없습니다." : "온라인 회원과 연결된 고객만 포인트를 처리할 수 있습니다.";
                 const packageUsage = record.packageUsage;
@@ -1430,36 +1478,88 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                             {!canProcessPoints ? (
                               <p className="text-xs text-muted-foreground">{pointUnavailableMessage}</p>
                             ) : (
-                              <div className="grid grid-cols-2 gap-2">
+                              <div className="grid grid-cols-1 gap-2 xl:grid-cols-2">
                                 <div className="space-y-2 rounded-lg border border-border/40 bg-muted/20 p-3">
                                   <p className="text-xs font-medium text-muted-foreground">적립 포인트</p>
-                                  <Input
-                                    inputMode="numeric"
-                                    value={form.grantAmount}
-                                    onChange={(e) => updatePointForm(record.id, { grantAmount: e.target.value })}
-                                    placeholder="예: 1000"
-                                    disabled={!canProcessPoints || hasGrant}
-                                    className="h-8 text-sm"
-                                  />
-                                  <Input value={form.grantReason} onChange={(e) => updatePointForm(record.id, { grantReason: e.target.value })} placeholder="사유(선택)" disabled={!canProcessPoints || hasGrant} className="h-8 text-sm" />
-                                  <Button type="button" size="sm" className="w-full" onClick={() => handleRecordPoints(record.id, "grant")} disabled={!canProcessPoints || hasGrant || processingPointKey === `${record.id}:grant`}>
-                                    {hasGrant ? "적립 완료" : processingPointKey === `${record.id}:grant` ? "처리 중..." : "적립"}
-                                  </Button>
+                                  {hasGrant ? (
+                                    <div className="space-y-2 text-xs text-muted-foreground">
+                                      <Badge className={isGrantReverted ? "border-warning/30 bg-warning/10 text-warning" : "border-success/20 bg-success/10 text-success"}>
+                                        {isGrantReverted ? "적립 취소 완료" : "포인트 적립 완료"}
+                                      </Badge>
+                                      <p>적립 포인트: {formatPoints(record.points?.earn)}</p>
+                                      <p className="break-all">grantTxId: {record.points?.grantTxId}</p>
+                                      {isGrantReverted ? (
+                                        <>
+                                          <p>취소일: {formatDate(record.points?.grantRevertedAt)}</p>
+                                          {record.points?.grantRevertReason && <p>사유: {record.points.grantRevertReason}</p>}
+                                          <p className="text-muted-foreground">취소된 포인트 처리는 같은 기록에서 다시 처리할 수 없습니다. 재처리가 필요한 경우 새 작업 기록 또는 관리자 포인트 조정 기능을 사용하세요.</p>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <Input value={form.grantRevertReason} onChange={(e) => updatePointForm(record.id, { grantRevertReason: e.target.value })} placeholder="적립 취소 사유 입력" className="h-8 text-sm" />
+                                          <Button type="button" size="sm" variant="destructive" className="w-full" onClick={() => handleRecordPointRevert(record.id, "grant")} disabled={processingPointKey === `${record.id}:grant-revert`}>
+                                            {processingPointKey === `${record.id}:grant-revert` ? "취소 중..." : "적립 취소"}
+                                          </Button>
+                                        </>
+                                      )}
+                                    </div>
+                                  ) : (
+                                    <>
+                                      <Input
+                                        inputMode="numeric"
+                                        value={form.grantAmount}
+                                        onChange={(e) => updatePointForm(record.id, { grantAmount: e.target.value })}
+                                        placeholder="예: 1000"
+                                        disabled={!canProcessPoints}
+                                        className="h-8 text-sm"
+                                      />
+                                      <Input value={form.grantReason} onChange={(e) => updatePointForm(record.id, { grantReason: e.target.value })} placeholder="사유(선택)" disabled={!canProcessPoints} className="h-8 text-sm" />
+                                      <Button type="button" size="sm" className="w-full" onClick={() => handleRecordPoints(record.id, "grant")} disabled={!canProcessPoints || processingPointKey === `${record.id}:grant`}>
+                                        {processingPointKey === `${record.id}:grant` ? "처리 중..." : "적립"}
+                                      </Button>
+                                    </>
+                                  )}
                                 </div>
                                 <div className="space-y-2 rounded-lg border border-border/40 bg-muted/20 p-3">
                                   <p className="text-xs font-medium text-muted-foreground">사용 포인트</p>
-                                  <Input
-                                    inputMode="numeric"
-                                    value={form.useAmount}
-                                    onChange={(e) => updatePointForm(record.id, { useAmount: e.target.value })}
-                                    placeholder="예: 1000"
-                                    disabled={!canProcessPoints || hasDeduct}
-                                    className="h-8 text-sm"
-                                  />
-                                  <Input value={form.useReason} onChange={(e) => updatePointForm(record.id, { useReason: e.target.value })} placeholder="사유(선택)" disabled={!canProcessPoints || hasDeduct} className="h-8 text-sm" />
-                                  <Button type="button" size="sm" variant="outline" className="w-full" onClick={() => handleRecordPoints(record.id, "deduct")} disabled={!canProcessPoints || hasDeduct || processingPointKey === `${record.id}:deduct`}>
-                                    {hasDeduct ? "사용 완료" : processingPointKey === `${record.id}:deduct` ? "처리 중..." : "사용"}
-                                  </Button>
+                                  {hasDeduct ? (
+                                    <div className="space-y-2 text-xs text-muted-foreground">
+                                      <Badge className={isDeductReverted ? "border-warning/30 bg-warning/10 text-warning" : "border-primary/20 bg-primary/10 text-primary"}>
+                                        {isDeductReverted ? "사용 취소 완료" : "포인트 사용 완료"}
+                                      </Badge>
+                                      <p>사용 포인트: {formatPoints(record.points?.use)}</p>
+                                      <p className="break-all">deductTxId: {record.points?.deductTxId}</p>
+                                      {isDeductReverted ? (
+                                        <>
+                                          <p>취소일: {formatDate(record.points?.deductRevertedAt)}</p>
+                                          {record.points?.deductRevertReason && <p>사유: {record.points.deductRevertReason}</p>}
+                                          <p className="text-muted-foreground">취소된 포인트 처리는 같은 기록에서 다시 처리할 수 없습니다. 재처리가 필요한 경우 새 작업 기록 또는 관리자 포인트 조정 기능을 사용하세요.</p>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <Input value={form.deductRevertReason} onChange={(e) => updatePointForm(record.id, { deductRevertReason: e.target.value })} placeholder="사용 취소 사유 입력" className="h-8 text-sm" />
+                                          <Button type="button" size="sm" variant="outline" className="w-full" onClick={() => handleRecordPointRevert(record.id, "deduct")} disabled={processingPointKey === `${record.id}:deduct-revert`}>
+                                            {processingPointKey === `${record.id}:deduct-revert` ? "취소 중..." : "사용 취소"}
+                                          </Button>
+                                        </>
+                                      )}
+                                    </div>
+                                  ) : (
+                                    <>
+                                      <Input
+                                        inputMode="numeric"
+                                        value={form.useAmount}
+                                        onChange={(e) => updatePointForm(record.id, { useAmount: e.target.value })}
+                                        placeholder="예: 1000"
+                                        disabled={!canProcessPoints}
+                                        className="h-8 text-sm"
+                                      />
+                                      <Input value={form.useReason} onChange={(e) => updatePointForm(record.id, { useReason: e.target.value })} placeholder="사유(선택)" disabled={!canProcessPoints} className="h-8 text-sm" />
+                                      <Button type="button" size="sm" variant="outline" className="w-full" onClick={() => handleRecordPoints(record.id, "deduct")} disabled={!canProcessPoints || processingPointKey === `${record.id}:deduct`}>
+                                        {processingPointKey === `${record.id}:deduct` ? "처리 중..." : "사용"}
+                                      </Button>
+                                    </>
+                                  )}
                                 </div>
                               </div>
                             )}

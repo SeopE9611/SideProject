@@ -17,6 +17,14 @@ export type OfflineRecordPoints = {
   use?: number | null;
   grantTxId?: string | null;
   deductTxId?: string | null;
+  grantRevertTxId?: string | null;
+  grantRevertedAt?: string | null;
+  grantRevertedBy?: string | null;
+  grantRevertReason?: string | null;
+  deductRevertTxId?: string | null;
+  deductRevertedAt?: string | null;
+  deductRevertedBy?: string | null;
+  deductRevertReason?: string | null;
 };
 
 export type OfflineRecordPackageUsage = {
