@@ -1733,87 +1733,35 @@ export default function StringServiceApplyPage() {
               어떤 방식으로 교체서비스를 신청하시겠어요?
             </h2>
             <p className="mt-2 text-muted-foreground text-sm bp-sm:text-base">
-              상황에 맞는 신청 방식을 선택하면 필요한 정보만 이어서 입력할 수 있습니다.
-              이미 주문/대여 이력이 있다면 아래 내역에서 이어서 진행할 수
-              있어요.
+              현재 상황에 맞는 방식을 선택하면 필요한 정보만 이어서 입력할 수 있습니다.
             </p>
           </div>
 
-          <div className="max-w-5xl mx-auto mb-6 bp-sm:mb-8">
-            <Card className="rounded-xl border-border bg-card">
-              <CardContent className="p-4 bp-sm:p-5 bp-md:p-6">
-                <h3 className="text-base bp-sm:text-lg font-semibold text-foreground">
-                  내 상황에 맞는 신청 방식을 선택해주세요
-                </h3>
-                <p className="mt-2 text-sm bp-sm:text-base text-muted-foreground leading-relaxed">
-                  스트링을 새로 구매할지, 라켓 구매/대여와 함께 진행할지, 보유 장비로 신청할지에 따라 가장 알맞은 흐름으로 안내해드려요.
-                </p>
-
-                <ul className="mt-4 space-y-4">
-                  <li className="rounded-lg border border-border/70 bg-muted/30 p-3 bp-sm:p-4">
-                    <p className="text-sm bp-sm:text-base font-semibold text-foreground">
-                      스트링을 새로 구매하려면
-                    </p>
-                    <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
-                      “스트링도 함께 구매하고 신청”을 선택하세요. 새 스트링을 고른 뒤 결제와 함께 교체서비스 신청이 접수됩니다.
-                    </p>
-                  </li>
-                  <li className="rounded-lg border border-border/70 bg-muted/30 p-3 bp-sm:p-4">
-                    <p className="text-sm bp-sm:text-base font-semibold text-foreground">
-                      라켓 구매나 대여도 함께 진행하려면
-                    </p>
-                    <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
-                      “라켓 구매/대여와 함께 신청”을 선택하세요. 라켓과 스트링을 함께 선택한 뒤 결제 단계에서 신청이 함께 접수됩니다.
-                    </p>
-                  </li>
-                  <li className="rounded-lg border border-border/70 bg-muted/30 p-3 bp-sm:p-4">
-                    <p className="text-sm bp-sm:text-base font-semibold text-foreground">
-                      이미 라켓이나 스트링을 가지고 있다면
-                    </p>
-                    <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
-                      “보유 라켓/보유 스트링으로 신청”을 선택하세요. 가지고 있는 장비 정보를 입력해 신청서를 작성합니다.
-                    </p>
-                  </li>
-                  <li className="rounded-lg border border-border/70 bg-muted/30 p-3 bp-sm:p-4">
-                    <p className="text-sm bp-sm:text-base font-semibold text-foreground">
-                      패키지권을 사용하려면
-                    </p>
-                    <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
-                      보유한 패키지권은 신청/결제 단계에서 적용 여부를 확인하세요.
-                    </p>
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
-          </div>
-
           {/* Option Cards */}
-          <div className="grid grid-cols-1 bp-md:grid-cols-3 gap-4 bp-sm:gap-5 bp-lg:gap-6 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 bp-md:grid-cols-2 bp-lg:grid-cols-4 gap-4 bp-sm:gap-5 bp-lg:gap-6 max-w-6xl mx-auto">
             {/* Option 1: 스트링 선택 후 신청 */}
             <button
               type="button"
               onClick={() => safePush("/products?from=apply")}
-              className="group relative bg-card rounded-2xl p-5 bp-sm:p-6 text-left border border-border hover:border-border transition-all duration-200 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              className="group relative flex h-full flex-col bg-card rounded-2xl p-5 bp-sm:p-6 text-left border border-border hover:border-border hover:shadow-lg transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
-              {/* Badge */}
               <div className="absolute -top-2.5 left-5">
                 <Badge variant="secondary">추천</Badge>
               </div>
 
-              {/* Icon */}
               <div className="w-12 h-12 bp-sm:w-14 bp-sm:h-14 rounded-xl bg-background flex items-center justify-center mb-4 group-hover:bg-muted transition-colors">
                 <Grid2X2 className="h-8 w-8" />
               </div>
 
-              {/* Content */}
-              <h3 className="text-base bp-sm:text-lg font-semibold text-foreground mb-1.5">
-                스트링도 함께 구매하고 신청
-              </h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                새 스트링을 고른 뒤 교체서비스까지 한 번에 신청합니다.
-              </p>
+              <div className="flex-1">
+                <h3 className="text-base bp-sm:text-lg font-semibold text-foreground mb-1.5">
+                  스트링도 새로 구매하고 신청
+                </h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  새 스트링을 고른 뒤 교체서비스까지 한 번에 신청합니다.
+                </p>
+              </div>
 
-              {/* Arrow indicator */}
               <div className="mt-5 flex items-center text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">
                 <span>스트링 고르기</span>
                 <svg
@@ -1833,24 +1781,21 @@ export default function StringServiceApplyPage() {
             </button>
 
             {/* Option 2: 라켓 고르고 신청 */}
-            <div className="relative bg-card rounded-2xl p-5 bp-sm:p-6 text-left border border-border hover:border-border transition-all duration-200 hover:shadow-lg">
-
-
-              {/* Icon */}
+            <div className="relative flex h-full flex-col bg-card rounded-2xl p-5 bp-sm:p-6 text-left border border-border hover:border-border hover:shadow-lg transition-colors duration-200">
               <div className="w-12 h-12 bp-sm:w-14 bp-sm:h-14 rounded-xl bg-background flex items-center justify-center mb-4">
                 <MdSportsTennis className="h-9 w-9" />
               </div>
 
-              {/* Content */}
-              <h3 className="text-base bp-sm:text-lg font-semibold text-foreground mb-1.5">
-                라켓 구매/대여와 함께 신청
-              </h3>
-              <p className="text-sm text-muted-foreground leading-relaxed mb-5">
-                라켓 구매 또는 대여 흐름에서 스트링 선택과 교체서비스를 함께 진행합니다.
-              </p>
+              <div className="flex-1">
+                <h3 className="text-base bp-sm:text-lg font-semibold text-foreground mb-1.5">
+                  라켓 구매/대여와 함께 신청
+                </h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  라켓 구매 또는 대여 흐름에서 스트링 선택과 교체서비스를 함께 진행합니다.
+                </p>
+              </div>
 
-              {/* Action Buttons */}
-              <div className="flex gap-2">
+              <div className="mt-5 flex gap-2">
                 <button
                   type="button"
                   onClick={() => safePush("/rackets?from=apply")}
@@ -1872,31 +1817,29 @@ export default function StringServiceApplyPage() {
             <button
               type="button"
               onClick={() => safePush("/services/apply?mode=single")}
-              className="group relative bg-card rounded-2xl p-5 bp-sm:p-6 text-left border border-border hover:border-border transition-all duration-200 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              className="group relative flex h-full flex-col bg-card rounded-2xl p-5 bp-sm:p-6 text-left border border-border hover:border-border hover:shadow-lg transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
-              {/* Badge */}
               <div className="absolute -top-2.5 left-5">
                 <Badge variant="secondary">직접입력</Badge>
               </div>
 
-              {/* Icon */}
               <div className="w-12 h-12 bp-sm:w-14 bp-sm:h-14 rounded-xl bg-background flex items-center justify-center mb-4 group-hover:bg-muted transition-colors">
                 <File className="h-9 w-9" />
               </div>
 
-              {/* Content */}
-              <h3 className="text-base bp-sm:text-lg font-semibold text-foreground mb-1.5">
-                보유 라켓/보유 스트링으로 신청
-              </h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                이미 가지고 있는 라켓이나 스트링으로 교체서비스를 신청합니다.
-              </p>
-              <p className="mt-1 text-xs text-primary">
-                필요한 비용은 신청 내용 확인 후 안내됩니다.
-              </p>
+              <div className="flex-1">
+                <h3 className="text-base bp-sm:text-lg font-semibold text-foreground mb-1.5">
+                  보유 라켓/보유 스트링으로 신청
+                </h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  이미 가지고 있는 라켓이나 스트링으로 교체서비스를 신청합니다.
+                </p>
+                <p className="mt-2 text-xs text-primary">
+                  필요한 비용은 신청 내용 확인 후 안내됩니다.
+                </p>
+              </div>
 
-              {/* Arrow indicator */}
-              <div className="mt-4 flex items-center text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">
+              <div className="mt-5 flex items-center text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">
                 <span>보유 장비로 신청하기</span>
                 <svg
                   className="ml-1.5 w-4 h-4 group-hover:translate-x-1 transition-transform"
@@ -1913,9 +1856,54 @@ export default function StringServiceApplyPage() {
                 </svg>
               </div>
             </button>
+
+            {/* Option 4: 기존 주문/대여에서 이어서 신청 */}
+            <div className="relative flex h-full flex-col bg-card rounded-2xl p-5 bp-sm:p-6 text-left border border-border hover:border-border hover:shadow-lg transition-colors duration-200">
+              <div className="w-12 h-12 bp-sm:w-14 bp-sm:h-14 rounded-xl bg-background flex items-center justify-center mb-4">
+                <svg
+                  className="w-8 h-8 text-foreground"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={1.5}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25z"
+                  />
+                </svg>
+              </div>
+
+              <div className="flex-1">
+                <h3 className="text-base bp-sm:text-lg font-semibold text-foreground mb-1.5">
+                  기존 주문/대여에서 이어서 신청
+                </h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  구매하거나 대여한 라켓·스트링이 있다면 기존 내역에서 이어서 신청할 수 있습니다.
+                </p>
+              </div>
+
+              <div className="mt-5 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => safePush("/mypage?tab=orders&scope=order")}
+                  className="flex-1 px-3 py-2 bp-sm:py-2.5 text-sm font-medium rounded-lg bg-background text-foreground hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  주문 내역
+                </button>
+                <button
+                  type="button"
+                  onClick={() => safePush("/mypage?tab=orders&scope=rental")}
+                  className="flex-1 px-3 py-2 bp-sm:py-2.5 text-sm font-medium rounded-lg bg-background text-foreground hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  대여 내역
+                </button>
+              </div>
+            </div>
           </div>
 
-          <div className="mt-6 bp-sm:mt-8 max-w-5xl mx-auto">
+          <div className="mt-6 bp-sm:mt-8 max-w-6xl mx-auto">
             <Card className="border-border bg-muted/30">
               <CardContent className="flex flex-col gap-4 p-4 md:flex-row md:items-center md:justify-between">
                 <div className="space-y-1">
@@ -1923,7 +1911,7 @@ export default function StringServiceApplyPage() {
                     어떤 스트링을 골라야 할지 고민된다면
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    먼저 추천 도우미로 플레이 성향에 맞는 스트링을 확인한 뒤 교체서비스 신청을 이어갈 수 있어요.
+                    스트링 선택이 어렵다면 플레이 성향에 맞는 추천을 먼저 확인해보세요.
                   </p>
                 </div>
                 <Button asChild className="shrink-0">
@@ -1931,93 +1919,6 @@ export default function StringServiceApplyPage() {
                 </Button>
               </CardContent>
             </Card>
-          </div>
-
-          {/* Info Banner */}
-          <div className="mt-6 bp-sm:mt-8 max-w-5xl mx-auto">
-            <div className="flex items-start gap-3 p-4 rounded-xl bg-background border border-border">
-              <svg
-                className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-0.5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={1.5}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"
-                />
-              </svg>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                일반적인 상품·라켓 구매 흐름에서는 체크아웃에서 교체서비스
-                신청이 함께 접수됩니다. 이 페이지에서는 기존 주문/대여 내역을
-                이어서 신청하거나, 보유 라켓·보유 스트링으로 단독 신청할 수
-                있어요.
-              </p>
-            </div>
-          </div>
-
-          {/* Divider */}
-          <div className="my-8 bp-sm:my-10 max-w-5xl mx-auto">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-border" />
-              </div>
-              <div className="relative flex justify-center">
-                <span className="bg-background px-4 text-sm text-muted-foreground">
-                  또는
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Orders/Rentals Section */}
-          <div className="max-w-5xl mx-auto">
-            <div className="bg-card rounded-2xl p-5 bp-sm:p-6 border border-border">
-              <div className="flex flex-col bp-sm:flex-row bp-sm:items-center bp-sm:justify-between gap-4">
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <svg
-                      className="w-5 h-5 text-muted-foreground"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={1.5}
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z"
-                      />
-                    </svg>
-                    <h3 className="text-base bp-sm:text-lg font-semibold text-foreground">
-                      이미 주문/대여한 내역에서 이어서 신청
-                    </h3>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    구매하거나 대여한 라켓·스트링이 있다면 마이페이지 내역에서
-                    선택해 신청서를 자동으로 채울 수 있어요.
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => safePush("/mypage?tab=orders&scope=order")}
-                    className="flex-1 bp-sm:flex-none px-4 py-2.5 text-sm font-medium rounded-lg border border-border text-foreground hover:bg-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  >
-                    주문 내역
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => safePush("/mypage?tab=orders&scope=rental")}
-                    className="flex-1 bp-sm:flex-none px-4 py-2.5 text-sm font-medium rounded-lg border border-border text-foreground hover:bg-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  >
-                    대여 내역
-                  </button>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
