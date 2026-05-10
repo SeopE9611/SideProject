@@ -288,44 +288,25 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
               <AdminNoticeWriteButton href={writeHref} label={writeLabel} />
             </div>
 
-            <div className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-[160px_minmax(0,1fr)_auto] sm:items-center lg:max-w-3xl">
-              <Select value={inputField} onValueChange={(v) => setInputField(v as any)}>
-                <SelectTrigger className="h-9 w-full bg-card text-sm sm:h-10 sm:text-base">
-                  <SelectValue placeholder="검색 조건" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">전체</SelectItem>
-                  <SelectItem value="title">제목</SelectItem>
-                  <SelectItem value="content">내용</SelectItem>
-                  <SelectItem value="title_content">제목+내용</SelectItem>
-                </SelectContent>
-              </Select>
-              <div className="relative min-w-0">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground sm:left-4 sm:h-5 sm:w-5" />
-                <Input
-                  type="search"
-                  placeholder="검색어를 입력하세요"
-                  className="h-9 w-full min-w-0 bg-card pl-10 text-sm sm:h-10 sm:pl-12 sm:text-base"
-                  value={inputKeyword}
-                  onChange={(e) => setInputKeyword(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      const nextPage = 1;
-                      setPage(nextPage);
-                      setKeyword(inputKeyword);
-                      setField(inputField);
-                      pushUrlFromState({
-                        page: nextPage,
-                        keyword: inputKeyword,
-                        field: inputField,
-                      });
-                    }
-                  }}
-                />
+            <div className="flex min-w-0 flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
+              <div className="w-full lg:w-[160px] lg:shrink-0">
+                <Select value={inputField} onValueChange={(v) => setInputField(v as any)}>
+                  <SelectTrigger className="h-9 w-full bg-card text-sm sm:h-10 sm:text-base">
+                    <SelectValue placeholder="검색 조건" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">전체</SelectItem>
+                    <SelectItem value="title">제목</SelectItem>
+                    <SelectItem value="content">내용</SelectItem>
+                    <SelectItem value="title_content">제목+내용</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-              <Button
-                type="button"
-                onClick={() => {
+
+              <form
+                className="flex w-full min-w-0 flex-col gap-2 sm:flex-row lg:ml-auto lg:max-w-xl"
+                onSubmit={(e) => {
+                  e.preventDefault();
                   const nextPage = 1;
                   setPage(nextPage);
                   setKeyword(inputKeyword);
@@ -336,14 +317,28 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
                     field: inputField,
                   });
                 }}
-                size="sm"
-                variant="outline"
-                className="h-9 w-full shrink-0 whitespace-nowrap text-sm sm:h-10 sm:w-auto sm:text-base"
-                disabled={isBusy}
               >
-                {isBusy && <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-border/30 border-t-primary-foreground" />}
-                검색
-              </Button>
+                <div className="relative min-w-0 flex-1">
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground sm:left-4 sm:h-5 sm:w-5" />
+                  <Input
+                    type="search"
+                    placeholder="검색어를 입력하세요"
+                    className="h-9 w-full min-w-0 bg-card pl-10 text-sm sm:h-10 sm:pl-12 sm:text-base"
+                    value={inputKeyword}
+                    onChange={(e) => setInputKeyword(e.target.value)}
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  size="sm"
+                  variant="outline"
+                  className="h-9 w-full shrink-0 whitespace-nowrap text-sm sm:h-10 sm:w-auto sm:text-base lg:w-auto"
+                  disabled={isBusy}
+                >
+                  {isBusy && <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-border/30 border-t-primary-foreground" />}
+                  검색
+                </Button>
+              </form>
             </div>
           </CardHeader>
           <CardContent className="p-4 sm:p-5 md:p-6">
