@@ -400,7 +400,7 @@ export default function AdminDashboardClient() {
       <div className="space-y-8 pb-8">
         <AdminPageHeader
           title="관리자 대시보드"
-          description="매출, 주문, 신청, 대여, 재고, 리뷰 상태를 한눈에 확인합니다."
+          description="온라인 기준 매출과 오프라인 매출, 주문, 신청, 대여, 재고, 리뷰 상태를 한눈에 확인합니다."
           icon={Activity}
           scope="범위: 전체 운영 요약"
           helperText="세부 처리는 운영 통합 센터와 각 관리 페이지에서 진행합니다."
@@ -479,7 +479,7 @@ export default function AdminDashboardClient() {
     <div className="space-y-8 pb-8">
       <AdminPageHeader
         title="관리자 대시보드"
-        description="매출, 주문, 신청, 대여, 재고, 리뷰 상태를 한눈에 확인합니다."
+        description="온라인 기준 매출과 오프라인 매출, 주문, 신청, 대여, 재고, 리뷰 상태를 한눈에 확인합니다."
         icon={Activity}
         scope="범위: 전체 운영 요약"
         helperText={`세부 처리는 운영 통합 센터와 각 관리 페이지에서 진행합니다. · 최근 ${data.series.days}일 (${data.series.fromYmd} ~ ${data.series.toYmd})`}
@@ -498,9 +498,9 @@ export default function AdminDashboardClient() {
         </div>
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           <KpiCard
-            title="총 매출"
+            title="온라인 기준 매출"
             value={formatAdminKRW(periodRevenue)}
-            sub={`최근 7일: ${formatAdminKRW(weekRevenue)}`}
+            sub={`최근 7일 온라인: ${formatAdminKRW(weekRevenue)}`}
             icon={<TrendingUp className="h-5 w-5" />}
             trend={`평균 ${formatAdminKRW(data.kpi.orders.aov7d)}`}
             spark={<InteractiveSparkLine data={data.series.dailyRevenue.slice(-30)} />}
@@ -677,13 +677,13 @@ export default function AdminDashboardClient() {
       <section className="space-y-4">
         <div>
           <h2 className="text-2xl font-semibold tracking-normal">매출 분석</h2>
-          <p className="text-sm text-muted-foreground">수익 트렌드 및 인기 상품</p>
+          <p className="text-sm text-muted-foreground">온라인 기준 수익 트렌드 및 인기 상품</p>
         </div>
 
         <Card className="border-border/40 bg-card/50 backdrop-blur">
           <CardHeader>
-            <CardTitle className="text-lg">최근 14일 매출 추이</CardTitle>
-            <CardDescription>주문, 교체 서비스, 패키지 결제완료 금액</CardDescription>
+            <CardTitle className="text-lg">최근 14일 온라인 매출 추이</CardTitle>
+            <CardDescription>오프라인 패키지 판매를 제외한 주문, 교체 서비스, 패키지 결제완료 금액</CardDescription>
           </CardHeader>
           <CardContent>
             <InteractiveStackedBarChart data={last14RevenueBySource} />
@@ -700,7 +700,7 @@ export default function AdminDashboardClient() {
                 <div className="h-3 w-3 rounded-sm bg-muted-foreground/60" />
                 <span className="text-xs font-medium text-muted-foreground">패키지</span>
               </div>
-              <div className="ml-auto text-sm font-semibold">총 {formatAdminKRW(last14Revenue.reduce((s, d) => s + Number(d.value || 0), 0))}</div>
+              <div className="ml-auto text-sm font-semibold">온라인 합계 {formatAdminKRW(last14Revenue.reduce((s, d) => s + Number(d.value || 0), 0))}</div>
             </div>
           </CardContent>
         </Card>

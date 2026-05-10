@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { EXCLUDE_OFFLINE_PACKAGE_ORDERS_FILTER } from "@/app/api/admin/offline/_lib/packageOrderOffline";
 import {
   orderPaidAmount,
   applicationPaidAmount,
@@ -163,7 +164,11 @@ export async function POST(
       .collection("packageOrders")
       .find(
         {
-          $and: [{ createdAt: { $gte: start, $lt: end } }, paidMatch],
+          $and: [
+            EXCLUDE_OFFLINE_PACKAGE_ORDERS_FILTER,
+            { createdAt: { $gte: start, $lt: end } },
+            paidMatch,
+          ],
         },
         {
           projection: {

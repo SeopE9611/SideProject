@@ -4,12 +4,12 @@ export type DashboardMetrics = {
     days: number;
     fromYmd: string;
     toYmd: string;
-    dailyRevenue: Array<{ date: string; value: number }>;
+    dailyRevenue: Array<{ date: string; value: number }>; // 온라인 기준: 오프라인 packageOrders 제외
     dailyRevenueBySource: Array<{
       date: string;
       orders: number;
       applications: number;
-      packages: number;
+      packages: number; // 온라인 기준: 오프라인 packageOrders 제외
       total: number;
     }>;
     dailyOrders: Array<{ date: string; value: number }>;

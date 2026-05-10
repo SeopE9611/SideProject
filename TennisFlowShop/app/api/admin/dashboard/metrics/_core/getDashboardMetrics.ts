@@ -1,4 +1,5 @@
 import { buildOfflineRevenueSummary } from "@/app/api/admin/offline/_lib/revenueSummary";
+import { EXCLUDE_OFFLINE_PACKAGE_ORDERS_FILTER } from "@/app/api/admin/offline/_lib/packageOrderOffline";
 import { getRefundBankLabel } from "@/lib/cancel-request/refund-account";
 import { labelOrderStatus } from "@/lib/admin/status-labels";
 import { getOrderStatusLabelForDisplay } from "@/lib/order-shipping";
@@ -55,7 +56,7 @@ type DashboardMetrics = {
     fromYmd: string;
     toYmd: string;
 
-    // 매출(결제완료 기준) - orders + applications + packageOrders 합산
+    // 온라인 매출(결제완료 기준) - orders + applications + 오프라인 판매를 제외한 packageOrders 합산
     dailyRevenue: Array<{ date: string; value: number }>;
     // 매출 분해(결제완료 기준) - 주문/신청/패키지 별로 보기
     dailyRevenueBySource: Array<{
@@ -1181,28 +1182,42 @@ export async function getDashboardMetrics(db: Db) {
 
   const packageOrdersCol = db.collection("packageOrders");
 
-  const totalPackageOrdersP = packageOrdersCol.countDocuments({});
+  const totalPackageOrdersP = packageOrdersCol.countDocuments(EXCLUDE_OFFLINE_PACKAGE_ORDERS_FILTER);
   const newPackageOrders7dP = packageOrdersCol.countDocuments({
-    createdAt: { $gte: since7d },
+    $and: [EXCLUDE_OFFLINE_PACKAGE_ORDERS_FILTER, { createdAt: { $gte: since7d } }],
   });
 
   const paidPackageOrders7dP = packageOrdersCol.countDocuments({
-    paymentStatus: { $in: PAYMENT_PAID_VALUES },
-    createdAt: { $gte: since7d },
+    $and: [
+      EXCLUDE_OFFLINE_PACKAGE_ORDERS_FILTER,
+      { paymentStatus: { $in: PAYMENT_PAID_VALUES }, createdAt: { $gte: since7d } },
+    ],
   });
   const revenuePackageOrders7dP = packageOrdersCol
     .aggregate<{
       _id: null;
       v: number;
-    }>([{ $match: { paymentStatus: { $in: PAYMENT_PAID_VALUES }, createdAt: { $gte: since7d } } }, { $group: { _id: null, v: { $sum: { $ifNull: ["$totalPrice", 0] } } } }])
+    }>([
+      {
+        $match: {
+          $and: [
+            EXCLUDE_OFFLINE_PACKAGE_ORDERS_FILTER,
+            { paymentStatus: { $in: PAYMENT_PAID_VALUES }, createdAt: { $gte: since7d } },
+          ],
+        },
+      },
+      { $group: { _id: null, v: { $sum: { $ifNull: ["$totalPrice", 0] } } } },
+    ])
     .toArray();
 
   const dailyPackageRevenueP = packageOrdersCol
     .aggregate<{ _id: string; v: number }>([
       {
         $match: {
-          paymentStatus: { $in: PAYMENT_PAID_VALUES },
-          createdAt: { $gte: chartStartUtc, $lte: now },
+          $and: [
+            EXCLUDE_OFFLINE_PACKAGE_ORDERS_FILTER,
+            { paymentStatus: { $in: PAYMENT_PAID_VALUES }, createdAt: { $gte: chartStartUtc, $lte: now } },
+          ],
         },
       },
       {
@@ -1222,15 +1237,19 @@ export async function getDashboardMetrics(db: Db) {
 
   // 결제 대기(24h+) - 패키지 주문(PackageOrder)
   const paymentPending24hPackagesP = packageOrdersCol.countDocuments({
-    paymentStatus: { $in: PAYMENT_PENDING_VALUES },
-    createdAt: { $lte: oneDayAgo },
+    $and: [
+      EXCLUDE_OFFLINE_PACKAGE_ORDERS_FILTER,
+      { paymentStatus: { $in: PAYMENT_PENDING_VALUES }, createdAt: { $lte: oneDayAgo } },
+    ],
   });
 
   const paymentPending24hPackagesListP = packageOrdersCol
     .find(
       {
-        paymentStatus: { $in: PAYMENT_PENDING_VALUES },
-        createdAt: { $lte: oneDayAgo },
+        $and: [
+          EXCLUDE_OFFLINE_PACKAGE_ORDERS_FILTER,
+          { paymentStatus: { $in: PAYMENT_PENDING_VALUES }, createdAt: { $lte: oneDayAgo } },
+        ],
       },
       {
         sort: { createdAt: 1 },

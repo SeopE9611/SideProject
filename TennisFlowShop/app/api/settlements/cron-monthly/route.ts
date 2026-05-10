@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
+import { EXCLUDE_OFFLINE_PACKAGE_ORDERS_FILTER } from "@/app/api/admin/offline/_lib/packageOrderOffline";
 import { getDb } from "@/lib/mongodb";
 import {
   PAID_STATUS_VALUES,
@@ -97,8 +98,11 @@ export async function POST() {
       .collection("packageOrders")
       .find(
         {
-          createdAt: { $gte: start, $lt: end },
-          paymentStatus: { $in: PAID_STATUS_VALUES },
+          $and: [
+            EXCLUDE_OFFLINE_PACKAGE_ORDERS_FILTER,
+            { createdAt: { $gte: start, $lt: end } },
+            { paymentStatus: { $in: PAID_STATUS_VALUES } },
+          ],
         },
         {
           projection: {
