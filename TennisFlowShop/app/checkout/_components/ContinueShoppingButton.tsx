@@ -18,7 +18,7 @@ export default function ContinueShoppingButton({
   const handleClick = () => {
     if (deliveryMethod === "방문수령" && withStringService) {
       const proceed = window.confirm(
-        "스트링 장착 서비스 신청서를 작성하지 않았습니다.\n계속 쇼핑하시겠습니까?\n\n(이 창을 벗어나도 마이페이지 > 주문 내역에서 이어서 신청할 수 있습니다.)",
+        "교체서비스 신청서를 작성하지 않았습니다.\n계속 쇼핑하시겠습니까?\n\n(이 창을 벗어나도 마이페이지 > 주문 내역에서 이어서 신청할 수 있습니다.)",
       );
       if (!proceed) return;
     }

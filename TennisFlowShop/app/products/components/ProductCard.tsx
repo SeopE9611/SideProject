@@ -201,7 +201,7 @@ const ProductCard = React.memo(
     const serviceCtaLabel = isApplyFlow
       ? viewMode === "list"
         ? "이 스트링으로 교체서비스 신청"
-        : "이 스트링으로 신청"
+        : "이 스트링으로 교체서비스 신청"
       : "교체서비스 신청";
 
     const detailHref = isApplyFlow
