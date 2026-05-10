@@ -432,183 +432,189 @@ export default function QnaPageClient({ initialItems, initialTotal, initialLoadE
         </div>
 
         <Card className="border border-border bg-card shadow-sm">
-          <CardHeader className="bg-muted/30 border-b p-4 sm:p-5 md:p-6">
-            <CardTitle className="flex flex-wrap items-center gap-x-3 gap-y-2">
+          <CardHeader className="border-b bg-muted/30 p-4 sm:p-5 md:p-6">
+            <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-                <MessageSquare className="h-5 w-5 text-success" />
-                <span className="text-lg sm:text-xl md:text-2xl font-semibold leading-tight break-keep">Q&amp;A 목록</span>
-                {(isBusy || isValidating) && <div className="h-4 w-4 border-2 border-border border-t-foreground rounded-full animate-spin" />}
+                <MessageSquare className="h-5 w-5 shrink-0 text-success sm:h-6 sm:w-6" />
+                <CardTitle className="whitespace-nowrap break-keep text-lg font-semibold leading-tight sm:text-xl md:text-2xl">Q&amp;A 목록</CardTitle>
+                {(isBusy || isValidating) && <div className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-border border-t-foreground" />}
               </div>
 
-              <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
-                <Button asChild variant="outline" size="sm" className="h-9 md:h-10">
-                  <Link href="/board/qna/write">
-                    <Plus className="h-4 w-4 mr-2" />
-                    문의하기
-                  </Link>
-                </Button>
-              </div>
-            </CardTitle>
+              <Button asChild variant="outline" size="sm" className="h-9 w-full shrink-0 whitespace-nowrap sm:w-auto md:h-10">
+                <Link href="/board/qna/write">
+                  <Plus className="mr-2 h-4 w-4 shrink-0" />
+                  문의하기
+                </Link>
+              </Button>
+            </div>
           </CardHeader>
 
-          <CardContent className="p-4 md:p-5">
-            <div className="mb-3 md:mb-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 md:gap-4">
-              <div className="flex flex-wrap items-center gap-1.5 md:gap-2">
-                <Select
-                  value={category}
-                  onValueChange={(v) => {
-                    setUiLoading(true);
-                    const nextPage = 1;
-                    setCategory(v);
-                    setPage(nextPage);
+          <div className="border-b bg-muted/20 px-4 py-3 sm:px-5 md:px-6">
+            <div className="flex min-w-0 flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div className="flex min-w-0 flex-col gap-2 md:flex-row md:items-center">
+                <span className="shrink-0 text-xs font-semibold uppercase tracking-wide text-muted-foreground">필터</span>
+                <div className="grid w-full min-w-0 grid-cols-1 gap-2 sm:grid-cols-2 md:w-auto">
+                  <Select
+                    value={category}
+                    onValueChange={(v) => {
+                      setUiLoading(true);
+                      const nextPage = 1;
+                      setCategory(v);
+                      setPage(nextPage);
 
-                    pushUrl({
-                      page: nextPage,
-                      category: v,
-                      answerFilter,
-                      keyword,
-                      field,
-                    });
-                  }}
-                >
-                  <SelectTrigger className="h-9 md:h-10 w-[140px] bg-card text-sm">
-                    <SelectValue placeholder="카테고리" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">전체 카테고리</SelectItem>
-                    <SelectItem value="product">상품</SelectItem>
-                    <SelectItem value="order">주문/결제</SelectItem>
-                    <SelectItem value="delivery">배송</SelectItem>
-                    <SelectItem value="refund">환불/교환</SelectItem>
-                    <SelectItem value="service">서비스</SelectItem>
-                    <SelectItem value="academy">아카데미</SelectItem>
-                    <SelectItem value="member">회원</SelectItem>
-                  </SelectContent>
-                </Select>
+                      pushUrl({
+                        page: nextPage,
+                        category: v,
+                        answerFilter,
+                        keyword,
+                        field,
+                      });
+                    }}
+                  >
+                    <SelectTrigger className="h-9 w-full bg-card text-sm md:h-10 md:w-[150px]" aria-label="문의 분류">
+                      <SelectValue placeholder="문의 분류" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">전체 분류</SelectItem>
+                      <SelectItem value="product">상품</SelectItem>
+                      <SelectItem value="order">주문/결제</SelectItem>
+                      <SelectItem value="delivery">배송</SelectItem>
+                      <SelectItem value="refund">환불/교환</SelectItem>
+                      <SelectItem value="service">서비스</SelectItem>
+                      <SelectItem value="academy">아카데미</SelectItem>
+                      <SelectItem value="member">회원</SelectItem>
+                    </SelectContent>
+                  </Select>
 
-                <Select
-                  value={answerFilter}
-                  onValueChange={(v) => {
-                    setUiLoading(true);
-                    const nextAnswerFilter = (v === "waiting" || v === "completed" ? v : "all") as "all" | "waiting" | "completed";
-                    const nextPage = 1;
+                  <Select
+                    value={answerFilter}
+                    onValueChange={(v) => {
+                      setUiLoading(true);
+                      const nextAnswerFilter = (v === "waiting" || v === "completed" ? v : "all") as "all" | "waiting" | "completed";
+                      const nextPage = 1;
 
-                    setAnswerFilter(nextAnswerFilter);
-                    setPage(nextPage);
+                      setAnswerFilter(nextAnswerFilter);
+                      setPage(nextPage);
 
-                    pushUrl({
-                      page: nextPage,
-                      category,
-                      answerFilter: nextAnswerFilter,
-                      keyword,
-                      field,
-                    });
-                  }}
-                >
-                  <SelectTrigger className="h-9 md:h-10 w-[120px] bg-card text-sm">
-                    <SelectValue placeholder="답변 상태" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">전체</SelectItem>
-                    <SelectItem value="waiting">답변 대기</SelectItem>
-                    <SelectItem value="completed">답변 완료</SelectItem>
-                  </SelectContent>
-                </Select>
+                      pushUrl({
+                        page: nextPage,
+                        category,
+                        answerFilter: nextAnswerFilter,
+                        keyword,
+                        field,
+                      });
+                    }}
+                  >
+                    <SelectTrigger className="h-9 w-full bg-card text-sm md:h-10 md:w-[140px]" aria-label="답변 상태">
+                      <SelectValue placeholder="답변 상태" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">전체 상태</SelectItem>
+                      <SelectItem value="waiting">답변 대기</SelectItem>
+                      <SelectItem value="completed">답변 완료</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
-              <div className="flex flex-wrap items-center gap-1.5 md:gap-2">
-                <Select value={inputField} onValueChange={(v) => setInputField(v === "title" || v === "content" || v === "title_content" ? v : "all")}>
-                  <SelectTrigger className="h-9 md:h-10 w-[120px] bg-card text-sm">
-                    <SelectValue placeholder="검색 조건" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">전체</SelectItem>
-                    <SelectItem value="title">제목</SelectItem>
-                    <SelectItem value="content">내용</SelectItem>
-                    <SelectItem value="title_content">제목+내용</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="flex min-w-0 flex-col gap-2 lg:ml-auto lg:flex-row lg:items-center">
+                <span className="shrink-0 text-xs font-semibold uppercase tracking-wide text-muted-foreground lg:sr-only">검색</span>
+                <div className="flex w-full min-w-0 flex-col gap-2 sm:flex-row lg:w-auto">
+                  <Select value={inputField} onValueChange={(v) => setInputField(v === "title" || v === "content" || v === "title_content" ? v : "all")}>
+                    <SelectTrigger className="h-9 w-full bg-card text-sm sm:w-[130px] md:h-10" aria-label="검색 기준">
+                      <SelectValue placeholder="검색 기준" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">전체 검색</SelectItem>
+                      <SelectItem value="title">제목</SelectItem>
+                      <SelectItem value="content">내용</SelectItem>
+                      <SelectItem value="title_content">제목+내용</SelectItem>
+                    </SelectContent>
+                  </Select>
 
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    type="search"
-                    placeholder="검색어를 입력하세요"
-                    className="h-9 md:h-10 w-[200px] pl-10 bg-card text-sm"
-                    value={inputKeyword}
-                    onChange={(e) => setInputKeyword(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
+                  <div className="relative min-w-0 flex-1 lg:w-[240px] lg:flex-none">
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      type="search"
+                      placeholder="검색어를 입력하세요"
+                      className="h-9 w-full min-w-0 bg-card pl-10 text-sm md:h-10"
+                      value={inputKeyword}
+                      onChange={(e) => setInputKeyword(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          setUiLoading(true);
+                          const nextPage = 1;
+                          setPage(nextPage);
+                          setKeyword(inputKeyword);
+                          setField(inputField);
+                          pushUrl({
+                            page: nextPage,
+                            category,
+                            answerFilter,
+                            keyword: inputKeyword,
+                            field: inputField,
+                          });
+                        }
+                      }}
+                    />
+                  </div>
+
+                  {(keyword.trim() || field !== "all") && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
                         setUiLoading(true);
                         const nextPage = 1;
                         setPage(nextPage);
-                        setKeyword(inputKeyword);
-                        setField(inputField);
+                        setInputKeyword("");
+                        setKeyword("");
+                        setInputField("all");
+                        setField("all");
                         pushUrl({
                           page: nextPage,
                           category,
                           answerFilter,
-                          keyword: inputKeyword,
-                          field: inputField,
+                          keyword: "",
+                          field: "all",
                         });
-                      }
-                    }}
-                  />
-                </div>
+                      }}
+                      className="h-9 shrink-0 whitespace-nowrap text-sm md:h-10"
+                      disabled={isBusy}
+                    >
+                      전체 보기
+                    </Button>
+                  )}
 
-                {(keyword.trim() || field !== "all") && (
                   <Button
                     type="button"
-                    variant="outline"
                     onClick={() => {
                       setUiLoading(true);
                       const nextPage = 1;
                       setPage(nextPage);
-                      setInputKeyword("");
-                      setKeyword("");
-                      setInputField("all");
-                      setField("all");
+                      setKeyword(inputKeyword);
+                      setField(inputField);
                       pushUrl({
                         page: nextPage,
                         category,
                         answerFilter,
-                        keyword: "",
-                        field: "all",
+                        keyword: inputKeyword,
+                        field: inputField,
                       });
                     }}
-                    className="h-9 md:h-10 text-sm"
+                    variant="outline"
+                    className="h-9 shrink-0 whitespace-nowrap text-sm md:h-10"
                     disabled={isBusy}
                   >
-                    전체 보기
+                    {isBusy && <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-border/30 border-t-primary-foreground" />}
+                    검색
                   </Button>
-                )}
-
-                <Button
-                  type="button"
-                  onClick={() => {
-                    setUiLoading(true);
-                    const nextPage = 1;
-                    setPage(nextPage);
-                    setKeyword(inputKeyword);
-                    setField(inputField);
-                    pushUrl({
-                      page: nextPage,
-                      category,
-                      answerFilter,
-                      keyword: inputKeyword,
-                      field: inputField,
-                    });
-                  }}
-                  variant="outline"
-                  className="h-9 md:h-10 text-sm"
-                  disabled={isBusy}
-                >
-                  {isBusy && <div className="h-4 w-4 border-2 border-border/30 border-t-primary-foreground rounded-full animate-spin mr-2" />}
-                  검색
-                </Button>
+                </div>
               </div>
             </div>
+          </div>
 
+          <CardContent className="p-4 md:p-5">
             {/* 비밀글 1차 차단(안내 모달): 바깥 클릭 시 자동 닫힘(radix 기본) */}
             <Dialog open={secretBlock.open} onOpenChange={(open) => setSecretBlock((p) => ({ ...p, open }))}>
               <DialogContent>

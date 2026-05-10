@@ -278,7 +278,7 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
         </div>
 
         <Card className="border border-border bg-card shadow-sm">
-          <CardHeader className="space-y-4 border-b bg-muted/30 p-4 sm:p-5 md:p-6">
+          <CardHeader className="border-b bg-muted/30 p-4 sm:p-5 md:p-6">
             <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex min-w-0 items-center gap-2 sm:gap-3">
                 <HeaderIcon className="h-5 w-5 shrink-0 text-primary sm:h-6 sm:w-6" />
@@ -287,20 +287,25 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
 
               <AdminNoticeWriteButton href={writeHref} label={writeLabel} />
             </div>
+          </CardHeader>
 
-            <div className="flex min-w-0 flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
-              <div className="w-full lg:w-[160px] lg:shrink-0">
-                <Select value={inputField} onValueChange={(v) => setInputField(v as any)}>
-                  <SelectTrigger className="h-9 w-full bg-card text-sm sm:h-10 sm:text-base">
-                    <SelectValue placeholder="검색 조건" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">전체</SelectItem>
-                    <SelectItem value="title">제목</SelectItem>
-                    <SelectItem value="content">내용</SelectItem>
-                    <SelectItem value="title_content">제목+내용</SelectItem>
-                  </SelectContent>
-                </Select>
+          <div className="border-b bg-muted/20 px-4 py-3 sm:px-5 md:px-6">
+            <div className="flex min-w-0 flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+              <div className="flex min-w-0 flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-2">
+                <span className="shrink-0 text-xs font-semibold uppercase tracking-wide text-muted-foreground">필터</span>
+                <div className="w-full sm:w-[170px] sm:shrink-0">
+                  <Select value={inputField} onValueChange={(v) => setInputField(v as any)}>
+                    <SelectTrigger className="h-9 w-full bg-card text-sm sm:h-10 sm:text-base" aria-label="검색 조건">
+                      <SelectValue placeholder="검색 조건" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">전체 검색</SelectItem>
+                      <SelectItem value="title">제목</SelectItem>
+                      <SelectItem value="content">내용</SelectItem>
+                      <SelectItem value="title_content">제목+내용</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
               <form
@@ -340,7 +345,8 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
                 </Button>
               </form>
             </div>
-          </CardHeader>
+          </div>
+
           <CardContent className="p-4 sm:p-5 md:p-6">
             <div className="space-y-3.5 sm:space-y-4">
               {!shouldShowLoadingState && hasDataError && (
