@@ -9,8 +9,8 @@ import { adminMutator } from "@/lib/admin/adminFetcher";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { maskPhone } from "@/lib/offline/normalizers";
 import { cn } from "@/lib/utils";
-import type { OfflineCustomerDto } from "@/types/admin/offline";
-import { AlertCircle, Calendar, Check, ChevronLeft, ChevronRight, ClipboardList, CreditCard, ExternalLink, History, Mail, Pencil, Phone, RotateCcw, Search, User, UserPlus, Wrench, X } from "lucide-react";
+import type { OfflineCustomerDto, OfflinePaymentMethod, OfflineRevenueSummary } from "@/types/admin/offline";
+import { AlertCircle, Calendar, Check, ChevronLeft, ChevronRight, ClipboardList, CreditCard, ExternalLink, History, Mail, Pencil, Phone, RotateCcw, Search, Store, User, UserPlus, Wrench, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import useSWR from "swr";
@@ -39,6 +39,24 @@ function formatCurrency(value: number | null | undefined): string {
 
 function formatDate(value: string | Date): string {
   return new Intl.DateTimeFormat("ko-KR", { year: "numeric", month: "numeric", day: "numeric" }).format(new Date(value));
+}
+
+function todayDateInputValue(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function monthStartDateInputValue(): string {
+  const now = new Date();
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString().slice(0, 10);
+}
+
+function buildSummaryRangePreset(preset: "today" | "month") {
+  const today = todayDateInputValue();
+  return { from: preset === "today" ? today : monthStartDateInputValue(), to: today };
+}
+
+function methodLabel(method: OfflinePaymentMethod): string {
+  return PAYMENT_METHOD_LABELS[method] ?? "기타";
 }
 
 function formatLineSummary(lines?: Array<{ racketName?: string; stringName?: string; tensionMain?: string; tensionCross?: string }>): string {
@@ -159,6 +177,8 @@ export default function OfflineAdminClient() {
   const [editMessage, setEditMessage] = useState<string | null>(null);
   const [isEditingSubmit, setIsEditingSubmit] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [summaryPreset, setSummaryPreset] = useState<"today" | "month" | "custom">("month");
+  const [summaryRange, setSummaryRange] = useState(() => buildSummaryRangePreset("month"));
 
   const [form, setForm] = useState({ kind: "stringing", status: "received", racketName: "", stringName: "", tensionMain: "", tensionCross: "", memo: "", amount: 0, method: "cash", payStatus: "pending" });
   const [newCustomer, setNewCustomer] = useState({ name: "", phone: "", email: "", memo: "" });
@@ -171,9 +191,12 @@ export default function OfflineAdminClient() {
     if (value.trim()) recordParams.set(filterKey, value.trim());
   });
   const recordsKey = `/api/admin/offline/records?${recordParams.toString()}`;
+  const summaryParams = new URLSearchParams({ from: summaryRange.from, to: summaryRange.to, groupBy: "day", includePackageSales: "true" });
+  const summaryKey = `/api/admin/offline/summary?${summaryParams.toString()}`;
 
   const { data, isLoading: searchLoading, mutate } = useSWR<{ onlineUsers: any[]; offlineCustomers: any[] }>(key, authenticatedSWRFetcher);
   const { data: records, isLoading: recordsLoading, mutate: mutateRecords } = useSWR<{ items: any[]; page?: number; limit?: number; total?: number; totalPages?: number }>(recordsKey, authenticatedSWRFetcher);
+  const { data: summary, isLoading: summaryLoading, error: summaryError } = useSWR<OfflineRevenueSummary>(summaryKey, authenticatedSWRFetcher);
 
   async function selectOfflineCustomer(id: string) {
     const res = (await authenticatedSWRFetcher(`/api/admin/offline/customers/${id}`)) as { item: OfflineCustomerDto };
@@ -189,6 +212,116 @@ export default function OfflineAdminClient() {
 
   return (
     <div className="space-y-6">
+      {/* Offline Revenue Summary */}
+      <Card className="overflow-hidden border-border/60">
+        <CardHeader className="pb-0">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+            <SectionHeader icon={Store} title="오프라인 매출 요약" description="온라인 주문/정산 총액과 분리된 오프라인 작업·패키지 판매 집계입니다" />
+            <div className="flex flex-wrap items-end gap-2">
+              <Button
+                type="button"
+                size="sm"
+                variant={summaryPreset === "today" ? "default" : "outline"}
+                onClick={() => {
+                  setSummaryPreset("today");
+                  setSummaryRange(buildSummaryRangePreset("today"));
+                }}
+              >
+                오늘
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant={summaryPreset === "month" ? "default" : "outline"}
+                onClick={() => {
+                  setSummaryPreset("month");
+                  setSummaryRange(buildSummaryRangePreset("month"));
+                }}
+              >
+                이번 달
+              </Button>
+              <Input
+                aria-label="요약 시작일"
+                type="date"
+                value={summaryRange.from}
+                onChange={(e) => {
+                  setSummaryPreset("custom");
+                  setSummaryRange((prev) => ({ ...prev, from: e.target.value }));
+                }}
+                className="h-9 w-[150px]"
+              />
+              <Input
+                aria-label="요약 종료일"
+                type="date"
+                value={summaryRange.to}
+                onChange={(e) => {
+                  setSummaryPreset("custom");
+                  setSummaryRange((prev) => ({ ...prev, to: e.target.value }));
+                }}
+                className="h-9 w-[150px]"
+              />
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-4 space-y-4">
+          {summaryLoading && (
+            <div className="rounded-xl border border-border/60 bg-muted/20 p-4 text-sm text-muted-foreground">집계 불러오는 중...</div>
+          )}
+          {summaryError && !summaryLoading && (
+            <Message type="error">오프라인 매출 요약을 불러오지 못했습니다. 기존 고객/기록 관리는 계속 사용할 수 있습니다.</Message>
+          )}
+          {summary && !summaryError && (
+            <>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+                <div className="rounded-xl border border-border/60 bg-primary/5 p-4">
+                  <p className="text-xs font-medium text-muted-foreground">오프라인 총 매출</p>
+                  <p className="mt-2 text-2xl font-bold tabular-nums">{formatCurrency(summary.total.paidAmount)}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">순매출 {formatCurrency(summary.total.netAmount)}</p>
+                </div>
+                <div className="rounded-xl border border-border/60 bg-muted/20 p-4">
+                  <p className="text-xs font-medium text-muted-foreground">작업/매출 기록</p>
+                  <p className="mt-2 text-xl font-semibold tabular-nums">{formatCurrency(summary.records.paidAmount)}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{summary.records.paidCount.toLocaleString("ko-KR")}건 결제완료</p>
+                </div>
+                <div className="rounded-xl border border-border/60 bg-muted/20 p-4">
+                  <p className="text-xs font-medium text-muted-foreground">패키지 판매</p>
+                  <p className="mt-2 text-xl font-semibold tabular-nums">{formatCurrency(summary.packageSales.paidAmount)}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{summary.packageSales.paidCount.toLocaleString("ko-KR")}건 결제완료</p>
+                </div>
+                <div className="rounded-xl border border-warning/30 bg-warning/10 p-4">
+                  <p className="text-xs font-medium text-muted-foreground">미결제</p>
+                  <p className="mt-2 text-xl font-semibold tabular-nums">{formatCurrency(summary.total.pendingAmount)}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{summary.total.pendingCount.toLocaleString("ko-KR")}건</p>
+                </div>
+                <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-4">
+                  <p className="text-xs font-medium text-muted-foreground">환불/차감</p>
+                  <p className="mt-2 text-xl font-semibold tabular-nums">{formatCurrency(summary.total.refundedAmount)}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{summary.total.refundedCount.toLocaleString("ko-KR")}건</p>
+                </div>
+              </div>
+              <div className="grid gap-3 lg:grid-cols-[1fr_auto] lg:items-center">
+                <div className="rounded-xl border border-border/60 p-4">
+                  <p className="mb-3 text-sm font-semibold text-foreground">결제수단별 결제완료 매출</p>
+                  <div className="grid gap-2 sm:grid-cols-4">
+                    {(Object.keys(PAYMENT_METHOD_LABELS) as OfflinePaymentMethod[]).map((method) => (
+                      <div key={method} className="rounded-lg bg-muted/30 px-3 py-2">
+                        <p className="text-xs text-muted-foreground">{methodLabel(method)}</p>
+                        <p className="font-semibold tabular-nums">{formatCurrency(summary.total.byMethod[method])}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="rounded-xl border border-border/60 bg-muted/20 px-4 py-3 text-sm text-muted-foreground">
+                  <p>패키지 발급 보정 필요</p>
+                  <p className="mt-1 text-lg font-semibold text-foreground">{summary.packageSales.issueFailedCount.toLocaleString("ko-KR")}건</p>
+                  {summary.packageSales.issueFailedCount > 0 && <p className="text-xs">금액 {formatCurrency(summary.packageSales.issueFailedAmount)} · TODO: 보정 관리 화면 연결</p>}
+                </div>
+              </div>
+            </>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Top Section: Selected Customer Quick View */}
       {selected && (
         <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">

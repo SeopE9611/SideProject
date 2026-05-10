@@ -73,3 +73,39 @@ export interface OfflineCustomerDto {
   createdAt?: string;
   updatedAt?: string;
 }
+
+export type OfflineRevenueKindBucket = Record<OfflineKind, number>;
+
+export type OfflineRevenueBucket = {
+  paidAmount: number;
+  refundedAmount: number;
+  pendingAmount: number;
+  netAmount: number;
+  paidCount: number;
+  refundedCount: number;
+  pendingCount: number;
+  totalCount: number;
+  byMethod: Record<OfflinePaymentMethod, number>;
+};
+
+export type OfflineRecordsRevenueBucket = OfflineRevenueBucket & {
+  byKind: OfflineRevenueKindBucket;
+};
+
+export type OfflinePackageSalesRevenueBucket = OfflineRevenueBucket & {
+  issueFailedCount: number;
+  issueFailedAmount: number;
+};
+
+export type OfflineRevenueSummary = {
+  range: { from: string | null; to: string | null };
+  records: OfflineRecordsRevenueBucket;
+  packageSales: OfflinePackageSalesRevenueBucket;
+  total: OfflineRevenueBucket;
+  daily?: Array<{
+    date: string;
+    recordsPaidAmount: number;
+    packageSalesPaidAmount: number;
+    totalPaidAmount: number;
+  }>;
+};

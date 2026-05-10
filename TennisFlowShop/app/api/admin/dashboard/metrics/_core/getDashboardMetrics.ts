@@ -1,3 +1,4 @@
+import { buildOfflineRevenueSummary } from "@/app/api/admin/offline/_lib/revenueSummary";
 import { getRefundBankLabel } from "@/lib/cancel-request/refund-account";
 import { labelOrderStatus } from "@/lib/admin/status-labels";
 import { getOrderStatusLabelForDisplay } from "@/lib/order-shipping";
@@ -81,6 +82,14 @@ type DashboardMetrics = {
     applications: KpiBlock & { paid7d: number; revenue7d: number };
     rentals: KpiBlock & { paid7d: number; revenue7d: number };
     packages: KpiBlock & { paid7d: number; revenue7d: number };
+    offline: {
+      todayOfflineRevenue: number;
+      monthOfflineRevenue: number;
+      pendingOfflineAmount: number;
+      pendingOfflineCount: number;
+      offlinePackageRevenue: number;
+      offlineServiceRevenue: number;
+    };
 
     // 리뷰(상품/서비스)
     reviews: KpiBlock & {
@@ -324,6 +333,7 @@ export async function getDashboardMetrics(db: Db) {
   // 월 KPI(이번 달 1일 KST 00:00)
   const kstNow = getKstParts(now);
   const monthStartUtc = kstDayStartUtc(kstNow.y, kstNow.m, 1);
+  const todayStartUtc = kstDayStartUtc(kstNow.y, kstNow.m, kstNow.d);
 
   // ----------------------------- Users -----------------------------
 
@@ -1463,6 +1473,9 @@ export async function getDashboardMetrics(db: Db) {
   // 실패 건은 “즉시 조치 필요”라 queued와 분리해서 카운트
   const outboxFailedP = outboxCol.countDocuments({ status: "failed" });
 
+  const offlineSummaryMonthP = buildOfflineRevenueSummary(db, { from: monthStartUtc, to: now, includePackageSales: true });
+  const offlineSummaryTodayP = buildOfflineRevenueSummary(db, { from: todayStartUtc, to: now, includePackageSales: true });
+
   const outboxBacklogListP = outboxCol
     .find(
       { status: { $in: ["queued", "failed"] } },
@@ -1582,6 +1595,8 @@ export async function getDashboardMetrics(db: Db) {
     stringingAgingList,
     stringingAging3d,
     outboxBacklogList,
+    offlineSummaryMonth,
+    offlineSummaryToday,
   ] = await Promise.all([
     totalUsersP,
     newUsers7dP,
@@ -1680,6 +1695,8 @@ export async function getDashboardMetrics(db: Db) {
     stringingAgingListP,
     stringingAging3dP,
     outboxBacklogListP,
+    offlineSummaryMonthP,
+    offlineSummaryTodayP,
   ]);
 
   const revenueOrders7d = Number(revenueOrders7dRows?.[0]?.v || 0);
@@ -2067,6 +2084,15 @@ export async function getDashboardMetrics(db: Db) {
         delta7d: newPackageOrders7d,
         paid7d: paidPackageOrders7d,
         revenue7d: revenuePackageOrders7d,
+      },
+
+      offline: {
+        todayOfflineRevenue: offlineSummaryToday.total.paidAmount,
+        monthOfflineRevenue: offlineSummaryMonth.total.paidAmount,
+        pendingOfflineAmount: offlineSummaryMonth.total.pendingAmount,
+        pendingOfflineCount: offlineSummaryMonth.total.pendingCount,
+        offlinePackageRevenue: offlineSummaryMonth.packageSales.paidAmount,
+        offlineServiceRevenue: offlineSummaryMonth.records.paidAmount,
       },
 
       reviews: {

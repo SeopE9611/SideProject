@@ -49,6 +49,14 @@ export type DashboardMetrics = {
       paid7d: number;
       revenue7d: number;
     };
+    offline: {
+      todayOfflineRevenue: number;
+      monthOfflineRevenue: number;
+      pendingOfflineAmount: number;
+      pendingOfflineCount: number;
+      offlinePackageRevenue: number;
+      offlineServiceRevenue: number;
+    };
     reviews: {
       total: number;
       delta7d: number;
