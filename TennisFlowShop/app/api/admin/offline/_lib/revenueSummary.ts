@@ -1,4 +1,5 @@
 import type { Db, Document } from "mongodb";
+import { OFFLINE_PACKAGE_ORDER_FILTER, isOfflinePackageOrder } from "./packageOrderOffline";
 import { isPaidPaymentStatus, orderPaidAmount, toNumber } from "@/app/api/settlements/_lib/settlementPolicy";
 import type { OfflinePaymentMethod, OfflineRevenueSummary, OfflineRevenueBucket, OfflineRevenueKindBucket } from "@/types/admin/offline";
 
@@ -93,10 +94,6 @@ function addStatusAmount(bucket: OfflineRevenueBucket, status: "paid" | "refunde
   bucket.netAmount = bucket.paidAmount - bucket.refundedAmount;
 }
 
-function isOfflinePackageOrder(doc: Document): boolean {
-  const meta = doc.meta as Record<string, unknown> | undefined;
-  return meta?.source === "offline_admin" || meta?.channel === "offline";
-}
 
 function getPackageOrderStatus(doc: Document): "paid" | "refunded" | "pending" {
   const paymentInfo = doc.paymentInfo as Record<string, unknown> | undefined;
@@ -180,7 +177,7 @@ export async function buildOfflineRevenueSummary(db: Db, options: SummaryOptions
   if (includePackageSales) {
     const packageDocs = await db.collection("packageOrders")
       .find(
-        { $or: [{ "meta.source": "offline_admin" }, { "meta.channel": "offline" }] },
+        OFFLINE_PACKAGE_ORDER_FILTER,
         { projection: { createdAt: 1, status: 1, paymentStatus: 1, paymentInfo: 1, paidAmount: 1, totalPrice: 1, packageInfo: 1, meta: 1 } },
       )
       .toArray();
