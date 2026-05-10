@@ -23,6 +23,12 @@ export type OfflineRecordPackageUsage = {
   passId?: string | null;
   usedCount?: number | null;
   consumptionId?: string | null;
+  reverted?: boolean | null;
+  revertedAt?: string | null;
+  revertedBy?: string | null;
+  revertReason?: string | null;
+  revertedConsumptionId?: string | null;
+  isReverted?: boolean | null;
 };
 
 export type OfflineServicePassSummary = {

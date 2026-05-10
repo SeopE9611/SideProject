@@ -316,6 +316,7 @@ type PointFormState = {
 
 type PackageFormState = {
   passId: string;
+  revertReason?: string;
   message?: string | null;
   messageType?: "success" | "error" | null;
 };
@@ -334,6 +335,12 @@ const PACKAGE_ERROR_MESSAGES: Record<string, string> = {
   "pass is not usable": "선택한 패키지는 사용할 수 없습니다.",
   "no remaining pass count": "잔여 횟수가 부족합니다.",
   "package already used for this record": "이미 이 기록에 패키지가 사용 처리되었습니다.",
+  "package usage not found": "패키지 사용 이력이 없습니다.",
+  "package usage already reverted": "이미 취소된 패키지 사용입니다.",
+  "consumption not found": "패키지 사용 이력을 찾을 수 없습니다.",
+  "consumption already reverted": "이미 취소된 패키지 사용입니다.",
+  "revert reason required": "패키지 사용 취소 사유를 입력해주세요.",
+  "package usage revert failed": "패키지 사용 취소에 실패했습니다.",
   "package consumption failed": "패키지 사용 처리에 실패했습니다.",
   "package consumed but offline record update failed": "패키지는 차감됐지만 기록 연결에 실패했습니다. 관리자에게 보정이 필요합니다.",
 };
@@ -551,6 +558,31 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
       await mutateDetail();
     } catch (err) {
       updatePackageForm(recordId, { passId: selectedPassId, message: translatePackageError(err), messageType: "error" });
+    } finally {
+      setProcessingPackageRecordId(null);
+    }
+  }
+
+  async function handleRecordPackageRevert(recordId: string) {
+    const reason = (packageForms[recordId]?.revertReason ?? "").trim();
+    if (!reason) {
+      updatePackageForm(recordId, { message: "패키지 사용 취소 사유를 입력해주세요.", messageType: "error" });
+      return;
+    }
+    if (!window.confirm("이 오프라인 작업에 적용된 패키지 사용 1회를 취소하고 잔여 횟수를 복구하시겠습니까?")) return;
+
+    setProcessingPackageRecordId(recordId);
+    updatePackageForm(recordId, { message: null, messageType: null });
+    try {
+      await adminMutator(`/api/admin/offline/records/${recordId}/package/revert`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason }),
+      });
+      updatePackageForm(recordId, { revertReason: "", message: "패키지 사용 취소가 완료되었습니다.", messageType: "success" });
+      await mutateDetail();
+    } catch (err) {
+      updatePackageForm(recordId, { message: translatePackageError(err) || "패키지 사용 취소에 실패했습니다.", messageType: "error" });
     } finally {
       setProcessingPackageRecordId(null);
     }
@@ -1329,8 +1361,10 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                 const pointUnavailableMessage = item.linkedUserId && !item.linkedUser ? "연결된 온라인 회원 정보를 찾을 수 없어 포인트를 처리할 수 없습니다." : "온라인 회원과 연결된 고객만 포인트를 처리할 수 있습니다.";
                 const packageUsage = record.packageUsage;
                 const hasPackageUsage = !!packageUsage?.passId || !!packageUsage?.consumptionId;
+                const isPackageUsageReverted = Boolean(packageUsage?.isReverted || packageUsage?.revertedAt || packageUsage?.reverted);
+                const hasActivePackageUsage = hasPackageUsage && !isPackageUsageReverted;
                 const usedPass = passes.find((pass) => pass.id === packageUsage?.passId);
-                const packageForm = packageForms[record.id] ?? { passId: usablePasses[0]?.id ?? "" };
+                const packageForm = packageForms[record.id] ?? { passId: usablePasses[0]?.id ?? "", revertReason: "" };
                 const canUsePackageForRecord = canUseLinkedFeatures && !hasPackageUsage && usablePasses.length > 0;
                 const isExpanded = expandedRecords.has(record.id);
 
@@ -1435,16 +1469,47 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                           {/* Package Section */}
                           <div className="space-y-3">
                             <h4 className="text-sm font-medium text-foreground">패키지</h4>
-                            {hasPackageUsage ? (
-                              <div className="rounded-lg border border-success/30 bg-success/5 p-3">
-                                <Badge className="bg-success/10 text-success border-success/20">
-                                  <Check className="mr-1.5 h-3.5 w-3.5" />
-                                  패키지 1회 사용 완료
+                            {isPackageUsageReverted ? (
+                              <div className="rounded-lg border border-warning/30 bg-warning/5 p-3 text-foreground">
+                                <Badge className="border-warning/30 bg-warning/10 text-warning">
+                                  <History className="mr-1.5 h-3.5 w-3.5" />
+                                  패키지 사용 취소됨
                                 </Badge>
-                                <p className="mt-2 text-xs text-muted-foreground">
-                                  {getPassLabel(usedPass)} {Number(packageUsage?.usedCount ?? 1)}회 사용
+                                <p className="mt-2 text-xs">
+                                  {getPassLabel(usedPass)} {Number(packageUsage?.usedCount ?? 1)}회 사용 취소
                                 </p>
-                                {!packageUsage?.consumptionId && <p className="mt-1 text-xs text-destructive">패키지 사용 상태를 복구해야 합니다.</p>}
+                                <p className="mt-1 text-xs text-muted-foreground">취소일: {formatDate(packageUsage?.revertedAt)}</p>
+                                {packageUsage?.revertReason && <p className="mt-1 text-xs text-muted-foreground">사유: {packageUsage.revertReason}</p>}
+                                <p className="mt-2 text-xs text-muted-foreground">이 record는 취소 이력 보존을 위해 다시 패키지를 사용할 수 없습니다. 새 record를 등록해 주세요.</p>
+                              </div>
+                            ) : hasActivePackageUsage ? (
+                              <div className="space-y-3 rounded-lg border border-success/30 bg-success/5 p-3">
+                                <div>
+                                  <Badge className="bg-success/10 text-success border-success/20">
+                                    <Check className="mr-1.5 h-3.5 w-3.5" />
+                                    패키지 1회 사용 완료
+                                  </Badge>
+                                  <p className="mt-2 text-xs text-muted-foreground">
+                                    {getPassLabel(usedPass)} {Number(packageUsage?.usedCount ?? 1)}회 사용
+                                  </p>
+                                  {packageUsage?.consumptionId && <p className="mt-1 text-xs text-muted-foreground">consumptionId: {packageUsage.consumptionId}</p>}
+                                  {!packageUsage?.consumptionId && <p className="mt-1 text-xs text-destructive">패키지 사용 상태를 복구해야 합니다.</p>}
+                                </div>
+                                {packageUsage?.consumptionId && (
+                                  <div className="space-y-2 rounded-lg border border-border/40 bg-background/70 p-3">
+                                    <p className="text-xs text-muted-foreground">잘못 차감한 경우에만 사용 취소하세요. 패키지 잔여 횟수가 복구됩니다.</p>
+                                    <Input
+                                      value={packageForm.revertReason ?? ""}
+                                      onChange={(e) => updatePackageForm(record.id, { revertReason: e.target.value })}
+                                      placeholder="사용 취소 사유를 입력해주세요."
+                                      disabled={processingPackageRecordId === record.id}
+                                      className="h-8 text-sm"
+                                    />
+                                    <Button type="button" size="sm" variant="destructive" className="w-full" onClick={() => handleRecordPackageRevert(record.id)} disabled={processingPackageRecordId === record.id}>
+                                      {processingPackageRecordId === record.id ? "처리 중..." : "사용 취소"}
+                                    </Button>
+                                  </div>
+                                )}
                               </div>
                             ) : (
                               <Badge variant="outline" className="text-muted-foreground">
