@@ -2,7 +2,7 @@
 
 /** Responsibility: 관리자 대시보드 화면 표현 + 상호작용 오케스트레이션 뷰. */
 
-import { Activity, AlertTriangle, Bell, Boxes, CircleHelp, ClipboardList, Package, ShoppingCart, Star, TrendingUp, Users, Wrench } from "lucide-react";
+import { Activity, AlertTriangle, Bell, Boxes, CircleHelp, ClipboardList, Package, ShoppingCart, Star, Store, TrendingUp, Users, Wrench } from "lucide-react";
 import Link from "next/link";
 import { type ReactNode, useMemo } from "react";
 import { Area, AreaChart, Bar, CartesianGrid, Cell, Pie, PieChart, BarChart as RechartsBarChart, Tooltip as RechartsTooltip, ResponsiveContainer, XAxis, YAxis } from "recharts";
@@ -473,6 +473,7 @@ export default function AdminDashboardClient() {
   // series.days(기본 30일) 범위 합산값입니다. (엄밀한 '이번 달'과는 다를 수 있음)
   const periodRevenue = data.series.dailyRevenue.reduce((sum, d) => sum + Number(d.value || 0), 0);
   const weekRevenue = data.kpi.orders.revenue7d + data.kpi.applications.revenue7d + data.kpi.packages.revenue7d;
+  const offlineMetrics = data.kpi.offline;
 
   return (
     <div className="space-y-8 pb-8">
@@ -524,6 +525,33 @@ export default function AdminDashboardClient() {
             sub={`활성 ${formatAdminNumber(data.kpi.users.active7d)}명`}
             icon={<Users className="h-5 w-5" />}
             spark={<InteractiveSparkLine data={data.series.dailySignups.slice(-30)} />}
+          />
+        </div>
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <KpiCard
+            title="오늘 오프라인 매출"
+            value={formatAdminKRW(offlineMetrics.todayOfflineRevenue)}
+            sub={`이번 달 ${formatAdminKRW(offlineMetrics.monthOfflineRevenue)}`}
+            icon={<Store className="h-5 w-5" />}
+            trend="온라인 총매출 미합산"
+          />
+          <KpiCard
+            title="오프라인 작업 매출"
+            value={formatAdminKRW(offlineMetrics.offlineServiceRevenue)}
+            sub="이번 달 작업/매출 records"
+            icon={<Wrench className="h-5 w-5" />}
+          />
+          <KpiCard
+            title="오프라인 패키지 판매"
+            value={formatAdminKRW(offlineMetrics.offlinePackageRevenue)}
+            sub="이번 달 offline_admin packageOrders"
+            icon={<Package className="h-5 w-5" />}
+          />
+          <KpiCard
+            title="오프라인 미결제"
+            value={formatAdminKRW(offlineMetrics.pendingOfflineAmount)}
+            sub={`${formatAdminNumber(offlineMetrics.pendingOfflineCount)}건 · 매출 합계 제외`}
+            icon={<AlertTriangle className="h-5 w-5" />}
           />
         </div>
       </section>
