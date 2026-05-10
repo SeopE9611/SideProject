@@ -21,8 +21,8 @@
     ],
     "paths": {
       "@/*": ["./*"],
-      "@components/*": ["app/components/*"],
-      "@admin/*": ["app/admin/*"]
+      "@components/*": ["./app/components/*"],
+      "@admin/*": ["./app/admin/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
