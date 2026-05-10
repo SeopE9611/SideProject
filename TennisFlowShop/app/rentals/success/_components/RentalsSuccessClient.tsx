@@ -375,7 +375,7 @@ export default function RentalsSuccessClient({ data }: Props) {
             <CardFooter className="bg-muted/30 p-4 md:p-6">
               <div className="flex w-full flex-col gap-4 sm:flex-row">
                 <Button className="h-12 flex-1 shadow-sm transition-[box-shadow,background-color,color] duration-200 hover:shadow-md" asChild>
-                  <Link href="/mypage?tab=orders" className="flex items-center gap-2">
+                  <Link href="/mypage?tab=orders&scope=rental" className="flex items-center gap-2">
                     <Package className="h-5 w-5" />
                     대여 내역 확인
                     <ArrowRight className="h-4 w-4" />

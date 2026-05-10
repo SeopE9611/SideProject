@@ -1157,7 +1157,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                         </div>
 
                         <div className="flex justify-between items-center">
-                          <span className="text-foreground/80">교체서비스비</span>
+                          <span className="text-foreground/80">교체서비스 비용</span>
                           <span className="font-semibold text-lg">{stringingFee.toLocaleString()}원</span>
                         </div>
                       </>
