@@ -314,7 +314,8 @@ export default function OfflineAdminClient() {
                 <div className="rounded-xl border border-border/60 bg-muted/20 px-4 py-3 text-sm text-muted-foreground">
                   <p>패키지 발급 보정 필요</p>
                   <p className="mt-1 text-lg font-semibold text-foreground">{summary.packageSales.issueFailedCount.toLocaleString("ko-KR")}건</p>
-                  {summary.packageSales.issueFailedCount > 0 && <p className="text-xs">금액 {formatCurrency(summary.packageSales.issueFailedAmount)} · TODO: 보정 관리 화면 연결</p>}
+                  {summary.packageSales.issueFailedCount > 0 && <p className="text-xs">금액 {formatCurrency(summary.packageSales.issueFailedAmount)} · <Link href="/admin/offline/reconciliation" className="font-medium text-primary underline-offset-4 hover:underline">보정 관리 화면 열기</Link></p>}
+                  {summary.packageSales.issueFailedCount === 0 && <Link href="/admin/offline/reconciliation" className="mt-1 inline-flex text-xs font-medium text-primary underline-offset-4 hover:underline">보정 필요 항목 전체 보기</Link>}
                 </div>
               </div>
             </>

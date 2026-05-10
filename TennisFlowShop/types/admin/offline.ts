@@ -27,6 +27,8 @@ export type OfflineRecordPoints = {
   deductRevertReason?: string | null;
 };
 
+export type OfflineReconciliationStatus = "open" | "resolved" | "ignored";
+
 export type OfflineRecordPackageUsage = {
   passId?: string | null;
   usedCount?: number | null;
@@ -37,6 +39,10 @@ export type OfflineRecordPackageUsage = {
   revertReason?: string | null;
   revertedConsumptionId?: string | null;
   isReverted?: boolean | null;
+  reconcileStatus?: OfflineReconciliationStatus | null;
+  reconcileNote?: string | null;
+  reconciledAt?: string | null;
+  reconciledBy?: string | null;
 };
 
 export type OfflineServicePassSummary = {
@@ -100,6 +106,43 @@ export interface OfflineCustomerDto {
   createdAt?: string;
   updatedAt?: string;
 }
+
+export type OfflineReconciliationType = "package_issue" | "package_usage";
+
+export type OfflineReconciliationItem = {
+  id: string;
+  type: OfflineReconciliationType;
+  status: OfflineReconciliationStatus;
+  title: string;
+  description: string;
+  severity: "warning" | "critical";
+  createdAt?: string | null;
+  updatedAt?: string | null;
+  source: Record<string, string | null>;
+  customer: { id?: string | null; name: string; phoneMasked?: string | null };
+  metadata: Record<string, unknown>;
+  links: Record<string, string | null>;
+  note?: string | null;
+  resolvedAt?: string | null;
+  resolvedBy?: string | null;
+};
+
+export type OfflineReconciliationSummary = {
+  open: number;
+  packageIssue: number;
+  packageUsage: number;
+  resolved: number;
+  ignored: number;
+};
+
+export type OfflineReconciliationResponse = {
+  items: OfflineReconciliationItem[];
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  summary: OfflineReconciliationSummary;
+};
 
 export type OfflineRevenueKindBucket = Record<OfflineKind, number>;
 

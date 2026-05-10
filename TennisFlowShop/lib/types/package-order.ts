@@ -83,4 +83,21 @@ export interface PackageOrder {
     description: string;
   }>;
   userSnapshot: { name: string; email: string };
+  meta?: {
+    source?: string;
+    channel?: string;
+    offlineCustomerId?: ObjectId | string;
+    linkedUserId?: ObjectId | string;
+    paymentMethod?: string;
+    paidAt?: Date | string;
+    requiresOfflineIssueReconcile?: boolean;
+    offlineIssueStatus?: "issue_failed" | string;
+    offlineIssueError?: string | null;
+    offlineIssueFailedAt?: Date | null;
+    reconcileStatus?: "open" | "resolved" | "ignored";
+    reconcileNote?: string | null;
+    reconciledAt?: Date | null;
+    reconciledBy?: ObjectId | string | null;
+    [key: string]: unknown;
+  };
 }
