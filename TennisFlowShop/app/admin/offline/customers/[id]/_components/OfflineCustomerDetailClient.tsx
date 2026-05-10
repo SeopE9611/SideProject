@@ -320,6 +320,12 @@ type PackageFormState = {
   messageType?: "success" | "error" | null;
 };
 
+type PackageRefundFormState = {
+  reason: string;
+  message?: string | null;
+  messageType?: "success" | "error" | null;
+};
+
 const PACKAGE_ERROR_MESSAGES: Record<string, string> = {
   "linked user required": "온라인 회원과 연결된 고객만 패키지를 사용할 수 있습니다.",
   "user not found": "연결된 온라인 회원 정보를 찾을 수 없어 패키지를 사용할 수 없습니다.",
@@ -356,6 +362,21 @@ const PACKAGE_SELL_ERROR_MESSAGES: Record<string, string> = {
 function translatePackageSellError(error: unknown): string {
   const message = getAdminErrorMessage(error);
   return PACKAGE_SELL_ERROR_MESSAGES[message] ?? message ?? "패키지 판매/발급에 실패했습니다.";
+}
+
+const PACKAGE_REFUND_ERROR_MESSAGES: Record<string, string> = {
+  "package order not found": "패키지 주문을 찾을 수 없습니다.",
+  "offline package order required": "오프라인 판매 패키지만 환불 처리할 수 있습니다.",
+  "package order already refunded": "이미 환불 처리된 패키지입니다.",
+  "service pass not found": "연결된 이용권을 찾을 수 없습니다.",
+  "package already used": "이미 사용 이력이 있어 자동 환불할 수 없습니다.",
+  "refund amount must equal paid amount": "이번 단계에서는 전액 환불만 처리할 수 있습니다.",
+  "refund failed": "오프라인 패키지 환불 처리에 실패했습니다.",
+};
+
+function translatePackageRefundError(error: unknown): string {
+  const message = getAdminErrorMessage(error);
+  return PACKAGE_REFUND_ERROR_MESSAGES[message] ?? message ?? "오프라인 패키지 환불 처리에 실패했습니다.";
 }
 
 function getPassLabel(pass?: OfflineServicePassSummary | null) {
@@ -411,6 +432,8 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
   const [isSellingPackage, setIsSellingPackage] = useState(false);
   const [packageSellMessage, setPackageSellMessage] = useState<string | null>(null);
   const [packageSellMessageType, setPackageSellMessageType] = useState<"success" | "error" | null>(null);
+  const [packageRefundForms, setPackageRefundForms] = useState<Record<string, PackageRefundFormState>>({});
+  const [refundingPackageOrderId, setRefundingPackageOrderId] = useState<string | null>(null);
   const [expandedRecords, setExpandedRecords] = useState<Set<string>>(new Set());
 
   const candidateKey = submittedCandidateQuery
@@ -611,6 +634,43 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
       setPackageSellMessageType("error");
     } finally {
       setIsSellingPackage(false);
+    }
+  }
+
+
+  function updatePackageRefundForm(packageOrderId: string, patch: Partial<PackageRefundFormState>) {
+    setPackageRefundForms((prev) => ({
+      ...prev,
+      [packageOrderId]: { ...(prev[packageOrderId] ?? { reason: "" }), ...patch },
+    }));
+  }
+
+  async function handlePackageRefund(sale: OfflinePackageSaleSummary) {
+    const reason = (packageRefundForms[sale.id]?.reason ?? "").trim();
+    if (!reason) {
+      updatePackageRefundForm(sale.id, { message: "환불 사유를 입력해주세요.", messageType: "error" });
+      return;
+    }
+    if (!window.confirm("이 오프라인 패키지 판매건을 환불 처리하시겠습니까? 실제 환불은 매장에서 별도로 처리해야 합니다.")) return;
+
+    setRefundingPackageOrderId(sale.id);
+    updatePackageRefundForm(sale.id, { message: null, messageType: null });
+    try {
+      await adminMutator(`/api/admin/offline/package-orders/${sale.id}/refund`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason }),
+      });
+      updatePackageRefundForm(sale.id, {
+        reason: "",
+        message: "오프라인 패키지 환불 처리가 완료되었습니다.",
+        messageType: "success",
+      });
+      await mutateDetail();
+    } catch (err) {
+      updatePackageRefundForm(sale.id, { message: translatePackageRefundError(err), messageType: "error" });
+    } finally {
+      setRefundingPackageOrderId(null);
     }
   }
 
@@ -1174,7 +1234,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                   <p className="text-sm text-muted-foreground">표시할 패키지 판매/주문 내역이 없습니다.</p>
                 ) : (
                   <div className="overflow-x-auto rounded-lg border border-border/40">
-                    <table className="w-full min-w-[720px] text-left text-sm">
+                    <table className="w-full min-w-[980px] text-left text-sm">
                       <thead className="bg-muted/50 text-xs text-muted-foreground">
                         <tr>
                           <th className="px-4 py-3 font-medium">패키지</th>
@@ -1184,22 +1244,62 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                           <th className="px-4 py-3 font-medium">결제상태</th>
                           <th className="px-4 py-3 font-medium">결제일</th>
                           <th className="px-4 py-3 font-medium">출처</th>
+                          <th className="px-4 py-3 font-medium">환불 처리</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {packageSales.map((sale) => (
-                          <tr key={sale.id} className="border-t border-border/40 transition-colors hover:bg-muted/30">
-                            <td className="px-4 py-3 font-medium text-foreground">{sale.packageName || "교체 서비스 패키지"}</td>
-                            <td className="px-4 py-3">{Number(sale.sessions ?? 0).toLocaleString("ko-KR")}회</td>
-                            <td className="px-4 py-3">{formatCurrency(sale.price)}</td>
-                            <td className="px-4 py-3">{PAYMENT_METHOD_LABELS[sale.paymentMethod as OfflinePaymentMethod] ?? sale.paymentMethod ?? "-"}</td>
-                            <td className="px-4 py-3">{sale.paymentStatus || "-"}</td>
-                            <td className="px-4 py-3">{formatDate(sale.paidAt || sale.createdAt)}</td>
-                            <td className="px-4 py-3">
-                              <Badge variant={sale.source === "offline_admin" ? "secondary" : "outline"}>{sale.sourceLabel || (sale.source === "offline_admin" ? "오프라인 판매" : "온라인/기존 주문")}</Badge>
-                            </td>
-                          </tr>
-                        ))}
+                        {packageSales.map((sale) => {
+                          const isOfflineSale = sale.source === "offline_admin" || sale.source === "offline" || sale.sourceLabel === "오프라인 판매";
+                          const refundForm = packageRefundForms[sale.id] ?? { reason: "" };
+                          const isRefunding = refundingPackageOrderId === sale.id;
+                          return (
+                            <tr key={sale.id} className="border-t border-border/40 align-top transition-colors hover:bg-muted/30">
+                              <td className="px-4 py-3 font-medium text-foreground">{sale.packageName || "교체 서비스 패키지"}</td>
+                              <td className="px-4 py-3">{Number(sale.sessions ?? 0).toLocaleString("ko-KR")}회</td>
+                              <td className="px-4 py-3">
+                                <div>{formatCurrency(sale.price)}</div>
+                                {sale.isRefunded && <div className="mt-1 text-xs text-destructive">환불 {formatCurrency(sale.refundAmount ?? sale.price)}</div>}
+                              </td>
+                              <td className="px-4 py-3">{PAYMENT_METHOD_LABELS[sale.paymentMethod as OfflinePaymentMethod] ?? sale.paymentMethod ?? "-"}</td>
+                              <td className="px-4 py-3">
+                                <div>{sale.paymentStatus || "-"}</div>
+                                {sale.isRefunded && <Badge variant="destructive" className="mt-1">환불 완료</Badge>}
+                              </td>
+                              <td className="px-4 py-3">
+                                <div>{formatDate(sale.paidAt || sale.createdAt)}</div>
+                                {sale.refundedAt && <div className="mt-1 text-xs text-muted-foreground">환불일 {formatDate(sale.refundedAt)}</div>}
+                              </td>
+                              <td className="px-4 py-3">
+                                <Badge variant={isOfflineSale ? "secondary" : "outline"}>{sale.sourceLabel || (isOfflineSale ? "오프라인 판매" : "온라인/기존 주문")}</Badge>
+                              </td>
+                              <td className="px-4 py-3">
+                                {!isOfflineSale ? (
+                                  <span className="text-xs text-muted-foreground">-</span>
+                                ) : sale.isRefunded ? (
+                                  <div className="space-y-1 text-xs text-muted-foreground">
+                                    <div className="font-medium text-destructive">환불 완료</div>
+                                    {sale.refundReason && <div>사유: {sale.refundReason}</div>}
+                                  </div>
+                                ) : (
+                                  <div className="min-w-[240px] space-y-2">
+                                    <Input
+                                      value={refundForm.reason}
+                                      onChange={(event) => updatePackageRefundForm(sale.id, { reason: event.target.value })}
+                                      placeholder="환불 사유 입력"
+                                      disabled={!sale.canRefund || isRefunding}
+                                    />
+                                    <Button size="sm" variant="destructive" disabled={!sale.canRefund || isRefunding} onClick={() => handlePackageRefund(sale)}>
+                                      {isRefunding ? "환불 처리 중..." : "수동 환불 처리"}
+                                    </Button>
+                                    <p className="text-xs text-muted-foreground">이 처리는 사이트 내부 기록용입니다. 실제 현금/카드/계좌이체 환불은 매장에서 별도로 완료해야 합니다.</p>
+                                    {sale.refundBlockedReason && <p className="text-xs text-destructive">{sale.refundBlockedReason}</p>}
+                                    {refundForm.message && <Message type={refundForm.messageType || "info"}>{refundForm.message}</Message>}
+                                  </div>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>

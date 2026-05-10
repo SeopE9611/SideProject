@@ -48,6 +48,19 @@ export type OfflinePackageSaleSummary = {
   createdAt?: string | null;
   source?: string | null;
   sourceLabel?: string | null;
+  isRefunded?: boolean;
+  refundAmount?: number | null;
+  refundedAt?: string | null;
+  refundReason?: string | null;
+  canRefund?: boolean;
+  refundBlockedReason?: string | null;
+  linkedServicePassIds?: string[];
+  passSummary?: Array<{
+    id: string;
+    status?: string | null;
+    usedCount?: number | null;
+    remainingCount?: number | null;
+  }>;
 };
 
 export type OfflineLinkCandidate = OfflineLinkedUser & {

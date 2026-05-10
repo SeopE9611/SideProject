@@ -100,8 +100,15 @@ function getPackageOrderStatus(doc: Document): "paid" | "refunded" | "pending" {
   return normalizePaymentStatus(doc.paymentStatus ?? paymentInfo?.status ?? doc.status);
 }
 
-function getPackageOrderAmount(doc: Document): number {
+function getPackageOrderAmount(doc: Document, status?: "paid" | "refunded" | "pending"): number {
   const packageInfo = doc.packageInfo as Record<string, unknown> | undefined;
+  const meta = doc.meta as Record<string, unknown> | undefined;
+  if (status === "refunded") {
+    const offlineRefundAmount = toNumber(meta?.offlineRefundAmount);
+    if (offlineRefundAmount > 0) return offlineRefundAmount;
+    const refundAmount = toNumber((doc as Record<string, unknown>).refundAmount);
+    if (refundAmount > 0) return refundAmount;
+  }
   const paidOrTotal = orderPaidAmount(doc);
   if (paidOrTotal > 0) return paidOrTotal;
   return toNumber(packageInfo?.price);
@@ -178,7 +185,7 @@ export async function buildOfflineRevenueSummary(db: Db, options: SummaryOptions
     const packageDocs = await db.collection("packageOrders")
       .find(
         OFFLINE_PACKAGE_ORDER_FILTER,
-        { projection: { createdAt: 1, status: 1, paymentStatus: 1, paymentInfo: 1, paidAmount: 1, totalPrice: 1, packageInfo: 1, meta: 1 } },
+        { projection: { createdAt: 1, status: 1, paymentStatus: 1, paymentInfo: 1, paidAmount: 1, totalPrice: 1, refundAmount: 1, packageInfo: 1, meta: 1 } },
       )
       .toArray();
     for (const doc of packageDocs) {
@@ -186,7 +193,7 @@ export async function buildOfflineRevenueSummary(db: Db, options: SummaryOptions
       const date = effectivePackageOrderDate(doc);
       if (!inRange(date, range)) continue;
       const status = getPackageOrderStatus(doc);
-      const amount = Math.max(0, getPackageOrderAmount(doc));
+      const amount = Math.max(0, getPackageOrderAmount(doc, status));
       const method = getPackageOrderMethod(doc);
       addStatusAmount(packageSales, status, amount, method);
       const meta = doc.meta as Record<string, unknown> | undefined;
