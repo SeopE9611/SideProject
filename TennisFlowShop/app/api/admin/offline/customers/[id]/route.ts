@@ -83,8 +83,47 @@ function getPackageSaleSourceLabel(doc: Record<string, any>) {
   return "기타";
 }
 
-function sanitizePackageSale(doc: Record<string, any>) {
+function isoDate(value: unknown) {
+  return value instanceof Date ? value.toISOString() : typeof value === "string" ? value : null;
+}
+
+function isOfflinePackageSale(doc: Record<string, any>) {
+  return doc.meta?.source === "offline_admin" || doc.meta?.channel === "offline";
+}
+
+function isRefundedPackageSale(doc: Record<string, any>) {
+  const status = String(doc.status ?? "").trim();
+  const paymentStatus = String(doc.paymentStatus ?? "").trim();
+  return status === "환불" || status === "취소" || paymentStatus === "환불" || paymentStatus === "결제취소" || doc.meta?.offlineRefund === true;
+}
+
+function hasPassRedemptions(pass: Record<string, any>) {
+  return Array.isArray(pass.redemptions) && pass.redemptions.length > 0;
+}
+
+function resolveRefundBlockedReason(params: {
+  sale: Record<string, any>;
+  linkedPasses: Record<string, any>[];
+  activeConsumptionPassIds: Set<string>;
+}) {
+  if (!isOfflinePackageSale(params.sale)) return "오프라인 판매 건이 아닙니다.";
+  if (isRefundedPackageSale(params.sale)) return "이미 환불 처리된 패키지입니다.";
+  if (params.linkedPasses.length === 0) return "연결된 이용권을 찾을 수 없습니다.";
+  const hasUsedPass = params.linkedPasses.some((pass) => Number(pass.usedCount ?? 0) !== 0 || hasPassRedemptions(pass));
+  const hasConsumption = params.linkedPasses.some((pass) => params.activeConsumptionPassIds.has(String(pass._id)));
+  if (hasUsedPass || hasConsumption) return "이미 사용 이력이 있어 자동 환불할 수 없습니다.";
+  return null;
+}
+
+function sanitizePackageSale(doc: Record<string, any>, linkedPasses: Record<string, any>[] = [], activeConsumptionPassIds: Set<string> = new Set()) {
   const source = doc.meta?.source ?? null;
+  const isRefunded = isRefundedPackageSale(doc);
+  const refundAmount = typeof doc.meta?.offlineRefundAmount === "number"
+    ? doc.meta.offlineRefundAmount
+    : typeof doc.refundAmount === "number"
+      ? doc.refundAmount
+      : null;
+  const refundBlockedReason = resolveRefundBlockedReason({ sale: doc, linkedPasses, activeConsumptionPassIds });
   return {
     id: String(doc._id),
     packageName: doc.packageInfo?.title ?? "교체 서비스 패키지",
@@ -96,6 +135,19 @@ function sanitizePackageSale(doc: Record<string, any>) {
     createdAt: doc.createdAt instanceof Date ? doc.createdAt.toISOString() : doc.createdAt ?? null,
     source,
     sourceLabel: getPackageSaleSourceLabel(doc),
+    isRefunded,
+    refundAmount,
+    refundedAt: isoDate(doc.refundedAt) ?? isoDate(doc.meta?.offlineRefundedAt),
+    refundReason: doc.refundReason ?? doc.meta?.offlineRefundReason ?? null,
+    canRefund: isOfflinePackageSale(doc) && !refundBlockedReason,
+    refundBlockedReason,
+    linkedServicePassIds: linkedPasses.map((pass) => String(pass._id)),
+    passSummary: linkedPasses.map((pass) => ({
+      id: String(pass._id),
+      status: pass.status ?? null,
+      usedCount: typeof pass.usedCount === "number" ? pass.usedCount : null,
+      remainingCount: typeof pass.remainingCount === "number" ? pass.remainingCount : null,
+    })),
   };
 }
 
@@ -122,7 +174,7 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
       guard.db.collection("service_passes")
         .find(
           { userId: linkedUserId },
-          { projection: { packageSize: 1, usedCount: 1, remainingCount: 1, status: 1, expiresAt: 1, createdAt: 1, meta: 1 } },
+          { projection: { packageSize: 1, usedCount: 1, remainingCount: 1, status: 1, expiresAt: 1, createdAt: 1, meta: 1, orderId: 1, redemptions: 1 } },
         )
         .sort({ status: 1, expiresAt: 1, createdAt: -1 })
         .limit(100)
@@ -130,13 +182,36 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
       guard.db.collection("packageOrders")
         .find(
           { userId: linkedUserId },
-          { projection: { packageInfo: 1, totalPrice: 1, paymentInfo: 1, paymentStatus: 1, createdAt: 1, meta: 1 } },
+          { projection: { packageInfo: 1, totalPrice: 1, paymentInfo: 1, paymentStatus: 1, status: 1, createdAt: 1, refundedAt: 1, refundAmount: 1, refundReason: 1, meta: 1 } },
         )
         .sort({ createdAt: -1, _id: -1 })
         .limit(20)
         .toArray(),
     ])
     : [[], []] as const;
+
+  const passDocs = passes as Array<Record<string, any>>;
+  const passIds = passDocs.map((pass) => pass._id).filter((value) => value instanceof ObjectId);
+  const activeConsumptionPassIds = new Set<string>();
+  if (passIds.length > 0) {
+    const consumptionDocs = await guard.db.collection("service_pass_consumptions")
+      .find(
+        { passId: { $in: passIds }, $or: [{ reverted: { $exists: false } }, { reverted: false }] } as any,
+        { projection: { passId: 1 } },
+      )
+      .toArray();
+    for (const consumption of consumptionDocs) {
+      if (consumption.passId) activeConsumptionPassIds.add(String(consumption.passId));
+    }
+  }
+  const passesByOrderId = new Map<string, Record<string, any>[]>();
+  for (const pass of passDocs) {
+    if (!pass.orderId) continue;
+    const key = String(pass.orderId);
+    const list = passesByOrderId.get(key) ?? [];
+    list.push(pass);
+    passesByOrderId.set(key, list);
+  }
 
   const records = await guard.db.collection("offline_service_records")
     .find(
@@ -164,7 +239,7 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
     },
     records: records.map((record) => sanitizeRecord(record as any)),
     passes: passes.map((pass) => sanitizePass(pass as any, now)),
-    packageSales: packageSales.map((sale) => sanitizePackageSale(sale as any)),
+    packageSales: packageSales.map((sale) => sanitizePackageSale(sale as any, passesByOrderId.get(String((sale as any)._id)) ?? [], activeConsumptionPassIds)),
   });
 }
 export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }> }) {
