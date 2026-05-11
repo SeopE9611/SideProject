@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { RACKET_BRANDS, racketBrandLabel, STRING_BRANDS, stringBrandLabel } from "@/lib/constants";
 import { isSignupBonusActive, SIGNUP_BONUS_CAMPAIGN_ID, SIGNUP_BONUS_END_DATE, SIGNUP_BONUS_POINTS, SIGNUP_BONUS_START_DATE } from "@/lib/points.policy";
 import { cn } from "@/lib/utils";
-import { BadgeCheck, BookOpen, MessageSquareText, Package, Search, Tags, Wrench } from "lucide-react";
+import { BadgeCheck, BookOpen, Package, Search, Tags, Wrench } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -508,38 +508,38 @@ const premiumItems: HItem[] = useMemo(
                 <Wrench className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
               </div>
               <div className="text-center">
-                <h3 className="text-sm bp-sm:text-base font-semibold text-foreground">교체서비스 시작하기</h3>
-                <p className="mt-1 bp-sm:mt-1.5 text-sm line-clamp-2 text-foreground/80">내 상황에 맞는 신청 방식 선택</p>
+                <h3 className="text-sm bp-sm:text-base font-semibold break-keep text-foreground">교체서비스 시작하기</h3>
+                <p className="mt-1 bp-sm:mt-1.5 text-sm line-clamp-2 break-keep text-foreground/80">내 상황에 맞는 신청 방식 선택</p>
               </div>
             </Link>
 
-            <Link href="/services/tension-guide" className={cn("group flex h-full flex-col items-center gap-3 bp-sm:gap-4 p-5 bp-sm:p-6 bp-md:p-7", surfaceCardInteractiveClass)}>
+            <Link href="/products?from=home" className={cn("group flex h-full flex-col items-center gap-3 bp-sm:gap-4 p-5 bp-sm:p-6 bp-md:p-7", surfaceCardInteractiveClass)}>
               <div className={cn("h-12 w-12 bp-sm:h-14 bp-sm:w-14", surfaceIconWrapClass)}>
-                <BookOpen className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
+                <Package className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
               </div>
               <div className="text-center">
-                <h3 className="text-sm bp-sm:text-base font-semibold text-foreground">장착/텐션 가이드</h3>
-                <p className="mt-1 bp-sm:mt-1.5 text-sm line-clamp-2 text-foreground/80">초보도 쉽게 고르기</p>
+                <h3 className="text-sm bp-sm:text-base font-semibold break-keep text-foreground">스트링 고르기</h3>
+                <p className="mt-1 bp-sm:mt-1.5 text-sm line-clamp-2 break-keep text-foreground/80">교체서비스에 사용할 스트링 선택</p>
               </div>
             </Link>
 
-            <Link href="/board/market" className={cn("group flex h-full flex-col items-center gap-3 bp-sm:gap-4 p-5 bp-sm:p-6 bp-md:p-7", surfaceCardInteractiveClass)}>
+            <Link href="/rackets?from=home" className={cn("group flex h-full flex-col items-center gap-3 bp-sm:gap-4 p-5 bp-sm:p-6 bp-md:p-7", surfaceCardInteractiveClass)}>
               <div className={cn("h-12 w-12 bp-sm:h-14 bp-sm:w-14", surfaceIconWrapClass)}>
                 <Tags className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
               </div>
               <div className="text-center">
-                <h3 className="text-sm bp-sm:text-base font-semibold text-foreground">중고 거래</h3>
-                <p className="mt-1 bp-sm:mt-1.5 text-sm line-clamp-2 text-foreground/80">라켓/스트링/장비 거래</p>
+                <h3 className="text-sm bp-sm:text-base font-semibold break-keep text-foreground">라켓 구매/대여</h3>
+                <p className="mt-1 bp-sm:mt-1.5 text-sm line-clamp-2 break-keep text-foreground/80">라켓을 고르고 스트링까지 연결</p>
               </div>
             </Link>
 
-            <Link href="/board" className={cn("group flex h-full flex-col items-center gap-3 bp-sm:gap-4 p-5 bp-sm:p-6 bp-md:p-7", surfaceCardInteractiveClass)}>
+            <Link href="/services/packages" className={cn("group flex h-full flex-col items-center gap-3 bp-sm:gap-4 p-5 bp-sm:p-6 bp-md:p-7", surfaceCardInteractiveClass)}>
               <div className={cn("h-12 w-12 bp-sm:h-14 bp-sm:w-14", surfaceIconWrapClass)}>
-                <MessageSquareText className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
+                <BadgeCheck className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
               </div>
               <div className="text-center">
-                <h3 className="text-sm bp-sm:text-base font-semibold text-foreground">커뮤니티</h3>
-                <p className="mt-1 bp-sm:mt-1.5 text-sm line-clamp-2 text-foreground/80">리뷰·자유·사용기</p>
+                <h3 className="text-sm bp-sm:text-base font-semibold break-keep text-foreground">패키지권 보기</h3>
+                <p className="mt-1 bp-sm:mt-1.5 text-sm line-clamp-2 break-keep text-foreground/80">자주 이용한다면 회차권으로 관리</p>
               </div>
             </Link>
           </div>
