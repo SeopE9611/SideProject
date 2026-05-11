@@ -198,11 +198,9 @@ const ProductCard = React.memo(
     const canCheckoutWithService =
       typeof product.mountingFee === "number" && product.mountingFee > 0;
     const featureEntries = getFeatureEntries(product.features);
-    const serviceCtaLabel = isApplyFlow
-      ? viewMode === "list"
-        ? "이 스트링으로 교체서비스 신청"
-        : "이 스트링으로 교체서비스 신청"
-      : "교체서비스 신청";
+    const serviceCtaLabel = "이 스트링으로 교체서비스 신청";
+    const shouldEmphasizeServiceCta =
+      isApplyFlow || !ENABLE_STRING_STANDALONE_ORDER;
 
     const detailHref = isApplyFlow
       ? `/products/${product._id}?from=apply`
@@ -339,10 +337,10 @@ const ProductCard = React.memo(
                   <Button
                     type="button"
                     size="sm"
-                    variant="default"
+                    variant={shouldEmphasizeServiceCta ? "default" : "outline"}
                     onClick={handleStringServiceApply}
                     disabled={isSoldOut}
-                    className="h-9 sm:h-10 text-xs sm:text-sm col-span-2 sm:col-span-1 whitespace-normal leading-tight"
+                    className="h-auto min-h-9 sm:min-h-10 text-xs sm:text-sm col-span-2 sm:col-span-1 whitespace-normal break-keep leading-tight"
                   >
                     {serviceCtaLabel}
                   </Button>
@@ -377,10 +375,10 @@ const ProductCard = React.memo(
                   <Button
                     type="button"
                     size="sm"
-                    variant="outline"
+                    variant={shouldEmphasizeServiceCta ? "default" : "outline"}
                     onClick={handleStringServiceApply}
                     disabled={isSoldOut}
-                    className="h-9 sm:h-10 text-xs sm:text-sm col-span-2 sm:col-span-1 whitespace-normal leading-tight"
+                    className="h-auto min-h-9 sm:min-h-10 text-xs sm:text-sm col-span-2 sm:col-span-1 whitespace-normal break-keep leading-tight"
                   >
                     {serviceCtaLabel}
                   </Button>
@@ -552,8 +550,8 @@ const ProductCard = React.memo(
           {isApplyFlow && canCheckoutWithService && (
             <Button
               type="button"
-              variant="default"
-              className="w-full rounded-lg h-10 px-3 text-xs sm:text-sm whitespace-nowrap text-center"
+              variant={shouldEmphasizeServiceCta ? "default" : "outline"}
+              className="w-full rounded-lg h-auto min-h-10 px-3 text-xs sm:text-sm whitespace-normal break-keep leading-tight text-center"
               onClick={handleStringServiceApply}
               disabled={isSoldOut}
             >
@@ -576,8 +574,8 @@ const ProductCard = React.memo(
           {!isApplyFlow && canCheckoutWithService && (
             <Button
               type="button"
-              variant="outline"
-              className="w-full rounded-lg h-10 px-3 text-xs sm:text-sm whitespace-nowrap text-center"
+              variant={shouldEmphasizeServiceCta ? "default" : "outline"}
+              className="w-full rounded-lg h-auto min-h-10 px-3 text-xs sm:text-sm whitespace-normal break-keep leading-tight text-center"
               onClick={handleStringServiceApply}
               disabled={isSoldOut}
             >
