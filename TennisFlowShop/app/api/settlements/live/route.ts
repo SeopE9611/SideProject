@@ -13,6 +13,7 @@ import {
 } from "@/app/api/settlements/_lib/settlementPolicy";
 import { enforceAdminRateLimit } from "@/lib/admin/adminRateLimit";
 import { ADMIN_EXPENSIVE_ENDPOINT_POLICIES } from "@/lib/admin/adminEndpointCostPolicy";
+import { buildOfflineSettlementReference } from "@/app/api/settlements/_lib/offlineReference";
 
 function withDeprecation(res: NextResponse) {
   res.headers.set("Deprecation", "true");
@@ -194,6 +195,10 @@ export async function GET(req: Request) {
     );
     const refund = refundOrders + refundApps + refundPackages;
     const net = paid - refund;
+    const offline = await buildOfflineSettlementReference(db, {
+      from: start,
+      toExclusive: endExclusive,
+    });
 
     return withDeprecation(
       NextResponse.json({
@@ -205,6 +210,7 @@ export async function GET(req: Request) {
           packages: packages.length,
           rentals: rentals.length,
         },
+        offline,
       }),
     );
   } catch (e) {

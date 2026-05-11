@@ -32,6 +32,7 @@ import type {
   SettlementDiff,
   SettlementLiveResponse,
   SettlementSnapshot,
+  OfflineSettlementReference,
 } from "@/types/admin/settlements";
 import {
   Activity,
@@ -188,6 +189,155 @@ export default function SettlementsClient() {
   // 공용 표시 함수
   const displayKRW = (n: number) =>
     compact ? formatKRWCard(n) : formatKRWFull(n);
+
+  const renderOfflineAmountCard = (
+    label: string,
+    value: number,
+    tone: "default" | "primary" | "warning" | "danger" = "default",
+    sub?: string,
+  ) => {
+    const toneClass = {
+      default: "text-foreground",
+      primary: "text-primary",
+      warning: "text-primary",
+      danger: "text-destructive",
+    }[tone];
+
+    return (
+      <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+        <p className="text-xs font-semibold text-muted-foreground">{label}</p>
+        <p className={cn("mt-2 text-xl font-bold tabular-nums", toneClass)}>
+          {displayKRW(value)}
+        </p>
+        {sub ? (
+          <p className="mt-1 text-xs text-muted-foreground">{sub}</p>
+        ) : null}
+      </div>
+    );
+  };
+
+  const renderOfflineReference = (offline?: OfflineSettlementReference) => {
+    if (!offline) return null;
+
+    const methodLabels: Array<
+      [keyof OfflineSettlementReference["byMethod"], string]
+    > = [
+      ["cash", "현금"],
+      ["card", "매장 카드"],
+      ["bank_transfer", "계좌이체"],
+      ["etc", "기타"],
+    ];
+
+    return (
+      <Card className={adminSurface.card}>
+        <CardContent className="p-4 sm:p-6 space-y-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg font-bold text-foreground">
+                  오프라인 매출 참고
+                </h3>
+                <Badge variant="secondary">정산 지급액 미포함</Badge>
+              </div>
+              <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                오프라인 매출은 현금/매장 카드/계좌이체 등으로 처리된 별도 운영
+                매출이며, 현재 온라인 PG 정산 지급액 계산에는 포함되지 않습니다.
+              </p>
+            </div>
+            <div className="rounded-lg border border-border bg-muted px-3 py-2 text-xs text-muted-foreground">
+              {offline.notice}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+            {renderOfflineAmountCard(
+              "오프라인 총 결제완료 매출",
+              offline.total.paidAmount,
+              "primary",
+              `${offline.total.paidCount.toLocaleString()}건`,
+            )}
+            {renderOfflineAmountCard(
+              "오프라인 순매출",
+              offline.total.netAmount,
+              "primary",
+              "결제완료 - 환불/차감",
+            )}
+            {renderOfflineAmountCard(
+              "오프라인 작업 매출",
+              offline.records.paidAmount,
+              "default",
+              `${offline.records.paidCount.toLocaleString()}건`,
+            )}
+            {renderOfflineAmountCard(
+              "오프라인 패키지 판매",
+              offline.packageSales.paidAmount,
+              "default",
+              `${offline.packageSales.paidCount.toLocaleString()}건`,
+            )}
+            {renderOfflineAmountCard(
+              "미결제",
+              offline.total.pendingAmount,
+              "warning",
+              `${offline.total.pendingCount.toLocaleString()}건 · 지급액 미포함`,
+            )}
+            {renderOfflineAmountCard(
+              "환불/차감",
+              offline.total.refundedAmount,
+              "danger",
+              `${offline.total.refundedCount.toLocaleString()}건`,
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4">
+            <div className="rounded-xl border border-border bg-muted/30 p-4">
+              <h4 className="text-sm font-bold text-foreground mb-3">
+                결제수단별 오프라인 결제완료 매출
+              </h4>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {methodLabels.map(([key, label]) => (
+                  <div
+                    key={key}
+                    className="rounded-lg bg-card border border-border p-3"
+                  >
+                    <p className="text-xs text-muted-foreground">{label}</p>
+                    <p className="mt-1 font-bold tabular-nums text-foreground">
+                      {displayKRW(offline.byMethod[key] || 0)}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-border bg-muted/30 p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <AlertTriangle className="w-4 h-4 text-primary" />
+                <h4 className="text-sm font-bold text-foreground">
+                  발급 보정 필요
+                </h4>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="rounded-lg bg-card border border-border p-3">
+                  <p className="text-xs text-muted-foreground">건수</p>
+                  <p className="mt-1 font-bold tabular-nums text-foreground">
+                    {(
+                      offline.packageSales.issueFailedCount || 0
+                    ).toLocaleString()}
+                    건
+                  </p>
+                </div>
+                <div className="rounded-lg bg-card border border-border p-3">
+                  <p className="text-xs text-muted-foreground">금액</p>
+                  <p className="mt-1 font-bold tabular-nums text-foreground">
+                    {displayKRW(offline.packageSales.issueFailedAmount || 0)}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
 
   // ──────────────────────────────────────────────────────────
   // 서버 액션
@@ -495,7 +645,7 @@ export default function SettlementsClient() {
 
           {/* 총 매출 */}
           <KpiCard
-            label="총 매출"
+            label="온라인 정산 기준 매출"
             value={totalRevenue ?? 0}
             storageKey="settlements.kpi.compact.revenue"
             formatCompact={formatKRWCard}
@@ -507,7 +657,7 @@ export default function SettlementsClient() {
 
           {/* 총 환불 */}
           <KpiCard
-            label="총 환불"
+            label="온라인 정산 기준 환불"
             value={totalRefunds ?? 0}
             storageKey="settlements.kpi.compact.refund"
             formatCompact={formatKRWCard}
@@ -519,7 +669,7 @@ export default function SettlementsClient() {
 
           {/* 순익 */}
           <KpiCard
-            label="순익"
+            label="온라인 정산 기준 순익"
             value={totalNet ?? 0}
             storageKey="settlements.kpi.compact.net"
             formatCompact={formatKRWCard}
@@ -676,7 +826,12 @@ export default function SettlementsClient() {
               </CardContent>
             </Card>
 
-            <Card className={cn(adminSurface.tableCard, "overflow-visible max-w-6xl mx-auto")}>
+            <Card
+              className={cn(
+                adminSurface.tableCard,
+                "overflow-visible max-w-6xl mx-auto",
+              )}
+            >
               {/* 데스크탑 */}
               <div className="hidden md:block overflow-x-auto">
                 <div className="min-w-[980px]">
@@ -1445,7 +1600,9 @@ export default function SettlementsClient() {
                       </div>
 
                       <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
-                        <div className="text-muted-foreground">매출</div>
+                        <div className="text-muted-foreground">
+                          온라인 기준 매출
+                        </div>
                         <div className="text-right tabular-nums text-foreground">
                           {(row.totals?.paid || 0).toLocaleString()}
                         </div>
@@ -1863,7 +2020,9 @@ export default function SettlementsClient() {
                         }}
                       >
                         <div className="text-center">기간</div>
-                        <div className="text-center tabular-nums">매출</div>
+                        <div className="text-center tabular-nums">
+                          온라인 기준 매출
+                        </div>
                         <div className="text-center tabular-nums">환불</div>
                         <div className="text-center tabular-nums">순익</div>
                         <div className="text-center tabular-nums">주문수</div>
@@ -1939,7 +2098,9 @@ export default function SettlementsClient() {
                     </div>
 
                     <div className="grid grid-cols-2 gap-2 text-sm">
-                      <div className="text-muted-foreground">매출</div>
+                      <div className="text-muted-foreground">
+                        온라인 기준 매출
+                      </div>
                       <div className="text-right tabular-nums text-foreground">
                         {(live.totals?.paid || 0).toLocaleString()}
                       </div>
@@ -1973,6 +2134,8 @@ export default function SettlementsClient() {
                 </div>
               </Card>
             )}
+
+            {renderOfflineReference(live?.offline)}
           </div>
         )}
       </div>

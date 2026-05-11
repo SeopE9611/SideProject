@@ -18,6 +18,7 @@ import {
   acquireAdminExecutionLock,
   releaseAdminExecutionLock,
 } from "@/lib/admin/adminExecutionLock";
+import { buildOfflineSettlementReference } from "@/app/api/settlements/_lib/offlineReference";
 
 // 월 시작/끝(KST) → UTC 경계로 변환
 function kstMonthRangeToUtc(yyyymm: string) {
@@ -244,6 +245,10 @@ export async function POST(
     );
     const refund = refundOrders + refundApps + refundPackages;
     const net = paid - refund;
+    const offline = await buildOfflineSettlementReference(db, {
+      from: start,
+      toExclusive: end,
+    });
 
     const snapshot = {
       yyyymm,
@@ -258,6 +263,7 @@ export async function POST(
       createdBy,
       lastGeneratedAt: new Date(),
       lastGeneratedBy: createdBy,
+      offline,
     };
 
     // upsert 기반 멱등 저장: 같은 월 재호출 시에도 문서가 한 건으로 유지된다.
