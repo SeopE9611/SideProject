@@ -319,7 +319,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const serviceTotal = qtyTotal + Number(product?.mountingFee ?? 0);
   const canCheckoutWithService = typeof product?.mountingFee === "number" && product.mountingFee > 0;
   const isApplyFlow = searchParams.get("from") === "apply";
-  const serviceCtaLabel = isApplyFlow ? "이 스트링으로 교체서비스 신청하기" : "교체서비스 신청하기";
+  const serviceCtaLabel = "이 스트링으로 교체서비스 신청하기";
   const shouldEmphasizeServiceCta = isApplyFlow || !ENABLE_STRING_STANDALONE_ORDER;
 
   // 브라우저 뒤/앞으로 가기 시에도 URL 변화에 맞춰 동기화
@@ -941,7 +941,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                             <Button
                               variant={shouldEmphasizeServiceCta ? "default" : "secondary"}
                               size="tall"
-                              className="h-12 w-full gap-2 sm:h-14"
+                              className="h-12 w-full gap-2 whitespace-normal break-keep leading-tight sm:h-14"
                               disabled={loading || quantity > stock}
                               onClick={handleBuyNowWithService}
                             >
@@ -1653,13 +1653,13 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     type="button"
                     onClick={handleBuyNowWithService}
                     className={cn(
-                      "flex-1 h-12 rounded-lg font-semibold text-sm transition-colors flex items-center justify-center gap-2",
+                      "flex-1 h-12 rounded-lg px-3 font-semibold text-sm transition-colors flex items-center justify-center gap-2 whitespace-normal break-keep leading-tight",
                       shouldEmphasizeServiceCta
                         ? "bg-foreground text-background shadow-sm hover:opacity-90 active:opacity-80"
                         : "border border-border bg-card dark:bg-muted hover:bg-muted/50 dark:hover:bg-muted active:bg-muted dark:active:bg-muted text-foreground",
                     )}
                   >
-                    <Wrench className="h-4 w-4" />
+                    <Wrench className="h-4 w-4 flex-shrink-0" />
                     {serviceCtaLabel}
                   </button>
                 )}
