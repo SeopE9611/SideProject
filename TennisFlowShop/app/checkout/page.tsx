@@ -1168,6 +1168,39 @@ export default function CheckoutPage() {
                   </div>
                 </nav>
 
+                {/* 현재 주문 성격 안내 */}
+                <section
+                  aria-label="현재 주문 성격 안내"
+                  className={cn(
+                    "rounded-2xl border border-border bg-card px-4 py-4 shadow-sm bp-sm:px-5",
+                    withStringService ? "ring-1 ring-primary/20" : "bg-muted/30",
+                  )}
+                >
+                  <div className="flex items-start gap-3">
+                    <div
+                      className={cn(
+                        "flex h-8 w-8 shrink-0 items-center justify-center rounded-full ring-1",
+                        withStringService ? "bg-primary/10 text-primary ring-primary/20" : "bg-muted/60 text-muted-foreground ring-border/60",
+                      )}
+                    >
+                      {withStringService ? <CheckCircle className="h-4 w-4" /> : <Info className="h-4 w-4" />}
+                    </div>
+                    <div className="min-w-0 space-y-1">
+                      <h2 className={cn("break-keep text-base font-semibold text-foreground", !withStringService && "text-sm")}>
+                        {withStringService ? "교체서비스 포함 주문입니다" : "일반 상품 주문입니다"}
+                      </h2>
+                      {withStringService ? (
+                        <div className="space-y-1 text-sm leading-relaxed text-muted-foreground">
+                          <p className="break-keep">선택한 스트링과 교체서비스 신청이 함께 접수됩니다. 결제 완료 후 마이페이지에서 신청 상태를 확인할 수 있습니다.</p>
+                          <p className="break-keep">장착 정보와 요청사항은 아래 신청 정보에서 확인해주세요.</p>
+                        </div>
+                      ) : (
+                        <p className="break-keep text-sm leading-relaxed text-muted-foreground">현재 주문에는 교체서비스 신청이 포함되어 있지 않습니다.</p>
+                      )}
+                    </div>
+                  </div>
+                </section>
+
                 {/* 작성 안내(고정 노출) */}
                 <div className="flex items-start gap-3 rounded-2xl border border-border bg-secondary/40 px-4 py-3 text-sm text-foreground shadow-sm">
                   <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted/60 ring-1 ring-border/60">
