@@ -1,35 +1,123 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import type { Document } from "mongodb";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getDb } from "@/lib/mongodb";
+import {
+  getAcademyClassLessonTypeLabel,
+  getAcademyClassLevelLabel,
+  getAcademyClassStatusLabel,
+  isAcademyClassLessonType,
+  isAcademyClassLevel,
+  type AcademyClassLessonType,
+  type AcademyClassLevel,
+  type PublicAcademyClass,
+} from "@/lib/types/academy";
 
 export const metadata: Metadata = {
   title: "도깨비테니스 아카데미",
 };
 
-const lessonPrograms = [
-  {
-    title: "입문 레슨",
-    description:
-      "라켓을 처음 잡는 분도 기본 자세와 안전한 스윙부터 차근차근 시작할 수 있습니다.",
-  },
-  {
-    title: "성인 취미반",
-    description:
-      "운동 습관과 즐거운 랠리를 목표로 개인 수준에 맞춰 꾸준히 실력을 쌓습니다.",
-  },
-  {
-    title: "주니어 레슨",
-    description:
-      "성장기 학생에게 필요한 기초 체력, 코디네이션, 테니스 기본기를 함께 지도합니다.",
-  },
-  {
-    title: "원포인트 레슨",
-    description:
-      "서브, 스트로크, 경기 운영처럼 특정 고민을 집중 점검하고 개선 방향을 안내합니다.",
-  },
-];
+const PUBLIC_CLASS_STATUSES = ["visible", "closed"] as const;
+
+function normalizeClassStatus(value: unknown): PublicAcademyClass["status"] {
+  return value === "closed" ? "closed" : "visible";
+}
+
+function normalizeClassLevel(value: unknown): AcademyClassLevel {
+  return isAcademyClassLevel(value) ? value : "all";
+}
+
+function normalizeClassLessonType(value: unknown): AcademyClassLessonType {
+  return isAcademyClassLessonType(value) ? value : "group";
+}
+
+function serializeDate(value: unknown): string | null {
+  if (value instanceof Date) return value.toISOString();
+  if (typeof value === "string") return value;
+  return null;
+}
+
+function serializeObjectId(value: unknown): string {
+  if (value && typeof value === "object" && "toHexString" in value) {
+    const maybeObjectId = value as { toHexString?: () => string };
+    if (typeof maybeObjectId.toHexString === "function") {
+      return maybeObjectId.toHexString();
+    }
+  }
+  return typeof value === "string" ? value : "";
+}
+
+function serializeAcademyClass(doc: Document): PublicAcademyClass {
+  const status = normalizeClassStatus(doc.status);
+  const level = normalizeClassLevel(doc.level);
+  const lessonType = normalizeClassLessonType(doc.lessonType);
+
+  return {
+    _id: serializeObjectId(doc._id),
+    name: typeof doc.name === "string" ? doc.name : "",
+    description: typeof doc.description === "string" ? doc.description : null,
+    level,
+    levelLabel: getAcademyClassLevelLabel(level),
+    lessonType,
+    lessonTypeLabel: getAcademyClassLessonTypeLabel(lessonType),
+    instructorName:
+      typeof doc.instructorName === "string" ? doc.instructorName : null,
+    location: typeof doc.location === "string" ? doc.location : null,
+    scheduleText:
+      typeof doc.scheduleText === "string" ? doc.scheduleText : null,
+    capacity: typeof doc.capacity === "number" ? doc.capacity : null,
+    enrolledCount:
+      typeof doc.enrolledCount === "number" ? doc.enrolledCount : 0,
+    price: typeof doc.price === "number" ? doc.price : null,
+    status,
+    statusLabel: getAcademyClassStatusLabel(status),
+    createdAt: serializeDate(doc.createdAt),
+    updatedAt: serializeDate(doc.updatedAt),
+  };
+}
+
+async function getPublicAcademyClasses(): Promise<PublicAcademyClass[]> {
+  try {
+    const db = await getDb();
+    const docs = await db
+      .collection("academy_classes")
+      .find({ status: { $in: [...PUBLIC_CLASS_STATUSES] } })
+      .sort({ createdAt: -1 })
+      .project({
+        _id: 1,
+        name: 1,
+        description: 1,
+        level: 1,
+        lessonType: 1,
+        instructorName: 1,
+        location: 1,
+        scheduleText: 1,
+        capacity: 1,
+        enrolledCount: 1,
+        price: 1,
+        status: 1,
+        createdAt: 1,
+        updatedAt: 1,
+      })
+      .toArray();
+
+    return docs.map(serializeAcademyClass);
+  } catch (error) {
+    console.error("[academy/page] failed to load public classes", error);
+    return [];
+  }
+}
+
+function formatClassPrice(price: number | null) {
+  if (typeof price === "number" && price > 0) {
+    return `월 ${price.toLocaleString("ko-KR")}원`;
+  }
+  return "상담 후 안내";
+}
 
 const lessonFlow = ["문의 접수", "레벨/목표 확인", "일정 상담", "수업 시작"];
 
@@ -56,7 +144,11 @@ const faqs = [
   },
 ];
 
-export default function AcademyPage() {
+export const dynamic = "force-dynamic";
+
+export default async function AcademyPage() {
+  const academyClasses = await getPublicAcademyClasses();
+
   return (
     <main className="min-h-screen bg-background px-4 py-10 md:px-6 md:py-14">
       <div className="mx-auto max-w-6xl space-y-10 md:space-y-12">
@@ -106,22 +198,122 @@ export default function AcademyPage() {
               목적과 경험에 맞춰 상담 후 적합한 수업 방향을 안내합니다.
             </p>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {lessonPrograms.map((program) => (
-              <Card key={program.title} className="border-border bg-card">
-                <CardHeader className="pb-3">
-                  <CardTitle className="break-keep text-lg">
-                    {program.title}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="break-keep text-sm leading-6 text-muted-foreground">
-                    {program.description}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          {academyClasses.length > 0 ? (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {academyClasses.map((academyClass) => {
+                const isClosed = academyClass.status === "closed";
+
+                return (
+                  <Card
+                    key={academyClass._id}
+                    className="flex h-full flex-col border-border bg-card"
+                  >
+                    <CardHeader className="space-y-3 pb-3">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge variant={isClosed ? "secondary" : "success"}>
+                          {academyClass.statusLabel}
+                        </Badge>
+                        <Badge variant="outline">
+                          {academyClass.lessonTypeLabel}
+                        </Badge>
+                        <Badge variant="outline">
+                          {academyClass.levelLabel}
+                        </Badge>
+                      </div>
+                      <CardTitle className="break-keep text-lg leading-7">
+                        {academyClass.name}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex flex-1 flex-col gap-4">
+                      <p className="break-keep text-sm leading-6 text-muted-foreground">
+                        {academyClass.description ||
+                          "도깨비테니스에서 레벨과 목표에 맞춰 안내하는 아카데미 클래스입니다."}
+                      </p>
+                      <dl className="space-y-2 text-sm text-muted-foreground">
+                        <div className="flex gap-2">
+                          <dt className="shrink-0 font-medium text-foreground">
+                            강사
+                          </dt>
+                          <dd className="break-keep break-words">
+                            {academyClass.instructorName || "상담 후 안내"}
+                          </dd>
+                        </div>
+                        <div className="flex gap-2">
+                          <dt className="shrink-0 font-medium text-foreground">
+                            장소
+                          </dt>
+                          <dd className="break-keep break-words">
+                            {academyClass.location || "상담 후 안내"}
+                          </dd>
+                        </div>
+                        <div className="flex gap-2">
+                          <dt className="shrink-0 font-medium text-foreground">
+                            일정
+                          </dt>
+                          <dd className="break-keep break-words">
+                            {academyClass.scheduleText || "상담 후 조율"}
+                          </dd>
+                        </div>
+                        <div className="flex gap-2">
+                          <dt className="shrink-0 font-medium text-foreground">
+                            정원
+                          </dt>
+                          <dd>
+                            {typeof academyClass.capacity === "number" &&
+                            academyClass.capacity > 0
+                              ? `정원 ${academyClass.capacity}명`
+                              : "상담 후 안내"}
+                          </dd>
+                        </div>
+                        <div className="flex gap-2">
+                          <dt className="shrink-0 font-medium text-foreground">
+                            가격
+                          </dt>
+                          <dd>{formatClassPrice(academyClass.price)}</dd>
+                        </div>
+                      </dl>
+                      <div className="mt-auto flex flex-col gap-2 pt-2 sm:flex-row">
+                        {isClosed ? (
+                          <>
+                            <Button disabled className="w-full sm:flex-1">
+                              모집 마감
+                            </Button>
+                            <Button
+                              asChild
+                              variant="outline"
+                              className="w-full sm:flex-1"
+                            >
+                              <Link href="/board/qna/write?category=academy">
+                                문의하기
+                              </Link>
+                            </Button>
+                          </>
+                        ) : (
+                          <Button asChild className="w-full">
+                            <Link href="/academy/apply">레슨 신청하기</Link>
+                          </Button>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          ) : (
+            <Card className="border-border bg-card">
+              <CardContent className="space-y-4 p-5 md:p-6">
+                <p className="break-keep text-sm leading-6 text-muted-foreground">
+                  현재 노출 중인 클래스가 없습니다. 레슨 문의를 남겨주시면
+                  가능한 수업을 안내해 드립니다.
+                </p>
+                <Button asChild className="w-full sm:w-auto">
+                  <Link href="/board/qna/write?category=academy">
+                    레슨 문의하기
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+          )}
         </section>
 
         <section className="space-y-4">
