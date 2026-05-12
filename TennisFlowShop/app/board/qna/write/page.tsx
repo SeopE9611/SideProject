@@ -95,6 +95,13 @@ export default function QnaWritePage() {
   } | null>(null);
   const preProductId = sp.get("productId");
   const preProductName = sp.get("productName") ?? "";
+  const queryCategory = sp.get("category")?.trim();
+  const initialCategory =
+    queryCategory?.toLowerCase() === "academy" || queryCategory === "아카데미"
+      ? "academy"
+      : preProductId
+        ? "product"
+        : "";
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
   const [previews, setPreviews] = useState<(string | null)[]>([]);
@@ -109,16 +116,15 @@ export default function QnaWritePage() {
   }, [selectedFiles]);
 
   const [isPrivate, setIsPrivate] = useState(false);
-  const [category, setCategory] = useState(preProductId ? "product" : "");
+  const [category, setCategory] = useState(initialCategory);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   // 이탈 경고(입력값이 하나라도 있으면 dirty)
   const isDirty = useMemo(() => {
-    const initCategory = preProductId ? "product" : "";
     return (
-      category !== initCategory ||
+      category !== initialCategory ||
       !!product?.id ||
       title.trim().length > 0 ||
       content.trim().length > 0 ||
@@ -126,7 +132,7 @@ export default function QnaWritePage() {
       isPrivate
     );
   }, [
-    preProductId,
+    initialCategory,
     category,
     product?.id,
     title,
