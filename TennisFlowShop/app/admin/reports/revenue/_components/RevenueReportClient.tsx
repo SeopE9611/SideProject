@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import useSWR from "swr";
-import { BarChartBig, Calendar, RefreshCw, Search, Store, WalletCards } from "lucide-react";
+import { BarChartBig, Calendar, FileDown, RefreshCw, Search, Store, WalletCards } from "lucide-react";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { adminSurface } from "@/components/admin/admin-typography";
 import { Badge } from "@/components/ui/badge";
@@ -62,10 +62,13 @@ export default function RevenueReportClient() {
   });
   const [applied, setApplied] = useState(filters);
 
-  const apiKey = useMemo(() => {
+  const reportQueryString = useMemo(() => {
     const params = new URLSearchParams({ from: applied.from, to: applied.to, groupBy: applied.groupBy });
-    return `/api/admin/reports/revenue?${params.toString()}`;
+    return params.toString();
   }, [applied]);
+
+  const apiKey = useMemo(() => `/api/admin/reports/revenue?${reportQueryString}`, [reportQueryString]);
+  const csvDownloadHref = useMemo(() => `/api/admin/reports/revenue/export?${reportQueryString}`, [reportQueryString]);
 
   const { data, error, isLoading, mutate } = useSWR<RevenueReportResponse>(apiKey, authenticatedSWRFetcher, {
     revalidateOnFocus: false,
@@ -118,12 +121,15 @@ export default function RevenueReportClient() {
               <Button type="button" variant="outline" size="sm" onClick={() => applyPreset("7d")}>최근 7일</Button>
               <Button type="button" variant="outline" size="sm" onClick={() => applyPreset("30d")}>최근 30일</Button>
             </div>
-            <div className="grid gap-3 md:grid-cols-[1fr_1fr_180px_auto_auto] md:items-end">
+            <div className="grid gap-3 md:grid-cols-[1fr_1fr_180px_auto_auto_auto] md:items-end">
               <div className="space-y-1.5"><Label htmlFor="report-from">시작일</Label><Input id="report-from" type="date" value={filters.from} onChange={(e) => setFilters((prev) => ({ ...prev, from: e.target.value }))} /></div>
               <div className="space-y-1.5"><Label htmlFor="report-to">종료일</Label><Input id="report-to" type="date" value={filters.to} onChange={(e) => setFilters((prev) => ({ ...prev, to: e.target.value }))} /></div>
               <div className="space-y-1.5"><Label>추이 단위</Label><Select value={filters.groupBy} onValueChange={(value: RevenueReportGroupBy) => setFilters((prev) => ({ ...prev, groupBy: value }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="day">일별</SelectItem><SelectItem value="month">월별</SelectItem></SelectContent></Select></div>
               <Button type="button" onClick={submit}><Search className="mr-2 h-4 w-4" />검색</Button>
               <Button type="button" variant="outline" onClick={reset}><RefreshCw className="mr-2 h-4 w-4" />초기화</Button>
+              <Button asChild type="button" variant="secondary">
+                <a href={csvDownloadHref} download><FileDown className="mr-2 h-4 w-4" />CSV 다운로드</a>
+              </Button>
             </div>
           </CardContent>
         </Card>
