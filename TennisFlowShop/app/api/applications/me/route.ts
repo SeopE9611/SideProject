@@ -1,9 +1,14 @@
 import { NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
-import { getTokenFromHeader, verifyAccessToken } from "@/lib/auth.utils";
+import { verifyAccessToken } from "@/lib/auth.utils";
 import { cookies } from "next/headers";
-import { ObjectId } from "mongodb";
+import { ObjectId, type Document } from "mongodb";
 import { normalizeCollection } from "@/app/features/stringing-applications/lib/collection";
+import {
+  getAcademyApplicationStatusLabel,
+  getAcademyCurrentLevelLabel,
+  getAcademyLessonTypeLabel,
+} from "@/lib/types/academy";
 /**
  * Query 숫자 파라미터 안전 파싱 (NaN/Infinity/음수 방지)
  * - 비정상 값이면 defaultValue 적용
@@ -37,6 +42,61 @@ function getApplicationLines(stringDetails: any): any[] {
   if (Array.isArray(stringDetails?.racketLines))
     return stringDetails.racketLines;
   return [];
+}
+
+function toISOStringMaybe(value: unknown): string | null {
+  if (!value) return null;
+  if (value instanceof Date) return value.toISOString();
+  const date = new Date(String(value));
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toISOString();
+}
+
+function toStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((item): item is string => typeof item === "string");
+}
+
+function getCreatedAtTime(doc: Document): number {
+  const date = new Date(doc.createdAt ?? 0);
+  return Number.isNaN(date.getTime()) ? 0 : date.getTime();
+}
+
+function serializeAcademyApplication(doc: Document) {
+  const status = typeof doc.status === "string" ? doc.status : "submitted";
+  const desiredLessonType =
+    typeof doc.desiredLessonType === "string" ? doc.desiredLessonType : null;
+  const currentLevel =
+    typeof doc.currentLevel === "string" ? doc.currentLevel : null;
+
+  return {
+    _id: doc._id.toString(),
+    id: doc._id.toString(),
+    kind: "academy_lesson",
+    type: "아카데미 레슨 신청",
+    title: "아카데미 레슨 신청",
+    applicantName:
+      typeof doc.applicantName === "string" ? doc.applicantName : null,
+    phone: typeof doc.phone === "string" ? doc.phone : null,
+    appliedAt: toISOStringMaybe(doc.createdAt) ?? new Date(0).toISOString(),
+    status,
+    statusLabel: getAcademyApplicationStatusLabel(status),
+    desiredLessonType,
+    desiredLessonTypeLabel: getAcademyLessonTypeLabel(desiredLessonType),
+    currentLevel,
+    currentLevelLabel: getAcademyCurrentLevelLabel(currentLevel),
+    preferredDays: toStringArray(doc.preferredDays),
+    preferredTimeText:
+      typeof doc.preferredTimeText === "string" ? doc.preferredTimeText : null,
+    lessonGoal: typeof doc.lessonGoal === "string" ? doc.lessonGoal : null,
+    requestMemo: typeof doc.requestMemo === "string" ? doc.requestMemo : null,
+    customerMessage:
+      typeof doc.customerMessage === "string" && doc.customerMessage.trim()
+        ? doc.customerMessage
+        : null,
+    createdAt: toISOStringMaybe(doc.createdAt),
+    updatedAt: toISOStringMaybe(doc.updatedAt),
+  };
 }
 
 export async function GET(req: Request) {
@@ -77,16 +137,62 @@ export async function GET(req: Request) {
   const db = client.db();
 
   // draft는 마이페이지 목록/카운트에서 제외
-  const total = await db
-    .collection("stringing_applications")
-    .countDocuments({ userId, status: { $ne: "draft" } });
-  const rawList = await db
-    .collection("stringing_applications")
-    .find({ userId, status: { $ne: "draft" } })
-    .sort({ createdAt: -1 })
-    .skip(skip)
-    .limit(limit)
-    .toArray();
+  // 서로 다른 컬렉션을 최신순으로 병합한 뒤 페이지네이션하기 위해
+  // 각 컬렉션에서 현재 페이지 계산에 필요한 최대치(skip + limit)만 가져온다.
+  const pageWindow = skip + limit;
+  const academyUserIdFilter = { $in: [subStr, userId] };
+  const [stringingTotal, academyTotal, rawStringingList, rawAcademyList] =
+    await Promise.all([
+      db
+        .collection("stringing_applications")
+        .countDocuments({ userId, status: { $ne: "draft" } }),
+      db
+        .collection("academy_lesson_applications")
+        .countDocuments({ userId: academyUserIdFilter }),
+      db
+        .collection("stringing_applications")
+        .find({ userId, status: { $ne: "draft" } })
+        .sort({ createdAt: -1 })
+        .limit(pageWindow)
+        .toArray(),
+      db
+        .collection("academy_lesson_applications")
+        .find(
+          { userId: academyUserIdFilter },
+          {
+            projection: {
+              applicantName: 1,
+              phone: 1,
+              desiredLessonType: 1,
+              currentLevel: 1,
+              preferredDays: 1,
+              preferredTimeText: 1,
+              lessonGoal: 1,
+              requestMemo: 1,
+              status: 1,
+              customerMessage: 1,
+              createdAt: 1,
+              updatedAt: 1,
+              userId: 1,
+            },
+          },
+        )
+        .sort({ createdAt: -1 })
+        .limit(pageWindow)
+        .toArray(),
+    ]);
+
+  const total = stringingTotal + academyTotal;
+  const mergedPage = [
+    ...rawStringingList.map((doc) => ({ kind: "stringing" as const, doc })),
+    ...rawAcademyList.map((doc) => ({ kind: "academy_lesson" as const, doc })),
+  ]
+    .sort((a, b) => getCreatedAtTime(b.doc) - getCreatedAtTime(a.doc))
+    .slice(skip, skip + limit);
+
+  const rawList = mergedPage
+    .filter((item) => item.kind === "stringing")
+    .map((item) => item.doc);
 
   /**
    * order 기반 신청서의 "라켓 포함 여부"를 미리 조회해서 Map으로 만듬
@@ -119,7 +225,7 @@ export async function GET(req: Request) {
   }
 
   // sanitize + stringType 매핑
-  const items = await Promise.all(
+  const stringingItems = await Promise.all(
     rawList.map(async (doc) => {
       const details: any = (doc as any).stringDetails ?? {};
       const typeIds: string[] = Array.isArray(details.stringTypes)
@@ -285,6 +391,20 @@ export async function GET(req: Request) {
       };
     }),
   );
+
+  const stringingItemById = new Map(
+    stringingItems.map((item) => [item.id, item]),
+  );
+
+  const items = mergedPage
+    .map((item) => {
+      if (item.kind === "academy_lesson") {
+        return serializeAcademyApplication(item.doc);
+      }
+      const id = item.doc._id.toString();
+      return stringingItemById.get(id);
+    })
+    .filter(Boolean);
 
   return NextResponse.json({ items, total });
 }

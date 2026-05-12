@@ -40,11 +40,15 @@ import useSWRInfinite from "swr/infinite";
 
 export interface Application {
   id: string;
-  type: "스트링 장착 서비스" | "아카데미 수강 신청";
-  applicantName: string;
-  phone: string;
+  _id?: string;
+  kind?: "stringing" | "academy_lesson";
+  type: "스트링 장착 서비스" | "아카데미 레슨 신청" | "아카데미 수강 신청";
+  title?: string;
+  applicantName: string | null;
+  phone: string | null;
   appliedAt: string;
-  status: "접수완료" | "검토 중" | "작업 중" | "교체완료";
+  status: string;
+  statusLabel?: string;
   racketType?: string;
   stringType?: string;
   preferredDate?: string;
@@ -55,7 +59,18 @@ export interface Application {
 
   course?: string;
   schedule?: string;
-  hasTracking: boolean;
+  desiredLessonType?: string | null;
+  desiredLessonTypeLabel?: string;
+  currentLevel?: string | null;
+  currentLevelLabel?: string;
+  preferredDays?: string[];
+  preferredTimeText?: string | null;
+  lessonGoal?: string | null;
+  requestMemo?: string | null;
+  customerMessage?: string | null;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+  hasTracking?: boolean;
   cancelStatus?: string; // '요청' | '승인' | '거절' | 'none'
   cancelReasonSummary?: string | null;
 
@@ -173,6 +188,27 @@ const getApplicationStatusIcon = (status: Application["status"]) => {
       return <CheckCircle className="h-4 w-4 text-primary" />;
     default:
       return <Ban className="h-4 w-4 text-destructive" />;
+  }
+};
+
+const getAcademyStatusVariant = (status: string) => {
+  switch (status) {
+    case "confirmed":
+    case "등록 확정":
+      return "success" as const;
+    case "reviewing":
+    case "검토 중":
+      return "warning" as const;
+    case "contacted":
+    case "상담 완료":
+      return "info" as const;
+    case "cancelled":
+    case "취소":
+      return "danger" as const;
+    case "submitted":
+    case "접수완료":
+    default:
+      return "neutral" as const;
   }
 };
 
@@ -379,7 +415,14 @@ export default function ApplicationsClient() {
 
   // 에러
   if (error) {
-    return <AsyncState kind="error" variant="card" resourceName="신청 내역" onAction={() => mutate()} />;
+    return (
+      <AsyncState
+        kind="error"
+        variant="card"
+        resourceName="신청 내역"
+        onAction={() => mutate()}
+      />
+    );
   }
 
   const isInitialLoading = !data && isValidating;
@@ -405,7 +448,12 @@ export default function ApplicationsClient() {
 
       {!isInitialLoading
         ? applications.map((app) => {
-            const isStringService = app.type === "스트링 장착 서비스";
+            const isAcademyLesson =
+              app.kind === "academy_lesson" ||
+              app.type === "아카데미 레슨 신청" ||
+              app.type === "아카데미 수강 신청";
+            const isStringService =
+              !isAcademyLesson && app.type === "스트링 장착 서비스";
             // collectionMethod는 "방문/자가발송" 라벨 표시에만 사용 (버튼 노출 조건은 needsInboundTracking 사용)
             const cm = normalizeCollection(
               (app as any).collectionMethod ??
@@ -479,7 +527,13 @@ export default function ApplicationsClient() {
               !isCancelRequested; // 요청 상태가 아니면 언제든 다시 취소 요청 가능
             const title = isStringService
               ? `${app.racketType?.trim() || "라켓 미입력"} / ${app.stringType?.trim() || "스트링 미입력"}`
-              : app.course?.trim() || "아카데미 수강 신청";
+              : app.title?.trim() || "아카데미 레슨 신청";
+            const displayStatus = isAcademyLesson
+              ? app.statusLabel || app.status
+              : app.status;
+            const preferredDaysLabel = app.preferredDays?.length
+              ? app.preferredDays.join(", ")
+              : "희망 요일 미입력";
             const metaLinkLabel = hasOrderLink
               ? "원 주문 연계"
               : hasRentalLink
@@ -518,9 +572,22 @@ export default function ApplicationsClient() {
                       className="flex items-center gap-2"
                       data-cy="mypage-application-status-wrap"
                     >
-                      {getApplicationStatusIcon(app.status)}
+                      {isAcademyLesson ? (
+                        <Clock className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        getApplicationStatusIcon(app.status)
+                      )}
                       <span data-cy="mypage-application-status-badge">
-                        <ApplicationStatusBadge status={app.status} />
+                        {isAcademyLesson ? (
+                          <Badge
+                            variant={getAcademyStatusVariant(app.status)}
+                            className="text-[11px] font-medium"
+                          >
+                            {displayStatus}
+                          </Badge>
+                        ) : (
+                          <ApplicationStatusBadge status={app.status} />
+                        )}
                       </span>
                       {isCancelRequested ? (
                         <Badge
@@ -538,6 +605,9 @@ export default function ApplicationsClient() {
                       {metaLinkLabel}
                       {metaLinkId ? ` · ${String(metaLinkId).slice(-6)}` : ""}
                     </Badge>
+                    {isAcademyLesson ? (
+                      <Badge variant="outline">도깨비테니스 아카데미</Badge>
+                    ) : null}
                     {collectionLabel ? (
                       <Badge variant="outline">
                         {collectionLabel.replace("접수 방식: ", "")}
@@ -589,13 +659,37 @@ export default function ApplicationsClient() {
                     ) : (
                       <>
                         <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
+                          <MdSportsTennis className="h-4 w-4 text-muted-foreground" />
+                          <div>
+                            <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                              희망 레슨 유형
+                            </p>
+                            <p className="font-medium text-foreground">
+                              {app.desiredLessonTypeLabel ?? "미선택"}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
                           <User className="h-4 w-4 text-muted-foreground" />
                           <div>
                             <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                              신청자
+                              현재 실력
                             </p>
                             <p className="font-medium text-foreground">
-                              {app.applicantName}
+                              {app.currentLevelLabel ?? "미선택"}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
+                          <Clock className="h-4 w-4 text-muted-foreground" />
+                          <div>
+                            <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                              희망 요일
+                            </p>
+                            <p className="break-words font-medium text-foreground">
+                              {preferredDaysLabel}
                             </p>
                           </div>
                         </div>
@@ -604,10 +698,11 @@ export default function ApplicationsClient() {
                           <Phone className="h-4 w-4 text-muted-foreground" />
                           <div>
                             <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                              연락처 / 일정
+                              희망 시간대
                             </p>
-                            <p className="font-medium text-foreground">
-                              {app.phone} / {app.schedule ?? "일정 미입력"}
+                            <p className="break-words font-medium text-foreground">
+                              {app.preferredTimeText?.trim() ||
+                                "희망 시간 미입력"}
                             </p>
                           </div>
                         </div>
@@ -615,21 +710,59 @@ export default function ApplicationsClient() {
                     )}
                   </div>
 
+                  {isAcademyLesson ? (
+                    <div className="space-y-3 rounded-xl border border-border/50 bg-muted/20 p-3 text-sm text-foreground">
+                      <p className="text-muted-foreground">
+                        신청 내용 확인 후 도깨비테니스에서 상담을 도와드립니다.
+                      </p>
+                      {app.lessonGoal ? (
+                        <div>
+                          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                            레슨 목표
+                          </p>
+                          <p className="mt-1 whitespace-pre-wrap break-words">
+                            {app.lessonGoal}
+                          </p>
+                        </div>
+                      ) : null}
+                      {app.requestMemo ? (
+                        <div>
+                          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                            요청사항
+                          </p>
+                          <p className="mt-1 whitespace-pre-wrap break-words">
+                            {app.requestMemo}
+                          </p>
+                        </div>
+                      ) : null}
+                      {app.customerMessage ? (
+                        <div className="rounded-lg border border-info/30 bg-info/10 p-3 text-info dark:bg-info/15">
+                          <p className="text-xs font-semibold">관리자 안내</p>
+                          <p className="mt-1 whitespace-pre-wrap break-words">
+                            {app.customerMessage}
+                          </p>
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : null}
+
                   <div className="flex flex-wrap items-center gap-2 border-t border-border/60 pt-3 md:pt-4">
-                    <Button
-                      data-cy="mypage-application-detail-cta"
-                      variant="outline"
-                      size="sm"
-                      onClick={() =>
-                        router.push(
-                          `/mypage?tab=orders&flowType=application&flowId=${app.id}&from=orders`,
-                        )
-                      }
-                      className="bg-transparent"
-                    >
-                      상세 보기
-                      <ArrowRight className="ml-1 h-3 w-3" />
-                    </Button>
+                    {isStringService ? (
+                      <Button
+                        data-cy="mypage-application-detail-cta"
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          router.push(
+                            `/mypage?tab=orders&flowType=application&flowId=${app.id}&from=orders`,
+                          )
+                        }
+                        className="bg-transparent"
+                      >
+                        상세 보기
+                        <ArrowRight className="ml-1 h-3 w-3" />
+                      </Button>
+                    ) : null}
 
                     {hasOrderLink && orderId ? (
                       <Button
