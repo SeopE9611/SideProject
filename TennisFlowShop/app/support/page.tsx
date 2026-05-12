@@ -8,7 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { badgeBaseOutlined, badgeSizeSm, getAnswerStatusBadgeSpec, getNoticeCategoryBadgeSpec, getQnaCategoryBadgeSpec } from "@/lib/badge-style";
-import { Bell, Eye, Gift, Headset, ImageIcon, Lock, MessageSquare, Paperclip, Pin } from "lucide-react";
+import { Bell, Eye, Gift, Headset, ImageIcon, Lock, MessageSquare, PackageSearch, Paperclip, Pin, ShoppingBag } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import useSWR from "swr";
@@ -90,6 +91,83 @@ const supportMobileTitleClampClass = "min-w-0 flex-1 line-clamp-2 text-sm font-s
 const supportMobileMetaWrapClass = "flex flex-wrap items-center gap-x-3.5 gap-y-1 text-xs text-muted-foreground";
 const supportMobileActionBadgeWrapClass = "shrink-0 self-start";
 const supportQnaInlineTitleClass = "min-w-0 flex-1 line-clamp-2 text-sm font-semibold leading-snug sm:line-clamp-1 sm:text-base";
+
+
+// ---------------------- 문의 진입 카드 ----------------------
+
+type SupportEntryAction = {
+  href: string;
+  label: string;
+  variant?: "default" | "outline";
+};
+
+type SupportEntryCardProps = {
+  icon: LucideIcon;
+  title: string;
+  description: string;
+  actions: SupportEntryAction[];
+};
+
+const supportEntryCards: SupportEntryCardProps[] = [
+  {
+    icon: MessageSquare,
+    title: "주문·배송·교체서비스 문의",
+    description: "상품 주문, 배송, 교체서비스 진행 상태와 상품 문의는 Q&A를 이용해주세요. 운영자가 확인 후 답변합니다.",
+    actions: [{ href: "/board/qna", label: "Q&A 문의하기", variant: "default" }],
+  },
+  {
+    icon: PackageSearch,
+    title: "비회원 주문 조회",
+    description: "회원가입 없이 주문한 내역을 이름, 연락처, 이메일로 확인합니다.",
+    actions: [{ href: "/order-lookup", label: "비회원 주문 조회", variant: "outline" }],
+  },
+  {
+    icon: Bell,
+    title: "공지사항",
+    description: "운영 안내, 배송 일정, 서비스 변경 사항을 확인합니다.",
+    actions: [{ href: "/board/notice", label: "공지사항 보기", variant: "outline" }],
+  },
+  {
+    icon: Gift,
+    title: "이벤트",
+    description: "진행 중인 이벤트와 혜택을 확인합니다.",
+    actions: [{ href: "/board/event", label: "이벤트 보기", variant: "outline" }],
+  },
+  {
+    icon: ShoppingBag,
+    title: "중고거래/개인 연락",
+    description: "중고거래 관련 연락은 쪽지 또는 중고거래 게시판을 이용합니다. 쪽지는 사용자 간 연락이 필요할 때 활용해주세요.",
+    actions: [
+      { href: "/board/market", label: "중고거래 보기", variant: "outline" },
+      { href: "/messages", label: "쪽지함 보기", variant: "outline" },
+    ],
+  },
+];
+
+function SupportEntryCard({ icon: Icon, title, description, actions }: SupportEntryCardProps) {
+  return (
+    <Card className="flex h-full flex-col border border-border bg-card shadow-sm">
+      <CardHeader className="space-y-3 p-4 sm:p-5">
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-muted/30">
+            <Icon className="h-5 w-5 text-foreground" aria-hidden="true" />
+          </div>
+          <div className="min-w-0 space-y-1">
+            <CardTitle className="break-keep text-base font-semibold leading-tight text-foreground sm:text-lg">{title}</CardTitle>
+            <p className="break-keep text-sm leading-relaxed text-muted-foreground">{description}</p>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="mt-auto flex flex-wrap gap-2 px-4 pb-4 pt-0 sm:px-5 sm:pb-5">
+        {actions.map((action) => (
+          <Button key={action.href} asChild size="sm" variant={action.variant ?? "outline"} className="whitespace-nowrap">
+            <Link href={action.href}>{action.label}</Link>
+          </Button>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
 
 function FiveLineSkeleton() {
   return (
@@ -410,10 +488,24 @@ export default function SupportPage() {
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted/30 shadow-lg">
               <Headset className="h-6 w-6 text-foreground" />
             </div>
-            <h1 className="text-3xl md:text-4xl font-bold tracking-normal text-foreground">고객센터</h1>
+            <h1 className="break-keep text-3xl font-bold tracking-normal text-foreground md:text-4xl">무엇을 도와드릴까요?</h1>
           </div>
-          <p className="mx-auto max-w-2xl break-keep text-sm text-muted-foreground md:text-base">서비스 이용 중 필요한 안내를 확인하고, 궁금한 내용은 Q&amp;A 문의로 남겨주세요.</p>
+          <p className="mx-auto max-w-2xl break-keep text-sm text-muted-foreground md:text-base">주문, 배송, 교체서비스, 비회원 주문 조회, 공지와 이벤트를 한 곳에서 확인할 수 있습니다.</p>
         </div>
+
+        <section aria-labelledby="support-entry-title" className="space-y-3">
+          <div className="space-y-1">
+            <h2 id="support-entry-title" className="break-keep text-xl font-semibold text-foreground">
+              문의·확인 목적별 바로가기
+            </h2>
+            <p className="break-keep text-sm text-muted-foreground">상황에 맞는 메뉴를 선택하면 더 빠르게 확인하거나 문의할 수 있어요.</p>
+          </div>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {supportEntryCards.map((card) => (
+              <SupportEntryCard key={card.title} {...card} />
+            ))}
+          </div>
+        </section>
 
         <SupportFaqSearch />
 
