@@ -70,9 +70,9 @@ export default function AcademyPage() {
                 도깨비테니스 아카데미
               </h1>
               <p className="break-keep text-base leading-7 text-foreground/80 md:text-lg">
-                입문자부터 실전 플레이어까지, 목표와 레벨에 맞춘 테니스
-                레슨을 안내합니다. 기본기, 랠리, 경기 운영까지 필요한
-                방향을 상담하며 함께 찾아보세요.
+                입문자부터 실전 플레이어까지, 목표와 레벨에 맞춘 테니스 레슨을
+                안내합니다. 기본기, 랠리, 경기 운영까지 필요한 방향을 상담하며
+                함께 찾아보세요.
               </p>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -82,18 +82,17 @@ export default function AcademyPage() {
                 </Link>
               </Button>
               <Button
-                type="button"
+                asChild
                 size="lg"
                 variant="outline"
-                disabled
                 className="w-full sm:w-auto"
               >
-                레슨 신청하기 준비 중
+                <Link href="/academy/apply">레슨 신청하기</Link>
               </Button>
             </div>
             <p className="break-keep text-sm leading-6 text-muted-foreground">
-              신청서는 다음 단계에서 제공될 예정입니다. 현재는 문의하기를
-              통해 레슨 상담을 남겨주세요.
+              레슨 신청서를 남겨주시면 도깨비테니스에서 확인 후 상담을
+              도와드립니다. 문의글로도 레슨 상담을 남길 수 있습니다.
             </p>
           </div>
         </section>
@@ -188,7 +187,9 @@ export default function AcademyPage() {
               도와드리겠습니다.
             </p>
             <Button asChild size="lg" className="w-full sm:w-auto">
-              <Link href="/board/qna/write?category=academy">레슨 문의하기</Link>
+              <Link href="/board/qna/write?category=academy">
+                레슨 문의하기
+              </Link>
             </Button>
           </div>
         </section>
