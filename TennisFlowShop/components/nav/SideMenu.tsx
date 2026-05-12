@@ -31,28 +31,28 @@ export default function SideMenu() {
   const linkClass = (href: string) => {
     const isActive = isActiveHref(href);
     return cn(
-      "group relative z-0 block rounded-lg px-3.5 py-2.5 text-[15px] font-semibold transition-[background-color,color,border-color,box-shadow,opacity] duration-200",
+      "group relative z-0 block rounded-lg px-3.5 py-2.5 text-base font-semibold transition-[background-color,color,border-color,box-shadow,opacity] duration-200",
       "hover:bg-primary/10 dark:hover:bg-primary/20",
       "hover:shadow-sm hover:z-10",
       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-      isActive ? "bg-primary/10 text-foreground border border-primary/20 shadow-sm dark:bg-primary/20" : "text-foreground/85 hover:text-foreground",
+      isActive ? "bg-primary/10 text-foreground border border-primary/20 shadow-sm dark:bg-primary/20" : "text-foreground/90 hover:text-foreground",
     );
   };
 
   const brandLinkClass = (href: string) => {
     const isActive = isActiveHref(href);
     return cn(
-      "group relative z-0 block rounded-md px-3 py-2 text-[14px] transition-[background-color,color,border-color,box-shadow,opacity] duration-200",
+      "group relative z-0 block rounded-md px-3 py-2 text-[14px] font-medium transition-[background-color,color,border-color,box-shadow,opacity] duration-200",
       "hover:bg-muted",
       "hover:shadow-sm hover:z-10",
       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-      isActive ? "bg-muted text-foreground font-medium shadow-sm" : "text-foreground/80 hover:text-foreground",
+      isActive ? "bg-muted text-foreground font-semibold shadow-sm" : "text-foreground/80 hover:text-foreground",
     );
   };
 
   const nestedGroupClass = "mt-1.5 pl-1";
 
-  const nestedTriggerClass = "px-3.5 py-2 text-[14px] font-semibold text-foreground/80 hover:text-foreground rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20";
+  const nestedTriggerClass = "px-3.5 py-2 text-[15px] font-semibold text-foreground/85 hover:text-foreground rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20";
 
   return (
     <aside
@@ -91,7 +91,7 @@ export default function SideMenu() {
                       <AccordionContent value="strings-brand" className="pb-0 pt-1">
                         <div className="grid grid-cols-2 gap-1">
                           {NAV_LINKS.strings.brands.map((b) => (
-                            <Link key={b.href} href={b.href} className={cn(brandLinkClass(b.href), "px-2.5 py-1.5 text-[13px]")}>
+                            <Link key={b.href} href={b.href} className={cn(brandLinkClass(b.href), "px-2.5 py-2 text-[14px]")}>
                               <span className="flex items-center justify-between">
                                 {b.name}
                                 <ChevronRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-[background-color,color,border-color,box-shadow,opacity] duration-200" />
@@ -187,7 +187,7 @@ export default function SideMenu() {
                       <AccordionContent value="rackets-brand" className="pb-0 pt-1">
                         <div className="grid grid-cols-2 gap-1">
                           {NAV_LINKS.rackets.brands.map((b) => (
-                            <Link key={b.href} href={b.href} className={cn(brandLinkClass(b.href), "px-2.5 py-1.5 text-[13px]")}>
+                            <Link key={b.href} href={b.href} className={cn(brandLinkClass(b.href), "px-2.5 py-2 text-[14px]")}>
                               <span className="flex items-center justify-between">
                                 {b.name}
                                 <ChevronRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-[background-color,color,border-color,box-shadow,opacity] duration-200" />
