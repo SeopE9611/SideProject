@@ -15,6 +15,7 @@ import {
   Bell,
   Inbox,
   History,
+  BookOpen,
 } from "lucide-react";
 import { MdSportsTennis } from "react-icons/md";
 
@@ -81,6 +82,16 @@ export const SIDEBAR_SECTIONS: SidebarSection[] = [
         icon: CalendarClock,
       },
       { title: "정산 관리", href: "/admin/settlements", icon: ChartBar },
+    ],
+  },
+  {
+    label: "아카데미",
+    items: [
+      {
+        title: "신청 관리",
+        href: "/admin/academy/applications",
+        icon: BookOpen,
+      },
     ],
   },
   {
