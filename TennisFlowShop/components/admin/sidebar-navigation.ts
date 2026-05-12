@@ -16,6 +16,7 @@ import {
   Inbox,
   History,
   BookOpen,
+  Library,
 } from "lucide-react";
 import { MdSportsTennis } from "react-icons/md";
 
@@ -91,6 +92,11 @@ export const SIDEBAR_SECTIONS: SidebarSection[] = [
         title: "신청 관리",
         href: "/admin/academy/applications",
         icon: BookOpen,
+      },
+      {
+        title: "클래스 관리",
+        href: "/admin/academy/classes",
+        icon: Library,
       },
     ],
   },

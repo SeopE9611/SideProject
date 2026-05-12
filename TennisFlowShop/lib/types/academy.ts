@@ -125,3 +125,128 @@ export function getAcademyCurrentLevelLabel(
   }
   return ACADEMY_CURRENT_LEVEL_LABELS[level as AcademyCurrentLevel];
 }
+
+export type AcademyClassStatus = "draft" | "visible" | "hidden" | "closed";
+
+export type AcademyClassLevel =
+  | "beginner"
+  | "intermediate"
+  | "advanced"
+  | "all";
+
+export type AcademyClassLessonType =
+  | "group"
+  | "private"
+  | "junior"
+  | "adult"
+  | "onePoint";
+
+export type AcademyClass = {
+  _id?: string;
+  name: string;
+  description?: string | null;
+  level: AcademyClassLevel;
+  lessonType: AcademyClassLessonType;
+  instructorName?: string | null;
+  location?: string | null;
+  scheduleText?: string | null;
+  capacity?: number | null;
+  enrolledCount?: number;
+  price?: number | null;
+  status: AcademyClassStatus;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export const ACADEMY_CLASS_STATUSES = [
+  "draft",
+  "visible",
+  "hidden",
+  "closed",
+] as const satisfies readonly AcademyClassStatus[];
+
+export const ACADEMY_CLASS_LEVELS = [
+  "beginner",
+  "intermediate",
+  "advanced",
+  "all",
+] as const satisfies readonly AcademyClassLevel[];
+
+export const ACADEMY_CLASS_LESSON_TYPES = [
+  "group",
+  "private",
+  "junior",
+  "adult",
+  "onePoint",
+] as const satisfies readonly AcademyClassLessonType[];
+
+export const ACADEMY_CLASS_STATUS_LABELS: Record<AcademyClassStatus, string> = {
+  draft: "임시 저장",
+  visible: "노출 중",
+  hidden: "숨김",
+  closed: "모집 마감",
+};
+
+export const ACADEMY_CLASS_LEVEL_LABELS: Record<AcademyClassLevel, string> = {
+  beginner: "입문/초급",
+  intermediate: "중급",
+  advanced: "상급",
+  all: "전체 레벨",
+};
+
+export const ACADEMY_CLASS_LESSON_TYPE_LABELS: Record<
+  AcademyClassLessonType,
+  string
+> = {
+  group: "그룹 레슨",
+  private: "개인 레슨",
+  junior: "주니어 레슨",
+  adult: "성인 레슨",
+  onePoint: "원포인트 레슨",
+};
+
+export function isAcademyClassStatus(
+  value: unknown,
+): value is AcademyClassStatus {
+  return (
+    typeof value === "string" &&
+    ACADEMY_CLASS_STATUSES.includes(value as AcademyClassStatus)
+  );
+}
+
+export function isAcademyClassLevel(value: unknown): value is AcademyClassLevel {
+  return (
+    typeof value === "string" &&
+    ACADEMY_CLASS_LEVELS.includes(value as AcademyClassLevel)
+  );
+}
+
+export function isAcademyClassLessonType(
+  value: unknown,
+): value is AcademyClassLessonType {
+  return (
+    typeof value === "string" &&
+    ACADEMY_CLASS_LESSON_TYPES.includes(value as AcademyClassLessonType)
+  );
+}
+
+export function getAcademyClassStatusLabel(
+  status: AcademyClassStatus | string | null | undefined,
+) {
+  if (!isAcademyClassStatus(status)) return "알 수 없음";
+  return ACADEMY_CLASS_STATUS_LABELS[status];
+}
+
+export function getAcademyClassLevelLabel(
+  level: AcademyClassLevel | string | null | undefined,
+) {
+  if (!isAcademyClassLevel(level)) return "미선택";
+  return ACADEMY_CLASS_LEVEL_LABELS[level];
+}
+
+export function getAcademyClassLessonTypeLabel(
+  type: AcademyClassLessonType | string | null | undefined,
+) {
+  if (!isAcademyClassLessonType(type)) return "미선택";
+  return ACADEMY_CLASS_LESSON_TYPE_LABELS[type];
+}
