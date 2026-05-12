@@ -24,6 +24,7 @@ export type RevenueReportOfflineBucket = {
   packageSalesPaidAmount: number;
   byMethod: Record<OfflinePaymentMethod, number>;
   issueFailedCount?: number;
+  issueFailedAmount?: number;
 };
 
 export type RevenueReportCombinedPreview = {
