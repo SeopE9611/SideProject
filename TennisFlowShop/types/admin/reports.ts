@@ -52,3 +52,27 @@ export type RevenueReportResponse = {
   combinedPreview: RevenueReportCombinedPreview;
   series: RevenueReportSeriesPoint[];
 };
+
+export type RevenueReportSnapshotStatus = "draft" | "finalized";
+
+export type RevenueReportSnapshot = {
+  id: string;
+  yyyymm: string;
+  range: RevenueReportResponse["range"];
+  report: RevenueReportResponse;
+  status: RevenueReportSnapshotStatus;
+  memo?: string | null;
+  createdAt?: string | null;
+  createdBy?: string | null;
+  updatedAt?: string | null;
+  updatedBy?: string | null;
+};
+
+export type RevenueReportSnapshotResponse = {
+  item?: RevenueReportSnapshot | null;
+  items?: RevenueReportSnapshot[];
+  page?: number;
+  limit?: number;
+  total?: number;
+  totalPages?: number;
+};
