@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 import { BarChartBig, Calendar, DatabaseZap, Eye, FileDown, Loader2, RefreshCw, Save, Search, Store, WalletCards } from "lucide-react";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
@@ -113,7 +113,8 @@ export default function RevenueReportClient() {
   const monthlySnapshotTarget = useMemo(() => getMonthlySnapshotTarget(applied.from, applied.to), [applied.from, applied.to]);
   const apiKey = useMemo(() => `/api/admin/reports/revenue?${reportQueryString}`, [reportQueryString]);
   const csvDownloadHref = useMemo(() => `/api/admin/reports/revenue/export?${reportQueryString}`, [reportQueryString]);
-  const snapshotKey = monthlySnapshotTarget ? `/api/admin/reports/revenue/snapshots?yyyymm=${monthlySnapshotTarget.yyyymm}` : null;
+  const activeSnapshotMonth = monthlySnapshotTarget?.yyyymm ?? null;
+  const snapshotKey = activeSnapshotMonth ? `/api/admin/reports/revenue/snapshots?yyyymm=${activeSnapshotMonth}` : null;
 
   const { data, error, isLoading, mutate } = useSWR<RevenueReportResponse>(apiKey, authenticatedSWRFetcher, {
     revalidateOnFocus: false,
@@ -143,7 +144,7 @@ export default function RevenueReportClient() {
     if (!monthlySnapshotTarget) return;
     const existing = snapshotData?.item;
     const confirmMessage = existing
-      ? `${monthlySnapshotTarget.yyyymm} 월별 스냅샷이 이미 저장되어 있습니다.\n새로 저장하면 저장 당시의 실시간 리포트 값으로 덮어써집니다. 계속할까요?`
+      ? `${monthlySnapshotTarget.yyyymm} 월별 스냅샷이 이미 저장되어 있습니다.\n새로 저장하면 저장 당시의 실시간 리포트 값과 현재 선택한 상태/메모로 덮어써집니다. 계속할까요?`
       : `${monthlySnapshotTarget.yyyymm} 월별 매출 리포트를 day 기준 스냅샷으로 저장할까요?`;
     if (!window.confirm(confirmMessage)) return;
 
@@ -166,6 +167,23 @@ export default function RevenueReportClient() {
 
   const report = data;
   const snapshot = snapshotData?.item ?? null;
+
+  useEffect(() => {
+    if (!activeSnapshotMonth) {
+      setSnapshotStatus("draft");
+      setSnapshotMemo("");
+      return;
+    }
+
+    if (!snapshot) {
+      setSnapshotStatus("draft");
+      setSnapshotMemo("");
+      return;
+    }
+
+    setSnapshotStatus(snapshot.status ?? "draft");
+    setSnapshotMemo(snapshot.memo ?? "");
+  }, [activeSnapshotMonth, snapshot?.id, snapshot?.updatedAt, snapshot?.status, snapshot?.memo]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -233,7 +251,7 @@ export default function RevenueReportClient() {
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
                       <p className="font-semibold">저장 상태</p>
-                      <p className="mt-1 text-sm text-muted-foreground">{isSnapshotLoading ? "저장된 스냅샷을 확인하는 중입니다…" : snapshot ? "저장된 스냅샷이 있습니다." : "저장된 스냅샷 없음"}</p>
+                      <p className="mt-1 text-sm text-muted-foreground">{isSnapshotLoading ? "저장된 스냅샷을 확인하는 중입니다…" : snapshot ? "저장된 스냅샷이 있습니다. 저장된 스냅샷의 상태와 메모가 아래 입력값에 반영되었습니다." : "저장된 스냅샷이 없습니다. 현재 월 리포트를 새로 저장할 수 있습니다."}</p>
                     </div>
                     {snapshot ? <Badge variant={snapshot.status === "finalized" ? "default" : "secondary"}>{snapshot.status}</Badge> : <Badge variant="outline">not saved</Badge>}
                   </div>
@@ -260,6 +278,7 @@ export default function RevenueReportClient() {
                     <Label htmlFor="snapshot-memo">메모</Label>
                     <Textarea id="snapshot-memo" value={snapshotMemo} onChange={(e) => setSnapshotMemo(e.target.value)} placeholder="운영 메모를 입력하세요. 고객명/전화번호 등 개인정보는 입력하지 마세요." rows={3} />
                   </div>
+                  <p className="text-xs text-muted-foreground">{snapshot ? "이미 저장된 스냅샷이 있습니다. 다시 저장하면 현재 선택한 상태와 메모로 덮어씁니다." : "저장된 스냅샷이 없습니다. 현재 선택한 상태와 메모로 새 스냅샷을 저장합니다."}</p>
                   <Button type="button" className="w-full" onClick={saveSnapshot} disabled={savingSnapshot || !report}>
                     {savingSnapshot ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}스냅샷 저장
                   </Button>
