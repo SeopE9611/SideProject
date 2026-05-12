@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { adminMutator } from "@/lib/admin/adminFetcher";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
+import { getKstMonthRange, getKstTodayRange, toKstYmd } from "@/lib/date/kst";
 import { maskPhone } from "@/lib/offline/normalizers";
 import { cn } from "@/lib/utils";
 import type { OfflineCustomerDto, OfflinePaymentMethod, OfflineRevenueSummary } from "@/types/admin/offline";
@@ -30,7 +31,7 @@ function toDateInputValue(value: string | Date | null | undefined): string {
   if (!value) return "";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "";
-  return date.toISOString().slice(0, 10);
+  return toKstYmd(date);
 }
 
 function formatCurrency(value: number | null | undefined): string {
@@ -41,18 +42,8 @@ function formatDate(value: string | Date): string {
   return new Intl.DateTimeFormat("ko-KR", { year: "numeric", month: "numeric", day: "numeric" }).format(new Date(value));
 }
 
-function todayDateInputValue(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
-function monthStartDateInputValue(): string {
-  const now = new Date();
-  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString().slice(0, 10);
-}
-
 function buildSummaryRangePreset(preset: "today" | "month") {
-  const today = todayDateInputValue();
-  return { from: preset === "today" ? today : monthStartDateInputValue(), to: today };
+  return preset === "today" ? getKstTodayRange() : getKstMonthRange();
 }
 
 function methodLabel(method: OfflinePaymentMethod): string {
