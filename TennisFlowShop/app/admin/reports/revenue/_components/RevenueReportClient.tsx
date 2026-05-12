@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import useSWR from "swr";
-import { BarChartBig, Calendar, FileDown, RefreshCw, Search, Store, WalletCards } from "lucide-react";
+import { BarChartBig, Calendar, DatabaseZap, Eye, FileDown, Loader2, RefreshCw, Save, Search, Store, WalletCards } from "lucide-react";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { adminSurface } from "@/components/admin/admin-typography";
 import { Badge } from "@/components/ui/badge";
@@ -12,10 +12,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { adminMutator } from "@/lib/admin/adminFetcher";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { getKstMonthRange, getKstRecentDaysRange, getKstTodayRange } from "@/lib/date/kst";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
-import type { RevenueReportGroupBy, RevenueReportResponse } from "@/types/admin/reports";
+import type { RevenueReportGroupBy, RevenueReportResponse, RevenueReportSnapshot, RevenueReportSnapshotResponse, RevenueReportSnapshotStatus } from "@/types/admin/reports";
 
 function defaultReportRange() {
   return { ...getKstMonthRange(), groupBy: "day" as const };
@@ -23,6 +26,29 @@ function defaultReportRange() {
 
 function formatKRW(value: number | null | undefined): string {
   return `${Number(value ?? 0).toLocaleString("ko-KR")}원`;
+}
+
+function formatDateTime(value: string | null | undefined): string {
+  if (!value) return "-";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat("ko-KR", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Seoul" }).format(date);
+}
+
+function monthLastDay(yyyymm: string): string | null {
+  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(yyyymm)) return null;
+  const [year, month] = yyyymm.split("-").map(Number);
+  const last = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  return `${yyyymm}-${String(last).padStart(2, "0")}`;
+}
+
+function getMonthlySnapshotTarget(from: string, to: string): { yyyymm: string; from: string; to: string } | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(from) || !/^\d{4}-\d{2}-\d{2}$/.test(to)) return null;
+  const yyyymm = from.slice(0, 7);
+  if (from !== `${yyyymm}-01`) return null;
+  const expectedTo = monthLastDay(yyyymm);
+  if (!expectedTo || to !== expectedTo) return null;
+  return { yyyymm, from, to };
 }
 
 const METHOD_LABELS = {
@@ -44,19 +70,55 @@ function SummaryCard({ title, value, sub, tone = "default" }: { title: string; v
   );
 }
 
+function SnapshotSummaryCard({ snapshot }: { snapshot: RevenueReportSnapshot }) {
+  return (
+    <Card className="border-dashed border-primary/40 bg-primary/5">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-base"><Eye className="h-4 w-4" /> 저장된 스냅샷 요약</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <SummaryCard title="온라인 정산 기준 매출" value={formatKRW(snapshot.report.online.paidAmount)} sub="저장 당시 값" />
+          <SummaryCard title="오프라인 운영 매출" value={formatKRW(snapshot.report.offline.paidAmount)} sub="저장 당시 값" />
+          <SummaryCard title="참고 합계" value={formatKRW(snapshot.report.combinedPreview.paidAmount)} sub="정산 지급액 계산 미사용" tone="warning" />
+          <SummaryCard title="온라인 환불" value={formatKRW(snapshot.report.online.refundedAmount)} sub="저장 당시 값" tone="danger" />
+          <SummaryCard title="오프라인 환불" value={formatKRW(snapshot.report.offline.refundedAmount)} sub="저장 당시 값" tone="danger" />
+          <SummaryCard title="오프라인 미결제" value={formatKRW(snapshot.report.offline.pendingAmount)} sub="저장 당시 값" tone="warning" />
+        </div>
+        <dl className="grid gap-2 rounded-xl border border-border bg-background/60 p-4 text-sm md:grid-cols-2">
+          <Row label="상태" value={snapshot.status === "finalized" ? "finalized · 마감 스냅샷" : "draft · 임시 저장"} />
+          <Row label="저장 범위" value={`${snapshot.range.from} ~ ${snapshot.range.to} · ${snapshot.range.groupBy === "day" ? "일별" : "월별"}`} />
+          <Row label="최초 생성" value={formatDateTime(snapshot.createdAt)} />
+          <Row label="마지막 저장" value={formatDateTime(snapshot.updatedAt)} />
+          <div className="md:col-span-2"><Row label="메모" value={snapshot.memo?.trim() || "-"} /></div>
+        </dl>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function RevenueReportClient() {
   const [filters, setFilters] = useState<{ from: string; to: string; groupBy: RevenueReportGroupBy }>(() => defaultReportRange());
   const [applied, setApplied] = useState(filters);
+  const [snapshotStatus, setSnapshotStatus] = useState<RevenueReportSnapshotStatus>("draft");
+  const [snapshotMemo, setSnapshotMemo] = useState("");
+  const [savingSnapshot, setSavingSnapshot] = useState(false);
+  const [showSnapshot, setShowSnapshot] = useState(true);
 
   const reportQueryString = useMemo(() => {
     const params = new URLSearchParams({ from: applied.from, to: applied.to, groupBy: applied.groupBy });
     return params.toString();
   }, [applied]);
 
+  const monthlySnapshotTarget = useMemo(() => getMonthlySnapshotTarget(applied.from, applied.to), [applied.from, applied.to]);
   const apiKey = useMemo(() => `/api/admin/reports/revenue?${reportQueryString}`, [reportQueryString]);
   const csvDownloadHref = useMemo(() => `/api/admin/reports/revenue/export?${reportQueryString}`, [reportQueryString]);
+  const snapshotKey = monthlySnapshotTarget ? `/api/admin/reports/revenue/snapshots?yyyymm=${monthlySnapshotTarget.yyyymm}` : null;
 
   const { data, error, isLoading, mutate } = useSWR<RevenueReportResponse>(apiKey, authenticatedSWRFetcher, {
+    revalidateOnFocus: false,
+  });
+  const { data: snapshotData, isLoading: isSnapshotLoading, mutate: mutateSnapshot } = useSWR<RevenueReportSnapshotResponse>(snapshotKey, authenticatedSWRFetcher, {
     revalidateOnFocus: false,
   });
 
@@ -77,7 +139,33 @@ export default function RevenueReportClient() {
     setApplied(next);
   };
 
+  const saveSnapshot = async () => {
+    if (!monthlySnapshotTarget) return;
+    const existing = snapshotData?.item;
+    const confirmMessage = existing
+      ? `${monthlySnapshotTarget.yyyymm} 월별 스냅샷이 이미 저장되어 있습니다.\n새로 저장하면 저장 당시의 실시간 리포트 값으로 덮어써집니다. 계속할까요?`
+      : `${monthlySnapshotTarget.yyyymm} 월별 매출 리포트를 day 기준 스냅샷으로 저장할까요?`;
+    if (!window.confirm(confirmMessage)) return;
+
+    setSavingSnapshot(true);
+    try {
+      const result = await adminMutator<RevenueReportSnapshotResponse>("/api/admin/reports/revenue/snapshots", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ yyyymm: monthlySnapshotTarget.yyyymm, status: snapshotStatus, memo: snapshotMemo }),
+      });
+      showSuccessToast("월별 매출 리포트 스냅샷을 저장했습니다.");
+      setShowSnapshot(true);
+      await mutateSnapshot(result, { revalidate: true });
+    } catch (saveError) {
+      showErrorToast(saveError instanceof Error ? saveError.message : "스냅샷 저장에 실패했습니다.");
+    } finally {
+      setSavingSnapshot(false);
+    }
+  };
+
   const report = data;
+  const snapshot = snapshotData?.item ?? null;
 
   return (
     <div className="min-h-screen bg-background">
@@ -117,6 +205,69 @@ export default function RevenueReportClient() {
                 <a href={csvDownloadHref} download><FileDown className="mr-2 h-4 w-4" />CSV 다운로드</a>
               </Button>
             </div>
+            <p className="text-xs text-muted-foreground">CSV 다운로드는 저장된 스냅샷이 아닌 현재 조회 중인 실시간 리포트 기준입니다.</p>
+          </CardContent>
+        </Card>
+
+        <Card className={cn(adminSurface.card, "border-primary/20")}>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base"><DatabaseZap className="h-4 w-4" /> 월별 리포트 스냅샷</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="rounded-xl border border-border bg-muted/30 p-4 text-sm text-muted-foreground">
+              {monthlySnapshotTarget ? (
+                <p><strong className="text-foreground">{monthlySnapshotTarget.yyyymm} 월별 스냅샷 저장 가능</strong> · 저장 시 서버에서 {monthlySnapshotTarget.from} ~ {monthlySnapshotTarget.to} 범위를 day 기준으로 다시 집계합니다.</p>
+              ) : (
+                <p><strong className="text-foreground">월별 스냅샷은 월 단위 조회에서 저장할 수 있습니다.</strong> 시작일은 해당 월 1일, 종료일은 해당 월 말일로 선택해주세요.</p>
+              )}
+              <ul className="mt-3 list-disc space-y-1 pl-5">
+                <li>스냅샷은 저장 시점의 매출 리포트이며, 이후 주문/환불/오프라인 기록 수정에 따라 실시간 리포트와 차이가 날 수 있습니다.</li>
+                <li>스냅샷은 정산 지급액 계산에 사용되지 않습니다.</li>
+                <li>이미 저장된 월별 스냅샷을 새로 저장하면 저장 당시의 리포트 값으로 덮어써집니다.</li>
+              </ul>
+            </div>
+
+            {monthlySnapshotTarget ? (
+              <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]">
+                <div className="rounded-xl border border-border p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <p className="font-semibold">저장 상태</p>
+                      <p className="mt-1 text-sm text-muted-foreground">{isSnapshotLoading ? "저장된 스냅샷을 확인하는 중입니다…" : snapshot ? "저장된 스냅샷이 있습니다." : "저장된 스냅샷 없음"}</p>
+                    </div>
+                    {snapshot ? <Badge variant={snapshot.status === "finalized" ? "default" : "secondary"}>{snapshot.status}</Badge> : <Badge variant="outline">not saved</Badge>}
+                  </div>
+                  {snapshot ? (
+                    <dl className="mt-4 space-y-2 text-sm">
+                      <Row label="마지막 저장일" value={formatDateTime(snapshot.updatedAt)} />
+                      <Row label="메모" value={snapshot.memo?.trim() || "-"} />
+                    </dl>
+                  ) : null}
+                  <Button type="button" variant="outline" className="mt-4" onClick={() => setShowSnapshot((prev) => !prev)} disabled={!snapshot}>
+                    <Eye className="mr-2 h-4 w-4" />{showSnapshot ? "스냅샷 접기" : "저장된 스냅샷 보기"}
+                  </Button>
+                </div>
+
+                <div className="space-y-3 rounded-xl border border-border p-4">
+                  <div className="space-y-1.5">
+                    <Label>저장 상태</Label>
+                    <Select value={snapshotStatus} onValueChange={(value: RevenueReportSnapshotStatus) => setSnapshotStatus(value)}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent><SelectItem value="draft">draft · 임시 저장</SelectItem><SelectItem value="finalized">finalized · 마감 스냅샷</SelectItem></SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="snapshot-memo">메모</Label>
+                    <Textarea id="snapshot-memo" value={snapshotMemo} onChange={(e) => setSnapshotMemo(e.target.value)} placeholder="운영 메모를 입력하세요. 고객명/전화번호 등 개인정보는 입력하지 마세요." rows={3} />
+                  </div>
+                  <Button type="button" className="w-full" onClick={saveSnapshot} disabled={savingSnapshot || !report}>
+                    {savingSnapshot ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}스냅샷 저장
+                  </Button>
+                </div>
+              </div>
+            ) : null}
+
+            {snapshot && showSnapshot ? <SnapshotSummaryCard snapshot={snapshot} /> : null}
           </CardContent>
         </Card>
 
@@ -129,8 +280,8 @@ export default function RevenueReportClient() {
         {report ? (
           <>
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              <SummaryCard title="온라인 정산 기준 매출" value={formatKRW(report.online.paidAmount)} sub={`${report.online.count.toLocaleString("ko-KR")}건 · 기존 정산 정책`} tone="primary" />
-              <SummaryCard title="오프라인 운영 매출" value={formatKRW(report.offline.paidAmount)} sub="별도 운영 매출" tone="primary" />
+              <SummaryCard title="온라인 정산 기준 매출" value={formatKRW(report.online.paidAmount)} sub={`${report.online.count.toLocaleString("ko-KR")}건 · 현재 DB 기준 실시간 리포트`} tone="primary" />
+              <SummaryCard title="오프라인 운영 매출" value={formatKRW(report.offline.paidAmount)} sub="현재 DB 기준 실시간 리포트" tone="primary" />
               <SummaryCard title="온라인 + 오프라인 참고 합계" value={formatKRW(report.combinedPreview.paidAmount)} sub="정산 지급액 계산에 사용되지 않습니다." tone="warning" />
               <SummaryCard title="오프라인 패키지 발급 보정 필요" value={`${Number(report.offline.issueFailedCount ?? 0).toLocaleString("ko-KR")}건`} sub="오프라인 패키지 발급 확인" />
               <SummaryCard title="온라인 환불" value={formatKRW(report.online.refundedAmount)} sub="기존 정산 환불 기준" tone="danger" />
@@ -142,7 +293,7 @@ export default function RevenueReportClient() {
             <Card className={adminSurface.card}>
               <CardContent className="p-5">
                 <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                  <div><h2 className="text-lg font-bold">온라인/오프라인 비교</h2><p className="mt-1 text-sm text-muted-foreground">온라인 매출과 오프라인 운영 매출은 분리 표시하며, 참고 합계는 정산 지급액처럼 사용하지 않습니다.</p></div>
+                  <div><h2 className="text-lg font-bold">실시간 온라인/오프라인 비교</h2><p className="mt-1 text-sm text-muted-foreground">현재 DB 기준 리포트입니다. 저장된 스냅샷과 다를 수 있으며, 참고 합계는 정산 지급액처럼 사용하지 않습니다.</p></div>
                   <Badge variant="secondary">{report.range.from} ~ {report.range.to} · {report.range.groupBy === "day" ? "일별" : "월별"}</Badge>
                 </div>
                 <div className="mt-5 grid gap-4 lg:grid-cols-2">
@@ -160,7 +311,7 @@ export default function RevenueReportClient() {
             </Card>
 
             <Card className={adminSurface.card}>
-              <CardHeader><CardTitle className="flex items-center gap-2 text-base"><Store className="h-4 w-4" /> 추이 표</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="flex items-center gap-2 text-base"><Store className="h-4 w-4" /> 실시간 추이 표</CardTitle></CardHeader>
               <CardContent className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-border text-sm">
                   <thead><tr className="text-left text-muted-foreground"><th className="py-2 pr-4 font-medium">날짜</th><th className="py-2 pr-4 font-medium">온라인 매출</th><th className="py-2 pr-4 font-medium">오프라인 매출</th><th className="py-2 pr-4 font-medium">참고 합계</th></tr></thead>
