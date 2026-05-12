@@ -9,6 +9,7 @@ import { ensurePointsIndexes } from "@/lib/points.indexes";
 import { ensureRentalIndexes } from "@/lib/rentals.indexes";
 import { ensureReviewIndexes } from "@/lib/reviews.maintenance";
 import { ensureRiskIndexes } from "@/lib/risk.indexes";
+import { ensureRevenueReportSnapshotIndexes } from "@/lib/revenueReportSnapshots.indexes";
 import { ensureUsedRacketsIndexes } from "@/lib/usedRackets.indexes";
 import { ensureUserIndexes } from "@/lib/users.indexes";
 import { ensureOfflineIndexes } from "@/lib/offline/offline.repository";
@@ -64,6 +65,9 @@ declare global {
 
   // cancel/refund 리스크 시그널 인덱스 보장 상태
   var _riskIndexesReady: Promise<void> | null | undefined;
+
+  // 월별 매출 리포트 스냅샷 인덱스 보장 상태
+  var _revenueReportSnapshotIndexesReady: Promise<void> | null | undefined;
   var _offlineIndexesReady: Promise<void> | null | undefined;
 }
 
@@ -262,6 +266,17 @@ export async function getDb() {
     });
   }
 
+  // revenue_report_snapshots 인덱스 보장(1회)
+  if (!global._revenueReportSnapshotIndexesReady) {
+    global._revenueReportSnapshotIndexesReady =
+      ensureRevenueReportSnapshotIndexes(db).catch((e) => {
+        console.error(
+          "[revenue_report_snapshots] ensureRevenueReportSnapshotIndexes failed",
+          e,
+        );
+        global._revenueReportSnapshotIndexesReady = null;
+      });
+  }
 
   if (!global._offlineIndexesReady) {
     global._offlineIndexesReady = ensureOfflineIndexes(db).catch((e) => {
@@ -291,6 +306,7 @@ export async function getDb() {
     global._adminNotesIndexesReady,
     global._usersIndexesReady,
     global._riskIndexesReady,
+    global._revenueReportSnapshotIndexesReady,
     global._reviewsIndexesReady,
     global._offlineIndexesReady,
   ];

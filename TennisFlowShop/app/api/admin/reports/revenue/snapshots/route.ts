@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import type { WithId } from "mongodb";
+import { MongoServerError, type WithId } from "mongodb";
 import { z } from "zod";
 import { buildRevenueReport } from "../_lib/buildRevenueReport";
 import { requireAdmin } from "@/lib/admin.guard";
@@ -81,6 +81,10 @@ function extractUpdatedDoc<T>(res: unknown): T | null {
   return (res ?? null) as T | null;
 }
 
+function isDuplicateKeyError(error: unknown) {
+  return error instanceof MongoServerError && error.code === 11000;
+}
+
 function snapshotTotals(report: RevenueReportResponse) {
   return {
     onlinePaidAmount: report.online.paidAmount,
@@ -158,25 +162,40 @@ export async function POST(req: Request) {
   );
   const previousUpdatedAt = serializeDate(existing?.updatedAt);
 
-  const result = await collection.findOneAndUpdate(
-    { yyyymm: parsed.data.yyyymm },
-    {
-      $set: {
-        range: report.range,
-        report,
-        status: parsed.data.status,
-        memo: parsed.data.memo?.trim() ? parsed.data.memo.trim() : null,
-        updatedAt: now,
-        updatedBy: actorId,
+  let result: unknown;
+  try {
+    result = await collection.findOneAndUpdate(
+      { yyyymm: parsed.data.yyyymm },
+      {
+        $set: {
+          range: report.range,
+          report,
+          status: parsed.data.status,
+          memo: parsed.data.memo?.trim() ? parsed.data.memo.trim() : null,
+          updatedAt: now,
+          updatedBy: actorId,
+        },
+        $setOnInsert: {
+          yyyymm: parsed.data.yyyymm,
+          createdAt: now,
+          createdBy: actorId,
+        },
       },
-      $setOnInsert: {
-        yyyymm: parsed.data.yyyymm,
-        createdAt: now,
-        createdBy: actorId,
-      },
-    },
-    { upsert: true, returnDocument: "after" },
-  );
+      { upsert: true, returnDocument: "after" },
+    );
+  } catch (error) {
+    if (!isDuplicateKeyError(error)) throw error;
+
+    const duplicate = await collection.findOne({ yyyymm: parsed.data.yyyymm });
+    if (duplicate) {
+      return NextResponse.json({ item: serializeSnapshot(duplicate) });
+    }
+
+    return NextResponse.json(
+      { message: "snapshot already exists for this month. please retry." },
+      { status: 409 },
+    );
+  }
 
   const updated = extractUpdatedDoc<WithId<RevenueReportSnapshotDoc>>(result);
   if (!updated) return NextResponse.json({ message: "failed to save snapshot" }, { status: 500 });

@@ -43,6 +43,18 @@ const INDEX_SPECS = {
       options: {},
     },
   ],
+  revenue_report_snapshots: [
+    {
+      name: "revenue_report_snapshots_yyyymm_unique",
+      keys: { yyyymm: 1 },
+      options: { unique: true },
+    },
+    {
+      name: "revenue_report_snapshots_updatedAt_yyyymm_desc",
+      keys: { updatedAt: -1, yyyymm: -1 },
+      options: {},
+    },
+  ],
   oauth_pending_signups: [
     {
       name: "ttl_oauth_pending_expiresAt",
