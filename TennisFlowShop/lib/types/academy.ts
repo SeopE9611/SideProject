@@ -82,13 +82,14 @@ export const ACADEMY_LESSON_TYPE_LABELS: Record<AcademyLessonType, string> = {
   consultation: "상담 후 결정",
 };
 
-export const ACADEMY_CURRENT_LEVEL_LABELS: Record<AcademyCurrentLevel, string> = {
-  new: "처음 배워요",
-  beginner: "초급",
-  intermediate: "중급",
-  advanced: "상급",
-  unknown: "잘 모르겠어요",
-};
+export const ACADEMY_CURRENT_LEVEL_LABELS: Record<AcademyCurrentLevel, string> =
+  {
+    new: "처음 배워요",
+    beginner: "초급",
+    intermediate: "중급",
+    advanced: "상급",
+    unknown: "잘 모르겠어요",
+  };
 
 export function isAcademyApplicationStatus(
   value: unknown,
@@ -140,6 +141,26 @@ export type AcademyClassLessonType =
   | "junior"
   | "adult"
   | "onePoint";
+
+export type PublicAcademyClass = {
+  _id: string;
+  name: string;
+  description: string | null;
+  level: AcademyClassLevel;
+  levelLabel: string;
+  lessonType: AcademyClassLessonType;
+  lessonTypeLabel: string;
+  instructorName: string | null;
+  location: string | null;
+  scheduleText: string | null;
+  capacity: number | null;
+  enrolledCount: number;
+  price: number | null;
+  status: Extract<AcademyClassStatus, "visible" | "closed">;
+  statusLabel: string;
+  createdAt: string | null;
+  updatedAt: string | null;
+};
 
 export type AcademyClass = {
   _id?: string;
@@ -214,7 +235,9 @@ export function isAcademyClassStatus(
   );
 }
 
-export function isAcademyClassLevel(value: unknown): value is AcademyClassLevel {
+export function isAcademyClassLevel(
+  value: unknown,
+): value is AcademyClassLevel {
   return (
     typeof value === "string" &&
     ACADEMY_CLASS_LEVELS.includes(value as AcademyClassLevel)
