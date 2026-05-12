@@ -67,7 +67,7 @@ const Footer = () => {
 
                   <div className="space-y-0.5">
                     <div className="font-brand-bold text-xl font-bold tracking-normal text-foreground bp-sm:text-2xl">도깨비테니스</div>
-                    <div className="text-xs font-semibold tracking-[0.08em] text-foreground/75">Powered by Tennis Flow</div>
+                    <div className="text-xs font-semibold tracking-[0.08em] text-foreground/75">Dokkaebi Tennis</div>
                   </div>
                 </Link>
               </div>
@@ -225,7 +225,7 @@ const Footer = () => {
 
                 <div className="space-y-1.5 text-left">
                   <div className="font-brand-bold text-xl font-bold tracking-normal text-foreground bp-sm:text-2xl">도깨비테니스</div>
-                  <div className="text-[11px] font-semibold tracking-[0.08em] text-muted-foreground/80 bp-sm:text-xs">Powered by Tennis Flow</div>
+                  <div className="text-[11px] font-semibold tracking-[0.08em] text-muted-foreground/80 bp-sm:text-xs">Dokkaebi Tennis</div>
                 </div>
               </Link>
             </div>

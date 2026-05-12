@@ -607,6 +607,12 @@ export default function QnaWritePage() {
                     {fieldErrors.category}
                   </p>
                 )}
+                {category === "academy" && (
+                  <p className="break-keep text-sm leading-6 text-muted-foreground">
+                    아카데미 정식 신청 기능은 준비 중입니다. 현재는 이
+                    카테고리로 레슨 상담 문의를 남길 수 있습니다.
+                  </p>
+                )}
 
                 {/* 상품 상세에서 진입한 프리필이 있으면 안내 뱃지 */}
                 {preProductId && (

@@ -63,7 +63,7 @@ export default function SocialAuthButtons({
           </svg>
         </span>
         {isRegisterMode ? "네이버로 3초만에 시작하기" : "네이버 로그인"}
-        {!onNaverClick && <span className="text-xs ml-2">(준비중)</span>}
+        {!onNaverClick && <span className="text-xs ml-2">(준비 중)</span>}
       </Button>
 
       <Button
@@ -99,7 +99,7 @@ export default function SocialAuthButtons({
           </svg>
         </span>
         {isRegisterMode ? "Google로 3초만에 시작하기" : "Google 로그인"}
-        {!onGoogleClick && <span className="text-xs ml-2">(준비중)</span>}
+        {!onGoogleClick && <span className="text-xs ml-2">(준비 중)</span>}
       </Button>
     </div>
   );

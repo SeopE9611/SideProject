@@ -70,9 +70,10 @@ export default function AcademyPage() {
                 도깨비테니스 아카데미
               </h1>
               <p className="break-keep text-base leading-7 text-foreground/80 md:text-lg">
-                입문자부터 실전 플레이어까지, 목표와 레벨에 맞춘 테니스
-                레슨을 안내합니다. 기본기, 랠리, 경기 운영까지 필요한
-                방향을 상담하며 함께 찾아보세요.
+                아카데미 정식 신청 기능은 준비 중입니다. 현재는 목표와
+                레벨에 맞춘 레슨 상담을 Q&amp;A 문의로 접수하고 있으며,
+                기본기, 랠리, 경기 운영까지 필요한 방향을 함께 확인해
+                드립니다.
               </p>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -88,12 +89,12 @@ export default function AcademyPage() {
                 disabled
                 className="w-full sm:w-auto"
               >
-                레슨 신청하기 준비 중
+                정식 신청 준비 중
               </Button>
             </div>
             <p className="break-keep text-sm leading-6 text-muted-foreground">
-              신청서는 다음 단계에서 제공될 예정입니다. 현재는 문의하기를
-              통해 레슨 상담을 남겨주세요.
+              아카데미 기능은 삭제된 것이 아니라 재정비 중입니다. 정식 신청서
+              오픈 전까지는 레슨 문의하기로 상담 내용을 남겨주세요.
             </p>
           </div>
         </section>
@@ -184,7 +185,7 @@ export default function AcademyPage() {
               나에게 맞는 레슨이 궁금하다면 문의해 주세요
             </h2>
             <p className="break-keep text-sm leading-6 text-muted-foreground">
-              도깨비테니스 아카데미가 레벨, 목표, 가능한 일정을 확인해 상담을
+              정식 신청 기능 오픈 전에도 레벨, 목표, 가능한 일정을 확인해 상담을
               도와드리겠습니다.
             </p>
             <Button asChild size="lg" className="w-full sm:w-auto">

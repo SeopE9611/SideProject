@@ -118,7 +118,7 @@ export default function RacketsClient() {
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">
-                    이미지 준비중
+                    이미지 준비 중
                   </div>
                 )}
                 {it.rental?.enabled === false && (
