@@ -114,6 +114,7 @@ export default function RevenueReportClient() {
   const apiKey = useMemo(() => `/api/admin/reports/revenue?${reportQueryString}`, [reportQueryString]);
   const csvDownloadHref = useMemo(() => `/api/admin/reports/revenue/export?${reportQueryString}`, [reportQueryString]);
   const activeSnapshotMonth = monthlySnapshotTarget?.yyyymm ?? null;
+  const snapshotCsvDownloadHref = activeSnapshotMonth ? `/api/admin/reports/revenue/snapshots/export?yyyymm=${encodeURIComponent(activeSnapshotMonth)}` : null;
   const snapshotKey = activeSnapshotMonth ? `/api/admin/reports/revenue/snapshots?yyyymm=${activeSnapshotMonth}` : null;
 
   const { data, error, isLoading, mutate } = useSWR<RevenueReportResponse>(apiKey, authenticatedSWRFetcher, {
@@ -223,7 +224,7 @@ export default function RevenueReportClient() {
                 <a href={csvDownloadHref} download><FileDown className="mr-2 h-4 w-4" />CSV 다운로드</a>
               </Button>
             </div>
-            <p className="text-xs text-muted-foreground">CSV 다운로드는 저장된 스냅샷이 아닌 현재 조회 중인 실시간 리포트 기준입니다.</p>
+            <p className="text-xs text-muted-foreground">CSV 다운로드는 현재 조회 중인 실시간 리포트 기준입니다. 스냅샷 CSV는 아래 월별 리포트 스냅샷 카드에서 별도로 다운로드합니다.</p>
           </CardContent>
         </Card>
 
@@ -256,14 +257,29 @@ export default function RevenueReportClient() {
                     {snapshot ? <Badge variant={snapshot.status === "finalized" ? "default" : "secondary"}>{snapshot.status}</Badge> : <Badge variant="outline">not saved</Badge>}
                   </div>
                   {snapshot ? (
-                    <dl className="mt-4 space-y-2 text-sm">
-                      <Row label="마지막 저장일" value={formatDateTime(snapshot.updatedAt)} />
-                      <Row label="메모" value={snapshot.memo?.trim() || "-"} />
-                    </dl>
+                    <>
+                      <dl className="mt-4 space-y-2 text-sm">
+                        <Row label="마지막 저장일" value={formatDateTime(snapshot.updatedAt)} />
+                        <Row label="메모" value={snapshot.memo?.trim() || "-"} />
+                      </dl>
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        <Button type="button" variant="outline" onClick={() => setShowSnapshot((prev) => !prev)}>
+                          <Eye className="mr-2 h-4 w-4" />{showSnapshot ? "스냅샷 접기" : "저장된 스냅샷 보기"}
+                        </Button>
+                        {snapshotCsvDownloadHref ? (
+                          <Button asChild type="button" variant="secondary">
+                            <a href={snapshotCsvDownloadHref} download><FileDown className="mr-2 h-4 w-4" />스냅샷 CSV 다운로드</a>
+                          </Button>
+                        ) : null}
+                      </div>
+                      <p className="mt-3 text-xs text-muted-foreground">스냅샷 CSV는 저장 당시 리포트 기준입니다. 현재 조회 중인 실시간 CSV와 파일명 및 기준값이 다릅니다.</p>
+                    </>
                   ) : null}
-                  <Button type="button" variant="outline" className="mt-4" onClick={() => setShowSnapshot((prev) => !prev)} disabled={!snapshot}>
-                    <Eye className="mr-2 h-4 w-4" />{showSnapshot ? "스냅샷 접기" : "저장된 스냅샷 보기"}
-                  </Button>
+                  {!snapshot ? (
+                    <Button type="button" variant="outline" className="mt-4" onClick={() => setShowSnapshot((prev) => !prev)} disabled>
+                      <Eye className="mr-2 h-4 w-4" />저장된 스냅샷 보기
+                    </Button>
+                  ) : null}
                 </div>
 
                 <div className="space-y-3 rounded-xl border border-border p-4">
