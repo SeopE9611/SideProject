@@ -13,22 +13,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
+import { getKstMonthRange, getKstRecentDaysRange, getKstTodayRange } from "@/lib/date/kst";
 import { cn } from "@/lib/utils";
 import type { RevenueReportGroupBy, RevenueReportResponse } from "@/types/admin/reports";
 
-function todayYmd(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
-function addDaysYmd(days: number): string {
-  const date = new Date();
-  date.setDate(date.getDate() + days);
-  return date.toISOString().slice(0, 10);
-}
-
-function monthStartYmd(): string {
-  const now = new Date();
-  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString().slice(0, 10);
+function defaultReportRange() {
+  return { ...getKstMonthRange(), groupBy: "day" as const };
 }
 
 function formatKRW(value: number | null | undefined): string {
@@ -55,11 +45,7 @@ function SummaryCard({ title, value, sub, tone = "default" }: { title: string; v
 }
 
 export default function RevenueReportClient() {
-  const [filters, setFilters] = useState<{ from: string; to: string; groupBy: RevenueReportGroupBy }>({
-    from: monthStartYmd(),
-    to: todayYmd(),
-    groupBy: "day",
-  });
+  const [filters, setFilters] = useState<{ from: string; to: string; groupBy: RevenueReportGroupBy }>(() => defaultReportRange());
   const [applied, setApplied] = useState(filters);
 
   const reportQueryString = useMemo(() => {
@@ -76,17 +62,17 @@ export default function RevenueReportClient() {
 
   const applyPreset = (preset: "today" | "month" | "7d" | "30d") => {
     const next = (() => {
-      if (preset === "today") return { from: todayYmd(), to: todayYmd() };
-      if (preset === "month") return { from: monthStartYmd(), to: todayYmd() };
-      if (preset === "7d") return { from: addDaysYmd(-6), to: todayYmd() };
-      return { from: addDaysYmd(-29), to: todayYmd() };
+      if (preset === "today") return getKstTodayRange();
+      if (preset === "month") return getKstMonthRange();
+      if (preset === "7d") return getKstRecentDaysRange(7);
+      return getKstRecentDaysRange(30);
     })();
     setFilters((prev) => ({ ...prev, ...next }));
   };
 
   const submit = () => setApplied(filters);
   const reset = () => {
-    const next = { from: monthStartYmd(), to: todayYmd(), groupBy: "day" as const };
+    const next = defaultReportRange();
     setFilters(next);
     setApplied(next);
   };
