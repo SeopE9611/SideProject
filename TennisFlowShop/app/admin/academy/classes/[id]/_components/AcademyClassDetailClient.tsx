@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { type KeyboardEvent } from "react";
 import useSWR from "swr";
 import { ArrowLeft, BookOpen, Eye, Pencil } from "lucide-react";
 
@@ -77,18 +79,35 @@ function AcademyApplicationStatusBadge({
   );
 }
 
-function formatDateTime(value: string | null | undefined) {
-  if (!value) return "-";
+function formatAdminDateTimeParts(value: string | null | undefined) {
+  if (!value) return { date: "-", time: "-" };
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "-";
-  return new Intl.DateTimeFormat("ko-KR", {
+  if (Number.isNaN(date.getTime())) return { date: "-", time: "-" };
+
+  const dateParts = new Intl.DateTimeFormat("ko-KR", {
     timeZone: "Asia/Seoul",
     year: "2-digit",
     month: "2-digit",
     day: "2-digit",
+  }).formatToParts(date);
+  const time = new Intl.DateTimeFormat("ko-KR", {
+    timeZone: "Asia/Seoul",
     hour: "2-digit",
     minute: "2-digit",
+    hourCycle: "h23",
   }).format(date);
+
+  const year = dateParts.find((part) => part.type === "year")?.value ?? "--";
+  const month = dateParts.find((part) => part.type === "month")?.value ?? "--";
+  const day = dateParts.find((part) => part.type === "day")?.value ?? "--";
+
+  return { date: `${year}.${month}.${day}`, time };
+}
+
+function formatAdminDateTime(value: string | null | undefined) {
+  const parts = formatAdminDateTimeParts(value);
+  if (parts.date === "-" && parts.time === "-") return "-";
+  return `${parts.date} ${parts.time}`;
 }
 
 function formatPrice(value: number | null | undefined) {
@@ -109,9 +128,9 @@ function InfoRow({
   value: string | number | null | undefined;
 }) {
   return (
-    <div className="grid gap-1 border-b border-border/60 py-3 last:border-b-0 sm:grid-cols-[140px_1fr]">
+    <div className="grid min-w-0 gap-1 border-b border-border/60 py-3 last:border-b-0 sm:grid-cols-[120px_1fr]">
       <div className="text-sm font-medium text-muted-foreground">{label}</div>
-      <div className="whitespace-pre-wrap text-sm text-foreground">
+      <div className="min-w-0 whitespace-pre-wrap break-words text-sm text-foreground">
         {value === null || value === undefined || value === "" ? "-" : value}
       </div>
     </div>
@@ -130,6 +149,7 @@ function StatCard({ label, value }: { label: string; value: number }) {
 }
 
 export default function AcademyClassDetailClient({ id }: { id: string }) {
+  const router = useRouter();
   const { data, error, isLoading } = useSWR<AcademyClassDetailResponse>(
     `/api/admin/academy/classes/${id}`,
     adminFetcher,
@@ -145,6 +165,19 @@ export default function AcademyClassDetailClient({ id }: { id: string }) {
     cancelled: 0,
   };
   const applications = data?.applications ?? [];
+
+  function goToApplicationDetail(applicationId: string) {
+    router.push(`/admin/academy/applications/${applicationId}`);
+  }
+
+  function handleApplicationRowKeyDown(
+    event: KeyboardEvent<HTMLTableRowElement>,
+    applicationId: string,
+  ) {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    goToApplicationDetail(applicationId);
+  }
 
   if (isLoading) {
     return (
@@ -198,172 +231,179 @@ export default function AcademyClassDetailClient({ id }: { id: string }) {
         }
       />
 
-      <div className="grid gap-5 xl:grid-cols-[1fr_360px]">
-        <div className="space-y-5">
-          <Card className={adminSurface.card}>
-            <CardHeader>
-              <CardTitle className="text-base">클래스 기본 정보</CardTitle>
-              <CardDescription>
-                고객에게 노출되는 클래스 운영 정보를 확인합니다.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <InfoRow label="클래스명" value={item.name} />
-              <InfoRow label="설명" value={item.description} />
-              <InfoRow
-                label="수업 유형"
-                value={item.lessonTypeLabel ?? getAcademyClassLessonTypeLabel(item.lessonType)}
-              />
-              <InfoRow
-                label="레벨"
-                value={item.levelLabel ?? getAcademyClassLevelLabel(item.level)}
-              />
-              <InfoRow label="강사" value={item.instructorName} />
-              <InfoRow label="장소" value={item.location} />
-              <InfoRow label="일정" value={item.scheduleText} />
-              <InfoRow label="가격" value={formatPrice(item.price)} />
-              <InfoRow label="정원" value={formatCapacity(item.capacity)} />
-              <InfoRow
-                label="상태"
-                value={item.statusLabel ?? getAcademyClassStatusLabel(item.status)}
-              />
-              <InfoRow label="생성일" value={formatDateTime(item.createdAt)} />
-              <InfoRow label="수정일" value={formatDateTime(item.updatedAt)} />
-            </CardContent>
-          </Card>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
+        <StatCard label="전체 신청" value={stats.total} />
+        <StatCard label="접수완료" value={stats.submitted} />
+        <StatCard label="검토 중" value={stats.reviewing} />
+        <StatCard label="상담 완료" value={stats.contacted} />
+        <StatCard label="등록 확정" value={stats.confirmed} />
+        <StatCard label="취소" value={stats.cancelled} />
+      </div>
 
-          <Card className={adminSurface.card}>
-            <CardHeader>
-              <CardTitle className="text-base">신청자 목록</CardTitle>
-              <CardDescription>
-                이 클래스와 연결된 최근 신청 50건을 최신순으로 표시합니다.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className={cn(adminSurface.tableCard, "overflow-x-auto")}>
-                <Table>
-                  <TableHeader className={adminSurface.tableHeader}>
-                    <TableRow>
-                      <TableHead>신청일</TableHead>
-                      <TableHead>신청자</TableHead>
-                      <TableHead>연락처</TableHead>
-                      <TableHead>희망 레슨 유형</TableHead>
-                      <TableHead>현재 실력</TableHead>
-                      <TableHead>희망 요일</TableHead>
-                      <TableHead>희망 시간</TableHead>
-                      <TableHead>상태</TableHead>
-                      <TableHead className="text-right">상세 보기</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {applications.length === 0 ? (
-                      <TableRow>
-                        <TableCell
-                          colSpan={9}
-                          className="h-32 text-center text-sm text-muted-foreground"
-                        >
-                          <div className="font-medium text-foreground">
-                            아직 이 클래스에 접수된 신청이 없습니다.
-                          </div>
-                          <div className="mt-1 text-xs text-muted-foreground">
-                            고객이 아카데미 페이지에서 이 클래스를 선택해 신청하면 이곳에 표시됩니다.
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ) : null}
-                    {applications.map((application) => (
-                      <TableRow key={application._id}>
-                        <TableCell className="whitespace-nowrap text-sm">
-                          {formatDateTime(application.createdAt)}
-                        </TableCell>
-                        <TableCell>
-                          <div className="font-medium text-foreground">
-                            {application.applicantName || "-"}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {application.email || "이메일 미입력"}
-                          </div>
-                        </TableCell>
-                        <TableCell className="whitespace-nowrap text-sm">
-                          {application.phone || "-"}
-                        </TableCell>
-                        <TableCell className="whitespace-nowrap">
+      <Card className={adminSurface.card}>
+        <CardHeader>
+          <CardTitle className="text-base">등록 현황</CardTitle>
+          <CardDescription>
+            신청 상태 기준으로 집계하며 클래스 저장값은 변경하지 않습니다.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="rounded-xl border border-border/70 bg-muted/30 p-4">
+              <div className="text-sm text-muted-foreground">등록 확정</div>
+              <div className="mt-2 text-xl font-semibold text-foreground">
+                등록 확정 {stats.confirmed.toLocaleString("ko-KR")}명 / {formatCapacity(item.capacity)}
+              </div>
+            </div>
+            <div className="rounded-xl border border-border/70 bg-muted/30 p-4">
+              <div className="text-sm text-muted-foreground">전체 신청</div>
+              <div className="mt-2 text-xl font-semibold text-foreground">
+                전체 신청 {stats.total.toLocaleString("ko-KR")}건
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className={cn(adminSurface.card, "min-w-0")}>
+        <CardHeader>
+          <CardTitle className="text-base">클래스 기본 정보</CardTitle>
+          <CardDescription>
+            고객에게 노출되는 클래스 운영 정보를 확인합니다.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <InfoRow label="클래스명" value={item.name} />
+          <InfoRow label="설명" value={item.description} />
+          <InfoRow
+            label="수업 유형"
+            value={item.lessonTypeLabel ?? getAcademyClassLessonTypeLabel(item.lessonType)}
+          />
+          <InfoRow
+            label="레벨"
+            value={item.levelLabel ?? getAcademyClassLevelLabel(item.level)}
+          />
+          <InfoRow label="강사" value={item.instructorName} />
+          <InfoRow label="장소" value={item.location} />
+          <InfoRow label="일정" value={item.scheduleText} />
+          <InfoRow label="가격" value={formatPrice(item.price)} />
+          <InfoRow label="정원" value={formatCapacity(item.capacity)} />
+          <InfoRow
+            label="상태"
+            value={item.statusLabel ?? getAcademyClassStatusLabel(item.status)}
+          />
+          <InfoRow label="생성일" value={formatAdminDateTime(item.createdAt)} />
+          <InfoRow label="수정일" value={formatAdminDateTime(item.updatedAt)} />
+        </CardContent>
+      </Card>
+
+      <Card className={cn(adminSurface.card, "min-w-0")}>
+        <CardHeader>
+          <CardTitle className="text-base">신청자 목록</CardTitle>
+          <CardDescription>
+            이 클래스와 연결된 최근 신청 50건을 최신순으로 표시합니다.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className={adminSurface.tableCard}>
+            <Table>
+              <TableHeader className={adminSurface.tableHeader}>
+                <TableRow>
+                  <TableHead className="whitespace-nowrap px-3">신청일</TableHead>
+                  <TableHead className="whitespace-nowrap px-3">신청자</TableHead>
+                  <TableHead className="whitespace-nowrap px-3">희망 정보</TableHead>
+                  <TableHead className="whitespace-nowrap px-3">선호 일정</TableHead>
+                  <TableHead className="whitespace-nowrap px-3">상태</TableHead>
+                  <TableHead className="whitespace-nowrap px-3 text-right">상세</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {applications.length === 0 ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={6}
+                      className="h-32 text-center text-sm text-muted-foreground"
+                    >
+                      <div className="font-medium text-foreground">
+                        아직 이 클래스에 접수된 신청이 없습니다.
+                      </div>
+                      <div className="mt-1 text-xs text-muted-foreground">
+                        고객이 아카데미 페이지에서 이 클래스를 선택해 신청하면 이곳에 표시됩니다.
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : null}
+                {applications.map((application) => {
+                  const createdAt = formatAdminDateTimeParts(application.createdAt);
+
+                  return (
+                    <TableRow
+                      key={application._id}
+                      role="button"
+                      tabIndex={0}
+                      className="cursor-pointer hover:bg-muted/50"
+                      onClick={() => goToApplicationDetail(application._id)}
+                      onKeyDown={(event) =>
+                        handleApplicationRowKeyDown(event, application._id)
+                      }
+                    >
+                      <TableCell className="whitespace-nowrap px-3 py-3 text-xs">
+                        <div className="font-medium text-foreground">{createdAt.date}</div>
+                        <div className="text-muted-foreground">{createdAt.time}</div>
+                      </TableCell>
+                      <TableCell className="min-w-0 px-3 py-3">
+                        <div className="font-medium text-foreground">
+                          {application.applicantName || "-"}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {application.email || "이메일 미입력"}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {application.phone || "연락처 미입력"}
+                        </div>
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap px-3 py-3 text-sm">
+                        <div>
                           {application.desiredLessonTypeLabel ||
                             getAcademyLessonTypeLabel(application.desiredLessonType)}
-                        </TableCell>
-                        <TableCell className="whitespace-nowrap">
+                        </div>
+                        <div className="text-xs text-muted-foreground">
                           {application.currentLevelLabel ||
                             getAcademyCurrentLevelLabel(application.currentLevel)}
-                        </TableCell>
-                        <TableCell className="min-w-[120px]">
+                        </div>
+                      </TableCell>
+                      <TableCell className="px-3 py-3 text-sm">
+                        <div className="max-w-[180px] truncate">
                           {application.preferredDays.length
                             ? application.preferredDays.join(", ")
                             : "-"}
-                        </TableCell>
-                        <TableCell className="min-w-[140px]">
-                          {application.preferredTimeText || "-"}
-                        </TableCell>
-                        <TableCell>
-                          <AcademyApplicationStatusBadge status={application.status} />
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button asChild variant="outline" size="sm">
-                            <Link href={`/admin/academy/applications/${application._id}`}>
-                              <Eye className="mr-2 h-4 w-4" />
-                              상세 보기
-                            </Link>
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="space-y-5">
-          <Card className={adminSurface.card}>
-            <CardHeader>
-              <CardTitle className="text-base">신청 통계</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
-                <StatCard label="전체 신청" value={stats.total} />
-                <StatCard label="접수완료" value={stats.submitted} />
-                <StatCard label="검토 중" value={stats.reviewing} />
-                <StatCard label="상담 완료" value={stats.contacted} />
-                <StatCard label="등록 확정" value={stats.confirmed} />
-                <StatCard label="취소" value={stats.cancelled} />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className={adminSurface.card}>
-            <CardHeader>
-              <CardTitle className="text-base">등록 현황</CardTitle>
-              <CardDescription>
-                신청 상태 기준으로 집계하며 클래스 저장값은 변경하지 않습니다.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="rounded-xl border border-border/70 bg-muted/30 p-4">
-                <div className="text-sm text-muted-foreground">등록 확정</div>
-                <div className="mt-2 text-xl font-semibold text-foreground">
-                  등록 확정 {stats.confirmed.toLocaleString("ko-KR")}명 / {formatCapacity(item.capacity)}
-                </div>
-              </div>
-              <div className="rounded-xl border border-border/70 bg-muted/30 p-4">
-                <div className="text-sm text-muted-foreground">전체 신청</div>
-                <div className="mt-2 text-xl font-semibold text-foreground">
-                  전체 신청 {stats.total.toLocaleString("ko-KR")}건
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+                        </div>
+                        <div className="max-w-[180px] truncate text-xs text-muted-foreground">
+                          {application.preferredTimeText || "희망 시간 미입력"}
+                        </div>
+                      </TableCell>
+                      <TableCell className="px-3 py-3">
+                        <AcademyApplicationStatusBadge status={application.status} />
+                      </TableCell>
+                      <TableCell
+                        className="px-3 py-3 text-right"
+                        onClick={(event) => event.stopPropagation()}
+                      >
+                        <Button asChild variant="outline" size="sm">
+                          <Link href={`/admin/academy/applications/${application._id}`}>
+                            <Eye className="mr-2 h-4 w-4" />
+                            상세
+                          </Link>
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
