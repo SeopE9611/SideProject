@@ -231,13 +231,12 @@ export async function POST(req: Request) {
 
   try {
     const result = await db.collection(COLLECTION_NAME).insertOne(application);
-    const item = { ...application, _id: result.insertedId.toString() };
+    const applicationId = result.insertedId.toString();
 
     return NextResponse.json(
       {
         success: true,
-        applicationId: item._id,
-        item,
+        applicationId,
       },
       { status: 201 },
     );
