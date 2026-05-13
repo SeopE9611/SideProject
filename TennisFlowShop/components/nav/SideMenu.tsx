@@ -31,11 +31,11 @@ export default function SideMenu() {
   const linkClass = (href: string) => {
     const isActive = isActiveHref(href);
     return cn(
-      "group relative z-0 block rounded-lg px-3 py-2.5 text-[15px] leading-5 font-semibold transition-[background-color,color,border-color,box-shadow,opacity] duration-200",
+      "group relative z-0 block rounded-lg px-3 py-2.5 text-[15px] leading-5 font-medium transition-[background-color,color,border-color,box-shadow,opacity] duration-200",
       "hover:bg-primary/10 dark:hover:bg-primary/20",
       "hover:shadow-sm hover:z-10",
       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-      isActive ? "bg-primary/10 text-foreground border border-primary/20 shadow-sm dark:bg-primary/20" : "text-foreground/90 hover:text-foreground",
+      isActive ? "bg-primary/10 text-foreground border border-primary/20 shadow-sm dark:bg-primary/20" : "text-foreground/75 hover:text-foreground",
     );
   };
 
@@ -46,13 +46,15 @@ export default function SideMenu() {
       "hover:bg-muted",
       "hover:shadow-sm hover:z-10",
       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-      isActive ? "bg-muted text-foreground font-semibold shadow-sm" : "text-foreground/80 hover:text-foreground",
+      isActive ? "bg-muted text-foreground font-semibold shadow-sm" : "text-foreground/75 hover:text-foreground",
     );
   };
 
-  const nestedGroupClass = "mt-1.5 pl-1";
+  const subMenuContentClass = "ml-2 border-l border-border/70 pb-2 pl-3 pt-1 space-y-0.5";
 
-  const nestedTriggerClass = "px-3 py-2 text-sm leading-5 font-semibold text-foreground/85 hover:text-foreground rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20";
+  const nestedGroupClass = "mt-1.5 pl-1.5";
+
+  const nestedTriggerClass = "px-3 py-2 text-sm leading-5 font-semibold text-foreground/70 hover:text-foreground rounded-lg hover:bg-muted";
 
   const topLevelLinkClass = (href: string) => {
     const isActive = isActiveHref(href);
@@ -83,7 +85,7 @@ export default function SideMenu() {
                 <span className="text-foreground">스트링</span>
               </span>
             </AccordionTrigger>
-            <AccordionContent value="strings" className="pb-2 pt-1 space-y-0.5">
+            <AccordionContent value="strings" className={subMenuContentClass}>
               <Link href={NAV_LINKS.strings.root} className={linkClass(NAV_LINKS.strings.root)}>
                 <span className="flex items-center justify-between">
                   전체 보기
@@ -164,7 +166,7 @@ export default function SideMenu() {
                 <span className="text-foreground">커뮤니티</span>
               </span>
             </AccordionTrigger>
-            <AccordionContent value="boards" className="pb-2 pt-1 space-y-0.5">
+            <AccordionContent value="boards" className={subMenuContentClass}>
               {NAV_LINKS.boards.map((it) => (
                 <Link key={it.name} href={it.href} className={linkClass(it.href)}>
                   <span className="flex items-center justify-between">
@@ -186,7 +188,7 @@ export default function SideMenu() {
                 <span className="text-foreground">도깨비 인증 중고 라켓</span>
               </span>
             </AccordionTrigger>
-            <AccordionContent value="rackets" className="pb-2 pt-1 space-y-0.5">
+            <AccordionContent value="rackets" className={subMenuContentClass}>
               <Link href={NAV_LINKS.rackets.root} className={linkClass(NAV_LINKS.rackets.root)}>
                 <span className="flex items-center justify-between">
                   전체 보기
@@ -231,7 +233,7 @@ export default function SideMenu() {
                 <span className="text-foreground">고객센터</span>
               </span>
             </AccordionTrigger>
-            <AccordionContent value="support" className="pb-2 pt-1 space-y-0.5">
+            <AccordionContent value="support" className={subMenuContentClass}>
               {NAV_LINKS.support?.map((it) => (
                 <Link key={it.name} href={it.href} className={linkClass(it.href)}>
                   <span className="flex items-center justify-between">
