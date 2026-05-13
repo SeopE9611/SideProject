@@ -202,14 +202,13 @@ export default function AcademyApplyClient({
         <Card className="border-warning/40 bg-warning/10">
           <CardContent className="space-y-3 p-5 text-sm text-foreground md:p-6">
             <p className="font-semibold">
-              선택한 클래스 정보를 찾을 수 없습니다.
+              선택한 클래스 정보를 찾을 수 없어 일반 레슨 신청으로 접수됩니다.
             </p>
             <p className="break-keep leading-6 text-muted-foreground">
-              이미 숨김 처리되었거나 존재하지 않는 클래스일 수 있습니다. 아래
-              신청서는 일반 레슨 신청으로 접수할 수 있습니다.
+              특정 클래스를 신청하려면 아카데미 페이지에서 클래스를 다시 선택해 주세요.
             </p>
             <Button asChild variant="outline" className="w-full sm:w-auto">
-              <Link href="/academy">아카데미로 돌아가기</Link>
+              <Link href="/academy">클래스 다시 선택하기</Link>
             </Button>
           </CardContent>
         </Card>

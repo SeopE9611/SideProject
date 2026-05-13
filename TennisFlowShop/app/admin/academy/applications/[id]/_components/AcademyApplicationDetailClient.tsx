@@ -480,8 +480,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
                   고객 안내 메시지
                 </label>
                 <p className="text-xs text-muted-foreground">
-                  고객에게 공개할 안내 메시지입니다. 이번 단계에서는 저장만
-                  합니다.
+                  저장한 내용은 고객 마이페이지에 관리자 안내로 표시됩니다.
                 </p>
                 <Textarea
                   id="customer-message"
