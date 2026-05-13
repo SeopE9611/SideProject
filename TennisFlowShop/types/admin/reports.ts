@@ -62,6 +62,7 @@ export type RevenueReportSnapshotMeta = {
   generatedAt?: string | null;
   generatedBy?: string | null;
   trigger?: string | null;
+  cron?: boolean | null;
 };
 
 export type RevenueReportSnapshot = {
