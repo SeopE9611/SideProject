@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { getSocialProviderBadgeSpec } from "@/lib/badge-style";
+import { cn } from "@/lib/utils";
 import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import { useUnreadMessageCount } from "@/lib/hooks/useUnreadMessageCount";
 import { ChevronDown, ChevronRight, Headset, Loader2, Mail, Menu, ShoppingCart, UserIcon } from "lucide-react";
@@ -45,16 +46,23 @@ function MobileBrandGrid({ brands, onPick }: { brands: { name: string; href: str
   return (
     <div className="space-y-2">
       <div className="grid grid-cols-2 gap-2">
-        {list.map((b) => (
-          <Button
-            key={b.name}
-            variant="outline"
-            className="relative z-0 h-9 justify-center rounded-lg border-border text-sm hover:bg-secondary transition-[background-color,color,border-color,box-shadow,opacity] duration-200 bg-transparent hover:shadow-sm hover:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-            onClick={() => onPick(b.href)}
-          >
-            {b.name}
-          </Button>
-        ))}
+        {list.map((b) => {
+          const isLongBrandName = b.name.length >= 6;
+
+          return (
+            <Button
+              key={b.name}
+              variant="outline"
+              className={cn(
+                "relative z-0 h-9 justify-center rounded-lg border-border text-sm hover:bg-secondary transition-[background-color,color,border-color,box-shadow,opacity] duration-200 bg-transparent hover:shadow-sm hover:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                isLongBrandName && "col-span-2 whitespace-nowrap",
+              )}
+              onClick={() => onPick(b.href)}
+            >
+              {b.name}
+            </Button>
+          );
+        })}
       </div>
       {brands.length > VISIBLE && (
         <Button variant="ghost" size="sm" className="w-full justify-center rounded-lg text-muted-foreground hover:text-foreground transition-colors" onClick={() => setExpanded((v) => !v)}>
@@ -564,34 +572,6 @@ const Header = () => {
                 <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200" />
               </Button>
 
-              {/* 게시판 */}
-              <AccordionItem value="boards" className="border-none">
-                <AccordionTrigger value="boards" className="py-3 px-3 rounded-lg hover:bg-secondary hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group">
-                  <span className="inline-flex items-center gap-2.5 text-base font-bold">
-                    {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
-                      <MessageSquareText className="h-4 w-4" />
-                    </div> */}
-                    <span className="text-foreground">커뮤니티</span>
-                  </span>
-                </AccordionTrigger>
-                <AccordionContent value="boards" className="pb-2 pt-1 space-y-0.5">
-                  {NAV_LINKS.boards.map((it) => (
-                    <Button
-                      key={it.name}
-                      variant="ghost"
-                      className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-[background-color,color,border-color,box-shadow,opacity]"
-                      onClick={() => {
-                        setOpen(false);
-                        router.push(it.href);
-                      }}
-                    >
-                      {it.name}
-                      <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200" />
-                    </Button>
-                  ))}
-                </AccordionContent>
-              </AccordionItem>
-
               {/* 중고 라켓 */}
               <AccordionItem value="rackets" className="border-none">
                 <AccordionTrigger value="rackets" className="py-3 px-3 rounded-lg hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group">
@@ -636,6 +616,34 @@ const Header = () => {
                       </AccordionItem>
                     </Accordion>
                   </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              {/* 게시판 */}
+              <AccordionItem value="boards" className="border-none">
+                <AccordionTrigger value="boards" className="py-3 px-3 rounded-lg hover:bg-secondary hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group">
+                  <span className="inline-flex items-center gap-2.5 text-base font-bold">
+                    {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
+                      <MessageSquareText className="h-4 w-4" />
+                    </div> */}
+                    <span className="text-foreground">커뮤니티</span>
+                  </span>
+                </AccordionTrigger>
+                <AccordionContent value="boards" className="pb-2 pt-1 space-y-0.5">
+                  {NAV_LINKS.boards.map((it) => (
+                    <Button
+                      key={it.name}
+                      variant="ghost"
+                      className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-[background-color,color,border-color,box-shadow,opacity]"
+                      onClick={() => {
+                        setOpen(false);
+                        router.push(it.href);
+                      }}
+                    >
+                      {it.name}
+                      <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200" />
+                    </Button>
+                  ))}
                 </AccordionContent>
               </AccordionItem>
 
