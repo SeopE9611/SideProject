@@ -55,6 +55,15 @@ export type RevenueReportResponse = {
 
 export type RevenueReportSnapshotStatus = "draft" | "finalized";
 
+export type RevenueReportSnapshotSource = "manual" | "auto";
+
+export type RevenueReportSnapshotMeta = {
+  source?: string | null;
+  generatedAt?: string | null;
+  generatedBy?: string | null;
+  trigger?: string | null;
+};
+
 export type RevenueReportSnapshot = {
   id: string;
   yyyymm: string;
@@ -62,6 +71,8 @@ export type RevenueReportSnapshot = {
   report: RevenueReportResponse;
   status: RevenueReportSnapshotStatus;
   memo?: string | null;
+  source?: RevenueReportSnapshotSource | null;
+  meta?: RevenueReportSnapshotMeta | null;
   createdAt?: string | null;
   createdBy?: string | null;
   updatedAt?: string | null;
