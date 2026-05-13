@@ -103,14 +103,18 @@ export default function SideMenu() {
                       </AccordionTrigger>
                       <AccordionContent value="strings-brand" className="pb-0 pt-1">
                         <div className="grid grid-cols-2 gap-1">
-                          {NAV_LINKS.strings.brands.map((b) => (
-                            <Link key={b.href} href={b.href} className={cn(brandLinkClass(b.href), "px-2.5 py-2 text-[14px]")}>
-                              <span className="flex items-center justify-between">
-                                {b.name}
-                                <ChevronRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-[background-color,color,border-color,box-shadow,opacity] duration-200" />
-                              </span>
-                            </Link>
-                          ))}
+                          {NAV_LINKS.strings.brands.map((b) => {
+                            const isLongBrandName = b.name.length >= 6;
+
+                            return (
+                              <Link key={b.href} href={b.href} className={cn(brandLinkClass(b.href), "px-2.5 py-2 text-[14px]", isLongBrandName && "col-span-2 whitespace-nowrap")}>
+                                <span className="flex items-center justify-between">
+                                  {b.name}
+                                  <ChevronRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-[background-color,color,border-color,box-shadow,opacity] duration-200" />
+                                </span>
+                              </Link>
+                            );
+                          })}
                         </div>
                       </AccordionContent>
                     </AccordionItem>
@@ -156,28 +160,6 @@ export default function SideMenu() {
             </span>
           </Link>
 
-          {/* 게시판 */}
-          <AccordionItem value="boards" className="border-none">
-            <AccordionTrigger value="boards" className="py-3 px-3 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group">
-              <span className="inline-flex items-center gap-2.5 text-[17px] leading-6 font-bold">
-                {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
-                  <MessageSquareText className="h-4 w-4" />
-                </div> */}
-                <span className="text-foreground">커뮤니티</span>
-              </span>
-            </AccordionTrigger>
-            <AccordionContent value="boards" className={subMenuContentClass}>
-              {NAV_LINKS.boards.map((it) => (
-                <Link key={it.name} href={it.href} className={linkClass(it.href)}>
-                  <span className="flex items-center justify-between">
-                    {it.name}
-                    <ChevronRight className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-[background-color,color,border-color,box-shadow,opacity] duration-200" />
-                  </span>
-                </Link>
-              ))}
-            </AccordionContent>
-          </AccordionItem>
-
           {/* 중고 라켓 */}
           <AccordionItem value="rackets" className="border-none">
             <AccordionTrigger value="rackets" className="py-3 px-3 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group">
@@ -206,20 +188,46 @@ export default function SideMenu() {
                       </AccordionTrigger>
                       <AccordionContent value="rackets-brand" className="pb-0 pt-1">
                         <div className="grid grid-cols-2 gap-1">
-                          {NAV_LINKS.rackets.brands.map((b) => (
-                            <Link key={b.href} href={b.href} className={cn(brandLinkClass(b.href), "px-2.5 py-2 text-[14px]")}>
-                              <span className="flex items-center justify-between">
-                                {b.name}
-                                <ChevronRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-[background-color,color,border-color,box-shadow,opacity] duration-200" />
-                              </span>
-                            </Link>
-                          ))}
+                          {NAV_LINKS.rackets.brands.map((b) => {
+                            const isLongBrandName = b.name.length >= 6;
+
+                            return (
+                              <Link key={b.href} href={b.href} className={cn(brandLinkClass(b.href), "px-2.5 py-2 text-[14px]", isLongBrandName && "col-span-2 whitespace-nowrap")}>
+                                <span className="flex items-center justify-between">
+                                  {b.name}
+                                  <ChevronRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-[background-color,color,border-color,box-shadow,opacity] duration-200" />
+                                </span>
+                              </Link>
+                            );
+                          })}
                         </div>
                       </AccordionContent>
                     </AccordionItem>
                   </Accordion>
                 </div>
               ) : null}
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* 게시판 */}
+          <AccordionItem value="boards" className="border-none">
+            <AccordionTrigger value="boards" className="py-3 px-3 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group">
+              <span className="inline-flex items-center gap-2.5 text-[17px] leading-6 font-bold">
+                {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
+                  <MessageSquareText className="h-4 w-4" />
+                </div> */}
+                <span className="text-foreground">커뮤니티</span>
+              </span>
+            </AccordionTrigger>
+            <AccordionContent value="boards" className={subMenuContentClass}>
+              {NAV_LINKS.boards.map((it) => (
+                <Link key={it.name} href={it.href} className={linkClass(it.href)}>
+                  <span className="flex items-center justify-between">
+                    {it.name}
+                    <ChevronRight className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-[background-color,color,border-color,box-shadow,opacity] duration-200" />
+                  </span>
+                </Link>
+              ))}
             </AccordionContent>
           </AccordionItem>
 
