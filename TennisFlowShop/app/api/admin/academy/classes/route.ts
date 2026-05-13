@@ -1,18 +1,40 @@
 import { NextResponse } from "next/server";
-import type { Document, Filter } from "mongodb";
+import { ObjectId, type Db, type Document, type Filter } from "mongodb";
 
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 import { requireAdmin } from "@/lib/admin.guard";
 import {
   isAcademyClassLevel,
   isAcademyClassLessonType,
+  isAcademyApplicationStatus,
   isAcademyClassStatus,
   type AcademyClassStatus,
 } from "@/lib/types/academy";
 
 const COLLECTION_NAME = "academy_classes";
+const APPLICATION_COLLECTION_NAME = "academy_lesson_applications";
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 50;
+
+type ApplicationStats = {
+  total: number;
+  submitted: number;
+  reviewing: number;
+  contacted: number;
+  confirmed: number;
+  cancelled: number;
+};
+
+function createEmptyApplicationStats(): ApplicationStats {
+  return {
+    total: 0,
+    submitted: 0,
+    reviewing: 0,
+    contacted: 0,
+    confirmed: 0,
+    cancelled: 0,
+  };
+}
 
 type ClassPayload = {
   name: string;
@@ -51,7 +73,7 @@ function serializeValue(value: unknown): unknown {
   return value;
 }
 
-function serializeClass(doc: Document) {
+function serializeClass(doc: Document, applicationStats = createEmptyApplicationStats()) {
   return {
     _id: String(serializeValue(doc._id)),
     name: typeof doc.name === "string" ? doc.name : "",
@@ -69,6 +91,13 @@ function serializeClass(doc: Document) {
     status: typeof doc.status === "string" ? doc.status : "draft",
     createdAt: serializeValue(doc.createdAt) ?? null,
     updatedAt: serializeValue(doc.updatedAt) ?? null,
+    applicationCount: applicationStats.total,
+    confirmedCount: applicationStats.confirmed,
+    submittedCount: applicationStats.submitted,
+    reviewingCount: applicationStats.reviewing,
+    contactedCount: applicationStats.contacted,
+    cancelledCount: applicationStats.cancelled,
+    applicationStats,
   };
 }
 
@@ -165,6 +194,74 @@ function validateClassPayload(payload: Record<string, unknown>):
   };
 }
 
+async function getApplicationStatsByClassId(
+  db: Db,
+  classes: Document[],
+) {
+  const classIdStrings = classes
+    .map((item) => String(serializeValue(item._id)))
+    .filter(Boolean);
+  const statsByClassId = new Map<string, ApplicationStats>();
+  for (const classId of classIdStrings) {
+    statsByClassId.set(classId, createEmptyApplicationStats());
+  }
+
+  if (classIdStrings.length === 0) return statsByClassId;
+
+  const objectIds = classIdStrings
+    .filter((classId) => ObjectId.isValid(classId))
+    .map((classId) => new ObjectId(classId));
+
+  const classIdMatchers: unknown[] = [...classIdStrings, ...objectIds];
+  const applications = await db
+    .collection(APPLICATION_COLLECTION_NAME)
+    .find(
+      {
+        $or: [
+          { classId: { $in: classIdMatchers } },
+          { "classSnapshot.classId": { $in: classIdStrings } },
+        ],
+      },
+      {
+        projection: {
+          classId: 1,
+          "classSnapshot.classId": 1,
+          status: 1,
+        },
+      },
+    )
+    .toArray();
+
+  for (const application of applications) {
+    const matchedClassIds = new Set<string>();
+    if (application.classId) {
+      matchedClassIds.add(String(serializeValue(application.classId)));
+    }
+    const snapshotClassId =
+      application.classSnapshot &&
+      typeof application.classSnapshot === "object" &&
+      "classId" in application.classSnapshot
+        ? String(
+            serializeValue(
+              (application.classSnapshot as { classId?: unknown }).classId,
+            ) ?? "",
+          )
+        : "";
+    if (snapshotClassId) matchedClassIds.add(snapshotClassId);
+
+    for (const classId of matchedClassIds) {
+      const stats = statsByClassId.get(classId);
+      if (!stats) continue;
+      stats.total += 1;
+      if (isAcademyApplicationStatus(application.status)) {
+        stats[application.status] += 1;
+      }
+    }
+  }
+
+  return statsByClassId;
+}
+
 export async function GET(req: Request) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
@@ -239,11 +336,18 @@ export async function GET(req: Request) {
     }
   }
 
+  const statsByClassId = await getApplicationStatsByClassId(guard.db, itemsRaw);
   const totalPages = Math.max(1, Math.ceil(total / limit));
 
   return NextResponse.json({
     success: true,
-    items: itemsRaw.map(serializeClass),
+    items: itemsRaw.map((item) =>
+      serializeClass(
+        item,
+        statsByClassId.get(String(serializeValue(item._id))) ??
+          createEmptyApplicationStats(),
+      ),
+    ),
     pagination: {
       page,
       limit,

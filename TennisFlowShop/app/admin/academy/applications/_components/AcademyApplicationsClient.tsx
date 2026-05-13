@@ -34,6 +34,7 @@ import {
   getAcademyApplicationStatusLabel,
   getAcademyCurrentLevelLabel,
   getAcademyLessonTypeLabel,
+  type AcademyClassSnapshot,
   type AcademyLessonApplicationStatus,
 } from "@/lib/types/academy";
 
@@ -52,6 +53,11 @@ type AcademyApplicationListItem = {
   createdAt: string | null;
   updatedAt: string | null;
   userId: string | null;
+  classId: string | null;
+  classSnapshot: Pick<
+    AcademyClassSnapshot,
+    "classId" | "name" | "levelLabel" | "lessonTypeLabel" | "scheduleText"
+  > | null;
 };
 
 type ApplicationsResponse = {
@@ -82,6 +88,36 @@ function AcademyStatusBadge({ status }: { status: AcademyLessonApplicationStatus
     <Badge variant={badgeToneVariant(getStatusTone(status))}>
       {getAcademyApplicationStatusLabel(status)}
     </Badge>
+  );
+}
+
+function SelectedClassCell({
+  classSnapshot,
+}: {
+  classSnapshot: AcademyApplicationListItem["classSnapshot"];
+}) {
+  if (!classSnapshot?.name) {
+    return (
+      <div className="min-w-[160px]">
+        <div className="font-medium text-muted-foreground">클래스 미선택</div>
+        <div className="text-xs text-muted-foreground">일반 레슨 신청</div>
+      </div>
+    );
+  }
+
+  const details = [
+    classSnapshot.lessonTypeLabel,
+    classSnapshot.levelLabel,
+    classSnapshot.scheduleText,
+  ].filter(Boolean);
+
+  return (
+    <div className="min-w-[180px]">
+      <div className="font-medium text-foreground">{classSnapshot.name}</div>
+      <div className="max-w-[240px] truncate text-xs text-muted-foreground">
+        {details.length ? details.join(" · ") : "클래스 상세 정보 미입력"}
+      </div>
+    </div>
   );
 }
 
@@ -188,7 +224,7 @@ export default function AcademyApplicationsClient() {
               <Input
                 value={keywordInput}
                 onChange={(event) => setKeywordInput(event.target.value)}
-                placeholder="이름, 연락처, 이메일, 목표 검색"
+                placeholder="이름, 연락처, 이메일, 목표, 클래스명 검색"
               />
               <Button type="submit" variant="outline">
                 <Search className="mr-2 h-4 w-4" />
@@ -210,6 +246,7 @@ export default function AcademyApplicationsClient() {
                   <TableHead>접수일</TableHead>
                   <TableHead>신청자</TableHead>
                   <TableHead>연락처</TableHead>
+                  <TableHead>선택 클래스</TableHead>
                   <TableHead>희망 레슨 유형</TableHead>
                   <TableHead>현재 실력</TableHead>
                   <TableHead>희망 요일</TableHead>
@@ -221,14 +258,14 @@ export default function AcademyApplicationsClient() {
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={9} className="h-28 text-center text-sm text-muted-foreground">
+                    <TableCell colSpan={10} className="h-28 text-center text-sm text-muted-foreground">
                       신청 목록을 불러오는 중입니다.
                     </TableCell>
                   </TableRow>
                 ) : null}
                 {!isLoading && data?.items.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={9} className="h-28 text-center text-sm text-muted-foreground">
+                    <TableCell colSpan={10} className="h-28 text-center text-sm text-muted-foreground">
                       아직 접수된 레슨 신청이 없습니다.
                     </TableCell>
                   </TableRow>
@@ -247,6 +284,9 @@ export default function AcademyApplicationsClient() {
                       </div>
                     </TableCell>
                     <TableCell className="whitespace-nowrap text-sm">{item.phone || "-"}</TableCell>
+                    <TableCell>
+                      <SelectedClassCell classSnapshot={item.classSnapshot} />
+                    </TableCell>
                     <TableCell>{getAcademyLessonTypeLabel(item.desiredLessonType)}</TableCell>
                     <TableCell>{getAcademyCurrentLevelLabel(item.currentLevel)}</TableCell>
                     <TableCell>{item.preferredDays.length ? item.preferredDays.join(", ") : "-"}</TableCell>

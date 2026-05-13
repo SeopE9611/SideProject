@@ -33,6 +33,26 @@ function serializeValue(value: unknown): unknown {
   return value;
 }
 
+function serializeClassSnapshot(value: unknown) {
+  if (!value || typeof value !== "object") return null;
+  const record = value as Document;
+  return {
+    classId:
+      typeof record.classId === "string"
+        ? record.classId
+        : String(serializeValue(record.classId) ?? ""),
+    name: typeof record.name === "string" ? record.name : "",
+    levelLabel:
+      typeof record.levelLabel === "string" ? record.levelLabel : null,
+    lessonTypeLabel:
+      typeof record.lessonTypeLabel === "string"
+        ? record.lessonTypeLabel
+        : null,
+    scheduleText:
+      typeof record.scheduleText === "string" ? record.scheduleText : null,
+  };
+}
+
 function serializeApplication(doc: Document) {
   return {
     _id: String(serializeValue(doc._id)),
@@ -49,6 +69,8 @@ function serializeApplication(doc: Document) {
     createdAt: serializeValue(doc.createdAt) ?? null,
     updatedAt: serializeValue(doc.updatedAt) ?? null,
     userId: doc.userId ? String(serializeValue(doc.userId)) : null,
+    classId: doc.classId ? String(serializeValue(doc.classId)) : null,
+    classSnapshot: serializeClassSnapshot(doc.classSnapshot),
   };
 }
 
@@ -90,6 +112,7 @@ export async function GET(req: Request) {
       { email: regex },
       { requestMemo: regex },
       { lessonGoal: regex },
+      { "classSnapshot.name": regex },
     ];
   }
 
@@ -112,6 +135,8 @@ export async function GET(req: Request) {
           createdAt: 1,
           updatedAt: 1,
           userId: 1,
+          classId: 1,
+          classSnapshot: 1,
         },
       })
       .sort(sortSpec)
