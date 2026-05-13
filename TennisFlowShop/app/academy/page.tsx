@@ -4,7 +4,13 @@ import type { Document } from "mongodb";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { getDb } from "@/lib/mongodb";
 import {
   getAcademyClassLessonTypeLabel,
@@ -119,6 +125,45 @@ function formatClassPrice(price: number | null) {
   return "상담 후 안내";
 }
 
+const lessonPrograms = [
+  {
+    category: "평일 레슨",
+    description:
+      "주중 일정에 맞춰 꾸준히 기본기와 랠리 감각을 쌓는 과정입니다.",
+    badge: "평일",
+    items: [
+      { title: "2인 레슨", detail: "주 1회 · 월 4회", price: "120,000원" },
+      { title: "2인 레슨", detail: "주 2회 · 월 8회", price: "170,000원" },
+      { title: "개인레슨", detail: "주 1회 · 월 4회", price: "160,000원" },
+      { title: "개인레슨", detail: "주 2회 · 월 8회", price: "250,000원" },
+    ],
+  },
+  {
+    category: "주말 레슨",
+    description: "평일 시간이 어려운 수강생을 위한 주말 집중 레슨입니다.",
+    badge: "주말",
+    items: [
+      { title: "1인 레슨", detail: "주 1회 · 월 4회", price: "180,000원" },
+      { title: "2인 레슨", detail: "주 1회 · 월 4회", price: "140,000원" },
+    ],
+  },
+  {
+    category: "쿠폰 레슨",
+    description:
+      "정기 일정이 어렵거나 필요한 횟수만 선택하고 싶은 분께 적합합니다.",
+    badge: "쿠폰",
+    items: [
+      { title: "1인 쿠폰", detail: "4회 이용", price: "180,000원" },
+      { title: "1인 쿠폰", detail: "8회 이용", price: "280,000원" },
+    ],
+  },
+];
+
+const academyContacts = [
+  { role: "원장", name: "이성우", phone: "010-3784-3493" },
+  { role: "코치", name: "김재민", phone: "010-5218-5248" },
+];
+
 const lessonFlow = ["문의 접수", "레벨/목표 확인", "일정 상담", "수업 시작"];
 
 const faqs = [
@@ -140,7 +185,7 @@ const faqs = [
   {
     question: "수강료는 어디서 확인하나요?",
     answer:
-      "레슨 형태, 횟수, 일정에 따라 달라질 수 있어 문의 접수 후 상담을 통해 안내합니다.",
+      "아카데미 홈의 수강료 안내에서 레슨 형태와 횟수별 금액을 먼저 확인할 수 있으며, 세부 일정은 상담 과정에서 조율합니다.",
   },
 ];
 
@@ -189,10 +234,122 @@ export default async function AcademyPage() {
           </div>
         </section>
 
+        <section className="space-y-5" aria-labelledby="lesson-fees-heading">
+          <div className="space-y-2">
+            <p className="text-sm font-semibold text-success">Lesson Program</p>
+            <h2
+              id="lesson-fees-heading"
+              className="break-keep text-2xl font-semibold text-foreground"
+            >
+              레슨 프로그램 & 수강료
+            </h2>
+            <p className="break-keep text-sm leading-6 text-muted-foreground">
+              레슨 유형과 횟수별 금액을 사이트 화면에서 바로 읽을 수 있도록
+              카드형 안내로 정리했습니다. 최종 일정은 상담 후 확정됩니다.
+            </p>
+          </div>
+          <div className="grid gap-4 lg:grid-cols-3">
+            {lessonPrograms.map((program) => (
+              <Card
+                key={program.category}
+                variant="interactive"
+                className="flex h-full flex-col overflow-hidden"
+              >
+                <CardHeader variant="section" className="space-y-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <CardTitle className="break-keep text-lg">
+                      {program.category}
+                    </CardTitle>
+                    <Badge variant="success">{program.badge}</Badge>
+                  </div>
+                  <CardDescription className="break-keep leading-6">
+                    {program.description}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="flex flex-1 flex-col gap-3 p-5 md:p-6">
+                  {program.items.map((item) => (
+                    <div
+                      key={`${program.category}-${item.title}-${item.detail}`}
+                      className="rounded-xl border border-border bg-background/70 p-4 transition-[border-color,background-color] duration-200 hover:border-success/45 hover:bg-card"
+                    >
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="min-w-0 space-y-1">
+                          <p className="break-keep text-sm font-semibold text-foreground">
+                            {item.title}
+                          </p>
+                          <p className="break-keep text-sm text-muted-foreground">
+                            {item.detail}
+                          </p>
+                        </div>
+                        <p className="shrink-0 text-left text-base font-bold text-success sm:text-right">
+                          {item.price}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
+
+        <section
+          className="space-y-5"
+          aria-labelledby="academy-contact-heading"
+        >
+          <div className="space-y-2">
+            <h2
+              id="academy-contact-heading"
+              className="break-keep text-2xl font-semibold text-foreground"
+            >
+              상담 문의
+            </h2>
+            <p className="break-keep text-sm leading-6 text-muted-foreground">
+              레슨 유형, 시간표, 수강 시작 가능일이 궁금하다면 담당자에게 바로
+              문의해 주세요.
+            </p>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            {academyContacts.map((contact) => (
+              <Card
+                key={contact.phone}
+                variant="interactive"
+                className="border-border bg-card"
+              >
+                <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between md:p-6">
+                  <div className="space-y-2">
+                    <Badge variant="outline">{contact.role}</Badge>
+                    <div>
+                      <h3 className="break-keep text-lg font-semibold text-foreground">
+                        {contact.role} {contact.name}
+                      </h3>
+                      <a
+                        href={`tel:${contact.phone.replaceAll("-", "")}`}
+                        className="mt-1 inline-flex text-base font-semibold text-success underline-offset-4 hover:underline"
+                      >
+                        {contact.phone}
+                      </a>
+                    </div>
+                  </div>
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="w-full sm:w-auto"
+                  >
+                    <a href={`tel:${contact.phone.replaceAll("-", "")}`}>
+                      전화하기
+                    </a>
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
+
         <section className="space-y-4">
           <div className="space-y-2">
             <h2 className="break-keep text-2xl font-semibold text-foreground">
-              레슨 프로그램
+              현재 모집 중인 클래스
             </h2>
             <p className="break-keep text-sm leading-6 text-muted-foreground">
               목적과 경험에 맞춰 상담 후 적합한 수업 방향을 안내합니다.
