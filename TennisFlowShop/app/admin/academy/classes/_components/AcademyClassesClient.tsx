@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState, type FormEvent } from "react";
 import useSWR from "swr";
-import { BookOpen, EyeOff, Pencil, Plus, Search } from "lucide-react";
+import { BookOpen, Eye, EyeOff, Pencil, Plus, Search } from "lucide-react";
 
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { adminSurface } from "@/components/admin/admin-typography";
@@ -289,9 +289,12 @@ export default function AcademyClassesClient() {
                       {formatDate(item.createdAt)}
                     </TableCell>
                     <TableCell>
-                      <div className="min-w-[180px] font-medium text-foreground">
+                      <Link
+                        href={`/admin/academy/classes/${item._id}`}
+                        className="block min-w-[180px] font-medium text-foreground underline-offset-4 hover:underline"
+                      >
                         {item.name || "-"}
-                      </div>
+                      </Link>
                       <div className="max-w-[260px] truncate text-xs text-muted-foreground">
                         {item.description || "설명 미입력"}
                       </div>
@@ -312,7 +315,13 @@ export default function AcademyClassesClient() {
                       <AcademyClassStatusBadge status={item.status} />
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
+                      <div className="flex flex-wrap justify-end gap-2">
+                        <Button asChild variant="outline" size="sm">
+                          <Link href={`/admin/academy/classes/${item._id}`}>
+                            <Eye className="mr-2 h-4 w-4" />
+                            상세
+                          </Link>
+                        </Button>
                         <Button asChild variant="outline" size="sm">
                           <Link href={`/admin/academy/classes/${item._id}/edit`}>
                             <Pencil className="mr-2 h-4 w-4" />

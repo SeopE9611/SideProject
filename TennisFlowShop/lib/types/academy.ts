@@ -195,7 +195,9 @@ export type AcademyClass = {
   name: string;
   description?: string | null;
   level: AcademyClassLevel;
+  levelLabel?: string;
   lessonType: AcademyClassLessonType;
+  lessonTypeLabel?: string;
   instructorName?: string | null;
   location?: string | null;
   scheduleText?: string | null;
@@ -210,8 +212,36 @@ export type AcademyClass = {
   applicationStats?: AcademyClassApplicationStats;
   price?: number | null;
   status: AcademyClassStatus;
+  statusLabel?: string;
   createdAt?: string;
   updatedAt?: string;
+};
+
+
+export type AcademyClassApplicationSummary = {
+  _id: string;
+  applicantName: string;
+  phone: string;
+  email: string | null;
+  desiredLessonType: string;
+  desiredLessonTypeLabel: string;
+  currentLevel: string;
+  currentLevelLabel: string;
+  preferredDays: string[];
+  preferredTimeText: string | null;
+  status: AcademyLessonApplicationStatus;
+  statusLabel: string;
+  hasCustomerMessage: boolean;
+  customerMessagePreview: string | null;
+  createdAt: string | null;
+  updatedAt: string | null;
+};
+
+export type AcademyClassDetailResponse = {
+  success: true;
+  item: AcademyClass;
+  applicationStats: AcademyClassApplicationStats;
+  applications: AcademyClassApplicationSummary[];
 };
 
 export const ACADEMY_CLASS_STATUSES = [
