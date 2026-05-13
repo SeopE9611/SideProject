@@ -22,17 +22,56 @@ function serializeValue(value: unknown): unknown {
   return value;
 }
 
+function serializeClassSnapshot(value: unknown) {
+  if (!value || typeof value !== "object") return null;
+  const record = value as Document;
+  return {
+    classId:
+      typeof record.classId === "string"
+        ? record.classId
+        : String(serializeValue(record.classId) ?? ""),
+    name: typeof record.name === "string" ? record.name : "",
+    description:
+      typeof record.description === "string" ? record.description : null,
+    level: typeof record.level === "string" ? record.level : null,
+    levelLabel:
+      typeof record.levelLabel === "string" ? record.levelLabel : null,
+    lessonType:
+      typeof record.lessonType === "string" ? record.lessonType : null,
+    lessonTypeLabel:
+      typeof record.lessonTypeLabel === "string"
+        ? record.lessonTypeLabel
+        : null,
+    instructorName:
+      typeof record.instructorName === "string" ? record.instructorName : null,
+    location: typeof record.location === "string" ? record.location : null,
+    scheduleText:
+      typeof record.scheduleText === "string" ? record.scheduleText : null,
+    capacity: typeof record.capacity === "number" ? record.capacity : null,
+    price: typeof record.price === "number" ? record.price : null,
+    status: typeof record.status === "string" ? record.status : null,
+    statusLabel:
+      typeof record.statusLabel === "string" ? record.statusLabel : null,
+  };
+}
+
 function serializeHistory(history: unknown) {
   if (!Array.isArray(history)) return [];
   return history.map((item) => {
     const record = item && typeof item === "object" ? (item as Document) : {};
     return {
       status: typeof record.status === "string" ? record.status : "submitted",
-      date: typeof record.date === "string" ? record.date : serializeValue(record.date),
+      date:
+        typeof record.date === "string"
+          ? record.date
+          : serializeValue(record.date),
       description:
         typeof record.description === "string" ? record.description : "",
-      actorId: record.actorId ? String(serializeValue(record.actorId)) : undefined,
-      actorName: typeof record.actorName === "string" ? record.actorName : undefined,
+      actorId: record.actorId
+        ? String(serializeValue(record.actorId))
+        : undefined,
+      actorName:
+        typeof record.actorName === "string" ? record.actorName : undefined,
     };
   });
 }
@@ -40,7 +79,8 @@ function serializeHistory(history: unknown) {
 function serializeApplication(doc: Document) {
   return {
     _id: String(serializeValue(doc._id)),
-    applicantName: typeof doc.applicantName === "string" ? doc.applicantName : "",
+    applicantName:
+      typeof doc.applicantName === "string" ? doc.applicantName : "",
     phone: typeof doc.phone === "string" ? doc.phone : "",
     email: typeof doc.email === "string" ? doc.email : null,
     desiredLessonType:
@@ -59,6 +99,8 @@ function serializeApplication(doc: Document) {
     createdAt: serializeValue(doc.createdAt) ?? null,
     updatedAt: serializeValue(doc.updatedAt) ?? null,
     userId: doc.userId ? String(serializeValue(doc.userId)) : null,
+    classId: doc.classId ? String(serializeValue(doc.classId)) : null,
+    classSnapshot: serializeClassSnapshot(doc.classSnapshot),
   };
 }
 
@@ -93,7 +135,8 @@ export async function PATCH(
   }
 
   const body = (await req.json().catch(() => null)) as unknown;
-  const payload = body && typeof body === "object" ? (body as Record<string, unknown>) : {};
+  const payload =
+    body && typeof body === "object" ? (body as Record<string, unknown>) : {};
   const status = payload.status;
   const reason = trimString(payload.reason, 500);
 
@@ -147,5 +190,8 @@ export async function PATCH(
     );
   }
 
-  return NextResponse.json({ success: true, item: serializeApplication(updated) });
+  return NextResponse.json({
+    success: true,
+    item: serializeApplication(updated),
+  });
 }

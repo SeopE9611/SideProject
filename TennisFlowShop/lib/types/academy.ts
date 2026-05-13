@@ -31,6 +31,8 @@ export type AcademyLessonApplicationHistoryItem = {
 export type AcademyLessonApplication = {
   _id?: string;
   userId?: string | null;
+  classId?: string | null;
+  classSnapshot?: AcademyClassSnapshot | null;
 
   applicantName: string;
   phone: string;
@@ -160,6 +162,23 @@ export type PublicAcademyClass = {
   statusLabel: string;
   createdAt: string | null;
   updatedAt: string | null;
+};
+
+export type AcademyClassSnapshot = {
+  classId: string;
+  name: string;
+  description?: string | null;
+  level?: AcademyClassLevel | null;
+  levelLabel?: string | null;
+  lessonType?: AcademyClassLessonType | null;
+  lessonTypeLabel?: string | null;
+  instructorName?: string | null;
+  location?: string | null;
+  scheduleText?: string | null;
+  capacity?: number | null;
+  price?: number | null;
+  status?: "visible" | "closed";
+  statusLabel?: string | null;
 };
 
 export type AcademyClass = {

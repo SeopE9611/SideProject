@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import type { Document } from "mongodb";
+import { ObjectId, type Document } from "mongodb";
 
 import { getDb } from "@/lib/mongodb";
 import {
@@ -73,9 +73,55 @@ function serializePublicClass(doc: Document): PublicAcademyClass {
   };
 }
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
     const db = await getDb();
+    const url = new URL(req.url);
+    const classId = url.searchParams.get("classId");
+
+    if (classId) {
+      if (!ObjectId.isValid(classId)) {
+        return NextResponse.json(
+          { success: false, message: "클래스 정보를 찾을 수 없습니다." },
+          { status: 404 },
+        );
+      }
+
+      const item = await db.collection(COLLECTION_NAME).findOne(
+        { _id: new ObjectId(classId), status: { $in: [...PUBLIC_STATUSES] } },
+        {
+          projection: {
+            _id: 1,
+            name: 1,
+            description: 1,
+            level: 1,
+            lessonType: 1,
+            instructorName: 1,
+            location: 1,
+            scheduleText: 1,
+            capacity: 1,
+            enrolledCount: 1,
+            price: 1,
+            status: 1,
+            createdAt: 1,
+            updatedAt: 1,
+          },
+        },
+      );
+
+      if (!item) {
+        return NextResponse.json(
+          { success: false, message: "클래스 정보를 찾을 수 없습니다." },
+          { status: 404 },
+        );
+      }
+
+      return NextResponse.json({
+        success: true,
+        item: serializePublicClass(item),
+      });
+    }
+
     const items = await db
       .collection(COLLECTION_NAME)
       .find({ status: { $in: [...PUBLIC_STATUSES] } })
