@@ -326,6 +326,7 @@ const Header = () => {
       { name: "매장/예약 안내", href: "/services/locations" },
     ],
     packages: [{ name: "패키지 안내", href: "/services/packages" }],
+    academy: { name: "도깨비테니스 아카데미", href: "/academy" },
     support: [
       { name: "고객센터 홈", href: "/support" },
       { name: "고객센터 공지사항", href: "/board/notice" },
@@ -550,6 +551,18 @@ const Header = () => {
                   </Button>
                 </AccordionContent>
               </AccordionItem>
+
+              <Button
+                variant="ghost"
+                className="group w-full justify-between rounded-lg px-3 py-3 text-base font-bold text-foreground hover:bg-secondary transition-[background-color,color,border-color,box-shadow,opacity] relative z-0 hover:shadow-sm hover:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                onClick={() => {
+                  setOpen(false);
+                  router.push(NAV_LINKS.academy.href);
+                }}
+              >
+                {NAV_LINKS.academy.name}
+                <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200" />
+              </Button>
 
               {/* 게시판 */}
               <AccordionItem value="boards" className="border-none">

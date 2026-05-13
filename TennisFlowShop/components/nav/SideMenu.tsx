@@ -54,6 +54,17 @@ export default function SideMenu() {
 
   const nestedTriggerClass = "px-3.5 py-2 text-[15px] font-semibold text-foreground/85 hover:text-foreground rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20";
 
+  const topLevelLinkClass = (href: string) => {
+    const isActive = isActiveHref(href);
+    return cn(
+      "group relative z-0 block rounded-lg px-3.5 py-3.5 text-lg font-bold transition-[background-color,color,border-color,box-shadow,opacity] duration-200",
+      "hover:bg-primary/10 dark:hover:bg-primary/20",
+      "hover:shadow-sm hover:z-10",
+      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+      isActive ? "bg-primary/10 text-foreground border border-primary/20 shadow-sm dark:bg-primary/20" : "text-foreground hover:text-foreground",
+    );
+  };
+
   return (
     <aside
       className="hidden bp-lg:block fixed left-0 z-30 h-[calc(100vh-var(--header-h,4rem))] w-72 bp-lg:w-72 xl:w-80 border-r border-border bg-background backdrop-blur supports-[backdrop-filter]:bg-background/60 overflow-hidden"
@@ -135,6 +146,13 @@ export default function SideMenu() {
               </Link>
             </AccordionContent>
           </AccordionItem>
+
+          <Link href={NAV_LINKS.academy.href} className={topLevelLinkClass(NAV_LINKS.academy.href)}>
+            <span className="flex items-center justify-between">
+              {NAV_LINKS.academy.name}
+              <ChevronRight className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-[background-color,color,border-color,box-shadow,opacity] duration-200" />
+            </span>
+          </Link>
 
           {/* 게시판 */}
           <AccordionItem value="boards" className="border-none">

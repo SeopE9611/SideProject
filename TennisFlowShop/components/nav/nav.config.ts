@@ -37,6 +37,7 @@ export const NAV_LINKS = {
     { name: "매장/예약 안내", href: "/services/locations" },
   ],
   packages: [{ name: "패키지 안내", href: "/services/packages" }],
+  academy: { name: "도깨비테니스 아카데미", href: "/academy" },
   support: [
     { name: "고객센터 홈", href: "/support" },
     { name: "고객센터 공지사항", href: "/board/notice" },
