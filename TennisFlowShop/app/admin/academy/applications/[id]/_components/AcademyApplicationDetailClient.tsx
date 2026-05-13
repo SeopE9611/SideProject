@@ -9,7 +9,13 @@ import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { adminSurface } from "@/components/admin/admin-typography";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -19,7 +25,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { adminFetcher, adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
+import {
+  adminFetcher,
+  adminMutator,
+  getAdminErrorMessage,
+} from "@/lib/admin/adminFetcher";
 import { badgeToneVariant, type BadgeSemanticTone } from "@/lib/badge-style";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import {
@@ -27,10 +37,10 @@ import {
   getAcademyApplicationStatusLabel,
   getAcademyCurrentLevelLabel,
   getAcademyLessonTypeLabel,
+  type AcademyClassSnapshot,
   type AcademyLessonApplicationHistoryItem,
   type AcademyLessonApplicationStatus,
 } from "@/lib/types/academy";
-
 
 type AcademyApplicationDetail = {
   _id: string;
@@ -48,6 +58,8 @@ type AcademyApplicationDetail = {
   adminMemo: string | null;
   customerMessage: string | null;
   history: AcademyLessonApplicationHistoryItem[];
+  classId: string | null;
+  classSnapshot: AcademyClassSnapshot | null;
   createdAt: string | null;
   updatedAt: string | null;
 };
@@ -57,7 +69,9 @@ type DetailResponse = {
   item: AcademyApplicationDetail;
 };
 
-function getStatusTone(status: AcademyLessonApplicationStatus): BadgeSemanticTone {
+function getStatusTone(
+  status: AcademyLessonApplicationStatus,
+): BadgeSemanticTone {
   if (status === "submitted") return "warning";
   if (status === "reviewing") return "info";
   if (status === "contacted") return "brand";
@@ -66,7 +80,11 @@ function getStatusTone(status: AcademyLessonApplicationStatus): BadgeSemanticTon
   return "neutral";
 }
 
-function AcademyStatusBadge({ status }: { status: AcademyLessonApplicationStatus }) {
+function AcademyStatusBadge({
+  status,
+}: {
+  status: AcademyLessonApplicationStatus;
+}) {
   return (
     <Badge variant={badgeToneVariant(getStatusTone(status))}>
       {getAcademyApplicationStatusLabel(status)}
@@ -88,6 +106,13 @@ function formatDateTime(value: string | null | undefined) {
   }).format(date);
 }
 
+function formatPrice(price: number | null | undefined) {
+  if (typeof price === "number" && price > 0) {
+    return `${price.toLocaleString("ko-KR")}원`;
+  }
+  return "상담 후 안내";
+}
+
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="grid gap-1 border-b border-border/60 py-3 last:border-b-0 sm:grid-cols-[140px_1fr]">
@@ -104,7 +129,8 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
   );
   const item = data?.item;
 
-  const [status, setStatus] = useState<AcademyLessonApplicationStatus>("submitted");
+  const [status, setStatus] =
+    useState<AcademyLessonApplicationStatus>("submitted");
   const [reason, setReason] = useState("");
   const [adminMemo, setAdminMemo] = useState("");
   const [customerMessage, setCustomerMessage] = useState("");
@@ -122,7 +148,10 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
     return [...(item?.history ?? [])].sort((a, b) => {
       const aTime = new Date(a.date).getTime();
       const bTime = new Date(b.date).getTime();
-      return (Number.isFinite(bTime) ? bTime : 0) - (Number.isFinite(aTime) ? aTime : 0);
+      return (
+        (Number.isFinite(bTime) ? bTime : 0) -
+        (Number.isFinite(aTime) ? aTime : 0)
+      );
     });
   }, [item?.history]);
 
@@ -225,20 +254,96 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
               <InfoRow label="이름" value={item.applicantName} />
               <InfoRow label="연락처" value={item.phone} />
               <InfoRow label="이메일" value={item.email ?? "-"} />
-              <InfoRow label="회원 여부" value={item.userId ? "회원 신청" : "비회원 신청"} />
+              <InfoRow
+                label="회원 여부"
+                value={item.userId ? "회원 신청" : "비회원 신청"}
+              />
               <InfoRow label="접수일" value={formatDateTime(item.createdAt)} />
             </CardContent>
           </Card>
+
+          {item.classSnapshot ? (
+            <Card className={adminSurface.card}>
+              <CardHeader>
+                <CardTitle className="text-base">선택 클래스 정보</CardTitle>
+                <CardDescription>
+                  신청 당시 저장된 클래스 스냅샷입니다.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <InfoRow
+                  label="클래스명"
+                  value={item.classSnapshot.name || "-"}
+                />
+                <InfoRow
+                  label="수업 유형"
+                  value={item.classSnapshot.lessonTypeLabel ?? "-"}
+                />
+                <InfoRow
+                  label="레벨"
+                  value={item.classSnapshot.levelLabel ?? "-"}
+                />
+                <InfoRow
+                  label="강사"
+                  value={item.classSnapshot.instructorName ?? "상담 후 안내"}
+                />
+                <InfoRow
+                  label="장소"
+                  value={item.classSnapshot.location ?? "상담 후 안내"}
+                />
+                <InfoRow
+                  label="일정"
+                  value={item.classSnapshot.scheduleText ?? "상담 후 조율"}
+                />
+                <InfoRow
+                  label="가격"
+                  value={formatPrice(item.classSnapshot.price)}
+                />
+                <InfoRow
+                  label="신청 당시 상태"
+                  value={item.classSnapshot.statusLabel ?? "-"}
+                />
+              </CardContent>
+            </Card>
+          ) : item.classId ? (
+            <Card className={adminSurface.card}>
+              <CardHeader>
+                <CardTitle className="text-base">선택 클래스 정보</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <InfoRow label="클래스 ID" value={item.classId} />
+                <p className="mt-3 text-sm text-muted-foreground">
+                  신청 당시 클래스 스냅샷이 없어 ID만 표시합니다.
+                </p>
+              </CardContent>
+            </Card>
+          ) : null}
 
           <Card className={adminSurface.card}>
             <CardHeader>
               <CardTitle className="text-base">레슨 희망 정보</CardTitle>
             </CardHeader>
             <CardContent>
-              <InfoRow label="희망 레슨 유형" value={getAcademyLessonTypeLabel(item.desiredLessonType)} />
-              <InfoRow label="현재 실력" value={getAcademyCurrentLevelLabel(item.currentLevel)} />
-              <InfoRow label="희망 요일" value={item.preferredDays.length ? item.preferredDays.join(", ") : "-"} />
-              <InfoRow label="희망 시간대" value={item.preferredTimeText ?? "-"} />
+              <InfoRow
+                label="희망 레슨 유형"
+                value={getAcademyLessonTypeLabel(item.desiredLessonType)}
+              />
+              <InfoRow
+                label="현재 실력"
+                value={getAcademyCurrentLevelLabel(item.currentLevel)}
+              />
+              <InfoRow
+                label="희망 요일"
+                value={
+                  item.preferredDays.length
+                    ? item.preferredDays.join(", ")
+                    : "-"
+                }
+              />
+              <InfoRow
+                label="희망 시간대"
+                value={item.preferredTimeText ?? "-"}
+              />
               <InfoRow label="레슨 목표" value={item.lessonGoal ?? "-"} />
               <InfoRow label="요청사항" value={item.requestMemo ?? "-"} />
             </CardContent>
@@ -247,7 +352,9 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
           <Card className={adminSurface.card}>
             <CardHeader>
               <CardTitle className="text-base">처리 이력</CardTitle>
-              <CardDescription>상태 변경 및 메모 변경 내역입니다.</CardDescription>
+              <CardDescription>
+                상태 변경 및 메모 변경 내역입니다.
+              </CardDescription>
             </CardHeader>
             <CardContent>
               {sortedHistory.length === 0 ? (
@@ -257,16 +364,23 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
               ) : (
                 <div className="space-y-3">
                   {sortedHistory.map((historyItem, index) => (
-                    <div key={`${historyItem.date}-${index}`} className="rounded-xl border border-border/70 p-4">
+                    <div
+                      key={`${historyItem.date}-${index}`}
+                      className="rounded-xl border border-border/70 p-4"
+                    >
                       <div className="flex flex-wrap items-center gap-2">
                         <AcademyStatusBadge status={historyItem.status} />
                         <span className="text-xs text-muted-foreground">
                           {formatDateTime(historyItem.date)}
                         </span>
                       </div>
-                      <p className="mt-2 text-sm text-foreground">{historyItem.description}</p>
+                      <p className="mt-2 text-sm text-foreground">
+                        {historyItem.description}
+                      </p>
                       {historyItem.actorName ? (
-                        <p className="mt-1 text-xs text-muted-foreground">처리자: {historyItem.actorName}</p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          처리자: {historyItem.actorName}
+                        </p>
                       ) : null}
                     </div>
                   ))}
@@ -280,14 +394,21 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
           <Card className={adminSurface.card}>
             <CardHeader>
               <CardTitle className="text-base">상태 관리</CardTitle>
-              <CardDescription>상담 진행 상황에 맞게 신청 상태를 변경합니다.</CardDescription>
+              <CardDescription>
+                상담 진행 상황에 맞게 신청 상태를 변경합니다.
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium" htmlFor="academy-status">
                   현재 상태
                 </label>
-                <Select value={status} onValueChange={(value) => setStatus(value as AcademyLessonApplicationStatus)}>
+                <Select
+                  value={status}
+                  onValueChange={(value) =>
+                    setStatus(value as AcademyLessonApplicationStatus)
+                  }
+                >
                   <SelectTrigger id="academy-status">
                     <SelectValue placeholder="상태 선택" />
                   </SelectTrigger>
@@ -302,7 +423,8 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium" htmlFor="status-reason">
-                  상태 변경 사유 <span className="text-muted-foreground">(선택)</span>
+                  상태 변경 사유{" "}
+                  <span className="text-muted-foreground">(선택)</span>
                 </label>
                 <Input
                   id="status-reason"
@@ -311,7 +433,11 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
                   placeholder="예: 상담 일정 확인"
                 />
               </div>
-              <Button className="w-full" onClick={saveStatus} disabled={savingStatus}>
+              <Button
+                className="w-full"
+                onClick={saveStatus}
+                disabled={savingStatus}
+              >
                 <Save className="mr-2 h-4 w-4" />
                 {savingStatus ? "저장 중..." : "상태 변경 저장"}
               </Button>
@@ -321,14 +447,18 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
           <Card className={adminSurface.card}>
             <CardHeader>
               <CardTitle className="text-base">관리자 메모</CardTitle>
-              <CardDescription>내부 메모와 고객 안내 메시지를 분리해서 저장합니다.</CardDescription>
+              <CardDescription>
+                내부 메모와 고객 안내 메시지를 분리해서 저장합니다.
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium" htmlFor="admin-memo">
                   관리자 내부 메모
                 </label>
-                <p className="text-xs text-muted-foreground">내부 운영자 전용 메모입니다. 고객에게 공개되지 않습니다.</p>
+                <p className="text-xs text-muted-foreground">
+                  내부 운영자 전용 메모입니다. 고객에게 공개되지 않습니다.
+                </p>
                 <Textarea
                   id="admin-memo"
                   value={adminMemo}
@@ -337,14 +467,22 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
                   placeholder="전화 상담 내용, 운영 참고사항 등을 입력하세요."
                   className="min-h-32"
                 />
-                <div className="text-right text-xs text-muted-foreground">{adminMemo.length}/2000</div>
+                <div className="text-right text-xs text-muted-foreground">
+                  {adminMemo.length}/2000
+                </div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium" htmlFor="customer-message">
+                <label
+                  className="text-sm font-medium"
+                  htmlFor="customer-message"
+                >
                   고객 안내 메시지
                 </label>
-                <p className="text-xs text-muted-foreground">고객에게 공개할 안내 메시지입니다. 이번 단계에서는 저장만 합니다.</p>
+                <p className="text-xs text-muted-foreground">
+                  고객에게 공개할 안내 메시지입니다. 이번 단계에서는 저장만
+                  합니다.
+                </p>
                 <Textarea
                   id="customer-message"
                   value={customerMessage}
@@ -353,10 +491,16 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
                   placeholder="상담 후 고객에게 안내할 내용을 입력하세요."
                   className="min-h-28"
                 />
-                <div className="text-right text-xs text-muted-foreground">{customerMessage.length}/1000</div>
+                <div className="text-right text-xs text-muted-foreground">
+                  {customerMessage.length}/1000
+                </div>
               </div>
 
-              <Button className="w-full" onClick={saveMemo} disabled={savingMemo}>
+              <Button
+                className="w-full"
+                onClick={saveMemo}
+                disabled={savingMemo}
+              >
                 <Save className="mr-2 h-4 w-4" />
                 {savingMemo ? "저장 중..." : "메모 저장"}
               </Button>

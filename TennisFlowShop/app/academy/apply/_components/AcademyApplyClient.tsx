@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useMemo, useState } from "react";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -20,6 +21,7 @@ import { Textarea } from "@/components/ui/textarea";
 import type {
   AcademyCurrentLevel,
   AcademyLessonType,
+  PublicAcademyClass,
 } from "@/lib/types/academy";
 
 const lessonTypeOptions: { value: AcademyLessonType; label: string }[] = [
@@ -65,6 +67,20 @@ const initialFormState: FormState = {
   requestMemo: "",
 };
 
+function formatClassPrice(price: number | null) {
+  if (typeof price === "number" && price > 0) {
+    return `${price.toLocaleString("ko-KR")}원`;
+  }
+  return "상담 후 안내";
+}
+
+function formatClassCapacity(capacity: number | null) {
+  if (typeof capacity === "number" && capacity > 0) {
+    return `${capacity}명`;
+  }
+  return "상담 후 안내";
+}
+
 function getClientValidationMessage(form: FormState) {
   if (!form.applicantName.trim()) return "신청자명을 입력해 주세요.";
   if (!form.phone.trim()) return "연락처를 입력해 주세요.";
@@ -76,11 +92,19 @@ function getClientValidationMessage(form: FormState) {
   return null;
 }
 
-export default function AcademyApplyClient() {
+export default function AcademyApplyClient({
+  requestedClassId,
+  selectedClass,
+}: {
+  requestedClassId?: string | null;
+  selectedClass?: PublicAcademyClass | null;
+}) {
   const router = useRouter();
   const [form, setForm] = useState<FormState>(initialFormState);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isSelectedClassClosed = selectedClass?.status === "closed";
+  const canSubmit = !isSubmitting && !isSelectedClassClosed;
 
   const selectedDaysLabel = useMemo(
     () =>
@@ -109,6 +133,13 @@ export default function AcademyApplyClient() {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
+    if (isSelectedClassClosed) {
+      setErrorMessage(
+        "모집이 마감된 클래스는 신청할 수 없습니다. 문의하기를 이용해 주세요.",
+      );
+      return;
+    }
+
     const validationMessage = getClientValidationMessage(form);
     if (validationMessage) {
       setErrorMessage(validationMessage);
@@ -132,6 +163,8 @@ export default function AcademyApplyClient() {
           preferredTimeText: form.preferredTimeText,
           lessonGoal: form.lessonGoal,
           requestMemo: form.requestMemo,
+          classId:
+            selectedClass?.status === "visible" ? selectedClass._id : undefined,
         }),
       });
 
@@ -165,6 +198,124 @@ export default function AcademyApplyClient() {
         </div>
       ) : null}
 
+      {requestedClassId && !selectedClass ? (
+        <Card className="border-warning/40 bg-warning/10">
+          <CardContent className="space-y-3 p-5 text-sm text-foreground md:p-6">
+            <p className="font-semibold">
+              선택한 클래스 정보를 찾을 수 없습니다.
+            </p>
+            <p className="break-keep leading-6 text-muted-foreground">
+              이미 숨김 처리되었거나 존재하지 않는 클래스일 수 있습니다. 아래
+              신청서는 일반 레슨 신청으로 접수할 수 있습니다.
+            </p>
+            <Button asChild variant="outline" className="w-full sm:w-auto">
+              <Link href="/academy">아카데미로 돌아가기</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      ) : null}
+
+      {selectedClass ? (
+        <Card className="border-border bg-card">
+          <CardHeader className="space-y-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge
+                variant={
+                  selectedClass.status === "closed" ? "secondary" : "success"
+                }
+              >
+                {selectedClass.statusLabel}
+              </Badge>
+              <Badge variant="outline">{selectedClass.lessonTypeLabel}</Badge>
+              <Badge variant="outline">{selectedClass.levelLabel}</Badge>
+            </div>
+            <div className="space-y-1">
+              <CardTitle className="break-keep text-xl">
+                선택한 클래스
+              </CardTitle>
+              <p className="break-keep text-sm leading-6 text-muted-foreground">
+                {selectedClass.status === "closed"
+                  ? "이 클래스는 현재 모집이 마감되었습니다."
+                  : "이 클래스 기준으로 레슨 신청이 접수됩니다."}
+              </p>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <h2 className="break-keep text-lg font-semibold text-foreground">
+                {selectedClass.name}
+              </h2>
+              {selectedClass.description ? (
+                <p className="break-keep text-sm leading-6 text-muted-foreground">
+                  {selectedClass.description}
+                </p>
+              ) : null}
+            </div>
+            <dl className="grid gap-3 text-sm md:grid-cols-2">
+              <div>
+                <dt className="text-muted-foreground">수업 유형</dt>
+                <dd className="mt-1 font-medium text-foreground">
+                  {selectedClass.lessonTypeLabel}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">레벨</dt>
+                <dd className="mt-1 font-medium text-foreground">
+                  {selectedClass.levelLabel}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">강사</dt>
+                <dd className="mt-1 break-keep font-medium text-foreground">
+                  {selectedClass.instructorName || "상담 후 안내"}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">장소</dt>
+                <dd className="mt-1 break-keep font-medium text-foreground">
+                  {selectedClass.location || "상담 후 안내"}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">일정</dt>
+                <dd className="mt-1 break-keep font-medium text-foreground">
+                  {selectedClass.scheduleText || "상담 후 조율"}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">정원</dt>
+                <dd className="mt-1 font-medium text-foreground">
+                  {formatClassCapacity(selectedClass.capacity)}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">수강료</dt>
+                <dd className="mt-1 font-medium text-foreground">
+                  {formatClassPrice(selectedClass.price)}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">상태</dt>
+                <dd className="mt-1 font-medium text-foreground">
+                  {selectedClass.statusLabel}
+                </dd>
+              </div>
+            </dl>
+            {selectedClass.status === "closed" ? (
+              <div className="rounded-xl border border-border bg-muted/30 p-4 text-sm text-muted-foreground">
+                <p className="break-keep leading-6">
+                  문의하기를 통해 다음 모집 일정을 확인해 주세요. 모집이 마감된
+                  클래스는 신청 접수가 비활성화됩니다.
+                </p>
+                <Button asChild className="mt-3 w-full sm:w-auto">
+                  <Link href="/board/qna/write?category=academy">문의하기</Link>
+                </Button>
+              </div>
+            ) : null}
+          </CardContent>
+        </Card>
+      ) : null}
+
       <Card className="border-border bg-card">
         <CardHeader>
           <CardTitle className="break-keep text-xl">신청자 정보</CardTitle>
@@ -180,7 +331,7 @@ export default function AcademyApplyClient() {
               }
               maxLength={50}
               placeholder="홍길동"
-              disabled={isSubmitting}
+              disabled={isSubmitting || isSelectedClassClosed}
             />
           </div>
           <div className="space-y-2">
@@ -191,7 +342,7 @@ export default function AcademyApplyClient() {
               onChange={(event) => updateField("phone", event.target.value)}
               maxLength={30}
               placeholder="010-1234-5678"
-              disabled={isSubmitting}
+              disabled={isSubmitting || isSelectedClassClosed}
             />
           </div>
           <div className="space-y-2 md:col-span-2">
@@ -203,7 +354,7 @@ export default function AcademyApplyClient() {
               onChange={(event) => updateField("email", event.target.value)}
               maxLength={100}
               placeholder="test@example.com"
-              disabled={isSubmitting}
+              disabled={isSubmitting || isSelectedClassClosed}
             />
           </div>
         </CardContent>
@@ -222,7 +373,7 @@ export default function AcademyApplyClient() {
                 onValueChange={(value) =>
                   updateField("desiredLessonType", value as AcademyLessonType)
                 }
-                disabled={isSubmitting}
+                disabled={isSubmitting || isSelectedClassClosed}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="레슨 유형 선택" />
@@ -243,7 +394,7 @@ export default function AcademyApplyClient() {
                 onValueChange={(value) =>
                   updateField("currentLevel", value as AcademyCurrentLevel)
                 }
-                disabled={isSubmitting}
+                disabled={isSubmitting || isSelectedClassClosed}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="현재 실력 선택" />
@@ -275,7 +426,7 @@ export default function AcademyApplyClient() {
                   <Checkbox
                     checked={form.preferredDays.includes(day)}
                     onCheckedChange={() => toggleDay(day)}
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || isSelectedClassClosed}
                   />
                   <span>{day}요일</span>
                 </label>
@@ -293,7 +444,7 @@ export default function AcademyApplyClient() {
               }
               maxLength={100}
               placeholder="예: 평일 저녁, 주말 오전, 상담 후 결정"
-              disabled={isSubmitting}
+              disabled={isSubmitting || isSelectedClassClosed}
             />
           </div>
 
@@ -307,7 +458,7 @@ export default function AcademyApplyClient() {
               }
               maxLength={500}
               placeholder="예: 기초부터 배우고 싶습니다. 랠리를 오래 이어가고 싶습니다."
-              disabled={isSubmitting}
+              disabled={isSubmitting || isSelectedClassClosed}
             />
           </div>
 
@@ -321,7 +472,7 @@ export default function AcademyApplyClient() {
               }
               maxLength={1000}
               placeholder="예: 라켓이 없어도 가능한지 궁금합니다. 가능한 상담 시간을 남겨주세요."
-              disabled={isSubmitting}
+              disabled={isSubmitting || isSelectedClassClosed}
             />
           </div>
         </CardContent>
@@ -333,10 +484,14 @@ export default function AcademyApplyClient() {
         </Button>
         <Button
           type="submit"
-          disabled={isSubmitting}
+          disabled={!canSubmit}
           className="w-full sm:w-auto"
         >
-          {isSubmitting ? "접수 중..." : "신청 접수하기"}
+          {isSelectedClassClosed
+            ? "모집 마감"
+            : isSubmitting
+              ? "접수 중..."
+              : "신청 접수하기"}
         </Button>
       </div>
     </form>

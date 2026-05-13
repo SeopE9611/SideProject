@@ -290,7 +290,11 @@ export default async function AcademyPage() {
                           </>
                         ) : (
                           <Button asChild className="w-full">
-                            <Link href="/academy/apply">레슨 신청하기</Link>
+                            <Link
+                              href={`/academy/apply?classId=${academyClass._id}`}
+                            >
+                              레슨 신청하기
+                            </Link>
                           </Button>
                         )}
                       </div>

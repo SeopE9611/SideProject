@@ -38,6 +38,16 @@ import { MdSportsTennis } from "react-icons/md";
 import { useSWRConfig } from "swr";
 import useSWRInfinite from "swr/infinite";
 
+type AcademyClassSnapshotForApplication = {
+  classId: string;
+  name: string;
+  lessonTypeLabel?: string | null;
+  levelLabel?: string | null;
+  location?: string | null;
+  scheduleText?: string | null;
+  price?: number | null;
+};
+
 export interface Application {
   id: string;
   _id?: string;
@@ -68,6 +78,7 @@ export interface Application {
   lessonGoal?: string | null;
   requestMemo?: string | null;
   customerMessage?: string | null;
+  classSnapshot?: AcademyClassSnapshotForApplication | null;
   createdAt?: string | null;
   updatedAt?: string | null;
   hasTracking?: boolean;
@@ -113,6 +124,13 @@ const ApplicationsListSkeleton = ({ count = 3 }: { count?: number }) => (
     ))}
   </div>
 );
+
+const formatAcademyClassPrice = (price?: number | null) => {
+  if (typeof price === "number" && price > 0) {
+    return `${price.toLocaleString("ko-KR")}원`;
+  }
+  return "상담 후 안내";
+};
 
 const formatDateTime = (iso: string) => {
   const date = new Date(iso);
@@ -715,6 +733,63 @@ export default function ApplicationsClient() {
                       <p className="text-muted-foreground">
                         신청 내용 확인 후 도깨비테니스에서 상담을 도와드립니다.
                       </p>
+
+                      {app.classSnapshot ? (
+                        <div className="rounded-xl border border-border/50 bg-background p-3">
+                          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                            선택 클래스
+                          </p>
+                          <p className="mt-1 break-keep font-semibold text-foreground">
+                            {app.classSnapshot.name || "클래스명 미입력"}
+                          </p>
+                          <dl className="mt-3 grid gap-2 text-sm text-muted-foreground md:grid-cols-2">
+                            <div>
+                              <dt className="text-xs uppercase tracking-wide">
+                                수업 유형
+                              </dt>
+                              <dd className="mt-0.5 font-medium text-foreground">
+                                {app.classSnapshot.lessonTypeLabel || "미선택"}
+                              </dd>
+                            </div>
+                            <div>
+                              <dt className="text-xs uppercase tracking-wide">
+                                레벨
+                              </dt>
+                              <dd className="mt-0.5 font-medium text-foreground">
+                                {app.classSnapshot.levelLabel || "미선택"}
+                              </dd>
+                            </div>
+                            <div>
+                              <dt className="text-xs uppercase tracking-wide">
+                                일정
+                              </dt>
+                              <dd className="mt-0.5 break-keep font-medium text-foreground">
+                                {app.classSnapshot.scheduleText ||
+                                  "상담 후 조율"}
+                              </dd>
+                            </div>
+                            <div>
+                              <dt className="text-xs uppercase tracking-wide">
+                                장소
+                              </dt>
+                              <dd className="mt-0.5 break-keep font-medium text-foreground">
+                                {app.classSnapshot.location || "상담 후 안내"}
+                              </dd>
+                            </div>
+                            <div>
+                              <dt className="text-xs uppercase tracking-wide">
+                                수강료
+                              </dt>
+                              <dd className="mt-0.5 font-medium text-foreground">
+                                {formatAcademyClassPrice(
+                                  app.classSnapshot.price,
+                                )}
+                              </dd>
+                            </div>
+                          </dl>
+                        </div>
+                      ) : null}
+
                       {app.lessonGoal ? (
                         <div>
                           <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">

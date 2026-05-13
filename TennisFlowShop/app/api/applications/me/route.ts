@@ -8,6 +8,7 @@ import {
   getAcademyApplicationStatusLabel,
   getAcademyCurrentLevelLabel,
   getAcademyLessonTypeLabel,
+  type AcademyClassSnapshot,
 } from "@/lib/types/academy";
 /**
  * Query 숫자 파라미터 안전 파싱 (NaN/Infinity/음수 방지)
@@ -42,6 +43,57 @@ function getApplicationLines(stringDetails: any): any[] {
   if (Array.isArray(stringDetails?.racketLines))
     return stringDetails.racketLines;
   return [];
+}
+
+function serializeObjectId(value: unknown): string {
+  if (value && typeof value === "object" && "toHexString" in value) {
+    const maybeObjectId = value as { toHexString?: () => string };
+    if (typeof maybeObjectId.toHexString === "function") {
+      return maybeObjectId.toHexString();
+    }
+  }
+  return typeof value === "string" ? value : "";
+}
+
+function serializeClassSnapshot(value: unknown): AcademyClassSnapshot | null {
+  if (!value || typeof value !== "object") return null;
+  const record = value as Document;
+  return {
+    classId:
+      typeof record.classId === "string"
+        ? record.classId
+        : serializeObjectId(record.classId),
+    name: typeof record.name === "string" ? record.name : "",
+    description:
+      typeof record.description === "string" ? record.description : null,
+    level:
+      typeof record.level === "string"
+        ? (record.level as AcademyClassSnapshot["level"])
+        : null,
+    levelLabel:
+      typeof record.levelLabel === "string" ? record.levelLabel : null,
+    lessonType:
+      typeof record.lessonType === "string"
+        ? (record.lessonType as AcademyClassSnapshot["lessonType"])
+        : null,
+    lessonTypeLabel:
+      typeof record.lessonTypeLabel === "string"
+        ? record.lessonTypeLabel
+        : null,
+    instructorName:
+      typeof record.instructorName === "string" ? record.instructorName : null,
+    location: typeof record.location === "string" ? record.location : null,
+    scheduleText:
+      typeof record.scheduleText === "string" ? record.scheduleText : null,
+    capacity: typeof record.capacity === "number" ? record.capacity : null,
+    price: typeof record.price === "number" ? record.price : null,
+    status:
+      record.status === "visible" || record.status === "closed"
+        ? record.status
+        : undefined,
+    statusLabel:
+      typeof record.statusLabel === "string" ? record.statusLabel : null,
+  };
 }
 
 function toISOStringMaybe(value: unknown): string | null {
@@ -94,6 +146,7 @@ function serializeAcademyApplication(doc: Document) {
       typeof doc.customerMessage === "string" && doc.customerMessage.trim()
         ? doc.customerMessage
         : null,
+    classSnapshot: serializeClassSnapshot(doc.classSnapshot),
     createdAt: toISOStringMaybe(doc.createdAt),
     updatedAt: toISOStringMaybe(doc.updatedAt),
   };
@@ -171,6 +224,7 @@ export async function GET(req: Request) {
               requestMemo: 1,
               status: 1,
               customerMessage: 1,
+              classSnapshot: 1,
               createdAt: 1,
               updatedAt: 1,
               userId: 1,
