@@ -181,6 +181,15 @@ export type AcademyClassSnapshot = {
   statusLabel?: string | null;
 };
 
+export type AcademyClassApplicationStats = {
+  total: number;
+  submitted: number;
+  reviewing: number;
+  contacted: number;
+  confirmed: number;
+  cancelled: number;
+};
+
 export type AcademyClass = {
   _id?: string;
   name: string;
@@ -192,6 +201,13 @@ export type AcademyClass = {
   scheduleText?: string | null;
   capacity?: number | null;
   enrolledCount?: number;
+  applicationCount?: number;
+  confirmedCount?: number;
+  submittedCount?: number;
+  reviewingCount?: number;
+  contactedCount?: number;
+  cancelledCount?: number;
+  applicationStats?: AcademyClassApplicationStats;
   price?: number | null;
   status: AcademyClassStatus;
   createdAt?: string;

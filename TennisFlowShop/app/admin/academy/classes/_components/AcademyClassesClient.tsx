@@ -88,10 +88,25 @@ function formatPrice(value: number | null | undefined) {
   return `${value.toLocaleString("ko-KR")}원`;
 }
 
-function formatCapacity(item: AcademyClass) {
-  const enrolledCount = item.enrolledCount ?? 0;
-  if (typeof item.capacity !== "number") return `${enrolledCount}명 / 제한 없음`;
-  return `${enrolledCount}명 / ${item.capacity}명`;
+function formatCapacityLabel(capacity: number | null | undefined) {
+  if (typeof capacity !== "number") return "정원 미정";
+  return `정원 ${capacity.toLocaleString("ko-KR")}명`;
+}
+
+function ApplicationStatsCell({ item }: { item: AcademyClass }) {
+  const total = item.applicationStats?.total ?? 0;
+  const confirmed = item.applicationStats?.confirmed ?? 0;
+
+  return (
+    <div className="min-w-[150px] whitespace-nowrap">
+      <div className="font-medium text-foreground">
+        신청 {total.toLocaleString("ko-KR")}건
+      </div>
+      <div className="text-xs text-muted-foreground">
+        등록 확정 {confirmed.toLocaleString("ko-KR")}명 / {formatCapacityLabel(item.capacity)}
+      </div>
+    </div>
+  );
 }
 
 function SummaryCard({ label, value, active }: { label: string; value: number; active?: boolean }) {
@@ -247,7 +262,7 @@ export default function AcademyClassesClient() {
                   <TableHead>레벨</TableHead>
                   <TableHead>강사</TableHead>
                   <TableHead>일정</TableHead>
-                  <TableHead>정원</TableHead>
+                  <TableHead>신청 현황</TableHead>
                   <TableHead>가격</TableHead>
                   <TableHead>상태</TableHead>
                   <TableHead className="text-right">관리</TableHead>
@@ -289,7 +304,9 @@ export default function AcademyClassesClient() {
                     </TableCell>
                     <TableCell className="whitespace-nowrap">{item.instructorName || "-"}</TableCell>
                     <TableCell className="min-w-[180px]">{item.scheduleText || "-"}</TableCell>
-                    <TableCell className="whitespace-nowrap">{formatCapacity(item)}</TableCell>
+                    <TableCell>
+                      <ApplicationStatsCell item={item} />
+                    </TableCell>
                     <TableCell className="whitespace-nowrap">{formatPrice(item.price)}</TableCell>
                     <TableCell>
                       <AcademyClassStatusBadge status={item.status} />
