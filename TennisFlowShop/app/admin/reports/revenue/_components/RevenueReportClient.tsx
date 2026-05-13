@@ -214,6 +214,7 @@ export default function RevenueReportClient() {
   const [snapshotStatus, setSnapshotStatus] = useState<RevenueReportSnapshotStatus>("draft");
   const [snapshotMemo, setSnapshotMemo] = useState("");
   const [savingSnapshot, setSavingSnapshot] = useState(false);
+  const [autoGeneratingSnapshot, setAutoGeneratingSnapshot] = useState(false);
   const [showSnapshot, setShowSnapshot] = useState(true);
 
   const reportQueryString = useMemo(() => {
@@ -274,6 +275,29 @@ export default function RevenueReportClient() {
       showErrorToast(saveError instanceof Error ? saveError.message : "스냅샷 저장에 실패했습니다.");
     } finally {
       setSavingSnapshot(false);
+    }
+  };
+
+  const autoGeneratePreviousMonthSnapshot = async () => {
+    if (!window.confirm("KST 기준 이전 달 매출 리포트 스냅샷을 finalized 상태로 생성/덮어쓰시겠습니까?")) return;
+
+    setAutoGeneratingSnapshot(true);
+    try {
+      const result = await adminMutator<RevenueReportSnapshotResponse>("/api/admin/reports/revenue/snapshots/auto-generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ target: "previous-month", status: "finalized" }),
+      });
+      const generatedMonth = result.item?.yyyymm ?? "이전 달";
+      showSuccessToast(`${generatedMonth} 마감 스냅샷을 생성했습니다.`);
+      if (activeSnapshotMonth && result.item?.yyyymm === activeSnapshotMonth) {
+        setShowSnapshot(true);
+        await mutateSnapshot(result, { revalidate: true });
+      }
+    } catch (generateError) {
+      showErrorToast(generateError instanceof Error ? generateError.message : "이전 달 스냅샷 생성에 실패했습니다.");
+    } finally {
+      setAutoGeneratingSnapshot(false);
     }
   };
 
@@ -354,7 +378,17 @@ export default function RevenueReportClient() {
                 <li>스냅샷은 저장 시점의 매출 리포트이며, 이후 주문/환불/오프라인 기록 수정에 따라 실시간 리포트와 차이가 날 수 있습니다.</li>
                 <li>스냅샷은 정산 지급액 계산에 사용되지 않습니다.</li>
                 <li>이미 저장된 월별 스냅샷을 새로 저장하면 저장 당시의 리포트 값으로 덮어써집니다.</li>
+                <li>자동 생성은 스냅샷 저장을 편하게 하기 위한 기능이며, 정산 지급액 계산에는 사용되지 않습니다.</li>
               </ul>
+              <div className="mt-4 flex flex-col gap-3 rounded-lg border border-border bg-background/70 p-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="font-medium text-foreground">이전 달 마감 스냅샷 생성</p>
+                  <p className="mt-1 text-xs">KST 기준 이전 달을 finalized 상태로 생성하며, 이미 해당 월 스냅샷이 있으면 새로 생성한 값으로 덮어씁니다.</p>
+                </div>
+                <Button type="button" variant="secondary" onClick={autoGeneratePreviousMonthSnapshot} disabled={autoGeneratingSnapshot}>
+                  {autoGeneratingSnapshot ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <DatabaseZap className="mr-2 h-4 w-4" />}이전 달 스냅샷 생성
+                </Button>
+              </div>
             </div>
 
             {monthlySnapshotTarget ? (
