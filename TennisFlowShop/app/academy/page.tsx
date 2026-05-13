@@ -331,15 +331,6 @@ export default async function AcademyPage() {
                       </a>
                     </div>
                   </div>
-                  <Button
-                    asChild
-                    variant="outline"
-                    className="w-full sm:w-auto"
-                  >
-                    <a href={`tel:${contact.phone.replaceAll("-", "")}`}>
-                      전화하기
-                    </a>
-                  </Button>
                 </CardContent>
               </Card>
             ))}
