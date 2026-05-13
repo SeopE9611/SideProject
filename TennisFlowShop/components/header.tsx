@@ -66,7 +66,7 @@ function MobileBrandGrid({ brands, onPick }: { brands: { name: string; href: str
 }
 
 const mobileMenuItemClass =
-  "group w-full justify-between rounded-lg px-3 py-2.5 text-[15px] font-semibold text-foreground/85 hover:text-foreground hover:bg-secondary transition-[background-color,color,border-color,box-shadow,opacity] relative z-0 hover:shadow-sm hover:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background";
+  "group w-full justify-between rounded-lg px-3 py-2.5 text-sm font-semibold text-foreground/85 hover:text-foreground hover:bg-secondary transition-[background-color,color,border-color,box-shadow,opacity] relative z-0 hover:shadow-sm hover:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background";
 const mobileNestedGroupClass = "mt-1.5 pl-1";
 const mobileNestedTriggerClass = "px-3 py-2 text-sm font-semibold text-foreground/75 hover:text-foreground rounded-lg hover:bg-secondary";
 
