@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
+import { useMemo, useState, type FormEvent, type KeyboardEvent } from "react";
 import useSWR from "swr";
-import { BookOpen, Eye, EyeOff, Pencil, Plus, Search } from "lucide-react";
+import { BookOpen, Eye, EyeOff, MoreHorizontal, Pencil, Plus, Search } from "lucide-react";
 
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { adminSurface } from "@/components/admin/admin-typography";
@@ -11,6 +12,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Select,
   SelectContent,
@@ -71,16 +78,29 @@ function AcademyClassStatusBadge({ status }: { status: AcademyClassStatus }) {
   );
 }
 
-function formatDate(value: string | null | undefined) {
-  if (!value) return "-";
+function formatAdminDateTimeParts(value: string | null | undefined) {
+  if (!value) return { date: "-", time: "-" };
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "-";
-  return new Intl.DateTimeFormat("ko-KR", {
+  if (Number.isNaN(date.getTime())) return { date: "-", time: "-" };
+
+  const dateParts = new Intl.DateTimeFormat("ko-KR", {
     timeZone: "Asia/Seoul",
     year: "2-digit",
     month: "2-digit",
     day: "2-digit",
+  }).formatToParts(date);
+  const time = new Intl.DateTimeFormat("ko-KR", {
+    timeZone: "Asia/Seoul",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
   }).format(date);
+
+  const year = dateParts.find((part) => part.type === "year")?.value ?? "--";
+  const month = dateParts.find((part) => part.type === "month")?.value ?? "--";
+  const day = dateParts.find((part) => part.type === "day")?.value ?? "--";
+
+  return { date: `${year}.${month}.${day}`, time };
 }
 
 function formatPrice(value: number | null | undefined) {
@@ -98,7 +118,7 @@ function ApplicationStatsCell({ item }: { item: AcademyClass }) {
   const confirmed = item.applicationStats?.confirmed ?? 0;
 
   return (
-    <div className="min-w-[150px] whitespace-nowrap">
+    <div className="whitespace-nowrap">
       <div className="font-medium text-foreground">
         신청 {total.toLocaleString("ko-KR")}건
       </div>
@@ -121,6 +141,7 @@ function SummaryCard({ label, value, active }: { label: string; value: number; a
 }
 
 export default function AcademyClassesClient() {
+  const router = useRouter();
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState<AcademyClassStatus | "all">("all");
   const [keywordInput, setKeywordInput] = useState("");
@@ -155,6 +176,20 @@ export default function AcademyClassesClient() {
     event.preventDefault();
     setPage(1);
     setKeyword(keywordInput.trim());
+  }
+
+  function goToDetail(id: string) {
+    router.push(`/admin/academy/classes/${id}`);
+  }
+
+  function goToEdit(id: string) {
+    router.push(`/admin/academy/classes/${id}/edit`);
+  }
+
+  function handleRowKeyDown(event: KeyboardEvent<HTMLTableRowElement>, id: string) {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    goToDetail(id);
   }
 
   async function hideClass(item: AcademyClass) {
@@ -252,96 +287,145 @@ export default function AcademyClassesClient() {
             </div>
           ) : null}
 
-          <div className={cn(adminSurface.tableCard, "overflow-x-auto")}>
+          <div className={adminSurface.tableCard}>
             <Table>
               <TableHeader className={adminSurface.tableHeader}>
                 <TableRow>
-                  <TableHead>등록일</TableHead>
-                  <TableHead>클래스명</TableHead>
-                  <TableHead>수업 유형</TableHead>
-                  <TableHead>레벨</TableHead>
-                  <TableHead>강사</TableHead>
-                  <TableHead>일정</TableHead>
-                  <TableHead>신청 현황</TableHead>
-                  <TableHead>가격</TableHead>
-                  <TableHead>상태</TableHead>
-                  <TableHead className="text-right">관리</TableHead>
+                  <TableHead className="whitespace-nowrap px-3">등록일</TableHead>
+                  <TableHead className="whitespace-nowrap px-3">클래스</TableHead>
+                  <TableHead className="whitespace-nowrap px-3">수업 정보</TableHead>
+                  <TableHead className="whitespace-nowrap px-3">운영 정보</TableHead>
+                  <TableHead className="whitespace-nowrap px-3">신청 현황</TableHead>
+                  <TableHead className="whitespace-nowrap px-3">가격/상태</TableHead>
+                  <TableHead className="whitespace-nowrap px-3 text-right">관리</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={10} className="h-28 text-center text-sm text-muted-foreground">
+                    <TableCell colSpan={7} className="h-28 text-center text-sm text-muted-foreground">
                       클래스 목록을 불러오는 중입니다.
                     </TableCell>
                   </TableRow>
                 ) : null}
                 {!isLoading && data?.items.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={10} className="h-28 text-center text-sm text-muted-foreground">
+                    <TableCell colSpan={7} className="h-28 text-center text-sm text-muted-foreground">
                       등록된 아카데미 클래스가 없습니다.
                     </TableCell>
                   </TableRow>
                 ) : null}
-                {data?.items.map((item) => (
-                  <TableRow key={item._id}>
-                    <TableCell className="whitespace-nowrap text-sm">
-                      {formatDate(item.createdAt)}
-                    </TableCell>
-                    <TableCell>
-                      <Link
-                        href={`/admin/academy/classes/${item._id}`}
-                        className="block min-w-[180px] font-medium text-foreground underline-offset-4 hover:underline"
+                {data?.items.map((item) => {
+                  const classId = item._id;
+                  if (!classId) return null;
+
+                  const createdAt = formatAdminDateTimeParts(item.createdAt);
+                  const isHideDisabled = item.status === "hidden" || hidingId === classId;
+
+                  return (
+                    <TableRow
+                      key={classId}
+                      role="button"
+                      tabIndex={0}
+                      className="cursor-pointer hover:bg-muted/50"
+                      onClick={() => goToDetail(classId)}
+                      onKeyDown={(event) => handleRowKeyDown(event, classId)}
+                    >
+                      <TableCell className="whitespace-nowrap px-3 py-3 text-xs">
+                        <div className="font-medium text-foreground">{createdAt.date}</div>
+                        <div className="text-muted-foreground">{createdAt.time}</div>
+                      </TableCell>
+                      <TableCell className="min-w-0 px-3 py-3">
+                        <div className="max-w-[260px] truncate font-medium text-foreground">
+                          {item.name || "-"}
+                        </div>
+                        <div className="max-w-[260px] truncate text-xs text-muted-foreground">
+                          {item.description || "설명 미입력"}
+                        </div>
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap px-3 py-3 text-sm">
+                        <div>{getAcademyClassLessonTypeLabel(item.lessonType)}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {getAcademyClassLevelLabel(item.level)}
+                        </div>
+                      </TableCell>
+                      <TableCell className="min-w-0 px-3 py-3 text-sm">
+                        <div className="whitespace-nowrap">{item.instructorName || "강사 미입력"}</div>
+                        <div className="max-w-[220px] truncate text-xs text-muted-foreground">
+                          {item.scheduleText || "일정 미입력"}
+                        </div>
+                        {item.location ? (
+                          <div className="max-w-[220px] truncate text-xs text-muted-foreground">
+                            {item.location}
+                          </div>
+                        ) : null}
+                      </TableCell>
+                      <TableCell className="px-3 py-3">
+                        <ApplicationStatsCell item={item} />
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap px-3 py-3">
+                        <div className="text-sm font-medium text-foreground">
+                          {formatPrice(item.price)}
+                        </div>
+                        <div className="mt-1">
+                          <AcademyClassStatusBadge status={item.status} />
+                        </div>
+                      </TableCell>
+                      <TableCell
+                        className="px-3 py-3 text-right"
+                        onClick={(event) => event.stopPropagation()}
                       >
-                        {item.name || "-"}
-                      </Link>
-                      <div className="max-w-[260px] truncate text-xs text-muted-foreground">
-                        {item.description || "설명 미입력"}
-                      </div>
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap">
-                      {getAcademyClassLessonTypeLabel(item.lessonType)}
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap">
-                      {getAcademyClassLevelLabel(item.level)}
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap">{item.instructorName || "-"}</TableCell>
-                    <TableCell className="min-w-[180px]">{item.scheduleText || "-"}</TableCell>
-                    <TableCell>
-                      <ApplicationStatsCell item={item} />
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap">{formatPrice(item.price)}</TableCell>
-                    <TableCell>
-                      <AcademyClassStatusBadge status={item.status} />
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex flex-wrap justify-end gap-2">
-                        <Button asChild variant="outline" size="sm">
-                          <Link href={`/admin/academy/classes/${item._id}`}>
-                            <Eye className="mr-2 h-4 w-4" />
-                            상세
-                          </Link>
-                        </Button>
-                        <Button asChild variant="outline" size="sm">
-                          <Link href={`/admin/academy/classes/${item._id}/edit`}>
-                            <Pencil className="mr-2 h-4 w-4" />
-                            수정
-                          </Link>
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          disabled={item.status === "hidden" || hidingId === item._id}
-                          onClick={() => hideClass(item)}
-                        >
-                          <EyeOff className="mr-2 h-4 w-4" />
-                          {hidingId === item._id ? "처리 중" : "숨김 처리"}
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              aria-label={`${item.name || "클래스"} 관리 메뉴`}
+                            >
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              onSelect={(event) => {
+                                event.preventDefault();
+                                goToDetail(classId);
+                              }}
+                            >
+                              <Eye className="mr-2 h-4 w-4" />
+                              상세 보기
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onSelect={(event) => {
+                                event.preventDefault();
+                                goToEdit(classId);
+                              }}
+                            >
+                              <Pencil className="mr-2 h-4 w-4" />
+                              수정
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              disabled={isHideDisabled}
+                              onSelect={(event) => {
+                                event.preventDefault();
+                                if (isHideDisabled) return;
+                                void hideClass(item);
+                              }}
+                            >
+                              <EyeOff className="mr-2 h-4 w-4" />
+                              {item.status === "hidden"
+                                ? "이미 숨김 처리됨"
+                                : hidingId === classId
+                                  ? "처리 중"
+                                  : "숨김 처리"}
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </div>

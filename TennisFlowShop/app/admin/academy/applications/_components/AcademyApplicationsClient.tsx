@@ -1,9 +1,9 @@
 "use client";
 
-import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useMemo, useState, type FormEvent, type KeyboardEvent } from "react";
 import useSWR from "swr";
-import { BookOpen, Eye, Search } from "lucide-react";
+import { BookOpen, MoreHorizontal, Search } from "lucide-react";
 
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { adminSurface } from "@/components/admin/admin-typography";
@@ -11,6 +11,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Select,
   SelectContent,
@@ -98,9 +104,9 @@ function SelectedClassCell({
 }) {
   if (!classSnapshot?.name) {
     return (
-      <div className="min-w-[160px]">
+      <div className="min-w-0 max-w-[220px]">
         <div className="font-medium text-muted-foreground">클래스 미선택</div>
-        <div className="text-xs text-muted-foreground">일반 레슨 신청</div>
+        <div className="truncate text-xs text-muted-foreground">일반 레슨 신청</div>
       </div>
     );
   }
@@ -112,30 +118,42 @@ function SelectedClassCell({
   ].filter(Boolean);
 
   return (
-    <div className="min-w-[180px]">
-      <div className="font-medium text-foreground">{classSnapshot.name}</div>
-      <div className="max-w-[240px] truncate text-xs text-muted-foreground">
+    <div className="min-w-0 max-w-[240px]">
+      <div className="truncate font-medium text-foreground">{classSnapshot.name}</div>
+      <div className="truncate text-xs text-muted-foreground">
         {details.length ? details.join(" · ") : "클래스 상세 정보 미입력"}
       </div>
     </div>
   );
 }
 
-function formatDate(value: string | null) {
-  if (!value) return "-";
+function formatAdminDateTimeParts(value: string | null) {
+  if (!value) return { date: "-", time: "-" };
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "-";
-  return new Intl.DateTimeFormat("ko-KR", {
+  if (Number.isNaN(date.getTime())) return { date: "-", time: "-" };
+
+  const dateParts = new Intl.DateTimeFormat("ko-KR", {
     timeZone: "Asia/Seoul",
     year: "2-digit",
     month: "2-digit",
     day: "2-digit",
+  }).formatToParts(date);
+  const time = new Intl.DateTimeFormat("ko-KR", {
+    timeZone: "Asia/Seoul",
     hour: "2-digit",
     minute: "2-digit",
+    hourCycle: "h23",
   }).format(date);
+
+  const year = dateParts.find((part) => part.type === "year")?.value ?? "--";
+  const month = dateParts.find((part) => part.type === "month")?.value ?? "--";
+  const day = dateParts.find((part) => part.type === "day")?.value ?? "--";
+
+  return { date: `${year}.${month}.${day}`, time };
 }
 
 export default function AcademyApplicationsClient() {
+  const router = useRouter();
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState<AcademyLessonApplicationStatus | "all">(
     "all",
@@ -167,10 +185,23 @@ export default function AcademyApplicationsClient() {
     cancelled: 0,
   };
 
-  function submitSearch(event: React.FormEvent<HTMLFormElement>) {
+  function submitSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setPage(1);
     setKeyword(keywordInput.trim());
+  }
+
+  function goToDetail(id: string) {
+    router.push(`/admin/academy/applications/${id}`);
+  }
+
+  function handleRowKeyDown(
+    event: KeyboardEvent<HTMLTableRowElement>,
+    id: string,
+  ) {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    goToDetail(id);
   }
 
   return (
@@ -239,71 +270,111 @@ export default function AcademyApplicationsClient() {
             </div>
           ) : null}
 
-          <div className={cn(adminSurface.tableCard, "overflow-x-auto")}>
+          <div className={adminSurface.tableCard}>
             <Table>
               <TableHeader className={adminSurface.tableHeader}>
                 <TableRow>
-                  <TableHead>접수일</TableHead>
-                  <TableHead>신청자</TableHead>
-                  <TableHead>연락처</TableHead>
-                  <TableHead>선택 클래스</TableHead>
-                  <TableHead>희망 레슨 유형</TableHead>
-                  <TableHead>현재 실력</TableHead>
-                  <TableHead>희망 요일</TableHead>
-                  <TableHead>희망 시간</TableHead>
-                  <TableHead>상태</TableHead>
-                  <TableHead className="text-right">관리</TableHead>
+                  <TableHead className="whitespace-nowrap px-3">접수일</TableHead>
+                  <TableHead className="whitespace-nowrap px-3">신청자</TableHead>
+                  <TableHead className="whitespace-nowrap px-3">선택 클래스</TableHead>
+                  <TableHead className="whitespace-nowrap px-3">희망 정보</TableHead>
+                  <TableHead className="whitespace-nowrap px-3">선호 일정</TableHead>
+                  <TableHead className="whitespace-nowrap px-3">상태</TableHead>
+                  <TableHead className="whitespace-nowrap px-3 text-right">관리</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={10} className="h-28 text-center text-sm text-muted-foreground">
+                    <TableCell colSpan={7} className="h-28 text-center text-sm text-muted-foreground">
                       신청 목록을 불러오는 중입니다.
                     </TableCell>
                   </TableRow>
                 ) : null}
                 {!isLoading && data?.items.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={10} className="h-28 text-center text-sm text-muted-foreground">
+                    <TableCell colSpan={7} className="h-28 text-center text-sm text-muted-foreground">
                       아직 접수된 레슨 신청이 없습니다.
                     </TableCell>
                   </TableRow>
                 ) : null}
-                {data?.items.map((item) => (
-                  <TableRow key={item._id}>
-                    <TableCell className="whitespace-nowrap text-sm">
-                      {formatDate(item.createdAt)}
-                    </TableCell>
-                    <TableCell>
-                      <div className="font-medium text-foreground">
-                        {item.applicantName || "-"}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {item.email || "이메일 미입력"}
-                      </div>
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap text-sm">{item.phone || "-"}</TableCell>
-                    <TableCell>
-                      <SelectedClassCell classSnapshot={item.classSnapshot} />
-                    </TableCell>
-                    <TableCell>{getAcademyLessonTypeLabel(item.desiredLessonType)}</TableCell>
-                    <TableCell>{getAcademyCurrentLevelLabel(item.currentLevel)}</TableCell>
-                    <TableCell>{item.preferredDays.length ? item.preferredDays.join(", ") : "-"}</TableCell>
-                    <TableCell>{item.preferredTimeText || "-"}</TableCell>
-                    <TableCell>
-                      <AcademyStatusBadge status={item.status} />
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button asChild variant="outline" size="sm">
-                        <Link href={`/admin/academy/applications/${item._id}`}>
-                          <Eye className="mr-2 h-4 w-4" />
-                          상세 보기
-                        </Link>
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {data?.items.map((item) => {
+                  const createdAt = formatAdminDateTimeParts(item.createdAt);
+
+                  return (
+                    <TableRow
+                      key={item._id}
+                      role="button"
+                      tabIndex={0}
+                      className="cursor-pointer hover:bg-muted/50"
+                      onClick={() => goToDetail(item._id)}
+                      onKeyDown={(event) => handleRowKeyDown(event, item._id)}
+                    >
+                      <TableCell className="whitespace-nowrap px-3 py-3 text-xs">
+                        <div className="font-medium text-foreground">{createdAt.date}</div>
+                        <div className="text-muted-foreground">{createdAt.time}</div>
+                      </TableCell>
+                      <TableCell className="min-w-0 px-3 py-3">
+                        <div className="font-medium text-foreground">
+                          {item.applicantName || "-"}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {item.email || "이메일 미입력"}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {item.phone || "연락처 미입력"}
+                        </div>
+                      </TableCell>
+                      <TableCell className="min-w-0 px-3 py-3">
+                        <SelectedClassCell classSnapshot={item.classSnapshot} />
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap px-3 py-3 text-sm">
+                        <div>{getAcademyLessonTypeLabel(item.desiredLessonType)}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {getAcademyCurrentLevelLabel(item.currentLevel)}
+                        </div>
+                      </TableCell>
+                      <TableCell className="px-3 py-3 text-sm">
+                        <div className="max-w-[160px] truncate">
+                          {item.preferredDays.length ? item.preferredDays.join(", ") : "-"}
+                        </div>
+                        <div className="max-w-[160px] truncate text-xs text-muted-foreground">
+                          {item.preferredTimeText || "희망 시간 미입력"}
+                        </div>
+                      </TableCell>
+                      <TableCell className="px-3 py-3">
+                        <AcademyStatusBadge status={item.status} />
+                      </TableCell>
+                      <TableCell
+                        className="px-3 py-3 text-right"
+                        onClick={(event) => event.stopPropagation()}
+                      >
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              aria-label={`${item.applicantName || "신청"} 관리 메뉴`}
+                            >
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              onSelect={(event) => {
+                                event.preventDefault();
+                                goToDetail(item._id);
+                              }}
+                            >
+                              상세 보기
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </div>
