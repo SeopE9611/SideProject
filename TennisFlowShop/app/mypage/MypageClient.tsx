@@ -10,7 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getSocialProviderBadgeSpec } from "@/lib/badge-style";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
-import { ClipboardList, Heart, ListTodo, MessageCircleQuestion, MessageSquare, ReceiptCent, Target, Ticket, Trophy, User } from "lucide-react";
+import { ClipboardList, GraduationCap, Heart, ListTodo, MessageCircleQuestion, MessageSquare, ReceiptCent, Target, Ticket, Trophy, User } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
@@ -19,6 +19,7 @@ import useSWR from "swr";
 const ApplicationDetail = dynamic(() => import("@/app/mypage/applications/_components/ApplicationDetail"), { loading: () => <TabPanelSkeleton rowCount={3} /> });
 const OrderDetailClient = dynamic(() => import("@/app/mypage/orders/_components/OrderDetailClient"), { loading: () => <TabPanelSkeleton rowCount={4} /> });
 const RentalsDetailClient = dynamic(() => import("@/app/mypage/rentals/_components/RentalsDetailClient"), { loading: () => <TabPanelSkeleton rowCount={3} /> });
+const AcademyApplicationsTab = dynamic(() => import("@/app/mypage/tabs/AcademyApplicationsTab"), { loading: () => <TabPanelSkeleton rowCount={4} /> });
 const MyPointsTab = dynamic(() => import("@/app/mypage/tabs/MyPointsTab"), {
   loading: () => <TabPanelSkeleton rowCount={4} />,
 });
@@ -35,6 +36,8 @@ const ReviewList = dynamic(() => import("@/app/mypage/tabs/ReviewList"), {
 const Wishlist = dynamic(() => import("@/app/mypage/tabs/Wishlist"), {
   loading: () => <TabPanelSkeleton rowCount={4} />,
 });
+
+const MYPAGE_TABS = ["orders", "academy", "wishlist", "reviews", "qna", "passes", "points"] as const;
 
 type Props = {
   user: {
@@ -97,7 +100,7 @@ export default function MypageClient({ user }: Props) {
     const legacyRentalId = searchParams.get("rentalId");
     const from = searchParams.get("from");
 
-    if (!legacyTab || legacyTab === "activity" || legacyTab === "applications" || legacyTab === "rentals") {
+    if (!legacyTab || legacyTab === "activity" || legacyTab === "applications" || legacyTab === "rentals" || !MYPAGE_TABS.includes(legacyTab as (typeof MYPAGE_TABS)[number])) {
       nextParams.set("tab", "orders");
       changed = true;
     }
@@ -144,7 +147,8 @@ export default function MypageClient({ user }: Props) {
     );
   }
 
-  const currentTab = searchParams.get("tab") ?? "orders";
+  const tabParam = searchParams.get("tab");
+  const currentTab = MYPAGE_TABS.includes(tabParam as (typeof MYPAGE_TABS)[number]) ? tabParam! : "orders";
 
   const handleTabChange = (value: string) => {
     const newParams = new URLSearchParams(searchParams.toString());
@@ -300,10 +304,15 @@ export default function MypageClient({ user }: Props) {
             <Tabs value={currentTab} onValueChange={handleTabChange}>
               <Card className="mb-6 border-border bg-card shadow-sm bp-sm:mb-8">
                 <CardContent className="p-3 bp-sm:p-4 bp-lg:p-6">
-                  <TabsList className="h-auto w-full p-1 bg-muted grid grid-cols-3 gap-1 bp-md:grid-cols-6">
+                  <TabsList className="h-auto w-full p-1 bg-muted grid grid-cols-2 gap-1 bp-sm:grid-cols-3 bp-md:grid-cols-4 bp-xl:grid-cols-7">
                     <TabsTrigger value="orders" className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md min-w-0">
                       <ClipboardList className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                       <span className="text-xs bp-sm:text-sm font-medium whitespace-nowrap">거래/이용 내역</span>
+                    </TabsTrigger>
+
+                    <TabsTrigger value="academy" className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md min-w-0">
+                      <GraduationCap className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
+                      <span className="text-xs bp-sm:text-sm font-medium whitespace-nowrap">클래스 신청</span>
                     </TabsTrigger>
 
                     <TabsTrigger value="wishlist" className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md min-w-0">
@@ -366,6 +375,24 @@ export default function MypageClient({ user }: Props) {
                       <TransactionFlowList />
                     ) : null}
                   </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* 클래스 신청 탭 */}
+              <TabsContent value="academy" className="mt-0">
+                <Card className="border-border bg-card shadow-sm">
+                  <CardHeader className={pageTone.sectionHeader}>
+                    <div className="flex items-center gap-3">
+                      <div className={pageTone.iconSurface}>
+                        <GraduationCap className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <CardTitle className="text-lg bp-sm:text-xl">클래스 신청</CardTitle>
+                        <CardDescription className="text-sm text-foreground/80">도깨비테니스 아카데미 클래스 신청 내역을 확인하세요.</CardDescription>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-3 bp-sm:p-6">{currentTab === "academy" ? <AcademyApplicationsTab /> : null}</CardContent>
                 </Card>
               </TabsContent>
 

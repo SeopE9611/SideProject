@@ -13,6 +13,7 @@ import {
   Ticket,
   MessageSquare,
   ReceiptCent,
+  GraduationCap,
 } from "lucide-react";
 
 export function UserSidebar() {
@@ -25,6 +26,11 @@ export function UserSidebar() {
       label: "거래/이용 내역",
       value: "orders",
       icon: ClipboardList,
+    },
+    {
+      label: "클래스 신청",
+      value: "academy",
+      icon: GraduationCap,
     },
     {
       label: "위시리스트",

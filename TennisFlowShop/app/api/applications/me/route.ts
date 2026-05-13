@@ -184,6 +184,8 @@ export async function GET(req: Request) {
     max: 50,
   });
   const skip = (page - 1) * limit;
+  const kind = url.searchParams.get("kind");
+  const academyOnly = kind === "academy_lesson";
 
   // DB 조회: count + paged
   const client = await clientPromise;
@@ -194,6 +196,46 @@ export async function GET(req: Request) {
   // 각 컬렉션에서 현재 페이지 계산에 필요한 최대치(skip + limit)만 가져온다.
   const pageWindow = skip + limit;
   const academyUserIdFilter = { $in: [subStr, userId] };
+  const academyProjection = {
+    applicantName: 1,
+    phone: 1,
+    desiredLessonType: 1,
+    currentLevel: 1,
+    preferredDays: 1,
+    preferredTimeText: 1,
+    lessonGoal: 1,
+    requestMemo: 1,
+    status: 1,
+    customerMessage: 1,
+    classSnapshot: 1,
+    createdAt: 1,
+    updatedAt: 1,
+    userId: 1,
+  };
+
+  if (academyOnly) {
+    const [academyTotal, rawAcademyList] = await Promise.all([
+      db
+        .collection("academy_lesson_applications")
+        .countDocuments({ userId: academyUserIdFilter }),
+      db
+        .collection("academy_lesson_applications")
+        .find(
+          { userId: academyUserIdFilter },
+          { projection: academyProjection },
+        )
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .toArray(),
+    ]);
+
+    return NextResponse.json({
+      items: rawAcademyList.map(serializeAcademyApplication),
+      total: academyTotal,
+    });
+  }
+
   const [stringingTotal, academyTotal, rawStringingList, rawAcademyList] =
     await Promise.all([
       db
@@ -212,24 +254,7 @@ export async function GET(req: Request) {
         .collection("academy_lesson_applications")
         .find(
           { userId: academyUserIdFilter },
-          {
-            projection: {
-              applicantName: 1,
-              phone: 1,
-              desiredLessonType: 1,
-              currentLevel: 1,
-              preferredDays: 1,
-              preferredTimeText: 1,
-              lessonGoal: 1,
-              requestMemo: 1,
-              status: 1,
-              customerMessage: 1,
-              classSnapshot: 1,
-              createdAt: 1,
-              updatedAt: 1,
-              userId: 1,
-            },
-          },
+          { projection: academyProjection },
         )
         .sort({ createdAt: -1 })
         .limit(pageWindow)
