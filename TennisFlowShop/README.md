@@ -21,6 +21,8 @@ npm install
 cp .env.example .env.local
 ```
 
+Cron 전용 API를 운영/스케줄러에서 호출하려면 서버 환경변수 `CRON_SECRET`을 설정하고, 요청 시 `Authorization: Bearer <CRON_SECRET>` 헤더를 사용하세요. 실제 secret 값은 저장소에 커밋하지 않습니다.
+
 ### 3) 개발 서버 실행
 
 ```bash
