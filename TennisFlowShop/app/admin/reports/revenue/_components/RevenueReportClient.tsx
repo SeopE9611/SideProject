@@ -28,6 +28,70 @@ function formatKRW(value: number | null | undefined): string {
   return `${Number(value ?? 0).toLocaleString("ko-KR")}원`;
 }
 
+function formatCount(value: number | null | undefined): string {
+  return `${Number(value ?? 0).toLocaleString("ko-KR")}건`;
+}
+
+function diffNumber(current?: number | null, snapshot?: number | null): number {
+  return Number(current ?? 0) - Number(snapshot ?? 0);
+}
+
+type SnapshotDiffUnit = "currency" | "count";
+
+type SnapshotDiffRow = {
+  label: string;
+  unit: SnapshotDiffUnit;
+  snapshotValue: number;
+  currentValue: number;
+  diff: number;
+};
+
+function formatSnapshotDiffValue(value: number, unit: SnapshotDiffUnit): string {
+  return unit === "currency" ? formatKRW(value) : formatCount(value);
+}
+
+function formatSnapshotDiff(value: number, unit: SnapshotDiffUnit): string {
+  if (value === 0) return "변동 없음";
+  const prefix = value > 0 ? "+" : "";
+  return `${prefix}${formatSnapshotDiffValue(value, unit)}`;
+}
+
+function snapshotDiffClassName(value: number): string {
+  if (value > 0) return "text-foreground";
+  if (value < 0) return "text-destructive";
+  return "text-muted-foreground";
+}
+
+function buildSnapshotDiffRows(current: RevenueReportResponse, snapshot: RevenueReportResponse): SnapshotDiffRow[] {
+  const rows: Array<{ label: string; unit: SnapshotDiffUnit; current?: number | null; snapshot?: number | null }> = [
+    { label: "온라인 정산 기준 매출", unit: "currency", current: current.online.paidAmount, snapshot: snapshot.online.paidAmount },
+    { label: "온라인 환불", unit: "currency", current: current.online.refundedAmount, snapshot: snapshot.online.refundedAmount },
+    { label: "온라인 순매출", unit: "currency", current: current.online.netAmount, snapshot: snapshot.online.netAmount },
+    { label: "오프라인 운영 매출", unit: "currency", current: current.offline.paidAmount, snapshot: snapshot.offline.paidAmount },
+    { label: "오프라인 환불", unit: "currency", current: current.offline.refundedAmount, snapshot: snapshot.offline.refundedAmount },
+    { label: "오프라인 순매출", unit: "currency", current: current.offline.netAmount, snapshot: snapshot.offline.netAmount },
+    { label: "오프라인 미결제", unit: "currency", current: current.offline.pendingAmount, snapshot: snapshot.offline.pendingAmount },
+    { label: "온라인 + 오프라인 참고 합계", unit: "currency", current: current.combinedPreview.paidAmount, snapshot: snapshot.combinedPreview.paidAmount },
+    { label: "참고 합계 순매출", unit: "currency", current: current.combinedPreview.netAmount, snapshot: snapshot.combinedPreview.netAmount },
+    { label: "오프라인 작업/매출 기록", unit: "currency", current: current.offline.recordsPaidAmount, snapshot: snapshot.offline.recordsPaidAmount },
+    { label: "오프라인 패키지 판매", unit: "currency", current: current.offline.packageSalesPaidAmount, snapshot: snapshot.offline.packageSalesPaidAmount },
+    { label: "패키지 발급 보정 필요 건수", unit: "count", current: current.offline.issueFailedCount, snapshot: snapshot.offline.issueFailedCount },
+    { label: "패키지 발급 보정 필요 금액", unit: "currency", current: current.offline.issueFailedAmount, snapshot: snapshot.offline.issueFailedAmount },
+  ];
+
+  return rows.map((row) => {
+    const currentValue = Number(row.current ?? 0);
+    const snapshotValue = Number(row.snapshot ?? 0);
+    return {
+      label: row.label,
+      unit: row.unit,
+      currentValue,
+      snapshotValue,
+      diff: diffNumber(currentValue, snapshotValue),
+    };
+  });
+}
+
 function formatDateTime(value: string | null | undefined): string {
   if (!value) return "-";
   const date = new Date(value);
@@ -92,6 +156,53 @@ function SnapshotSummaryCard({ snapshot }: { snapshot: RevenueReportSnapshot }) 
           <Row label="마지막 저장" value={formatDateTime(snapshot.updatedAt)} />
           <div className="md:col-span-2"><Row label="메모" value={snapshot.memo?.trim() || "-"} /></div>
         </dl>
+      </CardContent>
+    </Card>
+  );
+}
+
+function SnapshotDiffCard({ report, snapshot }: { report: RevenueReportResponse; snapshot: RevenueReportSnapshot }) {
+  const rows = buildSnapshotDiffRows(report, snapshot.report);
+  const changedCount = rows.filter((row) => row.diff !== 0).length;
+  const combinedNetDiff = diffNumber(report.combinedPreview.netAmount, snapshot.report.combinedPreview.netAmount);
+
+  return (
+    <Card className="border-dashed border-border bg-background">
+      <CardHeader className="space-y-3">
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2 text-base"><DatabaseZap className="h-4 w-4" /> 실시간 리포트와 스냅샷 차이</CardTitle>
+            <p className="mt-2 text-sm text-muted-foreground">아래 차이는 현재 실시간 리포트 값에서 저장된 스냅샷 값을 뺀 값입니다.</p>
+            <p className="mt-1 text-xs text-muted-foreground">이 비교는 운영 확인용이며 정산 지급액 계산에는 사용되지 않습니다. 스냅샷과 실시간 리포트는 별도 기준입니다.</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Badge variant={changedCount === 0 ? "secondary" : "outline"}>{changedCount === 0 ? "변동 없음" : `주요 항목 변동 ${changedCount.toLocaleString("ko-KR")}건`}</Badge>
+            <Badge variant="secondary">참고 순매출 {formatSnapshotDiff(combinedNetDiff, "currency")}</Badge>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-border text-sm">
+          <thead>
+            <tr className="text-left text-muted-foreground">
+              <th className="py-2 pr-4 font-medium">항목</th>
+              <th className="py-2 pr-4 font-medium">스냅샷 값</th>
+              <th className="py-2 pr-4 font-medium">현재 값</th>
+              <th className="py-2 pr-4 font-medium">차이</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border">
+            {rows.map((row) => (
+              <tr key={row.label}>
+                <td className="py-2 pr-4 font-medium text-foreground">{row.label}</td>
+                <td className="py-2 pr-4 tabular-nums text-muted-foreground">{formatSnapshotDiffValue(row.snapshotValue, row.unit)}</td>
+                <td className="py-2 pr-4 tabular-nums text-foreground">{formatSnapshotDiffValue(row.currentValue, row.unit)}</td>
+                <td className={cn("py-2 pr-4 font-semibold tabular-nums", snapshotDiffClassName(row.diff))}>{formatSnapshotDiff(row.diff, row.unit)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <p className="mt-4 text-xs text-muted-foreground">차이 공식: 현재 실시간 값 - 저장된 스냅샷 값. 일별 series 차이 비교는 이번 화면에서 제공하지 않습니다.</p>
       </CardContent>
     </Card>
   );
@@ -302,7 +413,12 @@ export default function RevenueReportClient() {
               </div>
             ) : null}
 
-            {snapshot && showSnapshot ? <SnapshotSummaryCard snapshot={snapshot} /> : null}
+            {snapshot && showSnapshot ? (
+              <>
+                <SnapshotSummaryCard snapshot={snapshot} />
+                {report ? <SnapshotDiffCard report={report} snapshot={snapshot} /> : null}
+              </>
+            ) : null}
           </CardContent>
         </Card>
 
