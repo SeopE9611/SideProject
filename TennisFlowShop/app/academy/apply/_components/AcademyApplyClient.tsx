@@ -205,7 +205,7 @@ export default function AcademyApplyClient({
               선택한 클래스 정보를 찾을 수 없어 일반 레슨 신청으로 접수됩니다.
             </p>
             <p className="break-keep leading-6 text-muted-foreground">
-              특정 클래스를 신청하려면 아카데미 페이지에서 클래스를 다시 선택해 주세요.
+              특정 클래스를 신청하려면 아카데미 페이지에서 모집 중인 클래스를 다시 선택해 주세요. 일반 신청은 상담 후 수업과 현장결제 안내를 도와드립니다.
             </p>
             <Button asChild variant="outline" className="w-full sm:w-auto">
               <Link href="/academy">클래스 다시 선택하기</Link>
@@ -235,7 +235,7 @@ export default function AcademyApplyClient({
               <p className="break-keep text-sm leading-6 text-muted-foreground">
                 {selectedClass.status === "closed"
                   ? "이 클래스는 현재 모집이 마감되었습니다."
-                  : "이 클래스 기준으로 레슨 신청이 접수됩니다."}
+                  : "선택한 클래스 기준으로 상담 신청이 접수됩니다. 등록 확정 후 현장에서 결제를 안내해드립니다."}
               </p>
             </div>
           </CardHeader>
@@ -288,7 +288,7 @@ export default function AcademyApplyClient({
                 </dd>
               </div>
               <div>
-                <dt className="text-muted-foreground">수강료</dt>
+                <dt className="text-muted-foreground">기준 수강료</dt>
                 <dd className="mt-1 font-medium text-foreground">
                   {formatClassPrice(selectedClass.price)}
                 </dd>
@@ -304,7 +304,7 @@ export default function AcademyApplyClient({
               <div className="rounded-xl border border-border bg-muted/30 p-4 text-sm text-muted-foreground">
                 <p className="break-keep leading-6">
                   문의하기를 통해 다음 모집 일정을 확인해 주세요. 모집이 마감된
-                  클래스는 신청 접수가 비활성화됩니다.
+                  클래스는 신청 접수가 비활성화되며, 가능한 수업은 상담 후 안내드립니다.
                 </p>
                 <Button asChild className="mt-3 w-full sm:w-auto">
                   <Link href="/board/qna/write?category=academy">문의하기</Link>
@@ -492,6 +492,9 @@ export default function AcademyApplyClient({
               ? "접수 중..."
               : "신청 접수하기"}
         </Button>
+        <p className="break-keep text-xs leading-5 text-muted-foreground sm:basis-full sm:text-right">
+          신청 단계에서는 결제가 진행되지 않습니다. 등록이 확정되면 현장에서 결제를 안내해드립니다.
+        </p>
       </div>
     </form>
   );

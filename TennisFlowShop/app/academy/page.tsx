@@ -185,7 +185,7 @@ const faqs = [
   {
     question: "수강료는 어디서 확인하나요?",
     answer:
-      "아카데미 홈의 수강료 안내에서 레슨 형태와 횟수별 금액을 먼저 확인할 수 있으며, 세부 일정은 상담 과정에서 조율합니다.",
+      "아카데미 홈의 기준 수강료를 먼저 확인할 수 있으며, 수강료는 레슨 유형과 일정에 따라 상담 후 최종 확인될 수 있습니다. 등록이 확정되면 현장에서 결제를 안내해드립니다.",
   },
 ];
 
@@ -228,8 +228,8 @@ export default async function AcademyPage() {
               </Button>
             </div>
             <p className="break-keep text-sm leading-6 text-muted-foreground">
-              레슨 신청서를 남겨주시면 도깨비테니스에서 확인 후 상담을
-              도와드립니다. 문의글로도 레슨 상담을 남길 수 있습니다.
+              레슨 신청 후 담당자가 일정과 수강 방식을 확인해드립니다.
+              등록이 확정되면 현장에서 결제를 안내해드립니다.
             </p>
           </div>
         </section>
@@ -241,11 +241,11 @@ export default async function AcademyPage() {
               id="lesson-fees-heading"
               className="break-keep text-2xl font-semibold text-foreground"
             >
-              레슨 프로그램 & 수강료
+              레슨 프로그램 & 기준 수강료
             </h2>
             <p className="break-keep text-sm leading-6 text-muted-foreground">
-              레슨 유형과 횟수별 금액을 사이트 화면에서 바로 읽을 수 있도록
-              카드형 안내로 정리했습니다. 최종 일정은 상담 후 확정됩니다.
+              레슨 유형과 횟수별 기준 수강료를 카드형 안내로 정리했습니다.
+              수강료는 레슨 유형과 일정에 따라 상담 후 최종 확인될 수 있습니다.
             </p>
           </div>
           <div className="grid gap-4 lg:grid-cols-3">
@@ -305,8 +305,8 @@ export default async function AcademyPage() {
               상담 문의
             </h2>
             <p className="break-keep text-sm leading-6 text-muted-foreground">
-              레슨 유형, 시간표, 수강 시작 가능일이 궁금하다면 담당자에게 바로
-              문의해 주세요.
+              레슨 유형, 시간표, 수강 시작 가능일이 궁금하다면 담당자에게 문의해 주세요.
+              상담 후 등록이 확정되면 첫 방문 시 현장에서 결제를 안내합니다.
             </p>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
@@ -343,7 +343,7 @@ export default async function AcademyPage() {
               현재 모집 중인 클래스
             </h2>
             <p className="break-keep text-sm leading-6 text-muted-foreground">
-              목적과 경험에 맞춰 상담 후 적합한 수업 방향을 안내합니다.
+              목적과 경험에 맞춰 상담 후 적합한 수업 방향을 안내합니다. 선택한 클래스는 상담 신청 기준으로 사용됩니다.
             </p>
           </div>
           {academyClasses.length > 0 ? (
@@ -455,8 +455,8 @@ export default async function AcademyPage() {
             <Card className="border-border bg-card">
               <CardContent className="space-y-4 p-5 md:p-6">
                 <p className="break-keep text-sm leading-6 text-muted-foreground">
-                  현재 노출 중인 클래스가 없습니다. 레슨 문의를 남겨주시면
-                  가능한 수업을 안내해 드립니다.
+                  현재 모집 중인 클래스가 없습니다. 레슨 문의를 남겨주시면
+                  가능한 수업과 현장결제 안내를 함께 도와드립니다.
                 </p>
                 <Button asChild className="w-full sm:w-auto">
                   <Link href="/board/qna/write?category=academy">
@@ -474,7 +474,7 @@ export default async function AcademyPage() {
               수업 진행 흐름
             </h2>
             <p className="break-keep text-sm leading-6 text-muted-foreground">
-              문의를 남겨주시면 레벨과 목표를 확인한 뒤 가능한 일정을 함께
+              문의를 남겨주시면 레벨과 목표를 확인한 뒤 가능한 일정과 수강 방식을 함께
               조율합니다.
             </p>
           </div>
@@ -528,7 +528,7 @@ export default async function AcademyPage() {
             </h2>
             <p className="break-keep text-sm leading-6 text-muted-foreground">
               도깨비테니스 아카데미가 레벨, 목표, 가능한 일정을 확인해 상담을
-              도와드리겠습니다.
+              도와드리고, 등록 확정 후 현장에서 결제를 안내해드립니다.
             </p>
             <Button asChild size="lg" className="w-full sm:w-auto">
               <Link href="/board/qna/write?category=academy">

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, type FormEvent, type KeyboardEvent } from "react";
 import useSWR from "swr";
-import { BookOpen, Eye, EyeOff, MoreHorizontal, Pencil, Plus, Search } from "lucide-react";
+import { BookOpen, Eye, EyeOff, MoreHorizontal, Pencil, Plus, Search, Trash2 } from "lucide-react";
 
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { adminSurface } from "@/components/admin/admin-typography";
@@ -147,6 +147,7 @@ export default function AcademyClassesClient() {
   const [keywordInput, setKeywordInput] = useState("");
   const [keyword, setKeyword] = useState("");
   const [hidingId, setHidingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const query = useMemo(() => {
     const params = new URLSearchParams({
@@ -195,7 +196,7 @@ export default function AcademyClassesClient() {
   async function hideClass(item: AcademyClass) {
     if (!item._id || hidingId) return;
     const confirmed = window.confirm(
-      "이 클래스를 숨김 처리할까요? 고객 화면에는 노출되지 않습니다.",
+      "이 클래스를 숨김 처리할까요?\n고객 화면에는 노출되지 않지만, 기존 신청 내역과 운영 데이터는 보존됩니다.",
     );
     if (!confirmed) return;
 
@@ -210,6 +211,36 @@ export default function AcademyClassesClient() {
       showErrorToast(getAdminErrorMessage(mutationError));
     } finally {
       setHidingId(null);
+    }
+  }
+
+  async function hardDeleteClass(item: AcademyClass) {
+    if (!item._id || deletingId) return;
+
+    const applicationTotal = item.applicationStats?.total ?? 0;
+    if (applicationTotal > 0) {
+      showErrorToast(
+        "이 클래스에는 신청 내역이 있어 삭제할 수 없습니다. 고객 화면에서 내리려면 숨김 처리를 사용하세요.",
+      );
+      return;
+    }
+
+    const confirmed = window.confirm(
+      "이 클래스를 영구 삭제할까요?\n연결된 신청 내역이 없는 클래스만 삭제할 수 있습니다.\n삭제 후에는 복구할 수 없습니다.",
+    );
+    if (!confirmed) return;
+
+    setDeletingId(item._id);
+    try {
+      await adminMutator(`/api/admin/academy/classes/${item._id}/hard-delete`, {
+        method: "DELETE",
+      });
+      showSuccessToast("클래스가 영구 삭제되었습니다.");
+      await mutate();
+    } catch (mutationError) {
+      showErrorToast(getAdminErrorMessage(mutationError));
+    } finally {
+      setDeletingId(null);
     }
   }
 
@@ -321,6 +352,8 @@ export default function AcademyClassesClient() {
 
                   const createdAt = formatAdminDateTimeParts(item.createdAt);
                   const isHideDisabled = item.status === "hidden" || hidingId === classId;
+                  const applicationTotal = item.applicationStats?.total ?? 0;
+                  const isDeleteDisabled = applicationTotal > 0 || deletingId === classId;
 
                   return (
                     <TableRow
@@ -419,6 +452,29 @@ export default function AcademyClassesClient() {
                                 : hidingId === classId
                                   ? "처리 중"
                                   : "숨김 처리"}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              disabled={isDeleteDisabled}
+                              className="text-destructive focus:text-destructive"
+                              onSelect={(event) => {
+                                event.preventDefault();
+                                if (isDeleteDisabled) {
+                                  if (applicationTotal > 0) {
+                                    showErrorToast(
+                                      "이 클래스에는 신청 내역이 있어 삭제할 수 없습니다. 고객 화면에서 내리려면 숨김 처리를 사용하세요.",
+                                    );
+                                  }
+                                  return;
+                                }
+                                void hardDeleteClass(item);
+                              }}
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              {applicationTotal > 0
+                                ? "삭제 불가: 신청 내역 있음"
+                                : deletingId === classId
+                                  ? "삭제 중"
+                                  : "삭제"}
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
