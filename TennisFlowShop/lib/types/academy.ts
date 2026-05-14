@@ -268,7 +268,7 @@ export const ACADEMY_CLASS_LESSON_TYPES = [
 
 export const ACADEMY_CLASS_STATUS_LABELS: Record<AcademyClassStatus, string> = {
   draft: "임시 저장",
-  visible: "노출 중",
+  visible: "모집 중",
   hidden: "숨김",
   closed: "모집 마감",
 };

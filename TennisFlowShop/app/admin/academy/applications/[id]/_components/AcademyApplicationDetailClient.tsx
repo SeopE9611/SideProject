@@ -296,7 +296,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
                   value={item.classSnapshot.scheduleText ?? "상담 후 조율"}
                 />
                 <InfoRow
-                  label="가격"
+                  label="기준 수강료"
                   value={formatPrice(item.classSnapshot.price)}
                 />
                 <InfoRow
@@ -395,7 +395,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
             <CardHeader>
               <CardTitle className="text-base">상태 관리</CardTitle>
               <CardDescription>
-                상담 진행 상황에 맞게 신청 상태를 변경합니다.
+                상담 진행 상황에 맞게 신청 상태를 변경합니다. 결제 요청이 아니라 상담과 등록 확정 흐름을 관리합니다.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -480,14 +480,14 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
                   고객 안내 메시지
                 </label>
                 <p className="text-xs text-muted-foreground">
-                  저장한 내용은 고객 마이페이지에 관리자 안내로 표시됩니다.
+                  고객 마이페이지에 표시되는 안내 메시지입니다. 등록 확정, 방문 일정, 현장결제 안내 등을 작성하세요.
                 </p>
                 <Textarea
                   id="customer-message"
                   value={customerMessage}
                   maxLength={1000}
                   onChange={(event) => setCustomerMessage(event.target.value)}
-                  placeholder="상담 후 고객에게 안내할 내용을 입력하세요."
+                  placeholder="예: 등록이 확정되었습니다. 첫 수업 방문 시 현장에서 결제해 주세요."
                   className="min-h-28"
                 />
                 <div className="text-right text-xs text-muted-foreground">

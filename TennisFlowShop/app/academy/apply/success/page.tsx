@@ -43,11 +43,9 @@ export default async function AcademyApplySuccessPage({ searchParams }: Props) {
                 레슨 신청이 접수되었습니다
               </h1>
               <div className="space-y-2 break-keep text-sm leading-6 text-muted-foreground md:text-base">
-                <p>
-                  도깨비테니스에서 신청 내용을 확인한 뒤 상담을 도와드립니다.
-                </p>
-                <p>일정과 수강 방식은 상담 후 확정됩니다.</p>
-                <p>아직 결제는 진행되지 않았습니다.</p>
+                <p>신청 내용이 접수되었습니다.</p>
+                <p>담당자가 일정과 수강 방식을 확인한 뒤 상담을 도와드립니다.</p>
+                <p>등록이 확정되면 현장에서 결제를 안내해드립니다.</p>
               </div>
             </div>
 

@@ -114,9 +114,9 @@ async function getPublicAcademyClassById(
 }
 
 const notices = [
-  "신청 접수 후 운영자가 확인합니다.",
-  "수업 일정/비용은 상담 후 확정됩니다.",
-  "아직 결제는 진행되지 않습니다.",
+  "신청 접수 후 상담을 통해 등록 가능 여부와 결제 방법을 안내드립니다.",
+  "수업 일정과 수강료는 상담 후 최종 확인됩니다.",
+  "결제는 신청 단계에서 진행되지 않으며, 등록 확정 후 현장에서 안내됩니다.",
 ];
 
 export default async function AcademyApplyPage({
@@ -139,7 +139,7 @@ export default async function AcademyApplyPage({
             레슨 신청하기
           </h1>
           <p className="break-keep text-base leading-7 text-muted-foreground md:text-lg">
-            신청서를 남겨주시면 도깨비테니스에서 확인 후 상담을 도와드립니다.
+            신청서를 남겨주시면 도깨비테니스에서 일정과 수강 방식을 확인한 뒤 상담을 도와드립니다.
           </p>
         </section>
 

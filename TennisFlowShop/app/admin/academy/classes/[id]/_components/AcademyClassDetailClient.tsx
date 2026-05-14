@@ -244,7 +244,7 @@ export default function AcademyClassDetailClient({ id }: { id: string }) {
         <CardHeader>
           <CardTitle className="text-base">등록 현황</CardTitle>
           <CardDescription>
-            신청 상태 기준으로 집계하며 클래스 저장값은 변경하지 않습니다.
+            신청 상태 기준으로 집계하며 클래스 저장값은 변경하지 않습니다. 신청 내역이 1건 이상 있으면 영구 삭제는 차단되며 숨김 처리로 고객 화면에서 내릴 수 있습니다.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -286,7 +286,7 @@ export default function AcademyClassDetailClient({ id }: { id: string }) {
           <InfoRow label="강사" value={item.instructorName} />
           <InfoRow label="장소" value={item.location} />
           <InfoRow label="일정" value={item.scheduleText} />
-          <InfoRow label="가격" value={formatPrice(item.price)} />
+          <InfoRow label="기준 수강료" value={formatPrice(item.price)} />
           <InfoRow label="정원" value={formatCapacity(item.capacity)} />
           <InfoRow
             label="상태"

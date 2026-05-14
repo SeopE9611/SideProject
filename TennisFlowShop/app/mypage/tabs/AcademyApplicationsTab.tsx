@@ -201,7 +201,7 @@ export default function AcademyApplicationsTab() {
             아직 신청한 아카데미 클래스가 없습니다.
           </h3>
           <p className="mb-6 text-muted-foreground">
-            아카데미 페이지에서 원하는 클래스를 확인하고 레슨 신청을 남겨보세요.
+            아카데미 페이지에서 원하는 클래스를 확인하고 상담 신청을 남겨보세요. 등록이 확정되면 현장에서 결제를 안내해드립니다.
           </p>
           <Button asChild variant="default" className="shadow-sm">
             <Link href="/academy">아카데미 보러가기</Link>
@@ -278,10 +278,13 @@ export default function AcademyApplicationsTab() {
                   </div>
                   <div className="rounded-lg bg-background p-3 bp-sm:col-span-2">
                     <dt className="flex items-center gap-1 text-xs uppercase tracking-wide">
-                      <WalletCards className="h-3.5 w-3.5" /> 수강료
+                      <WalletCards className="h-3.5 w-3.5" /> 기준 수강료
                     </dt>
                     <dd className="mt-0.5 font-medium text-foreground">
                       {formatPrice(application.classSnapshot.price)}
+                    </dd>
+                    <dd className="mt-1 break-keep text-xs text-muted-foreground">
+                      수강료는 상담 내용에 따라 최종 확인될 수 있습니다. 등록 확정 후 현장에서 결제를 안내해드립니다.
                     </dd>
                   </div>
                 </dl>
