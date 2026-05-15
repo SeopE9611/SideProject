@@ -26,6 +26,7 @@ export default function AdminNavigationShell() {
     {
       revalidateOnFocus: false,
       shouldRetryOnError: false,
+      dedupingInterval: 30_000,
     },
   );
   const badgeCounts = normalizeCounts(data);

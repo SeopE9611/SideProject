@@ -33,6 +33,12 @@ import { formatKST, type OpItem, type ReviewLevel } from "./table/operationsTabl
 
 const won = (n: number) => (n || 0).toLocaleString("ko-KR") + "원";
 
+type NavigationBadgeCounts = Partial<Record<"offline" | "academyApplications", number>>;
+
+type NavigationSummaryResponse = {
+  counts?: NavigationBadgeCounts;
+};
+
 function amountMeaningText(item: OpItem) {
   const bits: string[] = [];
   if (item.amountNote) bits.push(item.amountNote);
@@ -43,8 +49,8 @@ function amountMeaningText(item: OpItem) {
 }
 
 const PAGE_COPY = {
-  title: "운영 통합 센터",
-  description: "오늘 처리해야 할 주문·신청·대여 업무를 우선순위 기준으로 확인합니다.",
+  title: "오늘 처리함",
+  description: "오늘 처리해야 할 주문·신청·대여·오프라인·아카데미 업무를 우선순위로 확인합니다.",
   dailyTodoTitle: "오늘 해야 할 일",
   dailyTodoLabels: {
     urgent: "긴급",
@@ -707,6 +713,11 @@ export default function OperationsClient() {
     revalidateOnReconnect: false,
     keepPreviousData: true,
   });
+  const { data: navigationSummary } = useSWR<NavigationSummaryResponse>("/api/admin/navigation-summary", authenticatedSWRFetcher, {
+    revalidateOnFocus: false,
+    shouldRetryOnError: false,
+    dedupingInterval: 30_000,
+  });
   const totalGroups = data?.pagination?.totalGroups;
   const pageSize = data?.pagination?.pageSize ?? effectivePageSize;
   const totalPages = typeof totalGroups === "number" ? Math.max(1, Math.ceil(totalGroups / pageSize)) : null;
@@ -1008,7 +1019,7 @@ export default function OperationsClient() {
           title={PAGE_COPY.title}
           description={PAGE_COPY.description}
           icon={Inbox}
-          scope="처리 필요 업무 중심"
+          scope="운영 통합 센터"
           helperText="주문·신청·대여의 연결 상태와 다음 액션을 함께 확인합니다."
           actions={
             <Button type="button" variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => setShowActionsGuide((prev) => !prev)}>
@@ -1081,6 +1092,7 @@ export default function OperationsClient() {
           </Card>
         </div>
         <div className="mt-4 space-y-3">
+          <p className="text-xs text-muted-foreground">주문·교체서비스·대여·연결 업무 카드는 현재 조회 목록 기준이며, 오프라인·아카데미 카드는 전체 처리 필요 기준입니다.</p>
           <div className="grid gap-3 bp-sm:grid-cols-2 bp-lg:grid-cols-4">
             {practicalTaskCards.map((task) => (
               <Card key={task.title} className={cn("border-border bg-card shadow-sm", task.tone === "urgent" && "border-warning/40 bg-warning/5", task.tone === "warning" && "border-info/40 bg-info/5")}>
@@ -1102,7 +1114,7 @@ export default function OperationsClient() {
               <CardHeader className="p-3 pb-2">
                 <CardTitle className="flex items-baseline justify-between gap-2 text-sm font-semibold">
                   <span>오프라인 미결제/보정</span>
-                  <span className="text-lg font-bold text-muted-foreground">-</span>
+                  <span className="text-lg font-bold text-foreground">{navigationSummary?.counts?.offline ?? 0}건</span>
                 </CardTitle>
                 <CardDescription className="min-h-[40px] text-xs leading-relaxed text-foreground/75">오프라인 미결제, 패키지 발급 실패, 보정 필요 항목을 확인하세요.</CardDescription>
               </CardHeader>
@@ -1116,7 +1128,7 @@ export default function OperationsClient() {
               <CardHeader className="p-3 pb-2">
                 <CardTitle className="flex items-baseline justify-between gap-2 text-sm font-semibold">
                   <span>아카데미 상담</span>
-                  <span className="text-lg font-bold text-muted-foreground">-</span>
+                  <span className="text-lg font-bold text-foreground">{navigationSummary?.counts?.academyApplications ?? 0}건</span>
                 </CardTitle>
                 <CardDescription className="min-h-[40px] text-xs leading-relaxed text-foreground/75">신규 신청, 검토 중, 상담 대기, 등록 확정 대기 건을 확인하세요.</CardDescription>
               </CardHeader>
