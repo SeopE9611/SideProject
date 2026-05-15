@@ -499,7 +499,7 @@ export default function SupportPage() {
             </div>
             <h1 className="break-keep text-3xl font-bold tracking-normal text-foreground md:text-4xl">무엇을 도와드릴까요?</h1>
           </div>
-          <p className="mx-auto max-w-2xl break-keep text-sm text-muted-foreground md:text-base">주문, 배송, 교체서비스, 비회원 주문 조회, 공지와 이벤트를 한 곳에서 확인할 수 있습니다.</p>
+          <p className="mx-auto max-w-2xl break-keep text-sm text-muted-foreground md:text-base">고객센터는 공지사항, 이벤트, Q&A 문의, 매장/예약 안내, 주문/서비스 문의를 확인하는 공간입니다.</p>
         </div>
 
         <section aria-labelledby="support-entry-title" className="space-y-3">

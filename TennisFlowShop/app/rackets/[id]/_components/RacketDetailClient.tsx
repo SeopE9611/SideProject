@@ -491,6 +491,10 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
 
                   {/* CTA 영역 */}
                   <div ref={rentSectionRef} className="space-y-3 pt-4 border-t">
+                    <div className="rounded-xl border border-primary/20 bg-primary/5 p-3">
+                      <h2 className="text-base font-bold text-foreground">이 라켓으로 무엇을 할까요?</h2>
+                      <p className="mt-1 text-sm text-muted-foreground">구매, 대여, 비교 액션을 나눠서 선택할 수 있어요.</p>
+                    </div>
                     <div className="flex gap-2">
                       <Button
                         className="flex-1 min-w-0 h-12"

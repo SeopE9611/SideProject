@@ -72,9 +72,9 @@ export default async function RacketsPage({ searchParams }: { searchParams: Prom
             <div className="rounded-xl border border-border bg-card/90 backdrop-blur p-4 bp-sm:p-5 shadow-sm">
               <div className="flex items-start justify-between gap-3 flex-wrap">
                 <div className="min-w-0">
-                  <p className="text-sm bp-sm:text-base font-semibold text-foreground">교체·장착 신청을 위한 라켓 선택 단계예요</p>
+                  <p className="text-sm bp-sm:text-base font-semibold text-foreground">라켓을 선택한 뒤, 스트링 선택과 장착 신청이 이어집니다</p>
                   <p className="mt-1 text-xs bp-sm:text-sm text-muted-foreground leading-relaxed">
-                    라켓을 선택한 뒤, 결제/대여 흐름에서 신청서가 자동으로 이어질 수 있어요.
+                    구매 가능한 라켓은 스트링 선택 후 결제로, 대여 가능한 라켓은 대여 기간 선택 후 장착 세팅으로 이어져요.
                     <span className="block mt-1 text-sm text-foreground">[현재 보기: {rentOnly ? "대여 가능 라켓만" : "전체(구매/대여)"}]</span>
                   </p>
                 </div>
@@ -87,7 +87,7 @@ export default async function RacketsPage({ searchParams }: { searchParams: Prom
                     </Link>
                   </Button>
 
-                  {/* segmented-control: 전체 / 대여가능만 */}
+                  {/* segmented-control: 전체 / 대여 가능한 라켓 */}
                   <div className="flex-1 bp-sm:flex-none">
                     <div className="inline-flex w-full bp-sm:w-[320px] rounded-lg border border-border bg-card p-1">
                       <Link
@@ -95,7 +95,7 @@ export default async function RacketsPage({ searchParams }: { searchParams: Prom
                         aria-current={!rentOnly ? "page" : undefined}
                         className={`flex-1 text-center text-sm font-semibold rounded-md px-3 py-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${rentOnly ? "text-foreground hover:bg-secondary" : "bg-secondary text-foreground"}`}
                       >
-                        전체보기
+                        전체 라켓
                       </Link>
 
                       <Link
@@ -103,7 +103,7 @@ export default async function RacketsPage({ searchParams }: { searchParams: Prom
                         aria-current={rentOnly ? "page" : undefined}
                         className={`flex-1 text-center text-sm font-semibold rounded-md px-3 py-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${rentOnly ? "bg-secondary text-foreground" : "text-foreground hover:bg-secondary"}`}
                       >
-                        대여가능만
+                        대여 가능한 라켓
                       </Link>
                     </div>
                   </div>

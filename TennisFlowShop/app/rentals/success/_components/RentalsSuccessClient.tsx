@@ -173,6 +173,16 @@ export default function RentalsSuccessClient({ data }: Props) {
                 )}
               </div>
 
+              <div className="mt-4 rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm text-muted-foreground">
+                <h3 className="font-bold text-foreground">다음 단계</h3>
+                <p className="mt-2 leading-relaxed">
+                  {isPickup
+                    ? '매장 방문 전 대여 상태를 확인하고 신분증을 준비해주세요.'
+                    : '배송이 시작되면 진행 상황을 마이페이지에서 확인할 수 있습니다.'}
+                  {withService ? ' 교체서비스가 포함된 경우 장착 상태도 함께 확인할 수 있어요.' : ''}
+                </p>
+              </div>
+
               <Separator className="my-4 md:my-6" />
 
               <div className="mb-4 md:mb-6">

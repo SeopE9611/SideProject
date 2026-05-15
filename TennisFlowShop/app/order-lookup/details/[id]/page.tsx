@@ -495,6 +495,7 @@ export default function OrderDetailPage() {
             </h1>
             <p className="text-xl text-muted-foreground">주문번호: {order._id.slice(-8)}</p>
             <div className="mt-4">
+              <p className="mb-3 text-sm text-muted-foreground">현재 상태와 다음 해야 할 일을 아래 타임라인에서 확인하세요.</p>
               <Badge variant={badgeToneVariant(getOrderStatusTone(displayStatus))} className="gap-2 px-4 py-2 text-lg font-semibold">
                 {getStatusIcon(displayStatus, isVisitPickup)}
                 {displayStatus}

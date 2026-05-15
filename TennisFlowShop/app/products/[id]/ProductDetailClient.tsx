@@ -319,7 +319,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const serviceTotal = qtyTotal + Number(product?.mountingFee ?? 0);
   const canCheckoutWithService = typeof product?.mountingFee === "number" && product.mountingFee > 0;
   const isApplyFlow = searchParams.get("from") === "apply";
-  const serviceCtaLabel = "이 스트링으로 교체서비스 신청하기";
+  const serviceCtaLabel = isApplyFlow ? "이 스트링 선택하고 장착 신청 계속하기" : "이 스트링으로 교체서비스 신청하기";
   const shouldEmphasizeServiceCta = isApplyFlow || !ENABLE_STRING_STANDALONE_ORDER;
 
   // 브라우저 뒤/앞으로 가기 시에도 URL 변화에 맞춰 동기화
@@ -916,6 +916,10 @@ export default function ProductDetailClient({ product }: { product: any }) {
                       </div>
                     )}
 
+                    <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 text-sm text-muted-foreground">
+                      <span className="font-semibold text-foreground">다음 단계:</span> 결제 화면에서 장착 방식, 수령 방법, 요청사항을 입력합니다. 스트링만 구매하는 경우에는 장착 접수가 포함되지 않아요.
+                    </div>
+
                     <div id="cta-anchor" className="flex flex-col gap-3 sm:gap-3.5">
                       {product.inventory?.manageStock && product.inventory.stock <= 0 ? (
                         <Button disabled variant="secondary" size="tall" className="h-12 w-full sm:h-14">
@@ -933,7 +937,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                               disabled={loading || stock <= 0 || quantity > stock}
                             >
                               <CreditCard className="mr-2 h-5 w-5" />
-                              바로 구매하기
+                              스트링만 구매하기
                             </Button>
                           )}
 

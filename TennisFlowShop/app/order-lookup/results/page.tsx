@@ -353,6 +353,7 @@ export default function OrderLookupResultsPage() {
             <p className="text-xl text-muted-foreground">
               {displayName}님의 주문 내역 {orders?.length || 0}건
             </p>
+            <p className="mx-auto mt-3 max-w-2xl text-sm text-muted-foreground">각 주문 카드에서 현재 상태와 다음 해야 할 일을 확인하고, 회원가입하면 다음부터 마이페이지에서 더 쉽게 관리할 수 있어요.</p>
           </div>
         </div>
       </div>

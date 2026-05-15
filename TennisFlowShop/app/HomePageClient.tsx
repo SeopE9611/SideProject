@@ -495,51 +495,65 @@ const premiumItems: HItem[] = useMemo(
         )}
       </SiteContainer>
 
-      {/* 빠른 메뉴 */}
+      {/* 목적 선택 */}
       <section className="py-10 bp-sm:py-12 bp-md:py-16">
         <SiteContainer>
           <div className="mb-8 bp-sm:mb-10 text-center">
-            <h2 className="font-brand-bold text-2xl bp-sm:text-3xl font-bold text-foreground tracking-normal">빠른 메뉴</h2>
-            <p className="mt-2 bp-sm:mt-3 text-sm bp-sm:text-base text-muted-foreground">원하는 서비스를 바로 이용하세요</p>
+            <p className="mb-2 text-sm font-semibold text-primary">처음 오셨다면 여기서 시작하세요</p>
+            <h2 className="font-brand-bold text-2xl bp-sm:text-3xl font-bold text-foreground tracking-normal">무엇을 도와드릴까요?</h2>
+            <p className="mt-2 bp-sm:mt-3 text-sm bp-sm:text-base text-muted-foreground">원하는 목적을 고르면 필요한 단계로 바로 이동할 수 있어요.</p>
           </div>
-          <div className="grid gap-4 bp-sm:gap-5 bp-md:gap-6 grid-cols-2 bp-md-only:grid-cols-4 bp-lg:grid-cols-4">
-            <Link href="/services/apply" className={cn("group flex h-full flex-col items-center gap-3 bp-sm:gap-4 p-5 bp-sm:p-6 bp-md:p-7", surfaceCardInteractiveClass)}>
+          <div className="grid gap-4 bp-sm:gap-5 bp-md:gap-6 grid-cols-1 bp-md:grid-cols-2 bp-xl:grid-cols-3">
+            <Link href="/services/apply" className={cn("group relative flex h-full flex-col gap-4 p-5 bp-sm:p-6 bp-md:p-7 border-primary/40 bg-primary/5", surfaceCardInteractiveClass)}>
+              <BadgeCheck className="absolute right-5 top-5 h-5 w-5 text-primary" />
               <div className={cn("h-12 w-12 bp-sm:h-14 bp-sm:w-14", surfaceIconWrapClass)}>
                 <Wrench className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
               </div>
-              <div className="text-center">
-                <h3 className="text-sm bp-sm:text-base font-semibold break-keep text-foreground">교체서비스 시작하기</h3>
-                <p className="mt-1 bp-sm:mt-1.5 text-sm line-clamp-2 break-keep text-foreground/80">내 상황에 맞는 신청 방식 선택</p>
+              <div>
+                <p className="mb-1 text-xs font-semibold text-primary">가장 많이 찾는 시작</p>
+                <h3 className="text-base bp-sm:text-lg font-semibold break-keep text-foreground">스트링 교체를 신청하고 싶어요</h3>
+                <p className="mt-2 text-sm leading-relaxed break-keep text-foreground/80">보유 라켓이 있거나 새 스트링을 구매해서 장착까지 맡기고 싶을 때 선택하세요.</p>
               </div>
             </Link>
 
-            <Link href="/products?from=home" className={cn("group flex h-full flex-col items-center gap-3 bp-sm:gap-4 p-5 bp-sm:p-6 bp-md:p-7", surfaceCardInteractiveClass)}>
+            <Link href="/products?from=apply" className={cn("group flex h-full flex-col gap-4 p-5 bp-sm:p-6 bp-md:p-7", surfaceCardInteractiveClass)}>
               <div className={cn("h-12 w-12 bp-sm:h-14 bp-sm:w-14", surfaceIconWrapClass)}>
                 <Package className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
               </div>
-              <div className="text-center">
-                <h3 className="text-sm bp-sm:text-base font-semibold break-keep text-foreground">스트링 고르기</h3>
-                <p className="mt-1 bp-sm:mt-1.5 text-sm line-clamp-2 break-keep text-foreground/80">교체서비스에 사용할 스트링 선택</p>
+              <div>
+                <h3 className="text-base bp-sm:text-lg font-semibold break-keep text-foreground">새 스트링을 고르고 장착까지 맡길래요</h3>
+                <p className="mt-2 text-sm leading-relaxed break-keep text-foreground/80">스트링을 새로 선택하고 교체서비스까지 한 번에 진행합니다.</p>
               </div>
             </Link>
 
-            <Link href="/rackets?from=home" className={cn("group flex h-full flex-col items-center gap-3 bp-sm:gap-4 p-5 bp-sm:p-6 bp-md:p-7", surfaceCardInteractiveClass)}>
+            <Link href="/rackets?from=apply" className={cn("group flex h-full flex-col gap-4 p-5 bp-sm:p-6 bp-md:p-7", surfaceCardInteractiveClass)}>
               <div className={cn("h-12 w-12 bp-sm:h-14 bp-sm:w-14", surfaceIconWrapClass)}>
                 <Tags className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
               </div>
-              <div className="text-center">
-                <h3 className="text-sm bp-sm:text-base font-semibold break-keep text-foreground">라켓 구매/대여</h3>
-                <p className="mt-1 bp-sm:mt-1.5 text-sm line-clamp-2 break-keep text-foreground/80">라켓을 고르고 스트링까지 연결</p>
+              <div>
+                <h3 className="text-base bp-sm:text-lg font-semibold break-keep text-foreground">라켓 구매/대여 후 바로 사용할 수 있게 세팅할래요</h3>
+                <p className="mt-2 text-sm leading-relaxed break-keep text-foreground/80">라켓을 구매하거나 대여하면서 스트링 장착까지 함께 진행합니다.</p>
               </div>
             </Link>
 
-            <Link href="/services/packages" className={cn("group flex h-full flex-col items-center gap-3 bp-sm:gap-4 p-5 bp-sm:p-6 bp-md:p-7", surfaceCardInteractiveClass)}>
+            <Link href="/academy" className={cn("group flex h-full flex-col gap-4 p-5 bp-sm:p-6 bp-md:p-7", surfaceCardInteractiveClass)}>
               <div className={cn("h-12 w-12 bp-sm:h-14 bp-sm:w-14", surfaceIconWrapClass)}>
-                <BadgeCheck className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
+                <BookOpen className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
               </div>
-              <div className="text-center">
-                <h3 className="text-sm bp-sm:text-base font-semibold break-keep text-foreground">패키지권 보기</h3>
-                <p className="mt-1 bp-sm:mt-1.5 text-sm line-clamp-2 break-keep text-foreground/80">자주 이용한다면 회차권으로 관리</p>
+              <div>
+                <h3 className="text-base bp-sm:text-lg font-semibold break-keep text-foreground">레슨을 신청하고 싶어요</h3>
+                <p className="mt-2 text-sm leading-relaxed break-keep text-foreground/80">아카데미 클래스와 레슨 신청 안내를 확인합니다.</p>
+              </div>
+            </Link>
+
+            <Link href="/mypage" className={cn("group flex h-full flex-col gap-4 p-5 bp-sm:p-6 bp-md:p-7 bp-xl:col-span-2", surfaceCardInteractiveClass)}>
+              <div className={cn("h-12 w-12 bp-sm:h-14 bp-sm:w-14", surfaceIconWrapClass)}>
+                <Search className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
+              </div>
+              <div>
+                <h3 className="text-base bp-sm:text-lg font-semibold break-keep text-foreground">내 주문/신청 상태를 확인하고 싶어요</h3>
+                <p className="mt-2 text-sm leading-relaxed break-keep text-foreground/80">주문, 교체서비스, 대여, 아카데미 신청 상태를 확인합니다. 비회원 주문은 주문조회에서 확인할 수 있어요.</p>
+                <span className="mt-3 inline-flex text-sm font-semibold text-primary">마이페이지로 이동 · 비회원은 주문조회 이용</span>
               </div>
             </Link>
           </div>

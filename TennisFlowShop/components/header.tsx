@@ -397,14 +397,14 @@ const Header = () => {
 
   /** 탑 메뉴 항목들 */
   const menuItems = [
-    { name: "스트링", href: "/products", hasMegaMenu: true },
-    { name: "라켓", href: "/rackets", hasMegaMenu: true, isRacketMenu: true },
     {
-      name: "장착 서비스",
+      name: "교체서비스 시작하기",
       href: "/services",
       hasMegaMenu: true,
       isServiceMenu: true,
     },
+    { name: "스트링", href: "/products", hasMegaMenu: true },
+    { name: "라켓", href: "/rackets", hasMegaMenu: true, isRacketMenu: true },
     {
       name: "패키지",
       href: "/services/packages",

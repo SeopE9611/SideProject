@@ -234,7 +234,7 @@ export default function OrderLookupPage() {
               비회원 주문 조회
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              주문 시 입력하신 정보로 간편하게 주문 내역을 확인하세요
+              주문번호를 몰라도 주문 시 입력한 이름, 이메일, 연락처로 주문/신청 상태와 다음 해야 할 일을 확인할 수 있어요
             </p>
           </div>
         </div>
@@ -251,6 +251,11 @@ export default function OrderLookupPage() {
               <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
               이전 페이지로 돌아가기
             </Link>
+          </div>
+
+          <div className="mb-5 rounded-2xl border border-primary/20 bg-primary/5 p-4 text-sm text-muted-foreground">
+            <p className="font-semibold text-foreground">조회 후 확인할 수 있는 정보</p>
+            <p className="mt-2">현재 상태, 다음 해야 할 일, 문의가 필요한 경우의 안내를 함께 보여드립니다. 회원가입하면 다음부터 마이페이지에서 더 쉽게 관리할 수 있어요.</p>
           </div>
 
           {/* Main Card */}

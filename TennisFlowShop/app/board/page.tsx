@@ -859,7 +859,7 @@ export default function BoardPage() {
             </h1>
           </div>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            자유게시판, 중고거래, 장비 사용기, 리뷰를 한 곳에서 확인하는 커뮤니티 공간입니다.
+            커뮤니티는 자유게시판, 중고거래, 장비 사용기, 리뷰처럼 이용자끼리 정보를 나누는 공간입니다. 주문/서비스 문의는 고객센터를 이용해주세요.
           </p>
         </div>
 

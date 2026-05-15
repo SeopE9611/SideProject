@@ -198,7 +198,7 @@ const ProductCard = React.memo(
     const canCheckoutWithService =
       typeof product.mountingFee === "number" && product.mountingFee > 0;
     const featureEntries = getFeatureEntries(product.features);
-    const serviceCtaLabel = "이 스트링으로 교체서비스 신청";
+    const serviceCtaLabel = isApplyFlow ? "이 스트링 선택하고 장착 신청 계속하기" : "이 스트링으로 교체서비스 신청하기";
     const shouldEmphasizeServiceCta =
       isApplyFlow || !ENABLE_STRING_STANDALONE_ORDER;
 

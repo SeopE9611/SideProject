@@ -349,6 +349,25 @@ export default async function StringServiceSuccessPage(props: Props) {
               </CardHeader>
 
               <CardContent className="p-4 md:p-8">
+                <div className="mb-6 rounded-xl border border-primary/20 bg-primary/5 p-4 md:p-5">
+                  <h3 className="text-base font-bold text-foreground">다음 단계</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    {needsInboundTracking
+                      ? "라켓을 포장해 발송한 뒤 운송장 정보를 등록해주세요. 등록하면 진행 확인이 더 빨라집니다."
+                      : isVisit
+                        ? "선택한 방문 방식에 따라 매장에 방문해주세요. 방문 전 신청 상태를 확인해주세요."
+                        : "접수 상태는 마이페이지에서 확인할 수 있습니다. 추가 안내가 필요한 경우 연락드릴게요."}
+                  </p>
+                  <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                    <Button asChild className="flex-1">
+                      <Link href={`/mypage?${new URLSearchParams({ tab: "applications", applicationId: String(application._id) }).toString()}`}>마이페이지에서 확인하기</Link>
+                    </Button>
+                    <Button asChild variant="outline" className="flex-1">
+                      <Link href="/support">고객센터 문의하기</Link>
+                    </Button>
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
                   <div data-cy="service-success-amount-card" className="bg-muted p-4 md:p-6 rounded-xl">
                     <div className="flex items-center mb-3">

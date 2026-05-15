@@ -49,6 +49,15 @@ export default async function AcademyApplySuccessPage({ searchParams }: Props) {
               </div>
             </div>
 
+            <div className="rounded-xl border border-primary/20 bg-primary/5 px-4 py-4 text-left text-sm text-muted-foreground">
+              <p className="font-semibold text-foreground">다음 행동 안내</p>
+              <ul className="mt-2 space-y-1">
+                <li>• 관리자가 신청 내용을 확인한 뒤 등록 확정 여부를 안내합니다.</li>
+                <li>• 상태는 마이페이지의 아카데미 신청 내역에서 확인할 수 있습니다.</li>
+                <li>• 신청 단계에서는 결제가 진행되지 않습니다.</li>
+              </ul>
+            </div>
+
             {receiptLabel ? (
               <div className="rounded-xl border border-border bg-secondary/60 px-4 py-3 text-sm text-foreground">
                 접수번호: <span className="font-semibold">{receiptLabel}</span>
@@ -57,7 +66,7 @@ export default async function AcademyApplySuccessPage({ searchParams }: Props) {
 
             <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
               <Button asChild className="w-full sm:w-auto">
-                <Link href="/academy">아카데미로 돌아가기</Link>
+                <Link href="/mypage?tab=academy">마이페이지에서 확인하기</Link>
               </Button>
               <Button asChild variant="outline" className="w-full sm:w-auto">
                 <Link href="/board/qna/write?category=academy">

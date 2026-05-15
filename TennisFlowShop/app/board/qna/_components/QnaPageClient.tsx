@@ -371,6 +371,11 @@ export default function QnaPageClient({ initialItems, initialTotal, initialLoadE
             </div>
           </div>
 
+          <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 text-sm text-muted-foreground">
+            <p className="font-semibold text-foreground">문의 유형을 먼저 확인해주세요</p>
+            <p className="mt-1">상품 문의, 주문/배송 문의, 교체서비스 문의, 아카데미 문의, 기타 문의 중 가까운 유형을 선택하면 답변이 더 빨라집니다.</p>
+          </div>
+
           {/* KPI 미사용 주석처리 (삭제는 일단 대기) */}
           {/* <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Card className="border-0 bg-card shadow-lg backdrop-blur-sm">
@@ -477,10 +482,10 @@ export default function QnaPageClient({ initialItems, initialTotal, initialLoadE
                     <SelectContent>
                       <SelectItem value="all">전체 분류</SelectItem>
                       <SelectItem value="product">상품</SelectItem>
-                      <SelectItem value="order">주문/결제</SelectItem>
+                      <SelectItem value="order">주문/배송</SelectItem>
                       <SelectItem value="delivery">배송</SelectItem>
                       <SelectItem value="refund">환불/교환</SelectItem>
-                      <SelectItem value="service">서비스</SelectItem>
+                      <SelectItem value="service">교체서비스</SelectItem>
                       <SelectItem value="academy">아카데미</SelectItem>
                       <SelectItem value="member">회원</SelectItem>
                     </SelectContent>
