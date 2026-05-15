@@ -489,7 +489,17 @@ export default async function AcademyPage() {
                         </div>
                       </dl>
                       <div className="mt-auto flex flex-col gap-2 pt-2 sm:flex-row">
-                        {isClosed ? (
+                        {existingApplication ? (
+                          <Button
+                            asChild
+                            variant="outline"
+                            className="w-full border-success/45 bg-success/10 text-success hover:border-success/60 hover:bg-success/15 hover:text-success"
+                          >
+                            <Link href={`/mypage/academy-applications/${existingApplication.id}`}>
+                              신청 완료
+                            </Link>
+                          </Button>
+                        ) : isClosed ? (
                           <>
                             <Button disabled className="w-full sm:flex-1">
                               모집 마감
@@ -504,12 +514,6 @@ export default async function AcademyPage() {
                               </Link>
                             </Button>
                           </>
-                        ) : existingApplication ? (
-                          <Button asChild className="w-full">
-                            <Link href={`/mypage/academy-applications/${existingApplication.id}`}>
-                              신청 완료
-                            </Link>
-                          </Button>
                         ) : (
                           <Button asChild className="w-full">
                             <Link href={userId ? applyHref : loginHref}>
