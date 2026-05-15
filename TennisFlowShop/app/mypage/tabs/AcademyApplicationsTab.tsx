@@ -325,6 +325,14 @@ export default function AcademyApplicationsTab() {
                 </p>
               </div>
             ) : null}
+
+            <div className="flex justify-end border-t border-border/60 pt-4">
+              <Button asChild variant="outline" size="sm">
+                <Link href={`/mypage/academy-applications/${application.id}`}>
+                  상세 보기
+                </Link>
+              </Button>
+            </div>
           </CardContent>
         </Card>
       ))}

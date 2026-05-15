@@ -177,8 +177,37 @@ export type AcademyClassSnapshot = {
   scheduleText?: string | null;
   capacity?: number | null;
   price?: number | null;
-  status?: "visible" | "closed";
+  status?: AcademyClassStatus | null;
   statusLabel?: string | null;
+};
+
+export type AcademyCustomerApplicationDetail = {
+  _id: string;
+  kind: "academy_lesson";
+  type: "아카데미 클래스 신청";
+  status: AcademyLessonApplicationStatus;
+  statusLabel: string;
+  applicantName: string;
+  phone: string;
+  email: string | null;
+  desiredLessonType: string | null;
+  desiredLessonTypeLabel: string;
+  currentLevel: string | null;
+  currentLevelLabel: string;
+  preferredDays: string[];
+  preferredTimeText: string | null;
+  lessonGoal: string | null;
+  requestMemo: string | null;
+  customerMessage: string | null;
+  classId: string | null;
+  classSnapshot: AcademyClassSnapshot | null;
+  createdAt: string | null;
+  updatedAt: string | null;
+};
+
+export type AcademyCustomerApplicationDetailResponse = {
+  success: true;
+  item: AcademyCustomerApplicationDetail;
 };
 
 export type AcademyClassApplicationStats = {
