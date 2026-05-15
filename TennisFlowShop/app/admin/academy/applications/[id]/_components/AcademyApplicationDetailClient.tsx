@@ -57,6 +57,11 @@ type AcademyApplicationDetail = {
   status: AcademyLessonApplicationStatus;
   adminMemo: string | null;
   customerMessage: string | null;
+  cancelReason: string | null;
+  cancelReasonLabel: string | null;
+  cancelReasonDetail: string | null;
+  cancelledAt: string | null;
+  cancelledBy: "customer" | "admin" | null;
   history: AcademyLessonApplicationHistoryItem[];
   classId: string | null;
   classSnapshot: AcademyClassSnapshot | null;
@@ -259,6 +264,30 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
                 value={item.userId ? "회원 신청" : "비회원 신청"}
               />
               <InfoRow label="접수일" value={formatDateTime(item.createdAt)} />
+              {item.status === "cancelled" ? (
+                <>
+                  <InfoRow
+                    label="취소일"
+                    value={formatDateTime(item.cancelledAt)}
+                  />
+                  <InfoRow
+                    label="취소 처리"
+                    value={
+                      item.cancelledBy === "customer"
+                        ? "고객 신청 취소"
+                        : "관리자 취소"
+                    }
+                  />
+                  <InfoRow
+                    label="취소 사유"
+                    value={
+                      item.cancelReasonLabel
+                        ? `${item.cancelReasonLabel}${item.cancelReasonDetail ? ` - ${item.cancelReasonDetail}` : ""}`
+                        : "-"
+                    }
+                  />
+                </>
+              ) : null}
             </CardContent>
           </Card>
 
@@ -395,7 +424,8 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
             <CardHeader>
               <CardTitle className="text-base">상태 관리</CardTitle>
               <CardDescription>
-                상담 진행 상황에 맞게 신청 상태를 변경합니다. 결제 요청이 아니라 상담과 등록 확정 흐름을 관리합니다.
+                상담 진행 상황에 맞게 신청 상태를 변경합니다. 결제 요청이 아니라
+                상담과 등록 확정 흐름을 관리합니다.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -480,7 +510,8 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
                   고객 안내 메시지
                 </label>
                 <p className="text-xs text-muted-foreground">
-                  고객 마이페이지에 표시되는 안내 메시지입니다. 등록 확정, 방문 일정, 현장결제 안내 등을 작성하세요.
+                  고객 마이페이지에 표시되는 안내 메시지입니다. 등록 확정, 방문
+                  일정, 현장결제 안내 등을 작성하세요.
                 </p>
                 <Textarea
                   id="customer-message"

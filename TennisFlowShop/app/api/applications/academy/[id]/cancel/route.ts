@@ -15,6 +15,17 @@ import {
 const COLLECTION_NAME = "academy_lesson_applications";
 const CUSTOMER_CANCEL_DESCRIPTION =
   "고객이 마이페이지에서 아카데미 신청을 취소했습니다.";
+const CANCEL_REASON_OPTIONS = [
+  { value: "schedule_mismatch", label: "일정이 맞지 않아요" },
+  { value: "apply_other_class", label: "다른 클래스를 신청하려고 해요" },
+  { value: "wrong_information", label: "신청 정보를 잘못 입력했어요" },
+  { value: "personal_reason", label: "개인 사정으로 수강이 어려워요" },
+  { value: "other", label: "기타" },
+] as const;
+const CANCEL_REASON_LABEL_BY_VALUE = new Map(
+  CANCEL_REASON_OPTIONS.map((option) => [option.value, option.label]),
+);
+const CANCEL_REASON_DETAIL_MAX_LENGTH = 300;
 
 function serializeObjectId(value: unknown): string | null {
   if (!value) return null;
@@ -125,13 +136,21 @@ function serializeApplication(doc: Document) {
       doc.cancelledBy === "customer" || doc.cancelledBy === "admin"
         ? doc.cancelledBy
         : null,
+    cancelReason:
+      typeof doc.cancelReason === "string" ? doc.cancelReason : null,
+    cancelReasonLabel:
+      typeof doc.cancelReasonLabel === "string" ? doc.cancelReasonLabel : null,
+    cancelReasonDetail:
+      typeof doc.cancelReasonDetail === "string"
+        ? doc.cancelReasonDetail
+        : null,
     createdAt: toISOStringMaybe(doc.createdAt),
     updatedAt: toISOStringMaybe(doc.updatedAt),
   };
 }
 
 export async function POST(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
@@ -181,6 +200,37 @@ export async function POST(
       });
     }
 
+    const payload = (await req.json().catch(() => null)) as {
+      reason?: unknown;
+      reasonLabel?: unknown;
+      reasonDetail?: unknown;
+    } | null;
+    const reason = typeof payload?.reason === "string" ? payload.reason : "";
+    const expectedReasonLabel = CANCEL_REASON_LABEL_BY_VALUE.get(
+      reason as (typeof CANCEL_REASON_OPTIONS)[number]["value"],
+    );
+
+    if (!expectedReasonLabel) {
+      return NextResponse.json(
+        { success: false, message: "신청 취소 사유를 선택해 주세요." },
+        { status: 400 },
+      );
+    }
+
+    const reasonDetail =
+      typeof payload?.reasonDetail === "string"
+        ? payload.reasonDetail.trim()
+        : "";
+    if (reasonDetail.length > CANCEL_REASON_DETAIL_MAX_LENGTH) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: `상세 사유는 ${CANCEL_REASON_DETAIL_MAX_LENGTH}자 이하로 입력해 주세요.`,
+        },
+        { status: 400 },
+      );
+    }
+
     if (!isAcademyApplicationStatus(current.status)) {
       return NextResponse.json(
         { success: false, message: "신청 취소가 가능한 상태가 아닙니다." },
@@ -189,18 +239,24 @@ export async function POST(
     }
 
     const now = new Date().toISOString();
+    const descriptionReason = reasonDetail
+      ? `${expectedReasonLabel} - ${reasonDetail}`
+      : expectedReasonLabel;
     const cancelUpdate: Document = {
       $set: {
         status: "cancelled",
         updatedAt: now,
         cancelledAt: now,
         cancelledBy: "customer",
+        cancelReason: reason,
+        cancelReasonLabel: expectedReasonLabel,
+        cancelReasonDetail: reasonDetail || null,
       },
       $push: {
         history: {
           status: "cancelled",
           date: now,
-          description: CUSTOMER_CANCEL_DESCRIPTION,
+          description: `${CUSTOMER_CANCEL_DESCRIPTION} 사유: ${descriptionReason}`,
           actorName: "고객",
         },
       },

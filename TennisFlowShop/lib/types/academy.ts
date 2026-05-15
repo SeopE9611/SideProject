@@ -20,7 +20,6 @@ export type AcademyCurrentLevel =
   | "advanced"
   | "unknown";
 
-
 export type AcademyApplicantProfile = {
   name: string;
   phone: string;
@@ -84,6 +83,9 @@ export type AcademyLessonApplication = {
 
   cancelledAt?: string | Date;
   cancelledBy?: "customer" | "admin";
+  cancelReason?: string | null;
+  cancelReasonLabel?: string | null;
+  cancelReasonDetail?: string | null;
 
   createdAt?: string;
   updatedAt?: string;
@@ -236,6 +238,9 @@ export type AcademyCustomerApplicationDetail = {
   classSnapshot: AcademyClassSnapshot | null;
   cancelledAt?: string | null;
   cancelledBy?: "customer" | "admin" | null;
+  cancelReason?: string | null;
+  cancelReasonLabel?: string | null;
+  cancelReasonDetail?: string | null;
   createdAt: string | null;
   updatedAt: string | null;
 };

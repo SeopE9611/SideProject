@@ -22,6 +22,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { badgeToneVariant, type BadgeSemanticTone } from "@/lib/badge-style";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
@@ -108,6 +116,16 @@ function formatPrice(price: number | null | undefined) {
 function displayValue(value: string | null | undefined) {
   return value?.trim() || "-";
 }
+
+const CANCEL_REASON_OPTIONS = [
+  { value: "schedule_mismatch", label: "일정이 맞지 않아요" },
+  { value: "apply_other_class", label: "다른 클래스를 신청하려고 해요" },
+  { value: "wrong_information", label: "신청 정보를 잘못 입력했어요" },
+  { value: "personal_reason", label: "개인 사정으로 수강이 어려워요" },
+  { value: "other", label: "기타" },
+] as const;
+
+const CANCEL_REASON_DETAIL_MAX_LENGTH = 300;
 
 function DetailSkeleton() {
   return (
@@ -313,6 +331,8 @@ function ApplicationInfoCard({
 export default function AcademyApplicationDetailClient({ id }: { id: string }) {
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
+  const [cancelReasonDetail, setCancelReasonDetail] = useState("");
   const { data, error, isLoading, mutate } =
     useSWR<AcademyCustomerApplicationDetailResponse>(
       `/api/applications/academy/${id}`,
@@ -349,12 +369,34 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
   const isCancelled = item.status === "cancelled";
 
   const handleCancelApplication = async () => {
+    if (!cancelReason) {
+      showErrorToast("신청 취소 사유를 선택해 주세요.");
+      return;
+    }
+
+    if (cancelReasonDetail.trim().length > CANCEL_REASON_DETAIL_MAX_LENGTH) {
+      showErrorToast(
+        `상세 사유는 ${CANCEL_REASON_DETAIL_MAX_LENGTH}자 이하로 입력해 주세요.`,
+      );
+      return;
+    }
+
+    const reasonLabel =
+      CANCEL_REASON_OPTIONS.find((option) => option.value === cancelReason)
+        ?.label ?? "";
+
     setIsCancelling(true);
 
     try {
       const response = await fetch(`/api/applications/academy/${id}/cancel`, {
         method: "POST",
         credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          reason: cancelReason,
+          reasonLabel,
+          reasonDetail: cancelReasonDetail.trim(),
+        }),
       });
       const payload = (await response.json().catch(() => null)) as {
         success?: boolean;
@@ -370,6 +412,8 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
 
       await mutate({ success: true, item: payload.item }, false);
       setIsCancelDialogOpen(false);
+      setCancelReason("");
+      setCancelReasonDetail("");
       showSuccessToast(
         payload.message === "이미 취소된 신청입니다."
           ? payload.message
@@ -504,15 +548,30 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
         </CardHeader>
         <CardContent className="space-y-3">
           {isCancelled ? (
-            <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm font-medium text-destructive">
-              이미 취소된 신청입니다. 다시 수강을 원하시면 아카데미 페이지에서
-              새로 신청해 주세요.
+            <div className="space-y-2 rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
+              <p className="font-medium">
+                이미 취소된 신청입니다. 다시 수강을 원하시면 아카데미 페이지에서
+                새로 신청해 주세요.
+              </p>
+              {item.cancelReasonLabel ? (
+                <p className="text-xs leading-5 text-destructive/85">
+                  취소 사유: {item.cancelReasonLabel}
+                  {item.cancelReasonDetail
+                    ? ` - ${item.cancelReasonDetail}`
+                    : ""}
+                </p>
+              ) : null}
             </div>
           ) : (
             <AlertDialog
               open={isCancelDialogOpen}
               onOpenChange={(open) => {
-                if (!isCancelling) setIsCancelDialogOpen(open);
+                if (isCancelling) return;
+                setIsCancelDialogOpen(open);
+                if (!open) {
+                  setCancelReason("");
+                  setCancelReasonDetail("");
+                }
               }}
             >
               <AlertDialogTrigger asChild>
@@ -534,13 +593,69 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
                     원하시면 아카데미 페이지에서 새로 신청해 주세요.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
+                <div className="space-y-4 py-1">
+                  <div className="space-y-2">
+                    <label
+                      className="text-sm font-medium"
+                      htmlFor="academy-cancel-reason"
+                    >
+                      취소 사유 <span className="text-destructive">*</span>
+                    </label>
+                    <Select
+                      value={cancelReason}
+                      onValueChange={setCancelReason}
+                      disabled={isCancelling}
+                    >
+                      <SelectTrigger id="academy-cancel-reason">
+                        <SelectValue placeholder="취소 사유를 선택해 주세요" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {CANCEL_REASON_OPTIONS.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {cancelReason === "other" ? (
+                    <div className="space-y-2">
+                      <label
+                        className="text-sm font-medium"
+                        htmlFor="academy-cancel-detail"
+                      >
+                        상세 사유{" "}
+                        <span className="text-muted-foreground">(선택)</span>
+                      </label>
+                      <Textarea
+                        id="academy-cancel-detail"
+                        value={cancelReasonDetail}
+                        onChange={(event) =>
+                          setCancelReasonDetail(event.target.value)
+                        }
+                        maxLength={CANCEL_REASON_DETAIL_MAX_LENGTH}
+                        rows={3}
+                        placeholder="운영자에게 전달할 내용을 간단히 입력해 주세요."
+                        disabled={isCancelling}
+                      />
+                      <p className="text-right text-xs text-muted-foreground">
+                        {cancelReasonDetail.length}/
+                        {CANCEL_REASON_DETAIL_MAX_LENGTH}
+                      </p>
+                    </div>
+                  ) : null}
+                  <p className="break-keep rounded-xl border border-border/60 bg-muted/30 p-3 text-xs leading-5 text-muted-foreground">
+                    취소 사유는 운영자가 신청 내역을 확인하고 안내를 개선하는 데
+                    사용됩니다.
+                  </p>
+                </div>
                 <AlertDialogFooter>
                   <AlertDialogCancel disabled={isCancelling}>
                     취소하지 않기
                   </AlertDialogCancel>
                   <AlertDialogAction
                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                    disabled={isCancelling}
+                    disabled={isCancelling || !cancelReason}
                     onClick={(event) => {
                       event.preventDefault();
                       void handleCancelApplication();
