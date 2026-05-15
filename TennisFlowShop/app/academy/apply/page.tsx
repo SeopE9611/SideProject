@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { ObjectId, type Document } from "mongodb";
 
 import AcademyApplyClient from "@/app/academy/apply/_components/AcademyApplyClient";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { getCurrentUserId } from "@/lib/hooks/get-current-user";
 import { getDb } from "@/lib/mongodb";
 import {
   getAcademyClassLessonTypeLabel,
@@ -12,6 +15,8 @@ import {
   isAcademyClassLevel,
   type AcademyClassLessonType,
   type AcademyClassLevel,
+  type AcademyActiveApplicationSummary,
+  type AcademyApplicantProfile,
   type PublicAcademyClass,
 } from "@/lib/types/academy";
 
@@ -113,6 +118,94 @@ async function getPublicAcademyClassById(
   }
 }
 
+
+const ACTIVE_APPLICATION_STATUSES = [
+  "submitted",
+  "reviewing",
+  "contacted",
+  "confirmed",
+] as const;
+
+function serializeActiveApplication(doc: Document): AcademyActiveApplicationSummary {
+  const classSnapshot =
+    doc.classSnapshot && typeof doc.classSnapshot === "object"
+      ? (doc.classSnapshot as { name?: unknown })
+      : null;
+
+  return {
+    id: serializeValue(doc._id) ?? "",
+    classId: typeof doc.classId === "string" ? doc.classId : null,
+    className:
+      typeof classSnapshot?.name === "string"
+        ? classSnapshot.name
+        : typeof doc.className === "string"
+          ? doc.className
+          : null,
+    preferredDays: Array.isArray(doc.preferredDays)
+      ? doc.preferredDays.filter((day): day is string => typeof day === "string")
+      : [],
+    status:
+      doc.status === "reviewing" ||
+      doc.status === "contacted" ||
+      doc.status === "confirmed"
+        ? doc.status
+        : "submitted",
+  };
+}
+
+async function getApplicantProfile(
+  userId: string,
+): Promise<AcademyApplicantProfile> {
+  if (!ObjectId.isValid(userId)) {
+    return { name: "", phone: "", email: "" };
+  }
+
+  try {
+    const db = await getDb();
+    const user = await db.collection("users").findOne(
+      { _id: new ObjectId(userId) },
+      { projection: { name: 1, phone: 1, email: 1 } },
+    );
+
+    return {
+      name: typeof user?.name === "string" ? user.name : "",
+      phone: typeof user?.phone === "string" ? user.phone : "",
+      email: typeof user?.email === "string" ? user.email : "",
+    };
+  } catch (error) {
+    console.error("[academy/apply] failed to load applicant profile", error);
+    return { name: "", phone: "", email: "" };
+  }
+}
+
+async function getActiveApplications(
+  userId: string,
+): Promise<AcademyActiveApplicationSummary[]> {
+  try {
+    const db = await getDb();
+    const docs = await db
+      .collection("academy_lesson_applications")
+      .find({
+        userId,
+        status: { $in: [...ACTIVE_APPLICATION_STATUSES] },
+      })
+      .project({
+        _id: 1,
+        classId: 1,
+        classSnapshot: 1,
+        preferredDays: 1,
+        status: 1,
+      })
+      .sort({ createdAt: -1 })
+      .toArray();
+
+    return docs.map(serializeActiveApplication);
+  } catch (error) {
+    console.error("[academy/apply] failed to load active applications", error);
+    return [];
+  }
+}
+
 const notices = [
   "신청 접수 후 상담을 통해 등록 가능 여부와 결제 방법을 안내드립니다.",
   "수업 일정과 수강료는 상담 후 최종 확인됩니다.",
@@ -127,7 +220,25 @@ export default async function AcademyApplyPage({
   const resolvedSearchParams = await searchParams;
   const rawClassId = resolvedSearchParams?.classId;
   const classId = Array.isArray(rawClassId) ? rawClassId[0] : rawClassId;
-  const selectedClass = await getPublicAcademyClassById(classId ?? null);
+  const currentPath = `/academy/apply${classId ? `?classId=${encodeURIComponent(classId)}` : ""}`;
+  const userId = await getCurrentUserId();
+
+  if (!userId) {
+    redirect(`/login?next=${encodeURIComponent(currentPath)}`);
+  }
+
+  const [selectedClass, initialApplicantInfo, activeApplications] =
+    await Promise.all([
+      getPublicAcademyClassById(classId ?? null),
+      getApplicantProfile(userId),
+      getActiveApplications(userId),
+    ]);
+  const duplicateApplication = selectedClass
+    ? activeApplications.find(
+        (application) => application.classId === selectedClass._id,
+      )
+    : null;
+
   return (
     <main className="min-h-screen bg-background px-4 py-10 md:px-6 md:py-14">
       <div className="mx-auto max-w-4xl space-y-8">
@@ -156,10 +267,38 @@ export default async function AcademyApplyPage({
           </CardContent>
         </Card>
 
-        <AcademyApplyClient
-          requestedClassId={classId ?? null}
-          selectedClass={selectedClass}
-        />
+        {duplicateApplication ? (
+          <Card className="border-border bg-card">
+            <CardContent className="space-y-4 p-5 md:p-6">
+              <div className="space-y-2">
+                <h2 className="break-keep text-xl font-semibold text-foreground">
+                  이미 신청한 클래스입니다.
+                </h2>
+                <p className="break-keep text-sm leading-6 text-muted-foreground">
+                  기존 신청 내역에서 진행 상태를 확인해 주세요. 같은 클래스는
+                  진행 중인 신청이 있을 때 중복 신청할 수 없습니다.
+                </p>
+              </div>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <Button asChild>
+                  <a href={`/mypage/academy-applications/${duplicateApplication.id}`}>
+                    신청 내역 보기
+                  </a>
+                </Button>
+                <Button asChild variant="outline">
+                  <a href="/academy">아카데미로 돌아가기</a>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <AcademyApplyClient
+            requestedClassId={classId ?? null}
+            selectedClass={selectedClass}
+            initialApplicantInfo={initialApplicantInfo}
+            activeApplications={activeApplications}
+          />
+        )}
       </div>
     </main>
   );

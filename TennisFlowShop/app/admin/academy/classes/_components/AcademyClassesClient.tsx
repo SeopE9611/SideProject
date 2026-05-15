@@ -8,6 +8,16 @@ import { BookOpen, Eye, EyeOff, MoreHorizontal, Pencil, Plus, Search, Trash2 } f
 
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { adminSurface } from "@/components/admin/admin-typography";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -148,6 +158,9 @@ export default function AcademyClassesClient() {
   const [keyword, setKeyword] = useState("");
   const [hidingId, setHidingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [pendingAction, setPendingAction] = useState<
+    { type: "hide" | "delete"; item: AcademyClass } | null
+  >(null);
 
   const query = useMemo(() => {
     const params = new URLSearchParams({
@@ -195,10 +208,6 @@ export default function AcademyClassesClient() {
 
   async function hideClass(item: AcademyClass) {
     if (!item._id || hidingId) return;
-    const confirmed = window.confirm(
-      "이 클래스를 숨김 처리할까요?\n고객 화면에는 노출되지 않지만, 기존 신청 내역과 운영 데이터는 보존됩니다.",
-    );
-    if (!confirmed) return;
 
     setHidingId(item._id);
     try {
@@ -225,11 +234,6 @@ export default function AcademyClassesClient() {
       return;
     }
 
-    const confirmed = window.confirm(
-      "이 클래스를 영구 삭제할까요?\n연결된 신청 내역이 없는 클래스만 삭제할 수 있습니다.\n삭제 후에는 복구할 수 없습니다.",
-    );
-    if (!confirmed) return;
-
     setDeletingId(item._id);
     try {
       await adminMutator(`/api/admin/academy/classes/${item._id}/hard-delete`, {
@@ -243,6 +247,19 @@ export default function AcademyClassesClient() {
       setDeletingId(null);
     }
   }
+
+  const handleConfirmPendingAction = () => {
+    const action = pendingAction;
+    setPendingAction(null);
+    if (!action) return;
+
+    if (action.type === "hide") {
+      void hideClass(action.item);
+      return;
+    }
+
+    void hardDeleteClass(action.item);
+  };
 
   return (
     <div className="space-y-5 px-4 py-6 sm:px-6 lg:px-8">
@@ -443,7 +460,7 @@ export default function AcademyClassesClient() {
                               onSelect={(event) => {
                                 event.preventDefault();
                                 if (isHideDisabled) return;
-                                void hideClass(item);
+                                setPendingAction({ type: "hide", item });
                               }}
                             >
                               <EyeOff className="mr-2 h-4 w-4" />
@@ -466,7 +483,7 @@ export default function AcademyClassesClient() {
                                   }
                                   return;
                                 }
-                                void hardDeleteClass(item);
+                                setPendingAction({ type: "delete", item });
                               }}
                             >
                               <Trash2 className="mr-2 h-4 w-4" />
@@ -513,6 +530,36 @@ export default function AcademyClassesClient() {
           </div>
         </CardContent>
       </Card>
+      <AlertDialog
+        open={Boolean(pendingAction)}
+        onOpenChange={(open) => {
+          if (!open) setPendingAction(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {pendingAction?.type === "delete"
+                ? "클래스를 영구 삭제할까요?"
+                : "클래스를 숨김 처리할까요?"}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="break-keep leading-6">
+              {pendingAction?.type === "delete"
+                ? "이 클래스를 영구 삭제할까요? 연결된 신청 내역이 없는 클래스만 삭제할 수 있으며, 삭제 후에는 복구할 수 없습니다."
+                : "이 클래스를 숨김 처리할까요? 고객 화면에는 노출되지 않지만, 기존 신청 내역과 운영 데이터는 보존됩니다."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>취소</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmPendingAction}
+              className={pendingAction?.type === "delete" ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : undefined}
+            >
+              {pendingAction?.type === "delete" ? "영구 삭제" : "숨김 처리"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -15,10 +15,17 @@ import {
   type AcademyCurrentLevel,
   type AcademyLessonApplication,
   type AcademyLessonType,
+  type AcademyLessonApplicationStatus,
 } from "@/lib/types/academy";
 
 const COLLECTION_NAME = "academy_lesson_applications";
 const CLASS_COLLECTION_NAME = "academy_classes";
+const ACTIVE_APPLICATION_STATUSES: AcademyLessonApplicationStatus[] = [
+  "submitted",
+  "reviewing",
+  "contacted",
+  "confirmed",
+];
 
 const LESSON_TYPES = new Set<AcademyLessonType>([
   "group",
@@ -97,8 +104,20 @@ function optionalTrimString(value: unknown, maxLength: number) {
   return trimmed.length > 0 ? trimmed : null;
 }
 
-function toErrorResponse(message: string, status = 400) {
-  return NextResponse.json({ success: false, message }, { status });
+function toErrorResponse(
+  message: string,
+  status = 400,
+  extra?: Record<string, unknown>,
+) {
+  return NextResponse.json({ success: false, message, ...extra }, { status });
+}
+
+function getClassName(doc: Document) {
+  const snapshot =
+    doc.classSnapshot && typeof doc.classSnapshot === "object"
+      ? (doc.classSnapshot as { name?: unknown })
+      : null;
+  return typeof snapshot?.name === "string" ? snapshot.name : null;
 }
 
 export async function POST(req: Request) {
@@ -113,23 +132,17 @@ export async function POST(req: Request) {
   const payload =
     body && typeof body === "object" ? (body as Record<string, unknown>) : {};
 
-  const applicantName = trimString(payload.applicantName, 50);
-  const phone = trimString(payload.phone, 30);
-  const email = optionalTrimString(payload.email, 100);
+  const userId = await getCurrentUserId();
+  if (!userId) {
+    return toErrorResponse("로그인 후 레슨 신청을 진행해 주세요.", 401);
+  }
+
   const desiredLessonType = payload.desiredLessonType;
   const currentLevel = payload.currentLevel;
   const preferredTimeText = optionalTrimString(payload.preferredTimeText, 100);
   const lessonGoal = optionalTrimString(payload.lessonGoal, 500);
   const requestMemo = optionalTrimString(payload.requestMemo, 1000);
   const requestedClassId = optionalTrimString(payload.classId, 64);
-
-  if (!applicantName) {
-    return toErrorResponse("신청자명을 입력해 주세요.");
-  }
-
-  if (!phone) {
-    return toErrorResponse("연락처를 입력해 주세요.");
-  }
 
   if (
     typeof desiredLessonType !== "string" ||
@@ -167,6 +180,23 @@ export async function POST(req: Request) {
 
   const db = await getDb();
 
+  if (!ObjectId.isValid(userId)) {
+    return toErrorResponse("로그인 정보를 확인해 주세요.", 401);
+  }
+
+  const user = await db.collection("users").findOne(
+    { _id: new ObjectId(userId) },
+    { projection: { name: 1, phone: 1, email: 1 } },
+  );
+
+  const applicantName = trimString(user?.name, 50);
+  const phone = trimString(user?.phone, 30);
+  const email = optionalTrimString(user?.email, 100);
+
+  if (!applicantName || !phone) {
+    return toErrorResponse("회원정보의 이름과 연락처를 먼저 등록해 주세요.");
+  }
+
   if (requestedClassId) {
     if (!ObjectId.isValid(requestedClassId)) {
       return toErrorResponse("신청할 수 없는 클래스입니다.");
@@ -199,8 +229,67 @@ export async function POST(req: Request) {
     classSnapshot = createClassSnapshot(selectedClass);
   }
 
+  const activeApplications = await db
+    .collection(COLLECTION_NAME)
+    .find({
+      userId,
+      status: { $in: ACTIVE_APPLICATION_STATUSES },
+    })
+    .project({ _id: 1, classId: 1, classSnapshot: 1, preferredDays: 1 })
+    .sort({ createdAt: -1 })
+    .toArray();
+
+  if (classId) {
+    const duplicateApplication = activeApplications.find(
+      (application) => application.classId === classId,
+    );
+
+    if (duplicateApplication) {
+      return toErrorResponse(
+        "이미 신청한 클래스입니다. 기존 신청 내역을 확인해 주세요.",
+        409,
+        {
+          code: "ACADEMY_DUPLICATE_CLASS",
+          existingApplicationId: serializeObjectId(duplicateApplication._id),
+        },
+      );
+    }
+  }
+
+  const dayConflict = activeApplications.find((application) => {
+    if (classId && application.classId === classId) return false;
+    const existingDays = Array.isArray(application.preferredDays)
+      ? application.preferredDays.filter(
+          (day): day is string => typeof day === "string",
+        )
+      : [];
+    return existingDays.some((day) => preferredDays.includes(day));
+  });
+
+  if (dayConflict) {
+    const existingDays = Array.isArray(dayConflict.preferredDays)
+      ? dayConflict.preferredDays.filter(
+          (day): day is string => typeof day === "string",
+        )
+      : [];
+    const overlapDays = existingDays.filter((day) => preferredDays.includes(day));
+
+    return toErrorResponse(
+      "이미 신청한 클래스와 희망 요일이 겹칩니다.",
+      409,
+      {
+        code: "ACADEMY_DAY_CONFLICT",
+        conflict: {
+          applicationId: serializeObjectId(dayConflict._id),
+          className: getClassName(dayConflict),
+          existingDays,
+          overlapDays,
+        },
+      },
+    );
+  }
+
   const now = new Date().toISOString();
-  const userId = await getCurrentUserId();
 
   const application: Omit<AcademyLessonApplication, "_id"> = {
     userId,
