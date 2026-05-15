@@ -1221,6 +1221,17 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                     <Link href={nextActionGuide.actionHref}>{nextActionGuide.actionLabel}</Link>
                   </Button>
                 ) : null}
+                <div className="rounded-lg border border-border/60 bg-background/70 p-3">
+                  <p className="text-sm font-semibold text-foreground">교체서비스 처리 체크리스트</p>
+                  <ul className="mt-2 grid gap-1.5 text-xs leading-relaxed text-muted-foreground sm:grid-cols-2">
+                    <li>□ 고객 요청사항 확인</li>
+                    <li>□ 스트링/장력 정보 확인</li>
+                    <li>□ 결제 상태 또는 연결 주문 확인</li>
+                    <li>□ 배송/방문/자가발송 정보 확인</li>
+                    <li>□ 작업 상태 변경</li>
+                    <li>□ 완료 후 연결 주문/대여 상태 확인</li>
+                  </ul>
+                </div>
               </CardContent>
             </Card>
           )}

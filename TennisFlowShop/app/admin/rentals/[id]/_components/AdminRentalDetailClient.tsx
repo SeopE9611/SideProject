@@ -819,6 +819,17 @@ export default function AdminRentalDetailClient() {
                   <Link href={nextActionGuide.actionHref}>{nextActionGuide.actionLabel}</Link>
                 </Button>
               ) : null}
+              <div className="rounded-lg border border-border/60 bg-background/70 p-3">
+                <p className="text-sm font-semibold text-foreground">라켓 대여 처리 체크리스트</p>
+                <ul className="mt-2 grid gap-1.5 text-xs leading-relaxed text-muted-foreground sm:grid-cols-2">
+                  <li>□ 결제 상태 확인</li>
+                  <li>□ 출고 운송장 또는 방문 수령 정보 확인</li>
+                  <li>□ 대여중 처리</li>
+                  <li>□ 반납 예정일 확인</li>
+                  <li>□ 반납 완료 처리</li>
+                  <li>□ 보증금 환불 상태 확인</li>
+                </ul>
+              </div>
             </CardContent>
           </Card>
 

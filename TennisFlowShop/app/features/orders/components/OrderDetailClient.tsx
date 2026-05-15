@@ -1271,6 +1271,17 @@ export default function OrderDetailClient({ orderId }: Props) {
                   <Link href={nextActionGuide.actionHref}>{nextActionGuide.actionLabel}</Link>
                 </Button>
               ) : null}
+              <div className="rounded-lg border border-border/60 bg-background/70 p-3">
+                <p className="text-sm font-semibold text-foreground">주문 처리 체크리스트</p>
+                <ul className="mt-2 grid gap-1.5 text-xs leading-relaxed text-muted-foreground sm:grid-cols-2">
+                  <li>□ 결제 상태 확인</li>
+                  <li>□ 배송지/수령 방식 확인</li>
+                  <li>□ 운송장 또는 방문 수령 정보 확인</li>
+                  <li>□ 배송/수령 상태 변경</li>
+                  <li>□ 취소 요청이 있으면 환불 수단 확인</li>
+                  <li>□ 처리 이력 확인</li>
+                </ul>
+              </div>
             </CardContent>
           </Card>
 

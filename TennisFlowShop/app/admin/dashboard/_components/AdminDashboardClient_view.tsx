@@ -492,6 +492,64 @@ export default function AdminDashboardClient() {
       />
 
       <section className="space-y-4">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h2 className="text-2xl font-semibold tracking-normal">오늘 처리해야 할 일</h2>
+            <p className="text-sm text-muted-foreground">보고 지표보다 먼저 확인해야 하는 운영 업무입니다.</p>
+          </div>
+          <Button asChild variant="outline" className="w-fit bg-transparent">
+            <Link href="/admin/operations">오늘 처리함 열기</Link>
+          </Button>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <Card className="border-warning/40 bg-warning/5">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">긴급 알림</CardTitle>
+              <CardDescription>취소·장기 결제대기·연체</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm">
+              <div className="flex items-center justify-between"><span>취소 요청</span><Badge variant={data.kpi.queue.cancelRequests > 0 ? "destructive" : "secondary"}>{formatAdminNumber(data.kpi.queue.cancelRequests)}</Badge></div>
+              <div className="flex items-center justify-between"><span>결제 대기 24h+</span><Badge variant={data.kpi.queue.paymentPending24h > 0 ? "destructive" : "secondary"}>{formatAdminNumber(data.kpi.queue.paymentPending24h)}</Badge></div>
+              <div className="flex items-center justify-between"><span>대여 연체</span><Badge variant={data.kpi.queue.rentalOverdue > 0 ? "destructive" : "secondary"}>{formatAdminNumber(data.kpi.queue.rentalOverdue)}</Badge></div>
+            </CardContent>
+          </Card>
+          <Card className="border-primary/30 bg-primary/5">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">오늘 처리</CardTitle>
+              <CardDescription>배송·교체서비스·반납</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm">
+              <div className="flex items-center justify-between"><span>송장 등록 대기</span><Badge variant={data.kpi.queue.shippingPending > 0 ? "default" : "outline"}>{formatAdminNumber(data.kpi.queue.shippingPending)}</Badge></div>
+              <div className="flex items-center justify-between"><span>교체 3일+</span><Badge variant={data.kpi.queue.stringingAging3d > 0 ? "default" : "outline"}>{formatAdminNumber(data.kpi.queue.stringingAging3d)}</Badge></div>
+              <div className="flex items-center justify-between"><span>반납 임박 48h</span><Badge variant={data.kpi.queue.rentalDueSoon > 0 ? "default" : "outline"}>{formatAdminNumber(data.kpi.queue.rentalDueSoon)}</Badge></div>
+            </CardContent>
+          </Card>
+          <Card className="border-info/40 bg-info/5">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">확인 필요</CardTitle>
+              <CardDescription>오프라인·알림·정산</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm">
+              <div className="flex items-center justify-between"><span>오프라인 미결제</span><Badge variant={offlineMetrics.pendingOfflineCount > 0 ? "destructive" : "secondary"}>{formatAdminNumber(offlineMetrics.pendingOfflineCount)}</Badge></div>
+              <div className="flex items-center justify-between"><span>알림 실패</span><Badge variant={data.kpi.queue.outboxFailed > 0 ? "destructive" : "secondary"}>{formatAdminNumber(data.kpi.queue.outboxFailed)}</Badge></div>
+              <div className="flex items-center justify-between"><span>지난달 정산</span><Badge variant={!data.settlements.hasPrevSnapshot ? "destructive" : "secondary"}>{!data.settlements.hasPrevSnapshot ? "미생성" : "OK"}</Badge></div>
+            </CardContent>
+          </Card>
+          <Card className="border-border/60 bg-card">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">바로가기</CardTitle>
+              <CardDescription>업무 시작 동선</CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-2">
+              <Button asChild size="sm" variant="outline" className="justify-start bg-transparent"><Link href="/admin/orders">주문·교체서비스 처리</Link></Button>
+              <Button asChild size="sm" variant="outline" className="justify-start bg-transparent"><Link href="/admin/rentals">라켓 대여 처리</Link></Button>
+              <Button asChild size="sm" variant="outline" className="justify-start bg-transparent"><Link href="/admin/academy/applications">아카데미 상담</Link></Button>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      <section className="space-y-4">
         <div>
           <h2 className="text-2xl font-semibold tracking-normal">핵심 지표</h2>
           <p className="text-sm text-muted-foreground">주요 비즈니스 메트릭</p>
@@ -558,8 +616,8 @@ export default function AdminDashboardClient() {
 
       <section className="space-y-4">
         <div>
-          <h2 className="text-2xl font-semibold tracking-normal">즉시 처리 필요</h2>
-          <p className="text-sm text-muted-foreground">긴급 대응이 필요한 항목</p>
+          <h2 className="text-2xl font-semibold tracking-normal">운영 큐 상세</h2>
+          <p className="text-sm text-muted-foreground">상단 오늘 처리 업무의 세부 근거와 보조 큐입니다.</p>
         </div>
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           <Card className="border-destructive/40 bg-destructive/10 dark:border-destructive/40 dark:bg-destructive/15">

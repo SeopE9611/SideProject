@@ -606,6 +606,7 @@ export default function OperationsClient() {
   const [isFilterScrolled, setIsFilterScrolled] = useState(false);
   const [displayDensity, setDisplayDensity] = useState<"default" | "compact">("default");
   const [activeQuickView, setActiveQuickView] = useState<OperationsQuickView>("all");
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
   const replaceSyncedOperationsUrl = useCallback(
     (url: string) => {
@@ -903,6 +904,69 @@ export default function OperationsClient() {
   }, [flow, integrated, kind, onlyWarn, q, warnFilter, warnSort]);
   const activeQuickViewMeta = useMemo(() => QUICK_VIEWS.find((view) => view.key === activeQuickView) ?? QUICK_VIEWS[0], [activeQuickView]);
 
+  useEffect(() => {
+    if (activeFilterCount > 0) {
+      setShowAdvancedFilters(true);
+    }
+  }, [activeFilterCount]);
+
+  const practicalTaskCards = useMemo(() => {
+    const countBy = (predicate: (group: (typeof groupsToRender)[number]) => boolean) => groupsToRender.filter(predicate).length;
+    return [
+      {
+        title: "취소 요청",
+        count: countBy(isCancelRequestedGroup),
+        description: "고객이 취소를 요청했습니다. 환불 계좌/결제수단을 확인한 뒤 승인 또는 거절하세요.",
+        action: "바로 처리",
+        onClick: () => applyQuickView("cancelRequests"),
+        tone: "urgent" as const,
+      },
+      {
+        title: "결제 확인",
+        count: countBy(hasPaymentCheckNeeded),
+        description: "입금/결제 대기 또는 동기화 확인이 필요한 건을 먼저 확인하세요.",
+        action: "바로 처리",
+        onClick: () => applyQuickView("paymentCheck"),
+        tone: "warning" as const,
+      },
+      {
+        title: "배송/출고 처리",
+        count: countBy(hasShippingMissing),
+        description: "배송지와 수령 방식을 확인하고 운송장 또는 방문 수령 정보를 정리하세요.",
+        action: "바로 처리",
+        onClick: () => applyQuickView("shippingMissing"),
+        tone: "default" as const,
+      },
+      {
+        title: "교체서비스 작업",
+        count: countBy((group) => group.items.some((item) => item.kind === "stringing_application")),
+        description: "고객 요청사항, 스트링/장력, 연결 주문 상태를 확인한 뒤 작업 상태를 변경하세요.",
+        action: "신청 보기",
+        onClick: () => {
+          setKind("stringing_application");
+          setPage(1);
+        },
+        tone: "default" as const,
+      },
+      {
+        title: "대여 반납",
+        count: countBy(hasRentalDue),
+        description: "반납 예정/연체 라켓의 운송장, 라켓 상태, 보증금 환불 여부를 확인하세요.",
+        action: "바로 처리",
+        onClick: () => applyQuickView("rentalDue"),
+        tone: "warning" as const,
+      },
+      {
+        title: "연결 오류/확인 필요",
+        count: countBy(isLinkedWorkGroup),
+        description: "주문·교체서비스·대여 연결 문서와 표시된 확인 사유를 점검하세요.",
+        action: "바로 처리",
+        onClick: () => applyQuickView("linkedReview"),
+        tone: "warning" as const,
+      },
+    ];
+  }, [groupsToRender]);
+
   const activeKpi = useMemo(() => {
     if (warnFilter === "warn") return "urgent";
     if (warnFilter === "caution") return "caution";
@@ -1016,7 +1080,68 @@ export default function OperationsClient() {
             </CardHeader>
           </Card>
         </div>
-        <div className="rounded-xl border border-border bg-card p-3">
+        <div className="mt-4 space-y-3">
+          <div className="grid gap-3 bp-sm:grid-cols-2 bp-lg:grid-cols-4">
+            {practicalTaskCards.map((task) => (
+              <Card key={task.title} className={cn("border-border bg-card shadow-sm", task.tone === "urgent" && "border-warning/40 bg-warning/5", task.tone === "warning" && "border-info/40 bg-info/5")}>
+                <CardHeader className="p-3 pb-2">
+                  <CardTitle className="flex items-baseline justify-between gap-2 text-sm font-semibold">
+                    <span>{task.title}</span>
+                    <span className="text-lg font-bold text-foreground">{task.count}건</span>
+                  </CardTitle>
+                  <CardDescription className="min-h-[40px] text-xs leading-relaxed text-foreground/75">{task.description}</CardDescription>
+                </CardHeader>
+                <CardContent className="p-3 pt-0">
+                  <Button type="button" size="sm" variant="outline" className="h-8 w-full bg-background/70 text-xs" onClick={task.onClick}>
+                    {task.action}
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+            <Card className="border-border bg-card shadow-sm">
+              <CardHeader className="p-3 pb-2">
+                <CardTitle className="flex items-baseline justify-between gap-2 text-sm font-semibold">
+                  <span>오프라인 미결제/보정</span>
+                  <span className="text-lg font-bold text-muted-foreground">-</span>
+                </CardTitle>
+                <CardDescription className="min-h-[40px] text-xs leading-relaxed text-foreground/75">오프라인 미결제, 패키지 발급 실패, 보정 필요 항목을 확인하세요.</CardDescription>
+              </CardHeader>
+              <CardContent className="p-3 pt-0">
+                <Button asChild size="sm" variant="outline" className="h-8 w-full bg-background/70 text-xs">
+                  <Link href="/admin/offline/reconciliation">바로 처리</Link>
+                </Button>
+              </CardContent>
+            </Card>
+            <Card className="border-border bg-card shadow-sm">
+              <CardHeader className="p-3 pb-2">
+                <CardTitle className="flex items-baseline justify-between gap-2 text-sm font-semibold">
+                  <span>아카데미 상담</span>
+                  <span className="text-lg font-bold text-muted-foreground">-</span>
+                </CardTitle>
+                <CardDescription className="min-h-[40px] text-xs leading-relaxed text-foreground/75">신규 신청, 검토 중, 상담 대기, 등록 확정 대기 건을 확인하세요.</CardDescription>
+              </CardHeader>
+              <CardContent className="p-3 pt-0">
+                <Button asChild size="sm" variant="outline" className="h-8 w-full bg-background/70 text-xs">
+                  <Link href="/admin/academy/applications">바로 처리</Link>
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+          <details className="rounded-lg border border-border/70 bg-muted/20 px-3 py-2 text-sm">
+            <summary className="cursor-pointer font-semibold text-foreground">오늘 업무 처리 순서</summary>
+            <ol className="mt-2 list-decimal space-y-1 pl-5 text-xs leading-relaxed text-muted-foreground">
+              <li>취소 요청을 먼저 확인합니다.</li>
+              <li>결제 대기/입금 확인 건을 처리합니다.</li>
+              <li>배송/출고 누락 건을 처리합니다.</li>
+              <li>교체서비스 작업 상태를 확인합니다.</li>
+              <li>라켓 대여 반납/연체를 확인합니다.</li>
+              <li>오프라인 미결제와 보정 필요 항목을 확인합니다.</li>
+              <li>아카데미 상담 대기 건을 확인합니다.</li>
+            </ol>
+          </details>
+        </div>
+
+        <div className="mt-4 rounded-xl border border-border bg-card p-3">
           <div className={cn(adminSurface.filterCard, "mb-3 p-3 sm:p-3")}>
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div>
@@ -1079,17 +1204,23 @@ export default function OperationsClient() {
         >
           <CardHeader className="flex flex-row items-start justify-between gap-3 pb-2">
             <div>
-              <CardTitle>필터 및 검색</CardTitle>
-              <CardDescription className="text-xs mt-1">검색과 핵심 필터로 바로 업무를 좁혀보세요.</CardDescription>
+              <CardTitle>고급 필터</CardTitle>
+              <CardDescription className="text-xs mt-1">검색, 종류, 시나리오, 연결, 문제 유형, 정렬 조건은 필요할 때만 열어 사용합니다.</CardDescription>
               {error && !shouldShowGlobalError && <p className="mt-1 text-[11px] text-warning">검색 결과를 새로 불러오지 못해 이전 결과를 유지 중입니다. 잠시 후 다시 시도해 주세요.</p>}
               {activeFilterCount > 0 && <Badge className={cn(badgeBase, badgeSizeSm, "mt-2 " + badgeToneClass("brand"))}>적용된 필터 {activeFilterCount}개</Badge>}
             </div>
 
-            <Button variant="outline" size="sm" onClick={reset} className="shrink-0 bg-transparent">
-              필터 초기화
-            </Button>
+            <div className="flex shrink-0 gap-2">
+              <Button variant="outline" size="sm" onClick={() => setShowAdvancedFilters((prev) => !prev)} className="bg-transparent">
+                {showAdvancedFilters ? "고급 필터 닫기" : "고급 필터 열기"}
+              </Button>
+              <Button variant="outline" size="sm" onClick={reset} className="bg-transparent">
+                필터 초기화
+              </Button>
+            </div>
           </CardHeader>
-          <CardContent className="space-y-3">
+          {showAdvancedFilters && (
+            <CardContent className="space-y-3">
             {/* 검색 + 주요 버튼 */}
             <div className="flex flex-wrap items-center gap-2">
               <div className="relative w-full max-w-md">
@@ -1256,7 +1387,8 @@ export default function OperationsClient() {
                 </span>
               </div>
             </div>
-          </CardContent>
+            </CardContent>
+          )}
         </Card>
       </div>
 
