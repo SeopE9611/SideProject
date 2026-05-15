@@ -88,7 +88,6 @@ function serializeAcademyClass(doc: Document): PublicAcademyClass {
   };
 }
 
-
 const ACTIVE_APPLICATION_STATUSES = [
   "submitted",
   "reviewing",
@@ -96,7 +95,9 @@ const ACTIVE_APPLICATION_STATUSES = [
   "confirmed",
 ] as const;
 
-function serializeActiveApplication(doc: Document): AcademyActiveApplicationSummary {
+function serializeActiveApplication(
+  doc: Document,
+): AcademyActiveApplicationSummary {
   const classSnapshot =
     doc.classSnapshot && typeof doc.classSnapshot === "object"
       ? (doc.classSnapshot as { name?: unknown })
@@ -105,9 +106,12 @@ function serializeActiveApplication(doc: Document): AcademyActiveApplicationSumm
   return {
     id: serializeObjectId(doc._id),
     classId: typeof doc.classId === "string" ? doc.classId : null,
-    className: typeof classSnapshot?.name === "string" ? classSnapshot.name : null,
+    className:
+      typeof classSnapshot?.name === "string" ? classSnapshot.name : null,
     preferredDays: Array.isArray(doc.preferredDays)
-      ? doc.preferredDays.filter((day): day is string => typeof day === "string")
+      ? doc.preferredDays.filter(
+          (day): day is string => typeof day === "string",
+        )
       : [],
     status:
       doc.status === "reviewing" ||
@@ -132,7 +136,13 @@ async function getMyActiveAcademyApplications(
         classId: { $type: "string", $ne: "" },
         status: { $in: [...ACTIVE_APPLICATION_STATUSES] },
       })
-      .project({ _id: 1, classId: 1, classSnapshot: 1, preferredDays: 1, status: 1 })
+      .project({
+        _id: 1,
+        classId: 1,
+        classSnapshot: 1,
+        preferredDays: 1,
+        status: 1,
+      })
       .toArray();
 
     return docs.map(serializeActiveApplication);
@@ -260,10 +270,10 @@ export default async function AcademyPage() {
   );
 
   return (
-    <main className="min-h-screen bg-background px-4 py-10 md:px-6 md:py-14">
-      <div className="mx-auto max-w-6xl space-y-10 md:space-y-12">
-        <section className="rounded-2xl border border-border bg-card px-5 py-8 shadow-sm md:px-8 md:py-10">
-          <div className="max-w-3xl space-y-5">
+    <main className="min-h-screen bg-background px-4 py-8 md:px-6 md:py-12">
+      <div className="mx-auto max-w-6xl space-y-9 md:space-y-11">
+        <section className="rounded-3xl border border-border bg-card px-5 py-8 shadow-sm md:px-9 md:py-11">
+          <div className="max-w-3xl space-y-6">
             <div className="space-y-3">
               <p className="text-sm font-semibold text-success">
                 도깨비테니스 레슨 안내
@@ -271,16 +281,22 @@ export default async function AcademyPage() {
               <h1 className="break-keep text-3xl font-bold tracking-tight text-foreground md:text-5xl">
                 도깨비테니스 아카데미
               </h1>
-              <p className="break-keep text-base leading-7 text-foreground/80 md:text-lg">
+              <p className="max-w-2xl break-keep text-base leading-7 text-foreground/80 md:text-lg md:leading-8">
                 입문자부터 실전 플레이어까지, 목표와 레벨에 맞춘 테니스 레슨을
                 안내합니다. 기본기, 랠리, 경기 운영까지 필요한 방향을 상담하며
                 함께 찾아보세요.
               </p>
             </div>
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="flex flex-col gap-3 pt-1 sm:flex-row sm:items-center">
               <Button asChild size="lg" className="w-full sm:w-auto">
-                <Link href="/board/qna/write?category=academy">
-                  레슨 문의하기
+                <Link
+                  href={
+                    userId
+                      ? "/academy/apply"
+                      : `/login?next=${encodeURIComponent("/academy/apply")}`
+                  }
+                >
+                  {userId ? "레슨 신청하기" : "로그인 후 신청"}
                 </Link>
               </Button>
               <Button
@@ -289,12 +305,12 @@ export default async function AcademyPage() {
                 variant="outline"
                 className="w-full sm:w-auto"
               >
-                <Link href={userId ? "/academy/apply" : `/login?next=${encodeURIComponent("/academy/apply")}`}>{userId ? "레슨 신청하기" : "로그인 후 신청"}</Link>
+                <Link href="/board/qna/write?category=academy">문의하기</Link>
               </Button>
             </div>
-            <p className="break-keep text-sm leading-6 text-muted-foreground">
-              레슨 신청 후 담당자가 일정과 수강 방식을 확인해드립니다.
-              등록이 확정되면 현장에서 결제를 안내해드립니다.
+            <p className="max-w-2xl break-keep text-sm leading-6 text-muted-foreground">
+              레슨 신청 후 담당자가 일정과 수강 방식을 확인해드립니다. 등록이
+              확정되면 현장에서 결제를 안내해드립니다.
             </p>
           </div>
         </section>
@@ -318,7 +334,7 @@ export default async function AcademyPage() {
               <Card
                 key={program.category}
                 variant="interactive"
-                className="flex h-full flex-col overflow-hidden"
+                className="flex h-full flex-col overflow-hidden border-border bg-card"
               >
                 <CardHeader variant="section" className="space-y-3">
                   <div className="flex items-center justify-between gap-3">
@@ -331,11 +347,11 @@ export default async function AcademyPage() {
                     {program.description}
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="flex flex-1 flex-col gap-3 p-5 md:p-6">
+                <CardContent className="flex flex-1 flex-col gap-3 p-4 md:p-5">
                   {program.items.map((item) => (
                     <div
                       key={`${program.category}-${item.title}-${item.detail}`}
-                      className="rounded-xl border border-border bg-background/70 p-4 transition-[border-color,background-color] duration-200 hover:border-success/45 hover:bg-card"
+                      className="rounded-xl border border-border bg-background/70 p-4 transition-[border-color,background-color] duration-200 hover:border-success/35 hover:bg-card"
                     >
                       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                         <div className="min-w-0 space-y-1">
@@ -346,7 +362,7 @@ export default async function AcademyPage() {
                             {item.detail}
                           </p>
                         </div>
-                        <p className="shrink-0 text-left text-base font-bold text-success sm:text-right">
+                        <p className="shrink-0 whitespace-nowrap text-left text-base font-bold text-success sm:text-right">
                           {item.price}
                         </p>
                       </div>
@@ -370,8 +386,9 @@ export default async function AcademyPage() {
               상담 문의
             </h2>
             <p className="break-keep text-sm leading-6 text-muted-foreground">
-              레슨 유형, 시간표, 수강 시작 가능일이 궁금하다면 담당자에게 문의해 주세요.
-              상담 후 등록이 확정되면 첫 방문 시 현장에서 결제를 안내합니다.
+              레슨 유형, 시간표, 수강 시작 가능일이 궁금하다면 담당자에게 문의해
+              주세요. 상담 후 등록이 확정되면 첫 방문 시 현장에서 결제를
+              안내합니다.
             </p>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
@@ -379,9 +396,9 @@ export default async function AcademyPage() {
               <Card
                 key={contact.phone}
                 variant="interactive"
-                className="border-border bg-card"
+                className="flex h-full border-border bg-card"
               >
-                <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between md:p-6">
+                <CardContent className="flex w-full flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between md:p-6">
                   <div className="space-y-2">
                     <Badge variant="outline">{contact.role}</Badge>
                     <div>
@@ -396,6 +413,15 @@ export default async function AcademyPage() {
                       </a>
                     </div>
                   </div>
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="w-full sm:w-auto"
+                  >
+                    <Link href={`tel:${contact.phone.replaceAll("-", "")}`}>
+                      전화하기
+                    </Link>
+                  </Button>
                 </CardContent>
               </Card>
             ))}
@@ -408,21 +434,24 @@ export default async function AcademyPage() {
               현재 모집 중인 클래스
             </h2>
             <p className="break-keep text-sm leading-6 text-muted-foreground">
-              목적과 경험에 맞춰 상담 후 적합한 수업 방향을 안내합니다. 선택한 클래스는 상담 신청 기준으로 사용됩니다.
+              목적과 경험에 맞춰 상담 후 적합한 수업 방향을 안내합니다. 선택한
+              클래스는 상담 신청 기준으로 사용됩니다.
             </p>
           </div>
           {academyClasses.length > 0 ? (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {academyClasses.map((academyClass) => {
                 const isClosed = academyClass.status === "closed";
-                const existingApplication = activeApplicationByClassId.get(academyClass._id);
+                const existingApplication = activeApplicationByClassId.get(
+                  academyClass._id,
+                );
                 const applyHref = `/academy/apply?classId=${academyClass._id}`;
                 const loginHref = `/login?next=${encodeURIComponent(applyHref)}`;
 
                 return (
                   <Card
                     key={academyClass._id}
-                    className="flex h-full flex-col border-border bg-card"
+                    className="flex h-full flex-col border-border bg-card shadow-sm transition-[border-color,box-shadow] duration-200 hover:border-primary/25 hover:shadow-md"
                   >
                     <CardHeader className="space-y-3 pb-3">
                       <div className="flex flex-wrap items-center gap-2">
@@ -440,12 +469,12 @@ export default async function AcademyPage() {
                         {academyClass.name}
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="flex flex-1 flex-col gap-4">
+                    <CardContent className="flex flex-1 flex-col gap-4 pt-0">
                       <p className="break-keep text-sm leading-6 text-muted-foreground">
                         {academyClass.description ||
                           "도깨비테니스에서 레벨과 목표에 맞춰 안내하는 아카데미 클래스입니다."}
                       </p>
-                      <dl className="space-y-2 text-sm text-muted-foreground">
+                      <dl className="space-y-2.5 rounded-xl border border-border/60 bg-muted/20 p-3 text-sm text-muted-foreground">
                         <div className="flex gap-2">
                           <dt className="shrink-0 font-medium text-foreground">
                             강사
@@ -488,20 +517,26 @@ export default async function AcademyPage() {
                           <dd>{formatClassPrice(academyClass.price)}</dd>
                         </div>
                       </dl>
-                      <div className="mt-auto flex flex-col gap-2 pt-2 sm:flex-row">
+                      <div className="mt-auto flex flex-col gap-2 pt-1 sm:flex-row">
                         {existingApplication ? (
                           <Button
                             asChild
                             variant="outline"
                             className="w-full border-success/45 bg-success/10 text-success hover:border-success/60 hover:bg-success/15 hover:text-success"
                           >
-                            <Link href={`/mypage/academy-applications/${existingApplication.id}`}>
+                            <Link
+                              href={`/mypage/academy-applications/${existingApplication.id}`}
+                            >
                               신청 완료
                             </Link>
                           </Button>
                         ) : isClosed ? (
                           <>
-                            <Button disabled className="w-full sm:flex-1">
+                            <Button
+                              disabled
+                              variant="secondary"
+                              className="w-full sm:flex-1"
+                            >
                               모집 마감
                             </Button>
                             <Button
@@ -550,8 +585,8 @@ export default async function AcademyPage() {
               수업 진행 흐름
             </h2>
             <p className="break-keep text-sm leading-6 text-muted-foreground">
-              문의를 남겨주시면 레벨과 목표를 확인한 뒤 가능한 일정과 수강 방식을 함께
-              조율합니다.
+              문의를 남겨주시면 레벨과 목표를 확인한 뒤 가능한 일정과 수강
+              방식을 함께 조율합니다.
             </p>
           </div>
           <div className="grid gap-4 md:grid-cols-4">

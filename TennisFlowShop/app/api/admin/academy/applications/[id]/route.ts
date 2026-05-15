@@ -89,6 +89,19 @@ function serializeApplication(doc: Document) {
     adminMemo: typeof doc.adminMemo === "string" ? doc.adminMemo : null,
     customerMessage:
       typeof doc.customerMessage === "string" ? doc.customerMessage : null,
+    cancelReason:
+      typeof doc.cancelReason === "string" ? doc.cancelReason : null,
+    cancelReasonLabel:
+      typeof doc.cancelReasonLabel === "string" ? doc.cancelReasonLabel : null,
+    cancelReasonDetail:
+      typeof doc.cancelReasonDetail === "string"
+        ? doc.cancelReasonDetail
+        : null,
+    cancelledAt: serializeValue(doc.cancelledAt) ?? null,
+    cancelledBy:
+      doc.cancelledBy === "customer" || doc.cancelledBy === "admin"
+        ? doc.cancelledBy
+        : null,
     history: serializeHistory(doc.history),
     createdAt: serializeValue(doc.createdAt) ?? null,
     updatedAt: serializeValue(doc.updatedAt) ?? null,

@@ -34,7 +34,7 @@ function serializeClassSnapshot(value: unknown): AcademyClassSnapshot | null {
     classId:
       typeof record.classId === "string"
         ? record.classId
-        : serializeObjectId(record.classId) ?? "",
+        : (serializeObjectId(record.classId) ?? ""),
     name: typeof record.name === "string" ? record.name : "",
     description:
       typeof record.description === "string" ? record.description : null,
@@ -118,6 +118,19 @@ function serializeApplication(doc: Document) {
         : null,
     classId: serializeObjectId(doc.classId),
     classSnapshot: serializeClassSnapshot(doc.classSnapshot),
+    cancelledAt: toISOStringMaybe(doc.cancelledAt),
+    cancelledBy:
+      doc.cancelledBy === "customer" || doc.cancelledBy === "admin"
+        ? doc.cancelledBy
+        : null,
+    cancelReason:
+      typeof doc.cancelReason === "string" ? doc.cancelReason : null,
+    cancelReasonLabel:
+      typeof doc.cancelReasonLabel === "string" ? doc.cancelReasonLabel : null,
+    cancelReasonDetail:
+      typeof doc.cancelReasonDetail === "string"
+        ? doc.cancelReasonDetail
+        : null,
     createdAt: toISOStringMaybe(doc.createdAt),
     updatedAt: toISOStringMaybe(doc.updatedAt),
   };
@@ -167,6 +180,11 @@ export async function GET(
         customerMessage: 1,
         classId: 1,
         classSnapshot: 1,
+        cancelledAt: 1,
+        cancelledBy: 1,
+        cancelReason: 1,
+        cancelReasonLabel: 1,
+        cancelReasonDetail: 1,
         createdAt: 1,
         updatedAt: 1,
       },

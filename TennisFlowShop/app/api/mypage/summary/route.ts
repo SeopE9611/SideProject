@@ -1,12 +1,17 @@
-import { isApplicationTodoActionable, isOrderTodoActionable, isRentalTodoActionable, normalizeMypageTodoStatus } from '@/lib/mypage/activity-todo';
-import { verifyAccessToken } from '@/lib/auth.utils';
-import clientPromise from '@/lib/mongodb';
-import { ObjectId } from 'mongodb';
-import { cookies } from 'next/headers';
-import { NextResponse } from 'next/server';
-import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
+import {
+  isApplicationTodoActionable,
+  isOrderTodoActionable,
+  isRentalTodoActionable,
+  normalizeMypageTodoStatus,
+} from "@/lib/mypage/activity-todo";
+import { verifyAccessToken } from "@/lib/auth.utils";
+import clientPromise from "@/lib/mongodb";
+import { ObjectId } from "mongodb";
+import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
+import { normalizeCollection } from "@/app/features/stringing-applications/lib/collection";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 function getTrackingNoFromShippingInfo(shippingInfo: any): string | null {
   const v =
@@ -23,94 +28,118 @@ function getTrackingNoFromShippingInfo(shippingInfo: any): string | null {
 
 function isOrderHasRacketItem(order: any): boolean {
   const items = Array.isArray(order?.items) ? order.items : [];
-  return items.some((it: any) => it?.kind === 'racket' || it?.kind === 'used_racket');
+  return items.some(
+    (it: any) => it?.kind === "racket" || it?.kind === "used_racket",
+  );
 }
 
 function getOrderReviewTargetProductIds(order: any): string[] {
   const items = Array.isArray(order?.items) ? order.items : [];
   const ids = items
     .map((it: any) => (it?.productId ? String(it.productId) : null))
-    .filter((id: string | null): id is string => id !== null && ObjectId.isValid(id));
+    .filter(
+      (id: string | null): id is string => id !== null && ObjectId.isValid(id),
+    );
   return [...new Set<string>(ids)];
 }
 
 export async function GET() {
   const jar = await cookies();
-  const at = jar.get('accessToken')?.value;
-  if (!at) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+  const at = jar.get("accessToken")?.value;
+  if (!at)
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
   let payload: any;
   try {
     payload = verifyAccessToken(at);
   } catch {
-    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
-  const subStr = String(payload?.sub ?? '');
+  const subStr = String(payload?.sub ?? "");
   if (!ObjectId.isValid(subStr)) {
-    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
   const userId = new ObjectId(subStr);
   const db = (await clientPromise).db();
 
-  const [ordersCount, applicationsCount, orders, rentals, standaloneApps] =
-    await Promise.all([
-      db.collection('orders').countDocuments({ userId }),
-      db
-        .collection('stringing_applications')
-        .countDocuments({ userId, status: { $ne: 'draft' } }),
-      db
-        .collection('orders')
-        .find(
-          { userId },
-          {
-            projection: {
-              _id: 1,
-              status: 1,
-              userConfirmedAt: 1,
-              items: 1,
-            },
+  const academyActiveStatuses = [
+    "submitted",
+    "reviewing",
+    "contacted",
+    "confirmed",
+  ];
+  const academyUserIds = [userId, userId.toHexString()];
+
+  const [
+    ordersCount,
+    applicationsCount,
+    academyActiveApplicationsCount,
+    orders,
+    rentals,
+    standaloneApps,
+  ] = await Promise.all([
+    db.collection("orders").countDocuments({ userId }),
+    db
+      .collection("stringing_applications")
+      .countDocuments({ userId, status: { $ne: "draft" } }),
+    db.collection("academy_lesson_applications").countDocuments({
+      userId: { $in: academyUserIds },
+      status: { $in: academyActiveStatuses },
+    }),
+    db
+      .collection("orders")
+      .find(
+        { userId },
+        {
+          projection: {
+            _id: 1,
+            status: 1,
+            userConfirmedAt: 1,
+            items: 1,
           },
-        )
-        .toArray(),
-      db
-        .collection('rental_orders')
-        .find(
-          { userId },
-          {
-            projection: {
-              _id: 1,
-              stringingApplicationId: 1,
-              stringing: 1,
-            },
+        },
+      )
+      .toArray(),
+    db
+      .collection("rental_orders")
+      .find(
+        { userId },
+        {
+          projection: {
+            _id: 1,
+            stringingApplicationId: 1,
+            stringing: 1,
           },
-        )
-        .toArray(),
-      db
-        .collection('stringing_applications')
-        .find(
-          {
-            userId,
-            status: { $ne: 'draft' },
-            $and: [
-              { $or: [{ orderId: { $exists: false } }, { orderId: null }] },
-              { $or: [{ rentalId: { $exists: false } }, { rentalId: null }] },
-            ],
+        },
+      )
+      .toArray(),
+    db
+      .collection("stringing_applications")
+      .find(
+        {
+          userId,
+          status: { $ne: "draft" },
+          $and: [
+            { $or: [{ orderId: { $exists: false } }, { orderId: null }] },
+            { $or: [{ rentalId: { $exists: false } }, { rentalId: null }] },
+          ],
+        },
+        {
+          projection: {
+            _id: 1,
+            status: 1,
+            shippingInfo: 1,
+            collectionMethod: 1,
+            userConfirmedAt: 1,
           },
-          {
-            projection: {
-              _id: 1,
-              status: 1,
-              shippingInfo: 1,
-              collectionMethod: 1,
-              userConfirmedAt: 1,
-            },
-          },
-        )
-        .toArray(),
-    ]);
-  const activityFlowCount = orders.length + rentals.length + standaloneApps.length;
+        },
+      )
+      .toArray(),
+  ]);
+  const activityFlowCount =
+    orders.length + rentals.length + standaloneApps.length;
 
   const orderHasRacketById = new Map<string, boolean>();
   const orderReviewProductIdsById = new Map<string, string[]>();
@@ -125,17 +154,20 @@ export async function GET() {
     orderReviewProductIdsById.set(orderId, reviewTargetProductIds);
 
     const status = normalizeMypageTodoStatus(order?.status);
-    const isConfirmed = Boolean(order?.userConfirmedAt) || status === '구매확정';
+    const isConfirmed =
+      Boolean(order?.userConfirmedAt) || status === "구매확정";
     if (isConfirmed && reviewTargetProductIds.length > 0) {
       confirmedOrderIds.push(new ObjectId(orderId));
-      reviewTargetProductIds.forEach((productId) => reviewProductIdsPool.add(productId));
+      reviewTargetProductIds.forEach((productId) =>
+        reviewProductIdsPool.add(productId),
+      );
     }
   }
 
   const reviewedProductIdsByOrderId = new Map<string, Set<string>>();
   if (confirmedOrderIds.length > 0 && reviewProductIdsPool.size > 0) {
     const reviewedDocs = await db
-      .collection('reviews')
+      .collection("reviews")
       .find(
         {
           userId,
@@ -152,22 +184,29 @@ export async function GET() {
     for (const reviewed of reviewedDocs as any[]) {
       const orderId = String(reviewed.orderId);
       const productId = String(reviewed.productId);
-      const bucket = reviewedProductIdsByOrderId.get(orderId) ?? new Set<string>();
+      const bucket =
+        reviewedProductIdsByOrderId.get(orderId) ?? new Set<string>();
       bucket.add(productId);
       reviewedProductIdsByOrderId.set(orderId, bucket);
     }
   }
 
   const orderIdsAny = (orders as any[]).flatMap((o) => [o._id, String(o._id)]);
-  const rentalIdsAny = (rentals as any[]).flatMap((r) => [r._id, String(r._id)]);
+  const rentalIdsAny = (rentals as any[]).flatMap((r) => [
+    r._id,
+    String(r._id),
+  ]);
 
   const linkedApps = await db
-    .collection('stringing_applications')
+    .collection("stringing_applications")
     .find(
       {
         userId,
-        status: { $ne: 'draft' },
-        $or: [{ orderId: { $in: orderIdsAny } }, { rentalId: { $in: rentalIdsAny } }],
+        status: { $ne: "draft" },
+        $or: [
+          { orderId: { $in: orderIdsAny } },
+          { rentalId: { $in: rentalIdsAny } },
+        ],
       },
       {
         projection: {
@@ -192,7 +231,7 @@ export async function GET() {
     const collectionMethod = normalizeCollection(
       (shipping as any)?.collectionMethod ??
         (doc as any)?.collectionMethod ??
-        'self_ship',
+        "self_ship",
     );
     const orderIdStr = doc.orderId ? String(doc.orderId) : null;
     const inboundRequired = doc.rentalId
@@ -200,7 +239,8 @@ export async function GET() {
       : orderIdStr && orderHasRacketById.get(orderIdStr)
         ? false
         : true;
-    const needsInboundTracking = inboundRequired && collectionMethod === 'self_ship';
+    const needsInboundTracking =
+      inboundRequired && collectionMethod === "self_ship";
 
     const isActionable = isApplicationTodoActionable({
       status: doc.status,
@@ -209,7 +249,7 @@ export async function GET() {
       userConfirmedAt:
         doc.userConfirmedAt instanceof Date
           ? doc.userConfirmedAt.toISOString()
-          : typeof doc.userConfirmedAt === 'string'
+          : typeof doc.userConfirmedAt === "string"
             ? doc.userConfirmedAt
             : null,
     });
@@ -236,7 +276,8 @@ export async function GET() {
   for (const order of orders as any[]) {
     const orderId = String(order._id);
     const reviewTargetProductIds = orderReviewProductIdsById.get(orderId) ?? [];
-    const reviewedProductIds = reviewedProductIdsByOrderId.get(orderId) ?? new Set<string>();
+    const reviewedProductIds =
+      reviewedProductIdsByOrderId.get(orderId) ?? new Set<string>();
     const reviewPendingCount = reviewTargetProductIds.filter(
       (productId) => !reviewedProductIds.has(productId),
     ).length;
@@ -246,7 +287,7 @@ export async function GET() {
       userConfirmedAt:
         order?.userConfirmedAt instanceof Date
           ? order.userConfirmedAt.toISOString()
-          : typeof order?.userConfirmedAt === 'string'
+          : typeof order?.userConfirmedAt === "string"
             ? order.userConfirmedAt
             : null,
       reviewPendingCount,
@@ -254,7 +295,7 @@ export async function GET() {
         (actionableLinkedAppCountByOrderId.get(orderId) ?? 0) > 0
           ? [
               {
-                status: '교체완료',
+                status: "교체완료",
                 hasTracking: false,
                 needsInboundTracking: true,
                 userConfirmedAt: null,
@@ -270,14 +311,15 @@ export async function GET() {
   for (const rental of rentals as any[]) {
     const rentalId = String(rental._id);
     const withStringService =
-      Boolean(rental?.stringing?.requested) || Boolean(rental?.stringingApplicationId);
+      Boolean(rental?.stringing?.requested) ||
+      Boolean(rental?.stringingApplicationId);
 
     const needsAction = isRentalTodoActionable({
       linkedApplications:
         (actionableLinkedAppCountByRentalId.get(rentalId) ?? 0) > 0
           ? [
               {
-                status: '교체완료',
+                status: "교체완료",
                 hasTracking: false,
                 needsInboundTracking: true,
                 userConfirmedAt: null,
@@ -298,9 +340,11 @@ export async function GET() {
     const shipping = app.shippingInfo ?? {};
     const hasTracking = Boolean(getTrackingNoFromShippingInfo(shipping));
     const collectionMethod = normalizeCollection(
-      (shipping as any)?.collectionMethod ?? app?.collectionMethod ?? 'self_ship',
+      (shipping as any)?.collectionMethod ??
+        app?.collectionMethod ??
+        "self_ship",
     );
-    const needsInboundTracking = collectionMethod === 'self_ship';
+    const needsInboundTracking = collectionMethod === "self_ship";
 
     const needsAction = isApplicationTodoActionable({
       status: app?.status,
@@ -309,7 +353,7 @@ export async function GET() {
       userConfirmedAt:
         app?.userConfirmedAt instanceof Date
           ? app.userConfirmedAt.toISOString()
-          : typeof app?.userConfirmedAt === 'string'
+          : typeof app?.userConfirmedAt === "string"
             ? app.userConfirmedAt
             : null,
     });
@@ -321,6 +365,7 @@ export async function GET() {
     ordersCount,
     applicationsCount,
     activityFlowCount,
+    academyActiveApplicationsCount,
     todoCount: todoOrderCount + todoRentalCount + todoApplicationCount,
   });
 }
