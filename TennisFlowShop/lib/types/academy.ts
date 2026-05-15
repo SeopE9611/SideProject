@@ -20,6 +20,36 @@ export type AcademyCurrentLevel =
   | "advanced"
   | "unknown";
 
+
+export type AcademyApplicantProfile = {
+  name: string;
+  phone: string;
+  email: string;
+};
+
+export type AcademyActiveApplicationSummary = {
+  id: string;
+  classId: string | null;
+  className: string | null;
+  preferredDays: string[];
+  status: Extract<
+    AcademyLessonApplicationStatus,
+    "submitted" | "reviewing" | "contacted" | "confirmed"
+  >;
+};
+
+export type AcademyApplicationConflictResponse = {
+  success: false;
+  code: "ACADEMY_DAY_CONFLICT";
+  message: string;
+  conflict: {
+    applicationId: string;
+    className: string | null;
+    existingDays: string[];
+    overlapDays: string[];
+  };
+};
+
 export type AcademyLessonApplicationHistoryItem = {
   status: AcademyLessonApplicationStatus;
   date: string;
@@ -30,7 +60,7 @@ export type AcademyLessonApplicationHistoryItem = {
 
 export type AcademyLessonApplication = {
   _id?: string;
-  userId?: string | null;
+  userId: string;
   classId?: string | null;
   classSnapshot?: AcademyClassSnapshot | null;
 

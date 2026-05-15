@@ -11,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { getCurrentUserId } from "@/lib/hooks/get-current-user";
 import { getDb } from "@/lib/mongodb";
 import {
   getAcademyClassLessonTypeLabel,
@@ -20,6 +21,7 @@ import {
   isAcademyClassLevel,
   type AcademyClassLessonType,
   type AcademyClassLevel,
+  type AcademyActiveApplicationSummary,
   type PublicAcademyClass,
 } from "@/lib/types/academy";
 
@@ -84,6 +86,60 @@ function serializeAcademyClass(doc: Document): PublicAcademyClass {
     createdAt: serializeDate(doc.createdAt),
     updatedAt: serializeDate(doc.updatedAt),
   };
+}
+
+
+const ACTIVE_APPLICATION_STATUSES = [
+  "submitted",
+  "reviewing",
+  "contacted",
+  "confirmed",
+] as const;
+
+function serializeActiveApplication(doc: Document): AcademyActiveApplicationSummary {
+  const classSnapshot =
+    doc.classSnapshot && typeof doc.classSnapshot === "object"
+      ? (doc.classSnapshot as { name?: unknown })
+      : null;
+
+  return {
+    id: serializeObjectId(doc._id),
+    classId: typeof doc.classId === "string" ? doc.classId : null,
+    className: typeof classSnapshot?.name === "string" ? classSnapshot.name : null,
+    preferredDays: Array.isArray(doc.preferredDays)
+      ? doc.preferredDays.filter((day): day is string => typeof day === "string")
+      : [],
+    status:
+      doc.status === "reviewing" ||
+      doc.status === "contacted" ||
+      doc.status === "confirmed"
+        ? doc.status
+        : "submitted",
+  };
+}
+
+async function getMyActiveAcademyApplications(
+  userId: string | null,
+): Promise<AcademyActiveApplicationSummary[]> {
+  if (!userId) return [];
+
+  try {
+    const db = await getDb();
+    const docs = await db
+      .collection("academy_lesson_applications")
+      .find({
+        userId,
+        classId: { $type: "string", $ne: "" },
+        status: { $in: [...ACTIVE_APPLICATION_STATUSES] },
+      })
+      .project({ _id: 1, classId: 1, classSnapshot: 1, preferredDays: 1, status: 1 })
+      .toArray();
+
+    return docs.map(serializeActiveApplication);
+  } catch (error) {
+    console.error("[academy/page] failed to load active applications", error);
+    return [];
+  }
 }
 
 async function getPublicAcademyClasses(): Promise<PublicAcademyClass[]> {
@@ -192,7 +248,16 @@ const faqs = [
 export const dynamic = "force-dynamic";
 
 export default async function AcademyPage() {
-  const academyClasses = await getPublicAcademyClasses();
+  const userId = await getCurrentUserId();
+  const [academyClasses, activeApplications] = await Promise.all([
+    getPublicAcademyClasses(),
+    getMyActiveAcademyApplications(userId),
+  ]);
+  const activeApplicationByClassId = new Map(
+    activeApplications
+      .filter((application) => application.classId)
+      .map((application) => [application.classId, application]),
+  );
 
   return (
     <main className="min-h-screen bg-background px-4 py-10 md:px-6 md:py-14">
@@ -224,7 +289,7 @@ export default async function AcademyPage() {
                 variant="outline"
                 className="w-full sm:w-auto"
               >
-                <Link href="/academy/apply">레슨 신청하기</Link>
+                <Link href={userId ? "/academy/apply" : `/login?next=${encodeURIComponent("/academy/apply")}`}>{userId ? "레슨 신청하기" : "로그인 후 신청"}</Link>
               </Button>
             </div>
             <p className="break-keep text-sm leading-6 text-muted-foreground">
@@ -350,6 +415,9 @@ export default async function AcademyPage() {
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {academyClasses.map((academyClass) => {
                 const isClosed = academyClass.status === "closed";
+                const existingApplication = activeApplicationByClassId.get(academyClass._id);
+                const applyHref = `/academy/apply?classId=${academyClass._id}`;
+                const loginHref = `/login?next=${encodeURIComponent(applyHref)}`;
 
                 return (
                   <Card
@@ -436,12 +504,16 @@ export default async function AcademyPage() {
                               </Link>
                             </Button>
                           </>
+                        ) : existingApplication ? (
+                          <Button asChild className="w-full">
+                            <Link href={`/mypage/academy-applications/${existingApplication.id}`}>
+                              신청 완료
+                            </Link>
+                          </Button>
                         ) : (
                           <Button asChild className="w-full">
-                            <Link
-                              href={`/academy/apply?classId=${academyClass._id}`}
-                            >
-                              레슨 신청하기
+                            <Link href={userId ? applyHref : loginHref}>
+                              {userId ? "레슨 신청하기" : "로그인 후 신청"}
                             </Link>
                           </Button>
                         )}
