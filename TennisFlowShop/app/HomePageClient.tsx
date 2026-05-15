@@ -540,7 +540,7 @@ export default function Home() {
               </div>
             </Link>
 
-            <Link href="/mypage" className={cn("group flex h-full flex-col gap-4 p-5 bp-sm:p-6 bp-md:p-7 bp-xl:col-span-2", surfaceCardInteractiveClass)}>
+            <Link href="/mypage" className={cn("group flex h-full flex-col gap-4 p-5 bp-sm:p-6 bp-md:p-7", surfaceCardInteractiveClass)}>
               <div className={cn("h-12 w-12 bp-sm:h-14 bp-sm:w-14", surfaceIconWrapClass)}>
                 <Search className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
               </div>

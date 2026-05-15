@@ -100,12 +100,15 @@ export default function CartPageClient() {
             .map((i) => i.name)
             .join(", ")} 외 ${removeCount - 2}개`;
 
-  // "장착비 대상 스트링" 판별을 위해 /api/products/mini-batch 결과의 mountingFee를 캐시
+  // "장착 대상 스트링" 판별을 위해 /api/products/mini-batch 결과의 mountingFee를 캐시
   const [mountingFeeByProductId, setMountingFeeByProductId] = useState<
     Record<string, number>
   >({});
   const [shippingFeeByProductId, setShippingFeeByProductId] = useState<
     Record<string, number>
+  >({});
+  const [mountableStringByProductId, setMountableStringByProductId] = useState<
+    Record<string, boolean>
   >({});
 
   useEffect(() => {
@@ -163,17 +166,18 @@ export default function CartPageClient() {
     const hasMountableString = cartItems.some(
       (it) =>
         (it.kind ?? "product") === "product" &&
-        (mountingFeeByProductId[String(it.id)] ?? 0) > 0,
+        mountableStringByProductId[String(it.id)] === true,
     );
     return calcOrderShippingFeeWithBundlePolicy({
       items: cartItems.map((it) => ({
         kind: (it.kind ?? "product") as "product" | "racket",
         shippingFee: shippingFeeByProductId[String(it.id)],
         mountingFee: mountingFeeByProductId[String(it.id)] ?? 0,
+        isMountableString: mountableStringByProductId[String(it.id)] === true,
       })),
       withStringService: hasRacket && hasMountableString,
     });
-  }, [cartItems, mountingFeeByProductId, shippingFeeByProductId, isShippingFeeReady]);
+  }, [cartItems, mountingFeeByProductId, mountableStringByProductId, shippingFeeByProductId, isShippingFeeReady]);
   const total = subtotal + shippingFee;
 
   useEffect(() => {
@@ -184,14 +188,15 @@ export default function CartPageClient() {
         if (!cancelled) {
           setMountingFeeByProductId({});
           setShippingFeeByProductId({});
+          setMountableStringByProductId({});
         }
         return;
       }
 
       try {
-        const [mountingMapResult, shippingPairsResult] = await Promise.all([
+        const [mountingResult, shippingPairsResult] = await Promise.all([
           (async () => {
-            if (productIds.length === 0) return {} as Record<string, number>;
+            if (productIds.length === 0) return { fees: {} as Record<string, number>, mountable: {} as Record<string, boolean> };
             const res = await fetch("/api/products/mini-batch", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -201,19 +206,21 @@ export default function CartPageClient() {
             if (!res.ok) throw new Error("mini-batch request failed");
             const json = await res.json();
             const rows = Array.isArray(json?.items) ? json.items : [];
-            const miniMap = new Map<string, { mountingFee: number }>(
-              rows.map((entry: { id?: string; mountingFee?: number }) => [
+            const miniMap = new Map<string, { mountingFee: number; isMountableString: boolean }>(
+              rows.map((entry: { id?: string; mountingFee?: number; isMountableString?: boolean }) => [
                 String(entry?.id ?? ""),
                 {
                   mountingFee: Number(entry?.mountingFee ?? 0),
+                  isMountableString: entry?.isMountableString === true,
                 },
               ]),
             );
-            const pairs = productIds.map((id) => {
+            const feePairs = productIds.map((id) => {
               const mf = Number(miniMap.get(id)?.mountingFee ?? 0);
               return [id, Number.isFinite(mf) && mf > 0 ? mf : 0] as const;
             });
-            return Object.fromEntries(pairs);
+            const mountablePairs = productIds.map((id) => [id, miniMap.get(id)?.isMountableString === true] as const);
+            return { fees: Object.fromEntries(feePairs), mountable: Object.fromEntries(mountablePairs) };
           })(),
           Promise.all(
             shippingFeeIdsToResolve.map(async (id) => {
@@ -231,7 +238,8 @@ export default function CartPageClient() {
         ]);
 
         if (!cancelled) {
-          setMountingFeeByProductId(mountingMapResult);
+          setMountingFeeByProductId(mountingResult.fees);
+          setMountableStringByProductId(mountingResult.mountable);
           setShippingFeeByProductId(Object.fromEntries(shippingPairsResult));
         }
       } catch {
@@ -269,10 +277,10 @@ export default function CartPageClient() {
         .filter(
           (it) =>
             (it.kind ?? "product") === "product" &&
-            (mountingFeeByProductId[String(it.id)] ?? 0) > 0,
+            mountableStringByProductId[String(it.id)] === true,
         )
         .reduce((acc, it) => acc + Number(it.quantity ?? 0), 0),
-    [cartItems, mountingFeeByProductId],
+    [cartItems, mountableStringByProductId],
   );
 
   // "종류(라인) 개수" 체크: 서버 INVALID_COMPOSITION 규칙과 동일한 기준
@@ -286,9 +294,9 @@ export default function CartPageClient() {
       cartItems.filter(
         (it) =>
           (it.kind ?? "product") === "product" &&
-          (mountingFeeByProductId[String(it.id)] ?? 0) > 0,
+          mountableStringByProductId[String(it.id)] === true,
       ).length,
-    [cartItems, mountingFeeByProductId],
+    [cartItems, mountableStringByProductId],
   );
 
   // 장착 대상 스트링이 2종 이상이면, 어떤 라인을 정리해야 하는지 표시하기 위한 id 목록
@@ -297,10 +305,10 @@ export default function CartPageClient() {
       .filter(
         (it) =>
           (it.kind ?? "product") === "product" &&
-          (mountingFeeByProductId[String(it.id)] ?? 0) > 0,
+          mountableStringByProductId[String(it.id)] === true,
       )
       .map((it) => String(it.id));
-  }, [cartItems, mountingFeeByProductId]);
+  }, [cartItems, mountableStringByProductId]);
 
   const blockServiceCheckoutByComposition =
     totalRacketQty > 0 &&
@@ -329,9 +337,9 @@ export default function CartPageClient() {
       cartItems.find(
         (it) =>
           (it.kind ?? "product") === "product" &&
-          (mountingFeeByProductId[String(it.id)] ?? 0) > 0,
+          mountableStringByProductId[String(it.id)] === true,
       ),
-    [cartItems, mountingFeeByProductId],
+    [cartItems, mountableStringByProductId],
   );
 
   const bundleQty = useMemo(() => {
@@ -370,7 +378,7 @@ export default function CartPageClient() {
     cartItems.every(
       (it) =>
         (it.kind ?? "product") === "product" &&
-        (mountingFeeByProductId[String(it.id)] ?? 0) > 0,
+        mountableStringByProductId[String(it.id)] === true,
     );
 
   // 체크아웃 진입 URL을 "번들 완성" 또는 "스트링-only 장착 대상"일 때 withService=1로
@@ -448,7 +456,7 @@ export default function CartPageClient() {
       .filter(
         (it) =>
           (it.kind ?? "product") === "product" &&
-          (mountingFeeByProductId[String(it.id)] ?? 0) > 0,
+          mountableStringByProductId[String(it.id)] === true,
       )
       .map((it) => it.id);
 
@@ -656,15 +664,15 @@ export default function CartPageClient() {
                       !!bundleStringItem &&
                       item.id === bundleStringItem.id &&
                       (item.kind ?? "product") === "product" &&
-                      (mountingFeeByProductId[String(item.id)] ?? 0) > 0;
+                      mountableStringByProductId[String(item.id)] === true;
 
                     const lockStepper = isBundleRacket || isBundleString;
 
                     //- "구성 정리 필요" 상태에서 어떤 라인을 정리해야 하는지(장착 대상 스트링)를 시각적으로 강조
-                    // - 장착 대상 스트링: mountingFee > 0 인 스트링 상품
+                    // - 장착 대상 스트링: isMountableString=true 인 스트링 상품
                     const isMountableString =
                       (item.kind ?? "product") === "product" &&
-                      (mountingFeeByProductId[String(item.id)] ?? 0) > 0;
+                      mountableStringByProductId[String(item.id)] === true;
 
                     // - 구성 정리 필요 상태: 라켓이 있고 + (라켓 1종 / 장착 스트링 1종 규칙 위반) + 특히 장착 스트링이 2종 이상인 경우
                     const needsCompositionCleanup =

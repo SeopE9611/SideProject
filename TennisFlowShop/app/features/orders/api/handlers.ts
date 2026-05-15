@@ -22,6 +22,7 @@ import { calcOrderShippingFeeWithBundlePolicy, normalizeItemShippingFee } from "
 import { findOneActivePassForUser } from "@/lib/passes.service";
 import { normalizeEmailForSearch } from "@/lib/search-email";
 import { ENABLE_STRING_STANDALONE_ORDER } from "@/lib/orders/string-standalone-policy";
+import { isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
 
 /**
  * 서버 최종 유효성 검사 스키마(주문 생성)
@@ -598,6 +599,9 @@ export async function createOrder(
                 mountingFee: Number.isFinite(Number((prod as any)?.mountingFee))
                   ? Number((prod as any).mountingFee)
                   : 0,
+                isMountableString: isMountableStringByFee(
+                  (prod as any)?.mountingFee,
+                ),
                 shippingFee: normalizeItemShippingFee(
                   (prod as any)?.shippingFee,
                 ),
@@ -636,7 +640,7 @@ export async function createOrder(
             itemsWithSnapshot.every(
               (it) =>
                 it.kind === "product" &&
-                Number((it as any).mountingFee ?? 0) > 0,
+                (it as any).isMountableString === true,
             );
           if (
             isMountableStringOnlyOrder &&
@@ -659,7 +663,7 @@ export async function createOrder(
           );
           const serviceItems = itemsWithSnapshot.filter(
             (it) =>
-              it.kind === "product" && Number((it as any).mountingFee || 0) > 0,
+              it.kind === "product" && (it as any).isMountableString === true,
           );
 
           // 총 수량(단체 주문은 quantity로만 증가)

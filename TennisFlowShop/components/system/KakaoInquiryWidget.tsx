@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Bug, MessageCircle, X } from "lucide-react";
+import { Bug, Compass, MessageCircle, X } from "lucide-react";
 
 declare global {
   interface Window {
@@ -32,11 +33,13 @@ function normalizeChannelPublicId(raw: string) {
 export default function KakaoInquiryWidget() {
   const pathname = usePathname();
   // 어떤 패널이 열려있는지(중복 오픈 방지)
-  const [panel, setPanel] = useState<"inquiry" | "bug" | null>(null);
+  const [panel, setPanel] = useState<"guide" | "inquiry" | "bug" | null>(null);
 
   // outside click 닫기용 ref
+  const guideTriggerRef = useRef<HTMLButtonElement | null>(null);
   const bugTriggerRef = useRef<HTMLButtonElement | null>(null);
   const inquiryTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const guidePanelRef = useRef<HTMLDivElement | null>(null);
   const bugPanelRef = useRef<HTMLDivElement | null>(null);
   const inquiryPanelRef = useRef<HTMLDivElement | null>(null);
 
@@ -59,8 +62,10 @@ export default function KakaoInquiryWidget() {
   const canShowInquiry = !!jsKey && !!channelPublicId;
   const canShowBug = !!bugOpenChatUrl;
 
-  // 둘 다 없으면 위젯을 아예 숨김
-  const shouldHide = hideAll || (!canShowInquiry && !canShowBug);
+  const canShowGuide = true;
+
+  // 목적 선택은 Kakao env와 무관하게 노출한다.
+  const shouldHide = hideAll || (!canShowGuide && !canShowInquiry && !canShowBug);
 
   useEffect(() => {
     // 숨김 상태로 전환되면 패널은 닫아줌(UX + 상태 정리)
@@ -186,9 +191,17 @@ export default function KakaoInquiryWidget() {
       if (!target) return;
 
       const activePanelEl =
-        panel === "bug" ? bugPanelRef.current : inquiryPanelRef.current;
+        panel === "guide"
+          ? guidePanelRef.current
+          : panel === "bug"
+            ? bugPanelRef.current
+            : inquiryPanelRef.current;
       const activeTriggerEl =
-        panel === "bug" ? bugTriggerRef.current : inquiryTriggerRef.current;
+        panel === "guide"
+          ? guideTriggerRef.current
+          : panel === "bug"
+            ? bugTriggerRef.current
+            : inquiryTriggerRef.current;
 
       // 패널 내부 클릭 or 트리거 버튼 클릭이면 유지
       if (activePanelEl?.contains(target)) return;
@@ -241,6 +254,98 @@ export default function KakaoInquiryWidget() {
       style={liftPx ? { transform: `translateY(-${liftPx}px)` } : undefined}
     >
       <div className="flex flex-col items-end gap-3">
+
+        {/* ---------------- 목적 선택 ---------------- */}
+        <div className="relative">
+          <div
+            className={[
+              "absolute right-0 bottom-[76px]",
+              "transition-all duration-150",
+              panel === "guide"
+                ? "opacity-100 translate-y-0 pointer-events-auto"
+                : "opacity-0 translate-y-2 pointer-events-none",
+            ].join(" ")}
+          >
+            <div ref={guidePanelRef} className="relative">
+              <Card className="relative w-[320px] border-border shadow-xl bp-sm:w-[340px]">
+                <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-semibold">
+                    무엇을 하러 오셨나요?
+                  </CardTitle>
+                  <button
+                    type="button"
+                    aria-label="닫기"
+                    className="rounded-md p-1 text-muted-foreground hover:bg-muted"
+                    onClick={() => setPanel(null)}
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </CardHeader>
+
+                <CardContent className="space-y-3">
+                  <p className="text-sm text-muted-foreground">
+                    원하는 목적을 선택하면 필요한 단계로 바로 이동할 수 있어요.
+                  </p>
+                  <div className="grid gap-2">
+                    {[
+                      ["스트링 교체 신청하기", "/services/apply", ""],
+                      ["새 스트링 고르고 장착 신청", "/products?from=apply", ""],
+                      ["라켓 구매/대여 + 장착", "/rackets?from=apply", ""],
+                      ["아카데미 신청", "/academy", ""],
+                      ["주문/신청 상태 확인", "/mypage", "비회원 주문은 주문조회에서 확인 가능"],
+                    ].map(([label, href, description]) => (
+                      <Link
+                        key={href}
+                        href={href}
+                        className="rounded-lg border border-border bg-card px-3 py-2.5 text-sm font-semibold transition-colors hover:bg-muted"
+                        onClick={() => setPanel(null)}
+                      >
+                        <span className="block text-foreground">{label}</span>
+                        {description ? (
+                          <span className="mt-0.5 block text-xs font-normal text-muted-foreground">
+                            {description}
+                          </span>
+                        ) : null}
+                      </Link>
+                    ))}
+                  </div>
+                  <Link
+                    href="/order-lookup"
+                    className="block rounded-lg bg-muted px-3 py-2 text-center text-sm font-semibold text-foreground transition-colors hover:bg-muted/80"
+                    onClick={() => setPanel(null)}
+                  >
+                    비회원 주문조회
+                  </Link>
+                </CardContent>
+              </Card>
+
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 24 12"
+                className="absolute -bottom-3 right-7 h-3 w-6 [fill:hsl(var(--card))] [stroke:hsl(var(--border))]"
+              >
+                <path d="M1 1H23L12 11Z" strokeWidth="1" />
+              </svg>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            ref={guideTriggerRef}
+            aria-label="목적 선택"
+            onClick={() => setPanel((cur) => (cur === "guide" ? null : "guide"))}
+            className={[
+              "h-14 w-14 rounded-full shadow-xl",
+              "bg-primary text-primary-foreground",
+              "hover:bg-primary/90",
+              "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+              "flex items-center justify-center",
+            ].join(" ")}
+          >
+            <Compass className="h-7 w-7" />
+          </button>
+        </div>
+
         {/* ---------------- 버그 제보 ---------------- */}
         {canShowBug ? (
           <div className="relative">

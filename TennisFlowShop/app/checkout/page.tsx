@@ -27,6 +27,7 @@ import { bankLabelMap } from "@/lib/constants";
 import { useBackNavigationGuard } from "@/lib/hooks/useBackNavigationGuard";
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
 import { ENABLE_STRING_STANDALONE_ORDER } from "@/lib/orders/string-standalone-policy";
+import { isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
 import { isNicePaymentsEnabled } from "@/lib/payments/provider-flags";
 import { calcOrderShippingFeeWithBundlePolicy, normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { cn } from "@/lib/utils";
@@ -302,6 +303,7 @@ export default function CheckoutPage() {
 
   // 상품ID 목록을 기준으로 mountingFee를 mini API로 가져오는 상태
   const [mountingFeeByProductId, setMountingFeeByProductId] = useState<Record<string, number>>({});
+  const [mountableStringByProductId, setMountableStringByProductId] = useState<Record<string, boolean>>({});
   const [shippingFeeByProductId, setShippingFeeByProductId] = useState<Record<string, number>>({});
   const [mountingFeeLoading, setMountingFeeLoading] = useState(false);
 
@@ -351,10 +353,13 @@ export default function CheckoutPage() {
       orderItems.length > 0 &&
       orderItems.every((it) => {
         if ((it.kind ?? "product") !== "product") return false;
-        const mountingFee = mountingFeeByProductId[String(it.id)] ?? Number((it as any).mountingFee ?? 0);
-        return Number.isFinite(mountingFee) && mountingFee > 0;
+        const id = String(it.id);
+        if (Object.prototype.hasOwnProperty.call(mountableStringByProductId, id)) {
+          return mountableStringByProductId[id] === true;
+        }
+        return isMountableStringByFee((it as any).mountingFee);
       }),
-    [orderItemsKey, mountingFeeByProductId],
+    [orderItemsKey, mountingFeeByProductId, mountableStringByProductId],
   );
   const isStringOnlyServiceFlow = !ENABLE_STRING_STANDALONE_ORDER && isMountableStringOrderOnly;
   const stringStandalonePausedNotice = "현재 스트링 단품 구매는 운영하지 않으며, 선택한 스트링은 교체서비스 신청용으로 사용됩니다.";
@@ -434,6 +439,7 @@ export default function CheckoutPage() {
       if (allItemIds.length === 0) {
         setMountingFeeLoading(false);
         setMountingFeeByProductId({});
+        setMountableStringByProductId({});
         setShippingFeeByProductId({});
         return;
       }
@@ -449,15 +455,16 @@ export default function CheckoutPage() {
             const rawMounting = json?.ok ? Number(json.mountingFee ?? 0) : 0;
             const mf = Number.isFinite(rawMounting) && rawMounting > 0 ? rawMounting : 0;
             const sf = normalizeItemShippingFee(json?.shippingFee);
-            return [id, { mountingFee: mf, shippingFee: sf }] as const;
+            return [id, { mountingFee: mf, shippingFee: sf, isMountableString: json?.isMountableString === true }] as const;
           } catch {
-            return [id, { mountingFee: 0, shippingFee: 3000 }] as const;
+            return [id, { mountingFee: 0, shippingFee: 3000, isMountableString: false }] as const;
           }
         }),
       );
 
       if (cancelled) return;
       setMountingFeeByProductId(Object.fromEntries(entries.map(([id, fee]) => [id, serviceTargetIds.has(id) ? fee.mountingFee : 0])));
+      setMountableStringByProductId(Object.fromEntries(entries.map(([id, fee]) => [id, serviceTargetIds.has(id) && fee.isMountableString === true])));
       setShippingFeeByProductId(Object.fromEntries(entries.map(([id, fee]) => [id, fee.shippingFee])));
       setMountingFeeLoading(false);
     }
@@ -514,11 +521,12 @@ export default function CheckoutPage() {
         kind: item.kind ?? "product",
         shippingFee: shippingFeeByProductId[String(item.id)],
         mountingFee: mountingFeeByProductId[String(item.id)] ?? 0,
+        isMountableString: mountableStringByProductId[String(item.id)] === true,
       })),
       isVisitPickup: deliveryMethod === "방문수령",
       withStringService,
     });
-  }, [orderItems, shippingFeeByProductId, mountingFeeByProductId, deliveryMethod, isShippingFeeReady, withStringService]);
+  }, [orderItems, shippingFeeByProductId, mountingFeeByProductId, mountableStringByProductId, deliveryMethod, isShippingFeeReady, withStringService]);
 
   // serviceFee 계산을 “URL”이 아니라 “mountingFeeByProductId” 기반으로
   const baseServiceFee = withStringService
@@ -536,18 +544,18 @@ export default function CheckoutPage() {
     return rid ? String(rid) : null;
   }, [isBundleCheckout, orderItemsKey]);
 
-  // 교체서비스 ON일 때, “장착비 대상 스트링”과 “라켓” 수량 불일치를 선제 차단
-  // - 장착비 대상 스트링: /api/products/[id]/mini 로 조회한 mountingFee가 0보다 큰 상품
+  // 교체서비스 ON일 때, “장착 대상 스트링”과 “라켓” 수량 불일치를 선제 차단
+  // - 장착 대상 스트링: /api/products/[id]/mini 로 조회한 isMountableString=true 상품
   const serviceTargetIds = useMemo(() => {
     if (!withStringService) return [];
 
     const ids = orderItems
       .filter((it) => isServiceFeeTarget(it))
-      .filter((it) => (mountingFeeByProductId[String(it.id)] ?? 0) > 0)
+      .filter((it) => mountableStringByProductId[String(it.id)] === true)
       .map((it) => String(it.id));
 
     return Array.from(new Set(ids));
-  }, [orderItemsKey, withStringService, mountingFeeByProductId]);
+  }, [orderItemsKey, withStringService, mountableStringByProductId]);
 
   const bundleQtyGuard = useMemo(() => {
     if (!withStringService) return { mismatch: false, racketQty: 0, serviceQty: 0 };

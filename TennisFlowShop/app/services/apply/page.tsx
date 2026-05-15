@@ -28,6 +28,7 @@ import {
   UNSAVED_CHANGES_MESSAGE,
   useUnsavedChangesGuard,
 } from "@/lib/hooks/useUnsavedChangesGuard";
+import { isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import {
   COURIER_PICKUP_FEE,
@@ -1149,7 +1150,7 @@ export default function StringServiceApplyPage() {
     return 0;
   }, [orderId, order]);
 
-  // 주문 내 스트링 금액: items 중 mountingFee > 0 인 품목 합산(= StringCheckboxes 기준과 동일)
+  // 주문 내 스트링 금액: items 중 장착 가능 스트링 품목 합산
   const orderStringPrice = useMemo(() => {
     if (!orderId || !order) return 0;
 
@@ -1158,7 +1159,7 @@ export default function StringServiceApplyPage() {
 
     return items
       .filter(
-        (it: any) => typeof it?.mountingFee === "number" && it.mountingFee > 0,
+        (it: any) => isMountableStringByFee(it?.mountingFee),
       )
       .reduce((sum: number, it: any) => {
         const unit = Number(it?.price ?? 0);
@@ -1178,7 +1179,7 @@ export default function StringServiceApplyPage() {
     return n;
   }, [orderId, order]);
 
-  // PDP 통합(번들) 주문인지 여부: "라켓 + (장착비가 있는 스트링 상품)"이 함께 결제된 주문
+  // PDP 통합(번들) 주문인지 여부: "라켓 + 장착 가능한 스트링 상품"이 함께 결제된 주문
   // - 이 경우 (라켓 수량 = 스트링 수량 = 신청 라인 수) 정합성이 핵심이라 Step2에서 수량을 잠그는 용도로 사용
   const isCombinedPdpMode = useMemo(() => {
     if (!orderId || !order) return false;
@@ -1188,7 +1189,7 @@ export default function StringServiceApplyPage() {
       (it: any) => it?.kind === "racket" || it?.kind === "used_racket",
     );
     const hasMountableString = items.some(
-      (it: any) => it?.kind === "product" && Number(it?.mountingFee ?? 0) > 0,
+      (it: any) => it?.kind === "product" && isMountableStringByFee(it?.mountingFee),
     );
     return hasRacket && hasMountableString;
   }, [orderId, order]);

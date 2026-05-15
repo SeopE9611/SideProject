@@ -68,44 +68,38 @@ export default async function RacketsPage({ searchParams }: { searchParams: Prom
 
       <SiteContainer variant="wide" className="py-6 bp-sm:py-8 bp-md:py-12">
         {from === "apply" && (
-          <div className="sticky top-[72px] z-40 mb-4 bp-sm:mb-6">
-            <div className="rounded-xl border border-border bg-card/90 backdrop-blur p-4 bp-sm:p-5 shadow-sm">
-              <div className="flex items-start justify-between gap-3 flex-wrap">
+          <div className="sticky top-[72px] z-40 mb-3 bp-sm:mb-4">
+            <div className="rounded-xl border border-border bg-card/95 p-3 shadow-sm backdrop-blur">
+              <div className="flex flex-col gap-3 bp-md:flex-row bp-md:items-center bp-md:justify-between">
                 <div className="min-w-0">
-                  <p className="text-sm bp-sm:text-base font-semibold text-foreground">라켓을 선택한 뒤, 스트링 선택과 장착 신청이 이어집니다</p>
-                  <p className="mt-1 text-xs bp-sm:text-sm text-muted-foreground leading-relaxed">
-                    구매 가능한 라켓은 스트링 선택 후 결제로, 대여 가능한 라켓은 대여 기간 선택 후 장착 세팅으로 이어져요.
-                    <span className="block mt-1 text-sm text-foreground">[현재 보기: {rentOnly ? "대여 가능 라켓만" : "전체(구매/대여)"}]</span>
-                  </p>
+                  <p className="break-keep text-sm font-semibold text-foreground bp-sm:text-base">라켓 선택 후 스트링 장착까지 이어집니다</p>
+                  <p className="mt-0.5 break-keep text-xs leading-relaxed text-muted-foreground">구매는 스트링 선택 후 결제로, 대여는 기간 선택 후 장착 설정으로 이동합니다.</p>
                 </div>
 
-                <div className="flex w-full bp-sm:w-auto items-center gap-2 flex-wrap">
-                  <Button asChild variant="outline" className="flex-1 bp-sm:flex-none border-border bg-card text-foreground">
-                    <Link href="/services/apply" className="flex items-center gap-2">
-                      <span className="text-base">←</span>
+                <div className="flex w-full flex-wrap items-center gap-2 bp-md:w-auto bp-md:justify-end">
+                  <Button asChild size="sm" variant="outline" className="h-9 flex-1 border-border bg-card text-foreground bp-sm:flex-none">
+                    <Link href="/services/apply" className="flex items-center justify-center gap-1.5">
+                      <span aria-hidden="true">←</span>
                       신청 화면으로
                     </Link>
                   </Button>
 
-                  {/* segmented-control: 전체 / 대여 가능한 라켓 */}
-                  <div className="flex-1 bp-sm:flex-none">
-                    <div className="inline-flex w-full bp-sm:w-[320px] rounded-lg border border-border bg-card p-1">
-                      <Link
-                        href="/rackets?from=apply"
-                        aria-current={!rentOnly ? "page" : undefined}
-                        className={`flex-1 text-center text-sm font-semibold rounded-md px-3 py-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${rentOnly ? "text-foreground hover:bg-secondary" : "bg-secondary text-foreground"}`}
-                      >
-                        전체 라켓
-                      </Link>
+                  <div className="inline-flex h-9 flex-1 rounded-lg border border-border bg-card p-1 bp-sm:flex-none">
+                    <Link
+                      href="/rackets?from=apply"
+                      aria-current={!rentOnly ? "page" : undefined}
+                      className={`flex-1 rounded-md px-3 py-1.5 text-center text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 bp-sm:min-w-20 ${rentOnly ? "text-foreground hover:bg-secondary" : "bg-secondary text-foreground"}`}
+                    >
+                      전체
+                    </Link>
 
-                      <Link
-                        href="/rackets?from=apply&rentOnly=1"
-                        aria-current={rentOnly ? "page" : undefined}
-                        className={`flex-1 text-center text-sm font-semibold rounded-md px-3 py-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${rentOnly ? "bg-secondary text-foreground" : "text-foreground hover:bg-secondary"}`}
-                      >
-                        대여 가능한 라켓
-                      </Link>
-                    </div>
+                    <Link
+                      href="/rackets?from=apply&rentOnly=1"
+                      aria-current={rentOnly ? "page" : undefined}
+                      className={`flex-1 rounded-md px-3 py-1.5 text-center text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 bp-sm:min-w-20 ${rentOnly ? "bg-secondary text-foreground" : "text-foreground hover:bg-secondary"}`}
+                    >
+                      대여 가능
+                    </Link>
                   </div>
                 </div>
               </div>

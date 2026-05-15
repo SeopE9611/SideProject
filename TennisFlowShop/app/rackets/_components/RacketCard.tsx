@@ -251,7 +251,7 @@ const RacketCard = React.memo(
                       <Button
                         asChild
                         size="sm"
-                        className="text-xs bp-sm:text-base w-full justify-center whitespace-nowrap"
+                        className="h-auto min-h-9 text-xs bp-sm:text-base w-full justify-center whitespace-normal break-keep text-center leading-tight"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <Link
@@ -265,7 +265,7 @@ const RacketCard = React.memo(
                     ) : (
                       <Button
                         size="sm"
-                        className="text-xs bp-sm:text-base w-full justify-center whitespace-nowrap"
+                        className="h-auto min-h-9 text-xs bp-sm:text-base w-full justify-center whitespace-normal break-keep text-center leading-tight"
                         disabled
                         title={buyDisabledTitle}
                       >
@@ -284,7 +284,7 @@ const RacketCard = React.memo(
                           size="sm"
                           preventCardNav={true}
                           full={false}
-                          className="w-full justify-center whitespace-nowrap"
+                          className="w-full justify-center whitespace-normal break-keep text-center leading-tight"
                         />
                       ) : (
                         <Button
@@ -399,18 +399,18 @@ const RacketCard = React.memo(
               {racket.price.toLocaleString()}원
             </div>
 
-            <div className="mt-3 flex gap-2">
+            <div className={isApplyFlow ? "mt-3 grid grid-cols-1 gap-2" : "mt-3 flex gap-2"}>
               {canBuy ? (
                 <Button
                   asChild
                   size="sm"
-                  className="flex-1 min-w-0"
+                  className={isApplyFlow ? "h-auto min-h-10 w-full justify-center whitespace-normal break-keep text-center leading-tight" : "flex-1 min-w-0"}
                   onClick={(e) => e.stopPropagation()}
                 >
                   <Link
                     href={`/rackets/${racket.id}/select-string`}
                     onClick={(e) => e.stopPropagation()}
-                    className="justify-center"
+                    className="w-full justify-center text-center"
                   >
                     <ShoppingCart className="w-4 h-4 mr-1.5" />
                     {isApplyFlow ? "스트링 선택 후 구매" : "구매하기"}
@@ -439,13 +439,13 @@ const RacketCard = React.memo(
                       size="sm"
                       preventCardNav={true}
                       full={false}
-                      className="w-full justify-center"
+                      className={isApplyFlow ? "w-full justify-center whitespace-normal break-keep text-center leading-tight" : "w-full justify-center"}
                     />
                   </div>
                 ) : (
                   <Button
                     size="sm"
-                    className="flex-1 min-w-0 bg-muted text-muted-foreground cursor-not-allowed"
+                    className={isApplyFlow ? "w-full bg-muted text-muted-foreground cursor-not-allowed whitespace-normal break-keep text-center leading-tight" : "flex-1 min-w-0 bg-muted text-muted-foreground cursor-not-allowed"}
                     disabled
                     aria-disabled
                     title={rentDisabledTitle}
@@ -457,7 +457,7 @@ const RacketCard = React.memo(
               ) : (
                 <Button
                   size="sm"
-                  className="flex-1 min-w-0 bg-muted text-muted-foreground cursor-not-allowed"
+                  className={isApplyFlow ? "w-full bg-muted text-muted-foreground cursor-not-allowed whitespace-normal break-keep text-center leading-tight" : "flex-1 min-w-0 bg-muted text-muted-foreground cursor-not-allowed"}
                   disabled
                   aria-disabled
                   title={rentDisabledTitle}
@@ -475,7 +475,8 @@ const RacketCard = React.memo(
   (prev, next) =>
     prev.racket.id === next.racket.id &&
     prev.viewMode === next.viewMode &&
-    prev.brandLabel === next.brandLabel,
+    prev.brandLabel === next.brandLabel &&
+    Boolean(prev.isApplyFlow) === Boolean(next.isApplyFlow),
 );
 
 export default RacketCard;

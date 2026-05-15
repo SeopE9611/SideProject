@@ -75,23 +75,6 @@ export default function SideMenu() {
     >
       <div className="h-full overflow-y-auto scrollbar-hide px-5 py-4 space-y-1.5">
 
-        <div className="mb-4 rounded-2xl border border-primary/20 bg-primary/5 p-4">
-          <p className="text-sm font-semibold text-primary">무엇을 하러 오셨나요?</p>
-          <div className="mt-3 grid gap-2">
-            {[
-              ["스트링 교체 신청하기", "/services/apply"],
-              ["새 스트링 고르고 장착 신청", "/products?from=apply"],
-              ["라켓 구매/대여 + 장착", "/rackets?from=apply"],
-              ["아카데미 신청", "/academy"],
-              ["주문/신청 상태 확인", "/mypage"],
-            ].map(([label, href]) => (
-              <Link key={href} href={href} className="group flex items-center justify-between rounded-lg bg-card px-3 py-2 text-sm font-semibold text-foreground shadow-sm transition-colors hover:bg-muted">
-                <span>{label}</span>
-                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
-              </Link>
-            ))}
-          </div>
-        </div>
         <Accordion type="multiple" defaultValue={["strings", "rackets", "support", "boards"]}>
           {/* 스트링 */}
           <AccordionItem value="strings" className="border-none">
