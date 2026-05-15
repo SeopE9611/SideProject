@@ -16,9 +16,9 @@ import {
   GraduationCap,
 } from "lucide-react";
 
-export function UserSidebar() {
+export function UserSidebar({ activeTab }: { activeTab?: string } = {}) {
   const searchParams = useSearchParams();
-  const tab = searchParams.get("tab") ?? "orders";
+  const tab = activeTab ?? searchParams.get("tab") ?? "orders";
 
   // 메뉴 항목 정의
   const menuItems = [
