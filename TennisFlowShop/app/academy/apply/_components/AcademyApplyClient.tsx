@@ -197,7 +197,6 @@ export default function AcademyApplyClient({
     createInitialFormState(initialApplicantInfo),
   );
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [conflictDialog, setConflictDialog] = useState<ConflictDialogState>(null);
   const fieldRefs = useRef<Partial<Record<FieldName, HTMLDivElement | null>>>({});
@@ -211,6 +210,8 @@ export default function AcademyApplyClient({
         : "희망 요일을 선택해 주세요.",
     [form.preferredDays],
   );
+  const applicantInfoInputClassName =
+    "cursor-not-allowed border-muted bg-muted/60 text-foreground/80 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0";
 
   const scrollToField = (field: FieldName | null) => {
     if (!field) return;
@@ -254,7 +255,6 @@ export default function AcademyApplyClient({
     if (isSelectedClassClosed) {
       const message =
         "모집이 마감된 클래스는 신청할 수 없습니다. 문의하기를 이용해 주세요.";
-      setErrorMessage(message);
       showErrorToast(message);
       return;
     }
@@ -263,7 +263,6 @@ export default function AcademyApplyClient({
     setFieldErrors(errors);
     if (firstErrorField) {
       const message = errors[firstErrorField] ?? "신청서 필수값을 확인해 주세요.";
-      setErrorMessage(message);
       showErrorToast(message);
       scrollToField(firstErrorField);
       return;
@@ -288,7 +287,6 @@ export default function AcademyApplyClient({
       return;
     }
 
-    setErrorMessage(null);
     setIsSubmitting(true);
 
     try {
@@ -356,7 +354,6 @@ export default function AcademyApplyClient({
         error instanceof Error
           ? error.message
           : "레슨 신청 접수에 실패했습니다.";
-      setErrorMessage(message);
       showErrorToast(message);
     } finally {
       setIsSubmitting(false);
@@ -366,12 +363,6 @@ export default function AcademyApplyClient({
   return (
     <>
       <form onSubmit={handleSubmit} className="space-y-6">
-        {errorMessage ? (
-          <div className="rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm font-medium text-destructive">
-            {errorMessage}
-          </div>
-        ) : null}
-
         {requestedClassId && !selectedClass ? (
           <Card className="border-warning/40 bg-warning/10">
             <CardContent className="space-y-3 p-5 text-sm text-foreground md:p-6">
@@ -468,11 +459,15 @@ export default function AcademyApplyClient({
                 value={form.applicantName}
                 readOnly
                 aria-readonly="true"
+                aria-disabled="true"
+                tabIndex={-1}
                 aria-invalid={Boolean(fieldErrors.applicantName)}
                 maxLength={50}
                 placeholder="회원정보에 등록된 이름"
-                disabled={isSubmitting || isSelectedClassClosed}
-                className={cn("bg-muted/40", fieldErrors.applicantName && "border-destructive focus-visible:ring-destructive")}
+                className={cn(
+                  applicantInfoInputClassName,
+                  fieldErrors.applicantName && "border-destructive",
+                )}
               />
               {fieldErrors.applicantName ? <p className="text-sm font-medium text-destructive">{fieldErrors.applicantName}</p> : null}
             </div>
@@ -483,11 +478,15 @@ export default function AcademyApplyClient({
                 value={form.phone}
                 readOnly
                 aria-readonly="true"
+                aria-disabled="true"
+                tabIndex={-1}
                 aria-invalid={Boolean(fieldErrors.phone)}
                 maxLength={30}
                 placeholder="회원정보에 등록된 연락처"
-                disabled={isSubmitting || isSelectedClassClosed}
-                className={cn("bg-muted/40", fieldErrors.phone && "border-destructive focus-visible:ring-destructive")}
+                className={cn(
+                  applicantInfoInputClassName,
+                  fieldErrors.phone && "border-destructive",
+                )}
               />
               {fieldErrors.phone ? <p className="text-sm font-medium text-destructive">{fieldErrors.phone}</p> : null}
             </div>
@@ -499,10 +498,11 @@ export default function AcademyApplyClient({
                 value={form.email}
                 readOnly
                 aria-readonly="true"
+                aria-disabled="true"
+                tabIndex={-1}
                 maxLength={100}
                 placeholder="회원정보에 등록된 이메일"
-                disabled={isSubmitting || isSelectedClassClosed}
-                className="bg-muted/40"
+                className={applicantInfoInputClassName}
               />
             </div>
           </CardContent>
