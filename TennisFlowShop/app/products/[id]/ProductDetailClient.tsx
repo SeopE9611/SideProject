@@ -321,6 +321,9 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const isApplyFlow = searchParams.get("from") === "apply";
   const serviceCtaLabel = isApplyFlow ? "이 스트링 선택하고 장착 신청 계속하기" : "이 스트링으로 교체서비스 신청하기";
   const shouldEmphasizeServiceCta = isApplyFlow || !ENABLE_STRING_STANDALONE_ORDER;
+  const isStandalonePausedMountableString = canCheckoutWithService && !ENABLE_STRING_STANDALONE_ORDER;
+  const cartCtaLabel = isStandalonePausedMountableString ? "장착 신청용으로 담기" : "장바구니 담기";
+  const standalonePausedNotice = "현재 스트링 단품 구매는 운영하지 않으며, 교체서비스 신청과 함께 이용할 수 있어요.";
 
   // 브라우저 뒤/앞으로 가기 시에도 URL 변화에 맞춰 동기화
   useEffect(() => {
@@ -591,7 +594,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
     }
 
     if (!user) {
-      toast("장바구니에 담았습니다", {
+      toast(isStandalonePausedMountableString ? "교체서비스 신청용으로 담았습니다" : "장바구니에 담았습니다", {
         description: (
           <>
             {allowGuestCheckout ? (
@@ -613,7 +616,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
         },
       });
     } else {
-      showSuccessToast("장바구니에 담았습니다.");
+      showSuccessToast(isStandalonePausedMountableString ? "교체서비스 신청용으로 장바구니에 담았습니다." : "장바구니에 담았습니다.");
     }
   };
   // 즉시 구매용 핸들러 (장바구니와 완전히 분리)
@@ -917,7 +920,10 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     )}
 
                     <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 text-sm text-muted-foreground">
-                      <span className="font-semibold text-foreground">다음 단계:</span> 결제 화면에서 장착 방식, 수령 방법, 요청사항을 입력합니다. 스트링만 구매하는 경우에는 장착 접수가 포함되지 않아요.
+                      <span className="font-semibold text-foreground">다음 단계:</span>{" "}
+                      {isStandalonePausedMountableString
+                        ? standalonePausedNotice
+                        : "결제 화면에서 장착 방식, 수령 방법, 요청사항을 입력합니다. 스트링만 구매하는 경우에는 장착 접수가 포함되지 않아요."}
                     </div>
 
                     <div id="cta-anchor" className="flex flex-col gap-3 sm:gap-3.5">
@@ -963,7 +969,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                               disabled={loading || quantity > stock}
                             >
                               <ShoppingCart className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                              장바구니 담기
+                              {cartCtaLabel}
                             </Button>
                             <Button
                               variant="outline"

@@ -288,6 +288,14 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
   const isGuest = !isLoggedIn && (!order.userId || order.guest === true);
   const shouldShowApplyCta = withStringService && !hasSubmittedApplication;
   const isVisitPickup = isVisitPickupOrder(order.shippingInfo);
+  const nextActionStatusLabel = withStringService ? "주문 상태와 교체서비스 진행 상황" : "주문 상태와 배송/수령 진행 상황";
+  const nextActionGuidance = withStringService
+    ? isVisitPickup
+      ? "매장 방문 전 주문번호와 신청 상태를 확인해주세요."
+      : "택배 발송이 필요한 경우 라켓을 포장해 발송하고 운송장 정보를 등록해주세요."
+    : isVisitPickup
+      ? "매장 방문 전 주문번호와 수령 안내를 확인해주세요."
+      : "배송이 시작되면 마이페이지에서 배송 상태를 확인할 수 있습니다.";
   const showDeliveryOnlyFields = shouldShowDeliveryOnlyFields(order.shippingInfo);
 
   let stringingSummary: StringingSummary | null = null;
@@ -501,9 +509,9 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                 <div className="mb-6 rounded-xl border border-primary/20 bg-primary/5 p-4 md:p-5">
                   <h3 className="text-base font-bold text-foreground">다음 행동 안내</h3>
                   <ul className="mt-3 space-y-2 text-sm leading-relaxed text-muted-foreground">
-                    <li>• 주문 상태와 교체서비스 진행 상황은 마이페이지에서 확인할 수 있습니다.</li>
+                    <li>• {nextActionStatusLabel}은 마이페이지에서 확인할 수 있습니다.</li>
                     {withStringService && <li>• 교체서비스 신청도 함께 접수되었습니다. 수령/방문 안내에 따라 라켓을 준비해주세요.</li>}
-                    {isVisitPickup ? <li>• 매장 방문 전 주문번호와 신청 상태를 확인해주세요.</li> : <li>• 택배 발송이 필요한 경우 라켓을 포장해 발송하고 운송장 정보를 등록해주세요.</li>}
+                    <li>• {nextActionGuidance}</li>
                   </ul>
                   <div className="mt-4 flex flex-col gap-2 sm:flex-row">
                     <Button asChild className="flex-1"><Link href="/mypage">마이페이지에서 확인하기</Link></Button>

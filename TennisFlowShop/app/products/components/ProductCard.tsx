@@ -201,6 +201,10 @@ const ProductCard = React.memo(
     const serviceCtaLabel = isApplyFlow ? "이 스트링 선택하고 장착 신청 계속하기" : "이 스트링으로 교체서비스 신청하기";
     const shouldEmphasizeServiceCta =
       isApplyFlow || !ENABLE_STRING_STANDALONE_ORDER;
+    const shouldShowStandalonePausedNotice =
+      !isApplyFlow && canCheckoutWithService && !ENABLE_STRING_STANDALONE_ORDER;
+    const standalonePausedNotice =
+      "현재 스트링 단품 구매는 운영하지 않으며, 교체서비스 신청과 함께 이용할 수 있어요.";
 
     const detailHref = isApplyFlow
       ? `/products/${product._id}?from=apply`
@@ -409,6 +413,11 @@ const ProductCard = React.memo(
                   }}
                 />
               </div>
+              {shouldShowStandalonePausedNotice && (
+                <p className="mt-2 break-keep text-xs leading-relaxed text-muted-foreground">
+                  {standalonePausedNotice}
+                </p>
+              )}
             </div>
           </div>
         </Card>
@@ -581,6 +590,12 @@ const ProductCard = React.memo(
             >
               {serviceCtaLabel}
             </Button>
+          )}
+
+          {shouldShowStandalonePausedNotice && (
+            <p className="break-keep px-1 text-xs leading-relaxed text-muted-foreground">
+              {standalonePausedNotice}
+            </p>
           )}
         </CardFooter>
       </Card>
