@@ -862,7 +862,6 @@ const Header = () => {
                   <Image src="/brand/symbol-dark.png" alt="" aria-hidden="true" fill className="hidden object-contain dark:block" priority />
                 </div>
                 <div className="font-brand-bold font-bold text-[15px] tracking-normal text-foreground group-hover:text-foreground transition-colors whitespace-nowrap">도깨비테니스</div>
-                <div className="text-[11px] tracking-wide text-muted-foreground font-medium whitespace-nowrap">Powered by Tennis Flow</div>
               </Link>
 
               <div className="flex items-center gap-1.5">

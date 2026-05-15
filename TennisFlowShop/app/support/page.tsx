@@ -122,6 +122,15 @@ const supportEntryCards: SupportEntryCardProps[] = [
     actions: [{ href: "/order-lookup", label: "비회원 주문 조회", variant: "outline" }],
   },
   {
+    icon: Headset,
+    title: "아카데미 레슨 문의",
+    description: "레슨 유형, 일정, 수강료, 신청 상태가 궁금하다면 아카데미 페이지를 확인하거나 문의를 남겨주세요.",
+    actions: [
+      { href: "/academy", label: "아카데미 보기", variant: "outline" },
+      { href: "/board/qna/write?category=academy", label: "아카데미 문의하기", variant: "default" },
+    ],
+  },
+  {
     icon: Bell,
     title: "공지사항",
     description: "운영 안내, 배송 일정, 서비스 변경 사항을 확인합니다.",
