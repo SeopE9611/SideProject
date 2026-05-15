@@ -72,6 +72,10 @@ type AcademyApplicationDetail = {
 type DetailResponse = {
   success: true;
   item: AcademyApplicationDetail;
+  classAutoClosed?: boolean;
+  classAutoClosedMessage?: string | null;
+  classAutoClosedConfirmedCount?: number | null;
+  classAutoClosedCapacity?: number | null;
 };
 
 function getStatusTone(
@@ -174,7 +178,11 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
       );
       await mutate(result, { revalidate: false });
       setReason("");
-      showSuccessToast("신청 상태가 저장되었습니다.");
+      showSuccessToast(
+        result.classAutoClosed && result.classAutoClosedMessage
+          ? `신청 상태가 저장되었습니다. ${result.classAutoClosedMessage}`
+          : "신청 상태가 저장되었습니다.",
+      );
     } catch (mutationError) {
       showErrorToast(getAdminErrorMessage(mutationError));
     } finally {
