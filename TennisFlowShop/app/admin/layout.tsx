@@ -1,5 +1,4 @@
-import AdminMobileMenu from "@/components/admin/AdminMobileMenu";
-import AdminSidebar from "@/components/admin/AdminSidebar";
+import AdminNavigationShell from "@/components/admin/AdminNavigationShell";
 import AccessDenied from "@/components/system/AccessDenied";
 import { getCurrentUser } from "@/lib/hooks/get-current-user";
 import { logInfo } from "@/lib/logger";
@@ -74,14 +73,9 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   return (
     <div className="flex min-h-full flex-col bg-muted/30">
       <div className="mx-auto flex w-full max-w-[1800px] flex-1 gap-4 px-3 pb-10 pt-5 bp-md:px-4 lg:px-5 xl:gap-6 xl:px-6">
-        <div className="hidden xl:block">
-          <AdminSidebar defaultCollapsed />
-        </div>
+        <AdminNavigationShell />
 
         <main className="min-w-0 flex-1">
-          <div className="mb-4 xl:hidden">
-            <AdminMobileMenu />
-          </div>
           {children}
         </main>
       </div>
