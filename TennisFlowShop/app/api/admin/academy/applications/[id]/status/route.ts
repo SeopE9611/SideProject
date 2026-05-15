@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { ObjectId, type Document } from "mongodb";
+import { ObjectId, type Db, type Document, type Filter } from "mongodb";
 
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 import { requireAdmin } from "@/lib/admin.guard";
@@ -10,6 +10,9 @@ import {
 } from "@/lib/types/academy";
 
 const COLLECTION_NAME = "academy_lesson_applications";
+const CLASS_COLLECTION_NAME = "academy_classes";
+const CLASS_AUTO_CLOSED_MESSAGE =
+  "등록 확정 인원이 정원에 도달하여 클래스가 모집 마감 처리되었습니다.";
 
 function serializeValue(value: unknown): unknown {
   if (value instanceof Date) return value.toISOString();
@@ -104,6 +107,96 @@ function serializeApplication(doc: Document) {
   };
 }
 
+function getClassIdFromSnapshot(value: unknown) {
+  if (!value || typeof value !== "object") return "";
+  const record = value as { classId?: unknown };
+  const serialized = serializeValue(record.classId);
+  return typeof serialized === "string" ? serialized : String(serialized ?? "");
+}
+
+function buildClassApplicationFilter(classId: string): Filter<Document> {
+  const matchers: unknown[] = [classId];
+  if (ObjectId.isValid(classId)) {
+    matchers.push(new ObjectId(classId));
+  }
+
+  return {
+    $or: [{ classId: { $in: matchers } }, { "classSnapshot.classId": classId }],
+  };
+}
+
+function getApplicationClassIdCandidates(application: Document) {
+  const candidates = new Set<string>();
+  if (application.classId) {
+    const serialized = serializeValue(application.classId);
+    const classId =
+      typeof serialized === "string" ? serialized : String(serialized ?? "");
+    if (classId) candidates.add(classId);
+  }
+
+  const snapshotClassId = getClassIdFromSnapshot(application.classSnapshot);
+  if (snapshotClassId) candidates.add(snapshotClassId);
+
+  return [...candidates];
+}
+
+async function autoCloseClassWhenConfirmedCapacityReached(
+  db: Db,
+  application: Document,
+) {
+  const classIdCandidates = getApplicationClassIdCandidates(application);
+  const objectIdCandidates = classIdCandidates
+    .filter((classId) => ObjectId.isValid(classId))
+    .map((classId) => new ObjectId(classId));
+
+  if (objectIdCandidates.length === 0) {
+    return { classAutoClosed: false, confirmedCount: null, capacity: null };
+  }
+
+  const academyClass = await db
+    .collection(CLASS_COLLECTION_NAME)
+    .findOne(
+      { _id: { $in: objectIdCandidates } },
+      { projection: { _id: 1, capacity: 1, status: 1 } },
+    );
+
+  if (!academyClass) {
+    return { classAutoClosed: false, confirmedCount: null, capacity: null };
+  }
+
+  const classId = String(serializeValue(academyClass._id));
+  const capacity =
+    typeof academyClass.capacity === "number"
+      ? Math.trunc(academyClass.capacity)
+      : null;
+
+  if (!capacity || capacity <= 0) {
+    return { classAutoClosed: false, confirmedCount: null, capacity };
+  }
+
+  const confirmedCount = await db.collection(COLLECTION_NAME).countDocuments({
+    ...buildClassApplicationFilter(classId),
+    status: "confirmed",
+  });
+
+  if (academyClass.status !== "visible" || confirmedCount < capacity) {
+    return { classAutoClosed: false, confirmedCount, capacity };
+  }
+
+  const updateResult = await db
+    .collection(CLASS_COLLECTION_NAME)
+    .updateOne(
+      { _id: academyClass._id, status: "visible" },
+      { $set: { status: "closed", updatedAt: new Date().toISOString() } },
+    );
+
+  return {
+    classAutoClosed: updateResult.modifiedCount > 0,
+    confirmedCount,
+    capacity,
+  };
+}
+
 function trimString(value: unknown, maxLength: number) {
   if (typeof value !== "string") return "";
   return value.trim().slice(0, maxLength);
@@ -190,8 +283,33 @@ export async function PATCH(
     );
   }
 
+  let classAutoClosed = false;
+  let classAutoClosedConfirmedCount: number | null = null;
+  let classAutoClosedCapacity: number | null = null;
+
+  if (status === "confirmed") {
+    try {
+      const autoCloseResult = await autoCloseClassWhenConfirmedCapacityReached(
+        guard.db,
+        updated,
+      );
+      classAutoClosed = autoCloseResult.classAutoClosed;
+      classAutoClosedConfirmedCount = autoCloseResult.confirmedCount;
+      classAutoClosedCapacity = autoCloseResult.capacity;
+    } catch (error) {
+      console.error(
+        "[admin academy application status] auto close failed",
+        error,
+      );
+    }
+  }
+
   return NextResponse.json({
     success: true,
     item: serializeApplication(updated),
+    classAutoClosed,
+    classAutoClosedMessage: classAutoClosed ? CLASS_AUTO_CLOSED_MESSAGE : null,
+    classAutoClosedConfirmedCount,
+    classAutoClosedCapacity,
   });
 }
