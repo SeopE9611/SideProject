@@ -256,9 +256,6 @@ export default function OrdersClient() {
     return "";
   }
 
-  const ADMIN_SCOPE_TEXT =
-    "이 화면의 포함 범위: 상품 주문 + 교체서비스 신청 (대여 제외)";
-
   /**
    * 관리자 UX용 “거래종류(kind)” 라벨
    * - 개발자/DB 타입(__type)은 운영자에게 그대로 노출하면 헷갈리기 쉽다.
@@ -569,15 +566,11 @@ export default function OrdersClient() {
       {/* 제목 및 설명 */}
       <div className="mx-auto max-w-[1440px]">
         <AdminPageHeader
-          title="주문·신청 관리"
-          description="상품 주문과 교체서비스 신청서를 검색하고 상태·결제·배송 정보를 관리합니다."
+          title="주문·교체서비스 처리"
+          description="주문과 교체서비스 신청을 한 화면에서 확인하고, 처리할 항목을 빠르게 찾습니다."
           icon={PackageSearch}
-          scope="범위: 상품 주문 + 교체서비스 신청"
-          helperText="대여 주문은 /admin/rentals에서 별도로 관리합니다."
+          helperText="같은 색 테두리는 같은 고객 흐름입니다."
         />
-        <p className="mt-1 text-xs text-muted-foreground">
-          {ADMIN_SCOPE_TEXT}. (통합건은 같은 색 테두리로 묶여 표시됩니다)
-        </p>
       </div>
 
       {/* 필터 및 검색 카드 */}
@@ -585,8 +578,7 @@ export default function OrdersClient() {
         <CardHeader className="pb-2.5">
           <CardTitle>필터 및 검색</CardTitle>
           <CardDescription className="text-xs">
-            {ADMIN_SCOPE_TEXT}. 주문/신청 상태, 유형, 결제 상태로 필터링하거나
-            주문 ID, 고객명, 이메일로 검색하세요.
+            주문/신청 ID, 고객명, 이메일로 검색하고 필요한 조건만 선택하세요.
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-1">
@@ -657,63 +649,87 @@ export default function OrdersClient() {
               {data ? `총 ${data.total}개의 주문` : "목록을 불러오는 중…"}
             </p>
           </div>
-          {/* 운영자용: “이 화면에서 뭘 보고 처리해야 하는지”를 한 번에 이해시키는 장치 */}
-          <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-sm text-foreground/75">
-            <Badge
-              className={cn(
-                badgeBase,
-                badgeSizeSm,
-                "whitespace-nowrap",
-                kindBadgeClass("order"),
-              )}
-            >
-              주문
-            </Badge>
-            <Badge
-              className={cn(
-                badgeBase,
-                badgeSizeSm,
-                "whitespace-nowrap",
-                kindBadgeClass("stringing_application"),
-              )}
-            >
-              신청서
-            </Badge>
-            <Badge
-              className={cn(
-                badgeBase,
-                badgeSizeSm,
-                "whitespace-nowrap",
-                linkBadgeClass("integrated"),
-              )}
-            >
-              통합(주문+신청)
-            </Badge>
-            <Badge
-              className={cn(
-                badgeBase,
-                badgeSizeSm,
-                "whitespace-nowrap",
-                linkBadgeClass("standalone"),
-              )}
-            >
-              단독
-            </Badge>
-            <Badge
-              className={cn(
-                badgeBase,
-                badgeSizeSm,
-                "whitespace-nowrap",
-                linkBadgeClass("standalone"),
-              )}
-            >
-              범위: 주문+신청
-            </Badge>
-            <span>• 같은 색 테두리 = 같은 통합건</span>
-            <span>
-              • “신청서에서 관리” = 운송장/배송정보는 신청서에서만 등록
-            </span>
-            <span>• 대여 주문은 /admin/rentals에서만 관리</span>
+          {/* 운영자용: 빠른 구분 범례와 상세 도움말 */}
+          <div className="mt-1.5 flex flex-col gap-2 text-sm text-foreground/75">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <Badge
+                className={cn(
+                  badgeBase,
+                  badgeSizeSm,
+                  "whitespace-nowrap",
+                  kindBadgeClass("order"),
+                )}
+              >
+                주문
+              </Badge>
+              <Badge
+                className={cn(
+                  badgeBase,
+                  badgeSizeSm,
+                  "whitespace-nowrap",
+                  kindBadgeClass("stringing_application"),
+                )}
+              >
+                신청서
+              </Badge>
+              <Badge
+                className={cn(
+                  badgeBase,
+                  badgeSizeSm,
+                  "whitespace-nowrap",
+                  linkBadgeClass("integrated"),
+                )}
+              >
+                통합
+              </Badge>
+              <Badge
+                className={cn(
+                  badgeBase,
+                  badgeSizeSm,
+                  "whitespace-nowrap",
+                  linkBadgeClass("standalone"),
+                )}
+              >
+                단독
+              </Badge>
+              <details className="group">
+                <summary className="inline-flex h-7 cursor-pointer list-none items-center rounded-md border border-border/60 bg-card px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted/30 hover:text-foreground [&::-webkit-details-marker]:hidden">
+                  주문·신청 구분 안내
+                </summary>
+                <div className="mt-2 rounded-lg border border-border/60 bg-muted/20 p-3 text-xs leading-5 text-muted-foreground">
+                  <ul className="space-y-1">
+                    <li>
+                      <strong className="font-medium text-foreground">주문:</strong>{" "}
+                      상품 구매, 스트링 구매, 라켓 구매 등 결제 주문입니다.
+                    </li>
+                    <li>
+                      <strong className="font-medium text-foreground">신청서:</strong>{" "}
+                      교체서비스 작업 정보를 관리하는 신청 문서입니다.
+                    </li>
+                    <li>
+                      <strong className="font-medium text-foreground">통합:</strong>{" "}
+                      주문과 교체서비스 신청이 연결된 고객 흐름입니다.
+                    </li>
+                    <li>
+                      <strong className="font-medium text-foreground">단독:</strong>{" "}
+                      주문 또는 신청서가 단독으로 접수된 항목입니다.
+                    </li>
+                    <li>
+                      <strong className="font-medium text-foreground">같은 색 테두리:</strong>{" "}
+                      같은 고객 흐름으로 연결된 주문·신청입니다.
+                    </li>
+                    <li>
+                      <strong className="font-medium text-foreground">신청서에서 관리:</strong>{" "}
+                      배송/운송장 정보가 신청서 상세에서 관리되는 항목입니다.
+                    </li>
+                    <li>
+                      <strong className="font-medium text-foreground">대여 주문:</strong>{" "}
+                      라켓 대여 관련 업무는 “라켓 대여 처리” 화면에서 관리합니다.
+                    </li>
+                  </ul>
+                </div>
+              </details>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="relative min-h-[420px] overflow-x-auto scrollbar-hidden pr-2 md:overflow-x-visible md:pr-0">
