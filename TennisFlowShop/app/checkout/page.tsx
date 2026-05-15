@@ -357,6 +357,7 @@ export default function CheckoutPage() {
     [orderItemsKey, mountingFeeByProductId],
   );
   const isStringOnlyServiceFlow = !ENABLE_STRING_STANDALONE_ORDER && isMountableStringOrderOnly;
+  const stringStandalonePausedNotice = "현재 스트링 단품 구매는 운영하지 않으며, 선택한 스트링은 교체서비스 신청용으로 사용됩니다.";
 
   // next(로그인 리디렉션)에도 URL을 그대로 유지:
   // - withService=1은 "장착 서비스 포함 결제" 의도 플래그이며,
@@ -1198,6 +1199,7 @@ export default function CheckoutPage() {
                         <div className="space-y-1 text-sm leading-relaxed text-muted-foreground">
                           <p className="break-keep">결제와 함께 교체서비스 신청이 접수됩니다. 이후 진행 상황은 마이페이지에서 확인할 수 있어요.</p>
                           <p className="break-keep">선택한 스트링, 수령/배송 방식, 장착 요청사항은 아래 신청 정보에서 다시 확인해주세요.</p>
+                          {isStringOnlyServiceFlow && <p className="break-keep">{stringStandalonePausedNotice}</p>}
                         </div>
                       ) : (
                         <p className="break-keep text-sm leading-relaxed text-muted-foreground">현재 주문에는 교체서비스 신청이 포함되어 있지 않습니다.</p>

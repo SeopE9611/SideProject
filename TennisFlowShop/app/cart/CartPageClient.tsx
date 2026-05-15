@@ -378,6 +378,8 @@ export default function CartPageClient() {
   // - blockServiceCheckout: 구성/수량 불일치면 장바구니에서 이미 막히는 상태
   const shouldEnterCheckoutWithService =
     (!blockServiceCheckout && isBundleLocked) || hasMountableStringOnlyFlow;
+  const stringStandalonePausedNotice =
+    "현재 스트링 단품 구매는 운영하지 않으며, 선택한 스트링은 교체서비스 신청용으로 사용됩니다.";
   const checkoutBasePath = shouldEnterCheckoutWithService
     ? "/checkout?withService=1"
     : "/checkout";
@@ -1135,20 +1137,27 @@ export default function CartPageClient() {
                         금액 계산 중...
                       </Button>
                     ) : (
-                      <Button
-                        className="h-14 w-full font-semibold"
-                        size="lg"
-                        asChild
-                      >
-                        <Link
-                          href={checkoutHref}
-                          className="flex items-center gap-3"
+                      <>
+                        {hasMountableStringOnlyFlow && (
+                          <p className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-sm leading-relaxed text-muted-foreground">
+                            {stringStandalonePausedNotice}
+                          </p>
+                        )}
+                        <Button
+                          className="h-14 w-full font-semibold"
+                          size="lg"
+                          asChild
                         >
-                          <ShoppingBag className="h-5 w-5" />
-                          {user ? "주문하기" : "로그인 후 주문하기"}
-                          <ArrowRight className="h-5 w-5" />
-                        </Link>
-                      </Button>
+                          <Link
+                            href={checkoutHref}
+                            className="flex items-center gap-3"
+                          >
+                            <ShoppingBag className="h-5 w-5" />
+                            {user ? "주문하기" : "로그인 후 주문하기"}
+                            <ArrowRight className="h-5 w-5" />
+                          </Link>
+                        </Button>
+                      </>
                     )}
                   </CardFooter>
                 </Card>
@@ -1287,14 +1296,21 @@ export default function CartPageClient() {
                   금액 계산 중...
                 </Button>
               ) : (
-                <Button
-                  asChild
-                  className="h-12 w-full font-semibold"
-                >
-                  <Link href={checkoutHref}>
-                    {user ? "주문하기" : "로그인 후 주문하기"}
-                  </Link>
-                </Button>
+                <>
+                  {hasMountableStringOnlyFlow && (
+                    <p className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-sm leading-relaxed text-muted-foreground">
+                      {stringStandalonePausedNotice}
+                    </p>
+                  )}
+                  <Button
+                    asChild
+                    className="h-12 w-full font-semibold"
+                  >
+                    <Link href={checkoutHref}>
+                      {user ? "주문하기" : "로그인 후 주문하기"}
+                    </Link>
+                  </Button>
+                </>
               )}
             </SiteContainer>
           </div>
