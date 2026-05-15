@@ -692,7 +692,7 @@ export default function OrdersClient() {
               >
                 단독
               </Badge>
-              <details className="group">
+              <details className="group w-full sm:w-auto">
                 <summary className="inline-flex h-7 cursor-pointer list-none items-center rounded-md border border-border/60 bg-card px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted/30 hover:text-foreground [&::-webkit-details-marker]:hidden">
                   주문·신청 구분 안내
                 </summary>
