@@ -1,7 +1,3 @@
-import type { Document } from "mongodb";
-import type { Metadata } from "next";
-import Link from "next/link";
-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,6 +14,10 @@ import {
   type AcademyClassLevel,
   type PublicAcademyClass,
 } from "@/lib/types/academy";
+import type { Document } from "mongodb";
+import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "도깨비테니스 아카데미",
@@ -197,7 +197,6 @@ const academyContacts = [
   { role: "코치", name: "김재민", phone: "010-5218-5248" },
 ];
 
-
 const faqs = [
   {
     question: "테니스를 처음 배워도 가능한가요?",
@@ -227,22 +226,31 @@ export default async function AcademyPage() {
   return (
     <main className="min-h-screen bg-background px-4 py-8 md:px-6 md:py-12">
       <div className="mx-auto max-w-6xl space-y-9 md:space-y-11">
-        <section className="rounded-3xl border border-border bg-card px-5 py-8 shadow-sm md:px-9 md:py-11">
-          <div className="max-w-3xl space-y-6">
-            <div className="space-y-3">
-              <p className="text-sm font-semibold text-success">도깨비테니스 레슨 안내</p>
-              <h1 className="break-keep text-3xl font-bold tracking-tight text-foreground md:text-5xl">도깨비테니스 아카데미</h1>
-              <p className="max-w-2xl break-keep text-base leading-7 text-foreground/80 md:text-lg md:leading-8">
-                아카데미는 스트링·라켓 장비 서비스와 별도의 레슨 신청 흐름입니다. 입문자부터 실전 플레이어까지, 목표와 레벨에 맞춘 수업 방향을 상담하며 함께 찾아보세요.
-              </p>
+        <section className="overflow-hidden rounded-3xl border border-border bg-card px-5 py-8 shadow-sm md:px-9 md:py-11">
+          <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(340px,430px)] lg:items-center">
+            {/* 왼쪽: 기존 아카데미 소개/CTA 영역 */}
+            <div className="max-w-3xl space-y-6">
+              <div className="space-y-3">
+                <p className="text-sm font-semibold text-success">도깨비테니스 레슨 안내</p>
+                <h1 className="break-keep text-3xl font-bold tracking-tight text-foreground md:text-5xl">도깨비테니스 아카데미</h1>
+                <p className="max-w-2xl break-keep text-base leading-7 text-foreground/80 md:text-lg md:leading-8">
+                  아카데미는 스트링·라켓 장비 서비스와 별도의 레슨 신청 흐름입니다. 입문자부터 실전 플레이어까지, 목표와 레벨에 맞춘 수업 방향을 상담하며 함께 찾아보세요.
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-3 pt-1 sm:flex-row sm:items-center">
+                <Button asChild size="lg" className="w-full sm:w-auto">
+                  <Link href={userId ? "/academy/apply" : `/login?next=${encodeURIComponent("/academy/apply")}`}>{userId ? "레슨 신청하기" : "로그인 후 신청"}</Link>
+                </Button>
+                <Button asChild size="lg" variant="outline" className="w-full sm:w-auto">
+                  <Link href="/board/qna/write?category=academy">문의하기</Link>
+                </Button>
+              </div>
             </div>
-            <div className="flex flex-col gap-3 pt-1 sm:flex-row sm:items-center">
-              <Button asChild size="lg" className="w-full sm:w-auto">
-                <Link href={userId ? "/academy/apply" : `/login?next=${encodeURIComponent("/academy/apply")}`}>{userId ? "레슨 신청하기" : "로그인 후 신청"}</Link>
-              </Button>
-              <Button asChild size="lg" variant="outline" className="w-full sm:w-auto">
-                <Link href="/board/qna/write?category=academy">문의하기</Link>
-              </Button>
+
+            {/* 오른쪽: 아카데미 히어로 이미지 */}
+            <div className="relative hidden overflow-hidden rounded-3xl border border-border bg-muted/20 shadow-sm lg:block">
+              <Image src="/brand/academy-hero-tennis-court.png" alt="도깨비테니스 아카데미 레슨 장면" width={1122} height={1402} priority sizes="(min-width: 1024px) 430px, 100vw" className="h-[420px] w-full object-cover object-center" />
             </div>
           </div>
         </section>
@@ -397,7 +405,6 @@ export default async function AcademyPage() {
             </Card>
           )}
         </section>
-
 
         <section className="space-y-4">
           <div className="space-y-2">
