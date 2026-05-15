@@ -1,6 +1,17 @@
 "use client";
 
 import AsyncState from "@/components/system/AsyncState";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,6 +24,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { badgeToneVariant, type BadgeSemanticTone } from "@/lib/badge-style";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import type {
   AcademyCustomerApplicationDetail,
   AcademyCustomerApplicationDetailResponse,
@@ -30,9 +42,12 @@ import {
   WalletCards,
 } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 import useSWR from "swr";
 
-function getStatusTone(status: AcademyLessonApplicationStatus): BadgeSemanticTone {
+function getStatusTone(
+  status: AcademyLessonApplicationStatus,
+): BadgeSemanticTone {
   switch (status) {
     case "confirmed":
       return "success";
@@ -105,7 +120,10 @@ function DetailSkeleton() {
         </CardContent>
       </Card>
       {Array.from({ length: 4 }).map((_, index) => (
-        <Card key={`academy-detail-skeleton-${index}`} className="border-border bg-card">
+        <Card
+          key={`academy-detail-skeleton-${index}`}
+          className="border-border bg-card"
+        >
           <CardHeader>
             <Skeleton className="h-6 w-40" />
             <Skeleton className="h-4 w-64" />
@@ -205,8 +223,14 @@ function ClassInfoCard({ item }: { item: AcademyCustomerApplicationDetail }) {
           <InfoBox label="수업 유형" value={classSnapshot.lessonTypeLabel} />
           <InfoBox label="레벨" value={classSnapshot.levelLabel} />
           <InfoBox label="강사" value={classSnapshot.instructorName} />
-          <InfoBox label="장소" value={classSnapshot.location || "상담 후 안내"} />
-          <InfoBox label="일정" value={classSnapshot.scheduleText || "상담 후 조율"} />
+          <InfoBox
+            label="장소"
+            value={classSnapshot.location || "상담 후 안내"}
+          />
+          <InfoBox
+            label="일정"
+            value={classSnapshot.scheduleText || "상담 후 조율"}
+          />
           <InfoBox
             label="정원"
             value={
@@ -223,7 +247,8 @@ function ClassInfoCard({ item }: { item: AcademyCustomerApplicationDetail }) {
               {formatPrice(classSnapshot.price)}
             </dd>
             <dd className="mt-2 break-keep text-xs leading-5 text-muted-foreground">
-              수강료는 상담 내용에 따라 최종 확인될 수 있으며, 등록 확정 후 현장에서 결제를 안내해드립니다.
+              수강료는 상담 내용에 따라 최종 확인될 수 있으며, 등록 확정 후
+              현장에서 결제를 안내해드립니다.
             </dd>
           </div>
         </dl>
@@ -232,7 +257,11 @@ function ClassInfoCard({ item }: { item: AcademyCustomerApplicationDetail }) {
   );
 }
 
-function ApplicationInfoCard({ item }: { item: AcademyCustomerApplicationDetail }) {
+function ApplicationInfoCard({
+  item,
+}: {
+  item: AcademyCustomerApplicationDetail;
+}) {
   return (
     <Card className="border-border bg-card shadow-sm">
       <CardHeader>
@@ -240,7 +269,9 @@ function ApplicationInfoCard({ item }: { item: AcademyCustomerApplicationDetail 
           <UserRound className="h-5 w-5 text-primary" />
           신청 정보
         </CardTitle>
-        <CardDescription>신청 당시 입력한 상담 희망 정보입니다.</CardDescription>
+        <CardDescription>
+          신청 당시 입력한 상담 희망 정보입니다.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <dl className="grid gap-3 bp-sm:grid-cols-2">
@@ -251,12 +282,27 @@ function ApplicationInfoCard({ item }: { item: AcademyCustomerApplicationDetail 
           <InfoBox label="현재 실력" value={item.currentLevelLabel} />
           <InfoBox
             label="희망 요일"
-            value={item.preferredDays.length ? item.preferredDays.join(", ") : "미입력"}
+            value={
+              item.preferredDays.length
+                ? item.preferredDays.join(", ")
+                : "미입력"
+            }
           />
-          <InfoBox label="희망 시간대" value={item.preferredTimeText || "미입력"} />
-          <InfoBox label="레슨 목표" value={item.lessonGoal || "미입력"} multiline />
+          <InfoBox
+            label="희망 시간대"
+            value={item.preferredTimeText || "미입력"}
+          />
+          <InfoBox
+            label="레슨 목표"
+            value={item.lessonGoal || "미입력"}
+            multiline
+          />
           <div className="bp-sm:col-span-2">
-            <InfoBox label="요청사항" value={item.requestMemo || "미입력"} multiline />
+            <InfoBox
+              label="요청사항"
+              value={item.requestMemo || "미입력"}
+              multiline
+            />
           </div>
         </dl>
       </CardContent>
@@ -265,6 +311,8 @@ function ApplicationInfoCard({ item }: { item: AcademyCustomerApplicationDetail 
 }
 
 export default function AcademyApplicationDetailClient({ id }: { id: string }) {
+  const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
   const { data, error, isLoading, mutate } =
     useSWR<AcademyCustomerApplicationDetailResponse>(
       `/api/applications/academy/${id}`,
@@ -298,12 +346,56 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
   }
 
   const statusTone = getStatusTone(item.status);
+  const isCancelled = item.status === "cancelled";
+
+  const handleCancelApplication = async () => {
+    setIsCancelling(true);
+
+    try {
+      const response = await fetch(`/api/applications/academy/${id}/cancel`, {
+        method: "POST",
+        credentials: "include",
+      });
+      const payload = (await response.json().catch(() => null)) as {
+        success?: boolean;
+        item?: AcademyCustomerApplicationDetail;
+        message?: string;
+      } | null;
+
+      if (!response.ok || !payload?.success || !payload.item) {
+        throw new Error(
+          payload?.message || "신청 취소 중 문제가 발생했습니다.",
+        );
+      }
+
+      await mutate({ success: true, item: payload.item }, false);
+      setIsCancelDialogOpen(false);
+      showSuccessToast(
+        payload.message === "이미 취소된 신청입니다."
+          ? payload.message
+          : "아카데미 신청이 취소되었습니다.",
+      );
+    } catch (error) {
+      showErrorToast(
+        error instanceof Error
+          ? error.message
+          : "신청 취소 중 문제가 발생했습니다.",
+      );
+    } finally {
+      setIsCancelling(false);
+    }
+  };
 
   return (
     <div className="space-y-4 md:space-y-6">
       <Card className="border-border bg-card shadow-sm">
         <CardContent className="space-y-4 p-4 md:p-6">
-          <Button asChild variant="ghost" size="sm" className="w-fit px-0 hover:bg-transparent">
+          <Button
+            asChild
+            variant="ghost"
+            size="sm"
+            className="w-fit px-0 hover:bg-transparent"
+          >
             <Link href="/mypage?tab=academy">
               <ArrowLeft className="h-4 w-4" />
               클래스 신청 목록
@@ -321,10 +413,14 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
                 클래스 신청 상세
               </h1>
               <p className="break-keep text-sm text-muted-foreground">
-                도깨비테니스 아카데미 클래스 신청 진행 상황과 상담 안내를 확인할 수 있습니다.
+                도깨비테니스 아카데미 클래스 신청 진행 상황과 상담 안내를 확인할
+                수 있습니다.
               </p>
             </div>
-            <Badge variant={badgeToneVariant(statusTone)} className="w-fit text-sm">
+            <Badge
+              variant={badgeToneVariant(statusTone)}
+              className="w-fit text-sm"
+            >
               {item.statusLabel}
             </Badge>
           </div>
@@ -337,13 +433,19 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
             <CheckCircle2 className="h-5 w-5 text-primary" />
             진행 상태 안내
           </CardTitle>
-          <CardDescription>현재 상태와 다음 안내를 확인해 주세요.</CardDescription>
+          <CardDescription>
+            현재 상태와 다음 안내를 확인해 주세요.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="rounded-xl border border-border/60 bg-muted/25 p-4">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-sm font-medium text-muted-foreground">현재 상태</span>
-              <Badge variant={badgeToneVariant(statusTone)}>{item.statusLabel}</Badge>
+              <span className="text-sm font-medium text-muted-foreground">
+                현재 상태
+              </span>
+              <Badge variant={badgeToneVariant(statusTone)}>
+                {item.statusLabel}
+              </Badge>
             </div>
             <p className="mt-3 break-keep text-sm leading-6 text-foreground">
               {getStatusDescription(item.status)}
@@ -362,7 +464,9 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
               <MessageSquareText className="h-5 w-5" />
               관리자 안내
             </CardTitle>
-            <CardDescription>도깨비테니스 담당자가 남긴 안내입니다.</CardDescription>
+            <CardDescription>
+              도깨비테니스 담당자가 남긴 안내입니다.
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <p className="whitespace-pre-wrap break-words rounded-xl border border-info/20 bg-background p-4 text-sm leading-6 text-foreground">
@@ -385,8 +489,69 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
         </CardHeader>
         <CardContent>
           <p className="break-keep text-sm leading-6 text-foreground">
-            아카데미 수강료는 신청 단계에서 결제되지 않습니다. 상담 후 등록이 확정되면 첫 방문 또는 안내된 일정에 맞춰 현장에서 결제해 주세요.
+            아카데미 수강료는 신청 단계에서 결제되지 않습니다. 상담 후 등록이
+            확정되면 첫 방문 또는 안내된 일정에 맞춰 현장에서 결제해 주세요.
           </p>
+        </CardContent>
+      </Card>
+
+      <Card className="border-border bg-card shadow-sm">
+        <CardHeader>
+          <CardTitle className="text-lg">신청 관리</CardTitle>
+          <CardDescription>
+            신청 내용을 확인한 뒤 필요한 경우 신청 취소를 진행해 주세요.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {isCancelled ? (
+            <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm font-medium text-destructive">
+              이미 취소된 신청입니다. 다시 수강을 원하시면 아카데미 페이지에서
+              새로 신청해 주세요.
+            </div>
+          ) : (
+            <AlertDialog
+              open={isCancelDialogOpen}
+              onOpenChange={(open) => {
+                if (!isCancelling) setIsCancelDialogOpen(open);
+              }}
+            >
+              <AlertDialogTrigger asChild>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  className="w-full bp-sm:w-auto"
+                >
+                  신청 취소
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>
+                    아카데미 신청을 취소할까요?
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    취소 후에는 이 신청이 취소 상태로 표시됩니다. 다시 수강을
+                    원하시면 아카데미 페이지에서 새로 신청해 주세요.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel disabled={isCancelling}>
+                    취소하지 않기
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    disabled={isCancelling}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      void handleCancelApplication();
+                    }}
+                  >
+                    {isCancelling ? "취소 중..." : "신청 취소하기"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
         </CardContent>
       </Card>
 

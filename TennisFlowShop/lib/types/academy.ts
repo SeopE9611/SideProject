@@ -52,6 +52,9 @@ export type AcademyLessonApplication = {
 
   history?: AcademyLessonApplicationHistoryItem[];
 
+  cancelledAt?: string | Date;
+  cancelledBy?: "customer" | "admin";
+
   createdAt?: string;
   updatedAt?: string;
 };
@@ -201,6 +204,8 @@ export type AcademyCustomerApplicationDetail = {
   customerMessage: string | null;
   classId: string | null;
   classSnapshot: AcademyClassSnapshot | null;
+  cancelledAt?: string | null;
+  cancelledBy?: "customer" | "admin" | null;
   createdAt: string | null;
   updatedAt: string | null;
 };
@@ -245,7 +250,6 @@ export type AcademyClass = {
   createdAt?: string;
   updatedAt?: string;
 };
-
 
 export type AcademyClassApplicationSummary = {
   _id: string;
