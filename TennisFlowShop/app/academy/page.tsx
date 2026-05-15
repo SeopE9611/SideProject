@@ -282,9 +282,8 @@ export default async function AcademyPage() {
                 도깨비테니스 아카데미
               </h1>
               <p className="max-w-2xl break-keep text-base leading-7 text-foreground/80 md:text-lg md:leading-8">
-                입문자부터 실전 플레이어까지, 목표와 레벨에 맞춘 테니스 레슨을
-                안내합니다. 기본기, 랠리, 경기 운영까지 필요한 방향을 상담하며
-                함께 찾아보세요.
+                아카데미는 스트링·라켓 장비 서비스와 별도의 레슨 신청 흐름입니다.
+                입문자부터 실전 플레이어까지, 목표와 레벨에 맞춘 수업 방향을 상담하며 함께 찾아보세요.
               </p>
             </div>
             <div className="flex flex-col gap-3 pt-1 sm:flex-row sm:items-center">
@@ -308,10 +307,10 @@ export default async function AcademyPage() {
                 <Link href="/board/qna/write?category=academy">문의하기</Link>
               </Button>
             </div>
-            <p className="max-w-2xl break-keep text-sm leading-6 text-muted-foreground">
-              레슨 신청 후 담당자가 일정과 수강 방식을 확인해드립니다. 등록이
-              확정되면 현장에서 결제를 안내해드립니다.
-            </p>
+            <div className="max-w-2xl rounded-2xl border border-primary/20 bg-primary/5 p-4 text-sm leading-6 text-muted-foreground">
+              <p className="font-semibold text-foreground">신청 단계에서는 결제하지 않습니다.</p>
+              <p className="mt-1">레슨 신청 후 담당자가 일정과 수강 방식을 확인해드립니다. 등록이 확정되면 안내 또는 현장 결제로 진행됩니다.</p>
+            </div>
           </div>
         </section>
 

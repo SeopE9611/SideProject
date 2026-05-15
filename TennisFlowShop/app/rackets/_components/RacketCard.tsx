@@ -41,6 +41,7 @@ type Props = {
   racket: RacketItem;
   viewMode: "grid" | "list";
   brandLabel: string;
+  isApplyFlow?: boolean;
 };
 
 function useRacketAvailability(id: string) {
@@ -148,7 +149,7 @@ function RacketAvailBadge({ id }: { id: string }) {
 }
 
 const RacketCard = React.memo(
-  function RacketCard({ racket, viewMode, brandLabel }: Props) {
+  function RacketCard({ racket, viewMode, brandLabel, isApplyFlow = false }: Props) {
     const { avail, isSold, isAllRented, ready } = useRacketAvailability(
       racket.id,
     );
@@ -258,7 +259,7 @@ const RacketCard = React.memo(
                           onClick={(e) => e.stopPropagation()}
                         >
                           <ShoppingCart className="w-4 h-4 bp-sm:w-5 bp-sm:h-5 mr-1.5" />
-                          구매하기
+                          {isApplyFlow ? "스트링 선택 후 구매" : "구매하기"}
                         </Link>
                       </Button>
                     ) : (
@@ -412,7 +413,7 @@ const RacketCard = React.memo(
                     className="justify-center"
                   >
                     <ShoppingCart className="w-4 h-4 mr-1.5" />
-                    구매하기
+                    {isApplyFlow ? "스트링 선택 후 구매" : "구매하기"}
                   </Link>
                 </Button>
               ) : (

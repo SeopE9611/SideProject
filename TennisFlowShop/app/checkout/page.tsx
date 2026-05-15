@@ -1114,6 +1114,11 @@ export default function CheckoutPage() {
                   </div>
                 </div>
 
+                <div className="mt-4 grid max-w-4xl gap-2 text-sm text-muted-foreground sm:grid-cols-5">
+                  {["1. 주문 상품 확인", "2. 수령/배송 방식 선택", "3. 장착 정보 확인", "4. 결제/혜택 적용", "5. 최종 확인"].map((label) => (
+                    <span key={label} className="rounded-xl border border-border bg-card px-3 py-2 text-center break-keep">{label}</span>
+                  ))}
+                </div>
                 <p className="mt-3 max-w-2xl break-keep text-sm leading-relaxed text-foreground/80">결제와 함께 교체서비스 신청이 접수되며, 별도 신청서 작성 없이 현재 주문에 포함됩니다.</p>
               </nav>
             )}
@@ -1191,8 +1196,8 @@ export default function CheckoutPage() {
                       </h2>
                       {withStringService ? (
                         <div className="space-y-1 text-sm leading-relaxed text-muted-foreground">
-                          <p className="break-keep">선택한 스트링과 교체서비스 신청이 함께 접수됩니다. 결제 완료 후 마이페이지에서 신청 상태를 확인할 수 있습니다.</p>
-                          <p className="break-keep">장착 정보와 요청사항은 아래 신청 정보에서 확인해주세요.</p>
+                          <p className="break-keep">결제와 함께 교체서비스 신청이 접수됩니다. 이후 진행 상황은 마이페이지에서 확인할 수 있어요.</p>
+                          <p className="break-keep">선택한 스트링, 수령/배송 방식, 장착 요청사항은 아래 신청 정보에서 다시 확인해주세요.</p>
                         </div>
                       ) : (
                         <p className="break-keep text-sm leading-relaxed text-muted-foreground">현재 주문에는 교체서비스 신청이 포함되어 있지 않습니다.</p>
@@ -1364,6 +1369,16 @@ export default function CheckoutPage() {
                         </div>
                       </label>
                     </RadioGroup>
+                    {withStringService && (
+                      <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm text-muted-foreground">
+                        <p className="font-semibold text-foreground">선택 후 다음 행동</p>
+                        <p className="mt-1 break-keep">
+                          {deliveryMethod === "택배수령"
+                            ? "결제 후 라켓을 포장해 발송하고, 마이페이지에서 운송장 정보를 등록하면 진행이 빨라집니다."
+                            : "예약/방문 안내에 따라 매장에 방문해주세요. 방문 전 신청 상태를 마이페이지에서 확인할 수 있어요."}
+                        </p>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
 

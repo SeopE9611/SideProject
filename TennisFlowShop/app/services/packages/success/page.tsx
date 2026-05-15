@@ -226,16 +226,20 @@ export default async function PackageSuccessPage({
               </div>
               <p className="text-muted-foreground mb-4">
                 {isTossPayment || isNicePayment
-                  ? "결제가 완료되어 패키지가 활성화되었습니다. 바로 이용하실 수 있어요."
-                  : "입금 확인 후 패키지가 활성화되며, 스트링 교체 서비스 예약이 가능합니다."}
+                  ? "결제가 완료되어 패키지가 활성화되었습니다. 바로 교체서비스 신청에 사용할 수 있어요."
+                  : "입금 확인 후 패키지가 활성화되며, 교체서비스 신청 시 이용 횟수가 차감됩니다."}
               </p>
+              <div className="mb-4 rounded-lg border border-border bg-card p-3 text-left text-sm text-muted-foreground">
+                <p className="font-semibold text-foreground">다음 단계</p>
+                <p className="mt-1">패키지 활성화 상태는 마이페이지에서 확인하고, 교체서비스 신청 시 패키지 적용 여부를 확인해주세요.</p>
+              </div>
               <Button
                 variant="default"
                 className="font-semibold shadow-sm"
                 asChild
               >
-                <Link href="/services" className="flex items-center gap-2">
-                  서비스 예약하기
+                <Link href="/services/apply" className="flex items-center gap-2">
+                  교체서비스 신청하기
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>

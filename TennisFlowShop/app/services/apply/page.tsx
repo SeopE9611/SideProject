@@ -1738,124 +1738,49 @@ export default function StringServiceApplyPage() {
           </div>
 
           {/* Option Cards */}
-          <div className="grid grid-cols-1 bp-md:grid-cols-2 bp-lg:grid-cols-3 gap-4 bp-sm:gap-5 bp-lg:gap-6 max-w-6xl mx-auto">
-            {/* Option 1: 스트링 선택 후 신청 */}
-            <button
-              type="button"
-              onClick={() => safePush("/products?from=apply")}
-              className="group relative flex h-full flex-col bg-card rounded-2xl p-5 bp-sm:p-6 text-left border border-border hover:border-border hover:shadow-lg transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-            >
-              <div className="absolute -top-2.5 left-5">
-                <Badge variant="secondary">추천</Badge>
-              </div>
+          <div className="grid grid-cols-1 bp-md:grid-cols-2 bp-xl:grid-cols-4 gap-4 bp-sm:gap-5 bp-lg:gap-6 max-w-7xl mx-auto">
+            {[
+              { badge: "추천", icon: <Grid2X2 className="h-8 w-8" />, title: "새 스트링 구매 + 장착", target: "스트링을 새로 고르고 기존 라켓에 장착하고 싶은 분", steps: "스트링 선택 → 결제/장착 정보 입력 → 접수 완료", cta: "스트링 고르고 신청하기", href: "/products?from=apply" },
+              { badge: "구매", icon: <MdSportsTennis className="h-9 w-9" />, title: "라켓 구매 + 장착", target: "중고 라켓을 구매하면서 바로 사용할 수 있게 세팅하고 싶은 분", steps: "라켓 선택 → 스트링 선택 → 결제 → 장착 접수", cta: "라켓 고르고 구매하기", href: "/rackets?from=apply" },
+              { badge: "대여", icon: <MdSportsTennis className="h-9 w-9" />, title: "라켓 대여 + 장착", target: "라켓을 빌려 쓰면서 원하는 스트링 세팅을 추가하고 싶은 분", steps: "라켓 대여 → 스트링 선택 → 대여 결제 → 장착 접수", cta: "대여 라켓 보기", href: "/rackets?from=apply&rentOnly=1" },
+              { badge: "보유 장비", icon: <File className="h-9 w-9" />, title: "보유 라켓/보유 스트링 장착", target: "이미 가진 라켓이나 스트링으로 교체만 맡기고 싶은 분", steps: "신청서 작성 → 접수 → 비용 안내/진행", cta: "보유 장비로 신청하기", href: "/services/apply?mode=single" },
+            ].map((item, index) => (
+              <button
+                key={item.title}
+                type="button"
+                onClick={() => safePush(item.href)}
+                className={`group relative flex h-full flex-col bg-card rounded-2xl p-5 bp-sm:p-6 text-left border hover:shadow-lg transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${index === 0 ? "border-primary/40 bg-primary/5" : "border-border"}`}
+              >
+                <div className="absolute -top-2.5 left-5">
+                  <Badge variant="secondary">{item.badge}</Badge>
+                </div>
+                <div className="w-12 h-12 bp-sm:w-14 bp-sm:h-14 rounded-xl bg-background flex items-center justify-center mb-4 group-hover:bg-muted transition-colors">
+                  {item.icon}
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-base bp-sm:text-lg font-semibold leading-snug break-keep text-foreground mb-3">
+                    {item.title}
+                  </h3>
+                  <p className="text-xs font-semibold text-primary">추천 대상</p>
+                  <p className="mt-1 text-sm text-muted-foreground leading-relaxed break-keep">{item.target}</p>
+                  <p className="mt-3 text-xs font-semibold text-primary">진행 방식</p>
+                  <p className="mt-1 text-sm text-muted-foreground leading-relaxed break-keep">{item.steps}</p>
+                </div>
+                <div className="mt-5 flex items-center text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
+                  <span>{item.cta}</span>
+                  <svg className="ml-1.5 w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                  </svg>
+                </div>
+              </button>
+            ))}
+          </div>
 
-              <div className="w-12 h-12 bp-sm:w-14 bp-sm:h-14 rounded-xl bg-background flex items-center justify-center mb-4 group-hover:bg-muted transition-colors">
-                <Grid2X2 className="h-8 w-8" />
-              </div>
-
-              <div className="flex-1">
-                <h3 className="text-base bp-sm:text-lg font-semibold leading-snug break-keep text-foreground mb-1.5">
-                  스트링도 새로 구매하고 신청
-                </h3>
-                <p className="text-sm text-muted-foreground leading-relaxed break-keep">
-                  새 스트링을 고른 뒤 교체서비스까지 한 번에 신청합니다.
-                </p>
-              </div>
-
-              <div className="mt-5 flex items-center text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">
-                <span>스트링 고르기</span>
-                <svg
-                  className="ml-1.5 w-4 h-4 group-hover:translate-x-1 transition-transform"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
-                  />
-                </svg>
-              </div>
-            </button>
-
-            {/* Option 2: 라켓 고르고 신청 */}
-            <div className="relative flex h-full flex-col bg-card rounded-2xl p-5 bp-sm:p-6 text-left border border-border hover:border-border hover:shadow-lg transition-colors duration-200">
-              <div className="w-12 h-12 bp-sm:w-14 bp-sm:h-14 rounded-xl bg-background flex items-center justify-center mb-4">
-                <MdSportsTennis className="h-9 w-9" />
-              </div>
-
-              <div className="flex-1">
-                <h3 className="text-base bp-sm:text-lg font-semibold leading-snug break-keep text-foreground mb-1.5">
-                  라켓 구매/대여와 함께 신청
-                </h3>
-                <p className="text-sm text-muted-foreground leading-relaxed break-keep">
-                  라켓 구매 또는 대여 흐름에서 스트링 선택과 교체서비스를 함께 진행합니다.
-                </p>
-              </div>
-
-              <div className="mt-5 flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => safePush("/rackets?from=apply")}
-                  className="flex-1 px-3 py-2 bp-sm:py-2.5 text-sm font-medium rounded-lg bg-background text-foreground hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  라켓 구매
-                </button>
-                <button
-                  type="button"
-                  onClick={() => safePush("/rackets?from=apply&rentOnly=1")}
-                  className="flex-1 px-3 py-2 bp-sm:py-2.5 text-sm font-medium rounded-lg bg-background text-foreground hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  라켓 대여
-                </button>
-              </div>
-            </div>
-
-            {/* Option 3: 신청서만 작성 */}
-            <button
-              type="button"
-              onClick={() => safePush("/services/apply?mode=single")}
-              className="group relative flex h-full flex-col bg-card rounded-2xl p-5 bp-sm:p-6 text-left border border-border hover:border-border hover:shadow-lg transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-            >
-              <div className="absolute -top-2.5 left-5">
-                <Badge variant="secondary">직접입력</Badge>
-              </div>
-
-              <div className="w-12 h-12 bp-sm:w-14 bp-sm:h-14 rounded-xl bg-background flex items-center justify-center mb-4 group-hover:bg-muted transition-colors">
-                <File className="h-9 w-9" />
-              </div>
-
-              <div className="flex-1">
-                <h3 className="text-base bp-sm:text-lg font-semibold leading-snug break-keep text-foreground mb-1.5">
-                  보유 라켓/보유 스트링으로 신청
-                </h3>
-                <p className="text-sm text-muted-foreground leading-relaxed break-keep">
-                  이미 가지고 있는 라켓이나 스트링으로 교체서비스를 신청합니다.
-                </p>
-                <p className="mt-2 text-xs text-primary">
-                  필요한 비용은 신청 내용 확인 후 안내됩니다.
-                </p>
-              </div>
-
-              <div className="mt-5 flex items-center text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">
-                <span>보유 장비로 신청하기</span>
-                <svg
-                  className="ml-1.5 w-4 h-4 group-hover:translate-x-1 transition-transform"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
-                  />
-                </svg>
-              </div>
-            </button>
+          <div className="mt-5 flex flex-wrap justify-center gap-2 text-sm">
+            <Button type="button" variant="outline" onClick={() => safePush("/products/recommend")}>잘 모르겠어요. 추천받을래요.</Button>
+            <Button type="button" variant="outline" onClick={() => safePush("/services/pricing")}>가격 먼저 보기</Button>
+            <Button type="button" variant="outline" onClick={() => safePush("/services/locations")}>매장 위치/방문 안내</Button>
+            <Button type="button" variant="outline" onClick={() => safePush("/board/qna")}>고객센터 문의하기</Button>
           </div>
 
           <div className="mt-6 bp-sm:mt-8 grid grid-cols-1 bp-lg:grid-cols-2 gap-4 bp-sm:gap-5 max-w-6xl mx-auto">

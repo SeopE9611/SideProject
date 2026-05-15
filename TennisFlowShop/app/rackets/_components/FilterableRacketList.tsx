@@ -92,6 +92,7 @@ export default function FilterableRacketList({
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
+  const isApplyFlow = searchParams.get("from") === "apply";
 
   // 정렬 / 뷰 모드
   const [sortOption, setSortOption] = useState("latest");
@@ -100,7 +101,6 @@ export default function FilterableRacketList({
     () => searchParams.get("rentOnly") === "1",
   );
 
-  const isApplyFlow = searchParams.get("from") === "apply";
 
   // 필터 상태들
   const [selectedBrand, setSelectedBrand] = useState<string | null>(
@@ -735,6 +735,7 @@ export default function FilterableRacketList({
                   brandLabel={
                     brandLabelMap[racket.brand.toLowerCase()] ?? racket.brand
                   }
+                  isApplyFlow={isApplyFlow}
                 />
               ))}
             </div>

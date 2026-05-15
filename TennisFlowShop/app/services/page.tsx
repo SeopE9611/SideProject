@@ -155,6 +155,34 @@ export default async function ServicesPage() {
               </div>
 
               <CardContent className="p-5 bp-md:p-8">
+                <div className="mb-8 rounded-2xl border border-primary/20 bg-primary/5 p-4 md:p-6">
+                  <div className="mb-5 text-center">
+                    <p className="text-sm font-semibold text-primary">신청 방식 먼저 선택하기</p>
+                    <h3 className="mt-1 text-2xl font-bold text-foreground">내 상황에 맞는 시작 지점을 고르세요</h3>
+                    <p className="mt-2 text-sm text-muted-foreground">스트링만 고를지, 라켓 구매/대여와 함께 진행할지, 보유 장비로 맡길지 바로 선택할 수 있어요.</p>
+                  </div>
+                  <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                    {[
+                      { title: "새 스트링 구매 후 장착", recommend: "스트링을 새로 고르고 기존 라켓에 장착하고 싶은 분", step: "스트링 선택 → 결제/장착 정보 입력 → 접수 완료", href: "/products?from=apply", cta: "스트링 고르고 신청하기" },
+                      { title: "라켓 구매와 함께 장착", recommend: "중고 라켓을 구매하면서 바로 사용할 수 있게 세팅하고 싶은 분", step: "라켓 선택 → 스트링 선택 → 결제 → 장착 접수", href: "/rackets?from=apply", cta: "라켓 고르고 신청하기" },
+                      { title: "라켓 대여와 함께 장착", recommend: "라켓을 빌려 쓰면서 원하는 스트링 세팅을 추가하고 싶은 분", step: "라켓 대여 → 스트링 선택 → 대여 결제 → 장착 접수", href: "/rackets?from=apply&rentOnly=1", cta: "대여 라켓 보기" },
+                      { title: "보유 라켓/보유 스트링으로 장착", recommend: "이미 가진 라켓이나 스트링으로 교체만 맡기고 싶은 분", step: "신청서 작성 → 접수 → 비용 안내/진행", href: "/services/apply?mode=single", cta: "보유 장비로 신청" },
+                      { title: "잘 모르겠어요 / 상담이 필요해요", recommend: "스트링 선택이나 방문 방식이 고민되는 분", step: "추천 도우미 확인 → 필요 시 고객센터 문의", href: "/products/recommend", cta: "추천받기" },
+                    ].map((item) => (
+                      <div key={item.title} className="flex h-full flex-col rounded-xl border border-border bg-card p-4 text-left shadow-sm">
+                        <h4 className="text-base font-bold text-foreground">{item.title}</h4>
+                        <p className="mt-3 text-xs font-semibold text-primary">이런 분께 추천</p>
+                        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{item.recommend}</p>
+                        <p className="mt-3 text-xs font-semibold text-primary">다음 단계</p>
+                        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{item.step}</p>
+                        <Button asChild className="mt-4 w-full" variant={item.href === "/products/recommend" ? "outline" : "default"}>
+                          <Link href={item.href}>{item.cta}</Link>
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-1 bp-md:grid-cols-2 gap-4 bp-md:gap-8 mb-6 bp-md:mb-8">
                   <div className="text-center p-4 md:p-6 border border-border rounded-xl hover:shadow-md transition-[box-shadow,border-color,background-color] duration-200">
                     <div className="w-20 h-20 bg-secondary rounded-full flex items-center justify-center text-primary mx-auto mb-4">

@@ -60,13 +60,18 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
           <div className="mb-4 bp-sm:mb-6 rounded-xl border border-border bg-card p-4 bp-sm:p-5 shadow-sm">
             <div className="flex items-start justify-between gap-3 flex-wrap">
               <div className="min-w-0">
-                <p className="text-sm bp-sm:text-base font-semibold text-foreground">교체서비스 신청용 스트링을 고르는 중이에요</p>
-                <p className="mt-1 text-xs bp-sm:text-sm text-muted-foreground leading-relaxed">원하는 스트링을 선택하면 체크아웃에서 신청과 결제를 함께 진행할 수 있어요.</p>
+                <p className="text-sm bp-sm:text-base font-semibold text-foreground">1단계: 장착할 스트링을 선택해주세요</p>
+                <p className="mt-1 text-xs bp-sm:text-sm text-muted-foreground leading-relaxed">선택 후 결제 화면에서 수령 방식과 장착 요청사항을 입력합니다. 결제와 함께 교체서비스 신청이 접수돼요.</p>
+                <div className="mt-3 grid gap-2 text-xs text-muted-foreground bp-sm:grid-cols-3">
+                  <span className="rounded-lg border border-border bg-background px-3 py-2">1. 스트링 선택</span>
+                  <span className="rounded-lg border border-border bg-background px-3 py-2">2. 결제/수령 방식 입력</span>
+                  <span className="rounded-lg border border-border bg-background px-3 py-2">3. 장착 접수 완료</span>
+                </div>
               </div>
 
               <div className="flex w-full bp-sm:w-auto gap-2">
                 <Button asChild variant="outline" className="flex-1 bp-sm:flex-none">
-                  <Link href="/services">서비스 안내</Link>
+                  <Link href="/services/apply">신청 방식 다시 선택</Link>
                 </Button>
                 <Button asChild className="flex-1 bp-sm:flex-none">
                   <Link href="/services/pricing">가격표 보기</Link>

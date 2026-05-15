@@ -1040,10 +1040,10 @@ export default function CartPageClient() {
                         {blockServiceCheckoutByComposition && (
                           <div className="w-full rounded-lg border border-border bg-muted p-3 text-sm text-foreground dark:border-border dark:bg-muted dark:text-foreground space-y-1.5">
                             <p className="font-semibold">
-                              교체서비스 신청 구성을 정리해주세요.
+                              교체서비스 구성을 정리해야 해요
                             </p>
                             <p>
-                              교체서비스 신청은 라켓 1종과 장착 스트링 1종 조합으로 진행됩니다.
+                              라켓 1종에는 장착할 스트링 1종이 필요해요.
                             </p>
                             <p>
                               현재 라켓{" "}
@@ -1057,7 +1057,7 @@ export default function CartPageClient() {
                             </p>
                             {mountableStringLineCount > 1 && (
                               <p>
-                                상품 목록에서 남길 스트링의 ‘이 스트링만 남기기’를 눌러 1종만 남겨주세요.
+                                해야 할 일: 장착할 스트링 1종만 남겨주세요.
                               </p>
                             )}
                             {mountableStringLineCount === 0 && (
@@ -1072,7 +1072,7 @@ export default function CartPageClient() {
                         )}
                         {blockServiceCheckoutByQty && (
                           <div className="w-full rounded-lg border border-border bg-muted p-3 text-sm text-foreground dark:border-border dark:bg-muted dark:text-foreground">
-                            라켓 1개당 장착 스트링 1개가 필요합니다.
+                            라켓 1개에는 장착할 스트링 1개가 필요해요.
                             <br />
                             현재 라켓{" "}
                             <span className="font-semibold">{totalRacketQty}개</span>{" "}
@@ -1110,7 +1110,7 @@ export default function CartPageClient() {
                           >
                             <ShoppingBag className="h-5 w-5" />
                             {blockServiceCheckoutByComposition
-                              ? "구성 정리 후 주문하기"
+                              ? "구성 정리 후 결제하기"
                               : "수량 맞춘 뒤 주문하기"}
                             <ArrowRight className="h-5 w-5" />
                           </Button>
@@ -1213,10 +1213,10 @@ export default function CartPageClient() {
                   {blockServiceCheckoutByComposition && (
                     <div className="rounded-lg border border-border bg-muted p-3 text-sm text-foreground dark:border-border dark:bg-muted dark:text-foreground space-y-1.5">
                       <p className="font-semibold">
-                        교체서비스 신청 구성을 정리해주세요.
+                        교체서비스 구성을 정리해야 해요
                       </p>
                       <p>
-                        교체서비스 신청은 라켓 1종과 장착 스트링 1종 조합으로 진행됩니다.
+                        라켓 1종에는 장착할 스트링 1종이 필요해요.
                       </p>
                       <p>
                         현재 라켓 <span className="font-semibold">{racketLineCount}종</span>{" "}
@@ -1227,7 +1227,7 @@ export default function CartPageClient() {
                       </p>
                       {mountableStringLineCount > 1 && (
                         <p>
-                          상품 목록에서 남길 스트링의 ‘이 스트링만 남기기’를 눌러 1종만 남겨주세요.
+                          해야 할 일: 장착할 스트링 1종만 남겨주세요.
                         </p>
                       )}
                       {mountableStringLineCount === 0 && (
@@ -1240,7 +1240,7 @@ export default function CartPageClient() {
                   )}
                   {blockServiceCheckoutByQty && (
                     <div className="rounded-lg border border-border bg-muted p-3 text-sm text-foreground dark:border-border dark:bg-muted dark:text-foreground">
-                      라켓 1개당 장착 스트링 1개가 필요합니다. 현재 라켓{" "}
+                      라켓 1개에는 장착할 스트링 1개가 필요해요. 현재 라켓{" "}
                       <span className="font-semibold">{totalRacketQty}개</span> / 장착
                       스트링{" "}
                       <span className="font-semibold">
@@ -1265,7 +1265,7 @@ export default function CartPageClient() {
                       onClick={() => showErrorToast(serviceBlockToastMessage)}
                     >
                       {blockServiceCheckoutByComposition
-                        ? "구성 정리 후 주문하기"
+                        ? "구성 정리 후 결제하기"
                         : "수량 맞춘 뒤 주문하기"}
                     </Button>
                   )}

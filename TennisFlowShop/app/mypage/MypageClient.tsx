@@ -307,6 +307,27 @@ export default function MypageClient({ user }: Props) {
               </div>
             </div>
 
+            <button
+              type="button"
+              onClick={() => router.push("/mypage?tab=orders&scope=todo", { scroll: false })}
+              className={`mb-5 w-full rounded-2xl border p-4 text-left shadow-sm transition-colors bp-sm:p-5 ${hasTodoItems ? "border-primary/30 bg-primary/5 hover:bg-primary/10" : "border-border bg-muted hover:bg-muted/80"}`}
+            >
+              <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-primary">지금 해야 할 일</p>
+                  <h2 className="mt-1 text-xl font-bold text-foreground">
+                    {summaryLoading ? "확인 중입니다" : hasTodoItems ? `지금 해야 할 일 ${todoCount}개` : "현재 바로 처리할 일은 없어요"}
+                  </h2>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    입금 대기, 운송장 등록, 구매확정, 리뷰 작성, 아카데미 신청 상태처럼 사용자의 확인이 필요한 항목을 먼저 보여드립니다.
+                  </p>
+                </div>
+                <span className="inline-flex shrink-0 items-center justify-center rounded-xl bg-card px-4 py-2 text-sm font-semibold text-foreground ring-1 ring-border">
+                  처리할 일 보기
+                </span>
+              </div>
+            </button>
+
             <div className="grid grid-cols-2 bp-lg:grid-cols-5 gap-3 bp-sm:gap-4 bp-lg:gap-6">
               <div className="bg-muted rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 text-center border border-border">
                 <Trophy className="h-6 w-6 bp-sm:h-8 bp-sm:w-8 mx-auto mb-2 bp-sm:mb-3 text-primary" />
