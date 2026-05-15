@@ -54,21 +54,15 @@ const getMerchandisingBadges = (product: ApiProduct): MerchandisingBadge[] => {
   const stock = toFiniteNumber(inventory?.stock);
   const salePrice = toFiniteNumber(inventory?.salePrice);
 
-  const isOutOfStock =
-    inventory?.status === "outofstock" ||
-    (isTruthyBadgeField(inventory?.manageStock) && stock <= 0);
+  const isOutOfStock = inventory?.status === "outofstock" || (isTruthyBadgeField(inventory?.manageStock) && stock <= 0);
 
-  const isSale =
-    isTruthyBadgeField(inventory?.isSale) && salePrice > 0;
+  const isSale = isTruthyBadgeField(inventory?.isSale) && salePrice > 0;
 
-  const isNew =
-    isTruthyBadgeField(inventory?.isNew) || isTruthyBadgeField(product.isNew);
+  const isNew = isTruthyBadgeField(inventory?.isNew) || isTruthyBadgeField(product.isNew);
 
-  const isFeatured =
-    isTruthyBadgeField(inventory?.isFeatured);
+  const isFeatured = isTruthyBadgeField(inventory?.isFeatured);
 
-  const isBackorder =
-    inventory?.status === "backorder";
+  const isBackorder = inventory?.status === "backorder";
 
   const badges: MerchandisingBadge[] = [];
 
@@ -383,21 +377,21 @@ export default function Home() {
   }, [homeStringProducts, activeStringBrand]);
 
   // HorizontalProducts 매핑 (브랜드 라벨 표시)
-const premiumItems: HItem[] = useMemo(
-  () =>
-    premiumItemsSource.map((p) => {
-      return {
-        _id: p._id,
-        name: p.name,
-        price: p.price,
-        images: p.images ?? [],
-        brand: stringBrandLabel(p.brand),
-        href: `/products/${p._id}`,
-        merchandisingBadges: getMerchandisingBadges(p),
-      };
-    }),
-  [premiumItemsSource],
-);
+  const premiumItems: HItem[] = useMemo(
+    () =>
+      premiumItemsSource.map((p) => {
+        return {
+          _id: p._id,
+          name: p.name,
+          price: p.price,
+          images: p.images ?? [],
+          brand: stringBrandLabel(p.brand),
+          href: `/products/${p._id}`,
+          merchandisingBadges: getMerchandisingBadges(p),
+        };
+      }),
+    [premiumItemsSource],
+  );
   // 탭 변경 시 해당 브랜드만 최초 1회 로드
   useEffect(() => {
     if (!shouldLoadRackets) return;
@@ -552,8 +546,7 @@ const premiumItems: HItem[] = useMemo(
               </div>
               <div>
                 <h3 className="text-base bp-sm:text-lg font-semibold break-keep text-foreground">내 주문/신청 상태를 확인하고 싶어요</h3>
-                <p className="mt-2 text-sm leading-relaxed break-keep text-foreground/80">주문, 교체서비스, 대여, 아카데미 신청 상태를 확인합니다. 비회원 주문은 주문조회에서 확인할 수 있어요.</p>
-                <span className="mt-3 inline-flex text-sm font-semibold text-primary">마이페이지로 이동 · 비회원은 주문조회 이용</span>
+                <p className="mt-2 text-sm leading-relaxed break-keep text-foreground/80">주문, 교체서비스, 대여, 아카데미 신청 상태를 확인합니다.</p>
               </div>
             </Link>
           </div>
