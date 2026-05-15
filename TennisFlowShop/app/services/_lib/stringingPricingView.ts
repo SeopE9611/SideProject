@@ -99,7 +99,7 @@ async function fetchStringingProducts(): Promise<ProductLite[]> {
     return await db
       .collection<ProductLite>("products")
       .find(
-        { isDeleted: { $ne: true }, mountingFee: { $gt: 0 } },
+        { isDeleted: { $ne: true }, mountingFee: { $type: "number" as any, $gte: 0 } },
         {
           projection: {
             name: 1,

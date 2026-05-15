@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -394,6 +395,14 @@ export default function RacketSelectStringClient({
                   <Skeleton className="h-11 w-full rounded-xl" />
                 </div>
               ))}
+            </div>
+          ) : products.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-border bg-card p-6 text-center">
+              <p className="text-base font-semibold text-foreground">사용 가능한 스트링이 없습니다.</p>
+              <p className="mt-2 break-keep text-sm text-muted-foreground">스트링 상품의 장착 서비스 설정을 확인해주세요.</p>
+              <Button asChild variant="outline" className="mt-4">
+                <Link href="/services/apply">교체서비스 신청 화면으로 돌아가기</Link>
+              </Button>
             </div>
           ) : (
             <div className="grid grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-3 gap-4 bp-md:gap-6 items-start">

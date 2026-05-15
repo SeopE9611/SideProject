@@ -117,7 +117,7 @@ export async function GET(req: NextRequest) {
     // purpose 필터: 특정 "용도"에 맞는 상품만 노출
     // - stringing: 교체 서비스에 쓰는 스트링 상품(=mountingFee가 있는 상품)만 보여준다.
     if (purpose === "stringing") {
-      filter.mountingFee = { $gt: 0 };
+      filter.mountingFee = { $type: "number" as any, $gte: 0 };
     }
     const client = await clientPromise;
     const db = client.db();

@@ -3,6 +3,7 @@ import { getDb } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 import { NextResponse } from "next/server";
 import { normalizeItemShippingFee } from "@/lib/shipping-fee";
+import { hasPaidMountingFee, isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
 
 export async function GET(
   _req: Request,
@@ -43,11 +44,10 @@ export async function GET(
     const rawPrice = (prod as any).price;
     const rawShippingFee = (prod as any).shippingFee;
 
-    const mf = Number(rawMountingFee);
     const pr = Number(rawPrice);
 
-    // mountingFee는 "양수"만 유효로 보고, 아니면 0
-    const safeMountingFee = Number.isFinite(mf) && mf > 0 ? mf : 0;
+    const safeMountingFee = hasPaidMountingFee(rawMountingFee) ? rawMountingFee : 0;
+    const isMountableString = isMountableStringByFee(rawMountingFee);
     // price는 0도 유효(무료/이상치 방어는 별도 정책). 일단 음수만 방어
     const safePrice = Number.isFinite(pr) && pr >= 0 ? pr : 0;
 
@@ -62,6 +62,7 @@ export async function GET(
           (Array.isArray(prod.images) && prod.images[0]) ||
           null,
         mountingFee: safeMountingFee,
+        isMountableString,
         price: safePrice,
         shippingFee: normalizeItemShippingFee(rawShippingFee),
       },
@@ -99,6 +100,7 @@ export async function GET(
             (racket as any).images[0]) ||
           null,
         mountingFee: 0, // 라켓은 장착비 개념 없음(필요하면 정책에 맞게)
+        isMountableString: false,
         price: safePrice,
         shippingFee: normalizeItemShippingFee(rawShippingFee),
       },

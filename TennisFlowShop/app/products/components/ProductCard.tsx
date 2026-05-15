@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardTitle } from "@/components/ui/card";
 import { ENABLE_STRING_STANDALONE_ORDER } from "@/lib/orders/string-standalone-policy";
+import { isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { Eye, Heart, Star } from "lucide-react";
@@ -196,7 +197,7 @@ const ProductCard = React.memo(
       (manageStock && (stockRaw ?? 0) <= 0 && !allowBackorder);
     const stockForItem = typeof stockRaw === "number" ? stockRaw : undefined;
     const canCheckoutWithService =
-      typeof product.mountingFee === "number" && product.mountingFee > 0;
+      isMountableStringByFee(product.mountingFee);
     const featureEntries = getFeatureEntries(product.features);
     const serviceCtaLabel = isApplyFlow ? "이 스트링 선택하고 장착 신청 계속하기" : "이 스트링으로 교체서비스 신청하기";
     const shouldEmphasizeServiceCta =

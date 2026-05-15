@@ -3,6 +3,7 @@ import { calcOrderShippingFeeWithBundlePolicy, normalizeItemShippingFee } from "
 import { applyPackageToServiceFee, resolvePackageUsage, resolveRequiredPassCountFromInput } from "@/app/features/stringing-applications/lib/package-pricing";
 import { findOneActivePassForUser } from "@/lib/passes.service";
 import type { StringingApplicationInput } from "@/app/features/stringing-applications/api/submit-core";
+import { isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
 
 export async function calculateCheckoutPayableAmount(params: {
   db: Db;
@@ -26,6 +27,7 @@ export async function calculateCheckoutPayableAmount(params: {
           quantity,
           kind: "product" as const,
           mountingFee: Number.isFinite(Number((prod as any)?.mountingFee)) ? Number((prod as any).mountingFee) : 0,
+          isMountableString: isMountableStringByFee((prod as any)?.mountingFee),
           shippingFee: normalizeItemShippingFee((prod as any)?.shippingFee),
         };
       }
@@ -42,7 +44,7 @@ export async function calculateCheckoutPayableAmount(params: {
 
   if (shippingInfo?.withStringService) {
     const racketItems = itemsWithSnapshot.filter((it) => it.kind === "racket");
-    const serviceItems = itemsWithSnapshot.filter((it) => it.kind === "product" && Number((it as any).mountingFee || 0) > 0);
+    const serviceItems = itemsWithSnapshot.filter((it) => it.kind === "product" && (it as any).isMountableString === true);
     const racketQty = racketItems.reduce((sum, it) => sum + (Number(it.quantity) || 0), 0);
     const serviceQty = serviceItems.reduce((sum, it) => sum + (Number(it.quantity) || 0), 0);
     if (racketQty > 0) {

@@ -17,6 +17,7 @@ import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { addRecentViewedItem } from "@/lib/recent-viewed";
 import { ENABLE_STRING_STANDALONE_ORDER } from "@/lib/orders/string-standalone-policy";
+import { hasPaidMountingFee, isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
 import { cn } from "@/lib/utils";
 import {
   Activity,
@@ -203,7 +204,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
     };
     if (origin) display["제조국"] = origin;
 
-    if (product?.mountingFee && Number(product.mountingFee) > 0) {
+    if (hasPaidMountingFee(product?.mountingFee)) {
       display["장착 서비스 비용"] = `${Number(product.mountingFee).toLocaleString()}원`;
     }
 
@@ -317,7 +318,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const unitPrice = Number(product?.price ?? 0);
   const qtyTotal = unitPrice * quantity;
   const serviceTotal = qtyTotal + Number(product?.mountingFee ?? 0);
-  const canCheckoutWithService = typeof product?.mountingFee === "number" && product.mountingFee > 0;
+  const canCheckoutWithService = isMountableStringByFee(product?.mountingFee);
   const isApplyFlow = searchParams.get("from") === "apply";
   const serviceCtaLabel = isApplyFlow ? "이 스트링 선택하고 장착 신청 계속하기" : "이 스트링으로 교체서비스 신청하기";
   const shouldEmphasizeServiceCta = isApplyFlow || !ENABLE_STRING_STANDALONE_ORDER;
@@ -1609,7 +1610,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   <div className="text-sm font-semibold text-foreground truncate leading-tight">{product.name}</div>
                   <div className="mt-1 flex items-baseline gap-2">
                     <span className="text-lg font-bold text-foreground">{qtyTotal.toLocaleString()}원</span>
-                    {typeof product?.mountingFee === "number" && product.mountingFee > 0 && <span className="text-sm text-foreground/75">+서비스 {product.mountingFee.toLocaleString()}원</span>}
+                    {hasPaidMountingFee(product?.mountingFee) && <span className="text-sm text-foreground/75">+서비스 {product.mountingFee.toLocaleString()}원</span>}
                   </div>
                 </div>
 

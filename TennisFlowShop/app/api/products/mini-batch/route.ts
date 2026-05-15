@@ -2,11 +2,13 @@ import { getDb } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 import { NextResponse } from "next/server";
 import { normalizeItemShippingFee } from "@/lib/shipping-fee";
+import { hasPaidMountingFee, isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
 
 type MiniBatchRow = {
   id: string;
   mountingFee: number;
   shippingFee: number;
+  isMountableString: boolean;
 };
 
 export async function POST(req: Request) {
@@ -43,12 +45,13 @@ export async function POST(req: Request) {
           .toArray()
       : [];
 
-  const feeById = new Map<string, { mountingFee: number; shippingFee: number }>();
+  const feeById = new Map<string, { mountingFee: number; shippingFee: number; isMountableString: boolean }>();
   products.forEach((product) => {
-    const rawMounting = Number((product as { mountingFee?: number }).mountingFee ?? 0);
+    const rawMounting = (product as { mountingFee?: unknown }).mountingFee;
     feeById.set(String(product._id), {
-      mountingFee: Number.isFinite(rawMounting) && rawMounting > 0 ? rawMounting : 0,
+      mountingFee: hasPaidMountingFee(rawMounting) ? rawMounting : 0,
       shippingFee: normalizeItemShippingFee((product as { shippingFee?: unknown }).shippingFee),
+      isMountableString: isMountableStringByFee(rawMounting),
     });
   });
 
@@ -56,6 +59,7 @@ export async function POST(req: Request) {
     id,
     mountingFee: feeById.get(id)?.mountingFee ?? 0,
     shippingFee: feeById.get(id)?.shippingFee ?? 3000,
+    isMountableString: feeById.get(id)?.isMountableString === true,
   }));
 
   return NextResponse.json(

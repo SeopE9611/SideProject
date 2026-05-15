@@ -5,6 +5,8 @@
  * - 주문 배송비: 아이템별 shippingFee의 최댓값(max)
  */
 
+import { isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
+
 export const FREE_SHIP_THRESHOLD = 30000;
 export const DEFAULT_SHIPPING_FEE = 3000;
 
@@ -35,6 +37,7 @@ export function calcOrderShippingFeeWithBundlePolicy(args: {
     shippingFee?: unknown;
     kind?: "product" | "racket";
     mountingFee?: unknown;
+    isMountableString?: boolean;
   }>;
   isVisitPickup?: boolean;
   withStringService?: boolean;
@@ -49,7 +52,11 @@ export function calcOrderShippingFeeWithBundlePolicy(args: {
 
   const candidates = shouldExcludeMountableString
     ? items.filter((item) => {
-        const isMountableString = item?.kind === "product" && Number(item?.mountingFee) > 0;
+        const isMountableString =
+          item?.kind === "product" &&
+          (item?.isMountableString === true ||
+            (item?.isMountableString !== false &&
+              isMountableStringByFee(item?.mountingFee)));
         return !isMountableString;
       })
     : items;
