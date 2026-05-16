@@ -889,6 +889,24 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                   title: '추가 조치 필요 없음',
                   description: '현재 기준으로 즉시 필요한 추가 조치는 없습니다.',
                 };
+  const recommendedActions = [
+    { label: '상태 변경 위치로 이동', href: '#admin-stringing-cancel', show: true },
+    { label: '요청사항 확인', href: '#admin-stringing-request', show: true },
+    { label: '스트링/장력 확인', href: '#admin-stringing-spec', show: true },
+    {
+      label: '배송/방문/자가발송 정보 확인',
+      href: '#admin-stringing-shipping',
+      show: true,
+    },
+    { label: '결제 정보 확인', href: '#admin-stringing-payment', show: true },
+    {
+      label: '취소 요청 확인',
+      href: '#admin-stringing-cancel',
+      show: hasCancelRequest,
+    },
+    { label: '처리 이력 보기', href: '#admin-stringing-history', show: true },
+  ].filter((action) => action.show);
+
 
   const linkedContextLabel = data.rentalId ? '대여 + 신청 연결 업무' : data.orderId ? '주문 + 신청 연결 업무' : '단독 신청 업무';
 
@@ -1216,11 +1234,32 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
               </CardHeader>
               <CardContent className="space-y-3">
                 <p className="text-sm leading-relaxed text-foreground/80">{nextActionGuide.description}</p>
-                {nextActionGuide.actionHref && nextActionGuide.actionLabel ? (
-                  <Button asChild size="sm" variant="outline">
-                    <Link href={nextActionGuide.actionHref}>{nextActionGuide.actionLabel}</Link>
-                  </Button>
-                ) : null}
+                <div className="rounded-lg border border-border/60 bg-background/70 p-3">
+                  <p className="text-sm font-semibold text-foreground">권장 작업</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    현재 상태에서 관리자가 먼저 확인하면 좋은 작업입니다.
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {nextActionGuide.actionHref && nextActionGuide.actionLabel ? (
+                      <Button asChild size="sm">
+                        <Link href={nextActionGuide.actionHref}>
+                          {nextActionGuide.actionLabel}
+                        </Link>
+                      </Button>
+                    ) : null}
+                    {recommendedActions.map((action) => (
+                      <Button
+                        key={`${action.href}-${action.label}`}
+                        asChild
+                        size="sm"
+                        variant="outline"
+                        className="bg-transparent"
+                      >
+                        <a href={action.href}>{action.label}</a>
+                      </Button>
+                    ))}
+                  </div>
+                </div>
                 <div className="rounded-lg border border-border/60 bg-background/70 p-3">
                   <p className="text-sm font-semibold text-foreground">교체서비스 처리 체크리스트</p>
                   <ul className="mt-2 grid gap-1.5 text-xs leading-relaxed text-muted-foreground sm:grid-cols-2">
@@ -1237,7 +1276,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
           )}
 
           {/* 상태 카드 */}
-          <Card className={cn(detailCardClass, 'mb-6 bp-sm:mb-8')}>
+          <Card id="admin-stringing-cancel" className={cn(detailCardClass, 'mb-6 bp-sm:mb-8')}>
             <CardHeader className={detailCardHeaderClass}>
               <div className="flex items-center justify-between gap-3">
                 <CardTitle>{isAdmin ? '신청 상태 관리' : '신청 상태'}</CardTitle>
@@ -1446,7 +1485,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
             </Card>
 
             {/* 결제 정보 */}
-            <Card className={cn(detailCardClass, isAdmin && 'xl:col-span-6')}>
+            <Card id="admin-stringing-payment" className={cn(detailCardClass, isAdmin && 'xl:col-span-6')}>
               <CardHeader
                 className={cn(
                   detailCardHeaderClass,
@@ -1602,7 +1641,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
             </Card>
 
             {/* 스트링 정보 */}
-            <Card className={cn(detailCardClass, isAdmin ? 'xl:col-span-12' : 'md:col-span-2')}>
+            <Card id="admin-stringing-spec" className={cn(detailCardClass, isAdmin ? 'xl:col-span-12' : 'md:col-span-2')}>
               <CardHeader
                 className={cn(
                   detailCardHeaderClass,
@@ -1779,7 +1818,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
             </Card>
 
             {/* 요청사항 카드 */}
-            <Card className={cn(detailCardClass, isAdmin ? 'xl:col-span-12' : 'md:col-span-2')}>
+            <Card id="admin-stringing-request" className={cn(detailCardClass, isAdmin ? 'xl:col-span-12' : 'md:col-span-2')}>
               <CardHeader className={detailCardHeaderClass}>
                 <CardTitle className="flex items-center justify-between">
                   <span>요청사항</span>
@@ -1819,7 +1858,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
           {/* 관리자 전용 운송장 정보 카드 */}
           <div className="mt-6 space-y-4 bp-sm:mt-8 bp-sm:space-y-6">
             {isAdmin && (
-              <Card className={cn(detailCardClass, 'mb-8')}>
+              <Card id="admin-stringing-shipping" className={cn(detailCardClass, 'mb-8')}>
                 <CardHeader className={cn(detailCardHeaderClass, 'flex flex-row items-center gap-2')}>
                   <Truck className="h-5 w-5 text-foreground" />
                   <CardTitle className="text-lg font-semibold">배송 방향별 운송 정보</CardTitle>
@@ -1962,7 +2001,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
             )}
             {/* 처리 이력 */}
             {applicationId && (
-              <div className="mt-6">
+              <div id="admin-stringing-history" className="mt-6">
                 <StringingApplicationHistory
                   applicationId={applicationId}
                   isAdmin={isAdmin}

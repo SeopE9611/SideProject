@@ -601,6 +601,19 @@ export default function AdminRentalDetailClient() {
                   title: "추가 조치 필요 없음",
                   description: "현재 기준으로 즉시 필요한 추가 조치는 없습니다.",
                 };
+  const recommendedActions = [
+    { label: "결제 정보 확인", href: "#admin-rental-payment", show: true },
+    { label: "출고/반납 운송장 확인", href: "#admin-rental-shipping", show: true },
+    { label: "반납 처리 확인", href: "#admin-rental-return", show: true },
+    { label: "보증금 환불 확인", href: "#admin-rental-deposit", show: true },
+    {
+      label: "취소 요청 확인",
+      href: "#admin-rental-cancel",
+      show: hasCancelRequested,
+    },
+    { label: "처리 이력 보기", href: "#admin-rental-history", show: true },
+  ].filter((action) => action.show);
+
 
   return (
     <div className="min-h-screen bg-muted/30 dark:bg-muted/30">
@@ -721,7 +734,8 @@ export default function AdminRentalDetailClient() {
             </div>
             {/* 취소 요청 상태 안내 (관리자용) */}
             {cancelInfo && (
-              <AdminCancelRequestCard
+              <div id="admin-rental-cancel">
+                <AdminCancelRequestCard
                 badgeLabel={cancelInfo.badgeLabel}
                 description={cancelInfo.description}
                 reasonSummary={cancelInfo.reasonSummary}
@@ -761,6 +775,7 @@ export default function AdminRentalDetailClient() {
                   </div>
                 )}
               </AdminCancelRequestCard>
+              </div>
             )}
           </div>
 
@@ -814,11 +829,32 @@ export default function AdminRentalDetailClient() {
               <p className="text-sm leading-relaxed text-foreground/80">
                 {nextActionGuide.description}
               </p>
-              {nextActionGuide.actionHref && nextActionGuide.actionLabel ? (
-                <Button asChild size="sm" variant="outline">
-                  <Link href={nextActionGuide.actionHref}>{nextActionGuide.actionLabel}</Link>
-                </Button>
-              ) : null}
+              <div className="rounded-lg border border-border/60 bg-background/70 p-3">
+                <p className="text-sm font-semibold text-foreground">권장 작업</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  현재 상태에서 관리자가 먼저 확인하면 좋은 작업입니다.
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {nextActionGuide.actionHref && nextActionGuide.actionLabel ? (
+                    <Button asChild size="sm">
+                      <Link href={nextActionGuide.actionHref}>
+                        {nextActionGuide.actionLabel}
+                      </Link>
+                    </Button>
+                  ) : null}
+                  {recommendedActions.map((action) => (
+                    <Button
+                      key={action.href}
+                      asChild
+                      size="sm"
+                      variant="outline"
+                      className="bg-transparent"
+                    >
+                      <a href={action.href}>{action.label}</a>
+                    </Button>
+                  ))}
+                </div>
+              </div>
               <div className="rounded-lg border border-border/60 bg-background/70 p-3">
                 <p className="text-sm font-semibold text-foreground">라켓 대여 처리 체크리스트</p>
                 <ul className="mt-2 grid gap-1.5 text-xs leading-relaxed text-muted-foreground sm:grid-cols-2">
@@ -932,7 +968,7 @@ export default function AdminRentalDetailClient() {
             </Card>
           )}
 
-          <Card className="border-0 shadow-xl ring-1 ring-ring bg-muted/30 overflow-hidden mb-8">
+          <Card id="admin-rental-return" className="border-0 shadow-xl ring-1 ring-ring bg-muted/30 overflow-hidden mb-8">
             <CardHeader className="bg-muted/30 border-b pb-3">
               <CardTitle>대여 상태 관리</CardTitle>
               <CardDescription>
@@ -1112,7 +1148,7 @@ export default function AdminRentalDetailClient() {
               </CardContent>
             </Card>
 
-            <Card className="border-0 shadow-xl ring-1 ring-ring bg-muted/30 overflow-hidden">
+            <Card id="admin-rental-payment" className="border-0 shadow-xl ring-1 ring-ring bg-muted/30 overflow-hidden">
               <CardHeader className="bg-muted/30 border-b pb-3">
                 <CardTitle className="flex items-center space-x-2">
                   <CreditCard className="h-5 w-5 text-primary" />
@@ -1361,7 +1397,7 @@ export default function AdminRentalDetailClient() {
             </Card>
           </div>
 
-          <Card className="border-0 shadow-xl ring-1 ring-ring bg-muted/30 overflow-hidden">
+          <Card id="admin-rental-shipping" className="border-0 shadow-xl ring-1 ring-ring bg-muted/30 overflow-hidden">
             <CardHeader className="bg-muted/30 border-b pb-3">
               <CardTitle className="flex items-center gap-2">
                 <Truck className="h-5 w-5" />
@@ -1492,7 +1528,7 @@ export default function AdminRentalDetailClient() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-xl ring-1 ring-ring bg-muted/30 overflow-hidden">
+          <Card id="admin-rental-deposit" className="border-0 shadow-xl ring-1 ring-ring bg-muted/30 overflow-hidden">
             <CardHeader className="bg-muted/30 border-b pb-3">
               <CardTitle className="flex items-center space-x-2">
                 <Calendar className="h-5 w-5 text-primary" />
@@ -1547,10 +1583,12 @@ export default function AdminRentalDetailClient() {
           {data?.id ? (
             <AdminInternalNotesCard targetType="rental" targetId={data.id} />
           ) : null}
-          <AdminRentalHistory
-            id={id}
-            servicePickupMethod={servicePickupMethod}
-          />
+          <div id="admin-rental-history">
+            <AdminRentalHistory
+              id={id}
+              servicePickupMethod={servicePickupMethod}
+            />
+          </div>
         </div>
       </div>
     </div>
