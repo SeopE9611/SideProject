@@ -238,17 +238,17 @@ export default function MypageClient({ user }: Props) {
             </button>
 
             <div className="grid grid-cols-2 bp-lg:grid-cols-5 gap-3 bp-sm:gap-4 bp-lg:gap-6">
-              <div className="bg-muted rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 text-center border border-border">
+              <div className="flex flex-col items-center justify-center bg-muted rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 text-center border border-border">
                 <Trophy className="h-6 w-6 bp-sm:h-8 bp-sm:w-8 mx-auto mb-2 bp-sm:mb-3 text-primary" />
                 <div className="text-xl bp-sm:text-2xl font-bold mb-1">{summaryLoading ? <Skeleton className="mx-auto h-7 w-10" /> : (summary?.activityFlowCount ?? "-")}</div>
                 <div className="text-xs bp-sm:text-sm text-muted-foreground">전체 이용 내역</div>
               </div>
-              <div className="bg-muted rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 text-center border border-border">
+              <div className="flex flex-col items-center justify-center bg-muted rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 text-center border border-border">
                 <Target className="h-6 w-6 bp-sm:h-8 bp-sm:w-8 mx-auto mb-2 bp-sm:mb-3 text-primary" />
                 <div className="text-xl bp-sm:text-2xl font-bold mb-1">{summaryLoading ? <Skeleton className="mx-auto h-7 w-10" /> : (summary?.applicationsCount ?? "-")}</div>
                 <div className="text-xs bp-sm:text-sm text-muted-foreground">교체서비스 신청</div>
               </div>
-              <div className="bg-muted rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 text-center border border-border">
+              <div className="flex flex-col items-center justify-center bg-muted rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 text-center border border-border">
                 <ClipboardList className="h-6 w-6 bp-sm:h-8 bp-sm:w-8 mx-auto mb-2 bp-sm:mb-3 text-primary" />
                 <div className="text-xl bp-sm:text-2xl font-bold mb-1">{summaryLoading ? <Skeleton className="mx-auto h-7 w-10" /> : (summary?.ordersCount ?? "-")}</div>
                 <div className="text-xs bp-sm:text-sm text-muted-foreground">상품 주문</div>
@@ -256,7 +256,7 @@ export default function MypageClient({ user }: Props) {
               <button
                 type="button"
                 onClick={() => router.push("/mypage?tab=academy", { scroll: false })}
-                className="group rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 text-center border border-border bg-muted transition-[background-color,border-color,box-shadow,transform] hover:bg-muted/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2"
+                className="group flex flex-col items-center justify-center rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 text-center border border-border bg-muted transition-[background-color,border-color,box-shadow,transform] hover:bg-muted/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2"
                 aria-label="클래스 신청 내역으로 이동"
               >
                 <GraduationCap className="h-6 w-6 bp-sm:h-8 bp-sm:w-8 mx-auto mb-2 bp-sm:mb-3 text-primary transition-transform group-hover:scale-105" />
@@ -270,7 +270,7 @@ export default function MypageClient({ user }: Props) {
                     scroll: false,
                   })
                 }
-                className={`group rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 text-center border col-span-2 bp-lg:col-span-1 transition-[background-color,border-color,box-shadow,transform] ${
+                className={`group flex flex-col items-center justify-center rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 text-center border col-span-2 bp-lg:col-span-1 transition-[background-color,border-color,box-shadow,transform] ${
                   hasTodoItems ? "border-primary/30 bg-primary/5 shadow-sm ring-1 ring-primary/10 hover:bg-primary/10 dark:bg-primary/10 dark:hover:bg-primary/15" : "border-border bg-muted hover:bg-muted/80"
                 } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2`}
                 aria-label="지금 처리할 일 목록으로 이동"
