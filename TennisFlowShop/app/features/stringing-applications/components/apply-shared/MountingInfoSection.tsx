@@ -16,6 +16,7 @@ import { ClipboardList, DollarSign, Ticket, Zap } from "lucide-react";
 import React from "react";
 
 import { normalizeCollection } from "@/app/features/stringing-applications/lib/collection";
+import { isMountableStringItem } from "@/lib/orders/string-mounting-policy";
 import StringCheckboxes from "@/app/services/_components/StringCheckboxes";
 import TimeSlotSelector from "@/app/services/_components/TimeSlotSelector";
 import { Button } from "@/components/ui/button";
@@ -586,12 +587,8 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                 items={
                   orderId && order
                     ? (order?.items ?? [])
-                        // 모든 상품 중 mountingFee가 있는 것만 (kind 체크 제거)
-                        .filter(
-                          (i: any) =>
-                            typeof i.mountingFee === "number" &&
-                            i.mountingFee > 0,
-                        )
+                        // 장착 가능한 스트링만 노출하되, 무료 장착(mountingFee=0)도 포함
+                        .filter((i: any) => isMountableStringItem(i))
                         .map((i: any) => ({
                           id: i.id,
                           name: i.name,

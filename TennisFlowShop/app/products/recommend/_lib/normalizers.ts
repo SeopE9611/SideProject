@@ -12,6 +12,10 @@ function toBoolean(value: unknown): boolean | undefined {
   return undefined;
 }
 
+function toOptionalFiniteNumber(value: unknown): number | undefined {
+  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+}
+
 function pickImage(raw: Record<string, unknown>): string | undefined {
   if (typeof raw.image === "string" && raw.image) return raw.image;
   if (Array.isArray(raw.images) && typeof raw.images[0] === "string") return raw.images[0];
@@ -43,7 +47,7 @@ export function normalizeRecommendableProduct(raw: Record<string, unknown>): Rec
     image: pickImage(raw),
     material: typeof raw.material === "string" ? raw.material : undefined,
     gauge: typeof raw.gauge === "string" ? raw.gauge : undefined,
-    mountingFee: toNumber(raw.mountingFee, 0),
+    mountingFee: toOptionalFiniteNumber(raw.mountingFee),
     shippingFee: toNumber(raw.shippingFee, 0),
     features: {
       power: toNumber(featuresRaw.power, 0),
