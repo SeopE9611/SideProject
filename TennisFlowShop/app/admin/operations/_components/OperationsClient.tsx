@@ -19,6 +19,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { opsKindLabel } from "@/lib/admin-ops-taxonomy";
 import { inferNextActionForOperationGroup } from "@/lib/admin/next-action-guidance";
+import { formatElapsedText, getElapsedHours, getSlaBadgeMeta, resolveOperationsSlaLevel } from "@/lib/admin/operations-sla";
 import { buildQueryString } from "@/lib/admin/urlQuerySync";
 import { badgeBase, badgeSizeSm, badgeToneClass, getPaymentStatusBadgeSpec, getWorkflowMetaBadgeSpec } from "@/lib/badge-style";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
@@ -422,64 +423,6 @@ type QuickActionTarget = {
   href: string;
   label: string;
 };
-
-type OperationsSlaLevel = "normal" | "watch" | "urgent";
-
-function getElapsedHours(value?: string | null) {
-  if (!value) return null;
-  const time = new Date(value).getTime();
-  if (!Number.isFinite(time)) return null;
-
-  const diffMs = Date.now() - time;
-  if (diffMs < 0) return 0;
-
-  return Math.floor(diffMs / (1000 * 60 * 60));
-}
-
-function formatElapsedText(hours: number | null) {
-  if (hours === null) return null;
-  if (hours < 1) return "1시간 미만";
-  if (hours < 24) return `${hours}시간 경과`;
-
-  const days = Math.floor(hours / 24);
-  const restHours = hours % 24;
-  if (restHours === 0) return `${days}일 경과`;
-  return `${days}일 ${restHours}시간 경과`;
-}
-
-function resolveOperationsSlaLevel(group: { groupQueueBucket: string; items: OpItem[]; createdAt: string | null }): OperationsSlaLevel {
-  const hours = getElapsedHours(group.createdAt);
-  if (group.groupQueueBucket === "urgent") return "urgent";
-
-  const hasCancel = isCancelRequestedGroup(group);
-  const hasPayment = hasPaymentCheckNeeded(group);
-  const hasShipping = hasShippingMissing(group);
-  const hasRental = hasRentalDue(group);
-  const hasBucketWatch = group.groupQueueBucket === "caution" || group.groupQueueBucket === "pending";
-
-  if (hours === null) return hasBucketWatch ? "watch" : "normal";
-
-  if (hasCancel) {
-    if (hours >= 24) return "urgent";
-    if (hours >= 6) return "watch";
-  }
-
-  if (hasPayment || hasShipping || hasRental) {
-    if (hours >= 48) return "urgent";
-    if (hours >= 24) return "watch";
-  }
-
-  if (hours >= 72) return "urgent";
-  if (hours >= 24 || hasBucketWatch) return "watch";
-  return "normal";
-}
-
-function getSlaBadgeMeta(level: OperationsSlaLevel, elapsedText: string | null) {
-  if (!elapsedText) return null;
-  if (level === "urgent") return { label: `긴급 · ${elapsedText}`, className: "border-warning/40 bg-warning/10 text-warning" };
-  if (level === "watch") return { label: `확인 · ${elapsedText}`, className: "border-info/40 bg-info/10 text-info" };
-  return { label: elapsedText, className: "border-border bg-muted/40 text-foreground/70" };
-}
 
 const MEANINGFUL_QUICK_ACTION_LABELS = new Set(["취소 검토", "계좌 확인", "신청서 확인", "배송 확인", "대여 확인", "주문 확인"]);
 
@@ -1234,172 +1177,172 @@ export default function OperationsClient() {
           </CardHeader>
           {showAdvancedFilters && (
             <CardContent className="space-y-3">
-            {/* 검색 + 주요 버튼 */}
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="relative w-full max-w-md">
-                <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-                <Input
-                  type="search"
-                  className="pl-8 text-xs h-9 w-full"
-                  value={inputValue}
-                  onChange={(e) => {
-                    setInputValue(e.target.value);
+              {/* 검색 + 주요 버튼 */}
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="relative w-full max-w-md">
+                  <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+                  <Input
+                    type="search"
+                    className="pl-8 text-xs h-9 w-full"
+                    value={inputValue}
+                    onChange={(e) => {
+                      setInputValue(e.target.value);
+                    }}
+                    placeholder="ID, 고객명, 이메일, 요약(상품명/모델명) 검색..."
+                  />
+                </div>
+
+                <Button
+                  variant={onlyWarn ? "default" : "outline"}
+                  size="sm"
+                  title={onlyWarn ? "주의(오류) 항목만 조회 중" : "주의(오류) 항목만 모아보기"}
+                  className={cn("h-9", !onlyWarn && "bg-transparent")}
+                  onClick={() => {
+                    setOnlyWarn((v) => {
+                      const next = !v;
+                      if (next) setWarnFilter("warn");
+                      return next;
+                    });
+                    setPage(1);
                   }}
-                  placeholder="ID, 고객명, 이메일, 요약(상품명/모델명) 검색..."
-                />
+                >
+                  주의(오류)만 보기
+                </Button>
+
+                <Button type="button" variant="outline" size="sm" className="h-9 bg-transparent" onClick={copyShareViewLink}>
+                  <Link2 className="mr-1.5 h-4 w-4" />
+                  {shareLinkCopied ? "링크 복사됨" : "현재 뷰 링크 복사"}
+                </Button>
+
+                <Button asChild variant="outline" size="sm" className="h-9 bg-transparent">
+                  <Link href={settlementsHref}>정산 관리</Link>
+                </Button>
               </div>
 
-              <Button
-                variant={onlyWarn ? "default" : "outline"}
-                size="sm"
-                title={onlyWarn ? "주의(오류) 항목만 조회 중" : "주의(오류) 항목만 모아보기"}
-                className={cn("h-9", !onlyWarn && "bg-transparent")}
-                onClick={() => {
-                  setOnlyWarn((v) => {
-                    const next = !v;
-                    if (next) setWarnFilter("warn");
-                    return next;
-                  });
-                  setPage(1);
-                }}
-              >
-                주의(오류)만 보기
-              </Button>
+              {/* 필터 컴포넌트들 */}
+              <div className="grid w-full grid-cols-1 gap-2 border-t border-border pt-2.5 bp-sm:grid-cols-2 bp-md:grid-cols-3 bp-lg:grid-cols-5">
+                <Select
+                  value={kind}
+                  onValueChange={(v: any) => {
+                    setKind(v);
+                    setPage(1);
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="종류(전체)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">종류(전체)</SelectItem>
+                    <SelectItem value="order">주문</SelectItem>
+                    <SelectItem value="stringing_application">신청서</SelectItem>
+                    <SelectItem value="rental">대여</SelectItem>
+                  </SelectContent>
+                </Select>
 
-              <Button type="button" variant="outline" size="sm" className="h-9 bg-transparent" onClick={copyShareViewLink}>
-                <Link2 className="mr-1.5 h-4 w-4" />
-                {shareLinkCopied ? "링크 복사됨" : "현재 뷰 링크 복사"}
-              </Button>
+                <Select
+                  value={flow}
+                  onValueChange={(v: any) => {
+                    setFlow(v);
+                    setPage(1);
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="시나리오(전체)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">시나리오(전체)</SelectItem>
+                    <SelectItem value="1">스트링 단품 구매</SelectItem>
+                    <SelectItem value="2">스트링 구매 + 교체서비스 신청(통합)</SelectItem>
+                    <SelectItem value="3">교체서비스 단일 신청</SelectItem>
+                    <SelectItem value="4">라켓 단품 구매</SelectItem>
+                    <SelectItem value="5">라켓 구매 + 스트링 선택 + 교체서비스 신청(통합)</SelectItem>
+                    <SelectItem value="6">라켓 단품 대여</SelectItem>
+                    <SelectItem value="7">라켓 대여 + 스트링 선택 + 교체서비스 신청(통합)</SelectItem>
+                  </SelectContent>
+                </Select>
 
-              <Button asChild variant="outline" size="sm" className="h-9 bg-transparent">
-                <Link href={settlementsHref}>정산 관리</Link>
-              </Button>
-            </div>
+                <Select
+                  value={integrated}
+                  onValueChange={(v: any) => {
+                    setIntegrated(v);
+                    setPage(1);
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="연결(전체)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">연결(전체)</SelectItem>
+                    <SelectItem value="1">통합(연결됨)</SelectItem>
+                    <SelectItem value="0">단독</SelectItem>
+                  </SelectContent>
+                </Select>
 
-            {/* 필터 컴포넌트들 */}
-            <div className="grid w-full grid-cols-1 gap-2 border-t border-border pt-2.5 bp-sm:grid-cols-2 bp-md:grid-cols-3 bp-lg:grid-cols-5">
-              <Select
-                value={kind}
-                onValueChange={(v: any) => {
-                  setKind(v);
-                  setPage(1);
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="종류(전체)" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">종류(전체)</SelectItem>
-                  <SelectItem value="order">주문</SelectItem>
-                  <SelectItem value="stringing_application">신청서</SelectItem>
-                  <SelectItem value="rental">대여</SelectItem>
-                </SelectContent>
-              </Select>
+                <Select
+                  value={warnFilter}
+                  onValueChange={(v: any) => {
+                    if (onlyWarn && v !== "warn") return;
+                    setWarnFilter(v);
+                    setPage(1);
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="문제 유형 필터" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">전체</SelectItem>
+                    <SelectItem value="warn">주의만</SelectItem>
+                    <SelectItem value="caution" disabled={onlyWarn}>
+                      확인 필요 항목
+                    </SelectItem>
+                    <SelectItem value="review" disabled={onlyWarn}>
+                      확인 필요만
+                    </SelectItem>
+                    <SelectItem value="pending" disabled={onlyWarn}>
+                      미처리만
+                    </SelectItem>
+                    <SelectItem value="clean" disabled={onlyWarn}>
+                      정상 항목만
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
 
-              <Select
-                value={flow}
-                onValueChange={(v: any) => {
-                  setFlow(v);
-                  setPage(1);
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="시나리오(전체)" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">시나리오(전체)</SelectItem>
-                  <SelectItem value="1">스트링 단품 구매</SelectItem>
-                  <SelectItem value="2">스트링 구매 + 교체서비스 신청(통합)</SelectItem>
-                  <SelectItem value="3">교체서비스 단일 신청</SelectItem>
-                  <SelectItem value="4">라켓 단품 구매</SelectItem>
-                  <SelectItem value="5">라켓 구매 + 스트링 선택 + 교체서비스 신청(통합)</SelectItem>
-                  <SelectItem value="6">라켓 단품 대여</SelectItem>
-                  <SelectItem value="7">라켓 대여 + 스트링 선택 + 교체서비스 신청(통합)</SelectItem>
-                </SelectContent>
-              </Select>
+                <Select value={warnSort} onValueChange={(v: any) => setWarnSort(v)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="우선순위 정렬" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="default">우선순위 정렬(기본)</SelectItem>
+                    <SelectItem value="warn_first">주의 우선</SelectItem>
+                    <SelectItem value="safe_first">정상 항목 우선</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-              <Select
-                value={integrated}
-                onValueChange={(v: any) => {
-                  setIntegrated(v);
-                  setPage(1);
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="연결(전체)" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">연결(전체)</SelectItem>
-                  <SelectItem value="1">통합(연결됨)</SelectItem>
-                  <SelectItem value="0">단독</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select
-                value={warnFilter}
-                onValueChange={(v: any) => {
-                  if (onlyWarn && v !== "warn") return;
-                  setWarnFilter(v);
-                  setPage(1);
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="문제 유형 필터" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">전체</SelectItem>
-                  <SelectItem value="warn">주의만</SelectItem>
-                  <SelectItem value="caution" disabled={onlyWarn}>
-                    확인 필요 항목
-                  </SelectItem>
-                  <SelectItem value="review" disabled={onlyWarn}>
-                    확인 필요만
-                  </SelectItem>
-                  <SelectItem value="pending" disabled={onlyWarn}>
-                    미처리만
-                  </SelectItem>
-                  <SelectItem value="clean" disabled={onlyWarn}>
-                    정상 항목만
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select value={warnSort} onValueChange={(v: any) => setWarnSort(v)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="우선순위 정렬" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="default">우선순위 정렬(기본)</SelectItem>
-                  <SelectItem value="warn_first">주의 우선</SelectItem>
-                  <SelectItem value="safe_first">정상 항목 우선</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {activePresetKey && (
-              <div className="mt-1 grid gap-2 rounded-lg border border-primary/25 bg-primary/5 p-3 text-xs text-muted-foreground bp-sm:grid-cols-3">
-                <div>
-                  <p className="mb-1 text-[11px] font-semibold text-primary">현재 결과</p>
-                  <p className="text-sm font-medium text-foreground">{typeof totalGroups === "number" ? `${totalGroups.toLocaleString("ko-KR")}건` : "-"}</p>
+              {activePresetKey && (
+                <div className="mt-1 grid gap-2 rounded-lg border border-primary/25 bg-primary/5 p-3 text-xs text-muted-foreground bp-sm:grid-cols-3">
+                  <div>
+                    <p className="mb-1 text-[11px] font-semibold text-primary">현재 결과</p>
+                    <p className="text-sm font-medium text-foreground">{typeof totalGroups === "number" ? `${totalGroups.toLocaleString("ko-KR")}건` : "-"}</p>
+                  </div>
+                  <div>
+                    <p className="mb-1 text-[11px] font-semibold text-primary">우선 처리 이유</p>
+                    <p>{PRESET_CONFIG[activePresetKey].helperText}</p>
+                  </div>
+                  <div>
+                    <p className="mb-1 text-[11px] font-semibold text-primary">다음 처리</p>
+                    <p>{PRESET_CONFIG[activePresetKey].nextAction}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="mb-1 text-[11px] font-semibold text-primary">우선 처리 이유</p>
-                  <p>{PRESET_CONFIG[activePresetKey].helperText}</p>
-                </div>
-                <div>
-                  <p className="mb-1 text-[11px] font-semibold text-primary">다음 처리</p>
-                  <p>{PRESET_CONFIG[activePresetKey].nextAction}</p>
+              )}
+              <div className="pt-1">
+                <div className="flex items-center gap-2 rounded-md border border-border/60 bg-muted/20 px-2.5 py-1.5 text-[11px] leading-tight text-muted-foreground/90">
+                  <AlertTriangle className="h-3.5 w-3.5 text-warning" />
+                  <span>
+                    상태 배지는 목록에 보이는 <strong>주의 / 확인 필요</strong>만 사용합니다. 시나리오는 각 행 텍스트를 직접 확인하세요.
+                  </span>
                 </div>
               </div>
-            )}
-            <div className="pt-1">
-              <div className="flex items-center gap-2 rounded-md border border-border/60 bg-muted/20 px-2.5 py-1.5 text-[11px] leading-tight text-muted-foreground/90">
-                <AlertTriangle className="h-3.5 w-3.5 text-warning" />
-                <span>
-                  상태 배지는 목록에 보이는 <strong>주의 / 확인 필요</strong>만 사용합니다. 시나리오는 각 행 텍스트를 직접 확인하세요.
-                </span>
-              </div>
-            </div>
             </CardContent>
           )}
         </Card>
@@ -1537,8 +1480,11 @@ export default function OperationsClient() {
                       const elapsedText = formatElapsedText(elapsedHours);
                       const slaLevel = resolveOperationsSlaLevel({
                         groupQueueBucket: g.groupQueueBucket,
-                        items: g.items,
                         createdAt: g.createdAt ?? g.anchor.createdAt,
+                        hasCancel: groupCancelRequested,
+                        hasPayment: hasPaymentCheckNeeded(g),
+                        hasShipping: hasShippingMissing(g),
+                        hasRental: hasRentalDue(g),
                       });
                       const slaMeta = getSlaBadgeMeta(slaLevel, elapsedText);
                       const headline = statusHeadlineOf(g.anchor);
@@ -1596,11 +1542,7 @@ export default function OperationsClient() {
                                 </div>
                                 <p className="text-xs text-foreground/85 leading-tight">접수 {createdAtLabel}</p>
                                 {slaMeta ? (
-                                  <Badge
-                                    title="접수 시점 기준 경과 시간입니다. 긴급/확인은 운영 우선순위 기준으로 표시됩니다."
-                                    variant="outline"
-                                    className={cn(badgeBase, badgeSizeSm, slaMeta.className)}
-                                  >
+                                  <Badge title="접수 시점 기준 경과 시간입니다. 긴급/확인은 운영 우선순위 기준으로 표시됩니다." variant="outline" className={cn(badgeBase, badgeSizeSm, slaMeta.className)}>
                                     {slaMeta.label}
                                   </Badge>
                                 ) : null}
@@ -1798,8 +1740,11 @@ export default function OperationsClient() {
                   const elapsedText = formatElapsedText(elapsedHours);
                   const slaLevel = resolveOperationsSlaLevel({
                     groupQueueBucket: g.groupQueueBucket,
-                    items: g.items,
                     createdAt: g.createdAt ?? g.anchor.createdAt,
+                    hasCancel: g.items.some((it) => it.cancel?.status === "requested"),
+                    hasPayment: hasPaymentCheckNeeded(g),
+                    hasShipping: hasShippingMissing(g),
+                    hasRental: hasRentalDue(g),
                   });
                   const slaMeta = getSlaBadgeMeta(slaLevel, elapsedText);
                   const headline = statusHeadlineOf(g.anchor);
@@ -1847,11 +1792,7 @@ export default function OperationsClient() {
                           </div>
                           <p className="text-xs leading-snug text-foreground/75">접수 {createdAtLabel}</p>
                           {slaMeta ? (
-                            <Badge
-                              title="접수 시점 기준 경과 시간입니다. 긴급/확인은 운영 우선순위 기준으로 표시됩니다."
-                              variant="outline"
-                              className={cn(badgeBase, badgeSizeSm, slaMeta.className)}
-                            >
+                            <Badge title="접수 시점 기준 경과 시간입니다. 긴급/확인은 운영 우선순위 기준으로 표시됩니다." variant="outline" className={cn(badgeBase, badgeSizeSm, slaMeta.className)}>
                               {slaMeta.label}
                             </Badge>
                           ) : null}
