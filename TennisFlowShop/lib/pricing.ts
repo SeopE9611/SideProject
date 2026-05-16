@@ -9,6 +9,7 @@
 import type { Db } from "mongodb";
 import { ObjectId } from "mongodb";
 
+import { isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
 import { CUSTOM_STRING_MOUNTING_FEE } from "@/lib/stringing-pricing-policy";
 
 function createInvalidStringProductError(message: string) {
@@ -35,14 +36,14 @@ async function resolveStringProductMountingFee(
     throw createInvalidStringProductError("존재하지 않는 스트링 상품입니다.");
   }
 
-  const fee = Number(prod.mountingFee);
-  if (!Number.isFinite(fee) || fee <= 0) {
+  const rawFee = prod.mountingFee;
+  if (!isMountableStringByFee(rawFee)) {
     throw createInvalidStringProductError(
       "장착 가능한 스트링 상품이 아닙니다.",
     );
   }
 
-  return Math.round(fee);
+  return Math.max(0, Math.round(rawFee));
 }
 
 export async function calcStringingTotal(
