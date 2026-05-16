@@ -22,6 +22,10 @@ import {
 } from "@/lib/admin/linked-flow-stage";
 import { normalizeCollection } from "@/app/features/stringing-applications/lib/collection";
 import { normalizeEmailForSearch } from "@/lib/search-email";
+import {
+  isMountableStringByFee,
+  isMountableStringItem,
+} from "@/lib/orders/string-mounting-policy";
 
 // 고객정보 서버 검증(관리자 PATCH)
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -258,6 +262,7 @@ export async function GET(
           name: kind === "racket" ? "알 수 없는 라켓" : "알 수 없는 상품",
           price: 0,
           mountingFee: 0,
+          isMountableString: false,
           quantity: item.quantity,
           kind,
         };
@@ -272,15 +277,20 @@ export async function GET(
             name: "알 수 없는 상품",
             price: 0,
             mountingFee: 0,
+            isMountableString: false,
             quantity: item.quantity,
             kind: "product" as const,
           };
         }
+        const rawMountingFee = prod.mountingFee;
+        const isMountableString = isMountableStringByFee(rawMountingFee);
+
         return {
           id: normalizedId,
           name: prod.name,
           price: prod.price,
-          mountingFee: prod.mountingFee ?? 0,
+          mountingFee: isMountableString ? rawMountingFee : 0,
+          isMountableString,
           quantity: item.quantity,
           kind: "product" as const,
         };
@@ -294,6 +304,7 @@ export async function GET(
           name: "알 수 없는 라켓",
           price: 0,
           mountingFee: 0,
+          isMountableString: false,
           quantity: item.quantity,
           kind: "racket" as const,
         };
@@ -304,6 +315,7 @@ export async function GET(
         name: `${racket.brand} ${racket.model}`.trim(),
         price: racket.price ?? 0,
         mountingFee: 0,
+        isMountableString: false,
         quantity: item.quantity,
         kind: "racket" as const,
       };
@@ -379,7 +391,7 @@ export async function GET(
 
     // 주문 전체에서 스트링 장착 상품이 몇 개인지 계산
     const totalSlots = enrichedItems
-      .filter((item) => item.mountingFee > 0)
+      .filter((item) => isMountableStringItem(item))
       .reduce((sum, item) => sum + (item.quantity ?? 1), 0);
 
     // 이 주문으로 생성된 모든 스트링 신청서 조회 (취소 제외)

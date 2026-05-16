@@ -1,4 +1,8 @@
 import { getRecommendedTensionRange } from "@/app/products/recommend/_lib/tension";
+import {
+  hasPaidMountingFee,
+  isMountableStringByFee,
+} from "@/lib/orders/string-mounting-policy";
 import type {
   CompletedStringRecommendAnswers,
   RecommendableProduct,
@@ -60,7 +64,7 @@ function scoreProduct(product: RecommendableProduct, answers: CompletedStringRec
   if (answers.budget === "mid") score += price > 15000 && price <= 30000 ? 10 : price <= 40000 ? 5 : 1;
   if (answers.budget === "premium") score += price > 30000 ? 10 : price > 20000 ? 4 : 1;
 
-  if ((product.mountingFee ?? 0) > 0) score += 3;
+  if (hasPaidMountingFee(product.mountingFee)) score += 3;
   if (!isSoldOut(product)) score += 2;
 
   return Math.round(score * 10) / 10;
@@ -108,7 +112,7 @@ export function recommendStringProducts(products: RecommendableProduct[], answer
 
   const primaryPool = scored.filter((item) => {
     const soldOut = isSoldOut(item.product);
-    const hasMounting = (item.product.mountingFee ?? 0) > 0;
+    const hasMounting = isMountableStringByFee(item.product.mountingFee);
     const allowBackorder = item.product.inventory?.allowBackorder === true;
     return !soldOut && hasMounting && !allowBackorder;
   });

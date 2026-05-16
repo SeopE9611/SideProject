@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
+import { isMountableStringItem } from "@/lib/orders/string-mounting-policy";
 
 export type CollectionMethod = "self_ship" | "courier_pickup" | "visit";
 
@@ -141,7 +142,7 @@ export default function useStringingApplySharedState({
       (it: any) => it?.kind === "racket" || it?.kind === "used_racket",
     );
     const hasMountableString = items.some(
-      (it: any) => it?.kind === "product" && Number(it?.mountingFee ?? 0) > 0,
+      (it: any) => it?.kind === "product" && isMountableStringItem(it),
     );
     return hasRacket && hasMountableString;
   }, [orderId, order]);

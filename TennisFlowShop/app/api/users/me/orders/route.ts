@@ -3,6 +3,7 @@ import { ObjectId } from "mongodb";
 import clientPromise from "@/lib/mongodb";
 import { cookies } from "next/headers";
 import { verifyAccessToken } from "@/lib/auth.utils";
+import { isMountableStringItem } from "@/lib/orders/string-mounting-policy";
 
 /**
  * 숫자 쿼리 파라미터 안전 파싱 (NaN/Infinity 방지)
@@ -33,6 +34,7 @@ type OrderDoc = {
     price?: number;
     quantity?: number;
     mountingFee?: number;
+    isMountableString?: boolean;
     imageUrl?: string | null;
     unitPrice?: number;
     qty?: number;
@@ -112,8 +114,7 @@ function resolveListItemKind(item: any): "racket" | "string" | "product" {
   const rawKind = typeof item?.kind === "string" ? item.kind.toLowerCase() : "";
   if (rawKind === "racket" || rawKind === "used_racket") return "racket";
 
-  const mountingFee = Number(item?.mountingFee ?? 0);
-  if (Number.isFinite(mountingFee) && mountingFee > 0) return "string";
+  if (isMountableStringItem(item)) return "string";
 
   const categoryToken = [item?.category, item?.type]
     .filter((v): v is string => typeof v === "string" && v.trim().length > 0)

@@ -43,6 +43,7 @@ import {
 } from "@/lib/order-shipping";
 import { getCommonOrderStatusLabel } from "@/lib/status-labels/base";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import { isMountableStringItem } from "@/lib/orders/string-mounting-policy";
 import { cn } from "@/lib/utils";
 import {
   ArrowLeft,
@@ -104,6 +105,7 @@ interface OrderItem {
   price: number;
   imageUrl?: string | null;
   mountingFee?: number; // 장착 서비스 대상 스트링이면 서버에서 내려오는 필드 (없으면 undefined)
+  isMountableString?: boolean;
 }
 
 interface OrderDetail {
@@ -533,7 +535,7 @@ export default function OrderDetailClient({
   }
   // quantity 기반으로 총 '장착 서비스 대상 스트링 수량' 계산
   const stringServiceItemCount = (orderDetail.items ?? [])
-    .filter((item) => item.mountingFee != null && item.mountingFee > 0)
+    .filter((item) => isMountableStringItem(item))
     .reduce((sum, item) => sum + (item.quantity ?? 1), 0);
 
   // remainingSlots 파생값
