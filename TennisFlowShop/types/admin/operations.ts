@@ -95,6 +95,17 @@ export type AdminOperationsSummary = {
   pending: number;
 };
 
+export type OperationTaskCounts = {
+  cancelRequests: number;
+  paymentCheck: number;
+  shippingMissing: number;
+  stringingWork: number;
+  rentalDue: number;
+  linkedReview: number;
+  offline: number;
+  academyApplications: number;
+};
+
 export type AdminOperationsKindFilter = AdminOperationKind | "all";
 export type AdminOperationsWarnFilter =
   | "all"
