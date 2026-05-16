@@ -725,6 +725,17 @@ export default function OrderDetailClient({ orderId }: Props) {
                 title: "추가 조치 필요 없음",
                 description: "현재 기준으로 즉시 필요한 선행 조치는 없습니다.",
               };
+  const recommendedActions = [
+    { label: "결제 정보 확인", href: "#admin-order-payment", show: true },
+    { label: "배송/수령 정보 확인", href: "#admin-order-shipping", show: true },
+    {
+      label: "취소 요청 확인",
+      href: "#admin-order-cancel",
+      show: isCancelRequested || Boolean(cancelInfo),
+    },
+    { label: "처리 이력 보기", href: "#admin-order-history", show: true },
+  ].filter((action) => action.show);
+
 
   // 취소 성공 시 호출되는 콜백
   const handleCancelSuccess = async (reason: string, detail?: string) => {
@@ -1001,7 +1012,8 @@ export default function OrderDetailClient({ orderId }: Props) {
             </div>
             {/* 취소 요청 상태 안내 (관리자용) */}
             {cancelInfo && (
-              <AdminCancelRequestCard
+              <div id="admin-order-cancel">
+                <AdminCancelRequestCard
                 badgeLabel={cancelInfo.badgeLabel}
                 description={cancelInfo.description}
                 reasonSummary={cancelInfo.reasonSummary}
@@ -1032,6 +1044,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                   </div>
                 }
               />
+              </div>
             )}
           </div>
 
@@ -1266,11 +1279,32 @@ export default function OrderDetailClient({ orderId }: Props) {
               <p className="text-sm leading-relaxed text-foreground/80">
                 {nextActionGuide.description}
               </p>
-              {nextActionGuide.actionHref && nextActionGuide.actionLabel ? (
-                <Button asChild size="sm" variant="outline">
-                  <Link href={nextActionGuide.actionHref}>{nextActionGuide.actionLabel}</Link>
-                </Button>
-              ) : null}
+              <div className="rounded-lg border border-border/60 bg-background/70 p-3">
+                <p className="text-sm font-semibold text-foreground">권장 작업</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  현재 상태에서 관리자가 먼저 확인하면 좋은 작업입니다.
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {nextActionGuide.actionHref && nextActionGuide.actionLabel ? (
+                    <Button asChild size="sm">
+                      <Link href={nextActionGuide.actionHref}>
+                        {nextActionGuide.actionLabel}
+                      </Link>
+                    </Button>
+                  ) : null}
+                  {recommendedActions.map((action) => (
+                    <Button
+                      key={action.href}
+                      asChild
+                      size="sm"
+                      variant="outline"
+                      className="bg-transparent"
+                    >
+                      <a href={action.href}>{action.label}</a>
+                    </Button>
+                  ))}
+                </div>
+              </div>
               <div className="rounded-lg border border-border/60 bg-background/70 p-3">
                 <p className="text-sm font-semibold text-foreground">주문 처리 체크리스트</p>
                 <ul className="mt-2 grid gap-1.5 text-xs leading-relaxed text-muted-foreground sm:grid-cols-2">
@@ -1584,7 +1618,7 @@ export default function OrderDetailClient({ orderId }: Props) {
             </Card>
 
             {/* 배송 정보 */}
-            <Card className="overflow-hidden border-0 bg-muted/30 shadow-xl ring-ring xl:col-span-6">
+            <Card id="admin-order-shipping" className="overflow-hidden border-0 bg-muted/30 shadow-xl ring-ring xl:col-span-6">
               <CardHeader className="bg-muted/30 border-b pb-3">
                 <CardTitle className="flex items-center">
                   <Truck className="mr-2 h-5 w-5 text-primary" />
@@ -1828,7 +1862,7 @@ export default function OrderDetailClient({ orderId }: Props) {
             </Card>
 
             {/* 결제 정보 */}
-            <Card className="overflow-hidden border-0 bg-muted/30 shadow-xl ring-ring xl:col-span-6">
+            <Card id="admin-order-payment" className="overflow-hidden border-0 bg-muted/30 shadow-xl ring-ring xl:col-span-6">
               <CardHeader className="bg-muted/30 border-b pb-3">
                 <CardTitle className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
@@ -2034,7 +2068,7 @@ export default function OrderDetailClient({ orderId }: Props) {
           />
 
           {/* 처리 이력 */}
-          <Card className={cn("overflow-hidden xl:col-span-6", adminSurface.tableCard)}>
+          <Card id="admin-order-history" className={cn("overflow-hidden xl:col-span-6", adminSurface.tableCard)}>
             <CardHeader className="border-b bg-muted/30">
               <CardTitle className="flex items-center space-x-2">
                 <Calendar className="h-5 w-5 text-primary" />
