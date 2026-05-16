@@ -25,7 +25,7 @@ import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher"
 import { shortenId } from "@/lib/shorten";
 import { adminRichTooltipClass } from "@/lib/tooltip-style";
 import { cn } from "@/lib/utils";
-import type { AdminOperationsGroup, AdminOperationsListResponseDto, AdminOperationsSummary } from "@/types/admin/operations";
+import type { AdminOperationsGroup, AdminOperationsListResponseDto, AdminOperationsSummary, OperationTaskCounts } from "@/types/admin/operations";
 import { copyToClipboard } from "./actions/operationsActions";
 import { prevMonthYyyymmKST, type Kind } from "./filters/operationsFilters";
 import { buildOperationsViewQueryString, initOperationsStateFromQuery, useSyncOperationsQuery } from "./hooks/useOperationsQueryState";
@@ -37,6 +37,7 @@ type NavigationBadgeCounts = Partial<Record<"offline" | "academyApplications", n
 
 type NavigationSummaryResponse = {
   counts?: NavigationBadgeCounts;
+  operationTaskCounts?: Partial<OperationTaskCounts>;
 };
 
 function amountMeaningText(item: OpItem) {
@@ -921,12 +922,12 @@ export default function OperationsClient() {
     }
   }, [activeFilterCount]);
 
+  const taskCounts = navigationSummary?.operationTaskCounts;
   const practicalTaskCards = useMemo(() => {
-    const countBy = (predicate: (group: (typeof groupsToRender)[number]) => boolean) => groupsToRender.filter(predicate).length;
     return [
       {
         title: "취소 요청",
-        count: countBy(isCancelRequestedGroup),
+        count: taskCounts?.cancelRequests ?? 0,
         description: "고객이 취소를 요청했습니다. 환불 계좌/결제수단을 확인한 뒤 승인 또는 거절하세요.",
         action: "바로 처리",
         onClick: () => applyQuickView("cancelRequests"),
@@ -934,7 +935,7 @@ export default function OperationsClient() {
       },
       {
         title: "결제 확인",
-        count: countBy(hasPaymentCheckNeeded),
+        count: taskCounts?.paymentCheck ?? 0,
         description: "입금/결제 대기 또는 동기화 확인이 필요한 건을 먼저 확인하세요.",
         action: "바로 처리",
         onClick: () => applyQuickView("paymentCheck"),
@@ -942,7 +943,7 @@ export default function OperationsClient() {
       },
       {
         title: "배송/출고 처리",
-        count: countBy(hasShippingMissing),
+        count: taskCounts?.shippingMissing ?? 0,
         description: "배송지와 수령 방식을 확인하고 운송장 또는 방문 수령 정보를 정리하세요.",
         action: "바로 처리",
         onClick: () => applyQuickView("shippingMissing"),
@@ -950,7 +951,7 @@ export default function OperationsClient() {
       },
       {
         title: "교체서비스 작업",
-        count: countBy((group) => group.items.some((item) => item.kind === "stringing_application")),
+        count: taskCounts?.stringingWork ?? 0,
         description: "고객 요청사항, 스트링/장력, 연결 주문 상태를 확인한 뒤 작업 상태를 변경하세요.",
         action: "신청 보기",
         onClick: () => {
@@ -961,7 +962,7 @@ export default function OperationsClient() {
       },
       {
         title: "대여 반납",
-        count: countBy(hasRentalDue),
+        count: taskCounts?.rentalDue ?? 0,
         description: "반납 예정/연체 라켓의 운송장, 라켓 상태, 보증금 환불 여부를 확인하세요.",
         action: "바로 처리",
         onClick: () => applyQuickView("rentalDue"),
@@ -969,14 +970,14 @@ export default function OperationsClient() {
       },
       {
         title: "연결 오류/확인 필요",
-        count: countBy(isLinkedWorkGroup),
+        count: taskCounts?.linkedReview ?? 0,
         description: "주문·교체서비스·대여 연결 문서와 표시된 확인 사유를 점검하세요.",
         action: "바로 처리",
         onClick: () => applyQuickView("linkedReview"),
         tone: "warning" as const,
       },
     ];
-  }, [groupsToRender]);
+  }, [taskCounts]);
 
   const activeKpi = useMemo(() => {
     if (warnFilter === "warn") return "urgent";
@@ -1092,7 +1093,7 @@ export default function OperationsClient() {
           </Card>
         </div>
         <div className="mt-4 space-y-3">
-          <p className="text-xs text-muted-foreground">주문·교체서비스·대여·연결 업무 카드는 현재 조회 목록 기준이며, 오프라인·아카데미 카드는 전체 처리 필요 기준입니다.</p>
+          <p className="text-xs text-muted-foreground">전체 처리 필요 기준으로 표시됩니다. 검색과 필터는 아래 목록에만 적용됩니다.</p>
           <div className="grid gap-3 bp-sm:grid-cols-2 bp-lg:grid-cols-4">
             {practicalTaskCards.map((task) => (
               <Card key={task.title} className={cn("border-border bg-card shadow-sm", task.tone === "urgent" && "border-warning/40 bg-warning/5", task.tone === "warning" && "border-info/40 bg-info/5")}>
@@ -1114,7 +1115,7 @@ export default function OperationsClient() {
               <CardHeader className="p-3 pb-2">
                 <CardTitle className="flex items-baseline justify-between gap-2 text-sm font-semibold">
                   <span>오프라인 미결제/보정</span>
-                  <span className="text-lg font-bold text-foreground">{navigationSummary?.counts?.offline ?? 0}건</span>
+                  <span className="text-lg font-bold text-foreground">{taskCounts?.offline ?? 0}건</span>
                 </CardTitle>
                 <CardDescription className="min-h-[40px] text-xs leading-relaxed text-foreground/75">오프라인 미결제, 패키지 발급 실패, 보정 필요 항목을 확인하세요.</CardDescription>
               </CardHeader>
@@ -1128,7 +1129,7 @@ export default function OperationsClient() {
               <CardHeader className="p-3 pb-2">
                 <CardTitle className="flex items-baseline justify-between gap-2 text-sm font-semibold">
                   <span>아카데미 상담</span>
-                  <span className="text-lg font-bold text-foreground">{navigationSummary?.counts?.academyApplications ?? 0}건</span>
+                  <span className="text-lg font-bold text-foreground">{taskCounts?.academyApplications ?? 0}건</span>
                 </CardTitle>
                 <CardDescription className="min-h-[40px] text-xs leading-relaxed text-foreground/75">신규 신청, 검토 중, 상담 대기, 등록 확정 대기 건을 확인하세요.</CardDescription>
               </CardHeader>
