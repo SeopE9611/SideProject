@@ -1697,7 +1697,7 @@ export default function StringServiceApplyPage() {
     return (
       <div className="min-h-full bg-card bp-lg:bg-background">
         <ApplyHero />
-        <div className="px-3 bp-sm:px-4 bp-md:px-6 bp-lg:px-6 mx-auto bp-lg:max-w-[1200px] py-8 bp-sm:py-12 bp-lg:py-16">
+        <div className="px-3 bp-sm:px-4 bp-md:px-6 bp-lg:px-6 mx-auto bp-lg:max-w-[1200px] py-6 bp-sm:py-8 bp-lg:py-10">
           <div className="mx-auto max-w-xl">
             <div className="inline-flex items-center gap-2 rounded-md border border-border/60 bg-muted/30 px-3 py-2">
               <span className="h-2 w-2 rounded-full bg-muted-foreground/70" />
@@ -1727,7 +1727,7 @@ export default function StringServiceApplyPage() {
         <ApplyHero />
 
         {/* Main Content */}
-        <div className="px-3 bp-sm:px-4 bp-md:px-6 bp-lg:px-6 mx-auto bp-lg:max-w-[1200px] bp-xl:max-w-7xl py-8 bp-sm:py-12 bp-lg:py-16">
+        <div className="px-3 bp-sm:px-4 bp-md:px-6 bp-lg:px-6 mx-auto bp-lg:max-w-[1200px] bp-xl:max-w-7xl py-6 bp-sm:py-8 bp-lg:py-10">
           {/* Section Header */}
           <div className="text-center mb-6 bp-sm:mb-8">
             <h2 className="text-xl bp-sm:text-2xl font-semibold text-foreground">
@@ -1842,10 +1842,31 @@ export default function StringServiceApplyPage() {
       <ApplyHero />
 
       {/* Main */}
-      <div className="container mx-auto px-4 py-8 bp-sm:py-12">
+      <div className="container mx-auto px-4 py-6 bp-sm:py-8">
         <div className="mx-auto max-w-7xl">
+          <div className="mx-auto mb-4 max-w-3xl rounded-2xl border border-border bg-card/80 px-4 py-3 shadow-sm bp-sm:px-5">
+            <p className="text-xs font-semibold uppercase tracking-wide text-primary">
+              신청 흐름
+            </p>
+            <ol className="mt-2 grid gap-2 text-sm text-muted-foreground bp-sm:grid-cols-4">
+              {[
+                "수령/전달 방식 선택",
+                "장착 정보 입력",
+                "배송/연락 정보 확인",
+                "신청 또는 결제 진행",
+              ].map((label, index) => (
+                <li key={label} className="flex items-center gap-2">
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+                    {index + 1}
+                  </span>
+                  <span className="break-keep">{label}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
+
           {/* Progress Steps: 폼 폭(800px)에 맞춰 중앙 정렬 */}
-          <div ref={stepsRef} className="mb-6 bp-sm:mb-8">
+          <div ref={stepsRef} className="mb-4 bp-sm:mb-5">
             <ProgressSteps steps={steps} currentStep={currentStep} />
           </div>
 
@@ -1853,15 +1874,15 @@ export default function StringServiceApplyPage() {
           <div className="relative">
             {/* 중앙 메인 폼 */}
             <div className="mx-auto w-full md:w-[800px]">
-              <Card className="bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card border border-border bp-lg:border-0 shadow-sm bp-lg:shadow-md">
-                <CardContent className="p-4 bp-sm:p-6 bp-lg:p-8">
+              <Card className="border border-border bg-card shadow-sm bp-lg:bg-card/90">
+                <CardContent className="p-4 bp-sm:p-5 bp-lg:p-6">
                   <div
-                    className={`mb-5 rounded-xl border p-4 ${isOrderSlotBlocked ? "border-border bg-muted/40" : "border-border bg-background/60"}`}
+                    className={`mb-4 rounded-xl border px-4 py-3 ${isOrderSlotBlocked ? "border-border bg-muted/40" : "border-border bg-background/60"}`}
                   >
                     <p className="text-sm font-semibold text-foreground">
                       {entryBanner.title}
                     </p>
-                    <p className="mt-1 text-sm text-muted-foreground">
+                    <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
                       {entryBanner.body}
                     </p>
 

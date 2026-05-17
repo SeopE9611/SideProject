@@ -30,7 +30,7 @@ export default function ApplyStepFooter({
   handleSubmit,
 }: Props) {
   return (
-    <div className="flex justify-between mt-12 pt-8 border-t dark:border-border">
+    <div className="mt-8 flex justify-between border-t pt-5 dark:border-border">
       <Button
         type="button"
         variant="outline"
@@ -47,7 +47,7 @@ export default function ApplyStepFooter({
           onClick={onNext}
           disabled={!isStepValid(currentStep)}
           variant="default"
-          className="px-8 py-3 transition-all duration-200 disabled:opacity-50"
+          className="px-6 py-3 transition-all duration-200 disabled:opacity-50"
         >
           다음
           <ArrowRight className="ml-2 h-4 w-4" />
@@ -58,7 +58,7 @@ export default function ApplyStepFooter({
           disabled={isSubmitting || isOrderSlotBlocked}
           onClick={(e) => handleSubmit(e as unknown as React.FormEvent)}
           variant="default"
-          className="px-8 py-3 transition-all duration-200 disabled:opacity-50"
+          className="px-6 py-3 transition-all duration-200 disabled:opacity-50"
         >
           {isSubmitting ? (
             <>
@@ -67,7 +67,7 @@ export default function ApplyStepFooter({
             </>
           ) : (
             <>
-              신청서 제출하기
+              신청 완료하기
               <CheckCircle className="ml-2 h-4 w-4" />
             </>
           )}
