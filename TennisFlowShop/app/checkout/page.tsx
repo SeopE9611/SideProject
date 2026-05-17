@@ -1074,11 +1074,11 @@ export default function CheckoutPage() {
           <div className="absolute inset-0 bg-cross-line-pattern opacity-30" />
           <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/3 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
 
-          <SiteContainer variant="wide" className="relative py-8 bp-sm:py-12 bp-md:py-16">
-            <div className="flex flex-col bp-sm:flex-row bp-sm:items-center bp-sm:justify-between gap-6">
-              <div className="flex items-center gap-5">
-                <div className="flex h-14 w-14 bp-sm:h-16 bp-sm:w-16 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/20">
-                  <CreditCard className="h-7 w-7 bp-sm:h-8 bp-sm:w-8" />
+          <SiteContainer variant="wide" className="relative py-5 bp-sm:py-6 bp-md:py-8">
+            <div className="flex flex-col bp-sm:flex-row bp-sm:items-center bp-sm:justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="flex h-12 w-12 bp-sm:h-14 bp-sm:w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/20">
+                  <CreditCard className="h-6 w-6 bp-sm:h-7 bp-sm:w-7" />
                 </div>
                 <div>
                   <h1 className="text-2xl bp-sm:text-3xl bp-md:text-4xl font-bold tracking-normal">주문/결제</h1>
@@ -1096,8 +1096,8 @@ export default function CheckoutPage() {
              *   2) withStringService: 사용자가 서비스 포함을 선택한 경우
              */}
             {(lockServiceMode || withStringService) && (
-              <nav aria-label="장착 서비스 진행 단계" className="mt-8">
-                <div className="inline-flex items-center gap-3 rounded-2xl bg-card/80 backdrop-blur-sm p-4 ring-1 ring-border/50 shadow-sm">
+              <nav aria-label="장착 서비스 진행 단계" className="mt-5">
+                <div className="inline-flex max-w-full flex-wrap items-center gap-2.5 rounded-2xl bg-card/80 p-3 ring-1 ring-border/50 shadow-sm">
                   {/* 1) 스트링 선택: 이미 완료된 단계 */}
                   <div className="flex items-center gap-2.5">
                     <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-bold shadow-sm">
@@ -1123,12 +1123,7 @@ export default function CheckoutPage() {
                   </div>
                 </div>
 
-                <div className="mt-4 grid max-w-4xl gap-2 text-sm text-muted-foreground sm:grid-cols-5">
-                  {["1. 주문 상품 확인", "2. 수령/배송 방식 선택", "3. 장착 정보 확인", "4. 결제/혜택 적용", "5. 최종 확인"].map((label) => (
-                    <span key={label} className="rounded-xl border border-border bg-card px-3 py-2 text-center break-keep">{label}</span>
-                  ))}
-                </div>
-                <p className="mt-3 max-w-2xl break-keep text-sm leading-relaxed text-foreground/80">결제와 함께 교체서비스 신청이 접수되며, 별도 신청서 작성 없이 현재 주문에 포함됩니다.</p>
+                <p className="mt-3 max-w-2xl break-keep text-sm leading-relaxed text-foreground/80">결제와 함께 교체서비스 신청이 접수되며, 현재 주문에 포함됩니다.</p>
               </nav>
             )}
 
@@ -1160,9 +1155,9 @@ export default function CheckoutPage() {
               </div>
             ) : (
               <div className={cn("space-y-6", isCheckoutSubmitting && "pointer-events-none")} aria-busy={isCheckoutSubmitting}>
-                <nav aria-label="주문서 작성 순서" className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+                <nav aria-label="주문서 작성 순서" className="rounded-2xl border border-border bg-card p-3 shadow-sm bp-sm:p-4">
                   <p className="text-sm font-semibold text-foreground">주문서 작성 순서</p>
-                  <div className="mt-3 flex flex-nowrap gap-2 overflow-x-auto whitespace-nowrap pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                  <div className="mt-2.5 flex flex-nowrap gap-2 overflow-x-auto whitespace-nowrap pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                     {[
                       { href: "#checkout-order-items", label: "주문 상품" },
                       { href: "#checkout-delivery-method", label: "수령·배송" },
@@ -1182,11 +1177,11 @@ export default function CheckoutPage() {
                   </div>
                 </nav>
 
-                {/* 현재 주문 성격 안내 */}
+                {/* 현재 주문 성격 및 작성 안내 */}
                 <section
-                  aria-label="현재 주문 성격 안내"
+                  aria-label="현재 주문 성격 및 작성 안내"
                   className={cn(
-                    "rounded-2xl border border-border bg-card px-4 py-4 shadow-sm bp-sm:px-5",
+                    "rounded-2xl border border-border bg-card px-4 py-3 shadow-sm bp-sm:px-5",
                     withStringService ? "ring-1 ring-primary/20" : "bg-muted/30",
                   )}
                 >
@@ -1205,26 +1200,21 @@ export default function CheckoutPage() {
                       </h2>
                       {withStringService ? (
                         <div className="space-y-1 text-sm leading-relaxed text-muted-foreground">
-                          <p className="break-keep">결제와 함께 교체서비스 신청이 접수됩니다. 이후 진행 상황은 마이페이지에서 확인할 수 있어요.</p>
-                          <p className="break-keep">선택한 스트링, 수령/배송 방식, 장착 요청사항은 아래 신청 정보에서 다시 확인해주세요.</p>
+                          <p className="break-keep">결제와 함께 교체서비스 신청이 접수됩니다. 선택한 스트링, 수령/배송 방식, 장착 요청사항을 확인해주세요.</p>
+                          <p className="break-keep text-xs text-muted-foreground/90">결제 전 새로고침이나 페이지 이동은 피해주세요.</p>
                           {isStringOnlyServiceFlow && <p className="break-keep">{stringStandalonePausedNotice}</p>}
                         </div>
                       ) : (
-                        <p className="break-keep text-sm leading-relaxed text-muted-foreground">현재 주문에는 교체서비스 신청이 포함되어 있지 않습니다.</p>
+                        <div className="space-y-1 text-sm leading-relaxed text-muted-foreground">
+                          <p className="break-keep">현재 주문에는 교체서비스 신청이 포함되어 있지 않습니다.</p>
+                          <p className="break-keep text-xs text-muted-foreground/90">결제 전 새로고침이나 페이지 이동은 피해주세요.</p>
+                        </div>
                       )}
                     </div>
                   </div>
                 </section>
-
-                {/* 작성 안내(고정 노출) */}
-                <div className="flex items-start gap-3 rounded-2xl border border-border bg-secondary/40 px-4 py-3 text-sm text-foreground shadow-sm">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted/60 ring-1 ring-border/60">
-                    <Info className="h-4 w-4 text-muted-foreground" />
-                  </div>
-                  <p className="leading-relaxed pt-1">작성 중인 정보는 현재 화면에서 유지됩니다. 결제 전에는 새로고침이나 다른 페이지 이동을 피해주세요.</p>
-                </div>
                 {/* 주문 상품 */}
-                <Card id="checkout-order-items" className="group scroll-mt-24 border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md hover:ring-border">
+                <Card id="checkout-order-items" className="group scroll-mt-24 border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl">
                   <div className="border-b border-border bg-secondary/50 p-5 bp-sm:p-6">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
@@ -1263,19 +1253,19 @@ export default function CheckoutPage() {
                       {orderItems.map((item, idx) => (
                         <div
                           key={item.id}
-                          className="group/item flex flex-col gap-4 rounded-xl border border-border/40 bg-secondary/35 p-4 bp-sm:flex-row bp-sm:items-center bp-sm:gap-5 bp-sm:p-5 transition-[background-color,border-color,box-shadow,color,opacity] duration-200 hover:border-border hover:shadow-md hover:bg-secondary/55"
+                          className="flex flex-col gap-4 rounded-xl border border-border/40 bg-secondary/35 p-4 bp-sm:flex-row bp-sm:items-center bp-sm:gap-5 bp-sm:p-5"
                           style={{ animationDelay: `${idx * 50}ms` }}
                         >
                           <div className="flex items-center gap-4 min-w-0 flex-1">
                             <div className="relative shrink-0">
-                              <div className="overflow-hidden rounded-xl ring-2 ring-border/50 group-hover/item:ring-primary/30 transition-[background-color,border-color,box-shadow,color,opacity]">
+                              <div className="overflow-hidden rounded-xl ring-2 ring-border/50">
                                 <Image
                                   src={item.image || "/placeholder.svg?height=80&width=80&query=tennis+product"}
                                   alt={item.name}
                                   width={80}
                                   height={80}
                                   loading="lazy"
-                                  className="h-16 w-16 bp-sm:h-20 bp-sm:w-20 object-cover transition-transform duration-300 group-hover/item:scale-105"
+                                  className="h-16 w-16 bp-sm:h-20 bp-sm:w-20 object-cover"
                                 />
                               </div>
                               <div className="absolute -top-1.5 -right-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold shadow-lg ring-2 ring-card">{item.quantity}</div>
@@ -1316,7 +1306,7 @@ export default function CheckoutPage() {
                 </Card>
 
                 {/* 수령 방식 및 장착 서비스 카드 */}
-                <Card id="checkout-delivery-method" className="group scroll-mt-24 border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md hover:ring-border">
+                <Card id="checkout-delivery-method" className="group scroll-mt-24 border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl">
                   <div className="border-b border-border bg-secondary/50 p-5 bp-sm:p-6">
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20">
@@ -1393,7 +1383,7 @@ export default function CheckoutPage() {
                 </Card>
 
                 {/* 배송 정보/수령 정보 */}
-                <Card id="checkout-recipient-info" className="group scroll-mt-24 border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md hover:ring-border">
+                <Card id="checkout-recipient-info" className="group scroll-mt-24 border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl">
                   <div className="border-b border-border bg-secondary/50 p-5 bp-sm:p-6">
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20">
@@ -1475,6 +1465,7 @@ export default function CheckoutPage() {
                                 우편번호
                               </Label>
                               <Button
+                                type="button"
                                 variant="outline"
                                 size="sm"
                                 onClick={() => {
@@ -1534,7 +1525,7 @@ export default function CheckoutPage() {
                 {withStringService && checkoutStringingAdapter && <CheckoutStringingServiceSections withStringService={withStringService} adapter={checkoutStringingAdapter} />}
 
                 {/* 결제 정보 */}
-                <Card id="checkout-payment-info" className="group scroll-mt-24 border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md hover:ring-border">
+                <Card id="checkout-payment-info" className="group scroll-mt-24 border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl">
                   <div className="border-b border-border bg-secondary/50 p-5 bp-sm:p-6">
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20">
@@ -1728,7 +1719,7 @@ export default function CheckoutPage() {
                 </Card>
 
                 {/* 주문자 동의 */}
-                <Card id="checkout-agreements" className="group scroll-mt-24 border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md hover:ring-border">
+                <Card id="checkout-agreements" className="group scroll-mt-24 border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl">
                   <div className="border-b border-border bg-secondary/50 p-5 bp-sm:p-6">
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20">
