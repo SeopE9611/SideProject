@@ -90,6 +90,24 @@ const courierTrackUrl: Record<string, (no: string) => string> = {
 const fmt = (v?: string | Date | null) =>
   v ? new Date(v).toLocaleString() : "-";
 
+const rentalHistoryActionLabels: Record<string, string> = {
+  paid: "결제 확인",
+  out: "대여 시작 / 방문 수령 처리",
+  returned: "반납 완료",
+  "cancel-request": "취소 요청",
+  "cancel-approved": "취소 승인",
+  "cancel-rejected": "취소 거절",
+  "cancel-withdrawn": "취소 철회",
+};
+
+function getRentalHistoryActorLabel(actor?: { role?: string; id?: string } | null) {
+  if (!actor?.role) return "이력에 처리자 정보 없음";
+  if (actor.role === "admin") return "관리자";
+  if (actor.role === "user") return "고객";
+  if (actor.role === "system") return "시스템";
+  return actor.role;
+}
+
 const fetcher = (url: string) => authenticatedSWRFetcher<any>(url);
 
 const AdminConfirmDialog = dynamic(
@@ -614,6 +632,15 @@ export default function AdminRentalDetailClient() {
     { label: "처리 이력 보기", href: "#admin-rental-history", show: true },
   ].filter((action) => action.show);
 
+  const latestProcessingHistory = data?.latestHistory ?? null;
+
+  const latestProcessingAction = latestProcessingHistory?.action
+    ? rentalHistoryActionLabels[String(latestProcessingHistory.action)] ?? String(latestProcessingHistory.action)
+    : "기록 없음";
+
+  const latestProcessingActor = getRentalHistoryActorLabel(latestProcessingHistory?.actor);
+
+  const latestProcessingDate = fmt(latestProcessingHistory?.at);
 
   return (
     <div className="min-h-screen bg-muted/30 dark:bg-muted/30">
@@ -853,6 +880,33 @@ export default function AdminRentalDetailClient() {
                       <a href={action.href}>{action.label}</a>
                     </Button>
                   ))}
+                </div>
+              </div>
+              <div className="rounded-lg border border-border/60 bg-background/70 p-3">
+                <p className="text-sm font-semibold text-foreground">처리 정보</p>
+                <div className="mt-2 grid gap-1.5 text-xs leading-relaxed text-muted-foreground sm:grid-cols-2">
+                  <p>
+                    <span className="font-medium text-foreground">담당자:</span>{" "}
+                    미지정
+                  </p>
+                  <p>
+                    <span className="font-medium text-foreground">마지막 처리자:</span>{" "}
+                    {latestProcessingActor}
+                  </p>
+                  <p>
+                    <span className="font-medium text-foreground">마지막 처리:</span>{" "}
+                    {latestProcessingAction}
+                  </p>
+                  <p>
+                    <span className="font-medium text-foreground">처리 시각:</span>{" "}
+                    {latestProcessingDate}
+                  </p>
+                  {latestProcessingHistory?.from || latestProcessingHistory?.to ? (
+                    <p className="sm:col-span-2">
+                      <span className="font-medium text-foreground">상태 변화:</span>{" "}
+                      {latestProcessingHistory?.from ?? "-"} → {latestProcessingHistory?.to ?? "-"}
+                    </p>
+                  ) : null}
                 </div>
               </div>
               <div className="rounded-lg border border-border/60 bg-background/70 p-3">

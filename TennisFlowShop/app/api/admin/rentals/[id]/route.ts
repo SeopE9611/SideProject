@@ -84,6 +84,11 @@ export async function GET(
     .findOne({ _id: new ObjectId(id) });
   if (!doc) return NextResponse.json({ message: "Not Found" }, { status: 404 });
 
+  const latestHistory = await db.collection("rental_history").findOne(
+    { rentalId: doc._id },
+    { sort: { at: -1 } },
+  );
+
   // 고객 정보 조인
   let user: { name?: string; email?: string; phone?: string } | null = null;
   if (doc.userId) {
@@ -201,6 +206,15 @@ export async function GET(
       return: doc.shipping?.return ?? null,
     },
     cancelRequest: doc.cancelRequest ?? null, // 취소 요청 정보(있으면 그대로, 없으면 null)
+    latestHistory: latestHistory
+      ? {
+          action: latestHistory.action ?? null,
+          from: latestHistory.from ?? null,
+          to: latestHistory.to ?? null,
+          at: latestHistory.at ?? null,
+          actor: latestHistory.actor ?? null,
+        }
+      : null,
     refundAccount, // 관리자만 확인 가능(마스킹)
     user,
   });
