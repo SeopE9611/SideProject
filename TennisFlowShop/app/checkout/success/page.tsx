@@ -711,7 +711,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                                   </p>
                                 )}
                                 <p>
-                                  <span className="text-muted-foreground">교체서비스 비용:</span> <span className="font-semibold text-primary">0원 처리</span>
+                                  <span className="text-muted-foreground">교체서비스 비용:</span> <span className="font-semibold text-primary">무료</span>
                                 </p>
                               </>
                             ) : (

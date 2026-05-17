@@ -323,7 +323,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const serviceCtaLabel = isApplyFlow ? "이 스트링 선택하고 장착 신청 계속하기" : "이 스트링으로 교체서비스 신청하기";
   const shouldEmphasizeServiceCta = isApplyFlow || !ENABLE_STRING_STANDALONE_ORDER;
   const isStandalonePausedMountableString = canCheckoutWithService && !ENABLE_STRING_STANDALONE_ORDER;
-  const cartCtaLabel = isStandalonePausedMountableString ? "장착 신청용으로 담기" : "장바구니 담기";
+  const cartCtaLabel = isStandalonePausedMountableString ? "장착 신청용 장바구니에 담기" : "장바구니 담기";
   const standalonePausedNotice = "현재 스트링 단품 구매는 운영하지 않으며, 교체서비스 신청과 함께 이용할 수 있어요.";
 
   // 브라우저 뒤/앞으로 가기 시에도 URL 변화에 맞춰 동기화
@@ -594,8 +594,23 @@ export default function ProductDetailClient({ product }: { product: any }) {
       return;
     }
 
+    if (isStandalonePausedMountableString) {
+      toast("장착 신청용으로 담았습니다.", {
+        description: "장바구니에서 교체서비스 신청을 이어갈 수 있어요.",
+        ...(!user
+          ? {
+              action: {
+                label: "로그인하기",
+                onClick: () => router.push(`/login?next=${encodeURIComponent(`/products/${product._id}`)}`),
+              },
+            }
+          : {}),
+      });
+      return;
+    }
+
     if (!user) {
-      toast(isStandalonePausedMountableString ? "교체서비스 신청용으로 담았습니다" : "장바구니에 담았습니다", {
+      toast("장바구니에 담았습니다", {
         description: (
           <>
             {allowGuestCheckout ? (
@@ -617,7 +632,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
         },
       });
     } else {
-      showSuccessToast(isStandalonePausedMountableString ? "교체서비스 신청용으로 장바구니에 담았습니다." : "장바구니에 담았습니다.");
+      showSuccessToast("장바구니에 담았습니다.");
     }
   };
   // 즉시 구매용 핸들러 (장바구니와 완전히 분리)

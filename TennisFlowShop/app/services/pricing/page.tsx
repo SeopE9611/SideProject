@@ -34,9 +34,9 @@ export default async function PricingPage() {
     },
     {
       name: "패키지 적용 신청",
-      price: "교체비 0원",
+      price: "교체비 무료",
       time: "30-60분",
-      description: "사용 가능한 패키지 횟수가 있으면 교체비를 0원으로 처리합니다.",
+      description: "사용 가능한 패키지 횟수가 있으면 교체비가 무료입니다.",
       features: ["패키지 잔여 횟수 기준", "적용 불가 시 일반 정책으로 계산", "수거비는 별도 후정산 가능"],
     },
   ];
@@ -222,7 +222,7 @@ export default async function PricingPage() {
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground space-y-2">
             <p>• 스트링 포함 가격은 고정값이 아니며 선택 상품과 신청 방식에 따라 달라집니다.</p>
-            <p>• 패키지 적용 가능 시 교체비는 0원 처리됩니다.</p>
+            <p>• 패키지 적용 가능 시 교체비가 무료입니다.</p>
             <p>• 주문/대여 기반 신청은 이미 결제된 내역과 이번 신청의 별도 결제 항목을 구분해 안내됩니다.</p>
           </CardContent>
         </Card>

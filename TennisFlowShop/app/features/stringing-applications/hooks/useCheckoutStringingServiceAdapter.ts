@@ -379,7 +379,7 @@ export default function useCheckoutStringingServiceAdapter({
       : "없음";
 
     const priceLabel = usingPackage
-      ? "패키지 적용(교체비 0원)"
+      ? "패키지 적용(교체비 무료)"
       : `${price.toLocaleString("ko-KR")}원`;
 
     return {

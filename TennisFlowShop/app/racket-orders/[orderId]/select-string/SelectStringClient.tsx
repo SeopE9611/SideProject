@@ -106,13 +106,10 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
           const isAdding = addingProductId === p._id;
 
           return (
-            <button
+            <div
               key={p._id}
-              type="button"
               data-cy="racket-string-option"
-              disabled={!!addingProductId}
-              className="rounded-lg border border-border bg-card p-3 text-left text-foreground transition hover:border-primary focus:outline-none focus:ring-2 focus:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-50"
-              onClick={() => handleSelectString(p._id)}
+              className="flex h-full flex-col rounded-lg border border-border bg-card p-3 text-left text-foreground transition hover:border-primary"
             >
               <div className="font-medium">{p.name}</div>
               <div className="text-sm text-muted-foreground">
@@ -125,10 +122,19 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
                   장착비: {p.mountingFee.toLocaleString()}원
                 </div>
               )}
-              <div className="mt-2 text-sm text-primary">
+              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                선택한 스트링은 기존 라켓 주문과 연결되어 교체서비스 신청에 사용됩니다.
+              </p>
+              <Button
+                type="button"
+                data-cy="racket-string-select-button"
+                disabled={!!addingProductId}
+                className="mt-auto min-h-10 w-full h-auto whitespace-normal break-keep text-center leading-tight"
+                onClick={() => handleSelectString(p._id)}
+              >
                 {isAdding ? "이동 중…" : "이 스트링 선택하고 신청 계속하기"}
-              </div>
-            </button>
+              </Button>
+            </div>
           );
         })}
       </div>
