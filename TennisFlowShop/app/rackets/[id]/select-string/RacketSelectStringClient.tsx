@@ -44,7 +44,7 @@ export default function RacketSelectStringClient({
   const setItems = usePdpBundleStore((s) => s.setItems);
   const clearBundle = usePdpBundleStore((s) => s.clear);
 
-  // cart 편집/장바구니 담기에서 사용하는 store
+  // cart 편집 모드에서 사용하는 store
   const cartItems = useCartStore((s) => s.items);
   const addItem = useCartStore((s) => s.addItem);
   const removeItem = useCartStore((s) => s.removeItem);
@@ -226,40 +226,6 @@ export default function RacketSelectStringClient({
     router.push(`/checkout?mode=buynow&withService=1`);
   };
 
-  /**
-   *  buy-now 모드에서 “장바구니 담기”
-   * - 라켓 + 선택 스트링을 동일 수량으로 cartStore에 반영하고 /cart로 이동
-   * - (중요) from=cart가 아니므로 “기존 스트링 교체(initialStringId)”는 개입하지 않음
-   *   → 이미 카트에 여러 스트링이 있는 복잡 케이스는 다음 옵션1(우회 방지)에서 더 강하게 잠글 예정
-   */
-  const handleAddToCart = (p: any) => {
-    const manageStock = Boolean(p?.inventory?.manageStock);
-    const stock =
-      typeof p?.inventory?.stock === "number" ? p.inventory.stock : undefined;
-
-    if (manageStock && typeof stock === "number" && stock <= 0) {
-      showErrorToast?.("선택한 스트링의 재고가 부족합니다.");
-      return;
-    }
-
-    if (manageStock && typeof stock === "number" && stock < workCount) {
-      showErrorToast?.(
-        `선택한 스트링 재고가 부족합니다. (요청 ${workCount}개 / 현재 ${stock}개)`,
-      );
-      return;
-    }
-
-    const qty = clampWorkCount(workCount, manageStock ? stock : undefined);
-    try {
-      upsertCartBundle(p, qty);
-      showSuccessToast?.("장바구니에 번들(라켓+스트링)을 담았어요.");
-      router.push("/cart");
-    } catch {
-      showErrorToast?.(
-        "장바구니 담기 중 오류가 발생했어요. 다시 시도해주세요.",
-      );
-    }
-  };
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -530,14 +496,14 @@ export default function RacketSelectStringClient({
                         <div className="mt-4 grid grid-cols-1 gap-2">
                           <Button
                             variant="elevated"
-                            className="w-full font-medium rounded-xl py-5 transition-all duration-300"
+                            className="w-full whitespace-normal break-keep rounded-xl py-5 font-medium leading-tight transition-all duration-300"
                             disabled={isSoldOut || isShort}
                             onClick={() => handleSelectString(p)}
                           >
                             <span className="flex items-center justify-center gap-2">
-                              바로 결제
+                              이 스트링 선택하고 구매 계속하기
                               <svg
-                                className="w-4 h-4 group-hover:translate-x-1 transition-transform"
+                                className="w-4 h-4 shrink-0 group-hover:translate-x-1 transition-transform"
                                 fill="none"
                                 viewBox="0 0 24 24"
                                 stroke="currentColor"
@@ -551,15 +517,9 @@ export default function RacketSelectStringClient({
                               </svg>
                             </span>
                           </Button>
-
-                          <Button
-                            variant="outline"
-                            className="w-full rounded-xl py-5 font-medium"
-                            disabled={isSoldOut || isShort}
-                            onClick={() => handleAddToCart(p)}
-                          >
-                            장바구니 담기
-                          </Button>
+                          <p className="px-1 text-center text-xs leading-relaxed text-muted-foreground break-keep">
+                            선택한 스트링은 라켓과 함께 한 번에 결제됩니다.
+                          </p>
                         </div>
                       )}
                     </div>

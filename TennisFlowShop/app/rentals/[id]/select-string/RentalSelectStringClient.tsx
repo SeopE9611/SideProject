@@ -203,13 +203,13 @@ export default function RentalSelectStringClient({
 
                       {/* Select Button */}
                       <Button
-                        className="mt-4 w-full bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300"
+                        className="mt-4 w-full whitespace-normal break-keep bg-primary py-5 font-medium leading-tight text-primary-foreground transition-all duration-300 hover:bg-primary/90"
                         onClick={() => goCheckout(id)}
                       >
                         <span className="flex items-center justify-center gap-2">
-                          선택하기
+                          이 스트링 선택하고 대여 계속하기
                           <svg
-                            className="w-4 h-4 group-hover:translate-x-1 transition-transform"
+                            className="w-4 h-4 shrink-0 group-hover:translate-x-1 transition-transform"
                             fill="none"
                             viewBox="0 0 24 24"
                             stroke="currentColor"
@@ -223,6 +223,9 @@ export default function RentalSelectStringClient({
                           </svg>
                         </span>
                       </Button>
+                      <p className="mt-2 px-1 text-center text-xs leading-relaxed text-muted-foreground break-keep">
+                        선택 후 장착 정보 입력 단계로 이어집니다.
+                      </p>
                     </div>
                   </div>
                 );
