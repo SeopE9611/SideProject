@@ -26,7 +26,7 @@ import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher"
 import { shortenId } from "@/lib/shorten";
 import { adminRichTooltipClass } from "@/lib/tooltip-style";
 import { cn } from "@/lib/utils";
-import type { AdminOperationsGroup, AdminOperationsListResponseDto, AdminOperationsSummary, OperationTaskCounts } from "@/types/admin/operations";
+import type { AdminDailyOperationsSummaryResponse, AdminOperationsGroup, AdminOperationsListResponseDto, AdminOperationsSummary, OperationTaskCounts } from "@/types/admin/operations";
 import { copyToClipboard } from "./actions/operationsActions";
 import { prevMonthYyyymmKST, type Kind } from "./filters/operationsFilters";
 import { buildOperationsViewQueryString, initOperationsStateFromQuery, useSyncOperationsQuery } from "./hooks/useOperationsQueryState";
@@ -662,6 +662,11 @@ export default function OperationsClient() {
     shouldRetryOnError: false,
     dedupingInterval: 30_000,
   });
+  const { data: dailySummary, error: dailySummaryError } = useSWR<AdminDailyOperationsSummaryResponse>("/api/admin/operations/daily-summary", authenticatedSWRFetcher, {
+    revalidateOnFocus: false,
+    shouldRetryOnError: false,
+    dedupingInterval: 30_000,
+  });
   const totalGroups = data?.pagination?.totalGroups;
   const pageSize = data?.pagination?.pageSize ?? effectivePageSize;
   const totalPages = typeof totalGroups === "number" ? Math.max(1, Math.ceil(totalGroups / pageSize)) : null;
@@ -943,6 +948,14 @@ export default function OperationsClient() {
     }));
   }
 
+  const dailySummaryValue = (value?: number) => (typeof value === "number" ? `${value.toLocaleString("ko-KR")}건` : "-");
+  const dailySummaryInlineValue = (label: string, value?: number) => `${label} ${typeof value === "number" ? value.toLocaleString("ko-KR") : "-"}`;
+  const dailySummaryStatusMessage = dailySummaryError
+    ? "마감 요약을 불러오지 못했습니다. 기존 업무 목록은 계속 사용할 수 있습니다."
+    : dailySummary
+      ? dailySummary.attention.message
+      : "불러오는 중...";
+
   return (
     <div className="mx-auto w-full max-w-[1560px] px-3 py-4 bp-sm:px-4 bp-md:px-3 lg:px-5 lg:py-5">
       {shouldShowGlobalError && (
@@ -1096,6 +1109,78 @@ export default function OperationsClient() {
             </ol>
           </details>
         </div>
+
+        <section className="mt-4 rounded-xl border border-border bg-card p-4 shadow-sm">
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-base font-semibold text-foreground">오늘 업무 마감 요약</h2>
+              <p className="text-xs text-muted-foreground">오늘 처리한 업무와 남은 업무를 간단히 확인합니다.</p>
+            </div>
+            <Badge variant="outline">{dailySummary?.date ?? "오늘"}</Badge>
+          </div>
+
+          <div className="mt-4 grid gap-3 sm:grid-cols-3">
+            <Card className="border-border bg-background/70 shadow-none">
+              <CardHeader className="p-3 pb-2">
+                <CardTitle className="text-sm font-semibold">오늘 처리</CardTitle>
+                <CardDescription className="text-2xl font-bold text-foreground">{dailySummaryValue(dailySummary?.completedToday.total)}</CardDescription>
+              </CardHeader>
+              <CardContent className="p-3 pt-0 text-xs leading-relaxed text-muted-foreground">
+                {dailySummary
+                  ? [
+                      dailySummaryInlineValue("주문", dailySummary.completedToday.orders),
+                      dailySummaryInlineValue("교체", dailySummary.completedToday.stringingApplications),
+                      dailySummaryInlineValue("대여", dailySummary.completedToday.rentals),
+                      dailySummaryInlineValue("오프라인", dailySummary.completedToday.offline),
+                      dailySummaryInlineValue("아카데미", dailySummary.completedToday.academyApplications),
+                    ].join(" · ")
+                  : dailySummaryError
+                    ? "요약을 불러오지 못했습니다."
+                    : "불러오는 중..."}
+              </CardContent>
+            </Card>
+
+            <Card className="border-border bg-background/70 shadow-none">
+              <CardHeader className="p-3 pb-2">
+                <CardTitle className="text-sm font-semibold">남은 업무</CardTitle>
+                <CardDescription className="text-2xl font-bold text-foreground">{dailySummaryValue(dailySummary?.remaining.total)}</CardDescription>
+              </CardHeader>
+              <CardContent className="p-3 pt-0 text-xs leading-relaxed text-muted-foreground">
+                {dailySummary
+                  ? [
+                      dailySummaryInlineValue("취소", dailySummary.remaining.cancelRequests),
+                      dailySummaryInlineValue("결제", dailySummary.remaining.paymentCheck),
+                      dailySummaryInlineValue("배송", dailySummary.remaining.shippingMissing),
+                      dailySummaryInlineValue("교체", dailySummary.remaining.stringingWork),
+                      dailySummaryInlineValue("반납", dailySummary.remaining.rentalDue),
+                    ].join(" · ")
+                  : dailySummaryError
+                    ? "요약을 불러오지 못했습니다."
+                    : "불러오는 중..."}
+              </CardContent>
+            </Card>
+
+            <Card className="border-border bg-background/70 shadow-none">
+              <CardHeader className="p-3 pb-2">
+                <CardTitle className="text-sm font-semibold">마감 전 확인</CardTitle>
+                <CardDescription className="text-base font-bold text-foreground">
+                  긴급 {dailySummaryValue(dailySummary?.attention.urgentRemaining)} / 확인 {dailySummaryValue(dailySummary?.attention.watchRemaining)}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3 p-3 pt-0">
+                <p className={cn("text-xs leading-relaxed", dailySummaryError ? "text-warning" : "text-muted-foreground")}>{dailySummaryStatusMessage}</p>
+                <div className="flex flex-wrap gap-2">
+                  <Button type="button" size="sm" variant="outline" className="h-8 bg-background/70 text-xs" onClick={() => applyQuickView("cancelRequests")}>
+                    긴급 업무 보기
+                  </Button>
+                  <Button type="button" size="sm" variant="ghost" className="h-8 text-xs" onClick={() => applyQuickView("all")}>
+                    남은 업무 보기
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
 
         <div className="mt-4 rounded-xl border border-border bg-card p-3">
           <div className={cn(adminSurface.filterCard, "mb-3 p-3 sm:p-3")}>

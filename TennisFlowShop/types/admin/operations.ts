@@ -106,6 +106,24 @@ export type OperationTaskCounts = {
   academyApplications: number;
 };
 
+export type AdminDailyOperationsSummaryResponse = {
+  date: string;
+  completedToday: {
+    orders: number;
+    stringingApplications: number;
+    rentals: number;
+    offline: number;
+    academyApplications: number;
+    total: number;
+  };
+  remaining: OperationTaskCounts & { total: number };
+  attention: {
+    urgentRemaining: number;
+    watchRemaining: number;
+    message: string;
+  };
+};
+
 export type AdminOperationsKindFilter = AdminOperationKind | "all";
 export type AdminOperationsWarnFilter =
   | "all"
