@@ -71,7 +71,7 @@ export default async function SelectStringPage({ params }: PageProps) {
           주문 ID: <span className="font-mono">{orderId}</span>
         </p>
         <div className="rounded-lg border border-border bg-card p-4 text-sm text-foreground">
-          아래 목록에서 스트링을 고른 뒤, 교체 서비스 신청으로 연결됩니다.
+          선택한 스트링은 기존 라켓 주문과 연결되어 교체서비스 신청에 사용됩니다. 선택 후 장착 정보 입력 단계로 이어집니다.
         </div>
       </div>
       <SelectStringClient orderId={orderId} />

@@ -468,7 +468,13 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                   주문 정보
                   {withStringService && <span className="rounded-full border border-border px-2 py-0.5 text-xs font-medium text-muted-foreground">교체서비스 포함</span>}
                 </CardTitle>
-                <CardDescription className="mt-2 text-muted-foreground">주문 및 교체서비스 진행 정보를 한 번에 확인하세요.</CardDescription>
+                <CardDescription className="mt-2 text-muted-foreground">
+                  {withStringService
+                    ? "주문 및 교체서비스 진행 정보를 한 번에 확인하세요."
+                    : isVisitPickup
+                      ? "주문 정보와 수령 안내를 확인하세요."
+                      : "주문 정보와 배송 상태를 확인하세요."}
+                </CardDescription>
               </div>
               <CardContent className="p-4 md:p-6">
                 {/* 문서 정보 */}

@@ -147,7 +147,13 @@ export default function RentalsSuccessClient({ data }: Props) {
                 대여 정보
                 {withService && <span className="rounded-full border border-border px-2 py-0.5 text-xs font-medium text-muted-foreground">교체서비스 포함</span>}
               </CardTitle>
-              <CardDescription className="mt-2 text-lg">접수된 대여 및 교체서비스 정보를 함께 확인하세요.</CardDescription>
+              <CardDescription className="mt-2 text-lg">
+                {withService
+                  ? '접수된 대여 및 교체서비스 정보를 함께 확인하세요.'
+                  : isPickup
+                    ? '접수된 대여 정보와 결제/수령 진행 상황을 확인하세요.'
+                    : '접수된 대여 정보와 결제/배송 진행 상황을 확인하세요.'}
+              </CardDescription>
             </div>
             <CardContent className="p-4 md:p-6">
               <div className="space-y-4 rounded-lg border border-border bg-muted/20 p-4 text-sm">
