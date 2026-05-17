@@ -292,7 +292,7 @@ export default function KakaoInquiryWidget() {
                       ["새 스트링 고르고 장착 신청", "/products?from=apply", ""],
                       ["라켓 구매/대여 + 장착", "/rackets?from=apply", ""],
                       ["아카데미 신청", "/academy", ""],
-                      ["주문/신청 상태 확인", "/mypage", "비회원 주문은 주문조회에서 확인 가능"],
+                      ["주문/신청 상태 확인", "/mypage"],
                     ].map(([label, href, description]) => (
                       <Link
                         key={href}
@@ -309,13 +309,6 @@ export default function KakaoInquiryWidget() {
                       </Link>
                     ))}
                   </div>
-                  <Link
-                    href="/order-lookup"
-                    className="block rounded-lg bg-muted px-3 py-2 text-center text-sm font-semibold text-foreground transition-colors hover:bg-muted/80"
-                    onClick={() => setPanel(null)}
-                  >
-                    비회원 주문조회
-                  </Link>
                 </CardContent>
               </Card>
 
