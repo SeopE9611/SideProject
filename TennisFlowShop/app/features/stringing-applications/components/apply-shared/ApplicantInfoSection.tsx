@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { User, Truck, Store, Shield, MapPin, Box } from "lucide-react";
+import { CheckCircle2, User, Truck, Store, Shield, MapPin, Box } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -165,16 +165,25 @@ export default function ApplicantInfoSection({
 
   return (
     <div className="relative space-y-5">
-      <div className="text-center mb-6">
-        <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-secondary mb-4">
-          <User className="h-8 w-8 text-foreground" />
+      <div className="flex items-start gap-3 border-b border-border pb-4">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-secondary">
+          <User className="h-5 w-5 text-foreground" />
         </div>
-        <h2 className="text-2xl font-bold mb-2">신청자/수령 정보</h2>
-        <p className="text-muted-foreground">연락처와 수령·수거 방식을 입력해주세요</p>
+        <div>
+          <h2 className="text-xl font-bold text-foreground">신청자/수령 정보</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            먼저 라켓을 전달할 방식을 선택하고 필요한 연락처를 확인해주세요.
+          </p>
+        </div>
       </div>
 
-      {/* 기본 정보: 2열 */}
-      <div className="grid gap-x-6 gap-y-3 md:grid-cols-2">
+      <div className="rounded-2xl border border-border bg-background/60 p-4">
+        <div className="mb-3">
+          <h3 className="text-base font-semibold text-foreground">고객 정보</h3>
+          <p className="mt-1 text-sm text-muted-foreground">접수와 안내에 사용할 기본 정보입니다.</p>
+        </div>
+        {/* 기본 정보: 2열 */}
+        <div className="grid gap-x-6 gap-y-3 md:grid-cols-2">
         <div className="space-y-1">
           <Label htmlFor="name" className="text-sm font-medium">
             신청인 이름 <span className="text-destructive">*</span>
@@ -239,9 +248,20 @@ export default function ApplicantInfoSection({
             <p className={errCls}>{errorText("phone")}</p>
           ) : null}
         </div>
+        </div>
       </div>
 
-      <div className="space-y-3">
+      <div className="rounded-2xl border border-border bg-background/60 p-4">
+        <div className="mb-3 flex items-start justify-between gap-3">
+          <div>
+            <h3 className="text-base font-semibold text-foreground">배송/방문 정보</h3>
+            <p className="mt-1 text-sm text-muted-foreground">선택한 방식에 따라 필요한 입력만 표시됩니다.</p>
+          </div>
+          <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
+            {isVisitSelected ? "방문" : "택배 발송"}
+          </span>
+        </div>
+        <div className="space-y-3">
         {isVisitSelected ? (
           <div className="rounded-lg border border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
             {collectionVisitNotice}
@@ -316,12 +336,18 @@ export default function ApplicantInfoSection({
             </div>
           </>
         )}
+        </div>
       </div>
 
-      <div className="space-y-3">
-        <Label className="text-sm font-medium">
-          수거 방식 <span className="text-destructive">*</span>
-        </Label>
+      <div className="rounded-2xl border border-border bg-background/60 p-4">
+        <div className="mb-3 flex items-start justify-between gap-3">
+          <div>
+            <Label className="text-base font-semibold text-foreground">
+              수령/전달 방식 <span className="text-destructive">*</span>
+            </Label>
+            <p className="mt-1 text-sm text-muted-foreground">택배로 보내거나 매장 방문으로 접수할 수 있습니다.</p>
+          </div>
+        </div>
 
         {/* {normalizeCollection(formData.collectionMethod) === 'self_ship' && applicationId && (
           <div
@@ -410,11 +436,16 @@ export default function ApplicantInfoSection({
             />
             <Label
               htmlFor="cm-self"
-              className="block cursor-pointer rounded-xl border border-border bg-card px-4 py-3 shadow-sm hover:bg-background dark:hover:bg-card transition peer-data-[state=checked]:border-border peer-data-[state=checked]:bg-secondary peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-ring peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"
+              className="group block min-h-[96px] cursor-pointer rounded-xl border border-border bg-card px-4 py-3 transition hover:border-primary/40 hover:bg-primary/5 focus-visible:outline-none peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 peer-data-[state=checked]:ring-2 peer-data-[state=checked]:ring-primary/25 peer-disabled:cursor-not-allowed peer-disabled:opacity-50 peer-disabled:hover:border-border peer-disabled:hover:bg-card"
             >
-              <div className="flex items-center gap-2">
-                <Box className="h-4 w-4 text-primary" />
-                <span className="font-medium text-foreground">자가 발송</span>
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <Box className="h-4 w-4 text-primary" />
+                  <span className="font-medium text-foreground">자가 발송</span>
+                </div>
+                <CheckCircle2
+                  className={`h-4 w-4 text-primary transition-opacity ${formData.collectionMethod === "self_ship" ? "opacity-100" : "opacity-0"}`}
+                />
               </div>
               <p className="mt-1 text-xs text-muted-foreground">
                 편의점/우체국 등
@@ -434,13 +465,18 @@ export default function ApplicantInfoSection({
             />
             <Label
               htmlFor="cm-visit"
-              className="block cursor-pointer rounded-xl border border-border bg-card px-4 py-3 shadow-sm hover:bg-background dark:hover:bg-card transition peer-data-[state=checked]:border-border peer-data-[state=checked]:bg-secondary peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-ring peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"
+              className="group block min-h-[96px] cursor-pointer rounded-xl border border-border bg-card px-4 py-3 transition hover:border-primary/40 hover:bg-primary/5 focus-visible:outline-none peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 peer-data-[state=checked]:ring-2 peer-data-[state=checked]:ring-primary/25 peer-disabled:cursor-not-allowed peer-disabled:opacity-50 peer-disabled:hover:border-border peer-disabled:hover:bg-card"
             >
-              <div className="flex items-center gap-2">
-                <Store className="h-4 w-4 text-primary" />
-                <span className="font-medium text-foreground">
-                  매장 방문 접수
-                </span>
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <Store className="h-4 w-4 text-primary" />
+                  <span className="font-medium text-foreground">
+                    매장 방문 접수
+                  </span>
+                </div>
+                <CheckCircle2
+                  className={`h-4 w-4 text-primary transition-opacity ${normalizeCollection(formData.collectionMethod) === "visit" ? "opacity-100" : "opacity-0"}`}
+                />
               </div>
               <p className="mt-1 text-xs text-muted-foreground">
                 방문 가능 시간대만 선택
@@ -459,13 +495,18 @@ export default function ApplicantInfoSection({
 
             <Label
               htmlFor="cm-pickup"
-              className="block cursor-pointer rounded-xl border border-border bg-card px-4 py-3 shadow-sm hover:bg-background dark:hover:bg-card transition peer-data-[state=checked]:border-border peer-data-[state=checked]:bg-secondary peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-ring peer-disabled:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:hover:bg-card dark:peer-disabled:hover:bg-card"
+              className="group block min-h-[96px] cursor-pointer rounded-xl border border-border bg-card px-4 py-3 transition hover:border-primary/40 hover:bg-primary/5 focus-visible:outline-none peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 peer-data-[state=checked]:ring-2 peer-data-[state=checked]:ring-primary/25 peer-disabled:cursor-not-allowed peer-disabled:opacity-50 peer-disabled:hover:border-border peer-disabled:hover:bg-card"
             >
-              <div className="flex items-center gap-2">
-                <Truck className="h-4 w-4 text-primary" />
-                <span className="font-medium text-foreground">
-                  택배 기사 방문 수거
-                </span>
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <Truck className="h-4 w-4 text-primary" />
+                  <span className="font-medium text-foreground">
+                    택배 기사 방문 수거
+                  </span>
+                </div>
+                <CheckCircle2
+                  className={`h-4 w-4 text-primary transition-opacity ${formData.collectionMethod === "courier_pickup" ? "opacity-100" : "opacity-0"}`}
+                />
               </div>
               <p className="mt-1 text-xs text-muted-foreground">
                 선택 시 +3,000원 (후정산)
@@ -474,7 +515,7 @@ export default function ApplicantInfoSection({
           </div>
         </RadioGroup>
         {lockCollection && (
-          <p className="mt-2 text-xs text-muted-foreground">
+          <p className="mt-2 rounded-lg bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
             라켓 구매 단계에서 선택한 접수 방식은 변경할 수 없습니다.
           </p>
         )}
@@ -543,25 +584,15 @@ export default function ApplicantInfoSection({
         </div>
       )}
       {(orderId || isMember) && (
-        <div className="rounded-lg border border-warning/30 bg-warning/10 p-4 dark:bg-warning/15">
+        <div className="rounded-xl border border-warning/30 bg-warning/10 p-3 dark:bg-warning/15">
           <div className="flex items-start space-x-3">
             <Shield className="h-5 w-5 text-warning mt-0.5 flex-shrink-0" />
             <div className="text-sm">
-              <p className="font-medium text-warning mb-1">📢 안내사항</p>
-              <p className="text-foreground leading-relaxed">
-                신청자 정보는{" "}
-                <span className="font-semibold">주문 당시 정보</span>를 기준으로
-                작성됩니다. 회원정보를 수정하셨더라도{" "}
-                <span className="font-semibold">
-                  신청자 정보는 변경되지 않습니다.
-                </span>
-                <br />
-                변경이 필요한 경우,{" "}
-                <span className="text-warning font-semibold">
-                  추가 요청사항
-                </span>
-                에 기재해주세요.
-              </p>
+              <p className="font-medium text-warning mb-1">정보 유지 안내</p>
+              <ul className="list-disc space-y-1 pl-4 text-foreground">
+                <li>신청자 정보는 주문 당시 정보 기준으로 유지됩니다.</li>
+                <li>변경이 필요한 내용은 추가 요청사항에 적어주세요.</li>
+              </ul>
             </div>
           </div>
         </div>
