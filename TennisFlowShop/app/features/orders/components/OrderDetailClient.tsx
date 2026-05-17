@@ -736,6 +736,8 @@ export default function OrderDetailClient({ orderId }: Props) {
     { label: "처리 이력 보기", href: "#admin-order-history", show: true },
   ].filter((action) => action.show);
 
+  const latestProcessingHistory = allHistory[0] ?? null;
+  const latestProcessingDate = formatDateTime(latestProcessingHistory?.date);
 
   // 취소 성공 시 호출되는 콜백
   const handleCancelSuccess = async (reason: string, detail?: string) => {
@@ -1303,6 +1305,33 @@ export default function OrderDetailClient({ orderId }: Props) {
                       <a href={action.href}>{action.label}</a>
                     </Button>
                   ))}
+                </div>
+              </div>
+              <div className="rounded-lg border border-border/60 bg-background/70 p-3">
+                <p className="text-sm font-semibold text-foreground">처리 정보</p>
+                <div className="mt-2 grid gap-1.5 text-xs leading-relaxed text-muted-foreground sm:grid-cols-2">
+                  <p>
+                    <span className="font-medium text-foreground">담당자:</span>{" "}
+                    미지정
+                  </p>
+                  <p>
+                    <span className="font-medium text-foreground">마지막 처리자:</span>{" "}
+                    이력에 처리자 정보 없음
+                  </p>
+                  <p>
+                    <span className="font-medium text-foreground">마지막 처리:</span>{" "}
+                    {latestProcessingHistory?.status ?? "기록 없음"}
+                  </p>
+                  <p>
+                    <span className="font-medium text-foreground">처리 시각:</span>{" "}
+                    {latestProcessingDate}
+                  </p>
+                  {latestProcessingHistory?.description ? (
+                    <p className="sm:col-span-2">
+                      <span className="font-medium text-foreground">내용:</span>{" "}
+                      {latestProcessingHistory.description}
+                    </p>
+                  ) : null}
                 </div>
               </div>
               <div className="rounded-lg border border-border/60 bg-background/70 p-3">

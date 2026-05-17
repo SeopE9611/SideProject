@@ -907,6 +907,17 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
     { label: '처리 이력 보기', href: '#admin-stringing-history', show: true },
   ].filter((action) => action.show);
 
+  const latestProcessingHistory = Array.isArray(data.history)
+    ? [...data.history].sort((a, b) => {
+        const aTime = new Date(a.date).getTime();
+        const bTime = new Date(b.date).getTime();
+        return (Number.isFinite(bTime) ? bTime : 0) - (Number.isFinite(aTime) ? aTime : 0);
+      })[0] ?? null
+    : null;
+
+  const latestProcessingDate = latestProcessingHistory?.date
+    ? new Date(latestProcessingHistory.date).toLocaleString("ko-KR")
+    : "-";
 
   const linkedContextLabel = data.rentalId ? '대여 + 신청 연결 업무' : data.orderId ? '주문 + 신청 연결 업무' : '단독 신청 업무';
 
@@ -1258,6 +1269,33 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                         <a href={action.href}>{action.label}</a>
                       </Button>
                     ))}
+                  </div>
+                </div>
+                <div className="rounded-lg border border-border/60 bg-background/70 p-3">
+                  <p className="text-sm font-semibold text-foreground">처리 정보</p>
+                  <div className="mt-2 grid gap-1.5 text-xs leading-relaxed text-muted-foreground sm:grid-cols-2">
+                    <p>
+                      <span className="font-medium text-foreground">담당자:</span>{" "}
+                      미지정
+                    </p>
+                    <p>
+                      <span className="font-medium text-foreground">마지막 처리자:</span>{" "}
+                      이력에 처리자 정보 없음
+                    </p>
+                    <p>
+                      <span className="font-medium text-foreground">마지막 처리:</span>{" "}
+                      {latestProcessingHistory?.status ?? "기록 없음"}
+                    </p>
+                    <p>
+                      <span className="font-medium text-foreground">처리 시각:</span>{" "}
+                      {latestProcessingDate}
+                    </p>
+                    {latestProcessingHistory?.description ? (
+                      <p className="sm:col-span-2">
+                        <span className="font-medium text-foreground">내용:</span>{" "}
+                        {latestProcessingHistory.description}
+                      </p>
+                    ) : null}
                   </div>
                 </div>
                 <div className="rounded-lg border border-border/60 bg-background/70 p-3">
