@@ -250,16 +250,16 @@ export default function KakaoInquiryWidget() {
 
   return (
     <div
-      className="fixed bottom-5 right-5 z-[70] bp-sm:bottom-4 bp-sm:right-4"
+      className="fixed bottom-4 right-4 z-[70] bp-sm:bottom-4 bp-sm:right-4"
       style={liftPx ? { transform: `translateY(-${liftPx}px)` } : undefined}
     >
-      <div className="flex flex-col items-end gap-3">
+      <div className="flex flex-col items-end gap-2 bp-sm:gap-3">
 
         {/* ---------------- 목적 선택 ---------------- */}
         <div className="relative">
           <div
             className={[
-              "absolute right-0 bottom-[76px]",
+              "absolute right-0 bottom-[64px] bp-sm:bottom-[76px]",
               "transition-all duration-150",
               panel === "guide"
                 ? "opacity-100 translate-y-0 pointer-events-auto"
@@ -267,7 +267,7 @@ export default function KakaoInquiryWidget() {
             ].join(" ")}
           >
             <div ref={guidePanelRef} className="relative">
-              <Card className="relative w-[320px] border-border shadow-xl bp-sm:w-[340px]">
+              <Card className="relative w-[min(320px,calc(100vw-2rem))] border-border shadow-xl bp-sm:w-[340px]">
                 <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-semibold">
                     무엇을 하러 오셨나요?
@@ -282,7 +282,7 @@ export default function KakaoInquiryWidget() {
                   </button>
                 </CardHeader>
 
-                <CardContent className="space-y-3">
+                <CardContent className="space-y-2.5 bp-sm:space-y-3">
                   <p className="text-sm text-muted-foreground">
                     원하는 목적을 선택하면 필요한 단계로 바로 이동할 수 있어요.
                   </p>
@@ -297,7 +297,7 @@ export default function KakaoInquiryWidget() {
                       <Link
                         key={href}
                         href={href}
-                        className="rounded-lg border border-border bg-card px-3 py-2.5 text-sm font-semibold transition-colors hover:bg-muted"
+                        className="rounded-lg border border-border bg-card px-3 py-2 text-sm font-semibold transition-colors hover:bg-muted bp-sm:py-2.5"
                         onClick={() => setPanel(null)}
                       >
                         <span className="block text-foreground">{label}</span>
@@ -328,14 +328,14 @@ export default function KakaoInquiryWidget() {
             aria-label="목적 선택"
             onClick={() => setPanel((cur) => (cur === "guide" ? null : "guide"))}
             className={[
-              "h-14 w-14 rounded-full shadow-xl",
+              "h-12 w-12 rounded-full shadow-xl bp-sm:h-14 bp-sm:w-14",
               "bg-primary text-primary-foreground",
               "hover:bg-primary/90",
               "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
               "flex items-center justify-center",
             ].join(" ")}
           >
-            <Compass className="h-7 w-7" />
+            <Compass className="h-6 w-6 bp-sm:h-7 bp-sm:w-7" />
           </button>
         </div>
 
@@ -344,7 +344,7 @@ export default function KakaoInquiryWidget() {
           <div className="relative">
             <div
               className={[
-                "absolute right-0 bottom-[76px]",
+                "absolute right-0 bottom-[64px] bp-sm:bottom-[76px]",
                 "transition-all duration-150",
                 panel === "bug"
                   ? "opacity-100 translate-y-0 pointer-events-auto"
@@ -354,7 +354,7 @@ export default function KakaoInquiryWidget() {
               <div ref={bugPanelRef} className="relative">
                 <Card
                   className={[
-                    "relative w-[320px] shadow-xl",
+                    "relative w-[min(320px,calc(100vw-2rem))] shadow-xl",
                     // 다크/라이트 공통 테마 토큰
                     "border-border",
                   ].join(" ")}
@@ -373,7 +373,7 @@ export default function KakaoInquiryWidget() {
                     </button>
                   </CardHeader>
 
-                  <CardContent className="space-y-3">
+                  <CardContent className="space-y-2.5 bp-sm:space-y-3">
                     <p className="text-sm text-muted-foreground">
                       사이트 이용 중 문제가 생겼거나 버그를 발견하셨나요? 아래
                       개발자의 오픈채팅으로 제보해주시면 빠르게 확인할게요.
@@ -422,14 +422,14 @@ export default function KakaoInquiryWidget() {
               aria-label="버그 제보"
               onClick={() => setPanel((cur) => (cur === "bug" ? null : "bug"))}
               className={[
-                "h-14 w-14 rounded-full shadow-xl",
+                "h-12 w-12 rounded-full shadow-xl bp-sm:h-14 bp-sm:w-14",
                 "bg-primary text-primary-foreground",
                 "hover:bg-primary/90",
                 "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
                 "flex items-center justify-center",
               ].join(" ")}
             >
-              <Bug className="h-7 w-7" />
+              <Bug className="h-6 w-6 bp-sm:h-7 bp-sm:w-7" />
             </button>
           </div>
         ) : null}
@@ -439,7 +439,7 @@ export default function KakaoInquiryWidget() {
           <div className="relative">
             <div
               className={[
-                "absolute right-0 bottom-[76px]",
+                "absolute right-0 bottom-[64px] bp-sm:bottom-[76px]",
                 "transition-all duration-150",
                 panel === "inquiry"
                   ? "opacity-100 translate-y-0 pointer-events-auto"
@@ -449,7 +449,7 @@ export default function KakaoInquiryWidget() {
               <div ref={inquiryPanelRef} className="relative">
                 <Card
                   className={[
-                    "relative w-[320px] shadow-xl",
+                    "relative w-[min(320px,calc(100vw-2rem))] shadow-xl",
                     "border-border",
                   ].join(" ")}
                 >
@@ -470,7 +470,7 @@ export default function KakaoInquiryWidget() {
                     </button>
                   </CardHeader>
 
-                  <CardContent className="space-y-3">
+                  <CardContent className="space-y-2.5 bp-sm:space-y-3">
                     <p className="text-sm text-muted-foreground">
                       카카오톡 채널로 1:1 문의를 남겨주세요. 운영시간 외에는
                       답변이 늦을 수 있어요.
@@ -510,14 +510,14 @@ export default function KakaoInquiryWidget() {
                 setPanel((cur) => (cur === "inquiry" ? null : "inquiry"))
               }
               className={[
-                "h-14 w-14 rounded-full shadow-xl",
+                "h-12 w-12 rounded-full shadow-xl bp-sm:h-14 bp-sm:w-14",
                 "bg-primary text-primary-foreground",
                 "hover:bg-primary/90",
                 "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
                 "flex items-center justify-center",
               ].join(" ")}
             >
-              <MessageCircle className="h-7 w-7" />
+              <MessageCircle className="h-6 w-6 bp-sm:h-7 bp-sm:w-7" />
             </button>
           </div>
         ) : null}

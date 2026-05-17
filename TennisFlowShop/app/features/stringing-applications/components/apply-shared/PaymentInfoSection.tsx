@@ -202,7 +202,7 @@ export default function PaymentInfoSection({
                 패키지가 없거나 잔여 횟수가 없습니다.
               </div>
               <p className="text-sm text-muted-foreground mt-1">
-                패키지를 보유하면 교체비가 0원으로 처리됩니다. (배송/추가옵션비
+                패키지를 보유하면 교체비가 무료입니다. (배송/추가옵션비
                 제외)
               </p>
             </div>

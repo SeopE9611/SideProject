@@ -70,8 +70,8 @@ export default async function ServicesPage() {
     },
     {
       service: "패키지 적용 신청",
-      priceLabel: "교체비 0원",
-      description: "패키지 잔여 횟수 충족 시 교체비 0원 처리",
+      priceLabel: "교체비 무료",
+      description: "패키지 적용 시 교체비가 무료입니다.",
       icon: <Award className="h-6 w-6" />,
       duration: "45-60분",
       popular: false,
@@ -131,7 +131,7 @@ export default async function ServicesPage() {
   return (
     <div className="flex flex-col">
       {/* Hero 섹션 */}
-      <section className="relative min-h-[90vh] bp-md:min-h-[100vh] bp-lg:min-h-[110vh] flex items-center justify-center overflow-hidden">
+      <section className="relative min-h-[72vh] bp-md:min-h-[82vh] bp-lg:min-h-[88vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 bg-muted">
           <HeroCourtBackdrop className="h-full w-full text-primary opacity-[0.10] dark:opacity-[0.12]" />
           <div className="absolute inset-0 bg-background/40"></div>
@@ -145,21 +145,19 @@ export default async function ServicesPage() {
         <div className="container relative z-10">
           <div className="max-w-4xl mx-auto">
             <Card className="border border-border shadow-md bg-card overflow-hidden">
-              <div className="bg-card border-b border-border/60 p-6 md:p-8 text-center text-foreground">
-                <h2 className="font-bold text-3xl sm:text-4xl mb-4">예약 안내</h2>
-                <p className="text-xl text-muted-foreground">
-                  교체서비스는 신청 후 접수/확인 순서로 진행됩니다.
-                  <br />
-                  아래 방식 중 내 상황에 맞는 흐름으로 시작해 주세요.
+              <div className="bg-card border-b border-border/60 p-5 md:p-6 text-center text-foreground">
+                <h2 className="font-bold text-3xl sm:text-4xl mb-3">예약 안내</h2>
+                <p className="text-base sm:text-lg text-muted-foreground">
+                  교체서비스는 신청 후 접수/확인 순서로 진행됩니다. 내 상황에 맞는 시작 방식을 먼저 선택해 주세요.
                 </p>
               </div>
 
-              <CardContent className="p-5 bp-md:p-8">
-                <div className="mb-8 rounded-2xl border border-primary/20 bg-primary/5 p-4 md:p-6">
-                  <div className="mb-5 text-center">
+              <CardContent className="p-4 bp-md:p-6">
+                <div className="mb-6 rounded-2xl border border-primary/20 bg-primary/5 p-4 md:p-5">
+                  <div className="mb-4 text-center">
                     <p className="text-sm font-semibold text-primary">신청 방식 먼저 선택하기</p>
-                    <h3 className="mt-1 text-2xl font-bold text-foreground">내 상황에 맞는 시작 지점을 고르세요</h3>
-                    <p className="mt-2 text-sm text-muted-foreground">스트링만 고를지, 라켓 구매/대여와 함께 진행할지, 보유 장비로 맡길지 바로 선택할 수 있어요.</p>
+                    <h3 className="mt-1 text-xl font-bold text-foreground sm:text-2xl">내 상황에 맞는 시작 지점을 고르세요</h3>
+                    <p className="mt-2 text-sm text-muted-foreground">스트링 구매, 라켓 구매/대여, 보유 장비 신청 중 바로 선택할 수 있어요.</p>
                   </div>
                   <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                     {[
@@ -169,13 +167,13 @@ export default async function ServicesPage() {
                       { title: "보유 라켓/보유 스트링으로 장착", recommend: "이미 가진 라켓이나 스트링으로 교체만 맡기고 싶은 분", step: "신청서 작성 → 접수 → 비용 안내/진행", href: "/services/apply?mode=single", cta: "보유 장비로 신청" },
                       { title: "잘 모르겠어요 / 상담이 필요해요", recommend: "스트링 선택이나 방문 방식이 고민되는 분", step: "추천 도우미 확인 → 필요 시 고객센터 문의", href: "/products/recommend", cta: "추천받기" },
                     ].map((item) => (
-                      <div key={item.title} className="flex h-full flex-col rounded-xl border border-border bg-card p-4 text-left shadow-sm">
+                      <div key={item.title} className="flex h-full flex-col rounded-xl border border-border bg-card p-3.5 text-left shadow-sm">
                         <h4 className="text-base font-bold text-foreground">{item.title}</h4>
-                        <p className="mt-3 text-xs font-semibold text-primary">이런 분께 추천</p>
+                        <p className="mt-2 text-xs font-semibold text-primary">이런 분께 추천</p>
                         <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{item.recommend}</p>
-                        <p className="mt-3 text-xs font-semibold text-primary">다음 단계</p>
+                        <p className="mt-2 text-xs font-semibold text-primary">다음 단계</p>
                         <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{item.step}</p>
-                        <Button asChild className="mt-4 w-full" variant={item.href === "/products/recommend" ? "outline" : "default"}>
+                        <Button asChild className="mt-3 w-full" variant={item.href === "/products/recommend" ? "outline" : "default"}>
                           <Link href={item.href}>{item.cta}</Link>
                         </Button>
                       </div>
@@ -275,7 +273,7 @@ export default async function ServicesPage() {
         </div>
 
         {/* 스크롤 인디케이터 */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
           <div className="w-6 h-10 border-2 border-border/50 rounded-full flex justify-center">
             <div className="w-1 h-3 bg-card/70 rounded-full mt-2 "></div>
           </div>

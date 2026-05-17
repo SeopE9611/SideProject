@@ -204,7 +204,7 @@ export default function PriceSummaryCard({
                 <Ticket className="h-4 w-4 text-primary" />
                 <p className="text-sm font-medium">패키지 적용</p>
               </div>
-              <p className="text-sm text-primary">교체비 0원</p>
+              <p className="text-sm text-primary">교체비 무료</p>
             </div>
           )}
 
@@ -231,7 +231,7 @@ export default function PriceSummaryCard({
           )}
           {usingPackage && (
             <p className="mt-1 text-[11px] text-muted-foreground">
-              ※ 패키지 적용 시 교체비는 0원으로 처리됩니다.
+              ※ 패키지 적용 시 교체비가 무료입니다.
             </p>
           )}
         </div>
