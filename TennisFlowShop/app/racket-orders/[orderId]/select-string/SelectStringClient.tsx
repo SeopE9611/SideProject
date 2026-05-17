@@ -24,7 +24,13 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
     hasMore,
     loadMore,
     error,
-  } = useInfiniteProducts({ limit: 6 });
+  } = useInfiniteProducts({ limit: 6, purpose: "stringing" });
+
+  const mountableProducts = products.filter((product) =>
+    typeof (product as SelectableStringProduct).mountingFee === "number" &&
+    Number.isFinite((product as SelectableStringProduct).mountingFee) &&
+    Number((product as SelectableStringProduct).mountingFee) >= 0,
+  );
 
   // 스트링 선택 핸들러: 주문은 건드리지 않고 단순히 "선택 정보"만 들고 신청 페이지로 이동
   const handleSelectString = async (productId: string) => {
@@ -68,10 +74,27 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
     );
   }
 
-  if (!products || products.length === 0) {
+  if (!mountableProducts || mountableProducts.length === 0) {
     return (
       <div className="rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">
-        표시할 스트링이 없습니다. 필터를 변경하거나 나중에 다시 시도해 주세요.
+        <p className="font-medium text-foreground">사용 가능한 스트링이 없습니다.</p>
+        <p className="mt-1">장착 가능한 스트링 상품 설정을 확인하거나, 교체서비스 신청 화면으로 돌아가 다시 진행해주세요.</p>
+        <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+          <Button
+            type="button"
+            variant="default"
+            onClick={() => router.push(`/services/apply?orderId=${orderId}`)}
+          >
+            교체서비스 신청 화면으로
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => router.push("/products?from=apply")}
+          >
+            스트링 목록으로
+          </Button>
+        </div>
       </div>
     );
   }
@@ -79,7 +102,7 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
   return (
     <div className="space-y-4">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {products.map((p: SelectableStringProduct) => {
+        {mountableProducts.map((p: SelectableStringProduct) => {
           const isAdding = addingProductId === p._id;
 
           return (
@@ -103,7 +126,7 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
                 </div>
               )}
               <div className="mt-2 text-sm text-primary">
-                {isAdding ? "이동 중…" : "이 스트링 선택"}
+                {isAdding ? "이동 중…" : "이 스트링 선택하고 신청 계속하기"}
               </div>
             </button>
           );

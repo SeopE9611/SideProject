@@ -540,15 +540,25 @@ export default function Home() {
               </div>
             </Link>
 
-            <Link href="/mypage" className={cn("group flex h-full flex-col gap-4 p-5 bp-sm:p-6 bp-md:p-7", surfaceCardInteractiveClass)}>
+            <div className={cn("group flex h-full flex-col gap-4 p-5 bp-sm:p-6 bp-md:p-7", surfaceCardInteractiveClass)}>
               <div className={cn("h-12 w-12 bp-sm:h-14 bp-sm:w-14", surfaceIconWrapClass)}>
                 <Search className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
               </div>
-              <div>
-                <h3 className="text-base bp-sm:text-lg font-semibold break-keep text-foreground">내 주문/신청 상태를 확인하고 싶어요</h3>
-                <p className="mt-2 text-sm leading-relaxed break-keep text-foreground/80">주문, 교체서비스, 대여, 아카데미 신청 상태를 확인합니다.</p>
+              <div className="flex flex-1 flex-col gap-4">
+                <div>
+                  <h3 className="text-base bp-sm:text-lg font-semibold break-keep text-foreground">내 주문/신청 상태를 확인하고 싶어요</h3>
+                  <p className="mt-2 text-sm leading-relaxed break-keep text-foreground/80">회원은 마이페이지에서, 비회원은 주문조회에서 진행 상태를 확인할 수 있어요.</p>
+                </div>
+                <div className="mt-auto grid gap-2 bp-sm:grid-cols-2">
+                  <Button asChild size="sm" className="w-full">
+                    <Link href="/mypage">회원: 마이페이지</Link>
+                  </Button>
+                  <Button asChild size="sm" variant="outline" className="w-full bg-background/60">
+                    <Link href="/order-lookup">비회원: 주문조회</Link>
+                  </Button>
+                </div>
               </div>
-            </Link>
+            </div>
           </div>
         </SiteContainer>
       </section>
