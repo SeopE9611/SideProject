@@ -254,94 +254,6 @@ export default function ApplicantInfoSection({
       <div className="rounded-2xl border border-border bg-background/60 p-4">
         <div className="mb-3 flex items-start justify-between gap-3">
           <div>
-            <h3 className="text-base font-semibold text-foreground">배송/방문 정보</h3>
-            <p className="mt-1 text-sm text-muted-foreground">선택한 방식에 따라 필요한 입력만 표시됩니다.</p>
-          </div>
-          <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
-            {isVisitSelected ? "방문" : "택배 발송"}
-          </span>
-        </div>
-        <div className="space-y-3">
-        {isVisitSelected ? (
-          <div className="rounded-lg border border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
-            {collectionVisitNotice}
-          </div>
-        ) : (
-          <>
-            <div className="space-y-1">
-              <Label htmlFor="shippingPostcode" className="text-sm font-medium">
-                우편번호 <span className="text-destructive">*</span>
-              </Label>
-              <div className="flex flex-col gap-2 md:flex-row md:items-center">
-                <Input
-                  id="shippingPostcode"
-                  name="shippingPostcode"
-                  value={formData.shippingPostcode}
-                  onBlur={() => markTouched("shippingPostcode")}
-                  readOnly={postcodeAddressReadOnly}
-                  className={`w-full md:w-[180px] transition-all duration-200 ${postcodeAddressReadOnly ? "bg-muted text-muted-foreground cursor-not-allowed" : "focus:ring-2 focus:ring-ring"}`}
-                  placeholder=""
-                />
-                {canOpenPostcodeSearch && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleOpenPostcode}
-                    className="h-10 whitespace-nowrap transition-colors duration-200"
-                  >
-                    <MapPin className="h-4 w-4 mr-2" />
-                    우편번호 검색
-                  </Button>
-                )}
-              </div>
-              {errorText("shippingPostcode") ? (
-                <p className={errCls}>{errorText("shippingPostcode")}</p>
-              ) : null}
-            </div>
-
-            <div className="space-y-1">
-              <Label htmlFor="shippingAddress" className="text-sm font-medium">
-                주소 <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="shippingAddress"
-                name="shippingAddress"
-                value={formData.shippingAddress}
-                onBlur={() => markTouched("shippingAddress")}
-                readOnly={postcodeAddressReadOnly}
-                className={`transition-all duration-200 ${postcodeAddressReadOnly ? "bg-muted text-muted-foreground cursor-not-allowed" : "focus:ring-2 focus:ring-ring"}`}
-                placeholder=""
-              />
-              {errorText("shippingAddress") ? (
-                <p className={errCls}>{errorText("shippingAddress")}</p>
-              ) : null}
-            </div>
-
-            <div className="space-y-1">
-              <Label
-                htmlFor="shippingAddressDetail"
-                className="text-sm font-medium"
-              >
-                상세 주소
-              </Label>
-              <Input
-                id="shippingAddressDetail"
-                name="shippingAddressDetail"
-                value={formData.shippingAddressDetail}
-                onChange={handleInputChange}
-                readOnly={lockAddressFields}
-                className={`transition-all duration-200 ${lockAddressFields ? "bg-muted text-muted-foreground cursor-not-allowed" : "focus:ring-2 focus:ring-ring"}`}
-                placeholder="상세 주소를 입력해주세요"
-              />
-            </div>
-          </>
-        )}
-        </div>
-      </div>
-
-      <div className="rounded-2xl border border-border bg-background/60 p-4">
-        <div className="mb-3 flex items-start justify-between gap-3">
-          <div>
             <Label className="text-base font-semibold text-foreground">
               수령/전달 방식 <span className="text-destructive">*</span>
             </Label>
@@ -571,6 +483,94 @@ export default function ApplicantInfoSection({
             </p>
           )}
       </div>
+      <div className="rounded-2xl border border-border bg-background/60 p-4">
+        <div className="mb-3 flex items-start justify-between gap-3">
+          <div>
+            <h3 className="text-base font-semibold text-foreground">배송/방문 정보</h3>
+            <p className="mt-1 text-sm text-muted-foreground">선택한 방식에 따라 필요한 입력만 표시됩니다.</p>
+          </div>
+          <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
+            {isVisitSelected ? "방문" : "택배 발송"}
+          </span>
+        </div>
+        <div className="space-y-3">
+        {isVisitSelected ? (
+          <div className="rounded-lg border border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+            {collectionVisitNotice}
+          </div>
+        ) : (
+          <>
+            <div className="space-y-1">
+              <Label htmlFor="shippingPostcode" className="text-sm font-medium">
+                우편번호 <span className="text-destructive">*</span>
+              </Label>
+              <div className="flex flex-col gap-2 md:flex-row md:items-center">
+                <Input
+                  id="shippingPostcode"
+                  name="shippingPostcode"
+                  value={formData.shippingPostcode}
+                  onBlur={() => markTouched("shippingPostcode")}
+                  readOnly={postcodeAddressReadOnly}
+                  className={`w-full md:w-[180px] transition-all duration-200 ${postcodeAddressReadOnly ? "bg-muted text-muted-foreground cursor-not-allowed" : "focus:ring-2 focus:ring-ring"}`}
+                  placeholder=""
+                />
+                {canOpenPostcodeSearch && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleOpenPostcode}
+                    className="h-10 whitespace-nowrap transition-colors duration-200"
+                  >
+                    <MapPin className="h-4 w-4 mr-2" />
+                    우편번호 검색
+                  </Button>
+                )}
+              </div>
+              {errorText("shippingPostcode") ? (
+                <p className={errCls}>{errorText("shippingPostcode")}</p>
+              ) : null}
+            </div>
+
+            <div className="space-y-1">
+              <Label htmlFor="shippingAddress" className="text-sm font-medium">
+                주소 <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="shippingAddress"
+                name="shippingAddress"
+                value={formData.shippingAddress}
+                onBlur={() => markTouched("shippingAddress")}
+                readOnly={postcodeAddressReadOnly}
+                className={`transition-all duration-200 ${postcodeAddressReadOnly ? "bg-muted text-muted-foreground cursor-not-allowed" : "focus:ring-2 focus:ring-ring"}`}
+                placeholder=""
+              />
+              {errorText("shippingAddress") ? (
+                <p className={errCls}>{errorText("shippingAddress")}</p>
+              ) : null}
+            </div>
+
+            <div className="space-y-1">
+              <Label
+                htmlFor="shippingAddressDetail"
+                className="text-sm font-medium"
+              >
+                상세 주소
+              </Label>
+              <Input
+                id="shippingAddressDetail"
+                name="shippingAddressDetail"
+                value={formData.shippingAddressDetail}
+                onChange={handleInputChange}
+                readOnly={lockAddressFields}
+                className={`transition-all duration-200 ${lockAddressFields ? "bg-muted text-muted-foreground cursor-not-allowed" : "focus:ring-2 focus:ring-ring"}`}
+                placeholder="상세 주소를 입력해주세요"
+              />
+            </div>
+          </>
+        )}
+        </div>
+      </div>
+
       {/* 로딩 오버레이 */}
       {isUserLoading && (
         <div className="absolute inset-0 z-10 rounded-2xl bg-card ring-1 ring-inset ring-ring grid place-content-center">
