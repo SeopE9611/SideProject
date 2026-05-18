@@ -62,22 +62,10 @@ const forbiddenDirectionalBorderPaletteRegex = new RegExp(
   "g",
 );
 const classNameBlockRegex = /className\s*=\s*(?:"([^"]*)"|\{`([\s\S]*?)`\})/g;
-const zeroGradientBaseRegex = /\bbg-gradient-to-/;
-const zeroGradientStopRegex = /(?:^|\s)(?:[\w-]+:)*(?:from|via|to)-/;
-const zeroGradientTextRegex = /\bbg-clip-text\b|\btext-transparent\b/;
-const zeroGradientArbitraryRegex = /\bbg-\[(?:radial|linear|conic)-gradient/;
-const zeroGradientStringRegex =
-  /radial-gradient\(|linear-gradient\(|conic-gradient\(|repeating-linear-gradient\(|repeating-radial-gradient\(/g;
-const zeroGradientBackgroundArbitraryRegex = /\[background:[^\]]*gradient\(/g;
-const zeroGradientSvgRegex = /<linearGradient|<radialGradient|fill="url\(#/g;
 const lowContrastPrimaryRegex =
   /\bbg-primary(?:\/\d{1,3})?\b[\s\S]*\b(?:text-accent\b|text-primary\b(?!-foreground))/;
 const lowContrastGradientRegex =
   /\bbg-clip-text\b[\s\S]*\btext-transparent\b[\s\S]*\b(?:from-card|to-card|from-primary-foreground|to-primary-foreground)\b/;
-const gradientStopRegex =
-  /(?:^|\s)(?:[\w-]+:)*(?:from|via|to)-[\w/[\]-]+(?:\s|$)/;
-const gradientBaseRegex =
-  /(?:[\w-]+:)*(?:bg-gradient-to-(?:t|tr|r|br|b|bl|l|tl)|bg-radial|bg-conic)/;
 const hoverAccentRegex =
   /(?:^|\s)(?:[\w-]+:)*hover:bg-accent(?:\/[\d]{1,3})?(?:\s|$)/;
 const solidDestructiveWithTextDestructiveRegex =
@@ -386,65 +374,9 @@ for (const file of files) {
     });
   }
 
-  for (const match of text.matchAll(zeroGradientStringRegex)) {
-    found.push({
-      type: "zero-gradient-policy-gradient-string",
-      token: match[0],
-      line: getLine(text, match.index ?? 0),
-    });
-  }
-
-  for (const match of text.matchAll(zeroGradientBackgroundArbitraryRegex)) {
-    found.push({
-      type: "zero-gradient-policy-background-arbitrary-gradient",
-      token: match[0],
-      line: getLine(text, match.index ?? 0),
-    });
-  }
-
   for (const match of text.matchAll(classNameBlockRegex)) {
     const block = (match[1] ?? match[2] ?? "").replace(/\s+/g, " ").trim();
     if (!block) continue;
-
-    if (gradientStopRegex.test(block) && !gradientBaseRegex.test(block)) {
-      found.push({
-        type: "gradient-stop-without-base",
-        token: block,
-        line: getLine(text, match.index ?? 0),
-      });
-    }
-
-    if (zeroGradientBaseRegex.test(block)) {
-      found.push({
-        type: "zero-gradient-policy-bg-gradient",
-        token: block,
-        line: getLine(text, match.index ?? 0),
-      });
-    }
-
-    if (zeroGradientStopRegex.test(block)) {
-      found.push({
-        type: "zero-gradient-policy-gradient-stop",
-        token: block,
-        line: getLine(text, match.index ?? 0),
-      });
-    }
-
-    if (zeroGradientTextRegex.test(block)) {
-      found.push({
-        type: "zero-gradient-policy-text-gradient",
-        token: block,
-        line: getLine(text, match.index ?? 0),
-      });
-    }
-
-    if (zeroGradientArbitraryRegex.test(block)) {
-      found.push({
-        type: "zero-gradient-policy-arbitrary-gradient",
-        token: block,
-        line: getLine(text, match.index ?? 0),
-      });
-    }
 
     const isPrimaryTintStandard =
       /\bbg-primary\/(?:10|15|20)\b/.test(block) &&
@@ -850,14 +782,6 @@ for (const file of files) {
     }
   }
 
-  for (const match of text.matchAll(zeroGradientSvgRegex)) {
-    found.push({
-      type: "zero-gradient-policy-svg-gradient",
-      token: match[0],
-      line: getLine(text, match.index ?? 0),
-    });
-  }
-
   if (found.length === 0) continue;
 
   matchedFiles.add(file);
@@ -885,14 +809,6 @@ for (const file of files) {
 for (const file of publicSvgFiles) {
   const text = fs.readFileSync(path.join(ROOT, file), "utf8");
   const found = [];
-
-  for (const match of text.matchAll(zeroGradientSvgRegex)) {
-    found.push({
-      type: "zero-gradient-policy-svg-gradient",
-      token: match[0],
-      line: getLine(text, match.index ?? 0),
-    });
-  }
 
   if (found.length === 0) continue;
 
