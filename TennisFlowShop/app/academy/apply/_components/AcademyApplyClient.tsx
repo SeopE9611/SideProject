@@ -1,57 +1,36 @@
 "use client";
 
+import { AlertCircle, ArrowRight, ChevronDown, Clock, Loader2, Mail, MessageSquare, Phone, Target, User } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useMemo, useRef, useState } from "react";
 
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
+import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { showErrorToast } from "@/lib/toast";
-import type {
-  AcademyActiveApplicationSummary,
-  AcademyApplicantProfile,
-  AcademyCurrentLevel,
-  AcademyLessonType,
-  PublicAcademyClass,
-} from "@/lib/types/academy";
+import type { AcademyActiveApplicationSummary, AcademyApplicantProfile, AcademyCurrentLevel, AcademyLessonType, PublicAcademyClass } from "@/lib/types/academy";
 import { cn } from "@/lib/utils";
 
-const lessonTypeOptions: { value: AcademyLessonType; label: string }[] = [
-  { value: "group", label: "그룹 레슨" },
-  { value: "private", label: "개인 레슨" },
-  { value: "junior", label: "주니어 레슨" },
-  { value: "adult", label: "성인 레슨" },
-  { value: "onePoint", label: "원포인트 레슨" },
-  { value: "consultation", label: "상담 후 결정" },
+// ========== Types & Constants ==========
+
+const lessonTypeOptions: { value: AcademyLessonType; label: string; description: string }[] = [
+  { value: "group", label: "그룹 레슨", description: "여러 명이 함께 배우는 수업" },
+  { value: "private", label: "개인 레슨", description: "1:1 맞춤 수업" },
+  { value: "junior", label: "주니어 레슨", description: "청소년 대상 수업" },
+  { value: "adult", label: "성인 레슨", description: "성인 대상 수업" },
+  { value: "onePoint", label: "원포인트 레슨", description: "특정 기술 집중 수업" },
+  { value: "consultation", label: "상담 후 결정", description: "상담 후 수업 유형 결정" },
 ];
 
-const levelOptions: { value: AcademyCurrentLevel; label: string }[] = [
-  { value: "new", label: "처음 배워요" },
-  { value: "beginner", label: "초급" },
-  { value: "intermediate", label: "중급" },
-  { value: "advanced", label: "상급" },
-  { value: "unknown", label: "잘 모르겠어요" },
+const levelOptions: { value: AcademyCurrentLevel; label: string; description: string }[] = [
+  { value: "new", label: "처음 배워요", description: "테니스를 처음 시작합니다" },
+  { value: "beginner", label: "초급", description: "기본 스트로크를 배웠습니다" },
+  { value: "intermediate", label: "중급", description: "랠리가 가능합니다" },
+  { value: "advanced", label: "상급", description: "경기 운영이 가능합니다" },
+  { value: "unknown", label: "잘 모르겠어요", description: "상담 후 결정합니다" },
 ];
 
 const dayOptions = ["월", "화", "수", "목", "금", "토", "일"];
@@ -68,12 +47,7 @@ type FormState = {
   requestMemo: string;
 };
 
-type FieldName =
-  | "applicantName"
-  | "phone"
-  | "desiredLessonType"
-  | "currentLevel"
-  | "preferredDays";
+type FieldName = "applicantName" | "phone" | "desiredLessonType" | "currentLevel" | "preferredDays";
 
 type FieldErrors = Partial<Record<FieldName, string>>;
 
@@ -82,6 +56,113 @@ type ConflictDialogState = {
   description: string;
   applicationId?: string;
 } | null;
+
+// ========== UI Components ==========
+
+function SectionCard({ children, className = "", icon: Icon, title, description }: { children: React.ReactNode; className?: string; icon?: React.ElementType; title?: string; description?: string }) {
+  return (
+    <div className={cn("rounded-2xl border border-border/60 bg-card overflow-hidden", className)}>
+      {(title || description) && (
+        <div className="border-b border-border/40 bg-muted/30 px-5 py-4 md:px-6">
+          <div className="flex items-start gap-3">
+            {Icon && (
+              <div className="shrink-0 rounded-lg bg-primary/10 p-2">
+                <Icon className="h-4 w-4 text-primary" />
+              </div>
+            )}
+            <div>
+              {title && <h2 className="text-base font-semibold text-foreground">{title}</h2>}
+              {description && <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>}
+            </div>
+          </div>
+        </div>
+      )}
+      <div className="p-5 md:p-6">{children}</div>
+    </div>
+  );
+}
+
+function FormField({ label, required, error, children, hint }: { label: string; required?: boolean; error?: string; children: React.ReactNode; hint?: string }) {
+  return (
+    <div className="space-y-2">
+      <Label className="text-sm font-medium text-foreground">
+        {label}
+        {required && <span className="ml-1 text-destructive">*</span>}
+      </Label>
+      {children}
+      {hint && !error && <p className="text-xs text-muted-foreground">{hint}</p>}
+      {error && (
+        <p className="flex items-center gap-1.5 text-sm font-medium text-destructive">
+          <AlertCircle className="h-3.5 w-3.5" />
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function CustomSelect({
+  value,
+  onChange,
+  options,
+  placeholder,
+  disabled,
+  error,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  options: { value: string; label: string; description?: string }[];
+  placeholder: string;
+  disabled?: boolean;
+  error?: boolean;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const selectedOption = options.find((opt) => opt.value === value);
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => !disabled && setIsOpen(!isOpen)}
+        disabled={disabled}
+        className={cn(
+          "flex w-full items-center justify-between rounded-xl border bg-background px-4 py-3 text-left text-sm transition-all",
+          "hover:border-border focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+          error ? "border-destructive" : "border-border/60",
+          disabled && "cursor-not-allowed opacity-50",
+          isOpen && "ring-2 ring-ring ring-offset-2",
+        )}
+      >
+        <span className={cn(selectedOption ? "text-foreground" : "text-muted-foreground")}>{selectedOption?.label || placeholder}</span>
+        <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", isOpen && "rotate-180")} />
+      </button>
+
+      {isOpen && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
+          <div className="absolute left-0 right-0 top-full z-50 mt-2 max-h-64 overflow-auto rounded-xl border border-border bg-popover p-1.5 shadow-lg">
+            {options.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => {
+                  onChange(option.value);
+                  setIsOpen(false);
+                }}
+                className={cn("flex w-full flex-col items-start rounded-lg px-3 py-2.5 text-left transition-colors", "hover:bg-muted", option.value === value && "bg-muted")}
+              >
+                <span className="text-sm font-medium text-foreground">{option.label}</span>
+                {option.description && <span className="text-xs text-muted-foreground">{option.description}</span>}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+// ========== Utilities ==========
 
 function createInitialFormState(profile: AcademyApplicantProfile): FormState {
   return {
@@ -97,20 +178,6 @@ function createInitialFormState(profile: AcademyApplicantProfile): FormState {
   };
 }
 
-function formatClassPrice(price: number | null) {
-  if (typeof price === "number" && price > 0) {
-    return `${price.toLocaleString("ko-KR")}원`;
-  }
-  return "상담 후 안내";
-}
-
-function formatClassCapacity(capacity: number | null) {
-  if (typeof capacity === "number" && capacity > 0) {
-    return `${capacity}명`;
-  }
-  return "상담 후 안내";
-}
-
 function validateForm(form: FormState): {
   errors: FieldErrors;
   firstErrorField: FieldName | null;
@@ -118,12 +185,10 @@ function validateForm(form: FormState): {
   const errors: FieldErrors = {};
 
   if (!form.applicantName.trim()) {
-    errors.applicantName =
-      "회원정보의 이름을 먼저 등록해 주세요. 마이페이지 회원 정보 수정에서 변경할 수 있습니다.";
+    errors.applicantName = "회원정보의 이름을 먼저 등록해 주세요. 마이페이지에서 변경할 수 있습니다.";
   }
   if (!form.phone.trim()) {
-    errors.phone =
-      "회원정보의 연락처를 먼저 등록해 주세요. 마이페이지 회원 정보 수정에서 변경할 수 있습니다.";
+    errors.phone = "회원정보의 연락처를 먼저 등록해 주세요. 마이페이지에서 변경할 수 있습니다.";
   }
   if (!form.desiredLessonType) {
     errors.desiredLessonType = "희망 레슨 유형을 선택해 주세요.";
@@ -135,28 +200,16 @@ function validateForm(form: FormState): {
     errors.preferredDays = "희망 요일을 1개 이상 선택해 주세요.";
   }
 
-  const firstErrorField = ([
-    "applicantName",
-    "phone",
-    "desiredLessonType",
-    "currentLevel",
-    "preferredDays",
-  ] as FieldName[]).find((field) => errors[field]) ?? null;
+  const firstErrorField = (["applicantName", "phone", "desiredLessonType", "currentLevel", "preferredDays"] as FieldName[]).find((field) => errors[field]) ?? null;
 
   return { errors, firstErrorField };
 }
 
-function getDayConflict(
-  selectedClassId: string | null,
-  selectedDays: string[],
-  activeApplications: AcademyActiveApplicationSummary[],
-) {
+function getDayConflict(selectedClassId: string | null, selectedDays: string[], activeApplications: AcademyActiveApplicationSummary[]) {
   for (const application of activeApplications) {
     if (selectedClassId && application.classId === selectedClassId) continue;
 
-    const overlapDays = application.preferredDays.filter((day) =>
-      selectedDays.includes(day),
-    );
+    const overlapDays = application.preferredDays.filter((day) => selectedDays.includes(day));
     if (overlapDays.length > 0) {
       return { application, overlapDays };
     }
@@ -165,21 +218,13 @@ function getDayConflict(
   return null;
 }
 
-function createConflictDescription({
-  applicantName,
-  className,
-  existingDays,
-  overlapDays,
-}: {
-  applicantName: string;
-  className: string | null;
-  existingDays: string[];
-  overlapDays: string[];
-}) {
+function createConflictDescription({ applicantName, className, existingDays, overlapDays }: { applicantName: string; className: string | null; existingDays: string[]; overlapDays: string[] }) {
   const existingDaysText = existingDays.map((day) => `${day}요일`).join(", ");
   const overlapDaysText = overlapDays.map((day) => `${day}요일`).join(", ");
-  return `${applicantName || "회원"}님께서는 이미 ‘${className || "기존 클래스"}’에 ${existingDaysText}을 신청하셨습니다. 현재 선택한 요일 중 ${overlapDaysText}이 겹칩니다. 겹치는 요일을 제외한 뒤 다시 신청해 주세요.`;
+  return `${applicantName || "회원"}님께서는 이미 '${className || "기존 클래스"}'에 ${existingDaysText}을 신청하셨습니다. 현재 선택한 요일 중 ${overlapDaysText}이 겹칩니다. 겹치는 요일을 제외한 뒤 다시 신청해 주세요.`;
 }
+
+// ========== Main Component ==========
 
 export default function AcademyApplyClient({
   requestedClassId,
@@ -193,9 +238,7 @@ export default function AcademyApplyClient({
   activeApplications: AcademyActiveApplicationSummary[];
 }) {
   const router = useRouter();
-  const [form, setForm] = useState<FormState>(() =>
-    createInitialFormState(initialApplicantInfo),
-  );
+  const [form, setForm] = useState<FormState>(() => createInitialFormState(initialApplicantInfo));
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [conflictDialog, setConflictDialog] = useState<ConflictDialogState>(null);
@@ -203,24 +246,14 @@ export default function AcademyApplyClient({
   const isSelectedClassClosed = selectedClass?.status === "closed";
   const canSubmit = !isSubmitting && !isSelectedClassClosed;
 
-  const selectedDaysLabel = useMemo(
-    () =>
-      form.preferredDays.length > 0
-        ? `선택한 요일: ${form.preferredDays.join(", ")}`
-        : "희망 요일을 선택해 주세요.",
-    [form.preferredDays],
-  );
-  const applicantInfoInputClassName =
-    "cursor-not-allowed border-muted bg-muted/60 text-foreground/80 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0";
+  const selectedDaysLabel = useMemo(() => (form.preferredDays.length > 0 ? `${form.preferredDays.map((d) => `${d}요일`).join(", ")} 선택됨` : "요일을 선택해 주세요"), [form.preferredDays]);
 
   const scrollToField = (field: FieldName | null) => {
     if (!field) return;
     const element = fieldRefs.current[field];
     element?.scrollIntoView({ behavior: "smooth", block: "center" });
     window.setTimeout(() => {
-      const focusable = element?.querySelector<HTMLElement>(
-        "input, button, [tabindex]:not([tabindex='-1'])",
-      );
+      const focusable = element?.querySelector<HTMLElement>("input, button, [tabindex]:not([tabindex='-1'])");
       focusable?.focus?.();
     }, 250);
   };
@@ -237,9 +270,7 @@ export default function AcademyApplyClient({
       const exists = current.preferredDays.includes(day);
       return {
         ...current,
-        preferredDays: exists
-          ? current.preferredDays.filter((item) => item !== day)
-          : [...current.preferredDays, day],
+        preferredDays: exists ? current.preferredDays.filter((item) => item !== day) : [...current.preferredDays, day],
       };
     });
     setFieldErrors((current) => ({ ...current, preferredDays: undefined }));
@@ -253,8 +284,7 @@ export default function AcademyApplyClient({
     event.preventDefault();
 
     if (isSelectedClassClosed) {
-      const message =
-        "모집이 마감된 클래스는 신청할 수 없습니다. 문의하기를 이용해 주세요.";
+      const message = "모집이 마감된 클래스는 신청할 수 없습니다. 문의하기를 이용해 주세요.";
       showErrorToast(message);
       return;
     }
@@ -268,11 +298,7 @@ export default function AcademyApplyClient({
       return;
     }
 
-    const clientConflict = getDayConflict(
-      selectedClass?.status === "visible" ? selectedClass._id : null,
-      form.preferredDays,
-      activeApplications,
-    );
+    const clientConflict = getDayConflict(selectedClass?.status === "visible" ? selectedClass._id : null, form.preferredDays, activeApplications);
     if (clientConflict) {
       openConflictDialog({
         title: "희망 요일이 기존 신청과 겹칩니다.",
@@ -300,8 +326,7 @@ export default function AcademyApplyClient({
           preferredTimeText: form.preferredTimeText,
           lessonGoal: form.lessonGoal,
           requestMemo: form.requestMemo,
-          classId:
-            selectedClass?.status === "visible" ? selectedClass._id : undefined,
+          classId: selectedClass?.status === "visible" ? selectedClass._id : undefined,
         }),
       });
 
@@ -337,8 +362,7 @@ export default function AcademyApplyClient({
       if (response.status === 409 && data?.code === "ACADEMY_DUPLICATE_CLASS") {
         openConflictDialog({
           title: "이미 신청한 클래스입니다.",
-          description:
-            data.message || "기존 신청 내역에서 진행 상태를 확인해 주세요.",
+          description: data.message || "기존 신청 내역에서 진행 상태를 확인해 주세요.",
           applicationId: data.existingApplicationId,
         });
         return;
@@ -350,10 +374,7 @@ export default function AcademyApplyClient({
 
       router.push(`/academy/apply/success?applicationId=${data.applicationId}`);
     } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : "레슨 신청 접수에 실패했습니다.";
+      const message = error instanceof Error ? error.message : "레슨 신청 접수에 실패했습니다.";
       showErrorToast(message);
     } finally {
       setIsSubmitting(false);
@@ -363,299 +384,219 @@ export default function AcademyApplyClient({
   return (
     <>
       <form onSubmit={handleSubmit} className="space-y-6">
-        {requestedClassId && !selectedClass ? (
-          <Card className="border-warning/40 bg-warning/10">
-            <CardContent className="space-y-3 p-5 text-sm text-foreground md:p-6">
-              <p className="font-semibold">
-                선택한 클래스 정보를 찾을 수 없어 일반 레슨 신청으로 접수됩니다.
-              </p>
-              <p className="break-keep leading-6 text-muted-foreground">
-                특정 클래스를 신청하려면 아카데미 페이지에서 모집 중인 클래스를 다시 선택해 주세요. 일반 신청은 상담 후 수업과 현장결제 안내를 도와드립니다.
-              </p>
-              <Button asChild variant="outline" className="w-full sm:w-auto">
-                <Link href="/academy">클래스 다시 선택하기</Link>
-              </Button>
-            </CardContent>
-          </Card>
-        ) : null}
-
-        {selectedClass ? (
-          <Card className="border-border bg-card">
-            <CardHeader className="space-y-3">
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge
-                  variant={
-                    selectedClass.status === "closed" ? "secondary" : "success"
-                  }
-                >
-                  {selectedClass.statusLabel}
-                </Badge>
-                <Badge variant="outline">{selectedClass.lessonTypeLabel}</Badge>
-                <Badge variant="outline">{selectedClass.levelLabel}</Badge>
-              </div>
-              <div className="space-y-1">
-                <CardTitle className="break-keep text-xl">
-                  선택한 클래스
-                </CardTitle>
-                <p className="break-keep text-sm leading-6 text-muted-foreground">
-                  {selectedClass.status === "closed"
-                    ? "이 클래스는 현재 모집이 마감되었습니다."
-                    : "선택한 클래스 기준으로 상담 신청이 접수됩니다. 등록 확정 후 현장에서 결제를 안내해드립니다."}
-                </p>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <h2 className="break-keep text-lg font-semibold text-foreground">
-                  {selectedClass.name}
-                </h2>
-                {selectedClass.description ? (
-                  <p className="break-keep text-sm leading-6 text-muted-foreground">
-                    {selectedClass.description}
-                  </p>
-                ) : null}
-              </div>
-              <dl className="grid gap-3 text-sm md:grid-cols-2">
-                <div><dt className="text-muted-foreground">수업 유형</dt><dd className="mt-1 font-medium text-foreground">{selectedClass.lessonTypeLabel}</dd></div>
-                <div><dt className="text-muted-foreground">레벨</dt><dd className="mt-1 font-medium text-foreground">{selectedClass.levelLabel}</dd></div>
-                <div><dt className="text-muted-foreground">강사</dt><dd className="mt-1 break-keep font-medium text-foreground">{selectedClass.instructorName || "상담 후 안내"}</dd></div>
-                <div><dt className="text-muted-foreground">장소</dt><dd className="mt-1 break-keep font-medium text-foreground">{selectedClass.location || "상담 후 안내"}</dd></div>
-                <div><dt className="text-muted-foreground">일정</dt><dd className="mt-1 break-keep font-medium text-foreground">{selectedClass.scheduleText || "상담 후 조율"}</dd></div>
-                <div><dt className="text-muted-foreground">정원</dt><dd className="mt-1 font-medium text-foreground">{formatClassCapacity(selectedClass.capacity)}</dd></div>
-                <div><dt className="text-muted-foreground">기준 수강료</dt><dd className="mt-1 font-medium text-foreground">{formatClassPrice(selectedClass.price)}</dd></div>
-                <div><dt className="text-muted-foreground">상태</dt><dd className="mt-1 font-medium text-foreground">{selectedClass.statusLabel}</dd></div>
-              </dl>
-              {selectedClass.status === "closed" ? (
-                <div className="rounded-xl border border-border bg-muted/30 p-4 text-sm text-muted-foreground">
-                  <p className="break-keep leading-6">
-                    문의하기를 통해 다음 모집 일정을 확인해 주세요. 모집이 마감된
-                    클래스는 신청 접수가 비활성화되며, 가능한 수업은 상담 후 안내드립니다.
-                  </p>
-                  <Button asChild className="mt-3 w-full sm:w-auto">
-                    <Link href="/board/qna/write?category=academy">문의하기</Link>
-                  </Button>
-                </div>
-              ) : null}
-            </CardContent>
-          </Card>
-        ) : null}
-
-        <Card className="border-border bg-card">
-          <CardHeader className="space-y-2">
-            <CardTitle className="break-keep text-xl">신청자 정보</CardTitle>
-            <p className="break-keep text-sm leading-6 text-muted-foreground">
-              신청자 정보는 회원정보 기준으로 자동 입력됩니다. 변경이 필요하면{" "}
+        {/* Applicant Info Section */}
+        <SectionCard icon={User} title="신청자 정보" description="회원정보 기준으로 자동 입력됩니다">
+          <div className="mb-4 rounded-xl bg-muted/50 p-3">
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              정보 변경이 필요하시면{" "}
               <Link href="/mypage/profile" className="font-medium text-primary underline-offset-4 hover:underline">
                 마이페이지 회원 정보 수정
               </Link>
               에서 수정해 주세요.
             </p>
-          </CardHeader>
-          <CardContent className="grid gap-5 md:grid-cols-2">
-            <div className="space-y-2" ref={(node) => { fieldRefs.current.applicantName = node; }}>
-              <Label htmlFor="applicantName">신청자명 *</Label>
-              <Input
-                id="applicantName"
-                value={form.applicantName}
-                readOnly
-                aria-readonly="true"
-                aria-disabled="true"
-                tabIndex={-1}
-                aria-invalid={Boolean(fieldErrors.applicantName)}
-                maxLength={50}
-                placeholder="회원정보에 등록된 이름"
-                className={cn(
-                  applicantInfoInputClassName,
-                  fieldErrors.applicantName && "border-destructive",
-                )}
-              />
-              {fieldErrors.applicantName ? <p className="text-sm font-medium text-destructive">{fieldErrors.applicantName}</p> : null}
-            </div>
-            <div className="space-y-2" ref={(node) => { fieldRefs.current.phone = node; }}>
-              <Label htmlFor="phone">연락처 *</Label>
-              <Input
-                id="phone"
-                value={form.phone}
-                readOnly
-                aria-readonly="true"
-                aria-disabled="true"
-                tabIndex={-1}
-                aria-invalid={Boolean(fieldErrors.phone)}
-                maxLength={30}
-                placeholder="회원정보에 등록된 연락처"
-                className={cn(
-                  applicantInfoInputClassName,
-                  fieldErrors.phone && "border-destructive",
-                )}
-              />
-              {fieldErrors.phone ? <p className="text-sm font-medium text-destructive">{fieldErrors.phone}</p> : null}
-            </div>
-            <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="email">이메일</Label>
-              <Input
-                id="email"
-                type="email"
-                value={form.email}
-                readOnly
-                aria-readonly="true"
-                aria-disabled="true"
-                tabIndex={-1}
-                maxLength={100}
-                placeholder="회원정보에 등록된 이메일"
-                className={applicantInfoInputClassName}
-              />
-            </div>
-          </CardContent>
-        </Card>
+          </div>
 
-        <Card className="border-border bg-card">
-          <CardHeader>
-            <CardTitle className="break-keep text-xl">레슨 희망 내용</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-5">
-            <div className="grid gap-5 md:grid-cols-2">
-              <div className="space-y-2" ref={(node) => { fieldRefs.current.desiredLessonType = node; }}>
-                <Label>희망 레슨 유형 *</Label>
-                <Select
-                  value={form.desiredLessonType}
-                  onValueChange={(value) =>
-                    updateField("desiredLessonType", value as AcademyLessonType)
-                  }
-                  disabled={isSubmitting || isSelectedClassClosed}
-                >
-                  <SelectTrigger
-                    aria-invalid={Boolean(fieldErrors.desiredLessonType)}
-                    className={cn(fieldErrors.desiredLessonType && "border-destructive focus:ring-destructive")}
-                  >
-                    <SelectValue placeholder="레슨 유형 선택" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {lessonTypeOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {fieldErrors.desiredLessonType ? <p className="text-sm font-medium text-destructive">{fieldErrors.desiredLessonType}</p> : null}
-              </div>
-              <div className="space-y-2" ref={(node) => { fieldRefs.current.currentLevel = node; }}>
-                <Label>현재 실력 *</Label>
-                <Select
-                  value={form.currentLevel}
-                  onValueChange={(value) =>
-                    updateField("currentLevel", value as AcademyCurrentLevel)
-                  }
-                  disabled={isSubmitting || isSelectedClassClosed}
-                >
-                  <SelectTrigger
-                    aria-invalid={Boolean(fieldErrors.currentLevel)}
-                    className={cn(fieldErrors.currentLevel && "border-destructive focus:ring-destructive")}
-                  >
-                    <SelectValue placeholder="현재 실력 선택" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {levelOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {fieldErrors.currentLevel ? <p className="text-sm font-medium text-destructive">{fieldErrors.currentLevel}</p> : null}
-              </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div
+              ref={(node) => {
+                fieldRefs.current.applicantName = node;
+              }}
+            >
+              <FormField label="신청자명" required error={fieldErrors.applicantName}>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    value={form.applicantName}
+                    readOnly
+                    aria-readonly="true"
+                    tabIndex={-1}
+                    className={cn("cursor-not-allowed border-muted bg-muted/60 pl-10 text-foreground/80 shadow-none focus-visible:ring-0", fieldErrors.applicantName && "border-destructive")}
+                  />
+                </div>
+              </FormField>
             </div>
 
-            <div className="space-y-3" ref={(node) => { fieldRefs.current.preferredDays = node; }}>
-              <div className="space-y-1">
-                <Label>희망 요일 *</Label>
-                <p className="text-sm text-muted-foreground">{selectedDaysLabel}</p>
-              </div>
+            <div
+              ref={(node) => {
+                fieldRefs.current.phone = node;
+              }}
+            >
+              <FormField label="연락처" required error={fieldErrors.phone}>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    value={form.phone}
+                    readOnly
+                    aria-readonly="true"
+                    tabIndex={-1}
+                    className={cn("cursor-not-allowed border-muted bg-muted/60 pl-10 text-foreground/80 shadow-none focus-visible:ring-0", fieldErrors.phone && "border-destructive")}
+                  />
+                </div>
+              </FormField>
+            </div>
+
+            <div className="md:col-span-2">
+              <FormField label="이메일">
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input type="email" value={form.email} readOnly aria-readonly="true" tabIndex={-1} className="cursor-not-allowed border-muted bg-muted/60 pl-10 text-foreground/80 shadow-none focus-visible:ring-0" />
+                </div>
+              </FormField>
+            </div>
+          </div>
+        </SectionCard>
+
+        {/* Lesson Preferences Section */}
+        <SectionCard icon={Target} title="레슨 희망 내용" description="원하시는 레슨 정보를 입력해 주세요">
+          <div className="space-y-6">
+            {/* Lesson Type & Level */}
+            <div className="grid gap-4 md:grid-cols-2">
               <div
-                aria-invalid={Boolean(fieldErrors.preferredDays)}
-                className={cn(
-                  "grid grid-cols-2 gap-3 rounded-xl sm:grid-cols-4 md:grid-cols-7",
-                  fieldErrors.preferredDays && "border border-destructive p-2",
-                )}
+                ref={(node) => {
+                  fieldRefs.current.desiredLessonType = node;
+                }}
               >
-                {dayOptions.map((day) => (
-                  <label
-                    key={day}
-                    className="flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-background px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
-                  >
-                    <Checkbox
-                      checked={form.preferredDays.includes(day)}
-                      onCheckedChange={() => toggleDay(day)}
-                      disabled={isSubmitting || isSelectedClassClosed}
-                    />
-                    <span>{day}요일</span>
-                  </label>
-                ))}
+                <FormField label="희망 레슨 유형" required error={fieldErrors.desiredLessonType}>
+                  <CustomSelect
+                    value={form.desiredLessonType}
+                    onChange={(value) => updateField("desiredLessonType", value)}
+                    options={lessonTypeOptions}
+                    placeholder="레슨 유형을 선택해 주세요"
+                    disabled={isSubmitting || isSelectedClassClosed}
+                    error={Boolean(fieldErrors.desiredLessonType)}
+                  />
+                </FormField>
               </div>
-              {fieldErrors.preferredDays ? <p className="text-sm font-medium text-destructive">{fieldErrors.preferredDays}</p> : null}
+
+              <div
+                ref={(node) => {
+                  fieldRefs.current.currentLevel = node;
+                }}
+              >
+                <FormField label="현재 실력" required error={fieldErrors.currentLevel}>
+                  <CustomSelect
+                    value={form.currentLevel}
+                    onChange={(value) => updateField("currentLevel", value)}
+                    options={levelOptions}
+                    placeholder="현재 실력을 선택해 주세요"
+                    disabled={isSubmitting || isSelectedClassClosed}
+                    error={Boolean(fieldErrors.currentLevel)}
+                  />
+                </FormField>
+              </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="preferredTimeText">희망 시간대</Label>
-              <Input
-                id="preferredTimeText"
-                value={form.preferredTimeText}
-                onChange={(event) =>
-                  updateField("preferredTimeText", event.target.value)
-                }
-                maxLength={100}
-                placeholder="예: 평일 저녁, 주말 오전, 상담 후 결정"
-                disabled={isSubmitting || isSelectedClassClosed}
-              />
+            {/* Preferred Days */}
+            <div
+              ref={(node) => {
+                fieldRefs.current.preferredDays = node;
+              }}
+            >
+              <FormField label="희망 요일" required error={fieldErrors.preferredDays} hint={selectedDaysLabel}>
+                <div className={cn("grid grid-cols-7 gap-2 rounded-xl p-1", fieldErrors.preferredDays && "ring-2 ring-destructive ring-offset-2")}>
+                  {dayOptions.map((day) => {
+                    const isSelected = form.preferredDays.includes(day);
+                    return (
+                      <button
+                        key={day}
+                        type="button"
+                        onClick={() => toggleDay(day)}
+                        disabled={isSubmitting || isSelectedClassClosed}
+                        className={cn(
+                          "flex flex-col items-center justify-center rounded-xl border-2 py-3 text-sm font-medium transition-all",
+                          "hover:border-primary/50 hover:bg-primary/5",
+                          "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                          isSelected ? "border-primary bg-primary text-primary-foreground hover:bg-primary/90" : "border-border/60 bg-background text-muted-foreground",
+                          (isSubmitting || isSelectedClassClosed) && "cursor-not-allowed opacity-50",
+                        )}
+                      >
+                        <span className="text-xs">{day}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </FormField>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="lessonGoal">레슨 목표</Label>
-              <Textarea
-                id="lessonGoal"
-                value={form.lessonGoal}
-                onChange={(event) =>
-                  updateField("lessonGoal", event.target.value)
-                }
-                maxLength={500}
-                placeholder="예: 기초부터 배우고 싶습니다. 랠리를 오래 이어가고 싶습니다."
-                disabled={isSubmitting || isSelectedClassClosed}
-              />
-            </div>
+            {/* Preferred Time */}
+            <FormField label="희망 시간대" hint="예: 평일 저녁, 주말 오전">
+              <div className="relative">
+                <Clock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  value={form.preferredTimeText}
+                  onChange={(e) => updateField("preferredTimeText", e.target.value)}
+                  maxLength={100}
+                  placeholder="희망하시는 시간대를 입력해 주세요"
+                  disabled={isSubmitting || isSelectedClassClosed}
+                  className="pl-10"
+                />
+              </div>
+            </FormField>
 
-            <div className="space-y-2">
-              <Label htmlFor="requestMemo">요청사항</Label>
-              <Textarea
-                id="requestMemo"
-                value={form.requestMemo}
-                onChange={(event) =>
-                  updateField("requestMemo", event.target.value)
-                }
-                maxLength={1000}
-                placeholder="예: 라켓이 없어도 가능한지 궁금합니다. 가능한 상담 시간을 남겨주세요."
-                disabled={isSubmitting || isSelectedClassClosed}
-              />
-            </div>
-          </CardContent>
-        </Card>
+            {/* Lesson Goal */}
+            <FormField label="레슨 목표" hint="원하시는 레슨 목표를 자유롭게 작성해 주세요">
+              <div className="relative">
+                <Target className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Textarea
+                  value={form.lessonGoal}
+                  onChange={(e) => updateField("lessonGoal", e.target.value)}
+                  maxLength={500}
+                  placeholder="예: 기초부터 배우고 싶습니다. 랠리를 오래 이어가고 싶습니다."
+                  disabled={isSubmitting || isSelectedClassClosed}
+                  className="min-h-[100px] resize-none pl-10"
+                />
+              </div>
+            </FormField>
 
-        <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-          <Button asChild variant="outline" className="w-full sm:w-auto">
-            <Link href="/academy">아카데미로 돌아가기</Link>
-          </Button>
-          <Button type="submit" disabled={!canSubmit} className="w-full sm:w-auto">
-            {isSelectedClassClosed
-              ? "모집 마감"
-              : isSubmitting
-                ? "접수 중..."
-                : "신청 접수하기"}
-          </Button>
-          <p className="break-keep text-xs leading-5 text-muted-foreground sm:basis-full sm:text-right">
-            신청 단계에서는 결제가 진행되지 않습니다. 등록이 확정되면 현장에서 결제를 안내해드립니다.
-          </p>
+            {/* Request Memo */}
+            <FormField label="요청사항" hint="추가로 궁금하신 점이나 요청사항을 남겨주세요">
+              <div className="relative">
+                <MessageSquare className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Textarea
+                  value={form.requestMemo}
+                  onChange={(e) => updateField("requestMemo", e.target.value)}
+                  maxLength={1000}
+                  placeholder="예: 라켓이 없어도 가능한지 궁금합니다."
+                  disabled={isSubmitting || isSelectedClassClosed}
+                  className="min-h-[100px] resize-none pl-10"
+                />
+              </div>
+            </FormField>
+          </div>
+        </SectionCard>
+
+        {/* Submit Section */}
+        <div className="rounded-2xl border border-border/60 bg-muted/30 p-5 md:p-6">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-foreground">신청서 제출 준비가 완료되셨나요?</p>
+              <p className="text-xs text-muted-foreground">신청 단계에서는 결제가 진행되지 않습니다. 등록 확정 후 현장에서 안내드립니다.</p>
+            </div>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <Button asChild variant="outline" className="gap-2">
+                <Link href="/academy">아카데미로 돌아가기</Link>
+              </Button>
+              <Button type="submit" disabled={!canSubmit} className="gap-2">
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    접수 중...
+                  </>
+                ) : isSelectedClassClosed ? (
+                  "모집 마감"
+                ) : (
+                  <>
+                    신청 접수하기
+                    <ArrowRight className="h-4 w-4" />
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
         </div>
       </form>
 
+      {/* Conflict Dialog */}
       <AlertDialog
         open={Boolean(conflictDialog)}
         onOpenChange={(open) => {
@@ -665,22 +606,21 @@ export default function AcademyApplyClient({
           }
         }}
       >
-        <AlertDialogContent>
+        <AlertDialogContent className="max-w-md">
           <AlertDialogHeader>
+            <div className="mb-2 inline-flex h-12 w-12 items-center justify-center rounded-full bg-warning/10">
+              <AlertCircle className="h-6 w-6 text-warning" />
+            </div>
             <AlertDialogTitle>{conflictDialog?.title}</AlertDialogTitle>
-            <AlertDialogDescription className="break-keep leading-6">
-              {conflictDialog?.description}
-            </AlertDialogDescription>
+            <AlertDialogDescription className="leading-relaxed">{conflictDialog?.description}</AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            {conflictDialog?.applicationId ? (
-              <Button asChild variant="outline">
-                <Link href={`/mypage/academy-applications/${conflictDialog.applicationId}`}>
-                  신청 내역 보기
-                </Link>
+          <AlertDialogFooter className="flex-col gap-2 sm:flex-row">
+            {conflictDialog?.applicationId && (
+              <Button asChild variant="outline" className="w-full sm:w-auto">
+                <Link href={`/mypage/academy-applications/${conflictDialog.applicationId}`}>신청 내역 보기</Link>
               </Button>
-            ) : null}
-            <AlertDialogAction>확인하고 수정하기</AlertDialogAction>
+            )}
+            <AlertDialogAction className="w-full sm:w-auto">확인하고 수정하기</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
