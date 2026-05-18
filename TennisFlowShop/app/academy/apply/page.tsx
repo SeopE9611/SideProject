@@ -209,8 +209,8 @@ export default async function AcademyApplyPage({ searchParams }: { searchParams?
     <main className="min-h-screen bg-background">
       {/* Hero Section */}
       <section className="relative overflow-hidden border-b border-border/40">
-        <div className="absolute inset-0 bg-muted/30" />
-        <div className="absolute inset-x-0 top-0 h-24 bg-success/5" />
+        <div className="absolute inset-0 bg-gradient-to-br from-muted/50 via-background to-muted/30" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-success/5 via-transparent to-transparent" />
 
         <div className="relative mx-auto max-w-5xl px-6 py-12 md:py-16">
           {/* Breadcrumb */}
