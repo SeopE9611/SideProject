@@ -27,8 +27,8 @@ export default async function AcademyApplySuccessPage({ searchParams }: Props) {
   return (
     <main className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="relative overflow-hidden border-b border-border/40 bg-gradient-to-b from-muted/30 to-background">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" />
+      <section className="relative overflow-hidden border-b border-border/40 bg-muted/20">
+        <div className="absolute inset-x-0 top-0 h-24 bg-primary/5" />
 
         <div className="relative mx-auto max-w-3xl px-4 py-16 md:px-6 md:py-24">
           <div className="flex flex-col items-center text-center">
@@ -41,7 +41,7 @@ export default async function AcademyApplySuccessPage({ searchParams }: Props) {
             </div>
 
             {/* Badge */}
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm font-medium text-primary">
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
               <Sparkles className="h-4 w-4" />
               도깨비테니스 아카데미
             </div>

@@ -230,13 +230,13 @@ export default async function AcademyPage() {
   return (
     <main className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="relative overflow-hidden border-b border-border/40 bg-gradient-to-b from-muted/30 to-background">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" />
+      <section className="relative overflow-hidden border-b border-border/40 bg-muted/20">
+        <div className="absolute inset-x-0 top-0 h-24 bg-primary/5" />
         <div className="relative mx-auto max-w-6xl px-4 py-12 md:px-6 md:py-20">
           <div className="grid gap-10 lg:grid-cols-[1fr_400px] lg:items-center lg:gap-16">
             <div className="space-y-8">
               <div className="space-y-4">
-                <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm font-medium text-primary">
+                <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
                   <Sparkles className="h-4 w-4" />
                   도깨비테니스 레슨 안내
                 </div>
@@ -288,7 +288,7 @@ export default async function AcademyPage() {
             <div className="relative hidden lg:block">
               <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-muted/20 shadow-xl">
                 <Image src="/brand/academy-hero-tennis-court.png" alt="도깨비테니스 아카데미 레슨 장면" width={1122} height={1402} priority sizes="(min-width: 1024px) 400px, 100vw" className="h-[480px] w-full object-cover object-center" />
-                <div className="absolute inset-0 bg-gradient-to-t from-background/20 to-transparent" />
+                <div className="absolute inset-0 bg-background/20" />
               </div>
             </div>
           </div>
@@ -511,8 +511,8 @@ export default async function AcademyPage() {
         </section>
 
         {/* CTA Section */}
-        <section className="relative overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br from-muted/50 to-muted/30 p-8 md:p-12">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" />
+        <section className="relative overflow-hidden rounded-2xl border border-border/60 bg-muted/30 p-8 md:p-12">
+          <div className="absolute inset-0 bg-primary/5" />
           <div className="relative mx-auto max-w-2xl space-y-6 text-center">
             <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
               <MessageCircle className="h-7 w-7 text-primary" />
