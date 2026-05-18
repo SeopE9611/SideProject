@@ -1844,27 +1844,6 @@ export default function StringServiceApplyPage() {
       {/* Main */}
       <div className="container mx-auto px-4 py-6 bp-sm:py-8">
         <div className="mx-auto max-w-7xl">
-          <div className="mx-auto mb-4 max-w-3xl rounded-2xl border border-border bg-card/80 px-4 py-3 shadow-sm bp-sm:px-5">
-            <p className="text-xs font-semibold uppercase tracking-wide text-primary">
-              신청 흐름
-            </p>
-            <ol className="mt-2 grid gap-2 text-sm text-muted-foreground bp-sm:grid-cols-4">
-              {[
-                "수령/전달 방식 선택",
-                "장착 정보 입력",
-                "배송/연락 정보 확인",
-                "신청 또는 결제 진행",
-              ].map((label, index) => (
-                <li key={label} className="flex items-center gap-2">
-                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
-                    {index + 1}
-                  </span>
-                  <span className="break-keep">{label}</span>
-                </li>
-              ))}
-            </ol>
-          </div>
-
           {/* Progress Steps: 폼 폭(800px)에 맞춰 중앙 정렬 */}
           <div ref={stepsRef} className="mb-4 bp-sm:mb-5">
             <ProgressSteps steps={steps} currentStep={currentStep} />
