@@ -160,7 +160,7 @@ const productImageWrapClass =
 const productMetaPillClass =
   "flex items-center justify-between rounded-xl border border-border/60 bg-secondary/50 px-2 py-1.5";
 const productOverlayActionClass =
-  "absolute inset-x-0 bottom-0 flex items-center gap-2 border-t border-border/60 bg-card/90 px-3 py-3 opacity-0 transition-colors duration-200 group-hover:opacity-100 group-focus-within:opacity-100";
+  "absolute inset-x-0 bottom-0 hidden items-center gap-2 border-t border-border/60 bg-card/90 px-3 py-3 opacity-0 transition-colors duration-200 group-hover:opacity-100 group-focus-within:opacity-100 bp-sm:flex";
 
 type Props = {
   product: Product;
@@ -456,28 +456,7 @@ const ProductCard = React.memo(
             </Badge>
           )}
 
-          {/* ─── 호버 오버레이: 투명 없음, 단색 불투명 배경 ─────────────────
-              라이트: 흰색 베이스 / 다크: 짙은 카드색 베이스
-              opacity-0 → opacity-100 전환만 사용, bg-overlay 제거
-          ──────────────────────────────────────────────────────────────── */}
-          <div className={cn(productOverlayActionClass, "z-20")}>
-            {/* 상세보기 버튼 */}
-            <Button
-              asChild
-              size="sm"
-              variant="default"
-              className="h-8 flex-1 text-xs shadow-sm sm:h-9 sm:text-sm"
-            >
-              <Link href={detailHref}>
-                <Eye className="w-3 h-3 bp-sm:w-4 bp-sm:h-4 mr-1" />
-                상세 보기
-              </Link>
-            </Button>
-
-            {/* 위시리스트 버튼
-                라이트: 기본은 흰 배경 + 테두리, 호버/활성화 시 rose 계열로 전환
-                다크: 기본은 zinc 배경, 호버/활성화 시 rose 계열
-            */}
+          <div className="absolute left-2 top-2 z-20 sm:left-3 sm:top-3">
             <WishButton
               inWish={inWish}
               disabled={isWishUnknown}
@@ -497,6 +476,24 @@ const ProductCard = React.memo(
               }}
               size="sm"
             />
+          </div>
+
+          {/* ─── 호버 오버레이: bp-sm 이상 보조 상세 보기 액션 ───────────────
+              모바일에서는 상단 찜 버튼을 상시 노출하고 오버레이는 숨김
+          ──────────────────────────────────────────────────────────────── */}
+          <div className={cn(productOverlayActionClass, "z-20")}>
+            {/* 상세보기 버튼 */}
+            <Button
+              asChild
+              size="sm"
+              variant="default"
+              className="h-8 flex-1 text-xs shadow-sm sm:h-9 sm:text-sm"
+            >
+              <Link href={detailHref}>
+                <Eye className="w-3 h-3 bp-sm:w-4 bp-sm:h-4 mr-1" />
+                상세 보기
+              </Link>
+            </Button>
           </div>
         </div>
 
