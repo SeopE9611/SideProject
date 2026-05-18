@@ -397,10 +397,7 @@ export default async function AcademyPage() {
           ) : (
             <Card className="border-border bg-card">
               <CardContent className="space-y-4 p-5 md:p-6">
-                <p className="break-keep text-sm leading-6 text-muted-foreground">현재 모집 중인 클래스가 없습니다. 레슨 문의를 남겨주시면 가능한 수업과 현장결제 안내를 함께 도와드립니다.</p>
-                <Button asChild className="w-full sm:w-auto">
-                  <Link href="/board/qna/write?category=academy">레슨 문의하기</Link>
-                </Button>
+                <p className="break-keep text-sm leading-6 text-muted-foreground">현재 모집 중인 클래스가 없습니다.</p>
               </CardContent>
             </Card>
           )}
