@@ -71,7 +71,7 @@ const cartSignature = (items: CartItem[]) => {
   return items
     .map(
       (it) =>
-        `${it.kind ?? "product"}:${String(it.id)}:${Number(it.quantity ?? 0)}`,
+        `${it.kind ?? "product"}:${String(it.id)}:${Number(it.quantity ?? 0)}:${it.selectedGauge ?? ""}`,
     )
     .sort()
     .join("|");
