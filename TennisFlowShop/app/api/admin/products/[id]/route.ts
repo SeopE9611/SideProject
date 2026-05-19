@@ -38,21 +38,26 @@ function asBoolean(value: unknown): boolean {
 function normalizeGaugeInventories(value: unknown): ProductGaugeInventory[] {
   if (!Array.isArray(value)) return [];
   const normalized = value
-    .map((item) => {
+    .map<ProductGaugeInventory | null>((item) => {
       const row = asRecord(item);
       if (!row) return null;
       const gaugeValue = asString(row.value).trim();
       if (!gaugeValue) return null;
       const stockNumber = Number(row.stock);
-      return {
+
+      const normalizedRow: ProductGaugeInventory = {
         value: gaugeValue,
-        label: typeof row.label === "string" ? row.label : undefined,
+        ...(typeof row.label === "string" && row.label.trim()
+          ? { label: row.label.trim() }
+          : {}),
         stock:
           Number.isFinite(stockNumber) && stockNumber > 0
             ? stockNumber
             : 0,
         isSoldOut: asBoolean(row.isSoldOut),
-      } satisfies ProductGaugeInventory;
+      };
+
+      return normalizedRow;
     })
     .filter((row): row is ProductGaugeInventory => row !== null);
   const seen = new Set<string>();
