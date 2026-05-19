@@ -522,9 +522,15 @@ export default function BoardDetailClient({
   const [commentError, setCommentError] = useState<string | null>(null);
 
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editingReplyId, setEditingReplyId] = useState<string | null>(null);
 
-  // 댓글 수정 입력값(unsaved changes 감지용)
-  const [editDrafts, setEditDrafts] = useState<Record<string, string>>({});
+  // 댓글/답글 수정 입력값(unsaved changes 감지용)
+  const [commentEditDrafts, setCommentEditDrafts] = useState<
+    Record<string, string>
+  >({});
+  const [replyEditDrafts, setReplyEditDrafts] = useState<Record<string, string>>(
+    {},
+  );
 
   // 대댓글 입력 상태
   // - replyingToId: 현재 어느 댓글에 답글 폼이 열려 있는지
@@ -595,9 +601,12 @@ export default function BoardDetailClient({
     {},
   );
 
-  Object.values(repliesByParentId).forEach((replies) => {
-    replies.sort((a, b) => getTimeValue(a.createdAt) - getTimeValue(b.createdAt));
-  });
+  const sortRepliesAsc = (replies: CommunityComment[]) =>
+    [...replies].sort((a, b) => {
+      const timeDiff = getTimeValue(a.createdAt) - getTimeValue(b.createdAt);
+      if (timeDiff !== 0) return timeDiff;
+      return String(a.id).localeCompare(String(b.id));
+    });
 
   const originalEditingContent = useMemo(() => {
     if (!editingCommentId) return "";
@@ -613,7 +622,7 @@ export default function BoardDetailClient({
     const hasEditDraft = (() => {
       if (!editingCommentId) return false;
       const cur = (
-        editDrafts[editingCommentId] ?? originalEditingContent
+        commentEditDrafts[editingCommentId] ?? originalEditingContent
       ).trim();
       return cur !== originalEditingContent.trim();
     })();
@@ -632,7 +641,7 @@ export default function BoardDetailClient({
     commentContent,
     replyDrafts,
     editingCommentId,
-    editDrafts,
+    commentEditDrafts,
     originalEditingContent,
     reason,
     commentReportReason,
@@ -765,7 +774,11 @@ export default function BoardDetailClient({
   };
 
   // 어떤 댓글에 답글을 달지 시작할 때 호출
-  const handleStartReply = (commentId: string, nickname: string) => {
+  const handleStartReply = (commentId: string) => {
+    setEditingCommentId(null);
+    setEditingReplyId(null);
+    setCommentEditDrafts({});
+    setReplyEditDrafts({});
     // 하나의 댓글에만 폼이 열리도록 replyingToId만 교체
     setReplyingToId(commentId);
 
@@ -780,9 +793,13 @@ export default function BoardDetailClient({
 
   // 댓글 수정 모드 진입
   const startEditComment = (commentId: string) => {
+    setReplyingToId(null);
+    setEditingReplyId(null);
+    setReplyDrafts({});
+    setReplyEditDrafts({});
     setEditingCommentId(commentId);
     const original = comments.find((c) => c.id === commentId)?.content ?? "";
-    setEditDrafts((prev) => ({
+    setCommentEditDrafts((prev) => ({
       ...prev,
       [commentId]: prev[commentId] ?? original,
     }));
@@ -791,13 +808,37 @@ export default function BoardDetailClient({
 
   // 댓글 수정 모드 취소
   const cancelEditComment = () => {
-    setEditDrafts((prev) => {
+    setCommentEditDrafts((prev) => {
       if (!editingCommentId) return prev;
       const next = { ...prev };
       delete next[editingCommentId];
       return next;
     });
     setEditingCommentId(null);
+  };
+
+  const startEditReply = (reply: CommunityComment) => {
+    setEditingCommentId(null);
+    setReplyingToId(null);
+    setCommentEditDrafts({});
+    setReplyDrafts({});
+    setEditingReplyId(reply.id);
+    const original = reply.content ?? "";
+    setReplyEditDrafts((prev) => ({
+      ...prev,
+      [reply.id]: prev[reply.id] ?? original,
+    }));
+    setCommentError(null);
+    setReplyError(null);
+  };
+
+  const cancelEditReply = (replyId: string) => {
+    setReplyEditDrafts((prev) => {
+      const next = { ...prev };
+      delete next[replyId];
+      return next;
+    });
+    setEditingReplyId(null);
   };
   // 댓글 수정 저장
   const handleUpdateComment = async (commentId: string, newContent: string) => {
@@ -818,12 +859,21 @@ export default function BoardDetailClient({
       });
 
       // 수정 모드 종료 + draft 정리
-      setEditDrafts((prev) => {
-        const next = { ...prev };
-        delete next[commentId];
-        return next;
-      });
-      setEditingCommentId(null);
+      if (editingReplyId === commentId) {
+        setReplyEditDrafts((prev) => {
+          const next = { ...prev };
+          delete next[commentId];
+          return next;
+        });
+        setEditingReplyId(null);
+      } else {
+        setCommentEditDrafts((prev) => {
+          const next = { ...prev };
+          delete next[commentId];
+          return next;
+        });
+        setEditingCommentId(null);
+      }
 
       // 댓글 목록만 재검증
       await mutateComments();
@@ -1138,12 +1188,15 @@ export default function BoardDetailClient({
   }) => {
     const isCommentAuthor =
       !!user && !!comment.userId && user.id === comment.userId;
-    const isEditing = editingCommentId === comment.id;
+    const isEditingComment = !isReply && editingCommentId === comment.id;
+    const isEditingReply = isReply && editingReplyId === comment.id;
+    const isEditing = isEditingComment || isEditingReply;
     const isDeleted = comment.status === "deleted";
 
     // 대댓글 입력을 위한 로컬 ref (controlled가 아닌 uncontrolled로)
     const replyInputRef = useRef<HTMLTextAreaElement>(null);
-    const editInputRef = useRef<HTMLTextAreaElement>(null);
+    const commentEditInputRef = useRef<HTMLTextAreaElement>(null);
+    const replyEditInputRef = useRef<HTMLTextAreaElement>(null);
 
     return (
       <div
@@ -1225,7 +1278,9 @@ export default function BoardDetailClient({
                   <button
                     type="button"
                     className="rounded-lg px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground dark:hover:bg-muted dark:hover:text-foreground"
-                    onClick={() => startEditComment(comment.id)}
+                    onClick={() =>
+                      isReply ? startEditReply(comment) : startEditComment(comment.id)
+                    }
                   >
                     수정
                   </button>
@@ -1260,22 +1315,29 @@ export default function BoardDetailClient({
         ) : isEditing ? (
           <div className="space-y-2.5">
             <Textarea
-              ref={editInputRef}
+              ref={isReply ? replyEditInputRef : commentEditInputRef}
+              data-comment-edit-id={!isReply ? comment.id : undefined}
+              data-reply-edit-id={isReply ? comment.id : undefined}
               className="min-h-[80px] resize-none border-border text-sm focus-visible:ring-1 focus-visible:ring-ring dark:border-border dark:focus-visible:ring-ring"
-              defaultValue={comment.content} // 초기값만 세팅, 이후는 브라우저가 관리
+              defaultValue={comment.content}
               onChange={(e) => {
                 const v = e.currentTarget.value;
-                setEditDrafts((prev) => ({ ...prev, [comment.id]: v }));
+                if (isReply) {
+                  setReplyEditDrafts((prev) => ({ ...prev, [comment.id]: v }));
+                } else {
+                  setCommentEditDrafts((prev) => ({ ...prev, [comment.id]: v }));
+                }
               }}
               disabled={isCommentSubmitting}
-              autoFocus
             />
             <div className="flex justify-end gap-2">
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={cancelEditComment}
+                onClick={() =>
+                  isReply ? cancelEditReply(comment.id) : cancelEditComment()
+                }
                 disabled={isCommentSubmitting}
                 className="h-8 px-4 text-xs bg-transparent"
               >
@@ -1287,7 +1349,9 @@ export default function BoardDetailClient({
                 disabled={isCommentSubmitting}
                 className="h-8 bg-primary px-4 text-xs text-primary-foreground hover:bg-primary/90"
                 onClick={() => {
-                  const content = editInputRef.current?.value ?? "";
+                  const content = isReply
+                    ? (replyEditInputRef.current?.value ?? "")
+                    : (commentEditInputRef.current?.value ?? "");
                   // 빈 내용 방어
                   if (!content.trim()) {
                     setCommentError("댓글 내용을 입력해 주세요.");
@@ -1312,7 +1376,7 @@ export default function BoardDetailClient({
               type="button"
               className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground dark:hover:bg-muted dark:hover:text-foreground"
               onClick={() =>
-                handleStartReply(comment.id, comment.nickname ?? "회원")
+                handleStartReply(comment.id)
               }
             >
               <MessageSquare className="h-3.5 w-3.5" />
@@ -1336,6 +1400,7 @@ export default function BoardDetailClient({
           >
             <Textarea
               ref={replyInputRef}
+              data-reply-composer-id={comment.id}
               className="min-h-[70px] resize-none border-border bg-card text-sm focus-visible:ring-1 focus-visible:ring-ring dark:border-border dark:focus-visible:ring-ring"
               defaultValue={replyDrafts[comment.id] ?? ""}
               onChange={(e) => {
@@ -1344,7 +1409,6 @@ export default function BoardDetailClient({
               }}
               disabled={isReplySubmitting}
               placeholder={`@${comment.nickname ?? "회원"} 님께 답글을 남겨 보세요.`}
-              autoFocus
             />
             {replyError && (
               <p className="text-xs text-destructive">{replyError}</p>
@@ -1385,6 +1449,36 @@ export default function BoardDetailClient({
       </div>
     );
   };
+
+  useEffect(() => {
+    if (!editingCommentId) return;
+    const active = document.activeElement as HTMLElement | null;
+    if (active?.dataset?.commentEditId === editingCommentId) return;
+    const el = document.querySelector<HTMLTextAreaElement>(
+      `textarea[data-comment-edit-id="${editingCommentId}"]`,
+    );
+    el?.focus();
+  }, [editingCommentId]);
+
+  useEffect(() => {
+    if (!replyingToId) return;
+    const active = document.activeElement as HTMLElement | null;
+    if (active?.dataset?.replyComposerId === replyingToId) return;
+    const el = document.querySelector<HTMLTextAreaElement>(
+      `textarea[data-reply-composer-id="${replyingToId}"]`,
+    );
+    el?.focus();
+  }, [replyingToId]);
+
+  useEffect(() => {
+    if (!editingReplyId) return;
+    const active = document.activeElement as HTMLElement | null;
+    if (active?.dataset?.replyEditId === editingReplyId) return;
+    const el = document.querySelector<HTMLTextAreaElement>(
+      `textarea[data-reply-edit-id="${editingReplyId}"]`,
+    );
+    el?.focus();
+  }, [editingReplyId]);
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -2337,7 +2431,9 @@ export default function BoardDetailClient({
                 {!isCommentsLoading && comments.length > 0 && (
                   <ul className="space-y-3">
                     {rootComments.map((c) => {
-                      const replies = repliesByParentId[c.id] || [];
+                      const replies = sortRepliesAsc(
+                        repliesByParentId[c.id] ?? [],
+                      );
                       const isExpanded = expandedRootIds.has(c.id);
 
                       const MAX_COLLAPSED_REPLIES = 3;
