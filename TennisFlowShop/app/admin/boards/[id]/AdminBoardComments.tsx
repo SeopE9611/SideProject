@@ -2,6 +2,7 @@
 
 import useSWR from "swr";
 import { Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
@@ -13,6 +14,7 @@ type CommentItem = { id: string; parentId: string | null; nickname: string; cont
 type CommentsResponse = { ok: boolean; items: CommentItem[] };
 
 export default function AdminBoardComments({ postId }: Props) {
+  const router = useRouter();
   const { data, mutate } = useSWR<CommentsResponse>(
     `/api/community/posts/${postId}/comments?page=1&limit=100`,
     authenticatedSWRFetcher,
@@ -26,7 +28,8 @@ export default function AdminBoardComments({ postId }: Props) {
     try {
       await adminMutator(`/api/admin/community/comments/${comment.id}`, { method: "DELETE" });
       showSuccessToast(`${label}을 삭제했습니다.`);
-      mutate();
+      await mutate();
+      router.refresh();
     } catch (e: any) {
       showErrorToast(e?.message ?? `${label} 삭제에 실패했습니다.`);
     }
