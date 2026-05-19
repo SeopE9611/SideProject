@@ -585,7 +585,7 @@ export default function ProductEditClient({
       }));
       const gaugeOptions = normalizedGaugeInventories.map((row) => row.value);
       const normalizedGauge = gaugeOptions[0] ?? basicInfo.gauge ?? "";
-      const totalGaugeStock = normalizedGaugeInventories
+      const normalizedGaugeStockTotal = normalizedGaugeInventories
         .filter((row) => !row.isSoldOut)
         .reduce((sum, row) => sum + row.stock, 0);
 
@@ -618,7 +618,7 @@ export default function ProductEditClient({
         ],
         inventory: {
           ...inventory,
-          stock: totalGaugeStock,
+          stock: normalizedGaugeStockTotal,
           hideGaugeStock: !showGaugeStockToUser,
         }, // 재고 관리 정보
       };
