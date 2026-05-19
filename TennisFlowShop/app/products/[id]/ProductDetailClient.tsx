@@ -266,7 +266,6 @@ export default function ProductDetailClient({ product }: { product: any }) {
     if (Array.isArray(product?.gaugeOptions) && product.gaugeOptions.length > 0) {
       return product.gaugeOptions.map((value: unknown) => String(value ?? "").trim()).filter(Boolean).map((value: string) => ({
         value,
-        label: `${value}mm`,
         stock: Number(product?.inventory?.stock ?? 0),
         isSoldOut: false,
       }));
@@ -639,7 +638,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
   };
 
   const requireGaugeSelection = () => {
-    if (!isStringProduct || gaugeOptions.length <= 1) return true;
+    if (!isStringProduct || gaugeRows.length === 0) return true;
     if (selectedGauge) return true;
     showErrorToast("게이지를 선택해주세요.");
     return false;
