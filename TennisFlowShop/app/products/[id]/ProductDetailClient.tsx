@@ -105,12 +105,17 @@ function getProductDetailBadges(product: any): ProductBadge[] {
 }
 
 
-function resolveGaugeOptions(product: any): string[] {
-  if (Array.isArray(product?.gaugeOptions) && product.gaugeOptions.length > 0) {
-    return product.gaugeOptions.map((v: unknown) => String(v ?? "").trim()).filter(Boolean);
-  }
-  const fallbackGauge = typeof product?.gauge === "string" ? product.gauge.trim() : "";
-  return fallbackGauge ? [fallbackGauge] : [];
+type GaugeInventoryRow = {
+  value: string;
+  label?: string;
+  stock: number;
+  isSoldOut: boolean;
+};
+
+function normalizeGaugeDisplayLabel(row: GaugeInventoryRow): string {
+  const rawLabel = String(row.label ?? "").trim();
+  if (rawLabel) return rawLabel;
+  return formatGaugeLabel(row.value);
 }
 
 function getProductBadgeTone(
@@ -248,7 +253,28 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
   const [quantity, setQuantity] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const gaugeOptions = useMemo(() => resolveGaugeOptions(product), [product]);
+  const hideGaugeStock = product?.inventory?.hideGaugeStock === true;
+  const gaugeRows = useMemo<GaugeInventoryRow[]>(() => {
+    if (Array.isArray(product?.gaugeInventories) && product.gaugeInventories.length > 0) {
+      return product.gaugeInventories.map((row: any) => ({
+        value: String(row?.value ?? "").trim(),
+        label: typeof row?.label === "string" ? row.label : undefined,
+        stock: Number(row?.stock ?? 0),
+        isSoldOut: row?.isSoldOut === true,
+      })).filter((row: GaugeInventoryRow) => row.value.length > 0);
+    }
+    if (Array.isArray(product?.gaugeOptions) && product.gaugeOptions.length > 0) {
+      return product.gaugeOptions.map((value: unknown) => String(value ?? "").trim()).filter(Boolean).map((value: string) => ({
+        value,
+        label: `${value}mm`,
+        stock: Number(product?.inventory?.stock ?? 0),
+        isSoldOut: false,
+      }));
+    }
+    return [];
+  }, [product]);
+  const gaugeOptions = useMemo(() => gaugeRows.map((row) => row.value), [gaugeRows]);
+  const gaugeRowMap = useMemo(() => new Map(gaugeRows.map((row) => [row.value, row])), [gaugeRows]);
   const isMountableStringProduct = isMountableStringByFee(product?.mountingFee);
   const isStringProduct =
     product?.category === "string" ||
@@ -261,10 +287,26 @@ export default function ProductDetailClient({ product }: { product: any }) {
     if (!isStringProduct || gaugeOptions.length !== 1) return;
     setSelectedGauge(gaugeOptions[0]);
   }, [isStringProduct, gaugeOptions]);
+
+  useEffect(() => {
+    if (!isStringProduct || gaugeOptions.length === 0) return;
+    const current = selectedGauge ? gaugeRowMap.get(selectedGauge) : undefined;
+    const isCurrentSoldOut = !!current && (current.isSoldOut || current.stock <= 0);
+    const isCurrentInvalid = !!selectedGauge && !current;
+    if (!selectedGauge || isCurrentInvalid || isCurrentSoldOut) {
+      const firstAvailable = gaugeRows.find((row) => !row.isSoldOut && row.stock > 0);
+      setSelectedGauge(firstAvailable?.value ?? "");
+      setQuantity(1);
+    }
+  }, [gaugeOptions, gaugeRowMap, gaugeRows, isStringProduct, selectedGauge]);
   // const [isWishlisted, setIsWishlisted] = useState(false);
   const { addItem } = useCartStore();
   const { setItem: setBuyNowItem } = useBuyNowStore();
   const stock = product.inventory?.stock ?? 0;
+  const selectedGaugeRow = selectedGauge ? gaugeRowMap.get(selectedGauge) : undefined;
+  const effectiveStock = isStringProduct && gaugeOptions.length > 0 && selectedGaugeRow
+    ? Math.max(0, Number(selectedGaugeRow.stock ?? 0))
+    : stock;
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -608,8 +650,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
     if (!requireGaugeSelection()) return;
     // 재고 검증 (기존 장바구니에 담긴 수량 + 지금 선택 수량이 stock 초과인지)
     const wouldBe = quantity;
-    if (wouldBe > stock) {
-      showErrorToast(`재고가 부족합니다. 현재 재고: ${stock}개`);
+    if (wouldBe > effectiveStock) {
+      showErrorToast(hideGaugeStock ? "선택한 게이지의 구매 가능 수량을 초과했습니다." : `재고가 부족합니다. 현재 재고: ${effectiveStock}개`);
       return;
     }
     const result = addItem({
@@ -618,7 +660,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
       price: product.price,
       quantity,
       image: product.images?.[0] || "/placeholder.svg",
-      stock,
+      stock: effectiveStock,
       selectedGauge: selectedGauge || undefined,
     });
 
@@ -674,8 +716,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
     if (!requireGaugeSelection()) return;
 
     // 재고 검증 (지금 선택 수량이 stock 초과인지)
-    if (quantity > stock) {
-      showErrorToast(`재고가 부족합니다. 현재 재고: ${stock}개`);
+    if (quantity > effectiveStock) {
+      showErrorToast(hideGaugeStock ? "선택한 게이지의 구매 가능 수량을 초과했습니다." : `재고가 부족합니다. 현재 재고: ${effectiveStock}개`);
       return;
     }
 
@@ -686,7 +728,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
       price: product.price,
       quantity,
       image: product.images?.[0] || "/placeholder.svg",
-      stock,
+      stock: effectiveStock,
       selectedGauge: selectedGauge || undefined,
     };
 
@@ -709,8 +751,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
     if (!requireGaugeSelection()) return;
 
     // 재고 검증
-    if (quantity > stock) {
-      showErrorToast(`재고가 부족합니다. 현재 재고: ${stock}개`);
+    if (quantity > effectiveStock) {
+      showErrorToast(hideGaugeStock ? "선택한 게이지의 구매 가능 수량을 초과했습니다." : `재고가 부족합니다. 현재 재고: ${effectiveStock}개`);
       return;
     }
 
@@ -721,7 +763,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
       price: product.price, // 여기서는 "자재 가격"만
       quantity,
       image: product.images?.[0] || "/placeholder.svg",
-      stock,
+      stock: effectiveStock,
       selectedGauge: selectedGauge || undefined,
     };
 
@@ -796,7 +838,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
   // 수량 버튼 상태
   const canDec = quantity > 1;
-  const canInc = quantity < stock;
+  const canInc = quantity < effectiveStock;
 
   return (
     <div className="min-h-full bg-background pb-24 bp-md:pb-10">
@@ -960,7 +1002,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                           disabled={!canInc}
                           onClick={() => {
                             if (!canInc) {
-                              showErrorToast(`더 이상 담을 수 없습니다. 재고: ${stock}개`);
+                              showErrorToast(hideGaugeStock ? "선택한 게이지의 구매 가능 수량을 초과했습니다." : `더 이상 담을 수 없습니다. 재고: ${effectiveStock}개`);
                               return;
                             }
                             setQuantity((q) => q + 1);
@@ -986,7 +1028,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         : "결제 화면에서 장착 방식, 수령 방법, 요청사항을 입력합니다. 스트링만 구매하는 경우에는 장착 접수가 포함되지 않아요."}
                     </div>
 
-                    {isStringProduct && gaugeOptions.length > 0 && (
+                    {isStringProduct && gaugeRows.length > 0 && (
                       <div className="space-y-2 rounded-xl border border-border/60 bg-muted/30 p-3">
                         <div className="flex items-center justify-between gap-3">
                           <span className="text-sm font-semibold text-foreground">게이지 선택</span>
@@ -999,11 +1041,17 @@ export default function ProductDetailClient({ product }: { product: any }) {
                             <SelectValue placeholder="게이지를 선택하세요" />
                           </SelectTrigger>
                           <SelectContent>
-                            {gaugeOptions.map((gauge) => (
-                              <SelectItem key={gauge} value={gauge}>
-                                {formatGaugeLabel(gauge)}
-                              </SelectItem>
-                            ))}
+                            {gaugeRows.map((row) => {
+                              const soldOut = row.isSoldOut || row.stock <= 0;
+                              const displayLabel = normalizeGaugeDisplayLabel(row);
+                              const stockLabel = !hideGaugeStock && !soldOut ? ` · 재고 ${Math.max(0, Number(row.stock ?? 0))}개` : "";
+                              const soldOutLabel = soldOut ? " · 품절" : "";
+                              return (
+                                <SelectItem key={row.value} value={row.value} disabled={soldOut}>
+                                  {`${displayLabel}${stockLabel}${soldOutLabel}`}
+                                </SelectItem>
+                              );
+                            })}
                           </SelectContent>
                         </Select>
                       </div>
@@ -1023,7 +1071,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                               size="tall"
                               className="h-12 w-full sm:h-14"
                               onClick={handleBuyNow}
-                              disabled={loading || stock <= 0 || quantity > stock}
+                              disabled={loading || effectiveStock <= 0 || quantity > effectiveStock || (isStringProduct && gaugeRows.length > 0 && !selectedGauge)}
                             >
                               <CreditCard className="mr-2 h-5 w-5" />
                               스트링만 구매하기
@@ -1035,7 +1083,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                               variant={shouldEmphasizeServiceCta ? "default" : "secondary"}
                               size="tall"
                               className="h-12 w-full gap-2 whitespace-normal break-keep leading-tight sm:h-14"
-                              disabled={loading || quantity > stock}
+                              disabled={loading || quantity > effectiveStock || (isStringProduct && gaugeRows.length > 0 && !selectedGauge)}
                               onClick={handleBuyNowWithService}
                             >
                               <Wrench className="mr-2 h-5 w-5" />
@@ -1049,7 +1097,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                               size="lg"
                               className="h-auto min-h-12 w-full whitespace-normal break-keep text-sm sm:text-base"
                               onClick={handleAddToCart}
-                              disabled={loading || quantity > stock}
+                              disabled={loading || quantity > effectiveStock || (isStringProduct && gaugeRows.length > 0 && !selectedGauge)}
                             >
                               <ShoppingCart className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                               {cartCtaLabel}
@@ -1717,7 +1765,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     disabled={!canInc}
                     onClick={() => {
                       if (!canInc) {
-                        showErrorToast(`더 이상 담을 수 없습니다. 재고: ${stock}개`);
+                        showErrorToast(hideGaugeStock ? "선택한 게이지의 구매 가능 수량을 초과했습니다." : `더 이상 담을 수 없습니다. 재고: ${effectiveStock}개`);
                         return;
                       }
                       setQuantity((q) => q + 1);
@@ -1734,7 +1782,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   <button
                     type="button"
                     onClick={handleBuyNow}
-                    disabled={loading || stock <= 0 || quantity > stock}
+                    disabled={loading || effectiveStock <= 0 || quantity > effectiveStock || (isStringProduct && gaugeRows.length > 0 && !selectedGauge)}
                     className="flex-1 h-12 rounded-lg bg-foreground text-background disabled:bg-muted dark:disabled:bg-muted disabled:text-muted-foreground font-semibold text-sm transition-[box-shadow,background-color,color] duration-200 shadow-sm hover:shadow-md disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     <CreditCard className="h-4 w-4" />
