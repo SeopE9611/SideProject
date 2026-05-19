@@ -78,12 +78,12 @@ export default function CartPageClient() {
 
   // 장착 대상 스트링 "이 스트링만 남기기" 확인 다이얼로그 상태
   const [cleanupDialogOpen, setCleanupDialogOpen] = useState(false);
-  const [cleanupKeepId, setCleanupKeepId] = useState<string | null>(null);
+  const [cleanupKeepLineKey, setCleanupKeepLineKey] = useState<string | null>(null);
   const [cleanupRemoveLineKeys, setCleanupRemoveLineKeys] = useState<string[]>([]);
 
   // [장착 대상 스트링 정리 다이얼로그] 남길/삭제될 대상 텍스트 생성
-  const keepStringItem = cleanupKeepId
-    ? cartItems.find((i) => i.id === cleanupKeepId)
+  const keepStringItem = cleanupKeepLineKey
+    ? cartItems.find((i) => getCartLineKey(i) === cleanupKeepLineKey)
     : undefined;
   const keepStringLabel = keepStringItem
     ? `${keepStringItem.name} (수량 ${keepStringItem.quantity}개)`
@@ -454,24 +454,19 @@ export default function CartPageClient() {
 
   // "장착 대상 스트링"이 2종 이상 섞였을 때,
   // 사용자가 남길 스트링 1종을 직접 선택해서 나머지를 빠르게 정리하는 유틸(선제 차단 UX 강화)
-  const keepOnlyThisMountableString = (keepId: string) => {
-    const mountableIds = cartItems
+  const keepOnlyThisMountableString = (keepLineKey: string) => {
+    const lineKeysToRemove = cartItems
       .filter(
         (it) =>
           (it.kind ?? "product") === "product" &&
-          mountableStringByProductId[String(it.id)] === true,
+          mountableStringByProductId[String(it.id)] === true &&
+          getCartLineKey(it) !== keepLineKey,
       )
-      .map((it) => it.id);
-
-    if (mountableIds.length <= 1) return;
-
-    const lineKeysToRemove = cartItems
-      .filter((it) => mountableIds.includes(it.id) && it.id !== keepId)
       .map((it) => getCartLineKey(it));
     if (lineKeysToRemove.length === 0) return;
 
     // confirm() 대신 AlertDialog로 확인 UX 통일
-    setCleanupKeepId(keepId);
+    setCleanupKeepLineKey(keepLineKey);
     setCleanupRemoveLineKeys(lineKeysToRemove);
     setCleanupDialogOpen(true);
   };
@@ -479,7 +474,7 @@ export default function CartPageClient() {
   const confirmCleanupMountableStrings = () => {
     if (cleanupRemoveLineKeys.length === 0) {
       setCleanupDialogOpen(false);
-      setCleanupKeepId(null);
+      setCleanupKeepLineKey(null);
       setCleanupRemoveLineKeys([]);
       return;
     }
@@ -499,7 +494,7 @@ export default function CartPageClient() {
 
     // 상태 정리 + 닫기
     setCleanupDialogOpen(false);
-    setCleanupKeepId(null);
+    setCleanupKeepLineKey(null);
     setCleanupRemoveLineKeys([]);
   };
 
@@ -511,7 +506,7 @@ export default function CartPageClient() {
         onOpenChange={(open) => {
           setCleanupDialogOpen(open);
           if (!open) {
-            setCleanupKeepId(null);
+            setCleanupKeepLineKey(null);
             setCleanupRemoveLineKeys([]);
           }
         }}
@@ -759,7 +754,7 @@ export default function CartPageClient() {
                                       onClick={(e) => {
                                         e.preventDefault();
                                         e.stopPropagation();
-                                        keepOnlyThisMountableString(item.id);
+                                        keepOnlyThisMountableString(lineKey);
                                       }}
                                     >
                                       이 스트링만 남기기
@@ -930,9 +925,9 @@ export default function CartPageClient() {
                                       "번들(라켓 + 장착 스트링)을 통째로 장바구니에서 삭제할까요?",
                                     )
                                   ) {
-                                    bundleLockedIds.forEach((id) =>
-                                      removeItem(id),
-                                    );
+                                    cartItems
+                                      .filter((it) => bundleLockedIds.includes(it.id))
+                                      .forEach((it) => removeItem(it.id, it.selectedGauge));
                                     setSelectedLineKeys((prev) =>
                                       prev.filter((selectedLineKey) => {
                                         const selectedItem = cartItems.find(
