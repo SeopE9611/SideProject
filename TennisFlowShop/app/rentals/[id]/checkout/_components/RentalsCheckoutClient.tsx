@@ -39,9 +39,9 @@ declare global {
 }
 
 // 제출 직전 최종 유효성 가드
-type Bank = "shinhan" | "kookmin" | "woori";
+type Bank = "kakao";
 type PaymentMethod = "bank_transfer" | "nicepay";
-const ALLOWED_BANKS = new Set<Bank>(["shinhan", "kookmin", "woori"]);
+const ALLOWED_BANKS = new Set<Bank>(["kakao"]);
 const POSTAL_RE = /^\d{5}$/;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const onlyDigits = (v: string) => String(v ?? "").replace(/\D/g, "");
@@ -147,7 +147,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
   const [deliveryRequest, setRequest] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const [selectedBank, setSelectedBank] = useState<"shinhan" | "kookmin" | "woori" | "">("");
+  const [selectedBank, setSelectedBank] = useState<"kakao">("kakao");
   const [depositor, setDepositor] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("bank_transfer");
   const nicePaymentsEnabled = isNicePaymentsEnabled();
@@ -897,14 +897,8 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                             <SelectValue placeholder="입금 계좌를 선택하세요" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="shinhan">
-                              신한은행 {bankLabelMap.shinhan.account} (예금주: {bankLabelMap.shinhan.holder})
-                            </SelectItem>
-                            <SelectItem value="kookmin">
-                              국민은행 {bankLabelMap.kookmin.account} (예금주: {bankLabelMap.kookmin.holder})
-                            </SelectItem>
-                            <SelectItem value="woori">
-                              우리은행 {bankLabelMap.woori.account} (예금주: {bankLabelMap.woori.holder})
+                            <SelectItem value="kakao">
+                              카카오뱅크 {bankLabelMap.kakao.account} (예금주: {bankLabelMap.kakao.holder})
                             </SelectItem>
                           </SelectContent>
                         </Select>
