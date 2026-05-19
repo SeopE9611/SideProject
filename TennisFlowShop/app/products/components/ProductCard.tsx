@@ -159,8 +159,6 @@ const productImageWrapClass =
   "relative w-full overflow-hidden rounded-t-2xl bg-secondary/40 aspect-[5/4] bp-md:aspect-square";
 const productMetaPillClass =
   "flex items-center justify-between rounded-xl border border-border/60 bg-secondary/50 px-2 py-1.5";
-const productOverlayActionClass =
-  "absolute inset-x-0 bottom-0 hidden items-center gap-2 border-t border-border/60 bg-card/90 px-3 py-3 opacity-0 transition-colors duration-200 group-hover:opacity-100 group-focus-within:opacity-100 bp-sm:flex";
 
 type Props = {
   product: Product;
@@ -199,7 +197,7 @@ const ProductCard = React.memo(
     const canCheckoutWithService =
       isMountableStringByFee(product.mountingFee);
     const featureEntries = getFeatureEntries(product.features);
-    const serviceCtaLabel = isApplyFlow ? "이 스트링 선택하고 장착 신청 계속하기" : "이 스트링으로 교체서비스 신청하기";
+    const serviceCtaLabel = "이 스트링 선택하고 장착 신청 계속하기";
     const shouldEmphasizeServiceCta =
       isApplyFlow || !ENABLE_STRING_STANDALONE_ORDER;
     const shouldShowStandalonePausedNotice =
@@ -443,7 +441,7 @@ const ProductCard = React.memo(
               alt={product.name}
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-              className="object-cover group-hover:scale-105 transition-transform duration-300"
+              className="object-cover"
             />
           </Link>
 
@@ -481,20 +479,7 @@ const ProductCard = React.memo(
           {/* ─── 호버 오버레이: bp-sm 이상 보조 상세 보기 액션 ───────────────
               모바일에서는 상단 찜 버튼을 상시 노출하고 오버레이는 숨김
           ──────────────────────────────────────────────────────────────── */}
-          <div className={cn(productOverlayActionClass, "z-20")}>
-            {/* 상세보기 버튼 */}
-            <Button
-              asChild
-              size="sm"
-              variant="default"
-              className="h-8 flex-1 text-xs shadow-sm sm:h-9 sm:text-sm"
-            >
-              <Link href={detailHref}>
-                <Eye className="w-3 h-3 bp-sm:w-4 bp-sm:h-4 mr-1" />
-                상세 보기
-              </Link>
-            </Button>
-          </div>
+          
         </div>
 
         {/* 카드 콘텐츠 */}
@@ -575,18 +560,6 @@ const ProductCard = React.memo(
               disabled={isSoldOut}
             >
               {isApplyFlow ? "단품만 구매" : "단품 구매"}
-            </Button>
-          )}
-
-          {!isApplyFlow && canCheckoutWithService && (
-            <Button
-              type="button"
-              variant={shouldEmphasizeServiceCta ? "default" : "outline"}
-              className="w-full rounded-lg h-auto min-h-10 px-3 text-xs sm:text-sm whitespace-normal break-keep leading-tight text-center"
-              onClick={handleStringServiceApply}
-              disabled={isSoldOut}
-            >
-              {serviceCtaLabel}
             </Button>
           )}
 

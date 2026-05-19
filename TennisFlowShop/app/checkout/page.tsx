@@ -603,7 +603,7 @@ export default function CheckoutPage() {
     return { invalid, racketKinds, mountableStringKinds };
   }, [orderItemsKey, withStringService, serviceTargetIds]);
 
-  const [selectedBank, setSelectedBank] = useState("shinhan");
+  const [selectedBank, setSelectedBank] = useState("kakao");
   const [paymentMethod, setPaymentMethod] = useState<"bank-transfer" | "nicepay">("bank-transfer");
   const nicePaymentsEnabled = isNicePaymentsEnabled();
 
@@ -1666,14 +1666,8 @@ export default function CheckoutPage() {
                                 <SelectValue placeholder="입금 계좌를 선택하세요" />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="shinhan">
-                                  신한은행 {bankLabelMap.shinhan.account} (예금주: {bankLabelMap.shinhan.holder})
-                                </SelectItem>
-                                <SelectItem value="kookmin">
-                                  국민은행 {bankLabelMap.kookmin.account} (예금주: {bankLabelMap.kookmin.holder})
-                                </SelectItem>
-                                <SelectItem value="woori">
-                                  우리은행 {bankLabelMap.woori.account} (예금주: {bankLabelMap.woori.holder})
+                                <SelectItem value="kakao">
+                                  카카오뱅크 {bankLabelMap.kakao.account} (예금주: {bankLabelMap.kakao.holder})
                                 </SelectItem>
                               </SelectContent>
                             </Select>

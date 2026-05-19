@@ -161,7 +161,7 @@ export default function PackageCheckoutClient({
   const [paymentMethod, setPaymentMethod] = useState<"bank_transfer" | "nicepay" | "tosspayments">("bank_transfer");
   const nicePaymentsEnabled = isNicePaymentsEnabled();
   const tossPaymentsEnabled = isTossPaymentsEnabled();
-  const [selectedBank, setSelectedBank] = useState("shinhan");
+  const [selectedBank, setSelectedBank] = useState("kakao");
   const [name, setName] = useState(initialUser.name ?? "");
   const [phone, setPhone] = useState(initialUser.phone ?? "");
   const [email, setEmail] = useState(initialUser.email ?? "");
@@ -189,7 +189,7 @@ export default function PackageCheckoutClient({
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [agreePrivacy, setAgreePrivacy] = useState(false);
   const [agreeRefund, setAgreeRefund] = useState(false);
-  const bankOptionLabel = (key: "shinhan" | "kookmin" | "woori") => {
+  const bankOptionLabel = (key: "kakao" | "shinhan" | "kookmin" | "woori") => {
     const bank = bankLabelMap[key];
     return `${bank.label} ${bank.account} (예금주: ${bank.holder})`;
   };
@@ -592,9 +592,7 @@ export default function PackageCheckoutClient({
                             <SelectValue placeholder="입금 계좌를 선택하세요" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="shinhan">{bankOptionLabel("shinhan")}</SelectItem>
-                            <SelectItem value="kookmin">{bankOptionLabel("kookmin")}</SelectItem>
-                            <SelectItem value="woori">{bankOptionLabel("woori")}</SelectItem>
+                            <SelectItem value="kakao">{bankOptionLabel("kakao")}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>

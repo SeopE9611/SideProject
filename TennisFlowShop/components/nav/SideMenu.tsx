@@ -105,12 +105,10 @@ export default function SideMenu() {
                       <AccordionContent value="strings-brand" className="pb-0 pt-1">
                         <div className="grid grid-cols-2 gap-1">
                           {NAV_LINKS.strings.brands.map((b) => {
-                            const isLongBrandName = b.name.length >= 6;
-
                             return (
-                              <Link key={b.href} href={b.href} className={cn(brandLinkClass(b.href), "px-2.5 py-2 text-[14px]", isLongBrandName && "col-span-2 whitespace-nowrap")}>
-                                <span className="flex items-center justify-between">
-                                  {b.name}
+                              <Link key={b.href} href={b.href} className={cn(brandLinkClass(b.href), "min-w-0 px-2 py-2 text-[13px]")}>
+                                <span className="flex min-w-0 items-center justify-between">
+                                  <span className="block min-w-0 truncate whitespace-nowrap">{b.name}</span>
                                   <ChevronRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-[background-color,color,border-color,box-shadow,opacity] duration-200" />
                                 </span>
                               </Link>
@@ -190,12 +188,10 @@ export default function SideMenu() {
                       <AccordionContent value="rackets-brand" className="pb-0 pt-1">
                         <div className="grid grid-cols-2 gap-1">
                           {NAV_LINKS.rackets.brands.map((b) => {
-                            const isLongBrandName = b.name.length >= 6;
-
                             return (
-                              <Link key={b.href} href={b.href} className={cn(brandLinkClass(b.href), "px-2.5 py-2 text-[14px]", isLongBrandName && "col-span-2 whitespace-nowrap")}>
-                                <span className="flex items-center justify-between">
-                                  {b.name}
+                              <Link key={b.href} href={b.href} className={cn(brandLinkClass(b.href), "min-w-0 px-2 py-2 text-[13px]")}>
+                                <span className="flex min-w-0 items-center justify-between">
+                                  <span className="block min-w-0 truncate whitespace-nowrap">{b.name}</span>
                                   <ChevronRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-[background-color,color,border-color,box-shadow,opacity] duration-200" />
                                 </span>
                               </Link>

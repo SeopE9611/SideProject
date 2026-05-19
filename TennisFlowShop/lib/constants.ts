@@ -12,19 +12,24 @@ export const bankLabelMap: Record<
   string,
   { label: string; account: string; holder: string }
 > = {
+  kakao: {
+    label: "카카오뱅크",
+    account: "3333211092155",
+    holder: "도깨비테니스",
+  },
   shinhan: {
-    label: "신한은행",
-    account: "123-456-789012",
+    label: "카카오뱅크",
+    account: "3333211092155",
     holder: "도깨비테니스",
   },
   kookmin: {
-    label: "국민은행",
-    account: "123-45-6789-012",
+    label: "카카오뱅크",
+    account: "3333211092155",
     holder: "도깨비테니스",
   },
   woori: {
-    label: "우리은행",
-    account: "1234-567-890123",
+    label: "카카오뱅크",
+    account: "3333211092155",
     holder: "도깨비테니스",
   },
 };
@@ -135,7 +140,12 @@ export const STRING_BRANDS = [
   { value: "head", label: "헤드" },
   { value: "yonex", label: "요넥스" },
   { value: "solinco", label: "솔린코" },
+  { value: "prince", label: "프린스" },
   { value: "dunlop", label: "던롭" },
+  { value: "msv", label: "MSV" },
+  { value: "volkl", label: "볼키" },
+  { value: "topspin", label: "탑스핀" },
+  { value: "other", label: "기타" },
 ] as const;
 
 export const stringBrandLabel = (v?: string) =>

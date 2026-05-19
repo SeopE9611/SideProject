@@ -11,8 +11,8 @@ import { CreditCard, Loader2 } from "lucide-react";
 import type { StringingApplicationInput } from "@/app/features/stringing-applications/api/submit-core";
 
 // 제출 직전 최종 유효성 가드
-type Bank = "shinhan" | "kookmin" | "woori";
-const ALLOWED_BANKS = new Set<Bank>(["shinhan", "kookmin", "woori"]);
+type Bank = "kakao" | "shinhan" | "kookmin" | "woori";
+const ALLOWED_BANKS = new Set<Bank>(["kakao", "shinhan", "kookmin", "woori"]);
 const ALLOWED_DELIVERY = new Set(["택배수령", "방문수령"] as const);
 const ALLOWED_SERVICE_PICKUP = new Set([
   "SELF_SEND",

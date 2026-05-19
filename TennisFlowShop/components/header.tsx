@@ -47,19 +47,16 @@ function MobileBrandGrid({ brands, onPick }: { brands: { name: string; href: str
     <div className="space-y-2">
       <div className="grid grid-cols-2 gap-2">
         {list.map((b) => {
-          const isLongBrandName = b.name.length >= 6;
-
           return (
             <Button
               key={b.name}
               variant="outline"
               className={cn(
-                "relative z-0 h-9 justify-center rounded-lg border-border text-sm hover:bg-secondary transition-[background-color,color,border-color,box-shadow,opacity] duration-200 bg-transparent hover:shadow-sm hover:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-                isLongBrandName && "col-span-2 whitespace-nowrap",
+                "relative z-0 h-9 min-w-0 justify-center rounded-lg border-border bg-transparent px-2 text-[13px] hover:bg-secondary transition-[background-color,color,border-color,box-shadow,opacity] duration-200 hover:shadow-sm hover:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
               )}
               onClick={() => onPick(b.href)}
             >
-              {b.name}
+              <span className="block min-w-0 truncate whitespace-nowrap">{b.name}</span>
             </Button>
           );
         })}
@@ -316,6 +313,11 @@ const Header = () => {
         { name: "테크니화이버", href: "/products?brand=tecnifibre" },
         { name: "솔린코", href: "/products?brand=solinco" },
         { name: "프린스", href: "/products?brand=prince" },
+        { name: "던롭", href: "/products?brand=dunlop" },
+        { name: "MSV", href: "/products?brand=msv" },
+        { name: "볼키", href: "/products?brand=volkl" },
+        { name: "탑스핀", href: "/products?brand=topspin" },
+        { name: "기타", href: "/products?brand=other" },
       ],
     },
     rackets: {
