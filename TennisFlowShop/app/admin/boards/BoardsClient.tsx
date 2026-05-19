@@ -242,19 +242,21 @@ export default function BoardsClient() {
       : []
     : null;
 
-  const posts: PostItem[] = (postsRaw ?? []).map((item: any) => {
-    // 서버 스키마 정합성: views/likes/commentsCount 실필드만 사용
-    const views = Number(item?.views ?? 0);
-    const likes = Number(item?.likes ?? 0);
-    const commentsCount = Number(item?.commentsCount ?? 0);
+  const posts: PostItem[] = useMemo(() => {
+    return (postsRaw ?? []).map((item: any) => {
+      // 서버 스키마 정합성: views/likes/commentsCount 실필드만 사용
+      const views = Number(item?.views ?? 0);
+      const likes = Number(item?.likes ?? 0);
+      const commentsCount = Number(item?.commentsCount ?? 0);
 
-    return {
-      ...item,
-      views: Number.isFinite(views) ? views : 0,
-      likes: Number.isFinite(likes) ? likes : 0,
-      commentsCount: Number.isFinite(commentsCount) ? commentsCount : 0,
-    } as PostItem;
-  });
+      return {
+        ...item,
+        views: Number.isFinite(views) ? views : 0,
+        likes: Number.isFinite(likes) ? likes : 0,
+        commentsCount: Number.isFinite(commentsCount) ? commentsCount : 0,
+      } as PostItem;
+    });
+  }, [postsRaw]);
   const postsTotal: number | null = hasResolvedPostsTotal
     ? (postsData?.total ?? 0)
     : null;
@@ -290,12 +292,25 @@ export default function BoardsClient() {
     postType !== "all" || postStatus !== "all" || postQ.trim().length > 0;
   const [selectedPostIds, setSelectedPostIds] = useState<string[]>([]);
 
+  const currentPagePostIds = useMemo(() => posts.map((p) => p.id), [posts]);
+  const currentPagePostIdSet = useMemo(
+    () => new Set(currentPagePostIds),
+    [currentPagePostIds],
+  );
+
   useEffect(() => {
-    setSelectedPostIds((prev) => prev.filter((id) => posts.some((p) => p.id === id)));
-  }, [posts]);
+    setSelectedPostIds((prev) => {
+      const next = prev.filter((id) => currentPagePostIdSet.has(id));
+      const isSame =
+        next.length === prev.length &&
+        next.every((id, index) => id === prev[index]);
+
+      return isSame ? prev : next;
+    });
+  }, [currentPagePostIdSet]);
 
   const isCurrentPageAllSelected =
-    posts.length > 0 && selectedPostIds.length === posts.length;
+    posts.length > 0 && posts.every((p) => selectedPostIds.includes(p.id));
 
   const togglePostSelect = (postId: string) => {
     setSelectedPostIds((prev) =>
@@ -304,7 +319,7 @@ export default function BoardsClient() {
   };
 
   const toggleSelectAllCurrentPage = (checked: boolean) => {
-    setSelectedPostIds(checked ? posts.map((p) => p.id) : []);
+    setSelectedPostIds(checked ? currentPagePostIds : []);
   };
 
   const deleteSelectedPosts = async () => {
