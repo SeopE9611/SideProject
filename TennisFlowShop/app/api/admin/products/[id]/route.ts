@@ -61,6 +61,7 @@ function parseUpdateRequest(raw: unknown): AdminProductUpdateRequestDto | null {
     brand: asString(body.brand),
     material: asString(body.material),
     gauge: asString(body.gauge),
+    gaugeOptions: asStringArray(body.gaugeOptions),
     color: asString(body.color),
     length: asString(body.length),
     mountingFee: asNumber(body.mountingFee),

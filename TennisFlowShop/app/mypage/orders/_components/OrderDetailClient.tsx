@@ -104,6 +104,7 @@ interface OrderItem {
   quantity: number;
   price: number;
   imageUrl?: string | null;
+  selectedGauge?: string;
   mountingFee?: number; // 장착 서비스 대상 스트링이면 서버에서 내려오는 필드 (없으면 undefined)
   isMountableString?: boolean;
 }
@@ -1590,6 +1591,7 @@ export default function OrderDetailClient({
                       <p className="text-sm text-foreground/80">
                         수량: {item.quantity}개
                       </p>
+                      {item.selectedGauge && <p className="text-xs text-foreground/70">게이지: {item.selectedGauge}</p>}
                     </div>
 
                     {/* 가격 및 소계 */}

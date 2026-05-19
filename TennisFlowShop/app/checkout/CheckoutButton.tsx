@@ -371,6 +371,7 @@ export default function CheckoutButton({
           productId: item.id,
           quantity: item.quantity,
           kind: item.kind ?? "product",
+          selectedGauge: item.selectedGauge,
         })),
         shippingInfo,
         paymentInfo: {

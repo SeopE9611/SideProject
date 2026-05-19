@@ -32,6 +32,7 @@ export type HybridSpecUnit = {
   brand: string;
   name: string;
   gauge: string;
+  gaugeOptions?: string[];
   color: string;
   role?: "mains" | "cross";
 };
@@ -44,6 +45,7 @@ export type ProductDetail = {
   brand: string;
   material: string;
   gauge: string;
+  gaugeOptions?: string[];
   color: string;
   length: string;
   price: number;
@@ -121,6 +123,7 @@ export interface AdminProductUpdateRequestDto {
   brand: string;
   material: string;
   gauge: string;
+  gaugeOptions?: string[];
   color: string;
   length: string;
   mountingFee: number;
