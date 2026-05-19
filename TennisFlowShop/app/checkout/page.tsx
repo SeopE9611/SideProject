@@ -24,14 +24,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { getMyInfo } from "@/lib/auth.client";
 import { bankLabelMap } from "@/lib/constants";
+import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import { useBackNavigationGuard } from "@/lib/hooks/useBackNavigationGuard";
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
-import { ENABLE_STRING_STANDALONE_ORDER } from "@/lib/orders/string-standalone-policy";
 import { isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
+import { ENABLE_STRING_STANDALONE_ORDER } from "@/lib/orders/string-standalone-policy";
 import { isNicePaymentsEnabled } from "@/lib/payments/provider-flags";
 import { calcOrderShippingFeeWithBundlePolicy, normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { cn } from "@/lib/utils";
-import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import { Building2, Check, CheckCircle, CreditCard, Home, Info, Loader2, Mail, MapPin, MessageSquare, Package, Phone, Shield, Truck, UserIcon } from "lucide-react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
@@ -223,7 +223,7 @@ function FinalPaymentConfirmCard({
 
         <div className="h-px bg-border/70" />
 
-          <div className="space-y-3">
+        <div className="space-y-3">
           <div className="flex items-center justify-between text-sm">
             <span className="text-foreground/90">합계</span>
             {!isShippingFeeReady ? <Skeleton className="h-5 w-24 rounded" /> : <span className="font-semibold">{totalPrice.toLocaleString()}원</span>}
@@ -240,11 +240,7 @@ function FinalPaymentConfirmCard({
             )}
           </div>
         </div>
-        {withStringService && (
-          <p className="rounded-lg border border-border/70 bg-secondary/20 px-3 py-2 text-xs text-foreground/85">
-            결제 완료 후 교체서비스 신청 정보가 함께 접수됩니다.
-          </p>
-        )}
+        {withStringService && <p className="rounded-lg border border-border/70 bg-secondary/20 px-3 py-2 text-xs text-foreground/85">결제 완료 후 교체서비스 신청 정보가 함께 접수됩니다.</p>}
         <div className="space-y-2 rounded-xl border border-border/70 bg-secondary/20 p-3 text-xs text-foreground">
           <p>결제수단: {paymentMethod === "bank-transfer" ? "무통장입금" : "NICE 카드/간편결제"}</p>
           {paymentMethod === "bank-transfer" ? (
@@ -293,7 +289,7 @@ export default function CheckoutPage() {
   /**
    * 진입 시점 '서비스 포함 모드' 잠금 상태
    * - useSearchParams()는 history.replaceState만으로는 값이 갱신되지 않을 수 있으므로
-   * - 따라서 최초 진입(withService=1) 여���를 state로 보관해,
+   * - 따라서 최초 진입(withService=1) 여부를 state로 보관해,
    *   사용자가 '상품만 결제'로 전환했을 때 잠금을 확실히 해제할 수 있게 한다.
    */
   const [entryServiceLock, setEntryServiceLock] = useState(withServiceParam === "1");
@@ -855,7 +851,7 @@ export default function CheckoutPage() {
     if (!orderItems || orderItems.length === 0) errors.items = "주문 상품이 비어있습니다.";
 
     if (bundleQtyGuard.mismatch) {
-      errors.bundle = `라켓(${bundleQtyGuard.racketQty}개)과 스트링(${bundleQtyGuard.serviceQty}개) 수량이 일��하지 않습니다. 수량은 스트링 선택 화면에서 수정해주세요.`;
+      errors.bundle = `라켓(${bundleQtyGuard.racketQty}개)과 스트링(${bundleQtyGuard.serviceQty}개) 수량이 일치하지 않습니다. 수량은 스트링 선택 화면에서 수정해주세요.`;
     }
 
     // mini 로딩 중에는 composition 경고를 띄우지 않는다
@@ -1179,26 +1175,13 @@ export default function CheckoutPage() {
                 </nav>
 
                 {/* 현재 주문 성격 및 작성 안내 */}
-                <section
-                  aria-label="현재 주문 성격 및 작성 안내"
-                  className={cn(
-                    "rounded-2xl border border-border bg-card px-4 py-3 shadow-sm bp-sm:px-5",
-                    withStringService ? "ring-1 ring-primary/20" : "bg-muted/30",
-                  )}
-                >
+                <section aria-label="현재 주문 성격 및 작성 안내" className={cn("rounded-2xl border border-border bg-card px-4 py-3 shadow-sm bp-sm:px-5", withStringService ? "ring-1 ring-primary/20" : "bg-muted/30")}>
                   <div className="flex items-start gap-3">
-                    <div
-                      className={cn(
-                        "flex h-8 w-8 shrink-0 items-center justify-center rounded-full ring-1",
-                        withStringService ? "bg-primary/10 text-primary ring-primary/20" : "bg-muted/60 text-muted-foreground ring-border/60",
-                      )}
-                    >
+                    <div className={cn("flex h-8 w-8 shrink-0 items-center justify-center rounded-full ring-1", withStringService ? "bg-primary/10 text-primary ring-primary/20" : "bg-muted/60 text-muted-foreground ring-border/60")}>
                       {withStringService ? <CheckCircle className="h-4 w-4" /> : <Info className="h-4 w-4" />}
                     </div>
                     <div className="min-w-0 space-y-1">
-                      <h2 className={cn("break-keep text-base font-semibold text-foreground", !withStringService && "text-sm")}>
-                        {withStringService ? "교체서비스 포함 주문입니다" : "일반 상품 주문입니다"}
-                      </h2>
+                      <h2 className={cn("break-keep text-base font-semibold text-foreground", !withStringService && "text-sm")}>{withStringService ? "교체서비스 포함 주문입니다" : "일반 상품 주문입니다"}</h2>
                       {withStringService ? (
                         <div className="space-y-1 text-sm leading-relaxed text-muted-foreground">
                           <p className="break-keep">결제와 함께 교체서비스 신청이 접수됩니다. 선택한 스트링, 수령/배송 방식, 장착 요청사항을 확인해주세요.</p>
@@ -1252,22 +1235,11 @@ export default function CheckoutPage() {
                     )}
                     <div className="space-y-3">
                       {orderItems.map((item, idx) => (
-                        <div
-                          key={item.id}
-                          className="flex flex-col gap-4 rounded-xl border border-border/40 bg-secondary/35 p-4 bp-sm:flex-row bp-sm:items-center bp-sm:gap-5 bp-sm:p-5"
-                          style={{ animationDelay: `${idx * 50}ms` }}
-                        >
+                        <div key={item.id} className="flex flex-col gap-4 rounded-xl border border-border/40 bg-secondary/35 p-4 bp-sm:flex-row bp-sm:items-center bp-sm:gap-5 bp-sm:p-5" style={{ animationDelay: `${idx * 50}ms` }}>
                           <div className="flex items-center gap-4 min-w-0 flex-1">
                             <div className="relative shrink-0">
                               <div className="overflow-hidden rounded-xl ring-2 ring-border/50">
-                                <Image
-                                  src={item.image || "/placeholder.svg?height=80&width=80&query=tennis+product"}
-                                  alt={item.name}
-                                  width={80}
-                                  height={80}
-                                  loading="lazy"
-                                  className="h-16 w-16 bp-sm:h-20 bp-sm:w-20 object-cover"
-                                />
+                                <Image src={item.image || "/placeholder.svg?height=80&width=80&query=tennis+product"} alt={item.name} width={80} height={80} loading="lazy" className="h-16 w-16 bp-sm:h-20 bp-sm:w-20 object-cover" />
                               </div>
                               <div className="absolute -top-1.5 -right-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold shadow-lg ring-2 ring-card">{item.quantity}</div>
                             </div>
@@ -1375,9 +1347,7 @@ export default function CheckoutPage() {
                       <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm text-muted-foreground">
                         <p className="font-semibold text-foreground">선택 후 다음 행동</p>
                         <p className="mt-1 break-keep">
-                          {deliveryMethod === "택배수령"
-                            ? "결제 후 라켓을 포장해 발송하고, 마이페이지에서 운송장 정보를 등록하면 진행이 빨라집니다."
-                            : "예약/방문 안내에 따라 매장에 방문해주세요. 방문 전 신청 상태를 마이페이지에서 확인할 수 있어요."}
+                          {deliveryMethod === "택배수령" ? "결제 후 라켓을 포장해 발송하고, 마이페이지에서 운송장 정보를 등록하면 진행이 빨라집니다." : "예약/방문 안내에 따라 매장에 방문해주세요. 방문 전 신청 상태를 마이페이지에서 확인할 수 있어요."}
                         </p>
                       </div>
                     )}

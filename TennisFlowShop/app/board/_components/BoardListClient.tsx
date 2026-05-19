@@ -487,7 +487,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
     pushMarketFilters(sp, { ...EMPTY_MARKET_FILTER_DRAFT });
   };
 
-  // 브랜드 ��경 핸들러
+  // // 브랜드 변경 핸들러
   const handleBrandChange = (nextBrand: string) => {
     setPage(1);
     setBrand(nextBrand);

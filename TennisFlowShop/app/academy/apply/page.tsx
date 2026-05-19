@@ -186,7 +186,7 @@ function formatClassPrice(price: number | null) {
 
 function formatClassCapacity(capacity: number | null) {
   if (typeof capacity === "number" && capacity > 0) {
-    return `${capacity}��`;
+    return `${capacity}명`;
   }
   return "상담 후 안내";
 }
