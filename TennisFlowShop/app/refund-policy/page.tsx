@@ -1,3 +1,4 @@
+import SiteContainer from "@/components/layout/SiteContainer";
 import Link from "next/link";
 import type { Metadata } from "next";
 
@@ -17,37 +18,39 @@ const sections = [
 
 export default function RefundPolicyPage() {
   return (
-    <main className="mx-auto max-w-4xl px-4 py-10 md:py-14">
-      <section className="space-y-3 rounded-2xl border bg-background p-6 md:p-8">
-        <p className="text-sm font-medium text-primary">Policy</p>
-        <h1 className="text-3xl font-bold tracking-tight">환불 및 취소 정책</h1>
-        <p className="text-muted-foreground">주문, 교체서비스, 패키지, 대여 이용 전 취소와 환불 기준을 확인해주세요.</p>
-        <p className="text-sm text-muted-foreground">정책은 운영 상황과 결제수단에 따라 일부 달라질 수 있으며, 자세한 확인이 필요한 경우 고객센터 Q&A로 문의해주세요.</p>
-      </section>
+    <main className="py-10 md:py-14">
+      <SiteContainer className="max-w-4xl">
+        <section className="space-y-3 rounded-2xl border bg-background p-6 md:p-8">
+          <p className="text-sm font-medium text-primary">Policy</p>
+          <h1 className="text-3xl font-bold tracking-tight">환불 및 취소 정책</h1>
+          <p className="text-muted-foreground">주문, 교체서비스, 패키지, 대여 이용 전 취소와 환불 기준을 확인해주세요.</p>
+          <p className="text-sm text-muted-foreground">정책은 운영 상황과 결제수단에 따라 일부 달라질 수 있으며, 자세한 확인이 필요한 경우 고객센터 Q&A로 문의해주세요.</p>
+        </section>
 
-      <section className="mt-8 space-y-4">
-        {sections.map((section) => (
-          <article key={section.title} className="rounded-2xl border bg-muted/30 p-5 md:p-6">
-            <h2 className="text-lg font-semibold">{section.title}</h2>
-            <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-muted-foreground md:text-base">
-              {section.items.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-          </article>
-        ))}
-      </section>
+        <section className="mt-8 space-y-4">
+          {sections.map((section) => (
+            <article key={section.title} className="rounded-2xl border bg-muted/30 p-5 md:p-6">
+              <h2 className="text-lg font-semibold">{section.title}</h2>
+              <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-muted-foreground md:text-base">
+                {section.items.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </article>
+          ))}
+        </section>
 
-      <section className="mt-8 rounded-2xl border bg-background p-5 md:p-6">
-        <h2 className="text-lg font-semibold">문의 안내</h2>
-        <p className="mt-2 text-sm text-muted-foreground">최종 환불 가능 여부와 금액은 주문/서비스 상태 확인 후 안내드리며, 필요 시 운영 정책 기준에 따라 추가 확인이 진행될 수 있습니다.</p>
-        <ul className="mt-4 list-disc space-y-2 pl-5 text-sm text-muted-foreground md:text-base">
-          <li>고객센터: <Link href="/support" className="underline underline-offset-4">/support</Link></li>
-          <li>Q&A 문의: <Link href="/board/qna/write" className="underline underline-offset-4">/board/qna/write</Link></li>
-          <li>약관: <Link href="/terms" className="underline underline-offset-4">/terms</Link></li>
-          <li>개인정보처리방침: <Link href="/privacy" className="underline underline-offset-4">/privacy</Link></li>
-        </ul>
-      </section>
+        <section className="mt-8 rounded-2xl border bg-background p-5 md:p-6">
+          <h2 className="text-lg font-semibold">문의 안내</h2>
+          <p className="mt-2 text-sm text-muted-foreground">최종 환불 가능 여부와 금액은 주문/서비스 상태 확인 후 안내드리며, 필요 시 운영 정책 기준에 따라 추가 확인이 진행될 수 있습니다.</p>
+          <ul className="mt-4 list-disc space-y-2 pl-5 text-sm text-muted-foreground md:text-base">
+            <li>고객센터: <Link href="/support" className="underline underline-offset-4">/support</Link></li>
+            <li>Q&A 문의: <Link href="/board/qna/write" className="underline underline-offset-4">/board/qna/write</Link></li>
+            <li>약관: <Link href="/terms" className="underline underline-offset-4">/terms</Link></li>
+            <li>개인정보처리방침: <Link href="/privacy" className="underline underline-offset-4">/privacy</Link></li>
+          </ul>
+        </section>
+      </SiteContainer>
     </main>
   );
 }
