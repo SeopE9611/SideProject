@@ -118,6 +118,7 @@ if (!uri) {
       indexes: async () => [],
       listIndexes: () => createMockCursor(),
       createIndex: async () => undefined,
+      createIndexes: async () => [],
     });
 
     const mockClient = {
