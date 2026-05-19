@@ -156,6 +156,129 @@ type CommentsResponse =
 
 const COMMENT_LIMIT = 10; // 댓글 1페이지당 10개
 
+type CommentItemProps = {
+  comment: CommunityComment;
+  isReply?: boolean;
+  userId?: string;
+  editingCommentId: string | null;
+  editingReplyId: string | null;
+  replyingToId: string | null;
+  isCommentSubmitting: boolean;
+  isReplySubmitting: boolean;
+  replyDraft: string;
+  replyError: string | null;
+  onNavigateAuthorPosts: (comment: CommunityComment) => void;
+  onSendMessage: (comment: CommunityComment) => void;
+  onOpenAuthorProfile: (comment: CommunityComment) => void;
+  onStartEditComment: (commentId: string) => void;
+  onStartEditReply: (reply: CommunityComment) => void;
+  onDeleteComment: (commentId: string) => void;
+  onOpenCommentReport: (comment: CommunityComment) => void;
+  onReplyDraftChange: (commentId: string, value: string) => void;
+  onReplyCancel: (commentId: string) => void;
+  onSubmitReply: (commentId: string, content: string) => void;
+  onStartReply: (commentId: string) => void;
+  onCommentEditDraftChange: (commentId: string, value: string) => void;
+  onReplyEditDraftChange: (commentId: string, value: string) => void;
+  onCancelEditComment: () => void;
+  onCancelEditReply: (commentId: string) => void;
+  onSaveEdit: (commentId: string, content: string, isReply: boolean) => void;
+};
+
+function CommentItem({
+  comment,
+  isReply = false,
+  userId,
+  editingCommentId,
+  editingReplyId,
+  replyingToId,
+  isCommentSubmitting,
+  isReplySubmitting,
+  replyDraft,
+  replyError,
+  onNavigateAuthorPosts,
+  onSendMessage,
+  onOpenAuthorProfile,
+  onStartEditComment,
+  onStartEditReply,
+  onDeleteComment,
+  onOpenCommentReport,
+  onReplyDraftChange,
+  onReplyCancel,
+  onSubmitReply,
+  onStartReply,
+  onCommentEditDraftChange,
+  onReplyEditDraftChange,
+  onCancelEditComment,
+  onCancelEditReply,
+  onSaveEdit,
+}: CommentItemProps) {
+  const isCommentAuthor = !!userId && !!comment.userId && userId === comment.userId;
+  const isEditingComment = !isReply && editingCommentId === comment.id;
+  const isEditingReply = isReply && editingReplyId === comment.id;
+  const isEditing = isEditingComment || isEditingReply;
+  const isDeleted = comment.status === "deleted";
+  const replyInputRef = useRef<HTMLTextAreaElement>(null);
+  const commentEditInputRef = useRef<HTMLTextAreaElement>(null);
+  const replyEditInputRef = useRef<HTMLTextAreaElement>(null);
+
+  return (
+    <div
+      className={`group relative rounded-xl transition-[background-color,border-color,box-shadow,color,opacity] ${isReply ? "ml-10 border-l-2 border-border bg-muted/50 pl-4 py-3 dark:border-border " : "border border-border bg-card p-5 hover:border-border hover:shadow-sm dark:hover:border-border"}`}
+    >
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="flex flex-col gap-0.5">
+            {comment.status === "deleted" ? (
+              <span className="text-sm font-semibold text-muted-foreground">
+                {comment.nickname ?? "회원"}
+              </span>
+            ) : (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button type="button" className="text-left text-sm font-semibold text-foreground underline-offset-4 hover:underline dark:text-foreground">{comment.nickname ?? "회원"}</button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-44">
+                  <DropdownMenuItem onClick={() => onNavigateAuthorPosts(comment)}>이 작성자의 글 보기</DropdownMenuItem>
+                  <DropdownMenuItem disabled={!comment.userId || comment.userId === userId} onClick={(e) => { e.preventDefault(); e.stopPropagation(); onSendMessage(comment); }}>쪽지 보내기</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onOpenAuthorProfile(comment)}>작성자 테니스 프로필</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+            <span className="text-xs text-foreground/75">{new Date(comment.createdAt).toLocaleString("ko-KR", { year: "2-digit", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" })}</span>
+          </div>
+        </div>
+        {!isDeleted && (
+          <div className="flex items-center gap-1 opacity-100">
+            {isCommentAuthor && !isEditing && (<><button type="button" className="rounded-lg px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground dark:hover:bg-muted dark:hover:text-foreground" onClick={() => isReply ? onStartEditReply(comment) : onStartEditComment(comment.id)}>수정</button><button type="button" className="rounded-lg px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive dark:text-muted-foreground dark:hover:bg-destructive/20 dark:hover:text-destructive" onClick={() => onDeleteComment(comment.id)}>삭제</button></>)}
+            {!isCommentAuthor && (<button type="button" className="rounded-lg px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-muted-foreground dark:hover:bg-muted dark:hover:text-muted-foreground" onClick={() => onOpenCommentReport(comment)}>신고</button>)}
+          </div>
+        )}
+      </div>
+      {isDeleted ? (<p className="text-sm italic text-muted-foreground">삭제된 댓글입니다.</p>) : isEditing ? (
+        <div className="space-y-2.5">
+          <Textarea ref={isReply ? replyEditInputRef : commentEditInputRef} data-comment-edit-id={!isReply ? comment.id : undefined} data-reply-edit-id={isReply ? comment.id : undefined} className="min-h-[80px] resize-none border-border text-sm focus-visible:ring-1 focus-visible:ring-ring dark:border-border dark:focus-visible:ring-ring" defaultValue={comment.content} onChange={(e) => isReply ? onReplyEditDraftChange(comment.id, e.currentTarget.value) : onCommentEditDraftChange(comment.id, e.currentTarget.value)} disabled={isCommentSubmitting} />
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="outline" size="sm" onClick={() => isReply ? onCancelEditReply(comment.id) : onCancelEditComment()} disabled={isCommentSubmitting} className="h-8 px-4 text-xs bg-transparent">취소</Button>
+            <Button type="button" size="sm" disabled={isCommentSubmitting} className="h-8 bg-primary px-4 text-xs text-primary-foreground hover:bg-primary/90" onClick={() => onSaveEdit(comment.id, isReply ? (replyEditInputRef.current?.value ?? "") : (commentEditInputRef.current?.value ?? ""), isReply)}>저장</Button>
+          </div>
+        </div>
+      ) : (<p className="text-sm leading-relaxed text-muted-foreground">{comment.content}</p>)}
+      {!isEditing && !isReply && !isDeleted && <div className="mt-3"><button type="button" className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground dark:hover:bg-muted dark:hover:text-foreground" onClick={() => onStartReply(comment.id)}><MessageSquare className="h-3.5 w-3.5" />답글</button></div>}
+      {replyingToId === comment.id && (
+        <form className="mt-3 space-y-2.5 rounded-lg border border-border bg-muted/50 p-4 dark:border-border" onSubmit={(e) => {e.preventDefault(); onSubmitReply(comment.id, replyInputRef.current?.value || "");}}>
+          <Textarea ref={replyInputRef} data-reply-composer-id={comment.id} className="min-h-[70px] resize-none border-border bg-card text-sm focus-visible:ring-1 focus-visible:ring-ring dark:border-border dark:focus-visible:ring-ring" defaultValue={replyDraft} onChange={(e) => onReplyDraftChange(comment.id, e.currentTarget.value)} disabled={isReplySubmitting} placeholder={`@${comment.nickname ?? "회원"} 님께 답글을 남겨 보세요.`} />
+          {replyError && <p className="text-xs text-destructive">{replyError}</p>}
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="outline" size="sm" onClick={() => onReplyCancel(comment.id)} disabled={isReplySubmitting} className="h-8 px-4 text-xs">취소</Button>
+            <Button type="submit" size="sm" disabled={isReplySubmitting} className="h-8 bg-primary px-4 text-xs text-primary-foreground hover:bg-primary/90">{isReplySubmitting ? "작성 중..." : "등록"}</Button>
+          </div>
+        </form>
+      )}
+    </div>
+  );
+}
+
 const fmtDateTime = (v: string | Date) =>
   new Date(v).toLocaleString("ko-KR", {
     year: "numeric",
@@ -612,6 +735,10 @@ export default function BoardDetailClient({
     if (!editingCommentId) return "";
     return comments.find((c) => c.id === editingCommentId)?.content ?? "";
   }, [comments, editingCommentId]);
+  const originalEditingReplyContent = useMemo(() => {
+    if (!editingReplyId) return "";
+    return comments.find((c) => c.id === editingReplyId)?.content ?? "";
+  }, [comments, editingReplyId]);
 
   const isDirtyAny = useMemo(() => {
     const hasCommentDraft = commentContent.trim().length > 0;
@@ -626,6 +753,11 @@ export default function BoardDetailClient({
       ).trim();
       return cur !== originalEditingContent.trim();
     })();
+    const hasReplyEditDraft = (() => {
+      if (!editingReplyId) return false;
+      const cur = (replyEditDrafts[editingReplyId] ?? originalEditingReplyContent).trim();
+      return cur !== originalEditingReplyContent.trim();
+    })();
 
     const hasPostReportDraft = reason.trim().length > 0;
     const hasCommentReportDraft = commentReportReason.trim().length > 0;
@@ -634,6 +766,7 @@ export default function BoardDetailClient({
       hasCommentDraft ||
       hasReplyDraft ||
       hasEditDraft ||
+      hasReplyEditDraft ||
       hasPostReportDraft ||
       hasCommentReportDraft
     );
@@ -641,8 +774,11 @@ export default function BoardDetailClient({
     commentContent,
     replyDrafts,
     editingCommentId,
+    editingReplyId,
     commentEditDrafts,
+    replyEditDrafts,
     originalEditingContent,
+    originalEditingReplyContent,
     reason,
     commentReportReason,
   ]);
@@ -725,7 +861,7 @@ export default function BoardDetailClient({
   };
 
   // 대댓글 작성 핸들러
-  const handleSubmitReply = async (parentId: string) => {
+  const handleSubmitReply = async (parentId: string, contentOverride?: string) => {
     if (!item) return;
 
     if (!user) {
@@ -733,7 +869,7 @@ export default function BoardDetailClient({
       return;
     }
 
-    const raw = replyDrafts[parentId] ?? "";
+    const raw = contentOverride ?? replyDrafts[parentId] ?? "";
     const trimmed = raw.trim();
     if (!trimmed) {
       setReplyError("답글 내용을 입력해 주세요.");
@@ -1178,277 +1314,22 @@ export default function BoardDetailClient({
     }
   };
 
-  // 댓글 아이템 컴포넌트
-  const CommentItem = ({
-    comment,
-    isReply = false,
-  }: {
-    comment: CommunityComment;
-    isReply?: boolean;
-  }) => {
-    const isCommentAuthor =
-      !!user && !!comment.userId && user.id === comment.userId;
-    const isEditingComment = !isReply && editingCommentId === comment.id;
-    const isEditingReply = isReply && editingReplyId === comment.id;
-    const isEditing = isEditingComment || isEditingReply;
-    const isDeleted = comment.status === "deleted";
-
-    // 대댓글 입력을 위한 로컬 ref (controlled가 아닌 uncontrolled로)
-    const replyInputRef = useRef<HTMLTextAreaElement>(null);
-    const commentEditInputRef = useRef<HTMLTextAreaElement>(null);
-    const replyEditInputRef = useRef<HTMLTextAreaElement>(null);
-
-    return (
-      <div
-        className={`group relative rounded-xl transition-[background-color,border-color,box-shadow,color,opacity] ${isReply ? "ml-10 border-l-2 border-border bg-muted/50 pl-4 py-3 dark:border-border " : "border border-border bg-card p-5 hover:border-border hover:shadow-sm dark:hover:border-border"}`}
-      >
-        <div className="mb-3 flex items-start justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="flex flex-col gap-0.5">
-              {comment.status === "deleted" ? (
-                <span className="text-sm font-semibold text-muted-foreground">
-                  {comment.nickname ?? "회원"}
-                </span>
-              ) : (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button
-                      type="button"
-                      className="text-left text-sm font-semibold text-foreground underline-offset-4 hover:underline dark:text-foreground"
-                    >
-                      {comment.nickname ?? "회원"}
-                    </button>
-                  </DropdownMenuTrigger>
-
-                  <DropdownMenuContent align="start" className="w-44">
-                    <DropdownMenuItem
-                      onClick={() => {
-                        if (!confirmLeaveIfDirty()) return;
-                        if (!comment.userId) return;
-                        router.push(
-                          `${config.routePrefix}?authorId=${comment.userId}&authorName=${encodeURIComponent(comment.nickname ?? "회원")}`,
-                        );
-                      }}
-                    >
-                      이 작성자의 글 보기
-                    </DropdownMenuItem>
-
-                    <DropdownMenuItem
-                      disabled={!comment.userId || comment.userId === user?.id}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        if (!comment.userId) return;
-                        openCompose(comment.userId, comment.nickname);
-                      }}
-                    >
-                      쪽지 보내기
-                    </DropdownMenuItem>
-
-                    <DropdownMenuItem
-                      onClick={() => {
-                        handleOpenAuthorProfile({
-                          userId: comment.userId ?? null,
-                          nickname: comment.nickname ?? "회원",
-                        });
-                      }}
-                    >
-                      작성자 테니스 프로필
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
-
-              <span className="text-xs text-foreground/75">
-                {new Date(comment.createdAt).toLocaleString("ko-KR", {
-                  year: "2-digit",
-                  month: "2-digit",
-                  day: "2-digit",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </span>
-            </div>
-          </div>
-
-          {!isDeleted && (
-            <div className="flex items-center gap-1 opacity-100">
-              {isCommentAuthor && !isEditing && (
-                <>
-                  <button
-                    type="button"
-                    className="rounded-lg px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground dark:hover:bg-muted dark:hover:text-foreground"
-                    onClick={() =>
-                      isReply ? startEditReply(comment) : startEditComment(comment.id)
-                    }
-                  >
-                    수정
-                  </button>
-                  <button
-                    type="button"
-                    className="rounded-lg px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive dark:text-muted-foreground dark:hover:bg-destructive/20 dark:hover:text-destructive"
-                    onClick={() => handleDeleteComment(comment.id)}
-                  >
-                    삭제
-                  </button>
-                </>
-              )}
-
-              {!isCommentAuthor && (
-                <button
-                  type="button"
-                  className="rounded-lg px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-muted-foreground dark:hover:bg-muted dark:hover:text-muted-foreground"
-                  onClick={() => openCommentReportDialog(comment)}
-                >
-                  신고
-                </button>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* 본문 / 수정 모드 */}
-        {isDeleted ? (
-          <p className="text-sm italic text-muted-foreground">
-            삭제된 댓글입니다.
-          </p>
-        ) : isEditing ? (
-          <div className="space-y-2.5">
-            <Textarea
-              ref={isReply ? replyEditInputRef : commentEditInputRef}
-              data-comment-edit-id={!isReply ? comment.id : undefined}
-              data-reply-edit-id={isReply ? comment.id : undefined}
-              className="min-h-[80px] resize-none border-border text-sm focus-visible:ring-1 focus-visible:ring-ring dark:border-border dark:focus-visible:ring-ring"
-              defaultValue={comment.content}
-              onChange={(e) => {
-                const v = e.currentTarget.value;
-                if (isReply) {
-                  setReplyEditDrafts((prev) => ({ ...prev, [comment.id]: v }));
-                } else {
-                  setCommentEditDrafts((prev) => ({ ...prev, [comment.id]: v }));
-                }
-              }}
-              disabled={isCommentSubmitting}
-            />
-            <div className="flex justify-end gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() =>
-                  isReply ? cancelEditReply(comment.id) : cancelEditComment()
-                }
-                disabled={isCommentSubmitting}
-                className="h-8 px-4 text-xs bg-transparent"
-              >
-                취소
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                disabled={isCommentSubmitting}
-                className="h-8 bg-primary px-4 text-xs text-primary-foreground hover:bg-primary/90"
-                onClick={() => {
-                  const content = isReply
-                    ? (replyEditInputRef.current?.value ?? "")
-                    : (commentEditInputRef.current?.value ?? "");
-                  // 빈 내용 방어
-                  if (!content.trim()) {
-                    setCommentError("댓글 내용을 입력해 주세요.");
-                    return;
-                  }
-                  void handleUpdateComment(comment.id, content);
-                }}
-              >
-                저장
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <p className="text-sm leading-relaxed text-muted-foreground">
-            {comment.content}
-          </p>
-        )}
-
-        {!isEditing && !isReply && !isDeleted && (
-          <div className="mt-3">
-            <button
-              type="button"
-              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground dark:hover:bg-muted dark:hover:text-foreground"
-              onClick={() =>
-                handleStartReply(comment.id)
-              }
-            >
-              <MessageSquare className="h-3.5 w-3.5" />
-              답글
-            </button>
-          </div>
-        )}
-
-        {replyingToId === comment.id && (
-          <form
-            className="mt-3 space-y-2.5 rounded-lg border border-border bg-muted/50 p-4 dark:border-border"
-            onSubmit={(e) => {
-              e.preventDefault();
-              const content = replyInputRef.current?.value || "";
-              if (!content.trim()) {
-                setReplyError("답글 내용을 입력해 주세요.");
-                return;
-              }
-              void handleSubmitReply(comment.id);
-            }}
-          >
-            <Textarea
-              ref={replyInputRef}
-              data-reply-composer-id={comment.id}
-              className="min-h-[70px] resize-none border-border bg-card text-sm focus-visible:ring-1 focus-visible:ring-ring dark:border-border dark:focus-visible:ring-ring"
-              defaultValue={replyDrafts[comment.id] ?? ""}
-              onChange={(e) => {
-                const v = e.currentTarget.value;
-                setReplyDrafts((prev) => ({ ...prev, [comment.id]: v }));
-              }}
-              disabled={isReplySubmitting}
-              placeholder={`@${comment.nickname ?? "회원"} 님께 답글을 남겨 보세요.`}
-            />
-            {replyError && (
-              <p className="text-xs text-destructive">{replyError}</p>
-            )}
-            <div className="flex justify-end gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  if (replyInputRef.current) {
-                    replyInputRef.current.value = "";
-                  }
-                  setReplyDrafts((prev) => {
-                    const next = { ...prev };
-                    delete next[comment.id];
-                    return next;
-                  });
-                  setReplyingToId(null);
-                  setReplyError(null);
-                }}
-                disabled={isReplySubmitting}
-                className="h-8 px-4 text-xs"
-              >
-                취소
-              </Button>
-              <Button
-                type="submit"
-                size="sm"
-                disabled={isReplySubmitting}
-                className="h-8 bg-primary px-4 text-xs text-primary-foreground hover:bg-primary/90"
-              >
-                {isReplySubmitting ? "작성 중..." : "등록"}
-              </Button>
-            </div>
-          </form>
-        )}
-      </div>
+  const handleNavigateAuthorPosts = (comment: CommunityComment) => {
+    if (!confirmLeaveIfDirty()) return;
+    if (!comment.userId) return;
+    router.push(
+      `${config.routePrefix}?authorId=${comment.userId}&authorName=${encodeURIComponent(comment.nickname ?? "회원")}`,
     );
   };
+
+  const handleCommentSave = (commentId: string, content: string, _isReplyEdit: boolean) => {
+    if (!content.trim()) {
+      setCommentError("댓글 내용을 입력해 주세요.");
+      return;
+    }
+    void handleUpdateComment(commentId, content);
+  };
+
 
   useEffect(() => {
     if (!editingCommentId) return;
@@ -2449,13 +2330,122 @@ export default function BoardDetailClient({
 
                       return (
                         <li key={c.id} className="space-y-2.5">
-                          <CommentItem comment={c} />
+                          <CommentItem
+                            comment={c}
+                            userId={user?.id}
+                            editingCommentId={editingCommentId}
+                            editingReplyId={editingReplyId}
+                            replyingToId={replyingToId}
+                            isCommentSubmitting={isCommentSubmitting}
+                            isReplySubmitting={isReplySubmitting}
+                            replyDraft={replyDrafts[c.id] ?? ""}
+                            replyError={replyError}
+                            onNavigateAuthorPosts={handleNavigateAuthorPosts}
+                            onSendMessage={(comment) => {
+                              if (!comment.userId) return;
+                              openCompose(comment.userId, comment.nickname);
+                            }}
+                            onOpenAuthorProfile={(comment) =>
+                              handleOpenAuthorProfile({
+                                userId: comment.userId ?? null,
+                                nickname: comment.nickname ?? "회원",
+                              })
+                            }
+                            onStartEditComment={startEditComment}
+                            onStartEditReply={startEditReply}
+                            onDeleteComment={handleDeleteComment}
+                            onOpenCommentReport={openCommentReportDialog}
+                            onReplyDraftChange={(commentId, value) =>
+                              setReplyDrafts((prev) => ({ ...prev, [commentId]: value }))
+                            }
+                            onReplyCancel={(commentId) => {
+                              setReplyDrafts((prev) => {
+                                const next = { ...prev };
+                                delete next[commentId];
+                                return next;
+                              });
+                              setReplyingToId(null);
+                              setReplyError(null);
+                            }}
+                            onSubmitReply={(commentId, content) => {
+                              if (!content.trim()) {
+                                setReplyError("답글 내용을 입력해 주세요.");
+                                return;
+                              }
+                              void handleSubmitReply(commentId, content);
+                            }}
+                            onStartReply={handleStartReply}
+                            onCommentEditDraftChange={(commentId, value) =>
+                              setCommentEditDrafts((prev) => ({ ...prev, [commentId]: value }))
+                            }
+                            onReplyEditDraftChange={(commentId, value) =>
+                              setReplyEditDrafts((prev) => ({ ...prev, [commentId]: value }))
+                            }
+                            onCancelEditComment={cancelEditComment}
+                            onCancelEditReply={cancelEditReply}
+                            onSaveEdit={handleCommentSave}
+                          />
 
                           {visibleReplies.length > 0 && (
                             <ul className="space-y-2.5">
                               {visibleReplies.map((reply) => (
                                 <li key={reply.id}>
-                                  <CommentItem comment={reply} isReply />
+                                  <CommentItem
+                                    comment={reply}
+                                    isReply
+                                    userId={user?.id}
+                                    editingCommentId={editingCommentId}
+                                    editingReplyId={editingReplyId}
+                                    replyingToId={replyingToId}
+                                    isCommentSubmitting={isCommentSubmitting}
+                                    isReplySubmitting={isReplySubmitting}
+                                    replyDraft={replyDrafts[reply.id] ?? ""}
+                                    replyError={replyError}
+                                    onNavigateAuthorPosts={handleNavigateAuthorPosts}
+                                    onSendMessage={(comment) => {
+                                      if (!comment.userId) return;
+                                      openCompose(comment.userId, comment.nickname);
+                                    }}
+                                    onOpenAuthorProfile={(comment) =>
+                                      handleOpenAuthorProfile({
+                                        userId: comment.userId ?? null,
+                                        nickname: comment.nickname ?? "회원",
+                                      })
+                                    }
+                                    onStartEditComment={startEditComment}
+                                    onStartEditReply={startEditReply}
+                                    onDeleteComment={handleDeleteComment}
+                                    onOpenCommentReport={openCommentReportDialog}
+                                    onReplyDraftChange={(commentId, value) =>
+                                      setReplyDrafts((prev) => ({ ...prev, [commentId]: value }))
+                                    }
+                                    onReplyCancel={(commentId) => {
+                                      setReplyDrafts((prev) => {
+                                        const next = { ...prev };
+                                        delete next[commentId];
+                                        return next;
+                                      });
+                                      setReplyingToId(null);
+                                      setReplyError(null);
+                                    }}
+                                    onSubmitReply={(commentId, content) => {
+                                      if (!content.trim()) {
+                                        setReplyError("답글 내용을 입력해 주세요.");
+                                        return;
+                                      }
+                                      void handleSubmitReply(commentId, content);
+                                    }}
+                                    onStartReply={handleStartReply}
+                                    onCommentEditDraftChange={(commentId, value) =>
+                                      setCommentEditDrafts((prev) => ({ ...prev, [commentId]: value }))
+                                    }
+                                    onReplyEditDraftChange={(commentId, value) =>
+                                      setReplyEditDrafts((prev) => ({ ...prev, [commentId]: value }))
+                                    }
+                                    onCancelEditComment={cancelEditComment}
+                                    onCancelEditReply={cancelEditReply}
+                                    onSaveEdit={handleCommentSave}
+                                  />
                                 </li>
                               ))}
                             </ul>
