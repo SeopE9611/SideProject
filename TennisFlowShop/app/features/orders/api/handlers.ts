@@ -55,6 +55,7 @@ const OrderItemSchema = z.object({
     .refine((s) => ObjectId.isValid(s), { message: "INVALID_PRODUCT_ID" }),
   quantity: z.coerce.number().int().positive(),
   kind: z.enum(["product", "racket"]).optional(),
+  selectedGauge: z.string().trim().optional(),
 });
 
 const GuestInfoSchema = z
@@ -609,6 +610,7 @@ export async function createOrder(
                 imageUrl: prod?.images?.[0],
                 quantity,
                 kind: "product" as const,
+                selectedGauge: it.selectedGauge?.trim() || undefined,
               };
             }
 

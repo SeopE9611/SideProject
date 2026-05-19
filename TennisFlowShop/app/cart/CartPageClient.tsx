@@ -686,7 +686,7 @@ export default function CartPageClient() {
 
                     return (
                       <div
-                        key={item.id}
+                        key={`${item.id}:${item.selectedGauge ?? ""}`}
                         className={`rounded-xl bg-card p-3 bp-sm:p-4 shadow-sm transition hover:shadow-md dark:bg-card ${highlightCleanupTarget ? "ring-2 ring-ring bg-muted/40 dark:bg-muted" : ""}`}
                       >
                         <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center">
@@ -802,7 +802,7 @@ export default function CartPageClient() {
                                     aria-label={`${item.name} 수량 감소`}
                                     disabled={lockStepper ? true : !canDec}
                                     onClick={() =>
-                                      updateQuantity(item.id, item.quantity - 1)
+                                      updateQuantity(item.id, item.quantity - 1, item.selectedGauge)
                                     }
                                     title={
                                       lockStepper
@@ -849,6 +849,7 @@ export default function CartPageClient() {
                                       updateQuantity(
                                         item.id,
                                         item.quantity + 1,
+                                        item.selectedGauge,
                                       );
                                     }}
                                   >

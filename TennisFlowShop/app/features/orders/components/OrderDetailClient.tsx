@@ -149,7 +149,7 @@ interface OrderDetail {
     source?: string | null;
   } | null;
   total: number;
-  items: Array<{ name: string; quantity: number; price: number }>;
+  items: Array<{ name: string; quantity: number; price: number; selectedGauge?: string }>;
   history: Array<any>; // initialData용 (하지만 useSWRInfinite로 실제 이력 사용)
   cancelReason?: string;
   cancelReasonDetail?: string;
@@ -2015,6 +2015,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                         <p className="text-sm text-foreground/80">
                           수량: {item.quantity}개
                         </p>
+                        {item.selectedGauge && <p className="text-xs text-foreground/70">게이지: {item.selectedGauge}</p>}
                       </div>
                       <div className="text-right">
                         <p className="font-semibold text-foreground">

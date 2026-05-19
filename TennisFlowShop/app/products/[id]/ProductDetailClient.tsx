@@ -102,6 +102,15 @@ function getProductDetailBadges(product: any): ProductBadge[] {
   return badges.slice(0, 3);
 }
 
+
+function resolveGaugeOptions(product: any): string[] {
+  if (Array.isArray(product?.gaugeOptions) && product.gaugeOptions.length > 0) {
+    return product.gaugeOptions.map((v: unknown) => String(v ?? "").trim()).filter(Boolean);
+  }
+  const fallbackGauge = typeof product?.gauge === "string" ? product.gauge.trim() : "";
+  return fallbackGauge ? [fallbackGauge] : [];
+}
+
 function getProductBadgeTone(
   badge: ProductBadge,
 ): Parameters<typeof imageBadgeClass>[0] {
@@ -190,7 +199,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
     const brand = BRAND_MAP[product?.brand] ?? BRAND_MAP[spec.brand] ?? product?.brand ?? spec.brand;
     const material = MATERIAL_MAP[product?.material] ?? MATERIAL_MAP[spec.material] ?? spec.소재 ?? product?.material ?? spec.material;
     const gaugeRaw = product?.gauge ?? spec.gauge ?? spec.게이지;
-    const gauge = GAUGE_MAP[gaugeRaw] ?? gaugeRaw;
+    const gauge = gaugeOptions.length > 1 ? "선택 가능" : (GAUGE_MAP[gaugeRaw] ?? gaugeRaw);
     const color = COLOR_MAP[product?.color] ?? COLOR_MAP[spec.color] ?? spec.색상 ?? product?.color ?? spec.color;
     const lengthRaw = product?.length ?? spec.length ?? spec.길이;
     const length = typeof lengthRaw === "string" && /^\d+(\.\d+)?$/.test(lengthRaw) ? `${lengthRaw}m` : lengthRaw;
@@ -237,6 +246,13 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
   const [quantity, setQuantity] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const gaugeOptions = useMemo(() => resolveGaugeOptions(product), [product]);
+  const isStringProduct = product?.category === "string" || product?.kind === "string";
+  const [selectedGauge, setSelectedGauge] = useState<string>("");
+  useEffect(() => {
+    if (!isStringProduct || gaugeOptions.length !== 1) return;
+    setSelectedGauge(gaugeOptions[0]);
+  }, [isStringProduct, gaugeOptions]);
   // const [isWishlisted, setIsWishlisted] = useState(false);
   const { addItem } = useCartStore();
   const { setItem: setBuyNowItem } = useBuyNowStore();
@@ -572,8 +588,18 @@ export default function ProductDetailClient({ product }: { product: any }) {
     }
   };
 
+  const requireGaugeSelection = () => {
+    if (!isStringProduct || gaugeOptions.length <= 1) return true;
+    if (selectedGauge) return true;
+    showErrorToast("게이지를 선택해주세요.");
+    return false;
+  };
+
   const handleAddToCart = () => {
     if (loading) return;
+    if (!requireGaugeSelection()) return;
+    if (!requireGaugeSelection()) return;
+    if (!requireGaugeSelection()) return;
     // 재고 검증 (기존 장바구니에 담긴 수량 + 지금 선택 수량이 stock 초과인지)
     const wouldBe = quantity;
     if (wouldBe > stock) {
@@ -587,6 +613,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
       quantity,
       image: product.images?.[0] || "/placeholder.svg",
       stock,
+      selectedGauge: selectedGauge || undefined,
     });
 
     if (!result.success) {
@@ -653,6 +680,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
       quantity,
       image: product.images?.[0] || "/placeholder.svg",
       stock,
+      selectedGauge: selectedGauge || undefined,
     };
 
     setBuyNowItem(buyNowItem);
@@ -686,6 +714,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
       quantity,
       image: product.images?.[0] || "/placeholder.svg",
       stock,
+      selectedGauge: selectedGauge || undefined,
     };
 
     setBuyNowItem(buyNowItem);

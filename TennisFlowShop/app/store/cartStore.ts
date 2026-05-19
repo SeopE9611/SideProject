@@ -20,6 +20,7 @@ export type CartItem = {
   image?: string; // 이미지는 선택적 속성
   stock?: number; // 재고 정보
   kind?: "product" | "racket"; // 아이템 종류 (기본: product)
+  selectedGauge?: string;
 };
 
 // 타입 정의
@@ -28,8 +29,8 @@ export type CartItem = {
 interface CartState {
   items: CartItem[]; // 장바구니에 담긴 상품 목록
   addItem: (item: CartItem) => { success: boolean; message?: string };
-  removeItem: (id: string) => void; // 장바구니에서 상품 제거
-  updateQuantity: (id: string, quantity: number) => void; // 장바구니 상품 수량 수정
+  removeItem: (id: string, selectedGauge?: string) => void; // 장바구니에서 상품 제거
+  updateQuantity: (id: string, quantity: number, selectedGauge?: string) => void; // 장바구니 상품 수량 수정
   clearCart: () => void; // 장바구니 전체 삭제
 }
 
@@ -55,13 +56,21 @@ export const useCartStore = create<CartState>()(
       items: [],
 
       addItem: (item) => {
-        const exists = get().items.find((i) => i.id === item.id);
-        // 동일 상품을 중복으로 담는 건 현재 정책상 막고 있음
+        const exists = get().items.find((i) => i.id === item.id && (i.selectedGauge ?? "") === (item.selectedGauge ?? ""));
         if (exists) {
-          return {
-            success: false,
-            message: "이미 장바구니에 담긴 상품입니다.",
-          };
+          const maxStock = getMaxStock(exists.stock);
+          const nextQty = clampQuantity(exists.quantity + item.quantity, maxStock);
+          if (nextQty === exists.quantity) {
+            return { success: false, message: "재고 한도까지 담겨 있습니다." };
+          }
+          set((state) => ({
+            items: state.items.map((i) =>
+              i.id === item.id && (i.selectedGauge ?? "") === (item.selectedGauge ?? "")
+                ? { ...i, quantity: nextQty }
+                : i,
+            ),
+          }));
+          return { success: true };
         }
 
         // 재고(가용 수량) 상한 적용
@@ -85,25 +94,19 @@ export const useCartStore = create<CartState>()(
 
       // 특정 상품을 장바구니에서 제거
       // id가 일치하지 않는 상품만 남기고 나머지는 제거 (즉 해당 상품 삭제)
-      removeItem: (
-        id: string, // 장바구니 상품 제거 (id를 인자로 받음)
-      ) =>
+      removeItem: (id: string, selectedGauge?: string) =>
         set((state) => ({
-          // 상태를 업데이트
-          items: state.items.filter((i) => i.id !== id), // id가 일치하지 않는 상품만 남김
+          items: state.items.filter((i) => !(i.id === id && (i.selectedGauge ?? "") === (selectedGauge ?? ""))),
         })),
 
       // 수량 변경 (ex: +/- 버튼 클릭시)
       // 해당 상품의 수량을 새 값으로 바꿔줌
-      updateQuantity: (
-        id: string,
-        quantity: number, // 장바구니 상품 수량 수정 (id와 수량을 인자로 받음)
-      ) =>
+      updateQuantity: (id: string, quantity: number, selectedGauge?: string) =>
         set((state) => ({
           // 상태를 업데이트
           items: state.items
             .map((i) => {
-              if (i.id !== id) return i;
+              if (i.id !== id || (i.selectedGauge ?? "") !== (selectedGauge ?? "")) return i;
 
               const maxStock = getMaxStock(i.stock);
               const nextQty = clampQuantity(quantity, maxStock);

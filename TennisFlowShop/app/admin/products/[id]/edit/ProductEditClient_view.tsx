@@ -179,6 +179,7 @@ export default function ProductEditClient({
 
   // 검색 키워드(쉼표 구분) 입력 상태
   const [searchKeywordsInput, setSearchKeywordsInput] = useState("");
+  const [gaugeOptionsInput, setGaugeOptionsInput] = useState("");
   const handleGenerateKeywords = () => {
     const keywords = createSearchKeywords(basicInfo.name, basicInfo.brand);
     if (!keywords) {
@@ -239,6 +240,11 @@ export default function ProductEditClient({
     // 검색 키워드 초기값
     setSearchKeywordsInput(
       Array.isArray(p.searchKeywords) ? p.searchKeywords.join(", ") : "",
+    );
+    setGaugeOptionsInput(
+      Array.isArray((p as any).gaugeOptions)
+        ? (p as any).gaugeOptions.join(", ")
+        : "",
     );
 
     const hybridState = normalizeHybridState(p);
@@ -547,10 +553,15 @@ export default function ProductEditClient({
         .split(",")
         .map((k) => k.trim())
         .filter((k) => k.length > 0);
+      const gaugeOptions = gaugeOptionsInput
+        .split(",")
+        .map((v) => v.trim())
+        .filter((v) => v.length > 0);
 
       //  product 전체 구성
       const product = {
         ...basicInfo, // name, brand, price 등 기본 항목
+        gaugeOptions,
 
         searchKeywords,
 
@@ -856,6 +867,12 @@ export default function ProductEditClient({
                             ))}
                           </SelectContent>
                         </Select>
+                        <Input
+                          id="string-gauge-options"
+                          placeholder="게이지 옵션 (예: 1.20, 1.25, 1.30)"
+                          value={gaugeOptionsInput}
+                          onChange={(e) => setGaugeOptionsInput(e.target.value)}
+                        />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="string-material">재질</Label>

@@ -111,6 +111,7 @@ export default function NewStringPage() {
 
   // 검색 키워드 입력값 (쉼표로 구분)
   const [searchKeywordsInput, setSearchKeywordsInput] = useState("");
+  const [gaugeOptionsInput, setGaugeOptionsInput] = useState("");
 
   // 추가 특성 정보
   const [additionalFeatures, setAdditionalFeatures] = useState("");
@@ -440,10 +441,15 @@ export default function NewStringPage() {
       .split(",")
       .map((k) => k.trim())
       .filter((k) => k.length > 0);
+    const gaugeOptions = gaugeOptionsInput
+      .split(",")
+      .map((v) => v.trim())
+      .filter((v) => v.length > 0);
 
     //  product 전체 구성
     const product = {
       ...basicInfo, // name, brand, price 등 기본 항목
+      gaugeOptions,
 
       // 검색 키워드 (통합 검색에서 사용)
       searchKeywords,
@@ -743,6 +749,12 @@ export default function NewStringPage() {
                             ))}
                           </SelectContent>
                         </Select>
+                        <Input
+                          id="string-gauge-options"
+                          placeholder="게이지 옵션 (예: 1.20, 1.25, 1.30)"
+                          value={gaugeOptionsInput}
+                          onChange={(e) => setGaugeOptionsInput(e.target.value)}
+                        />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="string-color">색상</Label>
