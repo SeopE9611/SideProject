@@ -46,6 +46,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { badgeSizeSm, getBoardCategoryTone } from "@/lib/badge-style";
 import { communityFetch } from "@/lib/community/communityFetch.client";
 import { boardFetcher, parseApiError } from "@/lib/fetchers/boardFetcher";
+import { adminMutator } from "@/lib/admin/adminFetcher";
 import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import {
   UNSAVED_CHANGES_MESSAGE,
@@ -504,6 +505,16 @@ export default function BoardDetailClient({
   const isNotFound = (error as any)?.error === "not_found";
 
   const isAuthor = !!user && !!item?.userId && user.id === item.userId;
+  const userLike = user as
+    | ({ role?: string; isAdmin?: boolean; roles?: string[] } & typeof user)
+    | null;
+  const isAdmin = !!(
+    userLike &&
+    (userLike.role === "admin" ||
+      userLike.isAdmin === true ||
+      (Array.isArray(userLike.roles) && userLike.roles.includes("admin")))
+  );
+  const canDeletePost = isAuthor || isAdmin;
 
   // 댓글 입력 폼 상태
   const [commentContent, setCommentContent] = useState("");
@@ -868,16 +879,24 @@ export default function BoardDetailClient({
     if (isDeleting) return;
 
     const confirmed = window.confirm(
-      "정말로 이 게시글을 삭제하시겠습니까? 되돌릴 수 없습니다.",
+      isAdmin && !isAuthor
+        ? "관리자 권한으로 이 게시글을 삭제하시겠습니까? 삭제 후 복구할 수 없습니다."
+        : "정말로 이 게시글을 삭제하시겠습니까? 되돌릴 수 없습니다.",
     );
     if (!confirmed) return;
 
     try {
       setIsDeleting(true);
 
-      await boardFetcher(`/api/community/posts/${item.id}`, {
-        method: "DELETE",
-      });
+      if (isAdmin) {
+        await adminMutator(`/api/admin/community/posts/${item.id}`, {
+          method: "DELETE",
+        });
+      } else {
+        await boardFetcher(`/api/community/posts/${item.id}`, {
+          method: "DELETE",
+        });
+      }
 
       // 삭제 성공 - 목록으로 이동
       router.push(listHref);
@@ -1598,30 +1617,32 @@ export default function BoardDetailClient({
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-36">
                     {isAuthor && (
-                      <>
-                        <DropdownMenuItem
-                          onClick={() => {
-                            if (!confirmLeaveIfDirty()) return;
-                            router.push(
-                              `${config.routePrefix}/${item.id}/edit`,
-                            );
-                          }}
-                          className="gap-2"
-                        >
-                          <Pencil className="h-4 w-4" />
-                          수정
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={handleDelete}
-                          disabled={isDeleting}
-                          className="gap-2 text-destructive focus:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          {isDeleting ? "삭제 중..." : "삭제"}
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                      </>
+                      <DropdownMenuItem
+                        onClick={() => {
+                          if (!confirmLeaveIfDirty()) return;
+                          router.push(`${config.routePrefix}/${item.id}/edit`);
+                        }}
+                        className="gap-2"
+                      >
+                        <Pencil className="h-4 w-4" />
+                        수정
+                      </DropdownMenuItem>
                     )}
+                    {canDeletePost && (
+                      <DropdownMenuItem
+                        onClick={handleDelete}
+                        disabled={isDeleting}
+                        className="gap-2 text-destructive focus:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        {isDeleting
+                          ? "삭제 중..."
+                          : isAdmin && !isAuthor
+                            ? "관리자 삭제"
+                            : "삭제"}
+                      </DropdownMenuItem>
+                    )}
+                    {canDeletePost && <DropdownMenuSeparator />}
                     <DropdownMenuItem
                       onClick={() => {
                         if (!user) {
