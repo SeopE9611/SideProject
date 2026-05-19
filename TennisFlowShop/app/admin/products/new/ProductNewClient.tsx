@@ -421,7 +421,8 @@ export default function NewStringPage() {
       return;
     }
 
-    if (inventory.lowStock < 0 || inventory.lowStock > inventory.stock) {
+    const resolvedStock = totalGaugeStock;
+    if (inventory.lowStock < 0 || inventory.lowStock > resolvedStock) {
       showErrorToast(
         <>
           <strong>[재고관리 오류]</strong> <br />

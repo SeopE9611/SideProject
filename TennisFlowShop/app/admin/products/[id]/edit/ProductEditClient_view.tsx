@@ -206,8 +206,6 @@ export default function ProductEditClient({
     setSearchKeywordsInput(keywords.join(", "));
   };
 
-  // 재고 관리가 실제로 수정되었는지 추적할 플래그
-  const [inventoryDirty, setInventoryDirty] = useState(false);
 
   const { data, error, isLoading } = useSWR<ProductDetailResponse>(
     `/api/admin/products/${productId}`,
@@ -533,16 +531,15 @@ export default function ProductEditClient({
         return;
       }
 
-      if (inventoryDirty) {
-        if (inventory.lowStock < 0 || inventory.lowStock > inventory.stock) {
-          showErrorToast(
-            <>
-              <strong>[재고관리 오류]</strong> <br />
-              '재고 부족 기준은 0 이상이며 재고 수량보다 많을 수 없습니다.'
-            </>,
-          );
-          return;
-        }
+      const resolvedStock = totalGaugeStock;
+      if (inventory.lowStock < 0 || inventory.lowStock > resolvedStock) {
+        showErrorToast(
+          <>
+            <strong>[재고관리 오류]</strong> <br />
+            '재고 부족 기준은 0 이상이며 재고 수량보다 많을 수 없습니다.'
+          </>,
+        );
+        return;
       }
       // specifications 영문 키로 미리 구성
       const specifications: {
@@ -1646,7 +1643,6 @@ export default function ProductEditClient({
                           placeholder="0"
                           value={inventory.lowStock.toLocaleString()}
                           onChange={(e) => {
-                            setInventoryDirty(true);
                             const raw = e.target.value.replace(/,/g, "");
                             const numeric = Number(raw);
                             if (!isNaN(numeric)) {
