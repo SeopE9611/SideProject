@@ -34,7 +34,12 @@ const brands = [
   { label: "헤드", value: "head" },
   { label: "요넥스", value: "yonex" },
   { label: "솔린코", value: "solinco" },
+  { label: "프린스", value: "prince" },
   { label: "던롭", value: "dunlop" },
+  { label: "MSV", value: "msv" },
+  { label: "볼키", value: "volkl" },
+  { label: "탑스핀", value: "topspin" },
+  { label: "기타", value: "other" },
 ];
 
 // 브랜드 라벨 매핑 (소문자 key)

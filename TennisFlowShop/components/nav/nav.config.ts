@@ -9,14 +9,19 @@ export const NAV_LINKS = {
     root: "/products",
     /** 브랜드별 링크(슬러그는 실제 필터 키에 맞춰 수정 가능) */
     brands: [
+      { name: "럭실론", href: "/products?brand=luxilon" },
+      { name: "테크니화이버", href: "/products?brand=tecnifibre" },
       { name: "윌슨", href: "/products?brand=wilson" },
       { name: "바볼랏", href: "/products?brand=babolat" },
-      { name: "럭실론", href: "/products?brand=luxilon" },
-      { name: "요넥스", href: "/products?brand=yonex" },
       { name: "헤드", href: "/products?brand=head" },
-      { name: "테크니화이버", href: "/products?brand=tecnifibre" },
+      { name: "요넥스", href: "/products?brand=yonex" },
       { name: "솔린코", href: "/products?brand=solinco" },
       { name: "프린스", href: "/products?brand=prince" },
+      { name: "던롭", href: "/products?brand=dunlop" },
+      { name: "MSV", href: "/products?brand=msv" },
+      { name: "볼키", href: "/products?brand=volkl" },
+      { name: "탑스핀", href: "/products?brand=topspin" },
+      { name: "기타", href: "/products?brand=other" },
     ],
   },
 

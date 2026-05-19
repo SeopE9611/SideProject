@@ -976,11 +976,11 @@ export default function ProductDetailClient({ product }: { product: any }) {
                             </Button>
                           )}
 
-                          <div className="grid grid-cols-2 gap-3">
+                          <div className="space-y-3">
                             <Button
                               variant="outline"
                               size="lg"
-                              className="h-11 text-sm sm:h-12 sm:text-base"
+                              className="h-auto min-h-12 w-full whitespace-normal break-keep text-sm sm:text-base"
                               onClick={handleAddToCart}
                               disabled={loading || quantity > stock}
                             >
@@ -993,7 +993,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                               onClick={handleWishlist}
                               size="lg"
                               className={cn(
-                                "h-11 text-sm sm:h-12 sm:text-base",
+                                "h-auto min-h-12 w-full whitespace-normal break-keep text-sm sm:text-base",
                                 isWishlisted ? "border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/15" : "bg-background",
                                 isWishlistUnknown && "cursor-not-allowed opacity-70",
                               )}

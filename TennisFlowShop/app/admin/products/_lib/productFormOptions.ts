@@ -6,7 +6,12 @@ export const brands = [
   { id: "head", name: "헤드" },
   { id: "yonex", name: "요넥스" },
   { id: "solinco", name: "솔린코" },
+  { id: "prince", name: "프린스" },
   { id: "dunlop", name: "던롭" },
+  { id: "msv", name: "MSV" },
+  { id: "volkl", name: "볼키" },
+  { id: "topspin", name: "탑스핀" },
+  { id: "other", name: "기타" },
 ];
 
 export const gauges = [
