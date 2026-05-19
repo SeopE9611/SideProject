@@ -122,6 +122,13 @@ export default function NewStringPage() {
     ProductGaugeInventory[]
   >([]);
   const [showGaugeStockToUser, setShowGaugeStockToUser] = useState(true);
+  const totalGaugeStock = useMemo(
+    () =>
+      gaugeInventories
+        .filter((row) => !row.isSoldOut)
+        .reduce((sum, row) => sum + (Number.isFinite(row.stock) ? row.stock : 0), 0),
+    [gaugeInventories],
+  );
 
   // 추가 특성 정보
   const [additionalFeatures, setAdditionalFeatures] = useState("");
@@ -137,6 +144,10 @@ export default function NewStringPage() {
   // 제출(저장) 상태: 더블클릭/연타 레이스 방지
   const [submitting, setSubmitting] = useState(false);
   const submitRef = useRef(false);
+
+  useEffect(() => {
+    setInventory((prev) => ({ ...prev, stock: totalGaugeStock }));
+  }, [totalGaugeStock]);
 
   // 이미지 추가 핸들러
   const sanitizeFileName = (file: File) => {
@@ -1449,16 +1460,13 @@ export default function NewStringPage() {
                         <Input
                           id="string-stock"
                           type="text"
-                          placeholder="0"
-                          value={inventory.stock.toLocaleString()}
-                          onChange={(e) => {
-                            const raw = e.target.value.replace(/,/g, "");
-                            const numeric = Number(raw);
-                            if (!isNaN(numeric)) {
-                              setInventory({ ...inventory, stock: numeric });
-                            }
-                          }}
+                          value={totalGaugeStock.toLocaleString()}
+                          readOnly
+                          disabled
                         />
+                        <p className="text-xs text-muted-foreground">
+                          게이지별 재고 수량의 합계로 자동 계산됩니다.
+                        </p>
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="string-low-stock">

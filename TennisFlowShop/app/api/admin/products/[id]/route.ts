@@ -37,7 +37,7 @@ function asBoolean(value: unknown): boolean {
 
 function normalizeGaugeInventories(value: unknown): ProductGaugeInventory[] {
   if (!Array.isArray(value)) return [];
-  return value
+  const normalized = value
     .map((item) => {
       const row = asRecord(item);
       if (!row) return null;
@@ -55,6 +55,12 @@ function normalizeGaugeInventories(value: unknown): ProductGaugeInventory[] {
       } satisfies ProductGaugeInventory;
     })
     .filter((row): row is ProductGaugeInventory => row !== null);
+  const seen = new Set<string>();
+  return normalized.filter((row) => {
+    if (seen.has(row.value)) return false;
+    seen.add(row.value);
+    return true;
+  });
 }
 
 function toProductAuditSnapshot(doc: Record<string, unknown> | null) {
@@ -87,6 +93,7 @@ function parseUpdateRequest(raw: unknown): AdminProductUpdateRequestDto | null {
     gaugeInventories.length > 0
       ? gaugeInventories.map((row) => row.value)
       : legacyGaugeOptions;
+  const normalizedGauge = gaugeOptions[0] ?? asString(body.gauge);
 
   return {
     name: asString(body.name),
@@ -95,7 +102,7 @@ function parseUpdateRequest(raw: unknown): AdminProductUpdateRequestDto | null {
     description: asString(body.description),
     brand: asString(body.brand),
     material: asString(body.material),
-    gauge: asString(body.gauge),
+    gauge: normalizedGauge,
     gaugeOptions,
     gaugeInventories: gaugeInventories.length > 0 ? gaugeInventories : undefined,
     color: asString(body.color),

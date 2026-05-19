@@ -190,6 +190,13 @@ export default function ProductEditClient({
     ProductGaugeInventory[]
   >([]);
   const [showGaugeStockToUser, setShowGaugeStockToUser] = useState(true);
+  const totalGaugeStock = useMemo(
+    () =>
+      gaugeInventories
+        .filter((row) => !row.isSoldOut)
+        .reduce((sum, row) => sum + (Number.isFinite(row.stock) ? row.stock : 0), 0),
+    [gaugeInventories],
+  );
   const handleGenerateKeywords = () => {
     const keywords = createSearchKeywords(basicInfo.name, basicInfo.brand);
     if (!keywords) {
@@ -252,12 +259,10 @@ export default function ProductEditClient({
       Array.isArray(p.searchKeywords) ? p.searchKeywords.join(", ") : "",
     );
     const gaugeInventoryRows =
-      Array.isArray((p as any).gaugeInventories) &&
-      (p as any).gaugeInventories.length > 0
-        ? (p as any).gaugeInventories
-        : Array.isArray((p as any).gaugeOptions) &&
-            (p as any).gaugeOptions.length > 0
-          ? (p as any).gaugeOptions.map((value: string) => {
+      Array.isArray(p.gaugeInventories) && p.gaugeInventories.length > 0
+        ? p.gaugeInventories
+        : Array.isArray(p.gaugeOptions) && p.gaugeOptions.length > 0
+          ? p.gaugeOptions.map((value: string) => {
               const found = gauges.find((g) => g.value === value);
               return { value, label: found?.name ?? value, stock: 0, isSoldOut: false };
             })
@@ -282,7 +287,7 @@ export default function ProductEditClient({
       isSale: p.inventory.isSale,
       salePrice: p.inventory.salePrice,
     });
-    setShowGaugeStockToUser(!(p.inventory as any)?.hideGaugeStock);
+    setShowGaugeStockToUser(!p.inventory.hideGaugeStock);
     setAdditionalFeatures(p.additionalFeatures);
     setImages(p.images);
     setMainImageIndex(0);
@@ -290,6 +295,10 @@ export default function ProductEditClient({
       baselineRef.current = buildProductEditInitialSnapshot(p);
     }
   }, [data]);
+
+  useEffect(() => {
+    setInventory((prev) => ({ ...prev, stock: totalGaugeStock }));
+  }, [totalGaugeStock]);
 
   const isMaxReached = images.length >= MAX_PRODUCT_IMAGE_COUNT; // 최대 이미지 수 도달 여부
 
@@ -1619,17 +1628,13 @@ export default function ProductEditClient({
                         <Input
                           id="string-stock"
                           type="text"
-                          placeholder="0"
-                          value={inventory.stock.toLocaleString()}
-                          onChange={(e) => {
-                            setInventoryDirty(true);
-                            const raw = e.target.value.replace(/,/g, "");
-                            const numeric = Number(raw);
-                            if (!isNaN(numeric)) {
-                              setInventory({ ...inventory, stock: numeric });
-                            }
-                          }}
+                          value={totalGaugeStock.toLocaleString()}
+                          readOnly
+                          disabled
                         />
+                        <p className="text-xs text-muted-foreground">
+                          게이지별 재고 수량의 합계로 자동 계산됩니다.
+                        </p>
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="string-low-stock">
