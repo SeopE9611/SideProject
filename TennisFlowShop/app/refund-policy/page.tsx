@@ -19,7 +19,7 @@ const sections = [
 export default function RefundPolicyPage() {
   return (
     <main className="py-10 md:py-14">
-      <SiteContainer className="max-w-4xl">
+      <SiteContainer className="max-w-4xl bp-lg:max-w-4xl">
         <section className="space-y-3 rounded-2xl border bg-background p-6 md:p-8">
           <p className="text-sm font-medium text-primary">Policy</p>
           <h1 className="text-3xl font-bold tracking-tight">환불 및 취소 정책</h1>
