@@ -14,12 +14,22 @@ import { ensureUsedRacketsIndexes } from "@/lib/usedRackets.indexes";
 import { ensureUserIndexes } from "@/lib/users.indexes";
 import { ensureOfflineIndexes } from "@/lib/offline/offline.repository";
 import { ensureWishlistIndexes } from "@/lib/wishlist.indexes";
-import { MongoClient } from "mongodb";
+import { MongoClient, type MongoClientOptions } from "mongodb";
 
 const uri = process.env.MONGODB_URI;
 const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build";
 
 const dbName = process.env.MONGODB_DB || "tennis_academy";
+const mongoClientOptions: MongoClientOptions = {
+  maxPoolSize: 10,
+  minPoolSize: 0,
+  serverSelectionTimeoutMS: 7000,
+  connectTimeoutMS: 10000,
+  socketTimeoutMS: 45000,
+  maxIdleTimeMS: 60000,
+  retryReads: true,
+  retryWrites: true,
+};
 
 // ---- 전역 캐시(개발 핫리로드 & 서버리스 콜드스타트 대비) ----
 declare global {
@@ -106,6 +116,7 @@ if (!uri) {
       estimatedDocumentCount: async () => 0,
       distinct: async () => [],
       indexes: async () => [],
+      listIndexes: () => createMockCursor(),
       createIndex: async () => undefined,
     });
 
@@ -124,14 +135,14 @@ if (!uri) {
   }
 } else if (process.env.NODE_ENV === "development") {
   if (!global._mongoClientPromise) {
-    client = new MongoClient(uri);
+    client = new MongoClient(uri, mongoClientOptions);
     global._mongoClientPromise = client.connect();
   }
   clientPromise = global._mongoClientPromise!;
 } else {
   // 서버리스/프로덕션에서도 런타임 인스턴스 내에서는 단일 커넥션 프라미스를 재사용한다.
   if (!global._mongoClientPromise) {
-    client = new MongoClient(uri);
+    client = new MongoClient(uri, mongoClientOptions);
     global._mongoClientPromise = client.connect();
   }
   clientPromise = global._mongoClientPromise!;
