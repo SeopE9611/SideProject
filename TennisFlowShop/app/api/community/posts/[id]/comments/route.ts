@@ -121,7 +121,7 @@ export async function GET(
 
   const rootDocs = await commentsCol
     .find(rootFilter)
-    .sort({ createdAt: 1 })
+    .sort({ createdAt: 1, _id: 1 })
     .skip(skip)
     .limit(limit)
     .toArray();
@@ -137,7 +137,7 @@ export async function GET(
             parentId: { $in: rootIds },
             status: { $in: ["public", "deleted"] as const },
           })
-          .sort({ createdAt: 1 })
+          .sort({ createdAt: 1, _id: 1 })
           .toArray()
       : [];
 
@@ -153,9 +153,11 @@ export async function GET(
   );
 
   for (const [, replies] of replyDocsByParentId) {
-    replies.sort(
-      (a, b) => getTimeValue(a.createdAt) - getTimeValue(b.createdAt),
-    );
+    replies.sort((a, b) => {
+      const timeDiff = getTimeValue(a.createdAt) - getTimeValue(b.createdAt);
+      if (timeDiff !== 0) return timeDiff;
+      return String(a._id ?? "").localeCompare(String(b._id ?? ""));
+    });
   }
 
   const sortedReplyDocs = rootIds.flatMap(
