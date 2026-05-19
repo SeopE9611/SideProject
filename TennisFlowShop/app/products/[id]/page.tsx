@@ -1,6 +1,6 @@
 import ProductDetailClient from "@/app/products/[id]/ProductDetailClient";
 import { verifyAccessToken } from "@/lib/auth.utils";
-import clientPromise from "@/lib/mongodb";
+import { getDb } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 
@@ -20,6 +20,19 @@ function safeVerifyAccessToken(token?: string) {
   }
 }
 
+function normalizeErrorForLog(error: unknown) {
+  if (error instanceof Error) {
+    return {
+      name: error.name,
+      message: error.message,
+    };
+  }
+
+  return {
+    message: String(error),
+  };
+}
+
 export default async function ProductDetailPage({
   params,
 }: {
@@ -33,16 +46,47 @@ export default async function ProductDetailPage({
       </div>
     );
   }
-  const client = await clientPromise;
-  const db = client.db();
+  const productObjectId = new ObjectId(id);
+  let db;
+  try {
+    db = await getDb();
+  } catch (error) {
+    console.error("[products/[id]] failed to connect database", {
+      productId: id,
+      error: normalizeErrorForLog(error),
+    });
+    return (
+      <div className="p-6 text-destructive font-bold">
+        상품 정보를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.
+      </div>
+    );
+  }
+
   const token = (await cookies()).get("accessToken")?.value;
   let currentUserId: ObjectId | null = null;
   const payload = safeVerifyAccessToken(token);
-  if (payload?.sub) currentUserId = new ObjectId(String(payload.sub));
+  if (payload?.sub) {
+    const payloadSub = String(payload.sub);
+    if (ObjectId.isValid(payloadSub)) {
+      currentUserId = new ObjectId(payloadSub);
+    }
+  }
 
-  const product = await db
-    .collection("products")
-    .findOne({ _id: new ObjectId(id) });
+  let product;
+  try {
+    product = await db.collection("products").findOne({ _id: productObjectId });
+  } catch (error) {
+    console.error("[products/[id]] failed to load product", {
+      productId: id,
+      error: normalizeErrorForLog(error),
+    });
+    return (
+      <div className="p-6 text-destructive font-bold">
+        상품 정보를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.
+      </div>
+    );
+  }
+
   if (!product)
     return (
       <div className="p-6 text-destructive font-bold">
@@ -51,9 +95,13 @@ export default async function ProductDetailPage({
     );
 
   // 최신 리뷰 10개 (숨김 포함) — 서버에서 보안 마스킹
-  const reviews = await db
-    .collection("reviews")
-    .aggregate([
+  let reviews: Array<Record<string, unknown>> = [];
+  let agg: Array<{ avg?: number; count?: number }> = [];
+
+  try {
+    reviews = await db
+      .collection("reviews")
+      .aggregate([
       {
         $match: {
           productId: new ObjectId(id),
@@ -92,12 +140,12 @@ export default async function ProductDetailPage({
         ? [{ $addFields: { ownedByMe: { $eq: ["$userId", currentUserId] } } }]
         : [{ $addFields: { ownedByMe: false } }]),
       { $project: { userId: 0 } }, // 노출 불가
-    ])
-    .toArray();
+      ])
+      .toArray();
 
-  const agg = await db
-    .collection("reviews")
-    .aggregate([
+    agg = await db
+      .collection("reviews")
+      .aggregate([
       {
         $match: {
           productId: new ObjectId(id),
@@ -106,8 +154,16 @@ export default async function ProductDetailPage({
         },
       },
       { $group: { _id: null, avg: { $avg: "$rating" }, count: { $sum: 1 } } },
-    ])
-    .toArray();
+      ])
+      .toArray();
+  } catch (error) {
+    console.error("[products/[id]] failed to load product reviews", {
+      productId: id,
+      error: normalizeErrorForLog(error),
+    });
+    reviews = [];
+    agg = [];
+  }
 
   (product as any).reviews = reviews.map((r: any) => ({
     _id: r._id,
