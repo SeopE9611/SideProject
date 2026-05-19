@@ -197,8 +197,8 @@ const lessonPrograms = [
 ];
 
 const academyContacts = [
-  { role: "원장", name: "이성우(2관)", phone: "010-3784-3493" },
-  { role: "코치", name: "김재민(1관)", phone: "010-5218-5248" },
+  { role: "원장", name: "이성우 (2관)", phone: "010-3784-3493" },
+  { role: "코치", name: "김재민 (1관)", phone: "010-5218-5248" },
 ];
 
 const faqs = [
