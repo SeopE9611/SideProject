@@ -228,11 +228,7 @@ export default function PaymentInfoSection({
               <option value="" disabled hidden>
                 입금하실 은행을 선택해주세요.
               </option>
-              {Object.entries(bankLabelMap as any).map(([key, info]: any) => (
-                <option key={key} value={key}>
-                  {info.label}
-                </option>
-              ))}
+              <option value="kakao">{bankLabelMap.kakao.label}</option>
             </select>
           </div>
 

@@ -374,18 +374,6 @@ const ProductCard = React.memo(
                   </Button>
                 )}
 
-                {!isApplyFlow && canCheckoutWithService && (
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant={shouldEmphasizeServiceCta ? "default" : "outline"}
-                    onClick={handleStringServiceApply}
-                    disabled={isSoldOut}
-                    className="h-auto min-h-9 sm:min-h-10 text-xs sm:text-sm col-span-2 sm:col-span-1 whitespace-normal break-keep leading-tight"
-                  >
-                    {serviceCtaLabel}
-                  </Button>
-                )}
 
                 <WishButton
                   inWish={inWish}
