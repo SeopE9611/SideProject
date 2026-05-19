@@ -562,13 +562,6 @@ export default function BoardsClient() {
 
                 {postsLoading && (
                   <div className="space-y-3">
-                      <div className="flex items-center gap-2 px-2">
-                        <Checkbox
-                          checked={isCurrentPageAllSelected}
-                          onCheckedChange={(checked) => toggleSelectAllCurrentPage(Boolean(checked))}
-                        />
-                        <span className="text-sm text-muted-foreground">현재 페이지 전체 선택</span>
-                      </div>
                     <Skeleton className="h-32 w-full" />
                     <Skeleton className="h-32 w-full" />
                     <Skeleton className="h-32 w-full" />
@@ -584,6 +577,17 @@ export default function BoardsClient() {
 
                 {!postsLoading && !hasPostsDataError && (
                   <>
+                    {posts.length > 0 && (
+                      <div className="flex items-center gap-2 px-2">
+                        <Checkbox
+                          checked={isCurrentPageAllSelected}
+                          onCheckedChange={(checked) => toggleSelectAllCurrentPage(Boolean(checked))}
+                        />
+                        <span className="text-sm text-muted-foreground">
+                          현재 페이지 전체 선택
+                        </span>
+                      </div>
+                    )}
                     <div className="space-y-3">
                       {(posts ?? []).map((p) => (
                         <Card

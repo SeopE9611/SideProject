@@ -20,6 +20,7 @@ export async function DELETE(
   const { db } = guard;
   const commentsCol = db.collection("community_comments");
   const postsCol = db.collection("community_posts");
+  const reportsCol = db.collection("community_reports");
   const commentObjectId = new ObjectId(id);
 
   const existing = await commentsCol.findOne({ _id: commentObjectId });
@@ -32,16 +33,27 @@ export async function DELETE(
   targetIds.push(...replies.map((reply: any) => reply._id as ObjectId));
 
   await commentsCol.deleteMany({ _id: { $in: targetIds } });
+  await reportsCol.deleteMany({ commentId: { $in: targetIds } });
 
   const deletedCount = targetIds.length;
   if (existing.postId instanceof ObjectId) {
     await postsCol.updateOne(
       { _id: existing.postId },
-      {
-        $inc: { commentsCount: -deletedCount },
-        $max: { commentsCount: 0 },
-        $set: { updatedAt: new Date() },
-      },
+      [
+        {
+          $set: {
+            commentsCount: {
+              $max: [
+                0,
+                {
+                  $subtract: [{ $ifNull: ["$commentsCount", 0] }, deletedCount],
+                },
+              ],
+            },
+            updatedAt: new Date(),
+          },
+        },
+      ],
     );
   }
 
