@@ -8,6 +8,13 @@ export type ProductInventory = {
   isNew: boolean;
   isSale: boolean;
   salePrice: number;
+  hideGaugeStock?: boolean;
+};
+export type ProductGaugeInventory = {
+  value: string;
+  label?: string;
+  stock: number;
+  isSoldOut: boolean;
 };
 
 export type ProductFeatureScores = {
@@ -33,6 +40,7 @@ export type HybridSpecUnit = {
   name: string;
   gauge: string;
   gaugeOptions?: string[];
+  gaugeInventories?: ProductGaugeInventory[];
   color: string;
   role?: "mains" | "cross";
 };
@@ -46,6 +54,7 @@ export type ProductDetail = {
   material: string;
   gauge: string;
   gaugeOptions?: string[];
+  gaugeInventories?: ProductGaugeInventory[];
   color: string;
   length: string;
   price: number;
@@ -124,6 +133,7 @@ export interface AdminProductUpdateRequestDto {
   material: string;
   gauge: string;
   gaugeOptions?: string[];
+  gaugeInventories?: ProductGaugeInventory[];
   color: string;
   length: string;
   mountingFee: number;

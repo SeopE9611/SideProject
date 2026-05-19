@@ -15,12 +15,12 @@ export const brands = [
 ];
 
 export const gauges = [
-  { id: "15L", name: "1.35mm (15L)" },
-  { id: "16", name: "1.30mm (16)" },
-  { id: "16L", name: "1.28mm (16L)" },
-  { id: "17", name: "1.25mm (17)" },
-  { id: "17L", name: "1.20mm (17L)" },
-  { id: "18", name: "1.15mm (18)" },
+  { id: "15L", value: "1.35", name: "1.35mm (15L)" },
+  { id: "16", value: "1.30", name: "1.30mm (16)" },
+  { id: "16L", value: "1.28", name: "1.28mm (16L)" },
+  { id: "17", value: "1.25", name: "1.25mm (17)" },
+  { id: "17L", value: "1.20", name: "1.20mm (17L)" },
+  { id: "18", value: "1.15", name: "1.15mm (18)" },
 ];
 
 export const materials = [
