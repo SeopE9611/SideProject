@@ -100,7 +100,7 @@ export default function TermsPage() {
   return (
     <div className="min-h-screen bg-background">
       <div className="border-b">
-        <SiteContainer className="max-w-5xl py-8">
+        <SiteContainer className="max-w-5xl bp-lg:max-w-5xl py-8">
           <Link href="/" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors mb-8">
             <ArrowLeft className="mr-2 h-4 w-4" />
             홈으로 돌아가기
@@ -117,7 +117,7 @@ export default function TermsPage() {
         </SiteContainer>
       </div>
 
-      <SiteContainer className="max-w-5xl py-12">
+      <SiteContainer className="max-w-5xl bp-lg:max-w-5xl py-12">
         <div className="space-y-12">
           {/* Introduction */}
           <div className="space-y-4">
@@ -161,7 +161,7 @@ export default function TermsPage() {
       </SiteContainer>
 
       <div className="border-t mt-16">
-        <SiteContainer className="max-w-5xl py-8">
+        <SiteContainer className="max-w-5xl bp-lg:max-w-5xl py-8">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
             <p>&copy; {new Date().getFullYear()} 도깨비테니스. All rights reserved.</p>
             <div className="flex items-center gap-4">
