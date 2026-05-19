@@ -33,6 +33,7 @@ import {
   normalizeItemShippingFee,
 } from "@/lib/shipping-fee";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import {
   ArrowRight,
   Loader2,
@@ -731,7 +732,7 @@ export default function CartPageClient() {
                               </div>
                               {item.selectedGauge && (
                                 <div className="mt-1 text-xs text-muted-foreground">
-                                  게이지: {item.selectedGauge}
+                                  게이지: {formatGaugeLabel(item.selectedGauge)}
                                 </div>
                               )}
                               {highlightCleanupTarget && (

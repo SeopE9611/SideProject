@@ -197,9 +197,6 @@ const ProductCard = React.memo(
     const canCheckoutWithService =
       isMountableStringByFee(product.mountingFee);
     const featureEntries = getFeatureEntries(product.features);
-    const serviceCtaLabel = "이 스트링 선택하고 장착 신청 계속하기";
-    const shouldEmphasizeServiceCta =
-      isApplyFlow || !ENABLE_STRING_STANDALONE_ORDER;
     const shouldShowStandalonePausedNotice =
       !isApplyFlow && canCheckoutWithService && !ENABLE_STRING_STANDALONE_ORDER;
     const standalonePausedNotice =
@@ -336,22 +333,10 @@ const ProductCard = React.memo(
               )}
 
               <div className="grid grid-cols-2 bp-sm:flex gap-2">
-                {isApplyFlow && canCheckoutWithService && (
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant={shouldEmphasizeServiceCta ? "default" : "outline"}
-                    onClick={handleStringServiceApply}
-                    disabled={isSoldOut}
-                    className="h-auto min-h-9 sm:min-h-10 text-xs sm:text-sm col-span-2 sm:col-span-1 whitespace-normal break-keep leading-tight"
-                  >
-                    {serviceCtaLabel}
-                  </Button>
-                )}
 
                 <Button
                   asChild
-                  variant={isApplyFlow ? "outline" : "default"}
+                  variant="default"
                   size="sm"
                   className="bp-sm:flex-1 w-full h-9 sm:h-10 text-xs sm:text-sm"
                 >
@@ -370,7 +355,7 @@ const ProductCard = React.memo(
                     disabled={isSoldOut}
                     className="h-9 sm:h-10 text-xs sm:text-sm"
                   >
-                    {isApplyFlow ? "단품만 구매" : "단품 구매"}
+                    단품 구매
                   </Button>
                 )}
 
@@ -527,17 +512,6 @@ const ProductCard = React.memo(
         </CardContent>
 
         <CardFooter className="p-2.5 bp-sm:p-3 bp-md:p-4 pt-0 grid grid-cols-1 gap-2">
-          {isApplyFlow && canCheckoutWithService && (
-            <Button
-              type="button"
-              variant={shouldEmphasizeServiceCta ? "default" : "outline"}
-              className="w-full rounded-lg h-auto min-h-10 px-3 text-xs sm:text-sm whitespace-normal break-keep leading-tight text-center"
-              onClick={handleStringServiceApply}
-              disabled={isSoldOut}
-            >
-              {serviceCtaLabel}
-            </Button>
-          )}
 
           {ENABLE_STRING_STANDALONE_ORDER && (
             <Button
@@ -547,7 +521,7 @@ const ProductCard = React.memo(
               onClick={handleStringSingleBuy}
               disabled={isSoldOut}
             >
-              {isApplyFlow ? "단품만 구매" : "단품 구매"}
+              단품 구매
             </Button>
           )}
 

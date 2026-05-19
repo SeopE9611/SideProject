@@ -10,6 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { verifyAccessToken, verifyOrderAccessToken } from '@/lib/auth.utils';
 import { buildCheckoutSuccessLinks } from '@/lib/checkout-success-links';
 import { bankLabelMap } from '@/lib/constants';
+import { formatGaugeLabel } from '@/lib/formatGaugeLabel';
 import clientPromise from '@/lib/mongodb';
 import { getOrderDeliveryInfoTitle, isVisitPickupOrder, shouldShowDeliveryOnlyFields } from '@/lib/order-shipping';
 import { ArrowRight, CheckCircle, Clock, CreditCard, MapPin, Package, Phone, Shield, Star } from 'lucide-react';
@@ -647,7 +648,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                             <p className="font-semibold text-foreground">{item.name}</p>
                             <p className="text-sm text-muted-foreground">수량: {itemQuantity}개</p>
                             {item.selectedGauge && (
-                              <p className="text-xs text-muted-foreground">선택 옵션: 게이지 {item.selectedGauge}</p>
+                              <p className="text-xs text-muted-foreground">선택 옵션: 게이지 {formatGaugeLabel(item.selectedGauge)}</p>
                             )}
                           </div>
                           <div className="text-right">

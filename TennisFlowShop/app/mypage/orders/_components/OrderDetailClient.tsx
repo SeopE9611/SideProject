@@ -45,6 +45,7 @@ import { getCommonOrderStatusLabel } from "@/lib/status-labels/base";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { isMountableStringItem } from "@/lib/orders/string-mounting-policy";
 import { cn } from "@/lib/utils";
+import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import {
   ArrowLeft,
   Calendar,
@@ -1591,7 +1592,7 @@ export default function OrderDetailClient({
                       <p className="text-sm text-foreground/80">
                         수량: {item.quantity}개
                       </p>
-                      {item.selectedGauge && <p className="text-xs text-foreground/70">게이지: {item.selectedGauge}</p>}
+                      {item.selectedGauge && <p className="text-xs text-foreground/70">게이지: {formatGaugeLabel(item.selectedGauge)}</p>}
                     </div>
 
                     {/* 가격 및 소계 */}

@@ -31,6 +31,7 @@ import { isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
 import { isNicePaymentsEnabled } from "@/lib/payments/provider-flags";
 import { calcOrderShippingFeeWithBundlePolicy, normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { cn } from "@/lib/utils";
+import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import { Building2, Check, CheckCircle, CreditCard, Home, Info, Loader2, Mail, MapPin, MessageSquare, Package, Phone, Shield, Truck, UserIcon } from "lucide-react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
@@ -1275,7 +1276,7 @@ export default function CheckoutPage() {
                               <h3 className="font-semibold text-foreground line-clamp-2 text-sm bp-sm:text-base">{item.name}</h3>
                               <div className="flex flex-wrap items-center gap-2">
                                 <span className="inline-flex items-center gap-1 text-sm text-foreground/80 bg-muted/50 px-2 py-0.5 rounded-full">수량 {item.quantity}개</span>
-                                {item.selectedGauge && <span className="inline-flex items-center gap-1 text-xs text-foreground/80 bg-muted/40 px-2 py-0.5 rounded-full">게이지 {item.selectedGauge}</span>}
+                                {item.selectedGauge && <span className="inline-flex items-center gap-1 text-xs text-foreground/80 bg-muted/40 px-2 py-0.5 rounded-full">게이지 {formatGaugeLabel(item.selectedGauge)}</span>}
                                 {withStringService && serviceTargetIds.includes(String(item.id)) && (
                                   <Badge variant="outline" className="text-xs border-primary/30 text-primary bg-primary/5">
                                     교체서비스
