@@ -64,6 +64,11 @@ function parseListQuery(req: NextRequest) {
   };
 }
 
+function getTimeValue(value: unknown) {
+  const time = new Date(String(value ?? "")).getTime();
+  return Number.isFinite(time) ? time : 0;
+}
+
 // ----------------------------- GET: 댓글 목록 -------------------------------
 
 export async function GET(
@@ -136,7 +141,28 @@ export async function GET(
           .toArray()
       : [];
 
-  const docs = [...rootDocs, ...replyDocs];
+  const replyDocsByParentId = replyDocs.reduce<Map<string, any[]>>(
+    (acc, doc: any) => {
+      const parentId = doc.parentId ? String(doc.parentId) : "";
+      if (!parentId) return acc;
+      if (!acc.has(parentId)) acc.set(parentId, []);
+      acc.get(parentId)!.push(doc);
+      return acc;
+    },
+    new Map(),
+  );
+
+  for (const [, replies] of replyDocsByParentId) {
+    replies.sort(
+      (a, b) => getTimeValue(a.createdAt) - getTimeValue(b.createdAt),
+    );
+  }
+
+  const sortedReplyDocs = rootIds.flatMap(
+    (rootId) => replyDocsByParentId.get(String(rootId)) ?? [],
+  );
+
+  const docs = [...rootDocs, ...sortedReplyDocs];
   const userObjectIds = getValidCommunityUserObjectIds(
     docs.map((doc: any) => doc.userId ?? null),
   );
