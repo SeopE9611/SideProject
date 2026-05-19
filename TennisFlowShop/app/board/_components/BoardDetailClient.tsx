@@ -164,6 +164,11 @@ const fmtDateTime = (v: string | Date) =>
     minute: "2-digit",
   });
 
+const getTimeValue = (value: unknown) => {
+  const time = new Date(String(value ?? "")).getTime();
+  return Number.isFinite(time) ? time : 0;
+};
+
 function DetailSkeleton() {
   return (
     <Card className="border border-border bg-card shadow-sm">
@@ -578,6 +583,10 @@ export default function BoardDetailClient({
     },
     {},
   );
+
+  Object.values(repliesByParentId).forEach((replies) => {
+    replies.sort((a, b) => getTimeValue(a.createdAt) - getTimeValue(b.createdAt));
+  });
 
   const originalEditingContent = useMemo(() => {
     if (!editingCommentId) return "";
