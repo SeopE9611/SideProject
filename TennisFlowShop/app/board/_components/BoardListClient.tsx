@@ -1106,11 +1106,6 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                       필터 초기화
                     </Button>
                   )}
-                  <Button asChild size="sm">
-                    <Link href={`${config.routePrefix}/write`}>
-                      <Plus className="mr-1 h-3.5 w-3.5" />첫 글 작성하기
-                    </Link>
-                  </Button>
                 </div>
               </div>
             )}
