@@ -198,8 +198,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
     const origin = spec.origin ?? spec.madeIn ?? spec.제조국 ?? product?.origin ?? product?.madeIn;
     const brand = BRAND_MAP[product?.brand] ?? BRAND_MAP[spec.brand] ?? product?.brand ?? spec.brand;
     const material = MATERIAL_MAP[product?.material] ?? MATERIAL_MAP[spec.material] ?? spec.소재 ?? product?.material ?? spec.material;
-    const gaugeRaw = product?.gauge ?? spec.gauge ?? spec.게이지;
-    const gauge = gaugeOptions.length > 1 ? "선택 가능" : (GAUGE_MAP[gaugeRaw] ?? gaugeRaw);
+  const gaugeRaw = product?.gauge ?? spec.gauge ?? spec.게이지;
+  const gauge = gaugeOptions.length > 1 ? gaugeOptions.join(" / ") : (GAUGE_MAP[gaugeRaw] ?? gaugeRaw);
     const color = COLOR_MAP[product?.color] ?? COLOR_MAP[spec.color] ?? spec.색상 ?? product?.color ?? spec.color;
     const lengthRaw = product?.length ?? spec.length ?? spec.길이;
     const length = typeof lengthRaw === "string" && /^\d+(\.\d+)?$/.test(lengthRaw) ? `${lengthRaw}m` : lengthRaw;
@@ -247,7 +247,13 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const [quantity, setQuantity] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const gaugeOptions = useMemo(() => resolveGaugeOptions(product), [product]);
-  const isStringProduct = product?.category === "string" || product?.kind === "string";
+  const isMountableStringProduct = isMountableStringByFee(product?.mountingFee);
+  const isStringProduct =
+    product?.category === "string" ||
+    product?.category === "strings" ||
+    product?.kind === "string" ||
+    product?.kind === "strings" ||
+    isMountableStringProduct;
   const [selectedGauge, setSelectedGauge] = useState<string>("");
   useEffect(() => {
     if (!isStringProduct || gaugeOptions.length !== 1) return;

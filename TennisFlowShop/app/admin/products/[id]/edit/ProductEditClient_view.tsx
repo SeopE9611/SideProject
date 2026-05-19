@@ -244,7 +244,7 @@ export default function ProductEditClient({
     setGaugeOptionsInput(
       Array.isArray((p as any).gaugeOptions)
         ? (p as any).gaugeOptions.join(", ")
-        : "",
+        : (p.gauge ?? ""),
     );
 
     const hybridState = normalizeHybridState(p);
@@ -557,10 +557,12 @@ export default function ProductEditClient({
         .split(",")
         .map((v) => v.trim())
         .filter((v) => v.length > 0);
+      const normalizedGauge = gaugeOptions[0] ?? basicInfo.gauge ?? "";
 
       //  product 전체 구성
       const product = {
         ...basicInfo, // name, brand, price 등 기본 항목
+        gauge: normalizedGauge,
         gaugeOptions,
 
         searchKeywords,
@@ -571,7 +573,10 @@ export default function ProductEditClient({
 
         tags: { ...tags }, // 추천 플레이어 & 스타일
 
-        specifications, // 영문 키로 통일된 사양 정보
+        specifications: {
+          ...specifications,
+          gauge: normalizedGauge,
+        }, // 영문 키로 통일된 사양 정보
 
         additionalFeatures, // 추가 설명
 
@@ -867,12 +872,6 @@ export default function ProductEditClient({
                             ))}
                           </SelectContent>
                         </Select>
-                        <Input
-                          id="string-gauge-options"
-                          placeholder="게이지 옵션 (예: 1.20, 1.25, 1.30)"
-                          value={gaugeOptionsInput}
-                          onChange={(e) => setGaugeOptionsInput(e.target.value)}
-                        />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="string-material">재질</Label>
@@ -898,24 +897,18 @@ export default function ProductEditClient({
 
                     <div className="grid gap-4 md:grid-cols-2">
                       <div className="space-y-2">
-                        <Label htmlFor="string-gauge">게이지</Label>
-                        <Select
-                          value={basicInfo.gauge}
-                          onValueChange={(value) =>
-                            setBasicInfo({ ...basicInfo, gauge: value })
-                          }
-                        >
-                          <SelectTrigger id="string-gauge">
-                            <SelectValue placeholder="게이지 선택" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {gauges.map((gauge) => (
-                              <SelectItem key={gauge.id} value={gauge.id}>
-                                {gauge.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <Label htmlFor="string-gauge-options">구매 옵션</Label>
+                        <p className="text-sm text-muted-foreground">
+                          사용자가 상품 상세에서 선택할 수 있는 게이지를 쉼표로 입력하세요.
+                          <br />
+                          예: 1.20, 1.25, 1.30
+                        </p>
+                        <Input
+                          id="string-gauge-options"
+                          placeholder="1.20, 1.25, 1.30"
+                          value={gaugeOptionsInput}
+                          onChange={(e) => setGaugeOptionsInput(e.target.value)}
+                        />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="string-color">색상</Label>

@@ -28,10 +28,11 @@ type PopulatedItem = {
   name: string;
   price: number;
   quantity: number;
+  selectedGauge?: string;
 };
 
 type NumericLike = number | string | null | undefined;
-type OrderItemLike = { name?: string; price?: NumericLike; quantity?: NumericLike } | null | undefined;
+type OrderItemLike = { name?: string; price?: NumericLike; quantity?: NumericLike; selectedGauge?: string } | null | undefined;
 
 type StringingSummary = {
   lineCount: number;
@@ -399,6 +400,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
       name: it?.name ?? '상품명 없음',
       price: Number.isFinite(price) ? price : 0,
       quantity,
+      selectedGauge: typeof it?.selectedGauge === 'string' ? it.selectedGauge : undefined,
     };
   });
 
@@ -644,6 +646,9 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                           <div className="flex-1">
                             <p className="font-semibold text-foreground">{item.name}</p>
                             <p className="text-sm text-muted-foreground">수량: {itemQuantity}개</p>
+                            {item.selectedGauge && (
+                              <p className="text-xs text-muted-foreground">선택 옵션: 게이지 {item.selectedGauge}</p>
+                            )}
                           </div>
                           <div className="text-right">
                             <p className="text-lg font-bold text-primary">{totalItemPrice}원</p>
