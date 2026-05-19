@@ -1,6 +1,7 @@
 "use client";
 
 import SupportFaqSearch from "@/app/support/_components/SupportFaqSearch";
+import SiteContainer from "@/components/layout/SiteContainer";
 import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -490,7 +491,7 @@ export default function SupportPage() {
 
   return (
     <div className="min-h-screen bg-muted/30">
-      <div className="container mx-auto px-4 py-6 md:py-8 space-y-6 md:space-y-8">
+      <SiteContainer className="space-y-6 py-6 md:space-y-8 md:py-8">
         {/* 헤더 */}
         <div className="text-center space-y-3 md:space-y-4">
           <div className="flex items-center justify-center gap-3 mb-2">
@@ -524,7 +525,7 @@ export default function SupportPage() {
           <NoticeCard mode="event" items={events} isAdmin={isAdmin} isLoading={isLoading} error={error} onRetry={() => mutate()} />
           <QnaCard items={qnas} viewerId={viewerId} isAdmin={isAdmin} isLoading={isLoading} error={error} onRetry={() => mutate()} />
         </div>
-      </div>
+      </SiteContainer>
     </div>
   );
 }
