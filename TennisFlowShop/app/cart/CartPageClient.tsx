@@ -57,6 +57,9 @@ const getMaxStock = (stock?: number) =>
     ? stock
     : Number.POSITIVE_INFINITY;
 
+const getCartLineKey = (item: { id: string; selectedGauge?: string }) =>
+  `${item.id}::${item.selectedGauge ?? ""}`;
+
 export default function CartPageClient() {
   const { logout } = useAuthStore(); // 사용 여부와 관계없이 훅 순서 안정
   const {
@@ -71,12 +74,12 @@ export default function CartPageClient() {
   const [loading, setLoading] = useState(true);
 
   // 선택 상태
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [selectedLineKeys, setSelectedLineKeys] = useState<string[]>([]);
 
   // 장착 대상 스트링 "이 스트링만 남기기" 확인 다이얼로그 상태
   const [cleanupDialogOpen, setCleanupDialogOpen] = useState(false);
   const [cleanupKeepId, setCleanupKeepId] = useState<string | null>(null);
-  const [cleanupRemoveIds, setCleanupRemoveIds] = useState<string[]>([]);
+  const [cleanupRemoveLineKeys, setCleanupRemoveLineKeys] = useState<string[]>([]);
 
   // [장착 대상 스트링 정리 다이얼로그] 남길/삭제될 대상 텍스트 생성
   const keepStringItem = cleanupKeepId
@@ -87,7 +90,7 @@ export default function CartPageClient() {
     : "선택한 스트링";
 
   const removeStringItems = cartItems.filter((i) =>
-    cleanupRemoveIds.includes(i.id),
+    cleanupRemoveLineKeys.includes(getCartLineKey(i)),
   );
   const removeCount = removeStringItems.length;
   const removePreview =
@@ -404,48 +407,48 @@ export default function CartPageClient() {
   }, [isBundleLocked, bundleRacketItem?.id, bundleStringItem?.id]);
 
   // 선택/일괄
-  const toggleSelect = (id: string) => {
-    setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+  const toggleSelect = (lineKey: string) => {
+    setSelectedLineKeys((prev) =>
+      prev.includes(lineKey) ? prev.filter((x) => x !== lineKey) : [...prev, lineKey],
     );
   };
   const toggleAll = () => {
-    if (selectedIds.length === cartItems.length) setSelectedIds([]);
-    else setSelectedIds(cartItems.map((i) => i.id));
+    if (selectedLineKeys.length === cartItems.length) setSelectedLineKeys([]);
+    else setSelectedLineKeys(cartItems.map((i) => getCartLineKey(i)));
   };
   const removeSelected = () => {
-    if (selectedIds.length === 0) return;
+    if (selectedLineKeys.length === 0) return;
 
     // 선택 삭제 우회 방지:
     // 번들 구성품(라켓/장착 스트링) 중 하나라도 선택되면,
     // 불일치가 생기지 않도록 번들 2개를 "같이" 삭제한다.
-    const idsToRemove = new Set(selectedIds);
+    const lineKeysToRemove = new Set(selectedLineKeys);
 
     if (
       bundleLockedIds.length === 2 &&
-      (idsToRemove.has(bundleLockedIds[0]) ||
-        idsToRemove.has(bundleLockedIds[1]))
+      cartItems.some((it) => lineKeysToRemove.has(getCartLineKey(it)) && bundleLockedIds.includes(it.id))
     ) {
-      bundleLockedIds.forEach((id) => idsToRemove.add(id));
+      cartItems.forEach((it) => {
+        if (bundleLockedIds.includes(it.id)) lineKeysToRemove.add(getCartLineKey(it));
+      });
     }
 
-    const finalIds = Array.from(idsToRemove);
+    const finalItems = cartItems.filter((it) => lineKeysToRemove.has(getCartLineKey(it)));
     const bundleHint =
       bundleLockedIds.length === 2 &&
-      (idsToRemove.has(bundleLockedIds[0]) ||
-        idsToRemove.has(bundleLockedIds[1]))
+      finalItems.some((it) => bundleLockedIds.includes(it.id))
         ? "\n(번들 구성품은 함께 삭제됩니다.)"
         : "";
 
     if (
       !confirm(
-        `선택한 ${finalIds.length}개 상품을 장바구니에서 삭제할까요?${bundleHint}`,
+        `선택한 ${finalItems.length}개 상품을 장바구니에서 삭제할까요?${bundleHint}`,
       )
     )
       return;
 
-    finalIds.forEach((id) => removeItem(id));
-    setSelectedIds([]);
+    finalItems.forEach((it) => removeItem(it.id, it.selectedGauge));
+    setSelectedLineKeys([]);
     showSuccessToast?.("선택한 상품을 삭제했어요.");
   };
 
@@ -462,29 +465,34 @@ export default function CartPageClient() {
 
     if (mountableIds.length <= 1) return;
 
-    const idsToRemove = mountableIds.filter((id) => id !== keepId);
-    if (idsToRemove.length === 0) return;
+    const lineKeysToRemove = cartItems
+      .filter((it) => mountableIds.includes(it.id) && it.id !== keepId)
+      .map((it) => getCartLineKey(it));
+    if (lineKeysToRemove.length === 0) return;
 
     // confirm() 대신 AlertDialog로 확인 UX 통일
     setCleanupKeepId(keepId);
-    setCleanupRemoveIds(idsToRemove);
+    setCleanupRemoveLineKeys(lineKeysToRemove);
     setCleanupDialogOpen(true);
   };
 
   const confirmCleanupMountableStrings = () => {
-    if (cleanupRemoveIds.length === 0) {
+    if (cleanupRemoveLineKeys.length === 0) {
       setCleanupDialogOpen(false);
       setCleanupKeepId(null);
-      setCleanupRemoveIds([]);
+      setCleanupRemoveLineKeys([]);
       return;
     }
 
     // 나머지 장착 스트링 삭제
-    cleanupRemoveIds.forEach((id) => removeItem(id));
+    const cleanupTargets = cartItems.filter((it) =>
+      cleanupRemoveLineKeys.includes(getCartLineKey(it)),
+    );
+    cleanupTargets.forEach((it) => removeItem(it.id, it.selectedGauge));
 
     // 선택 상태에서도 제거(선택삭제/전체선택 UX 꼬임 방지)
-    setSelectedIds((prev) =>
-      prev.filter((id) => !cleanupRemoveIds.includes(id)),
+    setSelectedLineKeys((prev) =>
+      prev.filter((lineKey) => !cleanupRemoveLineKeys.includes(lineKey)),
     );
 
     showSuccessToast?.("교체서비스에 사용할 스트링을 1종으로 정리했어요.");
@@ -492,7 +500,7 @@ export default function CartPageClient() {
     // 상태 정리 + 닫기
     setCleanupDialogOpen(false);
     setCleanupKeepId(null);
-    setCleanupRemoveIds([]);
+    setCleanupRemoveLineKeys([]);
   };
 
   return (
@@ -504,7 +512,7 @@ export default function CartPageClient() {
           setCleanupDialogOpen(open);
           if (!open) {
             setCleanupKeepId(null);
-            setCleanupRemoveIds([]);
+            setCleanupRemoveLineKeys([]);
           }
         }}
       >
@@ -620,13 +628,13 @@ export default function CartPageClient() {
                         onClick={toggleAll}
                         className="hover:bg-card/60 dark:hover:bg-card/60"
                       >
-                        {selectedIds.length === cartItems.length
+                        {selectedLineKeys.length === cartItems.length
                           ? "전체 해제"
                           : "전체 선택"}
                       </Button>
                       <div className="hidden bp-sm:block h-4 w-px bg-foreground/10 dark:bg-card/10" />
                       <span className="text-muted-foreground">
-                        선택 {selectedIds.length}개
+                        선택 {selectedLineKeys.length}개
                       </span>
                       <Button
                         variant="ghost"
@@ -642,6 +650,7 @@ export default function CartPageClient() {
 
                 <CardContent className="p-3 bp-sm:p-4 bp-md:p-6 space-y-3 bp-sm:space-y-4">
                   {cartItems.map((item) => {
+                    const lineKey = getCartLineKey(item);
                     // 버튼 비활성 판단
                     const isRacket = (item.kind ?? "product") === "racket";
                     // 라켓은 /rackets/[id], 일반 상품은 /products/[id]
@@ -694,8 +703,8 @@ export default function CartPageClient() {
                           <div className="flex items-center gap-3 min-w-0">
                             <input
                               type="checkbox"
-                              checked={selectedIds.includes(item.id)}
-                              onChange={() => toggleSelect(item.id)}
+                              checked={selectedLineKeys.includes(lineKey)}
+                              onChange={() => toggleSelect(lineKey)}
                               className="h-4 w-4 accent-blue-600"
                               aria-label={`${item.name} 선택`}
                             />
@@ -725,6 +734,11 @@ export default function CartPageClient() {
                                   {formatKRW(item.price)}원
                                 </span>
                               </div>
+                              {item.selectedGauge && (
+                                <div className="mt-1 text-xs text-muted-foreground">
+                                  게이지: {item.selectedGauge}
+                                </div>
+                              )}
                               {highlightCleanupTarget && (
                                 <>
                                   <Badge
@@ -919,10 +933,15 @@ export default function CartPageClient() {
                                     bundleLockedIds.forEach((id) =>
                                       removeItem(id),
                                     );
-                                    setSelectedIds((prev) =>
-                                      prev.filter(
-                                        (id) => !bundleLockedIds.includes(id),
-                                      ),
+                                    setSelectedLineKeys((prev) =>
+                                      prev.filter((selectedLineKey) => {
+                                        const selectedItem = cartItems.find(
+                                          (it) => getCartLineKey(it) === selectedLineKey,
+                                        );
+                                        return selectedItem
+                                          ? !bundleLockedIds.includes(selectedItem.id)
+                                          : true;
+                                      }),
                                     );
                                   }
                                   return;
@@ -934,7 +953,7 @@ export default function CartPageClient() {
                                     `"${item.name}"을(를) 장바구니에서 삭제할까요?`,
                                   )
                                 ) {
-                                  removeItem(item.id);
+                                  removeItem(item.id, item.selectedGauge);
                                 }
                               }}
                               className="order-3 text-muted-foreground hover:text-destructive"

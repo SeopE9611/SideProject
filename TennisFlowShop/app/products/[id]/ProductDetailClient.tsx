@@ -598,8 +598,6 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const handleAddToCart = () => {
     if (loading) return;
     if (!requireGaugeSelection()) return;
-    if (!requireGaugeSelection()) return;
-    if (!requireGaugeSelection()) return;
     // 재고 검증 (기존 장바구니에 담긴 수량 + 지금 선택 수량이 stock 초과인지)
     const wouldBe = quantity;
     if (wouldBe > stock) {
@@ -665,6 +663,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
   // 즉시 구매용 핸들러 (장바구니와 완전히 분리)
   const handleBuyNow = () => {
     if (loading) return;
+    if (!requireGaugeSelection()) return;
 
     // 재고 검증 (지금 선택 수량이 stock 초과인지)
     if (quantity > stock) {
@@ -699,6 +698,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const handleBuyNowWithService = () => {
     if (loading) return;
     if (!canCheckoutWithService) return;
+    if (!requireGaugeSelection()) return;
 
     // 재고 검증
     if (quantity > stock) {
@@ -970,6 +970,34 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         ? standalonePausedNotice
                         : "결제 화면에서 장착 방식, 수령 방법, 요청사항을 입력합니다. 스트링만 구매하는 경우에는 장착 접수가 포함되지 않아요."}
                     </div>
+
+                    {isStringProduct && gaugeOptions.length > 0 && (
+                      <div className="space-y-2 rounded-xl border border-border/60 bg-muted/30 p-3">
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="text-sm font-semibold text-foreground">게이지 선택</span>
+                          {gaugeOptions.length === 1 && (
+                            <span className="text-xs text-muted-foreground">자동 선택</span>
+                          )}
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                          {gaugeOptions.map((gauge) => (
+                            <button
+                              key={gauge}
+                              type="button"
+                              onClick={() => setSelectedGauge(gauge)}
+                              className={cn(
+                                "rounded-lg border px-3 py-2 text-sm font-medium transition",
+                                selectedGauge === gauge
+                                  ? "border-foreground bg-foreground text-background"
+                                  : "border-border bg-background text-foreground hover:bg-muted",
+                              )}
+                            >
+                              {gauge}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
                     <div id="cta-anchor" className="flex flex-col gap-3 sm:gap-3.5">
                       {product.inventory?.manageStock && product.inventory.stock <= 0 ? (
