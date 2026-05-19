@@ -28,6 +28,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Tooltip,
   TooltipContent,
@@ -51,6 +57,7 @@ import {
 } from "@/lib/hooks/useUnsavedChangesGuard";
 import type {
   HybridSpecUnit,
+  ProductGaugeInventory,
   ProductDetailResponse,
 } from "@/types/admin/products";
 import {
@@ -179,7 +186,10 @@ export default function ProductEditClient({
 
   // 검색 키워드(쉼표 구분) 입력 상태
   const [searchKeywordsInput, setSearchKeywordsInput] = useState("");
-  const [gaugeOptionsInput, setGaugeOptionsInput] = useState("");
+  const [gaugeInventories, setGaugeInventories] = useState<
+    ProductGaugeInventory[]
+  >([]);
+  const [showGaugeStockToUser, setShowGaugeStockToUser] = useState(true);
   const handleGenerateKeywords = () => {
     const keywords = createSearchKeywords(basicInfo.name, basicInfo.brand);
     if (!keywords) {
@@ -241,11 +251,20 @@ export default function ProductEditClient({
     setSearchKeywordsInput(
       Array.isArray(p.searchKeywords) ? p.searchKeywords.join(", ") : "",
     );
-    setGaugeOptionsInput(
-      Array.isArray((p as any).gaugeOptions)
-        ? (p as any).gaugeOptions.join(", ")
-        : (p.gauge ?? ""),
-    );
+    const gaugeInventoryRows =
+      Array.isArray((p as any).gaugeInventories) &&
+      (p as any).gaugeInventories.length > 0
+        ? (p as any).gaugeInventories
+        : Array.isArray((p as any).gaugeOptions) &&
+            (p as any).gaugeOptions.length > 0
+          ? (p as any).gaugeOptions.map((value: string) => {
+              const found = gauges.find((g) => g.value === value);
+              return { value, label: found?.name ?? value, stock: 0, isSoldOut: false };
+            })
+          : p.gauge
+            ? [{ value: p.gauge, label: p.gauge, stock: 0, isSoldOut: false }]
+            : [];
+    setGaugeInventories(gaugeInventoryRows);
 
     const hybridState = normalizeHybridState(p);
     setHybridMain(hybridState.hybridMain);
@@ -263,6 +282,7 @@ export default function ProductEditClient({
       isSale: p.inventory.isSale,
       salePrice: p.inventory.salePrice,
     });
+    setShowGaugeStockToUser(!(p.inventory as any)?.hideGaugeStock);
     setAdditionalFeatures(p.additionalFeatures);
     setImages(p.images);
     setMainImageIndex(0);
@@ -553,17 +573,22 @@ export default function ProductEditClient({
         .split(",")
         .map((k) => k.trim())
         .filter((k) => k.length > 0);
-      const gaugeOptions = gaugeOptionsInput
-        .split(",")
-        .map((v) => v.trim())
-        .filter((v) => v.length > 0);
+      const normalizedGaugeInventories = gaugeInventories.map((row) => ({
+        ...row,
+        stock: Number.isFinite(row.stock) && row.stock >= 0 ? row.stock : 0,
+      }));
+      const gaugeOptions = normalizedGaugeInventories.map((row) => row.value);
       const normalizedGauge = gaugeOptions[0] ?? basicInfo.gauge ?? "";
+      const totalGaugeStock = normalizedGaugeInventories
+        .filter((row) => !row.isSoldOut)
+        .reduce((sum, row) => sum + row.stock, 0);
 
       //  product 전체 구성
       const product = {
         ...basicInfo, // name, brand, price 등 기본 항목
         gauge: normalizedGauge,
         gaugeOptions,
+        gaugeInventories: normalizedGaugeInventories,
 
         searchKeywords,
 
@@ -585,7 +610,11 @@ export default function ProductEditClient({
           ...images.slice(mainImageIndex, mainImageIndex + 1), // 대표 이미지 먼저
           ...images.filter((_, i) => i !== mainImageIndex), // 나머지
         ],
-        inventory, // 재고 관리 정보
+        inventory: {
+          ...inventory,
+          stock: totalGaugeStock,
+          hideGaugeStock: !showGaugeStockToUser,
+        }, // 재고 관리 정보
       };
 
       // console.log(' 등록된 상품 데이터:', product);
@@ -943,16 +972,70 @@ export default function ProductEditClient({
                     <div className="space-y-3 rounded-xl border border-border/60 bg-muted/20 p-4">
                       <h3 className="text-base font-semibold">구매 옵션</h3>
                       <div className="space-y-2">
-                        <Label htmlFor="string-gauge-options">게이지 옵션(mm)</Label>
+                        <Label>게이지 옵션(mm)</Label>
                         <p className="text-sm text-muted-foreground">
-                          사용자가 상품 상세에서 선택할 수 있는 게이지를 쉼표로 입력하세요.
+                          사용자가 상품 상세에서 선택할 수 있는 게이지를 선택하세요.
                         </p>
-                        <Input
-                          id="string-gauge-options"
-                          placeholder="예: 1.20, 1.25, 1.30"
-                          value={gaugeOptionsInput}
-                          onChange={(e) => setGaugeOptionsInput(e.target.value)}
-                        />
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button type="button" variant="outline" className="w-full justify-between">
+                              <span>{gaugeInventories.length > 0 ? `${gaugeInventories.length}개 게이지 선택됨` : "게이지 선택"}</span>
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-[320px]">
+                            <div className="space-y-2">
+                              {gauges.map((g) => {
+                                const checked = gaugeInventories.some((row) => row.value === g.value);
+                                return (
+                                  <label key={g.id} className="flex items-center gap-2 text-sm">
+                                    <Checkbox
+                                      checked={checked}
+                                      onCheckedChange={(nextChecked) => {
+                                        if (nextChecked) {
+                                          setGaugeInventories((prev) => [...prev, { value: g.value, label: g.name, stock: 0, isSoldOut: false }]);
+                                          return;
+                                        }
+                                        setGaugeInventories((prev) => prev.filter((row) => row.value !== g.value));
+                                      }}
+                                    />
+                                    <span>{g.name}</span>
+                                  </label>
+                                );
+                              })}
+                            </div>
+                          </PopoverContent>
+                        </Popover>
+                        <div className="space-y-3 pt-2">
+                          {gaugeInventories.map((row) => (
+                            <div key={row.value} className="grid gap-2 rounded-md border p-3 md:grid-cols-[1fr_120px_auto] md:items-center">
+                              <div className="text-sm font-medium">{row.label ?? row.value}</div>
+                              <Input
+                                type="number"
+                                min={0}
+                                value={row.stock}
+                                onChange={(e) => {
+                                  const next = Math.max(0, Number(e.target.value) || 0);
+                                  setGaugeInventories((prev) => prev.map((item) => (item.value === row.value ? { ...item, stock: next } : item)));
+                                }}
+                              />
+                              <label className="flex items-center gap-2 text-sm">
+                                <Checkbox
+                                  checked={row.isSoldOut}
+                                  onCheckedChange={(checked) =>
+                                    setGaugeInventories((prev) =>
+                                      prev.map((item) =>
+                                        item.value === row.value
+                                          ? { ...item, isSoldOut: Boolean(checked) }
+                                          : item,
+                                      ),
+                                    )
+                                  }
+                                />
+                                품절
+                              </label>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   </CardContent>
@@ -1520,6 +1603,16 @@ export default function ProductEditClient({
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4 p-6">
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id="show-gauge-stock"
+                        checked={showGaugeStockToUser}
+                        onCheckedChange={setShowGaugeStockToUser}
+                      />
+                      <Label htmlFor="show-gauge-stock">
+                        사용자에게 게이지별 재고 수량 노출
+                      </Label>
+                    </div>
                     <div className="grid gap-4 md:grid-cols-2">
                       <div className="space-y-2">
                         <Label htmlFor="string-stock">재고 수량</Label>

@@ -6,6 +6,7 @@ import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 import type {
   AdminProductMutationResponseDto,
+  ProductGaugeInventory,
   AdminProductUpdateRequestDto,
 } from "@/types/admin/products";
 import { ObjectId } from "mongodb";
@@ -30,6 +31,32 @@ function asStringArray(value: unknown): string[] {
   return value.filter((item): item is string => typeof item === "string");
 }
 
+function asBoolean(value: unknown): boolean {
+  return typeof value === "boolean" ? value : false;
+}
+
+function normalizeGaugeInventories(value: unknown): ProductGaugeInventory[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((item) => {
+      const row = asRecord(item);
+      if (!row) return null;
+      const gaugeValue = asString(row.value).trim();
+      if (!gaugeValue) return null;
+      const stockNumber = Number(row.stock);
+      return {
+        value: gaugeValue,
+        label: typeof row.label === "string" ? row.label : undefined,
+        stock:
+          Number.isFinite(stockNumber) && stockNumber > 0
+            ? stockNumber
+            : 0,
+        isSoldOut: asBoolean(row.isSoldOut),
+      } satisfies ProductGaugeInventory;
+    })
+    .filter((row): row is ProductGaugeInventory => row !== null);
+}
+
 function toProductAuditSnapshot(doc: Record<string, unknown> | null) {
   const safe = doc ?? {};
   const inventory = asRecord(safe.inventory);
@@ -52,6 +79,14 @@ function toProductAuditSnapshot(doc: Record<string, unknown> | null) {
 function parseUpdateRequest(raw: unknown): AdminProductUpdateRequestDto | null {
   const body = asRecord(raw);
   if (!body) return null;
+  const gaugeInventories = normalizeGaugeInventories(body.gaugeInventories);
+  const legacyGaugeOptions = asStringArray(body.gaugeOptions)
+    .map((g) => g.trim())
+    .filter((g) => g.length > 0);
+  const gaugeOptions =
+    gaugeInventories.length > 0
+      ? gaugeInventories.map((row) => row.value)
+      : legacyGaugeOptions;
 
   return {
     name: asString(body.name),
@@ -61,7 +96,8 @@ function parseUpdateRequest(raw: unknown): AdminProductUpdateRequestDto | null {
     brand: asString(body.brand),
     material: asString(body.material),
     gauge: asString(body.gauge),
-    gaugeOptions: asStringArray(body.gaugeOptions),
+    gaugeOptions,
+    gaugeInventories: gaugeInventories.length > 0 ? gaugeInventories : undefined,
     color: asString(body.color),
     length: asString(body.length),
     mountingFee: asNumber(body.mountingFee),
