@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { sanitizeHtml } from "@/lib/sanitize";
 import { AdminFetchError, adminFetcher } from "@/lib/admin/adminFetcher";
 import BoardDetailActions from "./BoardDetailActions";
+import AdminBoardComments from "./AdminBoardComments";
 
 export const metadata: Metadata = {
   title: "게시글 상세",
@@ -288,6 +289,7 @@ export default async function BoardPostDetailPage({
               </CardContent>
             </Card>
           </div>
+          <AdminBoardComments postId={postId} />
         </div>
       </div>
     </div>

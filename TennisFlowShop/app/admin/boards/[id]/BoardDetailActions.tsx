@@ -123,8 +123,8 @@ export default function BoardDetailActions({
         onConfirm={() => {
           void runDelete();
         }}
-        title="정말 삭제할까요?"
-        description="삭제 후에는 게시물이 목록과 화면에서 사라질 수 있으며, 복구가 어려울 수 있습니다."
+        title="게시글을 삭제하시겠습니까?"
+        description="삭제 후 복구할 수 없습니다."
         confirmText="삭제"
         severity="danger"
         eventKey="admin-board-delete-confirm"

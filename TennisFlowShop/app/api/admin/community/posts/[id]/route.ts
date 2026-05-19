@@ -248,11 +248,18 @@ export async function DELETE(
     return NextResponse.json({ error: "Invalid id" }, { status: 400 });
 
   const col = db.collection("community_posts");
+  const commentsCol = db.collection("community_comments");
+  const likesCol = db.collection("community_likes");
+  const reportsCol = db.collection("community_reports");
   const beforeDoc = (await col.findOne({ _id: new ObjectId(id) })) as EditableCommunityPost | null;
   if (!beforeDoc) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
-  const result = await col.deleteOne({ _id: new ObjectId(id) });
+  const postObjectId = new ObjectId(id);
+  const result = await col.deleteOne({ _id: postObjectId });
+  await commentsCol.deleteMany({ postId: postObjectId });
+  await likesCol.deleteMany({ postId: postObjectId });
+  await reportsCol.deleteMany({ postId: postObjectId });
 
   if (!result.deletedCount) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });

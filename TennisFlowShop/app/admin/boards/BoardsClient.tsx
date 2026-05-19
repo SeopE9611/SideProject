@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -17,11 +17,13 @@ import {
   BarChart3,
   FileText,
   AlertTriangle,
+  Trash2,
 } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -286,6 +288,44 @@ export default function BoardsClient() {
 
   const hasPostFilterApplied =
     postType !== "all" || postStatus !== "all" || postQ.trim().length > 0;
+  const [selectedPostIds, setSelectedPostIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    setSelectedPostIds((prev) => prev.filter((id) => posts.some((p) => p.id === id)));
+  }, [posts]);
+
+  const isCurrentPageAllSelected =
+    posts.length > 0 && selectedPostIds.length === posts.length;
+
+  const togglePostSelect = (postId: string) => {
+    setSelectedPostIds((prev) =>
+      prev.includes(postId) ? prev.filter((id) => id !== postId) : [...prev, postId],
+    );
+  };
+
+  const toggleSelectAllCurrentPage = (checked: boolean) => {
+    setSelectedPostIds(checked ? posts.map((p) => p.id) : []);
+  };
+
+  const deleteSelectedPosts = async () => {
+    if (selectedPostIds.length === 0) return;
+    const ok = window.confirm(`선택한 게시글 ${selectedPostIds.length}개를 삭제하시겠습니까?\n삭제된 게시글과 연결된 댓글/좋아요/신고 데이터가 함께 정리될 수 있습니다.\n이 작업은 되돌릴 수 없습니다.`);
+    if (!ok) return;
+
+    try {
+      await adminMutator("/api/admin/community/posts/bulk", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: selectedPostIds }),
+      });
+      showSuccessToast("선택한 게시글을 삭제했습니다.");
+      setSelectedPostIds([]);
+      mutatePosts();
+    } catch (e: any) {
+      showErrorToast(e?.message ?? "선택 삭제에 실패했습니다.");
+    }
+  };
+
 
   const shouldShowPostsEmptyState =
     hasResolvedPostsData &&
@@ -503,14 +543,32 @@ export default function BoardsClient() {
                     <RefreshCcw className="h-4 w-4" />
                   </Button>
 
-                  <div className="ml-auto text-sm font-medium">
-                    총 {postsTotal === null ? "-" : postsTotal.toLocaleString()}
-                    건
+                  <div className="ml-auto flex items-center gap-3">
+                    <span className="text-sm text-muted-foreground">선택 {selectedPostIds.length}개</span>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      disabled={selectedPostIds.length === 0}
+                      onClick={deleteSelectedPosts}
+                      className="gap-1"
+                    >
+                      <Trash2 className="h-4 w-4" /> 선택 삭제
+                    </Button>
+                    <div className="text-sm font-medium">
+                      총 {postsTotal === null ? "-" : postsTotal.toLocaleString()}건
+                    </div>
                   </div>
                 </div>
 
                 {postsLoading && (
                   <div className="space-y-3">
+                      <div className="flex items-center gap-2 px-2">
+                        <Checkbox
+                          checked={isCurrentPageAllSelected}
+                          onCheckedChange={(checked) => toggleSelectAllCurrentPage(Boolean(checked))}
+                        />
+                        <span className="text-sm text-muted-foreground">현재 페이지 전체 선택</span>
+                      </div>
                     <Skeleton className="h-32 w-full" />
                     <Skeleton className="h-32 w-full" />
                     <Skeleton className="h-32 w-full" />
@@ -564,6 +622,11 @@ export default function BoardsClient() {
 
                               return (
                                 <div className="flex items-start justify-between gap-4">
+                                  <Checkbox
+                                    checked={selectedPostIds.includes(p.id)}
+                                    onCheckedChange={() => togglePostSelect(p.id)}
+                                    className="mt-1"
+                                  />
                                   <div className="flex-1 space-y-2">
                                     <div className="flex items-center gap-2 flex-wrap">
                                       <Badge
