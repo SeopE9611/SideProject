@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { badgeBaseOutlined, badgeSizeSm, getAnswerStatusBadgeSpec, getQnaCategoryBadgeSpec, imageBadgeClass } from "@/lib/badge-style";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
@@ -19,6 +20,7 @@ import { addRecentViewedItem } from "@/lib/recent-viewed";
 import { ENABLE_STRING_STANDALONE_ORDER } from "@/lib/orders/string-standalone-policy";
 import { hasPaidMountingFee, isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
 import { cn } from "@/lib/utils";
+import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import {
   Activity,
   ArrowLeft,
@@ -199,7 +201,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
     const brand = BRAND_MAP[product?.brand] ?? BRAND_MAP[spec.brand] ?? product?.brand ?? spec.brand;
     const material = MATERIAL_MAP[product?.material] ?? MATERIAL_MAP[spec.material] ?? spec.소재 ?? product?.material ?? spec.material;
   const gaugeRaw = product?.gauge ?? spec.gauge ?? spec.게이지;
-  const gauge = gaugeOptions.length > 1 ? gaugeOptions.join(" / ") : (GAUGE_MAP[gaugeRaw] ?? gaugeRaw);
+  const gauge = gaugeOptions.length > 1 ? gaugeOptions.map((v: string) => formatGaugeLabel(v)).join(" / ") : (GAUGE_MAP[gaugeRaw] ?? formatGaugeLabel(gaugeRaw));
     const color = COLOR_MAP[product?.color] ?? COLOR_MAP[spec.color] ?? spec.색상 ?? product?.color ?? spec.color;
     const lengthRaw = product?.length ?? spec.length ?? spec.길이;
     const length = typeof lengthRaw === "string" && /^\d+(\.\d+)?$/.test(lengthRaw) ? `${lengthRaw}m` : lengthRaw;
@@ -405,7 +407,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (activeTab !== "reviews" || hasResolvedReviewUser) return;
+    if (hasResolvedReviewUser) return;
 
     setLoading(true);
     fetch("/api/users/me", { credentials: "include" })
@@ -813,10 +815,17 @@ export default function ProductDetailClient({ product }: { product: any }) {
               <span className="text-muted-foreground/50">/</span>
               <span className="text-foreground font-medium truncate max-w-[150px] sm:max-w-none">{product.name}</span>
             </div>
-            <Button variant="ghost" className="text-muted-foreground hover:text-foreground hover:bg-muted/50 px-3 py-2 h-auto text-sm rounded-xl transition-[background-color,color,border-color,box-shadow,opacity] duration-200" onClick={() => router.back()}>
-              <ArrowLeft className="mr-1.5 h-4 w-4" />
-              뒤로
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" className="text-muted-foreground hover:text-foreground hover:bg-muted/50 px-3 py-2 h-auto text-sm rounded-xl transition-[background-color,color,border-color,box-shadow,opacity] duration-200" onClick={() => router.back()}>
+                <ArrowLeft className="mr-1.5 h-4 w-4" />
+                뒤로
+              </Button>
+              {isAdmin && (
+                <Link href={`/admin/products/${productId}/edit`}>
+                  <Button variant="outline" size="sm" className="rounded-xl">상품 수정</Button>
+                </Link>
+              )}
+            </div>
           </div>
         </SiteContainer>
       </div>
@@ -985,23 +994,18 @@ export default function ProductDetailClient({ product }: { product: any }) {
                             <span className="text-xs text-muted-foreground">자동 선택</span>
                           )}
                         </div>
-                        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                          {gaugeOptions.map((gauge) => (
-                            <button
-                              key={gauge}
-                              type="button"
-                              onClick={() => setSelectedGauge(gauge)}
-                              className={cn(
-                                "rounded-lg border px-3 py-2 text-sm font-medium transition",
-                                selectedGauge === gauge
-                                  ? "border-foreground bg-foreground text-background"
-                                  : "border-border bg-background text-foreground hover:bg-muted",
-                              )}
-                            >
-                              {gauge}
-                            </button>
-                          ))}
-                        </div>
+                        <Select value={selectedGauge} onValueChange={setSelectedGauge}>
+                          <SelectTrigger className="w-full bg-background">
+                            <SelectValue placeholder="게이지를 선택하세요" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {gaugeOptions.map((gauge) => (
+                              <SelectItem key={gauge} value={gauge}>
+                                {formatGaugeLabel(gauge)}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                     )}
 

@@ -72,6 +72,7 @@ import {
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { adminSurface } from "@/components/admin/admin-typography";
 import { cn } from "@/lib/utils";
+import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import {
   ArrowLeft,
   Calendar,
@@ -2015,7 +2016,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                         <p className="text-sm text-foreground/80">
                           수량: {item.quantity}개
                         </p>
-                        {item.selectedGauge && <p className="text-xs text-foreground/70">게이지: {item.selectedGauge}</p>}
+                        {item.selectedGauge && <p className="text-xs text-foreground/70">게이지: {formatGaugeLabel(item.selectedGauge)}</p>}
                       </div>
                       <div className="text-right">
                         <p className="font-semibold text-foreground">
