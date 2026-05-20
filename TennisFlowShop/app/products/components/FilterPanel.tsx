@@ -308,9 +308,10 @@ export const FilterPanel = React.memo(function FilterPanel({
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">전체</SelectItem>
-                      <SelectItem value="5">★★★★★</SelectItem>
-                      <SelectItem value="4">★★★★☆ 이상</SelectItem>
-                      <SelectItem value="3">★★★☆☆ 이상</SelectItem>
+                      <SelectItem value="90">90 이상</SelectItem>
+                      <SelectItem value="80">80 이상</SelectItem>
+                      <SelectItem value="70">70 이상</SelectItem>
+                      <SelectItem value="60">60 이상</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

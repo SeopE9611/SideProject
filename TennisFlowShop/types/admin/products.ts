@@ -18,10 +18,15 @@ export type ProductGaugeInventory = {
 };
 
 export type ProductFeatureScores = {
+  /** 1~100 */
   power: number;
+  /** 1~100 */
   control: number;
+  /** 1~100 */
   spin: number;
+  /** 1~100 */
   durability: number;
+  /** 1~100 */
   comfort: number;
 };
 

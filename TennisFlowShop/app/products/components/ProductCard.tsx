@@ -9,6 +9,7 @@ import { Card, CardContent, CardFooter, CardTitle } from "@/components/ui/card";
 import { ENABLE_STRING_STANDALONE_ORDER } from "@/lib/orders/string-standalone-policy";
 import { isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import { normalizeFeatureScoreTo100 } from "@/lib/product-feature-score";
 import { cn } from "@/lib/utils";
 import { Eye, Heart, Star } from "lucide-react";
 import Image from "next/image";
@@ -57,7 +58,7 @@ const FEATURE_ORDER = [
 function getFeatureEntries(features?: Record<string, number>) {
   return FEATURE_ORDER.map((key) => {
     const rawValue = Number(features?.[key] ?? 0);
-    const value = Math.max(0, Math.min(5, rawValue));
+    const value = normalizeFeatureScoreTo100(rawValue);
     return { key, label: keyMap[key], value };
   }).filter((item) => item.value > 0);
 }
@@ -323,7 +324,7 @@ const ProductCard = React.memo(
                             {feature.label}
                           </span>
                           <span className="font-semibold text-primary">
-                            {feature.value}/5
+                            {feature.value}/100
                           </span>
                         </div>
                       </div>

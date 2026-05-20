@@ -21,6 +21,8 @@ import { ENABLE_STRING_STANDALONE_ORDER } from "@/lib/orders/string-standalone-p
 import { hasPaidMountingFee, isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
 import { cn } from "@/lib/utils";
 import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
+import ProductFeatureRadarChart from "@/app/products/components/ProductFeatureRadarChart";
+import { normalizeFeatureScoresTo100 } from "@/lib/product-feature-score";
 import {
   Activity,
   ArrowLeft,
@@ -191,13 +193,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
     powerHitter: "파워 히터", // 과거 호환
   };
 
-  // ====== 성능(영문/한글) 혼용 저장 호환 헬퍼 ======
-  const featureValue = (enKey: string, koKey: string, fallback = 3) => {
-    const v = product?.features?.[enKey] ?? product?.features?.[koKey];
-    const n = typeof v === "number" ? v : Number(v);
-    if (!n || Number.isNaN(n)) return fallback;
-    return Math.min(5, Math.max(1, n));
-  };
+  const normalizedFeatureScores = normalizeFeatureScoresTo100(product?.features);
 
   // ====== 스펙 표 렌더링용 변환 ======
   const toDisplaySpec = () => {
@@ -1176,42 +1172,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
               </CardTitle>
             </CardHeader>
             <CardContent className="p-5 sm:p-6 pt-0">
-              <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                {[
-                  { name: "반발력", icon: Zap, key: "power", koKey: "반발력" },
-                  {
-                    name: "컨트롤",
-                    icon: Target,
-                    key: "control",
-                    koKey: "컨트롤",
-                  },
-                  { name: "스핀", icon: RotateCcw, key: "spin", koKey: "스핀" },
-                  {
-                    name: "내구성",
-                    icon: Shield,
-                    key: "durability",
-                    koKey: "내구성",
-                  },
-                  {
-                    name: "편안함",
-                    icon: Heart,
-                    key: "comfort",
-                    koKey: "편안함",
-                  },
-                ].map((spec, index) => (
-                  <div key={index} className="p-3.5 sm:p-4 bg-muted/30 border border-border/40 rounded-xl">
-                    <div className="flex items-center gap-2 sm:gap-2.5 mb-2 sm:mb-2.5">
-                      <spec.icon className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
-                      <span className="text-sm sm:text-base font-medium text-foreground">{spec.name}</span>
-                    </div>
-                    <div className="flex gap-1.5">
-                      {[...Array(5)].map((_, i) => (
-                        <div key={i} className={`w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full transition-colors ${i < featureValue(spec.key, spec.koKey) ? "bg-foreground" : "bg-border"}`} />
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <ProductFeatureRadarChart scores={normalizedFeatureScores} />
             </CardContent>
           </Card>
         </div>
