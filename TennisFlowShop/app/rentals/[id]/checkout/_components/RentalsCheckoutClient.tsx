@@ -26,6 +26,7 @@ import { loadDaumPostcode } from "@/lib/loadDaumPostcode";
 import { isNicePaymentsEnabled } from "@/lib/payments/provider-flags";
 import { showErrorToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
+import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import { Building2, CheckCircle, CreditCard, Home, Loader2, Mail, MapPin, MessageSquare, Package, Phone, Shield, Truck, Undo2, UserIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -110,7 +111,7 @@ type Initial = {
   } | null;
 };
 
-export default function RentalsCheckoutClient({ initial }: { initial: Initial }) {
+export default function RentalsCheckoutClient({ initial, selectedGauge }: { initial: Initial; selectedGauge?: string }) {
   const router = useRouter();
   const submitIdemKeyRef = useRef<string | null>(null);
   /**
@@ -593,6 +594,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
             requested: !!requestStringing,
             // requestStringing이 false면 stringId는 보내지 않아 서버가 무시하도록 함
             stringId: requestStringing ? selectedString?.id : undefined,
+            selectedGauge: requestStringing ? selectedGauge || undefined : undefined,
           },
           // Step 2: checkout 내 입력이 충분하면 core 제출 경로로 바로 전달
           stringingApplicationInput,
@@ -762,6 +764,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                       <div className="space-y-1">
                         <div className="text-xs text-foreground/75">선택된 스트링</div>
                         <div className="font-semibold text-foreground">{selectedString.name}</div>
+                        {selectedGauge ? <div className="text-sm text-foreground/80">게이지: {formatGaugeLabel(selectedGauge)}</div> : null}
                         <div className="text-sm text-foreground/80">
                           {selectedString.price.toLocaleString()}원 + 교체 {selectedString.mountingFee.toLocaleString()}원
                         </div>
@@ -1235,6 +1238,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                         stringing: {
                           requested: !!requestStringing,
                           stringId: requestStringing ? selectedString?.id : undefined,
+                          selectedGauge: requestStringing ? selectedGauge || undefined : undefined,
                         },
                         stringingApplicationInput:
                           requestStringing && rentalStringingAdapter

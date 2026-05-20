@@ -2,11 +2,14 @@
 
 import Link from "next/link";
 import { useMemo } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { racketBrandLabel } from "@/lib/constants";
+import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import { useInfiniteProducts } from "@/app/products/hooks/useInfiniteProducts";
 import SiteContainer from "@/components/layout/SiteContainer";
 
@@ -20,6 +23,43 @@ type RacketMini = {
   image: string | null;
 };
 
+type GaugeInventoryRow = {
+  value: string;
+  label?: string;
+  stock: number;
+  isSoldOut: boolean;
+};
+
+function normalizeGaugeRows(product: any): GaugeInventoryRow[] {
+  if (Array.isArray(product?.gaugeInventories) && product.gaugeInventories.length > 0) {
+    return product.gaugeInventories
+      .map((row: any) => {
+        const stockNumber = Number(row?.stock ?? 0);
+        return {
+          value: String(row?.value ?? "").trim(),
+          label: typeof row?.label === "string" ? row.label.trim() : undefined,
+          stock: Number.isFinite(stockNumber) && stockNumber > 0 ? stockNumber : 0,
+          isSoldOut: row?.isSoldOut === true,
+        };
+      })
+      .filter((row: GaugeInventoryRow) => row.value.length > 0);
+  }
+  if (Array.isArray(product?.gaugeOptions) && product.gaugeOptions.length > 0) {
+    const fallbackStock = Number(product?.inventory?.stock ?? 0);
+    const normalizedFallbackStock = Number.isFinite(fallbackStock) && fallbackStock > 0 ? fallbackStock : 0;
+    return product.gaugeOptions
+      .map((value: unknown) => String(value ?? "").trim())
+      .filter(Boolean)
+      .map((value: string) => ({ value, stock: normalizedFallbackStock, isSoldOut: false }));
+  }
+  return [];
+}
+
+function getGaugeLabel(row: GaugeInventoryRow) {
+  const rawLabel = String(row.label ?? "").trim();
+  return rawLabel || formatGaugeLabel(row.value);
+}
+
 export default function RentalSelectStringClient({
   racket,
   period,
@@ -28,6 +68,7 @@ export default function RentalSelectStringClient({
   period: 7 | 15 | 30;
 }) {
   const router = useRouter();
+  const [selectedGaugeByStringId, setSelectedGaugeByStringId] = useState<Record<string, string>>({});
 
   const { products, isLoadingInitial, isFetchingMore, hasMore, loadMore } =
     useInfiniteProducts({
@@ -41,11 +82,12 @@ export default function RentalSelectStringClient({
     return `${brand} ${racket.model}${condition ? ` · ${condition}` : ""}`;
   }, [racket.brand, racket.model, racket.condition]);
 
-  const goCheckout = (stringId?: string) => {
+  const goCheckout = (stringId?: string, selectedGauge?: string) => {
     const base = `/rentals/${encodeURIComponent(racket.id)}/checkout?period=${period}`;
-    const url = stringId
-      ? `${base}&stringId=${encodeURIComponent(stringId)}`
-      : base;
+    const params = new URLSearchParams(`period=${period}`);
+    if (stringId) params.set("stringId", stringId);
+    if (selectedGauge) params.set("selectedGauge", selectedGauge);
+    const url = `/rentals/${encodeURIComponent(racket.id)}/checkout?${params.toString()}`;
     router.push(url);
   };
 
@@ -164,6 +206,14 @@ export default function RentalSelectStringClient({
               {(products ?? []).map((p: any) => {
                 const stringImage = p?.images?.[0] ?? p?.imageUrl;
                 const id = String(p?._id ?? "");
+                const gaugeRows = normalizeGaugeRows(p);
+                const selectedGauge = selectedGaugeByStringId[id] ?? "";
+                const selectedGaugeRow =
+                  gaugeRows.find((row) => row.value === selectedGauge) ?? null;
+                const hideGaugeStock = p?.inventory?.hideGaugeStock === true;
+                const isGaugeRequired = gaugeRows.length > 0;
+                const isGaugeSoldOut = selectedGaugeRow ? selectedGaugeRow.isSoldOut || selectedGaugeRow.stock <= 0 : false;
+                const hasGaugeStockIssue = selectedGaugeRow ? selectedGaugeRow.stock < 1 : false;
 
                 return (
                   <div
@@ -199,12 +249,49 @@ export default function RentalSelectStringClient({
                         <p className="text-xl font-bold text-foreground">
                           {Number(p.price ?? 0).toLocaleString()}원
                         </p>
+
+                        {isGaugeRequired ? (
+                          <div className="mt-3 space-y-2">
+                            <p className="text-sm font-medium text-foreground">게이지 선택</p>
+                            <Select
+                              value={selectedGauge}
+                              onValueChange={(value) =>
+                                setSelectedGaugeByStringId((prev) => ({ ...prev, [id]: value }))
+                              }
+                            >
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="게이지를 선택해주세요" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {gaugeRows.map((row) => {
+                                  const soldOut = row.isSoldOut || row.stock <= 0;
+                                  const stockSuffix = soldOut
+                                    ? " · 품절"
+                                    : hideGaugeStock
+                                      ? ""
+                                      : ` · 재고 ${row.stock}개`;
+                                  return (
+                                    <SelectItem key={row.value} value={row.value} disabled={soldOut}>
+                                      {`${getGaugeLabel(row)}${stockSuffix}`}
+                                    </SelectItem>
+                                  );
+                                })}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        ) : null}
                       </div>
 
                       {/* Select Button */}
                       <Button
                         className="mt-4 w-full whitespace-normal break-keep bg-primary py-5 font-medium leading-tight text-primary-foreground transition-all duration-300 hover:bg-primary/90"
-                        onClick={() => goCheckout(id)}
+                        disabled={isGaugeRequired && (!selectedGauge || isGaugeSoldOut || hasGaugeStockIssue)}
+                        onClick={() => {
+                          if (isGaugeRequired && !selectedGauge) return alert("게이지를 선택해주세요.");
+                          if (isGaugeSoldOut) return alert("선택한 게이지는 현재 품절입니다.");
+                          if (hasGaugeStockIssue) return alert("선택한 게이지의 구매 가능 수량을 초과했습니다.");
+                          goCheckout(id, selectedGauge || undefined);
+                        }}
                       >
                         <span className="flex items-center justify-center gap-2">
                           이 스트링 선택하고 대여 계속하기

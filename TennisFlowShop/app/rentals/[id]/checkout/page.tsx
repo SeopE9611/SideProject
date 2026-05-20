@@ -117,13 +117,17 @@ export default async function Page({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ period?: string; stringId?: string }>;
+  searchParams: Promise<{ period?: string; stringId?: string; selectedGauge?: string; gauge?: string }>;
 }) {
   const [{ id }, s] = await Promise.all([params, searchParams]);
   const rawPeriod = Number((s?.period as string | undefined) ?? NaN);
   const period =
     rawPeriod === 7 || rawPeriod === 15 || rawPeriod === 30 ? rawPeriod : 7;
   const stringId = (s?.stringId as string | undefined) ?? undefined;
+  const selectedGauge =
+    (s?.selectedGauge as string | undefined) ??
+    (s?.gauge as string | undefined) ??
+    "";
 
   // 비회원 주문(대여) 차단 정책(서버)
   const guestOrderMode = (
@@ -149,5 +153,5 @@ export default async function Page({
   const data = await getInitialForRacket(id, period, stringId);
   if (!data) notFound();
 
-  return <RentalsCheckoutClient initial={data} />;
+  return <RentalsCheckoutClient initial={data} selectedGauge={selectedGauge} />;
 }
