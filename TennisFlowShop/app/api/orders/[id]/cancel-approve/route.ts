@@ -43,6 +43,130 @@ function safeVerifyAccessToken(token?: string | null) {
   }
 }
 
+function pickStringProductObjectIdFromApplicationDoc(appDoc: any): ObjectId | null {
+  const toObjectIdIfValid = (value: unknown): ObjectId | null => {
+    if (value == null) return null;
+    const str = String(value).trim();
+    if (!str || str === "custom" || !ObjectId.isValid(str)) return null;
+    return new ObjectId(str);
+  };
+
+  const fromStringTypes = Array.isArray(appDoc?.stringDetails?.stringTypes)
+    ? appDoc.stringDetails.stringTypes.find(
+        (v: unknown) => String(v).trim() !== "custom",
+      )
+    : null;
+  const fromStringTypesObjectId = toObjectIdIfValid(fromStringTypes);
+  if (fromStringTypesObjectId) return fromStringTypesObjectId;
+
+  const fromStringItems = Array.isArray(appDoc?.stringItems)
+    ? appDoc.stringItems.find((item: any) => {
+        const productId = item?.productId ?? item?.id;
+        return (
+          typeof productId === "string" &&
+          productId.trim() &&
+          productId.trim() !== "custom"
+        );
+      })
+    : null;
+  const fromStringItemsObjectId = toObjectIdIfValid(
+    fromStringItems?.productId ?? fromStringItems?.id,
+  );
+  if (fromStringItemsObjectId) return fromStringItemsObjectId;
+
+  const lines = Array.isArray(appDoc?.stringDetails?.lines)
+    ? appDoc.stringDetails.lines
+    : Array.isArray(appDoc?.stringDetails?.racketLines)
+      ? appDoc.stringDetails.racketLines
+      : [];
+  const fromLines = lines.find(
+    (line: any) =>
+      typeof line?.stringProductId === "string" &&
+      line.stringProductId.trim() &&
+      line.stringProductId.trim() !== "custom",
+  );
+  const fromLinesObjectId = toObjectIdIfValid(fromLines?.stringProductId);
+  if (fromLinesObjectId) return fromLinesObjectId;
+
+  return toObjectIdIfValid(appDoc?.meta?.stringProductId);
+}
+
+async function restoreOrderGaugeStockIfNeeded(db: any, existing: any, now: Date) {
+  const alreadyRestored = Boolean(existing?.stockRestore?.gaugeStockRestoredAt);
+  if (alreadyRestored) {
+    return { setFields: {} as Record<string, unknown> };
+  }
+
+  const restoreMap = new Map<string, { productObjectId: ObjectId; selectedGauge: string; quantity: number }>();
+  const items = Array.isArray(existing?.items) ? existing.items : [];
+  for (const item of items) {
+    const kind = typeof item?.kind === "string" ? item.kind.trim() : "";
+    if (kind && kind !== "product") continue;
+    const selectedGauge =
+      typeof item?.selectedGauge === "string" && item.selectedGauge.trim()
+        ? item.selectedGauge.trim()
+        : undefined;
+    if (!selectedGauge) continue;
+    const productId = String(item?.productId ?? "").trim();
+    if (!ObjectId.isValid(productId)) continue;
+    const quantity = Math.max(0, Math.trunc(Number(item?.quantity ?? 0)));
+    if (quantity <= 0) continue;
+    const key = `${productId}:${selectedGauge}`;
+    const existingAgg = restoreMap.get(key);
+    if (existingAgg) {
+      existingAgg.quantity += quantity;
+      continue;
+    }
+    restoreMap.set(key, {
+      productObjectId: new ObjectId(productId),
+      selectedGauge,
+      quantity,
+    });
+  }
+
+  if (restoreMap.size === 0) {
+    return { setFields: {} as Record<string, unknown> };
+  }
+
+  const products = db.collection("products");
+  for (const restoreItem of restoreMap.values()) {
+    const restoreResult = await products.updateOne(
+      {
+        _id: restoreItem.productObjectId,
+        sold: { $gte: restoreItem.quantity },
+        "gaugeInventories.value": restoreItem.selectedGauge,
+      },
+      {
+        $inc: {
+          "gaugeInventories.$.stock": restoreItem.quantity,
+          "inventory.stock": restoreItem.quantity,
+          sold: -restoreItem.quantity,
+        },
+      },
+    );
+    if (!restoreResult.matchedCount || !restoreResult.modifiedCount) {
+      return {
+        errorResponse: NextResponse.json(
+          {
+            ok: false,
+            code: "GAUGE_STOCK_RESTORE_FAILED",
+            message: "주문 취소 중 스트링 게이지 재고 복구에 실패했습니다.",
+          },
+          { status: 409 },
+        ),
+        setFields: {} as Record<string, unknown>,
+      };
+    }
+  }
+
+  return {
+    setFields: {
+      "stockRestore.gaugeStockRestoredAt": now,
+      "stockRestore.gaugeStockRestoreReason": "order_cancel_approved",
+    } as Record<string, unknown>,
+  };
+}
+
 export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> },
@@ -264,6 +388,9 @@ export async function POST(
       cancelRequest: updatedCancelRequest,
       ...(nextPaymentInfo ? { paymentInfo: nextPaymentInfo } : {}),
     };
+    const gaugeRestore = await restoreOrderGaugeStockIfNeeded(db, existing, now);
+    if (gaugeRestore.errorResponse) return gaugeRestore.errorResponse;
+    Object.assign(updateFields, gaugeRestore.setFields);
 
     // 기존 cancelReason / cancelReasonDetail 필드도 같이 맞춰줌
     updateFields.cancelReason = reasonCode;
@@ -405,18 +532,71 @@ export async function POST(
 
         // 2) cancelRequest + status + history 업데이트
         const currentCancel = appDoc.cancelRequest ?? {};
+        const linkedAppSetFields: Record<string, unknown> = {
+          status: "취소",
+          cancelRequest: {
+            ...currentCancel,
+            status: "approved",
+            approvedAt: now,
+          },
+        };
+        const selectedGauge =
+          typeof appDoc?.meta?.selectedGauge === "string" &&
+          appDoc.meta.selectedGauge.trim()
+            ? appDoc.meta.selectedGauge.trim()
+            : undefined;
+        const hasDeductedGaugeStock = Boolean(appDoc?.meta?.gaugeStockDeductedAt);
+        const alreadyRestoredGaugeStock = Boolean(appDoc?.meta?.gaugeStockRestoredAt);
+
+        if (hasDeductedGaugeStock && selectedGauge && !alreadyRestoredGaugeStock) {
+          const stringProductObjectId =
+            pickStringProductObjectIdFromApplicationDoc(appDoc);
+          if (!stringProductObjectId) {
+            console.error(
+              "[cancel-approve] missing linked application string product id for gauge stock restore",
+              {
+                applicationId: appDoc?._id ? String(appDoc._id) : null,
+                selectedGauge,
+              },
+            );
+          } else {
+            const linkedRestoreResult = await db.collection("products").updateOne(
+              {
+                _id: stringProductObjectId,
+                sold: { $gte: 1 },
+                "gaugeInventories.value": selectedGauge,
+              },
+              {
+                $inc: {
+                  "gaugeInventories.$.stock": 1,
+                  "inventory.stock": 1,
+                  sold: -1,
+                },
+              },
+            );
+            if (
+              !linkedRestoreResult.matchedCount ||
+              !linkedRestoreResult.modifiedCount
+            ) {
+              return NextResponse.json(
+                {
+                  ok: false,
+                  code: "GAUGE_STOCK_RESTORE_FAILED",
+                  message: "주문 취소 중 스트링 게이지 재고 복구에 실패했습니다.",
+                },
+                { status: 409 },
+              );
+            }
+            linkedAppSetFields["meta.gaugeStockRestoredAt"] = now;
+            linkedAppSetFields["meta.gaugeStockRestoreReason"] =
+              "order_cancel_approved_linked_application";
+          }
+        }
 
         await appsCol.updateOne(
           { _id: appKey } as any,
           {
-            $set: {
-              status: "취소",
-              cancelRequest: {
-                ...currentCancel,
-                status: "approved",
-                approvedAt: now,
-              },
-            },
+            $set: linkedAppSetFields,
             $push: {
               history: {
                 status: "취소",
