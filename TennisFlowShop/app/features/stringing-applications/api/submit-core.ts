@@ -357,7 +357,12 @@ export async function submitStringingApplicationCore({
       ? `rental:${String(rentalObjectId)}`
       : undefined;
 
-  const updateDoc = {
+  const normalizedSelectedGauge =
+    typeof selectedGauge === "string" && selectedGauge.trim()
+      ? selectedGauge.trim()
+      : undefined;
+
+  const updateDoc: Record<string, unknown> = {
     orderId: orderObjectId,
     rentalId: rentalObjectId,
     paymentSource,
@@ -386,14 +391,12 @@ export async function submitStringingApplicationCore({
     guestPhone: userId ? null : phone,
     userSnapshot: userId ? { name, email: email ?? "" } : null,
     updatedAt: new Date(),
-    meta: {
-      selectedGauge:
-        typeof selectedGauge === "string" && selectedGauge.trim()
-          ? selectedGauge.trim()
-          : null,
-    },
     ...(cm === "visit" ? { visitSlotCount, visitDurationMinutes } : {}),
   };
+
+  if (normalizedSelectedGauge) {
+    updateDoc["meta.selectedGauge"] = normalizedSelectedGauge;
+  }
 
   const existingDraft = orderObjectId
     ? await db
