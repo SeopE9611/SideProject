@@ -512,11 +512,7 @@ export default function FilterableProductList({
     draftSearchQuery,
     draftPriceChanged,
   ].filter(Boolean).length;
-  const getScoreLabel = (value: number) => {
-    if (value === 5) return "5점";
-    if (value === 4) return "4점 이상";
-    return "3점 이상";
-  };
+  const getScoreLabel = (value: number) => `${value} 이상`;
   const getPriceChipLabel = (range: [number, number]) => {
     if (range[0] === 0 && range[1] === 10000) return "1만원 이하";
     if (range[0] === 10000 && range[1] === 20000) return "1만원 ~ 2만원";
