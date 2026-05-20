@@ -219,8 +219,10 @@ function FilterInputGroup({ label, value, onChange, placeholder }: { label: stri
 }
 
 // 적용된 필터 칩 데이터 생성
-function getActiveFilterChips(searchParams: URLSearchParams): { key: string; label: string }[] {
-  const chips: { key: string; label: string }[] = [];
+type ActiveFilterChipKey = MarketFilterKey | "price" | "weight" | "balance" | "headSize";
+
+function getActiveFilterChips(searchParams: URLSearchParams): { key: ActiveFilterChipKey; label: string }[] {
+  const chips: { key: ActiveFilterChipKey; label: string }[] = [];
   const saleStatus = searchParams.get("saleStatus");
   if (saleStatus)
     chips.push({
@@ -487,6 +489,44 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
     pushMarketFilters(sp, { ...EMPTY_MARKET_FILTER_DRAFT });
   };
 
+  const removeMarketFilterChip = (chipKey: ActiveFilterChipKey) => {
+    const sp = new URLSearchParams(searchParams.toString());
+    const nextDraft: MarketFilterDraft = { ...marketFilterDraft };
+
+    if (chipKey === "price") {
+      sp.delete("minPrice");
+      sp.delete("maxPrice");
+      nextDraft.minPrice = "";
+      nextDraft.maxPrice = "";
+    } else if (chipKey === "minPrice") {
+      sp.delete("minPrice");
+      nextDraft.minPrice = "";
+    } else if (chipKey === "maxPrice") {
+      sp.delete("maxPrice");
+      nextDraft.maxPrice = "";
+    } else if (chipKey === "weight") {
+      sp.delete("minWeight");
+      sp.delete("maxWeight");
+      nextDraft.minWeight = "";
+      nextDraft.maxWeight = "";
+    } else if (chipKey === "balance") {
+      sp.delete("minBalance");
+      sp.delete("maxBalance");
+      nextDraft.minBalance = "";
+      nextDraft.maxBalance = "";
+    } else if (chipKey === "headSize") {
+      sp.delete("minHeadSize");
+      sp.delete("maxHeadSize");
+      nextDraft.minHeadSize = "";
+      nextDraft.maxHeadSize = "";
+    } else {
+      sp.delete(chipKey);
+      nextDraft[chipKey] = "";
+    }
+
+    pushMarketFilters(sp, nextDraft);
+  };
+
   // // 브랜드 변경 핸들러
   const handleBrandChange = (nextBrand: string) => {
     setPage(1);
@@ -585,6 +625,11 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
   const shouldShowEmptyState = hasResolvedData && items.length === 0;
   const shouldShowRows = hasResolvedData && items.length > 0;
   const activeMarketFilterCount = useMemo(() => MARKET_FILTER_KEYS.filter((key) => (searchParams.get(key) ?? "").trim() !== "").length, [searchParams]);
+  const hasRacketDetailApplied = useMemo(
+    () => ["modelKeyword", "gripSize", "pattern", "minWeight", "maxWeight", "minBalance", "maxBalance", "minHeadSize", "maxHeadSize"].some((key) => (searchParams.get(key) ?? "").trim() !== ""),
+    [searchParams]
+  );
+  const hasStringDetailApplied = useMemo(() => ["modelKeyword", "material", "gauge", "color", "length"].some((key) => (searchParams.get(key) ?? "").trim() !== ""), [searchParams]);
 
   // total이 확정된 경우에만 실제 페이지 수를 계산하고, 미확정 상태에서는 내부 보수값(1)만 사용
   const totalPages = hasResolvedTotal ? Math.max(1, Math.ceil((total ?? 0) / PAGE_LIMIT)) : 1;
@@ -762,23 +807,16 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                       </div>
                       <div className="flex items-center gap-2">
                         {activeMarketFilterCount > 0 && (
-                          <span
-                            role="button"
-                            tabIndex={0}
+                          <button
+                            type="button"
                             className="hidden text-xs text-foreground/75 underline-offset-2 hover:text-foreground hover:underline md:inline"
                             onClick={(e) => {
                               e.stopPropagation();
                               resetMarketFilters();
                             }}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") {
-                                e.stopPropagation();
-                                resetMarketFilters();
-                              }
-                            }}
                           >
                             전체 초기화
-                          </span>
+                          </button>
                         )}
                         <div className="md:hidden">{isMarketFilterOpen ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}</div>
                       </div>
@@ -790,6 +828,14 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                         {getActiveFilterChips(searchParams).map((chip) => (
                           <span key={chip.key} className="inline-flex items-center gap-1 rounded-full border border-border bg-secondary px-2 py-0.5 text-[11px] text-foreground">
                             {chip.label}
+                            <button
+                              type="button"
+                              className="rounded-full p-0.5 text-foreground/70 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                              aria-label={`${chip.label} 필터 해제`}
+                              onClick={() => removeMarketFilterChip(chip.key)}
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
                           </span>
                         ))}
                         <button type="button" className="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-xs text-foreground/75 hover:text-foreground" onClick={resetMarketFilters}>
@@ -860,190 +906,45 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                       {/* ── 라켓 카테고리 필터 ── */}
                       {category === "racket" && (
                         <div className="border-t border-border bg-muted/20 px-4 py-3">
-                          <div className="mb-3 flex items-center gap-2">
-                            <div className="h-1 w-1 rounded-full bg-info" />
-                            <span className="text-xs font-semibold text-foreground">라켓 상세</span>
-                            <span className="text-xs text-foreground/75">모델, 스펙, 사이즈</span>
-                          </div>
-                          {/* 행 1: 검색/선택 필터 */}
-                          <div className="grid grid-cols-2 gap-x-3 gap-y-2.5 sm:grid-cols-3">
-                            <FilterInputGroup
-                              label="모델명"
-                              value={marketFilterDraft.modelKeyword}
-                              onChange={(v) =>
-                                setMarketFilterDraft((prev) => ({
-                                  ...prev,
-                                  modelKeyword: v,
-                                }))
-                              }
-                              placeholder="모델명 키워드"
-                            />
-                            <FilterSelectGroup
-                              label="그립 사이즈"
-                              value={marketFilterDraft.gripSize}
-                              onChange={(v) =>
-                                setMarketFilterDraft((prev) => ({
-                                  ...prev,
-                                  gripSize: v,
-                                }))
-                              }
-                              placeholder="전체"
-                              options={MARKET_RACKET_GRIP_SIZE_OPTIONS.map((g) => ({ value: g, label: g }))}
-                            />
-                            <FilterSelectGroup
-                              label="스트링 패턴"
-                              value={marketFilterDraft.pattern}
-                              onChange={(v) =>
-                                setMarketFilterDraft((prev) => ({
-                                  ...prev,
-                                  pattern: v,
-                                }))
-                              }
-                              placeholder="전체"
-                              options={MARKET_RACKET_PATTERN_OPTIONS.map((p) => ({ value: p, label: p }))}
-                            />
-                          </div>
-                          {/* 행 2: 범위 필터 */}
-                          <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2.5 sm:grid-cols-3">
-                            <RangeFilterGroup
-                              label="무게"
-                              unit="g"
-                              minValue={marketFilterDraft.minWeight}
-                              maxValue={marketFilterDraft.maxWeight}
-                              onMinChange={(v) =>
-                                setMarketFilterDraft((prev) => ({
-                                  ...prev,
-                                  minWeight: v,
-                                }))
-                              }
-                              onMaxChange={(v) =>
-                                setMarketFilterDraft((prev) => ({
-                                  ...prev,
-                                  maxWeight: v,
-                                }))
-                              }
-                            />
-                            <RangeFilterGroup
-                              label="밸런스"
-                              unit="mm"
-                              minValue={marketFilterDraft.minBalance}
-                              maxValue={marketFilterDraft.maxBalance}
-                              onMinChange={(v) =>
-                                setMarketFilterDraft((prev) => ({
-                                  ...prev,
-                                  minBalance: v,
-                                }))
-                              }
-                              onMaxChange={(v) =>
-                                setMarketFilterDraft((prev) => ({
-                                  ...prev,
-                                  maxBalance: v,
-                                }))
-                              }
-                            />
-                            <RangeFilterGroup
-                              label="헤드 사이즈"
-                              unit="sq in"
-                              minValue={marketFilterDraft.minHeadSize}
-                              maxValue={marketFilterDraft.maxHeadSize}
-                              onMinChange={(v) =>
-                                setMarketFilterDraft((prev) => ({
-                                  ...prev,
-                                  minHeadSize: v,
-                                }))
-                              }
-                              onMaxChange={(v) =>
-                                setMarketFilterDraft((prev) => ({
-                                  ...prev,
-                                  maxHeadSize: v,
-                                }))
-                              }
-                            />
-                          </div>
+                          <details className="group" open={hasRacketDetailApplied}>
+                            <summary className="mb-3 flex cursor-pointer list-none items-center gap-2">
+                              <div className="h-1 w-1 rounded-full bg-info" />
+                              <span className="text-xs font-semibold text-foreground">라켓 상세 조건</span>
+                              <span className="text-xs text-foreground/75">모델, 스펙, 사이즈</span>
+                              {hasRacketDetailApplied && <span className="rounded bg-info/15 px-1.5 py-0.5 text-[10px] font-medium text-info">적용됨</span>}
+                            </summary>
+                            <div className="grid grid-cols-2 gap-x-3 gap-y-2.5 sm:grid-cols-3">
+                              <FilterInputGroup label="모델명" value={marketFilterDraft.modelKeyword} onChange={(v) => setMarketFilterDraft((prev) => ({ ...prev, modelKeyword: v }))} placeholder="모델명 키워드" />
+                              <FilterSelectGroup label="그립 사이즈" value={marketFilterDraft.gripSize} onChange={(v) => setMarketFilterDraft((prev) => ({ ...prev, gripSize: v }))} placeholder="전체" options={MARKET_RACKET_GRIP_SIZE_OPTIONS.map((g) => ({ value: g, label: g }))} />
+                              <FilterSelectGroup label="스트링 패턴" value={marketFilterDraft.pattern} onChange={(v) => setMarketFilterDraft((prev) => ({ ...prev, pattern: v }))} placeholder="전체" options={MARKET_RACKET_PATTERN_OPTIONS.map((p) => ({ value: p, label: p }))} />
+                            </div>
+                            <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2.5 sm:grid-cols-3">
+                              <RangeFilterGroup label="무게" unit="g" minValue={marketFilterDraft.minWeight} maxValue={marketFilterDraft.maxWeight} onMinChange={(v) => setMarketFilterDraft((prev) => ({ ...prev, minWeight: v }))} onMaxChange={(v) => setMarketFilterDraft((prev) => ({ ...prev, maxWeight: v }))} />
+                              <RangeFilterGroup label="밸런스" unit="mm" minValue={marketFilterDraft.minBalance} maxValue={marketFilterDraft.maxBalance} onMinChange={(v) => setMarketFilterDraft((prev) => ({ ...prev, minBalance: v }))} onMaxChange={(v) => setMarketFilterDraft((prev) => ({ ...prev, maxBalance: v }))} />
+                              <RangeFilterGroup label="헤드 사이즈" unit="sq in" minValue={marketFilterDraft.minHeadSize} maxValue={marketFilterDraft.maxHeadSize} onMinChange={(v) => setMarketFilterDraft((prev) => ({ ...prev, minHeadSize: v }))} onMaxChange={(v) => setMarketFilterDraft((prev) => ({ ...prev, maxHeadSize: v }))} />
+                            </div>
+                          </details>
                         </div>
                       )}
 
                       {/* ── 스트링 카테고리 필터 ── */}
                       {category === "string" && (
                         <div className="border-t border-border bg-muted/20 px-4 py-3">
-                          <div className="mb-3 flex items-center gap-2">
-                            <div className="h-1 w-1 rounded-full bg-info" />
-                            <span className="text-xs font-semibold text-foreground">스트링 상세</span>
-                            <span className="text-xs text-foreground/75">모델, 재질, 게이지, 색상</span>
-                          </div>
-                          <div className="grid grid-cols-2 gap-x-3 gap-y-2.5 sm:grid-cols-3 lg:grid-cols-5">
-                            <FilterInputGroup
-                              label="모델명"
-                              value={marketFilterDraft.modelKeyword}
-                              onChange={(v) =>
-                                setMarketFilterDraft((prev) => ({
-                                  ...prev,
-                                  modelKeyword: v,
-                                }))
-                              }
-                              placeholder="모델명 키워드"
-                            />
-                            <FilterSelectGroup
-                              label="재질"
-                              value={marketFilterDraft.material}
-                              onChange={(v) =>
-                                setMarketFilterDraft((prev) => ({
-                                  ...prev,
-                                  material: v,
-                                }))
-                              }
-                              placeholder="전체"
-                              options={MARKET_STRING_MATERIAL_OPTIONS.map((m) => ({
-                                value: m,
-                                label: getMarketStringMaterialLabel(m),
-                              }))}
-                            />
-                            <FilterSelectGroup
-                              label="게이지"
-                              value={marketFilterDraft.gauge}
-                              onChange={(v) =>
-                                setMarketFilterDraft((prev) => ({
-                                  ...prev,
-                                  gauge: v,
-                                }))
-                              }
-                              placeholder="전체"
-                              options={MARKET_STRING_GAUGE_OPTIONS.map((g) => ({
-                                value: g,
-                                label: g,
-                              }))}
-                            />
-                            <FilterSelectGroup
-                              label="색상"
-                              value={marketFilterDraft.color}
-                              onChange={(v) =>
-                                setMarketFilterDraft((prev) => ({
-                                  ...prev,
-                                  color: v,
-                                }))
-                              }
-                              placeholder="전체"
-                              options={MARKET_STRING_COLOR_OPTIONS.map((c) => ({
-                                value: c,
-                                label: getMarketStringColorLabel(c),
-                              }))}
-                            />
-                            <FilterSelectGroup
-                              label="길이"
-                              value={marketFilterDraft.length}
-                              onChange={(v) =>
-                                setMarketFilterDraft((prev) => ({
-                                  ...prev,
-                                  length: v,
-                                }))
-                              }
-                              placeholder="전체"
-                              options={MARKET_STRING_LENGTH_OPTIONS.map((l) => ({
-                                value: l,
-                                label: getMarketStringLengthLabel(l),
-                              }))}
-                            />
-                          </div>
+                          <details className="group" open={hasStringDetailApplied}>
+                            <summary className="mb-3 flex cursor-pointer list-none items-center gap-2">
+                              <div className="h-1 w-1 rounded-full bg-info" />
+                              <span className="text-xs font-semibold text-foreground">스트링 상세 조건</span>
+                              <span className="text-xs text-foreground/75">모델, 재질, 게이지, 색상</span>
+                              {hasStringDetailApplied && <span className="rounded bg-info/15 px-1.5 py-0.5 text-[10px] font-medium text-info">적용됨</span>}
+                            </summary>
+                            <div className="grid grid-cols-2 gap-x-3 gap-y-2.5 sm:grid-cols-3 lg:grid-cols-5">
+                              <FilterInputGroup label="모델명" value={marketFilterDraft.modelKeyword} onChange={(v) => setMarketFilterDraft((prev) => ({ ...prev, modelKeyword: v }))} placeholder="모델명 키워드" />
+                              <FilterSelectGroup label="재질" value={marketFilterDraft.material} onChange={(v) => setMarketFilterDraft((prev) => ({ ...prev, material: v }))} placeholder="전체" options={MARKET_STRING_MATERIAL_OPTIONS.map((m) => ({ value: m, label: getMarketStringMaterialLabel(m) }))} />
+                              <FilterSelectGroup label="게이지" value={marketFilterDraft.gauge} onChange={(v) => setMarketFilterDraft((prev) => ({ ...prev, gauge: v }))} placeholder="전체" options={MARKET_STRING_GAUGE_OPTIONS.map((g) => ({ value: g, label: g }))} />
+                              <FilterSelectGroup label="색상" value={marketFilterDraft.color} onChange={(v) => setMarketFilterDraft((prev) => ({ ...prev, color: v }))} placeholder="전체" options={MARKET_STRING_COLOR_OPTIONS.map((c) => ({ value: c, label: getMarketStringColorLabel(c) }))} />
+                              <FilterSelectGroup label="길이" value={marketFilterDraft.length} onChange={(v) => setMarketFilterDraft((prev) => ({ ...prev, length: v }))} placeholder="전체" options={MARKET_STRING_LENGTH_OPTIONS.map((l) => ({ value: l, label: getMarketStringLengthLabel(l) }))} />
+                            </div>
+                          </details>
                         </div>
                       )}
 
