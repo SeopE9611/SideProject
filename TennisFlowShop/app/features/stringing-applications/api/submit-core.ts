@@ -362,6 +362,17 @@ export async function submitStringingApplicationCore({
       ? selectedGauge.trim()
       : undefined;
 
+  const existingDraft = orderObjectId
+    ? await db
+        .collection("stringing_applications")
+        .findOne(
+          { orderId: orderObjectId, status: "draft" },
+          { projection: { _id: 1, meta: 1 }, session },
+        )
+    : null;
+
+  const targetId = existingDraft?._id ?? applicationId;
+
   const updateDoc: Record<string, unknown> = {
     orderId: orderObjectId,
     rentalId: rentalObjectId,
@@ -401,7 +412,7 @@ export async function submitStringingApplicationCore({
   const existingApplication = await db
     .collection("stringing_applications")
     .findOne(
-      { _id: applicationId },
+      { _id: targetId },
       { projection: { _id: 1, meta: 1 }, session },
     );
 
@@ -452,6 +463,23 @@ export async function submitStringingApplicationCore({
         status: 400,
         code: "GAUGE_REQUIRED",
       });
+    }
+
+    const existingSelectedGauge = (existingApplication as any)?.meta?.selectedGauge;
+    if (
+      isGaugeSelectableProduct &&
+      alreadyDeductedGaugeStock &&
+      normalizedSelectedGauge &&
+      existingSelectedGauge &&
+      existingSelectedGauge !== normalizedSelectedGauge
+    ) {
+      throw Object.assign(
+        new Error("이미 재고가 차감된 신청서의 게이지는 변경할 수 없습니다."),
+        {
+          status: 409,
+          code: "GAUGE_ALREADY_DEDUCTED",
+        },
+      );
     }
 
     if (isGaugeSelectableProduct && normalizedSelectedGauge && !alreadyDeductedGaugeStock) {
@@ -515,17 +543,6 @@ export async function submitStringingApplicationCore({
       updateDoc["meta.gaugeStockDeductedAt"] = new Date();
     }
   }
-
-  const existingDraft = orderObjectId
-    ? await db
-        .collection("stringing_applications")
-        .findOne(
-          { orderId: orderObjectId, status: "draft" },
-          { projection: { _id: 1 }, session },
-        )
-    : null;
-
-  const targetId = existingDraft?._id ?? applicationId;
 
   const updateResult = await db.collection("stringing_applications").updateOne(
     { _id: targetId },
