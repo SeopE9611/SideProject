@@ -61,6 +61,40 @@ export async function POST(
     const alreadyCanceledApproved = currentStatus === "canceled" && isApproved;
     const now = new Date();
 
+    const selectedGauge =
+      typeof existing?.stringing?.selectedGauge === "string" &&
+      existing.stringing.selectedGauge.trim()
+        ? existing.stringing.selectedGauge.trim()
+        : null;
+    const stringProductId =
+      existing?.stringing?.stringId && ObjectId.isValid(String(existing.stringing.stringId))
+        ? new ObjectId(String(existing.stringing.stringId))
+        : null;
+
+    if (!alreadyCanceledApproved && selectedGauge && stringProductId) {
+      const gaugeRestoreResult = await guard.db.collection("products").updateOne(
+        {
+          _id: stringProductId,
+          sold: { $gte: 1 },
+          "gaugeInventories.value": selectedGauge,
+        },
+        {
+          $inc: {
+            "gaugeInventories.$.stock": 1,
+            "inventory.stock": 1,
+            sold: -1,
+          },
+        },
+      );
+
+      if (gaugeRestoreResult.matchedCount < 1 || gaugeRestoreResult.modifiedCount < 1) {
+        return NextResponse.json(
+          { ok: false, message: "스트링 게이지 재고 복구에 실패했습니다." },
+          { status: 409 },
+        );
+      }
+    }
+
     if (!alreadyCanceledApproved) {
       await rentals.updateOne({ _id }, {
         $set: {
