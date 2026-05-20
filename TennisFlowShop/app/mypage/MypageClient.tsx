@@ -197,7 +197,7 @@ export default function MypageClient({ user }: Props) {
   };
   const todoCount = summary?.todoCount ?? 0;
   const hasTodoItems = !summaryLoading && todoCount > 0;
-  const todoCardDescription = hasTodoItems ? "확인하기" : "없음";
+  const todoCardDescription = hasTodoItems ? "바로 확인" : "처리 완료";
 
   return (
     <div className="min-h-full bg-background">
@@ -226,18 +226,22 @@ export default function MypageClient({ user }: Props) {
             <button
               type="button"
               onClick={() => router.push("/mypage?tab=orders&scope=todo", { scroll: false })}
-              className={`mb-5 w-full rounded-2xl border p-4 text-left shadow-sm transition-colors bp-sm:p-5 ${hasTodoItems ? "border-primary/30 bg-primary/5 hover:bg-primary/10" : "border-border bg-muted hover:bg-muted/80"}`}
+              className={`mb-4 w-full rounded-2xl border p-4 text-left shadow-sm transition-colors bp-sm:mb-5 bp-sm:p-5 ${hasTodoItems ? "border-primary/30 bg-primary/5 hover:bg-primary/10" : "border-border bg-muted hover:bg-muted/80"}`}
             >
               <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-primary">지금 해야 할 일</p>
-                  <h2 className="mt-1 text-xl font-bold text-foreground">{summaryLoading ? "확인 중입니다" : hasTodoItems ? `지금 해야 할 일 ${todoCount}개` : "현재 바로 처리할 일은 없어요"}</h2>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">입금 대기, 운송장 등록, 구매확정, 리뷰 작성, 아카데미 신청 상태처럼 사용자의 확인이 필요한 항목을 먼저 보여드립니다.</p>
+                  <p className="text-sm font-semibold text-primary">지금 처리할 일</p>
+                  <h2 className="mt-1 text-xl font-bold text-foreground">{summaryLoading ? "확인 중입니다" : hasTodoItems ? `지금 확인할 항목 ${todoCount}개` : "현재 처리할 일이 없습니다"}</h2>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">입금 대기, 운송장 등록, 구매확정, 리뷰 작성, 아카데미 신청 상태 등 우선 확인이 필요한 항목을 먼저 모아 보여드립니다.</p>
                 </div>
+                <span className="inline-flex min-h-10 items-center justify-center rounded-lg border border-primary/30 bg-background px-3 text-sm font-medium text-foreground">
+                  {summaryLoading ? "로딩 중" : hasTodoItems ? "바로 확인하기" : "내역 보기"}
+                </span>
               </div>
             </button>
 
-            <div className="grid grid-cols-2 bp-lg:grid-cols-5 gap-3 bp-sm:gap-4 bp-lg:gap-6">
+            <div className="mb-2 px-1 text-xs font-medium text-muted-foreground">내 이용 요약</div>
+            <div className="grid grid-cols-2 bp-lg:grid-cols-5 gap-2.5 bp-sm:gap-4 bp-lg:gap-6">
               <div className="flex flex-col items-center justify-center bg-muted rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 text-center border border-border">
                 <Trophy className="h-6 w-6 bp-sm:h-8 bp-sm:w-8 mx-auto mb-2 bp-sm:mb-3 text-primary" />
                 <div className="text-xl bp-sm:text-2xl font-bold mb-1">{summaryLoading ? <Skeleton className="mx-auto h-7 w-10" /> : (summary?.activityFlowCount ?? "-")}</div>
@@ -256,7 +260,7 @@ export default function MypageClient({ user }: Props) {
               <button
                 type="button"
                 onClick={() => router.push("/mypage?tab=academy", { scroll: false })}
-                className="group flex flex-col items-center justify-center rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 text-center border border-border bg-muted transition-[background-color,border-color,box-shadow,transform] hover:bg-muted/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2"
+                className="group flex flex-col items-center justify-center rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 text-center border border-border bg-muted transition-[background-color,border-color,box-shadow,transform] hover:bg-muted/80 hover:border-primary/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2"
                 aria-label="클래스 신청 내역으로 이동"
               >
                 <GraduationCap className="h-6 w-6 bp-sm:h-8 bp-sm:w-8 mx-auto mb-2 bp-sm:mb-3 text-primary transition-transform group-hover:scale-105" />
@@ -331,42 +335,45 @@ export default function MypageClient({ user }: Props) {
             <Tabs value={currentTab} onValueChange={handleTabChange}>
               <Card className="mb-6 border-border bg-card shadow-sm bp-sm:mb-8">
                 <CardContent className="p-3 bp-sm:p-4 bp-lg:p-6">
-                  <TabsList className="h-auto w-full p-1 bg-muted grid grid-cols-2 gap-1 bp-sm:grid-cols-3 bp-md:grid-cols-4 bp-xl:grid-cols-7">
-                    <TabsTrigger value="orders" className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md min-w-0">
+                  <p className="mb-2 px-1 text-xs font-medium text-muted-foreground">내 상세 내역</p>
+                  <div className="overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                    <TabsList className="h-auto w-full min-w-[640px] p-1 bg-muted grid grid-cols-7 gap-1.5">
+                    <TabsTrigger value="orders" className="w-full flex flex-col items-center gap-1 bp-sm:gap-1.5 py-2.5 bp-sm:py-3 px-2 bp-sm:px-3 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md min-w-0">
                       <ClipboardList className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                       <span className="text-xs bp-sm:text-sm font-medium whitespace-nowrap">거래/이용 내역</span>
                     </TabsTrigger>
 
-                    <TabsTrigger value="academy" className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md min-w-0">
+                    <TabsTrigger value="academy" className="w-full flex flex-col items-center gap-1 bp-sm:gap-1.5 py-2.5 bp-sm:py-3 px-2 bp-sm:px-3 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md min-w-0">
                       <GraduationCap className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                       <span className="text-xs bp-sm:text-sm font-medium whitespace-nowrap">클래스 신청</span>
                     </TabsTrigger>
 
-                    <TabsTrigger value="wishlist" className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md min-w-0">
+                    <TabsTrigger value="wishlist" className="w-full flex flex-col items-center gap-1 bp-sm:gap-1.5 py-2.5 bp-sm:py-3 px-2 bp-sm:px-3 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md min-w-0">
                       <Heart className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
-                      <span className="text-xs bp-sm:text-sm font-medium whitespace-nowrap">위시리스트</span>
+                      <span className="text-xs bp-sm:text-sm font-medium whitespace-nowrap">찜한 상품</span>
                     </TabsTrigger>
 
-                    <TabsTrigger value="reviews" className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md min-w-0">
+                    <TabsTrigger value="reviews" className="w-full flex flex-col items-center gap-1 bp-sm:gap-1.5 py-2.5 bp-sm:py-3 px-2 bp-sm:px-3 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md min-w-0">
                       <MessageSquare className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                       <span className="text-xs bp-sm:text-sm font-medium whitespace-nowrap">리뷰 관리</span>
                     </TabsTrigger>
 
-                    <TabsTrigger value="qna" className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md min-w-0">
+                    <TabsTrigger value="qna" className="w-full flex flex-col items-center gap-1 bp-sm:gap-1.5 py-2.5 bp-sm:py-3 px-2 bp-sm:px-3 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md min-w-0">
                       <MessageCircleQuestion className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                       <span className="text-xs bp-sm:text-sm font-medium whitespace-nowrap">Q&A 내역</span>
                     </TabsTrigger>
 
-                    <TabsTrigger value="passes" className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md min-w-0">
+                    <TabsTrigger value="passes" className="w-full flex flex-col items-center gap-1 bp-sm:gap-1.5 py-2.5 bp-sm:py-3 px-2 bp-sm:px-3 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md min-w-0">
                       <Ticket className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                       <span className="text-xs bp-sm:text-sm font-medium whitespace-nowrap">패키지</span>
                     </TabsTrigger>
 
-                    <TabsTrigger value="points" className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md min-w-0">
+                    <TabsTrigger value="points" className="w-full flex flex-col items-center gap-1 bp-sm:gap-1.5 py-2.5 bp-sm:py-3 px-2 bp-sm:px-3 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md min-w-0">
                       <ReceiptCent className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                       <span className="text-xs bp-sm:text-sm font-medium whitespace-nowrap">적립 포인트</span>
                     </TabsTrigger>
-                  </TabsList>
+                    </TabsList>
+                  </div>
                 </CardContent>
               </Card>
 
