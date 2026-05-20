@@ -201,13 +201,56 @@ export async function createRentalOrderCore(params: {
         : undefined;
     if (!sid || !ObjectId.isValid(sid)) throw new Error("BAD_STRING_ID");
 
+    const stringQuantity = 1;
+    const stringObjectId = new ObjectId(sid);
     const s = await db
       .collection("products")
       .findOne(
-        { _id: new ObjectId(sid) },
-        { projection: { name: 1, price: 1, mountingFee: 1, images: 1 } },
+        { _id: stringObjectId },
+        {
+          projection: {
+            name: 1,
+            price: 1,
+            mountingFee: 1,
+            images: 1,
+            gaugeOptions: 1,
+            gaugeInventories: 1,
+          },
+        },
       );
     if (!s) throw new Error("STRING_NOT_FOUND");
+
+    const gaugeOptions = Array.isArray((s as any).gaugeOptions)
+      ? (s as any).gaugeOptions
+      : [];
+    const gaugeInventories = Array.isArray((s as any).gaugeInventories)
+      ? (s as any).gaugeInventories
+      : [];
+    const hasGaugeSelection =
+      gaugeOptions.length > 0 || gaugeInventories.length > 0;
+
+    if (hasGaugeSelection && !selectedGauge) {
+      throw new Error("GAUGE_REQUIRED");
+    }
+
+    if (selectedGauge) {
+      if (gaugeInventories.length <= 0) {
+        throw new Error("GAUGE_NOT_FOUND");
+      }
+      const selectedGaugeInventory = gaugeInventories.find(
+        (row: any) => String(row?.value ?? "").trim() === selectedGauge,
+      );
+      if (!selectedGaugeInventory) {
+        throw new Error("GAUGE_NOT_FOUND");
+      }
+      if (selectedGaugeInventory?.isSoldOut === true) {
+        throw new Error("GAUGE_SOLD_OUT");
+      }
+      const currentGaugeStock = Number(selectedGaugeInventory?.stock ?? 0);
+      if (!Number.isFinite(currentGaugeStock) || currentGaugeStock < stringQuantity) {
+        throw new Error("GAUGE_INSUFFICIENT_STOCK");
+      }
+    }
 
     const firstImg =
       Array.isArray((s as any).images) && (s as any).images[0]
@@ -338,6 +381,34 @@ export async function createRentalOrderCore(params: {
         const rentalIdStr = String(res.insertedId);
 
         if (stringingSnap?.requested) {
+          if (stringingSnap.selectedGauge) {
+            const stringQuantity = 1;
+            const stockUpdateResult = await db.collection("products").updateOne(
+              {
+                _id: stringingSnap.stringId,
+                "inventory.stock": { $gte: stringQuantity },
+                gaugeInventories: {
+                  $elemMatch: {
+                    value: stringingSnap.selectedGauge,
+                    isSoldOut: { $ne: true },
+                    stock: { $gte: stringQuantity },
+                  },
+                },
+              },
+              {
+                $inc: {
+                  "gaugeInventories.$.stock": -stringQuantity,
+                  "inventory.stock": -stringQuantity,
+                  sold: stringQuantity,
+                },
+              },
+              { session },
+            );
+            if (stockUpdateResult.modifiedCount !== 1) {
+              throw new Error("GAUGE_STOCK_UPDATE_FAILED");
+            }
+          }
+
           const normalizedInput = stringingApplicationInput as
             | StringingApplicationInput
             | undefined;
@@ -350,6 +421,7 @@ export async function createRentalOrderCore(params: {
               input: {
                 ...normalizedInput,
                 rentalId: rentalIdStr,
+                selectedGauge: stringingSnap.selectedGauge,
               },
             });
             stringingApplicationId = String(submitResult.applicationId);

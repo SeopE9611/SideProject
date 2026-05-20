@@ -45,6 +45,7 @@ export type StringingApplicationInput = {
   preferredTime?: string;
   requirements?: string;
   packageOptOut?: boolean;
+  selectedGauge?: string;
   lines?: Array<{
     racketType?: string;
     stringProductId?: string;
@@ -109,6 +110,7 @@ export async function submitStringingApplicationCore({
     preferredTime,
     requirements,
     packageOptOut,
+    selectedGauge,
     lines,
   } = input;
 
@@ -384,6 +386,12 @@ export async function submitStringingApplicationCore({
     guestPhone: userId ? null : phone,
     userSnapshot: userId ? { name, email: email ?? "" } : null,
     updatedAt: new Date(),
+    meta: {
+      selectedGauge:
+        typeof selectedGauge === "string" && selectedGauge.trim()
+          ? selectedGauge.trim()
+          : null,
+    },
     ...(cm === "visit" ? { visitSlotCount, visitDurationMinutes } : {}),
   };
 
