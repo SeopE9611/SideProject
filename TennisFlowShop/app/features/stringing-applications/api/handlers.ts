@@ -261,7 +261,7 @@ function pickStringProductObjectIdFromApplicationDoc(appDoc: any): ObjectId | nu
   return toObjectIdIfValid(appDoc?.meta?.stringProductId);
 }
 
-async function restoreStringingGaugeStockIfNeeded(db: any, appDoc: any, now: Date) {
+async function restoreStringingGaugeStockIfNeeded(db: any, appDoc: any, now: Date, restoreReason = 'cancel_approved') {
   const selectedGauge =
     typeof appDoc?.meta?.selectedGauge === 'string' && appDoc.meta.selectedGauge.trim()
       ? appDoc.meta.selectedGauge.trim()
@@ -317,7 +317,7 @@ async function restoreStringingGaugeStockIfNeeded(db: any, appDoc: any, now: Dat
     skippedReason: null,
     setFields: {
       'meta.gaugeStockRestoredAt': now,
-      'meta.gaugeStockRestoreReason': 'cancel_approved',
+      'meta.gaugeStockRestoreReason': restoreReason,
     } as Record<string, unknown>,
   };
 }
@@ -929,6 +929,10 @@ export async function handlePatchStringingApplication(req: Request, id: string) 
 }
 
 // ========== 신청서의 상태 업데이트 ==========
+function isCancelApplicationStatus(status: unknown): boolean {
+  return String(status ?? '').trim() === '취소';
+}
+
 export async function handleUpdateApplicationStatus(req: Request, context: { params: { id: string } }) {
   const adminAuth = await requireAdminUserFromAccessToken();
   if (!adminAuth.ok) return adminAuth.response;
@@ -961,19 +965,31 @@ export async function handleUpdateApplicationStatus(req: Request, context: { par
     return NextResponse.json({ error: '신청서를 찾을 수 없습니다.' }, { status: 404 });
   }
 
+  const now = new Date();
+  const wasCanceled = isCancelApplicationStatus(beforeAppDoc?.status);
+  const willBeCanceled = isCancelApplicationStatus(status);
+
+  let gaugeRestore: any = { restored: false, skippedReason: 'not_checked', setFields: {} as Record<string, unknown> };
+  if (willBeCanceled && !wasCanceled) {
+    gaugeRestore = await restoreStringingGaugeStockIfNeeded(db, beforeAppDoc, now, 'status_changed_to_cancel');
+    if (gaugeRestore.errorResponse) {
+      return gaugeRestore.errorResponse;
+    }
+  }
+
   // description 따로 준비
   const description = `신청서 상태가 [${status}]로 변경되었습니다.`;
 
   // historyEntry 객체 구성
   const historyEntry = {
     status,
-    date: new Date(),
+    date: now,
     description,
   };
 
   // 상태 + 이력 함께 업데이트
   const updateOps: any = {
-    $set: { status },
+    $set: { status, ...(gaugeRestore.setFields ?? {}) },
     $push: { history: { $each: [historyEntry] } },
   };
 
