@@ -25,6 +25,14 @@ type ProductDoc = {
 
 export { POST } from "@/app/api/admin/products/route";
 
+function normalizeFeatureFilterParam(value: string | null): number | null {
+  if (!value) return null;
+  const n = Number(value);
+  if (!Number.isFinite(n) || n <= 0) return null;
+  if (n >= 1 && n <= 5) return Math.round(n * 20);
+  return Math.min(100, Math.max(1, Math.round(n)));
+}
+
 export async function GET(req: NextRequest) {
   try {
     const url = new URL(req.url);
@@ -90,12 +98,21 @@ export async function GET(req: NextRequest) {
 
     const filter: Filter<ProductDoc> = { isDeleted: { $ne: true } }; // Soft-Delete된 상품은 기본적으로 제외
     if (brand) filter.brand = brand;
-    if (power) filter["features.power"] = { $gte: Number(power) };
-    if (control) filter["features.control"] = { $gte: Number(control) };
-    if (spin) filter["features.spin"] = { $gte: Number(spin) };
-    if (durability)
-      filter["features.durability"] = { $gte: Number(durability) };
-    if (comfort) filter["features.comfort"] = { $gte: Number(comfort) };
+    
+    
+    
+    
+    
+    const powerScore = normalizeFeatureFilterParam(power);
+    if (powerScore !== null) filter["features.power"] = { $gte: powerScore };
+    const controlScore = normalizeFeatureFilterParam(control);
+    if (controlScore !== null) filter["features.control"] = { $gte: controlScore };
+    const spinScore = normalizeFeatureFilterParam(spin);
+    if (spinScore !== null) filter["features.spin"] = { $gte: spinScore };
+    const durabilityScore = normalizeFeatureFilterParam(durability);
+    if (durabilityScore !== null) filter["features.durability"] = { $gte: durabilityScore };
+    const comfortScore = normalizeFeatureFilterParam(comfort);
+    if (comfortScore !== null) filter["features.comfort"] = { $gte: comfortScore };
     if (q) filter.name = { $regex: q, $options: "i" };
     if (material) filter.material = material;
     if (isFeatured === "true") filter["inventory.isFeatured"] = true;

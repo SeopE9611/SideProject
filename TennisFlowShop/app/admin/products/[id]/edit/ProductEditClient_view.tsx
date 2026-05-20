@@ -69,6 +69,7 @@ import {
 import { createSearchKeywords } from "./hooks/useKeywordGenerator";
 import { adminFormHintTooltipClass } from "@/lib/tooltip-style";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
+import { normalizeFeatureScoresTo100 } from "@/lib/product-feature-score";
 import { parseSearchKeywordsInput } from "./table/productTableUtils";
 import {
   MAX_PRODUCT_IMAGE_COUNT,
@@ -153,11 +154,11 @@ export default function ProductEditClient({
 
   // 성능 및 특성 정보
   const [features, setFeatures] = useState({
-    power: 3,
-    control: 3,
-    spin: 3,
-    durability: 3,
-    comfort: 3,
+    power: 60,
+    control: 60,
+    spin: 60,
+    durability: 60,
+    comfort: 60,
   });
 
   // 태그 정보
@@ -272,7 +273,7 @@ export default function ProductEditClient({
     const hybridState = normalizeHybridState(p);
     setHybridMain(hybridState.hybridMain);
     setHybridCross(hybridState.hybridCross);
-    setFeatures(p.features);
+    setFeatures(normalizeFeatureScoresTo100(p.features));
     setTags(p.tags);
     setInventory({
       stock: p.inventory.stock,
@@ -491,11 +492,11 @@ export default function ProductEditClient({
 
       // 이미 기본값으로 3이 설정되어있어서 오류가 생기지는 않겠지만 예방차원에 로직 추가
       const featureValues = Object.values(features);
-      if (featureValues.some((value) => value < 1 || value > 5)) {
+      if (featureValues.some((value) => value < 1 || value > 100)) {
         showErrorToast(
           <>
             <strong>[{SECTIONS.PERFORMANCE}] 미입력</strong> <br />
-            '모든 성능 항목은 1~5 사이 값으로 설정되어야 합니다.'
+            '모든 성능 항목은 1~100 사이 값으로 설정되어야 합니다.'
           </>,
         );
         return;
@@ -1375,12 +1376,12 @@ export default function ProductEditClient({
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <Label htmlFor="power-rating">반발력</Label>
-                        <span className="font-medium">{features.power}/5</span>
+                        <span className="font-medium">{features.power}/100</span>
                       </div>
                       <Slider
                         id="power-rating"
                         min={1}
-                        max={5}
+                        max={100}
                         step={1}
                         value={[features.power]}
                         onValueChange={(value) =>
@@ -1399,13 +1400,13 @@ export default function ProductEditClient({
                       <div className="flex items-center justify-between">
                         <Label htmlFor="control-rating">컨트롤</Label>
                         <span className="font-medium">
-                          {features.control}/5
+                          {features.control}/100
                         </span>
                       </div>
                       <Slider
                         id="control-rating"
                         min={1}
-                        max={5}
+                        max={100}
                         step={1}
                         value={[features.control]}
                         onValueChange={(value) =>
@@ -1421,12 +1422,12 @@ export default function ProductEditClient({
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <Label htmlFor="spin-rating">스핀</Label>
-                        <span className="font-medium">{features.spin}/5</span>
+                        <span className="font-medium">{features.spin}/100</span>
                       </div>
                       <Slider
                         id="spin-rating"
                         min={1}
-                        max={5}
+                        max={100}
                         step={1}
                         value={[features.spin]}
                         onValueChange={(value) =>
@@ -1443,13 +1444,13 @@ export default function ProductEditClient({
                       <div className="flex items-center justify-between">
                         <Label htmlFor="durability-rating">내구성</Label>
                         <span className="font-medium">
-                          {features.durability}/5
+                          {features.durability}/100
                         </span>
                       </div>
                       <Slider
                         id="durability-rating"
                         min={1}
-                        max={5}
+                        max={100}
                         step={1}
                         value={[features.durability]}
                         onValueChange={(value) =>
@@ -1466,13 +1467,13 @@ export default function ProductEditClient({
                       <div className="flex items-center justify-between">
                         <Label htmlFor="comfort-rating">편안함</Label>
                         <span className="font-medium">
-                          {features.comfort}/5
+                          {features.comfort}/100
                         </span>
                       </div>
                       <Slider
                         id="comfort-rating"
                         min={1}
-                        max={5}
+                        max={100}
                         step={1}
                         value={[features.comfort]}
                         onValueChange={(value) =>
