@@ -21,6 +21,13 @@ type PerformanceFilterConfig = {
   setter: (v: number | null) => void;
   featureKey: string;
 };
+const PRICE_PRESETS: { label: string; range: [number, number] }[] = [
+  { label: "전체", range: [0, 200000] },
+  { label: "1만원 이하", range: [0, 10000] },
+  { label: "1만원 ~ 2만원", range: [10000, 20000] },
+  { label: "2만원 ~ 3만원", range: [20000, 30000] },
+  { label: "3만원 이상", range: [30000, 200000] },
+];
 
 type Props = {
   selectedBrand: string | null;
@@ -166,6 +173,7 @@ export const FilterPanel = React.memo(function FilterPanel({
               </h2>
               {onClose && (
                 <Button
+                  type="button"
                   variant="outline"
                   size="sm"
                   onClick={onClose}
@@ -178,6 +186,7 @@ export const FilterPanel = React.memo(function FilterPanel({
             <div className="flex gap-2">
               {activeFiltersCount > 0 && (
                 <Button
+                  type="button"
                   variant="ghost"
                   size="sm"
                   onClick={onReset}
@@ -308,6 +317,46 @@ export const FilterPanel = React.memo(function FilterPanel({
               ),
             )}
           </div>
+          <div className="mt-4 bp-sm:mt-6 space-y-2">
+            <h3 className="font-medium text-base bp-sm:text-lg">가격대</h3>
+            <div className="flex flex-wrap gap-2">
+              {PRICE_PRESETS.map((preset) => {
+                const isActive =
+                  priceRange[0] === preset.range[0] &&
+                  priceRange[1] === preset.range[1];
+                return (
+                  <button
+                    key={preset.label}
+                    type="button"
+                    onClick={() => setPriceRange(preset.range)}
+                    className={cn(
+                      "rounded-md border px-3 py-1.5 text-xs bp-sm:text-sm transition-colors",
+                      isActive
+                        ? "border-primary bg-primary/15 text-primary dark:bg-primary/30 dark:text-primary-foreground"
+                        : "border-border bg-background text-muted-foreground hover:bg-muted",
+                    )}
+                  >
+                    {preset.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          {onClose && (
+            <div className="mt-6 border-t border-border pt-4 flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                className="flex-1"
+                onClick={onReset}
+              >
+                초기화
+              </Button>
+              <Button type="button" className="flex-1" onClick={onSearchSubmit}>
+                필터 적용
+              </Button>
+            </div>
+          )}
         </motion.div>
       </AnimatePresence>
       )}
