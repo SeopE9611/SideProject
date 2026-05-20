@@ -491,14 +491,9 @@ const ProductCard = React.memo(
                     <span className="text-muted-foreground font-medium">
                       {feature.label}
                     </span>
-                    <div className="flex items-center gap-0.5">
-                      {Array.from({ length: 5 }).map((_, i) => (
-                        <div
-                          key={i}
-                          className={`w-1.5 h-1.5 rounded-full ${i < feature.value ? "bg-primary" : "bg-muted"}`}
-                        />
-                      ))}
-                    </div>
+                    <span className="font-semibold text-primary">
+                      {feature.value}/100
+                    </span>
                   </div>
                 ))}
               </div>
