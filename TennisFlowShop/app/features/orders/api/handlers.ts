@@ -412,6 +412,83 @@ export async function createOrder(
             if (!product)
               throw new HttpError(404, { error: "상품을 찾을 수 없습니다." });
 
+            const selectedGauge = item.selectedGauge?.trim();
+            if (selectedGauge) {
+              const gaugeInventories = Array.isArray(
+                (product as any).gaugeInventories,
+              )
+                ? ((product as any).gaugeInventories as Array<{
+                    value?: string;
+                    stock?: number;
+                    isSoldOut?: boolean;
+                  }>)
+                : [];
+              const gaugeRow = gaugeInventories.find(
+                (g) => String(g?.value ?? "").trim() === selectedGauge,
+              );
+
+              if (!gaugeRow) {
+                throw new HttpError(400, {
+                  error: "선택한 게이지 옵션을 찾을 수 없습니다.",
+                  code: "GAUGE_NOT_FOUND",
+                  productName: product.name,
+                  selectedGauge,
+                });
+              }
+
+              if (gaugeRow.isSoldOut === true) {
+                throw new HttpError(400, {
+                  error: "선택한 게이지는 현재 품절입니다.",
+                  code: "GAUGE_SOLD_OUT",
+                  productName: product.name,
+                  selectedGauge,
+                });
+              }
+
+              const gaugeStock = Number(gaugeRow.stock ?? 0);
+              if (gaugeStock < quantity) {
+                throw new HttpError(400, {
+                  error: "선택한 게이지의 구매 가능 수량을 초과했습니다.",
+                  code: "GAUGE_INSUFFICIENT_STOCK",
+                  productName: product.name,
+                  selectedGauge,
+                  currentGaugeStock: gaugeStock,
+                });
+              }
+
+              const gaugeUpdated = await db.collection("products").updateOne(
+                {
+                  _id: productId,
+                  "inventory.stock": { $gte: quantity },
+                  gaugeInventories: {
+                    $elemMatch: {
+                      value: selectedGauge,
+                      isSoldOut: { $ne: true },
+                      stock: { $gte: quantity },
+                    },
+                  },
+                },
+                {
+                  $inc: {
+                    "gaugeInventories.$.stock": -quantity,
+                    "inventory.stock": -quantity,
+                    sold: quantity,
+                  },
+                },
+                { session },
+              );
+
+              if (gaugeUpdated.matchedCount === 0 || gaugeUpdated.modifiedCount === 0) {
+                throw new HttpError(400, {
+                  error: "선택한 게이지의 구매 가능 수량을 초과했습니다.",
+                  code: "GAUGE_STOCK_UPDATE_FAILED",
+                  productName: product.name,
+                  selectedGauge,
+                });
+              }
+              continue;
+            }
+
             const currentStock = Number(product?.inventory?.stock ?? 0);
             if (currentStock < quantity) {
               throw new HttpError(400, {
