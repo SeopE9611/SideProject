@@ -1,28 +1,21 @@
-import { cookies } from "next/headers";
-import { NextResponse, NextRequest } from "next/server";
-import { ObjectId, type Db } from "mongodb";
-import { verifyAccessToken } from "@/lib/auth.utils";
-import type { DBOrder } from "@/lib/types/order-db";
-import { findUserSnapshot, fetchCombinedOrders } from "./db";
-import clientPromise from "@/lib/mongodb";
 import { createStringingApplicationFromOrder } from "@/app/features/stringing-applications/api/create-from-order";
-import {
-  submitStringingApplicationCore,
-  type StringingApplicationInput,
-} from "@/app/features/stringing-applications/api/submit-core";
-import {
-  applyPackageToServiceFee,
-  resolvePackageUsage,
-  resolveRequiredPassCountFromInput,
-} from "@/app/features/stringing-applications/lib/package-pricing";
-import { deductPoints } from "@/lib/points.service";
+import { submitStringingApplicationCore, type StringingApplicationInput } from "@/app/features/stringing-applications/api/submit-core";
+import { applyPackageToServiceFee, resolvePackageUsage, resolveRequiredPassCountFromInput } from "@/app/features/stringing-applications/lib/package-pricing";
+import { verifyAccessToken } from "@/lib/auth.utils";
 import { getShippingBadge } from "@/lib/badge-style";
-import { z } from "zod";
-import { calcOrderShippingFeeWithBundlePolicy, normalizeItemShippingFee } from "@/lib/shipping-fee";
-import { findOneActivePassForUser } from "@/lib/passes.service";
-import { normalizeEmailForSearch } from "@/lib/search-email";
-import { ENABLE_STRING_STANDALONE_ORDER } from "@/lib/orders/string-standalone-policy";
+import clientPromise from "@/lib/mongodb";
 import { isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
+import { ENABLE_STRING_STANDALONE_ORDER } from "@/lib/orders/string-standalone-policy";
+import { findOneActivePassForUser } from "@/lib/passes.service";
+import { deductPoints } from "@/lib/points.service";
+import { normalizeEmailForSearch } from "@/lib/search-email";
+import { calcOrderShippingFeeWithBundlePolicy, normalizeItemShippingFee } from "@/lib/shipping-fee";
+import type { DBOrder } from "@/lib/types/order-db";
+import { ObjectId, type Db } from "mongodb";
+import { cookies } from "next/headers";
+import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+import { fetchCombinedOrders, findUserSnapshot } from "./db";
 
 /**
  * 서버 최종 유효성 검사 스키마(주문 생성)
@@ -107,8 +100,7 @@ const ShippingInfoSchema = z
     }
 
     // 택배/발송이면 주소/우편번호 최소 방어
-    const needsAddress =
-      v.deliveryMethod === "택배수령" || v.shippingMethod === "courier";
+    const needsAddress = v.deliveryMethod === "택배수령" || v.shippingMethod === "courier";
     if (needsAddress) {
       const postal = (v.postalCode ?? "").trim();
       const addr = (v.address ?? "").trim();
@@ -169,9 +161,7 @@ const ordersIdemIndexGlobal = globalThis as typeof globalThis & {
 // 매 요청 createIndex 비용 제거(런타임 1회 보장)
 async function ensureOrdersIdemIndex(db: Db) {
   if (!ordersIdemIndexGlobal.__tf_orders_idem_index_promise__) {
-    ordersIdemIndexGlobal.__tf_orders_idem_index_promise__ = db
-      .collection("orders")
-      .createIndex({ idemKey: 1 }, { unique: true, sparse: true });
+    ordersIdemIndexGlobal.__tf_orders_idem_index_promise__ = db.collection("orders").createIndex({ idemKey: 1 }, { unique: true, sparse: true });
   }
   await ordersIdemIndexGlobal.__tf_orders_idem_index_promise__;
 }
@@ -182,10 +172,7 @@ type CreateOrderExecutionContext = {
   userIdOverride?: string | null;
 };
 
-export async function createOrder(
-  req: Request,
-  executionContext?: CreateOrderExecutionContext,
-): Promise<Response> {
+export async function createOrder(req: Request, executionContext?: CreateOrderExecutionContext): Promise<Response> {
   try {
     const idemKeyRaw = req.headers.get("Idempotency-Key");
     const idemKey = idemKeyRaw && idemKeyRaw.trim() ? idemKeyRaw : undefined;
@@ -221,10 +208,7 @@ export async function createOrder(
      *=========================================================================
      */
     const gomRaw = (process.env.GUEST_ORDER_MODE ?? "on").trim();
-    const guestOrderMode =
-      gomRaw === "off" || gomRaw === "legacy" || gomRaw === "on"
-        ? gomRaw
-        : "on";
+    const guestOrderMode = gomRaw === "off" || gomRaw === "legacy" || gomRaw === "on" ? gomRaw : "on";
     if (executionContext?.source === "nicepay_return") {
       console.info("[orders][createOrder][context]", {
         source: executionContext.source,
@@ -250,10 +234,7 @@ export async function createOrder(
     try {
       rawBody = await req.json();
     } catch {
-      return NextResponse.json(
-        { error: "요청 본문(JSON)이 올바르지 않습니다." },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "요청 본문(JSON)이 올바르지 않습니다." }, { status: 400 });
     }
 
     // 서버 최종 스키마 검증
@@ -263,36 +244,20 @@ export async function createOrder(
       const issues = parsed.error.issues ?? [];
 
       // 아이템 관련 (빈 배열/형식/ID 등)
-      if (
-        issues.some(
-          (i) => i.path?.[0] === "items" && i.message === "INVALID_PRODUCT_ID",
-        )
-      ) {
-        return NextResponse.json(
-          { error: "잘못된 상품 ID 입니다." },
-          { status: 400 },
-        );
+      if (issues.some((i) => i.path?.[0] === "items" && i.message === "INVALID_PRODUCT_ID")) {
+        return NextResponse.json({ error: "잘못된 상품 ID 입니다." }, { status: 400 });
       }
       if (issues.some((i) => i.path?.[0] === "items")) {
-        return NextResponse.json(
-          { error: "주문 상품이 비어있습니다." },
-          { status: 400 },
-        );
+        return NextResponse.json({ error: "주문 상품이 비어있습니다." }, { status: 400 });
       }
 
       // 배송 정보 관련
       if (issues.some((i) => i.path?.[0] === "shippingInfo")) {
-        return NextResponse.json(
-          { error: "배송 정보가 누락되었거나 올바르지 않습니다." },
-          { status: 400 },
-        );
+        return NextResponse.json({ error: "배송 정보가 누락되었거나 올바르지 않습니다." }, { status: 400 });
       }
 
       // 나머지(포인트/게스트 정보 등) - 기본 메시지
-      return NextResponse.json(
-        { error: "요청 값이 올바르지 않습니다." },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "요청 값이 올바르지 않습니다." }, { status: 400 });
     }
 
     const body = parsed.data;
@@ -301,40 +266,25 @@ export async function createOrder(
     // - 서버가 최종 규칙을 강제(클라 입력은 참고용)
     // - 정책: 100P 단위로만 사용 가능 (UI와 동일)
     const POINT_UNIT = 100;
-    const requestedPointsToUse = Math.max(
-      0,
-      Math.floor(Number(body?.pointsToUse ?? 0) || 0),
-    );
-    const normalizedRequestedPointsToUse =
-      Math.floor(requestedPointsToUse / POINT_UNIT) * POINT_UNIT;
+    const requestedPointsToUse = Math.max(0, Math.floor(Number(body?.pointsToUse ?? 0) || 0));
+    const normalizedRequestedPointsToUse = Math.floor(requestedPointsToUse / POINT_UNIT) * POINT_UNIT;
 
     // 클라 금액은 절대 신뢰하지 않음(참고 로그용만)
     const { items: rawItems, shippingInfo, guestInfo } = body;
-    const stringingApplicationInput = body?.stringingApplicationInput as
-      | StringingApplicationInput
-      | undefined;
+    const stringingApplicationInput = body?.stringingApplicationInput as StringingApplicationInput | undefined;
     const clientTotalPrice = body?.totalPrice;
     const clientShippingFee = body?.shippingFee;
     const clientServiceFee = body?.serviceFee;
 
     // 최소 방어
     if (!Array.isArray(rawItems) || rawItems.length === 0) {
-      return NextResponse.json(
-        { error: "주문 상품이 비어있습니다." },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "주문 상품이 비어있습니다." }, { status: 400 });
     }
     if (!shippingInfo) {
-      return NextResponse.json(
-        { error: "배송 정보가 누락되었습니다." },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "배송 정보가 누락되었습니다." }, { status: 400 });
     }
     if (!userId && !guestInfo) {
-      return NextResponse.json(
-        { error: "게스트 주문 정보 누락" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "게스트 주문 정보 누락" }, { status: 400 });
     }
 
     /**
@@ -349,15 +299,10 @@ export async function createOrder(
      * - 라켓 구매 + visit 인데 배송비가 0원이 아니게 계산되는 케이스 방지
      * - 주문 목록/상세에서 배송 라벨(뱃지/필터)이 일관되게 표시될 확률 증가
      */
-    if (
-      shippingInfo &&
-      !(shippingInfo as any).deliveryMethod &&
-      (shippingInfo as any).shippingMethod
-    ) {
+    if (shippingInfo && !(shippingInfo as any).deliveryMethod && (shippingInfo as any).shippingMethod) {
       const sm = (shippingInfo as any).shippingMethod;
       if (sm === "visit") (shippingInfo as any).deliveryMethod = "방문수령";
-      else if (sm === "courier")
-        (shippingInfo as any).deliveryMethod = "택배수령";
+      else if (sm === "courier") (shippingInfo as any).deliveryMethod = "택배수령";
     }
 
     // DB
@@ -380,10 +325,7 @@ export async function createOrder(
     if (idemKey) {
       const dup = await ordersCol.findOne({ idemKey });
       if (dup) {
-        return NextResponse.json(
-          { success: true, orderId: String(dup._id) },
-          { status: 200 },
-        );
+        return NextResponse.json({ success: true, orderId: String(dup._id) }, { status: 200 });
       }
     }
 
@@ -406,26 +348,19 @@ export async function createOrder(
 
           if (kind === "product") {
             const productId = new ObjectId(item.productId);
-            const product = await db
-              .collection("products")
-              .findOne({ _id: productId }, { session });
-            if (!product)
-              throw new HttpError(404, { error: "상품을 찾을 수 없습니다." });
+            const product = await db.collection("products").findOne({ _id: productId }, { session });
+            if (!product) throw new HttpError(404, { error: "상품을 찾을 수 없습니다." });
 
             const selectedGauge = item.selectedGauge?.trim();
             if (selectedGauge) {
-              const gaugeInventories = Array.isArray(
-                (product as any).gaugeInventories,
-              )
+              const gaugeInventories = Array.isArray((product as any).gaugeInventories)
                 ? ((product as any).gaugeInventories as Array<{
                     value?: string;
                     stock?: number;
                     isSoldOut?: boolean;
                   }>)
                 : [];
-              const gaugeRow = gaugeInventories.find(
-                (g) => String(g?.value ?? "").trim() === selectedGauge,
-              );
+              const gaugeRow = gaugeInventories.find((g) => String(g?.value ?? "").trim() === selectedGauge);
 
               if (!gaugeRow) {
                 throw new HttpError(400, {
@@ -452,7 +387,6 @@ export async function createOrder(
                   code: "GAUGE_INSUFFICIENT_STOCK",
                   productName: product.name,
                   selectedGauge,
-                  currentGaugeStock: gaugeStock,
                 });
               }
 
@@ -498,13 +432,7 @@ export async function createOrder(
               });
             }
 
-            await db
-              .collection("products")
-              .updateOne(
-                { _id: productId },
-                { $inc: { "inventory.stock": -quantity, sold: quantity } },
-                { session },
-              );
+            await db.collection("products").updateOne({ _id: productId }, { $inc: { "inventory.stock": -quantity, sold: quantity } }, { session });
             continue;
           }
 
@@ -528,34 +456,21 @@ export async function createOrder(
             //    "quantity 필드가 실제 숫자로 존재하는지"로 판단해야 함
             //    (레거시 단품 라켓: quantity 없음)
             const rawQtyField = (racket as any).quantity;
-            const hasStockQty =
-              typeof rawQtyField === "number" && Number.isFinite(rawQtyField);
+            const hasStockQty = typeof rawQtyField === "number" && Number.isFinite(rawQtyField);
             const stockQty = hasStockQty ? rawQtyField : NaN;
 
-            const racketName =
-              `${(racket as any).brand ?? ""} ${(racket as any).model ?? ""}`.trim() ||
-              "중고 라켓";
+            const racketName = `${(racket as any).brand ?? ""} ${(racket as any).model ?? ""}`.trim() || "중고 라켓";
 
             // 대여 점유 수량
-            const activeRentalCount = await db
-              .collection("rental_orders")
-              .countDocuments(
-                { racketId, status: { $in: ["paid", "out"] } },
-                { session },
-              );
+            const activeRentalCount = await db.collection("rental_orders").countDocuments({ racketId, status: { $in: ["paid", "out"] } }, { session });
 
             // baseQty는 "실제 보유 수량"을 그대로 사용(0도 0으로 유지)
             // - 레거시 단품 라켓은 status=available일 때만 1개로 취급
-            const baseQty = hasStockQty
-              ? Math.max(0, Math.trunc(stockQty))
-              : racket.status === "available"
-                ? 1
-                : 0;
+            const baseQty = hasStockQty ? Math.max(0, Math.trunc(stockQty)) : racket.status === "available" ? 1 : 0;
             const sellableQty = Math.max(0, baseQty - activeRentalCount);
 
             if (sellableQty < quantity) {
-              const reason =
-                activeRentalCount > 0 ? "RENTAL_RESERVED" : "OUT_OF_STOCK";
+              const reason = activeRentalCount > 0 ? "RENTAL_RESERVED" : "OUT_OF_STOCK";
               throw new HttpError(400, {
                 error: "INSUFFICIENT_STOCK",
                 kind: "racket",
@@ -631,12 +546,7 @@ export async function createOrder(
               { returnDocument: "after", session } as any,
             );
 
-            const updatedDoc =
-              updated &&
-              typeof updated === "object" &&
-              "value" in (updated as any)
-                ? (updated as any).value
-                : updated;
+            const updatedDoc = updated && typeof updated === "object" && "value" in (updated as any) ? (updated as any).value : updated;
 
             if (!updatedDoc) {
               throw new HttpError(400, {
@@ -662,9 +572,7 @@ export async function createOrder(
 
             if (kind === "product") {
               const oid = new ObjectId(it.productId);
-              const prod = await db
-                .collection("products")
-                .findOne({ _id: oid }, { session });
+              const prod = await db.collection("products").findOne({ _id: oid }, { session });
 
               return {
                 productId: oid,
@@ -674,15 +582,9 @@ export async function createOrder(
                 price: Number(prod?.price ?? 0),
 
                 // 서비스비 근거 데이터(DB 기준)
-                mountingFee: Number.isFinite(Number((prod as any)?.mountingFee))
-                  ? Number((prod as any).mountingFee)
-                  : 0,
-                isMountableString: isMountableStringByFee(
-                  (prod as any)?.mountingFee,
-                ),
-                shippingFee: normalizeItemShippingFee(
-                  (prod as any)?.shippingFee,
-                ),
+                mountingFee: Number.isFinite(Number((prod as any)?.mountingFee)) ? Number((prod as any).mountingFee) : 0,
+                isMountableString: isMountableStringByFee((prod as any)?.mountingFee),
+                shippingFee: normalizeItemShippingFee((prod as any)?.shippingFee),
 
                 imageUrl: prod?.images?.[0],
                 quantity,
@@ -692,12 +594,8 @@ export async function createOrder(
             }
 
             const rid = new ObjectId(it.productId);
-            const racket = await db
-              .collection("used_rackets")
-              .findOne({ _id: rid }, { session });
-            const racketName = racket
-              ? `${racket.brand} ${racket.model}`.trim()
-              : "알 수 없는 라켓";
+            const racket = await db.collection("used_rackets").findOne({ _id: rid }, { session });
+            const racketName = racket ? `${racket.brand} ${racket.model}`.trim() : "알 수 없는 라켓";
 
             return {
               productId: rid,
@@ -706,25 +604,14 @@ export async function createOrder(
               imageUrl: (racket as any)?.images?.[0] ?? null,
               quantity,
               kind: "racket" as const,
-              shippingFee: normalizeItemShippingFee(
-                (racket as any)?.shippingFee,
-              ),
+              shippingFee: normalizeItemShippingFee((racket as any)?.shippingFee),
             };
           }),
         );
 
         if (!ENABLE_STRING_STANDALONE_ORDER) {
-          const isMountableStringOnlyOrder =
-            itemsWithSnapshot.length > 0 &&
-            itemsWithSnapshot.every(
-              (it) =>
-                it.kind === "product" &&
-                (it as any).isMountableString === true,
-            );
-          if (
-            isMountableStringOnlyOrder &&
-            shippingInfo?.withStringService !== true
-          ) {
+          const isMountableStringOnlyOrder = itemsWithSnapshot.length > 0 && itemsWithSnapshot.every((it) => it.kind === "product" && (it as any).isMountableString === true);
+          if (isMountableStringOnlyOrder && shippingInfo?.withStringService !== true) {
             throw new HttpError(400, {
               error: "STRING_ONLY_ORDER_DISABLED",
               reason: "STRING_SERVICE_REQUIRED",
@@ -737,23 +624,12 @@ export async function createOrder(
         // - 장착비(mountingFee)가 있는 상품을 "스트링(장착 대상)"으로 간주.
         if (shippingInfo?.withStringService) {
           // 라켓/장착스트링 라인들
-          const racketItems = itemsWithSnapshot.filter(
-            (it) => it.kind === "racket",
-          );
-          const serviceItems = itemsWithSnapshot.filter(
-            (it) =>
-              it.kind === "product" && (it as any).isMountableString === true,
-          );
+          const racketItems = itemsWithSnapshot.filter((it) => it.kind === "racket");
+          const serviceItems = itemsWithSnapshot.filter((it) => it.kind === "product" && (it as any).isMountableString === true);
 
           // 총 수량(단체 주문은 quantity로만 증가)
-          const racketQty = racketItems.reduce(
-            (sum, it) => sum + (Number(it.quantity) || 0),
-            0,
-          );
-          const serviceQty = serviceItems.reduce(
-            (sum, it) => sum + (Number(it.quantity) || 0),
-            0,
-          );
+          const racketQty = racketItems.reduce((sum, it) => sum + (Number(it.quantity) || 0), 0);
+          const serviceQty = serviceItems.reduce((sum, it) => sum + (Number(it.quantity) || 0), 0);
 
           /**
            * 핵심 정책(강화)
@@ -815,10 +691,7 @@ export async function createOrder(
         });
 
         const packageOptOut = !!stringingApplicationInput?.packageOptOut;
-        const pass =
-          userId && shippingInfo?.withStringService
-            ? await findOneActivePassForUser(db, new ObjectId(userId))
-            : null;
+        const pass = userId && shippingInfo?.withStringService ? await findOneActivePassForUser(db, new ObjectId(userId)) : null;
         const packageUsage = resolvePackageUsage({
           hasPackage: !!pass,
           packageRemaining: Number(pass?.remainingCount ?? 0),
@@ -826,9 +699,7 @@ export async function createOrder(
           packageOptOut,
         });
 
-        const computedServiceFee = shippingInfo?.withStringService
-          ? applyPackageToServiceFee(baseServiceFee, packageUsage)
-          : 0;
+        const computedServiceFee = shippingInfo?.withStringService ? applyPackageToServiceFee(baseServiceFee, packageUsage) : 0;
 
         const computedShippingFee = calcOrderShippingFeeWithBundlePolicy({
           items: itemsWithSnapshot,
@@ -836,63 +707,40 @@ export async function createOrder(
           withStringService: !!shippingInfo?.withStringService,
         });
 
-        const computedTotalPrice =
-          computedSubtotal + computedServiceFee + computedShippingFee;
+        const computedTotalPrice = computedSubtotal + computedServiceFee + computedShippingFee;
 
         // 포인트 사용(회원만) — 서버가 최종 확정
         // 정책: 배송비는 포인트 적용 제외(= 상품금액 + 서비스비까지만 차감 가능)
-        const maxPointsByPolicy = Math.max(
-          0,
-          computedTotalPrice - computedShippingFee,
-        ); // = computedSubtotal + computedServiceFee
+        const maxPointsByPolicy = Math.max(0, computedTotalPrice - computedShippingFee); // = computedSubtotal + computedServiceFee
         let pointsToUse = 0;
 
-        if (
-          userId &&
-          normalizedRequestedPointsToUse > 0 &&
-          maxPointsByPolicy > 0
-        ) {
+        if (userId && normalizedRequestedPointsToUse > 0 && maxPointsByPolicy > 0) {
           const userOid = new ObjectId(userId);
-          const u = await db
-            .collection("users")
-            .findOne({ _id: userOid }, {
-              projection: { pointsBalance: 1, pointsDebt: 1 },
-              session,
-            } as any);
+          const u = await db.collection("users").findOne({ _id: userOid }, {
+            projection: { pointsBalance: 1, pointsDebt: 1 },
+            session,
+          } as any);
 
           const balanceRaw = Number((u as any)?.pointsBalance ?? 0);
           const debtRaw = Number((u as any)?.pointsDebt ?? 0);
 
-          const balance =
-            Number.isFinite(balanceRaw) && balanceRaw > 0
-              ? Math.floor(balanceRaw)
-              : 0;
-          const debt =
-            Number.isFinite(debtRaw) && debtRaw > 0 ? Math.floor(debtRaw) : 0;
+          const balance = Number.isFinite(balanceRaw) && balanceRaw > 0 ? Math.floor(balanceRaw) : 0;
+          const debt = Number.isFinite(debtRaw) && debtRaw > 0 ? Math.floor(debtRaw) : 0;
 
           // 실제 사용 가능 포인트 = balance - debt (0 미만 방지)
           const available = Math.max(0, balance - debt);
 
           // 정책(배송비 제외)과 available 둘 다 만족하는 범위로 클램프
-          const maxPointsByBalanceAndPolicy = Math.min(
-            available,
-            maxPointsByPolicy,
-          );
+          const maxPointsByBalanceAndPolicy = Math.min(available, maxPointsByPolicy);
 
           // 요청값(100P 단위 정규화)도 결국 서버가 최종 확정
-          pointsToUse = Math.min(
-            normalizedRequestedPointsToUse,
-            maxPointsByBalanceAndPolicy,
-          );
+          pointsToUse = Math.min(normalizedRequestedPointsToUse, maxPointsByBalanceAndPolicy);
         }
 
         const payableTotalPrice = Math.max(0, computedTotalPrice - pointsToUse);
         // 결제 은행(Checkout에서 paymentInfo.bank로 내려옴)
         const bankRaw = body?.paymentInfo?.bank;
-        const bank =
-          typeof bankRaw === "string" && bankRaw.trim() !== ""
-            ? bankRaw.trim()
-            : undefined;
+        const bank = typeof bankRaw === "string" && bankRaw.trim() !== "" ? bankRaw.trim() : undefined;
 
         // 주문 문서 생성(저장 값은 서버 계산값만)
         const order: any = {
@@ -924,9 +772,7 @@ export async function createOrder(
           },
           paymentStatus: "결제대기",
 
-          history: [
-            { status: "대기중", date: new Date(), description: "주문 생성" },
-          ],
+          history: [{ status: "대기중", date: new Date(), description: "주문 생성" }],
         };
 
         // 옵션 값들
@@ -940,12 +786,7 @@ export async function createOrder(
           if (snapshot) order.userSnapshot = snapshot;
         }
 
-        const orderSearchEmailLower = normalizeEmailForSearch(
-          order?.customer?.email ??
-            order?.userSnapshot?.email ??
-            order?.guestInfo?.email ??
-            null,
-        );
+        const orderSearchEmailLower = normalizeEmailForSearch(order?.customer?.email ?? order?.userSnapshot?.email ?? order?.guestInfo?.email ?? null);
         if (orderSearchEmailLower) {
           order.searchEmailLower = orderSearchEmailLower;
         }
@@ -985,10 +826,7 @@ export async function createOrder(
           }
         }
         // 주문 기반 신청서 자동 생성(옵션)
-        if (
-          shippingInfo?.withStringService === true &&
-          stringingApplicationInput
-        ) {
+        if (shippingInfo?.withStringService === true && stringingApplicationInput) {
           const submitResult = await submitStringingApplicationCore({
             db,
             userId: order.userId ?? null,
@@ -1026,39 +864,26 @@ export async function createOrder(
     }
 
     if (!createdOrderId) {
-      return NextResponse.json(
-        { success: false, error: "주문 생성 실패(트랜잭션 결과 누락)" },
-        { status: 500 },
-      );
+      return NextResponse.json({ success: false, error: "주문 생성 실패(트랜잭션 결과 누락)" }, { status: 500 });
     }
 
     return NextResponse.json(
       {
         success: true,
         orderId: String(createdOrderId),
-        stringingApplicationId: createdStringingApplicationId
-          ? String(createdStringingApplicationId)
-          : null,
+        stringingApplicationId: createdStringingApplicationId ? String(createdStringingApplicationId) : null,
         stringingSubmitted,
       },
       { status: 201 },
     );
   } catch (error) {
-    if (
-      error &&
-      typeof error === "object" &&
-      (error as any).status &&
-      (error as any).body
-    ) {
+    if (error && typeof error === "object" && (error as any).status && (error as any).body) {
       return NextResponse.json((error as any).body, {
         status: (error as any).status,
       });
     }
     console.error("주문 POST 에러:", error);
-    return NextResponse.json(
-      { success: false, error: "주문 생성 중 오류 발생" },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: "주문 생성 중 오류 발생" }, { status: 500 });
   }
 }
 
@@ -1085,9 +910,7 @@ export async function getOrders(req: NextRequest): Promise<Response> {
   const client = await clientPromise;
   const db = client.db();
   const userIdObj = new ObjectId(sub);
-  const me = await db
-    .collection("users")
-    .findOne({ _id: userIdObj }, { projection: { role: 1 } });
+  const me = await db.collection("users").findOne({ _id: userIdObj }, { projection: { role: 1 } });
   if (!me) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -1103,9 +926,7 @@ export async function getOrders(req: NextRequest): Promise<Response> {
    * - fetchCombinedOrders가 전체를 메모리로 들고 와서 필터/슬라이스 하는 구조라
    *   과도한 limit 요청은 응답/메모리 부담이 됩니다. (서버 안정성 목적)
    */
-  const limit = Number.isFinite(limitRaw)
-    ? Math.max(1, Math.min(50, limitRaw))
-    : 10;
+  const limit = Number.isFinite(limitRaw) ? Math.max(1, Math.min(50, limitRaw)) : 10;
   const skip = (page - 1) * limit;
 
   // 클라이언트가 보내는 검색/필터 파라미터들
@@ -1144,8 +965,7 @@ export async function getOrders(req: NextRequest): Promise<Response> {
     const idStr = safeLower(order?.id ?? order?._id);
     const nameStr = safeLower(order?.customer?.name);
     const emailStr = safeLower(order?.customer?.email);
-    const searchMatch =
-      !q || idStr.includes(q) || nameStr.includes(q) || emailStr.includes(q);
+    const searchMatch = !q || idStr.includes(q) || nameStr.includes(q) || emailStr.includes(q);
 
     // --- 상태/유형/결제 ---
     const statusMatch = status === "all" || order?.status === status;
@@ -1153,10 +973,7 @@ export async function getOrders(req: NextRequest): Promise<Response> {
     const paymentMatch = payment === "all" || order?.paymentStatus === payment;
 
     // --- 고객유형(member/guest) ---
-    const customerTypeMatch =
-      customerType === "all" ||
-      (customerType === "member" && !!order?.userId) ||
-      (customerType === "guest" && !order?.userId);
+    const customerTypeMatch = customerType === "all" || (customerType === "member" && !!order?.userId) || (customerType === "guest" && !order?.userId);
 
     // --- 운송장(shipping): OrdersClient의 기준(getShippingBadge.label)과 동일하게 ---
     const shippingLabel = getShippingBadge(order).label;
@@ -1169,16 +986,7 @@ export async function getOrders(req: NextRequest): Promise<Response> {
     const orderYmd = dateYmd ? toKstYmd(order?.date ?? order?.createdAt) : "";
     const dateMatch = !dateYmd || (orderYmd && orderYmd === dateYmd);
 
-    return (
-      searchMatch &&
-      statusMatch &&
-      typeMatch &&
-      paymentMatch &&
-      customerTypeMatch &&
-      cancelMatch &&
-      shippingMatch &&
-      dateMatch
-    );
+    return searchMatch && statusMatch && typeMatch && paymentMatch && customerTypeMatch && cancelMatch && shippingMatch && dateMatch;
   });
 
   const safeTime = (value: any) => {
