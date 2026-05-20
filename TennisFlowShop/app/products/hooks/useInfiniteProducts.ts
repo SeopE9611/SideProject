@@ -1,5 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 
+type ProductGaugeInventory = {
+  value: string;
+  label?: string;
+  stock: number;
+  isSoldOut: boolean;
+};
+
 type Product = {
   _id: string;
   name: string;
@@ -11,11 +18,14 @@ type Product = {
   ratingAvg?: number;
   ratingCount?: number;
   ratingAverage?: number;
+  gaugeOptions?: string[];
+  gaugeInventories?: ProductGaugeInventory[];
   inventory?: {
     stock?: number;
     status?: "instock" | "outofstock" | "backorder" | string;
     manageStock?: boolean;
     allowBackorder?: boolean;
+    hideGaugeStock?: boolean;
   };
 };
 
