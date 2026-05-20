@@ -226,6 +226,102 @@ async function requireAdminUserFromAccessToken() {
   return { ok: true as const, db, userId };
 }
 
+function pickStringProductObjectIdFromApplicationDoc(appDoc: any): ObjectId | null {
+  const toObjectIdIfValid = (value: unknown): ObjectId | null => {
+    if (value == null) return null;
+    const str = String(value).trim();
+    if (!str || str === 'custom' || !ObjectId.isValid(str)) return null;
+    return new ObjectId(str);
+  };
+
+  const fromStringTypes = Array.isArray(appDoc?.stringDetails?.stringTypes)
+    ? appDoc.stringDetails.stringTypes.find((v: unknown) => String(v).trim() !== 'custom')
+    : null;
+  const fromStringTypesObjectId = toObjectIdIfValid(fromStringTypes);
+  if (fromStringTypesObjectId) return fromStringTypesObjectId;
+
+  const fromStringItems = Array.isArray(appDoc?.stringItems)
+    ? appDoc.stringItems.find((item: any) => {
+        const productId = item?.productId ?? item?.id;
+        return typeof productId === 'string' && productId.trim() && productId.trim() !== 'custom';
+      })
+    : null;
+  const fromStringItemsObjectId = toObjectIdIfValid(fromStringItems?.productId ?? fromStringItems?.id);
+  if (fromStringItemsObjectId) return fromStringItemsObjectId;
+
+  const lines = Array.isArray(appDoc?.stringDetails?.lines)
+    ? appDoc.stringDetails.lines
+    : Array.isArray(appDoc?.stringDetails?.racketLines)
+      ? appDoc.stringDetails.racketLines
+      : [];
+  const fromLines = lines.find((line: any) => typeof line?.stringProductId === 'string' && line.stringProductId.trim() && line.stringProductId.trim() !== 'custom');
+  const fromLinesObjectId = toObjectIdIfValid(fromLines?.stringProductId);
+  if (fromLinesObjectId) return fromLinesObjectId;
+
+  return toObjectIdIfValid(appDoc?.meta?.stringProductId);
+}
+
+async function restoreStringingGaugeStockIfNeeded(db: any, appDoc: any, now: Date) {
+  const selectedGauge =
+    typeof appDoc?.meta?.selectedGauge === 'string' && appDoc.meta.selectedGauge.trim()
+      ? appDoc.meta.selectedGauge.trim()
+      : undefined;
+  const hasDeducted = Boolean(appDoc?.meta?.gaugeStockDeductedAt);
+  const alreadyRestored = Boolean(appDoc?.meta?.gaugeStockRestoredAt);
+
+  if (!hasDeducted || alreadyRestored || !selectedGauge) {
+    return { restored: false, skippedReason: 'not_required', setFields: {} as Record<string, unknown> };
+  }
+
+  const stringProductObjectId = pickStringProductObjectIdFromApplicationDoc(appDoc);
+  if (!stringProductObjectId) {
+    console.error('[restoreStringingGaugeStockIfNeeded] missing string product id for deducted application', {
+      applicationId: appDoc?._id ? String(appDoc._id) : null,
+      selectedGauge,
+    });
+    return { restored: false, skippedReason: 'missing_product_id', setFields: {} as Record<string, unknown> };
+  }
+
+  const restoreResult = await db.collection('products').updateOne(
+    {
+      _id: stringProductObjectId,
+      sold: { $gte: 1 },
+      'gaugeInventories.value': selectedGauge,
+    },
+    {
+      $inc: {
+        'gaugeInventories.$.stock': 1,
+        'inventory.stock': 1,
+        sold: -1,
+      },
+    },
+  );
+
+  if (!restoreResult.matchedCount || !restoreResult.modifiedCount) {
+    return {
+      restored: false,
+      skippedReason: 'restore_failed',
+      errorResponse: NextResponse.json(
+        {
+          error: '스트링 게이지 재고 복구에 실패했습니다.',
+          code: 'GAUGE_STOCK_RESTORE_FAILED',
+        },
+        { status: 409 },
+      ),
+      setFields: {} as Record<string, unknown>,
+    };
+  }
+
+  return {
+    restored: true,
+    skippedReason: null,
+    setFields: {
+      'meta.gaugeStockRestoredAt': now,
+      'meta.gaugeStockRestoreReason': 'cancel_approved',
+    } as Record<string, unknown>,
+  };
+}
+
 // ================= GET (단일 신청서 조회) =================
 export async function handleGetStringingApplication(req: Request, id: string) {
   const client = await clientPromise;
@@ -1151,6 +1247,10 @@ export async function handleStringingCancelApprove(req: Request, { params }: { p
     }
 
     const now = new Date();
+    const gaugeRestore = await restoreStringingGaugeStockIfNeeded(db, appDoc, now);
+    if (gaugeRestore.errorResponse) {
+      return gaugeRestore.errorResponse;
+    }
 
     // 히스토리 한 줄 구성
     const historyEntry: HistoryRecord = {
@@ -1175,6 +1275,7 @@ export async function handleStringingCancelApprove(req: Request, { params }: { p
         status: '취소',
         'cancelRequest.status': 'approved',
         'cancelRequest.approvedAt': now,
+        ...gaugeRestore.setFields,
       },
       $push: { history: historyEntry as any },
     } as any);
@@ -1225,7 +1326,7 @@ export async function handleStringingCancelApprove(req: Request, { params }: { p
       status: 'approved',
     });
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, gaugeStockRestore: gaugeRestore.restored ? 'restored' : gaugeRestore.skippedReason });
   } catch (error) {
     console.error('[handleStringingCancelApprove] error', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
@@ -1905,6 +2006,10 @@ export async function handleApplicationCancelApprove(req: Request, { params }: {
     }
 
     const now = new Date();
+    const gaugeRestore = await restoreStringingGaugeStockIfNeeded(db, existing, now);
+    if (gaugeRestore.errorResponse) {
+      return gaugeRestore.errorResponse;
+    }
 
     const updatedCancelRequest = {
       ...currentCancel,
@@ -1922,6 +2027,7 @@ export async function handleApplicationCancelApprove(req: Request, { params }: {
       $set: {
         cancelRequest: updatedCancelRequest,
         status: '취소', // 신청 자체 상태를 "취소"로 전환
+        ...gaugeRestore.setFields,
       },
       $push: { history: historyEntry },
     } as any);
@@ -1936,7 +2042,7 @@ export async function handleApplicationCancelApprove(req: Request, { params }: {
       }
     }
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, gaugeStockRestore: gaugeRestore.restored ? 'restored' : gaugeRestore.skippedReason });
   } catch (err) {
     console.error('POST /api/applications/stringing/[id]/cancel-approve 오류:', err);
     return new NextResponse('서버 오류가 발생했습니다.', { status: 500 });
