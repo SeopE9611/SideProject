@@ -30,6 +30,7 @@ import {
 } from "@/lib/hooks/useUnsavedChangesGuard";
 import { isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import {
   COURIER_PICKUP_FEE,
   CUSTOM_STRING_MOUNTING_FEE,
@@ -191,6 +192,15 @@ export default function StringServiceApplyPage() {
 
   const isOrderBased = Boolean(orderId);
   const isRentalBased = Boolean(rentalId);
+  const queryStringProductIdRaw =
+    searchParams.get("productId") ?? searchParams.get("stringId");
+  const selectedStringProductIdFromQuery =
+    typeof queryStringProductIdRaw === "string" && queryStringProductIdRaw.trim()
+      ? queryStringProductIdRaw.trim()
+      : null;
+  const selectedGaugeParam =
+    searchParams.get("selectedGauge") ?? searchParams.get("gauge") ?? "";
+  const normalizedSelectedGauge = selectedGaugeParam.trim() || "";
 
   // 이 주문에 연결된 스트링 서비스 슬롯 정보 (있을 때만 사용)
   const orderStringService = (order as any)?.stringService as
@@ -218,9 +228,8 @@ export default function StringServiceApplyPage() {
   );
 
   // PDP 연동용 (주의: orderId 기반 진입이면 PDP 파라미터는 무시한다)
-  const pdpProductId = isOrderBased
-    ? null
-    : (searchParams.get("productId") ?? searchParams.get("stringId"));
+  const pdpProductId =
+    !isOrderBased && !isRentalBased ? selectedStringProductIdFromQuery : null;
 
   /**
    * 옵션 A: 교체 서비스 신청은 "주문(orderId)" 기반으로만 진행합니다.
@@ -435,30 +444,55 @@ export default function StringServiceApplyPage() {
 
   // PDP에서 넘어오면 STEP2 자동 선택 + 장착비 기억 + 플래그 on
   useEffect(() => {
-    if (!pdpProductId) return;
+    const autoSelectedProductId = isOrderBased
+      ? selectedStringProductIdFromQuery
+      : pdpProductId;
+
+    if (!autoSelectedProductId) return;
     if (isRentalBased) return;
+
+    if (isOrderBased && !selectedStringProductIdFromQuery) return;
 
     // 주문 데이터 로딩 완료를 기다림
     if (orderId && !order) return;
 
     setFormData((prev) => {
       // 이미 같은 상품이 선택되어 있으면 스킵
-      if (prev.stringTypes.includes(pdpProductId)) return prev;
+      if (prev.stringTypes.includes(autoSelectedProductId)) return {
+        ...prev,
+        selectedGauge:
+          isOrderBased && selectedStringProductIdFromQuery
+            ? normalizedSelectedGauge || prev.selectedGauge || ""
+            : prev.selectedGauge,
+      };
 
       return {
         ...prev,
-        stringTypes: [pdpProductId], // 무조건 선택
+        stringTypes: [autoSelectedProductId], // 무조건 선택
         stringUseCounts: {
           ...(prev.stringUseCounts ?? {}),
-          [pdpProductId]: prev.stringUseCounts?.[pdpProductId] ?? 1,
+          [autoSelectedProductId]: prev.stringUseCounts?.[autoSelectedProductId] ?? 1,
         },
         pdpMountingFee: Number.isFinite(pdpMountingFee)
           ? pdpMountingFee
           : undefined,
+        selectedGauge:
+          isOrderBased && selectedStringProductIdFromQuery
+            ? normalizedSelectedGauge || prev.selectedGauge || ""
+            : prev.selectedGauge,
       };
     });
     setFromPDP(true);
-  }, [pdpProductId, pdpMountingFee, orderId, order, isRentalBased]);
+  }, [
+    isOrderBased,
+    selectedStringProductIdFromQuery,
+    normalizedSelectedGauge,
+    pdpProductId,
+    pdpMountingFee,
+    orderId,
+    order,
+    isRentalBased,
+  ]);
 
   // 초안 보장: 주문 기반 진입 시, 진행 중 신청서(draft/received)를 "항상" 1개로 맞춘다.
   // - 이미 있으면 재사용(reused=true), 없으면 자동 생성
@@ -1117,6 +1151,7 @@ export default function StringServiceApplyPage() {
         mountingFee: i.mountingFee,
       })),
       stringTypes: formData.stringTypes,
+      selectedGauge: formData.selectedGauge || undefined,
       linesCount: linesForSubmit.length,
       fromPDP,
     });
@@ -1479,6 +1514,7 @@ export default function StringServiceApplyPage() {
       phone: cleanedApplicantPhone,
       racketType: formData.racketType,
       stringTypes: formData.stringTypes,
+      selectedGauge: formData.selectedGauge || undefined,
       customStringName: formData.stringTypes.includes("custom")
         ? formData.customStringType
         : null,
@@ -1883,6 +1919,12 @@ export default function StringServiceApplyPage() {
 
                   {/* 라켓 주문 프리필 배지 */}
                   <OrderPrefillBadge orderId={orderId} rentalId={rentalId} />
+
+                  {formData.selectedGauge && formData.stringTypes.length > 0 ? (
+                    <div className="mt-3 mb-4 rounded-md border border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+                      게이지: {formatGaugeLabel(formData.selectedGauge)}
+                    </div>
+                  ) : null}
 
                   <form onSubmit={handleSubmit}>
                     {getCurrentStepContent()}

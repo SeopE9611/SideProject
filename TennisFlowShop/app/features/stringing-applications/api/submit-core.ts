@@ -398,6 +398,124 @@ export async function submitStringingApplicationCore({
     updateDoc["meta.selectedGauge"] = normalizedSelectedGauge;
   }
 
+  const existingApplication = await db
+    .collection("stringing_applications")
+    .findOne(
+      { _id: applicationId },
+      { projection: { _id: 1, meta: 1 }, session },
+    );
+
+  const alreadyDeductedGaugeStock = Boolean(
+    (existingApplication as any)?.meta?.gaugeStockDeductedAt,
+  );
+
+  const selectedProductIdCandidate =
+    (Array.isArray(stringTypes) ? stringTypes.find((id) => id && id !== "custom") : undefined) ??
+    normalizedStringItems.find((item) => item.productId && item.productId !== "custom")?.productId ??
+    normalizedLines.find((line) => line.stringProductId && line.stringProductId !== "custom")?.stringProductId;
+
+  const normalizedStringProductId =
+    typeof selectedProductIdCandidate === "string" && selectedProductIdCandidate.trim()
+      ? selectedProductIdCandidate.trim()
+      : "";
+
+  if (orderObjectId && !rentalObjectId && normalizedStringProductId) {
+    const stringProductObjectId = toObjectIdOrThrow(
+      normalizedStringProductId,
+      "stringProductId",
+    );
+
+    if (!stringProductObjectId) {
+      throw Object.assign(new Error("유효하지 않은 stringProductId입니다."), {
+        status: 400,
+      });
+    }
+
+    const stringProduct = await db.collection("products").findOne(
+      { _id: stringProductObjectId },
+      {
+        projection: { _id: 1, gaugeInventories: 1, gaugeOptions: 1 },
+        session,
+      },
+    );
+
+    const hasGaugeInventories =
+      Array.isArray((stringProduct as any)?.gaugeInventories) &&
+      (stringProduct as any).gaugeInventories.length > 0;
+    const hasGaugeOptions =
+      Array.isArray((stringProduct as any)?.gaugeOptions) &&
+      (stringProduct as any).gaugeOptions.length > 0;
+    const isGaugeSelectableProduct = hasGaugeInventories || hasGaugeOptions;
+
+    if (isGaugeSelectableProduct && !normalizedSelectedGauge) {
+      throw Object.assign(new Error("게이지를 선택해주세요."), {
+        status: 400,
+        code: "GAUGE_REQUIRED",
+      });
+    }
+
+    if (isGaugeSelectableProduct && normalizedSelectedGauge && !alreadyDeductedGaugeStock) {
+      const stringQuantity = 1;
+
+      const gaugeRow = (Array.isArray((stringProduct as any)?.gaugeInventories)
+        ? (stringProduct as any).gaugeInventories
+        : []
+      ).find((row: any) => String(row?.value ?? "").trim() === normalizedSelectedGauge);
+
+      if (!gaugeRow) {
+        throw Object.assign(new Error("선택한 게이지를 찾을 수 없습니다."), {
+          status: 400,
+          code: "GAUGE_NOT_FOUND",
+        });
+      }
+
+      if (gaugeRow?.isSoldOut === true) {
+        throw Object.assign(new Error("선택한 게이지는 품절입니다."), {
+          status: 409,
+          code: "GAUGE_SOLD_OUT",
+        });
+      }
+
+      if (Number(gaugeRow?.stock ?? 0) < stringQuantity) {
+        throw Object.assign(new Error("선택한 게이지의 재고가 부족합니다."), {
+          status: 409,
+          code: "GAUGE_INSUFFICIENT_STOCK",
+        });
+      }
+
+      const gaugeDeductResult = await db.collection("products").updateOne(
+        {
+          _id: stringProductObjectId,
+          "inventory.stock": { $gte: stringQuantity },
+          gaugeInventories: {
+            $elemMatch: {
+              value: normalizedSelectedGauge,
+              isSoldOut: { $ne: true },
+              stock: { $gte: stringQuantity },
+            },
+          },
+        },
+        {
+          $inc: {
+            "gaugeInventories.$.stock": -stringQuantity,
+            "inventory.stock": -stringQuantity,
+            sold: stringQuantity,
+          },
+        },
+        { session },
+      );
+
+      if (!gaugeDeductResult.matchedCount || !gaugeDeductResult.modifiedCount) {
+        throw Object.assign(new Error("선택한 게이지의 재고가 부족합니다."), {
+          status: 409,
+          code: "GAUGE_INSUFFICIENT_STOCK",
+        });
+      }
+
+      updateDoc["meta.gaugeStockDeductedAt"] = new Date();
+    }
+  }
+
   const existingDraft = orderObjectId
     ? await db
         .collection("stringing_applications")
