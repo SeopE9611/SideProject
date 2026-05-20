@@ -43,6 +43,7 @@ export interface ApplyFormData {
   pickupNote: string;
   lines: ApplicationLine[];
   pdpMountingFee?: number;
+  selectedGauge?: string;
   defaultMainTension?: string;
   defaultCrossTension?: string;
 }
@@ -123,6 +124,7 @@ export default function useStringingApplySharedState({
     pickupTime: "",
     pickupNote: "",
     lines: [],
+    selectedGauge: "",
   });
 
   const [visitDurationMinutesUi, setVisitDurationMinutesUi] = useState<
