@@ -6,12 +6,20 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useInfiniteProducts } from "@/app/products/hooks/useInfiniteProducts";
 import { usePdpBundleStore } from "@/app/store/pdpBundleStore";
 import { useCartStore } from "@/app/store/cartStore";
 import { CheckCircle2, Minus, Plus, ShoppingCart } from "lucide-react";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { Input } from "@/components/ui/input";
+import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 
 type RacketMini = {
@@ -22,6 +30,44 @@ type RacketMini = {
   status?: string;
   maxQty?: number;
 };
+
+type GaugeInventoryRow = {
+  value: string;
+  label?: string;
+  stock: number;
+  isSoldOut: boolean;
+};
+
+function normalizeGaugeRows(product: any): GaugeInventoryRow[] {
+  if (Array.isArray(product?.gaugeInventories) && product.gaugeInventories.length > 0) {
+    return product.gaugeInventories
+      .map((row: any) => ({
+        value: String(row?.value ?? "").trim(),
+        label: typeof row?.label === "string" ? row.label.trim() : undefined,
+        stock: Number(row?.stock ?? 0),
+        isSoldOut: row?.isSoldOut === true,
+      }))
+      .filter((row: GaugeInventoryRow) => row.value.length > 0);
+  }
+
+  if (Array.isArray(product?.gaugeOptions) && product.gaugeOptions.length > 0) {
+    return product.gaugeOptions
+      .map((value: unknown) => String(value ?? "").trim())
+      .filter(Boolean)
+      .map((value: string) => ({
+        value,
+        stock: Number(product?.inventory?.stock ?? 0),
+        isSoldOut: false,
+      }));
+  }
+
+  return [];
+}
+
+function getGaugeLabel(row: GaugeInventoryRow) {
+  const rawLabel = String(row.label ?? "").trim();
+  return rawLabel || formatGaugeLabel(row.value);
+}
 
 export default function RacketSelectStringClient({
   racket,
@@ -38,6 +84,7 @@ export default function RacketSelectStringClient({
   // cart 편집 모드일 때: 기존 선택 값
   const initialQtyParam = Number(searchParams.get("qty") ?? 1);
   const initialStringId = searchParams.get("stringId"); // cart에 있던 “번들 스트링” id
+  const initialSelectedGauge = searchParams.get("selectedGauge") ?? "";
   const returnTo = searchParams.get("returnTo") ?? "/cart";
 
   // buy-now 모드에서만 사용하는 store
@@ -57,6 +104,7 @@ export default function RacketSelectStringClient({
    * - 수량 변경은 이 화면에서만 하도록 UX를 묶는 것이 전제.
    */
   const [workCount, setWorkCount] = useState<number>(1);
+  const [selectedGaugeByStringId, setSelectedGaugeByStringId] = useState<Record<string, string>>({});
 
   const clampWorkCount = (v: number, stringStock?: number) => {
     if (!Number.isFinite(v)) return 1;
@@ -96,12 +144,25 @@ export default function RacketSelectStringClient({
     [isFromCart, initialStringId],
   );
 
+  useEffect(() => {
+    if (!isFromCart || !initialStringId || !initialSelectedGauge || products.length === 0) return;
+    const target = products.find((item: any) => String(item?._id) === initialStringId);
+    if (!target) return;
+    const hasGauge = normalizeGaugeRows(target).some((row) => row.value === initialSelectedGauge);
+    if (!hasGauge) return;
+    setSelectedGaugeByStringId((prev) =>
+      prev[initialStringId] === initialSelectedGauge
+        ? prev
+        : { ...prev, [initialStringId]: initialSelectedGauge },
+    );
+  }, [initialSelectedGauge, initialStringId, isFromCart, products]);
+
   /**
    * cartStore에 "라켓 + 스트링" 번들을 동일 수량으로 반영
    * - 라켓 라인은 없으면 add, 있으면 updateQuantity
    * - 스트링 라인은 (cart 편집 모드인 경우) 기존 stringId가 있으면 교체 처리
    */
-  const upsertCartBundle = (selectedString: any, qty: number) => {
+  const upsertCartBundle = (selectedString: any, qty: number, selectedGauge?: string) => {
     const newStringId = String(selectedString?._id);
     const newStringImage =
       selectedString?.images?.[0] ?? selectedString?.imageUrl;
@@ -127,23 +188,32 @@ export default function RacketSelectStringClient({
     // 2) 스트링 라인: cart 편집 모드(from=cart)에서만 “기존 스트링 교체”를 명시적으로 처리
     // - 같은 스트링이면 updateQuantity
     // - 다른 스트링이면 기존 제거 후 새로 add(또는 기존에 있으면 update)
-    if (initialStringId && initialStringId !== newStringId) {
-      removeItem(initialStringId);
+    if (
+      initialStringId &&
+      (initialStringId !== newStringId ||
+        (initialStringId === newStringId && (initialSelectedGauge || "") !== (selectedGauge || "")))
+    ) {
+      removeItem(initialStringId, initialSelectedGauge || undefined);
     }
 
     const hasNewString = cartItems.some(
-      (it) => it.id === newStringId && (it.kind ?? "product") === "product",
+      (it) =>
+        it.id === newStringId &&
+        (it.kind ?? "product") === "product" &&
+        (it.selectedGauge ?? "") === (selectedGauge ?? ""),
     );
 
     if (hasNewString) {
-      updateQuantity(newStringId, qty);
+      updateQuantity(newStringId, qty, selectedGauge || undefined);
     } else {
+      const gaugeRows = normalizeGaugeRows(selectedString);
+      const selectedGaugeRow = gaugeRows.find((row) => row.value === selectedGauge);
       const stringManageStock = Boolean(selectedString?.inventory?.manageStock);
-      const stringStock =
-        stringManageStock &&
-        typeof selectedString?.inventory?.stock === "number"
+      const baseStock =
+        stringManageStock && typeof selectedString?.inventory?.stock === "number"
           ? selectedString.inventory.stock
           : undefined;
+      const effectiveStringStock = selectedGaugeRow ? selectedGaugeRow.stock : baseStock;
       addItem({
         id: newStringId,
         name: selectedString?.name ?? "스트링",
@@ -151,7 +221,8 @@ export default function RacketSelectStringClient({
         quantity: qty,
         image: newStringImage,
         kind: "product",
-        stock: stringStock,
+        stock: effectiveStringStock,
+        selectedGauge: selectedGauge || undefined,
       });
     }
   };
@@ -161,10 +232,33 @@ export default function RacketSelectStringClient({
    * - from=cart면: cartStore를 직접 수정하고 returnTo로 복귀
    * - from!=cart면: pdpBundleStore로 buy-now checkout 이동
    */
-  const handleSelectString = (p: any) => {
+  const handleSelectString = (p: any, selectedGauge?: string) => {
+    const gaugeRows = normalizeGaugeRows(p);
+    const hasGaugeRows = gaugeRows.length > 0;
+    const selectedGaugeRow = gaugeRows.find((row) => row.value === selectedGauge);
+    const hideGaugeStock = p?.inventory?.hideGaugeStock === true;
+
+    if (hasGaugeRows && !selectedGauge) {
+      showErrorToast?.("게이지를 선택해주세요.");
+      return;
+    }
+    if (hasGaugeRows && !selectedGaugeRow) {
+      showErrorToast?.("선택한 게이지 정보를 찾을 수 없습니다.");
+      return;
+    }
+    if (selectedGaugeRow && (selectedGaugeRow.isSoldOut || selectedGaugeRow.stock <= 0)) {
+      showErrorToast?.("선택한 게이지는 품절입니다.");
+      return;
+    }
+    if (selectedGaugeRow && selectedGaugeRow.stock < workCount) {
+      showErrorToast?.("선택한 게이지의 구매 가능 수량을 초과했습니다.");
+      return;
+    }
+
     const manageStock = Boolean(p?.inventory?.manageStock);
-    const stock =
+    const baseStock =
       typeof p?.inventory?.stock === "number" ? p.inventory.stock : undefined;
+    const stock = selectedGaugeRow ? selectedGaugeRow.stock : baseStock;
 
     // 관리 재고가 0이면(품절) 번들 진행 자체를 막음
     if (manageStock && typeof stock === "number" && stock <= 0) {
@@ -175,7 +269,9 @@ export default function RacketSelectStringClient({
     // 번들 수량(workCount)보다 재고가 적으면, checkout으로 보내지 않고 여기서 차단
     if (manageStock && typeof stock === "number" && stock < workCount) {
       showErrorToast?.(
-        `선택한 스트링 재고가 부족합니다. (요청 ${workCount}개 / 현재 ${stock}개)`,
+        hideGaugeStock
+          ? "선택한 게이지의 구매 가능 수량을 초과했습니다."
+          : "선택한 스트링의 구매 가능 수량을 초과했습니다.",
       );
       return;
     }
@@ -185,7 +281,7 @@ export default function RacketSelectStringClient({
     // 1) cart 편집 모드: cartStore를 직접 수정하고 returnTo로 복귀
     if (isFromCart) {
       try {
-        upsertCartBundle(p, qty);
+        upsertCartBundle(p, qty, selectedGauge);
         showSuccessToast?.(
           "장바구니 번들(라켓+스트링) 수량/스트링을 수정했어요.",
         );
@@ -220,6 +316,7 @@ export default function RacketSelectStringClient({
         image: stringImage,
         kind: "product",
         stock: manageStock ? stock : undefined,
+        selectedGauge: selectedGauge || undefined,
       },
     ]);
 
@@ -375,6 +472,11 @@ export default function RacketSelectStringClient({
               {products.map((p: any) => {
                 const stringId = String(p._id);
                 const stringImage = p?.images?.[0] ?? p?.imageUrl;
+                const gaugeRows = normalizeGaugeRows(p);
+                const hasGaugeRows = gaugeRows.length > 0;
+                const selectedGauge = selectedGaugeByStringId[stringId] ?? "";
+                const selectedGaugeRow = gaugeRows.find((row) => row.value === selectedGauge);
+                const hideGaugeStock = p?.inventory?.hideGaugeStock === true;
                 const manageStock = Boolean(p?.inventory?.manageStock);
                 const stock =
                   typeof p?.inventory?.stock === "number"
@@ -384,10 +486,20 @@ export default function RacketSelectStringClient({
                   typeof p?.inventory?.lowStock === "number"
                     ? p.inventory.lowStock
                     : 5;
+                const isGaugeSoldOut =
+                  selectedGaugeRow != null &&
+                  (selectedGaugeRow.isSoldOut || selectedGaugeRow.stock <= 0);
+                const isGaugeShort =
+                  selectedGaugeRow != null && selectedGaugeRow.stock < workCount;
                 const isSoldOut =
-                  manageStock && typeof stock === "number" && stock <= 0;
+                  hasGaugeRows
+                    ? isGaugeSoldOut
+                    : manageStock && typeof stock === "number" && stock <= 0;
                 const isShort =
-                  manageStock && typeof stock === "number" && stock < workCount;
+                  hasGaugeRows
+                    ? isGaugeShort
+                    : manageStock && typeof stock === "number" && stock < workCount;
+                const disabledByGauge = hasGaugeRows && (!selectedGauge || isGaugeSoldOut || isGaugeShort);
 
                 const isCurrent =
                   Boolean(selectedStringIdForHighlight) &&
@@ -448,6 +560,45 @@ export default function RacketSelectStringClient({
                         <p className="text-lg font-bold text-foreground">
                           {Number(p.price ?? 0).toLocaleString()}원
                         </p>
+                        {hasGaugeRows && (
+                          <div className="space-y-1.5">
+                            <p className="text-xs font-medium text-foreground">게이지 선택</p>
+                            <Select
+                              value={selectedGauge}
+                              onValueChange={(value) =>
+                                setSelectedGaugeByStringId((prev) => ({
+                                  ...prev,
+                                  [stringId]: value,
+                                }))
+                              }
+                            >
+                              <SelectTrigger className="h-9 text-left text-xs">
+                                <SelectValue placeholder="게이지를 선택해주세요" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {gaugeRows.map((row) => {
+                                  const soldOut = row.isSoldOut || row.stock <= 0;
+                                  const gaugeLabel = getGaugeLabel(row);
+                                  const stockSuffix =
+                                    soldOut
+                                      ? " · 품절"
+                                      : hideGaugeStock
+                                        ? ""
+                                        : ` · 재고 ${row.stock}개`;
+                                  return (
+                                    <SelectItem
+                                      key={`${stringId}-${row.value}`}
+                                      value={row.value}
+                                      disabled={soldOut}
+                                    >
+                                      {`${gaugeLabel}${stockSuffix}`}
+                                    </SelectItem>
+                                  );
+                                })}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        )}
                         {/* 재고 힌트 */}
                         {manageStock &&
                           typeof stock === "number" &&
@@ -473,7 +624,8 @@ export default function RacketSelectStringClient({
                         <Button
                           variant="elevated"
                           className="mt-4 w-full rounded-xl py-5 font-medium"
-                          onClick={() => handleSelectString(p)}
+                          disabled={disabledByGauge || isSoldOut || isShort}
+                          onClick={() => handleSelectString(p, selectedGauge || undefined)}
                         >
                           <span className="flex items-center justify-center gap-2">
                             이 스트링으로 변경
@@ -497,8 +649,8 @@ export default function RacketSelectStringClient({
                           <Button
                             variant="elevated"
                             className="w-full whitespace-normal break-keep rounded-xl py-5 font-medium leading-tight transition-all duration-300"
-                            disabled={isSoldOut || isShort}
-                            onClick={() => handleSelectString(p)}
+                            disabled={disabledByGauge || isSoldOut || isShort}
+                            onClick={() => handleSelectString(p, selectedGauge || undefined)}
                           >
                             <span className="flex items-center justify-center gap-2">
                               이 스트링 선택하고 구매 계속하기

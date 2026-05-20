@@ -365,6 +365,9 @@ export default function CartPageClient() {
       stringId: String(bundleStringItem.id),
       returnTo: "/cart",
     });
+    if (bundleStringItem.selectedGauge) {
+      params.set("selectedGauge", bundleStringItem.selectedGauge);
+    }
 
     return `/rackets/${bundleRacketItem.id}/select-string?${params.toString()}`;
   }, [
