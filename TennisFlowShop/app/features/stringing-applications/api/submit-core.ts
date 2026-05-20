@@ -361,6 +361,18 @@ export async function submitStringingApplicationCore({
     typeof selectedGauge === "string" && selectedGauge.trim()
       ? selectedGauge.trim()
       : undefined;
+  const orderForGauge =
+    orderObjectId && !rentalObjectId
+      ? await db.collection("orders").findOne(
+          { _id: orderObjectId },
+          {
+            projection: {
+              items: 1,
+            },
+            session,
+          },
+        )
+      : null;
 
   const existingDraft = orderObjectId
     ? await db
@@ -405,10 +417,6 @@ export async function submitStringingApplicationCore({
     ...(cm === "visit" ? { visitSlotCount, visitDurationMinutes } : {}),
   };
 
-  if (normalizedSelectedGauge) {
-    updateDoc["meta.selectedGauge"] = normalizedSelectedGauge;
-  }
-
   const existingApplication = await db
     .collection("stringing_applications")
     .findOne(
@@ -442,6 +450,27 @@ export async function submitStringingApplicationCore({
       });
     }
 
+    const purchasedStringItem = Array.isArray((orderForGauge as any)?.items)
+      ? (orderForGauge as any).items.find((item: any) => {
+          const kind = item?.kind ?? "product";
+          const productId = String(item?.productId ?? "");
+          return kind === "product" && productId === String(stringProductObjectId);
+        })
+      : null;
+
+    const selectedGaugeFromOrderItem =
+      typeof purchasedStringItem?.selectedGauge === "string" &&
+      purchasedStringItem.selectedGauge.trim()
+        ? purchasedStringItem.selectedGauge.trim()
+        : undefined;
+
+    const effectiveSelectedGauge =
+      normalizedSelectedGauge ?? selectedGaugeFromOrderItem;
+
+    const isStockAlreadyDeductedByOrderItem =
+      Boolean(selectedGaugeFromOrderItem) &&
+      selectedGaugeFromOrderItem === effectiveSelectedGauge;
+
     const stringProduct = await db.collection("products").findOne(
       { _id: stringProductObjectId },
       {
@@ -458,20 +487,24 @@ export async function submitStringingApplicationCore({
       (stringProduct as any).gaugeOptions.length > 0;
     const isGaugeSelectableProduct = hasGaugeInventories || hasGaugeOptions;
 
-    if (isGaugeSelectableProduct && !normalizedSelectedGauge) {
+    if (isGaugeSelectableProduct && !effectiveSelectedGauge) {
       throw Object.assign(new Error("게이지를 선택해주세요."), {
         status: 400,
         code: "GAUGE_REQUIRED",
       });
     }
 
+    if (effectiveSelectedGauge) {
+      updateDoc["meta.selectedGauge"] = effectiveSelectedGauge;
+    }
+
     const existingSelectedGauge = (existingApplication as any)?.meta?.selectedGauge;
     if (
       isGaugeSelectableProduct &&
       alreadyDeductedGaugeStock &&
-      normalizedSelectedGauge &&
+      effectiveSelectedGauge &&
       existingSelectedGauge &&
-      existingSelectedGauge !== normalizedSelectedGauge
+      existingSelectedGauge !== effectiveSelectedGauge
     ) {
       throw Object.assign(
         new Error("이미 재고가 차감된 신청서의 게이지는 변경할 수 없습니다."),
@@ -482,13 +515,18 @@ export async function submitStringingApplicationCore({
       );
     }
 
-    if (isGaugeSelectableProduct && normalizedSelectedGauge && !alreadyDeductedGaugeStock) {
+    if (
+      isGaugeSelectableProduct &&
+      effectiveSelectedGauge &&
+      !alreadyDeductedGaugeStock &&
+      !isStockAlreadyDeductedByOrderItem
+    ) {
       const stringQuantity = 1;
 
       const gaugeRow = (Array.isArray((stringProduct as any)?.gaugeInventories)
         ? (stringProduct as any).gaugeInventories
         : []
-      ).find((row: any) => String(row?.value ?? "").trim() === normalizedSelectedGauge);
+      ).find((row: any) => String(row?.value ?? "").trim() === effectiveSelectedGauge);
 
       if (!gaugeRow) {
         throw Object.assign(new Error("선택한 게이지를 찾을 수 없습니다."), {
@@ -517,7 +555,7 @@ export async function submitStringingApplicationCore({
           "inventory.stock": { $gte: stringQuantity },
           gaugeInventories: {
             $elemMatch: {
-              value: normalizedSelectedGauge,
+              value: effectiveSelectedGauge,
               isSoldOut: { $ne: true },
               stock: { $gte: stringQuantity },
             },
