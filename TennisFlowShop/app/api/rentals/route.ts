@@ -118,6 +118,20 @@ export async function POST(req: Request) {
   }
 
   const normalizedBody = parsed.data;
+  const selectedGauge =
+    typeof (body as any)?.selectedGauge === "string" && (body as any).selectedGauge.trim()
+      ? (body as any).selectedGauge.trim()
+      : typeof (body as any)?.stringing?.selectedGauge === "string" &&
+          (body as any).stringing.selectedGauge.trim()
+        ? (body as any).stringing.selectedGauge.trim()
+        : undefined;
+  const payloadWithGauge: RentalCreatePayload = {
+    ...(normalizedBody as RentalCreatePayload),
+    stringing: {
+      ...((normalizedBody as RentalCreatePayload).stringing ?? {}),
+      ...(selectedGauge ? { selectedGauge } : {}),
+    },
+  };
 
   try {
     const client = await clientPromise;
@@ -151,7 +165,7 @@ export async function POST(req: Request) {
       db,
       client,
       userObjectId,
-      payload: normalizedBody as RentalCreatePayload,
+      payload: payloadWithGauge,
       idemKey,
       initialStatus: "pending",
     });

@@ -39,6 +39,7 @@ type DBRentalLite = {
     price?: number;
     mountingFee?: number;
     image?: string | null;
+    selectedGauge?: string;
   };
 
   // 대여 금액 계산 결과(있다면) — serviceAmount에 참고로 반영 가능
@@ -73,6 +74,7 @@ type CreateAppDoc = {
     stringImage?: string | null;
     stringUnitPrice?: number | null;
     mountingFee?: number | null;
+    selectedGauge?: string | null;
     pricingSource?: "rental" | "manual";
   };
 };
@@ -158,6 +160,11 @@ export async function createStringingApplicationFromRental(
       mountingFee:
         typeof (rental.stringing as any)?.mountingFee === "number"
           ? (rental.stringing as any).mountingFee
+          : null,
+      selectedGauge:
+        typeof (rental.stringing as any)?.selectedGauge === "string" &&
+        (rental.stringing as any).selectedGauge.trim()
+          ? (rental.stringing as any).selectedGauge.trim()
           : null,
       pricingSource: "rental",
     },

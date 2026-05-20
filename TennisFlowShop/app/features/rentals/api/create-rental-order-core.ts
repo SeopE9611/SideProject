@@ -51,6 +51,7 @@ export type RentalCreatePayload = {
   stringing?: {
     requested?: boolean;
     stringId?: string;
+    selectedGauge?: string;
   };
   stringingApplicationInput?: unknown;
 };
@@ -187,12 +188,17 @@ export async function createRentalOrderCore(params: {
     price: number;
     mountingFee: number;
     image: string | null;
+    selectedGauge?: string;
     requestedAt: Date;
   } = null;
 
   const requested = !!stringing?.requested;
   if (requested) {
     const sid = stringing?.stringId;
+    const selectedGauge =
+      typeof stringing?.selectedGauge === "string" && stringing.selectedGauge.trim()
+        ? stringing.selectedGauge.trim()
+        : undefined;
     if (!sid || !ObjectId.isValid(sid)) throw new Error("BAD_STRING_ID");
 
     const s = await db
@@ -215,6 +221,7 @@ export async function createRentalOrderCore(params: {
       price: Number((s as any).price ?? 0),
       mountingFee: Number((s as any).mountingFee ?? 0),
       image: firstImg,
+      ...(selectedGauge ? { selectedGauge } : {}),
       requestedAt: new Date(),
     };
   }
