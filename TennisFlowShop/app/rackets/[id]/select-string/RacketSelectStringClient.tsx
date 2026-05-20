@@ -44,7 +44,10 @@ function normalizeGaugeRows(product: any): GaugeInventoryRow[] {
       .map((row: any) => ({
         value: String(row?.value ?? "").trim(),
         label: typeof row?.label === "string" ? row.label.trim() : undefined,
-        stock: Number(row?.stock ?? 0),
+        stock: (() => {
+          const stockNumber = Number(row?.stock ?? 0);
+          return Number.isFinite(stockNumber) && stockNumber > 0 ? stockNumber : 0;
+        })(),
         isSoldOut: row?.isSoldOut === true,
       }))
       .filter((row: GaugeInventoryRow) => row.value.length > 0);
@@ -482,6 +485,7 @@ export default function RacketSelectStringClient({
                   typeof p?.inventory?.stock === "number"
                     ? p.inventory.stock
                     : undefined;
+                const effectiveStock = selectedGaugeRow ? selectedGaugeRow.stock : stock;
                 const lowStock =
                   typeof p?.inventory?.lowStock === "number"
                     ? p.inventory.lowStock
@@ -497,9 +501,15 @@ export default function RacketSelectStringClient({
                     : manageStock && typeof stock === "number" && stock <= 0;
                 const isShort =
                   hasGaugeRows
-                    ? isGaugeShort
+                    ? selectedGaugeRow != null && effectiveStock < workCount
                     : manageStock && typeof stock === "number" && stock < workCount;
                 const disabledByGauge = hasGaugeRows && (!selectedGauge || isGaugeSoldOut || isGaugeShort);
+                const canShowStockHint =
+                  manageStock &&
+                  typeof effectiveStock === "number" &&
+                  effectiveStock > 0 &&
+                  effectiveStock <= lowStock &&
+                  (!hasGaugeRows || (selectedGaugeRow != null && !hideGaugeStock));
 
                 const isCurrent =
                   Boolean(selectedStringIdForHighlight) &&
@@ -600,18 +610,16 @@ export default function RacketSelectStringClient({
                           </div>
                         )}
                         {/* 재고 힌트 */}
-                        {manageStock &&
-                          typeof stock === "number" &&
-                          stock > 0 &&
-                          stock <= lowStock && (
+                        {canShowStockHint && (
                             <p className="text-xs text-warning">
-                              현재 남은 수량 {stock}개
+                              현재 남은 수량 {effectiveStock}개
                             </p>
                           )}
                         {isShort && (
                           <p className="text-xs text-destructive">
-                            재고 {stock}개로 번들 수량({workCount}개)을 충족할
-                            수 없어요
+                            {hasGaugeRows
+                              ? "선택한 게이지의 구매 가능 수량을 초과했습니다."
+                              : `재고 ${stock}개로 번들 수량(${workCount}개)을 충족할 수 없어요`}
                           </p>
                         )}
                         {isSoldOut && (
