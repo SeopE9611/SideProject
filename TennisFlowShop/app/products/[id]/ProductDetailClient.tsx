@@ -114,6 +114,68 @@ type GaugeInventoryRow = {
   isSoldOut: boolean;
 };
 
+
+type ColorInventoryRow = {
+  value: string;
+  label?: string;
+  colorHex?: string;
+  image?: string;
+  stock: number;
+  isSoldOut: boolean;
+};
+
+function normalizeColorRows(product: any): ColorInventoryRow[] {
+  if (Array.isArray(product?.colorInventories) && product.colorInventories.length > 0) {
+    return product.colorInventories
+      .map((row: any) => {
+        const stockNumber = Number(row?.stock ?? 0);
+
+        return {
+          value: String(row?.value ?? "").trim(),
+          label: typeof row?.label === "string" ? row.label.trim() : undefined,
+          colorHex: typeof row?.colorHex === "string" ? row.colorHex.trim() : undefined,
+          image: typeof row?.image === "string" ? row.image.trim() : undefined,
+          stock: Number.isFinite(stockNumber) && stockNumber > 0 ? stockNumber : 0,
+          isSoldOut: row?.isSoldOut === true,
+        };
+      })
+      .filter((row: ColorInventoryRow) => row.value.length > 0);
+  }
+
+  if (Array.isArray(product?.colorOptions) && product.colorOptions.length > 0) {
+    return product.colorOptions
+      .map((value: unknown) => String(value ?? "").trim())
+      .filter(Boolean)
+      .map((value: string) => ({
+        value,
+        label: value,
+        stock: Number(product?.inventory?.stock ?? 0),
+        isSoldOut: false,
+      }));
+  }
+
+  if (typeof product?.color === "string" && product.color.trim()) {
+    return [
+      {
+        value: product.color.trim(),
+        label: product.color.trim(),
+        stock: Number(product?.inventory?.stock ?? 0),
+        isSoldOut: false,
+      },
+    ];
+  }
+
+  return [];
+}
+
+function getColorLabel(row: ColorInventoryRow): string {
+  return String(row.label || row.value || "").trim();
+}
+
+function isColorSoldOut(row: ColorInventoryRow): boolean {
+  return row.isSoldOut === true || Number(row.stock ?? 0) <= 0;
+}
+
 function normalizeGaugeDisplayLabel(row: GaugeInventoryRow): string {
   const rawLabel = String(row.label ?? "").trim();
   if (rawLabel) return rawLabel;
@@ -249,6 +311,20 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
   const [quantity, setQuantity] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const colorRows = useMemo(() => normalizeColorRows(product), [product]);
+  const firstAvailableColor = useMemo(
+    () => colorRows.find((row) => !isColorSoldOut(row)) ?? colorRows[0],
+    [colorRows],
+  );
+  const [selectedColor, setSelectedColor] = useState<string>("");
+  useEffect(() => {
+    if (!selectedColor && firstAvailableColor?.value) {
+      setSelectedColor(firstAvailableColor.value);
+    }
+  }, [firstAvailableColor?.value, selectedColor]);
+  const selectedColorRow = colorRows.find((row) => row.value === selectedColor);
+  const selectedColorLabel = selectedColorRow ? getColorLabel(selectedColorRow) : "";
+  const colorImage = selectedColorRow?.image?.trim();
   const hideGaugeStock = product?.inventory?.hideGaugeStock === true;
   const gaugeRows = useMemo<GaugeInventoryRow[]>(() => {
     if (Array.isArray(product?.gaugeInventories) && product.gaugeInventories.length > 0) {
@@ -872,7 +948,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
           <div className="bp-lg:col-span-3 space-y-4 sm:space-y-5">
             <Card className="overflow-hidden border border-border/60 shadow-lg bg-card rounded-3xl">
               <div className="relative aspect-square bg-muted/20">
-                <Image src={images[selectedImageIndex] || "/placeholder.svg"} alt={product.name} fill className="object-contain p-4 transition-transform duration-500 hover:scale-105" />
+                <Image src={colorImage || images[selectedImageIndex] || "/placeholder.svg"} alt={product.name} fill className="object-contain p-4 transition-transform duration-500 hover:scale-105" />
                 {images.length > 1 && (
                   <>
                     <Button
@@ -972,6 +1048,56 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   </div>
 
                   <div className="space-y-4 sm:space-y-5 pt-5 sm:pt-6 border-t border-border/60">
+                    {colorRows.length > 0 && (
+                      <div className="space-y-2 rounded-xl border border-border/60 bg-muted/30 p-3">
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="text-sm font-semibold text-foreground">색상 선택</span>
+                          {selectedColorLabel && (
+                            <span className="text-xs text-muted-foreground">현재 색상: {selectedColorLabel}</span>
+                          )}
+                        </div>
+                        {colorRows.length > 1 ? (
+                          <div className="flex flex-wrap gap-2">
+                            {colorRows.map((row) => {
+                              const label = getColorLabel(row);
+                              const soldOut = isColorSoldOut(row);
+                              const isSelected = selectedColor === row.value;
+                              const hasImage = typeof row.image === "string" && row.image.trim().length > 0;
+                              const hasSwatch = typeof row.colorHex === "string" && row.colorHex.trim().length > 0;
+
+                              return (
+                                <button
+                                  key={row.value}
+                                  type="button"
+                                  aria-pressed={isSelected}
+                                  aria-label={`${label} 색상 선택`}
+                                  disabled={soldOut}
+                                  onClick={() => setSelectedColor(row.value)}
+                                  className={cn(
+                                    "relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-lg border bg-background text-xs text-foreground transition",
+                                    isSelected ? "border-foreground" : "border-border/60",
+                                    soldOut && "cursor-not-allowed opacity-45",
+                                  )}
+                                >
+                                  {hasImage ? (
+                                    <Image src={row.image!.trim()} alt={label} fill className="object-cover" />
+                                  ) : hasSwatch ? (
+                                    <span className="h-7 w-7 rounded-full border border-border/60" style={{ backgroundColor: row.colorHex?.trim() }} />
+                                  ) : (
+                                    <span className="px-1 text-center leading-tight">{label}</span>
+                                  )}
+                                  {soldOut && (
+                                    <span className="absolute bottom-0 left-0 right-0 bg-background/85 text-[10px] font-medium">품절</span>
+                                  )}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-muted-foreground">색상: {selectedColorLabel || getColorLabel(colorRows[0])}</p>
+                        )}
+                      </div>
+                    )}
                     <div className="flex items-center justify-between">
                       <span className="font-semibold text-base sm:text-lg">수량</span>
 
