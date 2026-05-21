@@ -167,6 +167,90 @@ async function restoreOrderGaugeStockIfNeeded(db: any, existing: any, now: Date)
   };
 }
 
+async function restoreOrderColorStockIfNeeded(db: any, existing: any, now: Date) {
+  const alreadyRestored = Boolean(existing?.stockRestore?.colorStockRestoredAt);
+  if (alreadyRestored) {
+    return { setFields: {} as Record<string, unknown> };
+  }
+
+  const restoreMap = new Map<string, { productObjectId: ObjectId; selectedColor: string; quantity: number; hasSelectedGauge: boolean }>();
+  const items = Array.isArray(existing?.items) ? existing.items : [];
+  for (const item of items) {
+    const kind = typeof item?.kind === "string" ? item.kind.trim() : "";
+    if (kind && kind !== "product") continue;
+    const selectedColor = typeof item?.selectedColor === "string" && item.selectedColor.trim() ? item.selectedColor.trim() : undefined;
+    if (!selectedColor) continue;
+    const productId = String(item?.productId ?? "").trim();
+    if (!ObjectId.isValid(productId)) continue;
+    const quantity = Math.max(0, Math.trunc(Number(item?.quantity ?? 0)));
+    if (quantity <= 0) continue;
+    const hasSelectedGauge = Boolean(typeof item?.selectedGauge === "string" && item.selectedGauge.trim());
+    const key = `${productId}:${selectedColor}:${hasSelectedGauge ? "gauge" : "plain"}`;
+    const existingAgg = restoreMap.get(key);
+    if (existingAgg) {
+      existingAgg.quantity += quantity;
+      continue;
+    }
+    restoreMap.set(key, {
+      productObjectId: new ObjectId(productId),
+      selectedColor,
+      quantity,
+      hasSelectedGauge,
+    });
+  }
+
+  if (restoreMap.size === 0) {
+    return { setFields: {} as Record<string, unknown> };
+  }
+
+  const products = db.collection("products");
+  for (const restoreItem of restoreMap.values()) {
+    const restoreResult = await products.updateOne(
+      restoreItem.hasSelectedGauge
+        ? {
+            _id: restoreItem.productObjectId,
+            "colorInventories.value": restoreItem.selectedColor,
+          }
+        : {
+            _id: restoreItem.productObjectId,
+            sold: { $gte: restoreItem.quantity },
+            "colorInventories.value": restoreItem.selectedColor,
+          },
+      {
+        $inc: restoreItem.hasSelectedGauge
+          ? {
+              "colorInventories.$.stock": restoreItem.quantity,
+            }
+          : {
+              "colorInventories.$.stock": restoreItem.quantity,
+              "inventory.stock": restoreItem.quantity,
+              sold: -restoreItem.quantity,
+            },
+      },
+    );
+    if (!restoreResult.matchedCount || !restoreResult.modifiedCount) {
+      return {
+        errorResponse: NextResponse.json(
+          {
+            ok: false,
+            code: "COLOR_STOCK_RESTORE_FAILED",
+            message: "주문 취소 중 색상 재고 복구에 실패했습니다.",
+          },
+          { status: 409 },
+        ),
+        setFields: {} as Record<string, unknown>,
+      };
+    }
+  }
+
+  return {
+    setFields: {
+      "stockRestore.colorStockRestoredAt": now,
+      "stockRestore.colorStockRestoreReason": "order_cancel_approved",
+    } as Record<string, unknown>,
+  };
+}
+
 export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> },
@@ -391,6 +475,9 @@ export async function POST(
     const gaugeRestore = await restoreOrderGaugeStockIfNeeded(db, existing, now);
     if (gaugeRestore.errorResponse) return gaugeRestore.errorResponse;
     Object.assign(updateFields, gaugeRestore.setFields);
+    const colorRestore = await restoreOrderColorStockIfNeeded(db, existing, now);
+    if (colorRestore.errorResponse) return colorRestore.errorResponse;
+    Object.assign(updateFields, colorRestore.setFields);
 
     // 기존 cancelReason / cancelReasonDetail 필드도 같이 맞춰줌
     updateFields.cancelReason = reasonCode;
