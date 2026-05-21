@@ -58,8 +58,11 @@ const getMaxStock = (stock?: number) =>
     ? stock
     : Number.POSITIVE_INFINITY;
 
-const getCartLineKey = (item: { id: string; selectedGauge?: string }) =>
-  `${item.id}::${item.selectedGauge ?? ""}`;
+const getCartLineKey = (item: {
+  id: string;
+  selectedGauge?: string;
+  selectedColor?: string;
+}) => `${item.id}::${item.selectedGauge ?? ""}::${item.selectedColor ?? ""}`;
 
 export default function CartPageClient() {
   const { logout } = useAuthStore(); // 사용 여부와 관계없이 훅 순서 안정
@@ -451,7 +454,7 @@ export default function CartPageClient() {
     )
       return;
 
-    finalItems.forEach((it) => removeItem(it.id, it.selectedGauge));
+    finalItems.forEach((it) => removeItem(it.id, it.selectedGauge, it.selectedColor));
     setSelectedLineKeys([]);
     showSuccessToast?.("선택한 상품을 삭제했어요.");
   };
@@ -487,7 +490,7 @@ export default function CartPageClient() {
     const cleanupTargets = cartItems.filter((it) =>
       cleanupRemoveLineKeys.includes(getCartLineKey(it)),
     );
-    cleanupTargets.forEach((it) => removeItem(it.id, it.selectedGauge));
+    cleanupTargets.forEach((it) => removeItem(it.id, it.selectedGauge, it.selectedColor));
 
     // 선택 상태에서도 제거(선택삭제/전체선택 UX 꼬임 방지)
     setSelectedLineKeys((prev) =>
@@ -694,7 +697,7 @@ export default function CartPageClient() {
 
                     return (
                       <div
-                        key={`${item.id}:${item.selectedGauge ?? ""}`}
+                        key={`${item.id}:${item.selectedGauge ?? ""}:${item.selectedColor ?? ""}`}
                         className={`rounded-xl bg-card p-3 bp-sm:p-4 shadow-sm transition hover:shadow-md dark:bg-card ${highlightCleanupTarget ? "ring-2 ring-ring bg-muted/40 dark:bg-muted" : ""}`}
                       >
                         <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center">
@@ -737,6 +740,18 @@ export default function CartPageClient() {
                                 <div className="mt-1 text-xs text-muted-foreground">
                                   게이지: {formatGaugeLabel(item.selectedGauge)}
                                 </div>
+                              )}
+                              {(item.selectedColorLabel || item.selectedColor) && (
+                                <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-muted/40 px-2 py-0.5 text-xs text-muted-foreground">
+                                  색상
+                                  {item.selectedColorHex && (
+                                    <span
+                                      className="h-2.5 w-2.5 rounded-full border border-border/60"
+                                      style={{ backgroundColor: item.selectedColorHex }}
+                                    />
+                                  )}
+                                  {item.selectedColorLabel || item.selectedColor}
+                                </span>
                               )}
                               {highlightCleanupTarget && (
                                 <>
@@ -815,7 +830,7 @@ export default function CartPageClient() {
                                     aria-label={`${item.name} 수량 감소`}
                                     disabled={lockStepper ? true : !canDec}
                                     onClick={() =>
-                                      updateQuantity(item.id, item.quantity - 1, item.selectedGauge)
+                                      updateQuantity(item.id, item.quantity - 1, item.selectedGauge, item.selectedColor)
                                     }
                                     title={
                                       lockStepper
@@ -863,6 +878,7 @@ export default function CartPageClient() {
                                         item.id,
                                         item.quantity + 1,
                                         item.selectedGauge,
+                                        item.selectedColor,
                                       );
                                     }}
                                   >
@@ -931,7 +947,7 @@ export default function CartPageClient() {
                                   ) {
                                     cartItems
                                       .filter((it) => bundleLockedIds.includes(it.id))
-                                      .forEach((it) => removeItem(it.id, it.selectedGauge));
+                                      .forEach((it) => removeItem(it.id, it.selectedGauge, it.selectedColor));
                                     setSelectedLineKeys((prev) =>
                                       prev.filter((selectedLineKey) => {
                                         const selectedItem = cartItems.find(
@@ -952,7 +968,7 @@ export default function CartPageClient() {
                                     `"${item.name}"을(를) 장바구니에서 삭제할까요?`,
                                   )
                                 ) {
-                                  removeItem(item.id, item.selectedGauge);
+                                  removeItem(item.id, item.selectedGauge, item.selectedColor);
                                 }
                               }}
                               className="order-3 text-muted-foreground hover:text-destructive"
