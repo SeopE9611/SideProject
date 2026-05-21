@@ -340,6 +340,81 @@ export async function createOrder(req: Request, executionContext?: CreateOrderEx
     let stringingSubmitted = false;
 
     try {
+      async function applyColorInventoryDeduction(params: {
+        productId: ObjectId;
+        selectedColor: string;
+        quantity: number;
+        shouldAffectGlobalStock: boolean;
+        session: any;
+        productName?: string;
+      }) {
+        const { productId, selectedColor, quantity, shouldAffectGlobalStock, session, productName } = params;
+        const colorUpdated = await db.collection("products").updateOne(
+          {
+            _id: productId,
+            colorInventories: {
+              $elemMatch: {
+                value: selectedColor,
+                isSoldOut: { $ne: true },
+                stock: { $gte: quantity },
+              },
+            },
+            ...(shouldAffectGlobalStock ? { "inventory.stock": { $gte: quantity } } : {}),
+          },
+          {
+            $inc: shouldAffectGlobalStock
+              ? {
+                  "colorInventories.$.stock": -quantity,
+                  "inventory.stock": -quantity,
+                  sold: quantity,
+                }
+              : {
+                  "colorInventories.$.stock": -quantity,
+                },
+          },
+          { session },
+        );
+
+        if (colorUpdated.matchedCount > 0 && colorUpdated.modifiedCount > 0) return;
+
+        const productForColor = await db.collection("products").findOne({ _id: productId }, { session });
+        const colorInventories = Array.isArray((productForColor as any)?.colorInventories) ? (productForColor as any).colorInventories : [];
+        const colorRow = colorInventories.find((c: any) => String(c?.value ?? "").trim() === selectedColor);
+
+        if (!colorRow) {
+          throw new HttpError(400, {
+            error: "선택한 색상 옵션을 찾을 수 없습니다.",
+            code: "COLOR_NOT_FOUND",
+            productName,
+            selectedColor,
+          });
+        }
+        if (colorRow.isSoldOut === true) {
+          throw new HttpError(400, {
+            error: "선택한 색상은 현재 품절입니다.",
+            code: "COLOR_SOLD_OUT",
+            productName,
+            selectedColor,
+          });
+        }
+        const colorStock = Number(colorRow.stock ?? 0);
+        if (colorStock < quantity) {
+          throw new HttpError(400, {
+            error: "선택한 색상의 구매 가능 수량을 초과했습니다.",
+            code: "COLOR_INSUFFICIENT_STOCK",
+            productName,
+            selectedColor,
+          });
+        }
+
+        throw new HttpError(400, {
+          error: "선택한 색상의 구매 가능 수량을 초과했습니다.",
+          code: "COLOR_STOCK_UPDATE_FAILED",
+          productName,
+          selectedColor,
+        });
+      }
+
       await session.withTransaction(async () => {
         // 1) 재고 차감(세션 포함)
         for (const item of rawItems as RawOrderItem[]) {
@@ -356,6 +431,7 @@ export async function createOrder(req: Request, executionContext?: CreateOrderEx
             if (!product) throw new HttpError(404, { error: "상품을 찾을 수 없습니다." });
 
             const selectedGauge = item.selectedGauge?.trim();
+            const selectedColor = item.selectedColor?.trim();
             if (selectedGauge) {
               const gaugeInventories = Array.isArray((product as any).gaugeInventories)
                 ? ((product as any).gaugeInventories as Array<{
@@ -424,6 +500,28 @@ export async function createOrder(req: Request, executionContext?: CreateOrderEx
                   selectedGauge,
                 });
               }
+              if (selectedColor) {
+                await applyColorInventoryDeduction({
+                  productId,
+                  selectedColor,
+                  quantity,
+                  shouldAffectGlobalStock: false,
+                  session,
+                  productName: String((product as any)?.name ?? ""),
+                });
+              }
+              continue;
+            }
+
+            if (selectedColor) {
+              await applyColorInventoryDeduction({
+                productId,
+                selectedColor,
+                quantity,
+                shouldAffectGlobalStock: true,
+                session,
+                productName: String((product as any)?.name ?? ""),
+              });
               continue;
             }
 
