@@ -630,6 +630,16 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
     [searchParams]
   );
   const hasStringDetailApplied = useMemo(() => ["modelKeyword", "material", "gauge", "color", "length"].some((key) => (searchParams.get(key) ?? "").trim() !== ""), [searchParams]);
+  const [isRacketDetailOpen, setIsRacketDetailOpen] = useState(hasRacketDetailApplied);
+  const [isStringDetailOpen, setIsStringDetailOpen] = useState(hasStringDetailApplied);
+
+  useEffect(() => {
+    if (hasRacketDetailApplied) setIsRacketDetailOpen(true);
+  }, [hasRacketDetailApplied]);
+
+  useEffect(() => {
+    if (hasStringDetailApplied) setIsStringDetailOpen(true);
+  }, [hasStringDetailApplied]);
 
   // total이 확정된 경우에만 실제 페이지 수를 계산하고, 미확정 상태에서는 내부 보수값(1)만 사용
   const totalPages = hasResolvedTotal ? Math.max(1, Math.ceil((total ?? 0) / PAGE_LIMIT)) : 1;
@@ -906,7 +916,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                       {/* ── 라켓 카테고리 필터 ── */}
                       {category === "racket" && (
                         <div className="border-t border-border bg-muted/20 px-4 py-3">
-                          <details className="group" open={hasRacketDetailApplied}>
+                          <details className="group" open={isRacketDetailOpen} onToggle={(e) => setIsRacketDetailOpen(e.currentTarget.open)}>
                             <summary className="mb-3 flex cursor-pointer list-none items-center gap-2">
                               <div className="h-1 w-1 rounded-full bg-info" />
                               <span className="text-xs font-semibold text-foreground">라켓 상세 조건</span>
@@ -930,7 +940,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                       {/* ── 스트링 카테고리 필터 ── */}
                       {category === "string" && (
                         <div className="border-t border-border bg-muted/20 px-4 py-3">
-                          <details className="group" open={hasStringDetailApplied}>
+                          <details className="group" open={isStringDetailOpen} onToggle={(e) => setIsStringDetailOpen(e.currentTarget.open)}>
                             <summary className="mb-3 flex cursor-pointer list-none items-center gap-2">
                               <div className="h-1 w-1 rounded-full bg-info" />
                               <span className="text-xs font-semibold text-foreground">스트링 상세 조건</span>
