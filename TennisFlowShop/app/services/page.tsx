@@ -131,151 +131,140 @@ export default async function ServicesPage() {
   return (
     <div className="flex flex-col">
       {/* Hero 섹션 */}
-      <section className="relative min-h-[72vh] bp-md:min-h-[82vh] bp-lg:min-h-[88vh] flex items-center justify-center overflow-hidden">
+      <section className="relative overflow-hidden py-12 bp-md:py-16 bp-lg:py-20">
         <div className="absolute inset-0 bg-muted">
           <HeroCourtBackdrop className="h-full w-full text-primary opacity-[0.10] dark:opacity-[0.12]" />
           <div className="absolute inset-0 bg-background/40"></div>
         </div>
 
-        {/* 장식 요소 */}
-        <div className="absolute top-20 left-10 w-32 h-32 bg-secondary/40 rounded-full"></div>
-        <div className="absolute bottom-20 right-10 w-24 h-24 bg-primary/10 dark:bg-primary/20 rounded-full"></div>
-        <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-muted/80 rounded-full delay-1000"></div>
+        <div className="absolute top-16 left-8 hidden h-24 w-24 rounded-full bg-secondary/30 bp-md:block"></div>
+        <div className="absolute bottom-14 right-8 h-16 w-16 rounded-full bg-primary/10 dark:bg-primary/20"></div>
 
         <div className="container relative z-10">
-          <div className="max-w-4xl mx-auto">
-            <Card className="border border-border shadow-md bg-card overflow-hidden">
-              <div className="bg-card border-b border-border/60 p-5 md:p-6 text-center text-foreground">
-                <h2 className="font-bold text-3xl sm:text-4xl mb-3">예약 안내</h2>
-                <p className="text-base sm:text-lg text-muted-foreground">
-                  교체서비스는 신청 후 접수/확인 순서로 진행됩니다. 내 상황에 맞는 시작 방식을 먼저 선택해 주세요.
+          <div className="mx-auto max-w-4xl">
+            <Card className="border border-border bg-card/95 shadow-md backdrop-blur-[1px]">
+              <CardContent className="p-6 text-center bp-md:p-8">
+                <h1 className="text-3xl font-bold text-foreground sm:text-4xl">스트링 교체 서비스를 더 쉽게</h1>
+                <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+                  스트링 구매, 라켓 구매·대여, 보유 장비 신청까지 상황에 맞는 방식으로 접수할 수 있습니다.
                 </p>
-              </div>
-
-              <CardContent className="p-4 bp-md:p-6">
-                <div className="mb-6 rounded-2xl border border-primary/20 bg-primary/5 p-4 md:p-5">
-                  <div className="mb-4 text-center">
-                    <p className="text-sm font-semibold text-primary">신청 방식 먼저 선택하기</p>
-                    <h3 className="mt-1 text-xl font-bold text-foreground sm:text-2xl">내 상황에 맞는 시작 지점을 고르세요</h3>
-                    <p className="mt-2 text-sm text-muted-foreground">스트링 구매, 라켓 구매/대여, 보유 장비 신청 중 바로 선택할 수 있어요.</p>
-                  </div>
-                  <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                    {[
-                      { title: "새 스트링 구매 후 장착", recommend: "스트링을 새로 고르고 기존 라켓에 장착하고 싶은 분", step: "스트링 선택 → 결제/장착 정보 입력 → 접수 완료", href: "/products?from=apply", cta: "스트링 고르고 신청하기" },
-                      { title: "라켓 구매와 함께 장착", recommend: "중고 라켓을 구매하면서 바로 사용할 수 있게 세팅하고 싶은 분", step: "라켓 선택 → 스트링 선택 → 결제 → 장착 접수", href: "/rackets?from=apply", cta: "라켓 고르고 신청하기" },
-                      { title: "라켓 대여와 함께 장착", recommend: "라켓을 빌려 쓰면서 원하는 스트링 세팅을 추가하고 싶은 분", step: "라켓 대여 → 스트링 선택 → 대여 결제 → 장착 접수", href: "/rackets?from=apply&rentOnly=1", cta: "대여 라켓 보기" },
-                      { title: "보유 라켓/보유 스트링으로 장착", recommend: "이미 가진 라켓이나 스트링으로 교체만 맡기고 싶은 분", step: "신청서 작성 → 접수 → 비용 안내/진행", href: "/services/apply?mode=single", cta: "보유 장비로 신청" },
-                      { title: "잘 모르겠어요 / 상담이 필요해요", recommend: "스트링 선택이나 방문 방식이 고민되는 분", step: "추천 도우미 확인 → 필요 시 고객센터 문의", href: "/products/recommend", cta: "추천받기" },
-                    ].map((item) => (
-                      <div key={item.title} className="flex h-full flex-col rounded-xl border border-border bg-card p-3.5 text-left shadow-sm">
-                        <h4 className="text-base font-bold text-foreground">{item.title}</h4>
-                        <p className="mt-2 text-xs font-semibold text-primary">이런 분께 추천</p>
-                        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{item.recommend}</p>
-                        <p className="mt-2 text-xs font-semibold text-primary">다음 단계</p>
-                        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{item.step}</p>
-                        <Button asChild className="mt-3 w-full" variant={item.href === "/products/recommend" ? "outline" : "default"}>
-                          <Link href={item.href}>{item.cta}</Link>
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 bp-md:grid-cols-2 gap-4 bp-md:gap-8 mb-6 bp-md:mb-8">
-                  <div className="text-center p-4 md:p-6 border border-border rounded-xl hover:shadow-md transition-[box-shadow,border-color,background-color] duration-200">
-                    <div className="w-20 h-20 bg-secondary rounded-full flex items-center justify-center text-primary mx-auto mb-4">
-                      <PhoneCall className="h-10 w-10" />
-                    </div>
-                    <h3 className="text-2xl font-bold mb-4">전화 예약</h3>
-                    <p className="text-muted-foreground mb-4">가장 빠른 예약은 전화로 문의해 주세요.</p>
-                    <div className="text-2xl bp-md:text-3xl font-bold text-foreground mb-2">0507-1392-3493</div>
-                    <p className="text-sm text-muted-foreground">운영 시간: 평일 10:00 - 22:00, 토요일 09:00 - 18:00</p>
-                  </div>
-
-                  <div className="text-center p-4 md:p-6 border border-border rounded-xl hover:shadow-md transition-[box-shadow,border-color,background-color] duration-200">
-                    <div className="w-20 h-20 bg-secondary rounded-full flex items-center justify-center text-primary mx-auto mb-4">
-                      <Calendar className="h-10 w-10" />
-                    </div>
-                    <h3 className="text-2xl font-bold mb-4">온라인 신청</h3>
-                    <p className="text-muted-foreground mb-6">
-                      스트링 교체 신청서를 통해 예약 요청을 남겨주세요. <br />
-                    </p>
-                    <Button variant="default" className="w-full" asChild>
-                      <Link href="/services/apply">
-                        <Calendar className="w-4 h-4 mr-2" />
-                        신청 방식 선택하기
-                      </Link>
-                    </Button>
-                  </div>
-                </div>
-
-                <Separator className="my-6 md:my-8" />
-
-                <div className="bg-muted rounded-xl border border-border p-4 md:p-6 text-foreground">
-                  <h3 className="text-xl font-bold mb-4 text-center">
-                    <CheckCircle className="w-5 h-5 inline mr-2 text-primary" />
-                    알아두세요
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="flex items-start">
-                      <Clock className="w-5 h-5 text-primary mt-1 mr-3 flex-shrink-0" />
-                      <div>
-                        <p className="font-medium">예약 시간</p>
-                        <p className="text-sm text-muted-foreground">방문 접수 시 완료 10분 전 도착 권장</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start">
-                      <Shield className="w-5 h-5 text-primary mt-1 mr-3 flex-shrink-0" />
-                      <div>
-                        <p className="font-medium">소요 시간</p>
-                        <p className="text-sm text-muted-foreground">30분~1시간</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start">
-                      <Zap className="w-5 h-5 text-primary mt-1 mr-3 flex-shrink-0" />
-                      <div>
-                        <p className="font-medium">100% 예약제</p>
-                        <p className="text-sm text-muted-foreground">사전 예약 필수</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <Card className="mt-6 border-border bg-muted/30 md:mt-8">
-                  <CardContent className="flex flex-col gap-4 p-4 md:flex-row md:items-center md:justify-between">
-                    <div className="space-y-1 text-left">
-                      <p className="text-sm font-semibold text-foreground">스트링 선택이 어렵다면 추천 도우미를 이용해보세요</p>
-                      <p className="text-sm text-muted-foreground">플레이 성향과 예산을 기준으로 나에게 맞는 스트링 선택 방향을 확인할 수 있어요.</p>
-                    </div>
-                    <Button asChild className="shrink-0">
-                      <Link href="/products/recommend">스트링 추천 도우미</Link>
-                    </Button>
-                  </CardContent>
-                </Card>
-
-                <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center mt-6 md:mt-8">
-                  <Button variant="outline" asChild>
-                    <Link href="/board/qna">
-                      <HelpCircle className="mr-2 h-4 w-4" />
-                      자주 묻는 질문
-                    </Link>
+                <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+                  <Button asChild>
+                    <Link href="#service-start">신청 방식 선택하기</Link>
                   </Button>
-                  <Button variant="default" asChild>
-                    <Link href="/products">
-                      <ArrowRight className="mr-2 h-4 w-4" />
-                      테니스 스트링 쇼핑하기
-                    </Link>
+                  <Button variant="outline" asChild>
+                    <Link href="#pricing">가격 안내 보기</Link>
                   </Button>
                 </div>
               </CardContent>
             </Card>
           </div>
         </div>
+      </section>
 
-        {/* 스크롤 인디케이터 */}
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
-          <div className="w-6 h-10 border-2 border-border/50 rounded-full flex justify-center">
-            <div className="w-1 h-3 bg-card/70 rounded-full mt-2 "></div>
+      <section className="py-8 bp-md:py-12" id="service-start">
+        <div className="container">
+          <div className="mx-auto max-w-5xl">
+            <div className="mb-5 text-center bp-md:mb-7">
+              <p className="text-sm font-semibold text-primary">신청 방식 먼저 선택하기</p>
+              <h2 className="mt-1 text-2xl font-bold text-foreground sm:text-3xl">어떤 방식으로 시작할까요?</h2>
+              <p className="mt-2 text-sm text-muted-foreground">현재 상황에 맞는 시작 지점을 고르면 신청 흐름으로 이어집니다.</p>
+            </div>
+
+            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+              {[
+                { title: "새 스트링 구매 후 장착", recommend: "스트링을 새로 고르고 기존 라켓에 장착하고 싶은 분", step: "스트링 선택 → 결제/장착 정보 입력 → 접수 완료", href: "/products?from=apply", cta: "스트링 고르고 신청하기" },
+                { title: "라켓 구매와 함께 장착", recommend: "중고 라켓을 구매하면서 바로 사용할 수 있게 세팅하고 싶은 분", step: "라켓 선택 → 스트링 선택 → 결제 → 장착 접수", href: "/rackets?from=apply", cta: "라켓 고르고 신청하기" },
+                { title: "라켓 대여와 함께 장착", recommend: "라켓을 빌려 쓰면서 원하는 스트링 세팅을 추가하고 싶은 분", step: "라켓 대여 → 스트링 선택 → 대여 결제 → 장착 접수", href: "/rackets?from=apply&rentOnly=1", cta: "대여 라켓 보기" },
+                { title: "보유 라켓/보유 스트링으로 장착", recommend: "이미 가진 라켓이나 스트링으로 교체만 맡기고 싶은 분", step: "신청서 작성 → 접수 → 비용 안내/진행", href: "/services/apply?mode=single", cta: "보유 장비로 신청" },
+                { title: "잘 모르겠어요 / 상담이 필요해요", recommend: "스트링 선택이나 방문 방식이 고민되는 분", step: "추천 도우미 확인 → 필요 시 고객센터 문의", href: "/products/recommend", cta: "추천받기" },
+              ].map((item) => (
+                <div key={item.title} className="flex h-full flex-col rounded-xl border border-border bg-card p-3.5 text-left shadow-sm transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md">
+                  <h4 className="text-base font-bold text-foreground">{item.title}</h4>
+                  <p className="mt-2 text-xs font-semibold text-primary">이런 분께 추천</p>
+                  <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{item.recommend}</p>
+                  <p className="mt-2 text-xs font-semibold text-primary">다음 단계</p>
+                  <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{item.step}</p>
+                  <Button asChild className="mt-3 w-full" variant={item.href === "/products/recommend" ? "outline" : "default"}>
+                    <Link href={item.href}>{item.cta}</Link>
+                  </Button>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-6 grid grid-cols-1 gap-4 bp-md:mt-8 bp-md:grid-cols-2 bp-md:gap-6">
+              <div className="rounded-xl border border-border p-4 text-center md:p-5">
+                <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-secondary text-primary">
+                  <PhoneCall className="h-8 w-8" />
+                </div>
+                <h3 className="mb-2 text-xl font-bold">전화 예약</h3>
+                <p className="mb-3 text-sm text-muted-foreground">가장 빠른 예약은 전화로 문의해 주세요.</p>
+                <div className="mb-1 text-xl font-bold text-foreground bp-md:text-2xl">0507-1392-3493</div>
+                <p className="text-sm text-muted-foreground">운영 시간: 평일 10:00 - 22:00, 토요일 09:00 - 18:00</p>
+              </div>
+
+              <div className="rounded-xl border border-border p-4 text-center shadow-sm transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md md:p-5">
+                <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-secondary text-primary">
+                  <Calendar className="h-8 w-8" />
+                </div>
+                <h3 className="mb-2 text-xl font-bold">온라인 신청</h3>
+                <p className="mb-4 text-sm text-muted-foreground">스트링 교체 신청서를 통해 예약 요청을 남겨주세요.</p>
+                <Button variant="default" className="w-full" asChild>
+                  <Link href="/services/apply">
+                    <Calendar className="mr-2 h-4 w-4" />
+                    신청 방식 선택하기
+                  </Link>
+                </Button>
+              </div>
+            </div>
+
+            <div className="mt-4 rounded-xl border border-border bg-muted/60 p-4 md:p-5">
+              <h3 className="mb-3 text-base font-bold text-foreground">
+                <CheckCircle className="mr-2 inline h-5 w-5 text-primary" />
+                알아두세요
+              </h3>
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+                <div className="rounded-lg bg-background/80 p-3">
+                  <p className="font-medium">예약 시간</p>
+                  <p className="text-sm text-muted-foreground">방문 접수 시 완료 10분 전 도착 권장</p>
+                </div>
+                <div className="rounded-lg bg-background/80 p-3">
+                  <p className="font-medium">소요 시간</p>
+                  <p className="text-sm text-muted-foreground">30분~1시간</p>
+                </div>
+                <div className="rounded-lg bg-background/80 p-3">
+                  <p className="font-medium">100% 예약제</p>
+                  <p className="text-sm text-muted-foreground">사전 예약 필수</p>
+                </div>
+              </div>
+            </div>
+
+            <Card className="mt-4 border-border bg-muted/30">
+              <CardContent className="flex flex-col gap-4 p-4 md:flex-row md:items-center md:justify-between">
+                <div className="space-y-1 text-left">
+                  <p className="text-sm font-semibold text-foreground">스트링 선택이 어렵다면 추천 도우미를 이용해보세요</p>
+                  <p className="text-sm text-muted-foreground">플레이 성향과 예산을 기준으로 나에게 맞는 스트링 선택 방향을 확인할 수 있어요.</p>
+                </div>
+                <Button asChild className="shrink-0" variant="outline">
+                  <Link href="/products/recommend">스트링 추천 도우미</Link>
+                </Button>
+              </CardContent>
+            </Card>
+
+            <div className="mt-4 flex flex-col justify-center gap-3 sm:flex-row">
+              <Button variant="outline" asChild>
+                <Link href="/board/qna">
+                  <HelpCircle className="mr-2 h-4 w-4" />
+                  자주 묻는 질문
+                </Link>
+              </Button>
+              <Button variant="default" asChild>
+                <Link href="/products">
+                  <ArrowRight className="mr-2 h-4 w-4" />
+                  테니스 스트링 쇼핑하기
+                </Link>
+              </Button>
+            </div>
           </div>
         </div>
       </section>
