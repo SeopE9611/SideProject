@@ -327,7 +327,7 @@ export default function CheckoutPage() {
 
   // 장바구니 결제 vs 즉시 구매 모드 분기
   const orderItems: CartItem[] = mode === "buynow" ? (pdpBundleItems.length > 0 ? pdpBundleItems : buyNowItem ? [buyNowItem] : []) : cartItems;
-  const orderItemsKey = orderItems.map((it) => `${it.kind}:${it.id}:${it.quantity}:${it.selectedGauge ?? ""}`).join("|");
+  const orderItemsKey = orderItems.map((it) => `${it.kind}:${it.id}:${it.quantity}:${it.selectedGauge ?? ""}:${it.selectedColor ?? ""}`).join("|");
 
   // 장착비(공임)를 붙일 아이템 kind 정의
   // - products 컬렉션에서 mountingFee를 조회하므로, 여기 포함된 kind는 "products 기반"이어야 함
@@ -1249,6 +1249,15 @@ export default function CheckoutPage() {
                               <div className="flex flex-wrap items-center gap-2">
                                 <span className="inline-flex items-center gap-1 text-sm text-foreground/80 bg-muted/50 px-2 py-0.5 rounded-full">수량 {item.quantity}개</span>
                                 {item.selectedGauge && <span className="inline-flex items-center gap-1 text-xs text-foreground/80 bg-muted/40 px-2 py-0.5 rounded-full">게이지 {formatGaugeLabel(item.selectedGauge)}</span>}
+                                {(item.selectedColorLabel || item.selectedColor) && (
+                                  <span className="inline-flex items-center gap-1 text-xs text-foreground/80 bg-muted/40 px-2 py-0.5 rounded-full">
+                                    색상
+                                    {item.selectedColorHex && (
+                                      <span className="h-2.5 w-2.5 rounded-full border border-border/60" style={{ backgroundColor: item.selectedColorHex }} />
+                                    )}
+                                    {item.selectedColorLabel || item.selectedColor}
+                                  </span>
+                                )}
                                 {withStringService && serviceTargetIds.includes(String(item.id)) && (
                                   <Badge variant="outline" className="text-xs border-primary/30 text-primary bg-primary/5">
                                     교체서비스
@@ -1857,7 +1866,7 @@ export default function CheckoutPage() {
                         onBeforeSuccessNavigation={() => setIsIntentionalSuccessNavigation(true)}
                         onSuccessNavigationAbort={() => setIsIntentionalSuccessNavigation(false)}
                         payload={{
-                          items: orderItems.map((item) => ({ productId: item.id, quantity: item.quantity, kind: item.kind ?? "product", selectedGauge: item.selectedGauge })),
+                          items: orderItems.map((item) => ({ productId: item.id, quantity: item.quantity, kind: item.kind ?? "product", selectedGauge: item.selectedGauge, selectedColor: item.selectedColor, selectedColorLabel: item.selectedColorLabel, selectedColorHex: item.selectedColorHex, selectedColorImage: item.selectedColorImage })),
                           shippingInfo: {
                             name: name.trim(),
                             phone: phone.replace(/\D/g, ""),

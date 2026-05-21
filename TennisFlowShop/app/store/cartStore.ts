@@ -21,6 +21,10 @@ export type CartItem = {
   stock?: number; // 재고 정보
   kind?: "product" | "racket"; // 아이템 종류 (기본: product)
   selectedGauge?: string;
+  selectedColor?: string;
+  selectedColorLabel?: string;
+  selectedColorHex?: string;
+  selectedColorImage?: string;
 };
 
 // 타입 정의
@@ -29,8 +33,8 @@ export type CartItem = {
 interface CartState {
   items: CartItem[]; // 장바구니에 담긴 상품 목록
   addItem: (item: CartItem) => { success: boolean; message?: string };
-  removeItem: (id: string, selectedGauge?: string) => void; // 장바구니에서 상품 제거
-  updateQuantity: (id: string, quantity: number, selectedGauge?: string) => void; // 장바구니 상품 수량 수정
+  removeItem: (id: string, selectedGauge?: string, selectedColor?: string) => void; // 장바구니에서 상품 제거
+  updateQuantity: (id: string, quantity: number, selectedGauge?: string, selectedColor?: string) => void; // 장바구니 상품 수량 수정
   clearCart: () => void; // 장바구니 전체 삭제
 }
 
@@ -47,6 +51,13 @@ const clampQuantity = (qty: number, maxStock: number) => {
   return Math.min(Math.max(1, next), maxStock);
 };
 
+
+const isSameCartLine = (a: Pick<CartItem, "id" | "kind" | "selectedGauge" | "selectedColor">, b: Pick<CartItem, "id" | "kind" | "selectedGauge" | "selectedColor">) =>
+  a.id === b.id &&
+  (a.kind ?? "product") === (b.kind ?? "product") &&
+  (a.selectedGauge ?? "") === (b.selectedGauge ?? "") &&
+  (a.selectedColor ?? "") === (b.selectedColor ?? "");
+
 // 실제 스토어 생성
 // create<CartState>(...)는 주스탄드에서 제공하는 함수로, CartState 타입을 기반으로 상태를 만듬
 // set은 상태를 업데이트 할 수 있게 해주는 내부 함수
@@ -56,7 +67,7 @@ export const useCartStore = create<CartState>()(
       items: [],
 
       addItem: (item) => {
-        const exists = get().items.find((i) => i.id === item.id && (i.selectedGauge ?? "") === (item.selectedGauge ?? ""));
+        const exists = get().items.find((i) => isSameCartLine(i, item));
         if (exists) {
           const maxStock = getMaxStock(exists.stock);
           const nextQty = clampQuantity(exists.quantity + item.quantity, maxStock);
@@ -65,7 +76,7 @@ export const useCartStore = create<CartState>()(
           }
           set((state) => ({
             items: state.items.map((i) =>
-              i.id === item.id && (i.selectedGauge ?? "") === (item.selectedGauge ?? "")
+              isSameCartLine(i, item)
                 ? { ...i, quantity: nextQty }
                 : i,
             ),
@@ -94,19 +105,22 @@ export const useCartStore = create<CartState>()(
 
       // 특정 상품을 장바구니에서 제거
       // id가 일치하지 않는 상품만 남기고 나머지는 제거 (즉 해당 상품 삭제)
-      removeItem: (id: string, selectedGauge?: string) =>
+      removeItem: (id: string, selectedGauge?: string, selectedColor?: string) =>
         set((state) => ({
-          items: state.items.filter((i) => !(i.id === id && (i.selectedGauge ?? "") === (selectedGauge ?? ""))),
+          items: state.items.filter(
+            (i) =>
+              !isSameCartLine(i, { id, kind: i.kind, selectedGauge, selectedColor }),
+          ),
         })),
 
       // 수량 변경 (ex: +/- 버튼 클릭시)
       // 해당 상품의 수량을 새 값으로 바꿔줌
-      updateQuantity: (id: string, quantity: number, selectedGauge?: string) =>
+      updateQuantity: (id: string, quantity: number, selectedGauge?: string, selectedColor?: string) =>
         set((state) => ({
           // 상태를 업데이트
           items: state.items
             .map((i) => {
-              if (i.id !== id || (i.selectedGauge ?? "") !== (selectedGauge ?? "")) return i;
+              if (!isSameCartLine(i, { id, kind: i.kind, selectedGauge, selectedColor })) return i;
 
               const maxStock = getMaxStock(i.stock);
               const nextQty = clampQuantity(quantity, maxStock);

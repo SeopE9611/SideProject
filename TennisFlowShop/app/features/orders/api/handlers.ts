@@ -49,6 +49,10 @@ const OrderItemSchema = z.object({
   quantity: z.coerce.number().int().positive(),
   kind: z.enum(["product", "racket"]).optional(),
   selectedGauge: z.string().trim().optional(),
+  selectedColor: z.string().trim().optional(),
+  selectedColorLabel: z.string().trim().optional(),
+  selectedColorHex: z.string().trim().optional(),
+  selectedColorImage: z.string().trim().optional(),
 });
 
 const GuestInfoSchema = z
@@ -590,6 +594,10 @@ export async function createOrder(req: Request, executionContext?: CreateOrderEx
                 quantity,
                 kind: "product" as const,
                 selectedGauge: it.selectedGauge?.trim() || undefined,
+                selectedColor: it.selectedColor?.trim() || undefined,
+                selectedColorLabel: it.selectedColorLabel?.trim() || undefined,
+                selectedColorHex: it.selectedColorHex?.trim() || undefined,
+                selectedColorImage: it.selectedColorImage?.trim() || undefined,
               };
             }
 

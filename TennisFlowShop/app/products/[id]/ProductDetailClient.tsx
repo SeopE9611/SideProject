@@ -709,6 +709,29 @@ export default function ProductDetailClient({ product }: { product: any }) {
     }
   };
 
+  const validateSelectedColorForCheckout = () => {
+    if (colorRows.length === 0) return true;
+    if (!selectedColor || !selectedColorRow) {
+      showErrorToast("색상을 선택해주세요.");
+      return false;
+    }
+    if (isColorSoldOut(selectedColorRow)) {
+      showErrorToast("선택한 색상은 현재 품절입니다.");
+      return false;
+    }
+    return true;
+  };
+
+  const selectedColorPayload =
+    selectedColorRow && selectedColor
+      ? {
+          selectedColor,
+          selectedColorLabel: getColorLabel(selectedColorRow),
+          selectedColorHex: selectedColorRow.colorHex,
+          selectedColorImage: selectedColorRow.image,
+        }
+      : {};
+
   const requireGaugeSelection = () => {
     if (!isStringProduct || gaugeRows.length === 0) return true;
     if (selectedGauge) return true;
@@ -719,6 +742,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const handleAddToCart = () => {
     if (loading) return;
     if (!requireGaugeSelection()) return;
+    if (!validateSelectedColorForCheckout()) return;
     // 재고 검증 (기존 장바구니에 담긴 수량 + 지금 선택 수량이 stock 초과인지)
     const wouldBe = quantity;
     if (wouldBe > effectiveStock) {
@@ -730,9 +754,10 @@ export default function ProductDetailClient({ product }: { product: any }) {
       name: product.name,
       price: product.price,
       quantity,
-      image: product.images?.[0] || "/placeholder.svg",
+      image: selectedColorRow?.image?.trim() || product.images?.[0] || "/placeholder.svg",
       stock: effectiveStock,
       selectedGauge: selectedGauge || undefined,
+      ...selectedColorPayload,
     });
 
     if (!result.success) {
@@ -785,6 +810,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const handleBuyNow = () => {
     if (loading) return;
     if (!requireGaugeSelection()) return;
+    if (!validateSelectedColorForCheckout()) return;
 
     // 재고 검증 (지금 선택 수량이 stock 초과인지)
     if (quantity > effectiveStock) {
@@ -798,9 +824,10 @@ export default function ProductDetailClient({ product }: { product: any }) {
       name: product.name,
       price: product.price,
       quantity,
-      image: product.images?.[0] || "/placeholder.svg",
+      image: selectedColorRow?.image?.trim() || product.images?.[0] || "/placeholder.svg",
       stock: effectiveStock,
       selectedGauge: selectedGauge || undefined,
+      ...selectedColorPayload,
     };
 
     setBuyNowItem(buyNowItem);
@@ -820,6 +847,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
     if (loading) return;
     if (!canCheckoutWithService) return;
     if (!requireGaugeSelection()) return;
+    if (!validateSelectedColorForCheckout()) return;
 
     // 재고 검증
     if (quantity > effectiveStock) {
@@ -833,9 +861,10 @@ export default function ProductDetailClient({ product }: { product: any }) {
       name: product.name,
       price: product.price, // 여기서는 "자재 가격"만
       quantity,
-      image: product.images?.[0] || "/placeholder.svg",
+      image: selectedColorRow?.image?.trim() || product.images?.[0] || "/placeholder.svg",
       stock: effectiveStock,
       selectedGauge: selectedGauge || undefined,
+      ...selectedColorPayload,
     };
 
     setBuyNowItem(buyNowItem);

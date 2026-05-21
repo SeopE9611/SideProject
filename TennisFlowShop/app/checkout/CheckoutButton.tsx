@@ -71,7 +71,7 @@ const cartSignature = (items: CartItem[]) => {
   return items
     .map(
       (it) =>
-        `${it.kind ?? "product"}:${String(it.id)}:${Number(it.quantity ?? 0)}:${it.selectedGauge ?? ""}`,
+        `${it.kind ?? "product"}:${String(it.id)}:${Number(it.quantity ?? 0)}:${it.selectedGauge ?? ""}:${it.selectedColor ?? ""}`,
     )
     .sort()
     .join("|");
@@ -372,6 +372,10 @@ export default function CheckoutButton({
           quantity: item.quantity,
           kind: item.kind ?? "product",
           selectedGauge: item.selectedGauge,
+          selectedColor: item.selectedColor,
+          selectedColorLabel: item.selectedColorLabel,
+          selectedColorHex: item.selectedColorHex,
+          selectedColorImage: item.selectedColorImage,
         })),
         shippingInfo,
         paymentInfo: {
