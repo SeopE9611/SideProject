@@ -356,10 +356,10 @@ export default function ApplicantInfoSection({
                   <span className="font-medium text-foreground">자가 발송</span>
                 </div>
                 <CheckCircle2
-                  className={`h-4 w-4 text-primary transition-opacity ${formData.collectionMethod === "self_ship" ? "opacity-100" : "opacity-0"}`}
+                  className={`h-4 w-4 shrink-0 text-primary transition-opacity ${formData.collectionMethod === "self_ship" ? "opacity-100" : "opacity-0"}`}
                 />
               </div>
-              <p className="mt-1 text-xs text-muted-foreground">
+              <p className="mt-1 break-keep text-sm leading-relaxed text-muted-foreground">
                 편의점/우체국 등
               </p>
             </Label>
@@ -387,10 +387,10 @@ export default function ApplicantInfoSection({
                   </span>
                 </div>
                 <CheckCircle2
-                  className={`h-4 w-4 text-primary transition-opacity ${normalizeCollection(formData.collectionMethod) === "visit" ? "opacity-100" : "opacity-0"}`}
+                  className={`h-4 w-4 shrink-0 text-primary transition-opacity ${normalizeCollection(formData.collectionMethod) === "visit" ? "opacity-100" : "opacity-0"}`}
                 />
               </div>
-              <p className="mt-1 text-xs text-muted-foreground">
+              <p className="mt-1 break-keep text-sm leading-relaxed text-muted-foreground">
                 방문 가능 시간대만 선택
               </p>
             </Label>

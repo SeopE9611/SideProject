@@ -917,11 +917,11 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                       {category === "racket" && (
                         <div className="border-t border-border bg-muted/20 px-4 py-3">
                           <details className="group" open={isRacketDetailOpen} onToggle={(e) => setIsRacketDetailOpen(e.currentTarget.open)}>
-                            <summary className="mb-3 flex cursor-pointer list-none items-center gap-2">
+                            <summary className="mb-3 flex cursor-pointer list-none flex-wrap items-center gap-2">
                               <div className="h-1 w-1 rounded-full bg-info" />
                               <span className="text-xs font-semibold text-foreground">라켓 상세 조건</span>
                               <span className="text-xs text-foreground/75">모델, 스펙, 사이즈</span>
-                              {hasRacketDetailApplied && <span className="rounded bg-info/15 px-1.5 py-0.5 text-[10px] font-medium text-info">적용됨</span>}
+                              {hasRacketDetailApplied && <span className="shrink-0 rounded bg-info/15 px-1.5 py-0.5 text-[10px] font-medium text-info">적용됨</span>}
                             </summary>
                             <div className="grid grid-cols-2 gap-x-3 gap-y-2.5 sm:grid-cols-3">
                               <FilterInputGroup label="모델명" value={marketFilterDraft.modelKeyword} onChange={(v) => setMarketFilterDraft((prev) => ({ ...prev, modelKeyword: v }))} placeholder="모델명 키워드" />
@@ -941,11 +941,11 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                       {category === "string" && (
                         <div className="border-t border-border bg-muted/20 px-4 py-3">
                           <details className="group" open={isStringDetailOpen} onToggle={(e) => setIsStringDetailOpen(e.currentTarget.open)}>
-                            <summary className="mb-3 flex cursor-pointer list-none items-center gap-2">
+                            <summary className="mb-3 flex cursor-pointer list-none flex-wrap items-center gap-2">
                               <div className="h-1 w-1 rounded-full bg-info" />
                               <span className="text-xs font-semibold text-foreground">스트링 상세 조건</span>
                               <span className="text-xs text-foreground/75">모델, 재질, 게이지, 색상</span>
-                              {hasStringDetailApplied && <span className="rounded bg-info/15 px-1.5 py-0.5 text-[10px] font-medium text-info">적용됨</span>}
+                              {hasStringDetailApplied && <span className="shrink-0 rounded bg-info/15 px-1.5 py-0.5 text-[10px] font-medium text-info">적용됨</span>}
                             </summary>
                             <div className="grid grid-cols-2 gap-x-3 gap-y-2.5 sm:grid-cols-3 lg:grid-cols-5">
                               <FilterInputGroup label="모델명" value={marketFilterDraft.modelKeyword} onChange={(v) => setMarketFilterDraft((prev) => ({ ...prev, modelKeyword: v }))} placeholder="모델명 키워드" />

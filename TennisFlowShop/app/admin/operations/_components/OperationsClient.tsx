@@ -996,7 +996,7 @@ export default function OperationsClient() {
           </div>
         )}
 
-        <section className="mt-4 space-y-3 rounded-xl border border-border bg-card p-3 shadow-sm">
+        <section className="mt-4 space-y-3 rounded-xl border border-border bg-card p-3 shadow-sm bp-sm:p-4">
           <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h2 className="text-base font-semibold text-foreground">오늘 바로 처리할 업무</h2>
@@ -1004,18 +1004,18 @@ export default function OperationsClient() {
             </div>
             <p className="text-sm text-muted-foreground">전체 처리 필요 기준입니다. 검색과 필터는 아래 목록에만 적용됩니다.</p>
           </div>
-          <div className="grid gap-3 bp-sm:grid-cols-2 bp-lg:grid-cols-4">
+          <div className="grid gap-3.5 bp-sm:grid-cols-2 bp-lg:grid-cols-4 bp-lg:gap-4">
             {practicalTaskCards.map((task) => (
               <Card key={task.title} className={cn("border-border bg-card shadow-sm", task.tone === "urgent" && "border-warning/40 bg-warning/5", task.tone === "warning" && "border-info/40 bg-info/5")}>
-                <CardHeader className="p-3 pb-2">
+                <CardHeader className="p-3 pb-2.5">
                   <CardTitle className="flex items-baseline justify-between gap-2 text-sm font-semibold">
                     <span>{task.title}</span>
                     <span className="text-lg font-bold text-foreground">{task.count}건</span>
                   </CardTitle>
-                  <CardDescription className="min-h-[40px] text-xs leading-relaxed text-foreground/75">{task.description}</CardDescription>
+                  <CardDescription className="min-h-[44px] break-keep text-sm leading-relaxed text-foreground/80">{task.description}</CardDescription>
                 </CardHeader>
                 <CardContent className="p-3 pt-0">
-                  <Button type="button" size="sm" variant="outline" className="h-8 w-full bg-background/70 text-xs" onClick={task.onClick}>
+                  <Button type="button" size="sm" variant="outline" className="h-8 w-full whitespace-nowrap bg-background/70 text-sm" onClick={task.onClick}>
                     {task.action}
                   </Button>
                 </CardContent>
@@ -1027,10 +1027,10 @@ export default function OperationsClient() {
                   <span>오프라인 미결제/보정</span>
                   <span className="text-lg font-bold text-foreground">{taskCounts?.offline ?? 0}건</span>
                 </CardTitle>
-                <CardDescription className="min-h-[40px] text-xs leading-relaxed text-foreground/75">오프라인 미결제, 패키지 발급 실패, 보정 필요 항목을 확인하세요.</CardDescription>
+                <CardDescription className="min-h-[44px] break-keep text-sm leading-relaxed text-foreground/80">오프라인 미결제, 패키지 발급 실패, 보정 필요 항목을 확인하세요.</CardDescription>
               </CardHeader>
               <CardContent className="p-3 pt-0">
-                <Button asChild size="sm" variant="outline" className="h-8 w-full bg-background/70 text-xs">
+                <Button asChild size="sm" variant="outline" className="h-8 w-full whitespace-nowrap bg-background/70 text-sm">
                   <Link href="/admin/offline/reconciliation">바로 처리</Link>
                 </Button>
               </CardContent>
@@ -1041,10 +1041,10 @@ export default function OperationsClient() {
                   <span>아카데미 상담</span>
                   <span className="text-lg font-bold text-foreground">{taskCounts?.academyApplications ?? 0}건</span>
                 </CardTitle>
-                <CardDescription className="min-h-[40px] text-xs leading-relaxed text-foreground/75">신규 신청, 검토 중, 상담 대기, 등록 확정 대기 건을 확인하세요.</CardDescription>
+                <CardDescription className="min-h-[44px] break-keep text-sm leading-relaxed text-foreground/80">신규 신청, 검토 중, 상담 대기, 등록 확정 대기 건을 확인하세요.</CardDescription>
               </CardHeader>
               <CardContent className="p-3 pt-0">
-                <Button asChild size="sm" variant="outline" className="h-8 w-full bg-background/70 text-xs">
+                <Button asChild size="sm" variant="outline" className="h-8 w-full whitespace-nowrap bg-background/70 text-sm">
                   <Link href="/admin/academy/applications">바로 처리</Link>
                 </Button>
               </CardContent>
