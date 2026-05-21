@@ -32,14 +32,14 @@ export const materials = [
 ];
 
 export const colors = [
-  { id: "black", name: "블랙" },
-  { id: "white", name: "화이트" },
-  { id: "red", name: "레드" },
-  { id: "blue", name: "블루" },
-  { id: "yellow", name: "옐로우" },
-  { id: "green", name: "그린" },
-  { id: "orange", name: "오렌지" },
-  { id: "silver", name: "실버" },
-  { id: "gold", name: "골드" },
-  { id: "transparent", name: "투명" },
+  { id: "black", name: "블랙", hex: "\x23111827" },
+  { id: "white", name: "화이트", hex: "\x23ffffff" },
+  { id: "red", name: "레드", hex: "\x23ef4444" },
+  { id: "blue", name: "블루", hex: "\x232563eb" },
+  { id: "yellow", name: "옐로우", hex: "\x23facc15" },
+  { id: "green", name: "그린", hex: "\x2322c55e" },
+  { id: "orange", name: "오렌지", hex: "\x23f97316" },
+  { id: "silver", name: "실버", hex: "\x2394a3b8" },
+  { id: "gold", name: "골드", hex: "\x23eab308" },
+  { id: "transparent", name: "투명", hex: "\x23ffffff00" },
 ];
