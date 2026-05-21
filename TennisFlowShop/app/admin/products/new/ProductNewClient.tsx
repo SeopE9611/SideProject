@@ -59,7 +59,10 @@ import {
 } from "@/app/admin/products/_lib/productFormOptions";
 import { adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
 import { adminFormHintTooltipClass } from "@/lib/tooltip-style";
-import type { ProductGaugeInventory } from "@/types/admin/products";
+import type {
+  ProductColorInventory,
+  ProductGaugeInventory,
+} from "@/types/admin/products";
 
 const AdminConfirmDialog = dynamic(
   () => import("@/components/admin/AdminConfirmDialog"),
@@ -120,6 +123,9 @@ export default function NewStringPage() {
   const [searchKeywordsInput, setSearchKeywordsInput] = useState("");
   const [gaugeInventories, setGaugeInventories] = useState<
     ProductGaugeInventory[]
+  >([]);
+  const [colorInventories, setColorInventories] = useState<
+    ProductColorInventory[]
   >([]);
   const [showGaugeStockToUser, setShowGaugeStockToUser] = useState(true);
   const totalGaugeStock = useMemo(
@@ -472,6 +478,12 @@ export default function NewStringPage() {
     const normalizedGaugeStockTotal = normalizedGaugeInventories
       .filter((row) => !row.isSoldOut)
       .reduce((sum, row) => sum + row.stock, 0);
+    const normalizedColorInventories = colorInventories.map((row) => ({
+      ...row,
+      stock: Number.isFinite(row.stock) && row.stock >= 0 ? row.stock : 0,
+    }));
+    const colorOptions = normalizedColorInventories.map((row) => row.value);
+    const normalizedColor = colorOptions[0] ?? basicInfo.color ?? "";
 
     //  product 전체 구성
     const product = {
@@ -479,6 +491,9 @@ export default function NewStringPage() {
       gauge: normalizedGauge,
       gaugeOptions,
       gaugeInventories: normalizedGaugeInventories,
+      color: normalizedColor,
+      colorOptions,
+      colorInventories: normalizedColorInventories,
 
       // 검색 키워드 (통합 검색에서 사용)
       searchKeywords,
@@ -812,6 +827,102 @@ export default function NewStringPage() {
 
                     <div className="space-y-3 rounded-xl border border-border/60 bg-muted/20 p-4">
                       <h3 className="text-base font-semibold">구매 옵션</h3>
+                      <div className="space-y-2">
+                        <Label>색상 옵션</Label>
+                        <p className="text-sm text-muted-foreground">
+                          사용자가 상품 상세에서 선택할 수 있는 색상 옵션을 설정합니다.
+                        </p>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button type="button" variant="outline" className="w-full justify-between">
+                              <span>{colorInventories.length > 0 ? `${colorInventories.length}개 색상 선택됨` : "색상 선택"}</span>
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-[320px]">
+                            <div className="space-y-2">
+                              {colors.map((color) => {
+                                const checked = colorInventories.some((row) => row.value === color.id);
+                                return (
+                                  <label key={color.id} className="flex items-center gap-2 text-sm">
+                                    <Checkbox
+                                      checked={checked}
+                                      onCheckedChange={(nextChecked) => {
+                                        if (nextChecked) {
+                                          setColorInventories((prev) => [
+                                            ...prev,
+                                            { value: color.id, label: color.name, colorHex: color.hex, image: "", stock: 0, isSoldOut: false },
+                                          ]);
+                                          return;
+                                        }
+                                        setColorInventories((prev) => prev.filter((row) => row.value !== color.id));
+                                      }}
+                                    />
+                                    <span>{color.name}</span>
+                                  </label>
+                                );
+                              })}
+                            </div>
+                          </PopoverContent>
+                        </Popover>
+                        <div className="space-y-3 pt-2">
+                          {colorInventories.map((row) => (
+                            <div key={row.value} className="grid gap-2 rounded-md border p-3 md:grid-cols-2">
+                              <Input
+                                placeholder="색상명"
+                                value={row.label ?? ""}
+                                onChange={(e) =>
+                                  setColorInventories((prev) =>
+                                    prev.map((item) => (item.value === row.value ? { ...item, label: e.target.value } : item)),
+                                  )
+                                }
+                              />
+                              <Input
+                                placeholder="hex 값"
+                                value={row.colorHex ?? ""}
+                                onChange={(e) =>
+                                  setColorInventories((prev) =>
+                                    prev.map((item) => (item.value === row.value ? { ...item, colorHex: e.target.value } : item)),
+                                  )
+                                }
+                              />
+                              <Input
+                                className="md:col-span-2"
+                                placeholder="색상 이미지 URL"
+                                value={row.image ?? ""}
+                                onChange={(e) =>
+                                  setColorInventories((prev) =>
+                                    prev.map((item) => (item.value === row.value ? { ...item, image: e.target.value } : item)),
+                                  )
+                                }
+                              />
+                              <Input
+                                type="number"
+                                min={0}
+                                value={row.stock}
+                                onChange={(e) => {
+                                  const next = Math.max(0, Number(e.target.value) || 0);
+                                  setColorInventories((prev) => prev.map((item) => (item.value === row.value ? { ...item, stock: next } : item)));
+                                }}
+                              />
+                              <label className="flex items-center gap-2 text-sm">
+                                <Checkbox
+                                  checked={row.isSoldOut}
+                                  onCheckedChange={(checked) =>
+                                    setColorInventories((prev) =>
+                                      prev.map((item) =>
+                                        item.value === row.value
+                                          ? { ...item, isSoldOut: Boolean(checked) }
+                                          : item,
+                                      ),
+                                    )
+                                  }
+                                />
+                                품절
+                              </label>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                       <div className="space-y-2">
                         <Label>게이지 옵션(mm)</Label>
                         <p className="text-sm text-muted-foreground">

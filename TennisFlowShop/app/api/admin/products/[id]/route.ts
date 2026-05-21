@@ -6,6 +6,7 @@ import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 import type {
   AdminProductMutationResponseDto,
+  ProductColorInventory,
   ProductGaugeInventory,
   AdminProductUpdateRequestDto,
 } from "@/types/admin/products";
@@ -67,6 +68,39 @@ function normalizeGaugeInventories(value: unknown): ProductGaugeInventory[] {
     return true;
   });
 }
+function normalizeColorInventories(value: unknown): ProductColorInventory[] {
+  if (!Array.isArray(value)) return [];
+  const normalized = value
+    .map<ProductColorInventory | null>((item) => {
+      const row = asRecord(item);
+      if (!row) return null;
+      const colorValue = asString(row.value).trim();
+      if (!colorValue) return null;
+      const stockNumber = Number(row.stock);
+      const normalizedRow: ProductColorInventory = {
+        value: colorValue,
+        ...(typeof row.label === "string" && row.label.trim()
+          ? { label: row.label.trim() }
+          : {}),
+        ...(typeof row.colorHex === "string" && row.colorHex.trim()
+          ? { colorHex: row.colorHex.trim() }
+          : {}),
+        ...(typeof row.image === "string" && row.image.trim()
+          ? { image: row.image.trim() }
+          : {}),
+        stock: Number.isFinite(stockNumber) && stockNumber > 0 ? stockNumber : 0,
+        isSoldOut: asBoolean(row.isSoldOut),
+      };
+      return normalizedRow;
+    })
+    .filter((row): row is ProductColorInventory => row !== null);
+  const seen = new Set<string>();
+  return normalized.filter((row) => {
+    if (seen.has(row.value)) return false;
+    seen.add(row.value);
+    return true;
+  });
+}
 
 function toProductAuditSnapshot(doc: Record<string, unknown> | null) {
   const safe = doc ?? {};
@@ -99,6 +133,15 @@ function parseUpdateRequest(raw: unknown): AdminProductUpdateRequestDto | null {
       ? gaugeInventories.map((row) => row.value)
       : legacyGaugeOptions;
   const normalizedGauge = gaugeOptions[0] ?? asString(body.gauge);
+  const colorInventories = normalizeColorInventories(body.colorInventories);
+  const legacyColorOptions = asStringArray(body.colorOptions)
+    .map((c) => c.trim())
+    .filter((c) => c.length > 0);
+  const colorOptions =
+    colorInventories.length > 0
+      ? colorInventories.map((row) => row.value)
+      : legacyColorOptions;
+  const normalizedColor = colorOptions[0] ?? asString(body.color);
 
   return {
     name: asString(body.name),
@@ -110,7 +153,9 @@ function parseUpdateRequest(raw: unknown): AdminProductUpdateRequestDto | null {
     gauge: normalizedGauge,
     gaugeOptions,
     gaugeInventories: gaugeInventories.length > 0 ? gaugeInventories : undefined,
-    color: asString(body.color),
+    color: normalizedColor,
+    colorOptions,
+    colorInventories: colorInventories.length > 0 ? colorInventories : undefined,
     length: asString(body.length),
     mountingFee: asNumber(body.mountingFee),
     price: asNumber(body.price),
