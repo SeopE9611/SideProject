@@ -162,7 +162,7 @@ export default async function ServicesPage() {
         </div>
       </section>
 
-      <section className="py-8 bp-md:py-12" id="service-start">
+      <section className="scroll-mt-24 py-8 bp-md:scroll-mt-28 bp-md:py-12" id="service-start">
         <div className="container">
           <div className="mx-auto max-w-5xl">
             <div className="mb-5 text-center bp-md:mb-7">
@@ -366,7 +366,7 @@ export default async function ServicesPage() {
       </section>
 
       {/* 가격 안내 섹션 */}
-      <section className="py-12 bp-md:py-16 bp-lg:py-20 bg-background relative overflow-hidden" id="pricing">
+      <section className="relative overflow-hidden bg-background py-12 scroll-mt-24 bp-md:scroll-mt-28 bp-md:py-16 bp-lg:py-20" id="pricing">
         <HeroCourtBackdrop className="h-full w-full text-primary opacity-[0.10] dark:opacity-[0.12]" />
 
         <div className="container relative z-10">
