@@ -171,6 +171,13 @@ interface ApplicationDetail {
     name: string;
     mountingFee: number;
   }[];
+  meta?: {
+    selectedGauge?: string | null;
+    selectedColor?: string | null;
+    selectedColorLabel?: string | null;
+    selectedColorHex?: string | null;
+    selectedColorImage?: string | null;
+  };
 
   packageInfo?: {
     applied: boolean;
@@ -650,6 +657,9 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
   // 총 장착비 (백엔드 totalPrice 신뢰)
   const totalPrice = data.totalPrice ?? 0;
   const lineCount = Array.isArray(data.lines) ? data.lines.length : 0;
+  const selectedGauge = String(data.meta?.selectedGauge ?? '').trim();
+  const selectedColorLabel = String(data.meta?.selectedColorLabel ?? data.meta?.selectedColor ?? '').trim();
+  const selectedColorHex = String(data.meta?.selectedColorHex ?? '').trim();
 
   const groupedItemSummary = new Map<string, { id: string; name: string; price: number; quantity: number }>();
   for (const item of data.items ?? []) {
@@ -1714,6 +1724,31 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                     </div>
                     <div className="text-right text-foreground text-sm">{visitTimeLabel}</div>
                   </section>
+
+                  {(selectedGauge || selectedColorLabel) && (
+                    <section className="space-y-2 border-b border-dashed border-border pb-4">
+                      <div className="flex items-center gap-2 text-foreground">
+                        <Target className="w-5 h-5" />
+                        <span className="font-medium">옵션 정보</span>
+                      </div>
+                      <div className="space-y-1.5 text-sm text-foreground/80">
+                        {selectedGauge && <p>게이지: {selectedGauge}</p>}
+                        {selectedColorLabel && (
+                          <p className="flex items-center gap-2">
+                            <span>색상:</span>
+                            {selectedColorHex && (
+                              <span
+                                className="h-3 w-3 rounded-full border border-border"
+                                style={{ backgroundColor: selectedColorHex }}
+                                aria-hidden="true"
+                              />
+                            )}
+                            <span>{selectedColorLabel}</span>
+                          </p>
+                        )}
+                      </div>
+                    </section>
+                  )}
 
                   {/* 섹션 2: 라켓별 장착 정보 */}
                   {Array.isArray(data.lines) && data.lines.length > 0 && (
