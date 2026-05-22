@@ -117,7 +117,7 @@ export default async function Page({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ period?: string; stringId?: string; selectedGauge?: string; gauge?: string }>;
+  searchParams: Promise<{ period?: string; stringId?: string; selectedGauge?: string; gauge?: string; selectedColor?: string; color?: string }>;
 }) {
   const [{ id }, s] = await Promise.all([params, searchParams]);
   const rawPeriod = Number((s?.period as string | undefined) ?? NaN);
@@ -127,6 +127,10 @@ export default async function Page({
   const selectedGauge =
     (s?.selectedGauge as string | undefined) ??
     (s?.gauge as string | undefined) ??
+    "";
+  const selectedColor =
+    (s?.selectedColor as string | undefined) ??
+    (s?.color as string | undefined) ??
     "";
 
   // 비회원 주문(대여) 차단 정책(서버)
@@ -153,5 +157,5 @@ export default async function Page({
   const data = await getInitialForRacket(id, period, stringId);
   if (!data) notFound();
 
-  return <RentalsCheckoutClient initial={data} selectedGauge={selectedGauge} />;
+  return <RentalsCheckoutClient initial={data} selectedGauge={selectedGauge} selectedColor={selectedColor} />;
 }

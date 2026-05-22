@@ -52,6 +52,10 @@ export type RentalCreatePayload = {
     requested?: boolean;
     stringId?: string;
     selectedGauge?: string;
+    selectedColor?: string;
+    selectedColorLabel?: string;
+    selectedColorHex?: string;
+    selectedColorImage?: string;
   };
   stringingApplicationInput?: unknown;
 };
@@ -189,6 +193,10 @@ export async function createRentalOrderCore(params: {
     mountingFee: number;
     image: string | null;
     selectedGauge?: string;
+    selectedColor?: string;
+    selectedColorLabel?: string;
+    selectedColorHex?: string;
+    selectedColorImage?: string;
     requestedAt: Date;
   } = null;
 
@@ -198,6 +206,22 @@ export async function createRentalOrderCore(params: {
     const selectedGauge =
       typeof stringing?.selectedGauge === "string" && stringing.selectedGauge.trim()
         ? stringing.selectedGauge.trim()
+        : undefined;
+    const selectedColor =
+      typeof stringing?.selectedColor === "string" && stringing.selectedColor.trim()
+        ? stringing.selectedColor.trim()
+        : undefined;
+    const selectedColorLabel =
+      typeof stringing?.selectedColorLabel === "string" && stringing.selectedColorLabel.trim()
+        ? stringing.selectedColorLabel.trim()
+        : undefined;
+    const selectedColorHex =
+      typeof stringing?.selectedColorHex === "string" && stringing.selectedColorHex.trim()
+        ? stringing.selectedColorHex.trim()
+        : undefined;
+    const selectedColorImage =
+      typeof stringing?.selectedColorImage === "string" && stringing.selectedColorImage.trim()
+        ? stringing.selectedColorImage.trim()
         : undefined;
     if (!sid || !ObjectId.isValid(sid)) throw new Error("BAD_STRING_ID");
 
@@ -215,6 +239,9 @@ export async function createRentalOrderCore(params: {
             images: 1,
             gaugeOptions: 1,
             gaugeInventories: 1,
+            color: 1,
+            colorOptions: 1,
+            colorInventories: 1,
           },
         },
       );
@@ -229,6 +256,23 @@ export async function createRentalOrderCore(params: {
     const hasGaugeSelection =
       gaugeOptions.length > 0 || gaugeInventories.length > 0;
 
+
+    const colorInventories = Array.isArray((s as any).colorInventories)
+      ? (s as any).colorInventories
+      : [];
+    const hasManagedColorInventories = colorInventories.length > 0;
+
+    if (selectedColor && hasManagedColorInventories) {
+      const selectedColorInventory = colorInventories.find(
+        (row: any) => String(row?.value ?? "").trim() === selectedColor,
+      );
+      if (!selectedColorInventory) throw new Error("COLOR_NOT_FOUND");
+      if (selectedColorInventory?.isSoldOut === true) throw new Error("COLOR_SOLD_OUT");
+      const currentColorStock = Number(selectedColorInventory?.stock ?? 0);
+      if (!Number.isFinite(currentColorStock) || currentColorStock < stringQuantity) {
+        throw new Error("COLOR_INSUFFICIENT_STOCK");
+      }
+    }
     if (hasGaugeSelection && !selectedGauge) {
       throw new Error("GAUGE_REQUIRED");
     }
@@ -265,6 +309,10 @@ export async function createRentalOrderCore(params: {
       mountingFee: Number((s as any).mountingFee ?? 0),
       image: firstImg,
       ...(selectedGauge ? { selectedGauge } : {}),
+      ...(selectedColor ? { selectedColor } : {}),
+      ...(selectedColorLabel ? { selectedColorLabel } : {}),
+      ...(selectedColorHex ? { selectedColorHex } : {}),
+      ...(selectedColorImage ? { selectedColorImage } : {}),
       requestedAt: new Date(),
     };
   }
@@ -381,31 +429,34 @@ export async function createRentalOrderCore(params: {
         const rentalIdStr = String(res.insertedId);
 
         if (stringingSnap?.requested) {
-          if (stringingSnap.selectedGauge) {
+          if (stringingSnap.selectedGauge || stringingSnap.selectedColor) {
             const stringQuantity = 1;
-            const stockUpdateResult = await db.collection("products").updateOne(
-              {
-                _id: stringingSnap.stringId,
-                "inventory.stock": { $gte: stringQuantity },
-                gaugeInventories: {
-                  $elemMatch: {
-                    value: stringingSnap.selectedGauge,
-                    isSoldOut: { $ne: true },
-                    stock: { $gte: stringQuantity },
-                  },
+            if (stringingSnap.selectedGauge && stringingSnap.selectedColor) {
+              const stockUpdateResult = await db.collection("products").updateOne(
+                {
+                  _id: stringingSnap.stringId,
+                  "inventory.stock": { $gte: stringQuantity },
+                  gaugeInventories: { $elemMatch: { value: stringingSnap.selectedGauge, isSoldOut: { $ne: true }, stock: { $gte: stringQuantity } } },
+                  colorInventories: { $elemMatch: { value: stringingSnap.selectedColor, isSoldOut: { $ne: true }, stock: { $gte: stringQuantity } } },
                 },
-              },
-              {
-                $inc: {
-                  "gaugeInventories.$.stock": -stringQuantity,
-                  "inventory.stock": -stringQuantity,
-                  sold: stringQuantity,
-                },
-              },
-              { session },
-            );
-            if (stockUpdateResult.modifiedCount !== 1) {
-              throw new Error("GAUGE_STOCK_UPDATE_FAILED");
+                { $inc: { "gaugeInventories.$[g].stock": -stringQuantity, "colorInventories.$[c].stock": -stringQuantity, "inventory.stock": -stringQuantity, sold: stringQuantity } },
+                { session, arrayFilters: [{ "g.value": stringingSnap.selectedGauge }, { "c.value": stringingSnap.selectedColor }] },
+              );
+              if (stockUpdateResult.modifiedCount !== 1) throw new Error("GAUGE_STOCK_UPDATE_FAILED");
+            } else if (stringingSnap.selectedGauge) {
+              const stockUpdateResult = await db.collection("products").updateOne(
+                { _id: stringingSnap.stringId, "inventory.stock": { $gte: stringQuantity }, gaugeInventories: { $elemMatch: { value: stringingSnap.selectedGauge, isSoldOut: { $ne: true }, stock: { $gte: stringQuantity } } } },
+                { $inc: { "gaugeInventories.$.stock": -stringQuantity, "inventory.stock": -stringQuantity, sold: stringQuantity } },
+                { session },
+              );
+              if (stockUpdateResult.modifiedCount !== 1) throw new Error("GAUGE_STOCK_UPDATE_FAILED");
+            } else if (stringingSnap.selectedColor) {
+              const stockUpdateResult = await db.collection("products").updateOne(
+                { _id: stringingSnap.stringId, "inventory.stock": { $gte: stringQuantity }, colorInventories: { $elemMatch: { value: stringingSnap.selectedColor, isSoldOut: { $ne: true }, stock: { $gte: stringQuantity } } } },
+                { $inc: { "colorInventories.$.stock": -stringQuantity, "inventory.stock": -stringQuantity, sold: stringQuantity } },
+                { session },
+              );
+              if (stockUpdateResult.modifiedCount !== 1) throw new Error("COLOR_STOCK_UPDATE_FAILED");
             }
           }
 
