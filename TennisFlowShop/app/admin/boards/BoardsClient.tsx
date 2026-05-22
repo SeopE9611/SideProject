@@ -565,7 +565,7 @@ export default function BoardsClient() {
                       size="sm"
                       disabled={selectedPostIds.length === 0}
                       onClick={deleteSelectedPosts}
-                      className="gap-1"
+                      className="gap-1 whitespace-nowrap min-h-[40px]"
                     >
                       <Trash2 className="h-4 w-4" /> 선택 삭제
                     </Button>
@@ -750,7 +750,7 @@ export default function BoardsClient() {
                                     variant="outline"
                                     size="sm"
                                     onClick={() => togglePostVisibility(p)}
-                                    className="gap-2 shrink-0"
+                                    className="gap-2 shrink-0 whitespace-nowrap min-h-[40px]"
                                   >
                                     {p.status === "public" ? (
                                       <>

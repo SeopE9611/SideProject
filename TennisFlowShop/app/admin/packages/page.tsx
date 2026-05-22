@@ -603,10 +603,10 @@ export default function PackageOrdersClient() {
     "sticky top-0 z-10 whitespace-nowrap px-1.5 py-1.5 text-center align-middle " +
     "bg-card backdrop-blur supports-[backdrop-filter]:bg-card dark:supports-[backdrop-filter]:bg-card " +
     "border-b border-border text-foreground " +
-    "font-semibold text-[11px] leading-[1.05] box-border";
+    "font-semibold text-xs leading-tight box-border";
 
   const tdClasses =
-    "px-3 py-2 align-middle text-center text-[11px] leading-tight tabular-nums";
+    "px-3 py-2 align-middle text-center text-xs leading-tight tabular-nums";
 
   // 열별 정렬
   const col = {

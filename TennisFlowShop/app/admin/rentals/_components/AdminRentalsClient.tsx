@@ -445,7 +445,7 @@ export default function AdminRentalsClient() {
       <Card className={cn("mb-5 px-6 py-5", adminSurface.filterCard)}>
         <CardHeader className="pb-3">
           <CardTitle>필터 및 검색</CardTitle>
-          <CardDescription className="text-xs">대여 상태와 날짜로 필터링하거나 대여 ID, 고객명, 이메일, 브랜드, 모델로 검색하세요.</CardDescription>
+          <CardDescription className="text-sm leading-relaxed break-keep">대여 상태와 날짜로 필터링하거나 대여 ID, 고객명, 이메일, 브랜드, 모델로 검색하세요.</CardDescription>
         </CardHeader>
 
         <CardContent className="space-y-3">
@@ -793,7 +793,7 @@ export default function AdminRentalsClient() {
                                 </p>
                                 <p className="mt-1 text-sm text-foreground/75">수령 방법: {pickup.label}</p>
                                 <p className="mt-1 text-sm text-foreground/75">{settlement.label}</p>
-                                {warnMissingApp && <p className="mt-2 text-[11px] text-primary">주의: 교체서비스 포함인데 신청서 연결이 없습니다.</p>}
+                                {warnMissingApp && <p className="mt-2 text-xs leading-relaxed break-keep text-primary">주의: 교체서비스 포함인데 신청서 연결이 없습니다.</p>}
 
                                 {/* 신청서 연결이 있으면 툴팁에서 바로 이동 링크 제공 */}
                                 {r.stringingApplicationId && (
