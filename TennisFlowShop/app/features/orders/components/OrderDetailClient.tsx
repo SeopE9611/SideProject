@@ -150,7 +150,15 @@ interface OrderDetail {
     source?: string | null;
   } | null;
   total: number;
-  items: Array<{ name: string; quantity: number; price: number; selectedGauge?: string }>;
+  items: Array<{
+    name: string;
+    quantity: number;
+    price: number;
+    selectedGauge?: string;
+    selectedColor?: string;
+    selectedColorLabel?: string;
+    selectedColorHex?: string;
+  }>;
   history: Array<any>; // initialData용 (하지만 useSWRInfinite로 실제 이력 사용)
   cancelReason?: string;
   cancelReasonDetail?: string;
@@ -2017,6 +2025,19 @@ export default function OrderDetailClient({ orderId }: Props) {
                           수량: {item.quantity}개
                         </p>
                         {item.selectedGauge && <p className="text-xs text-foreground/70">게이지: {formatGaugeLabel(item.selectedGauge)}</p>}
+                        {(item.selectedColorLabel || item.selectedColor) && (
+                          <p className="flex items-center gap-2 text-xs text-foreground/70">
+                            <span>색상:</span>
+                            {item.selectedColorHex && (
+                              <span
+                                className="h-3 w-3 rounded-full border border-border"
+                                style={{ backgroundColor: item.selectedColorHex }}
+                                aria-hidden="true"
+                              />
+                            )}
+                            <span>{item.selectedColorLabel || item.selectedColor}</span>
+                          </p>
+                        )}
                       </div>
                       <div className="text-right">
                         <p className="font-semibold text-foreground">
