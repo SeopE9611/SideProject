@@ -371,6 +371,9 @@ export default function CartPageClient() {
     if (bundleStringItem.selectedGauge) {
       params.set("selectedGauge", bundleStringItem.selectedGauge);
     }
+    if (bundleStringItem.selectedColor) {
+      params.set("selectedColor", bundleStringItem.selectedColor);
+    }
 
     return `/rackets/${bundleRacketItem.id}/select-string?${params.toString()}`;
   }, [
