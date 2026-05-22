@@ -1272,7 +1272,6 @@ export default function NewStringPage() {
                         {colorInventories.map((row) => {
                           const colorMeta = colors.find((c) => c.id === row.value);
                           const resolvedHex = colorMeta?.hex ?? row.colorHex ?? "";
-                          const isLegacyImage = Boolean(row.image) && !images.includes(row.image as string);
                           return (
                             <div key={row.value} className="space-y-3 rounded-lg border border-border/70 bg-muted/10 p-4">
                               <div className="flex items-center gap-2 text-sm font-semibold">
@@ -1296,7 +1295,6 @@ export default function NewStringPage() {
                                     이미지 제거
                                   </Button>
                                 </div>
-                                {isLegacyImage && <p className="text-xs text-muted-foreground">기존 연결 이미지 유지 중입니다.</p>}
                               </div>
                               <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                                 <div className="flex items-center gap-2">
