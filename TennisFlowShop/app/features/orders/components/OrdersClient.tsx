@@ -566,12 +566,59 @@ export default function OrdersClient() {
       {/* 제목 및 설명 */}
       <div className="mx-auto max-w-[1440px]">
         <AdminPageHeader
-          title="주문·교체서비스 처리"
-          description="주문과 교체서비스 신청을 한 화면에서 확인하고, 처리할 항목을 빠르게 찾습니다."
+          title="주문 관리"
+          description="결제 확인, 배송정보 등록, 취소 요청, 교체서비스 포함 주문을 한 곳에서 확인합니다."
           icon={PackageSearch}
-          helperText="같은 색 테두리는 같은 고객 흐름입니다."
+          helperText="운영 통합 센터에서 우선순위를 확인한 뒤, 이 화면에서 주문별 상세 처리를 진행하세요."
         />
       </div>
+
+      <Card className={cn("mb-4 px-4 py-4 lg:px-5", adminSurface.filterCard)}>
+        <CardHeader className="pb-2 pt-1">
+          <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+            <div className="space-y-1">
+              <CardTitle className="text-base">업무 가이드</CardTitle>
+              <CardDescription className="text-sm leading-relaxed break-keep">
+                주문 목록을 보기 전에 우선순위를 빠르게 확인하고, 상세 처리는 각 주문 상세 화면에서 진행하세요.
+              </CardDescription>
+            </div>
+            <Link
+              href="/admin/operations"
+              className="inline-flex h-9 items-center justify-center rounded-md border border-border bg-background px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            >
+              오늘 처리할 일 보기
+            </Link>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-1">
+          <div className="grid gap-2 md:grid-cols-2">
+            <div className="rounded-md border border-border/70 bg-card px-3 py-2.5">
+              <p className="text-sm font-medium">결제 확인 필요</p>
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground break-keep">
+                결제 대기·결제 확인 항목을 우선 확인해 출고 지연을 줄입니다.
+              </p>
+            </div>
+            <div className="rounded-md border border-border/70 bg-card px-3 py-2.5">
+              <p className="text-sm font-medium">배송정보 등록</p>
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground break-keep">
+                운송장 번호와 배송 상태를 최신으로 유지해 CS 문의를 줄입니다.
+              </p>
+            </div>
+            <div className="rounded-md border border-border/70 bg-card px-3 py-2.5">
+              <p className="text-sm font-medium">취소/환불 요청</p>
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground break-keep">
+                요청 상태와 환불 계좌 확인 여부를 함께 보고 승인 대기 건을 처리하세요.
+              </p>
+            </div>
+            <div className="rounded-md border border-border/70 bg-card px-3 py-2.5">
+              <p className="text-sm font-medium">교체서비스 포함 주문 확인</p>
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground break-keep">
+                주문·신청서 통합 흐름을 함께 확인해 누락 없는 작업 순서를 맞추세요.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* 필터 및 검색 카드 */}
       <Card className={cn("mb-4 px-4 py-4 lg:px-5", adminSurface.filterCard)}>
