@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, type FormEvent, type KeyboardEvent } from "react";
 import useSWR from "swr";
@@ -208,10 +209,49 @@ export default function AcademyApplicationsClient() {
     <div className="space-y-5 px-4 py-6 sm:px-6 lg:px-8">
       <AdminPageHeader
         title="아카데미 신청 관리"
-        description="레슨 신청 내역을 확인하고 상담/등록 상태를 관리합니다."
+        description="수강 신청 접수, 상담 상태, 등록 확정 여부를 한 곳에서 확인합니다."
         icon={BookOpen}
         scope="도깨비테니스 아카데미"
+        helperText="신청 접수 확인 → 상담·검토 진행 → 등록 확정 관리 → 모집 상태 확인 순서로 운영하세요."
       />
+
+      <Card className={cn(adminSurface.card, "border-dashed")}>
+        <CardContent className="space-y-4 pt-5">
+          <div className="grid gap-2.5 text-sm sm:grid-cols-2 lg:grid-cols-4">
+            <div className="rounded-lg border bg-muted/20 px-3 py-2.5">
+              <p className="font-medium text-foreground">1) 신청 접수 확인</p>
+              <p className="mt-1 leading-relaxed break-keep text-muted-foreground">
+                신규 신청의 기본 정보와 접수 시점을 우선 확인합니다.
+              </p>
+            </div>
+            <div className="rounded-lg border bg-muted/20 px-3 py-2.5">
+              <p className="font-medium text-foreground">2) 상담·검토 진행</p>
+              <p className="mt-1 leading-relaxed break-keep text-muted-foreground">
+                레슨 목적과 가능 일정을 점검하며 상담 상태를 관리합니다.
+              </p>
+            </div>
+            <div className="rounded-lg border bg-muted/20 px-3 py-2.5">
+              <p className="font-medium text-foreground">3) 등록 확정 관리</p>
+              <p className="mt-1 leading-relaxed break-keep text-muted-foreground">
+                정원 및 상담 결과를 기준으로 등록 확정 여부를 반영합니다.
+              </p>
+            </div>
+            <div className="rounded-lg border bg-muted/20 px-3 py-2.5">
+              <p className="font-medium text-foreground">4) 모집 상태 확인</p>
+              <p className="mt-1 leading-relaxed break-keep text-muted-foreground">
+                클래스 모집·마감 상태와 신청 처리 현황을 함께 확인합니다.
+              </p>
+            </div>
+          </div>
+
+          <Link
+            href="/admin/academy"
+            className="inline-flex text-sm font-medium leading-relaxed text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          >
+            아카데미 허브로 돌아가기
+          </Link>
+        </CardContent>
+      </Card>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
         <SummaryCard label="전체" value={counts.all} active={status === "all"} />
