@@ -1422,7 +1422,30 @@ export default function ProductEditClient({
                                   {images.map((imageUrl, index) => <SelectItem key={imageUrl} value={imageUrl}>{index === 0 ? "대표 이미지" : `이미지 ${index + 1}`}</SelectItem>)}
                                 </SelectContent>
                               </Select>
-                              {isLegacyImage && <p className="text-xs text-muted-foreground">기존 연결 이미지 유지 중입니다.</p>}
+                              {isLegacyImage && (
+                                <div className="flex items-center gap-2">
+                                  <p className="text-xs text-muted-foreground">
+                                    기존 연결 이미지 유지 중입니다.
+                                  </p>
+                                  <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="outline"
+                                    className="h-7 px-2 text-xs"
+                                    onClick={() =>
+                                      setColorInventories((prev) =>
+                                        prev.map((item) =>
+                                          item.value === row.value
+                                            ? { ...item, image: "" }
+                                            : item,
+                                        ),
+                                      )
+                                    }
+                                  >
+                                    연결 해제
+                                  </Button>
+                                </div>
+                              )}
                             </div>
                             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                               <div className="flex items-center gap-2">
