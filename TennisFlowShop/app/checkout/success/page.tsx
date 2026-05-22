@@ -30,10 +30,21 @@ type PopulatedItem = {
   price: number;
   quantity: number;
   selectedGauge?: string;
+  selectedColor?: string;
+  selectedColorLabel?: string;
+  selectedColorHex?: string;
 };
 
 type NumericLike = number | string | null | undefined;
-type OrderItemLike = { name?: string; price?: NumericLike; quantity?: NumericLike; selectedGauge?: string } | null | undefined;
+type OrderItemLike = {
+  name?: string;
+  price?: NumericLike;
+  quantity?: NumericLike;
+  selectedGauge?: string;
+  selectedColor?: string;
+  selectedColorLabel?: string;
+  selectedColorHex?: string;
+} | null | undefined;
 
 type StringingSummary = {
   lineCount: number;
@@ -402,6 +413,9 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
       price: Number.isFinite(price) ? price : 0,
       quantity,
       selectedGauge: typeof it?.selectedGauge === 'string' ? it.selectedGauge : undefined,
+      selectedColor: typeof it?.selectedColor === 'string' ? it.selectedColor : undefined,
+      selectedColorLabel: typeof it?.selectedColorLabel === 'string' ? it.selectedColorLabel : undefined,
+      selectedColorHex: typeof it?.selectedColorHex === 'string' ? it.selectedColorHex : undefined,
     };
   });
 
@@ -649,6 +663,19 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                             <p className="text-sm text-muted-foreground">수량: {itemQuantity}개</p>
                             {item.selectedGauge && (
                               <p className="text-xs text-muted-foreground">선택 옵션: 게이지 {formatGaugeLabel(item.selectedGauge)}</p>
+                            )}
+                            {(item.selectedColorLabel || item.selectedColor) && (
+                              <p className="flex items-center gap-2 text-xs text-muted-foreground">
+                                <span>선택 옵션: 색상</span>
+                                {item.selectedColorHex && (
+                                  <span
+                                    className="h-3 w-3 rounded-full border border-border"
+                                    style={{ backgroundColor: item.selectedColorHex }}
+                                    aria-hidden="true"
+                                  />
+                                )}
+                                <span>{item.selectedColorLabel || item.selectedColor}</span>
+                              </p>
                             )}
                           </div>
                           <div className="text-right">

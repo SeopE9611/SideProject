@@ -106,6 +106,9 @@ interface OrderItem {
   price: number;
   imageUrl?: string | null;
   selectedGauge?: string;
+  selectedColor?: string;
+  selectedColorLabel?: string;
+  selectedColorHex?: string;
   mountingFee?: number; // 장착 서비스 대상 스트링이면 서버에서 내려오는 필드 (없으면 undefined)
   isMountableString?: boolean;
 }
@@ -1593,6 +1596,19 @@ export default function OrderDetailClient({
                         수량: {item.quantity}개
                       </p>
                       {item.selectedGauge && <p className="text-xs text-foreground/70">게이지: {formatGaugeLabel(item.selectedGauge)}</p>}
+                      {(item.selectedColorLabel || item.selectedColor) && (
+                        <p className="flex items-center gap-2 text-xs text-foreground/70">
+                          <span>색상:</span>
+                          {item.selectedColorHex && (
+                            <span
+                              className="h-3 w-3 rounded-full border border-border"
+                              style={{ backgroundColor: item.selectedColorHex }}
+                              aria-hidden="true"
+                            />
+                          )}
+                          <span>{item.selectedColorLabel || item.selectedColor}</span>
+                        </p>
+                      )}
                     </div>
 
                     {/* 가격 및 소계 */}
