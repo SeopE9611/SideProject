@@ -201,6 +201,9 @@ export default function StringServiceApplyPage() {
   const selectedGaugeParam =
     searchParams.get("selectedGauge") ?? searchParams.get("gauge") ?? "";
   const normalizedSelectedGauge = selectedGaugeParam.trim() || "";
+  const selectedColorParam =
+    searchParams.get("selectedColor") ?? searchParams.get("color") ?? "";
+  const normalizedSelectedColor = selectedColorParam.trim() || "";
 
   // 이 주문에 연결된 스트링 서비스 슬롯 정보 (있을 때만 사용)
   const orderStringService = (order as any)?.stringService as
@@ -464,6 +467,10 @@ export default function StringServiceApplyPage() {
           isOrderBased && selectedStringProductIdFromQuery
             ? normalizedSelectedGauge || prev.selectedGauge || ""
             : prev.selectedGauge,
+        selectedColor:
+          isOrderBased && selectedStringProductIdFromQuery
+            ? normalizedSelectedColor || prev.selectedColor || ""
+            : prev.selectedColor,
       };
 
       return {
@@ -480,6 +487,10 @@ export default function StringServiceApplyPage() {
           isOrderBased && selectedStringProductIdFromQuery
             ? normalizedSelectedGauge || prev.selectedGauge || ""
             : prev.selectedGauge,
+        selectedColor:
+          isOrderBased && selectedStringProductIdFromQuery
+            ? normalizedSelectedColor || prev.selectedColor || ""
+            : prev.selectedColor,
       };
     });
     setFromPDP(true);
@@ -1152,6 +1163,8 @@ export default function StringServiceApplyPage() {
       })),
       stringTypes: formData.stringTypes,
       selectedGauge: formData.selectedGauge || undefined,
+      selectedColor:
+        formData.stringTypes.length > 0 ? formData.selectedColor || undefined : undefined,
       linesCount: linesForSubmit.length,
       fromPDP,
     });
@@ -1515,6 +1528,8 @@ export default function StringServiceApplyPage() {
       racketType: formData.racketType,
       stringTypes: formData.stringTypes,
       selectedGauge: formData.selectedGauge || undefined,
+      selectedColor:
+        formData.stringTypes.length > 0 ? formData.selectedColor || undefined : undefined,
       customStringName: formData.stringTypes.includes("custom")
         ? formData.customStringType
         : null,
@@ -1923,6 +1938,7 @@ export default function StringServiceApplyPage() {
                   {formData.selectedGauge && formData.stringTypes.length > 0 ? (
                     <div className="mt-3 mb-4 rounded-md border border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
                       게이지: {formatGaugeLabel(formData.selectedGauge)}
+                      {formData.selectedColor ? ` · 색상: ${formData.selectedColor}` : ""}
                     </div>
                   ) : null}
 

@@ -322,6 +322,55 @@ async function restoreStringingGaugeStockIfNeeded(db: any, appDoc: any, now: Dat
   };
 }
 
+async function restoreStringingColorStockIfNeeded(db: any, appDoc: any, now: Date, restoreReason = 'cancel_approved') {
+  const selectedColor =
+    typeof appDoc?.meta?.selectedColor === 'string' && appDoc.meta.selectedColor.trim()
+      ? appDoc.meta.selectedColor.trim()
+      : undefined;
+  const hasDeducted = Boolean(appDoc?.meta?.colorStockDeductedAt);
+  const alreadyRestored = Boolean(appDoc?.meta?.colorStockRestoredAt);
+  if (!hasDeducted || alreadyRestored || !selectedColor) {
+    return { restored: false, skippedReason: 'not_required', setFields: {} as Record<string, unknown> };
+  }
+
+  const stringProductObjectId = pickStringProductObjectIdFromApplicationDoc(appDoc);
+  if (!stringProductObjectId) {
+    return { restored: false, skippedReason: 'missing_product_id', setFields: {} as Record<string, unknown> };
+  }
+  const hasGaugeDeducted = Boolean(appDoc?.meta?.gaugeStockDeductedAt);
+  const restoreResult = await db.collection('products').updateOne(
+    {
+      _id: stringProductObjectId,
+      'colorInventories.value': selectedColor,
+      ...(hasGaugeDeducted ? {} : { sold: { $gte: 1 } }),
+    },
+    {
+      $inc: hasGaugeDeducted
+        ? { 'colorInventories.$.stock': 1 }
+        : { 'colorInventories.$.stock': 1, 'inventory.stock': 1, sold: -1 },
+    },
+  );
+  if (!restoreResult.matchedCount || !restoreResult.modifiedCount) {
+    return {
+      restored: false,
+      skippedReason: 'restore_failed',
+      errorResponse: NextResponse.json(
+        { error: '스트링 색상 재고 복구에 실패했습니다.', code: 'COLOR_STOCK_RESTORE_FAILED' },
+        { status: 409 },
+      ),
+      setFields: {} as Record<string, unknown>,
+    };
+  }
+  return {
+    restored: true,
+    skippedReason: null,
+    setFields: {
+      'meta.colorStockRestoredAt': now,
+      'meta.colorStockRestoreReason': restoreReason,
+    } as Record<string, unknown>,
+  };
+}
+
 // ================= GET (단일 신청서 조회) =================
 export async function handleGetStringingApplication(req: Request, id: string) {
   const client = await clientPromise;
@@ -988,8 +1037,11 @@ export async function handleUpdateApplicationStatus(req: Request, context: { par
   };
 
   // 상태 + 이력 함께 업데이트
+  const colorRestore =
+    status === '취소' ? await restoreStringingColorStockIfNeeded(db, beforeAppDoc, now, 'status_changed_to_cancel') : { setFields: {} };
+  if ((colorRestore as any).errorResponse) return (colorRestore as any).errorResponse;
   const updateOps: any = {
-    $set: { status, ...(gaugeRestore.setFields ?? {}) },
+    $set: { status, ...(gaugeRestore.setFields ?? {}), ...((colorRestore as any).setFields ?? {}) },
     $push: { history: { $each: [historyEntry] } },
   };
 
@@ -1264,9 +1316,11 @@ export async function handleStringingCancelApprove(req: Request, { params }: { p
 
     const now = new Date();
     const gaugeRestore = await restoreStringingGaugeStockIfNeeded(db, appDoc, now);
+    const colorRestore = await restoreStringingColorStockIfNeeded(db, appDoc, now);
     if (gaugeRestore.errorResponse) {
       return gaugeRestore.errorResponse;
     }
+    if (colorRestore.errorResponse) return colorRestore.errorResponse;
 
     // 히스토리 한 줄 구성
     const historyEntry: HistoryRecord = {
@@ -1292,6 +1346,7 @@ export async function handleStringingCancelApprove(req: Request, { params }: { p
         'cancelRequest.status': 'approved',
         'cancelRequest.approvedAt': now,
         ...gaugeRestore.setFields,
+        ...colorRestore.setFields,
       },
       $push: { history: historyEntry as any },
     } as any);
@@ -1342,7 +1397,11 @@ export async function handleStringingCancelApprove(req: Request, { params }: { p
       status: 'approved',
     });
 
-    return NextResponse.json({ success: true, gaugeStockRestore: gaugeRestore.restored ? 'restored' : gaugeRestore.skippedReason });
+    return NextResponse.json({
+      success: true,
+      gaugeStockRestore: gaugeRestore.restored ? 'restored' : gaugeRestore.skippedReason,
+      colorStockRestore: colorRestore.restored ? 'restored' : colorRestore.skippedReason,
+    });
   } catch (error) {
     console.error('[handleStringingCancelApprove] error', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
@@ -2023,9 +2082,11 @@ export async function handleApplicationCancelApprove(req: Request, { params }: {
 
     const now = new Date();
     const gaugeRestore = await restoreStringingGaugeStockIfNeeded(db, existing, now);
+    const colorRestore = await restoreStringingColorStockIfNeeded(db, existing, now);
     if (gaugeRestore.errorResponse) {
       return gaugeRestore.errorResponse;
     }
+    if (colorRestore.errorResponse) return colorRestore.errorResponse;
 
     const updatedCancelRequest = {
       ...currentCancel,
@@ -2044,6 +2105,7 @@ export async function handleApplicationCancelApprove(req: Request, { params }: {
         cancelRequest: updatedCancelRequest,
         status: '취소', // 신청 자체 상태를 "취소"로 전환
         ...gaugeRestore.setFields,
+        ...colorRestore.setFields,
       },
       $push: { history: historyEntry },
     } as any);
@@ -2058,7 +2120,11 @@ export async function handleApplicationCancelApprove(req: Request, { params }: {
       }
     }
 
-    return NextResponse.json({ ok: true, gaugeStockRestore: gaugeRestore.restored ? 'restored' : gaugeRestore.skippedReason });
+    return NextResponse.json({
+      ok: true,
+      gaugeStockRestore: gaugeRestore.restored ? 'restored' : gaugeRestore.skippedReason,
+      colorStockRestore: colorRestore.restored ? 'restored' : colorRestore.skippedReason,
+    });
   } catch (err) {
     console.error('POST /api/applications/stringing/[id]/cancel-approve 오류:', err);
     return new NextResponse('서버 오류가 발생했습니다.', { status: 500 });
