@@ -87,7 +87,7 @@ const fmt = (v: string | Date) =>
     .replace(/\.$/, "");
 const supportCardHeaderClass = "flex-row items-center justify-between gap-2 space-y-0 bg-muted/30 border-b p-3 sm:p-4";
 const supportCardHeaderTitleClass = "flex min-w-0 items-center gap-2";
-const supportCardHeaderActionClass = "flex shrink-0 items-center gap-1";
+const supportCardHeaderActionClass = "flex shrink-0 items-center gap-1.5";
 const supportMobileTitleClampClass = "min-w-0 flex-1 line-clamp-2 text-sm font-semibold leading-snug sm:line-clamp-1 sm:text-base";
 const supportMobileMetaWrapClass = "flex flex-wrap items-center gap-x-3.5 gap-y-1 text-xs text-muted-foreground";
 const supportMobileActionBadgeWrapClass = "shrink-0 self-start";
@@ -168,9 +168,9 @@ function SupportEntryCard({ icon: Icon, title, description, actions }: SupportEn
           </div>
         </div>
       </CardHeader>
-      <CardContent className="mt-auto flex flex-wrap gap-2 px-4 pb-4 pt-0 sm:px-5 sm:pb-5">
+      <CardContent className="mt-auto flex flex-wrap gap-2.5 px-4 pb-4 pt-0 sm:px-5 sm:pb-5">
         {actions.map((action) => (
-          <Button key={action.href} asChild size="sm" variant={action.variant ?? "outline"} className="whitespace-nowrap">
+          <Button key={action.href} asChild size="sm" variant={action.variant ?? "outline"} className="min-h-10 whitespace-nowrap">
             <Link href={action.href}>{action.label}</Link>
           </Button>
         ))}
@@ -500,7 +500,7 @@ export default function SupportPage() {
             </div>
             <h1 className="break-keep text-3xl font-bold tracking-normal text-foreground md:text-4xl">무엇을 도와드릴까요?</h1>
           </div>
-          <p className="mx-auto max-w-2xl break-keep text-sm text-muted-foreground md:text-base">고객센터는 공지사항, 이벤트, Q&A 문의, 매장/예약 안내, 주문/서비스 문의를 확인하는 공간입니다.</p>
+          <p className="mx-auto max-w-2xl break-keep text-sm leading-relaxed text-muted-foreground md:text-base">고객센터는 공지사항, 이벤트, Q&A 문의, 매장/예약 안내, 주문/서비스 문의를 확인하는 공간입니다.</p>
         </div>
 
         <section aria-labelledby="support-entry-title" className="space-y-3">
@@ -508,7 +508,7 @@ export default function SupportPage() {
             <h2 id="support-entry-title" className="break-keep text-xl font-semibold text-foreground">
               문의·확인 목적별 바로가기
             </h2>
-            <p className="break-keep text-sm text-muted-foreground">상황에 맞는 메뉴를 선택하면 더 빠르게 확인하거나 문의할 수 있어요.</p>
+            <p className="break-keep text-sm leading-relaxed text-muted-foreground">상황에 맞는 메뉴를 선택하면 더 빠르게 확인하거나 문의할 수 있어요.</p>
           </div>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             {supportEntryCards.map((card) => (

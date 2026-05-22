@@ -112,8 +112,8 @@ const fmtDateTime = (v: string | Date) =>
     .replace(/\.\s/g, ".")
     .replace(/\.$/, "");
 
-const boardListMobileTitleClampClass = "line-clamp-2 font-medium leading-snug text-foreground";
-const boardListMobileMetaWrapClass = "mt-1.5 flex flex-wrap items-center justify-between gap-2 text-xs text-foreground/75";
+const boardListMobileTitleClampClass = "line-clamp-2 break-keep font-medium leading-snug text-foreground";
+const boardListMobileMetaWrapClass = "mt-2 flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5 text-xs leading-relaxed text-foreground/75";
 
 // 판매상태 배지 variant 매핑
 function saleStatusBadgeVariant(status?: string | null): "success" | "warning" | "neutral" {
@@ -1293,7 +1293,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                     const isSold = post.marketMeta?.saleStatus === "sold";
 
                     return isMarket ? (
-                      <Link key={post.id} href={buildDetailHref(post.postNo ?? post.id)} className={["block rounded-lg border border-border bg-card px-3 py-3 transition-colors active:bg-muted/30", isSold ? "opacity-45" : ""].join(" ")}>
+                      <Link key={post.id} href={buildDetailHref(post.postNo ?? post.id)} className={["block rounded-lg border border-border bg-card px-3 py-3.5 transition-colors active:bg-muted/30", isSold ? "opacity-45" : ""].join(" ")}>
                         {/* 상단: 가격 + 상태/등급 뱃지 */}
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-1.5">
@@ -1337,11 +1337,11 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                         )}
 
                         {/* 하단 메타 */}
-                        <div className="mt-2 flex flex-wrap items-center justify-between gap-2 border-t border-border/40 pt-1.5 text-[10px] leading-relaxed text-muted-foreground">
+                        <div className="mt-2.5 flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5 border-t border-border/40 pt-2 text-xs leading-relaxed text-muted-foreground">
                           <span>
                             {post.nickname || "회원"} &middot; {fmtDateTime(post.createdAt)}
                           </span>
-                          <div className="flex items-center gap-1.5 tabular-nums">
+                          <div className="flex items-center gap-2 tabular-nums">
                             <span className="flex items-center gap-0.5">
                               <Eye className="h-2.5 w-2.5" />
                               {post.views ?? 0}
@@ -1354,7 +1354,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                         </div>
                       </Link>
                     ) : (
-                      <Link key={post.id} href={buildDetailHref(post.postNo ?? post.id)} className="block rounded-lg border border-border bg-card px-3 py-2.5 transition-colors hover:border-primary/30 active:bg-muted/40">
+                      <Link key={post.id} href={buildDetailHref(post.postNo ?? post.id)} className="block rounded-lg border border-border bg-card px-3 py-3 transition-colors hover:border-primary/30 active:bg-muted/40">
                         {/* 1줄: 번호 + 분류 뱃지 */}
                         <div className="flex items-center gap-2 text-xs text-foreground/75">
                           <span className="text-[11px] tabular-nums">{typeof post.postNo === "number" ? post.postNo : "-"}</span>
@@ -1364,7 +1364,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                         </div>
 
                         {/* 2줄: 제목 */}
-                        <div className="mt-1 flex items-start gap-1">
+                        <div className="mt-1.5 flex items-start gap-1.5">
                           <span className={`${boardListMobileTitleClampClass} text-sm`}>{post.title}</span>
                           {post.images && post.images.length > 0 && <ImageIcon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary/70" aria-label="이미지 첨부 있음" />}
                           {post.attachments && post.attachments.length > 0 && <Paperclip className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-label="파일 첨부 있음" />}
