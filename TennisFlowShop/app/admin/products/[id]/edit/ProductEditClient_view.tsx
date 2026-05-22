@@ -30,11 +30,6 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
@@ -472,6 +467,7 @@ export default function ProductEditClient({
       // 색션명 상수
       const SECTIONS = {
         BASIC: "기본정보",
+        OPTIONS: "구매 옵션",
         PERFORMANCE: "성능 및 특성",
         INVENTORY: "재고관리",
         IMAGE: "이미지",
@@ -528,6 +524,58 @@ export default function ProductEditClient({
             '최소 1장의 이미지를 업로드해야 합니다.'
           </>,
         );
+        return;
+      }
+
+      if (colorInventories.length === 0) {
+        setActiveTab("options");
+        showErrorToast("색상을 최소 1개 이상 선택해주세요.");
+        return;
+      }
+
+      if (gaugeInventories.length === 0) {
+        setActiveTab("options");
+        showErrorToast("게이지를 최소 1개 이상 선택해주세요.");
+        return;
+      }
+
+      if (
+        colorInventories.some(
+          (row) => !Number.isFinite(Number(row.stock)) || Number(row.stock) < 0,
+        )
+      ) {
+        setActiveTab("options");
+        showErrorToast("색상 재고 수량은 0 이상 숫자로 입력해주세요.");
+        return;
+      }
+
+      if (
+        gaugeInventories.some(
+          (row) => !Number.isFinite(Number(row.stock)) || Number(row.stock) < 0,
+        )
+      ) {
+        setActiveTab("options");
+        showErrorToast("게이지 재고 수량은 0 이상 숫자로 입력해주세요.");
+        return;
+      }
+
+      if (
+        colorInventories.some(
+          (row) => !row.isSoldOut && Number(row.stock) <= 0,
+        )
+      ) {
+        setActiveTab("options");
+        showErrorToast("품절이 아닌 색상은 재고 수량을 1개 이상 입력해주세요.");
+        return;
+      }
+
+      if (
+        gaugeInventories.some(
+          (row) => !row.isSoldOut && Number(row.stock) <= 0,
+        )
+      ) {
+        setActiveTab("options");
+        showErrorToast("품절이 아닌 게이지는 재고 수량을 1개 이상 입력해주세요.");
         return;
       }
 
@@ -599,19 +647,33 @@ export default function ProductEditClient({
         .split(",")
         .map((k) => k.trim())
         .filter((k) => k.length > 0);
-      const normalizedGaugeInventories = gaugeInventories.map((row) => ({
-        ...row,
-        stock: Number.isFinite(row.stock) && row.stock >= 0 ? row.stock : 0,
-      }));
+      const normalizedGaugeInventories = gaugeInventories.map((row) => {
+        const gaugeMeta = gauges.find((g) => g.value === row.value);
+        return {
+          ...row,
+          value: gaugeMeta?.value ?? row.value,
+          label: gaugeMeta?.name ?? row.label ?? row.value,
+          stock: Number.isFinite(Number(row.stock)) && Number(row.stock) >= 0 ? Number(row.stock) : 0,
+          isSoldOut: Boolean(row.isSoldOut),
+        };
+      });
       const gaugeOptions = normalizedGaugeInventories.map((row) => row.value);
       const normalizedGauge = gaugeOptions[0] ?? basicInfo.gauge ?? "";
       const normalizedGaugeStockTotal = normalizedGaugeInventories
         .filter((row) => !row.isSoldOut)
         .reduce((sum, row) => sum + row.stock, 0);
-      const normalizedColorInventories = colorInventories.map((row) => ({
-        ...row,
-        stock: Number.isFinite(row.stock) && row.stock >= 0 ? row.stock : 0,
-      }));
+      const normalizedColorInventories = colorInventories.map((row) => {
+        const colorMeta = colors.find((c) => c.id === row.value);
+        return {
+          ...row,
+          value: colorMeta?.id ?? row.value,
+          label: colorMeta?.name ?? row.label ?? row.value,
+          colorHex: colorMeta?.hex ?? row.colorHex ?? "",
+          image: row.image ?? "",
+          stock: Number.isFinite(Number(row.stock)) && Number(row.stock) >= 0 ? Number(row.stock) : 0,
+          isSoldOut: Boolean(row.isSoldOut),
+        };
+      });
       const colorOptions = normalizedColorInventories.map((row) => row.value);
       const normalizedColor = colorOptions[0] ?? basicInfo.color ?? "";
 
@@ -772,7 +834,7 @@ export default function ProductEditClient({
                     variant="default"
                   >
                     <Save className="mr-2 h-4 w-4" />
-                    수정완료
+                    {submitting ? "수정 중..." : "수정완료"}
                   </Button>
                 </div>
               </div>
@@ -785,12 +847,18 @@ export default function ProductEditClient({
               onValueChange={setActiveTab}
               className="space-y-4"
             >
-              <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 bg-muted border border-border">
+              <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 bg-muted border border-border">
                 <TabsTrigger
                   value="basic"
                   className="text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
                 >
                   기본 정보
+                </TabsTrigger>
+                <TabsTrigger
+                  value="options"
+                  className="text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                >
+                  구매 옵션
                 </TabsTrigger>
                 <TabsTrigger
                   value="features"
@@ -1004,130 +1072,6 @@ export default function ProductEditClient({
                       </div>
                     </div>
 
-                    <div className="space-y-3 rounded-xl border border-border/60 bg-muted/20 p-4">
-                      <h3 className="text-base font-semibold">구매 옵션</h3>
-                      <div className="space-y-2">
-                        <Label>색상 옵션</Label>
-                        <p className="text-sm text-muted-foreground">
-                          사용자가 상품 상세에서 선택할 수 있는 색상 옵션을 설정합니다.
-                        </p>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button type="button" variant="outline" className="w-full justify-between">
-                              <span>{colorInventories.length > 0 ? `${colorInventories.length}개 색상 선택됨` : "색상 선택"}</span>
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-[320px]">
-                            <div className="space-y-2">
-                              {colors.map((color) => {
-                                const checked = colorInventories.some((row) => row.value === color.id);
-                                return (
-                                  <label key={color.id} className="flex items-center gap-2 text-sm">
-                                    <Checkbox
-                                      checked={checked}
-                                      onCheckedChange={(nextChecked) => {
-                                        if (nextChecked) {
-                                          setColorInventories((prev) => [
-                                            ...prev,
-                                            { value: color.id, label: color.name, colorHex: color.hex, image: "", stock: 0, isSoldOut: false },
-                                          ]);
-                                          return;
-                                        }
-                                        setColorInventories((prev) => prev.filter((row) => row.value !== color.id));
-                                      }}
-                                    />
-                                    <span>{color.name}</span>
-                                  </label>
-                                );
-                              })}
-                            </div>
-                          </PopoverContent>
-                        </Popover>
-                        <div className="space-y-3 pt-2">
-                          {colorInventories.map((row) => (
-                            <div key={row.value} className="grid gap-2 rounded-md border p-3 md:grid-cols-2">
-                              <Input placeholder="색상명" value={row.label ?? ""} onChange={(e) => setColorInventories((prev) => prev.map((item) => item.value === row.value ? { ...item, label: e.target.value } : item))} />
-                              <Input placeholder="hex 값" value={row.colorHex ?? ""} onChange={(e) => setColorInventories((prev) => prev.map((item) => item.value === row.value ? { ...item, colorHex: e.target.value } : item))} />
-                              <Input className="md:col-span-2" placeholder="색상 이미지 URL" value={row.image ?? ""} onChange={(e) => setColorInventories((prev) => prev.map((item) => item.value === row.value ? { ...item, image: e.target.value } : item))} />
-                              <Input type="number" min={0} value={row.stock} onChange={(e) => {
-                                const next = Math.max(0, Number(e.target.value) || 0);
-                                setColorInventories((prev) => prev.map((item) => item.value === row.value ? { ...item, stock: next } : item));
-                              }} />
-                              <label className="flex items-center gap-2 text-sm">
-                                <Checkbox checked={row.isSoldOut} onCheckedChange={(checked) => setColorInventories((prev) => prev.map((item) => item.value === row.value ? { ...item, isSoldOut: Boolean(checked) } : item))} />
-                                품절
-                              </label>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <Label>게이지 옵션(mm)</Label>
-                        <p className="text-sm text-muted-foreground">
-                          사용자가 상품 상세에서 선택할 수 있는 게이지를 선택하세요.
-                        </p>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button type="button" variant="outline" className="w-full justify-between">
-                              <span>{gaugeInventories.length > 0 ? `${gaugeInventories.length}개 게이지 선택됨` : "게이지 선택"}</span>
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-[320px]">
-                            <div className="space-y-2">
-                              {gauges.map((g) => {
-                                const checked = gaugeInventories.some((row) => row.value === g.value);
-                                return (
-                                  <label key={g.id} className="flex items-center gap-2 text-sm">
-                                    <Checkbox
-                                      checked={checked}
-                                      onCheckedChange={(nextChecked) => {
-                                        if (nextChecked) {
-                                          setGaugeInventories((prev) => [...prev, { value: g.value, label: g.name, stock: 0, isSoldOut: false }]);
-                                          return;
-                                        }
-                                        setGaugeInventories((prev) => prev.filter((row) => row.value !== g.value));
-                                      }}
-                                    />
-                                    <span>{g.name}</span>
-                                  </label>
-                                );
-                              })}
-                            </div>
-                          </PopoverContent>
-                        </Popover>
-                        <div className="space-y-3 pt-2">
-                          {gaugeInventories.map((row) => (
-                            <div key={row.value} className="grid gap-2 rounded-md border p-3 md:grid-cols-[1fr_120px_auto] md:items-center">
-                              <div className="text-sm font-medium">{row.label ?? row.value}</div>
-                              <Input
-                                type="number"
-                                min={0}
-                                value={row.stock}
-                                onChange={(e) => {
-                                  const next = Math.max(0, Number(e.target.value) || 0);
-                                  setGaugeInventories((prev) => prev.map((item) => (item.value === row.value ? { ...item, stock: next } : item)));
-                                }}
-                              />
-                              <label className="flex items-center gap-2 text-sm">
-                                <Checkbox
-                                  checked={row.isSoldOut}
-                                  onCheckedChange={(checked) =>
-                                    setGaugeInventories((prev) =>
-                                      prev.map((item) =>
-                                        item.value === row.value
-                                          ? { ...item, isSoldOut: Boolean(checked) }
-                                          : item,
-                                      ),
-                                    )
-                                  }
-                                />
-                                품절
-                              </label>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
                   </CardContent>
                 </Card>
                 {basicInfo.material === "hybrid" && (
@@ -1434,6 +1378,86 @@ export default function ProductEditClient({
                             원
                           </span>
                         </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="options" className="space-y-4">
+                <Card variant="ghost" className="shadow-xl bg-muted/30 border border-border">
+                  <CardHeader className="bg-muted/30 border-b border-border">
+                    <CardTitle className="text-primary">구매 옵션</CardTitle>
+                    <CardDescription className="text-muted-foreground">
+                      색상/게이지 옵션별 재고 및 품절 상태를 관리하세요.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6 p-6">
+                    <div className="space-y-3">
+                      <Label>색상 옵션</Label>
+                      <p className="text-sm text-muted-foreground">사용 가능한 색상을 선택하고 색상별 이미지/재고를 설정하세요.</p>
+                      <div className="flex flex-wrap gap-2">
+                        {colors.map((color) => {
+                          const selected = colorInventories.some((row) => row.value === color.id);
+                          return <Button key={color.id} type="button" size="sm" variant={selected ? "default" : "outline"} onClick={() => selected ? setColorInventories((prev) => prev.filter((row) => row.value !== color.id)) : setColorInventories((prev) => [...prev, { value: color.id, label: color.name, colorHex: color.hex, image: "", stock: 0, isSoldOut: false }])}>{color.name}</Button>;
+                        })}
+                      </div>
+                      {colorInventories.length === 0 && <p className="text-sm text-muted-foreground">선택된 색상이 없습니다. 위 색상 목록에서 사용할 색상을 선택하세요.</p>}
+                      <div className="space-y-3">
+                        {colorInventories.map((row) => {
+                          const colorMeta = colors.find((c) => c.id === row.value);
+                          const resolvedHex = colorMeta?.hex ?? row.colorHex ?? "";
+                          const isLegacyImage = Boolean(row.image) && !images.includes(row.image as string);
+                          return <div key={row.value} className="space-y-3 rounded-lg border border-border/70 bg-muted/10 p-4">
+                            <div className="flex items-center gap-2 text-sm font-semibold">
+                              <span className="h-3 w-3 rounded-full border border-border bg-muted" style={resolvedHex ? { backgroundColor: resolvedHex } : undefined} />
+                              <span>{colorMeta?.name ?? row.label ?? row.value}</span>
+                            </div>
+                            <div className="space-y-2">
+                              <Label>연결 이미지</Label>
+                              <Select value={row.image && images.includes(row.image) ? row.image : "__none"} onValueChange={(value) => setColorInventories((prev) => prev.map((item) => item.value === row.value ? { ...item, image: value === "__none" ? "" : value } : item))}>
+                                <SelectTrigger><SelectValue placeholder="이미지 선택" /></SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="__none">이미지 선택 안 함</SelectItem>
+                                  {images.map((imageUrl, index) => <SelectItem key={imageUrl} value={imageUrl}>{index === 0 ? "대표 이미지" : `이미지 ${index + 1}`}</SelectItem>)}
+                                </SelectContent>
+                              </Select>
+                              {isLegacyImage && <p className="text-xs text-muted-foreground">기존 연결 이미지 유지 중입니다.</p>}
+                            </div>
+                            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                              <div className="flex items-center gap-2">
+                                <Label>재고 수량</Label>
+                                <Input type="number" min={0} className="w-28" value={row.stock} onChange={(e) => { const next = Number(e.target.value); setColorInventories((prev) => prev.map((item) => item.value === row.value ? { ...item, stock: Number.isFinite(next) ? Math.max(0, next) : 0 } : item)); }} />
+                                <span className="text-sm text-muted-foreground">개</span>
+                              </div>
+                              <label className="flex items-center gap-2 text-sm"><Checkbox checked={row.isSoldOut} onCheckedChange={(checked) => setColorInventories((prev) => prev.map((item) => item.value === row.value ? { ...item, isSoldOut: Boolean(checked) } : item))} />품절</label>
+                            </div>
+                          </div>;
+                        })}
+                      </div>
+                    </div>
+                    <div className="space-y-3">
+                      <Label>게이지 옵션(mm)</Label>
+                      <p className="text-sm text-muted-foreground">사용 가능한 게이지를 선택하고 게이지별 재고를 관리하세요.</p>
+                      <div className="flex flex-wrap gap-2">
+                        {gauges.map((gauge) => {
+                          const selected = gaugeInventories.some((row) => row.value === gauge.value);
+                          return <Button key={gauge.id} type="button" size="sm" variant={selected ? "default" : "outline"} onClick={() => selected ? setGaugeInventories((prev) => prev.filter((row) => row.value !== gauge.value)) : setGaugeInventories((prev) => [...prev, { value: gauge.value, label: gauge.name, stock: 0, isSoldOut: false }])}>{gauge.name}</Button>;
+                        })}
+                      </div>
+                      {gaugeInventories.length === 0 && <p className="text-sm text-muted-foreground">선택된 게이지가 없습니다. 위 게이지 목록에서 사용할 게이지를 선택하세요.</p>}
+                      <div className="space-y-3">
+                        {gaugeInventories.map((row) => <div key={row.value} className="space-y-3 rounded-lg border border-border/70 bg-muted/10 p-4">
+                          <div className="text-sm font-semibold">{row.label ?? row.value}</div>
+                          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                            <div className="flex items-center gap-2">
+                              <Label>재고 수량</Label>
+                              <Input type="number" min={0} className="w-28" value={row.stock} onChange={(e) => { const next = Number(e.target.value); setGaugeInventories((prev) => prev.map((item) => item.value === row.value ? { ...item, stock: Number.isFinite(next) ? Math.max(0, next) : 0 } : item)); }} />
+                              <span className="text-sm text-muted-foreground">개</span>
+                            </div>
+                            <label className="flex items-center gap-2 text-sm"><Checkbox checked={row.isSoldOut} onCheckedChange={(checked) => setGaugeInventories((prev) => prev.map((item) => item.value === row.value ? { ...item, isSoldOut: Boolean(checked) } : item))} />품절</label>
+                          </div>
+                        </div>)}
                       </div>
                     </div>
                   </CardContent>
@@ -2026,7 +2050,7 @@ export default function ProductEditClient({
                 variant="default"
               >
                 <Save className="mr-2 h-4 w-4" />
-                수정완료
+                {submitting ? "수정 중..." : "수정완료"}
               </Button>
             </div>
           </form>
