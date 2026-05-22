@@ -5,6 +5,10 @@ export type OrderItem = {
   imageUrl?: string | null;
   mountingFee?: number;
   quantity: number;
+  selectedGauge?: string | null;
+  selectedColor?: string | null;
+  selectedColorLabel?: string | null;
+  selectedColorHex?: string | null;
 };
 export type Order = {
   id: string;
@@ -48,6 +52,12 @@ export type Order = {
 
   // 장착 서비스 신청용 요약 문자열 (예: '듀로플렉스 125 외 1종')
   stringSummary?: string;
+  meta?: {
+    selectedGauge?: string | null;
+    selectedColor?: string | null;
+    selectedColorLabel?: string | null;
+    selectedColorHex?: string | null;
+  };
 
   cancelStatus?: "requested" | "approved" | "rejected";
   refundAccountReady?: boolean;

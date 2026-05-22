@@ -86,6 +86,20 @@ import useSWR from "swr";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 
 export default function OrdersClient() {
+  function getSelectedColorLabel(value: {
+    selectedColorLabel?: string | null;
+    selectedColor?: string | null;
+  }) {
+    return String(value?.selectedColorLabel ?? value?.selectedColor ?? "").trim();
+  }
+
+  function getMetaSelectedColorLabel(meta?: {
+    selectedColorLabel?: string | null;
+    selectedColor?: string | null;
+  } | null) {
+    return String(meta?.selectedColorLabel ?? meta?.selectedColor ?? "").trim();
+  }
+
   function getCancelQuickSignal(
     order: OrderWithType,
   ): { label: "계좌확인 필요" | "검토 가능"; className: string } | null {
@@ -1109,6 +1123,24 @@ export default function OrdersClient() {
                                         장착 상품: {order.stringSummary}
                                       </p>
                                     )}
+                                  {order.__type === "stringing_application" &&
+                                    (() => {
+                                      const meta = (order as any).meta;
+                                      const gauge = String(
+                                        meta?.selectedGauge ?? "",
+                                      ).trim();
+                                      const color = getMetaSelectedColorLabel(
+                                        meta,
+                                      );
+                                      if (!gauge && !color) return null;
+                                      return (
+                                        <p className="mt-1 text-sm text-foreground/75">
+                                          {gauge && `게이지 ${gauge}`}
+                                          {gauge && color ? " · " : ""}
+                                          {color && `색상 ${color}`}
+                                        </p>
+                                      );
+                                    })()}
 
                                   <p className="mt-2 text-sm text-foreground/75">
                                     주문/신청 시나리오:{" "}
@@ -1143,6 +1175,27 @@ export default function OrdersClient() {
                                             {linkedApplication.stringSummary}
                                           </p>
                                         )}
+                                        {(() => {
+                                          const gauge = String(
+                                            (linkedApplication as any)
+                                              ?.meta?.selectedGauge ?? "",
+                                          ).trim();
+                                          const color =
+                                            getMetaSelectedColorLabel(
+                                              (linkedApplication as any)?.meta,
+                                            ) ||
+                                            getSelectedColorLabel(
+                                              linkedApplication as any,
+                                            );
+                                          if (!gauge && !color) return null;
+                                          return (
+                                            <p className="mt-1 text-sm text-foreground/75">
+                                              {gauge && `게이지 ${gauge}`}
+                                              {gauge && color ? " · " : ""}
+                                              {color && `색상 ${color}`}
+                                            </p>
+                                          );
+                                        })()}
                                         {(linkedApplication as any)
                                           ?.tensionSummary && (
                                           <p className="mt-1 text-sm text-foreground/75">

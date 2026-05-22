@@ -70,6 +70,10 @@ interface Order {
     price: number;
     imageUrl?: string | null;
     kind?: "racket" | "string" | "product";
+    selectedGauge?: string | null;
+    selectedColor?: string | null;
+    selectedColorLabel?: string | null;
+    selectedColorHex?: string | null;
   }>;
   totalPrice: number;
   userSnapshot?: { name: string; email: string };
@@ -155,6 +159,11 @@ const getOrderCompositionTitle = (order: Order) => {
 
   return baseTitle;
 };
+
+const getSelectedColorLabel = (item: {
+  selectedColorLabel?: string | null;
+  selectedColor?: string | null;
+}) => String(item.selectedColorLabel ?? item.selectedColor ?? "").trim();
 
 export default function OrderList() {
   // SWR Infinite 키 생성 (필터/검색 파라미터 만들게된다면 여기에 반드시 포함하기)
@@ -531,6 +540,18 @@ export default function OrderList() {
                           <span className="text-muted-foreground">×</span>
                           <span>{item.quantity}개</span>
                         </div>
+                        {(() => {
+                          const gauge = String(item.selectedGauge ?? "").trim();
+                          const color = getSelectedColorLabel(item);
+                          if (!gauge && !color) return null;
+                          return (
+                            <div className="mt-1 text-xs text-foreground/70">
+                              {gauge && `게이지 ${gauge}`}
+                              {gauge && color ? " · " : ""}
+                              {color && `색상 ${color}`}
+                            </div>
+                          );
+                        })()}
                       </div>
                     </div>
                   ))}
