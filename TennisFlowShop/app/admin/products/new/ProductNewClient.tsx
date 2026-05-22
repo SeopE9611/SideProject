@@ -437,6 +437,62 @@ export default function NewStringPage() {
       );
       return;
     }
+
+    if (colorInventories.length === 0) {
+      setActiveTab("options");
+      showErrorToast("색상을 최소 1개 이상 선택해주세요.");
+      return;
+    }
+
+    if (gaugeInventories.length === 0) {
+      setActiveTab("options");
+      showErrorToast("게이지를 최소 1개 이상 선택해주세요.");
+      return;
+    }
+
+    if (
+      colorInventories.some((row) => {
+        const stock = Number(row.stock);
+        return !Number.isFinite(stock) || stock < 0;
+      })
+    ) {
+      setActiveTab("options");
+      showErrorToast("색상 재고 수량은 0 이상 숫자로 입력해주세요.");
+      return;
+    }
+
+    if (
+      gaugeInventories.some((row) => {
+        const stock = Number(row.stock);
+        return !Number.isFinite(stock) || stock < 0;
+      })
+    ) {
+      setActiveTab("options");
+      showErrorToast("게이지 재고 수량은 0 이상 숫자로 입력해주세요.");
+      return;
+    }
+
+    if (
+      colorInventories.some((row) => {
+        const stock = Number(row.stock);
+        return !row.isSoldOut && stock <= 0;
+      })
+    ) {
+      setActiveTab("options");
+      showErrorToast("품절이 아닌 색상은 재고 수량을 1개 이상 입력해주세요.");
+      return;
+    }
+
+    if (
+      gaugeInventories.some((row) => {
+        const stock = Number(row.stock);
+        return !row.isSoldOut && stock <= 0;
+      })
+    ) {
+      setActiveTab("options");
+      showErrorToast("품절이 아닌 게이지는 재고 수량을 1개 이상 입력해주세요.");
+      return;
+    }
     // specifications 영문 키로 미리 구성
     const specifications: any = {
       material: basicInfo.material,
