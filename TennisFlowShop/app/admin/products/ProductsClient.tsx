@@ -339,11 +339,44 @@ export default function ProductsClient() {
         )}
         <AdminPageHeader
           title="상품 관리"
-          description="스트링 상품의 가격, 재고, 배송비, 공개 상태를 관리합니다."
+          description="판매 상품의 노출 상태, 가격, 재고, 색상 옵션, 배송비를 한 곳에서 관리합니다."
           icon={PackageSearch}
           scope="범위: 스트링 상품"
-          helperText="라켓 상품은 라켓 관리에서 별도로 관리합니다."
+          helperText="신규 등록 전 가격·배송비·재고 정보를 확인하고, 판매 중 상품은 품절/옵션 상태를 우선 점검하세요."
         />
+
+        <Card className="mb-6 border-border bg-card">
+          <CardContent className="p-4 sm:p-5">
+            <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm font-medium text-foreground break-keep leading-relaxed">
+                오늘의 상품 운영 우선순위를 먼저 확인하고 목록에서 바로 점검하세요.
+              </p>
+              <Link
+                href="/admin/operations"
+                className="text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                오늘 처리할 일 보기
+              </Link>
+            </div>
+            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+              {[
+                "신규 상품 등록: 상품명·브랜드·규격과 기본 정보를 먼저 확인하세요.",
+                "재고/색상 옵션 확인: 판매 중 상품의 품절 여부와 옵션별 재고를 우선 점검하세요.",
+                "가격·배송비 점검: 판매 가격, 할인 반영, 배송비 설정이 정확한지 확인하세요.",
+                "판매 상태/노출 관리: 비활성·비노출 상품이 의도된 상태인지 주기적으로 검토하세요.",
+              ].map((guide) => (
+                <div
+                  key={guide}
+                  className="rounded-md border border-border bg-muted/40 px-3 py-2"
+                >
+                  <p className="text-sm text-foreground break-keep leading-relaxed">
+                    {guide}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
 
         <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8 shrink-0">
           {[
@@ -429,7 +462,7 @@ export default function ProductsClient() {
               >
                 <Link href="/admin/products/new">
                   <Plus className="mr-2 h-4 w-4" />
-                  스트링 등록
+                  신규 스트링 등록
                 </Link>
               </Button>
             </div>
