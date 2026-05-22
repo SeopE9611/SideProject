@@ -204,7 +204,19 @@ async function restoreOrderColorStockIfNeeded(db: any, existing: any, now: Date)
   }
 
   const products = db.collection("products");
+  let restoredAnyManagedColorStock = false;
   for (const restoreItem of restoreMap.values()) {
+    const product = await products.findOne(
+      { _id: restoreItem.productObjectId },
+      {
+        projection: { colorInventories: 1 },
+      },
+    );
+    const hasManagedColorInventory = Array.isArray((product as any)?.colorInventories) && (product as any).colorInventories.length > 0;
+    if (!hasManagedColorInventory) {
+      continue;
+    }
+
     const restoreResult = await products.updateOne(
       restoreItem.hasSelectedGauge
         ? {
@@ -241,6 +253,11 @@ async function restoreOrderColorStockIfNeeded(db: any, existing: any, now: Date)
         setFields: {} as Record<string, unknown>,
       };
     }
+    restoredAnyManagedColorStock = true;
+  }
+
+  if (!restoredAnyManagedColorStock) {
+    return { setFields: {} as Record<string, unknown> };
   }
 
   return {

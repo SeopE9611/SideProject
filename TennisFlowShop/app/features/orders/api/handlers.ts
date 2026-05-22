@@ -340,6 +340,8 @@ export async function createOrder(req: Request, executionContext?: CreateOrderEx
     let stringingSubmitted = false;
 
     try {
+      type ColorInventoryDeductionResult = { status: "deducted" } | { status: "not_managed" };
+
       async function applyColorInventoryDeduction(params: {
         productId: ObjectId;
         selectedColor: string;
@@ -347,8 +349,16 @@ export async function createOrder(req: Request, executionContext?: CreateOrderEx
         shouldAffectGlobalStock: boolean;
         session: any;
         productName?: string;
-      }) {
-        const { productId, selectedColor, quantity, shouldAffectGlobalStock, session, productName } = params;
+        product?: any;
+      }): Promise<ColorInventoryDeductionResult> {
+        const { productId, selectedColor, quantity, shouldAffectGlobalStock, session, productName, product } = params;
+        const productDoc = product ?? (await db.collection("products").findOne({ _id: productId }, { session }));
+        const hasManagedColorInventory = Array.isArray((productDoc as any)?.colorInventories) && (productDoc as any).colorInventories.length > 0;
+
+        if (!hasManagedColorInventory) {
+          return { status: "not_managed" };
+        }
+
         const colorUpdated = await db.collection("products").updateOne(
           {
             _id: productId,
@@ -375,7 +385,7 @@ export async function createOrder(req: Request, executionContext?: CreateOrderEx
           { session },
         );
 
-        if (colorUpdated.matchedCount > 0 && colorUpdated.modifiedCount > 0) return;
+        if (colorUpdated.matchedCount > 0 && colorUpdated.modifiedCount > 0) return { status: "deducted" };
 
         const productForColor = await db.collection("products").findOne({ _id: productId }, { session });
         const colorInventories = Array.isArray((productForColor as any)?.colorInventories) ? (productForColor as any).colorInventories : [];
@@ -508,21 +518,25 @@ export async function createOrder(req: Request, executionContext?: CreateOrderEx
                   shouldAffectGlobalStock: false,
                   session,
                   productName: String((product as any)?.name ?? ""),
+                  product,
                 });
               }
               continue;
             }
 
             if (selectedColor) {
-              await applyColorInventoryDeduction({
+              const colorDeductionResult = await applyColorInventoryDeduction({
                 productId,
                 selectedColor,
                 quantity,
                 shouldAffectGlobalStock: true,
                 session,
                 productName: String((product as any)?.name ?? ""),
+                product,
               });
-              continue;
+              if (colorDeductionResult.status === "deducted") {
+                continue;
+              }
             }
 
             const currentStock = Number(product?.inventory?.stock ?? 0);
