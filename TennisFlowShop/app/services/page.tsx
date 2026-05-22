@@ -203,7 +203,7 @@ export default async function ServicesPage() {
                 <p className="text-sm text-muted-foreground">운영 시간: 평일 10:00 - 22:00, 토요일 09:00 - 18:00</p>
               </div>
 
-              <div className="rounded-xl border border-border p-4 text-center shadow-sm transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md md:p-5">
+              <div className="rounded-xl border border-border p-4 text-center md:p-5">
                 <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-secondary text-primary">
                   <Calendar className="h-8 w-8" />
                 </div>
@@ -444,7 +444,7 @@ export default async function ServicesPage() {
             <h3 className="text-2xl font-bold mb-6 text-center text-foreground">추가 서비스</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {additionalServices.map((service) => (
-                <div key={service.title} className="border border-border rounded-xl p-4 md:p-6 hover:shadow-md transition-shadow duration-300">
+                <div key={service.title} className="border border-border rounded-xl p-4 md:p-6">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center">
                       <div className="w-10 h-10 bg-secondary rounded-lg flex items-center justify-center text-primary mr-3">{service.icon}</div>
