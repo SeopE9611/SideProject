@@ -259,8 +259,8 @@ export default function AdminNotificationsClient() {
           helperText="상태별 집계와 발송 실패 사유를 함께 확인합니다."
           actions={
             <div className="flex flex-wrap items-center gap-2">
-              <Button variant="secondary" size="sm">목록</Button>
-              <Button variant="outline" size="sm" className="border-border/40" disabled>상세 (항목 선택)</Button>
+              <Button variant="secondary" size="sm" className="whitespace-nowrap">목록</Button>
+              <Button variant="outline" size="sm" className="border-border/40 whitespace-nowrap" disabled title="목록에서 항목을 선택하면 상세 보기로 이동할 수 있습니다." aria-label="항목 선택 전에는 상세 보기 비활성화">상세 (항목 선택)</Button>
             </div>
           }
         />
