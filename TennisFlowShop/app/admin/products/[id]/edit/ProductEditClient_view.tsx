@@ -315,6 +315,18 @@ export default function ProductEditClient({
 
   const isMaxReached = images.length >= MAX_PRODUCT_IMAGE_COUNT; // 최대 이미지 수 도달 여부
 
+  const uploadProductImageFile = async (file: File): Promise<string | null> => {
+    const fileName = sanitizeUploadFileName(file.name);
+    const { error } = await supabase.storage
+      .from("tennis-images")
+      .upload(fileName, file);
+    if (error) return null;
+    const { data: publicData } = supabase.storage
+      .from("tennis-images")
+      .getPublicUrl(fileName);
+    return publicData?.publicUrl ?? null;
+  };
+
   // 이미지 업로드 핸들러
   const handleAddImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -334,26 +346,40 @@ export default function ProductEditClient({
     setUploading(true);
 
     for (const file of filesToUpload) {
-      const fileName = sanitizeUploadFileName(file.name);
-      const { error } = await supabase.storage
-        .from("tennis-images")
-        .upload(fileName, file);
-      if (error) {
+      const imageUrl = await uploadProductImageFile(file);
+      if (!imageUrl) {
         // 업로드 실패 시에도 다음 파일은 계속 시도(일괄 업로드 UX)
         showErrorToast(
           "이미지 업로드에 실패했습니다. 잠시 후 다시 시도해 주세요.",
         );
         continue;
       }
-      const { data: publicData } = supabase.storage
-        .from("tennis-images")
-        .getPublicUrl(fileName);
-      const imageUrl = publicData?.publicUrl;
-      if (imageUrl) setImages((prev) => [...prev, imageUrl]);
+      setImages((prev) => [...prev, imageUrl]);
     }
 
     setUploading(false);
     e.target.value = ""; // <- 동일 파일 다시 선택 가능하도록
+  };
+
+  const handleUploadColorImage = async (
+    colorValue: string,
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    const imageUrl = await uploadProductImageFile(file);
+    setUploading(false);
+    e.target.value = "";
+    if (!imageUrl) {
+      showErrorToast("색상 이미지 업로드에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+      return;
+    }
+    setColorInventories((prev) =>
+      prev.map((row) =>
+        row.value === colorValue ? { ...row, image: imageUrl } : row,
+      ),
+    );
   };
 
   // 대표 이미지 설정
@@ -1414,38 +1440,23 @@ export default function ProductEditClient({
                               <span>{colorMeta?.name ?? row.label ?? row.value}</span>
                             </div>
                             <div className="space-y-2">
-                              <Label>연결 이미지</Label>
-                              <Select value={row.image && images.includes(row.image) ? row.image : "__none"} onValueChange={(value) => setColorInventories((prev) => prev.map((item) => item.value === row.value ? { ...item, image: value === "__none" ? "" : value } : item))}>
-                                <SelectTrigger><SelectValue placeholder="이미지 선택" /></SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="__none">이미지 선택 안 함</SelectItem>
-                                  {images.map((imageUrl, index) => <SelectItem key={imageUrl} value={imageUrl}>{index === 0 ? "대표 이미지" : `이미지 ${index + 1}`}</SelectItem>)}
-                                </SelectContent>
-                              </Select>
-                              {isLegacyImage && (
-                                <div className="flex items-center gap-2">
-                                  <p className="text-xs text-muted-foreground">
-                                    기존 연결 이미지 유지 중입니다.
-                                  </p>
-                                  <Button
-                                    type="button"
-                                    size="sm"
-                                    variant="outline"
-                                    className="h-7 px-2 text-xs"
-                                    onClick={() =>
-                                      setColorInventories((prev) =>
-                                        prev.map((item) =>
-                                          item.value === row.value
-                                            ? { ...item, image: "" }
-                                            : item,
-                                        ),
-                                      )
-                                    }
-                                  >
-                                    연결 해제
-                                  </Button>
-                                </div>
+                              <Label>색상 이미지</Label>
+                              {row.image ? (
+                                <img src={row.image} alt={`${row.label ?? row.value} 색상 이미지`} className="h-24 w-24 rounded-md border border-border object-cover" />
+                              ) : (
+                                <p className="text-xs text-muted-foreground">등록된 색상 이미지가 없습니다.</p>
                               )}
+                              <p className="text-xs text-muted-foreground">색상 이미지를 등록하면 상품 상세에서 해당 색상 선택 시 이미지가 전환됩니다.</p>
+                              <div className="flex gap-2">
+                                <Input type="file" accept="image/*" className="hidden" id={`edit-color-image-${row.value}`} onChange={(e) => void handleUploadColorImage(row.value, e)} />
+                                <Button type="button" variant="outline" size="sm" onClick={() => document.getElementById(`edit-color-image-${row.value}`)?.click()}>
+                                  이미지 업로드
+                                </Button>
+                                <Button type="button" variant="ghost" size="sm" onClick={() => setColorInventories((prev) => prev.map((item) => item.value === row.value ? { ...item, image: "" } : item))}>
+                                  이미지 제거
+                                </Button>
+                              </div>
+                              {isLegacyImage && <p className="text-xs text-muted-foreground">기존 연결 이미지 유지 중입니다.</p>}
                             </div>
                             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                               <div className="flex items-center gap-2">
@@ -1942,8 +1953,7 @@ export default function ProductEditClient({
                       스트링 이미지
                     </CardTitle>
                     <CardDescription className="text-muted-foreground">
-                      스트링의 이미지를 추가하세요. 첫 번째 이미지가 대표
-                      이미지로 사용됩니다.
+                      상품 대표 이미지와 공통 상세 이미지를 관리합니다. 색상별 이미지는 구매 옵션 탭의 각 색상에서 등록하세요.
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4 p-6">
