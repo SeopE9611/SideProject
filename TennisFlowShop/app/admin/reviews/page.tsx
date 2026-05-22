@@ -30,7 +30,7 @@ export default function ReviewsPage() {
     <div className="space-y-5 p-6">
       <section className="space-y-2 rounded-lg border bg-card p-4 sm:p-5">
         <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          리뷰 관리
+          리뷰 관리 안내
         </h1>
         <p className="text-sm leading-relaxed break-keep text-muted-foreground">
           상품 리뷰의 공개 상태, 연결 정보, 유지보수 작업을 한 곳에서
