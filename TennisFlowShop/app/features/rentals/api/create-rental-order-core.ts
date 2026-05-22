@@ -199,6 +199,7 @@ export async function createRentalOrderCore(params: {
     selectedColorImage?: string;
     requestedAt: Date;
   } = null;
+  let stringingHasManagedColorInventories = false;
 
   const requested = !!stringing?.requested;
   if (requested) {
@@ -261,6 +262,7 @@ export async function createRentalOrderCore(params: {
       ? (s as any).colorInventories
       : [];
     const hasManagedColorInventories = colorInventories.length > 0;
+    stringingHasManagedColorInventories = hasManagedColorInventories;
 
     if (selectedColor && hasManagedColorInventories) {
       const selectedColorInventory = colorInventories.find(
@@ -432,17 +434,28 @@ export async function createRentalOrderCore(params: {
           if (stringingSnap.selectedGauge || stringingSnap.selectedColor) {
             const stringQuantity = 1;
             if (stringingSnap.selectedGauge && stringingSnap.selectedColor) {
-              const stockUpdateResult = await db.collection("products").updateOne(
-                {
-                  _id: stringingSnap.stringId,
-                  "inventory.stock": { $gte: stringQuantity },
-                  gaugeInventories: { $elemMatch: { value: stringingSnap.selectedGauge, isSoldOut: { $ne: true }, stock: { $gte: stringQuantity } } },
-                  colorInventories: { $elemMatch: { value: stringingSnap.selectedColor, isSoldOut: { $ne: true }, stock: { $gte: stringQuantity } } },
-                },
-                { $inc: { "gaugeInventories.$[g].stock": -stringQuantity, "colorInventories.$[c].stock": -stringQuantity, "inventory.stock": -stringQuantity, sold: stringQuantity } },
-                { session, arrayFilters: [{ "g.value": stringingSnap.selectedGauge }, { "c.value": stringingSnap.selectedColor }] },
-              );
-              if (stockUpdateResult.modifiedCount !== 1) throw new Error("GAUGE_STOCK_UPDATE_FAILED");
+              if (stringingHasManagedColorInventories) {
+                const stockUpdateResult = await db.collection("products").updateOne(
+                  {
+                    _id: stringingSnap.stringId,
+                    "inventory.stock": { $gte: stringQuantity },
+                    gaugeInventories: { $elemMatch: { value: stringingSnap.selectedGauge, isSoldOut: { $ne: true }, stock: { $gte: stringQuantity } } },
+                    colorInventories: { $elemMatch: { value: stringingSnap.selectedColor, isSoldOut: { $ne: true }, stock: { $gte: stringQuantity } } },
+                  },
+                  { $inc: { "gaugeInventories.$[g].stock": -stringQuantity, "colorInventories.$[c].stock": -stringQuantity, "inventory.stock": -stringQuantity, sold: stringQuantity } },
+                  { session, arrayFilters: [{ "g.value": stringingSnap.selectedGauge }, { "c.value": stringingSnap.selectedColor }] },
+                );
+                if (stockUpdateResult.modifiedCount !== 1) {
+                  throw new Error("GAUGE_OR_COLOR_STOCK_UPDATE_FAILED");
+                }
+              } else {
+                const stockUpdateResult = await db.collection("products").updateOne(
+                  { _id: stringingSnap.stringId, "inventory.stock": { $gte: stringQuantity }, gaugeInventories: { $elemMatch: { value: stringingSnap.selectedGauge, isSoldOut: { $ne: true }, stock: { $gte: stringQuantity } } } },
+                  { $inc: { "gaugeInventories.$.stock": -stringQuantity, "inventory.stock": -stringQuantity, sold: stringQuantity } },
+                  { session },
+                );
+                if (stockUpdateResult.modifiedCount !== 1) throw new Error("GAUGE_STOCK_UPDATE_FAILED");
+              }
             } else if (stringingSnap.selectedGauge) {
               const stockUpdateResult = await db.collection("products").updateOne(
                 { _id: stringingSnap.stringId, "inventory.stock": { $gte: stringQuantity }, gaugeInventories: { $elemMatch: { value: stringingSnap.selectedGauge, isSoldOut: { $ne: true }, stock: { $gte: stringQuantity } } } },
@@ -451,12 +464,21 @@ export async function createRentalOrderCore(params: {
               );
               if (stockUpdateResult.modifiedCount !== 1) throw new Error("GAUGE_STOCK_UPDATE_FAILED");
             } else if (stringingSnap.selectedColor) {
-              const stockUpdateResult = await db.collection("products").updateOne(
-                { _id: stringingSnap.stringId, "inventory.stock": { $gte: stringQuantity }, colorInventories: { $elemMatch: { value: stringingSnap.selectedColor, isSoldOut: { $ne: true }, stock: { $gte: stringQuantity } } } },
-                { $inc: { "colorInventories.$.stock": -stringQuantity, "inventory.stock": -stringQuantity, sold: stringQuantity } },
-                { session },
-              );
-              if (stockUpdateResult.modifiedCount !== 1) throw new Error("COLOR_STOCK_UPDATE_FAILED");
+              if (stringingHasManagedColorInventories) {
+                const stockUpdateResult = await db.collection("products").updateOne(
+                  { _id: stringingSnap.stringId, "inventory.stock": { $gte: stringQuantity }, colorInventories: { $elemMatch: { value: stringingSnap.selectedColor, isSoldOut: { $ne: true }, stock: { $gte: stringQuantity } } } },
+                  { $inc: { "colorInventories.$.stock": -stringQuantity, "inventory.stock": -stringQuantity, sold: stringQuantity } },
+                  { session },
+                );
+                if (stockUpdateResult.modifiedCount !== 1) throw new Error("COLOR_STOCK_UPDATE_FAILED");
+              } else {
+                const stockUpdateResult = await db.collection("products").updateOne(
+                  { _id: stringingSnap.stringId, "inventory.stock": { $gte: stringQuantity } },
+                  { $inc: { "inventory.stock": -stringQuantity, sold: stringQuantity } },
+                  { session },
+                );
+                if (stockUpdateResult.modifiedCount !== 1) throw new Error("STRING_STOCK_UPDATE_FAILED");
+              }
             }
           }
 
