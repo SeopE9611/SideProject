@@ -498,6 +498,7 @@ export default function StringServiceApplyPage() {
     isOrderBased,
     selectedStringProductIdFromQuery,
     normalizedSelectedGauge,
+    normalizedSelectedColor,
     pdpProductId,
     pdpMountingFee,
     orderId,
