@@ -38,6 +38,15 @@ type GaugeInventoryRow = {
   isSoldOut: boolean;
 };
 
+type ColorInventoryRow = {
+  value: string;
+  label?: string;
+  colorHex?: string;
+  image?: string;
+  stock: number;
+  isSoldOut: boolean;
+};
+
 function normalizeGaugeRows(product: any): GaugeInventoryRow[] {
   if (Array.isArray(product?.gaugeInventories) && product.gaugeInventories.length > 0) {
     return product.gaugeInventories
@@ -72,6 +81,62 @@ function getGaugeLabel(row: GaugeInventoryRow) {
   return rawLabel || formatGaugeLabel(row.value);
 }
 
+function normalizeColorRows(product: any): ColorInventoryRow[] {
+  if (Array.isArray(product?.colorInventories) && product.colorInventories.length > 0) {
+    return product.colorInventories
+      .map((row: any) => {
+        const stockNumber = Number(row?.stock ?? 0);
+        return {
+          value: String(row?.value ?? "").trim(),
+          label: typeof row?.label === "string" ? row.label.trim() : undefined,
+          colorHex: typeof row?.colorHex === "string" ? row.colorHex.trim() : undefined,
+          image: typeof row?.image === "string" ? row.image.trim() : undefined,
+          stock: Number.isFinite(stockNumber) && stockNumber > 0 ? stockNumber : 0,
+          isSoldOut: row?.isSoldOut === true,
+        };
+      })
+      .filter((row: ColorInventoryRow) => row.value.length > 0);
+  }
+
+  if (Array.isArray(product?.colorOptions) && product.colorOptions.length > 0) {
+    const fallbackStock = Number(product?.inventory?.stock ?? 0);
+    const normalizedFallbackStock =
+      Number.isFinite(fallbackStock) && fallbackStock > 0 ? fallbackStock : 0;
+    return product.colorOptions
+      .map((value: unknown) => String(value ?? "").trim())
+      .filter(Boolean)
+      .map((value: string) => ({
+        value,
+        label: value,
+        stock: normalizedFallbackStock,
+        isSoldOut: false,
+      }));
+  }
+
+  if (typeof product?.color === "string" && product.color.trim()) {
+    const fallbackStock = Number(product?.inventory?.stock ?? 0);
+    const normalizedFallbackStock =
+      Number.isFinite(fallbackStock) && fallbackStock > 0 ? fallbackStock : 0;
+    return [
+      {
+        value: product.color.trim(),
+        label: product.color.trim(),
+        stock: normalizedFallbackStock,
+        isSoldOut: false,
+      },
+    ];
+  }
+  return [];
+}
+
+function getColorLabel(row: ColorInventoryRow) {
+  return String(row.label || row.value || "").trim();
+}
+
+function isColorSoldOut(row: ColorInventoryRow) {
+  return row.isSoldOut === true || Number(row.stock ?? 0) <= 0;
+}
+
 export default function RacketSelectStringClient({
   racket,
 }: {
@@ -88,6 +153,7 @@ export default function RacketSelectStringClient({
   const initialQtyParam = Number(searchParams.get("qty") ?? 1);
   const initialStringId = searchParams.get("stringId"); // cart에 있던 “번들 스트링” id
   const initialSelectedGauge = searchParams.get("selectedGauge") ?? "";
+  const initialSelectedColor = searchParams.get("selectedColor") ?? "";
   const returnTo = searchParams.get("returnTo") ?? "/cart";
 
   // buy-now 모드에서만 사용하는 store
@@ -108,6 +174,7 @@ export default function RacketSelectStringClient({
    */
   const [workCount, setWorkCount] = useState<number>(1);
   const [selectedGaugeByStringId, setSelectedGaugeByStringId] = useState<Record<string, string>>({});
+  const [selectedColorByStringId, setSelectedColorByStringId] = useState<Record<string, string>>({});
 
   const clampWorkCount = (v: number, stringStock?: number) => {
     if (!Number.isFinite(v)) return 1;
@@ -160,15 +227,59 @@ export default function RacketSelectStringClient({
     );
   }, [initialSelectedGauge, initialStringId, isFromCart, products]);
 
+  useEffect(() => {
+    if (!products.length) return;
+    setSelectedColorByStringId((prev) => {
+      const next = { ...prev };
+      let changed = false;
+      products.forEach((product: any) => {
+        const colorRows = normalizeColorRows(product);
+        if (!colorRows.length) return;
+        const stringId = String(product?._id);
+        if (next[stringId]) return;
+        const firstAvailable = colorRows.find((row) => !isColorSoldOut(row)) ?? colorRows[0];
+        if (firstAvailable?.value) {
+          next[stringId] = firstAvailable.value;
+          changed = true;
+        }
+      });
+      return changed ? next : prev;
+    });
+  }, [products]);
+
+  useEffect(() => {
+    if (!isFromCart || !initialStringId || !initialSelectedColor || products.length === 0) return;
+    const target = products.find((item: any) => String(item?._id) === initialStringId);
+    if (!target) return;
+    const hasColor = normalizeColorRows(target).some((row) => row.value === initialSelectedColor);
+    if (!hasColor) return;
+    setSelectedColorByStringId((prev) =>
+      prev[initialStringId] === initialSelectedColor
+        ? prev
+        : { ...prev, [initialStringId]: initialSelectedColor },
+    );
+  }, [initialSelectedColor, initialStringId, isFromCart, products]);
+
   /**
    * cartStore에 "라켓 + 스트링" 번들을 동일 수량으로 반영
    * - 라켓 라인은 없으면 add, 있으면 updateQuantity
    * - 스트링 라인은 (cart 편집 모드인 경우) 기존 stringId가 있으면 교체 처리
    */
-  const upsertCartBundle = (selectedString: any, qty: number, selectedGauge?: string) => {
+  const upsertCartBundle = (selectedString: any, qty: number, selectedGauge?: string, selectedColor?: string) => {
     const newStringId = String(selectedString?._id);
-    const newStringImage =
-      selectedString?.images?.[0] ?? selectedString?.imageUrl;
+    const colorRows = normalizeColorRows(selectedString);
+    const selectedColorRow = colorRows.find((row) => row.value === selectedColor);
+    const selectedColorPayload =
+      selectedColorRow && selectedColor
+        ? {
+            selectedColor,
+            selectedColorLabel: getColorLabel(selectedColorRow),
+            selectedColorHex: selectedColorRow.colorHex,
+            selectedColorImage: selectedColorRow.image,
+          }
+        : {};
+    const selectedStringImage =
+      selectedColorRow?.image?.trim() || selectedString?.images?.[0] || selectedString?.imageUrl;
 
     // 1) 라켓 라인: 없으면 add, 있으면 수량 update
     const hasRacket = cartItems.some(
@@ -194,20 +305,26 @@ export default function RacketSelectStringClient({
     if (
       initialStringId &&
       (initialStringId !== newStringId ||
-        (initialStringId === newStringId && (initialSelectedGauge || "") !== (selectedGauge || "")))
+        (initialSelectedGauge || "") !== (selectedGauge || "") ||
+        (initialSelectedColor || "") !== (selectedColor || ""))
     ) {
-      removeItem(initialStringId, initialSelectedGauge || undefined);
+      removeItem(
+        initialStringId,
+        initialSelectedGauge || undefined,
+        initialSelectedColor || undefined,
+      );
     }
 
     const hasNewString = cartItems.some(
       (it) =>
         it.id === newStringId &&
         (it.kind ?? "product") === "product" &&
-        (it.selectedGauge ?? "") === (selectedGauge ?? ""),
+        (it.selectedGauge ?? "") === (selectedGauge ?? "") &&
+        (it.selectedColor ?? "") === (selectedColor ?? ""),
     );
 
     if (hasNewString) {
-      updateQuantity(newStringId, qty, selectedGauge || undefined);
+      updateQuantity(newStringId, qty, selectedGauge || undefined, selectedColor || undefined);
     } else {
       const gaugeRows = normalizeGaugeRows(selectedString);
       const selectedGaugeRow = gaugeRows.find((row) => row.value === selectedGauge);
@@ -222,10 +339,11 @@ export default function RacketSelectStringClient({
         name: selectedString?.name ?? "스트링",
         price: Number(selectedString?.price ?? 0),
         quantity: qty,
-        image: newStringImage,
+        image: selectedStringImage,
         kind: "product",
         stock: effectiveStringStock,
         selectedGauge: selectedGauge || undefined,
+        ...selectedColorPayload,
       });
     }
   };
@@ -235,7 +353,7 @@ export default function RacketSelectStringClient({
    * - from=cart면: cartStore를 직접 수정하고 returnTo로 복귀
    * - from!=cart면: pdpBundleStore로 buy-now checkout 이동
    */
-  const handleSelectString = (p: any, selectedGauge?: string) => {
+  const handleSelectString = (p: any, selectedGauge?: string, selectedColor?: string) => {
     const gaugeRows = normalizeGaugeRows(p);
     const hasGaugeRows = gaugeRows.length > 0;
     const selectedGaugeRow = gaugeRows.find((row) => row.value === selectedGauge);
@@ -257,6 +375,36 @@ export default function RacketSelectStringClient({
       showErrorToast?.("선택한 게이지의 구매 가능 수량을 초과했습니다.");
       return;
     }
+    const colorRows = normalizeColorRows(p);
+    const hasColorRows = colorRows.length > 0;
+    const selectedColorRow = colorRows.find((row) => row.value === selectedColor);
+    if (hasColorRows && !selectedColor) {
+      showErrorToast?.("색상을 선택해주세요.");
+      return;
+    }
+    if (hasColorRows && selectedColor && !selectedColorRow) {
+      showErrorToast?.("선택한 색상 정보를 찾을 수 없습니다.");
+      return;
+    }
+    if (selectedColorRow && isColorSoldOut(selectedColorRow)) {
+      showErrorToast?.("선택한 색상은 현재 품절입니다.");
+      return;
+    }
+    if (selectedColorRow && selectedColorRow.stock < workCount) {
+      showErrorToast?.("선택한 색상의 구매 가능 수량을 초과했습니다.");
+      return;
+    }
+    const selectedColorPayload =
+      selectedColorRow && selectedColor
+        ? {
+            selectedColor,
+            selectedColorLabel: getColorLabel(selectedColorRow),
+            selectedColorHex: selectedColorRow.colorHex,
+            selectedColorImage: selectedColorRow.image,
+          }
+        : {};
+    const selectedStringImage =
+      selectedColorRow?.image?.trim() || p?.images?.[0] || p?.imageUrl;
 
     const manageStock = Boolean(p?.inventory?.manageStock);
     const baseStock =
@@ -284,7 +432,7 @@ export default function RacketSelectStringClient({
     // 1) cart 편집 모드: cartStore를 직접 수정하고 returnTo로 복귀
     if (isFromCart) {
       try {
-        upsertCartBundle(p, qty, selectedGauge);
+        upsertCartBundle(p, qty, selectedGauge, selectedColor);
         showSuccessToast?.(
           "장바구니 번들(라켓+스트링) 수량/스트링을 수정했어요.",
         );
@@ -298,8 +446,6 @@ export default function RacketSelectStringClient({
     }
 
     // 2) buy-now 모드: pdpBundleStore로 checkout 이동
-    const stringImage = p?.images?.[0] ?? p?.imageUrl;
-
     setItems([
       // stock을 같이 들고가면, 이후 화면에서도 “클램프/사전 경고”에 활용 가능
       {
@@ -316,10 +462,11 @@ export default function RacketSelectStringClient({
         name: p.name,
         price: p.price,
         quantity: qty,
-        image: stringImage,
+        image: selectedStringImage,
         kind: "product",
         stock: manageStock ? stock : undefined,
         selectedGauge: selectedGauge || undefined,
+        ...selectedColorPayload,
       },
     ]);
 
@@ -478,6 +625,10 @@ export default function RacketSelectStringClient({
                 const gaugeRows = normalizeGaugeRows(p);
                 const hasGaugeRows = gaugeRows.length > 0;
                 const selectedGauge = selectedGaugeByStringId[stringId] ?? "";
+                const colorRows = normalizeColorRows(p);
+                const hasColorRows = colorRows.length > 0;
+                const selectedColor = selectedColorByStringId[stringId] ?? "";
+                const selectedColorRow = colorRows.find((row) => row.value === selectedColor);
                 const selectedGaugeRow = gaugeRows.find((row) => row.value === selectedGauge);
                 const hideGaugeStock = p?.inventory?.hideGaugeStock === true;
                 const manageStock = Boolean(p?.inventory?.manageStock);
@@ -504,6 +655,12 @@ export default function RacketSelectStringClient({
                     ? selectedGaugeRow != null && effectiveStock < workCount
                     : manageStock && typeof stock === "number" && stock < workCount;
                 const disabledByGauge = hasGaugeRows && (!selectedGauge || isGaugeSoldOut || isGaugeShort);
+                const isColorSoldOutState =
+                  selectedColorRow != null && isColorSoldOut(selectedColorRow);
+                const isColorShort =
+                  selectedColorRow != null && selectedColorRow.stock < workCount;
+                const disabledByColor =
+                  hasColorRows && (!selectedColor || isColorSoldOutState || isColorShort);
                 const canShowStockHint =
                   manageStock &&
                   typeof effectiveStock === "number" &&
@@ -570,6 +727,59 @@ export default function RacketSelectStringClient({
                         <p className="text-lg font-bold text-foreground">
                           {Number(p.price ?? 0).toLocaleString()}원
                         </p>
+                        {hasColorRows && (
+                          <div className="space-y-2">
+                            <p className="text-xs font-medium text-foreground">색상 선택</p>
+                            {colorRows.length === 1 ? (
+                              <p className="text-xs text-muted-foreground">
+                                색상: {getColorLabel(colorRows[0])}
+                                {isColorSoldOut(colorRows[0]) ? " (품절)" : ""}
+                              </p>
+                            ) : (
+                              <div className="space-y-1.5">
+                                <p className="text-xs text-muted-foreground">
+                                  현재 색상: {selectedColorRow ? getColorLabel(selectedColorRow) : "미선택"}
+                                </p>
+                                <div className="flex flex-wrap gap-2">
+                                  {colorRows.map((row) => {
+                                    const label = getColorLabel(row);
+                                    const soldOut = isColorSoldOut(row);
+                                    const isSelected = selectedColor === row.value;
+                                    return (
+                                      <button
+                                        key={`${stringId}-color-${row.value}`}
+                                        type="button"
+                                        aria-pressed={isSelected}
+                                        aria-label={`${label} 색상 선택`}
+                                        disabled={soldOut}
+                                        onClick={() =>
+                                          setSelectedColorByStringId((prev) => ({
+                                            ...prev,
+                                            [stringId]: row.value,
+                                          }))
+                                        }
+                                        className={[
+                                          "h-10 min-w-10 rounded-md border px-2 text-xs transition",
+                                          isSelected ? "border-ring ring-2 ring-ring/40" : "border-border",
+                                          soldOut ? "opacity-50 cursor-not-allowed" : "hover:border-foreground/40",
+                                        ].join(" ")}
+                                      >
+                                        {row.image ? (
+                                          <img src={row.image} alt={label} className="h-6 w-6 rounded object-cover mx-auto" />
+                                        ) : row.colorHex ? (
+                                          <span className="mx-auto block h-5 w-5 rounded-full border" style={{ backgroundColor: row.colorHex }} />
+                                        ) : (
+                                          label
+                                        )}
+                                        {soldOut && <span className="ml-1 text-[10px] text-destructive">품절</span>}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
                         {hasGaugeRows && (
                           <div className="space-y-1.5">
                             <p className="text-xs font-medium text-foreground">게이지 선택</p>
@@ -632,8 +842,8 @@ export default function RacketSelectStringClient({
                         <Button
                           variant="elevated"
                           className="mt-4 w-full rounded-xl py-5 font-medium"
-                          disabled={disabledByGauge || isSoldOut || isShort}
-                          onClick={() => handleSelectString(p, selectedGauge || undefined)}
+                          disabled={disabledByGauge || disabledByColor || isSoldOut || isShort}
+                          onClick={() => handleSelectString(p, selectedGauge || undefined, selectedColor || undefined)}
                         >
                           <span className="flex items-center justify-center gap-2">
                             이 스트링으로 변경
@@ -657,8 +867,8 @@ export default function RacketSelectStringClient({
                           <Button
                             variant="elevated"
                             className="w-full whitespace-normal break-keep rounded-xl py-5 font-medium leading-tight transition-all duration-300"
-                            disabled={disabledByGauge || isSoldOut || isShort}
-                            onClick={() => handleSelectString(p, selectedGauge || undefined)}
+                            disabled={disabledByGauge || disabledByColor || isSoldOut || isShort}
+                            onClick={() => handleSelectString(p, selectedGauge || undefined, selectedColor || undefined)}
                           >
                             <span className="flex items-center justify-center gap-2">
                               이 스트링 선택하고 구매 계속하기

@@ -7,6 +7,15 @@ type ProductGaugeInventory = {
   isSoldOut: boolean;
 };
 
+type ProductColorInventory = {
+  value: string;
+  label?: string;
+  colorHex?: string;
+  image?: string;
+  stock: number;
+  isSoldOut: boolean;
+};
+
 type Product = {
   _id: string;
   name: string;
@@ -20,6 +29,9 @@ type Product = {
   ratingAverage?: number;
   gaugeOptions?: string[];
   gaugeInventories?: ProductGaugeInventory[];
+  color?: string;
+  colorOptions?: string[];
+  colorInventories?: ProductColorInventory[];
   inventory?: {
     stock?: number;
     status?: "instock" | "outofstock" | "backorder" | string;
