@@ -124,6 +124,12 @@ export default function RentalsCheckoutClient({ initial, selectedGauge, selected
   const selectedString = initial.selectedString ?? null;
   const requestStringing = Boolean(selectedString?.id);
   const normalizedSelectedColor = typeof selectedColor === "string" && selectedColor.trim() ? selectedColor.trim() : "";
+  const stringingPayload = {
+    requested: !!requestStringing,
+    stringId: requestStringing ? selectedString?.id : undefined,
+    selectedGauge: requestStringing ? selectedGauge || undefined : undefined,
+    selectedColor: requestStringing ? normalizedSelectedColor || undefined : undefined,
+  };
 
   // --- 수령 방식(택배/방문수령) ---
   type DeliveryMethod = "택배수령" | "방문수령";
@@ -592,10 +598,8 @@ export default function RentalsCheckoutClient({ initial, selectedGauge, selected
           // 결제금액(대여료/보증금)은 그대로 두고,
           // "요청 여부 + 선택 스트링"만 서버/DB에 저장.
           stringing: {
-            requested: !!requestStringing,
+            ...stringingPayload,
             // requestStringing이 false면 stringId는 보내지 않아 서버가 무시하도록 함
-            stringId: requestStringing ? selectedString?.id : undefined,
-            selectedGauge: requestStringing ? selectedGauge || undefined : undefined,
           },
           // Step 2: checkout 내 입력이 충분하면 core 제출 경로로 바로 전달
           stringingApplicationInput,
@@ -1237,12 +1241,7 @@ export default function RentalsCheckoutClient({ initial, selectedGauge, selected
                           account: onlyDigits(refundAccount),
                           holder: refundHolder.trim(),
                         },
-                        stringing: {
-                          requested: !!requestStringing,
-                          stringId: requestStringing ? selectedString?.id : undefined,
-                          selectedGauge: requestStringing ? selectedGauge || undefined : undefined,
-                          selectedColor: requestStringing ? normalizedSelectedColor || undefined : undefined,
-                        },
+                        stringing: stringingPayload,
                         stringingApplicationInput:
                           requestStringing && rentalStringingAdapter
                             ? {
