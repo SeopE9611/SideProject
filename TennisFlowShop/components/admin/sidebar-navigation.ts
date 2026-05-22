@@ -53,7 +53,7 @@ export const SIDEBAR_SECTIONS: SidebarSection[] = [
     label: "오늘 업무",
     items: [
       { title: "오늘 처리함", href: "/admin/operations", icon: Inbox, key: "operations" },
-      { title: "주문·교체서비스 처리", href: "/admin/orders", icon: PackageSearch, key: "orders" },
+      { title: "주문 관리(교체서비스 포함)", href: "/admin/orders", icon: PackageSearch, key: "orders" },
       { title: "라켓 대여 처리", href: "/admin/rentals", icon: ClipboardList, key: "rentals" },
       { title: "오프라인 접수", href: "/admin/offline", icon: Store, key: "offline" },
       { title: "아카데미 상담", href: "/admin/academy/applications", icon: BookOpen, key: "academyApplications" },
