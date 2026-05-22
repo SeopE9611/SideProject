@@ -9,6 +9,7 @@ export type OrderItem = {
   selectedColor?: string | null;
   selectedColorLabel?: string | null;
   selectedColorHex?: string | null;
+  selectedColorImage?: string | null;
 };
 export type Order = {
   id: string;
@@ -57,6 +58,20 @@ export type Order = {
     selectedColor?: string | null;
     selectedColorLabel?: string | null;
     selectedColorHex?: string | null;
+    selectedColorImage?: string | null;
+    gaugeStockDeductedAt?: string | Date | null;
+    gaugeStockRestoredAt?: string | Date | null;
+    gaugeStockRestoreReason?: string | null;
+    colorStockDeductedAt?: string | Date | null;
+    colorStockRestoredAt?: string | Date | null;
+    colorStockRestoreReason?: string | null;
+  };
+
+  stockRestore?: {
+    gaugeStockRestoredAt?: string | Date | null;
+    gaugeStockRestoreReason?: string | null;
+    colorStockRestoredAt?: string | Date | null;
+    colorStockRestoreReason?: string | null;
   };
 
   cancelStatus?: "requested" | "approved" | "rejected";
