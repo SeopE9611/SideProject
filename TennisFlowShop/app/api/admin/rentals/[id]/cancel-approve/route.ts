@@ -66,6 +66,13 @@ export async function POST(
       existing.stringing.selectedGauge.trim()
         ? existing.stringing.selectedGauge.trim()
         : null;
+    const selectedColor =
+      typeof existing?.stringing?.selectedColor === "string" &&
+      existing.stringing.selectedColor.trim()
+        ? existing.stringing.selectedColor.trim()
+        : null;
+    const colorStockRestoredAt = existing?.stringing?.colorStockRestoredAt ? new Date(existing.stringing.colorStockRestoredAt) : null;
+
     const stringProductId =
       existing?.stringing?.stringId && ObjectId.isValid(String(existing.stringing.stringId))
         ? new ObjectId(String(existing.stringing.stringId))
@@ -91,6 +98,37 @@ export async function POST(
         return NextResponse.json(
           { ok: false, message: "스트링 게이지 재고 복구에 실패했습니다." },
           { status: 409 },
+        );
+      }
+    }
+
+
+    if (!alreadyCanceledApproved && selectedColor && stringProductId && !colorStockRestoredAt) {
+      const hasManagedColorInventories = await guard.db.collection("products").countDocuments(
+        { _id: stringProductId, colorInventories: { $exists: true, $ne: [] } },
+        { limit: 1 },
+      );
+
+      if (hasManagedColorInventories > 0) {
+        const colorRestoreResult = await guard.db.collection("products").updateOne(
+          selectedGauge
+            ? { _id: stringProductId, "colorInventories.value": selectedColor }
+            : { _id: stringProductId, sold: { $gte: 1 }, "colorInventories.value": selectedColor },
+          selectedGauge
+            ? { $inc: { "colorInventories.$.stock": 1 } }
+            : { $inc: { "colorInventories.$.stock": 1, "inventory.stock": 1, sold: -1 } },
+        );
+
+        if (colorRestoreResult.matchedCount < 1 || colorRestoreResult.modifiedCount < 1) {
+          return NextResponse.json(
+            { ok: false, code: "COLOR_STOCK_RESTORE_FAILED", message: "대여 취소 중 색상 재고 복구에 실패했습니다." },
+            { status: 409 },
+          );
+        }
+
+        await rentals.updateOne(
+          { _id, "stringing.colorStockRestoredAt": { $exists: false } },
+          { $set: { "stringing.colorStockRestoredAt": now, updatedAt: now } },
         );
       }
     }

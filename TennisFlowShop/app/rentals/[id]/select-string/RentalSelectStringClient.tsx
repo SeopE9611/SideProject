@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
@@ -60,6 +60,56 @@ function getGaugeLabel(row: GaugeInventoryRow) {
   return rawLabel || formatGaugeLabel(row.value);
 }
 
+
+type ColorInventoryRow = {
+  value: string;
+  label?: string;
+  colorHex?: string;
+  image?: string;
+  stock: number;
+  isSoldOut: boolean;
+};
+
+function normalizeColorRows(product: any): ColorInventoryRow[] {
+  if (Array.isArray(product?.colorInventories) && product.colorInventories.length > 0) {
+    return product.colorInventories
+      .map((row: any) => {
+        const stockNumber = Number(row?.stock ?? 0);
+        return {
+          value: String(row?.value ?? "").trim(),
+          label: typeof row?.label === "string" ? row.label.trim() : undefined,
+          colorHex: typeof row?.colorHex === "string" ? row.colorHex.trim() : undefined,
+          image: typeof row?.image === "string" ? row.image.trim() : undefined,
+          stock: Number.isFinite(stockNumber) && stockNumber > 0 ? stockNumber : 0,
+          isSoldOut: row?.isSoldOut === true,
+        };
+      })
+      .filter((row: ColorInventoryRow) => row.value.length > 0);
+  }
+  if (Array.isArray(product?.colorOptions) && product.colorOptions.length > 0) {
+    const fallbackStock = Number(product?.inventory?.stock ?? 0);
+    const normalizedFallbackStock = Number.isFinite(fallbackStock) && fallbackStock > 0 ? fallbackStock : 0;
+    return product.colorOptions
+      .map((value: unknown) => String(value ?? "").trim())
+      .filter(Boolean)
+      .map((value: string) => ({ value, label: value, stock: normalizedFallbackStock, isSoldOut: false }));
+  }
+  if (typeof product?.color === "string" && product.color.trim()) {
+    const fallbackStock = Number(product?.inventory?.stock ?? 0);
+    const normalizedFallbackStock = Number.isFinite(fallbackStock) && fallbackStock > 0 ? fallbackStock : 0;
+    return [{ value: product.color.trim(), label: product.color.trim(), stock: normalizedFallbackStock, isSoldOut: false }];
+  }
+  return [];
+}
+
+function getColorLabel(row: ColorInventoryRow) {
+  return String(row.label || row.value || "").trim();
+}
+
+function isColorSoldOut(row: ColorInventoryRow) {
+  return row.isSoldOut === true || Number(row.stock ?? 0) <= 0;
+}
+
 export default function RentalSelectStringClient({
   racket,
   period,
@@ -69,6 +119,7 @@ export default function RentalSelectStringClient({
 }) {
   const router = useRouter();
   const [selectedGaugeByStringId, setSelectedGaugeByStringId] = useState<Record<string, string>>({});
+  const [selectedColorByStringId, setSelectedColorByStringId] = useState<Record<string, string>>({});
 
   const { products, isLoadingInitial, isFetchingMore, hasMore, loadMore } =
     useInfiniteProducts({
@@ -82,11 +133,31 @@ export default function RentalSelectStringClient({
     return `${brand} ${racket.model}${condition ? ` · ${condition}` : ""}`;
   }, [racket.brand, racket.model, racket.condition]);
 
-  const goCheckout = (stringId?: string, selectedGauge?: string) => {
+  useEffect(() => {
+    setSelectedColorByStringId((prev) => {
+      let changed = false;
+      const next = { ...prev };
+      for (const product of products ?? []) {
+        const id = String((product as any)?._id ?? "");
+        if (!id || next[id]) continue;
+        const colorRows = normalizeColorRows(product);
+        if (colorRows.length <= 0) continue;
+        const firstAvailable = colorRows.find((row) => !isColorSoldOut(row)) ?? colorRows[0];
+        if (firstAvailable?.value) {
+          next[id] = firstAvailable.value;
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [products]);
+
+  const goCheckout = (stringId?: string, selectedGauge?: string, selectedColor?: string) => {
     const base = `/rentals/${encodeURIComponent(racket.id)}/checkout?period=${period}`;
     const params = new URLSearchParams(`period=${period}`);
     if (stringId) params.set("stringId", stringId);
     if (selectedGauge) params.set("selectedGauge", selectedGauge);
+    if (selectedColor) params.set("selectedColor", selectedColor);
     const url = `/rentals/${encodeURIComponent(racket.id)}/checkout?${params.toString()}`;
     router.push(url);
   };
@@ -211,6 +282,12 @@ export default function RentalSelectStringClient({
                 const selectedGaugeRow =
                   gaugeRows.find((row) => row.value === selectedGauge) ?? null;
                 const hideGaugeStock = p?.inventory?.hideGaugeStock === true;
+                const colorRows = normalizeColorRows(p);
+                const selectedColor = selectedColorByStringId[id] ?? "";
+                const selectedColorRow = colorRows.find((row) => row.value === selectedColor) ?? null;
+                const isColorRequired = colorRows.length > 0;
+                const isColorOut = selectedColorRow ? isColorSoldOut(selectedColorRow) : false;
+                const hasColorStockIssue = selectedColorRow ? selectedColorRow.stock < 1 : false;
                 const isGaugeRequired = gaugeRows.length > 0;
                 const isGaugeSoldOut = selectedGaugeRow ? selectedGaugeRow.isSoldOut || selectedGaugeRow.stock <= 0 : false;
                 const hasGaugeStockIssue = selectedGaugeRow ? selectedGaugeRow.stock < 1 : false;
@@ -282,15 +359,49 @@ export default function RentalSelectStringClient({
                         ) : null}
                       </div>
 
+
+                        {colorRows.length > 0 ? (
+                          <div className="mt-3 space-y-2">
+                            <p className="text-sm font-medium text-foreground">색상 선택</p>
+                            {colorRows.length === 1 ? (
+                              <p className="text-sm text-muted-foreground">색상: {getColorLabel(colorRows[0])}</p>
+                            ) : (
+                              <div className="flex flex-wrap gap-2">
+                                {colorRows.map((row) => {
+                                  const soldOut = isColorSoldOut(row);
+                                  const selected = selectedColor === row.value;
+                                  return (
+                                    <button
+                                      key={row.value}
+                                      type="button"
+                                      disabled={soldOut}
+                                      onClick={() => setSelectedColorByStringId((prev) => ({ ...prev, [id]: row.value }))}
+                                      className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs transition ${selected ? "border-primary ring-2 ring-primary/40" : "border-border"} ${soldOut ? "opacity-50 cursor-not-allowed" : "hover:border-primary/60"}`}
+                                    >
+                                      {row.image ? <img src={row.image} alt={getColorLabel(row)} className="h-5 w-5 rounded object-cover" /> : row.colorHex ? <span className="h-4 w-4 rounded-full border" style={{ backgroundColor: row.colorHex }} /> : null}
+                                      <span>{getColorLabel(row)}</span>
+                                      {soldOut ? <span>품절</span> : null}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        ) : null}
+
                       {/* Select Button */}
                       <Button
                         className="mt-4 w-full whitespace-normal break-keep bg-primary py-5 font-medium leading-tight text-primary-foreground transition-all duration-300 hover:bg-primary/90"
-                        disabled={isGaugeRequired && (!selectedGauge || isGaugeSoldOut || hasGaugeStockIssue)}
+                        disabled={(isGaugeRequired && (!selectedGauge || isGaugeSoldOut || hasGaugeStockIssue)) || (isColorRequired && (!selectedColor || isColorOut || hasColorStockIssue))}
                         onClick={() => {
                           if (isGaugeRequired && !selectedGauge) return alert("게이지를 선택해주세요.");
                           if (isGaugeSoldOut) return alert("선택한 게이지는 현재 품절입니다.");
                           if (hasGaugeStockIssue) return alert("선택한 게이지의 구매 가능 수량을 초과했습니다.");
-                          goCheckout(id, selectedGauge || undefined);
+                          if (isColorRequired && !selectedColor) return alert("색상을 선택해주세요.");
+                          if (isColorRequired && !selectedColorRow) return alert("선택한 색상 정보를 찾을 수 없습니다.");
+                          if (isColorOut) return alert("선택한 색상은 현재 품절입니다.");
+                          if (hasColorStockIssue) return alert("선택한 색상의 구매 가능 수량을 초과했습니다.");
+                          goCheckout(id, selectedGauge || undefined, selectedColor || undefined);
                         }}
                       >
                         <span className="flex items-center justify-center gap-2">

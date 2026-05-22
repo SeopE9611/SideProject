@@ -125,11 +125,35 @@ export async function POST(req: Request) {
           (body as any).stringing.selectedGauge.trim()
         ? (body as any).stringing.selectedGauge.trim()
         : undefined;
+  const selectedColor =
+    typeof (body as any)?.selectedColor === "string" && (body as any).selectedColor.trim()
+      ? (body as any).selectedColor.trim()
+      : typeof (body as any)?.stringing?.selectedColor === "string" &&
+          (body as any).stringing.selectedColor.trim()
+        ? (body as any).stringing.selectedColor.trim()
+        : undefined;
+  const selectedColorLabel =
+    typeof (body as any)?.stringing?.selectedColorLabel === "string" && (body as any).stringing.selectedColorLabel.trim()
+      ? (body as any).stringing.selectedColorLabel.trim()
+      : undefined;
+  const selectedColorHex =
+    typeof (body as any)?.stringing?.selectedColorHex === "string" && (body as any).stringing.selectedColorHex.trim()
+      ? (body as any).stringing.selectedColorHex.trim()
+      : undefined;
+  const selectedColorImage =
+    typeof (body as any)?.stringing?.selectedColorImage === "string" && (body as any).stringing.selectedColorImage.trim()
+      ? (body as any).stringing.selectedColorImage.trim()
+      : undefined;
+
   const payloadWithGauge: RentalCreatePayload = {
     ...(normalizedBody as RentalCreatePayload),
     stringing: {
       ...((normalizedBody as RentalCreatePayload).stringing ?? {}),
       ...(selectedGauge ? { selectedGauge } : {}),
+      ...(selectedColor ? { selectedColor } : {}),
+      ...(selectedColorLabel ? { selectedColorLabel } : {}),
+      ...(selectedColorHex ? { selectedColorHex } : {}),
+      ...(selectedColorImage ? { selectedColorImage } : {}),
     },
   };
 
