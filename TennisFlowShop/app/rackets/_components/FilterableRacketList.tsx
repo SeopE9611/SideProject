@@ -573,9 +573,36 @@ export default function FilterableRacketList({
 
         {/* 상품 목록 */}
         <div className="bp-lg:col-span-3">
-          <div className="mb-4 space-y-3 bp-sm:flex bp-sm:items-center bp-sm:justify-between bp-sm:space-y-0 bp-md:mb-8">
-            <div className="flex items-center justify-between gap-3 bp-sm:justify-start">
-              <div className="text-base bp-sm:text-lg font-semibold text-foreground">
+          <div className="mb-4 rounded-xl border border-border/60 bg-card p-3 bp-sm:p-4 bp-md:mb-8">
+            <div className="mb-3 space-y-1.5">
+              <p className="text-xs font-medium text-muted-foreground">라켓 목록</p>
+              <p className="text-sm leading-relaxed break-keep text-muted-foreground">
+                조건에 맞는 라켓을 확인하고 상세 페이지에서 구매·대여 정보를
+                확인하세요.
+              </p>
+            </div>
+
+            <div className="mb-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+              {isApplyFlow && (
+                <span className="rounded-full bg-secondary px-2.5 py-1 break-keep">
+                  라켓 선택 후 스트링 장착 흐름으로 이어집니다.
+                </span>
+              )}
+              {rentOnly && (
+                <span className="rounded-full bg-secondary px-2.5 py-1 break-keep">
+                  대여 가능한 라켓만 모아보고 있습니다.
+                </span>
+              )}
+              {activeFiltersCount > 0 && (
+                <span className="rounded-full border border-border px-2.5 py-1 whitespace-nowrap">
+                  적용 중인 조건 {activeFiltersCount}개
+                </span>
+              )}
+            </div>
+
+            <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
+              <div className="flex flex-wrap items-center gap-2 bp-sm:gap-3">
+                <div className="text-base bp-sm:text-lg font-semibold text-foreground">
                 {rentOnly ? (
                   <>
                     대여 가능 총{" "}
@@ -611,44 +638,57 @@ export default function FilterableRacketList({
                     )}
                   </>
                 )}
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  if (showFilters) cancelFiltersSheet();
-                  else openFiltersSheet();
-                }}
-                className="bp-lg:hidden h-9 px-3 border-border hover:bg-secondary"
-                aria-expanded={showFilters}
-                aria-label="필터 열기"
-              >
-                <Filter className="w-4 h-4 mr-2" />
-                필터{activeDraftCount > 0 && `(${activeDraftCount})`}
-              </Button>
-              {!isApplyFlow && (
+                </div>
                 <Button
                   type="button"
-                  variant={rentOnly ? "default" : "outline"}
+                  variant="outline"
                   size="sm"
-                  onClick={() => setRentOnly((v) => !v)}
-                  className={cn(
-                    "h-9 px-3",
-                    rentOnly
-                      ? "border-border"
-                      : "border-border hover:bg-secondary",
-                  )}
-                  aria-pressed={rentOnly}
-                  aria-label="대여 가능 라켓만 보기 토글"
+                  onClick={() => {
+                    if (showFilters) cancelFiltersSheet();
+                    else openFiltersSheet();
+                  }}
+                  className="bp-lg:hidden h-9 px-3 border-border hover:bg-secondary whitespace-nowrap"
+                  aria-expanded={showFilters}
+                  aria-label="필터 열기"
                 >
-                  대여만 보기
+                  <Filter className="w-4 h-4 mr-2" />
+                  필터{activeDraftCount > 0 && `(${activeDraftCount})`}
                 </Button>
-              )}
-            </div>
+                {!isApplyFlow && (
+                  <Button
+                    type="button"
+                    variant={rentOnly ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setRentOnly((v) => !v)}
+                    className={cn(
+                      "h-9 px-3 whitespace-nowrap",
+                      rentOnly
+                        ? "border-border"
+                        : "border-border hover:bg-secondary",
+                    )}
+                    aria-pressed={rentOnly}
+                    aria-label="대여 가능 라켓만 보기 토글"
+                  >
+                    대여만 보기
+                  </Button>
+                )}
+              </div>
 
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center border border-border rounded-lg p-1 bg-card">
+              <div className="flex items-center justify-between gap-2 bp-sm:justify-end bp-sm:gap-3">
+                <Select value={sortOption} onValueChange={setSortOption}>
+                  <SelectTrigger className="h-9 w-full min-w-0 bp-sm:w-[180px] rounded-lg border-2 focus:border-border dark:focus:border-border bg-card text-sm">
+                    <SelectValue placeholder="정렬" />
+                  </SelectTrigger>
+                  <SelectContent className="dark:bg-card dark:border-border">
+                    <SelectItem value="latest">최신순</SelectItem>
+                    <SelectItem value="price-low">가격 낮은순</SelectItem>
+                    <SelectItem value="price-high">가격 높은순</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <div className="flex items-center border border-border rounded-lg p-1 bg-card shrink-0">
                 <Button
+                  type="button"
                   variant={viewMode === "grid" ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setViewMode("grid")}
@@ -658,6 +698,7 @@ export default function FilterableRacketList({
                 </Button>
 
                 <Button
+                  type="button"
                   variant={viewMode === "list" ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setViewMode("list")}
@@ -665,18 +706,8 @@ export default function FilterableRacketList({
                 >
                   <List className="w-4 h-4" />
                 </Button>
+                </div>
               </div>
-
-              <Select value={sortOption} onValueChange={setSortOption}>
-                <SelectTrigger className="h-9 w-[150px] bp-sm:w-[180px] rounded-lg border-2 focus:border-border dark:focus:border-border bg-card text-sm">
-                  <SelectValue placeholder="정렬" />
-                </SelectTrigger>
-                <SelectContent className="dark:bg-card dark:border-border">
-                  <SelectItem value="latest">최신순</SelectItem>
-                  <SelectItem value="price-low">가격 낮은순</SelectItem>
-                  <SelectItem value="price-high">가격 높은순</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
           </div>
 
