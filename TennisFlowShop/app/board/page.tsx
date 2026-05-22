@@ -139,13 +139,13 @@ function CommunityLatestCard({
             </span>
           </div>
           <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
-            <Button asChild variant="ghost" size="sm">
+            <Button asChild variant="ghost" size="sm" className="min-h-10 whitespace-nowrap">
               <Link href={writeHref}>
                 <Plus className="h-4 w-4 mr-1" />
                 글쓰기
               </Link>
             </Button>
-            <Button asChild variant="ghost" size="sm">
+            <Button asChild variant="ghost" size="sm" className="min-h-10 whitespace-nowrap">
               <Link href={listHref}>
                 전체보기 <ArrowRight className="ml-1 h-4 w-4" />
               </Link>
