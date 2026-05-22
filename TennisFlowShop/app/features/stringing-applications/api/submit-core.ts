@@ -590,12 +590,11 @@ export async function submitStringingApplicationCore({
         });
       }
 
-      const shouldAdjustGlobalInventory =
-        !effectiveSelectedGauge || isStockAlreadyDeductedByOrderItem || alreadyDeductedGaugeStock;
+      const shouldAdjustGlobalInventory = !effectiveSelectedGauge;
       const colorDeductResult = await db.collection("products").updateOne(
         {
           _id: stringProductObjectId,
-          ...(shouldAdjustGlobalInventory ? {} : { "inventory.stock": { $gte: 1 } }),
+          ...(shouldAdjustGlobalInventory ? { "inventory.stock": { $gte: 1 } } : {}),
           colorInventories: {
             $elemMatch: {
               value: effectiveSelectedColor,
@@ -606,8 +605,8 @@ export async function submitStringingApplicationCore({
         },
         {
           $inc: shouldAdjustGlobalInventory
-            ? { "colorInventories.$.stock": -1 }
-            : { "colorInventories.$.stock": -1, "inventory.stock": -1, sold: 1 },
+            ? { "colorInventories.$.stock": -1, "inventory.stock": -1, sold: 1 }
+            : { "colorInventories.$.stock": -1 },
         },
         { session },
       );
