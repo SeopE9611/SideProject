@@ -46,6 +46,10 @@ export type StringingApplicationInput = {
   requirements?: string;
   packageOptOut?: boolean;
   selectedGauge?: string;
+  selectedColor?: string;
+  selectedColorLabel?: string;
+  selectedColorHex?: string;
+  selectedColorImage?: string;
   lines?: Array<{
     racketType?: string;
     stringProductId?: string;
@@ -111,6 +115,10 @@ export async function submitStringingApplicationCore({
     requirements,
     packageOptOut,
     selectedGauge,
+    selectedColor,
+    selectedColorLabel,
+    selectedColorHex,
+    selectedColorImage,
     lines,
   } = input;
 
@@ -361,6 +369,10 @@ export async function submitStringingApplicationCore({
     typeof selectedGauge === "string" && selectedGauge.trim()
       ? selectedGauge.trim()
       : undefined;
+  const normalizedSelectedColor =
+    typeof selectedColor === "string" && selectedColor.trim()
+      ? selectedColor.trim()
+      : undefined;
   const orderForGauge =
     orderObjectId && !rentalObjectId
       ? await db.collection("orders").findOne(
@@ -424,9 +436,8 @@ export async function submitStringingApplicationCore({
       { projection: { _id: 1, meta: 1 }, session },
     );
 
-  const alreadyDeductedGaugeStock = Boolean(
-    (existingApplication as any)?.meta?.gaugeStockDeductedAt,
-  );
+  const alreadyDeductedGaugeStock = Boolean((existingApplication as any)?.meta?.gaugeStockDeductedAt);
+  const alreadyDeductedColorStock = Boolean((existingApplication as any)?.meta?.colorStockDeductedAt);
 
   const selectedProductIdCandidate =
     (Array.isArray(stringTypes) ? stringTypes.find((id) => id && id !== "custom") : undefined) ??
@@ -463,18 +474,26 @@ export async function submitStringingApplicationCore({
       purchasedStringItem.selectedGauge.trim()
         ? purchasedStringItem.selectedGauge.trim()
         : undefined;
+    const selectedColorFromOrderItem =
+      typeof purchasedStringItem?.selectedColor === "string" &&
+      purchasedStringItem.selectedColor.trim()
+        ? purchasedStringItem.selectedColor.trim()
+        : undefined;
 
-    const effectiveSelectedGauge =
-      normalizedSelectedGauge ?? selectedGaugeFromOrderItem;
+    const effectiveSelectedGauge = normalizedSelectedGauge ?? selectedGaugeFromOrderItem;
+    const effectiveSelectedColor = normalizedSelectedColor ?? selectedColorFromOrderItem;
 
     const isStockAlreadyDeductedByOrderItem =
       Boolean(selectedGaugeFromOrderItem) &&
       selectedGaugeFromOrderItem === effectiveSelectedGauge;
+    const isColorStockAlreadyDeductedByOrderItem =
+      Boolean(selectedColorFromOrderItem) &&
+      selectedColorFromOrderItem === effectiveSelectedColor;
 
     const stringProduct = await db.collection("products").findOne(
       { _id: stringProductObjectId },
       {
-        projection: { _id: 1, gaugeInventories: 1, gaugeOptions: 1 },
+        projection: { _id: 1, gaugeInventories: 1, gaugeOptions: 1, color: 1, colorOptions: 1, colorInventories: 1 },
         session,
       },
     );
@@ -497,6 +516,18 @@ export async function submitStringingApplicationCore({
     if (effectiveSelectedGauge) {
       updateDoc["meta.selectedGauge"] = effectiveSelectedGauge;
     }
+    if (effectiveSelectedColor) {
+      updateDoc["meta.selectedColor"] = effectiveSelectedColor;
+    }
+    if (typeof selectedColorLabel === "string" && selectedColorLabel.trim()) {
+      updateDoc["meta.selectedColorLabel"] = selectedColorLabel.trim();
+    }
+    if (typeof selectedColorHex === "string" && selectedColorHex.trim()) {
+      updateDoc["meta.selectedColorHex"] = selectedColorHex.trim();
+    }
+    if (typeof selectedColorImage === "string" && selectedColorImage.trim()) {
+      updateDoc["meta.selectedColorImage"] = selectedColorImage.trim();
+    }
 
     const existingSelectedGauge = (existingApplication as any)?.meta?.selectedGauge;
     if (
@@ -513,6 +544,81 @@ export async function submitStringingApplicationCore({
           code: "GAUGE_ALREADY_DEDUCTED",
         },
       );
+    }
+
+    const existingSelectedColor = (existingApplication as any)?.meta?.selectedColor;
+    if (
+      alreadyDeductedColorStock &&
+      effectiveSelectedColor &&
+      existingSelectedColor &&
+      existingSelectedColor !== effectiveSelectedColor
+    ) {
+      throw Object.assign(
+        new Error("이미 재고가 차감된 신청서의 색상은 변경할 수 없습니다."),
+        { status: 409, code: "COLOR_ALREADY_DEDUCTED" },
+      );
+    }
+
+    const hasManagedColorInventories =
+      Array.isArray((stringProduct as any)?.colorInventories) &&
+      (stringProduct as any).colorInventories.length > 0;
+    if (
+      effectiveSelectedColor &&
+      !alreadyDeductedColorStock &&
+      !isColorStockAlreadyDeductedByOrderItem &&
+      hasManagedColorInventories
+    ) {
+      const colorRow = (stringProduct as any).colorInventories.find(
+        (row: any) => String(row?.value ?? "").trim() === effectiveSelectedColor,
+      );
+      if (!colorRow) {
+        throw Object.assign(new Error("선택한 색상 정보를 찾을 수 없습니다."), {
+          status: 400,
+          code: "COLOR_NOT_FOUND",
+        });
+      }
+      if (colorRow?.isSoldOut === true) {
+        throw Object.assign(new Error("선택한 색상은 현재 품절입니다."), {
+          status: 409,
+          code: "COLOR_SOLD_OUT",
+        });
+      }
+      if (Number(colorRow?.stock ?? 0) < 1) {
+        throw Object.assign(new Error("선택한 색상의 구매 가능 수량을 초과했습니다."), {
+          status: 409,
+          code: "COLOR_INSUFFICIENT_STOCK",
+        });
+      }
+
+      const shouldAdjustGlobalInventory =
+        !effectiveSelectedGauge || isStockAlreadyDeductedByOrderItem || alreadyDeductedGaugeStock;
+      const colorDeductResult = await db.collection("products").updateOne(
+        {
+          _id: stringProductObjectId,
+          ...(shouldAdjustGlobalInventory ? {} : { "inventory.stock": { $gte: 1 } }),
+          colorInventories: {
+            $elemMatch: {
+              value: effectiveSelectedColor,
+              isSoldOut: { $ne: true },
+              stock: { $gte: 1 },
+            },
+          },
+        },
+        {
+          $inc: shouldAdjustGlobalInventory
+            ? { "colorInventories.$.stock": -1 }
+            : { "colorInventories.$.stock": -1, "inventory.stock": -1, sold: 1 },
+        },
+        { session },
+      );
+
+      if (!colorDeductResult.matchedCount || !colorDeductResult.modifiedCount) {
+        throw Object.assign(new Error("선택한 색상의 구매 가능 수량을 초과했습니다."), {
+          status: 409,
+          code: "COLOR_INSUFFICIENT_STOCK",
+        });
+      }
+      updateDoc["meta.colorStockDeductedAt"] = new Date();
     }
 
     if (
