@@ -236,7 +236,7 @@ export default function AdminRacketsClient() {
               description: "고객이 보는 상세 정보와 노출 상태를 주기적으로 업데이트하세요.",
             },
           ].map((guide) => (
-            <Card key={guide.title} className="border-border/70 bg-muted/20">
+            <Card key={guide.title} className="border-border/70 bg-muted/30">
               <CardContent className="p-4">
                 <p className="text-sm font-semibold leading-relaxed break-keep text-foreground">{guide.title}</p>
                 <p className="mt-1 text-sm leading-relaxed break-keep text-muted-foreground">{guide.description}</p>
