@@ -16,7 +16,7 @@ type CommentsResponse = { ok: boolean; items: CommentItem[] };
 export default function AdminBoardComments({ postId }: Props) {
   const router = useRouter();
   const { data, mutate } = useSWR<CommentsResponse>(
-    `/api/community/posts/${postId}/comments?page=1&limit=100`,
+    `/api/admin/community/posts/${postId}/comments?page=1&limit=100`,
     authenticatedSWRFetcher,
   );
 
