@@ -123,6 +123,14 @@ type ColorInventoryRow = {
   stock: number;
   isSoldOut: boolean;
 };
+type VariantInventoryRow = {
+  colorValue: string;
+  gaugeValue: string;
+  gaugeLabel?: string;
+  colorImage?: string;
+  stock: number;
+  isSoldOut: boolean;
+};
 
 function normalizeColorRows(product: any): ColorInventoryRow[] {
   if (Array.isArray(product?.colorInventories) && product.colorInventories.length > 0) {
@@ -311,10 +319,28 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
   const [quantity, setQuantity] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const variantRows = useMemo<VariantInventoryRow[]>(() => {
+    if (!Array.isArray(product?.variantInventories) || product.variantInventories.length === 0) return [];
+    return product.variantInventories
+      .map((row: any) => ({
+        colorValue: String(row?.colorValue ?? "").trim(),
+        gaugeValue: String(row?.gaugeValue ?? "").trim(),
+        gaugeLabel: typeof row?.gaugeLabel === "string" ? row.gaugeLabel.trim() : undefined,
+        colorImage: typeof row?.colorImage === "string" ? row.colorImage.trim() : undefined,
+        stock: Math.max(0, Number(row?.stock ?? 0)),
+        isSoldOut: row?.isSoldOut === true,
+      }))
+      .filter((row: VariantInventoryRow) => row.colorValue.length > 0 && row.gaugeValue.length > 0);
+  }, [product]);
+  const hasVariantInventories = variantRows.length > 0;
+  const isSellableVariant = (row?: VariantInventoryRow) => !!row && row.isSoldOut !== true && Number(row.stock) > 0;
+  const getVariantsByColor = (colorValue: string) => variantRows.filter((v) => v.colorValue === colorValue);
+  const getVariantBySelection = (colorValue: string, gaugeValue: string) => variantRows.find((v) => v.colorValue === colorValue && v.gaugeValue === gaugeValue);
+  const getAvailableGaugesForColor = (colorValue: string) => getVariantsByColor(colorValue);
   const colorRows = useMemo(() => normalizeColorRows(product), [product]);
   const firstAvailableColor = useMemo(
-    () => colorRows.find((row) => !isColorSoldOut(row)) ?? colorRows[0],
-    [colorRows],
+    () => colorRows.find((row) => (hasVariantInventories ? getVariantsByColor(row.value).some((v) => isSellableVariant(v)) : !isColorSoldOut(row))) ?? colorRows[0],
+    [colorRows, hasVariantInventories],
   );
   const [selectedColor, setSelectedColor] = useState<string>("");
   useEffect(() => {
@@ -324,9 +350,19 @@ export default function ProductDetailClient({ product }: { product: any }) {
   }, [firstAvailableColor?.value, selectedColor]);
   const selectedColorRow = colorRows.find((row) => row.value === selectedColor);
   const selectedColorLabel = selectedColorRow ? getColorLabel(selectedColorRow) : "";
-  const colorImage = selectedColorRow?.image?.trim();
+  const selectedColorVariants = useMemo(() => (selectedColor ? getAvailableGaugesForColor(selectedColor) : []), [selectedColor, variantRows]);
+  const colorImageFromVariant = selectedColorVariants.find((v) => v.colorImage)?.colorImage?.trim();
+  const colorImage = selectedColorRow?.image?.trim() || colorImageFromVariant;
   const hideGaugeStock = product?.inventory?.hideGaugeStock === true;
   const gaugeRows = useMemo<GaugeInventoryRow[]>(() => {
+    if (hasVariantInventories) {
+      return selectedColorVariants.map((row) => ({
+        value: row.gaugeValue,
+        label: row.gaugeLabel,
+        stock: Number(row.stock ?? 0),
+        isSoldOut: row.isSoldOut === true,
+      }));
+    }
     if (Array.isArray(product?.gaugeInventories) && product.gaugeInventories.length > 0) {
       return product.gaugeInventories.map((row: any) => ({
         value: String(row?.value ?? "").trim(),
@@ -343,7 +379,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
       }));
     }
     return [];
-  }, [product]);
+  }, [hasVariantInventories, product, selectedColorVariants]);
   const gaugeOptions = useMemo(() => gaugeRows.map((row) => row.value), [gaugeRows]);
   const gaugeRowMap = useMemo(() => new Map(gaugeRows.map((row) => [row.value, row])), [gaugeRows]);
   const isMountableStringProduct = isMountableStringByFee(product?.mountingFee);
@@ -370,14 +406,33 @@ export default function ProductDetailClient({ product }: { product: any }) {
       setQuantity(1);
     }
   }, [gaugeOptions, gaugeRowMap, gaugeRows, isStringProduct, selectedGauge]);
+  useEffect(() => {
+    if (!hasVariantInventories || !isStringProduct || !selectedColor) return;
+    const current = selectedGauge ? getVariantBySelection(selectedColor, selectedGauge) : undefined;
+    if (isSellableVariant(current)) return;
+    const firstSellable = getAvailableGaugesForColor(selectedColor).find((v) => isSellableVariant(v));
+    setSelectedGauge(firstSellable?.gaugeValue ?? "");
+    setQuantity(1);
+  }, [hasVariantInventories, isStringProduct, selectedColor, selectedGauge, variantRows]);
   // const [isWishlisted, setIsWishlisted] = useState(false);
   const { addItem } = useCartStore();
   const { setItem: setBuyNowItem } = useBuyNowStore();
   const stock = product.inventory?.stock ?? 0;
   const selectedGaugeRow = selectedGauge ? gaugeRowMap.get(selectedGauge) : undefined;
-  const effectiveStock = isStringProduct && gaugeOptions.length > 0 && selectedGaugeRow
-    ? Math.max(0, Number(selectedGaugeRow.stock ?? 0))
-    : stock;
+  const selectedVariant = hasVariantInventories && selectedColor && selectedGauge ? getVariantBySelection(selectedColor, selectedGauge) : undefined;
+  const selectedVariantSoldOut = !isSellableVariant(selectedVariant);
+  const variantHasNoSellableGauge = hasVariantInventories && !!selectedColor && getAvailableGaugesForColor(selectedColor).every((v) => !isSellableVariant(v));
+  const effectiveStock = hasVariantInventories
+    ? (isSellableVariant(selectedVariant) ? Math.max(0, Number(selectedVariant?.stock ?? 0)) : 0)
+    : isStringProduct && gaugeOptions.length > 0 && selectedGaugeRow
+      ? Math.max(0, Number(selectedGaugeRow.stock ?? 0))
+      : stock;
+  useEffect(() => {
+    if (quantity > effectiveStock && effectiveStock > 0) setQuantity(effectiveStock);
+  }, [effectiveStock, quantity]);
+  const variantPurchaseBlocked =
+    hasVariantInventories &&
+    (!selectedColor || !selectedGauge || !selectedVariant || selectedVariantSoldOut || quantity > effectiveStock || variantHasNoSellableGauge);
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -715,7 +770,10 @@ export default function ProductDetailClient({ product }: { product: any }) {
       showErrorToast("색상을 선택해주세요.");
       return false;
     }
-    if (isColorSoldOut(selectedColorRow)) {
+    const colorSoldOut = hasVariantInventories
+      ? !getVariantsByColor(selectedColorRow.value).some((v) => isSellableVariant(v))
+      : isColorSoldOut(selectedColorRow);
+    if (colorSoldOut) {
       showErrorToast("선택한 색상은 현재 품절입니다.");
       return false;
     }
@@ -728,7 +786,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
           selectedColor,
           selectedColorLabel: getColorLabel(selectedColorRow),
           selectedColorHex: selectedColorRow.colorHex,
-          selectedColorImage: selectedColorRow.image,
+          selectedColorImage: selectedVariant?.colorImage?.trim() || selectedColorRow.image || colorImage || product.images?.[0] || "/placeholder.svg",
         }
       : {};
 
@@ -1089,7 +1147,9 @@ export default function ProductDetailClient({ product }: { product: any }) {
                           <div className="flex flex-wrap gap-2">
                             {colorRows.map((row) => {
                               const label = getColorLabel(row);
-                              const soldOut = isColorSoldOut(row);
+                              const soldOut = hasVariantInventories
+                                ? !getVariantsByColor(row.value).some((v) => isSellableVariant(v))
+                                : isColorSoldOut(row);
                               const isSelected = selectedColor === row.value;
                               const hasImage = typeof row.image === "string" && row.image.trim().length > 0;
                               const hasSwatch = typeof row.colorHex === "string" && row.colorHex.trim().length > 0;
@@ -1162,7 +1222,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         </Button>
                       </div>
                     </div>
-                    {product.inventory?.manageStock && product.inventory.stock <= 5 && product.inventory.stock > 0 && (
+                    {!hasVariantInventories && product.inventory?.manageStock && product.inventory.stock <= 5 && product.inventory.stock > 0 && (
                       <div className={cn("flex items-center gap-2.5 p-3 sm:p-3.5", detailSurfaceSubtleInnerClass)}>
                         <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
                         <span className="text-sm sm:text-base text-muted-foreground">
@@ -1204,14 +1264,17 @@ export default function ProductDetailClient({ product }: { product: any }) {
                             })}
                           </SelectContent>
                         </Select>
+                        {hasVariantInventories && variantHasNoSellableGauge && (
+                          <p className="text-xs text-destructive">선택 가능한 게이지가 없습니다.</p>
+                        )}
                       </div>
                     )}
 
                     <div id="cta-anchor" className="flex flex-col gap-3 sm:gap-3.5">
-                      {product.inventory?.manageStock && product.inventory.stock <= 0 ? (
+                      {(hasVariantInventories ? selectedVariantSoldOut : (product.inventory?.manageStock && product.inventory.stock <= 0)) ? (
                         <Button disabled variant="secondary" size="tall" className="h-12 w-full sm:h-14">
                           <X className="mr-2 h-5 w-5" />
-                          재고가 소진되었습니다
+                          {hasVariantInventories ? "선택한 색상/게이지 조합이 품절되었습니다" : "재고가 소진되었습니다"}
                         </Button>
                       ) : (
                         <>
@@ -1221,7 +1284,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                               size="tall"
                               className="h-12 w-full sm:h-14"
                               onClick={handleBuyNow}
-                              disabled={loading || effectiveStock <= 0 || quantity > effectiveStock || (isStringProduct && gaugeRows.length > 0 && !selectedGauge)}
+                              disabled={loading || effectiveStock <= 0 || quantity > effectiveStock || (isStringProduct && gaugeRows.length > 0 && !selectedGauge) || variantPurchaseBlocked}
                             >
                               <CreditCard className="mr-2 h-5 w-5" />
                               스트링만 구매하기
@@ -1233,7 +1296,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                               variant={shouldEmphasizeServiceCta ? "default" : "secondary"}
                               size="tall"
                               className="h-12 w-full gap-2 whitespace-normal break-keep leading-tight sm:h-14"
-                              disabled={loading || quantity > effectiveStock || (isStringProduct && gaugeRows.length > 0 && !selectedGauge)}
+                              disabled={loading || quantity > effectiveStock || (isStringProduct && gaugeRows.length > 0 && !selectedGauge) || variantPurchaseBlocked}
                               onClick={handleBuyNowWithService}
                             >
                               <Wrench className="mr-2 h-5 w-5" />
@@ -1247,7 +1310,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                               size="lg"
                               className="h-auto min-h-12 w-full whitespace-normal break-keep text-sm sm:text-base"
                               onClick={handleAddToCart}
-                              disabled={loading || quantity > effectiveStock || (isStringProduct && gaugeRows.length > 0 && !selectedGauge)}
+                              disabled={loading || quantity > effectiveStock || (isStringProduct && gaugeRows.length > 0 && !selectedGauge) || variantPurchaseBlocked}
                             >
                               <ShoppingCart className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                               {cartCtaLabel}
@@ -1897,7 +1960,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   <button
                     type="button"
                     onClick={handleBuyNow}
-                    disabled={loading || effectiveStock <= 0 || quantity > effectiveStock || (isStringProduct && gaugeRows.length > 0 && !selectedGauge)}
+                    disabled={loading || effectiveStock <= 0 || quantity > effectiveStock || (isStringProduct && gaugeRows.length > 0 && !selectedGauge) || variantPurchaseBlocked}
                     className="flex-1 h-12 rounded-lg bg-foreground text-background disabled:bg-muted dark:disabled:bg-muted disabled:text-muted-foreground font-semibold text-sm transition-[box-shadow,background-color,color] duration-200 shadow-sm hover:shadow-md disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     <CreditCard className="h-4 w-4" />
