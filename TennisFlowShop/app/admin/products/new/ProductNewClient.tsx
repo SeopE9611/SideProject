@@ -1314,7 +1314,25 @@ export default function NewStringPage() {
                                   <Button type="button" variant="outline" size="sm" onClick={() => document.getElementById(`new-color-image-${row.value}`)?.click()}>
                                     이미지 업로드
                                   </Button>
-                                  <Button type="button" variant="ghost" size="sm" onClick={() => setColorInventories((prev) => prev.map((item) => item.value === row.value ? { ...item, image: "" } : item))}>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => {
+                                      setColorInventories((prev) =>
+                                        prev.map((item) =>
+                                          item.value === row.value ? { ...item, image: "" } : item,
+                                        ),
+                                      );
+                                      setVariantInventories((prev) =>
+                                        prev.map((variant) =>
+                                          variant.colorValue === row.value
+                                            ? { ...variant, colorImage: "" }
+                                            : variant,
+                                        ),
+                                      );
+                                    }}
+                                  >
                                     이미지 제거
                                   </Button>
                                 </div>
