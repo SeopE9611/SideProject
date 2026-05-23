@@ -353,21 +353,56 @@ export default function ProductEditClient({
       Array.isArray(p.variantInventories) && p.variantInventories.length > 0;
     if (hasExistingVariants) {
       const existingVariants = p.variantInventories ?? [];
-      setVariantInventories(
-        existingVariants.map((row) => ({
+      const colorMetaMap = new Map(
+        colorInventoryRows.map((row) => [row.value, row]),
+      );
+      const gaugeMetaMap = new Map(
+        gaugeInventoryRows.map((row) => [row.value, row]),
+      );
+      const normalizedVariantMap = new Map<string, ProductVariantInventory>();
+
+      existingVariants.forEach((row) => {
+        const colorMeta = colorMetaMap.get(row.colorValue);
+        const gaugeMeta = gaugeMetaMap.get(row.gaugeValue);
+        const key = getVariantKey(row.colorValue, row.gaugeValue);
+        if (normalizedVariantMap.has(key)) return;
+        normalizedVariantMap.set(key, {
           ...row,
+          colorLabel: colorMeta?.label ?? row.colorLabel,
+          colorHex: colorMeta?.colorHex ?? row.colorHex,
+          colorImage: row.colorImage ?? colorMeta?.image ?? "",
+          gaugeLabel: gaugeMeta?.label ?? row.gaugeLabel,
           stock:
             Number.isFinite(Number(row.stock)) && Number(row.stock) >= 0
               ? Number(row.stock)
               : 0,
           isSoldOut: Boolean(row.isSoldOut),
-          colorImage:
-            row.colorImage ??
-            colorInventoryRows.find((colorRow) => colorRow.value === row.colorValue)
-              ?.image ??
-            "",
-        })),
-      );
+        });
+      });
+
+      const reconciledVariants: ProductVariantInventory[] = [];
+      colorInventoryRows.forEach((colorRow) => {
+        gaugeInventoryRows.forEach((gaugeRow) => {
+          const key = getVariantKey(colorRow.value, gaugeRow.value);
+          const existingRow = normalizedVariantMap.get(key);
+          if (existingRow) {
+            reconciledVariants.push(existingRow);
+            return;
+          }
+          reconciledVariants.push({
+            colorValue: colorRow.value,
+            colorLabel: colorRow.label,
+            colorHex: colorRow.colorHex,
+            colorImage: colorRow.image || "",
+            gaugeValue: gaugeRow.value,
+            gaugeLabel: gaugeRow.label,
+            stock: 0,
+            isSoldOut: true,
+          });
+        });
+      });
+
+      setVariantInventories(reconciledVariants);
       setShouldShowLegacyVariantGuide(false);
     } else {
       const generatedVariants: ProductVariantInventory[] = [];
