@@ -122,9 +122,6 @@ export default function NewStringPage() {
 
   // 검색 키워드 입력값 (쉼표로 구분)
   const [searchKeywordsInput, setSearchKeywordsInput] = useState("");
-  const [gaugeInventories, setGaugeInventories] = useState<
-    ProductGaugeInventory[]
-  >([]);
   const [colorInventories, setColorInventories] = useState<
     ProductColorInventory[]
   >([]);
@@ -153,6 +150,13 @@ export default function NewStringPage() {
     variantInventories
       .filter((row) => row.gaugeValue === gaugeValue && !row.isSoldOut)
       .reduce((sum, row) => sum + (Number.isFinite(row.stock) ? row.stock : 0), 0);
+  const gaugeSummaryRows = useMemo(() => {
+    const values = Array.from(new Set(variantInventories.map((row) => row.gaugeValue)));
+    return values.map((value) => {
+      const found = gauges.find((g) => g.value === value);
+      return { value, label: found?.name ?? value };
+    });
+  }, [variantInventories]);
   const updateVariantStock = (colorValue: string, gaugeValue: string, stock: number) => {
     setVariantInventories((prev) =>
       prev.map((row) =>
@@ -171,31 +175,19 @@ export default function NewStringPage() {
       ),
     );
   };
-  const reconcileVariantInventories = (
-    colorsInput: ProductColorInventory[],
-    gaugesInput: ProductGaugeInventory[],
-  ) => {
-    const nextRows: ProductVariantInventory[] = [];
-    const prevMap = new Map(
-      variantInventories.map((row) => [getVariantKey(row.colorValue, row.gaugeValue), row]),
-    );
-    colorsInput.forEach((colorRow) => {
-      gaugesInput.forEach((gaugeRow) => {
-        const key = getVariantKey(colorRow.value, gaugeRow.value);
-        const prev = prevMap.get(key);
-        nextRows.push({
-          colorValue: colorRow.value,
-          colorLabel: colorRow.label,
-          colorHex: colorRow.colorHex,
-          colorImage: colorRow.image,
-          gaugeValue: gaugeRow.value,
-          gaugeLabel: gaugeRow.label,
-          stock: prev?.stock ?? 0,
-          isSoldOut: prev?.isSoldOut ?? true,
-        });
-      });
+  const addVariantForColor = (colorRow: ProductColorInventory, gaugeValue: string) => {
+    const gaugeMeta = gauges.find((g) => g.value === gaugeValue);
+    setVariantInventories((prev) => {
+      if (prev.some((row) => row.colorValue === colorRow.value && row.gaugeValue === gaugeValue)) {
+        return prev;
+      }
+      return [...prev, { colorValue: colorRow.value, colorLabel: colorRow.label, colorHex: colorRow.colorHex, colorImage: colorRow.image ?? "", gaugeValue, gaugeLabel: gaugeMeta?.name ?? gaugeValue, stock: 0, isSoldOut: true }];
     });
-    setVariantInventories(nextRows);
+  };
+  const removeVariantForColor = (colorValue: string, gaugeValue: string) => {
+    setVariantInventories((prev) =>
+      prev.filter((row) => !(row.colorValue === colorValue && row.gaugeValue === gaugeValue)),
+    );
   };
 
   // 추가 특성 정보
@@ -534,21 +526,17 @@ export default function NewStringPage() {
       return;
     }
 
-    if (gaugeInventories.length === 0) {
+    if (variantInventories.length === 0) {
       setActiveTab("options");
-      showErrorToast("게이지를 최소 1개 이상 선택해주세요.");
+      showErrorToast("각 색상마다 최소 1개 이상의 게이지를 추가해주세요.");
       return;
     }
-
-    const expectedCombinationCount = colorInventories.length * gaugeInventories.length;
-    if (variantInventories.length === 0 || expectedCombinationCount === 0) {
+    const hasColorWithoutVariant = colorInventories.some(
+      (colorRow) => !variantInventories.some((variant) => variant.colorValue === colorRow.value),
+    );
+    if (hasColorWithoutVariant) {
       setActiveTab("options");
-      showErrorToast("색상×게이지 조합 재고를 입력해주세요.");
-      return;
-    }
-    if (variantInventories.length !== expectedCombinationCount) {
-      setActiveTab("options");
-      showErrorToast("선택된 색상×게이지 조합 재고가 누락되었습니다.");
+      showErrorToast("각 색상마다 최소 1개 이상의 게이지를 추가해주세요.");
       return;
     }
     if (variantInventories.some((row) => !Number.isFinite(Number(row.stock)) || Number(row.stock) < 0)) {
@@ -591,7 +579,7 @@ export default function NewStringPage() {
     const searchKeywords = searchKeywordsInput.split(",").map((k) => k.trim()).filter((k) => k.length > 0);
     const normalizedVariants = variantInventories.map((row) => ({ ...row, stock: Math.max(0, Number(row.stock) || 0), colorImage: row.colorImage ?? colorInventories.find((c) => c.value===row.colorValue)?.image }));
     const colorOptions = colorInventories.map((row) => row.value);
-    const gaugeOptions = gaugeInventories.map((row) => row.value);
+    const gaugeOptions = Array.from(new Set(normalizedVariants.map((row) => row.gaugeValue)));
     const normalizedGauge = gaugeOptions[0] ?? basicInfo.gauge ?? "";
     const normalizedColor = colorOptions[0] ?? basicInfo.color ?? "";
     const normalizedColorInventories = colorInventories.map((colorRow) => {
@@ -599,7 +587,7 @@ export default function NewStringPage() {
       const stock = rows.filter((row) => !row.isSoldOut).reduce((sum, row) => sum + row.stock, 0);
       return { ...colorRow, image: colorRow.image ?? rows[0]?.colorImage ?? "", stock, isSoldOut: rows.every((row) => row.isSoldOut) || stock === 0 };
     });
-    const normalizedGaugeInventories = gaugeInventories.map((gaugeRow) => {
+    const normalizedGaugeInventories = gaugeSummaryRows.map((gaugeRow) => {
       const rows = normalizedVariants.filter((row) => row.gaugeValue === gaugeRow.value);
       const stock = rows.filter((row) => !row.isSoldOut).reduce((sum, row) => sum + row.stock, 0);
       return { ...gaugeRow, stock, isSoldOut: rows.every((row) => row.isSoldOut) || stock === 0 };
@@ -892,7 +880,7 @@ export default function NewStringPage() {
 
                     <div className="grid gap-4 md:grid-cols-2">
                       <div className="space-y-2">
-                        <Label htmlFor="string-color">색상</Label>
+                        <Label htmlFor="string-color">대표 색상(목록/필터용)</Label>
                         <Select
                           value={basicInfo.color}
                           onValueChange={(value) =>
@@ -910,6 +898,7 @@ export default function NewStringPage() {
                             ))}
                           </SelectContent>
                         </Select>
+                        <p className="text-xs text-muted-foreground">실제 구매 색상은 구매 옵션 탭에서 색상별로 관리됩니다.</p>
                       </div>
                     </div>
 
@@ -1265,7 +1254,7 @@ export default function NewStringPage() {
                   <CardContent className="space-y-6 p-6">
                     <div className="space-y-3">
                       <Label>색상 옵션</Label>
-                      <p className="text-sm text-muted-foreground">사용 가능한 색상을 선택하고 색상 카드 안에서 게이지 조합 재고를 설정하세요.</p>
+                      <p className="text-sm text-muted-foreground">색상을 선택한 뒤, 각 색상 카드 안에서 사용 가능한 게이지와 재고를 개별로 관리하세요.</p>
                       <div className="flex flex-wrap gap-2">
                         {colors.map((color) => {
                           const selected = colorInventories.some((row) => row.value === color.id);
@@ -1277,10 +1266,11 @@ export default function NewStringPage() {
                               variant={selected ? "default" : "outline"}
                               onClick={() => {
                                 if (selected) {
-                                  setColorInventories((prev) => { const next=prev.filter((row) => row.value !== color.id); reconcileVariantInventories(next, gaugeInventories); return next; });
+                                  setColorInventories((prev) => prev.filter((row) => row.value !== color.id));
+                                  setVariantInventories((prev) => prev.filter((row) => row.colorValue !== color.id));
                                   return;
                                 }
-                                setColorInventories((prev) => { const next=[...prev,{ value: color.id, label: color.name, colorHex: color.hex, image: "", stock: 0, isSoldOut: false }]; reconcileVariantInventories(next, gaugeInventories); return next; });
+                                setColorInventories((prev) => [...prev,{ value: color.id, label: color.name, colorHex: color.hex, image: "", stock: 0, isSoldOut: false }]);
                               }}
                             >
                               {color.name}
@@ -1339,32 +1329,39 @@ export default function NewStringPage() {
                               </div>
                               <div className="space-y-2">
                                 <Label>게이지별 재고</Label>
-                                {gaugeInventories.length === 0 ? (
-                                  <p className="text-xs text-muted-foreground">먼저 게이지를 1개 이상 선택하세요.</p>
+                                <p className="text-xs text-muted-foreground">이 색상에서 판매할 게이지만 추가하세요.</p>
+                                <div className="flex flex-wrap gap-2">
+                                  {gauges.map((gauge) => {
+                                    const selected = variantInventories.some((item) => item.colorValue === row.value && item.gaugeValue === gauge.value);
+                                    return <Button key={`${row.value}-${gauge.value}`} type="button" size="sm" variant={selected ? "default" : "outline"} onClick={() => selected ? removeVariantForColor(row.value, gauge.value) : addVariantForColor(row, gauge.value)}>{gauge.name}</Button>;
+                                  })}
+                                </div>
+                                {variantInventories.filter((variant) => variant.colorValue === row.value).length === 0 ? (
+                                  <p className="text-xs text-muted-foreground">아직 추가된 게이지가 없습니다.</p>
                                 ) : (
                                   <div className="space-y-2">
-                                    {gaugeInventories.map((gaugeRow) => {
-                                      const variantRow = getVariantRow(row.value, gaugeRow.value);
+                                    {variantInventories.filter((variant) => variant.colorValue === row.value).map((variantRow) => {
                                       return (
-                                        <div key={`${row.value}-${gaugeRow.value}`} className="flex flex-col gap-3 rounded-md border border-border/60 bg-background/60 p-3 md:flex-row md:items-center md:justify-between">
-                                          <div className="text-sm font-medium">{gaugeRow.label ?? gaugeRow.value}</div>
+                                        <div key={`${row.value}-${variantRow.gaugeValue}`} className="flex flex-col gap-3 rounded-md border border-border/60 bg-background/60 p-3 md:flex-row md:items-center md:justify-between">
+                                          <div className="text-sm font-medium">{variantRow.gaugeLabel ?? variantRow.gaugeValue}</div>
                                           <div className="flex items-center gap-2">
                                             <Label>재고 수량</Label>
                                             <Input
                                               type="number"
                                               min={0}
                                               className="w-24"
-                                              value={variantRow?.stock ?? 0}
-                                              onChange={(e) => updateVariantStock(row.value, gaugeRow.value, Number(e.target.value))}
+                                              value={variantRow.stock ?? 0}
+                                              onChange={(e) => updateVariantStock(row.value, variantRow.gaugeValue, Number(e.target.value))}
                                             />
                                             <span className="text-sm text-muted-foreground">개</span>
                                             <label className="ml-2 flex items-center gap-2 text-sm">
                                               <Checkbox
-                                                checked={variantRow?.isSoldOut ?? true}
-                                                onCheckedChange={(checked) => updateVariantSoldOut(row.value, gaugeRow.value, Boolean(checked))}
+                                                checked={variantRow.isSoldOut ?? true}
+                                                onCheckedChange={(checked) => updateVariantSoldOut(row.value, variantRow.gaugeValue, Boolean(checked))}
                                               />
                                               품절
                                             </label>
+                                            <Button type="button" variant="ghost" size="sm" onClick={() => removeVariantForColor(row.value, variantRow.gaugeValue)}>삭제</Button>
                                           </div>
                                         </div>
                                       );
@@ -1381,25 +1378,10 @@ export default function NewStringPage() {
                       </div>
                     </div>
                     <div className="space-y-3">
-                      <Label>게이지 옵션(mm)</Label>
-                      <p className="text-sm text-muted-foreground">사용 가능한 게이지만 선택하세요. 재고/품절은 색상 카드 안의 조합 row에서 관리됩니다.</p>
-                      <div className="flex flex-wrap gap-2">
-                        {gauges.map((gauge) => {
-                          const selected = gaugeInventories.some((row) => row.value === gauge.value);
-                          return (
-                            <Button key={gauge.id} type="button" size="sm" variant={selected ? "default" : "outline"} onClick={() => {
-                              if (selected) {
-                                setGaugeInventories((prev) => { const next=prev.filter((row) => row.value !== gauge.value); reconcileVariantInventories(colorInventories, next); return next; });
-                                return;
-                              }
-                              setGaugeInventories((prev) => { const next=[...prev,{ value: gauge.value, label: gauge.name, stock: 0, isSoldOut: false }]; reconcileVariantInventories(colorInventories, next); return next; });
-                            }}>{gauge.name}</Button>
-                          );
-                        })}
-                      </div>
-                      {gaugeInventories.length === 0 && <p className="text-sm text-muted-foreground">선택된 게이지가 없습니다. 위 게이지 목록에서 사용할 게이지를 선택하세요.</p>}
+                      <Label>전체 사용 게이지 요약</Label>
+                      <p className="text-sm text-muted-foreground">실제 추가/삭제는 각 색상 카드 안에서 관리됩니다.</p>
                       <div className="space-y-3">
-                        {gaugeInventories.map((row) => (
+                        {gaugeSummaryRows.map((row) => (
                           <div key={row.value} className="rounded-lg border border-border/70 bg-muted/10 p-4">
                             <div className="text-sm font-semibold">{row.label ?? row.value} · 총 재고 {getGaugeTotalStock(row.value)}개</div>
                           </div>

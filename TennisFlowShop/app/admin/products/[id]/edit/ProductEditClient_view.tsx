@@ -235,34 +235,17 @@ export default function ProductEditClient({
     variantInventories
       .filter((row) => row.gaugeValue === gaugeValue && !row.isSoldOut)
       .reduce((sum, row) => sum + (Number.isFinite(row.stock) ? row.stock : 0), 0);
-  const reconcileVariantInventories = (
-    colorsInput: ProductColorInventory[],
-    gaugesInput: ProductGaugeInventory[],
-  ) => {
+  const addVariantForColor = (colorRow: ProductColorInventory, gaugeValue: string) => {
+    const gaugeMeta = gauges.find((g) => g.value === gaugeValue);
     setVariantInventories((prev) => {
-      const nextRows: ProductVariantInventory[] = [];
-      const prevMap = new Map(
-        prev.map((row) => [getVariantKey(row.colorValue, row.gaugeValue), row]),
-      );
-      colorsInput.forEach((colorRow) => {
-        gaugesInput.forEach((gaugeRow) => {
-          const key = getVariantKey(colorRow.value, gaugeRow.value);
-          const prevRow = prevMap.get(key);
-          nextRows.push({
-            colorValue: colorRow.value,
-            colorLabel: colorRow.label,
-            colorHex: colorRow.colorHex,
-            colorImage: colorRow.image || prevRow?.colorImage || "",
-            gaugeValue: gaugeRow.value,
-            gaugeLabel: gaugeRow.label,
-            stock: prevRow?.stock ?? 0,
-            isSoldOut: prevRow?.isSoldOut ?? true,
-          });
-        });
-      });
-      return nextRows;
+      if (prev.some((row) => row.colorValue === colorRow.value && row.gaugeValue === gaugeValue)) return prev;
+      return [...prev, { colorValue: colorRow.value, colorLabel: colorRow.label, colorHex: colorRow.colorHex, colorImage: colorRow.image ?? "", gaugeValue, gaugeLabel: gaugeMeta?.name ?? gaugeValue, stock: 0, isSoldOut: true }];
     });
   };
+  const removeVariantForColor = (colorValue: string, gaugeValue: string) =>
+    setVariantInventories((prev) =>
+      prev.filter((row) => !(row.colorValue === colorValue && row.gaugeValue === gaugeValue)),
+    );
   const handleGenerateKeywords = () => {
     const keywords = createSearchKeywords(basicInfo.name, basicInfo.brand);
     if (!keywords) {
@@ -380,48 +363,11 @@ export default function ProductEditClient({
         });
       });
 
-      const reconciledVariants: ProductVariantInventory[] = [];
-      colorInventoryRows.forEach((colorRow) => {
-        gaugeInventoryRows.forEach((gaugeRow) => {
-          const key = getVariantKey(colorRow.value, gaugeRow.value);
-          const existingRow = normalizedVariantMap.get(key);
-          if (existingRow) {
-            reconciledVariants.push(existingRow);
-            return;
-          }
-          reconciledVariants.push({
-            colorValue: colorRow.value,
-            colorLabel: colorRow.label,
-            colorHex: colorRow.colorHex,
-            colorImage: colorRow.image || "",
-            gaugeValue: gaugeRow.value,
-            gaugeLabel: gaugeRow.label,
-            stock: 0,
-            isSoldOut: true,
-          });
-        });
-      });
-
-      setVariantInventories(reconciledVariants);
+      setVariantInventories(Array.from(normalizedVariantMap.values()));
       setShouldShowLegacyVariantGuide(false);
     } else {
-      const generatedVariants: ProductVariantInventory[] = [];
-      colorInventoryRows.forEach((colorRow) => {
-        gaugeInventoryRows.forEach((gaugeRow) => {
-          generatedVariants.push({
-            colorValue: colorRow.value,
-            colorLabel: colorRow.label,
-            colorHex: colorRow.colorHex,
-            colorImage: colorRow.image ?? "",
-            gaugeValue: gaugeRow.value,
-            gaugeLabel: gaugeRow.label,
-            stock: 0,
-            isSoldOut: true,
-          });
-        });
-      });
-      setVariantInventories(generatedVariants);
-      setShouldShowLegacyVariantGuide(generatedVariants.length > 0);
+      setVariantInventories([]);
+      setShouldShowLegacyVariantGuide(colorInventoryRows.length > 0);
     }
 
     const hybridState = normalizeHybridState(p);
@@ -704,21 +650,16 @@ export default function ProductEditClient({
         return;
       }
 
-      if (gaugeInventories.length === 0) {
+      if (variantInventories.length === 0) {
         setActiveTab("options");
-        showErrorToast("게이지를 최소 1개 이상 선택해주세요.");
+        showErrorToast("각 색상마다 최소 1개 이상의 게이지를 추가해주세요.");
         return;
       }
 
-      const expectedCombinationCount = colorInventories.length * gaugeInventories.length;
-      if (variantInventories.length === 0 || expectedCombinationCount === 0) {
+      const hasColorWithoutVariant = colorInventories.some((colorRow) => !variantInventories.some((variant) => variant.colorValue === colorRow.value));
+      if (hasColorWithoutVariant) {
         setActiveTab("options");
-        showErrorToast("색상×게이지 조합 재고를 입력해주세요.");
-        return;
-      }
-      if (variantInventories.length !== expectedCombinationCount) {
-        setActiveTab("options");
-        showErrorToast("색상×게이지 조합 재고를 입력해주세요.");
+        showErrorToast("각 색상마다 최소 1개 이상의 게이지를 추가해주세요.");
         return;
       }
       if (variantInventories.some((row) => !Number.isFinite(Number(row.stock)) || Number(row.stock) < 0)) {
@@ -825,21 +766,23 @@ export default function ProductEditClient({
           isSoldOut,
         };
       });
-      const normalizedGaugeInventories = gaugeInventories.map((row) => {
-        const gaugeMeta = gauges.find((g) => g.value === row.value);
-        const gaugeRows = normalizedVariants.filter((variant) => variant.gaugeValue === row.value);
+      const gaugeSummaryValues = Array.from(new Set(normalizedVariants.map((variant) => variant.gaugeValue)));
+      const normalizedGaugeInventories = gaugeSummaryValues.map((value) => {
+        const row = gaugeInventories.find((item) => item.value === value);
+        const gaugeMeta = gauges.find((g) => g.value === value);
+        const gaugeRows = normalizedVariants.filter((variant) => variant.gaugeValue === value);
         const sellableStock = gaugeRows
           .filter((variant) => !variant.isSoldOut && variant.stock > 0)
           .reduce((sum, variant) => sum + variant.stock, 0);
         const isSoldOut = gaugeRows.length === 0 || gaugeRows.every((variant) => variant.isSoldOut) || sellableStock === 0;
         return {
-          value: gaugeMeta?.value ?? row.value,
-          label: gaugeMeta?.name ?? row.label ?? row.value,
+          value: gaugeMeta?.value ?? value,
+          label: gaugeMeta?.name ?? row?.label ?? value,
           stock: sellableStock,
           isSoldOut,
         };
       });
-      const gaugeOptions = normalizedGaugeInventories.map((row) => row.value);
+      const gaugeOptions = Array.from(new Set(normalizedVariants.map((row) => row.gaugeValue)));
       const normalizedGauge = gaugeOptions[0] ?? basicInfo.gauge ?? "";
       const normalizedGaugeStockTotal = normalizedVariants
         .filter((variant) => !variant.isSoldOut && variant.stock > 0)
@@ -1176,6 +1119,7 @@ export default function ProductEditClient({
                             ))}
                           </SelectContent>
                         </Select>
+                        <p className="text-xs text-muted-foreground">실제 구매 색상은 구매 옵션 탭에서 색상별로 관리됩니다.</p>
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="string-material">재질</Label>
@@ -1201,7 +1145,7 @@ export default function ProductEditClient({
 
                     <div className="grid gap-4 md:grid-cols-2">
                       <div className="space-y-2">
-                        <Label htmlFor="string-color">색상</Label>
+                        <Label htmlFor="string-color">대표 색상(목록/필터용)</Label>
                         <Select
                           value={basicInfo.color}
                           onValueChange={(value) =>
@@ -1578,17 +1522,10 @@ export default function ProductEditClient({
                           const selected = colorInventories.some((row) => row.value === color.id);
                           return <Button key={color.id} type="button" size="sm" variant={selected ? "default" : "outline"} onClick={() => {
                             if (selected) {
-                              setColorInventories((prev) => {
-                                const next = prev.filter((row) => row.value !== color.id);
-                                reconcileVariantInventories(next, gaugeInventories);
-                                return next;
-                              });
+                              setColorInventories((prev) => prev.filter((row) => row.value !== color.id));
+                              setVariantInventories((prev) => prev.filter((row) => row.colorValue !== color.id));
                             } else {
-                              setColorInventories((prev) => {
-                                const next = [...prev, { value: color.id, label: color.name, colorHex: color.hex, image: "", stock: 0, isSoldOut: false }];
-                                reconcileVariantInventories(next, gaugeInventories);
-                                return next;
-                              });
+                              setColorInventories((prev) => [...prev, { value: color.id, label: color.name, colorHex: color.hex, image: "", stock: 0, isSoldOut: false }]);
                             }
                           }}>{color.name}</Button>;
                         })}
@@ -1626,24 +1563,29 @@ export default function ProductEditClient({
                             </div>
                             <div className="space-y-3">
                               <div className="text-sm font-semibold">게이지별 재고</div>
-                              <div className="space-y-3">
-                                {gaugeInventories.map((gaugeRow) => {
-                                  const variant = getVariantRow(row.value, gaugeRow.value);
-                                  return (
-                                    <div key={`${row.value}-${gaugeRow.value}`} className="flex flex-col gap-2 rounded-md border border-border/60 p-3 md:flex-row md:items-center md:justify-between">
-                                      <div className="text-sm font-medium">{gaugeRow.label ?? gaugeRow.value}</div>
-                                      <div className="flex items-center gap-2">
-                                        <Label>재고 수량</Label>
-                                        <Input type="number" min={0} className="w-28" value={variant?.stock ?? 0} onChange={(e) => updateVariantStock(row.value, gaugeRow.value, Number(e.target.value))} />
-                                        <span className="text-sm text-muted-foreground">개</span>
-                                      </div>
-                                      <label className="flex items-center gap-2 text-sm">
-                                        <Checkbox checked={variant?.isSoldOut ?? true} onCheckedChange={(checked) => updateVariantSoldOut(row.value, gaugeRow.value, Boolean(checked))} />
-                                        품절
-                                      </label>
-                                    </div>
-                                  );
+                              <p className="text-xs text-muted-foreground">이 색상에서 판매할 게이지만 추가하세요.</p>
+                              <div className="flex flex-wrap gap-2">
+                                {gauges.map((gauge) => {
+                                  const selected = variantInventories.some((variant) => variant.colorValue === row.value && variant.gaugeValue === gauge.value);
+                                  return <Button key={`${row.value}-${gauge.value}`} type="button" size="sm" variant={selected ? "default" : "outline"} onClick={() => selected ? removeVariantForColor(row.value, gauge.value) : addVariantForColor(row, gauge.value)}>{gauge.name}</Button>;
                                 })}
+                              </div>
+                              <div className="space-y-3">
+                                {variantInventories.filter((variant) => variant.colorValue === row.value).map((variant) => (
+                                  <div key={`${row.value}-${variant.gaugeValue}`} className="flex flex-col gap-2 rounded-md border border-border/60 p-3 md:flex-row md:items-center md:justify-between">
+                                    <div className="text-sm font-medium">{variant.gaugeLabel ?? variant.gaugeValue}</div>
+                                    <div className="flex items-center gap-2">
+                                      <Label>재고 수량</Label>
+                                      <Input type="number" min={0} className="w-28" value={variant.stock ?? 0} onChange={(e) => updateVariantStock(row.value, variant.gaugeValue, Number(e.target.value))} />
+                                      <span className="text-sm text-muted-foreground">개</span>
+                                    </div>
+                                    <label className="flex items-center gap-2 text-sm">
+                                      <Checkbox checked={variant.isSoldOut ?? true} onCheckedChange={(checked) => updateVariantSoldOut(row.value, variant.gaugeValue, Boolean(checked))} />
+                                      품절
+                                    </label>
+                                    <Button type="button" variant="ghost" size="sm" onClick={() => removeVariantForColor(row.value, variant.gaugeValue)}>삭제</Button>
+                                  </div>
+                                ))}
                               </div>
                               <p className="text-sm text-muted-foreground">{colorMeta?.name ?? row.label ?? row.value} 총 재고: {getColorTotalStock(row.value)}개</p>
                             </div>
@@ -1652,32 +1594,11 @@ export default function ProductEditClient({
                       </div>
                     </div>
                     <div className="space-y-3">
-                      <Label>게이지 옵션(mm)</Label>
-                      <p className="text-sm text-muted-foreground">사용 가능한 게이지를 선택하고 게이지별 재고를 관리하세요.</p>
-                      <div className="flex flex-wrap gap-2">
-                        {gauges.map((gauge) => {
-                          const selected = gaugeInventories.some((row) => row.value === gauge.value);
-                          return <Button key={gauge.id} type="button" size="sm" variant={selected ? "default" : "outline"} onClick={() => {
-                            if (selected) {
-                              setGaugeInventories((prev) => {
-                                const next = prev.filter((row) => row.value !== gauge.value);
-                                reconcileVariantInventories(colorInventories, next);
-                                return next;
-                              });
-                            } else {
-                              setGaugeInventories((prev) => {
-                                const next = [...prev, { value: gauge.value, label: gauge.name, stock: 0, isSoldOut: false }];
-                                reconcileVariantInventories(colorInventories, next);
-                                return next;
-                              });
-                            }
-                          }}>{gauge.name}</Button>;
-                        })}
-                      </div>
-                      {gaugeInventories.length === 0 && <p className="text-sm text-muted-foreground">선택된 게이지가 없습니다. 위 게이지 목록에서 사용할 게이지를 선택하세요.</p>}
+                      <Label>전체 사용 게이지 요약</Label>
+                      <p className="text-sm text-muted-foreground">실제 추가/삭제는 각 색상 카드 안에서 관리됩니다.</p>
                       <div className="space-y-3">
-                        {gaugeInventories.map((row) => <div key={row.value} className="space-y-3 rounded-lg border border-border/70 bg-muted/10 p-4">
-                          <div className="text-sm font-semibold">{row.label ?? row.value} · 총 재고 {getGaugeTotalStock(row.value)}개</div>
+                        {Array.from(new Set(variantInventories.map((variant) => variant.gaugeValue))).map((gaugeValue) => <div key={gaugeValue} className="space-y-3 rounded-lg border border-border/70 bg-muted/10 p-4">
+                          <div className="text-sm font-semibold">{gauges.find((g) => g.value === gaugeValue)?.name ?? gaugeValue} · 총 재고 {getGaugeTotalStock(gaugeValue)}개</div>
                         </div>)}
                       </div>
                     </div>
