@@ -8,6 +8,7 @@ import type {
   AdminProductMutationResponseDto,
   ProductColorInventory,
   ProductGaugeInventory,
+  ProductVariantInventory,
   AdminProductUpdateRequestDto,
 } from "@/types/admin/products";
 import { ObjectId } from "mongodb";
@@ -17,6 +18,37 @@ function asRecord(value: unknown): Record<string, unknown> | null {
   if (typeof value !== "object" || value === null || Array.isArray(value))
     return null;
   return value as Record<string, unknown>;
+}
+function normalizeVariantInventories(value: unknown): ProductVariantInventory[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map<ProductVariantInventory | null>((item) => {
+      const row = asRecord(item);
+      if (!row) return null;
+      const colorValue = asString(row.colorValue).trim();
+      const gaugeValue = asString(row.gaugeValue).trim();
+      if (!colorValue || !gaugeValue) return null;
+      const stockNumber = Number(row.stock);
+      return {
+        colorValue,
+        ...(typeof row.colorLabel === "string" && row.colorLabel.trim()
+          ? { colorLabel: row.colorLabel.trim() }
+          : {}),
+        ...(typeof row.colorHex === "string" && row.colorHex.trim()
+          ? { colorHex: row.colorHex.trim() }
+          : {}),
+        ...(typeof row.colorImage === "string" && row.colorImage.trim()
+          ? { colorImage: row.colorImage.trim() }
+          : {}),
+        gaugeValue,
+        ...(typeof row.gaugeLabel === "string" && row.gaugeLabel.trim()
+          ? { gaugeLabel: row.gaugeLabel.trim() }
+          : {}),
+        stock: Number.isFinite(stockNumber) && stockNumber >= 0 ? stockNumber : 0,
+        isSoldOut: asBoolean(row.isSoldOut),
+      };
+    })
+    .filter((row): row is ProductVariantInventory => row !== null);
 }
 
 function asString(value: unknown): string {
@@ -134,6 +166,7 @@ function parseUpdateRequest(raw: unknown): AdminProductUpdateRequestDto | null {
       : legacyGaugeOptions;
   const normalizedGauge = gaugeOptions[0] ?? asString(body.gauge);
   const colorInventories = normalizeColorInventories(body.colorInventories);
+  const variantInventories = normalizeVariantInventories(body.variantInventories);
   const legacyColorOptions = asStringArray(body.colorOptions)
     .map((c) => c.trim())
     .filter((c) => c.length > 0);
@@ -156,6 +189,8 @@ function parseUpdateRequest(raw: unknown): AdminProductUpdateRequestDto | null {
     color: normalizedColor,
     colorOptions,
     colorInventories: colorInventories.length > 0 ? colorInventories : undefined,
+    variantInventories:
+      variantInventories.length > 0 ? variantInventories : undefined,
     length: asString(body.length),
     mountingFee: asNumber(body.mountingFee),
     price: asNumber(body.price),

@@ -62,6 +62,7 @@ import { adminFormHintTooltipClass } from "@/lib/tooltip-style";
 import type {
   ProductColorInventory,
   ProductGaugeInventory,
+  ProductVariantInventory,
 } from "@/types/admin/products";
 
 const AdminConfirmDialog = dynamic(
@@ -127,14 +128,67 @@ export default function NewStringPage() {
   const [colorInventories, setColorInventories] = useState<
     ProductColorInventory[]
   >([]);
+  const [variantInventories, setVariantInventories] = useState<
+    ProductVariantInventory[]
+  >([]);
   const [showGaugeStockToUser, setShowGaugeStockToUser] = useState(true);
+  const getVariantKey = (colorValue: string, gaugeValue: string) =>
+    `${colorValue}::${gaugeValue}`;
   const totalGaugeStock = useMemo(
     () =>
-      gaugeInventories
+      variantInventories
         .filter((row) => !row.isSoldOut)
         .reduce((sum, row) => sum + (Number.isFinite(row.stock) ? row.stock : 0), 0),
-    [gaugeInventories],
+    [variantInventories],
   );
+  const getVariantRow = (colorValue: string, gaugeValue: string) =>
+    variantInventories.find(
+      (row) => row.colorValue === colorValue && row.gaugeValue === gaugeValue,
+    );
+  const updateVariantStock = (colorValue: string, gaugeValue: string, stock: number) => {
+    setVariantInventories((prev) =>
+      prev.map((row) =>
+        row.colorValue === colorValue && row.gaugeValue === gaugeValue
+          ? { ...row, stock: Math.max(0, Number.isFinite(stock) ? stock : 0) }
+          : row,
+      ),
+    );
+  };
+  const updateVariantSoldOut = (colorValue: string, gaugeValue: string, isSoldOut: boolean) => {
+    setVariantInventories((prev) =>
+      prev.map((row) =>
+        row.colorValue === colorValue && row.gaugeValue === gaugeValue
+          ? { ...row, isSoldOut }
+          : row,
+      ),
+    );
+  };
+  const reconcileVariantInventories = (
+    colorsInput: ProductColorInventory[],
+    gaugesInput: ProductGaugeInventory[],
+  ) => {
+    const nextRows: ProductVariantInventory[] = [];
+    const prevMap = new Map(
+      variantInventories.map((row) => [getVariantKey(row.colorValue, row.gaugeValue), row]),
+    );
+    colorsInput.forEach((colorRow) => {
+      gaugesInput.forEach((gaugeRow) => {
+        const key = getVariantKey(colorRow.value, gaugeRow.value);
+        const prev = prevMap.get(key);
+        nextRows.push({
+          colorValue: colorRow.value,
+          colorLabel: colorRow.label,
+          colorHex: colorRow.colorHex,
+          colorImage: colorRow.image,
+          gaugeValue: gaugeRow.value,
+          gaugeLabel: gaugeRow.label,
+          stock: prev?.stock ?? 0,
+          isSoldOut: prev?.isSoldOut ?? true,
+        });
+      });
+    });
+    setVariantInventories(nextRows);
+  };
 
   // 추가 특성 정보
   const [additionalFeatures, setAdditionalFeatures] = useState("");
@@ -283,11 +337,17 @@ export default function NewStringPage() {
       showErrorToast("색상 이미지 업로드에 실패했습니다. 잠시 후 다시 시도하세요.");
       return;
     }
-    setColorInventories((prev) =>
-      prev.map((row) =>
+    setColorInventories((prev) => {
+      const next = prev.map((row) =>
         row.value === colorValue ? { ...row, image: imageUrl } : row,
-      ),
-    );
+      );
+      setVariantInventories((variantPrev) =>
+        variantPrev.map((row) =>
+          row.colorValue === colorValue ? { ...row, colorImage: imageUrl } : row,
+        ),
+      );
+      return next;
+    });
   };
 
   // 상품명 + 브랜드 기준으로 간단한 검색 키워드 자동 생성
@@ -472,47 +532,25 @@ export default function NewStringPage() {
       return;
     }
 
-    if (
-      colorInventories.some((row) => {
-        const stock = Number(row.stock);
-        return !Number.isFinite(stock) || stock < 0;
-      })
-    ) {
+    const expectedCombinationCount = colorInventories.length * gaugeInventories.length;
+    if (variantInventories.length === 0 || expectedCombinationCount === 0) {
       setActiveTab("options");
-      showErrorToast("색상 재고 수량은 0 이상 숫자로 입력해주세요.");
+      showErrorToast("색상×게이지 조합 재고를 입력해주세요.");
       return;
     }
-
-    if (
-      gaugeInventories.some((row) => {
-        const stock = Number(row.stock);
-        return !Number.isFinite(stock) || stock < 0;
-      })
-    ) {
+    if (variantInventories.length !== expectedCombinationCount) {
       setActiveTab("options");
-      showErrorToast("게이지 재고 수량은 0 이상 숫자로 입력해주세요.");
+      showErrorToast("선택된 색상×게이지 조합 재고가 누락되었습니다.");
       return;
     }
-
-    if (
-      colorInventories.some((row) => {
-        const stock = Number(row.stock);
-        return !row.isSoldOut && stock <= 0;
-      })
-    ) {
+    if (variantInventories.some((row) => !Number.isFinite(Number(row.stock)) || Number(row.stock) < 0)) {
       setActiveTab("options");
-      showErrorToast("품절이 아닌 색상은 재고 수량을 1개 이상 입력해주세요.");
+      showErrorToast("조합 재고 수량은 0 이상 숫자로 입력해주세요.");
       return;
     }
-
-    if (
-      gaugeInventories.some((row) => {
-        const stock = Number(row.stock);
-        return !row.isSoldOut && stock <= 0;
-      })
-    ) {
+    if (variantInventories.some((row) => !row.isSoldOut && Number(row.stock) < 1)) {
       setActiveTab("options");
-      showErrorToast("품절이 아닌 게이지는 재고 수량을 1개 이상 입력해주세요.");
+      showErrorToast("품절이 아닌 조합은 재고 수량을 1개 이상 입력해주세요.");
       return;
     }
     // specifications 영문 키로 미리 구성
@@ -542,61 +580,41 @@ export default function NewStringPage() {
       }
     }
 
-    // 검색 키워드: 쉼표 기준으로 잘라 배열로 변환
-    const searchKeywords = searchKeywordsInput
-      .split(",")
-      .map((k) => k.trim())
-      .filter((k) => k.length > 0);
+    const searchKeywords = searchKeywordsInput.split(",").map((k) => k.trim()).filter((k) => k.length > 0);
+    const normalizedVariants = variantInventories.map((row) => ({ ...row, stock: Math.max(0, Number(row.stock) || 0), colorImage: row.colorImage ?? colorInventories.find((c) => c.value===row.colorValue)?.image }));
+    const colorOptions = colorInventories.map((row) => row.value);
     const gaugeOptions = gaugeInventories.map((row) => row.value);
-    const normalizedGaugeInventories = gaugeInventories.map((row) => ({
-      ...row,
-      stock: Number.isFinite(row.stock) && row.stock >= 0 ? row.stock : 0,
-    }));
     const normalizedGauge = gaugeOptions[0] ?? basicInfo.gauge ?? "";
-    const normalizedGaugeStockTotal = normalizedGaugeInventories
-      .filter((row) => !row.isSoldOut)
-      .reduce((sum, row) => sum + row.stock, 0);
-    const normalizedColorInventories = colorInventories.map((row) => ({
-      ...row,
-      stock: Number.isFinite(row.stock) && row.stock >= 0 ? row.stock : 0,
-    }));
-    const colorOptions = normalizedColorInventories.map((row) => row.value);
     const normalizedColor = colorOptions[0] ?? basicInfo.color ?? "";
+    const normalizedColorInventories = colorInventories.map((colorRow) => {
+      const rows = normalizedVariants.filter((row) => row.colorValue === colorRow.value);
+      const stock = rows.filter((row) => !row.isSoldOut).reduce((sum, row) => sum + row.stock, 0);
+      return { ...colorRow, image: colorRow.image ?? rows[0]?.colorImage ?? "", stock, isSoldOut: rows.every((row) => row.isSoldOut) || stock === 0 };
+    });
+    const normalizedGaugeInventories = gaugeInventories.map((gaugeRow) => {
+      const rows = normalizedVariants.filter((row) => row.gaugeValue === gaugeRow.value);
+      const stock = rows.filter((row) => !row.isSoldOut).reduce((sum, row) => sum + row.stock, 0);
+      return { ...gaugeRow, stock, isSoldOut: rows.every((row) => row.isSoldOut) || stock === 0 };
+    });
+    const normalizedGaugeStockTotal = normalizedVariants.filter((row) => !row.isSoldOut).reduce((sum,row)=>sum+row.stock,0);
 
-    //  product 전체 구성
     const product = {
-      ...basicInfo, // name, brand, price 등 기본 항목
+      ...basicInfo,
       gauge: normalizedGauge,
       gaugeOptions,
       gaugeInventories: normalizedGaugeInventories,
       color: normalizedColor,
       colorOptions,
       colorInventories: normalizedColorInventories,
-
-      // 검색 키워드 (통합 검색에서 사용)
+      variantInventories: normalizedVariants,
       searchKeywords,
-
-      features: {
-        ...features, // power, control, spin 등 성능 항목
-      },
-
-      tags: { ...tags }, // 추천 플레이어 & 스타일
-
-      specifications: {
-        ...specifications,
-        gauge: normalizedGauge,
-      }, // 영문 키로 통일된 사양 정보
-
-      additionalFeatures, // 추가 설명
-
+      features: { ...features },
+      tags: { ...tags },
+      specifications: { ...specifications, gauge: normalizedGauge },
+      additionalFeatures,
       images,
-      inventory: {
-        ...inventory,
-        stock: normalizedGaugeStockTotal,
-        hideGaugeStock: !showGaugeStockToUser,
-      }, // 재고 관리 정보
+      inventory: { ...inventory, stock: normalizedGaugeStockTotal, hideGaugeStock: !showGaugeStockToUser },
     };
-
     // console.log(' 등록된 상품 데이터:', product);
 
     // API 전송 로직 위치
@@ -1251,13 +1269,10 @@ export default function NewStringPage() {
                               variant={selected ? "default" : "outline"}
                               onClick={() => {
                                 if (selected) {
-                                  setColorInventories((prev) => prev.filter((row) => row.value !== color.id));
+                                  setColorInventories((prev) => { const next=prev.filter((row) => row.value !== color.id); reconcileVariantInventories(next, gaugeInventories); return next; });
                                   return;
                                 }
-                                setColorInventories((prev) => [
-                                  ...prev,
-                                  { value: color.id, label: color.name, colorHex: color.hex, image: "", stock: 0, isSoldOut: false },
-                                ]);
+                                setColorInventories((prev) => { const next=[...prev,{ value: color.id, label: color.name, colorHex: color.hex, image: "", stock: 0, isSoldOut: false }]; reconcileVariantInventories(next, gaugeInventories); return next; });
                               }}
                             >
                               {color.name}
@@ -1324,10 +1339,10 @@ export default function NewStringPage() {
                           return (
                             <Button key={gauge.id} type="button" size="sm" variant={selected ? "default" : "outline"} onClick={() => {
                               if (selected) {
-                                setGaugeInventories((prev) => prev.filter((row) => row.value !== gauge.value));
+                                setGaugeInventories((prev) => { const next=prev.filter((row) => row.value !== gauge.value); reconcileVariantInventories(colorInventories, next); return next; });
                                 return;
                               }
-                              setGaugeInventories((prev) => [...prev, { value: gauge.value, label: gauge.name, stock: 0, isSoldOut: false }]);
+                              setGaugeInventories((prev) => { const next=[...prev,{ value: gauge.value, label: gauge.name, stock: 0, isSoldOut: false }]; reconcileVariantInventories(colorInventories, next); return next; });
                             }}>{gauge.name}</Button>
                           );
                         })}
