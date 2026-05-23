@@ -145,6 +145,14 @@ export default function NewStringPage() {
     variantInventories.find(
       (row) => row.colorValue === colorValue && row.gaugeValue === gaugeValue,
     );
+  const getColorTotalStock = (colorValue: string) =>
+    variantInventories
+      .filter((row) => row.colorValue === colorValue && !row.isSoldOut)
+      .reduce((sum, row) => sum + (Number.isFinite(row.stock) ? row.stock : 0), 0);
+  const getGaugeTotalStock = (gaugeValue: string) =>
+    variantInventories
+      .filter((row) => row.gaugeValue === gaugeValue && !row.isSoldOut)
+      .reduce((sum, row) => sum + (Number.isFinite(row.stock) ? row.stock : 0), 0);
   const updateVariantStock = (colorValue: string, gaugeValue: string, stock: number) => {
     setVariantInventories((prev) =>
       prev.map((row) =>
@@ -1257,7 +1265,7 @@ export default function NewStringPage() {
                   <CardContent className="space-y-6 p-6">
                     <div className="space-y-3">
                       <Label>색상 옵션</Label>
-                      <p className="text-sm text-muted-foreground">사용 가능한 색상을 선택하고 색상별 이미지/재고를 설정하세요.</p>
+                      <p className="text-sm text-muted-foreground">사용 가능한 색상을 선택하고 색상 카드 안에서 게이지 조합 재고를 설정하세요.</p>
                       <div className="flex flex-wrap gap-2">
                         {colors.map((color) => {
                           const selected = colorInventories.some((row) => row.value === color.id);
@@ -1311,19 +1319,43 @@ export default function NewStringPage() {
                                   </Button>
                                 </div>
                               </div>
-                              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                                <div className="flex items-center gap-2">
-                                  <Label>재고 수량</Label>
-                                  <Input type="number" min={0} className="w-28" value={row.stock} onChange={(e) => {
-                                    const next = Number(e.target.value);
-                                    setColorInventories((prev) => prev.map((item) => item.value === row.value ? { ...item, stock: Number.isFinite(next) ? Math.max(0, next) : 0 } : item));
-                                  }} />
-                                  <span className="text-sm text-muted-foreground">개</span>
-                                </div>
-                                <label className="flex items-center gap-2 text-sm">
-                                  <Checkbox checked={row.isSoldOut} onCheckedChange={(checked) => setColorInventories((prev) => prev.map((item) => item.value === row.value ? { ...item, isSoldOut: Boolean(checked) } : item))} />
-                                  품절
-                                </label>
+                              <div className="space-y-2">
+                                <Label>게이지별 재고</Label>
+                                {gaugeInventories.length === 0 ? (
+                                  <p className="text-xs text-muted-foreground">먼저 게이지를 1개 이상 선택하세요.</p>
+                                ) : (
+                                  <div className="space-y-2">
+                                    {gaugeInventories.map((gaugeRow) => {
+                                      const variantRow = getVariantRow(row.value, gaugeRow.value);
+                                      return (
+                                        <div key={`${row.value}-${gaugeRow.value}`} className="flex flex-col gap-3 rounded-md border border-border/60 bg-background/60 p-3 md:flex-row md:items-center md:justify-between">
+                                          <div className="text-sm font-medium">{gaugeRow.label ?? gaugeRow.value}</div>
+                                          <div className="flex items-center gap-2">
+                                            <Label>재고 수량</Label>
+                                            <Input
+                                              type="number"
+                                              min={0}
+                                              className="w-24"
+                                              value={variantRow?.stock ?? 0}
+                                              onChange={(e) => updateVariantStock(row.value, gaugeRow.value, Number(e.target.value))}
+                                            />
+                                            <span className="text-sm text-muted-foreground">개</span>
+                                            <label className="ml-2 flex items-center gap-2 text-sm">
+                                              <Checkbox
+                                                checked={variantRow?.isSoldOut ?? true}
+                                                onCheckedChange={(checked) => updateVariantSoldOut(row.value, gaugeRow.value, Boolean(checked))}
+                                              />
+                                              품절
+                                            </label>
+                                          </div>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                )}
+                                <p className="text-sm font-medium text-muted-foreground">
+                                  {colorMeta?.name ?? row.label ?? row.value} 총 재고: {getColorTotalStock(row.value)}개
+                                </p>
                               </div>
                             </div>
                           );
@@ -1332,7 +1364,7 @@ export default function NewStringPage() {
                     </div>
                     <div className="space-y-3">
                       <Label>게이지 옵션(mm)</Label>
-                      <p className="text-sm text-muted-foreground">사용 가능한 게이지를 선택하고 게이지별 재고를 관리하세요.</p>
+                      <p className="text-sm text-muted-foreground">사용 가능한 게이지만 선택하세요. 재고/품절은 색상 카드 안의 조합 row에서 관리됩니다.</p>
                       <div className="flex flex-wrap gap-2">
                         {gauges.map((gauge) => {
                           const selected = gaugeInventories.some((row) => row.value === gauge.value);
@@ -1350,22 +1382,8 @@ export default function NewStringPage() {
                       {gaugeInventories.length === 0 && <p className="text-sm text-muted-foreground">선택된 게이지가 없습니다. 위 게이지 목록에서 사용할 게이지를 선택하세요.</p>}
                       <div className="space-y-3">
                         {gaugeInventories.map((row) => (
-                          <div key={row.value} className="space-y-3 rounded-lg border border-border/70 bg-muted/10 p-4">
-                            <div className="text-sm font-semibold">{row.label ?? row.value}</div>
-                            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                              <div className="flex items-center gap-2">
-                                <Label>재고 수량</Label>
-                                <Input type="number" min={0} className="w-28" value={row.stock} onChange={(e) => {
-                                  const next = Number(e.target.value);
-                                  setGaugeInventories((prev) => prev.map((item) => item.value === row.value ? { ...item, stock: Number.isFinite(next) ? Math.max(0, next) : 0 } : item));
-                                }} />
-                                <span className="text-sm text-muted-foreground">개</span>
-                              </div>
-                              <label className="flex items-center gap-2 text-sm">
-                                <Checkbox checked={row.isSoldOut} onCheckedChange={(checked) => setGaugeInventories((prev) => prev.map((item) => item.value === row.value ? { ...item, isSoldOut: Boolean(checked) } : item))} />
-                                품절
-                              </label>
-                            </div>
+                          <div key={row.value} className="rounded-lg border border-border/70 bg-muted/10 p-4">
+                            <div className="text-sm font-semibold">{row.label ?? row.value} · 총 재고 {getGaugeTotalStock(row.value)}개</div>
                           </div>
                         ))}
                       </div>
