@@ -24,6 +24,16 @@ export type ProductColorInventory = {
   stock: number;
   isSoldOut: boolean;
 };
+export type ProductVariantInventory = {
+  colorValue: string;
+  colorLabel?: string;
+  colorHex?: string;
+  colorImage?: string;
+  gaugeValue: string;
+  gaugeLabel?: string;
+  stock: number;
+  isSoldOut: boolean;
+};
 
 export type ProductFeatureScores = {
   /** 1~100 */
@@ -71,6 +81,7 @@ export type ProductDetail = {
   color: string;
   colorOptions?: string[];
   colorInventories?: ProductColorInventory[];
+  variantInventories?: ProductVariantInventory[];
   length: string;
   price: number;
   mountingFee: number;
@@ -152,6 +163,7 @@ export interface AdminProductUpdateRequestDto {
   color: string;
   colorOptions?: string[];
   colorInventories?: ProductColorInventory[];
+  variantInventories?: ProductVariantInventory[];
   length: string;
   mountingFee: number;
   price: number;
