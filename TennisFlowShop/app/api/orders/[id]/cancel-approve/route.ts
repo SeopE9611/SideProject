@@ -91,6 +91,115 @@ function pickStringProductObjectIdFromApplicationDoc(appDoc: any): ObjectId | nu
   return toObjectIdIfValid(appDoc?.meta?.stringProductId);
 }
 
+
+async function restoreOrderVariantStockIfNeeded(db: any, existing: any, now: Date) {
+  const alreadyRestored = Boolean(existing?.stockRestore?.variantStockRestoredAt);
+  if (alreadyRestored) {
+    return { setFields: {} as Record<string, unknown> };
+  }
+
+  const restoreMap = new Map<string, { productObjectId: ObjectId; selectedColor: string; selectedGauge: string; quantity: number }>();
+  const items = Array.isArray(existing?.items) ? existing.items : [];
+  for (const item of items) {
+    const kind = typeof item?.kind === "string" ? item.kind.trim() : "";
+    if (kind && kind !== "product") continue;
+    const stockDeductionMode =
+      typeof item?.stockDeductionMode === "string" ? item.stockDeductionMode.trim() : "";
+    const stockDeductionModeFromObject =
+      typeof item?.stockDeduction?.mode === "string" ? item.stockDeduction.mode.trim() : "";
+    const isVariantDeduction = stockDeductionMode === "variant" || stockDeductionModeFromObject === "variant";
+    if (!isVariantDeduction) continue;
+
+    const selectedColor =
+      typeof item?.stockDeduction?.colorValue === "string" && item.stockDeduction.colorValue.trim()
+        ? item.stockDeduction.colorValue.trim()
+        : typeof item?.selectedColor === "string" && item.selectedColor.trim()
+          ? item.selectedColor.trim()
+          : "";
+    const selectedGauge =
+      typeof item?.stockDeduction?.gaugeValue === "string" && item.stockDeduction.gaugeValue.trim()
+        ? item.stockDeduction.gaugeValue.trim()
+        : typeof item?.selectedGauge === "string" && item.selectedGauge.trim()
+          ? item.selectedGauge.trim()
+          : "";
+    if (!selectedColor || !selectedGauge) continue;
+
+    const productId = String(item?.productId ?? "").trim();
+    if (!ObjectId.isValid(productId)) continue;
+    const quantity = Math.max(0, Math.trunc(Number(item?.quantity ?? 0)));
+    if (quantity <= 0) continue;
+    const key = `${productId}:${selectedColor}:${selectedGauge}`;
+    const existingAgg = restoreMap.get(key);
+    if (existingAgg) {
+      existingAgg.quantity += quantity;
+      continue;
+    }
+    restoreMap.set(key, {
+      productObjectId: new ObjectId(productId),
+      selectedColor,
+      selectedGauge,
+      quantity,
+    });
+  }
+
+  if (restoreMap.size === 0) {
+    return { setFields: {} as Record<string, unknown> };
+  }
+
+  const products = db.collection("products");
+  for (const restoreItem of restoreMap.values()) {
+    const restoreResult = await products.updateOne(
+      {
+        _id: restoreItem.productObjectId,
+        sold: { $gte: restoreItem.quantity },
+        variantInventories: {
+          $elemMatch: {
+            colorValue: restoreItem.selectedColor,
+            gaugeValue: restoreItem.selectedGauge,
+          },
+        },
+      },
+      {
+        $inc: {
+          "variantInventories.$[variant].stock": restoreItem.quantity,
+          "colorInventories.$[color].stock": restoreItem.quantity,
+          "gaugeInventories.$[gauge].stock": restoreItem.quantity,
+          "inventory.stock": restoreItem.quantity,
+          sold: -restoreItem.quantity,
+        },
+      },
+      {
+        arrayFilters: [
+          { "variant.colorValue": restoreItem.selectedColor, "variant.gaugeValue": restoreItem.selectedGauge },
+          { "color.value": restoreItem.selectedColor },
+          { "gauge.value": restoreItem.selectedGauge },
+        ],
+      },
+    );
+
+    if (!restoreResult.matchedCount || !restoreResult.modifiedCount) {
+      return {
+        errorResponse: NextResponse.json(
+          {
+            ok: false,
+            code: "VARIANT_STOCK_RESTORE_FAILED",
+            message: "주문 취소 중 옵션 조합 재고 복구에 실패했습니다.",
+          },
+          { status: 409 },
+        ),
+        setFields: {} as Record<string, unknown>,
+      };
+    }
+  }
+
+  return {
+    setFields: {
+      "stockRestore.variantStockRestoredAt": now,
+      "stockRestore.variantStockRestoreReason": "order_cancel_approved",
+    } as Record<string, unknown>,
+  };
+}
+
 async function restoreOrderGaugeStockIfNeeded(db: any, existing: any, now: Date) {
   const alreadyRestored = Boolean(existing?.stockRestore?.gaugeStockRestoredAt);
   if (alreadyRestored) {
@@ -102,6 +211,9 @@ async function restoreOrderGaugeStockIfNeeded(db: any, existing: any, now: Date)
   for (const item of items) {
     const kind = typeof item?.kind === "string" ? item.kind.trim() : "";
     if (kind && kind !== "product") continue;
+    const stockDeductionMode = typeof item?.stockDeductionMode === "string" ? item.stockDeductionMode.trim() : "";
+    const stockDeductionModeFromObject = typeof item?.stockDeduction?.mode === "string" ? item.stockDeduction.mode.trim() : "";
+    if (stockDeductionMode === "variant" || stockDeductionModeFromObject === "variant") continue;
     const selectedGauge =
       typeof item?.selectedGauge === "string" && item.selectedGauge.trim()
         ? item.selectedGauge.trim()
@@ -178,6 +290,9 @@ async function restoreOrderColorStockIfNeeded(db: any, existing: any, now: Date)
   for (const item of items) {
     const kind = typeof item?.kind === "string" ? item.kind.trim() : "";
     if (kind && kind !== "product") continue;
+    const stockDeductionMode = typeof item?.stockDeductionMode === "string" ? item.stockDeductionMode.trim() : "";
+    const stockDeductionModeFromObject = typeof item?.stockDeduction?.mode === "string" ? item.stockDeduction.mode.trim() : "";
+    if (stockDeductionMode === "variant" || stockDeductionModeFromObject === "variant") continue;
     const selectedColor = typeof item?.selectedColor === "string" && item.selectedColor.trim() ? item.selectedColor.trim() : undefined;
     if (!selectedColor) continue;
     const productId = String(item?.productId ?? "").trim();
@@ -489,6 +604,9 @@ export async function POST(
       cancelRequest: updatedCancelRequest,
       ...(nextPaymentInfo ? { paymentInfo: nextPaymentInfo } : {}),
     };
+    const variantRestore = await restoreOrderVariantStockIfNeeded(db, existing, now);
+    if (variantRestore.errorResponse) return variantRestore.errorResponse;
+    Object.assign(updateFields, variantRestore.setFields);
     const gaugeRestore = await restoreOrderGaugeStockIfNeeded(db, existing, now);
     if (gaugeRestore.errorResponse) return gaugeRestore.errorResponse;
     Object.assign(updateFields, gaugeRestore.setFields);

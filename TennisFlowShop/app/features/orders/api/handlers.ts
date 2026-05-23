@@ -342,6 +342,130 @@ export async function createOrder(req: Request, executionContext?: CreateOrderEx
     try {
       type ColorInventoryDeductionResult = { status: "deducted" } | { status: "not_managed" };
 
+
+      type VariantInventoryDeductionResult = { status: "deducted" } | { status: "not_managed" };
+
+      async function applyVariantInventoryDeduction(params: {
+        productId: ObjectId;
+        selectedColor?: string;
+        selectedGauge?: string;
+        quantity: number;
+        session: any;
+        productName?: string;
+        product?: any;
+      }): Promise<VariantInventoryDeductionResult> {
+        const { productId, selectedColor, selectedGauge, quantity, session, productName, product } = params;
+        const productDoc = product ?? (await db.collection("products").findOne({ _id: productId }, { session }));
+        const variantInventories = Array.isArray((productDoc as any)?.variantInventories) ? (productDoc as any).variantInventories : [];
+        if (variantInventories.length === 0) {
+          return { status: "not_managed" };
+        }
+
+        const colorValue = typeof selectedColor === "string" ? selectedColor.trim() : "";
+        const gaugeValue = typeof selectedGauge === "string" ? selectedGauge.trim() : "";
+
+        if (!colorValue || !gaugeValue) {
+          throw new HttpError(400, {
+            error: "색상과 게이지를 모두 선택해주세요.",
+            code: "VARIANT_SELECTION_REQUIRED",
+            productName,
+            selectedColor: colorValue || undefined,
+            selectedGauge: gaugeValue || undefined,
+          });
+        }
+
+        const variantRow = variantInventories.find(
+          (v: any) => String(v?.colorValue ?? "").trim() === colorValue && String(v?.gaugeValue ?? "").trim() === gaugeValue,
+        );
+
+        if (!variantRow) {
+          throw new HttpError(400, {
+            error: "선택한 색상/게이지 조합을 찾을 수 없습니다.",
+            code: "VARIANT_NOT_FOUND",
+            productName,
+            selectedColor: colorValue,
+            selectedGauge: gaugeValue,
+          });
+        }
+
+        if (variantRow?.isSoldOut === true) {
+          throw new HttpError(400, {
+            error: "선택한 색상/게이지 조합은 현재 품절입니다.",
+            code: "VARIANT_SOLD_OUT",
+            productName,
+            selectedColor: colorValue,
+            selectedGauge: gaugeValue,
+          });
+        }
+
+        const variantStock = Number(variantRow?.stock ?? 0);
+        if (variantStock < quantity) {
+          throw new HttpError(400, {
+            error: "선택한 색상/게이지 조합의 구매 가능 수량을 초과했습니다.",
+            code: "VARIANT_INSUFFICIENT_STOCK",
+            productName,
+            selectedColor: colorValue,
+            selectedGauge: gaugeValue,
+          });
+        }
+
+        const variantUpdated = await db.collection("products").updateOne(
+          {
+            _id: productId,
+            "inventory.stock": { $gte: quantity },
+            variantInventories: {
+              $elemMatch: {
+                colorValue,
+                gaugeValue,
+                isSoldOut: { $ne: true },
+                stock: { $gte: quantity },
+              },
+            },
+            colorInventories: {
+              $elemMatch: {
+                value: colorValue,
+                stock: { $gte: quantity },
+              },
+            },
+            gaugeInventories: {
+              $elemMatch: {
+                value: gaugeValue,
+                stock: { $gte: quantity },
+              },
+            },
+          },
+          {
+            $inc: {
+              "variantInventories.$[variant].stock": -quantity,
+              "colorInventories.$[color].stock": -quantity,
+              "gaugeInventories.$[gauge].stock": -quantity,
+              "inventory.stock": -quantity,
+              sold: quantity,
+            },
+          },
+          {
+            session,
+            arrayFilters: [
+              { "variant.colorValue": colorValue, "variant.gaugeValue": gaugeValue },
+              { "color.value": colorValue },
+              { "gauge.value": gaugeValue },
+            ],
+          },
+        );
+
+        if (variantUpdated.matchedCount > 0 && variantUpdated.modifiedCount > 0) {
+          return { status: "deducted" };
+        }
+
+        throw new HttpError(400, {
+          error: "선택한 색상/게이지 조합의 구매 가능 수량을 초과했습니다.",
+          code: "VARIANT_STOCK_UPDATE_FAILED",
+          productName,
+          selectedColor: colorValue,
+          selectedGauge: gaugeValue,
+        });
+      }
+
       async function applyColorInventoryDeduction(params: {
         productId: ObjectId;
         selectedColor: string;
@@ -442,6 +566,21 @@ export async function createOrder(req: Request, executionContext?: CreateOrderEx
 
             const selectedGauge = item.selectedGauge?.trim();
             const selectedColor = item.selectedColor?.trim();
+            const hasVariantInventories = Array.isArray((product as any).variantInventories) && (product as any).variantInventories.length > 0;
+
+            if (hasVariantInventories) {
+              await applyVariantInventoryDeduction({
+                productId,
+                selectedColor,
+                selectedGauge,
+                quantity,
+                session,
+                productName: String((product as any)?.name ?? ""),
+                product,
+              });
+              continue;
+            }
+
             if (selectedGauge) {
               const gaugeInventories = Array.isArray((product as any).gaugeInventories)
                 ? ((product as any).gaugeInventories as Array<{
@@ -710,6 +849,17 @@ export async function createOrder(req: Request, executionContext?: CreateOrderEx
                 selectedColorLabel: it.selectedColorLabel?.trim() || undefined,
                 selectedColorHex: it.selectedColorHex?.trim() || undefined,
                 selectedColorImage: it.selectedColorImage?.trim() || undefined,
+                stockDeduction:
+                  Array.isArray((prod as any)?.variantInventories) &&
+                  (prod as any).variantInventories.length > 0 &&
+                  it.selectedColor?.trim() &&
+                  it.selectedGauge?.trim()
+                    ? {
+                        mode: "variant" as const,
+                        colorValue: it.selectedColor.trim(),
+                        gaugeValue: it.selectedGauge.trim(),
+                      }
+                    : undefined,
               };
             }
 
