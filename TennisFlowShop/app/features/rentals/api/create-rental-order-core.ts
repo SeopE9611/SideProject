@@ -24,6 +24,73 @@ async function ensureRentalOrdersIdemIndex(db: Db) {
   await rentalOrdersIdemIndexGlobal.__tf_rental_orders_idem_index_promise__;
 }
 
+async function applyRentalVariantInventoryDeduction(params: {
+  db: Db;
+  session: any;
+  productId: ObjectId;
+  selectedColor?: string;
+  selectedGauge?: string;
+  quantity: number;
+  productName: string;
+  product: any;
+}) {
+  const { db, session, productId, selectedColor, selectedGauge, quantity, product } =
+    params;
+  const variantInventories = Array.isArray(product?.variantInventories)
+    ? product.variantInventories
+    : [];
+  if (variantInventories.length <= 0) return { status: "not_managed" as const };
+  if (!selectedColor || !selectedGauge) throw new Error("VARIANT_SELECTION_REQUIRED");
+
+  const variantRow = variantInventories.find(
+    (row: any) =>
+      String(row?.colorValue ?? "").trim() === selectedColor &&
+      String(row?.gaugeValue ?? "").trim() === selectedGauge,
+  );
+  if (!variantRow) throw new Error("VARIANT_NOT_FOUND");
+  if (variantRow?.isSoldOut === true) throw new Error("VARIANT_SOLD_OUT");
+  const variantStock = Number(variantRow?.stock ?? 0);
+  if (!Number.isFinite(variantStock) || variantStock < quantity) {
+    throw new Error("VARIANT_INSUFFICIENT_STOCK");
+  }
+
+  const stockUpdateResult = await db.collection("products").updateOne(
+    {
+      _id: productId,
+      "inventory.stock": { $gte: quantity },
+      variantInventories: {
+        $elemMatch: {
+          colorValue: selectedColor,
+          gaugeValue: selectedGauge,
+          isSoldOut: { $ne: true },
+          stock: { $gte: quantity },
+        },
+      },
+    },
+    {
+      $inc: {
+        "variantInventories.$[variant].stock": -quantity,
+        "colorInventories.$[color].stock": -quantity,
+        "gaugeInventories.$[gauge].stock": -quantity,
+        "inventory.stock": -quantity,
+        sold: quantity,
+      },
+    },
+    {
+      session,
+      arrayFilters: [
+        { "variant.colorValue": selectedColor, "variant.gaugeValue": selectedGauge },
+        { "color.value": selectedColor },
+        { "gauge.value": selectedGauge },
+      ],
+    },
+  );
+  if (stockUpdateResult.modifiedCount !== 1) {
+    throw new Error("VARIANT_STOCK_UPDATE_FAILED");
+  }
+  return { status: "deducted" as const };
+}
+
 export type RentalCreatePayload = {
   racketId: string;
   days: 7 | 15 | 30;
@@ -197,6 +264,11 @@ export async function createRentalOrderCore(params: {
     selectedColorLabel?: string;
     selectedColorHex?: string;
     selectedColorImage?: string;
+    stockDeduction?: {
+      mode: "variant";
+      colorValue: string;
+      gaugeValue: string;
+    };
     requestedAt: Date;
   } = null;
   let stringingHasManagedColorInventories = false;
@@ -243,6 +315,7 @@ export async function createRentalOrderCore(params: {
             color: 1,
             colorOptions: 1,
             colorInventories: 1,
+            variantInventories: 1,
           },
         },
       );
@@ -262,6 +335,9 @@ export async function createRentalOrderCore(params: {
       ? (s as any).colorInventories
       : [];
     const hasManagedColorInventories = colorInventories.length > 0;
+    const hasVariantInventories =
+      Array.isArray((s as any).variantInventories) &&
+      (s as any).variantInventories.length > 0;
     stringingHasManagedColorInventories = hasManagedColorInventories;
 
     if (selectedColor && hasManagedColorInventories) {
@@ -315,6 +391,15 @@ export async function createRentalOrderCore(params: {
       ...(selectedColorLabel ? { selectedColorLabel } : {}),
       ...(selectedColorHex ? { selectedColorHex } : {}),
       ...(selectedColorImage ? { selectedColorImage } : {}),
+      ...(hasVariantInventories && selectedColor && selectedGauge
+        ? {
+            stockDeduction: {
+              mode: "variant" as const,
+              colorValue: selectedColor,
+              gaugeValue: selectedGauge,
+            },
+          }
+        : {}),
       requestedAt: new Date(),
     };
   }
@@ -433,7 +518,34 @@ export async function createRentalOrderCore(params: {
         if (stringingSnap?.requested) {
           if (stringingSnap.selectedGauge || stringingSnap.selectedColor) {
             const stringQuantity = 1;
-            if (stringingSnap.selectedGauge && stringingSnap.selectedColor) {
+            const product = await db.collection("products").findOne(
+              { _id: stringingSnap.stringId },
+              {
+                projection: {
+                  name: 1,
+                  gaugeInventories: 1,
+                  colorInventories: 1,
+                  variantInventories: 1,
+                },
+              },
+            );
+            if (!product) throw new Error("STRING_NOT_FOUND");
+            const hasVariantInventories =
+              Array.isArray((product as any).variantInventories) &&
+              (product as any).variantInventories.length > 0;
+
+            if (hasVariantInventories) {
+              await applyRentalVariantInventoryDeduction({
+                db,
+                session,
+                productId: stringingSnap.stringId,
+                selectedColor: stringingSnap.selectedColor,
+                selectedGauge: stringingSnap.selectedGauge,
+                quantity: stringQuantity,
+                productName: stringingSnap.name,
+                product,
+              });
+            } else if (stringingSnap.selectedGauge && stringingSnap.selectedColor) {
               if (stringingHasManagedColorInventories) {
                 const stockUpdateResult = await db.collection("products").updateOne(
                   {

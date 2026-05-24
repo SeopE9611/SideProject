@@ -6,6 +6,77 @@ import { writeRentalHistory } from "@/app/features/rentals/utils/history";
 import { grantPoints } from "@/lib/points.service";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 
+async function restoreRentalVariantStockIfNeeded(params: {
+  db: any;
+  existing: any;
+  now: Date;
+}) {
+  const { db, existing, now } = params;
+  if (existing?.stockRestore?.variantStockRestoredAt) return;
+  const stockDeduction = existing?.stringing?.stockDeduction;
+  if (String(stockDeduction?.mode ?? "") !== "variant") return;
+
+  const selectedColor =
+    typeof stockDeduction?.colorValue === "string" && stockDeduction.colorValue.trim()
+      ? stockDeduction.colorValue.trim()
+      : null;
+  const selectedGauge =
+    typeof stockDeduction?.gaugeValue === "string" && stockDeduction.gaugeValue.trim()
+      ? stockDeduction.gaugeValue.trim()
+      : null;
+  const stringProductId =
+    existing?.stringing?.stringId && ObjectId.isValid(String(existing.stringing.stringId))
+      ? new ObjectId(String(existing.stringing.stringId))
+      : null;
+  if (!stringProductId || !selectedColor || !selectedGauge) {
+    throw new Error("VARIANT_STOCK_RESTORE_FAILED");
+  }
+
+  const restoreResult = await db.collection("products").updateOne(
+    {
+      _id: stringProductId,
+      sold: { $gte: 1 },
+      variantInventories: {
+        $elemMatch: {
+          colorValue: selectedColor,
+          gaugeValue: selectedGauge,
+        },
+      },
+    },
+    {
+      $inc: {
+        "variantInventories.$[variant].stock": 1,
+        "colorInventories.$[color].stock": 1,
+        "gaugeInventories.$[gauge].stock": 1,
+        "inventory.stock": 1,
+        sold: -1,
+      },
+    },
+    {
+      arrayFilters: [
+        { "variant.colorValue": selectedColor, "variant.gaugeValue": selectedGauge },
+        { "color.value": selectedColor },
+        { "gauge.value": selectedGauge },
+      ],
+    },
+  );
+
+  if (restoreResult.matchedCount < 1 || restoreResult.modifiedCount < 1) {
+    throw new Error("VARIANT_STOCK_RESTORE_FAILED");
+  }
+
+  await db.collection("rental_orders").updateOne(
+    { _id: existing._id, "stockRestore.variantStockRestoredAt": { $exists: false } },
+    {
+      $set: {
+        "stockRestore.variantStockRestoredAt": now,
+        "stockRestore.variantStockRestoreReason": "rental_cancel_approved",
+        updatedAt: now,
+      },
+    },
+  );
+}
+
 export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> },
@@ -72,13 +143,33 @@ export async function POST(
         ? existing.stringing.selectedColor.trim()
         : null;
     const colorStockRestoredAt = existing?.stringing?.colorStockRestoredAt ? new Date(existing.stringing.colorStockRestoredAt) : null;
+    const isVariantDeductionMode =
+      String(existing?.stringing?.stockDeduction?.mode ?? "") === "variant";
 
     const stringProductId =
       existing?.stringing?.stringId && ObjectId.isValid(String(existing.stringing.stringId))
         ? new ObjectId(String(existing.stringing.stringId))
         : null;
 
-    if (!alreadyCanceledApproved && selectedGauge && stringProductId) {
+    if (!alreadyCanceledApproved) {
+      try {
+        await restoreRentalVariantStockIfNeeded({ db: guard.db, existing, now });
+      } catch (e: any) {
+        if (e?.message === "VARIANT_STOCK_RESTORE_FAILED") {
+          return NextResponse.json(
+            {
+              ok: false,
+              code: "VARIANT_STOCK_RESTORE_FAILED",
+              message: "대여 취소 중 옵션 조합 재고 복구에 실패했습니다.",
+            },
+            { status: 409 },
+          );
+        }
+        throw e;
+      }
+    }
+
+    if (!alreadyCanceledApproved && !isVariantDeductionMode && selectedGauge && stringProductId) {
       const gaugeRestoreResult = await guard.db.collection("products").updateOne(
         {
           _id: stringProductId,
@@ -103,7 +194,7 @@ export async function POST(
     }
 
 
-    if (!alreadyCanceledApproved && selectedColor && stringProductId && !colorStockRestoredAt) {
+    if (!alreadyCanceledApproved && !isVariantDeductionMode && selectedColor && stringProductId && !colorStockRestoredAt) {
       const hasManagedColorInventories = await guard.db.collection("products").countDocuments(
         { _id: stringProductId, colorInventories: { $exists: true, $ne: [] } },
         { limit: 1 },
