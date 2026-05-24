@@ -70,6 +70,17 @@ type ColorInventoryRow = {
   isSoldOut: boolean;
 };
 
+type VariantInventoryRow = {
+  colorValue: string;
+  colorLabel?: string;
+  colorHex?: string;
+  colorImage?: string;
+  gaugeValue: string;
+  gaugeLabel?: string;
+  stock: number;
+  isSoldOut: boolean;
+};
+
 function normalizeColorRows(product: any): ColorInventoryRow[] {
   if (Array.isArray(product?.colorInventories) && product.colorInventories.length > 0) {
     return product.colorInventories
@@ -110,6 +121,39 @@ function isColorSoldOut(row: ColorInventoryRow) {
   return row.isSoldOut === true || Number(row.stock ?? 0) <= 0;
 }
 
+function normalizeVariantRows(product: any): VariantInventoryRow[] {
+  if (!Array.isArray(product?.variantInventories)) return [];
+  return product.variantInventories
+    .map((row: any) => {
+      const stockNumber = Number(row?.stock ?? 0);
+      return {
+        colorValue: String(row?.colorValue ?? "").trim(),
+        colorLabel: typeof row?.colorLabel === "string" ? row.colorLabel.trim() : undefined,
+        colorHex: typeof row?.colorHex === "string" ? row.colorHex.trim() : undefined,
+        colorImage: typeof row?.colorImage === "string" ? row.colorImage.trim() : undefined,
+        gaugeValue: String(row?.gaugeValue ?? "").trim(),
+        gaugeLabel: typeof row?.gaugeLabel === "string" ? row.gaugeLabel.trim() : undefined,
+        stock: Number.isFinite(stockNumber) && stockNumber > 0 ? stockNumber : 0,
+        isSoldOut: row?.isSoldOut === true,
+      };
+    })
+    .filter((row: VariantInventoryRow) => row.colorValue.length > 0 && row.gaugeValue.length > 0);
+}
+
+function isSellableVariant(row: VariantInventoryRow) {
+  return row.isSoldOut !== true && Number(row.stock ?? 0) > 0;
+}
+
+function getVariantsByColor(product: any, colorValue: string) {
+  return normalizeVariantRows(product).filter((row) => row.colorValue === colorValue);
+}
+
+function getVariantBySelection(product: any, colorValue: string, gaugeValue: string) {
+  return normalizeVariantRows(product).find(
+    (row) => row.colorValue === colorValue && row.gaugeValue === gaugeValue,
+  );
+}
+
 export default function RentalSelectStringClient({
   racket,
   period,
@@ -140,9 +184,21 @@ export default function RentalSelectStringClient({
       for (const product of products ?? []) {
         const id = String((product as any)?._id ?? "");
         if (!id || next[id]) continue;
-        const colorRows = normalizeColorRows(product);
-        if (colorRows.length <= 0) continue;
-        const firstAvailable = colorRows.find((row) => !isColorSoldOut(row)) ?? colorRows[0];
+        const hasVariantInventories =
+          Array.isArray((product as any)?.variantInventories) &&
+          (product as any).variantInventories.length > 0;
+        const firstAvailable = hasVariantInventories
+          ? (() => {
+              const variantRows = normalizeVariantRows(product);
+              if (variantRows.length <= 0) return null;
+              const firstSellable = variantRows.find((row) => isSellableVariant(row)) ?? variantRows[0];
+              return firstSellable ? { value: firstSellable.colorValue } : null;
+            })()
+          : (() => {
+              const colorRows = normalizeColorRows(product);
+              if (colorRows.length <= 0) return null;
+              return colorRows.find((row) => !isColorSoldOut(row)) ?? colorRows[0];
+            })();
         if (firstAvailable?.value) {
           next[id] = firstAvailable.value;
           changed = true;
@@ -151,6 +207,42 @@ export default function RentalSelectStringClient({
       return changed ? next : prev;
     });
   }, [products]);
+
+  useEffect(() => {
+    setSelectedGaugeByStringId((prev) => {
+      let changed = false;
+      const next = { ...prev };
+      for (const product of products ?? []) {
+        const id = String((product as any)?._id ?? "");
+        if (!id) continue;
+        const currentColor = selectedColorByStringId[id] ?? "";
+        const hasVariantInventories =
+          Array.isArray((product as any)?.variantInventories) &&
+          (product as any).variantInventories.length > 0;
+        if (hasVariantInventories) {
+          const currentGauge = next[id] ?? "";
+          const currentVariant = getVariantBySelection(product, currentColor, currentGauge);
+          if (currentGauge && currentVariant && isSellableVariant(currentVariant)) continue;
+          const firstSellable = getVariantsByColor(product, currentColor).find((row) => isSellableVariant(row));
+          const nextGauge = firstSellable?.gaugeValue ?? "";
+          if ((next[id] ?? "") !== nextGauge) {
+            next[id] = nextGauge;
+            changed = true;
+          }
+          continue;
+        }
+        const gaugeRows = normalizeGaugeRows(product);
+        if (gaugeRows.length <= 0) continue;
+        if (next[id]) continue;
+        const firstAvailable = gaugeRows.find((row) => !row.isSoldOut && row.stock > 0) ?? gaugeRows[0];
+        if (firstAvailable?.value) {
+          next[id] = firstAvailable.value;
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [products, selectedColorByStringId]);
 
   const goCheckout = (stringId?: string, selectedGauge?: string, selectedColor?: string) => {
     const base = `/rentals/${encodeURIComponent(racket.id)}/checkout?period=${period}`;
@@ -277,16 +369,44 @@ export default function RentalSelectStringClient({
               {(products ?? []).map((p: any) => {
                 const stringImage = p?.images?.[0] ?? p?.imageUrl;
                 const id = String(p?._id ?? "");
-                const gaugeRows = normalizeGaugeRows(p);
-                const selectedGauge = selectedGaugeByStringId[id] ?? "";
-                const selectedGaugeRow =
-                  gaugeRows.find((row) => row.value === selectedGauge) ?? null;
-                const hideGaugeStock = p?.inventory?.hideGaugeStock === true;
+                const hasVariantInventories =
+                  Array.isArray(p?.variantInventories) &&
+                  p.variantInventories.length > 0;
                 const colorRows = normalizeColorRows(p);
+                const variantRows = hasVariantInventories ? normalizeVariantRows(p) : [];
+                const variantColorValues = hasVariantInventories
+                  ? Array.from(new Set(variantRows.map((row) => row.colorValue)))
+                  : [];
                 const selectedColor = selectedColorByStringId[id] ?? "";
                 const selectedColorRow = colorRows.find((row) => row.value === selectedColor) ?? null;
+                const variantsForSelectedColor = hasVariantInventories
+                  ? getVariantsByColor(p, selectedColor)
+                  : [];
+                const selectedGauge = selectedGaugeByStringId[id] ?? "";
+                const selectedVariant = hasVariantInventories
+                  ? getVariantBySelection(p, selectedColor, selectedGauge) ?? null
+                  : null;
+                const gaugeRows = hasVariantInventories
+                  ? variantsForSelectedColor.map((row) => ({
+                      value: row.gaugeValue,
+                      label: row.gaugeLabel,
+                      stock: row.stock,
+                      isSoldOut: row.isSoldOut,
+                    }))
+                  : normalizeGaugeRows(p);
+                const selectedGaugeRow = gaugeRows.find((row) => row.value === selectedGauge) ?? null;
+                const hideGaugeStock = p?.inventory?.hideGaugeStock === true;
                 const isColorRequired = colorRows.length > 0;
-                const isColorOut = selectedColorRow ? isColorSoldOut(selectedColorRow) : false;
+                const selectedColorSellableInVariant = hasVariantInventories
+                  ? variantRows.some(
+                      (row) => row.colorValue === selectedColor && isSellableVariant(row),
+                    )
+                  : false;
+                const isColorOut = hasVariantInventories
+                  ? !selectedColorSellableInVariant
+                  : selectedColorRow
+                    ? isColorSoldOut(selectedColorRow)
+                    : false;
                 const hasColorStockIssue = selectedColorRow ? selectedColorRow.stock < 1 : false;
                 const isGaugeRequired = gaugeRows.length > 0;
                 const isGaugeSoldOut = selectedGaugeRow ? selectedGaugeRow.isSoldOut || selectedGaugeRow.stock <= 0 : false;
@@ -368,7 +488,25 @@ export default function RentalSelectStringClient({
                             ) : (
                               <div className="flex flex-wrap gap-2">
                                 {colorRows.map((row) => {
-                                  const soldOut = isColorSoldOut(row);
+                                  const variantFallbackImage = hasVariantInventories
+                                    ? variantRows.find(
+                                        (variantRow) =>
+                                          variantRow.colorValue === row.value &&
+                                          variantRow.colorImage,
+                                      )?.colorImage
+                                    : undefined;
+                                  const colorImage =
+                                    row.image ||
+                                    variantFallbackImage ||
+                                    p?.images?.[0] ||
+                                    "/placeholder.svg";
+                                  const soldOut = hasVariantInventories
+                                    ? !variantRows.some(
+                                        (variantRow) =>
+                                          variantRow.colorValue === row.value &&
+                                          isSellableVariant(variantRow),
+                                      )
+                                    : isColorSoldOut(row);
                                   const selected = selectedColor === row.value;
                                   return (
                                     <button
@@ -378,12 +516,44 @@ export default function RentalSelectStringClient({
                                       onClick={() => setSelectedColorByStringId((prev) => ({ ...prev, [id]: row.value }))}
                                       className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs transition ${selected ? "border-primary ring-2 ring-primary/40" : "border-border"} ${soldOut ? "opacity-50 cursor-not-allowed" : "hover:border-primary/60"}`}
                                     >
-                                      {row.image ? <img src={row.image} alt={getColorLabel(row)} className="h-5 w-5 rounded object-cover" /> : row.colorHex ? <span className="h-4 w-4 rounded-full border" style={{ backgroundColor: row.colorHex }} /> : null}
+                                      {colorImage ? <img src={colorImage} alt={getColorLabel(row)} className="h-5 w-5 rounded object-cover" /> : row.colorHex ? <span className="h-4 w-4 rounded-full border" style={{ backgroundColor: row.colorHex }} /> : null}
                                       <span>{getColorLabel(row)}</span>
                                       {soldOut ? <span>품절</span> : null}
                                     </button>
                                   );
                                 })}
+                                {hasVariantInventories
+                                  ? variantColorValues
+                                      .filter((value) => !colorRows.some((row) => row.value === value))
+                                      .map((value) => {
+                                        const fallbackVariant = variantRows.find((row) => row.colorValue === value);
+                                        if (!fallbackVariant) return null;
+                                        const soldOut = !variantRows.some(
+                                          (variantRow) =>
+                                            variantRow.colorValue === value &&
+                                            isSellableVariant(variantRow),
+                                        );
+                                        const selected = selectedColor === value;
+                                        const colorImage =
+                                          fallbackVariant.colorImage ||
+                                          p?.images?.[0] ||
+                                          "/placeholder.svg";
+                                        const colorLabel = fallbackVariant.colorLabel || value;
+                                        return (
+                                          <button
+                                            key={value}
+                                            type="button"
+                                            disabled={soldOut}
+                                            onClick={() => setSelectedColorByStringId((prev) => ({ ...prev, [id]: value }))}
+                                            className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs transition ${selected ? "border-primary ring-2 ring-primary/40" : "border-border"} ${soldOut ? "opacity-50 cursor-not-allowed" : "hover:border-primary/60"}`}
+                                          >
+                                            <img src={colorImage} alt={colorLabel} className="h-5 w-5 rounded object-cover" />
+                                            <span>{colorLabel}</span>
+                                            {soldOut ? <span>품절</span> : null}
+                                          </button>
+                                        );
+                                      })
+                                  : null}
                               </div>
                             )}
                           </div>
@@ -394,6 +564,14 @@ export default function RentalSelectStringClient({
                         className="mt-4 w-full whitespace-normal break-keep bg-primary py-5 font-medium leading-tight text-primary-foreground transition-all duration-300 hover:bg-primary/90"
                         disabled={(isGaugeRequired && (!selectedGauge || isGaugeSoldOut || hasGaugeStockIssue)) || (isColorRequired && (!selectedColor || isColorOut || hasColorStockIssue))}
                         onClick={() => {
+                          if (hasVariantInventories && !selectedColor) return alert("색상을 선택해주세요.");
+                          if (hasVariantInventories && !selectedGauge) return alert("게이지를 선택해주세요.");
+                          if (hasVariantInventories && (!selectedVariant || selectedVariant.colorValue !== selectedColor || selectedVariant.gaugeValue !== selectedGauge)) {
+                            return alert("선택한 색상/게이지 조합을 찾을 수 없습니다.");
+                          }
+                          if (hasVariantInventories && selectedVariant && !isSellableVariant(selectedVariant)) {
+                            return alert("선택한 색상/게이지 조합은 품절되었습니다.");
+                          }
                           if (isGaugeRequired && !selectedGauge) return alert("게이지를 선택해주세요.");
                           if (isGaugeSoldOut) return alert("선택한 게이지는 현재 품절입니다.");
                           if (hasGaugeStockIssue) return alert("선택한 게이지의 구매 가능 수량을 초과했습니다.");
@@ -401,6 +579,29 @@ export default function RentalSelectStringClient({
                           if (isColorRequired && !selectedColorRow) return alert("선택한 색상 정보를 찾을 수 없습니다.");
                           if (isColorOut) return alert("선택한 색상은 현재 품절입니다.");
                           if (hasColorStockIssue) return alert("선택한 색상의 구매 가능 수량을 초과했습니다.");
+                          if (hasVariantInventories && selectedVariant) {
+                            const selectedColorLabel = selectedVariant.colorLabel ?? selectedColorRow?.label ?? selectedColor;
+                            const selectedColorHex = selectedVariant.colorHex ?? selectedColorRow?.colorHex ?? "";
+                            const selectedColorImage =
+                              selectedVariant.colorImage ??
+                              selectedColorRow?.image ??
+                              p?.images?.[0] ??
+                              "";
+                            const selectedGaugeLabel =
+                              selectedVariant.gaugeLabel ??
+                              selectedGaugeRow?.label ??
+                              getGaugeLabel(selectedGaugeRow ?? { value: selectedGauge, stock: 0, isSoldOut: false });
+                            const params = new URLSearchParams(`period=${period}`);
+                            params.set("stringId", id);
+                            params.set("selectedGauge", selectedGauge);
+                            params.set("selectedColor", selectedColor);
+                            if (selectedColorLabel) params.set("selectedColorLabel", selectedColorLabel);
+                            if (selectedColorHex) params.set("selectedColorHex", selectedColorHex);
+                            if (selectedColorImage) params.set("selectedColorImage", selectedColorImage);
+                            if (selectedGaugeLabel) params.set("selectedGaugeLabel", selectedGaugeLabel);
+                            router.push(`/rentals/${encodeURIComponent(racket.id)}/checkout?${params.toString()}`);
+                            return;
+                          }
                           goCheckout(id, selectedGauge || undefined, selectedColor || undefined);
                         }}
                       >
