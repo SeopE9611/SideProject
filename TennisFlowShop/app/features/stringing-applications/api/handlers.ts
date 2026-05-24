@@ -261,7 +261,109 @@ function pickStringProductObjectIdFromApplicationDoc(appDoc: any): ObjectId | nu
   return toObjectIdIfValid(appDoc?.meta?.stringProductId);
 }
 
+function resolveVariantStockDeduction(appDoc: any): { mode: string; colorValue?: string; gaugeValue?: string } | null {
+  const candidates = [
+    appDoc?.stockDeduction,
+    appDoc?.stringing?.stockDeduction,
+    appDoc?.selectedString?.stockDeduction,
+    appDoc?.stringProduct?.stockDeduction,
+  ];
+  for (const item of candidates) {
+    if (item && typeof item === 'object' && typeof item.mode === 'string') {
+      return item as { mode: string; colorValue?: string; gaugeValue?: string };
+    }
+  }
+  return null;
+}
+
+async function restoreStringingVariantStockIfNeeded(db: any, appDoc: any, now: Date) {
+  const stockDeduction = resolveVariantStockDeduction(appDoc);
+  const mode = String(stockDeduction?.mode ?? '').trim();
+  const alreadyRestored = Boolean(appDoc?.stockRestore?.variantStockRestoredAt);
+  if (mode !== 'variant' || alreadyRestored) {
+    return { restored: false, skippedReason: 'not_required', setFields: {} as Record<string, unknown> };
+  }
+
+  const selectedColor =
+    typeof stockDeduction?.colorValue === 'string' && stockDeduction.colorValue.trim()
+      ? stockDeduction.colorValue.trim()
+      : typeof appDoc?.meta?.selectedColor === 'string' && appDoc.meta.selectedColor.trim()
+        ? appDoc.meta.selectedColor.trim()
+        : undefined;
+  const selectedGauge =
+    typeof stockDeduction?.gaugeValue === 'string' && stockDeduction.gaugeValue.trim()
+      ? stockDeduction.gaugeValue.trim()
+      : typeof appDoc?.meta?.selectedGauge === 'string' && appDoc.meta.selectedGauge.trim()
+        ? appDoc.meta.selectedGauge.trim()
+        : undefined;
+  if (!selectedColor || !selectedGauge) {
+    return { restored: false, skippedReason: 'missing_selection', setFields: {} as Record<string, unknown> };
+  }
+
+  const stringProductObjectId = pickStringProductObjectIdFromApplicationDoc(appDoc);
+  if (!stringProductObjectId) {
+    return { restored: false, skippedReason: 'missing_product_id', setFields: {} as Record<string, unknown> };
+  }
+
+  const quantity = 1;
+  const restoreResult = await db.collection('products').updateOne(
+    {
+      _id: stringProductObjectId,
+      sold: { $gte: quantity },
+      variantInventories: {
+        $elemMatch: {
+          colorValue: selectedColor,
+          gaugeValue: selectedGauge,
+        },
+      },
+    },
+    {
+      $inc: {
+        'variantInventories.$[variant].stock': quantity,
+        'colorInventories.$[color].stock': quantity,
+        'gaugeInventories.$[gauge].stock': quantity,
+        'inventory.stock': quantity,
+        sold: -quantity,
+      },
+    },
+    {
+      arrayFilters: [
+        { 'variant.colorValue': selectedColor, 'variant.gaugeValue': selectedGauge },
+        { 'color.value': selectedColor },
+        { 'gauge.value': selectedGauge },
+      ],
+    },
+  );
+
+  if (!restoreResult.matchedCount || !restoreResult.modifiedCount) {
+    return {
+      restored: false,
+      skippedReason: 'restore_failed',
+      errorResponse: NextResponse.json(
+        {
+          error: '신청서 취소 중 옵션 조합 재고 복구에 실패했습니다.',
+          code: 'VARIANT_STOCK_RESTORE_FAILED',
+        },
+        { status: 409 },
+      ),
+      setFields: {} as Record<string, unknown>,
+    };
+  }
+
+  return {
+    restored: true,
+    skippedReason: null,
+    setFields: {
+      'stockRestore.variantStockRestoredAt': now,
+      'stockRestore.variantStockRestoreReason': 'stringing_application_cancelled',
+    } as Record<string, unknown>,
+  };
+}
+
 async function restoreStringingGaugeStockIfNeeded(db: any, appDoc: any, now: Date, restoreReason = 'cancel_approved') {
+  if (resolveVariantStockDeduction(appDoc)?.mode === 'variant') {
+    return { restored: false, skippedReason: 'variant_mode', setFields: {} as Record<string, unknown> };
+  }
   const selectedGauge =
     typeof appDoc?.meta?.selectedGauge === 'string' && appDoc.meta.selectedGauge.trim()
       ? appDoc.meta.selectedGauge.trim()
@@ -323,6 +425,9 @@ async function restoreStringingGaugeStockIfNeeded(db: any, appDoc: any, now: Dat
 }
 
 async function restoreStringingColorStockIfNeeded(db: any, appDoc: any, now: Date, restoreReason = 'cancel_approved') {
+  if (resolveVariantStockDeduction(appDoc)?.mode === 'variant') {
+    return { restored: false, skippedReason: 'variant_mode', setFields: {} as Record<string, unknown> };
+  }
   const selectedColor =
     typeof appDoc?.meta?.selectedColor === 'string' && appDoc.meta.selectedColor.trim()
       ? appDoc.meta.selectedColor.trim()
@@ -1019,7 +1124,12 @@ export async function handleUpdateApplicationStatus(req: Request, context: { par
   const willBeCanceled = isCancelApplicationStatus(status);
 
   let gaugeRestore: any = { restored: false, skippedReason: 'not_checked', setFields: {} as Record<string, unknown> };
+  let variantRestore: any = { restored: false, skippedReason: 'not_checked', setFields: {} as Record<string, unknown> };
   if (willBeCanceled && !wasCanceled) {
+    variantRestore = await restoreStringingVariantStockIfNeeded(db, beforeAppDoc, now);
+    if (variantRestore.errorResponse) {
+      return variantRestore.errorResponse;
+    }
     gaugeRestore = await restoreStringingGaugeStockIfNeeded(db, beforeAppDoc, now, 'status_changed_to_cancel');
     if (gaugeRestore.errorResponse) {
       return gaugeRestore.errorResponse;
@@ -1041,7 +1151,7 @@ export async function handleUpdateApplicationStatus(req: Request, context: { par
     status === '취소' ? await restoreStringingColorStockIfNeeded(db, beforeAppDoc, now, 'status_changed_to_cancel') : { setFields: {} };
   if ((colorRestore as any).errorResponse) return (colorRestore as any).errorResponse;
   const updateOps: any = {
-    $set: { status, ...(gaugeRestore.setFields ?? {}), ...((colorRestore as any).setFields ?? {}) },
+    $set: { status, ...(variantRestore.setFields ?? {}), ...(gaugeRestore.setFields ?? {}), ...((colorRestore as any).setFields ?? {}) },
     $push: { history: { $each: [historyEntry] } },
   };
 
@@ -1315,8 +1425,12 @@ export async function handleStringingCancelApprove(req: Request, { params }: { p
     }
 
     const now = new Date();
+    const variantRestore = await restoreStringingVariantStockIfNeeded(db, appDoc, now);
     const gaugeRestore = await restoreStringingGaugeStockIfNeeded(db, appDoc, now);
     const colorRestore = await restoreStringingColorStockIfNeeded(db, appDoc, now);
+    if (variantRestore.errorResponse) {
+      return variantRestore.errorResponse;
+    }
     if (gaugeRestore.errorResponse) {
       return gaugeRestore.errorResponse;
     }
@@ -1345,6 +1459,7 @@ export async function handleStringingCancelApprove(req: Request, { params }: { p
         status: '취소',
         'cancelRequest.status': 'approved',
         'cancelRequest.approvedAt': now,
+        ...variantRestore.setFields,
         ...gaugeRestore.setFields,
         ...colorRestore.setFields,
       },
@@ -2081,8 +2196,12 @@ export async function handleApplicationCancelApprove(req: Request, { params }: {
     }
 
     const now = new Date();
+    const variantRestore = await restoreStringingVariantStockIfNeeded(db, existing, now);
     const gaugeRestore = await restoreStringingGaugeStockIfNeeded(db, existing, now);
     const colorRestore = await restoreStringingColorStockIfNeeded(db, existing, now);
+    if (variantRestore.errorResponse) {
+      return variantRestore.errorResponse;
+    }
     if (gaugeRestore.errorResponse) {
       return gaugeRestore.errorResponse;
     }
@@ -2104,6 +2223,7 @@ export async function handleApplicationCancelApprove(req: Request, { params }: {
       $set: {
         cancelRequest: updatedCancelRequest,
         status: '취소', // 신청 자체 상태를 "취소"로 전환
+        ...variantRestore.setFields,
         ...gaugeRestore.setFields,
         ...colorRestore.setFields,
       },

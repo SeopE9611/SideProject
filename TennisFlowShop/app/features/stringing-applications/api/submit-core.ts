@@ -91,6 +91,96 @@ function isSameObjectId(a: unknown, b: ObjectId): boolean {
   return !!a && MongoObjectId.isValid(String(a)) && String(a) === String(b);
 }
 
+async function applyStringingVariantInventoryDeduction(params: {
+  db: Db;
+  productId: ObjectId;
+  product: any;
+  selectedColor?: string;
+  selectedGauge?: string;
+  quantity: number;
+  session?: ClientSession;
+}) {
+  const { db, productId, product, selectedColor, selectedGauge, quantity, session } = params;
+  const variantInventories = Array.isArray(product?.variantInventories)
+    ? product.variantInventories
+    : [];
+  if (variantInventories.length === 0) {
+    return { status: "not_managed" as const };
+  }
+
+  if (!selectedColor || !selectedGauge) {
+    throw Object.assign(new Error("색상과 게이지를 모두 선택해주세요."), {
+      status: 400,
+      code: "VARIANT_SELECTION_REQUIRED",
+    });
+  }
+
+  const variantRow = variantInventories.find(
+    (row: any) =>
+      String(row?.colorValue ?? "").trim() === selectedColor &&
+      String(row?.gaugeValue ?? "").trim() === selectedGauge,
+  );
+  if (!variantRow) {
+    throw Object.assign(new Error("선택한 옵션 조합 정보를 찾을 수 없습니다."), {
+      status: 400,
+      code: "VARIANT_NOT_FOUND",
+    });
+  }
+  if (variantRow?.isSoldOut === true) {
+    throw Object.assign(new Error("선택한 옵션 조합은 현재 품절입니다."), {
+      status: 409,
+      code: "VARIANT_SOLD_OUT",
+    });
+  }
+  if (Number(variantRow?.stock ?? 0) < quantity) {
+    throw Object.assign(new Error("선택한 옵션 조합의 재고가 부족합니다."), {
+      status: 409,
+      code: "VARIANT_INSUFFICIENT_STOCK",
+    });
+  }
+
+  const result = await db.collection("products").updateOne(
+    {
+      _id: productId,
+      "inventory.stock": { $gte: quantity },
+      variantInventories: {
+        $elemMatch: {
+          colorValue: selectedColor,
+          gaugeValue: selectedGauge,
+          isSoldOut: { $ne: true },
+          stock: { $gte: quantity },
+        },
+      },
+    },
+    {
+      $inc: {
+        "variantInventories.$[variant].stock": -quantity,
+        "colorInventories.$[color].stock": -quantity,
+        "gaugeInventories.$[gauge].stock": -quantity,
+        "inventory.stock": -quantity,
+        sold: quantity,
+      },
+    },
+    {
+      arrayFilters: [
+        { "variant.colorValue": selectedColor, "variant.gaugeValue": selectedGauge },
+        { "color.value": selectedColor },
+        { "gauge.value": selectedGauge },
+      ],
+      session,
+    },
+  );
+
+  if (!result.matchedCount || !result.modifiedCount) {
+    throw Object.assign(new Error("선택한 옵션 조합의 재고가 부족합니다."), {
+      status: 409,
+      code: "VARIANT_INSUFFICIENT_STOCK",
+    });
+  }
+
+  return { status: "deducted" as const };
+}
+
 export async function submitStringingApplicationCore({
   db,
   input,
@@ -493,7 +583,7 @@ export async function submitStringingApplicationCore({
     const stringProduct = await db.collection("products").findOne(
       { _id: stringProductObjectId },
       {
-        projection: { _id: 1, gaugeInventories: 1, gaugeOptions: 1, color: 1, colorOptions: 1, colorInventories: 1 },
+        projection: { _id: 1, gaugeInventories: 1, gaugeOptions: 1, color: 1, colorOptions: 1, colorInventories: 1, variantInventories: 1 },
         session,
       },
     );
@@ -562,6 +652,31 @@ export async function submitStringingApplicationCore({
     const hasManagedColorInventories =
       Array.isArray((stringProduct as any)?.colorInventories) &&
       (stringProduct as any).colorInventories.length > 0;
+    const hasVariantInventories =
+      Array.isArray((stringProduct as any)?.variantInventories) &&
+      (stringProduct as any).variantInventories.length > 0;
+
+    if (hasVariantInventories && !alreadyDeductedGaugeStock) {
+      const variantDeduction = await applyStringingVariantInventoryDeduction({
+        db,
+        productId: stringProductObjectId,
+        product: stringProduct,
+        selectedColor: effectiveSelectedColor,
+        selectedGauge: effectiveSelectedGauge,
+        quantity: 1,
+        session,
+      });
+
+      if (variantDeduction.status === "deducted") {
+        updateDoc["meta.gaugeStockDeductedAt"] = new Date();
+        updateDoc["meta.colorStockDeductedAt"] = new Date();
+        updateDoc["stockDeduction"] = {
+          mode: "variant",
+          colorValue: effectiveSelectedColor ?? null,
+          gaugeValue: effectiveSelectedGauge ?? null,
+        };
+      }
+    } else
     if (
       effectiveSelectedColor &&
       !alreadyDeductedColorStock &&
