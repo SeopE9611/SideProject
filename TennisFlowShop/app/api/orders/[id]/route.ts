@@ -280,6 +280,7 @@ export async function GET(
             isMountableString: false,
             quantity: item.quantity,
             kind: "product" as const,
+            stockDeduction: (item as any)?.stockDeduction ?? null,
           };
         }
         const rawMountingFee = prod.mountingFee;
@@ -293,6 +294,7 @@ export async function GET(
           isMountableString,
           quantity: item.quantity,
           kind: "product" as const,
+          stockDeduction: (item as any)?.stockDeduction ?? null,
         };
       }
 
@@ -307,6 +309,7 @@ export async function GET(
           isMountableString: false,
           quantity: item.quantity,
           kind: "racket" as const,
+          stockDeduction: (item as any)?.stockDeduction ?? null,
         };
       }
 
@@ -318,6 +321,7 @@ export async function GET(
         isMountableString: false,
         quantity: item.quantity,
         kind: "racket" as const,
+        stockDeduction: (item as any)?.stockDeduction ?? null,
       };
     });
 

@@ -708,7 +708,15 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
   };
 
   const isCancelled = data.status === '취소';
-  const isVariantStockMode = data.stockDeduction?.mode === 'variant';
+  const effectiveStockDeduction =
+    data.stockDeduction ??
+    (data as any).stringing?.stockDeduction ??
+    (data as any).selectedString?.stockDeduction ??
+    (data as any).stringProduct?.stockDeduction ??
+    null;
+  const effectiveStockRestore =
+    data.stockRestore ?? (data as any).stringing?.stockRestore ?? null;
+  const isVariantStockMode = effectiveStockDeduction?.mode === 'variant';
   const paymentSourceRaw = String(data.paymentSource ?? '').trim();
   const linkedPayment = data.linkedPayment ?? null;
   const packageApplied = Boolean(data.packageInfo?.applied);
@@ -1772,18 +1780,18 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                         </p>
                         <p>
                           {isVariantStockMode
-                            ? `선택한 색상과 게이지 조합 기준으로 재고가 차감되었습니다. (색상 ${data.stockDeduction?.colorValue ?? '-'} / 게이지 ${data.stockDeduction?.gaugeValue ?? '-'})`
+                            ? `선택한 색상과 게이지 조합 기준으로 재고가 차감되었습니다. (색상 ${effectiveStockDeduction?.colorValue ?? '-'} / 게이지 ${effectiveStockDeduction?.gaugeValue ?? '-'})`
                             : '기존 색상/게이지 재고 기준으로 처리된 신청서입니다.'}
                         </p>
                         <p>
                           <span className="font-medium text-foreground">조합 재고 복구:</span>{' '}
-                          {data.stockRestore?.variantStockRestoredAt ? '복구 완료' : '복구 정보 없음'}
+                          {effectiveStockRestore?.variantStockRestoredAt ? '복구 완료' : '복구 정보 없음'}
                         </p>
-                        {data.stockRestore?.variantStockRestoredAt ? (
+                        {effectiveStockRestore?.variantStockRestoredAt ? (
                           <p>
-                            {new Date(data.stockRestore.variantStockRestoredAt).toLocaleString()}
-                            {data.stockRestore.variantStockRestoreReason
-                              ? ` · ${data.stockRestore.variantStockRestoreReason}`
+                            {new Date(effectiveStockRestore.variantStockRestoredAt).toLocaleString()}
+                            {effectiveStockRestore.variantStockRestoreReason
+                              ? ` · ${effectiveStockRestore.variantStockRestoreReason}`
                               : ''}
                           </p>
                         ) : isVariantStockMode && isCancelled ? (

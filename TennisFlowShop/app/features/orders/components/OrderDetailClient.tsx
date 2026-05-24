@@ -158,6 +158,11 @@ interface OrderDetail {
     selectedColor?: string;
     selectedColorLabel?: string;
     selectedColorHex?: string;
+    stockDeduction?: {
+      mode?: string;
+      colorValue?: string | null;
+      gaugeValue?: string | null;
+    } | null;
   }>;
   history: Array<any>; // initialData용 (하지만 useSWRInfinite로 실제 이력 사용)
   cancelReason?: string;
@@ -756,7 +761,12 @@ export default function OrderDetailClient({ orderId }: Props) {
 
   const latestProcessingHistory = allHistory[0] ?? null;
   const latestProcessingDate = formatDateTime(latestProcessingHistory?.date);
-  const isVariantStockMode = orderDetail.stockDeduction?.mode === "variant";
+  const variantStockDeductionItems = Array.isArray(orderDetail.items)
+    ? orderDetail.items.filter(
+        (item) => item?.stockDeduction?.mode === "variant",
+      )
+    : [];
+  const isVariantStockMode = variantStockDeductionItems.length > 0;
   const currentStatusText = String(localStatus ?? orderDetail.status ?? "");
   const normalizedStatusText = currentStatusText.toLowerCase();
   const isCanceledState =
@@ -1370,9 +1380,19 @@ export default function OrderDetailClient({ orderId }: Props) {
                   </p>
                   <p>
                     {isVariantStockMode
-                      ? `선택한 색상과 게이지 조합 기준으로 재고가 차감되었습니다. (색상 ${orderDetail.stockDeduction?.colorValue ?? "-"} / 게이지 ${orderDetail.stockDeduction?.gaugeValue ?? "-"})`
+                      ? "선택한 색상과 게이지 조합 기준으로 재고가 차감되었습니다."
                       : "기존 색상/게이지 재고 기준으로 처리된 주문입니다."}
                   </p>
+                  {isVariantStockMode ? (
+                    <div className="space-y-1">
+                      {variantStockDeductionItems.map((item, index) => (
+                        <p key={`${item.name}-${index}`}>
+                          {item.name}: 색상 {item.stockDeduction?.colorValue ?? "-"} / 게이지{" "}
+                          {item.stockDeduction?.gaugeValue ?? "-"}
+                        </p>
+                      ))}
+                    </div>
+                  ) : null}
                   <p>
                     <span className="font-medium text-foreground">조합 재고 복구:</span>{" "}
                     {orderDetail.stockRestore?.variantStockRestoredAt

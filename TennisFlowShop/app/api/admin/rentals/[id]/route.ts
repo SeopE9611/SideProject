@@ -206,8 +206,14 @@ export async function GET(
       return: doc.shipping?.return ?? null,
     },
     cancelRequest: doc.cancelRequest ?? null, // 취소 요청 정보(있으면 그대로, 없으면 null)
-    stockDeduction: (doc as any).stockDeduction ?? null,
-    stockRestore: (doc as any).stockRestore ?? null,
+    stockDeduction:
+      (doc as any).stockDeduction ??
+      (doc as any).stringing?.stockDeduction ??
+      null,
+    stockRestore:
+      (doc as any).stockRestore ??
+      (doc as any).stringing?.stockRestore ??
+      null,
     latestHistory: latestHistory
       ? {
           action: latestHistory.action ?? null,
