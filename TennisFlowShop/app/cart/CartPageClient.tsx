@@ -64,6 +64,18 @@ const getCartLineKey = (item: {
   selectedColor?: string;
 }) => `${item.id}::${item.selectedGauge ?? ""}::${item.selectedColor ?? ""}`;
 
+type ProductVariantInventoryRow = {
+  colorValue?: string | null;
+  gaugeValue?: string | null;
+  stock?: number | null;
+  isSoldOut?: boolean | null;
+};
+
+type ProductForCartValidation = {
+  _id?: string;
+  variantInventories?: ProductVariantInventoryRow[];
+};
+
 export default function CartPageClient() {
   const { logout } = useAuthStore(); // 사용 여부와 관계없이 훅 순서 안정
   const {
@@ -84,6 +96,7 @@ export default function CartPageClient() {
   const [cleanupDialogOpen, setCleanupDialogOpen] = useState(false);
   const [cleanupKeepLineKey, setCleanupKeepLineKey] = useState<string | null>(null);
   const [cleanupRemoveLineKeys, setCleanupRemoveLineKeys] = useState<string[]>([]);
+  const [isCheckingCheckoutStock, setIsCheckingCheckoutStock] = useState(false);
 
   // [장착 대상 스트링 정리 다이얼로그] 남길/삭제될 대상 텍스트 생성
   const keepStringItem = cleanupKeepLineKey
@@ -508,6 +521,61 @@ export default function CartPageClient() {
     setCleanupRemoveLineKeys([]);
   };
 
+  const validateLatestStockBeforeCheckout = async () => {
+    const cartProductItems = cartItems.filter((item) => (item.kind ?? "product") === "product");
+    if (cartProductItems.length === 0) return true;
+
+    setIsCheckingCheckoutStock(true);
+    try {
+      const results = await Promise.all(
+        cartProductItems.map(async (item) => {
+          const response = await fetch(`/api/products/${item.id}`, { cache: "no-store" });
+          if (!response.ok) return { item, product: null as ProductForCartValidation | null };
+          const json = await response.json();
+          return { item, product: (json?.product ?? null) as ProductForCartValidation | null };
+        }),
+      );
+
+      for (const { item, product } of results) {
+        if (!product) {
+          showErrorToast("일부 상품의 최신 정보를 확인하지 못했어요. 잠시 후 다시 시도해주세요.");
+          return false;
+        }
+
+        const variants = Array.isArray(product.variantInventories) ? product.variantInventories : [];
+        if (variants.length > 0 && item.selectedColor && item.selectedGauge) {
+          const selectedVariant = variants.find(
+            (variant) =>
+              (variant.colorValue ?? "") === item.selectedColor &&
+              (variant.gaugeValue ?? "") === item.selectedGauge,
+          );
+          if (!selectedVariant) {
+            showErrorToast("선택한 색상/게이지 조합의 재고 정보를 찾지 못했어요. 옵션을 다시 확인해주세요.");
+            return false;
+          }
+          if (selectedVariant.isSoldOut === true || Number(selectedVariant.stock ?? 0) < item.quantity) {
+            showErrorToast("선택한 색상/게이지 조합의 재고가 부족합니다. 수량을 다시 확인해주세요.");
+            return false;
+          }
+          continue;
+        }
+
+        const maxStock = getMaxStock(item.stock);
+        if (Number.isFinite(maxStock) && item.quantity > maxStock) {
+          showErrorToast("일부 상품의 재고가 변경되었습니다. 수량을 다시 확인해주세요.");
+          return false;
+        }
+      }
+
+      return true;
+    } catch {
+      showErrorToast("재고 확인 중 문제가 발생했어요. 잠시 후 다시 시도해주세요.");
+      return false;
+    } finally {
+      setIsCheckingCheckoutStock(false);
+    }
+  };
+
   return (
     <div className="min-h-full bg-background">
       {/* 교체서비스 스트링 정리 확인 다이얼로그 */}
@@ -818,7 +886,7 @@ export default function CartPageClient() {
                                   <span
                                     className={`mt-1 text-xs ${item.quantity >= maxStock ? "text-destructive" : "text-muted-foreground"}`}
                                   >
-                                    현재 가용 수량: {maxStock}개
+                                    장바구니 기준 재고: {maxStock}개
                                   </span>
                                 )}
                               </div>
@@ -906,7 +974,7 @@ export default function CartPageClient() {
                                     <span
                                       className={`mt-1 text-xs ${item.quantity >= maxStock ? "text-destructive" : "text-muted-foreground"}`}
                                     >
-                                      현재 가용 수량: {maxStock}개
+                                      장바구니 기준 재고: {maxStock}개
                                     </span>
                                   )
                                 )}
@@ -1189,19 +1257,29 @@ export default function CartPageClient() {
                             {stringStandalonePausedNotice}
                           </p>
                         )}
+                        <p className="rounded-lg border border-border/60 bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
+                          최신 재고는 주문 시 다시 확인됩니다.
+                        </p>
                         <Button
                           className="h-14 w-full font-semibold"
                           size="lg"
-                          asChild
+                          disabled={isCheckingCheckoutStock}
+                          onClick={async () => {
+                            if (!user) {
+                              window.location.href = checkoutHref;
+                              return;
+                            }
+                            const isValid = await validateLatestStockBeforeCheckout();
+                            if (isValid) window.location.href = checkoutHref;
+                          }}
                         >
-                          <Link
-                            href={checkoutHref}
-                            className="flex items-center gap-3"
-                          >
+                          {isCheckingCheckoutStock ? (
+                            <Loader2 className="h-5 w-5 animate-spin" />
+                          ) : (
                             <ShoppingBag className="h-5 w-5" />
-                            {user ? "주문하기" : "로그인 후 주문하기"}
-                            <ArrowRight className="h-5 w-5" />
-                          </Link>
+                          )}
+                          {user ? "주문하기" : "로그인 후 주문하기"}
+                          <ArrowRight className="h-5 w-5" />
                         </Button>
                       </>
                     )}
