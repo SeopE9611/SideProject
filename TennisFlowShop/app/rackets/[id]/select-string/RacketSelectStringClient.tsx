@@ -47,6 +47,17 @@ type ColorInventoryRow = {
   isSoldOut: boolean;
 };
 
+type VariantInventoryRow = {
+  colorValue: string;
+  colorLabel?: string;
+  colorHex?: string;
+  colorImage?: string;
+  gaugeValue: string;
+  gaugeLabel?: string;
+  stock: number;
+  isSoldOut: boolean;
+};
+
 function normalizeGaugeRows(product: any): GaugeInventoryRow[] {
   if (Array.isArray(product?.gaugeInventories) && product.gaugeInventories.length > 0) {
     return product.gaugeInventories
@@ -135,6 +146,39 @@ function getColorLabel(row: ColorInventoryRow) {
 
 function isColorSoldOut(row: ColorInventoryRow) {
   return row.isSoldOut === true || Number(row.stock ?? 0) <= 0;
+}
+
+function normalizeVariantRows(product: any): VariantInventoryRow[] {
+  if (!Array.isArray(product?.variantInventories)) return [];
+  return product.variantInventories
+    .map((row: any) => {
+      const stockNumber = Number(row?.stock ?? 0);
+      return {
+        colorValue: String(row?.colorValue ?? "").trim(),
+        colorLabel: typeof row?.colorLabel === "string" ? row.colorLabel.trim() : undefined,
+        colorHex: typeof row?.colorHex === "string" ? row.colorHex.trim() : undefined,
+        colorImage: typeof row?.colorImage === "string" ? row.colorImage.trim() : undefined,
+        gaugeValue: String(row?.gaugeValue ?? "").trim(),
+        gaugeLabel: typeof row?.gaugeLabel === "string" ? row.gaugeLabel.trim() : undefined,
+        stock: Number.isFinite(stockNumber) && stockNumber > 0 ? stockNumber : 0,
+        isSoldOut: row?.isSoldOut === true,
+      };
+    })
+    .filter((row: VariantInventoryRow) => row.colorValue.length > 0 && row.gaugeValue.length > 0);
+}
+
+function isSellableVariant(row: VariantInventoryRow) {
+  return row.isSoldOut !== true && Number(row.stock ?? 0) > 0;
+}
+
+function getVariantsByColor(product: any, colorValue: string) {
+  return normalizeVariantRows(product).filter((row) => row.colorValue === colorValue);
+}
+
+function getVariantBySelection(product: any, colorValue: string, gaugeValue: string) {
+  return normalizeVariantRows(product).find(
+    (row) => row.colorValue === colorValue && row.gaugeValue === gaugeValue,
+  );
 }
 
 export default function RacketSelectStringClient({
@@ -248,6 +292,34 @@ export default function RacketSelectStringClient({
   }, [products]);
 
   useEffect(() => {
+    if (!products.length) return;
+    setSelectedGaugeByStringId((prev) => {
+      const next = { ...prev };
+      let changed = false;
+      products.forEach((product: any) => {
+        const stringId = String(product?._id);
+        const hasVariantInventories =
+          Array.isArray(product?.variantInventories) && product.variantInventories.length > 0;
+        if (!hasVariantInventories) return;
+        const colorValue = selectedColorByStringId[stringId];
+        if (!colorValue) return;
+        const variantsForColor = getVariantsByColor(product, colorValue);
+        const keepCurrent = variantsForColor.find(
+          (row) => row.gaugeValue === next[stringId] && isSellableVariant(row),
+        );
+        if (keepCurrent) return;
+        const firstSellable = variantsForColor.find((row) => isSellableVariant(row));
+        const nextGauge = firstSellable?.gaugeValue ?? "";
+        if ((next[stringId] ?? "") !== nextGauge) {
+          next[stringId] = nextGauge;
+          changed = true;
+        }
+      });
+      return changed ? next : prev;
+    });
+  }, [products, selectedColorByStringId]);
+
+  useEffect(() => {
     if (!isFromCart || !initialStringId || !initialSelectedColor || products.length === 0) return;
     const target = products.find((item: any) => String(item?._id) === initialStringId);
     if (!target) return;
@@ -267,19 +339,33 @@ export default function RacketSelectStringClient({
    */
   const upsertCartBundle = (selectedString: any, qty: number, selectedGauge?: string, selectedColor?: string) => {
     const newStringId = String(selectedString?._id);
+    const hasVariantInventories =
+      Array.isArray(selectedString?.variantInventories) &&
+      selectedString.variantInventories.length > 0;
+    const selectedVariant = hasVariantInventories
+      ? getVariantBySelection(selectedString, selectedColor ?? "", selectedGauge ?? "")
+      : undefined;
     const colorRows = normalizeColorRows(selectedString);
     const selectedColorRow = colorRows.find((row) => row.value === selectedColor);
     const selectedColorPayload =
-      selectedColorRow && selectedColor
+      selectedColor
         ? {
             selectedColor,
-            selectedColorLabel: getColorLabel(selectedColorRow),
-            selectedColorHex: selectedColorRow.colorHex,
-            selectedColorImage: selectedColorRow.image,
+            selectedColorLabel:
+              selectedVariant?.colorLabel || (selectedColorRow ? getColorLabel(selectedColorRow) : selectedColor),
+            selectedColorHex: selectedVariant?.colorHex || selectedColorRow?.colorHex,
+            selectedColorImage:
+              selectedVariant?.colorImage ||
+              selectedColorRow?.image ||
+              selectedString?.images?.[0] ||
+              selectedString?.imageUrl,
           }
         : {};
     const selectedStringImage =
-      selectedColorRow?.image?.trim() || selectedString?.images?.[0] || selectedString?.imageUrl;
+      selectedVariant?.colorImage?.trim() ||
+      selectedColorRow?.image?.trim() ||
+      selectedString?.images?.[0] ||
+      selectedString?.imageUrl;
 
     // 1) 라켓 라인: 없으면 add, 있으면 수량 update
     const hasRacket = cartItems.some(
@@ -333,7 +419,11 @@ export default function RacketSelectStringClient({
         stringManageStock && typeof selectedString?.inventory?.stock === "number"
           ? selectedString.inventory.stock
           : undefined;
-      const effectiveStringStock = selectedGaugeRow ? selectedGaugeRow.stock : baseStock;
+      const effectiveStringStock = hasVariantInventories
+        ? selectedVariant?.stock
+        : selectedGaugeRow
+          ? selectedGaugeRow.stock
+          : baseStock;
       addItem({
         id: newStringId,
         name: selectedString?.name ?? "스트링",
@@ -354,24 +444,29 @@ export default function RacketSelectStringClient({
    * - from!=cart면: pdpBundleStore로 buy-now checkout 이동
    */
   const handleSelectString = (p: any, selectedGauge?: string, selectedColor?: string) => {
+    const hasVariantInventories =
+      Array.isArray(p?.variantInventories) && p.variantInventories.length > 0;
+    const selectedVariant = hasVariantInventories
+      ? getVariantBySelection(p, selectedColor ?? "", selectedGauge ?? "")
+      : undefined;
     const gaugeRows = normalizeGaugeRows(p);
     const hasGaugeRows = gaugeRows.length > 0;
     const selectedGaugeRow = gaugeRows.find((row) => row.value === selectedGauge);
     const hideGaugeStock = p?.inventory?.hideGaugeStock === true;
 
-    if (hasGaugeRows && !selectedGauge) {
+    if (!hasVariantInventories && hasGaugeRows && !selectedGauge) {
       showErrorToast?.("게이지를 선택해주세요.");
       return;
     }
-    if (hasGaugeRows && !selectedGaugeRow) {
+    if (!hasVariantInventories && hasGaugeRows && !selectedGaugeRow) {
       showErrorToast?.("선택한 게이지 정보를 찾을 수 없습니다.");
       return;
     }
-    if (selectedGaugeRow && (selectedGaugeRow.isSoldOut || selectedGaugeRow.stock <= 0)) {
+    if (!hasVariantInventories && selectedGaugeRow && (selectedGaugeRow.isSoldOut || selectedGaugeRow.stock <= 0)) {
       showErrorToast?.("선택한 게이지는 품절입니다.");
       return;
     }
-    if (selectedGaugeRow && selectedGaugeRow.stock < workCount) {
+    if (!hasVariantInventories && selectedGaugeRow && selectedGaugeRow.stock < workCount) {
       showErrorToast?.("선택한 게이지의 구매 가능 수량을 초과했습니다.");
       return;
     }
@@ -382,7 +477,7 @@ export default function RacketSelectStringClient({
       showErrorToast?.("색상을 선택해주세요.");
       return;
     }
-    if (hasColorRows && selectedColor && !selectedColorRow) {
+    if (!hasVariantInventories && hasColorRows && selectedColor && !selectedColorRow) {
       showErrorToast?.("선택한 색상 정보를 찾을 수 없습니다.");
       return;
     }
@@ -394,22 +489,45 @@ export default function RacketSelectStringClient({
       showErrorToast?.("선택한 색상의 구매 가능 수량을 초과했습니다.");
       return;
     }
+    if (hasVariantInventories) {
+      if (!selectedColor) return showErrorToast?.("색상을 선택해주세요.");
+      if (!selectedGauge) return showErrorToast?.("게이지를 선택해주세요.");
+      if (!selectedVariant) return showErrorToast?.("선택한 색상/게이지 조합을 찾을 수 없습니다.");
+      if (!isSellableVariant(selectedVariant)) {
+        return showErrorToast?.("선택한 색상/게이지 조합은 품절되었습니다.");
+      }
+      if (selectedVariant.stock < workCount) {
+        return showErrorToast?.("선택한 게이지의 구매 가능 수량을 초과했습니다.");
+      }
+    }
     const selectedColorPayload =
-      selectedColorRow && selectedColor
+      selectedColor
         ? {
             selectedColor,
-            selectedColorLabel: getColorLabel(selectedColorRow),
-            selectedColorHex: selectedColorRow.colorHex,
-            selectedColorImage: selectedColorRow.image,
+            selectedColorLabel:
+              selectedVariant?.colorLabel || (selectedColorRow ? getColorLabel(selectedColorRow) : selectedColor),
+            selectedColorHex: selectedVariant?.colorHex || selectedColorRow?.colorHex,
+            selectedColorImage:
+              selectedVariant?.colorImage ||
+              selectedColorRow?.image ||
+              p?.images?.[0] ||
+              p?.imageUrl,
           }
         : {};
     const selectedStringImage =
-      selectedColorRow?.image?.trim() || p?.images?.[0] || p?.imageUrl;
+      selectedVariant?.colorImage?.trim() ||
+      selectedColorRow?.image?.trim() ||
+      p?.images?.[0] ||
+      p?.imageUrl;
 
     const manageStock = Boolean(p?.inventory?.manageStock);
     const baseStock =
       typeof p?.inventory?.stock === "number" ? p.inventory.stock : undefined;
-    const stock = selectedGaugeRow ? selectedGaugeRow.stock : baseStock;
+    const stock = hasVariantInventories
+      ? selectedVariant?.stock
+      : selectedGaugeRow
+        ? selectedGaugeRow.stock
+        : baseStock;
 
     // 관리 재고가 0이면(품절) 번들 진행 자체를 막음
     if (manageStock && typeof stock === "number" && stock <= 0) {
@@ -622,21 +740,42 @@ export default function RacketSelectStringClient({
               {products.map((p: any) => {
                 const stringId = String(p._id);
                 const stringImage = p?.images?.[0] ?? p?.imageUrl;
+                const hasVariantInventories =
+                  Array.isArray(p?.variantInventories) && p.variantInventories.length > 0;
+                const variantRows = hasVariantInventories ? normalizeVariantRows(p) : [];
                 const gaugeRows = normalizeGaugeRows(p);
                 const hasGaugeRows = gaugeRows.length > 0;
                 const selectedGauge = selectedGaugeByStringId[stringId] ?? "";
                 const colorRows = normalizeColorRows(p);
                 const hasColorRows = colorRows.length > 0;
                 const selectedColor = selectedColorByStringId[stringId] ?? "";
+                const variantsForSelectedColor = hasVariantInventories
+                  ? getVariantsByColor(p, selectedColor)
+                  : [];
+                const gaugeRowsForRender = hasVariantInventories
+                  ? variantsForSelectedColor.map((row) => ({
+                      value: row.gaugeValue,
+                      label: row.gaugeLabel,
+                      stock: row.stock,
+                      isSoldOut: row.isSoldOut,
+                    }))
+                  : gaugeRows;
                 const selectedColorRow = colorRows.find((row) => row.value === selectedColor);
-                const selectedGaugeRow = gaugeRows.find((row) => row.value === selectedGauge);
+                const selectedGaugeRow = gaugeRowsForRender.find((row) => row.value === selectedGauge);
+                const selectedVariant = hasVariantInventories
+                  ? getVariantBySelection(p, selectedColor, selectedGauge)
+                  : undefined;
                 const hideGaugeStock = p?.inventory?.hideGaugeStock === true;
                 const manageStock = Boolean(p?.inventory?.manageStock);
                 const stock =
                   typeof p?.inventory?.stock === "number"
                     ? p.inventory.stock
                     : undefined;
-                const effectiveStock = selectedGaugeRow ? selectedGaugeRow.stock : stock;
+                const effectiveStock = hasVariantInventories
+                  ? selectedVariant?.stock
+                  : selectedGaugeRow
+                    ? selectedGaugeRow.stock
+                    : stock;
                 const lowStock =
                   typeof p?.inventory?.lowStock === "number"
                     ? p.inventory.lowStock
@@ -654,9 +793,12 @@ export default function RacketSelectStringClient({
                   hasGaugeRows
                     ? selectedGaugeRow != null && effectiveStock < workCount
                     : manageStock && typeof stock === "number" && stock < workCount;
-                const disabledByGauge = hasGaugeRows && (!selectedGauge || isGaugeSoldOut || isGaugeShort);
+                const disabledByGauge =
+                  (hasVariantInventories || hasGaugeRows) && (!selectedGauge || isGaugeSoldOut || isGaugeShort);
                 const isColorSoldOutState =
-                  selectedColorRow != null && isColorSoldOut(selectedColorRow);
+                  hasVariantInventories
+                    ? !variantRows.some((row) => row.colorValue === selectedColor && isSellableVariant(row))
+                    : selectedColorRow != null && isColorSoldOut(selectedColorRow);
                 const isColorShort =
                   selectedColorRow != null && selectedColorRow.stock < workCount;
                 const disabledByColor =
@@ -743,8 +885,22 @@ export default function RacketSelectStringClient({
                                 <div className="flex flex-wrap gap-2">
                                   {colorRows.map((row) => {
                                     const label = getColorLabel(row);
-                                    const soldOut = isColorSoldOut(row);
+                                    const soldOut = hasVariantInventories
+                                      ? !variantRows.some(
+                                          (variant) =>
+                                            variant.colorValue === row.value && isSellableVariant(variant),
+                                        )
+                                      : isColorSoldOut(row);
                                     const isSelected = selectedColor === row.value;
+                                    const colorImageFallback = hasVariantInventories
+                                      ? variantRows.find(
+                                          (variant) =>
+                                            variant.colorValue === row.value &&
+                                            variant.colorImage &&
+                                            variant.colorImage.length > 0,
+                                        )?.colorImage
+                                      : undefined;
+                                    const colorImage = row.image || colorImageFallback || stringImage || "/placeholder.svg";
                                     return (
                                       <button
                                         key={`${stringId}-color-${row.value}`}
@@ -752,20 +908,39 @@ export default function RacketSelectStringClient({
                                         aria-pressed={isSelected}
                                         aria-label={`${label} 색상 선택`}
                                         disabled={soldOut}
-                                        onClick={() =>
+                                        onClick={() => {
+                                          const nextColor = row.value;
+                                          if (!hasVariantInventories) {
+                                            setSelectedColorByStringId((prev) => ({
+                                              ...prev,
+                                              [stringId]: nextColor,
+                                            }));
+                                            return;
+                                          }
+                                          const nextVariants = getVariantsByColor(p, nextColor);
+                                          const keepCurrentGauge = nextVariants.find(
+                                            (variant) =>
+                                              variant.gaugeValue === selectedGauge &&
+                                              isSellableVariant(variant),
+                                          );
+                                          const firstSellable = nextVariants.find((variant) => isSellableVariant(variant));
                                           setSelectedColorByStringId((prev) => ({
                                             ...prev,
-                                            [stringId]: row.value,
-                                          }))
-                                        }
+                                            [stringId]: nextColor,
+                                          }));
+                                          setSelectedGaugeByStringId((prev) => ({
+                                            ...prev,
+                                            [stringId]: keepCurrentGauge?.gaugeValue ?? firstSellable?.gaugeValue ?? "",
+                                          }));
+                                        }}
                                         className={[
                                           "h-10 min-w-10 rounded-md border px-2 text-xs transition",
                                           isSelected ? "border-ring ring-2 ring-ring/40" : "border-border",
                                           soldOut ? "opacity-50 cursor-not-allowed" : "hover:border-foreground/40",
                                         ].join(" ")}
                                       >
-                                        {row.image ? (
-                                          <img src={row.image} alt={label} className="h-6 w-6 rounded object-cover mx-auto" />
+                                        {colorImage ? (
+                                          <img src={colorImage} alt={label} className="h-6 w-6 rounded object-cover mx-auto" />
                                         ) : row.colorHex ? (
                                           <span className="mx-auto block h-5 w-5 rounded-full border" style={{ backgroundColor: row.colorHex }} />
                                         ) : (
@@ -780,7 +955,7 @@ export default function RacketSelectStringClient({
                             )}
                           </div>
                         )}
-                        {hasGaugeRows && (
+                        {(hasVariantInventories || hasGaugeRows) && (
                           <div className="space-y-1.5">
                             <p className="text-xs font-medium text-foreground">게이지 선택</p>
                             <Select
@@ -796,7 +971,7 @@ export default function RacketSelectStringClient({
                                 <SelectValue placeholder="게이지를 선택해주세요" />
                               </SelectTrigger>
                               <SelectContent>
-                                {gaugeRows.map((row) => {
+                                {gaugeRowsForRender.map((row) => {
                                   const soldOut = row.isSoldOut || row.stock <= 0;
                                   const gaugeLabel = getGaugeLabel(row);
                                   const stockSuffix =
