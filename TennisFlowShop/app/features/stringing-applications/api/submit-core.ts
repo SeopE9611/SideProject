@@ -656,6 +656,8 @@ export async function submitStringingApplicationCore({
       Array.isArray((stringProduct as any)?.variantInventories) &&
       (stringProduct as any).variantInventories.length > 0;
 
+    let didVariantDeduct = false;
+
     if (hasVariantInventories && !alreadyDeductedGaugeStock) {
       const variantDeduction = await applyStringingVariantInventoryDeduction({
         db,
@@ -668,6 +670,7 @@ export async function submitStringingApplicationCore({
       });
 
       if (variantDeduction.status === "deducted") {
+        didVariantDeduct = true;
         updateDoc["meta.gaugeStockDeductedAt"] = new Date();
         updateDoc["meta.colorStockDeductedAt"] = new Date();
         updateDoc["stockDeduction"] = {
@@ -676,8 +679,7 @@ export async function submitStringingApplicationCore({
           gaugeValue: effectiveSelectedGauge ?? null,
         };
       }
-    } else
-    if (
+    } else if (
       effectiveSelectedColor &&
       !alreadyDeductedColorStock &&
       !isColorStockAlreadyDeductedByOrderItem &&
@@ -736,6 +738,7 @@ export async function submitStringingApplicationCore({
     }
 
     if (
+      !didVariantDeduct &&
       isGaugeSelectableProduct &&
       effectiveSelectedGauge &&
       !alreadyDeductedGaugeStock &&
