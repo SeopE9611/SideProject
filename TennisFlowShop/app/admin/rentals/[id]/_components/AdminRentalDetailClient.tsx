@@ -641,6 +641,9 @@ export default function AdminRentalDetailClient() {
   const latestProcessingActor = getRentalHistoryActorLabel(latestProcessingHistory?.actor);
 
   const latestProcessingDate = fmt(latestProcessingHistory?.at);
+  const isVariantStockMode = data?.stockDeduction?.mode === "variant";
+  const isCanceledState =
+    data?.status === "canceled" || data?.status === "cancelled";
 
   return (
     <div className="min-h-screen bg-muted/30 dark:bg-muted/30">
@@ -905,6 +908,38 @@ export default function AdminRentalDetailClient() {
                     <p className="sm:col-span-2">
                       <span className="font-medium text-foreground">상태 변화:</span>{" "}
                       {latestProcessingHistory?.from ?? "-"} → {latestProcessingHistory?.to ?? "-"}
+                    </p>
+                  ) : null}
+                </div>
+              </div>
+              <div className="rounded-lg border border-border/60 bg-background/70 p-3">
+                <p className="text-sm font-semibold text-foreground">재고 운영 정보</p>
+                <div className="mt-2 space-y-1.5 text-xs leading-relaxed text-muted-foreground">
+                  <p>
+                    <span className="font-medium text-foreground">재고 차감 방식:</span>{" "}
+                    {isVariantStockMode ? "색상×게이지 조합 재고" : "기존 재고 방식"}
+                  </p>
+                  <p>
+                    {isVariantStockMode
+                      ? `선택한 색상과 게이지 조합 기준으로 재고가 차감되었습니다. (색상 ${data?.stockDeduction?.colorValue ?? "-"} / 게이지 ${data?.stockDeduction?.gaugeValue ?? "-"})`
+                      : "기존 색상/게이지 재고 기준으로 처리된 대여입니다."}
+                  </p>
+                  <p>
+                    <span className="font-medium text-foreground">조합 재고 복구:</span>{" "}
+                    {data?.stockRestore?.variantStockRestoredAt
+                      ? "복구 완료"
+                      : "복구 정보 없음"}
+                  </p>
+                  {data?.stockRestore?.variantStockRestoredAt ? (
+                    <p>
+                      {fmt(data.stockRestore.variantStockRestoredAt)}
+                      {data?.stockRestore?.variantStockRestoreReason
+                        ? ` · ${data.stockRestore.variantStockRestoreReason}`
+                        : ""}
+                    </p>
+                  ) : isVariantStockMode && isCanceledState ? (
+                    <p className="text-muted-foreground/80">
+                      취소 처리 데이터에서 조합 재고 복구 시각이 확인되지 않았습니다.
                     </p>
                   ) : null}
                 </div>

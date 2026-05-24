@@ -178,6 +178,15 @@ interface ApplicationDetail {
     selectedColorHex?: string | null;
     selectedColorImage?: string | null;
   };
+  stockDeduction?: {
+    mode?: string;
+    colorValue?: string | null;
+    gaugeValue?: string | null;
+  } | null;
+  stockRestore?: {
+    variantStockRestoredAt?: string | null;
+    variantStockRestoreReason?: string | null;
+  } | null;
 
   packageInfo?: {
     applied: boolean;
@@ -699,6 +708,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
   };
 
   const isCancelled = data.status === '취소';
+  const isVariantStockMode = data.stockDeduction?.mode === 'variant';
   const paymentSourceRaw = String(data.paymentSource ?? '').trim();
   const linkedPayment = data.linkedPayment ?? null;
   const packageApplied = Boolean(data.packageInfo?.applied);
@@ -1746,6 +1756,41 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                             <span>{selectedColorLabel}</span>
                           </p>
                         )}
+                      </div>
+                    </section>
+                  )}
+                  {isAdmin && (
+                    <section className="space-y-2 border-b border-dashed border-border pb-4">
+                      <div className="flex items-center gap-2 text-foreground">
+                        <Target className="w-5 h-5" />
+                        <span className="font-medium">재고 운영 정보</span>
+                      </div>
+                      <div className="space-y-1.5 text-sm text-foreground/80">
+                        <p>
+                          <span className="font-medium text-foreground">재고 차감 방식:</span>{' '}
+                          {isVariantStockMode ? '색상×게이지 조합 재고' : '기존 재고 방식'}
+                        </p>
+                        <p>
+                          {isVariantStockMode
+                            ? `선택한 색상과 게이지 조합 기준으로 재고가 차감되었습니다. (색상 ${data.stockDeduction?.colorValue ?? '-'} / 게이지 ${data.stockDeduction?.gaugeValue ?? '-'})`
+                            : '기존 색상/게이지 재고 기준으로 처리된 신청서입니다.'}
+                        </p>
+                        <p>
+                          <span className="font-medium text-foreground">조합 재고 복구:</span>{' '}
+                          {data.stockRestore?.variantStockRestoredAt ? '복구 완료' : '복구 정보 없음'}
+                        </p>
+                        {data.stockRestore?.variantStockRestoredAt ? (
+                          <p>
+                            {new Date(data.stockRestore.variantStockRestoredAt).toLocaleString()}
+                            {data.stockRestore.variantStockRestoreReason
+                              ? ` · ${data.stockRestore.variantStockRestoreReason}`
+                              : ''}
+                          </p>
+                        ) : isVariantStockMode && isCancelled ? (
+                          <p className="text-muted-foreground">
+                            취소 처리 데이터에서 조합 재고 복구 시각이 확인되지 않았습니다.
+                          </p>
+                        ) : null}
                       </div>
                     </section>
                   )}
