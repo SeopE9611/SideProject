@@ -543,7 +543,11 @@ export default function CartPageClient() {
         }
 
         const variants = Array.isArray(product.variantInventories) ? product.variantInventories : [];
-        if (variants.length > 0 && item.selectedColor && item.selectedGauge) {
+        if (variants.length > 0) {
+          if (!item.selectedColor || !item.selectedGauge) {
+            showErrorToast("옵션 정보를 확인할 수 없습니다. 선택한 색상/게이지 옵션을 다시 선택해주세요.");
+            return false;
+          }
           const selectedVariant = variants.find(
             (variant) =>
               (variant.colorValue ?? "") === item.selectedColor &&
@@ -573,6 +577,18 @@ export default function CartPageClient() {
       return false;
     } finally {
       setIsCheckingCheckoutStock(false);
+    }
+  };
+
+  const handleCheckoutClick = async () => {
+    if (!user) {
+      window.location.href = checkoutHref;
+      return;
+    }
+
+    const isValid = await validateLatestStockBeforeCheckout();
+    if (isValid) {
+      window.location.href = checkoutHref;
     }
   };
 
@@ -1264,14 +1280,7 @@ export default function CartPageClient() {
                           className="h-14 w-full font-semibold"
                           size="lg"
                           disabled={isCheckingCheckoutStock}
-                          onClick={async () => {
-                            if (!user) {
-                              window.location.href = checkoutHref;
-                              return;
-                            }
-                            const isValid = await validateLatestStockBeforeCheckout();
-                            if (isValid) window.location.href = checkoutHref;
-                          }}
+                          onClick={handleCheckoutClick}
                         >
                           {isCheckingCheckoutStock ? (
                             <Loader2 className="h-5 w-5 animate-spin" />
@@ -1427,12 +1436,19 @@ export default function CartPageClient() {
                     </p>
                   )}
                   <Button
-                    asChild
+                    type="button"
                     className="h-12 w-full font-semibold"
+                    onClick={handleCheckoutClick}
+                    disabled={isCheckingCheckoutStock}
                   >
-                    <Link href={checkoutHref}>
-                      {user ? "주문하기" : "로그인 후 주문하기"}
-                    </Link>
+                    {isCheckingCheckoutStock ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : null}
+                    {isCheckingCheckoutStock
+                      ? "재고 확인 중..."
+                      : user
+                        ? "주문하기"
+                        : "로그인 후 주문하기"}
                   </Button>
                 </>
               )}
