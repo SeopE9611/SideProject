@@ -641,7 +641,11 @@ export default function AdminRentalDetailClient() {
   const latestProcessingActor = getRentalHistoryActorLabel(latestProcessingHistory?.actor);
 
   const latestProcessingDate = fmt(latestProcessingHistory?.at);
-  const isVariantStockMode = data?.stockDeduction?.mode === "variant";
+  const effectiveStockDeduction =
+    data?.stockDeduction ?? data?.stringing?.stockDeduction ?? null;
+  const effectiveStockRestore =
+    data?.stockRestore ?? data?.stringing?.stockRestore ?? null;
+  const isVariantStockMode = effectiveStockDeduction?.mode === "variant";
   const isCanceledState =
     data?.status === "canceled" || data?.status === "cancelled";
 
@@ -921,20 +925,20 @@ export default function AdminRentalDetailClient() {
                   </p>
                   <p>
                     {isVariantStockMode
-                      ? `선택한 색상과 게이지 조합 기준으로 재고가 차감되었습니다. (색상 ${data?.stockDeduction?.colorValue ?? "-"} / 게이지 ${data?.stockDeduction?.gaugeValue ?? "-"})`
+                      ? `선택한 색상과 게이지 조합 기준으로 재고가 차감되었습니다. (색상 ${effectiveStockDeduction?.colorValue ?? "-"} / 게이지 ${effectiveStockDeduction?.gaugeValue ?? "-"})`
                       : "기존 색상/게이지 재고 기준으로 처리된 대여입니다."}
                   </p>
                   <p>
                     <span className="font-medium text-foreground">조합 재고 복구:</span>{" "}
-                    {data?.stockRestore?.variantStockRestoredAt
+                    {effectiveStockRestore?.variantStockRestoredAt
                       ? "복구 완료"
                       : "복구 정보 없음"}
                   </p>
-                  {data?.stockRestore?.variantStockRestoredAt ? (
+                  {effectiveStockRestore?.variantStockRestoredAt ? (
                     <p>
-                      {fmt(data.stockRestore.variantStockRestoredAt)}
-                      {data?.stockRestore?.variantStockRestoreReason
-                        ? ` · ${data.stockRestore.variantStockRestoreReason}`
+                      {fmt(effectiveStockRestore.variantStockRestoredAt)}
+                      {effectiveStockRestore?.variantStockRestoreReason
+                        ? ` · ${effectiveStockRestore.variantStockRestoreReason}`
                         : ""}
                     </p>
                   ) : isVariantStockMode && isCanceledState ? (
