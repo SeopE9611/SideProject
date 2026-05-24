@@ -235,6 +235,15 @@ interface OrderDetail {
       } | null;
     } | null;
   }[];
+  stockDeduction?: {
+    mode?: string;
+    colorValue?: string | null;
+    gaugeValue?: string | null;
+  } | null;
+  stockRestore?: {
+    variantStockRestoredAt?: string | null;
+    variantStockRestoreReason?: string | null;
+  } | null;
 }
 type AdminNextActionTone = "urgent" | "warning" | "info" | "success";
 type AdminNextActionGuide = {
@@ -747,6 +756,15 @@ export default function OrderDetailClient({ orderId }: Props) {
 
   const latestProcessingHistory = allHistory[0] ?? null;
   const latestProcessingDate = formatDateTime(latestProcessingHistory?.date);
+  const isVariantStockMode = orderDetail.stockDeduction?.mode === "variant";
+  const currentStatusText = String(localStatus ?? orderDetail.status ?? "");
+  const normalizedStatusText = currentStatusText.toLowerCase();
+  const isCanceledState =
+    currentStatusText === "취소완료" ||
+    currentStatusText === "취소승인" ||
+    currentStatusText === "취소" ||
+    normalizedStatusText === "cancelled" ||
+    normalizedStatusText === "canceled";
 
   // 취소 성공 시 호출되는 콜백
   const handleCancelSuccess = async (reason: string, detail?: string) => {
@@ -1339,6 +1357,38 @@ export default function OrderDetailClient({ orderId }: Props) {
                     <p className="sm:col-span-2">
                       <span className="font-medium text-foreground">내용:</span>{" "}
                       {latestProcessingHistory.description}
+                    </p>
+                  ) : null}
+                </div>
+              </div>
+              <div className="rounded-lg border border-border/60 bg-background/70 p-3">
+                <p className="text-sm font-semibold text-foreground">재고 운영 정보</p>
+                <div className="mt-2 space-y-1.5 text-xs leading-relaxed text-muted-foreground">
+                  <p>
+                    <span className="font-medium text-foreground">재고 차감 방식:</span>{" "}
+                    {isVariantStockMode ? "색상×게이지 조합 재고" : "기존 재고 방식"}
+                  </p>
+                  <p>
+                    {isVariantStockMode
+                      ? `선택한 색상과 게이지 조합 기준으로 재고가 차감되었습니다. (색상 ${orderDetail.stockDeduction?.colorValue ?? "-"} / 게이지 ${orderDetail.stockDeduction?.gaugeValue ?? "-"})`
+                      : "기존 색상/게이지 재고 기준으로 처리된 주문입니다."}
+                  </p>
+                  <p>
+                    <span className="font-medium text-foreground">조합 재고 복구:</span>{" "}
+                    {orderDetail.stockRestore?.variantStockRestoredAt
+                      ? "복구 완료"
+                      : "복구 정보 없음"}
+                  </p>
+                  {orderDetail.stockRestore?.variantStockRestoredAt ? (
+                    <p>
+                      {formatDateTime(orderDetail.stockRestore.variantStockRestoredAt)}
+                      {orderDetail.stockRestore.variantStockRestoreReason
+                        ? ` · ${orderDetail.stockRestore.variantStockRestoreReason}`
+                        : ""}
+                    </p>
+                  ) : isVariantStockMode && isCanceledState ? (
+                    <p className="text-muted-foreground/80">
+                      취소 처리 데이터에서 조합 재고 복구 시각이 확인되지 않았습니다.
                     </p>
                   ) : null}
                 </div>
