@@ -36,6 +36,7 @@ type GaugeInventoryRow = {
   label?: string;
   stock: number;
   isSoldOut: boolean;
+  showWhenSoldOut?: boolean | null;
 };
 
 type ColorInventoryRow = {
@@ -45,6 +46,7 @@ type ColorInventoryRow = {
   image?: string;
   stock: number;
   isSoldOut: boolean;
+  showWhenSoldOut?: boolean | null;
 };
 
 type VariantInventoryRow = {
@@ -56,6 +58,7 @@ type VariantInventoryRow = {
   gaugeLabel?: string;
   stock: number;
   isSoldOut: boolean;
+  showWhenSoldOut?: boolean | null;
 };
 
 function normalizeGaugeRows(product: any): GaugeInventoryRow[] {
@@ -69,6 +72,7 @@ function normalizeGaugeRows(product: any): GaugeInventoryRow[] {
           return Number.isFinite(stockNumber) && stockNumber > 0 ? stockNumber : 0;
         })(),
         isSoldOut: row?.isSoldOut === true,
+        showWhenSoldOut: row?.showWhenSoldOut === false ? false : true,
       }))
       .filter((row: GaugeInventoryRow) => row.value.length > 0);
   }
@@ -104,6 +108,7 @@ function normalizeColorRows(product: any): ColorInventoryRow[] {
           image: typeof row?.image === "string" ? row.image.trim() : undefined,
           stock: Number.isFinite(stockNumber) && stockNumber > 0 ? stockNumber : 0,
           isSoldOut: row?.isSoldOut === true,
+        showWhenSoldOut: row?.showWhenSoldOut === false ? false : true,
         };
       })
       .filter((row: ColorInventoryRow) => row.value.length > 0);
@@ -162,6 +167,7 @@ function normalizeVariantRows(product: any): VariantInventoryRow[] {
         gaugeLabel: typeof row?.gaugeLabel === "string" ? row.gaugeLabel.trim() : undefined,
         stock: Number.isFinite(stockNumber) && stockNumber > 0 ? stockNumber : 0,
         isSoldOut: row?.isSoldOut === true,
+        showWhenSoldOut: row?.showWhenSoldOut === false ? false : true,
       };
     })
     .filter((row: VariantInventoryRow) => row.colorValue.length > 0 && row.gaugeValue.length > 0);
@@ -170,9 +176,15 @@ function normalizeVariantRows(product: any): VariantInventoryRow[] {
 function isSellableVariant(row: VariantInventoryRow) {
   return row.isSoldOut !== true && Number(row.stock ?? 0) > 0;
 }
+function isSoldOutVariant(row: VariantInventoryRow) {
+  return row.isSoldOut === true || Number(row.stock ?? 0) <= 0;
+}
+function isVisibleVariant(row: VariantInventoryRow) {
+  return !(isSoldOutVariant(row) && row.showWhenSoldOut === false);
+}
 
 function getVariantsByColor(product: any, colorValue: string) {
-  return normalizeVariantRows(product).filter((row) => row.colorValue === colorValue);
+  return normalizeVariantRows(product).filter((row) => row.colorValue === colorValue && isVisibleVariant(row));
 }
 
 function getVariantBySelection(product: any, colorValue: string, gaugeValue: string) {

@@ -15,6 +15,7 @@ export type ProductGaugeInventory = {
   label?: string;
   stock: number;
   isSoldOut: boolean;
+  showWhenSoldOut?: boolean | null;
 };
 export type ProductColorInventory = {
   value: string;
@@ -23,6 +24,7 @@ export type ProductColorInventory = {
   image?: string;
   stock: number;
   isSoldOut: boolean;
+  showWhenSoldOut?: boolean | null;
 };
 export type ProductVariantInventory = {
   colorValue: string;
@@ -33,6 +35,7 @@ export type ProductVariantInventory = {
   gaugeLabel?: string;
   stock: number;
   isSoldOut: boolean;
+  showWhenSoldOut?: boolean | null;
 };
 
 export type ProductFeatureScores = {

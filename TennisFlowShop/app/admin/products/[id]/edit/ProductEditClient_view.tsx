@@ -227,6 +227,15 @@ export default function ProductEditClient({
       ),
     );
   };
+  const updateVariantShowWhenSoldOut = (colorValue: string, gaugeValue: string, showWhenSoldOut: boolean) => {
+    setVariantInventories((prev) =>
+      prev.map((row) =>
+        row.colorValue === colorValue && row.gaugeValue === gaugeValue
+          ? { ...row, showWhenSoldOut }
+          : row,
+      ),
+    );
+  };
   const getColorTotalStock = (colorValue: string) =>
     variantInventories
       .filter((row) => row.colorValue === colorValue && !row.isSoldOut)
@@ -239,7 +248,7 @@ export default function ProductEditClient({
     const gaugeMeta = gauges.find((g) => g.value === gaugeValue);
     setVariantInventories((prev) => {
       if (prev.some((row) => row.colorValue === colorRow.value && row.gaugeValue === gaugeValue)) return prev;
-      return [...prev, { colorValue: colorRow.value, colorLabel: colorRow.label, colorHex: colorRow.colorHex, colorImage: colorRow.image ?? "", gaugeValue, gaugeLabel: gaugeMeta?.name ?? gaugeValue, stock: 0, isSoldOut: true }];
+      return [...prev, { colorValue: colorRow.value, colorLabel: colorRow.label, colorHex: colorRow.colorHex, colorImage: colorRow.image ?? "", gaugeValue, gaugeLabel: gaugeMeta?.name ?? gaugeValue, stock: 0, isSoldOut: true, showWhenSoldOut: true }];
     });
   };
   const removeVariantForColor = (colorValue: string, gaugeValue: string) =>
@@ -360,6 +369,7 @@ export default function ProductEditClient({
               ? Number(row.stock)
               : 0,
           isSoldOut: Boolean(row.isSoldOut),
+          showWhenSoldOut: row.showWhenSoldOut !== false,
         });
       });
 
@@ -749,6 +759,7 @@ export default function ProductEditClient({
           row.colorImage ??
           colorInventories.find((c) => c.value === row.colorValue)?.image ??
           "",
+        showWhenSoldOut: row.showWhenSoldOut !== false,
       }));
       const normalizedColorInventories = colorInventories.map((row) => {
         const colorMeta = colors.find((c) => c.id === row.value);
@@ -1583,6 +1594,11 @@ export default function ProductEditClient({
                                       <Checkbox checked={variant.isSoldOut ?? true} onCheckedChange={(checked) => updateVariantSoldOut(row.value, variant.gaugeValue, Boolean(checked))} />
                                       품절
                                     </label>
+                                    <label className="flex items-center gap-2 text-sm">
+                                      <Checkbox checked={variant.showWhenSoldOut !== false} onCheckedChange={(checked) => updateVariantShowWhenSoldOut(row.value, variant.gaugeValue, Boolean(checked))} />
+                                      품절 시에도 노출
+                                    </label>
+                                    <p className="text-xs text-muted-foreground">꺼두면 재고가 0이거나 품절 처리된 경우 사용자 선택 화면에서 숨겨집니다.</p>
                                     <Button type="button" variant="ghost" size="sm" onClick={() => removeVariantForColor(row.value, variant.gaugeValue)}>삭제</Button>
                                   </div>
                                 ))}

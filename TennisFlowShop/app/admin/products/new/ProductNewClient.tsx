@@ -175,13 +175,22 @@ export default function NewStringPage() {
       ),
     );
   };
+  const updateVariantShowWhenSoldOut = (colorValue: string, gaugeValue: string, showWhenSoldOut: boolean) => {
+    setVariantInventories((prev) =>
+      prev.map((row) =>
+        row.colorValue === colorValue && row.gaugeValue === gaugeValue
+          ? { ...row, showWhenSoldOut }
+          : row,
+      ),
+    );
+  };
   const addVariantForColor = (colorRow: ProductColorInventory, gaugeValue: string) => {
     const gaugeMeta = gauges.find((g) => g.value === gaugeValue);
     setVariantInventories((prev) => {
       if (prev.some((row) => row.colorValue === colorRow.value && row.gaugeValue === gaugeValue)) {
         return prev;
       }
-      return [...prev, { colorValue: colorRow.value, colorLabel: colorRow.label, colorHex: colorRow.colorHex, colorImage: colorRow.image ?? "", gaugeValue, gaugeLabel: gaugeMeta?.name ?? gaugeValue, stock: 0, isSoldOut: true }];
+      return [...prev, { colorValue: colorRow.value, colorLabel: colorRow.label, colorHex: colorRow.colorHex, colorImage: colorRow.image ?? "", gaugeValue, gaugeLabel: gaugeMeta?.name ?? gaugeValue, stock: 0, isSoldOut: true, showWhenSoldOut: true }];
     });
   };
   const removeVariantForColor = (colorValue: string, gaugeValue: string) => {
@@ -577,7 +586,7 @@ export default function NewStringPage() {
     }
 
     const searchKeywords = searchKeywordsInput.split(",").map((k) => k.trim()).filter((k) => k.length > 0);
-    const normalizedVariants = variantInventories.map((row) => ({ ...row, stock: Math.max(0, Number(row.stock) || 0), colorImage: row.colorImage ?? colorInventories.find((c) => c.value===row.colorValue)?.image }));
+    const normalizedVariants = variantInventories.map((row) => ({ ...row, stock: Math.max(0, Number(row.stock) || 0), colorImage: row.colorImage ?? colorInventories.find((c) => c.value===row.colorValue)?.image, showWhenSoldOut: row.showWhenSoldOut !== false }));
     const colorOptions = colorInventories.map((row) => row.value);
     const gaugeOptions = Array.from(new Set(normalizedVariants.map((row) => row.gaugeValue)));
     const normalizedGauge = gaugeOptions[0] ?? basicInfo.gauge ?? "";
@@ -1361,6 +1370,14 @@ export default function NewStringPage() {
                                               />
                                               품절
                                             </label>
+                                            <label className="ml-2 flex items-center gap-2 text-sm">
+                                              <Checkbox
+                                                checked={variantRow.showWhenSoldOut !== false}
+                                                onCheckedChange={(checked) => updateVariantShowWhenSoldOut(row.value, variantRow.gaugeValue, Boolean(checked))}
+                                              />
+                                              품절 시에도 노출
+                                            </label>
+                                            <p className="text-xs text-muted-foreground">꺼두면 재고가 0이거나 품절 처리된 경우 사용자 선택 화면에서 숨겨집니다.</p>
                                             <Button type="button" variant="ghost" size="sm" onClick={() => removeVariantForColor(row.value, variantRow.gaugeValue)}>삭제</Button>
                                           </div>
                                         </div>
