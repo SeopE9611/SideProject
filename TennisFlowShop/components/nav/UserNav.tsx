@@ -13,32 +13,17 @@ import {
   LayoutDashboard,
   Settings,
   UserIcon,
-  Mail,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import { useAuthStore } from "@/app/store/authStore";
-import { useUnreadMessageCount } from "@/lib/hooks/useUnreadMessageCount";
 import { Badge } from "@/components/ui/badge";
 import { getSocialProviderBadgeSpec } from "@/lib/badge-style";
 
-type UserNavProps = {
-  unreadCount?: number | null;
-};
-
-export function UserNav({ unreadCount }: UserNavProps) {
+export function UserNav() {
   const router = useRouter();
   const { user, loading } = useCurrentUser();
   const { logout } = useAuthStore();
-  const shouldPollUnread = unreadCount == null;
-  const { count, status } = useUnreadMessageCount(
-    shouldPollUnread && !loading && !!user,
-  );
-  const resolvedUnread = shouldPollUnread
-    ? status === "ready"
-      ? (count ?? 0)
-      : null
-    : unreadCount;
 
   if (loading) {
     return (
@@ -135,15 +120,6 @@ export function UserNav({ unreadCount }: UserNavProps) {
         <DropdownMenuItem onClick={() => router.push("/mypage")}>
           <Settings className="mr-2 h-4 w-4" />
           마이페이지
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => router.push("/messages")}>
-          <Mail className="mr-2 h-4 w-4" />
-          쪽지함{" "}
-          {resolvedUnread !== null && resolvedUnread > 0 && (
-            <span className="shrink-0 rounded-full bg-destructive text-destructive-foreground text-[10px] leading-none px-1.5 py-[2px]">
-              {resolvedUnread > 99 ? "99+" : resolvedUnread}
-            </span>
-          )}
         </DropdownMenuItem>
         {isAdmin && (
           <DropdownMenuItem onClick={() => router.push("/admin/dashboard")}>

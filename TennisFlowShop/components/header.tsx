@@ -14,7 +14,7 @@ import { getSocialProviderBadgeSpec } from "@/lib/badge-style";
 import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import { useUnreadMessageCount } from "@/lib/hooks/useUnreadMessageCount";
 import { cn } from "@/lib/utils";
-import { ChevronDown, ChevronRight, Headset, Loader2, Mail, Menu, ShoppingCart, UserIcon } from "lucide-react";
+import { ChevronDown, ChevronRight, Gift, Headset, Loader2, Mail, Menu, ShoppingCart, UserIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -680,11 +680,11 @@ const Header = () => {
           </div>
 
           {/* 하단 고정 영역(모바일) */}
-          <div className="shrink-0 border-t border-border bg-card px-3 pt-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] bp-sm:px-4 bp-sm:pt-4 space-y-3">
+          <div className="shrink-0 border-t border-border bg-card px-3 pt-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] bp-sm:px-4 bp-sm:pt-4 space-y-2">
             {user ? (
               <>
                 {/* 사용자 정보 카드 */}
-                <div className="rounded-xl border border-border bg-card p-3">
+                <div className="rounded-xl border border-border bg-card p-2.5">
                   <div className="flex items-start justify-between">
                     {/* <Avatar className="h-10 w-10 border-2 border-border shadow-sm">
                           <AvatarImage src={user.image || '/placeholder.svg'} />
@@ -739,11 +739,11 @@ const Header = () => {
                 </div>
 
                 {/* 주요 액션(아이콘 전용) - 모바일 Sheet 하단 높이/복잡도 축소 */}
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-4 gap-1.5">
                   <Button
                     variant="outline"
                     size="icon"
-                    className="relative h-10 w-full rounded-xl border-border bg-background hover:bg-secondary"
+                    className="relative h-9 w-full rounded-lg border-border bg-background hover:bg-secondary"
                     onClick={() => {
                       setOpen(false);
                       router.push("/mypage");
@@ -757,7 +757,7 @@ const Header = () => {
                   <Button
                     variant="outline"
                     size="icon"
-                    className="relative h-10 w-full rounded-xl border-border bg-background hover:bg-secondary"
+                    className="relative h-9 w-full rounded-lg border-border bg-background hover:bg-secondary"
                     onClick={() => {
                       setOpen(false);
                       router.push("/messages");
@@ -776,7 +776,21 @@ const Header = () => {
                   <Button
                     variant="outline"
                     size="icon"
-                    className="relative h-10 w-full rounded-xl border-border bg-background hover:bg-secondary"
+                    className="relative h-9 w-full rounded-lg border-border bg-background hover:bg-secondary"
+                    onClick={() => {
+                      setOpen(false);
+                      router.push("/board/event");
+                    }}
+                    aria-label="이벤트"
+                  >
+                    <Gift className="h-5 w-5" />
+                    <span className="sr-only">이벤트</span>
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="relative h-9 w-full rounded-lg border-border bg-background hover:bg-secondary"
                     onClick={() => {
                       setOpen(false);
                       router.push("/cart");
@@ -989,7 +1003,7 @@ const Header = () => {
                     <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
-                <Link href="/support">
+                <Link href="/support" className="hidden bp-xl:inline-flex">
                   <Button
                     variant="ghost"
                     size="icon"
@@ -998,6 +1012,33 @@ const Header = () => {
                     title="고객센터"
                   >
                     <Headset className="!h-5 !w-5" />
+                  </Button>
+                </Link>
+                <Link href="/board/event">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="relative h-10 w-10 rounded-full hover:bg-secondary p-0 transition-[background-color,color,border-color,box-shadow,opacity] duration-300 focus-visible:ring-2 ring-ring shrink-0"
+                    aria-label="이벤트"
+                    title="이벤트"
+                  >
+                    <Gift className="!h-5 !w-5" />
+                  </Button>
+                </Link>
+                <Link href="/messages">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="relative h-10 w-10 rounded-full hover:bg-secondary p-0 transition-[background-color,color,border-color,box-shadow,opacity] duration-300 focus-visible:ring-2 ring-ring shrink-0"
+                    aria-label={resolvedUnreadCount !== null && resolvedUnreadCount > 0 ? `읽지 않은 쪽지 ${resolvedUnreadCount}개` : "쪽지함"}
+                    title="쪽지함"
+                  >
+                    <Mail className="!h-5 !w-5" />
+                    {resolvedUnreadCount !== null && resolvedUnreadCount > 0 && (
+                      <span className="absolute -top-1 -right-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground">
+                        {resolvedUnreadCount > 99 ? "99+" : resolvedUnreadCount}
+                      </span>
+                    )}
                   </Button>
                 </Link>
                 <Link href="/cart">
@@ -1034,7 +1075,7 @@ const Header = () => {
                 )}
 
                 <div className="max-w-[110px] xl:max-w-[140px] overflow-hidden shrink-0">
-                  <UserNav unreadCount={resolvedUnreadCount} />
+                  <UserNav />
                 </div>
                 <div className="shrink-0">
                   <ThemeToggle />
