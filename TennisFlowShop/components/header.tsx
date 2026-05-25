@@ -970,8 +970,8 @@ const Header = () => {
               </div>
 
               {/* 검색 (PC 전용) */}
-              <div className="justify-self-center min-w-0 w-full px-2 xl:px-4">
-                <div className="w-full max-w-[560px] xl:max-w-[640px] mx-auto">
+              <div className="justify-self-center min-w-0 w-full px-2 xl:px-3 2xl:px-4">
+                <div className="w-full max-w-[420px] xl:max-w-[520px] 2xl:max-w-[640px] mx-auto">
                   <SearchPreview
                     placeholder="스트링 / 라켓 검색..."
                     className="w-full rounded-full bg-background/80 border border-border focus-within:ring-2 focus-within:ring-ring transition-[background-color,color,border-color,box-shadow,opacity] duration-200"
@@ -997,13 +997,13 @@ const Header = () => {
               ) : null}
 
               {/* 아이콘/유저 */}
-              <div className="justify-self-end flex items-center gap-2 xl:gap-4 min-w-fit shrink-0 pl-2">
+              <div className="justify-self-end flex items-center gap-1.5 xl:gap-2 2xl:gap-3 min-w-fit shrink-0 pl-2">
                 <SheetTrigger asChild>
                   <Button variant="ghost" size="icon" className="bp-lg:hidden rounded-full hover:bg-secondary p-2 transition-[background-color,color,border-color,box-shadow,opacity] duration-300 focus-visible:ring-2 ring-ring" aria-label="메뉴 열기">
                     <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
-                <Link href="/support" className="hidden bp-xl:inline-flex">
+                <Link href="/support" className="hidden 2xl:inline-flex">
                   <Button
                     variant="ghost"
                     size="icon"
@@ -1055,10 +1055,10 @@ const Header = () => {
                 </Link>
 
                 {user && (
-                  <Button variant="ghost" className="h-9 px-3 rounded-full shrink-0" asChild>
+                  <Button variant="ghost" className="h-9 px-2.5 2xl:px-3 rounded-full shrink-0" asChild>
                     <Link href="/mypage?tab=points" className="flex items-center gap-2">
                       <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-muted text-xs font-bold text-muted-foreground">P</span>
-                      <span className="inline-flex items-center gap-1 text-sm font-semibold tabular-nums">
+                      <span className="hidden 2xl:inline-flex items-center gap-1 text-sm font-semibold tabular-nums">
                         {pointsStatus === "loading" ? (
                           <>
                             <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" aria-hidden="true" />
@@ -1074,7 +1074,7 @@ const Header = () => {
                   </Button>
                 )}
 
-                <div className="max-w-[110px] xl:max-w-[140px] overflow-hidden shrink-0">
+                <div className="max-w-[88px] xl:max-w-[110px] 2xl:max-w-[150px] overflow-hidden shrink-0">
                   <UserNav />
                 </div>
                 <div className="shrink-0">
