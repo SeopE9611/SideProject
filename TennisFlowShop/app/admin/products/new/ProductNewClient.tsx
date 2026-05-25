@@ -132,6 +132,19 @@ export default function NewStringPage() {
   const [showGaugeStockToUser, setShowGaugeStockToUser] = useState(true);
   const getVariantKey = (colorValue: string, gaugeValue: string) =>
     `${colorValue}::${gaugeValue}`;
+  const formatPlainGaugeLabel = (value?: string | null) => {
+    const raw = String(value ?? "").trim();
+    if (!raw) return "";
+
+    const normalized = raw
+      .toLowerCase()
+      .replace(/mm/g, "")
+      .replace(/\s+/g, "")
+      .replace(",", ".");
+
+    if (!/^\d+\.\d+$/.test(normalized)) return raw;
+    return `${normalized}mm`;
+  };
   const normalizeGaugeInput = (input: string) => {
     const normalized = input
       .trim()
@@ -166,8 +179,8 @@ export default function NewStringPage() {
   const gaugeSummaryRows = useMemo(() => {
     const values = Array.from(new Set(variantInventories.map((row) => row.gaugeValue)));
     return values.map((value) => {
-      const found = gauges.find((g) => g.value === value);
-      return { value, label: found?.name ?? `${value}mm` };
+      const variantGaugeLabel = variantInventories.find((variant) => variant.gaugeValue === value)?.gaugeLabel;
+      return { value, label: formatPlainGaugeLabel(value) || variantGaugeLabel || `${value}mm` };
     });
   }, [variantInventories]);
   const updateVariantStock = (colorValue: string, gaugeValue: string, stock: number) => {
@@ -619,7 +632,13 @@ export default function NewStringPage() {
     const normalizedGaugeInventories = gaugeSummaryRows.map((gaugeRow) => {
       const rows = normalizedVariants.filter((row) => row.gaugeValue === gaugeRow.value);
       const stock = rows.filter((row) => !row.isSoldOut).reduce((sum, row) => sum + row.stock, 0);
-      return { ...gaugeRow, stock, isSoldOut: rows.every((row) => row.isSoldOut) || stock === 0 };
+      const variantGaugeLabel = normalizedVariants.find((variant) => variant.gaugeValue === gaugeRow.value)?.gaugeLabel;
+      return {
+        ...gaugeRow,
+        label: formatPlainGaugeLabel(gaugeRow.value) || variantGaugeLabel || `${gaugeRow.value}mm`,
+        stock,
+        isSoldOut: rows.every((row) => row.isSoldOut) || stock === 0,
+      };
     });
     const normalizedGaugeStockTotal = normalizedVariants.filter((row) => !row.isSoldOut).reduce((sum,row)=>sum+row.stock,0);
 

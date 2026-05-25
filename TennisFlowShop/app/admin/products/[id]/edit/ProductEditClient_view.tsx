@@ -199,6 +199,19 @@ export default function ProductEditClient({
   const [showGaugeStockToUser, setShowGaugeStockToUser] = useState(true);
   const getVariantKey = (colorValue: string, gaugeValue: string) =>
     `${colorValue}::${gaugeValue}`;
+  const formatPlainGaugeLabel = (value?: string | null) => {
+    const raw = String(value ?? "").trim();
+    if (!raw) return "";
+
+    const normalized = raw
+      .toLowerCase()
+      .replace(/mm/g, "")
+      .replace(/\s+/g, "")
+      .replace(",", ".");
+
+    if (!/^\d+\.\d+$/.test(normalized)) return raw;
+    return `${normalized}mm`;
+  };
   const normalizeGaugeInput = (input: string) => {
     const normalized = input
       .trim()
@@ -385,7 +398,7 @@ export default function ProductEditClient({
           colorLabel: colorMeta?.label ?? row.colorLabel,
           colorHex: colorMeta?.colorHex ?? row.colorHex,
           colorImage: row.colorImage ?? colorMeta?.image ?? "",
-          gaugeLabel: gaugeMeta?.label ?? row.gaugeLabel,
+          gaugeLabel: formatPlainGaugeLabel(row.gaugeValue) || row.gaugeLabel || gaugeMeta?.label,
           stock:
             Number.isFinite(Number(row.stock)) && Number(row.stock) >= 0
               ? Number(row.stock)
@@ -811,7 +824,7 @@ export default function ProductEditClient({
         const isSoldOut = gaugeRows.length === 0 || gaugeRows.every((variant) => variant.isSoldOut) || sellableStock === 0;
         return {
           value: gaugeMeta?.value ?? value,
-          label: gaugeMeta?.name ?? variantGaugeLabel ?? row?.label ?? `${value}mm`,
+          label: formatPlainGaugeLabel(value) || variantGaugeLabel || row?.label || gaugeMeta?.name || `${value}mm`,
           stock: sellableStock,
           isSoldOut,
         };
