@@ -15,16 +15,17 @@ type VariantInventoryRow = { colorValue: string; colorLabel?: string; colorHex?:
 
 type SelectableStringProduct = { _id: string; name?: string; price?: number; mountingFee?: number; gaugeOptions?: string[]; gaugeInventories?: GaugeInventoryRow[]; colorOptions?: string[]; colorInventories?: ColorInventoryRow[]; color?: string; images?: string[]; inventory?: { stock?: number; hideGaugeStock?: boolean } };
 
-const REQUIRED_QUANTITY = 1;
 const PLACEHOLDER_IMAGE = "https://placehold.co/40x40?text=%20";
 
 function normalizeGaugeRows(product: SelectableStringProduct): GaugeInventoryRow[] { if (Array.isArray(product.gaugeInventories) && product.gaugeInventories.length > 0) return product.gaugeInventories.map((row) => ({ value: String(row?.value ?? "").trim(), label: typeof row?.label === "string" ? row.label.trim() : undefined, stock: Math.max(0, Number(row?.stock ?? 0) || 0), isSoldOut: row?.isSoldOut === true })).filter((row) => row.value); if (Array.isArray(product.gaugeOptions) && product.gaugeOptions.length > 0) { const fallbackStock = Math.max(0, Number(product.inventory?.stock ?? 0) || 0); return product.gaugeOptions.map((value) => String(value ?? "").trim()).filter(Boolean).map((value) => ({ value, stock: fallbackStock, isSoldOut: false })); } return []; }
 function normalizeColorRows(product: SelectableStringProduct): ColorInventoryRow[] { if (Array.isArray(product.colorInventories) && product.colorInventories.length > 0) return product.colorInventories.map((row) => ({ value: String(row?.value ?? "").trim(), label: typeof row?.label === "string" ? row.label.trim() : undefined, colorHex: typeof row?.colorHex === "string" ? row.colorHex.trim() : undefined, image: typeof row?.image === "string" ? row.image.trim() : undefined, stock: Math.max(0, Number(row?.stock ?? 0) || 0), isSoldOut: row?.isSoldOut === true })).filter((row) => row.value); if (Array.isArray(product.colorOptions) && product.colorOptions.length > 0) { const fallbackStock = Math.max(0, Number(product.inventory?.stock ?? 0) || 0); return product.colorOptions.map((value: unknown) => String(value ?? "").trim()).filter(Boolean).map((value) => ({ value, label: value, stock: fallbackStock, isSoldOut: false })); } if (typeof product.color === "string" && product.color.trim()) { const fallbackStock = Math.max(0, Number(product.inventory?.stock ?? 0) || 0); return [{ value: product.color.trim(), label: product.color.trim(), stock: fallbackStock, isSoldOut: false }]; } return []; }
-function normalizeVariantRows(product: SelectableStringProduct): VariantInventoryRow[] { if (!Array.isArray((product as any)?.variantInventories)) return []; return (product as any).variantInventories.map((row: any) => ({ colorValue: String(row?.colorValue ?? "").trim(), colorLabel: typeof row?.colorLabel === "string" ? row.colorLabel.trim() : undefined, colorHex: typeof row?.colorHex === "string" ? row.colorHex.trim() : undefined, colorImage: typeof row?.colorImage === "string" ? row.colorImage.trim() : undefined, gaugeValue: String(row?.gaugeValue ?? "").trim(), gaugeLabel: typeof row?.gaugeLabel === "string" ? row.gaugeLabel.trim() : undefined, stock: Math.max(0, Number(row?.stock ?? 0) || 0), isSoldOut: row?.isSoldOut === true, showWhenSoldOut: row?.showWhenSoldOut === false ? false : true })).filter((row: VariantInventoryRow) => row.colorValue && row.gaugeValue); }
+function normalizeVariantRows(product: SelectableStringProduct): VariantInventoryRow[] { if (!Array.isArray((product as any)?.variantInventories)) return []; return (product as any).variantInventories.map((row: any) => ({ colorValue: String(row?.colorValue ?? "").trim(), colorLabel: typeof row?.colorLabel === "string" ? row.colorLabel.trim() : undefined, colorHex: typeof row?.colorHex === "string" ? row.colorHex.trim() : undefined, colorImage: typeof row?.colorImage === "string" ? row.colorImage.trim() : undefined, gaugeValue: String(row?.gaugeValue ?? "").trim(), gaugeLabel: typeof row?.gaugeLabel === "string" ? row.gaugeLabel.trim() : undefined, stock: Math.max(0, Number(row?.stock ?? 0) || 0), isSoldOut: row?.isSoldOut === true, showWhenSoldOut: row?.showWhenSoldOut ?? null })).filter((row: VariantInventoryRow) => row.colorValue && row.gaugeValue); }
+
 const isSellableVariant = (row: VariantInventoryRow) => row.isSoldOut !== true && row.stock > 0;
 const isSoldOutVariant = (row: VariantInventoryRow) => row.isSoldOut === true || Number(row.stock ?? 0) <= 0;
-const isVisibleVariant = (row: VariantInventoryRow) => !(isSoldOutVariant(row) && row.showWhenSoldOut === false);
-const getVariantsByColor = (product: SelectableStringProduct, colorValue: string) => normalizeVariantRows(product).filter((row) => row.colorValue === colorValue && isVisibleVariant(row));
+const isHiddenSoldOutVariant = (row: VariantInventoryRow) => isSoldOutVariant(row) && row.showWhenSoldOut === false;
+const isVisibleVariant = (row: VariantInventoryRow) => !isHiddenSoldOutVariant(row);
+const getVariantsByColor = (product: SelectableStringProduct, colorValue: string) => normalizeVariantRows(product).filter((row) => row.colorValue === colorValue);
 const getVariantBySelection = (product: SelectableStringProduct, colorValue: string, gaugeValue: string) => normalizeVariantRows(product).find((row) => row.colorValue === colorValue && row.gaugeValue === gaugeValue);
 const getGaugeLabel = (row: GaugeInventoryRow) => String(row.label ?? "").trim() || formatGaugeLabel(row.value);
 const getColorLabel = (row: ColorInventoryRow) => String(row.label || row.value || "").trim();
@@ -38,8 +39,72 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
   const { products, isLoadingInitial, isFetchingMore, hasMore, loadMore, error } = useInfiniteProducts({ limit: 6, purpose: "stringing" });
   const mountableProducts = products.filter((product) => typeof (product as SelectableStringProduct).mountingFee === "number" && Number((product as SelectableStringProduct).mountingFee) >= 0);
 
-  useEffect(() => { setSelectedColorByProductId((prev) => { const next = { ...prev }; let changed = false; for (const p of mountableProducts as SelectableStringProduct[]) { if (next[p._id]) continue; const variants = normalizeVariantRows(p); if (variants.length > 0) { const colors = Array.from(new Set(variants.map((v) => v.colorValue))); const selected = colors.find((c) => variants.some((v) => v.colorValue === c && isSellableVariant(v))) ?? colors[0]; if (selected) { next[p._id] = selected; changed = true; } continue; } const rows = normalizeColorRows(p); const first = rows.find((r) => !isColorSoldOut(r)) ?? rows[0]; if (first?.value) { next[p._id] = first.value; changed = true; } } return changed ? next : prev; }); }, [mountableProducts]);
-  useEffect(() => { setSelectedGaugeByProductId((prev) => { const next = { ...prev }; let changed = false; for (const p of mountableProducts as SelectableStringProduct[]) { const variants = normalizeVariantRows(p); if (variants.length === 0) continue; const color = selectedColorByProductId[p._id] ?? ""; if (!color) continue; const sellable = getVariantsByColor(p, color).filter(isSellableVariant); const current = next[p._id] ?? ""; const keep = sellable.some((row) => row.gaugeValue === current); const fallback = sellable[0]?.gaugeValue ?? ""; const result = keep ? current : fallback; if ((next[p._id] ?? "") !== result) { next[p._id] = result; changed = true; } } return changed ? next : prev; }); }, [mountableProducts, selectedColorByProductId]);
+  useEffect(() => {
+    setSelectedColorByProductId((prev) => {
+      const next = { ...prev };
+      let changed = false;
+      for (const p of mountableProducts as SelectableStringProduct[]) {
+        const variants = normalizeVariantRows(p);
+        const hasVariantInventories = variants.length > 0;
+        if (hasVariantInventories) {
+          const visibleVariantRows = variants.filter(isVisibleVariant);
+          const colorRows = normalizeColorRows(p);
+          const visibleVariantColorValues = Array.from(new Set(visibleVariantRows.map((v) => v.colorValue).filter(Boolean)));
+          const visibleColorRows = colorRows.filter((row) => visibleVariantColorValues.includes(row.value));
+          const visibleColorValueSet = new Set(visibleColorRows.map((row) => row.value));
+          const variantOnlyVisibleColorRows = visibleVariantRows.filter((variant) => variant.colorValue && !visibleColorValueSet.has(variant.colorValue)).map((variant) => ({ value: variant.colorValue, label: variant.colorLabel ?? variant.colorValue, colorHex: variant.colorHex, image: variant.colorImage }));
+          const dedupedVariantOnlyRows = Array.from(new Map(variantOnlyVisibleColorRows.map((row) => [row.value, row])).values());
+          const effectiveColorRows = [...visibleColorRows, ...dedupedVariantOnlyRows];
+          const current = next[p._id] ?? "";
+          if (!effectiveColorRows.length) {
+            if (current !== "") {
+              next[p._id] = "";
+              changed = true;
+            }
+            continue;
+          }
+          const hasSelectedVisibleColor = effectiveColorRows.some((color) => color.value === current);
+          if (!hasSelectedVisibleColor) {
+            next[p._id] = effectiveColorRows[0]?.value ?? "";
+            changed = true;
+          }
+          continue;
+        }
+
+        if (next[p._id]) continue;
+        const rows = normalizeColorRows(p);
+        const first = rows.find((r) => !isColorSoldOut(r)) ?? rows[0];
+        if (first?.value) {
+          next[p._id] = first.value;
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [mountableProducts]);
+
+  useEffect(() => {
+    setSelectedGaugeByProductId((prev) => {
+      const next = { ...prev };
+      let changed = false;
+      for (const p of mountableProducts as SelectableStringProduct[]) {
+        const variants = normalizeVariantRows(p);
+        if (variants.length === 0) continue;
+        const visibleVariantRows = variants.filter(isVisibleVariant);
+        const color = selectedColorByProductId[p._id] ?? "";
+        const variantsForSelectedColor = visibleVariantRows.filter((row) => row.colorValue === color);
+        const current = next[p._id] ?? "";
+        const keep = variantsForSelectedColor.some((row) => row.gaugeValue === current);
+        const fallback = variantsForSelectedColor.find(isSellableVariant)?.gaugeValue ?? variantsForSelectedColor[0]?.gaugeValue ?? "";
+        const result = keep ? current : fallback;
+        if ((next[p._id] ?? "") !== result) {
+          next[p._id] = result;
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [mountableProducts, selectedColorByProductId]);
 
   const handleSelectString = async (product: SelectableStringProduct, selectedGauge?: string, selectedColor?: string) => {
     if (addingProductId) return;
@@ -48,16 +113,34 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
     const normalizedColor = String(selectedColor ?? "").trim();
     const colorRows = normalizeColorRows(product);
     const gaugeRows = normalizeGaugeRows(product);
-    const hasVariantInventories = normalizeVariantRows(product).length > 0;
-    if (hasVariantInventories) { if (!normalizedColor) { showErrorToast("색상을 선택해주세요."); setAddingProductId(null); return; } if (!normalizedGauge) { showErrorToast("게이지를 선택해주세요."); setAddingProductId(null); return; } const selectedVariant = getVariantBySelection(product, normalizedColor, normalizedGauge); if (!selectedVariant) { showErrorToast("선택한 색상/게이지 조합을 찾을 수 없습니다."); setAddingProductId(null); return; } if (!isSellableVariant(selectedVariant)) { showErrorToast("선택한 색상/게이지 조합은 품절되었습니다."); setAddingProductId(null); return; } } else { if (gaugeRows.length > 0 && !normalizedGauge) { showErrorToast("게이지를 선택해주세요."); setAddingProductId(null); return; } if (colorRows.length > 0 && !normalizedColor) { showErrorToast("색상을 선택해주세요."); setAddingProductId(null); return; } }
-    const params = new URLSearchParams(); params.set("orderId", orderId); params.set("productId", product._id); if (normalizedGauge) params.set("selectedGauge", normalizedGauge); if (normalizedColor) params.set("selectedColor", normalizedColor); router.push(`/services/apply?${params.toString()}`); setAddingProductId(null);
+    const variantRows = normalizeVariantRows(product);
+    const hasVariantInventories = variantRows.length > 0;
+
+    if (hasVariantInventories) {
+      if (!normalizedColor) { showErrorToast("색상을 선택해주세요."); setAddingProductId(null); return; }
+      if (!normalizedGauge) { showErrorToast("게이지를 선택해주세요."); setAddingProductId(null); return; }
+      const selectedVariant = getVariantBySelection(product, normalizedColor, normalizedGauge);
+      if (!selectedVariant || !isVisibleVariant(selectedVariant)) { showErrorToast("선택한 색상/게이지 조합을 찾을 수 없습니다."); setAddingProductId(null); return; }
+      if (!isSellableVariant(selectedVariant)) { showErrorToast("선택한 색상/게이지 조합은 품절되었습니다."); setAddingProductId(null); return; }
+    } else {
+      if (gaugeRows.length > 0 && !normalizedGauge) { showErrorToast("게이지를 선택해주세요."); setAddingProductId(null); return; }
+      if (colorRows.length > 0 && !normalizedColor) { showErrorToast("색상을 선택해주세요."); setAddingProductId(null); return; }
+    }
+
+    const params = new URLSearchParams();
+    params.set("orderId", orderId);
+    params.set("productId", product._id);
+    if (normalizedGauge) params.set("selectedGauge", normalizedGauge);
+    if (normalizedColor) params.set("selectedColor", normalizedColor);
+    router.push(`/services/apply?${params.toString()}`);
+    setAddingProductId(null);
   };
 
   if (isLoadingInitial) return <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{Array.from({ length: 6 }).map((_, idx) => <div key={idx} className="rounded-lg border border-border bg-card p-3 space-y-3"><Skeleton className="h-5 w-2/3" /><Skeleton className="h-4 w-20" /><Skeleton className="h-9 w-full" /></div>)}</div>;
   if (error) return <div className="rounded-lg border border-border bg-card p-4 text-sm text-destructive">목록을 불러오는 중 오류가 발생했습니다. {error}</div>;
 
-  return <div className="space-y-4"><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{mountableProducts.map((p: SelectableStringProduct) => { const variants = normalizeVariantRows(p); const hasVariantInventories = variants.length > 0; const colorRows = normalizeColorRows(p); const selectedColor = selectedColorByProductId[p._id] ?? ""; const gaugeRows = hasVariantInventories ? getVariantsByColor(p, selectedColor).map((v) => ({ value: v.gaugeValue, label: v.gaugeLabel, stock: v.stock, isSoldOut: v.isSoldOut })) : normalizeGaugeRows(p); const selectedGauge = selectedGaugeByProductId[p._id] ?? ""; const selectedVariant = hasVariantInventories ? getVariantBySelection(p, selectedColor, selectedGauge) : undefined; const variantBlocked = hasVariantInventories && (!selectedColor || !selectedGauge || !selectedVariant || !isSellableVariant(selectedVariant)); const legacyColorBlocked = !hasVariantInventories && colorRows.length > 0 && !selectedColor; const legacyGaugeBlocked = !hasVariantInventories && gaugeRows.length > 0 && !selectedGauge; const disableSelectButton = !!addingProductId || variantBlocked || legacyColorBlocked || legacyGaugeBlocked;
-    return <div key={p._id} className="flex h-full flex-col rounded-lg border border-border bg-card p-3"><div className="font-medium">{p.name}</div><div className="text-sm text-muted-foreground">{typeof p.price === "number" ? `${p.price.toLocaleString()}원` : "가격 정보 없음"}</div><div className="mt-3 space-y-2"><div className="text-xs font-medium">색상 선택</div><div className="flex flex-wrap gap-2">{(hasVariantInventories ? Array.from(new Set(variants.map((v) => v.colorValue))).map((colorValue) => { const colorRow = colorRows.find((row) => row.value === colorValue); const variantImage = variants.find((v) => v.colorValue === colorValue && v.colorImage)?.colorImage; const image = colorRow?.image || variantImage || p.images?.[0] || PLACEHOLDER_IMAGE; const sellable = variants.some((v) => v.colorValue === colorValue && isSellableVariant(v)); const label = colorRow?.label || variants.find((v) => v.colorValue === colorValue)?.colorLabel || colorValue; const colorHex = colorRow?.colorHex || variants.find((v) => v.colorValue === colorValue)?.colorHex; return { value: colorValue, label, image, colorHex, disabled: !sellable }; }) : colorRows.map((row) => ({ value: row.value, label: getColorLabel(row), image: row.image || p.images?.[0] || PLACEHOLDER_IMAGE, colorHex: row.colorHex, disabled: isColorSoldOut(row) }))).map((row) => <button key={`${p._id}-${row.value}`} type="button" disabled={row.disabled} onClick={() => setSelectedColorByProductId((prev) => ({ ...prev, [p._id]: row.value }))} className={`flex items-center gap-2 rounded-md border px-2 py-1 text-xs ${selectedColor === row.value ? "border-primary ring-2 ring-primary/30" : "border-border"} ${row.disabled ? "opacity-50 cursor-not-allowed" : "hover:border-primary/60"}`}>{row.image ? <img src={row.image} alt={row.label} className="h-5 w-5 rounded object-cover" /> : row.colorHex ? <span className="h-4 w-4 rounded-full border" style={{ backgroundColor: row.colorHex }} /> : null}<span>{row.label}</span>{row.disabled ? <span className="text-destructive">품절</span> : null}</button>)}</div></div>
+  return <div className="space-y-4"><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{mountableProducts.map((p: SelectableStringProduct) => { const variants = normalizeVariantRows(p); const hasVariantInventories = variants.length > 0; const visibleVariantRows = variants.filter(isVisibleVariant); const colorRows = normalizeColorRows(p); const visibleVariantColorValues = Array.from(new Set(visibleVariantRows.map((v) => v.colorValue).filter(Boolean))); const visibleColorRows = colorRows.filter((row) => visibleVariantColorValues.includes(row.value)); const visibleColorValueSet = new Set(visibleColorRows.map((row) => row.value)); const variantOnlyVisibleColorRows = visibleVariantRows.filter((variant) => variant.colorValue && !visibleColorValueSet.has(variant.colorValue)).map((variant) => ({ value: variant.colorValue, label: variant.colorLabel ?? variant.colorValue, colorHex: variant.colorHex, image: variant.colorImage, stock: variant.stock, isSoldOut: variant.isSoldOut })); const dedupedVariantOnlyRows = Array.from(new Map(variantOnlyVisibleColorRows.map((row) => [row.value, row])).values()); const effectiveColorRows = hasVariantInventories ? [...visibleColorRows, ...dedupedVariantOnlyRows] : colorRows; const selectedColor = selectedColorByProductId[p._id] ?? ""; const gaugeRows = hasVariantInventories ? visibleVariantRows.filter((v) => v.colorValue === selectedColor).map((v) => ({ value: v.gaugeValue, label: v.gaugeLabel, stock: v.stock, isSoldOut: v.isSoldOut })) : normalizeGaugeRows(p); const selectedGauge = selectedGaugeByProductId[p._id] ?? ""; const selectedVariant = hasVariantInventories ? visibleVariantRows.find((row) => row.colorValue === selectedColor && row.gaugeValue === selectedGauge) : undefined; const variantBlocked = hasVariantInventories && (!selectedColor || !selectedGauge || !selectedVariant || !isSellableVariant(selectedVariant)); const legacyColorBlocked = !hasVariantInventories && colorRows.length > 0 && !selectedColor; const legacyGaugeBlocked = !hasVariantInventories && gaugeRows.length > 0 && !selectedGauge; const disableSelectButton = !!addingProductId || variantBlocked || legacyColorBlocked || legacyGaugeBlocked;
+    return <div key={p._id} className="flex h-full flex-col rounded-lg border border-border bg-card p-3"><div className="font-medium">{p.name}</div><div className="text-sm text-muted-foreground">{typeof p.price === "number" ? `${p.price.toLocaleString()}원` : "가격 정보 없음"}</div><div className="mt-3 space-y-2"><div className="text-xs font-medium">색상 선택</div><div className="flex flex-wrap gap-2">{(hasVariantInventories ? effectiveColorRows.map((colorRow) => { const colorValue = colorRow.value; const variantImage = visibleVariantRows.find((v) => v.colorValue === colorValue && v.colorImage)?.colorImage; const image = colorRow.image || variantImage || p.images?.[0] || PLACEHOLDER_IMAGE; const sellable = visibleVariantRows.some((v) => v.colorValue === colorValue && isSellableVariant(v)); const label = colorRow.label || visibleVariantRows.find((v) => v.colorValue === colorValue)?.colorLabel || colorValue; const colorHex = colorRow.colorHex || visibleVariantRows.find((v) => v.colorValue === colorValue)?.colorHex; return { value: colorValue, label, image, colorHex, disabled: !sellable }; }) : colorRows.map((row) => ({ value: row.value, label: getColorLabel(row), image: row.image || p.images?.[0] || PLACEHOLDER_IMAGE, colorHex: row.colorHex, disabled: isColorSoldOut(row) }))).map((row) => <button key={`${p._id}-${row.value}`} type="button" disabled={row.disabled} onClick={() => setSelectedColorByProductId((prev) => ({ ...prev, [p._id]: row.value }))} className={`flex items-center gap-2 rounded-md border px-2 py-1 text-xs ${selectedColor === row.value ? "border-primary ring-2 ring-primary/30" : "border-border"} ${row.disabled ? "opacity-50 cursor-not-allowed" : "hover:border-primary/60"}`}>{row.image ? <img src={row.image} alt={row.label} className="h-5 w-5 rounded object-cover" /> : row.colorHex ? <span className="h-4 w-4 rounded-full border" style={{ backgroundColor: row.colorHex }} /> : null}<span>{row.label}</span>{row.disabled ? <span className="text-destructive">품절</span> : null}</button>)}</div></div>
       {gaugeRows.length > 0 && <div className="mt-3 space-y-1"><div className="text-xs font-medium">게이지 선택</div><Select value={selectedGauge} onValueChange={(value) => setSelectedGaugeByProductId((prev) => ({ ...prev, [p._id]: value }))}><SelectTrigger className="h-9 w-full text-xs"><SelectValue placeholder="게이지를 선택하세요" /></SelectTrigger><SelectContent>{gaugeRows.map((row) => { const soldOut = row.isSoldOut || row.stock <= 0; const suffix = soldOut ? " · 품절" : p.inventory?.hideGaugeStock === true ? "" : ` · 재고 ${row.stock}개`; return <SelectItem key={`${p._id}-${row.value}`} value={row.value} disabled={soldOut} className="text-xs">{`${getGaugeLabel(row)}${suffix}`}</SelectItem>; })}</SelectContent></Select></div>}
       <Button type="button" className="mt-auto" disabled={disableSelectButton} onClick={() => handleSelectString(p, selectedGauge, selectedColor)}>{addingProductId === p._id ? "이동 중…" : "이 스트링 선택하고 신청 계속하기"}</Button></div>; })}</div>{hasMore && <Button type="button" variant="outline" onClick={loadMore} disabled={isFetchingMore || !!addingProductId} className="w-full">{isFetchingMore ? "로딩 중..." : "더 보기"}</Button>}</div>;
 }
