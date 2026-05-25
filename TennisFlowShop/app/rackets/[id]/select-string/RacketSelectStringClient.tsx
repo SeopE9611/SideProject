@@ -186,6 +186,30 @@ function isVisibleVariant(row: VariantInventoryRow) {
 function getVariantsByColor(product: any, colorValue: string) {
   return normalizeVariantRows(product).filter((row) => row.colorValue === colorValue && isVisibleVariant(row));
 }
+function getVisibleColorRows(product: any): ColorInventoryRow[] {
+  const colorRows = normalizeColorRows(product);
+  const variantRows = normalizeVariantRows(product);
+  if (variantRows.length === 0) return colorRows;
+  const visibleVariantRows = variantRows.filter(isVisibleVariant);
+  const visibleColorValues = Array.from(new Set(visibleVariantRows.map((row) => row.colorValue).filter(Boolean)));
+  const visibleColorRows = colorRows.filter((row) => visibleColorValues.includes(row.value));
+  const existingValues = new Set(visibleColorRows.map((row) => row.value));
+  const fallbackRows: ColorInventoryRow[] = [];
+  visibleVariantRows.forEach((row) => {
+    if (!row.colorValue || existingValues.has(row.colorValue)) return;
+    fallbackRows.push({
+      value: row.colorValue,
+      label: row.colorLabel ?? row.colorValue,
+      colorHex: row.colorHex ?? undefined,
+      image: row.colorImage ?? undefined,
+      stock: Number(row.stock ?? 0),
+      isSoldOut: row.isSoldOut === true,
+      showWhenSoldOut: row.showWhenSoldOut,
+    });
+    existingValues.add(row.colorValue);
+  });
+  return [...visibleColorRows, ...fallbackRows];
+}
 
 function getVariantBySelection(product: any, colorValue: string, gaugeValue: string) {
   return normalizeVariantRows(product).find(
@@ -289,7 +313,7 @@ export default function RacketSelectStringClient({
       const next = { ...prev };
       let changed = false;
       products.forEach((product: any) => {
-        const colorRows = normalizeColorRows(product);
+        const colorRows = getVisibleColorRows(product);
         if (!colorRows.length) return;
         const stringId = String(product?._id);
         if (next[stringId]) return;
@@ -316,12 +340,10 @@ export default function RacketSelectStringClient({
         const colorValue = selectedColorByStringId[stringId];
         if (!colorValue) return;
         const variantsForColor = getVariantsByColor(product, colorValue);
-        const keepCurrent = variantsForColor.find(
-          (row) => row.gaugeValue === next[stringId] && isSellableVariant(row),
-        );
+        const keepCurrent = variantsForColor.some((row) => row.gaugeValue === next[stringId]);
         if (keepCurrent) return;
         const firstSellable = variantsForColor.find((row) => isSellableVariant(row));
-        const nextGauge = firstSellable?.gaugeValue ?? "";
+        const nextGauge = firstSellable?.gaugeValue ?? variantsForColor[0]?.gaugeValue ?? "";
         if ((next[stringId] ?? "") !== nextGauge) {
           next[stringId] = nextGauge;
           changed = true;
@@ -482,7 +504,7 @@ export default function RacketSelectStringClient({
       showErrorToast?.("선택한 게이지의 구매 가능 수량을 초과했습니다.");
       return;
     }
-    const colorRows = normalizeColorRows(p);
+    const colorRows = hasVariantInventories ? getVisibleColorRows(p) : normalizeColorRows(p);
     const hasColorRows = colorRows.length > 0;
     const selectedColorRow = colorRows.find((row) => row.value === selectedColor);
     if (hasColorRows && !selectedColor) {
@@ -900,7 +922,9 @@ export default function RacketSelectStringClient({
                                     const soldOut = hasVariantInventories
                                       ? !variantRows.some(
                                           (variant) =>
-                                            variant.colorValue === row.value && isSellableVariant(variant),
+                                            variant.colorValue === row.value &&
+                                            isVisibleVariant(variant) &&
+                                            isSellableVariant(variant),
                                         )
                                       : isColorSoldOut(row);
                                     const isSelected = selectedColor === row.value;
