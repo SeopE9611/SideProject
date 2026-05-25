@@ -803,6 +803,7 @@ export default function ProductEditClient({
       const normalizedGaugeInventories = gaugeSummaryValues.map((value) => {
         const row = gaugeInventories.find((item) => item.value === value);
         const gaugeMeta = gauges.find((g) => g.value === value);
+        const variantGaugeLabel = normalizedVariants.find((variant) => variant.gaugeValue === value)?.gaugeLabel;
         const gaugeRows = normalizedVariants.filter((variant) => variant.gaugeValue === value);
         const sellableStock = gaugeRows
           .filter((variant) => !variant.isSoldOut && variant.stock > 0)
@@ -810,7 +811,7 @@ export default function ProductEditClient({
         const isSoldOut = gaugeRows.length === 0 || gaugeRows.every((variant) => variant.isSoldOut) || sellableStock === 0;
         return {
           value: gaugeMeta?.value ?? value,
-          label: gaugeMeta?.name ?? row?.label ?? value,
+          label: gaugeMeta?.name ?? variantGaugeLabel ?? row?.label ?? `${value}mm`,
           stock: sellableStock,
           isSoldOut,
         };
