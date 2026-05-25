@@ -9,8 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { badgeBaseOutlined, badgeSizeSm, getAnswerStatusBadgeSpec, getNoticeCategoryBadgeSpec, getQnaCategoryBadgeSpec } from "@/lib/badge-style";
-import { Bell, Eye, Gift, Headset, ImageIcon, Lock, MessageSquare, PackageSearch, Paperclip, Pin, ShoppingBag } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { Bell, Eye, Gift, Headset, ImageIcon, Lock, MessageSquare, PackageSearch, Paperclip, Pin, ShoppingBag } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import useSWR from "swr";
@@ -92,7 +92,6 @@ const supportMobileTitleClampClass = "min-w-0 flex-1 line-clamp-2 text-sm font-s
 const supportMobileMetaWrapClass = "flex flex-wrap items-center gap-x-3.5 gap-y-1 text-xs text-muted-foreground";
 const supportMobileActionBadgeWrapClass = "shrink-0 self-start";
 const supportQnaInlineTitleClass = "min-w-0 flex-1 line-clamp-2 text-sm font-semibold leading-snug sm:line-clamp-1 sm:text-base";
-
 
 // ---------------------- 문의 진입 카드 ----------------------
 
@@ -208,7 +207,7 @@ function NoticeCard({ items, isAdmin, isLoading, error, onRetry, mode = "notice"
   const isEventMode = mode === "event";
   const basePath = isEventMode ? "/board/event" : "/board/notice";
   const writePath = isEventMode ? "/board/event/write" : "/board/notice/write";
-  const cardTitle = isEventMode ? "이벤트" : "고객센터 공지사항";
+  const cardTitle = isEventMode ? "이벤트" : "공지사항";
   const writeLabel = isEventMode ? "글 쓰기" : "글 쓰기";
   const listLabel = "전체 보기";
   const emptyTitle = isEventMode ? "등록된 이벤트가 없습니다." : "등록된 공지가 없습니다.";

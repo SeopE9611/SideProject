@@ -47,7 +47,7 @@ export const menuSections: MenuSection[] = [
         href: "/support",
       },
       {
-        name: "고객센터 공지사항",
+        name: "공지사항",
         href: "/board/notice",
       },
       {

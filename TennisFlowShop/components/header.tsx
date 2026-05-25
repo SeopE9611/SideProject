@@ -11,9 +11,9 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { getSocialProviderBadgeSpec } from "@/lib/badge-style";
-import { cn } from "@/lib/utils";
 import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import { useUnreadMessageCount } from "@/lib/hooks/useUnreadMessageCount";
+import { cn } from "@/lib/utils";
 import { ChevronDown, ChevronRight, Headset, Loader2, Mail, Menu, ShoppingCart, UserIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -339,7 +339,7 @@ const Header = () => {
     academy: { name: "도깨비테니스 아카데미", href: "/academy" },
     support: [
       { name: "고객센터 홈", href: "/support" },
-      { name: "고객센터 공지사항", href: "/board/notice" },
+      { name: "공지사항", href: "/board/notice" },
       { name: "이벤트", href: "/board/event" },
       { name: "Q&A 문의", href: "/board/qna" },
     ],

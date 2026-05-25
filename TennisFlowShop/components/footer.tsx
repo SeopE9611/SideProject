@@ -1,5 +1,5 @@
 import SiteContainer from "@/components/layout/SiteContainer";
-import { ArrowUpRight, Clock, CreditCard, Facebook, Instagram, Mail, MapPin, Phone, Train, Truck } from "lucide-react";
+import { ArrowUpRight, Clock, CreditCard, Instagram, Mail, MapPin, Phone, Train, Truck } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -22,14 +22,14 @@ const Footer = () => {
   // ];
 
   const customerService = [
-    { name: "고객센터 공지사항", href: "/board/notice" },
+    { name: "공지사항", href: "/board/notice" },
     { name: "이벤트", href: "/board/event" },
     { name: "Q&A 문의", href: "/board/qna" },
     { name: "이용약관", href: "/terms" },
     { name: "개인정보처리방침", href: "/privacy" },
   ];
 
-  const customerServiceLinks = customerService.filter((link) => link.name === "고객센터 공지사항" || link.name === "이벤트" || link.name === "Q&A 문의");
+  const customerServiceLinks = customerService.filter((link) => link.name === "공지사항" || link.name === "이벤트" || link.name === "Q&A 문의");
   const policyLinks = customerService.filter((link) => link.name === "이용약관" || link.name === "개인정보처리방침");
 
   const snsLinks = [
@@ -37,11 +37,6 @@ const Footer = () => {
       name: "인스타그램",
       href: "https://www.instagram.com/",
       Icon: Instagram,
-    },
-    {
-      name: "페이스북",
-      href: "https://www.facebook.com/",
-      Icon: Facebook,
     },
     {
       name: "밴드",
@@ -198,7 +193,7 @@ const Footer = () => {
                     </Link>
                   ))}
                   <Link href="/board/notice" className="transition-colors duration-300 hover:text-primary">
-                    고객센터 공지사항
+                    공지사항
                   </Link>
                   <Link href="/board/event" className="transition-colors duration-300 hover:text-primary">
                     이벤트
