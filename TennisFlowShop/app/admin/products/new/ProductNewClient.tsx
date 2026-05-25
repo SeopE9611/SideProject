@@ -128,9 +128,22 @@ export default function NewStringPage() {
   const [variantInventories, setVariantInventories] = useState<
     ProductVariantInventory[]
   >([]);
+  const [gaugeInputsByColor, setGaugeInputsByColor] = useState<Record<string, string>>({});
   const [showGaugeStockToUser, setShowGaugeStockToUser] = useState(true);
   const getVariantKey = (colorValue: string, gaugeValue: string) =>
     `${colorValue}::${gaugeValue}`;
+  const normalizeGaugeInput = (input: string) => {
+    const normalized = input
+      .trim()
+      .toLowerCase()
+      .replace(/mm/g, "")
+      .replace(/\s+/g, "")
+      .replace(",", ".");
+    if (!/^\d+\.\d+$/.test(normalized)) return null;
+    const numericValue = Number(normalized);
+    if (!Number.isFinite(numericValue) || numericValue <= 0) return null;
+    return { value: normalized, label: `${normalized}mm` };
+  };
   const totalGaugeStock = useMemo(
     () =>
       variantInventories
@@ -154,7 +167,7 @@ export default function NewStringPage() {
     const values = Array.from(new Set(variantInventories.map((row) => row.gaugeValue)));
     return values.map((value) => {
       const found = gauges.find((g) => g.value === value);
-      return { value, label: found?.name ?? value };
+      return { value, label: found?.name ?? `${value}mm` };
     });
   }, [variantInventories]);
   const updateVariantStock = (colorValue: string, gaugeValue: string, stock: number) => {
@@ -184,14 +197,21 @@ export default function NewStringPage() {
       ),
     );
   };
-  const addVariantForColor = (colorRow: ProductColorInventory, gaugeValue: string) => {
-    const gaugeMeta = gauges.find((g) => g.value === gaugeValue);
+  const addVariantForColor = (colorRow: ProductColorInventory) => {
+    const rawInput = gaugeInputsByColor[colorRow.value] ?? "";
+    const normalizedGauge = normalizeGaugeInput(rawInput);
+    if (!normalizedGauge) {
+      showErrorToast("게이지는 1.25처럼 숫자로 입력해주세요.");
+      return;
+    }
     setVariantInventories((prev) => {
-      if (prev.some((row) => row.colorValue === colorRow.value && row.gaugeValue === gaugeValue)) {
+      if (prev.some((row) => row.colorValue === colorRow.value && row.gaugeValue === normalizedGauge.value)) {
+        showErrorToast("이미 같은 색상에 추가된 게이지입니다.");
         return prev;
       }
-      return [...prev, { colorValue: colorRow.value, colorLabel: colorRow.label, colorHex: colorRow.colorHex, colorImage: colorRow.image ?? "", gaugeValue, gaugeLabel: gaugeMeta?.name ?? gaugeValue, stock: 0, isSoldOut: true, showWhenSoldOut: true }];
+      return [...prev, { colorValue: colorRow.value, colorLabel: colorRow.label, colorHex: colorRow.colorHex, colorImage: colorRow.image ?? "", gaugeValue: normalizedGauge.value, gaugeLabel: normalizedGauge.label, stock: 0, isSoldOut: false, showWhenSoldOut: true }];
     });
+    setGaugeInputsByColor((prev) => ({ ...prev, [colorRow.value]: "" }));
   };
   const removeVariantForColor = (colorValue: string, gaugeValue: string) => {
     setVariantInventories((prev) =>
@@ -1337,13 +1357,22 @@ export default function NewStringPage() {
                                 </div>
                               </div>
                               <div className="space-y-2">
-                                <Label>게이지별 재고</Label>
-                                <p className="text-xs text-muted-foreground">이 색상에서 판매할 게이지만 추가하세요.</p>
-                                <div className="flex flex-wrap gap-2">
-                                  {gauges.map((gauge) => {
-                                    const selected = variantInventories.some((item) => item.colorValue === row.value && item.gaugeValue === gauge.value);
-                                    return <Button key={`${row.value}-${gauge.value}`} type="button" size="sm" variant={selected ? "default" : "outline"} onClick={() => selected ? removeVariantForColor(row.value, gauge.value) : addVariantForColor(row, gauge.value)}>{gauge.name}</Button>;
-                                  })}
+                                <Label>게이지 직접 입력</Label>
+                                <p className="text-xs text-muted-foreground">mm는 자동으로 붙습니다.</p>
+                                <div className="flex flex-col gap-2 md:flex-row">
+                                  <Input
+                                    placeholder="예: 1.25"
+                                    value={gaugeInputsByColor[row.value] ?? ""}
+                                    onChange={(e) =>
+                                      setGaugeInputsByColor((prev) => ({
+                                        ...prev,
+                                        [row.value]: e.target.value,
+                                      }))
+                                    }
+                                  />
+                                  <Button type="button" size="sm" onClick={() => addVariantForColor(row)}>
+                                    게이지 추가
+                                  </Button>
                                 </div>
                                 {variantInventories.filter((variant) => variant.colorValue === row.value).length === 0 ? (
                                   <p className="text-xs text-muted-foreground">아직 추가된 게이지가 없습니다.</p>

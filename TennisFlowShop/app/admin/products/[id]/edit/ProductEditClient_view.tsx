@@ -193,11 +193,24 @@ export default function ProductEditClient({
   const [variantInventories, setVariantInventories] = useState<
     ProductVariantInventory[]
   >([]);
+  const [gaugeInputsByColor, setGaugeInputsByColor] = useState<Record<string, string>>({});
   const [shouldShowLegacyVariantGuide, setShouldShowLegacyVariantGuide] =
     useState(false);
   const [showGaugeStockToUser, setShowGaugeStockToUser] = useState(true);
   const getVariantKey = (colorValue: string, gaugeValue: string) =>
     `${colorValue}::${gaugeValue}`;
+  const normalizeGaugeInput = (input: string) => {
+    const normalized = input
+      .trim()
+      .toLowerCase()
+      .replace(/mm/g, "")
+      .replace(/\s+/g, "")
+      .replace(",", ".");
+    if (!/^\d+\.\d+$/.test(normalized)) return null;
+    const numericValue = Number(normalized);
+    if (!Number.isFinite(numericValue) || numericValue <= 0) return null;
+    return { value: normalized, label: `${normalized}mm` };
+  };
   const totalGaugeStock = useMemo(
     () =>
       variantInventories
@@ -244,12 +257,21 @@ export default function ProductEditClient({
     variantInventories
       .filter((row) => row.gaugeValue === gaugeValue && !row.isSoldOut)
       .reduce((sum, row) => sum + (Number.isFinite(row.stock) ? row.stock : 0), 0);
-  const addVariantForColor = (colorRow: ProductColorInventory, gaugeValue: string) => {
-    const gaugeMeta = gauges.find((g) => g.value === gaugeValue);
+  const addVariantForColor = (colorRow: ProductColorInventory) => {
+    const rawInput = gaugeInputsByColor[colorRow.value] ?? "";
+    const normalizedGauge = normalizeGaugeInput(rawInput);
+    if (!normalizedGauge) {
+      showErrorToast("게이지는 1.25처럼 숫자로 입력해주세요.");
+      return;
+    }
     setVariantInventories((prev) => {
-      if (prev.some((row) => row.colorValue === colorRow.value && row.gaugeValue === gaugeValue)) return prev;
-      return [...prev, { colorValue: colorRow.value, colorLabel: colorRow.label, colorHex: colorRow.colorHex, colorImage: colorRow.image ?? "", gaugeValue, gaugeLabel: gaugeMeta?.name ?? gaugeValue, stock: 0, isSoldOut: true, showWhenSoldOut: true }];
+      if (prev.some((row) => row.colorValue === colorRow.value && row.gaugeValue === normalizedGauge.value)) {
+        showErrorToast("이미 같은 색상에 추가된 게이지입니다.");
+        return prev;
+      }
+      return [...prev, { colorValue: colorRow.value, colorLabel: colorRow.label, colorHex: colorRow.colorHex, colorImage: colorRow.image ?? "", gaugeValue: normalizedGauge.value, gaugeLabel: normalizedGauge.label, stock: 0, isSoldOut: false, showWhenSoldOut: true }];
     });
+    setGaugeInputsByColor((prev) => ({ ...prev, [colorRow.value]: "" }));
   };
   const removeVariantForColor = (colorValue: string, gaugeValue: string) =>
     setVariantInventories((prev) =>
@@ -1572,14 +1594,23 @@ export default function ProductEditClient({
                                 </Button>
                               </div>
                             </div>
-                            <div className="space-y-3">
-                              <div className="text-sm font-semibold">게이지별 재고</div>
-                              <p className="text-xs text-muted-foreground">이 색상에서 판매할 게이지만 추가하세요.</p>
-                              <div className="flex flex-wrap gap-2">
-                                {gauges.map((gauge) => {
-                                  const selected = variantInventories.some((variant) => variant.colorValue === row.value && variant.gaugeValue === gauge.value);
-                                  return <Button key={`${row.value}-${gauge.value}`} type="button" size="sm" variant={selected ? "default" : "outline"} onClick={() => selected ? removeVariantForColor(row.value, gauge.value) : addVariantForColor(row, gauge.value)}>{gauge.name}</Button>;
-                                })}
+                              <div className="space-y-3">
+                              <Label>게이지 직접 입력</Label>
+                              <p className="text-xs text-muted-foreground">mm는 자동으로 붙습니다.</p>
+                              <div className="flex flex-col gap-2 md:flex-row">
+                                <Input
+                                  placeholder="예: 1.25"
+                                  value={gaugeInputsByColor[row.value] ?? ""}
+                                  onChange={(e) =>
+                                    setGaugeInputsByColor((prev) => ({
+                                      ...prev,
+                                      [row.value]: e.target.value,
+                                    }))
+                                  }
+                                />
+                                <Button type="button" size="sm" onClick={() => addVariantForColor(row)}>
+                                  게이지 추가
+                                </Button>
                               </div>
                               <div className="space-y-3">
                                 {variantInventories.filter((variant) => variant.colorValue === row.value).map((variant) => (
@@ -1614,7 +1645,7 @@ export default function ProductEditClient({
                       <p className="text-sm text-muted-foreground">실제 추가/삭제는 각 색상 카드 안에서 관리됩니다.</p>
                       <div className="space-y-3">
                         {Array.from(new Set(variantInventories.map((variant) => variant.gaugeValue))).map((gaugeValue) => <div key={gaugeValue} className="space-y-3 rounded-lg border border-border/70 bg-muted/10 p-4">
-                          <div className="text-sm font-semibold">{gauges.find((g) => g.value === gaugeValue)?.name ?? gaugeValue} · 총 재고 {getGaugeTotalStock(gaugeValue)}개</div>
+                          <div className="text-sm font-semibold">{variantInventories.find((variant) => variant.gaugeValue === gaugeValue)?.gaugeLabel ?? `${gaugeValue}mm`} · 총 재고 {getGaugeTotalStock(gaugeValue)}개</div>
                         </div>)}
                       </div>
                     </div>
