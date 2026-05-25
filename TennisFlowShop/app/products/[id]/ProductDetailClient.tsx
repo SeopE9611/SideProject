@@ -112,6 +112,7 @@ type GaugeInventoryRow = {
   label?: string;
   stock: number;
   isSoldOut: boolean;
+  showWhenSoldOut?: boolean | null;
 };
 
 
@@ -122,6 +123,7 @@ type ColorInventoryRow = {
   image?: string;
   stock: number;
   isSoldOut: boolean;
+  showWhenSoldOut?: boolean | null;
 };
 type VariantInventoryRow = {
   colorValue: string;
@@ -130,6 +132,7 @@ type VariantInventoryRow = {
   colorImage?: string;
   stock: number;
   isSoldOut: boolean;
+  showWhenSoldOut?: boolean | null;
 };
 
 function normalizeColorRows(product: any): ColorInventoryRow[] {
@@ -145,6 +148,7 @@ function normalizeColorRows(product: any): ColorInventoryRow[] {
           image: typeof row?.image === "string" ? row.image.trim() : undefined,
           stock: Number.isFinite(stockNumber) && stockNumber > 0 ? stockNumber : 0,
           isSoldOut: row?.isSoldOut === true,
+        showWhenSoldOut: row?.showWhenSoldOut === false ? false : true,
         };
       })
       .filter((row: ColorInventoryRow) => row.value.length > 0);
@@ -329,17 +333,20 @@ export default function ProductDetailClient({ product }: { product: any }) {
         colorImage: typeof row?.colorImage === "string" ? row.colorImage.trim() : undefined,
         stock: Math.max(0, Number(row?.stock ?? 0)),
         isSoldOut: row?.isSoldOut === true,
+        showWhenSoldOut: row?.showWhenSoldOut === false ? false : true,
       }))
       .filter((row: VariantInventoryRow) => row.colorValue.length > 0 && row.gaugeValue.length > 0);
   }, [product]);
   const hasVariantInventories = variantRows.length > 0;
   const isSellableVariant = (row?: VariantInventoryRow) => !!row && row.isSoldOut !== true && Number(row.stock) > 0;
-  const getVariantsByColor = (colorValue: string) => variantRows.filter((v) => v.colorValue === colorValue);
+  const isSoldOutVariant = (row: VariantInventoryRow) => row.isSoldOut === true || Number(row.stock ?? 0) <= 0;
+  const isVisibleVariant = (row: VariantInventoryRow) => !(isSoldOutVariant(row) && row.showWhenSoldOut === false);
+  const getVariantsByColor = (colorValue: string) => variantRows.filter((v) => v.colorValue === colorValue && isVisibleVariant(v));
   const getVariantBySelection = (colorValue: string, gaugeValue: string) => variantRows.find((v) => v.colorValue === colorValue && v.gaugeValue === gaugeValue);
   const getAvailableGaugesForColor = (colorValue: string) => getVariantsByColor(colorValue);
   const colorRows = useMemo(() => normalizeColorRows(product), [product]);
   const firstAvailableColor = useMemo(
-    () => colorRows.find((row) => (hasVariantInventories ? getVariantsByColor(row.value).some((v) => isSellableVariant(v)) : !isColorSoldOut(row))) ?? colorRows[0],
+    () => colorRows.find((row) => (hasVariantInventories ? getVariantsByColor(row.value).length > 0 : !isColorSoldOut(row))) ?? colorRows[0],
     [colorRows, hasVariantInventories],
   );
   const [selectedColor, setSelectedColor] = useState<string>("");
@@ -369,6 +376,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
         label: typeof row?.label === "string" ? row.label : undefined,
         stock: Number(row?.stock ?? 0),
         isSoldOut: row?.isSoldOut === true,
+        showWhenSoldOut: row?.showWhenSoldOut === false ? false : true,
       })).filter((row: GaugeInventoryRow) => row.value.length > 0);
     }
     if (Array.isArray(product?.gaugeOptions) && product.gaugeOptions.length > 0) {
