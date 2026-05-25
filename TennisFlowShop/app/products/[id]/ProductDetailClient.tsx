@@ -341,13 +341,33 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const isSellableVariant = (row?: VariantInventoryRow) => !!row && row.isSoldOut !== true && Number(row.stock) > 0;
   const isSoldOutVariant = (row: VariantInventoryRow) => row.isSoldOut === true || Number(row.stock ?? 0) <= 0;
   const isVisibleVariant = (row: VariantInventoryRow) => !(isSoldOutVariant(row) && row.showWhenSoldOut === false);
-  const getVariantsByColor = (colorValue: string) => variantRows.filter((v) => v.colorValue === colorValue && isVisibleVariant(v));
+  const visibleVariantRows = useMemo(() => variantRows.filter((row) => isVisibleVariant(row)), [variantRows]);
+  const getVariantsByColor = (colorValue: string) => visibleVariantRows.filter((v) => v.colorValue === colorValue);
   const getVariantBySelection = (colorValue: string, gaugeValue: string) => variantRows.find((v) => v.colorValue === colorValue && v.gaugeValue === gaugeValue);
   const getAvailableGaugesForColor = (colorValue: string) => getVariantsByColor(colorValue);
   const colorRows = useMemo(() => normalizeColorRows(product), [product]);
+  const visibleColorRows = useMemo(() => {
+    if (!hasVariantInventories) return colorRows;
+    const visibleColorValues = new Set(visibleVariantRows.map((row) => row.colorValue).filter(Boolean));
+    const baseRows = colorRows.filter((row) => visibleColorValues.has(row.value));
+    const known = new Set(baseRows.map((row) => row.value));
+    visibleVariantRows.forEach((row) => {
+      if (!row.colorValue || known.has(row.colorValue)) return;
+      baseRows.push({
+        value: row.colorValue,
+        label: row.colorValue,
+        image: row.colorImage,
+        stock: Number(row.stock ?? 0),
+        isSoldOut: row.isSoldOut === true,
+        showWhenSoldOut: row.showWhenSoldOut,
+      });
+      known.add(row.colorValue);
+    });
+    return baseRows;
+  }, [colorRows, hasVariantInventories, visibleVariantRows]);
   const firstAvailableColor = useMemo(
-    () => colorRows.find((row) => (hasVariantInventories ? getVariantsByColor(row.value).length > 0 : !isColorSoldOut(row))) ?? colorRows[0],
-    [colorRows, hasVariantInventories],
+    () => visibleColorRows.find((row) => (hasVariantInventories ? getVariantsByColor(row.value).length > 0 : !isColorSoldOut(row))) ?? visibleColorRows[0],
+    [visibleColorRows, hasVariantInventories],
   );
   const [selectedColor, setSelectedColor] = useState<string>("");
   useEffect(() => {
@@ -355,7 +375,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
       setSelectedColor(firstAvailableColor.value);
     }
   }, [firstAvailableColor?.value, selectedColor]);
-  const selectedColorRow = colorRows.find((row) => row.value === selectedColor);
+  const selectedColorRow = visibleColorRows.find((row) => row.value === selectedColor);
   const selectedColorLabel = selectedColorRow ? getColorLabel(selectedColorRow) : "";
   const selectedColorVariants = useMemo(() => (selectedColor ? getAvailableGaugesForColor(selectedColor) : []), [selectedColor, variantRows]);
   const colorImageFromVariant = selectedColorVariants.find((v) => v.colorImage)?.colorImage?.trim();
@@ -421,7 +441,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
     const firstSellable = getAvailableGaugesForColor(selectedColor).find((v) => isSellableVariant(v));
     setSelectedGauge(firstSellable?.gaugeValue ?? "");
     setQuantity(1);
-  }, [hasVariantInventories, isStringProduct, selectedColor, selectedGauge, variantRows]);
+  }, [hasVariantInventories, isStringProduct, selectedColor, selectedGauge, visibleVariantRows]);
   // const [isWishlisted, setIsWishlisted] = useState(false);
   const { addItem } = useCartStore();
   const { setItem: setBuyNowItem } = useBuyNowStore();
@@ -1143,7 +1163,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   </div>
 
                   <div className="space-y-4 sm:space-y-5 pt-5 sm:pt-6 border-t border-border/60">
-                    {colorRows.length > 0 && (
+                    {visibleColorRows.length > 0 && (
                       <div className="space-y-2 rounded-xl border border-border/60 bg-muted/30 p-3">
                         <div className="flex items-center justify-between gap-3">
                           <span className="text-sm font-semibold text-foreground">색상 선택</span>
@@ -1151,9 +1171,9 @@ export default function ProductDetailClient({ product }: { product: any }) {
                             <span className="text-xs text-muted-foreground">현재 색상: {selectedColorLabel}</span>
                           )}
                         </div>
-                        {colorRows.length > 1 ? (
+                        {visibleColorRows.length > 1 ? (
                           <div className="flex flex-wrap gap-2">
-                            {colorRows.map((row) => {
+                            {visibleColorRows.map((row) => {
                               const label = getColorLabel(row);
                               const soldOut = hasVariantInventories
                                 ? !getVariantsByColor(row.value).some((v) => isSellableVariant(v))
@@ -1191,7 +1211,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                             })}
                           </div>
                         ) : (
-                          <p className="text-sm text-muted-foreground">색상: {selectedColorLabel || getColorLabel(colorRows[0])}</p>
+                          <p className="text-sm text-muted-foreground">색상: {selectedColorLabel || getColorLabel(visibleColorRows[0])}</p>
                         )}
                       </div>
                     )}

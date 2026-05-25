@@ -159,6 +159,29 @@ function isVisibleVariant(row: VariantInventoryRow) {
 function getVariantsByColor(product: any, colorValue: string) {
   return normalizeVariantRows(product).filter((row) => row.colorValue === colorValue && isVisibleVariant(row));
 }
+function getVisibleColorRows(product: any): ColorInventoryRow[] {
+  const colorRows = normalizeColorRows(product);
+  const variants = normalizeVariantRows(product);
+  if (!variants.length) return colorRows;
+  const visibleVariants = variants.filter(isVisibleVariant);
+  const visibleColorValues = new Set(visibleVariants.map((v) => v.colorValue).filter(Boolean));
+  const baseRows = colorRows.filter((row) => visibleColorValues.has(row.value));
+  const known = new Set(baseRows.map((row) => row.value));
+  visibleVariants.forEach((v) => {
+    if (!v.colorValue || known.has(v.colorValue)) return;
+    baseRows.push({
+      value: v.colorValue,
+      label: v.colorLabel ?? v.colorValue,
+      colorHex: v.colorHex ?? undefined,
+      image: v.colorImage ?? undefined,
+      stock: Number(v.stock ?? 0),
+      isSoldOut: v.isSoldOut === true,
+      showWhenSoldOut: v.showWhenSoldOut,
+    });
+    known.add(v.colorValue);
+  });
+  return baseRows;
+}
 
 function getVariantBySelection(product: any, colorValue: string, gaugeValue: string) {
   return normalizeVariantRows(product).find(
@@ -201,13 +224,13 @@ export default function RentalSelectStringClient({
           (product as any).variantInventories.length > 0;
         const firstAvailable = hasVariantInventories
           ? (() => {
-              const variantRows = normalizeVariantRows(product);
+              const variantRows = normalizeVariantRows(product).filter(isVisibleVariant);
               if (variantRows.length <= 0) return null;
               const firstSellable = variantRows.find((row) => isSellableVariant(row)) ?? variantRows[0];
               return firstSellable ? { value: firstSellable.colorValue } : null;
             })()
           : (() => {
-              const colorRows = normalizeColorRows(product);
+              const colorRows = getVisibleColorRows(product);
               if (colorRows.length <= 0) return null;
               return colorRows.find((row) => !isColorSoldOut(row)) ?? colorRows[0];
             })();
@@ -235,8 +258,9 @@ export default function RentalSelectStringClient({
           const currentGauge = next[id] ?? "";
           const currentVariant = getVariantBySelection(product, currentColor, currentGauge);
           if (currentGauge && currentVariant && isSellableVariant(currentVariant)) continue;
-          const firstSellable = getVariantsByColor(product, currentColor).find((row) => isSellableVariant(row));
-          const nextGauge = firstSellable?.gaugeValue ?? "";
+          const visibleRows = getVariantsByColor(product, currentColor);
+          const firstSellable = visibleRows.find((row) => isSellableVariant(row));
+          const nextGauge = firstSellable?.gaugeValue ?? visibleRows[0]?.gaugeValue ?? "";
           if ((next[id] ?? "") !== nextGauge) {
             next[id] = nextGauge;
             changed = true;
@@ -384,7 +408,7 @@ export default function RentalSelectStringClient({
                 const hasVariantInventories =
                   Array.isArray(p?.variantInventories) &&
                   p.variantInventories.length > 0;
-                const colorRows = normalizeColorRows(p);
+                const colorRows = hasVariantInventories ? getVisibleColorRows(p) : normalizeColorRows(p);
                 const variantRows = hasVariantInventories ? normalizeVariantRows(p) : [];
                 const variantColorValues = hasVariantInventories
                   ? Array.from(new Set(variantRows.map((row) => row.colorValue)))
