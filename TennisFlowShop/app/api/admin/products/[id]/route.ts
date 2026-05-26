@@ -46,6 +46,7 @@ function normalizeVariantInventories(value: unknown): ProductVariantInventory[] 
           : {}),
         stock: Number.isFinite(stockNumber) && stockNumber >= 0 ? stockNumber : 0,
         isSoldOut: asBoolean(row.isSoldOut),
+        showWhenSoldOut: row.showWhenSoldOut === false ? false : true,
       };
     })
     .filter((row): row is ProductVariantInventory => row !== null);

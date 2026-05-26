@@ -1491,14 +1491,16 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                     {Object.entries(toDisplaySpec())
                       .filter(([, value]) => value)
-                      .map(([key, value]) => (
+                      .map(([key, value]) => {
+                        const displayValue = key === "색상" && selectedColorLabel ? selectedColorLabel : value;
+                        return (
                         <div key={key} className="bg-muted/30 p-3 sm:p-4 rounded-lg border border-border">
                           <div className="flex items-center justify-between">
                             <span className="font-semibold text-foreground text-sm sm:text-base">{key}</span>
-                            <span className="text-muted-foreground font-medium text-sm sm:text-base">{String(value)}</span>
+                            <span className="text-muted-foreground font-medium text-sm sm:text-base">{String(displayValue)}</span>
                           </div>
                         </div>
-                      ))}
+                      );})}
                   </div>
                   {product?.material === "hybrid" && hybridSpec && (
                     <Card className="mt-4 sm:mt-6 border-0 shadow-none bg-transparent">
