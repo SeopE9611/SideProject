@@ -150,12 +150,7 @@ export default function AdminRacketEditClient({ id }: { id: string }) {
   return (
     <div className="min-h-screen bg-background">
       <div className="container py-8 px-6">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-          }}
-          className="space-y-6"
-        >
+        <div className="space-y-6">
           <div className="rounded-2xl p-8 border border-border bg-card shadow-lg">
             {isLoading ? (
               <div className="mb-4 rounded-lg border border-border bg-muted/30 px-4 py-2 text-sm text-muted-foreground">
@@ -226,7 +221,7 @@ export default function AdminRacketEditClient({ id }: { id: string }) {
           <Separator className="bg-border" />
 
           <AdminRacketForm initial={data} submitLabel="저장" onSubmit={onSubmit} />
-        </form>
+        </div>
       </div>
     </div>
   );
