@@ -20,6 +20,9 @@ type ProductDoc = {
     comfort?: number;
   };
   inventory?: { isFeatured?: boolean };
+  ratingCount?: number;
+  ratingAvg?: number;
+  ratingAverage?: number;
   isDeleted?: boolean;
 };
 
@@ -144,6 +147,7 @@ export async function GET(req: NextRequest) {
 
     if (sort === "price-low") sortObj = { price: 1 };
     else if (sort === "price-high") sortObj = { price: -1 };
+    else if (sort === "reviews-desc") sortObj = { ratingCount: -1, ratingAvg: -1, _id: -1 };
 
     const idFilter =
       exclude && ObjectId.isValid(exclude)

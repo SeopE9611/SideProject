@@ -83,6 +83,7 @@ export default function FilterableProductList({
   // 정렬 / 뷰 모드
   const [sortOption, setSortOption] = useState("latest");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
 
   // 필터 상태들
   const [selectedBrand, setSelectedBrand] = useState<string | null>(
@@ -138,6 +139,19 @@ export default function FilterableProductList({
 
   // 초기 URL -> 상태
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mql = window.matchMedia("(max-width: 767px)");
+    const syncViewport = (matches: boolean) => {
+      setIsMobileViewport(matches);
+      if (matches) setViewMode("grid");
+    };
+    syncViewport(mql.matches);
+    const onChange = (e: MediaQueryListEvent) => syncViewport(e.matches);
+    mql.addEventListener("change", onChange);
+    return () => mql.removeEventListener("change", onChange);
+  }, []);
+
+  useEffect(() => {
     if (isInitializingRef.current) {
       const brand = searchParams.get("brand");
       setSelectedBrand(brand || null);
@@ -171,7 +185,7 @@ export default function FilterableProductList({
       setSortOption(searchParams.get("sort") || "latest");
 
       const view = searchParams.get("view");
-      setViewMode(view === "list" ? "list" : "grid");
+      setViewMode(isMobileViewport ? "grid" : view === "list" ? "list" : "grid");
 
       const q = searchParams.get("q") || "";
       setSearchQuery(q);
@@ -224,9 +238,9 @@ export default function FilterableProductList({
     if (sort !== sortOption) setSortOption(sort);
 
     const view = searchParams.get("view");
-    const desiredView = view === "list" ? "list" : "grid";
+    const desiredView = isMobileViewport ? "grid" : view === "list" ? "list" : "grid";
     if (desiredView !== viewMode) setViewMode(desiredView as "grid" | "list");
-  }, [searchParams]);
+  }, [searchParams, isMobileViewport]);
 
   // 기본 범위면 아예 min/max를 안 보내서 "가격 필터 미적용" 상태 유지
   const minPriceParam =
@@ -559,7 +573,7 @@ export default function FilterableProductList({
       "sort",
       sortOption && sortOption !== "latest" ? sortOption : null,
     );
-    setOrDelete("view", viewMode !== "grid" ? viewMode : null);
+    setOrDelete("view", !isMobileViewport && viewMode !== "grid" ? viewMode : null);
     setOrDelete(
       "minPrice",
       priceRange[0] > DEFAULT_MIN_PRICE ? String(priceRange[0]) : null,
@@ -586,6 +600,7 @@ export default function FilterableProductList({
     submittedQuery,
     sortOption,
     viewMode,
+    isMobileViewport,
     priceRange,
     router,
     pathname,
@@ -881,7 +896,7 @@ export default function FilterableProductList({
 
             <div className="flex items-center justify-between gap-3 bp-sm:justify-end">
               {/* 뷰 모드 토글 */}
-              <div className="flex items-center border border-border rounded-lg p-1 bg-card">
+              {!isMobileViewport && <div className="flex items-center border border-border rounded-lg p-1 bg-card">
                 <Button
                   type="button"
                   variant={viewMode === "grid" ? "default" : "ghost"}
@@ -900,7 +915,7 @@ export default function FilterableProductList({
                 >
                   <List className="w-4 h-4" />
                 </Button>
-              </div>
+              </div>}
 
               {/* 정렬 */}
               <Select value={sortOption} onValueChange={setSortOption}>
@@ -909,7 +924,7 @@ export default function FilterableProductList({
                 </SelectTrigger>
                 <SelectContent className="dark:bg-card dark:border-border">
                   <SelectItem value="latest">최신순</SelectItem>
-                  <SelectItem value="popular">인기순</SelectItem>
+                  <SelectItem value="reviews-desc">리뷰 많은순</SelectItem>
                   <SelectItem value="price-low">가격 낮은순</SelectItem>
                   <SelectItem value="price-high">가격 높은순</SelectItem>
                 </SelectContent>
