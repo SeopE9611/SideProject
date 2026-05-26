@@ -61,19 +61,19 @@ export function ProductPreviewCard({ basicInfo, features, inventory, colorCount,
       {/* Badges */}
       <div className="mb-4 flex flex-wrap gap-1.5">
         {inventory.isNew && (
-          <Badge variant="default" className="bg-blue-500 hover:bg-blue-600">
+          <Badge variant="info">
             <Sparkles className="mr-1 h-3 w-3" />
             신상품
           </Badge>
         )}
         {inventory.isFeatured && (
-          <Badge variant="default" className="bg-amber-500 hover:bg-amber-600">
+          <Badge variant="warning">
             <TrendingUp className="mr-1 h-3 w-3" />
             추천
           </Badge>
         )}
         {inventory.isSale && (
-          <Badge variant="default" className="bg-red-500 hover:bg-red-600">
+          <Badge variant="destructive">
             <Percent className="mr-1 h-3 w-3" />
             할인
           </Badge>

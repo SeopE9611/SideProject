@@ -1219,8 +1219,8 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                         <FormSection title="구매 옵션" description="색상/게이지 옵션별 재고 및 품절 상태를 관리하세요." icon={<Palette className="h-5 w-5" />}>
                           <div className="space-y-6">
                             {shouldShowLegacyVariantGuide && (
-                              <div className="flex items-start gap-3 rounded-lg border border-amber-500/50 bg-amber-500/10 p-4">
-                                <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" />
+                              <div className="flex items-start gap-3 rounded-lg border border-warning/50 bg-warning/12 p-4">
+                                <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-warning" />
                                 <div className="text-sm text-foreground">
                                   <p className="font-medium">색상별 게이지 재고 설정 필요</p>
                                   <p className="text-muted-foreground">기존 상품은 색상별 게이지 재고가 설정되어 있지 않습니다. 색상×게이지 조합별 재고를 다시 입력한 뒤 저장해 주세요.</p>
