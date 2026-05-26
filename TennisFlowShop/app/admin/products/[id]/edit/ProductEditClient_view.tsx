@@ -1734,6 +1734,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                       colorCount={colorInventories.length}
                       gaugeCount={uniqueGaugeCount}
                       imageCount={images.length}
+                      className="top-24 max-h-[calc(100vh-7rem)] overflow-y-auto"
                     />
                   </div>
                 </div>

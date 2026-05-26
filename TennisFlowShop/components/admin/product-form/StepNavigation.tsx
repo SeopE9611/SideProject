@@ -97,7 +97,11 @@ export function StepNavigation({
           <Button
             variant="default"
             type="button"
-            onClick={onNext}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onNext();
+            }}
             disabled={!canGoNext}
             className="gap-1"
           >

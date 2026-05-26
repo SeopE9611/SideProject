@@ -204,6 +204,8 @@ export default function NewStringPage() {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const currentStep = STEPS[currentStepIndex];
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
+  const stepContentRef = useRef<HTMLDivElement | null>(null);
+  const shouldScrollAfterStepChangeRef = useRef(false);
 
   const [images, setImages] = useState<string[]>([]);
 
@@ -395,12 +397,14 @@ export default function NewStringPage() {
       if (!completedSteps.includes(currentStep.id)) {
         setCompletedSteps((prev) => [...prev, currentStep.id]);
       }
+      shouldScrollAfterStepChangeRef.current = true;
       setCurrentStepIndex((prev) => prev + 1);
     }
   };
 
   const goToPreviousStep = () => {
     if (currentStepIndex > 0) {
+      shouldScrollAfterStepChangeRef.current = true;
       setCurrentStepIndex((prev) => prev - 1);
     }
   };
@@ -408,13 +412,31 @@ export default function NewStringPage() {
   const goToStep = (stepId: string) => {
     const index = STEPS.findIndex((s) => s.id === stepId);
     if (index !== -1) {
+      shouldScrollAfterStepChangeRef.current = true;
       setCurrentStepIndex(index);
     }
   };
 
+  useEffect(() => {
+    if (!shouldScrollAfterStepChangeRef.current) return;
+    shouldScrollAfterStepChangeRef.current = false;
+
+    requestAnimationFrame(() => {
+      const container = stepContentRef.current;
+      if (!container) return;
+
+      container.scrollIntoView({ behavior: "smooth", block: "start" });
+      const firstFocusable = container.querySelector<HTMLElement>(
+        "input:not([type=hidden]):not([disabled]), textarea:not([disabled]), button[role=combobox]:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex='-1'])",
+      );
+      firstFocusable?.focus({ preventScroll: true });
+    });
+  }, [currentStepIndex]);
+
   // 폼 제출 핸들러
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (currentStep.id !== "images") return;
 
     // 중복 제출/업로드 중 제출 방지
     if (submitting || submitRef.current) return;
@@ -689,7 +711,7 @@ export default function NewStringPage() {
               {/* Main Content - 2 Column Layout */}
               <div className="flex flex-col gap-6 lg:flex-row">
                 {/* Left: Form Content */}
-                <div className="flex-1 space-y-6">
+                <div ref={stepContentRef} className="flex-1 space-y-6 scroll-mt-24">
                   {/* Step 1: Basic Info */}
                   {currentStep.id === "basic" && (
                     <div className="space-y-6 animate-in fade-in-0 slide-in-from-right-4 duration-300">
@@ -1559,6 +1581,7 @@ export default function NewStringPage() {
                     colorCount={colorInventories.length}
                     gaugeCount={uniqueGaugeCount}
                     imageCount={images.length}
+                    className="top-24 max-h-[calc(100vh-7rem)] overflow-y-auto"
                   />
                 </div>
               </div>
