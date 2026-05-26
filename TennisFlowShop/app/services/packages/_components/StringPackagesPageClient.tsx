@@ -86,7 +86,7 @@ export default function StringPackagesPageClient({ initialPackages, initialOwner
       {/* Hero Section */}
       <section className="relative min-h-[70svh] md:min-h-[70vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 bg-muted/30 dark:bg-muted/20">
-          <HeroCourtBackdrop className="h-full w-full text-primary opacity-[0.10] dark:opacity-[0.12]" />
+          <HeroCourtBackdrop className="h-full w-full text-muted-foreground opacity-[0.10] dark:opacity-[0.12]" />
           <div className="absolute inset-0 bg-overlay/20"></div>
         </div>
 
@@ -180,7 +180,7 @@ export default function StringPackagesPageClient({ initialPackages, initialOwner
               ].map((faq, index) => (
                 <Card key={index} className="border border-border shadow-sm hover:shadow-md transition-shadow duration-300">
                   <CardContent className="p-4 md:p-6">
-                    <h3 className="font-bold text-lg mb-3 text-primary">Q. {faq.question}</h3>
+                    <h3 className="font-bold text-lg mb-3 text-foreground">Q. {faq.question}</h3>
                     <p className="text-muted-foreground leading-relaxed">A. {faq.answer}</p>
                   </CardContent>
                 </Card>
