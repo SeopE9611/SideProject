@@ -1173,7 +1173,7 @@ export default function TransactionFlowList() {
                               className={`
         flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-semibold
         transition-colors duration-200
-        ${isSecondaryOpen ? 'bg-foreground text-background' : 'bg-muted text-muted-foreground group-hover:bg-secondary group-hover:text-foreground'}
+        ${isSecondaryOpen ? 'bg-primary/15 text-primary' : 'bg-muted text-muted-foreground group-hover:bg-secondary group-hover:text-foreground'}
       `}
                             >
                               {secondaryActions.length}

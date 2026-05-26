@@ -1350,14 +1350,14 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 <div className="space-y-2 sm:space-y-2.5">
                   {selectedPlayerTypes.length > 0 && (
                     <div className="flex items-center gap-3 rounded-xl border border-border/60 bg-secondary/40 p-3 text-sm sm:text-base">
-                      <div className="w-2.5 h-2.5 bg-foreground rounded-full shrink-0"></div>
+                      <div className="w-2.5 h-2.5 bg-muted-foreground/70 rounded-full shrink-0"></div>
                       <span className="text-muted-foreground">플레이어:</span>
                       <span className="font-medium text-foreground">{selectedPlayerTypes.join(", ")}</span>
                     </div>
                   )}
                   {selectedPlayStyles.length > 0 && (
                     <div className="flex items-center gap-3 rounded-xl border border-border/60 bg-secondary/40 p-3 text-sm sm:text-base">
-                      <div className="w-2.5 h-2.5 bg-foreground rounded-full shrink-0"></div>
+                      <div className="w-2.5 h-2.5 bg-muted-foreground/70 rounded-full shrink-0"></div>
                       <span className="text-muted-foreground">스타일:</span>
                       <span className="font-medium text-foreground">{selectedPlayStyles.join(", ")}</span>
                     </div>
