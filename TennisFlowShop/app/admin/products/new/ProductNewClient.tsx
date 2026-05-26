@@ -129,9 +129,10 @@ export default function NewStringPage() {
     ProductVariantInventory[]
   >([]);
   const [gaugeInputsByColor, setGaugeInputsByColor] = useState<Record<string, string>>({});
+  const defaultColorPickerValue = `${String.fromCharCode(35)}000000`;
   const [customColorName, setCustomColorName] = useState("");
-  const [customColorHex, setCustomColorHex] = useState("");
-  const HEX_EXAMPLE = `${String.fromCharCode(35)}DFFF00`;
+  const [customColorHex, setCustomColorHex] = useState(defaultColorPickerValue);
+  const [customColorHexTouched, setCustomColorHexTouched] = useState(false);
   const [showGaugeStockToUser, setShowGaugeStockToUser] = useState(true);
   const getVariantKey = (colorValue: string, gaugeValue: string) =>
     `${colorValue}::${gaugeValue}`;
@@ -259,9 +260,12 @@ export default function NewStringPage() {
     return { value, label, colorHex };
   };
   const handleAddCustomColor = () => {
-    const normalized = normalizeCustomColorInput(customColorName, customColorHex);
+    const normalized = normalizeCustomColorInput(
+      customColorName,
+      customColorHexTouched ? customColorHex : "",
+    );
     if (!normalized) return showErrorToast("색상명을 입력해주세요.");
-    if (normalized.colorHex === null) return showErrorToast(`HEX 색상값은 ${HEX_EXAMPLE} 형식으로 입력해주세요.`);
+    if (normalized.colorHex === null) return showErrorToast("색상 미리보기 값이 올바르지 않습니다.");
     const labelLower = normalized.label.trim().toLowerCase();
     const duplicated = colorInventories.some(
       (row) => row.value === normalized.value || String(row.label ?? "").trim().toLowerCase() === labelLower,
@@ -272,7 +276,8 @@ export default function NewStringPage() {
       { value: normalized.value, label: normalized.label, colorHex: normalized.colorHex ?? "", image: "", stock: 0, isSoldOut: false },
     ]);
     setCustomColorName("");
-    setCustomColorHex("");
+    setCustomColorHex(defaultColorPickerValue);
+    setCustomColorHexTouched(false);
   };
 
   // 추가 특성 정보
@@ -1367,11 +1372,26 @@ export default function NewStringPage() {
                       </div>
                       <div className="space-y-2 rounded-md border border-border/60 p-3">
                         <Label>색상 직접 추가</Label>
-                        <div className="grid gap-2 md:grid-cols-3">
+                        <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_auto_auto] md:items-end">
                           <Input placeholder="예: 네온 옐로우" value={customColorName} onChange={(e) => setCustomColorName(e.target.value)} />
-                          <Input placeholder={`예: ${HEX_EXAMPLE}`} value={customColorHex} onChange={(e) => setCustomColorHex(e.target.value)} />
+                          <div className="space-y-1">
+                            <Label htmlFor="custom-color-picker-new" className="text-xs text-muted-foreground">색상 미리보기 선택 (선택사항)</Label>
+                            <Input
+                              id="custom-color-picker-new"
+                              type="color"
+                              value={customColorHex}
+                              onChange={(e) => {
+                                setCustomColorHex(e.target.value);
+                                setCustomColorHexTouched(true);
+                              }}
+                              className="h-10 w-14 cursor-pointer p-1"
+                            />
+                          </div>
                           <Button type="button" onClick={handleAddCustomColor}>색상 추가</Button>
                         </div>
+                        <p className="text-xs text-muted-foreground">
+                          색상 미리보기를 선택하지 않아도 색상명만으로 추가할 수 있어요.
+                        </p>
                       </div>
                       {colorInventories.length === 0 && (
                         <p className="text-sm text-muted-foreground">선택된 색상이 없습니다. 위 색상 목록에서 사용할 색상을 선택하세요.</p>
