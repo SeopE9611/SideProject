@@ -798,31 +798,31 @@ export default function NewStringPage() {
               <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 bg-muted border border-border">
                 <TabsTrigger
                   value="basic"
-                  className="text-muted-foreground data-[state=active]:border-foreground/20 data-[state=active]:bg-muted data-[state=active]:text-foreground"
+                  className="text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-border"
                 >
                   기본 정보
                 </TabsTrigger>
                 <TabsTrigger
                   value="options"
-                  className="text-muted-foreground data-[state=active]:border-foreground/20 data-[state=active]:bg-muted data-[state=active]:text-foreground"
+                  className="text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-border"
                 >
                   구매 옵션
                 </TabsTrigger>
                 <TabsTrigger
                   value="features"
-                  className="text-muted-foreground data-[state=active]:border-foreground/20 data-[state=active]:bg-muted data-[state=active]:text-foreground"
+                  className="text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-border"
                 >
                   성능 및 특성
                 </TabsTrigger>
                 <TabsTrigger
                   value="inventory"
-                  className="text-muted-foreground data-[state=active]:border-foreground/20 data-[state=active]:bg-muted data-[state=active]:text-foreground"
+                  className="text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-border"
                 >
                   재고 관리
                 </TabsTrigger>
                 <TabsTrigger
                   value="images"
-                  className="text-muted-foreground data-[state=active]:border-foreground/20 data-[state=active]:bg-muted data-[state=active]:text-foreground"
+                  className="text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-border"
                 >
                   이미지
                 </TabsTrigger>
@@ -1359,7 +1359,8 @@ export default function NewStringPage() {
                               key={color.id}
                               type="button"
                               size="sm"
-                              variant={selected ? "default" : "outline"}
+                              variant="outline"
+                              className={selected ? "border-foreground/20 bg-muted text-foreground shadow-none hover:bg-muted" : undefined}
                               onClick={() => {
                                 if (selected) return;
                                 setColorInventories((prev) => [...prev,{ value: color.id, label: color.name, colorHex: color.hex, image: "", stock: 0, isSoldOut: false }]);
