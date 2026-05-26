@@ -31,7 +31,7 @@ export default function StringRecommendQuestion({ question, value, onChange, ind
                 selected ? "border-foreground/20 bg-muted/70 text-foreground dark:border-border dark:bg-muted/70 dark:text-foreground" : "border-border bg-background hover:bg-muted/40",
               )}
             >
-              <p className={cn("font-medium", selected ? "text-foreground" : "text-foreground")}>{option.label}</p>
+              <p className="font-medium text-foreground">{option.label}</p>
               {option.description ? <p className="mt-1 text-sm text-muted-foreground">{option.description}</p> : null}
             </button>
           );
