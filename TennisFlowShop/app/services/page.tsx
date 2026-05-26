@@ -133,12 +133,12 @@ export default async function ServicesPage() {
       {/* Hero 섹션 */}
       <section className="relative overflow-hidden py-12 bp-md:py-16 bp-lg:py-20">
         <div className="absolute inset-0 bg-muted">
-          <HeroCourtBackdrop className="h-full w-full text-primary opacity-[0.10] dark:opacity-[0.12]" />
+          <HeroCourtBackdrop className="h-full w-full text-muted-foreground opacity-[0.10] dark:opacity-[0.12]" />
           <div className="absolute inset-0 bg-background/40"></div>
         </div>
 
         <div className="absolute top-16 left-8 hidden h-24 w-24 rounded-full bg-secondary/30 bp-md:block"></div>
-        <div className="absolute bottom-14 right-8 h-16 w-16 rounded-full bg-primary/10 dark:bg-primary/20"></div>
+        <div className="absolute bottom-14 right-8 h-16 w-16 rounded-full bg-muted dark:bg-muted/80"></div>
 
         <div className="container relative z-10">
           <div className="mx-auto max-w-4xl">
@@ -166,7 +166,7 @@ export default async function ServicesPage() {
         <div className="container">
           <div className="mx-auto max-w-5xl">
             <div className="mb-5 text-center bp-md:mb-7">
-              <p className="text-sm font-semibold text-primary">신청 방식 먼저 선택하기</p>
+              <p className="text-sm font-semibold text-muted-foreground">신청 방식 먼저 선택하기</p>
               <h2 className="mt-1 text-2xl font-bold text-foreground sm:text-3xl">어떤 방식으로 시작할까요?</h2>
               <p className="mt-2 text-sm text-muted-foreground">현재 상황에 맞는 시작 지점을 고르면 신청 흐름으로 이어집니다.</p>
             </div>
@@ -181,9 +181,9 @@ export default async function ServicesPage() {
               ].map((item) => (
                 <div key={item.title} className="flex h-full flex-col rounded-xl border border-border bg-card p-3.5 text-left shadow-sm transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md">
                   <h4 className="text-base font-bold text-foreground">{item.title}</h4>
-                  <p className="mt-2 text-xs font-semibold text-primary">이런 분께 추천</p>
+                  <p className="mt-2 text-xs font-semibold text-foreground">이런 분께 추천</p>
                   <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{item.recommend}</p>
-                  <p className="mt-2 text-xs font-semibold text-primary">다음 단계</p>
+                  <p className="mt-2 text-xs font-semibold text-foreground">다음 단계</p>
                   <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{item.step}</p>
                   <Button asChild className="mt-3 w-full" variant={item.href === "/products/recommend" ? "outline" : "default"}>
                     <Link href={item.href}>{item.cta}</Link>
@@ -194,7 +194,7 @@ export default async function ServicesPage() {
 
             <div className="mt-6 grid grid-cols-1 gap-4 bp-md:mt-8 bp-md:grid-cols-2 bp-md:gap-6">
               <div className="rounded-xl border border-border p-4 text-center md:p-5">
-                <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-secondary text-primary">
+                <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-secondary text-muted-foreground">
                   <PhoneCall className="h-8 w-8" />
                 </div>
                 <h3 className="mb-2 text-xl font-bold">전화 예약</h3>
@@ -204,7 +204,7 @@ export default async function ServicesPage() {
               </div>
 
               <div className="rounded-xl border border-border p-4 text-center md:p-5">
-                <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-secondary text-primary">
+                <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-secondary text-muted-foreground">
                   <Calendar className="h-8 w-8" />
                 </div>
                 <h3 className="mb-2 text-xl font-bold">온라인 신청</h3>
@@ -220,7 +220,7 @@ export default async function ServicesPage() {
 
             <div className="mt-4 rounded-xl border border-border bg-muted/60 p-4 md:p-5">
               <h3 className="mb-3 text-base font-bold text-foreground">
-                <CheckCircle className="mr-2 inline h-5 w-5 text-primary" />
+                <CheckCircle className="mr-2 inline h-5 w-5 text-muted-foreground" />
                 알아두세요
               </h3>
               <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
@@ -291,7 +291,7 @@ export default async function ServicesPage() {
                 <div className="h-2 bg-muted"></div>
 
                 <CardHeader className="text-center pb-4">
-                  <div className="mx-auto mb-4 w-20 h-20 rounded-full border border-border/60 bg-secondary flex items-center justify-center text-primary shadow-sm transition-shadow duration-300 group-hover:shadow-md">
+                  <div className="mx-auto mb-4 w-20 h-20 rounded-full border border-border/60 bg-secondary flex items-center justify-center text-muted-foreground shadow-sm transition-shadow duration-300 group-hover:shadow-md">
                     {type.icon}
                   </div>
                   <CardTitle className="text-2xl font-bold mb-2">{type.title}</CardTitle>
@@ -307,7 +307,7 @@ export default async function ServicesPage() {
                         <div key={key} className="flex items-center justify-between">
                           <span className="text-sm capitalize">{key === "power" ? "파워" : key === "control" ? "컨트롤" : key === "spin" ? "스핀" : "내구성"}</span>
                           <div className="flex-1 mx-3 bg-muted rounded-full h-2">
-                            <div className="h-2 rounded-full bg-primary transition-all duration-1000 ease-out" style={{ width: `${value}%` }}></div>
+                            <div className="h-2 rounded-full bg-muted-foreground/70 transition-all duration-1000 ease-out" style={{ width: `${value}%` }}></div>
                           </div>
                           <span className="text-sm font-medium">{value}%</span>
                         </div>
@@ -318,13 +318,13 @@ export default async function ServicesPage() {
                   {/* 주요 특징 */}
                   <div>
                     <h4 className="font-semibold mb-3 flex items-center">
-                      <CheckCircle className="w-4 h-4 mr-2 text-primary" />
+                      <CheckCircle className="w-4 h-4 mr-2 text-muted-foreground" />
                       주요 특징
                     </h4>
                     <ul className="space-y-2">
                       {type.features.map((feature, idx) => (
                         <li key={idx} className="flex items-start text-sm">
-                          <div className="w-2 h-2 rounded-full bg-primary mt-2 mr-3 flex-shrink-0"></div>
+                          <div className="w-2 h-2 rounded-full bg-muted-foreground/70 mt-2 mr-3 flex-shrink-0"></div>
                           <span>{feature}</span>
                         </li>
                       ))}
@@ -334,13 +334,13 @@ export default async function ServicesPage() {
                   {/* 추천 대상 */}
                   <div>
                     <h4 className="font-semibold mb-3 flex items-center">
-                      <Users className="w-4 h-4 mr-2 text-primary" />
+                      <Users className="w-4 h-4 mr-2 text-muted-foreground" />
                       추천 대상
                     </h4>
                     <ul className="space-y-2">
                       {type.recommended.slice(0, 2).map((rec, idx) => (
                         <li key={idx} className="flex items-start text-sm">
-                          <ArrowRight className="w-3 h-3 mt-1 mr-2 text-primary flex-shrink-0" />
+                          <ArrowRight className="w-3 h-3 mt-1 mr-2 text-muted-foreground flex-shrink-0" />
                           <span>{rec}</span>
                         </li>
                       ))}
@@ -367,7 +367,7 @@ export default async function ServicesPage() {
 
       {/* 가격 안내 섹션 */}
       <section className="relative overflow-hidden bg-background py-12 scroll-mt-24 bp-md:scroll-mt-28 bp-md:py-16 bp-lg:py-20" id="pricing">
-        <HeroCourtBackdrop className="h-full w-full text-primary opacity-[0.10] dark:opacity-[0.12]" />
+        <HeroCourtBackdrop className="h-full w-full text-muted-foreground opacity-[0.10] dark:opacity-[0.12]" />
 
         <div className="container relative z-10">
           <div className="text-center mb-16">
@@ -389,10 +389,10 @@ export default async function ServicesPage() {
                 key={item.service}
                 className={`relative overflow-hidden border border-border shadow-sm hover:shadow-md transition-[box-shadow,border-color,background-color] duration-200 ${item.popular ? "bg-card text-foreground ring-1 ring-border/60" : "bg-card"}`}
               >
-                {item.popular && <div className="absolute top-0 right-0 bg-primary text-primary-foreground px-3 py-1 text-xs font-bold rounded-bl-lg">인기</div>}
+                {item.popular && <div className="absolute top-0 right-0 bg-secondary text-foreground px-3 py-1 text-xs font-semibold rounded-bl-lg">인기</div>}
 
                 <CardHeader className="text-center pb-4">
-                  <div className={`mx-auto mb-4 w-16 h-16 rounded-full flex items-center justify-center shadow-sm ${item.popular ? "bg-secondary text-primary" : "bg-secondary text-primary"}`}>{item.icon}</div>
+                  <div className={`mx-auto mb-4 w-16 h-16 rounded-full flex items-center justify-center shadow-sm ${item.popular ? "bg-secondary text-muted-foreground" : "bg-secondary text-muted-foreground"}`}>{item.icon}</div>
                   <CardTitle className={`text-lg font-bold ${item.popular ? "text-foreground" : ""}`}>{item.service}</CardTitle>
                   <div className={`text-3xl font-bold ${item.popular ? "text-foreground" : "text-foreground"}`}>{item.priceLabel}</div>
                   <div className={`text-sm ${item.popular ? "text-muted-foreground" : "text-muted-foreground"}`}>소요시간: {item.duration}</div>
@@ -447,7 +447,7 @@ export default async function ServicesPage() {
                 <div key={service.title} className="border border-border rounded-xl p-4 md:p-6">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center">
-                      <div className="w-10 h-10 bg-secondary rounded-lg flex items-center justify-center text-primary mr-3">{service.icon}</div>
+                      <div className="w-10 h-10 bg-secondary rounded-lg flex items-center justify-center text-muted-foreground mr-3">{service.icon}</div>
                       <h4 className="font-bold">{service.title}</h4>
                     </div>
                     {service.free ? <Badge variant="info">무료</Badge> : <span className="font-bold text-foreground">{service.priceLabel ?? "별도 안내"}</span>}
@@ -483,13 +483,13 @@ export default async function ServicesPage() {
           <div className="grid grid-cols-1 bp-md:grid-cols-2 bp-lg:grid-cols-4 gap-6 md:gap-8">
             {processSteps.map((step) => (
               <div key={step.step} className="relative group">
-                {processSteps.indexOf(step) < processSteps.length - 1 && <div className="hidden bp-lg:block absolute top-16 left-full w-full h-0.5 bg-primary/20 dark:bg-primary/30 transform translate-x-4 z-0"></div>}
+                {processSteps.indexOf(step) < processSteps.length - 1 && <div className="hidden bp-lg:block absolute top-16 left-full w-full h-0.5 bg-border/70 dark:bg-border/80 transform translate-x-4 z-0"></div>}
 
                 <Card className="relative z-10 text-center border border-border shadow-sm hover:shadow-md transition-[box-shadow,border-color,background-color] duration-200 bg-card">
                   <CardContent className="p-4 bp-md:p-8">
                     <div className="relative mb-6">
-                      <div className="w-20 h-20 bg-secondary rounded-full flex items-center justify-center text-primary mx-auto shadow-sm transition-shadow duration-300 group-hover:shadow-md">{step.icon}</div>
-                      <div className="absolute -top-2 -right-2 w-8 h-8 bg-secondary rounded-full flex items-center justify-center text-primary text-sm font-bold shadow-sm">{step.step}</div>
+                      <div className="w-20 h-20 bg-secondary rounded-full flex items-center justify-center text-muted-foreground mx-auto shadow-sm transition-shadow duration-300 group-hover:shadow-md">{step.icon}</div>
+                      <div className="absolute -top-2 -right-2 w-8 h-8 bg-secondary rounded-full flex items-center justify-center text-foreground text-sm font-bold shadow-sm">{step.step}</div>
                     </div>
                     <h3 className="text-xl font-bold mb-4">{step.title}</h3>
                     <p className="text-muted-foreground leading-relaxed">{step.description}</p>

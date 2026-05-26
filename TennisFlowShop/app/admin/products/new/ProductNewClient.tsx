@@ -749,7 +749,7 @@ export default function NewStringPage() {
               <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
                 <div className="flex items-center space-x-4">
                   <div className="bg-card rounded-full p-3 shadow-md">
-                    <Package className="h-8 w-8 text-primary" />
+                    <Package className="h-8 w-8 text-muted-foreground" />
                   </div>
                   <div>
                     <h2 className="text-3xl font-bold tracking-normal">
@@ -798,31 +798,31 @@ export default function NewStringPage() {
               <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 bg-muted border border-border">
                 <TabsTrigger
                   value="basic"
-                  className="text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                  className="text-muted-foreground data-[state=active]:border-foreground/20 data-[state=active]:bg-muted data-[state=active]:text-foreground"
                 >
                   기본 정보
                 </TabsTrigger>
                 <TabsTrigger
                   value="options"
-                  className="text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                  className="text-muted-foreground data-[state=active]:border-foreground/20 data-[state=active]:bg-muted data-[state=active]:text-foreground"
                 >
                   구매 옵션
                 </TabsTrigger>
                 <TabsTrigger
                   value="features"
-                  className="text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                  className="text-muted-foreground data-[state=active]:border-foreground/20 data-[state=active]:bg-muted data-[state=active]:text-foreground"
                 >
                   성능 및 특성
                 </TabsTrigger>
                 <TabsTrigger
                   value="inventory"
-                  className="text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                  className="text-muted-foreground data-[state=active]:border-foreground/20 data-[state=active]:bg-muted data-[state=active]:text-foreground"
                 >
                   재고 관리
                 </TabsTrigger>
                 <TabsTrigger
                   value="images"
-                  className="text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                  className="text-muted-foreground data-[state=active]:border-foreground/20 data-[state=active]:bg-muted data-[state=active]:text-foreground"
                 >
                   이미지
                 </TabsTrigger>
@@ -835,7 +835,7 @@ export default function NewStringPage() {
                   className="shadow-xl bg-muted/30 border border-border"
                 >
                   <CardHeader className="bg-muted/30 border-b border-border">
-                    <CardTitle className="text-primary">기본 정보</CardTitle>
+                    <CardTitle className="text-foreground">기본 정보</CardTitle>
                     <CardDescription className="text-muted-foreground">
                       스트링의 기본 정보를 입력하세요.
                     </CardDescription>
@@ -1029,7 +1029,7 @@ export default function NewStringPage() {
                     className="mt-6 shadow-xl bg-muted/30 border border-border"
                   >
                     <CardHeader className="bg-muted/30 border-b border-border">
-                      <CardTitle className="text-primary">
+                      <CardTitle className="text-foreground">
                         하이브리드 구성
                       </CardTitle>
                       <CardDescription className="text-muted-foreground">
@@ -1222,7 +1222,7 @@ export default function NewStringPage() {
                   className="shadow-xl bg-muted/30 border border-border"
                 >
                   <CardHeader className="bg-muted/30 border-b border-border">
-                    <CardTitle className="text-primary">가격 정보</CardTitle>
+                    <CardTitle className="text-foreground">가격 정보</CardTitle>
                     <CardDescription className="text-muted-foreground">
                       소비자 가격과 장착 서비스 비용을 함께 설정해주세요.
                     </CardDescription>
@@ -1342,7 +1342,7 @@ export default function NewStringPage() {
                   className="shadow-xl bg-muted/30 border border-border"
                 >
                   <CardHeader className="bg-muted/30 border-b border-border">
-                    <CardTitle className="text-primary">구매 옵션</CardTitle>
+                    <CardTitle className="text-foreground">구매 옵션</CardTitle>
                     <CardDescription className="text-muted-foreground">
                       색상/게이지 옵션별 재고 및 품절 상태를 관리하세요.
                     </CardDescription>
@@ -1537,7 +1537,7 @@ export default function NewStringPage() {
                   className="shadow-xl bg-muted/30 border border-border"
                 >
                   <CardHeader className="bg-muted/30 border-b border-border">
-                    <CardTitle className="text-primary">성능 및 특성</CardTitle>
+                    <CardTitle className="text-foreground">성능 및 특성</CardTitle>
                     <CardDescription className="text-muted-foreground">
                       스트링의 성능과 특성을 설정하세요.
                     </CardDescription>
@@ -1659,7 +1659,7 @@ export default function NewStringPage() {
                     <Separator className="bg-border" />
 
                     <div className="space-y-4">
-                      <h3 className="text-lg font-medium text-primary">
+                      <h3 className="text-lg font-medium text-foreground">
                         추천 플레이어 타입
                       </h3>
                       <div className="space-y-2">
@@ -1697,7 +1697,7 @@ export default function NewStringPage() {
                     </div>
 
                     <div className="space-y-4">
-                      <h3 className="text-lg font-medium text-primary">
+                      <h3 className="text-lg font-medium text-foreground">
                         추천 플레이 스타일
                       </h3>
                       <div className="space-y-2">
@@ -1771,7 +1771,7 @@ export default function NewStringPage() {
                   className="shadow-xl bg-muted/30 border border-border"
                 >
                   <CardHeader className="bg-muted/30 border-b border-border">
-                    <CardTitle className="text-primary">재고 관리</CardTitle>
+                    <CardTitle className="text-foreground">재고 관리</CardTitle>
                     <CardDescription className="text-muted-foreground">
                       스트링의 재고 관련 정보를 설정하세요.
                     </CardDescription>
@@ -1890,7 +1890,7 @@ export default function NewStringPage() {
                     <Separator className="bg-border" />
 
                     <div className="space-y-4">
-                      <h3 className="text-lg font-medium text-primary">
+                      <h3 className="text-lg font-medium text-foreground">
                         판매 옵션
                       </h3>
 
@@ -1977,7 +1977,7 @@ export default function NewStringPage() {
                   className="shadow-xl bg-muted/30 border border-border"
                 >
                   <CardHeader className="bg-muted/30 border-b border-border">
-                    <CardTitle className="text-primary">
+                    <CardTitle className="text-foreground">
                       스트링 이미지
                     </CardTitle>
                     <CardDescription className="text-muted-foreground">

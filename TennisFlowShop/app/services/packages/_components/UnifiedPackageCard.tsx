@@ -67,12 +67,12 @@ export default function UnifiedPackageCard({
       onClick={onSelect}
     >
       {pkg.popular && (
-        <div className="absolute right-0 top-0 rounded-bl-lg bg-primary px-4 py-2 text-sm font-bold text-primary-foreground">
+        <div className="absolute right-0 top-0 rounded-bl-lg bg-secondary px-4 py-2 text-sm font-semibold text-foreground">
           인기
         </div>
       )}
       {pkg.discount && (
-        <div className="absolute left-0 top-0 rounded-br-lg bg-primary px-3 py-1 text-xs font-bold text-primary-foreground">
+        <div className="absolute left-0 top-0 rounded-br-lg bg-secondary px-3 py-1 text-xs font-semibold text-foreground">
           {pkg.discount}% 할인
         </div>
       )}
@@ -98,7 +98,7 @@ export default function UnifiedPackageCard({
         </CardDescription>
 
         <div className="space-y-1">
-          <div className="text-4xl font-bold text-primary">
+          <div className="text-4xl font-bold text-foreground">
             {pkg.price.toLocaleString()}원
           </div>
           {pkg.originalPrice && pkg.originalPrice > pkg.price && (
@@ -162,7 +162,7 @@ export default function UnifiedPackageCard({
 
         <div className="rounded-xl border border-border bg-muted p-4 text-foreground">
           <h4 className="mb-3 flex items-center font-semibold text-foreground">
-            <Gift className="mr-2 h-4 w-4 text-primary" />
+            <Gift className="mr-2 h-4 w-4 text-muted-foreground" />
             혜택 요약
           </h4>
           <div className="space-y-1 text-sm text-muted-foreground">

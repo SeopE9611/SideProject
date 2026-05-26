@@ -85,14 +85,14 @@ html body[data-scroll-locked] {
   --popover-foreground: 0 0% 10%;
 
   /* Primary action (CTA / main interaction) */
-  --primary: 214 42% 38%;
-  --primary-foreground: 0 0% 100%;
+  --primary: 220 7% 30%;
+  --primary-foreground: 0 0% 98%;
 
   /* Secondary emphasis */
-  --accent: 214 40% 34%;
-  --accent-foreground: 0 0% 100%;
-  --accent-hover: 214 43% 30%;
-  --accent-active: 214 46% 26%;
+  --accent: 220 6% 26%;
+  --accent-foreground: 0 0% 98%;
+  --accent-hover: 220 7% 24%;
+  --accent-active: 220 8% 20%;
 
   /* System feedback (toast/badge/banner) */
   --info: 213 86% 43%;
@@ -110,7 +110,7 @@ html body[data-scroll-locked] {
 
   --border: 40 6% 88%;
   --input: 40 6% 88%;
-  --ring: 214 42% 42%;
+  --ring: 220 7% 38%;
   --overlay: 0 0% 6%;
 
   --destructive: 0 72% 51%;
@@ -150,14 +150,14 @@ html body[data-scroll-locked] {
   --popover-foreground: 0 0% 96%;
 
   /* Primary action (CTA / main interaction) */
-  --primary: 214 52% 66%;
-  --primary-foreground: 222 22% 10%;
+  --primary: 220 7% 72%;
+  --primary-foreground: 220 10% 12%;
 
   /* Secondary emphasis */
-  --accent: 214 48% 62%;
-  --accent-foreground: 222 22% 10%;
-  --accent-hover: 214 54% 70%;
-  --accent-active: 214 58% 76%;
+  --accent: 220 7% 68%;
+  --accent-foreground: 220 10% 12%;
+  --accent-hover: 220 8% 76%;
+  --accent-active: 220 8% 82%;
 
   /* System feedback (toast/badge/banner) */
   --info: 210 90% 66%;
@@ -175,7 +175,7 @@ html body[data-scroll-locked] {
 
   --border: 240 3% 24%;
   --input: 240 3% 24%;
-  --ring: 214 52% 66%;
+  --ring: 220 7% 70%;
   --overlay: 0 0% 4%;
 
   --destructive: 0 72% 51%;
