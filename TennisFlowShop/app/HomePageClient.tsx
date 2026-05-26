@@ -691,7 +691,7 @@ export default function Home() {
               <div className="relative flex items-center gap-2 bp-sm:gap-2.5 overflow-x-auto pb-2 scrollbar-hide">
                 <button
                   onClick={() => setActiveStringBrand("all")}
-                  className={`shrink-0 px-5 bp-sm:px-6 bp-md:px-7 py-2.5 bp-sm:py-3 rounded-xl text-sm bp-sm:text-base font-semibold transition-[background-color,color,border-color,box-shadow,opacity] duration-300 whitespace-nowrap ${activeStringBrand === "all" ? "border border-foreground/15 bg-foreground text-background shadow-md dark:border-border dark:bg-card dark:text-foreground" : "bg-card border border-border/60 text-foreground hover:border-border hover:shadow-md"}`}
+                  className={`shrink-0 px-5 bp-sm:px-6 bp-md:px-7 py-2.5 bp-sm:py-3 rounded-xl text-sm bp-sm:text-base font-semibold transition-[background-color,color,border-color,box-shadow,opacity] duration-300 whitespace-nowrap ${activeStringBrand === "all" ? "border border-primary/40 bg-primary/10 text-primary shadow-sm dark:border-primary/40 dark:bg-primary/15 dark:text-primary" : "bg-card border border-border/60 text-foreground hover:border-border hover:shadow-md"}`}
                 >
                   전체
                 </button>
@@ -699,7 +699,7 @@ export default function Home() {
                   <button
                     key={b.value}
                     onClick={() => setActiveStringBrand(b.value as StringBrandKey)}
-                    className={`shrink-0 px-5 bp-sm:px-6 bp-md:px-7 py-2.5 bp-sm:py-3 rounded-xl text-sm bp-sm:text-base font-semibold transition-[background-color,color,border-color,box-shadow,opacity] duration-300 whitespace-nowrap ${activeStringBrand === b.value ? "border border-foreground/15 bg-foreground text-background shadow-md dark:border-border dark:bg-card dark:text-foreground" : "bg-card border border-border/60 text-foreground hover:border-border hover:shadow-md"}`}
+                    className={`shrink-0 px-5 bp-sm:px-6 bp-md:px-7 py-2.5 bp-sm:py-3 rounded-xl text-sm bp-sm:text-base font-semibold transition-[background-color,color,border-color,box-shadow,opacity] duration-300 whitespace-nowrap ${activeStringBrand === b.value ? "border border-primary/40 bg-primary/10 text-primary shadow-sm dark:border-primary/40 dark:bg-primary/15 dark:text-primary" : "bg-card border border-border/60 text-foreground hover:border-border hover:shadow-md"}`}
                   >
                     {b.label}
                   </button>
@@ -740,7 +740,7 @@ export default function Home() {
               <div className="relative flex items-center gap-2 bp-sm:gap-2.5 overflow-x-auto pb-2 scrollbar-hide">
                 <button
                   onClick={() => setActiveBrand("all")}
-                  className={`shrink-0 px-5 bp-sm:px-6 bp-md:px-7 py-2.5 bp-sm:py-3 rounded-xl text-sm bp-sm:text-base font-semibold transition-[background-color,color,border-color,box-shadow,opacity] duration-300 whitespace-nowrap ${activeBrand === "all" ? "border border-foreground/15 bg-foreground text-background shadow-md dark:border-border dark:bg-card dark:text-foreground" : "bg-card border border-border/60 text-foreground hover:border-border hover:shadow-md"}`}
+                  className={`shrink-0 px-5 bp-sm:px-6 bp-md:px-7 py-2.5 bp-sm:py-3 rounded-xl text-sm bp-sm:text-base font-semibold transition-[background-color,color,border-color,box-shadow,opacity] duration-300 whitespace-nowrap ${activeBrand === "all" ? "border border-primary/40 bg-primary/10 text-primary shadow-sm dark:border-primary/40 dark:bg-primary/15 dark:text-primary" : "bg-card border border-border/60 text-foreground hover:border-border hover:shadow-md"}`}
                 >
                   전체
                 </button>
@@ -748,7 +748,7 @@ export default function Home() {
                   <button
                     key={b.value}
                     onClick={() => setActiveBrand(b.value as BrandKey)}
-                    className={`shrink-0 px-5 bp-sm:px-6 bp-md:px-7 py-2.5 bp-sm:py-3 rounded-xl text-sm bp-sm:text-base font-semibold transition-[background-color,color,border-color,box-shadow,opacity] duration-300 whitespace-nowrap ${activeBrand === b.value ? "border border-foreground/15 bg-foreground text-background shadow-md dark:border-border dark:bg-card dark:text-foreground" : "bg-card border border-border/60 text-foreground hover:border-border hover:shadow-md"}`}
+                    className={`shrink-0 px-5 bp-sm:px-6 bp-md:px-7 py-2.5 bp-sm:py-3 rounded-xl text-sm bp-sm:text-base font-semibold transition-[background-color,color,border-color,box-shadow,opacity] duration-300 whitespace-nowrap ${activeBrand === b.value ? "border border-primary/40 bg-primary/10 text-primary shadow-sm dark:border-primary/40 dark:bg-primary/15 dark:text-primary" : "bg-card border border-border/60 text-foreground hover:border-border hover:shadow-md"}`}
                   >
                     {b.label}
                   </button>

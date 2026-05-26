@@ -1819,7 +1819,7 @@ export default function StringServiceApplyPage() {
                   <p className="mt-3 text-xs font-semibold text-primary">진행 방식</p>
                   <p className="mt-1 text-sm text-muted-foreground leading-relaxed break-keep">{item.steps}</p>
                 </div>
-                <div className="mt-5 flex items-center text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
+                <div className="mt-5 inline-flex w-fit items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-sm font-semibold text-foreground transition-colors group-hover:bg-secondary">
                   <span>{item.cta}</span>
                   <svg className="ml-1.5 w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
