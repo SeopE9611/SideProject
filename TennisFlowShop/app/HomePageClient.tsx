@@ -262,13 +262,28 @@ export default function Home() {
           }
         });
       },
-      { root: null, rootMargin: "300px 0px", threshold: 0.01 },
+      { root: null, rootMargin: "900px 0px", threshold: 0.01 },
     );
 
     const targets = [communitySectionRef.current, stringsSectionRef.current, racketsSectionRef.current].filter((v): v is HTMLElement => Boolean(v));
     targets.forEach((target) => observer.observe(target));
 
     return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const triggerPreload = () => {
+      setShouldLoadCommunity(true);
+      setShouldLoadStrings(true);
+      setShouldLoadRackets(true);
+    };
+    if ("requestIdleCallback" in window) {
+      const id = window.requestIdleCallback(() => triggerPreload(), { timeout: 900 });
+      return () => window.cancelIdleCallback(id);
+    }
+    const rafId = requestAnimationFrame(() => triggerPreload());
+    return () => cancelAnimationFrame(rafId);
   }, []);
 
   // 전체 상품 + 로딩
@@ -673,10 +688,10 @@ export default function Home() {
           </div>
           <div className="mb-8 bp-sm:mb-10">
             <div className="flex justify-center">
-              <div className="flex items-center gap-2 bp-sm:gap-2.5 overflow-x-auto pb-2 scrollbar-hide">
+              <div className="relative flex items-center gap-2 bp-sm:gap-2.5 overflow-x-auto pb-2 scrollbar-hide">
                 <button
                   onClick={() => setActiveStringBrand("all")}
-                  className={`shrink-0 px-5 bp-sm:px-6 bp-md:px-7 py-2.5 bp-sm:py-3 rounded-xl text-sm bp-sm:text-base font-semibold transition-[background-color,color,border-color,box-shadow,opacity] duration-300 whitespace-nowrap ${activeStringBrand === "all" ? "bg-foreground text-background shadow-lg" : "bg-card border border-border/60 text-foreground hover:border-border hover:shadow-md"}`}
+                  className={`shrink-0 px-5 bp-sm:px-6 bp-md:px-7 py-2.5 bp-sm:py-3 rounded-xl text-sm bp-sm:text-base font-semibold transition-[background-color,color,border-color,box-shadow,opacity] duration-300 whitespace-nowrap ${activeStringBrand === "all" ? "border border-foreground/15 bg-foreground text-background shadow-md dark:border-border dark:bg-card dark:text-foreground" : "bg-card border border-border/60 text-foreground hover:border-border hover:shadow-md"}`}
                 >
                   전체
                 </button>
@@ -684,13 +699,14 @@ export default function Home() {
                   <button
                     key={b.value}
                     onClick={() => setActiveStringBrand(b.value as StringBrandKey)}
-                    className={`shrink-0 px-5 bp-sm:px-6 bp-md:px-7 py-2.5 bp-sm:py-3 rounded-xl text-sm bp-sm:text-base font-semibold transition-[background-color,color,border-color,box-shadow,opacity] duration-300 whitespace-nowrap ${activeStringBrand === b.value ? "bg-foreground text-background shadow-lg" : "bg-card border border-border/60 text-foreground hover:border-border hover:shadow-md"}`}
+                    className={`shrink-0 px-5 bp-sm:px-6 bp-md:px-7 py-2.5 bp-sm:py-3 rounded-xl text-sm bp-sm:text-base font-semibold transition-[background-color,color,border-color,box-shadow,opacity] duration-300 whitespace-nowrap ${activeStringBrand === b.value ? "border border-foreground/15 bg-foreground text-background shadow-md dark:border-border dark:bg-card dark:text-foreground" : "bg-card border border-border/60 text-foreground hover:border-border hover:shadow-md"}`}
                   >
                     {b.label}
                   </button>
                 ))}
               </div>
             </div>
+            <p className="mt-2 text-center text-xs bp-sm:text-sm text-muted-foreground">좌우로 넘기면 더 많은 브랜드를 볼 수 있어요.</p>
           </div>
 
           <HorizontalProducts
@@ -721,10 +737,10 @@ export default function Home() {
           </div>
           <div className="mb-8 bp-sm:mb-10">
             <div className="flex justify-center">
-              <div className="flex items-center gap-2 bp-sm:gap-2.5 overflow-x-auto pb-2 scrollbar-hide">
+              <div className="relative flex items-center gap-2 bp-sm:gap-2.5 overflow-x-auto pb-2 scrollbar-hide">
                 <button
                   onClick={() => setActiveBrand("all")}
-                  className={`shrink-0 px-5 bp-sm:px-6 bp-md:px-7 py-2.5 bp-sm:py-3 rounded-xl text-sm bp-sm:text-base font-semibold transition-[background-color,color,border-color,box-shadow,opacity] duration-300 whitespace-nowrap ${activeBrand === "all" ? "bg-foreground text-background shadow-lg" : "bg-card border border-border/60 text-foreground hover:border-border hover:shadow-md"}`}
+                  className={`shrink-0 px-5 bp-sm:px-6 bp-md:px-7 py-2.5 bp-sm:py-3 rounded-xl text-sm bp-sm:text-base font-semibold transition-[background-color,color,border-color,box-shadow,opacity] duration-300 whitespace-nowrap ${activeBrand === "all" ? "border border-foreground/15 bg-foreground text-background shadow-md dark:border-border dark:bg-card dark:text-foreground" : "bg-card border border-border/60 text-foreground hover:border-border hover:shadow-md"}`}
                 >
                   전체
                 </button>
@@ -732,13 +748,14 @@ export default function Home() {
                   <button
                     key={b.value}
                     onClick={() => setActiveBrand(b.value as BrandKey)}
-                    className={`shrink-0 px-5 bp-sm:px-6 bp-md:px-7 py-2.5 bp-sm:py-3 rounded-xl text-sm bp-sm:text-base font-semibold transition-[background-color,color,border-color,box-shadow,opacity] duration-300 whitespace-nowrap ${activeBrand === b.value ? "bg-foreground text-background shadow-lg" : "bg-card border border-border/60 text-foreground hover:border-border hover:shadow-md"}`}
+                    className={`shrink-0 px-5 bp-sm:px-6 bp-md:px-7 py-2.5 bp-sm:py-3 rounded-xl text-sm bp-sm:text-base font-semibold transition-[background-color,color,border-color,box-shadow,opacity] duration-300 whitespace-nowrap ${activeBrand === b.value ? "border border-foreground/15 bg-foreground text-background shadow-md dark:border-border dark:bg-card dark:text-foreground" : "bg-card border border-border/60 text-foreground hover:border-border hover:shadow-md"}`}
                   >
                     {b.label}
                   </button>
                 ))}
               </div>
             </div>
+            <p className="mt-2 text-center text-xs bp-sm:text-sm text-muted-foreground">좌우로 넘기면 더 많은 브랜드를 볼 수 있어요.</p>
           </div>
           <HorizontalProducts
             title="중고 라켓"

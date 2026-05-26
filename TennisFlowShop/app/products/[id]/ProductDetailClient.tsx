@@ -473,7 +473,6 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const allowGuestCheckout = guestOrderMode === "on";
   const [loading, setLoading] = useState(false);
   const [hasResolvedReviewUser, setHasResolvedReviewUser] = useState(false);
-  const [showSticky, setShowSticky] = useState(false);
   const fetcher = (url: string) => fetch(url, { credentials: "include" }).then(async (r) => (r.status === 200 ? r.json() : null));
   const relatedSectionRef = useRef<HTMLDivElement | null>(null);
   const [shouldLoadRelated, setShouldLoadRelated] = useState(false);
@@ -540,10 +539,10 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const serviceTotal = qtyTotal + Number(product?.mountingFee ?? 0);
   const canCheckoutWithService = isMountableStringByFee(product?.mountingFee);
   const isApplyFlow = searchParams.get("from") === "apply";
-  const serviceCtaLabel = isApplyFlow ? "이 스트링 선택하고 장착 신청 계속하기" : "이 스트링으로 교체서비스 신청하기";
+  const serviceCtaLabel = isApplyFlow ? "이 스트링 선택하기" : "교체서비스 신청하기";
   const shouldEmphasizeServiceCta = isApplyFlow || !ENABLE_STRING_STANDALONE_ORDER;
   const isStandalonePausedMountableString = canCheckoutWithService && !ENABLE_STRING_STANDALONE_ORDER;
-  const cartCtaLabel = isStandalonePausedMountableString ? "장착 신청용 장바구니에 담기" : "장바구니 담기";
+  const cartCtaLabel = "장바구니 담기";
   const standalonePausedNotice = "현재 스트링 단품 구매는 운영하지 않으며, 교체서비스 신청과 함께 이용할 수 있어요.";
 
   // 브라우저 뒤/앞으로 가기 시에도 URL 변화에 맞춰 동기화
@@ -552,32 +551,6 @@ export default function ProductDetailClient({ product }: { product: any }) {
     setActiveTab(current);
   }, [searchParams]);
 
-  useEffect(() => {
-    // 본문 CTA(구매 버튼 묶음)가 보이면 sticky는 숨기고,
-    // CTA가 화면 밖으로 나가면 sticky 보여짐
-    const el = document.getElementById("cta-anchor");
-
-    // 렌더 타이밍상 아직 없으면(예외 케이스) sticky는 일단 보이게
-    if (!el) {
-      setShowSticky(true);
-      return;
-    }
-
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        // CTA가 보이면 sticky 숨김, 안 보이면 sticky 표시
-        setShowSticky(!entry.isIntersecting);
-      },
-      {
-        threshold: 0.1,
-        // CTA가 sticky 뒤에 가려졌는데도 intersecting으로 잡히는 걸 방지
-        rootMargin: "0px 0px -160px 0px",
-      },
-    );
-
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
 
   const updateTabInUrl = (tab: DetailTab) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -1259,13 +1232,6 @@ export default function ProductDetailClient({ product }: { product: any }) {
                       </div>
                     )}
 
-                    <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 text-sm text-muted-foreground">
-                      <span className="font-semibold text-foreground">다음 단계:</span>{" "}
-                      {isStandalonePausedMountableString
-                        ? standalonePausedNotice
-                        : "결제 화면에서 장착 방식, 수령 방법, 요청사항을 입력합니다. 스트링만 구매하는 경우에는 장착 접수가 포함되지 않아요."}
-                    </div>
-
                     {isStringProduct && gaugeRows.length > 0 && (
                       <div className="space-y-2 rounded-xl border border-border/60 bg-muted/30 p-3">
                         <div className="flex items-center justify-between gap-3">
@@ -1298,7 +1264,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                       </div>
                     )}
 
-                    <div id="cta-anchor" className="flex flex-col gap-3 sm:gap-3.5">
+                    <div className="flex flex-col gap-3 sm:gap-3.5">
                       {(hasVariantInventories ? selectedVariantSoldOut : (product.inventory?.manageStock && product.inventory.stock <= 0)) ? (
                         <Button disabled variant="secondary" size="tall" className="h-12 w-full sm:h-14">
                           <X className="mr-2 h-5 w-5" />
@@ -1323,7 +1289,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                             <Button
                               variant={shouldEmphasizeServiceCta ? "default" : "secondary"}
                               size="tall"
-                              className="h-12 w-full gap-2 whitespace-normal break-keep leading-tight sm:h-14"
+                              className="h-12 w-full gap-2 whitespace-nowrap sm:h-14"
                               disabled={loading || quantity > effectiveStock || (isStringProduct && gaugeRows.length > 0 && !selectedGauge) || variantPurchaseBlocked}
                               onClick={handleBuyNowWithService}
                             >
@@ -1336,7 +1302,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                             <Button
                               variant="outline"
                               size="lg"
-                              className="h-auto min-h-12 w-full whitespace-normal break-keep text-sm sm:text-base"
+                              className="h-auto min-h-12 w-full whitespace-nowrap text-sm sm:text-base"
                               onClick={handleAddToCart}
                               disabled={loading || quantity > effectiveStock || (isStringProduct && gaugeRows.length > 0 && !selectedGauge) || variantPurchaseBlocked}
                             >
@@ -1349,7 +1315,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                               onClick={handleWishlist}
                               size="lg"
                               className={cn(
-                                "h-auto min-h-12 w-full whitespace-normal break-keep text-sm sm:text-base",
+                                "h-auto min-h-12 w-full whitespace-nowrap text-sm sm:text-base",
                                 isWishlisted ? "border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/15" : "bg-background",
                                 isWishlistUnknown && "cursor-not-allowed opacity-70",
                               )}
@@ -1931,92 +1897,6 @@ export default function ProductDetailClient({ product }: { product: any }) {
           {editOpen && editing && <ReviewEditDialog open={editOpen} editForm={editForm} hoverRating={hoverRating} onClose={closeEdit} onSubmit={submitEdit} onChangeForm={setEditForm} onChangeHoverRating={setHoverRating} />}
         </div>
       </SiteContainer>
-      {/* ===== 모바일 전용 하단 Sticky ===== */}
-      {showSticky && (
-        <div data-bottom-sticky="1" className="fixed inset-x-0 bottom-0 z-50 bp-md:hidden border-t border-border">
-          <div className="bg-card shadow-[0_-4px_16px_rgba(0,0,0,0.08)] dark:shadow-[0_-4px_16px_rgba(0,0,0,0.3)]">
-            <SiteContainer variant="wide" className="py-3">
-              {/* 상품 정보 섹션 */}
-              <div className="flex items-center gap-3 pb-3 border-b border-border">
-                {/* 썸네일 */}
-                <div className="relative w-14 h-14 rounded-md overflow-hidden bg-muted shrink-0 border border-border">
-                  <img src={images[0] || "/placeholder.svg"} alt={product.name} className="w-full h-full object-cover" />
-                </div>
-
-                {/* 제품명 & 가격 */}
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-semibold text-foreground truncate leading-tight">{product.name}</div>
-                  <div className="mt-1 flex items-baseline gap-2">
-                    <span className="text-lg font-bold text-foreground">{qtyTotal.toLocaleString()}원</span>
-                    {hasPaidMountingFee(product?.mountingFee) && <span className="text-sm text-foreground/75">+서비스 {product.mountingFee.toLocaleString()}원</span>}
-                  </div>
-                </div>
-
-                {/* 수량 조절 */}
-                <div className="flex items-center gap-0 rounded-lg border border-border bg-muted/50 dark:bg-muted/50">
-                  <button
-                    type="button"
-                    className="h-9 w-9 flex items-center justify-center text-muted-foreground disabled:opacity-30 disabled:cursor-not-allowed active:bg-muted dark:active:bg-muted transition-colors"
-                    aria-label="수량 감소"
-                    disabled={!canDec}
-                    onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                  >
-                    <Minus className="h-4 w-4" />
-                  </button>
-                  <div className="w-10 text-center">
-                    <span className="text-sm font-semibold text-foreground tabular-nums">{quantity}</span>
-                  </div>
-                  <button
-                    type="button"
-                    className="h-9 w-9 flex items-center justify-center text-muted-foreground disabled:opacity-30 disabled:cursor-not-allowed active:bg-muted dark:active:bg-muted transition-colors"
-                    aria-label="수량 증가"
-                    disabled={!canInc}
-                    onClick={() => {
-                      if (!canInc) {
-                        showErrorToast(hideGaugeStock ? "선택한 게이지의 구매 가능 수량을 초과했습니다." : `더 이상 담을 수 없습니다. 재고: ${effectiveStock}개`);
-                        return;
-                      }
-                      setQuantity((q) => q + 1);
-                    }}
-                  >
-                    <Plus className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-
-              {/* 액션 버튼 섹션 */}
-              <div className="pt-3 flex gap-2">
-                {ENABLE_STRING_STANDALONE_ORDER && (
-                  <button
-                    type="button"
-                    onClick={handleBuyNow}
-                    disabled={loading || effectiveStock <= 0 || quantity > effectiveStock || (isStringProduct && gaugeRows.length > 0 && !selectedGauge) || variantPurchaseBlocked}
-                    className="flex-1 h-12 rounded-lg bg-foreground text-background disabled:bg-muted dark:disabled:bg-muted disabled:text-muted-foreground font-semibold text-sm transition-[box-shadow,background-color,color] duration-200 shadow-sm hover:shadow-md disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  >
-                    <CreditCard className="h-4 w-4" />
-                    스트링만 구매하기
-                  </button>
-                )}
-                {canCheckoutWithService && (
-                  <button
-                    type="button"
-                    onClick={handleBuyNowWithService}
-                    className={cn(
-                      "flex-1 h-12 rounded-lg px-3 font-semibold text-sm transition-colors flex items-center justify-center gap-2 whitespace-normal break-keep leading-tight",
-                      shouldEmphasizeServiceCta
-                        ? "bg-foreground text-background shadow-sm hover:opacity-90 active:opacity-80"
-                        : "border border-border bg-card dark:bg-muted hover:bg-muted/50 dark:hover:bg-muted active:bg-muted dark:active:bg-muted text-foreground",
-                    )}
-                  >
-                    <Wrench className="h-4 w-4 flex-shrink-0" />
-                    {serviceCtaLabel}
-                  </button>
-                )}
-              </div>
-            </SiteContainer>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

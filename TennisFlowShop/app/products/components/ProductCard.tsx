@@ -428,32 +428,6 @@ const ProductCard = React.memo(
             </Badge>
           )}
 
-          <div className="absolute left-2 top-2 z-20 sm:left-3 sm:top-3">
-            <WishButton
-              inWish={inWish}
-              disabled={isWishUnknown}
-              onToggle={async (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                try {
-                  await toggle(product._id);
-                  showSuccessToast(
-                    inWish
-                      ? "위시리스트에서 제거했습니다."
-                      : "위시리스트에 추가했습니다.",
-                  );
-                } catch {
-                  showErrorToast("처리 중 오류가 발생했습니다.");
-                }
-              }}
-              size="sm"
-            />
-          </div>
-
-          {/* ─── 호버 오버레이: bp-sm 이상 보조 상세 보기 액션 ───────────────
-              모바일에서는 상단 찜 버튼을 상시 노출하고 오버레이는 숨김
-          ──────────────────────────────────────────────────────────────── */}
-          
         </div>
 
         {/* 카드 콘텐츠 */}
@@ -508,6 +482,31 @@ const ProductCard = React.memo(
         </CardContent>
 
         <CardFooter className="p-2.5 bp-sm:p-3 bp-md:p-4 pt-0 grid grid-cols-1 gap-2">
+          <div className="hidden bp-md:grid bp-md:grid-cols-2 gap-2">
+            <Button asChild type="button" variant="outline" className="h-10 text-sm">
+              <Link href={detailHref}>
+                <Eye className="h-4 w-4 mr-1.5" />
+                상세 보기
+              </Link>
+            </Button>
+            <div className="flex justify-end">
+              <WishButton
+                inWish={inWish}
+                disabled={isWishUnknown}
+                onToggle={async (e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  try {
+                    await toggle(product._id);
+                    showSuccessToast(inWish ? "위시리스트에서 제거했습니다." : "위시리스트에 추가했습니다.");
+                  } catch {
+                    showErrorToast("처리 중 오류가 발생했습니다.");
+                  }
+                }}
+                size="sm"
+              />
+            </div>
+          </div>
 
           {ENABLE_STRING_STANDALONE_ORDER && (
             <Button

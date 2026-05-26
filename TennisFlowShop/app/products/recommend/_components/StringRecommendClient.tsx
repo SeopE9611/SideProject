@@ -93,7 +93,7 @@ export default function StringRecommendClient() {
 
   return <div className="mx-auto max-w-5xl space-y-6 py-8 md:py-12">{/* omitted for brevity */}
     <Card className="rounded-2xl"><CardHeader><CardTitle className="text-2xl md:text-3xl">스트링 추천 도우미</CardTitle><p className="text-muted-foreground">간단한 질문에 답하면 플레이 성향에 맞는 스트링 선택 방향을 안내해드릴게요.</p><p className="text-sm text-muted-foreground">추천 결과는 선택을 돕기 위한 참고 정보이며, 실제 텐션과 세팅은 라켓 상태와 사용 습관에 따라 달라질 수 있어요.</p></CardHeader></Card>
-    <Card className="rounded-2xl"><CardContent className="p-5 md:p-6"><p className="text-sm text-muted-foreground">{RECOMMEND_QUESTIONS.length}개 중 {answeredCount}개 답변 완료</p><div className="mt-3 h-2 w-full rounded-full bg-muted"><div className="h-2 rounded-full bg-primary transition-all" style={{ width: `${progress}%` }} /></div></CardContent></Card>
+    <Card className="sticky top-16 z-30 rounded-2xl border border-border/80 bg-card/95 shadow-sm backdrop-blur md:top-20"><CardContent className="p-4 md:p-5"><p className="text-sm text-muted-foreground">{RECOMMEND_QUESTIONS.length}개 중 {answeredCount}개 답변 완료</p><div className="mt-2.5 h-2 w-full rounded-full bg-muted"><div className="h-2 rounded-full bg-primary transition-all" style={{ width: `${progress}%` }} /></div></CardContent></Card>
     <div className="space-y-4">{RECOMMEND_QUESTIONS.map((question, index) => (<StringRecommendQuestion key={question.id} question={question} value={answers[question.id]} onChange={(value) => handleSelect(question.id, value)} index={index} />))}</div>
     {isLoadingProducts ? <p className="text-sm text-muted-foreground">추천에 사용할 스트링 정보를 불러오는 중...</p> : null}
     {productsError ? <p className="text-sm text-destructive">{productsError}</p> : null}
