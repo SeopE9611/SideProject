@@ -28,7 +28,7 @@ export default function StringRecommendQuestion({ question, value, onChange, ind
               onClick={() => onChange(option.value)}
               className={cn(
                 "w-full rounded-xl border p-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-                selected ? "border-primary bg-primary/10" : "border-border bg-background hover:bg-muted/40",
+                selected ? "border-primary/40 bg-primary/10 text-primary dark:border-primary/40 dark:bg-primary/15 dark:text-primary" : "border-border bg-background hover:bg-muted/40",
               )}
             >
               <p className="font-medium text-foreground">{option.label}</p>
