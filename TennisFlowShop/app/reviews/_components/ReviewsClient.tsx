@@ -222,7 +222,7 @@ export default function ReviewsClient() {
                 <Checkbox
                   checked={hasPhoto}
                   onCheckedChange={(v) => setHasPhoto(Boolean(v))}
-                  className="rounded border-border data-[state=checked]:bg-foreground data-[state=checked]:border-foreground"
+                  className="rounded border-border data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                 />
                 사진만 보기
               </label>
