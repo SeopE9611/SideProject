@@ -194,6 +194,9 @@ export default function ProductEditClient({
     ProductVariantInventory[]
   >([]);
   const [gaugeInputsByColor, setGaugeInputsByColor] = useState<Record<string, string>>({});
+  const [customColorName, setCustomColorName] = useState("");
+  const [customColorHex, setCustomColorHex] = useState("");
+  const HEX_EXAMPLE = `${String.fromCharCode(35)}DFFF00`;
   const [shouldShowLegacyVariantGuide, setShouldShowLegacyVariantGuide] =
     useState(false);
   const [showGaugeStockToUser, setShowGaugeStockToUser] = useState(true);
@@ -290,6 +293,43 @@ export default function ProductEditClient({
     setVariantInventories((prev) =>
       prev.filter((row) => !(row.colorValue === colorValue && row.gaugeValue === gaugeValue)),
     );
+  const removeColorOption = (colorValue: string) => {
+    setColorInventories((prev) => prev.filter((row) => row.value !== colorValue));
+    setVariantInventories((prev) => prev.filter((row) => row.colorValue !== colorValue));
+    setGaugeInputsByColor((prev) => {
+      const next = { ...prev };
+      delete next[colorValue];
+      return next;
+    });
+  };
+  const normalizeCustomColorInput = (name: string, hex: string) => {
+    const label = name.trim();
+    if (!label) return null;
+    const value = label.toLowerCase().replace(/\s+/g, "-");
+    const normalizedHex = hex.trim();
+    const colorHex =
+      normalizedHex.length === 0
+        ? ""
+        : /^#?[0-9a-fA-F]{6}$/.test(normalizedHex)
+          ? normalizedHex.startsWith("#")
+            ? normalizedHex
+            : `#${normalizedHex}`
+          : null;
+    return { value, label, colorHex };
+  };
+  const handleAddCustomColor = () => {
+    const normalized = normalizeCustomColorInput(customColorName, customColorHex);
+    if (!normalized) return showErrorToast("색상명을 입력해주세요.");
+    if (normalized.colorHex === null) return showErrorToast(`HEX 색상값은 ${HEX_EXAMPLE} 형식으로 입력해주세요.`);
+    const labelLower = normalized.label.trim().toLowerCase();
+    const duplicated = colorInventories.some(
+      (row) => row.value === normalized.value || String(row.label ?? "").trim().toLowerCase() === labelLower,
+    );
+    if (duplicated) return showErrorToast("이미 추가된 색상입니다.");
+    setColorInventories((prev) => [...prev, { value: normalized.value, label: normalized.label, colorHex: normalized.colorHex ?? "", image: "", stock: 0, isSoldOut: false }]);
+    setCustomColorName("");
+    setCustomColorHex("");
+  };
   const handleGenerateKeywords = () => {
     const keywords = createSearchKeywords(basicInfo.name, basicInfo.brand);
     if (!keywords) {
@@ -1568,14 +1608,18 @@ export default function ProductEditClient({
                         {colors.map((color) => {
                           const selected = colorInventories.some((row) => row.value === color.id);
                           return <Button key={color.id} type="button" size="sm" variant={selected ? "default" : "outline"} onClick={() => {
-                            if (selected) {
-                              setColorInventories((prev) => prev.filter((row) => row.value !== color.id));
-                              setVariantInventories((prev) => prev.filter((row) => row.colorValue !== color.id));
-                            } else {
-                              setColorInventories((prev) => [...prev, { value: color.id, label: color.name, colorHex: color.hex, image: "", stock: 0, isSoldOut: false }]);
-                            }
-                          }}>{color.name}</Button>;
+                            if (selected) return;
+                            setColorInventories((prev) => [...prev, { value: color.id, label: color.name, colorHex: color.hex, image: "", stock: 0, isSoldOut: false }]);
+                          }}>{selected ? `${color.name} (이미 추가됨)` : color.name}</Button>;
                         })}
+                      </div>
+                      <div className="space-y-2 rounded-md border border-border/60 p-3">
+                        <Label>색상 직접 추가</Label>
+                        <div className="grid gap-2 md:grid-cols-3">
+                          <Input placeholder="예: 네온 옐로우" value={customColorName} onChange={(e) => setCustomColorName(e.target.value)} />
+                          <Input placeholder={`예: ${HEX_EXAMPLE}`} value={customColorHex} onChange={(e) => setCustomColorHex(e.target.value)} />
+                          <Button type="button" onClick={handleAddCustomColor}>색상 추가</Button>
+                        </div>
                       </div>
                       {colorInventories.length === 0 && <p className="text-sm text-muted-foreground">선택된 색상이 없습니다. 위 색상 목록에서 사용할 색상을 선택하세요.</p>}
                       <div className="space-y-3">
@@ -1583,9 +1627,15 @@ export default function ProductEditClient({
                           const colorMeta = colors.find((c) => c.id === row.value);
                           const resolvedHex = colorMeta?.hex ?? row.colorHex ?? "";
                           return <div key={row.value} className="space-y-3 rounded-lg border border-border/70 bg-muted/10 p-4">
-                            <div className="flex items-center gap-2 text-sm font-semibold">
-                              <span className="h-3 w-3 rounded-full border border-border bg-muted" style={resolvedHex ? { backgroundColor: resolvedHex } : undefined} />
-                              <span>{colorMeta?.name ?? row.label ?? row.value}</span>
+                            <div className="flex items-center justify-between gap-2 text-sm font-semibold">
+                              <div className="flex items-center gap-2">
+                                <span className="h-3 w-3 rounded-full border border-border bg-muted" style={resolvedHex ? { backgroundColor: resolvedHex } : undefined} />
+                                <span>{colorMeta?.name ?? row.label ?? row.value}</span>
+                              </div>
+                              <Button type="button" variant="ghost" size="sm" onClick={() => {
+                                if (!window.confirm("이 색상을 삭제하면 해당 색상의 게이지/재고 옵션도 함께 삭제됩니다. 계속할까요?")) return;
+                                removeColorOption(row.value);
+                              }}>색상 삭제</Button>
                             </div>
                             <div className="space-y-2">
                               <Label>색상 이미지</Label>
