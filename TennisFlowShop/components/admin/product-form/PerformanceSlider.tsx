@@ -20,11 +20,11 @@ function getPerformanceLevel(value: number): {
   color: string;
   bgColor: string;
 } {
-  if (value <= 20) return { label: "매우 낮음", color: "text-red-500", bgColor: "bg-red-500" };
-  if (value <= 40) return { label: "낮음", color: "text-orange-500", bgColor: "bg-orange-500" };
-  if (value <= 60) return { label: "보통", color: "text-yellow-500", bgColor: "bg-yellow-500" };
-  if (value <= 80) return { label: "높음", color: "text-green-500", bgColor: "bg-green-500" };
-  return { label: "매우 높음", color: "text-emerald-500", bgColor: "bg-emerald-500" };
+  if (value <= 20) return { label: "매우 낮음", color: "text-destructive", bgColor: "bg-destructive" };
+  if (value <= 40) return { label: "낮음", color: "text-warning", bgColor: "bg-warning" };
+  if (value <= 60) return { label: "보통", color: "text-muted-foreground", bgColor: "bg-muted-foreground" };
+  if (value <= 80) return { label: "높음", color: "text-info", bgColor: "bg-info" };
+  return { label: "매우 높음", color: "text-success", bgColor: "bg-success" };
 }
 
 export function PerformanceSlider({
@@ -58,7 +58,7 @@ export function PerformanceSlider({
 
       <div className="relative">
         {/* Custom gradient track background */}
-        <div className="absolute inset-x-0 top-1/2 h-2 -translate-y-1/2 rounded-full bg-gradient-to-r from-red-200 via-yellow-200 to-emerald-200 dark:from-red-900/30 dark:via-yellow-900/30 dark:to-emerald-900/30" />
+        <div className="absolute inset-x-0 top-1/2 h-2 -translate-y-1/2 rounded-full bg-gradient-to-r from-destructive/25 via-warning/25 to-success/25" />
         
         {/* Active track */}
         <div
