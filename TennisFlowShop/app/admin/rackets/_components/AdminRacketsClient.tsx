@@ -260,7 +260,7 @@ export default function AdminRacketsClient() {
               label: "전체 라켓",
               icon: <Package className="h-6 w-6 text-primary" />,
               value: stats.total,
-              bgColor: "bg-primary",
+              bgColor: "bg-muted",
             },
             {
               label: "판매 가능",

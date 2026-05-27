@@ -390,7 +390,7 @@ export default function ProductsClient() {
               label: "판매 중",
               icon: <CheckCircle className="h-6 w-6 text-foreground" />,
               value: activeAll,
-              bgColor: "bg-muted",
+              bgColor: "bg-success/10 dark:bg-success/15",
             },
             {
               label: "재고 부족",
@@ -402,7 +402,7 @@ export default function ProductsClient() {
               label: "품절",
               icon: <XCircle className="h-6 w-6 text-foreground" />,
               value: outOfStockAll,
-              bgColor: "bg-muted",
+              bgColor: "bg-destructive/10 dark:bg-destructive/15",
             },
           ].map((c, i) => (
             <Card key={i} className={adminSurface.kpiCard}>
