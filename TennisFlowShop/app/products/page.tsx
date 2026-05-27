@@ -61,12 +61,13 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
             <div className="flex items-start justify-between gap-3 flex-wrap">
               <div className="min-w-0">
                 <p className="text-sm bp-sm:text-base font-semibold text-foreground">1단계: 장착할 스트링을 선택해주세요</p>
-                <p className="mt-1 text-xs bp-sm:text-sm text-muted-foreground leading-relaxed">선택 후 결제 화면에서 수령 방식과 장착 요청사항을 입력합니다. 결제와 함께 교체서비스 신청이 접수돼요.</p>
+                <p className="mt-1 text-xs bp-sm:text-sm text-muted-foreground leading-relaxed">선택 후 결제 화면에서 수령 방식과 장착 요청사항을 입력합니다. 결제와 함께 교체서비스 신청이 접수됩니다.</p>
                 <div className="mt-3 grid gap-2 text-xs text-muted-foreground bp-sm:grid-cols-3">
                   <span className="rounded-lg border border-border bg-background px-3 py-2">1. 스트링 선택</span>
                   <span className="rounded-lg border border-border bg-background px-3 py-2">2. 결제/수령 방식 입력</span>
                   <span className="rounded-lg border border-border bg-background px-3 py-2">3. 장착 접수 완료</span>
                 </div>
+                <p className="mt-2 text-xs bp-sm:text-sm text-muted-foreground">현재 스트링 단품 구매는 운영하지 않으며, 스트링 교체 신청과 함께 이용할 수 있습니다.</p>
               </div>
 
               <div className="flex w-full bp-sm:w-auto gap-2">

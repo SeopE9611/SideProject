@@ -96,7 +96,7 @@ const SLIDES = [
     img: "dokkaebibanner.png",
     alt: "서비스",
     href: "/services",
-    caption: "교체서비스 시작하기",
+    caption: "스트링 교체 신청",
   },
   {
     img: "dokkaebibanner.png",
@@ -520,7 +520,7 @@ export default function Home() {
               </div>
               <div>
                 <p className="mb-1 text-xs font-semibold text-primary">가장 많이 찾는 시작</p>
-                <h3 className="text-base bp-sm:text-lg font-semibold break-keep text-foreground">스트링 교체를 신청하고 싶어요</h3>
+                <h3 className="text-base bp-sm:text-lg font-semibold break-keep text-foreground">스트링 교체 신청</h3>
                 <p className="mt-2 text-sm leading-relaxed break-keep text-foreground/80">보유 라켓이 있거나 새 스트링을 구매해서 장착까지 맡기고 싶을 때 선택하세요.</p>
               </div>
             </Link>
@@ -530,7 +530,7 @@ export default function Home() {
                 <Package className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
               </div>
               <div>
-                <h3 className="text-base bp-sm:text-lg font-semibold break-keep text-foreground">새 스트링을 고르고 장착까지 맡길래요</h3>
+                <h3 className="text-base bp-sm:text-lg font-semibold break-keep text-foreground">새 스트링 선택 후 교체 신청</h3>
                 <p className="mt-2 text-sm leading-relaxed break-keep text-foreground/80">스트링을 새로 선택하고 교체서비스까지 한 번에 진행합니다.</p>
               </div>
             </Link>
@@ -540,7 +540,7 @@ export default function Home() {
                 <Tags className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
               </div>
               <div>
-                <h3 className="text-base bp-sm:text-lg font-semibold break-keep text-foreground">라켓 구매/대여 후 바로 사용할 수 있게 세팅할래요</h3>
+                <h3 className="text-base bp-sm:text-lg font-semibold break-keep text-foreground">라켓 구매/대여 후 교체 신청</h3>
                 <p className="mt-2 text-sm leading-relaxed break-keep text-foreground/80">라켓을 구매하거나 대여하면서 스트링 장착까지 함께 진행합니다.</p>
               </div>
             </Link>
@@ -561,7 +561,7 @@ export default function Home() {
               </div>
               <div className="flex flex-1 flex-col gap-4">
                 <div>
-                  <h3 className="text-base bp-sm:text-lg font-semibold break-keep text-foreground">내 주문/신청 상태를 확인하고 싶어요</h3>
+                  <h3 className="text-base bp-sm:text-lg font-semibold break-keep text-foreground">주문/신청 상태 확인</h3>
                   <p className="mt-2 text-sm leading-relaxed break-keep text-foreground/80">마이페이지 주문조회에서 진행 상태를 확인할 수 있어요.</p>
                 </div>
               </div>
@@ -671,7 +671,7 @@ export default function Home() {
               <Button asChild variant="default" size="tall" className="px-6 bp-sm:px-8 text-sm bp-sm:text-base">
                 <Link href="/services/apply">
                   <Wrench className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
-                  교체서비스 시작하기
+                  스트링 교체 신청
                 </Link>
               </Button>
             </div>

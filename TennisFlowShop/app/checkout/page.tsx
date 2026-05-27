@@ -1151,7 +1151,7 @@ export default function CheckoutPage() {
                 <Skeleton className="h-96 w-full rounded-2xl" />
               </div>
             ) : (
-              <div className={cn("space-y-6", isCheckoutSubmitting && "pointer-events-none")} aria-busy={isCheckoutSubmitting}>
+              <div className={cn("space-y-6 pb-28 bp-md:pb-0", isCheckoutSubmitting && "pointer-events-none")} aria-busy={isCheckoutSubmitting}>
                 <nav aria-label="주문서 작성 순서" className="rounded-2xl border border-border bg-card p-3 shadow-sm bp-sm:p-4">
                   <p className="text-sm font-semibold text-foreground">주문서 작성 순서</p>
                   <div className="mt-2.5 flex flex-nowrap gap-2 overflow-x-auto whitespace-nowrap pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -1804,6 +1804,27 @@ export default function CheckoutPage() {
                     selectedBank={selectedBank}
                     depositor={depositor}
                   />
+                </div>
+
+
+
+                <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 px-4 py-3 shadow-lg backdrop-blur bp-md:hidden pb-[calc(env(safe-area-inset-bottom)+0.75rem)]">
+                  <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-xs text-muted-foreground">결제 예정 금액</p>
+                      <p className="text-lg font-bold text-foreground">{payableTotalPrice.toLocaleString()}원</p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="default"
+                      className="shrink-0"
+                      onClick={() => {
+                        document.getElementById("checkout-final-confirm")?.scrollIntoView({ behavior: "smooth", block: "start" });
+                      }}
+                    >
+                      최종 확인으로 이동
+                    </Button>
+                  </div>
                 </div>
 
                 <Card className="relative border border-border bg-card shadow-sm overflow-hidden">
