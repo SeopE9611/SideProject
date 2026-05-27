@@ -478,7 +478,7 @@ export default function PackageSettingsClient() {
                                 </div>
                               </div>
                               <p className="text-xs text-muted-foreground">
-                                할인율과 절감액은 정가와 판매 가격을 기준으로 자동 계산됩니다.
+                                할인율과 절감액은 정가와 판매 가격을 기준으로 자동 계산되며, 할인율은 소수점 첫째 자리까지 표시됩니다.
                               </p>
 
                               <div className="grid grid-cols-2 gap-4">
@@ -639,7 +639,7 @@ export default function PackageSettingsClient() {
                                       </div>
                                       <div>
                                         <p className="text-muted-foreground">할인율</p>
-                                        <p className="font-semibold text-foreground">{meta.discountRate > 0 ? `${meta.discountRate}%` : "-"}</p>
+                                        <p className="font-semibold text-foreground">{meta.discountRate > 0 ? `${meta.discountRate.toFixed(1)}%` : "-"}</p>
                                       </div>
                                       <div>
                                         <p className="text-muted-foreground">절감액</p>
@@ -647,7 +647,7 @@ export default function PackageSettingsClient() {
                                       </div>
                                     </div>
                                     <p className="text-xs text-muted-foreground">
-                                      회당 금액은 판매 가격 ÷ 이용 횟수, 할인율/절감액은 정가 대비 판매 가격 기준으로 자동 계산됩니다.
+                                      회당 금액은 판매 가격 ÷ 이용 횟수, 할인율은 정가 대비 판매 가격 기준으로 소수점 첫째 자리까지 자동 계산됩니다.
                                     </p>
                                   </>
                                 );

@@ -42,7 +42,8 @@ export function getPackagePricingMeta(pkg: { sessions: number; price: number; or
   const originalPrice = toSafeNumber(pkg.originalPrice);
   const perSession = sessions > 0 ? Math.round(price / sessions) : 0;
   const originalPerSession = sessions > 0 && originalPrice > 0 ? Math.round(originalPrice / sessions) : 0;
-  const discountRate = originalPrice > price && originalPrice > 0 ? Math.round((1 - price / originalPrice) * 100) : 0;
+  const rawDiscountRate = originalPrice > price && originalPrice > 0 ? (1 - price / originalPrice) * 100 : 0;
+  const discountRate = rawDiscountRate > 0 ? Number(rawDiscountRate.toFixed(1)) : 0;
   const savingAmount = originalPrice > price ? originalPrice - price : 0;
 
   return { perSession, originalPerSession, discountRate, savingAmount };
@@ -69,7 +70,7 @@ export const formatValidityPeriod = (value: unknown): string => {
 
 const calculateDiscount = (price: number, originalPrice?: number): number | undefined => {
   if (!originalPrice || originalPrice <= 0 || price <= 0 || price >= originalPrice) return undefined;
-  return Math.round((1 - price / originalPrice) * 100);
+  return Number(((1 - price / originalPrice) * 100).toFixed(1));
 };
 
 export const normalizePackageCardData = (input: {

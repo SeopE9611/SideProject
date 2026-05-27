@@ -73,7 +73,7 @@ export default function UnifiedPackageCard({
       )}
       {pricingMeta.discountRate > 0 && (
         <div className="absolute left-0 top-0 rounded-br-lg bg-secondary px-3 py-1 text-xs font-semibold text-foreground">
-          {pricingMeta.discountRate}% 할인
+          {pricingMeta.discountRate.toFixed(1)}% 할인
         </div>
       )}
 
@@ -85,16 +85,16 @@ export default function UnifiedPackageCard({
         >
           <Icon className="h-8 w-8" />
         </div>
-        <div className="mb-2 flex items-center justify-center">
-          <CardTitle className="text-xl font-bold leading-tight break-keep text-balance bp-xl:text-2xl">
+        <div className="mb-4 flex min-h-[104px] flex-col items-center justify-start text-center">
+          <CardTitle className="line-clamp-2 text-xl font-bold leading-tight break-keep text-balance bp-xl:text-2xl">
             {pkg.title}
           </CardTitle>
+          <CardDescription className="mt-2 line-clamp-2 min-h-[44px] text-base break-keep leading-relaxed">
+            {pkg.description}
+          </CardDescription>
         </div>
-        <CardDescription className="mb-4 text-base">
-          {pkg.description}
-        </CardDescription>
 
-        <div className="space-y-1">
+        <div className="min-h-[120px] space-y-1">
           <div className="text-4xl font-bold text-foreground">
             {pkg.price.toLocaleString()}원
           </div>
@@ -110,7 +110,7 @@ export default function UnifiedPackageCard({
 
       <CardContent className="flex flex-1 flex-col space-y-6">
         <div
-          className={`grid gap-3 ${showTotalPrice ? "grid-cols-3" : "grid-cols-2"}`}
+          className={`min-h-[72px] grid gap-3 ${showTotalPrice ? "grid-cols-3" : "grid-cols-2"}`}
         >
           <div className="rounded-lg bg-muted p-3 text-center">
             <div className="text-xl font-bold text-foreground">
@@ -136,7 +136,7 @@ export default function UnifiedPackageCard({
 
         <Separator />
 
-        <div>
+        <div className="min-h-[160px]">
           <h4 className="mb-3 flex items-center font-semibold">
             <CheckCircle className="mr-2 h-4 w-4 text-success" />
             포함 서비스
@@ -156,7 +156,7 @@ export default function UnifiedPackageCard({
           </ul>
         </div>
 
-        <div className="rounded-xl border border-border bg-muted p-4 text-foreground">
+        <div className="min-h-[76px] rounded-xl border border-border bg-muted p-4 text-foreground">
           <h4 className="mb-3 flex items-center font-semibold text-foreground">
             <Gift className="mr-2 h-4 w-4 text-muted-foreground" />
             혜택 요약
