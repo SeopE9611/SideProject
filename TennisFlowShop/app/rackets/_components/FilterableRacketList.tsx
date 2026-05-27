@@ -693,9 +693,9 @@ export default function FilterableRacketList({
                   size="sm"
                   onClick={() => setViewMode("grid")}
                   className="h-8 w-9 p-0"
-                aria-label="리스트 보기"
-                aria-pressed={viewMode === "list"}
-              >
+                  aria-label="그리드 보기"
+                  aria-pressed={viewMode === "grid"}
+                >
                   <Grid3X3 className="w-4 h-4" />
                 </Button>
 
@@ -705,6 +705,8 @@ export default function FilterableRacketList({
                   size="sm"
                   onClick={() => setViewMode("list")}
                   className="h-8 w-9 p-0"
+                  aria-label="리스트 보기"
+                  aria-pressed={viewMode === "list"}
                 >
                   <List className="w-4 h-4" />
                 </Button>
