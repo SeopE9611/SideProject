@@ -324,11 +324,11 @@ const ProductCard = React.memo(
                             "col-span-2",
                         )}
                       >
-                        <div className="flex items-center justify-between gap-1">
-                          <span className="whitespace-nowrap text-muted-foreground font-medium">
+                        <div className="flex min-w-0 items-center justify-between gap-1">
+                          <span className="shrink-0 whitespace-nowrap text-muted-foreground font-medium">
                             {feature.label}
                           </span>
-                          <span className="shrink-0 font-semibold text-primary">
+                          <span className="shrink-0 whitespace-nowrap tabular-nums font-semibold text-primary">
                             {feature.value}/100
                           </span>
                         </div>
@@ -460,18 +460,20 @@ const ProductCard = React.memo(
                     key={feature.key}
                     className={cn(
                       productMetaPillClass,
-                      "px-2 py-1.5",
+                      "min-w-0 px-2 py-1.5",
                       featureEntries.length % 2 === 1 &&
                         index === featureEntries.length - 1 &&
                         "col-span-2",
                     )}
                   >
-                    <span className="whitespace-nowrap text-muted-foreground font-medium">
-                      {feature.label}
-                    </span>
-                    <span className="shrink-0 font-semibold text-primary">
-                      {feature.value}/100
-                    </span>
+                    <div className="flex min-w-0 items-center justify-between gap-1">
+                      <span className="shrink-0 whitespace-nowrap text-muted-foreground font-medium">
+                        {feature.label}
+                      </span>
+                      <span className="shrink-0 whitespace-nowrap tabular-nums font-semibold text-primary">
+                        {feature.value}/100
+                      </span>
+                    </div>
                   </div>
                 ))}
               </div>
