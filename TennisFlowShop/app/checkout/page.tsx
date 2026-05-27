@@ -1886,6 +1886,7 @@ export default function CheckoutPage() {
                         disabled={!canSubmit}
                         onBeforeSuccessNavigation={() => setIsIntentionalSuccessNavigation(true)}
                         onSuccessNavigationAbort={() => setIsIntentionalSuccessNavigation(false)}
+                        payableAmount={payableTotalPrice}
                         payload={{
                           items: orderItems.map((item) => ({ productId: item.id, quantity: item.quantity, kind: item.kind ?? "product", selectedGauge: item.selectedGauge, selectedColor: item.selectedColor, selectedColorLabel: item.selectedColorLabel, selectedColorHex: item.selectedColorHex, selectedColorImage: item.selectedColorImage })),
                           shippingInfo: {

@@ -58,6 +58,11 @@ export default function TossCheckoutButton({
         throw new Error("최종 결제금액이 0원이거나 올바르지 않아 카드/간편결제를 진행할 수 없습니다.");
       }
 
+      const expectedAmount = Math.floor(Number(payableAmount ?? NaN));
+      if (!Number.isFinite(expectedAmount) || prepareAmount !== expectedAmount) {
+        throw new Error(`결제 금액이 변경되어 결제를 진행할 수 없습니다. 화면 금액(${Number.isFinite(expectedAmount) ? expectedAmount.toLocaleString() : "-"}원)과 서버 확정 금액(${Number.isFinite(prepareAmount) ? prepareAmount.toLocaleString() : "-"}원)이 다릅니다. 새로고침 후 다시 시도해주세요.`);
+      }
+
       const widget = (window as any).__tossPaymentWidget;
       const paymentMethodWidget = (window as any).__tossPaymentMethodWidget;
       if (!widget || !paymentMethodWidget) throw new Error("결제위젯이 아직 준비되지 않았습니다.");
