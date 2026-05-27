@@ -324,11 +324,11 @@ const ProductCard = React.memo(
                             "col-span-2",
                         )}
                       >
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="text-muted-foreground font-medium">
+                        <div className="flex items-center justify-between gap-1">
+                          <span className="whitespace-nowrap text-muted-foreground font-medium">
                             {feature.label}
                           </span>
-                          <span className="font-semibold text-primary">
+                          <span className="shrink-0 font-semibold text-primary">
                             {feature.value}/100
                           </span>
                         </div>
@@ -454,21 +454,22 @@ const ProductCard = React.memo(
             </div>
 
             {featureEntries.length > 0 && (
-              <div className="mb-3 grid grid-cols-2 gap-1.5 text-xs sm:text-sm">
+              <div className="mb-3 grid grid-cols-2 gap-1.5 text-[11px] sm:text-xs">
                 {featureEntries.map((feature, index) => (
                   <div
                     key={feature.key}
                     className={cn(
                       productMetaPillClass,
+                      "px-2 py-1.5",
                       featureEntries.length % 2 === 1 &&
                         index === featureEntries.length - 1 &&
                         "col-span-2",
                     )}
                   >
-                    <span className="text-muted-foreground font-medium">
+                    <span className="whitespace-nowrap text-muted-foreground font-medium">
                       {feature.label}
                     </span>
-                    <span className="font-semibold text-primary">
+                    <span className="shrink-0 font-semibold text-primary">
                       {feature.value}/100
                     </span>
                   </div>
