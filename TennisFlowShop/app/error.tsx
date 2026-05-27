@@ -7,6 +7,7 @@ import { AlertTriangle, RefreshCw, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import SiteContainer from "@/components/layout/SiteContainer";
 
 export default function Error({
   error,
@@ -23,7 +24,7 @@ export default function Error({
 
   return (
     <div className="min-h-[60vh] bg-muted/30">
-      <div className="container mx-auto px-4 py-10 md:py-16">
+      <SiteContainer className="py-10 md:py-16">
         <div className="max-w-2xl mx-auto">
           <Card className="relative overflow-hidden border border-border bg-card shadow-md">
             <div className="h-1.5 w-full bg-muted/30" />
@@ -80,7 +81,7 @@ export default function Error({
             <div className="pointer-events-none absolute -bottom-20 -left-16 h-40 w-40 rounded-full bg-muted/30" />
           </Card>
         </div>
-      </div>
+      </SiteContainer>
     </div>
   );
 }

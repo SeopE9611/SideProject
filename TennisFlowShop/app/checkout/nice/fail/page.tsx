@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import SiteContainer from "@/components/layout/SiteContainer";
 import Link from "next/link";
 
 import type { Metadata } from "next";
@@ -63,7 +64,8 @@ export default async function NiceCheckoutFailPage({ searchParams }: { searchPar
   const rawMessage = (sp.message || "").trim();
 
   return (
-    <div className="mx-auto flex min-h-[60vh] w-full max-w-2xl items-center px-6">
+    <SiteContainer className="flex min-h-[60vh] items-center">
+      <div className="mx-auto w-full max-w-2xl">
       <Card className="w-full">
         <CardHeader>
           <CardTitle className="text-2xl">{guide.title}</CardTitle>
@@ -93,6 +95,7 @@ export default async function NiceCheckoutFailPage({ searchParams }: { searchPar
           </Button>
         </CardFooter>
       </Card>
-    </div>
+      </div>
+    </SiteContainer>
   );
 }

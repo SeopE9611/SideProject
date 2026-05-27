@@ -1124,9 +1124,11 @@ export default function OperationsClient() {
         </section>
 
         <details className="mt-3 rounded-lg border border-border/70 bg-muted/20 px-3 py-2 text-sm">
-          <summary className="flex cursor-pointer items-center gap-2 font-semibold text-foreground">
-            <span>오늘 업무 처리 순서</span>
-            <Badge className={cn(badgeBase, badgeSizeSm, badgeToneClass("brand"))}>권장 처리 순서</Badge>
+          <summary className="cursor-pointer font-semibold text-foreground">
+            <span className="inline-flex items-center gap-2">
+              <span>오늘 업무 처리 순서</span>
+              <Badge className={cn(badgeBase, badgeSizeSm, badgeToneClass("brand"))}>권장 처리 순서</Badge>
+            </span>
           </summary>
           <p className="mt-1 text-xs text-muted-foreground">처음 접속했다면 이 순서대로 확인하세요.</p>
           <ol className="mt-2 list-decimal space-y-1 pl-5 text-xs leading-relaxed text-muted-foreground">

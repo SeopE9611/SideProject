@@ -5,6 +5,9 @@
 
 > 브랜드 예외 허용 파일의 고정 목록은 `docs/brand-color-exception-whitelist.md`를 기준으로 관리합니다.
 
+관련 UI 사용 기준:
+- 레이아웃, radius, typography, badge 사용 기준은 `docs/design-system-guidelines.md`를 참고합니다.
+
 ## 검색 기준
 
 - `#[0-9A-Fa-f]{3,6}`
