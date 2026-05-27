@@ -1819,15 +1819,15 @@ export default function CheckoutPage() {
                       variant="default"
                       className="shrink-0"
                       onClick={() => {
-                        document.getElementById("checkout-final-confirm")?.scrollIntoView({ behavior: "smooth", block: "start" });
+                        document.getElementById("checkout-payment-action")?.scrollIntoView({ behavior: "smooth", block: "start" });
                       }}
                     >
-                      최종 확인으로 이동
+                      결제 버튼으로 이동
                     </Button>
                   </div>
                 </div>
 
-                <Card className="relative border border-border bg-card shadow-sm overflow-hidden">
+                <Card id="checkout-payment-action" className="relative border border-border bg-card shadow-sm overflow-hidden">
                   <CardContent className="flex flex-col gap-4 p-4 bp-sm:p-6 shrink-0">
                     {(fieldErrors.items || fieldErrors.bundle || (isMountingFeeReady && fieldErrors.composition)) && (
                       <div className="w-full rounded-lg border border-destructive/30 bg-destructive/15 p-3 text-sm text-destructive dark:bg-destructive/20">
