@@ -903,7 +903,9 @@ export default function FilterableProductList({
                   size="sm"
                   onClick={() => setViewMode("grid")}
                   className="h-8 w-9 p-0"
-                >
+                aria-label="리스트 보기"
+                aria-pressed={viewMode === "list"}
+              >
                   <Grid3X3 className="w-4 h-4" />
                 </Button>
                 <Button
