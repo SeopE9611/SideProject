@@ -10,7 +10,6 @@ import {
   ReceiptText,
   Store,
   Ticket,
-  Truck,
 } from "lucide-react";
 
 type CollectionMethod = "self_ship" | "courier_pickup" | "visit";
@@ -55,29 +54,16 @@ export default function PriceSummaryCard({
   const isCustom = stringTypes.includes("custom");
   const isRentalBreakdown = Number(rentalDeposit) > 0 || Number(rentalFee) > 0;
 
-  const MethodIcon =
-    collectionMethod === "courier_pickup"
-      ? Truck
-      : collectionMethod === "visit"
-        ? Store
-        : Box;
-  const methodText =
-    collectionMethod === "courier_pickup"
-      ? "기사 방문(+3,000원)"
-      : collectionMethod === "visit"
-        ? "매장 방문"
-        : "자가 발송";
+  const MethodIcon = collectionMethod === "visit" ? Store : Box;
+  const methodText = collectionMethod === "visit" ? "매장 방문" : "자가 발송";
 
-  const pickupLabel =
-    collectionMethod === "courier_pickup" ? "수거비(택배 기사 방문)" : "수거비";
+  const pickupLabel = "수거비";
   const pickupHint =
-    collectionMethod === "courier_pickup"
-      ? "후정산"
-      : collectionMethod === "visit"
-        ? "매장 방문: 없음"
-        : collectionMethod === "self_ship"
-          ? "자가 발송: 없음"
-          : "—";
+    collectionMethod === "visit"
+      ? "매장 방문: 없음"
+      : collectionMethod === "self_ship"
+        ? "자가 발송: 없음"
+        : "—";
 
   return (
     <Card className="overflow-hidden border border-border shadow-sm">
@@ -132,7 +118,7 @@ export default function PriceSummaryCard({
                     ? "보유/커스텀 스트링: 교체비만"
                     : stringIncluded
                       ? "스트링 상품: 주문/대여 결제 내역 우선"
-                      : "스트링 상품: 선택 상품의 장착비 기준"}
+                      : "스트링 상품: 선택 상품과 신청 방식 기준 안내"}
                 </p>
               </div>
             </div>
@@ -224,11 +210,6 @@ export default function PriceSummaryCard({
           </div>
 
           {/* 안내 */}
-          {collectionMethod === "courier_pickup" && (
-            <p className="mt-3 text-[11px] text-muted-foreground">
-              ※ 기사 방문 수거 시 수거비 3,000원은 후정산됩니다.
-            </p>
-          )}
           {usingPackage && (
             <p className="mt-1 text-[11px] text-muted-foreground">
               ※ 패키지 적용 시 교체비가 무료입니다.

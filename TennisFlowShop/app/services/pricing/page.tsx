@@ -29,15 +29,15 @@ export default async function PricingPage() {
       name: "스트링 상품 선택 장착",
       price: "상품별 상이",
       time: "30-60분",
-      description: "선택한 상품의 상품별 장착비를 기준으로 교체비가 계산됩니다.",
-      features: ["상품별 장착비 적용", "주문/대여 연계 시 기존 결제내역 우선", "최종 결제 금액은 신청 방식에 따라 상이"],
+      description: "선택한 스트링 상품과 신청 방식에 따라 최종 교체비가 안내됩니다.",
+      features: ["상품 기준 교체비 안내", "주문/대여 연계 시 기존 결제내역 우선", "최종 결제 금액은 신청 방식에 따라 상이"],
     },
     {
       name: "패키지 적용 신청",
       price: "교체비 무료",
       time: "30-60분",
       description: "사용 가능한 패키지 횟수가 있으면 교체비가 무료입니다.",
-      features: ["패키지 잔여 횟수 기준", "적용 불가 시 일반 정책으로 계산", "수거비는 별도 후정산 가능"],
+      features: ["패키지 잔여 횟수 기준", "적용 불가 시 일반 정책으로 계산", "최종 결제 금액은 신청 방식에 따라 상이"],
     },
   ];
 
@@ -107,7 +107,6 @@ export default async function PricingPage() {
             <CardContent className="p-4 text-sm text-muted-foreground space-y-1">
               <p>• {STRINGING_POLICY_TEXT.product}</p>
               <p>• {STRINGING_POLICY_TEXT.package}</p>
-              <p>• {STRINGING_POLICY_TEXT.courier}</p>
               <p>• {STRINGING_POLICY_TEXT.dynamic}</p>
             </CardContent>
           </Card>

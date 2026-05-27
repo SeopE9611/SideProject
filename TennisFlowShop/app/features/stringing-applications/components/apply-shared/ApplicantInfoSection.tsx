@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { CheckCircle2, User, Truck, Store, Shield, MapPin, Box } from "lucide-react";
+import { CheckCircle2, User , Store, Shield, MapPin, Box } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -99,12 +99,6 @@ export default function ApplicantInfoSection({
     }
 
     if (!method) next.collectionMethod = "수거 방식을 선택해주세요.";
-    if (method === "courier_pickup") {
-      if (!formData?.pickupDate)
-        next.pickupDate = "수거 희망일을 입력해주세요.";
-      if (!formData?.pickupTime)
-        next.pickupTime = "수거 시간대를 입력해주세요.";
-    }
 
     return next;
   }, [formData]);
@@ -121,7 +115,6 @@ export default function ApplicantInfoSection({
   const lockVisit = lockCollection || isVisitDelivery;
   const isVisitSelected =
     normalizeCollection(formData.collectionMethod) === "visit";
-  const courierPickupDisabled = true; // false로 변경하면 기사방문 선택가능
 
   // 정상 프리필되면 잠그고 비어있는경우 풀림
   const isPrefillLocked = !!(orderId || isMember);
@@ -296,8 +289,6 @@ export default function ApplicantInfoSection({
             setFormData((prev: any) => {
               // 주문 연동 모드에서는 수거 방식 변경 자체를 막는다.
               if (lockCollection) return prev;
-              //  비활성화된 옵션은 선택 자체를 막는다(혹시 UI에서 클릭 이벤트가 들어와도 방어)
-              if (v === "courier_pickup" && courierPickupDisabled) return prev;
               const prevCollection = normalizeCollection(prev.collectionMethod);
               const nextCollection = normalizeCollection(v as CollectionMethod);
               const next = { ...prev, collectionMethod: v as CollectionMethod };
@@ -396,93 +387,14 @@ export default function ApplicantInfoSection({
             </Label>
           </div>
 
-          {/* 기사 방문 수거  */}
-          <div>
-            <RadioGroupItem
-              id="cm-pickup"
-              value="courier_pickup"
-              disabled={courierPickupDisabled || lockVisit}
-              className="peer sr-only"
-            />
-
-            <Label
-              htmlFor="cm-pickup"
-              className="group block min-h-[96px] cursor-pointer rounded-xl border border-border bg-card px-4 py-3 transition hover:border-primary/40 hover:bg-primary/5 focus-visible:outline-none peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 peer-data-[state=checked]:ring-2 peer-data-[state=checked]:ring-primary/25 peer-disabled:cursor-not-allowed peer-disabled:opacity-50 peer-disabled:hover:border-border peer-disabled:hover:bg-card"
-            >
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <Truck className="h-4 w-4 text-primary" />
-                  <span className="font-medium text-foreground">
-                    택배 기사 방문 수거
-                  </span>
-                </div>
-                <CheckCircle2
-                  className={`h-4 w-4 text-primary transition-opacity ${formData.collectionMethod === "courier_pickup" ? "opacity-100" : "opacity-0"}`}
-                />
-              </div>
-              <p className="mt-1 text-xs text-muted-foreground">
-                선택 시 +3,000원 (후정산)
-              </p>
-            </Label>
-          </div>
         </RadioGroup>
         {lockCollection && (
           <p className="mt-2 rounded-lg bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
             라켓 구매 단계에서 선택한 접수 방식은 변경할 수 없습니다.
           </p>
         )}
-
-        {/* 기사 방문 수거 선택 시 추가 입력 */}
-        {normalizeCollection(formData.collectionMethod) === "courier_pickup" &&
-          !courierPickupDisabled && (
-            <div className="grid gap-3 md:grid-cols-3">
-              <div className="space-y-1">
-                <Label htmlFor="pickupDate" className="text-sm font-medium">
-                  수거 희망일
-                </Label>
-                <Input
-                  id="pickupDate"
-                  name="pickupDate"
-                  type="date"
-                  value={formData.pickupDate}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="pickupTime" className="text-sm font-medium">
-                  수거 시간대
-                </Label>
-                <Input
-                  id="pickupTime"
-                  name="pickupTime"
-                  placeholder="예: 10:00~13:00"
-                  value={formData.pickupTime}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="pickupNote" className="text-sm font-medium">
-                  기사 메모(선택)
-                </Label>
-                <Input
-                  id="pickupNote"
-                  name="pickupNote"
-                  placeholder="공동현관 비번/경비실 맡김 등"
-                  value={formData.pickupNote}
-                  onChange={handleInputChange}
-                />
-              </div>
-            </div>
-          )}
-
-        {normalizeCollection(formData.collectionMethod) === "courier_pickup" &&
-          !courierPickupDisabled && (
-            <p className="text-xs text-muted-foreground">
-              ※ 기사 방문 수거 선택 시 수거비 +3,000원이 발생합니다(후정산 /
-              결제 합산은 관리자 확정 시 반영).
-            </p>
-          )}
       </div>
+
       <div className="rounded-2xl border border-border bg-background/60 p-4">
         <div className="mb-3 flex items-start justify-between gap-3">
           <div>

@@ -32,7 +32,6 @@ import { isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import {
-  COURIER_PICKUP_FEE,
   CUSTOM_STRING_MOUNTING_FEE,
 } from "@/lib/stringing-pricing-policy";
 import { loadDaumPostcode } from "@/lib/loadDaumPostcode";
@@ -988,7 +987,6 @@ export default function StringServiceApplyPage() {
   const [price, setPrice] = useState<number>(0);
 
   // 수거비 상수
-  const PICKUP_FEE = COURIER_PICKUP_FEE; // 기사 방문 수거 시 후정산 안내용
 
   // === 패키지 사용에 필요한 횟수 계산 ===
   // useMemo 대신 즉시 실행 함수(IIFE)로 계산 (훅 순서 꼬임 방지)
@@ -1091,13 +1089,13 @@ export default function StringServiceApplyPage() {
   // ===== 가격 표시 계산(표시 전용) =====
   const priceView = useMemo(() => {
     // 교체비(표시용)
-    // - 커스텀/보유 스트링: 15,000 (스트링 미포함 작업비)
+    // - 커스텀/보유 스트링: 12,000 (스트링 미포함 작업비)
     // - 주문(orderId) 기반: 선택한 주문 항목의 mountingFee
     // - PDP 기반: pdpMountingFee
     // - 그 외(완전 단독 신청): 35,000 fallback
     let base = 0;
 
-    // 1) 커스텀/보유 스트링 선택 시: 항상 15,000
+    // 1) 커스텀/보유 스트링 선택 시: 항상 12,000
     if (formData.stringTypes.includes("custom")) {
       base = CUSTOM_STRING_MOUNTING_FEE;
     }
@@ -1123,13 +1121,10 @@ export default function StringServiceApplyPage() {
       }
     }
 
-    // 수거비(표시용)
-    const pickupFee =
-      normalizeCollection(formData.collectionMethod) === "courier_pickup"
-        ? PICKUP_FEE
-        : 0;
+    // 수거비(표시용): 신규 UI에서는 항상 0원
+    const pickupFee = 0;
 
-    // 총액(표시용): 패키지 적용 시 교체비 0 (수거비는 후정산 안내로 표시만)
+    // 총액(표시용): 패키지 적용 시 교체비 0 (수거비는 표시용 참고)
     const total = usingPackage ? 0 : base + pickupFee;
 
     return { usingPackage, base, pickupFee, total };

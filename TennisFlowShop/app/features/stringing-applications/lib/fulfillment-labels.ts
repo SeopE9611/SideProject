@@ -30,7 +30,7 @@ export const normalizeOrderShippingMethod = (
 export const collectionMethodLabel = (raw: unknown): string => {
   const method = normalizeCollection(raw);
   if (method === "visit") return "매장 방문 접수";
-  if (method === "courier_pickup") return "기사 방문 수거";
+  if (method === "courier_pickup") return "자가 발송(택배)";
   return "자가 발송(택배)";
 };
 
