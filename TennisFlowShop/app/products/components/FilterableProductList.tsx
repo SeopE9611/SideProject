@@ -942,7 +942,7 @@ export default function FilterableProductList({
                 className={cn(
                   "grid gap-4 bp-md:gap-6",
                   viewMode === "grid"
-                    ? "grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-3 bp-xl:grid-cols-4"
+                    ? "grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-2 min-[1500px]:grid-cols-3 min-[1800px]:grid-cols-4"
                     : "grid-cols-1",
                 )}
               >
@@ -996,7 +996,7 @@ export default function FilterableProductList({
                 className={cn(
                   "grid gap-4 bp-md:gap-6",
                   viewMode === "grid"
-                    ? "grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-3 bp-xl:grid-cols-4"
+                    ? "grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-2 min-[1500px]:grid-cols-3 min-[1800px]:grid-cols-4"
                     : "grid-cols-1",
                 )}
               >
@@ -1038,7 +1038,7 @@ export default function FilterableProductList({
 
               {/* 추가 로딩 표시 */}
               {isFetchingMore && (
-                <div className="mt-4 grid grid-cols-1 gap-4 bp-md:gap-6 bp-sm:grid-cols-2 bp-lg:grid-cols-3 bp-xl:grid-cols-4">
+                <div className="mt-4 grid grid-cols-1 gap-4 bp-md:gap-6 bp-sm:grid-cols-2 bp-lg:grid-cols-2 min-[1500px]:grid-cols-3 min-[1800px]:grid-cols-4">
                   {Array.from({ length: 4 }).map((_, index) => (
                     <div
                       key={`products-fetching-skeleton-${index}`}
