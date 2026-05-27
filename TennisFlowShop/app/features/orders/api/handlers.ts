@@ -10,6 +10,7 @@ import { findOneActivePassForUser } from "@/lib/passes.service";
 import { deductPoints } from "@/lib/points.service";
 import { normalizeEmailForSearch } from "@/lib/search-email";
 import { calcOrderShippingFeeWithBundlePolicy, normalizeItemShippingFee } from "@/lib/shipping-fee";
+import { getEffectiveProductPrice } from "@/lib/product-pricing";
 import type { DBOrder } from "@/lib/types/order-db";
 import { ObjectId, type Db } from "mongodb";
 import { cookies } from "next/headers";
@@ -834,7 +835,7 @@ export async function createOrder(req: Request, executionContext?: CreateOrderEx
                 name: prod?.name ?? "알 수 없는 상품",
                 brand: prod?.brand,
                 category: prod?.category,
-                price: Number(prod?.price ?? 0),
+                price: getEffectiveProductPrice(prod),
 
                 // 서비스비 근거 데이터(DB 기준)
                 mountingFee: Number.isFinite(Number((prod as any)?.mountingFee)) ? Number((prod as any).mountingFee) : 0,

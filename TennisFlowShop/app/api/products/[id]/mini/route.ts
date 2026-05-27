@@ -4,6 +4,7 @@ import { ObjectId } from "mongodb";
 import { NextResponse } from "next/server";
 import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { hasPaidMountingFee, isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
+import { getEffectiveProductPrice } from "@/lib/product-pricing";
 
 export async function GET(
   _req: Request,
@@ -27,6 +28,7 @@ export async function GET(
     images: 1,
     mountingFee: 1,
     price: 1,
+    inventory: 1,
     shippingFee: 1,
 
     // used_rackets
@@ -41,15 +43,11 @@ export async function GET(
 
   if (prod) {
     const rawMountingFee = (prod as any).mountingFee;
-    const rawPrice = (prod as any).price;
     const rawShippingFee = (prod as any).shippingFee;
-
-    const pr = Number(rawPrice);
 
     const safeMountingFee = hasPaidMountingFee(rawMountingFee) ? rawMountingFee : 0;
     const isMountableString = isMountableStringByFee(rawMountingFee);
-    // price는 0도 유효(무료/이상치 방어는 별도 정책). 일단 음수만 방어
-    const safePrice = Number.isFinite(pr) && pr >= 0 ? pr : 0;
+    const safePrice = getEffectiveProductPrice(prod as { price?: unknown; inventory?: { isSale?: unknown; salePrice?: unknown } | null; });
 
     return NextResponse.json(
       {
