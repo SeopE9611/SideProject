@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { isMountableStringItem } from "@/lib/orders/string-mounting-policy";
+import { CUSTOM_STRING_MOUNTING_FEE } from "@/lib/stringing-pricing-policy";
 
 export type CollectionMethod = "self_ship" | "courier_pickup" | "visit";
 
@@ -272,7 +273,7 @@ export default function useStringingApplySharedState({
   const getFallbackBaseMountingFee = useCallback(
     (data: ApplyFormData): number => {
       if (data.stringTypes.includes("custom")) {
-        return 15000;
+        return CUSTOM_STRING_MOUNTING_FEE;
       }
 
       if (data.stringTypes.length > 0) {
@@ -326,7 +327,7 @@ export default function useStringingApplySharedState({
 
     const getMountingFee = (prodId: string): number => {
       if (prodId === "custom") {
-        return 15000;
+        return CUSTOM_STRING_MOUNTING_FEE;
       }
 
       if (isOrderMode && order) {

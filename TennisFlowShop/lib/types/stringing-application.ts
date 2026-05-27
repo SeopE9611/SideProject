@@ -1,9 +1,9 @@
 import { RefundAccountInfo } from "@/lib/cancel-request/refund-account";
 
-/** 수거 방식: 자가 발송 / 기사 방문 수거 / 매장 방문 */
+/** 수거 방식: 자가 발송 / 택배 접수(레거시 courier_pickup) / 매장 방문 */
 export type CollectionMethod = "self_ship" | "courier_pickup" | "visit";
 
-/** 기사 방문 수거 시 추가 정보 */
+/** 택배 접수 레거시 추가 정보 */
 export interface ShippingPickup {
   /** YYYY-MM-DD 형식 권장 */
   date: string;
@@ -35,7 +35,7 @@ export interface StringingShippingInfo {
   /** 배송/문 앞 보관 등 요청사항 */
   deliveryRequest?: string;
 
-  /** 수거 방식 및 기사 방문 수거 정보 */
+  /** 수거 방식 및 레거시 택배 접수 정보 */
   collectionMethod?: CollectionMethod;
   pickup?: ShippingPickup;
 }
