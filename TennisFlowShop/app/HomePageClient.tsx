@@ -216,6 +216,9 @@ export default function Home() {
   const [shouldLoadStrings, setShouldLoadStrings] = useState(false);
   const [shouldLoadRackets, setShouldLoadRackets] = useState(false);
   const stringsFetchedRef = useRef(false);
+  const [stringByBrand, setStringByBrand] = useState<Record<string, ApiProduct[]>>({});
+  const [stringsLoadingByBrand, setStringsLoadingByBrand] = useState<Record<string, boolean>>({});
+  const [stringsErrorByBrand, setStringsErrorByBrand] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -355,6 +358,24 @@ export default function Home() {
     }
   }, []);
 
+  const loadStringBrand = useCallback(async (brand: StringBrandKey) => {
+    if (brand === "all") return;
+    setStringsLoadingByBrand((prev) => ({ ...prev, [brand]: true }));
+    setStringsErrorByBrand((prev) => ({ ...prev, [brand]: false }));
+    try {
+      const res = await fetch(`/api/products?brand=${brand}&sort=createdAt_desc&limit=12`, { credentials: "include" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const json = await res.json();
+      const items: ApiProduct[] = json.products ?? json.items ?? [];
+      setStringByBrand((prev) => ({ ...prev, [brand]: items }));
+    } catch {
+      setStringByBrand((prev) => ({ ...prev, [brand]: [] }));
+      setStringsErrorByBrand((prev) => ({ ...prev, [brand]: true }));
+    } finally {
+      setStringsLoadingByBrand((prev) => ({ ...prev, [brand]: false }));
+    }
+  }, []);
+
   useEffect(() => {
     if (!shouldLoadStrings || stringsFetchedRef.current) return;
     stringsFetchedRef.current = true;
@@ -386,10 +407,9 @@ export default function Home() {
 */
   // 현재 탭 기준의 리스트 소스 (브랜드 필터)
   const premiumItemsSource = useMemo(() => {
-    const base = homeStringProducts;
-    if (activeStringBrand === "all") return base;
-    return base.filter((p) => (p.brand ?? "").toLowerCase() === activeStringBrand);
-  }, [homeStringProducts, activeStringBrand]);
+    if (activeStringBrand === "all") return homeStringProducts;
+    return stringByBrand[activeStringBrand] ?? [];
+  }, [activeStringBrand, homeStringProducts, stringByBrand]);
 
   // HorizontalProducts 매핑 (브랜드 라벨 표시)
   const premiumItems: HItem[] = useMemo(
@@ -403,10 +423,16 @@ export default function Home() {
           brand: stringBrandLabel(p.brand),
           href: `/products/${p._id}`,
           merchandisingBadges: getMerchandisingBadges(p),
+          inventory: p.inventory,
         };
       }),
     [premiumItemsSource],
   );
+  useEffect(() => {
+    if (!shouldLoadStrings || activeStringBrand === "all") return;
+    if (stringByBrand[activeStringBrand]) return;
+    void loadStringBrand(activeStringBrand);
+  }, [activeStringBrand, loadStringBrand, shouldLoadStrings, stringByBrand]);
   // 탭 변경 시 해당 브랜드만 최초 1회 로드
   useEffect(() => {
     if (!shouldLoadRackets) return;
@@ -716,14 +742,20 @@ export default function Home() {
             moreHref={activeStringBrand === "all" ? "/products" : `/products?brand=${activeStringBrand}`}
             firstPageSlots={4}
             moveMoreToSecondWhen5Plus={true}
-            error={productsError}
-            onRetry={fetchHomeProducts}
+            error={activeStringBrand === "all" ? productsError : Boolean(stringsErrorByBrand[activeStringBrand])}
+            onRetry={() => {
+              if (activeStringBrand === "all") {
+                void fetchHomeProducts();
+                return;
+              }
+              void loadStringBrand(activeStringBrand);
+            }}
             emptyTitle={activeStringBrand === "all" ? "등록된 스트링이 없습니다" : "해당 브랜드 스트링이 없습니다"}
             emptyDescription={activeStringBrand === "all" ? "곧 상품이 업데이트됩니다." : "다른 브랜드를 선택해 보세요."}
             errorTitle="스트링을 불러오지 못했어요"
             errorDescription="네트워크/서버 상태를 확인 후 다시 시도해 주세요."
             showHeader={false}
-            loading={!shouldLoadStrings || loading}
+            loading={!shouldLoadStrings || (activeStringBrand === "all" ? loading : Boolean(stringsLoadingByBrand[activeStringBrand]))}
           />
         </SiteContainer>
       </section>

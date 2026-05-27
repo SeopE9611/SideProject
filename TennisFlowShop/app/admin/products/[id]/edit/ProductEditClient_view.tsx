@@ -1240,12 +1240,12 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                                       key={color.id}
                                       type="button"
                                       size="sm"
-                                      variant={selected ? "default" : "outline"}
+                                      variant="outline"
                                       onClick={() => {
                                         if (selected) return;
                                         setColorInventories((prev) => [...prev, { value: color.id, label: color.name, colorHex: color.hex, image: "", stock: 0, isSoldOut: false }]);
                                       }}
-                                      className="gap-2"
+                                      className={cn("gap-2", selected && "border-border/70 bg-muted/50 text-foreground")}
                                     >
                                       {color.hex && <span className="h-3 w-3 rounded-full border border-border/60" style={{ backgroundColor: color.hex }} />}
                                       {selected ? `${color.name} (추가됨)` : color.name}

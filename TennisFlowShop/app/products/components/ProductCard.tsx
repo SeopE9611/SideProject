@@ -35,6 +35,8 @@ export type Product = {
     status?: "instock" | "outofstock" | "backorder" | string;
     manageStock?: boolean;
     allowBackorder?: boolean;
+    isSale?: boolean | string | number;
+    salePrice?: number | string | null;
   };
 };
 
@@ -185,6 +187,11 @@ const ProductCard = React.memo(
     const isWishUnknown = wishState === null;
 
     const inventory = product.inventory;
+    const regularPrice = Number(product.price ?? 0);
+    const salePrice = Number(inventory?.salePrice ?? 0);
+    const isSale = (inventory?.isSale === true || inventory?.isSale === "true" || inventory?.isSale === 1) && salePrice > 0 && salePrice < regularPrice;
+    const displayPrice = isSale ? salePrice : regularPrice;
+    const saleRate = isSale ? Math.round(((regularPrice - salePrice) / regularPrice) * 100) : 0;
     const stockRaw =
       typeof inventory?.stock === "number" ? inventory.stock : null;
     const manageStock = inventory?.manageStock === true;
@@ -220,7 +227,7 @@ const ProductCard = React.memo(
       setBuyNowItem({
         id: String(product._id),
         name: product.name,
-        price: Number(product.price ?? 0),
+        price: displayPrice,
         quantity: 1,
         image,
         stock: stockForItem,
@@ -242,7 +249,7 @@ const ProductCard = React.memo(
       setBuyNowItem({
         id: String(product._id),
         name: product.name,
-        price: Number(product.price ?? 0),
+        price: displayPrice,
         quantity: 1,
         image,
         stock: stockForItem,
@@ -297,10 +304,10 @@ const ProductCard = React.memo(
                     </span>
                   </div>
                 </div>
-                <div className="flex items-baseline gap-2">
-                  <div className="text-xl sm:text-2xl font-bold text-primary">
-                    {product.price.toLocaleString()}원
-                  </div>
+                <div className="flex items-baseline gap-2 flex-wrap">
+                  <div className="text-xl sm:text-2xl font-bold text-primary">{displayPrice.toLocaleString()}원</div>
+                  {isSale && <span className="text-sm text-muted-foreground line-through">{regularPrice.toLocaleString()}원</span>}
+                  {isSale && <Badge variant="destructive" className="text-xs">{saleRate}% OFF</Badge>}
                 </div>
               </div>
 
@@ -468,8 +475,9 @@ const ProductCard = React.memo(
             )}
 
             <div className="flex justify-end pt-0.5">
-              <div className="text-base font-bold text-foreground sm:text-lg">
-                {product.price.toLocaleString()}원
+              <div className="text-right">
+                <div className="text-base font-bold text-foreground sm:text-lg">{displayPrice.toLocaleString()}원</div>
+                {isSale && <div className="text-xs text-muted-foreground line-through">{regularPrice.toLocaleString()}원</div>}
               </div>
             </div>
           </Link>

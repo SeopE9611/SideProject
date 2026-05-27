@@ -16,7 +16,7 @@ export const menuSections: MenuSection[] = [
       { name: "폴리에스터", href: "/products?material=polyester" },
       { name: "하이브리드", href: "/products?material=hybrid" },
       { name: "멀티필라멘트", href: "/products?material=multifilament" },
-      { name: "내추럴 거트", href: "/products?material=natural-gut" },
+      { name: "내추럴 거트", href: "/products?material=natural_gut" },
     ],
   },
   {

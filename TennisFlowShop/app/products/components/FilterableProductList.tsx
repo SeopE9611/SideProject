@@ -48,7 +48,6 @@ const brandLabelMap: Record<string, string> = Object.fromEntries(
 );
 const materialLabelMap: Record<string, string> = {
   polyester: "폴리에스터",
-  hybrid: "하이브리드",
   multifilament: "멀티필라멘트",
   natural_gut: "천연 거트",
   synthetic_gut: "합성 거트",
@@ -943,7 +942,7 @@ export default function FilterableProductList({
                 className={cn(
                   "grid gap-4 bp-md:gap-6",
                   viewMode === "grid"
-                    ? "grid-cols-1 bp-sm:grid-cols-2 bp-xl:grid-cols-3"
+                    ? "grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-3 bp-xl:grid-cols-4"
                     : "grid-cols-1",
                 )}
               >
@@ -997,7 +996,7 @@ export default function FilterableProductList({
                 className={cn(
                   "grid gap-4 bp-md:gap-6",
                   viewMode === "grid"
-                    ? "grid-cols-1 bp-sm:grid-cols-2 bp-xl:grid-cols-3"
+                    ? "grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-3 bp-xl:grid-cols-4"
                     : "grid-cols-1",
                 )}
               >

@@ -87,11 +87,12 @@ function getProductDetailBadges(product: any): ProductBadge[] {
   const inventory = product?.inventory;
   const stock = Number(inventory?.stock ?? 0);
   const salePrice = Number(inventory?.salePrice ?? 0);
+  const regularPrice = Number(product?.price ?? 0);
 
   const isOutOfStock =
     inventory?.status === "outofstock" ||
     (isTruthyBadgeField(inventory?.manageStock) && stock <= 0);
-  const isSale = isTruthyBadgeField(inventory?.isSale) && salePrice > 0;
+  const isSale = isTruthyBadgeField(inventory?.isSale) && salePrice > 0 && salePrice < regularPrice;
   const isNew = isTruthyBadgeField(inventory?.isNew);
   const isFeatured = isTruthyBadgeField(inventory?.isFeatured);
   const isBackorder = inventory?.status === "backorder";
@@ -268,6 +269,11 @@ export default function ProductDetailClient({ product }: { product: any }) {
   };
 
   const normalizedFeatureScores = normalizeFeatureScoresTo100(product?.features);
+  const regularPrice = Number(product?.price ?? 0);
+  const salePrice = Number(product?.inventory?.salePrice ?? 0);
+  const isSale = isTruthyBadgeField(product?.inventory?.isSale) && salePrice > 0 && salePrice < regularPrice;
+  const displayPrice = isSale ? salePrice : regularPrice;
+  const saleRate = isSale && regularPrice > 0 ? Math.round(((regularPrice - salePrice) / regularPrice) * 100) : 0;
 
   // ====== 스펙 표 렌더링용 변환 ======
   const toDisplaySpec = () => {
@@ -811,7 +817,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
     const result = addItem({
       id: product._id.toString(),
       name: product.name,
-      price: product.price,
+      price: displayPrice,
       quantity,
       image: selectedColorRow?.image?.trim() || product.images?.[0] || "/placeholder.svg",
       stock: effectiveStock,
@@ -881,7 +887,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
     const buyNowItem: CartItem = {
       id: product._id.toString(),
       name: product.name,
-      price: product.price,
+      price: displayPrice,
       quantity,
       image: selectedColorRow?.image?.trim() || product.images?.[0] || "/placeholder.svg",
       stock: effectiveStock,
@@ -918,7 +924,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
     const buyNowItem: CartItem = {
       id: product._id.toString(),
       name: product.name,
-      price: product.price, // 여기서는 "자재 가격"만
+      price: displayPrice, // 여기서는 "자재 가격"만
       quantity,
       image: selectedColorRow?.image?.trim() || product.images?.[0] || "/placeholder.svg",
       stock: effectiveStock,
@@ -1115,13 +1121,13 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   <div className="space-y-3">
                     <div className="flex items-baseline gap-3 flex-wrap">
                       <span className="text-3xl sm:text-4xl font-bold text-foreground tracking-normal">
-                        {product.price.toLocaleString()}
+                        {displayPrice.toLocaleString()}
                         <span className="text-xl sm:text-2xl font-medium ml-0.5">원</span>
                       </span>
-                      {product.originalPrice && product.originalPrice > product.price && (
+                      {isSale && (
                         <>
-                          <span className="text-lg sm:text-xl text-muted-foreground/60 line-through">{product.originalPrice.toLocaleString()}원</span>
-                          <span className="text-sm font-semibold text-destructive bg-destructive/10 px-2.5 py-1 rounded-lg">{Math.round((1 - product.price / product.originalPrice) * 100)}% OFF</span>
+                          <span className="text-lg sm:text-xl text-muted-foreground/60 line-through">{regularPrice.toLocaleString()}원</span>
+                          <span className="text-sm font-semibold text-destructive bg-destructive/10 px-2.5 py-1 rounded-lg">{saleRate}% OFF</span>
                         </>
                       )}
                     </div>
@@ -1368,7 +1374,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
               <div>
                 <h4 className="font-semibold text-sm sm:text-base text-foreground mb-3 sm:mb-4">추가 특성</h4>
                 {additionalFeaturesText ? (
-                  <p className="rounded-xl border border-border/60 bg-secondary/40 p-3 text-sm leading-relaxed text-muted-foreground sm:text-base">{additionalFeaturesText}</p>
+                  <p className="rounded-xl border border-border/60 bg-secondary/40 p-3 text-sm leading-relaxed text-muted-foreground sm:text-base whitespace-pre-line break-words">{additionalFeaturesText}</p>
                 ) : (
                   <p className="rounded-xl border border-border/60 bg-secondary/40 p-3 text-sm italic text-muted-foreground sm:text-base">추가 특성 정보가 없습니다.</p>
                 )}
@@ -1438,7 +1444,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     <h3 className="text-xl sm:text-2xl font-bold text-foreground">상품 설명</h3>
                   </div>
                   <div className="bg-muted/30 p-4 sm:p-6 rounded-lg">
-                    <p className="text-muted-foreground leading-relaxed text-base sm:text-lg">
+                    <p className="text-muted-foreground leading-relaxed text-base sm:text-lg whitespace-pre-line break-words">
                       {product.description || "이 제품은 최고급 소재로 제작된 프리미엄 테니스 스트링입니다. 뛰어난 반발력과 내구성을 자랑하며, 모든 레벨의 플레이어에게 적합합니다. 전문적인 장착 서비스와 함께 최상의 테니스 경험을 제공합니다."}
                     </p>
                   </div>
