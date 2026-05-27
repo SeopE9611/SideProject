@@ -3,7 +3,6 @@
 import UnifiedPackageCard from "@/app/services/packages/_components/UnifiedPackageCard";
 import { type PackageCardData } from "@/app/services/packages/_lib/packageCard";
 import SiteContainer from "@/components/layout/SiteContainer";
-import HeroCourtBackdrop from "@/components/system/HeroCourtBackdrop";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -84,19 +83,26 @@ export default function StringPackagesPageClient({ initialPackages, initialOwner
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="relative min-h-[70svh] md:min-h-[70vh] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-muted/30 dark:bg-muted/20">
-          <HeroCourtBackdrop className="h-full w-full text-muted-foreground opacity-[0.10] dark:opacity-[0.12]" />
-          <div className="absolute inset-0 bg-overlay/20"></div>
-        </div>
-
+      <section className="relative overflow-hidden py-12 bp-md:py-16 bp-lg:py-20">
+        <div className="absolute inset-0 bg-muted/40" />
         <SiteContainer variant="wide" className="relative z-10 text-center text-foreground">
-          <div className="max-w-4xl mx-auto">
-            <h1 className="font-bold text-3xl sm:text-4xl md:text-5xl mb-6 text-foreground">스트링 교체 패키지</h1>
-
-            <p className="text-base sm:text-xl md:text-2xl mb-8 text-muted-foreground leading-relaxed">정기적인 스트링 교체로 최상의 경기력을 유지하세요</p>
-
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="mx-auto max-w-4xl">
+            <Card className="border border-border bg-card/95 shadow-md backdrop-blur-[1px]">
+              <CardContent className="p-6 text-center bp-md:p-8">
+                <h1 className="font-bold text-3xl sm:text-4xl mb-4 text-foreground">스트링 교체 패키지</h1>
+                <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
+                  플레이 빈도와 필요에 맞는 패키지를 선택하세요.
+                  <br />
+                  모든 패키지는 전문가 상담과 품질 보장이 포함됩니다.
+                </p>
+                <div className="mt-5 rounded-lg border border-border bg-muted/40 p-4 text-sm leading-relaxed text-muted-foreground sm:text-base">
+                  현역 테니스 코치가 직접 매는 스트링은 다릅니다.
+                  <br />
+                  단순 기계 작업이 아닌, 코트 위 실전 데이터를 기반으로 전담 코치가 직접 스트링을 교체합니다.
+                  <br />
+                  전문가의 디테일한 상담과 완벽한 품질 보장까지, 회원님의 스윙에 딱 맞는 스트링 패키지를 만나보세요.
+                </div>
+                <div className="mt-6 flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" variant="default" className="shadow-sm hover:shadow-md transition-[box-shadow,border-color,background-color] duration-200" asChild>
                 <Link href="#packages">
                   <ArrowRight className="w-5 h-5 mr-2" />
@@ -111,6 +117,8 @@ export default function StringPackagesPageClient({ initialPackages, initialOwner
                 </Link>
               </Button>
             </div>
+              </CardContent>
+            </Card>
           </div>
         </SiteContainer>
       </section>
@@ -131,7 +139,7 @@ export default function StringPackagesPageClient({ initialPackages, initialOwner
             {ownershipBlockedMessage && <p className="mt-6 rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">{ownershipBlockedMessage}</p>}
           </div>
 
-          <div className="flex min-h-[420px] flex-wrap justify-center gap-6 md:gap-8">
+          <div className="grid items-stretch gap-5 md:grid-cols-2 xl:grid-cols-4">
             {packages.map((pkg) => (
               <UnifiedPackageCard
                 key={pkg.id}

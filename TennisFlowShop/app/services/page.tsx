@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { COURIER_PICKUP_FEE, CUSTOM_STRING_MOUNTING_FEE } from "@/lib/stringing-pricing-policy";
+import { CUSTOM_STRING_MOUNTING_FEE } from "@/lib/stringing-pricing-policy";
 import { ArrowRight, Award, Calendar, CheckCircle, Clock, HelpCircle, PhoneCall, Shield, Star, Target, Trophy, Users, Zap } from "lucide-react";
 import Link from "next/link";
 
@@ -63,7 +63,7 @@ export default async function ServicesPage() {
     {
       service: "스트링 상품 선택 장착",
       priceLabel: "상품별 상이",
-      description: "선택 상품 mountingFee 기준으로 교체비 계산",
+      description: "선택한 스트링 상품과 신청 방식에 따라 최종 교체비가 안내됩니다.",
       icon: <Shield className="h-6 w-6" />,
       duration: "30-45분",
       popular: true,
@@ -456,10 +456,7 @@ export default async function ServicesPage() {
                 </div>
               ))}
             </div>
-            <div className="mt-6 rounded-xl border border-border bg-muted/40 p-4 text-sm text-muted-foreground space-y-1">
-              <p>• 기사 방문 수거비는 {COURIER_PICKUP_FEE.toLocaleString()}원이며 후정산으로 안내됩니다.</p>
-              <p>• 스트링 상품 선택 시 교체비는 상품별 mountingFee 기준으로 달라질 수 있습니다.</p>
-            </div>
+            
           </div>
         </div>
       </section>

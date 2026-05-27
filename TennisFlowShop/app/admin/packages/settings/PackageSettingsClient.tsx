@@ -39,6 +39,7 @@ import {
   DEFAULT_PACKAGE_CONFIGS,
   DEFAULT_GENERAL_SETTINGS,
 } from "@/lib/package-settings";
+import { getPackagePricingMeta } from "@/app/services/packages/_lib/packageCard";
 import {
   UNSAVED_CHANGES_MESSAGE,
   useUnsavedChangesGuard,
@@ -472,6 +473,9 @@ export default function PackageSettingsClient() {
                                   />
                                 </div>
                               </div>
+                              <p className="text-xs text-muted-foreground">
+                                할인율은 정가와 판매 가격을 기준으로 자동 계산됩니다.
+                              </p>
 
                               <div className="grid grid-cols-2 gap-4">
                                 <div>
@@ -620,6 +624,25 @@ export default function PackageSettingsClient() {
                             </div>
                           ) : (
                             <div className="space-y-4">
+                              {(() => {
+                                const meta = getPackagePricingMeta(pkg);
+                                return (
+                                  <div className="grid grid-cols-3 gap-2 rounded-lg border border-border bg-muted/30 p-3 text-center text-sm">
+                                    <div>
+                                      <p className="text-muted-foreground">회당 금액</p>
+                                      <p className="font-semibold text-foreground">{formatCurrency(meta.perSession)}</p>
+                                    </div>
+                                    <div>
+                                      <p className="text-muted-foreground">할인율</p>
+                                      <p className="font-semibold text-foreground">{meta.discountRate > 0 ? `${meta.discountRate}%` : "-"}</p>
+                                    </div>
+                                    <div>
+                                      <p className="text-muted-foreground">절감액</p>
+                                      <p className="font-semibold text-foreground">{meta.savingAmount > 0 ? formatCurrency(meta.savingAmount) : "-"}</p>
+                                    </div>
+                                  </div>
+                                );
+                              })()}
                               <div className="flex items-center justify-between">
                                 <div>
                                   <p className="text-2xl font-bold text-foreground">

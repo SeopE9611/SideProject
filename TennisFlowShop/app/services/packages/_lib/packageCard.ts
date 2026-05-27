@@ -34,6 +34,26 @@ const FEATURE_FALLBACK: Record<number, string[]> = Object.fromEntries(
   DEFAULT_PACKAGE_CONFIGS.map((config) => [config.sessions, config.features]),
 );
 
+export function getPackagePricingMeta(pkg: {
+  sessions: number;
+  price: number;
+  originalPrice?: number;
+}) {
+  const sessions = Number(pkg.sessions || 0);
+  const price = Number(pkg.price || 0);
+  const originalPrice = Number(pkg.originalPrice || 0);
+  const perSession = sessions > 0 ? Math.round(price / sessions) : 0;
+  const originalPerSession =
+    sessions > 0 && originalPrice > 0 ? Math.round(originalPrice / sessions) : 0;
+  const discountRate =
+    originalPrice > price && originalPrice > 0
+      ? Math.round((1 - price / originalPrice) * 100)
+      : 0;
+  const savingAmount = originalPrice > price ? originalPrice - price : 0;
+
+  return { perSession, originalPerSession, discountRate, savingAmount };
+}
+
 export const formatValidityPeriod = (value: unknown): string => {
   if (typeof value === "string") {
     const trimmed = value.trim();
@@ -82,10 +102,8 @@ export const normalizePackageCardData = (input: {
   validityPeriod: unknown;
 }): PackageCardData => {
   const validityPeriod = formatValidityPeriod(input.validityPeriod);
-  const perSession =
-    input.sessions > 0 ? Math.round(input.price / input.sessions) : 0;
-  const discount =
-    input.discount ?? calculateDiscount(input.price, input.originalPrice);
+  const { perSession, discountRate } = getPackagePricingMeta(input);
+  const discount = input.discount ?? discountRate ?? calculateDiscount(input.price, input.originalPrice);
 
   const normalizedBenefits = [
     perSession > 0 ? `회당 ${perSession.toLocaleString()}원` : null,

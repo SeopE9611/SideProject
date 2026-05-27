@@ -1,6 +1,6 @@
 "use client";
 
-import type { PackageCardData } from "@/app/services/packages/_lib/packageCard";
+import { getPackagePricingMeta, type PackageCardData } from "@/app/services/packages/_lib/packageCard";
 import {
   PACKAGE_VARIANT_BUTTON_CLASS,
   PACKAGE_VARIANT_DOT_CLASS,
@@ -60,10 +60,11 @@ export default function UnifiedPackageCard({
   className,
 }: UnifiedPackageCardProps) {
   const Icon = iconByVariant[pkg.variant] ?? Target;
+  const pricingMeta = getPackagePricingMeta(pkg);
 
   return (
     <Card
-      className={`group relative overflow-hidden border border-border shadow-sm transition-[box-shadow,border-color,background-color] duration-200 ${onSelect ? "cursor-pointer hover:shadow-md" : ""} ${pkg.popular || selected ? "ring-2 ring-ring" : ""} ${className ?? ""}`}
+      className={`group relative flex h-full flex-col overflow-hidden border border-border shadow-sm transition-[box-shadow,border-color,background-color] duration-200 ${onSelect ? "cursor-pointer hover:shadow-md" : ""} ${pkg.popular || selected ? "ring-2 ring-ring" : ""} ${className ?? ""}`}
       onClick={onSelect}
     >
       {pkg.popular && (
@@ -71,9 +72,9 @@ export default function UnifiedPackageCard({
           인기
         </div>
       )}
-      {pkg.discount && (
+      {pricingMeta.discountRate > 0 && (
         <div className="absolute left-0 top-0 rounded-br-lg bg-secondary px-3 py-1 text-xs font-semibold text-foreground">
-          {pkg.discount}% 할인
+          {pricingMeta.discountRate}% 할인
         </div>
       )}
 
@@ -106,13 +107,12 @@ export default function UnifiedPackageCard({
               {pkg.originalPrice.toLocaleString()}원
             </div>
           )}
-          <div className="text-sm text-muted-foreground">
-            회당 {Math.round(pkg.price / pkg.sessions).toLocaleString()}원
-          </div>
+          <div className="text-sm text-muted-foreground">회당 {pricingMeta.perSession.toLocaleString()}원</div>
+          {pricingMeta.originalPerSession > 0 ? <div className="text-xs text-muted-foreground">정가 기준 회당 {pricingMeta.originalPerSession.toLocaleString()}원</div> : null}
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-6">
+      <CardContent className="flex flex-1 flex-col space-y-6">
         <div
           className={`grid gap-3 ${showTotalPrice ? "grid-cols-3" : "grid-cols-2"}`}
         >
@@ -146,7 +146,7 @@ export default function UnifiedPackageCard({
             포함 서비스
           </h4>
           <ul className="space-y-2">
-            {pkg.features.map((feature, idx) => (
+            {pkg.features.slice(0, 4).map((feature, idx) => (
               <li
                 key={`${pkg.id}-feature-${idx}`}
                 className="flex items-start text-sm"
@@ -166,14 +166,14 @@ export default function UnifiedPackageCard({
             혜택 요약
           </h4>
           <div className="space-y-1 text-sm text-muted-foreground">
-            {pkg.benefits.map((benefit, idx) => (
+            {pkg.benefits.slice(0, 4).map((benefit, idx) => (
               <div key={`${pkg.id}-benefit-${idx}`}>• {benefit}</div>
             ))}
           </div>
         </div>
 
         {ctaHref && ctaLabel && (
-          <div className="space-y-2">
+          <div className="mt-auto space-y-2">
             <Button
               className={`w-full border border-border shadow-sm transition-all hover:shadow-md ${PACKAGE_VARIANT_BUTTON_CLASS[pkg.variant]}`}
               asChild
