@@ -55,6 +55,8 @@ const config: Config = {
         "bp-md": "768px",
         "bp-lg": "1200px",
         "bp-xl": "1400px",
+        "bp-2xl": "1500px",
+        "bp-3xl": "1800px",
         "bp-sm-only": { min: "576px", max: "767px" },
         "bp-md-only": { min: "768px", max: "1199px" },
       },
