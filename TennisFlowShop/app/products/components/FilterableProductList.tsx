@@ -698,7 +698,7 @@ export default function FilterableProductList({
         </SheetContent>
       </Sheet>
 
-      <div className="grid grid-cols-1 gap-6 bp-xl:gap-8 bp-lg:grid-cols-[280px_minmax(0,1fr)] bp-xl:grid-cols-[300px_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 gap-6 bp-xl:gap-8 bp-lg:grid-cols-[300px_minmax(0,1fr)] bp-xl:grid-cols-[320px_minmax(0,1fr)]">
         {/* 필터 사이드바 */}
         <div
           className={cn(

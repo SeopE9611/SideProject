@@ -157,7 +157,7 @@ function RatingStars({
 }
 
 const productCardSurfaceClass =
-  "group h-full overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md";
+  "group h-full overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md flex flex-col";
 const productImageWrapClass =
   "relative w-full overflow-hidden rounded-t-2xl bg-secondary/40 aspect-[5/4] bp-md:aspect-square";
 const productMetaPillClass =
@@ -432,17 +432,19 @@ const ProductCard = React.memo(
         </div>
 
         {/* 카드 콘텐츠 */}
-        <CardContent className="p-4 sm:p-5">
+        <CardContent className="flex flex-1 flex-col p-4 sm:p-5">
           <Link
             href={detailHref}
             className="block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
+            <div className="min-h-[48px]">
             <div className="text-xs text-muted-foreground mb-1.5 font-medium">
               {brandLabel}
             </div>
             <CardTitle className="mb-2 min-h-[2.5rem] line-clamp-2 text-sm font-semibold text-foreground transition-colors group-hover:text-foreground sm:min-h-[3rem] sm:text-base">
               {product.name}
             </CardTitle>
+            </div>
 
             <div className="flex items-center gap-1.5 mb-2.5">
               <RatingStars avg={ratingAvg} starClassName="w-3 h-3" />
@@ -474,8 +476,8 @@ const ProductCard = React.memo(
               </div>
             )}
 
-            <div className="flex justify-end pt-1">
-              <div className="text-right space-y-1">
+            <div className="flex min-h-[64px] justify-end pt-1">
+              <div className="flex flex-col items-end justify-end text-right space-y-1">
                 {isSale && (
                   <div className="flex justify-end">
                     <Badge variant="outline" className="h-5 rounded-full border-destructive/25 bg-destructive/10 px-2 text-[11px] font-semibold text-destructive">
@@ -490,7 +492,7 @@ const ProductCard = React.memo(
           </Link>
         </CardContent>
 
-        <CardFooter className="p-3 bp-sm:p-4 pt-0 grid grid-cols-1 gap-2">
+        <CardFooter className="mt-auto grid grid-cols-1 gap-2 p-3 pt-3 bp-sm:p-4">
           <div className="grid grid-cols-[minmax(0,1fr)_40px] gap-2">
             <Button asChild type="button" variant="outline" className="h-10 text-sm">
               <Link href={detailHref}>
