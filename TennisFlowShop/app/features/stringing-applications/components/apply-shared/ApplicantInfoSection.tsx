@@ -327,7 +327,7 @@ export default function ApplicantInfoSection({
               return next;
             })
           }
-          className="grid gap-3 md:grid-cols-3"
+          className="grid gap-3 md:grid-cols-2"
         >
           {/* 자가 발송 */}
           <div>

@@ -171,18 +171,18 @@ export default function PriceSummaryCard({
             </div>
           )}
 
-          <div className="flex items-start justify-between">
-            <div className="flex items-center gap-2">
-              <Package className="h-4 w-4 text-muted-foreground" />
-              <div className="space-y-0.5">
-                <p className="text-sm font-medium">{pickupLabel}</p>
-                <p className="text-xs text-muted-foreground">{pickupHint}</p>
+          {pickupFee > 0 && (
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-2">
+                <Package className="h-4 w-4 text-muted-foreground" />
+                <div className="space-y-0.5">
+                  <p className="text-sm font-medium">{pickupLabel}</p>
+                  <p className="text-xs text-muted-foreground">{pickupHint}</p>
+                </div>
               </div>
+              <p className="text-sm">{`+ ${won(pickupFee)}`}</p>
             </div>
-            <p className="text-sm">
-              {pickupFee > 0 ? `+ ${won(pickupFee)}` : "—"}
-            </p>
-          </div>
+          )}
 
           {usingPackage && (
             <div className="flex items-center justify-between">
