@@ -109,6 +109,12 @@ export default function RacketFilterPanel({
             </div>
           </div>
 
+          <p className="mb-4 text-xs text-muted-foreground leading-relaxed break-keep">
+            {onClose
+              ? "선택 후 검색/적용을 누르면 결과에 반영됩니다."
+              : "조건을 선택하면 목록에 바로 반영됩니다."}
+          </p>
+
           {/* 검색 */}
           <form
             onSubmit={(e) => {
@@ -177,6 +183,9 @@ export default function RacketFilterPanel({
           {/* 상태 등급 */}
           <div className="space-y-1.5 mb-6">
             <Label>상태 등급</Label>
+            <p className="text-xs text-muted-foreground leading-relaxed break-keep">
+              A는 사용감이 적은 최상급, B는 일반 사용감이 있는 양호, C는 사용감이 비교적 있는 보통 상태입니다.
+            </p>
             <Select
               value={selectedCondition ?? "all"}
               onValueChange={(v) =>

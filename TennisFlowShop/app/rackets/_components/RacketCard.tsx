@@ -130,7 +130,7 @@ function RacketAvailBadge({ id }: { id: string }) {
 
   // 대여중이 있으면 분수(가용/보유) + 대여중 배지로 정보량 확보
   return (
-    <div className="flex items-center gap-1.5">
+    <div className="flex flex-wrap items-center gap-1">
       <Badge
         variant={badgeToneVariant("brand")}
         className="px-2 py-1 text-xs font-medium whitespace-nowrap"
@@ -234,7 +234,7 @@ const RacketCard = React.memo(
                   <h3 className="text-lg bp-sm:text-xl bp-md:text-2xl font-bold mb-2 bp-sm:mb-3">
                     {racket.model}
                   </h3>
-                  <div className="flex flex-wrap items-center gap-2 mb-2 bp-sm:mb-3">
+                  <div className="mt-2 flex flex-wrap items-center gap-1.5 bp-sm:gap-2">
                     <StatusBadge kind="condition" state={racket.condition} />
                     <RacketAvailBadge id={racket.id} />
                     {!racket.rental?.enabled && (
@@ -382,7 +382,7 @@ const RacketCard = React.memo(
             {racket.model}
           </CardTitle>
 
-          <div className="flex flex-wrap items-center gap-2 mb-3">
+          <div className="mt-2 flex flex-wrap items-center gap-1.5">
             <StatusBadge kind="condition" state={racket.condition} />
             <div className="ml-1">
               <RacketAvailBadge id={racket.id} />

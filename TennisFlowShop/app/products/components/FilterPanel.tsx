@@ -166,7 +166,7 @@ export const FilterPanel = React.memo(function FilterPanel({
           exit={{ opacity: 0, y: -5 }}
           transition={{ duration: 0.15 }}
         >
-          <div className="flex items-center justify-between mb-4 bp-sm:mb-6">
+          <div className="flex items-center justify-between mb-2 bp-sm:mb-3">
             <div className="flex gap-2 items-center">
               <h2 className="font-bold text-lg bp-sm:text-xl text-foreground">
                 필터
@@ -197,6 +197,12 @@ export const FilterPanel = React.memo(function FilterPanel({
               )}
             </div>
           </div>
+
+          <p className="mb-3 bp-sm:mb-4 text-xs text-muted-foreground leading-relaxed break-keep">
+            {onClose
+              ? "선택 후 하단의 필터 적용을 누르면 결과에 반영됩니다."
+              : "조건을 선택하면 목록에 바로 반영됩니다."}
+          </p>
 
           <form
             onSubmit={(e) => {
@@ -291,6 +297,9 @@ export const FilterPanel = React.memo(function FilterPanel({
 
           <div className="space-y-3 bp-sm:space-y-4">
             <h3 className="font-medium text-base bp-sm:text-lg">성능</h3>
+            <p className="text-xs text-muted-foreground leading-relaxed break-keep">
+              성능 점수는 도깨비테니스 내부 기준입니다. 100점에 가까울수록 해당 성향이 강합니다.
+            </p>
             {performanceFiltersConfig.map(
               ({ label, state, setter, featureKey }) => (
                 <div key={featureKey}>

@@ -8,7 +8,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "중고 라켓",
+  title: "중고 라켓 구매·대여",
 };
 
 type SearchParams = Record<string, string | string[] | undefined>;
@@ -49,9 +49,9 @@ export default async function RacketsPage({ searchParams }: { searchParams: Prom
 
         <SiteContainer variant="wide" className="relative">
           <div className="text-center text-foreground">
-            <h1 className="text-3xl bp-sm:text-4xl bp-md:text-4xl bp-lg:text-5xl font-bold mb-3 bp-sm:mb-4 bp-md:mb-6 text-foreground leading-tight">중고 라켓</h1>
+            <h1 className="text-3xl bp-sm:text-4xl bp-md:text-4xl bp-lg:text-5xl font-bold mb-3 bp-sm:mb-4 bp-md:mb-6 text-foreground leading-tight">중고 라켓 구매·대여</h1>
             <p className="text-base bp-sm:text-lg bp-md:text-xl mb-5 bp-sm:mb-6 bp-md:mb-8 text-muted-foreground max-w-3xl mx-auto leading-relaxed px-4">
-              도깨비테니스의 중고 라켓으로 <span className="font-medium text-primary">합리적인 가격</span>에 대여하세요.
+              검수된 중고 라켓을 구매하거나 대여하고, 필요하면 스트링 교체까지 이어서 신청하세요.
             </p>
             <div className="mt-2 flex items-center justify-center">
               <Button asChild size="lg" variant="secondary">
