@@ -287,7 +287,6 @@ export const FilterPanel = React.memo(function FilterPanel({
               <SelectContent className="dark:bg-card dark:border-border">
                 <SelectItem value="all">전체</SelectItem>
                 <SelectItem value="polyester">폴리에스터</SelectItem>
-                <SelectItem value="hybrid">하이브리드</SelectItem>
                 <SelectItem value="multifilament">멀티필라멘트</SelectItem>
                 <SelectItem value="natural_gut">천연 거트</SelectItem>
                 <SelectItem value="synthetic_gut">합성 거트</SelectItem>

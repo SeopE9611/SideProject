@@ -28,6 +28,7 @@ export type HItem = {
   condition?: "A" | "B" | "C" | "D";
   rentalEnabled?: boolean;
   merchandisingBadges?: Array<"품절" | "SALE" | "NEW" | "추천" | "입고예정">;
+  inventory?: { isSale?: boolean | string | number; salePrice?: number | string | null };
 };
 
 type Props = {
@@ -208,6 +209,13 @@ export default function HorizontalProducts({
   };
 
   const ItemCard = ({ p }: { p: HItem }) => (
+    (() => {
+      const regularPrice = Number(p.price ?? 0);
+      const salePrice = Number(p.inventory?.salePrice ?? 0);
+      const isSale = (p.inventory?.isSale === true || p.inventory?.isSale === "true" || p.inventory?.isSale === 1) && salePrice > 0 && salePrice < regularPrice;
+      const displayPrice = isSale ? salePrice : regularPrice;
+      const saleRate = isSale ? Math.round(((regularPrice - salePrice) / regularPrice) * 100) : 0;
+      return (
     <Link
       key={p._id}
       href={p.href ?? `/products/${p._id}`}
@@ -252,12 +260,16 @@ export default function HorizontalProducts({
       <div className="space-y-2 bp-sm:space-y-2.5 bp-md:space-y-3">
         <div className="text-sm bp-md:text-base text-foreground/80 font-medium">{p.brand}</div>
         <h3 className="text-sm bp-sm:text-base bp-md:text-lg bp-lg:text-xl font-semibold text-foreground line-clamp-2 min-h-[2.5rem] bp-sm:min-h-[3rem] bp-md:min-h-[3.5rem] leading-snug">{p.name}</h3>
-        <div className="text-base bp-sm:text-lg bp-md:text-xl bp-lg:text-2xl font-bold text-foreground pt-1 bp-sm:pt-2 tracking-normal">
-          {Number(p.price).toLocaleString()}
-          <span className="text-sm bp-sm:text-base bp-md:text-lg font-medium ml-0.5">원</span>
+        <div className="pt-1 bp-sm:pt-2">
+          <div className="text-base bp-sm:text-lg bp-md:text-xl bp-lg:text-2xl font-bold text-foreground tracking-normal">
+            {displayPrice.toLocaleString()}<span className="text-sm bp-sm:text-base bp-md:text-lg font-medium ml-0.5">원</span>
+          </div>
+          {isSale && <div className="flex items-center gap-2"><span className="text-xs text-muted-foreground line-through">{regularPrice.toLocaleString()}원</span><span className="text-xs font-semibold text-destructive">{saleRate}% OFF</span></div>}
         </div>
       </div>
     </Link>
+      );
+    })()
   );
 
   const PlaceholderCard = () => (
