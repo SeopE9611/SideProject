@@ -32,11 +32,13 @@ type NicePrepareResponse = {
 export default function NiceCheckoutButton({
   disabled,
   payload,
+  payableAmount,
   onBeforeSuccessNavigation,
   onSuccessNavigationAbort,
 }: {
   disabled: boolean;
   payload: Record<string, unknown>;
+  payableAmount: number;
   onBeforeSuccessNavigation?: () => void;
   onSuccessNavigationAbort?: () => void;
 }) {
@@ -122,6 +124,13 @@ export default function NiceCheckoutButton({
       if (typeof window.AUTHNICE?.requestPay !== "function") {
         onSuccessNavigationAbort?.();
         throw new Error("Nice 결제창이 준비되지 않았습니다.");
+      }
+
+      const prepareAmount = Number(prepJson.nice.amount ?? NaN);
+      const expectedAmount = Math.floor(Number(payableAmount ?? NaN));
+      if (!Number.isFinite(prepareAmount) || !Number.isFinite(expectedAmount) || prepareAmount !== expectedAmount) {
+        onSuccessNavigationAbort?.();
+        throw new Error(`결제 금액이 변경되어 결제를 진행할 수 없습니다. 화면 금액(${Number.isFinite(expectedAmount) ? expectedAmount.toLocaleString() : "-"}원)과 서버 확정 금액(${Number.isFinite(prepareAmount) ? prepareAmount.toLocaleString() : "-"}원)이 다릅니다. 새로고침 후 다시 시도해주세요.`);
       }
 
       onBeforeSuccessNavigation?.();
