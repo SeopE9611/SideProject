@@ -39,9 +39,13 @@ export function getPackagePricingMeta(pkg: {
   price: number;
   originalPrice?: number;
 }) {
-  const sessions = Number(pkg.sessions || 0);
-  const price = Number(pkg.price || 0);
-  const originalPrice = Number(pkg.originalPrice || 0);
+  const toSafeNumber = (value: unknown) => {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : 0;
+  };
+  const sessions = toSafeNumber(pkg.sessions);
+  const price = toSafeNumber(pkg.price);
+  const originalPrice = toSafeNumber(pkg.originalPrice);
   const perSession = sessions > 0 ? Math.round(price / sessions) : 0;
   const originalPerSession =
     sessions > 0 && originalPrice > 0 ? Math.round(originalPrice / sessions) : 0;
@@ -102,12 +106,10 @@ export const normalizePackageCardData = (input: {
   validityPeriod: unknown;
 }): PackageCardData => {
   const validityPeriod = formatValidityPeriod(input.validityPeriod);
-  const { perSession, discountRate } = getPackagePricingMeta(input);
+  const { discountRate } = getPackagePricingMeta(input);
   const discount = input.discount ?? discountRate ?? calculateDiscount(input.price, input.originalPrice);
 
   const normalizedBenefits = [
-    perSession > 0 ? `회당 ${perSession.toLocaleString()}원` : null,
-    discount ? `${discount}% 할인` : null,
     validityPeriod !== "유효기간 설정 없음"
       ? `유효기간 ${validityPeriod}`
       : null,
