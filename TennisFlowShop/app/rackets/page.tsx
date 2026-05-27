@@ -66,7 +66,10 @@ export default async function RacketsPage({ searchParams }: { searchParams: Prom
         </SiteContainer>
       </div>
 
-      <SiteContainer variant="wide" className="py-6 bp-sm:py-8 bp-md:py-12">
+      <SiteContainer
+        variant="wide"
+        className="py-6 bp-sm:py-8 bp-md:py-12 bp-lg:max-w-[1600px] bp-xl:max-w-[1680px]"
+      >
         {from === "apply" && (
           <div className="sticky top-[72px] z-40 mb-3 bp-sm:mb-4">
             <div className="rounded-xl border border-border bg-card/95 p-3 shadow-sm backdrop-blur">

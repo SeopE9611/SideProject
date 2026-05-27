@@ -61,7 +61,7 @@ export default function RacketFilterPanel({
 }: Props) {
   if (isLoadingInitial) {
     return (
-      <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+      <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
         <SkeletonFilterDetailed />
       </div>
     );
@@ -70,7 +70,7 @@ export default function RacketFilterPanel({
   return (
     <div
       className={cn(
-        "rounded-xl border border-border bg-card p-6 shadow-sm",
+        "rounded-xl border border-border bg-card p-5 shadow-sm bp-lg:max-h-[calc(100vh-120px)] bp-lg:overflow-y-auto bp-lg:overscroll-contain bp-lg:pr-3 bp-lg:[scrollbar-gutter:stable] bp-lg:[scrollbar-width:thin] bp-lg:[scrollbar-color:hsl(var(--muted-foreground)/0.15)_transparent] bp-lg:[&::-webkit-scrollbar]:w-1 bp-lg:[&::-webkit-scrollbar-track]:bg-transparent bp-lg:[&::-webkit-scrollbar-thumb]:rounded-full bp-lg:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/10 bp-lg:hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/30",
       )}
     >
       <AnimatePresence mode="wait">
@@ -81,7 +81,7 @@ export default function RacketFilterPanel({
           exit={{ opacity: 0, y: -5 }}
           transition={{ duration: 0.15 }}
         >
-          <div className="flex items-center justify-between mb-6">
+          <div className="mb-5 flex items-center justify-between">
             <div className="flex gap-2 items-center">
               <h2 className="font-bold text-xl text-foreground">필터</h2>
               {onClose && (
@@ -109,7 +109,7 @@ export default function RacketFilterPanel({
             </div>
           </div>
 
-          <p className="mb-4 text-xs text-muted-foreground leading-relaxed break-keep">
+          <p className="mb-4 text-xs leading-relaxed text-muted-foreground break-keep">
             {onClose
               ? "선택 후 검색/적용을 누르면 결과에 반영됩니다."
               : "조건을 선택하면 목록에 바로 반영됩니다."}
@@ -121,7 +121,7 @@ export default function RacketFilterPanel({
               e.preventDefault();
               onSearchSubmit();
             }}
-            className="mb-6 flex gap-2"
+            className="mb-5 flex items-stretch gap-2"
           >
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
@@ -130,7 +130,7 @@ export default function RacketFilterPanel({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="라켓 모델 검색..."
-                className="pl-10 pr-10 rounded-lg border border-input bg-background transition-colors w-full"
+                className="h-10 w-full rounded-lg border border-input bg-background pl-10 pr-10 transition-colors"
               />
               {searchQuery && (
                 <button
@@ -150,14 +150,14 @@ export default function RacketFilterPanel({
                 </button>
               )}
             </div>
-            <Button type="submit" size="sm" variant="default">
+            <Button type="submit" size="sm" variant="default" className="h-10 px-4">
               검색
             </Button>
           </form>
 
           {/* 브랜드 */}
-          <div className="mb-6">
-            <Label htmlFor="brand" className="mb-3 block font-medium">
+          <div className="mb-5 space-y-2">
+            <Label htmlFor="brand" className="block text-sm font-medium text-foreground">
               브랜드
             </Label>
             <Select
@@ -166,7 +166,7 @@ export default function RacketFilterPanel({
               }
               value={selectedBrand ?? "all"}
             >
-              <SelectTrigger className="rounded-lg border border-input bg-background">
+              <SelectTrigger className="h-10 rounded-lg border border-input bg-background">
                 <SelectValue placeholder="브랜드 선택" />
               </SelectTrigger>
               <SelectContent className="dark:bg-card dark:border-border">
@@ -181,8 +181,8 @@ export default function RacketFilterPanel({
           </div>
 
           {/* 상태 등급 */}
-          <div className="space-y-1.5 mb-6">
-            <Label>상태 등급</Label>
+          <div className="mb-5 space-y-2">
+            <Label className="text-sm font-medium text-foreground">상태 등급</Label>
             <p className="text-xs text-muted-foreground leading-relaxed break-keep">
               A는 사용감이 적은 최상급, B는 일반 사용감이 있는 양호, C는 사용감이 비교적 있는 보통 상태입니다.
             </p>
@@ -192,7 +192,7 @@ export default function RacketFilterPanel({
                 setSelectedCondition(v === "all" ? null : v)
               }
             >
-              <SelectTrigger className="rounded-lg border border-input bg-background">
+              <SelectTrigger className="h-10 rounded-lg border border-input bg-background">
                 <SelectValue placeholder="전체" />
               </SelectTrigger>
               <SelectContent className="dark:bg-card dark:border-border">
@@ -205,8 +205,8 @@ export default function RacketFilterPanel({
           </div>
 
           {/* 가격 범위 */}
-          <div className="space-y-1.5">
-            <Label>가격 범위</Label>
+          <div className="space-y-2">
+            <Label className="text-sm font-medium text-foreground">가격 범위</Label>
             <div className="flex gap-2 items-center">
               <Input
                 type="number"

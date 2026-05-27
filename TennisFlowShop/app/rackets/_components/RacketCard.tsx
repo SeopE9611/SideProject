@@ -174,7 +174,7 @@ const RacketCard = React.memo(
 
     if (viewMode === "list") {
       return (
-        <Card className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md relative">
+        <Card className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md">
           <div className="absolute inset-0 opacity-5 dark:opacity-10">
             <svg className="w-full h-full" viewBox="0 0 400 200" fill="none">
               <rect
@@ -213,7 +213,7 @@ const RacketCard = React.memo(
           </div>
 
           <div className="flex flex-col bp-md:flex-row relative z-10">
-            <div className="relative w-full bp-md:w-48 bp-lg:w-56 aspect-[4/3] bp-md:aspect-square overflow-hidden">
+            <div className="relative w-full aspect-[4/3] overflow-hidden bg-muted/30 bp-md:w-[280px] bp-md:aspect-square bp-xl:w-[320px]">
               <Image
                 src={
                   racket.images?.[0] ||
@@ -222,16 +222,16 @@ const RacketCard = React.memo(
                 alt={`${racketBrandLabel(racket.brand)} ${racket.model}`}
                 fill
                 sizes="(max-width: 768px) 100vw, 224px"
-                className="object-cover object-center"
+                className="object-contain object-center p-2"
               />
             </div>
-            <div className="flex-1 p-3 bp-sm:p-6 bp-md:p-7">
+            <div className="flex flex-1 flex-col p-3 bp-sm:p-6 bp-md:p-7">
               <div className="flex flex-col bp-lg:flex-row bp-lg:justify-between bp-lg:items-start mb-3 bp-sm:mb-4 gap-3 bp-sm:gap-4">
                 <div className="flex-1">
                   <div className="text-sm bp-sm:text-base text-muted-foreground mb-1.5 font-medium">
                     {brandLabel}
                   </div>
-                  <h3 className="text-lg bp-sm:text-xl bp-md:text-2xl font-bold mb-2 bp-sm:mb-3">
+                  <h3 className="mb-2 min-h-[3.25rem] text-lg font-bold leading-snug bp-sm:mb-3 bp-sm:text-xl bp-md:min-h-[3.75rem] bp-md:text-2xl line-clamp-2">
                     {racket.model}
                   </h3>
                   <div className="mt-2 flex flex-wrap items-center gap-1.5 bp-sm:gap-2">
@@ -243,7 +243,7 @@ const RacketCard = React.memo(
                   </div>
                 </div>
                 <div className="text-left bp-lg:text-right">
-                  <div className="text-lg bp-sm:text-2xl bp-md:text-3xl font-bold text-primary">
+                  <div className="min-h-[2.75rem] text-lg font-bold text-foreground bp-sm:text-2xl bp-md:text-3xl">
                     {racket.price.toLocaleString()}원
                   </div>
                   <div className="mt-3 grid grid-cols-1 bp-sm:grid-cols-2 gap-2 bp-lg:max-w-[340px] bp-lg:ml-auto">
@@ -339,10 +339,10 @@ const RacketCard = React.memo(
 
     // grid view
     return (
-      <Card className="group h-full overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md relative">
+      <Card className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md">
         <div className="absolute top-0 left-0 right-0 h-1 bg-muted/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-        <div className="relative w-full aspect-[4/3] bp-md:aspect-square overflow-hidden">
+        <div className="relative w-full aspect-[4/3] overflow-hidden bg-muted/30">
           <Image
             src={
               racket.images?.[0] ||
@@ -351,7 +351,7 @@ const RacketCard = React.memo(
             alt={`${racketBrandLabel(racket.brand)} ${racket.model}`}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            className="object-cover object-center group-hover:scale-105 transition-transform duration-300"
+            className="object-contain object-center p-2 transition-transform duration-300 group-hover:scale-105"
           />
 
           <div className="absolute inset-0 bg-overlay/0 group-hover:bg-overlay/20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
@@ -374,11 +374,11 @@ const RacketCard = React.memo(
             </div>
           </div>
         </div>
-        <CardContent className="p-3 bp-sm:p-6">
+        <CardContent className="flex flex-1 flex-col p-3 bp-sm:p-6">
           <div className="text-xs bp-sm:text-base text-muted-foreground mb-2 font-medium">
             {brandLabel}
           </div>
-          <CardTitle className="text-base bp-sm:text-lg bp-md:text-xl mb-3 line-clamp-2 group-hover:text-primary dark:group-hover:text-primary transition-colors">
+          <CardTitle className="mb-3 min-h-[3rem] text-base line-clamp-2 transition-colors group-hover:text-primary dark:group-hover:text-primary bp-sm:min-h-[3.5rem] bp-sm:text-lg bp-md:text-xl">
             {racket.model}
           </CardTitle>
 
@@ -393,9 +393,9 @@ const RacketCard = React.memo(
           </div>
         </CardContent>
 
-        <CardFooter className="p-3 bp-sm:p-6 pt-0">
+        <CardFooter className="mt-auto p-3 pt-0 bp-sm:p-6 bp-sm:pt-0">
           <div className="w-full">
-            <div className="font-bold text-base bp-sm:text-xl bp-md:text-2xl text-primary">
+            <div className="min-h-[2.5rem] text-base font-bold text-foreground bp-sm:text-xl bp-md:text-2xl">
               {racket.price.toLocaleString()}원
             </div>
 
