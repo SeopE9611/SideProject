@@ -1786,23 +1786,23 @@ export default function StringServiceApplyPage() {
               어떤 방식으로 교체서비스를 신청하시겠어요?
             </h2>
             <p className="mt-2 text-muted-foreground text-sm bp-sm:text-base">
-              현재 상황에 맞는 방식을 선택하면 필요한 정보만 이어서 입력할 수 있습니다.
+              필요한 방식 하나를 선택해 빠르게 교체 신청을 진행하세요.
             </p>
           </div>
 
           {/* Option Cards */}
-          <div className="grid grid-cols-1 bp-md:grid-cols-2 bp-xl:grid-cols-4 gap-4 bp-sm:gap-5 bp-lg:gap-6 max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 bp-md:grid-cols-2 bp-xl:grid-cols-4 gap-3 bp-sm:gap-4 bp-lg:gap-5 max-w-7xl mx-auto">
             {[
-              { badge: "추천", icon: <Grid2X2 className="h-8 w-8" />, title: "새 스트링 구매 + 장착", target: "스트링을 새로 고르고 기존 라켓에 장착하고 싶은 분", steps: "스트링 선택 → 결제/장착 정보 입력 → 접수 완료", cta: "스트링 고르고 신청하기", href: "/products?from=apply" },
-              { badge: "구매", icon: <MdSportsTennis className="h-9 w-9" />, title: "라켓 구매 + 장착", target: "중고 라켓을 구매하면서 바로 사용할 수 있게 세팅하고 싶은 분", steps: "라켓 선택 → 스트링 선택 → 결제 → 장착 접수", cta: "라켓 고르고 구매하기", href: "/rackets?from=apply" },
-              { badge: "대여", icon: <MdSportsTennis className="h-9 w-9" />, title: "라켓 대여 + 장착", target: "라켓을 빌려 쓰면서 원하는 스트링 세팅을 추가하고 싶은 분", steps: "라켓 대여 → 스트링 선택 → 대여 결제 → 장착 접수", cta: "대여 라켓 보기", href: "/rackets?from=apply&rentOnly=1" },
-              { badge: "보유 장비", icon: <File className="h-9 w-9" />, title: "보유 라켓/보유 스트링 장착", target: "이미 가진 라켓이나 스트링으로 교체만 맡기고 싶은 분", steps: "신청서 작성 → 접수 → 비용 안내/진행", cta: "보유 장비로 신청하기", href: "/services/apply?mode=single" },
+              { badge: "추천", icon: <Grid2X2 className="h-8 w-8" />, title: "새 스트링 선택 후 교체 신청", target: "스트링을 고르고 결제와 함께 장착 신청까지 진행합니다.", steps: "스트링 선택 → 결제/장착 정보 입력", cta: "스트링 고르기", href: "/products?from=apply" },
+              { badge: "구매", icon: <MdSportsTennis className="h-9 w-9" />, title: "라켓 구매 후 교체 신청", target: "중고 라켓을 구매하면서 원하는 스트링으로 세팅합니다.", steps: "라켓 선택 → 스트링 선택 → 결제", cta: "라켓 구매하기", href: "/rackets?from=apply" },
+              { badge: "대여", icon: <MdSportsTennis className="h-9 w-9" />, title: "라켓 대여 후 교체 신청", target: "대여 라켓에 원하는 스트링 세팅을 함께 신청합니다.", steps: "라켓 대여 → 스트링 선택 → 대여 결제", cta: "대여 라켓 보기", href: "/rackets?from=apply&rentOnly=1" },
+              { badge: "보유 장비", icon: <File className="h-9 w-9" />, title: "보유 장비로 교체 신청", target: "가지고 있는 라켓이나 스트링으로 교체만 신청합니다.", steps: "신청서 작성 → 접수", cta: "보유 장비로 신청", href: "/services/apply?mode=single" },
             ].map((item, index) => (
               <button
                 key={item.title}
                 type="button"
                 onClick={() => safePush(item.href)}
-                className={`group relative flex h-full flex-col bg-card rounded-2xl p-5 bp-sm:p-6 text-left border hover:shadow-lg transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${index === 0 ? "border-primary/40 bg-primary/5" : "border-border"}`}
+                className={`group relative flex h-full flex-col bg-card rounded-2xl p-4 bp-sm:p-5 text-left border hover:shadow-lg transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${index === 0 ? "border-primary/40 bg-primary/5" : "border-border"}`}
               >
                 <div className="absolute -top-2.5 left-5">
                   <Badge variant="secondary">{item.badge}</Badge>
@@ -1814,9 +1814,9 @@ export default function StringServiceApplyPage() {
                   <h3 className="text-base bp-sm:text-lg font-semibold leading-snug break-keep text-foreground mb-3">
                     {item.title}
                   </h3>
-                  <p className="text-xs font-semibold text-primary">추천 대상</p>
+                  <p className="text-xs font-semibold text-primary">핵심 안내</p>
                   <p className="mt-1 text-sm text-muted-foreground leading-relaxed break-keep">{item.target}</p>
-                  <p className="mt-3 text-xs font-semibold text-primary">진행 방식</p>
+                  <p className="mt-2 text-xs font-semibold text-primary">진행 흐름</p>
                   <p className="mt-1 text-sm text-muted-foreground leading-relaxed break-keep">{item.steps}</p>
                 </div>
                 <div className="mt-5 inline-flex w-fit items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-sm font-semibold text-foreground transition-colors group-hover:bg-secondary">
@@ -1829,7 +1829,7 @@ export default function StringServiceApplyPage() {
             ))}
           </div>
 
-          <div className="mt-5 flex flex-wrap justify-center gap-2 text-sm">
+          <div className="mt-4 rounded-xl border border-border bg-muted/30 p-3 bp-sm:p-4 flex flex-wrap justify-center gap-2 text-sm">
             <Button type="button" variant="outline" onClick={() => safePush("/products/recommend")}>잘 모르겠어요. 추천받을래요.</Button>
             <Button type="button" variant="outline" onClick={() => safePush("/services/pricing")}>가격 먼저 보기</Button>
             <Button type="button" variant="outline" onClick={() => safePush("/services/locations")}>매장 위치/방문 안내</Button>

@@ -198,10 +198,8 @@ const ProductCard = React.memo(
     const canCheckoutWithService =
       isMountableStringByFee(product.mountingFee);
     const featureEntries = getFeatureEntries(product.features);
-    const shouldShowStandalonePausedNotice =
+    const shouldShowStandaloneServiceBadge =
       !isApplyFlow && canCheckoutWithService && !ENABLE_STRING_STANDALONE_ORDER;
-    const standalonePausedNotice =
-      "현재 스트링 단품 구매는 운영하지 않으며, 교체서비스 신청과 함께 이용할 수 있어요.";
 
     const detailHref = isApplyFlow
       ? `/products/${product._id}?from=apply`
@@ -343,7 +341,7 @@ const ProductCard = React.memo(
                 >
                   <Link href={detailHref}>
                     <Eye className="w-3 h-3 bp-sm:w-4 bp-sm:h-4 mr-1.5" />
-                    상세 보기
+                    {isApplyFlow ? "이 스트링으로 교체 신청" : "상세 보기"}
                   </Link>
                 </Button>
 
@@ -386,11 +384,7 @@ const ProductCard = React.memo(
                   }}
                 />
               </div>
-              {shouldShowStandalonePausedNotice && (
-                <p className="mt-2 break-keep text-xs leading-relaxed text-muted-foreground">
-                  {standalonePausedNotice}
-                </p>
-              )}
+              {shouldShowStandaloneServiceBadge && (<Badge variant="secondary" className="mt-2 w-fit text-[11px]">교체서비스 전용</Badge>)}
             </div>
           </div>
         </Card>
@@ -404,7 +398,7 @@ const ProductCard = React.memo(
         <div className={productImageWrapClass}>
           <Link
             href={detailHref}
-            aria-label={`${product.name} 상세 보기`}
+            aria-label={`${product.name} ${isApplyFlow ? "교체 신청" : "상세 보기"}`}
             className="absolute inset-0 block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             <Image
@@ -520,11 +514,7 @@ const ProductCard = React.memo(
             </Button>
           )}
 
-          {shouldShowStandalonePausedNotice && (
-            <p className="break-keep px-1 text-xs leading-relaxed text-muted-foreground">
-              {standalonePausedNotice}
-            </p>
-          )}
+          {shouldShowStandaloneServiceBadge && (<Badge variant="secondary" className="w-fit text-[11px]">교체서비스 전용</Badge>)}
         </CardFooter>
       </Card>
     );
