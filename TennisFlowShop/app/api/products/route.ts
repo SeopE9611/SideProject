@@ -96,7 +96,7 @@ export async function GET(req: NextRequest) {
 
     // 페이징
     const page = Math.max(1, Number(params.get("page") || "1"));
-    const limit = Math.min(100, Number(params.get("limit") || "20"));
+    const limit = Math.min(100, Number(params.get("limit") || "12"));
     const skip = (page - 1) * limit;
 
     const filter: Filter<ProductDoc> = { isDeleted: { $ne: true } }; // Soft-Delete된 상품은 기본적으로 제외

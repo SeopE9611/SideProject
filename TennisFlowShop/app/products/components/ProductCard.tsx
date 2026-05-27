@@ -265,7 +265,7 @@ const ProductCard = React.memo(
           {/* 리스트뷰: 배경 장식 SVG 제거 */}
 
           <div className="flex flex-col bp-md:flex-row relative z-10">
-            <div className="relative w-full bp-md:w-48 aspect-[5/4] bp-md:aspect-square flex-shrink-0 overflow-hidden bg-secondary/40">
+            <div className="relative w-full bp-md:w-[280px] bp-xl:w-[320px] aspect-[4/3] flex-shrink-0 overflow-hidden bg-secondary/30">
               <Image
                 src={
                   (product.images?.[0] as string) ||
@@ -273,8 +273,8 @@ const ProductCard = React.memo(
                 }
                 alt={product.name}
                 fill
-                sizes="(max-width: 768px) 100vw, 192px"
-                className="object-cover"
+                sizes="(max-width: 768px) 100vw, (max-width: 1536px) 280px, 320px"
+                className="object-contain"
               />
               {product.isNew && (
                 <Badge
@@ -286,7 +286,7 @@ const ProductCard = React.memo(
               )}
             </div>
             <div className="flex-1 p-4 bp-md:p-5">
-              <div className="flex flex-col gap-3 mb-4">
+              <div className="flex flex-col gap-3 mb-3">
                 <div className="flex-1">
                   <div className="text-sm text-foreground/80 mb-1 font-medium">
                     {brandLabel}
@@ -312,8 +312,8 @@ const ProductCard = React.memo(
               </div>
 
               {featureEntries.length > 0 && (
-                <div className="mb-4">
-                  <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="mb-3">
+                  <div className="grid grid-cols-2 gap-1.5 text-[11px] sm:text-xs">
                     {featureEntries.map((feature, index) => (
                       <div
                         key={feature.key}
@@ -338,13 +338,13 @@ const ProductCard = React.memo(
                 </div>
               )}
 
-              <div className="grid grid-cols-2 bp-sm:flex gap-2">
+              <div className="grid grid-cols-[minmax(0,1fr)_40px] gap-2 max-w-md">
 
                 <Button
                   asChild
                   variant="default"
                   size="sm"
-                  className="bp-sm:flex-1 w-full h-9 sm:h-10 text-xs sm:text-sm"
+                  className="w-full h-10 text-xs sm:text-sm"
                 >
                   <Link href={detailHref}>
                     <Eye className="w-3 h-3 bp-sm:w-4 bp-sm:h-4 mr-1.5" />
@@ -432,7 +432,7 @@ const ProductCard = React.memo(
         </div>
 
         {/* 카드 콘텐츠 */}
-        <CardContent className="p-3 sm:p-4">
+        <CardContent className="p-4 sm:p-5">
           <Link
             href={detailHref}
             className="block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
@@ -444,7 +444,7 @@ const ProductCard = React.memo(
               {product.name}
             </CardTitle>
 
-            <div className="flex items-center gap-1.5 mb-2">
+            <div className="flex items-center gap-1.5 mb-2.5">
               <RatingStars avg={ratingAvg} starClassName="w-3 h-3" />
               <span className="text-xs text-muted-foreground">
                 ({ratingCount})
@@ -474,17 +474,24 @@ const ProductCard = React.memo(
               </div>
             )}
 
-            <div className="flex justify-end pt-0.5">
-              <div className="text-right">
-                <div className="text-base font-bold text-foreground sm:text-lg">{displayPrice.toLocaleString()}원</div>
+            <div className="flex justify-end pt-1">
+              <div className="text-right space-y-1">
+                {isSale && (
+                  <div className="flex justify-end">
+                    <Badge variant="outline" className="h-5 rounded-full border-destructive/25 bg-destructive/10 px-2 text-[11px] font-semibold text-destructive">
+                      {saleRate}% OFF
+                    </Badge>
+                  </div>
+                )}
+                <div className="text-lg font-bold text-foreground">{displayPrice.toLocaleString()}원</div>
                 {isSale && <div className="text-xs text-muted-foreground line-through">{regularPrice.toLocaleString()}원</div>}
               </div>
             </div>
           </Link>
         </CardContent>
 
-        <CardFooter className="p-2.5 bp-sm:p-3 bp-md:p-4 pt-0 grid grid-cols-1 gap-2">
-          <div className="hidden bp-md:grid bp-md:grid-cols-2 gap-2">
+        <CardFooter className="p-3 bp-sm:p-4 pt-0 grid grid-cols-1 gap-2">
+          <div className="grid grid-cols-[minmax(0,1fr)_40px] gap-2">
             <Button asChild type="button" variant="outline" className="h-10 text-sm">
               <Link href={detailHref}>
                 <Eye className="h-4 w-4 mr-1.5" />
@@ -505,7 +512,7 @@ const ProductCard = React.memo(
                     showErrorToast("처리 중 오류가 발생했습니다.");
                   }
                 }}
-                size="sm"
+                size="md"
               />
             </div>
           </div>
