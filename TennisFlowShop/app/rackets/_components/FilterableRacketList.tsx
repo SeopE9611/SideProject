@@ -97,6 +97,7 @@ export default function FilterableRacketList({
   // 정렬 / 뷰 모드
   const [sortOption, setSortOption] = useState("latest");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [isDesktopViewport, setIsDesktopViewport] = useState(false);
   const [rentOnly, setRentOnly] = useState(
     () => searchParams.get("rentOnly") === "1",
   );
@@ -284,7 +285,7 @@ export default function FilterableRacketList({
   }, [rackets, sortOption, priceMin, priceMax]);
 
   const products = racketsList();
-  const [visibleCount, setVisibleCount] = useState(6);
+  const [visibleCount, setVisibleCount] = useState(12);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const hasMore = products.length > visibleCount;
   const visibleProducts = useMemo(
@@ -296,7 +297,7 @@ export default function FilterableRacketList({
     if (isLoadingMore || !hasMore) return;
     setIsLoadingMore(true);
     window.setTimeout(() => {
-      setVisibleCount((prev) => Math.min(prev + 6, products.length));
+      setVisibleCount((prev) => Math.min(prev + 12, products.length));
       setIsLoadingMore(false);
     }, 120);
   }, [isLoadingMore, hasMore, products.length]);
@@ -337,9 +338,24 @@ export default function FilterableRacketList({
   }, []);
 
   useEffect(() => {
-    setVisibleCount(6);
+    setVisibleCount(12);
     setIsLoadingMore(false);
   }, [filterKey, sortOption, priceMin, priceMax]);
+
+  useEffect(() => {
+    const mql = window.matchMedia("(min-width: 1200px)");
+    const syncDesktop = (matches: boolean) => {
+      setIsDesktopViewport(matches);
+      if (!matches) setViewMode("grid");
+    };
+    syncDesktop(mql.matches);
+    const onChange = (e: MediaQueryListEvent) => syncDesktop(e.matches);
+    mql.addEventListener("change", onChange);
+    return () => mql.removeEventListener("change", onChange);
+  }, []);
+
+  const effectiveViewMode: "grid" | "list" =
+    isDesktopViewport ? viewMode : "grid";
 
   // draft를 현재 applied(selected) 값으로 동기화 (Sheet 열 때/취소할 때)
   const syncDraftFromApplied = useCallback(() => {
@@ -558,13 +574,10 @@ export default function FilterableRacketList({
         </SheetContent>
       </Sheet>
 
-      <div className="grid grid-cols-1 gap-5 bp-md:gap-8 bp-lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-5 bp-md:gap-8 bp-lg:grid-cols-[300px_minmax(0,1fr)] bp-xl:grid-cols-[320px_minmax(0,1fr)]">
         {/* 필터 사이드바 */}
         <div
-          className={cn(
-            "hidden bp-lg:block",
-            "space-y-4 bp-md:space-y-6 bp-lg:col-span-1",
-          )}
+          className={cn("hidden bp-lg:block", "space-y-4 bp-md:space-y-6")}
         >
           <div className="sticky top-20 self-start">
             <RacketFilterPanel {...desktopFilterPanelProps} />
@@ -572,7 +585,7 @@ export default function FilterableRacketList({
         </div>
 
         {/* 상품 목록 */}
-        <div className="bp-lg:col-span-3">
+        <div className="min-w-0">
           <div className="mb-4 rounded-xl border border-border/60 bg-card p-3 bp-sm:p-4 bp-md:mb-8">
             <div className="mb-3 space-y-1.5">
               <p className="text-xs font-medium text-muted-foreground">라켓 목록</p>
@@ -686,31 +699,33 @@ export default function FilterableRacketList({
                   </SelectContent>
                 </Select>
 
+                {isDesktopViewport && (
                 <div className="flex items-center border border-border rounded-lg p-1 bg-card shrink-0">
                 <Button
                   type="button"
-                  variant={viewMode === "grid" ? "default" : "ghost"}
+                  variant={effectiveViewMode === "grid" ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setViewMode("grid")}
                   className="h-8 w-9 p-0"
                   aria-label="그리드 보기"
-                  aria-pressed={viewMode === "grid"}
+                  aria-pressed={effectiveViewMode === "grid"}
                 >
                   <Grid3X3 className="w-4 h-4" />
                 </Button>
 
                 <Button
                   type="button"
-                  variant={viewMode === "list" ? "default" : "ghost"}
+                  variant={effectiveViewMode === "list" ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setViewMode("list")}
                   className="h-8 w-9 p-0"
                   aria-label="리스트 보기"
-                  aria-pressed={viewMode === "list"}
+                  aria-pressed={effectiveViewMode === "list"}
                 >
                   <List className="w-4 h-4" />
                 </Button>
                 </div>
+                )}
               </div>
             </div>
           </div>
@@ -720,12 +735,12 @@ export default function FilterableRacketList({
             <div
               className={cn(
                 "grid gap-4 bp-md:gap-6",
-                viewMode === "grid"
-                  ? "grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-3"
+                effectiveViewMode === "grid"
+                  ? "grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-2 bp-2xl:grid-cols-3 bp-3xl:grid-cols-4"
                   : "grid-cols-1",
               )}
             >
-              {Array.from({ length: 6 }).map((_, i) => (
+              {Array.from({ length: 12 }).map((_, i) => (
                 <SkeletonProductCard key={i} />
               ))}
             </div>
@@ -757,8 +772,8 @@ export default function FilterableRacketList({
             <div
               className={cn(
                 "grid gap-4 bp-md:gap-6",
-                viewMode === "grid"
-                  ? "grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-3"
+                effectiveViewMode === "grid"
+                  ? "grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-2 bp-2xl:grid-cols-3 bp-3xl:grid-cols-4"
                   : "grid-cols-1",
               )}
             >
@@ -766,7 +781,7 @@ export default function FilterableRacketList({
                 <RacketCard
                   key={racket.id}
                   racket={racket}
-                  viewMode={viewMode}
+                  viewMode={effectiveViewMode}
                   brandLabel={
                     brandLabelMap[racket.brand.toLowerCase()] ?? racket.brand
                   }
