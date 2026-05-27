@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
+import SiteContainer from "@/components/layout/SiteContainer";
 
 export default function TossCheckoutSuccessPage() {
   const router = useRouter();
@@ -39,9 +40,11 @@ export default function TossCheckoutSuccessPage() {
   }, [router, sp]);
 
   return (
-    <div className="mx-auto flex min-h-[50vh] max-w-xl flex-col items-center justify-center gap-3 px-6 text-center">
+    <SiteContainer className="flex min-h-[50vh]">
+      <div className="mx-auto flex w-full max-w-xl flex-col items-center justify-center gap-3 text-center">
       <Loader2 className="h-6 w-6 animate-spin" />
       <p className="text-sm text-muted-foreground">결제 승인 처리 중입니다. 잠시만 기다려주세요.</p>
-    </div>
+      </div>
+    </SiteContainer>
   );
 }
