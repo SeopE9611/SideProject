@@ -267,7 +267,7 @@ export default function FilterableProductList({
     comfort: selectedComfort ?? undefined,
     q: submittedQuery,
     sort: sortOption,
-    limit: 6,
+    limit: 12,
     minPrice: minPriceParam,
     maxPrice: maxPriceParam,
     purpose: isApplyFlow ? "stringing" : undefined,
@@ -609,16 +609,16 @@ export default function FilterableProductList({
   const observerRef = useRef<IntersectionObserver | null>(null);
   const lastProductRef = useCallback(
     (node: HTMLDivElement | null) => {
-      if (isFetchingMore) return;
+      if (isFetchingMore || isLoadingInitial || !hasMore) return;
       if (observerRef.current) observerRef.current.disconnect();
       observerRef.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasMore) {
+        if (entries[0]?.isIntersecting && hasMore && !isFetchingMore && !isLoadingInitial) {
           loadMore();
         }
       });
       if (node) observerRef.current.observe(node);
     },
-    [isFetchingMore, hasMore, loadMore],
+    [isFetchingMore, hasMore, isLoadingInitial, loadMore],
   );
 
   // 데스크톱(좌측 고정 패널): 선택 즉시 적용(=기존대로 selectedXXX 사용)
@@ -698,12 +698,12 @@ export default function FilterableProductList({
         </SheetContent>
       </Sheet>
 
-      <div className="grid grid-cols-1 gap-4 bp-md:gap-8 bp-lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-6 bp-xl:gap-8 bp-lg:grid-cols-[280px_minmax(0,1fr)] bp-xl:grid-cols-[300px_minmax(0,1fr)]">
         {/* 필터 사이드바 */}
         <div
           className={cn(
             "hidden bp-lg:block",
-            "space-y-4 md:space-y-6 bp-lg:col-span-1",
+            "space-y-4 md:space-y-6",
           )}
         >
           <div className="sticky top-20 self-start">
@@ -712,7 +712,7 @@ export default function FilterableProductList({
         </div>
 
         {/* 상품 목록 */}
-        <div className="bp-lg:col-span-3">
+        <div className="min-w-0">
           <div className="mb-6 bp-md:mb-8 space-y-3">
             <div className="flex items-center justify-between">
               <div
@@ -946,7 +946,7 @@ export default function FilterableProductList({
                     : "grid-cols-1",
                 )}
               >
-                {Array.from({ length: viewMode === "grid" ? 6 : 4 }).map(
+                {Array.from({ length: viewMode === "grid" ? 12 : 4 }).map(
                   (_, index) => (
                     <div
                       key={`products-loading-skeleton-${index}`}
@@ -1038,12 +1038,18 @@ export default function FilterableProductList({
 
               {/* 추가 로딩 표시 */}
               {isFetchingMore && (
-                <div
-                  aria-live="polite"
-                  className="text-center py-4 flex justify-center items-center gap-2"
-                >
-                  <div className="h-4 w-4 rounded-full border-2 border-border border-t-transparent animate-spin" />
-                  <Skeleton className="h-4 w-24" />
+                <div className="mt-4 grid grid-cols-1 gap-4 bp-md:gap-6 bp-sm:grid-cols-2 bp-lg:grid-cols-3 bp-xl:grid-cols-4">
+                  {Array.from({ length: 4 }).map((_, index) => (
+                    <div
+                      key={`products-fetching-skeleton-${index}`}
+                      className="rounded-xl border border-border bg-card p-4"
+                    >
+                      <Skeleton className="mb-4 aspect-[4/3] w-full rounded-lg" />
+                      <Skeleton className="h-5 w-2/3" />
+                      <Skeleton className="mt-2 h-4 w-1/2" />
+                      <Skeleton className="mt-4 h-8 w-full rounded-md" />
+                    </div>
+                  ))}
                 </div>
               )}
 

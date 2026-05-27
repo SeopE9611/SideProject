@@ -39,7 +39,10 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
         </SiteContainer>
       </div>
 
-      <SiteContainer variant="wide" className="py-6 bp-sm:py-8 bp-md:py-12">
+      <SiteContainer
+        variant="wide"
+        className="py-6 bp-sm:py-8 bp-md:py-12 bp-lg:max-w-[1600px] bp-xl:max-w-[1680px]"
+      >
         <Card className="mb-4 border-border bg-muted/30 bp-sm:mb-6">
           <CardContent className="flex flex-col gap-4 p-4 md:flex-row md:items-center md:justify-between">
             <div className="space-y-1">

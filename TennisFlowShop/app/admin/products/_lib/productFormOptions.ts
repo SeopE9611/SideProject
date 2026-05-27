@@ -43,6 +43,7 @@ export const colors = [
   { id: "gray", name: "그레이", hex: "\x236b7280" },
   { id: "natural", name: "내추럴", hex: "\x23ead7b7" },
   { id: "pink", name: "핑크", hex: "\x23f9a8d4" },
+  { id: "purple", name: "퍼플", hex: "\x238b5cf6" },
   { id: "silver", name: "실버", hex: "\x2394a3b8" },
   { id: "gold", name: "골드", hex: "\x23eab308" },
   { id: "transparent", name: "투명", hex: "\x23ffffff00" },
