@@ -1,18 +1,11 @@
-import StringPackagesPageClient from "@/app/services/packages/_components/StringPackagesPageClient";
-import {
-  normalizePackageCardData,
-  type PackageCardData,
-} from "@/app/services/packages/_lib/packageCard";
-import {
-  type PackageVariant,
-  getPackageVariantByIndex,
-  toPackageVariant,
-} from "@/app/services/packages/_lib/packageVariant";
 import { loadPackageSettings } from "@/app/features/packages/api/db";
-import { cookies } from "next/headers";
-import type { Metadata } from "next";
+import StringPackagesPageClient from "@/app/services/packages/_components/StringPackagesPageClient";
+import { normalizePackageCardData, type PackageCardData } from "@/app/services/packages/_lib/packageCard";
+import { getPackageVariantByIndex, toPackageVariant, type PackageVariant } from "@/app/services/packages/_lib/packageVariant";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { findBlockingPackageOrderByUserId } from "@/lib/package-order-ownership";
+import type { Metadata } from "next";
+import { cookies } from "next/headers";
 
 export const metadata: Metadata = {
   title: "스트링 교체 할인 패키지",
@@ -44,15 +37,10 @@ const STATIC_PACKAGES: PackageCardData[] = [
     originalPrice: 360000,
     discount: 17,
     popular: true,
-    features: [
-      "30회 스트링 교체",
-      "무료 장력 상담",
-      "프리미엄 스트링 선택",
-      "우선 예약",
-    ],
+    features: ["30회 스트링 교체", "무료 장력 상담", "프리미엄 스트링 선택", "우선 예약"],
     benefits: ["6만원 절약", "우선 예약 혜택"],
     variant: "accent" as PackageVariant,
-    description: "정기적으로 테니스를 즐기는 분들을 위한 인기 패키지",
+    description: "정기적으로 테니스를 즐기는 분들을 위한 추천 패키지",
     validityPeriod: "6개월",
   },
   {
@@ -62,13 +50,7 @@ const STATIC_PACKAGES: PackageCardData[] = [
     price: 500000,
     originalPrice: 600000,
     discount: 17,
-    features: [
-      "50회 스트링 교체",
-      "무료 장력 상담",
-      "프리미엄 스트링 선택",
-      "우선 예약",
-      "무료 그립 교체 5회",
-    ],
+    features: ["50회 스트링 교체", "무료 장력 상담", "프리미엄 스트링 선택", "우선 예약", "무료 그립 교체 5회"],
     benefits: ["10만원 절약", "그립 교체 혜택"],
     variant: "primary" as PackageVariant,
     description: "진지한 테니스 플레이어를 위한 프리미엄 패키지",
@@ -82,13 +64,7 @@ const STATIC_PACKAGES: PackageCardData[] = [
     price: 1000000,
     originalPrice: 1200000,
     discount: 17,
-    features: [
-      "100회 스트링 교체",
-      "무료 장력 상담",
-      "프리미엄 스트링 선택",
-      "우선 예약",
-      "무료 그립 교체 10회",
-    ],
+    features: ["100회 스트링 교체", "무료 장력 상담", "프리미엄 스트링 선택", "우선 예약", "무료 그립 교체 10회"],
     benefits: ["20만원 절약", "전용 서비스"],
     variant: "primary" as PackageVariant,
     description: "프로 선수와 열정적인 플레이어를 위한 최고급 패키지",
@@ -109,23 +85,16 @@ function safeVerifyAccessToken(token?: string | null) {
 async function getInitialPackages(): Promise<PackageCardData[]> {
   try {
     const { packageConfigs } = await loadPackageSettings();
-    const activePackages = packageConfigs
-      .filter((pkg) => pkg.isActive)
-      .sort((a, b) => a.sortOrder - b.sortOrder);
+    const activePackages = packageConfigs.filter((pkg) => pkg.isActive).sort((a, b) => a.sortOrder - b.sortOrder);
 
     if (!activePackages.length) return STATIC_PACKAGES;
 
     return activePackages.map((pkg, index) => {
       const sessions = Number(pkg.sessions || 0);
       const price = Number(pkg.price || 0);
-      const originalPrice = Number(
-        pkg.originalPrice != null ? pkg.originalPrice : pkg.price || 0,
-      );
+      const originalPrice = Number(pkg.originalPrice != null ? pkg.originalPrice : pkg.price || 0);
 
-      const variant = toPackageVariant(
-        undefined,
-        pkg.isPopular ? "accent" : getPackageVariantByIndex(index),
-      );
+      const variant = toPackageVariant(undefined, pkg.isPopular ? "accent" : getPackageVariantByIndex(index));
 
       return normalizePackageCardData({
         id: pkg.id || `package-${index + 1}`,
@@ -172,15 +141,7 @@ async function getInitialOwnershipBlockedMessage(): Promise<string | null> {
 export default async function StringPackagesPage() {
   // 기존 구조는 클라이언트 마운트 이후 settings/ownership를 각각 추가 fetch했다.
   // 아래처럼 서버에서 동시에 선조회하면 첫 화면에서 바로 데이터를 사용할 수 있어 체감 지연을 줄일 수 있다.
-  const [initialPackages, initialOwnershipBlockedMessage] = await Promise.all([
-    getInitialPackages(),
-    getInitialOwnershipBlockedMessage(),
-  ]);
+  const [initialPackages, initialOwnershipBlockedMessage] = await Promise.all([getInitialPackages(), getInitialOwnershipBlockedMessage()]);
 
-  return (
-    <StringPackagesPageClient
-      initialPackages={initialPackages}
-      initialOwnershipBlockedMessage={initialOwnershipBlockedMessage}
-    />
-  );
+  return <StringPackagesPageClient initialPackages={initialPackages} initialOwnershipBlockedMessage={initialOwnershipBlockedMessage} />;
 }
