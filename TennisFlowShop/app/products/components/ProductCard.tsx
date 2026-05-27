@@ -480,7 +480,7 @@ const ProductCard = React.memo(
             <Button asChild type="button" variant="outline" className="h-10 text-sm">
               <Link href={detailHref}>
                 <Eye className="h-4 w-4 mr-1.5" />
-                상세 보기
+                {isApplyFlow ? "이 스트링으로 교체 신청" : "상세 보기"}
               </Link>
             </Button>
             <div className="flex justify-end">
@@ -514,7 +514,11 @@ const ProductCard = React.memo(
             </Button>
           )}
 
-          {shouldShowStandaloneServiceBadge && (<Badge variant="secondary" className="w-fit text-[11px]">교체서비스 전용</Badge>)}
+          {shouldShowStandaloneServiceBadge && (
+            <Badge variant="secondary" className="w-fit text-[11px]">
+              교체서비스 전용
+            </Badge>
+          )}
         </CardFooter>
       </Card>
     );
