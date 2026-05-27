@@ -317,7 +317,7 @@ export default function AdminRentalDetailClient() {
     (isVisitPickup
       ? "방문 수령"
       : servicePickupMethod === "COURIER_VISIT"
-        ? "기사 방문 수거"
+        ? "자가 발송(택배)"
         : "택배 발송");
 
   const pendingDialogConfig =

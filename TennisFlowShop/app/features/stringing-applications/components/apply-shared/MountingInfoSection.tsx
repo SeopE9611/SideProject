@@ -804,11 +804,6 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                     </span>
                     을 기준으로 합니다.
                   </p>
-                  <p className="mt-1">
-                    * 기사 방문 수거비가 있는 경우(=택배 접수 방식 기준){" "}
-                    <span className="font-semibold">후정산</span>이며, 입금
-                    금액에는 포함되지 않습니다.
-                  </p>
                 </div>
               )}
 

@@ -430,7 +430,7 @@ export default function OrdersClient() {
       .toLowerCase();
     if (!method) return null;
     if (method === "visit") return "방문 접수";
-    if (method === "courier_pickup") return "기사 방문 수거";
+    if (method === "courier_pickup") return "자가 발송(택배)";
     return "발송 접수";
   }
 
