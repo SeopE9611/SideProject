@@ -7,7 +7,6 @@ import {
   PACKAGE_VARIANT_ICON_CLASS,
   PACKAGE_VARIANT_TOP_BAR_CLASS,
 } from "@/app/services/packages/_lib/packageVariant";
-import { getMerchandisingBadgeSpec } from "@/lib/badge-style";
 import {
   Award,
   CheckCircle,
@@ -69,7 +68,7 @@ export default function UnifiedPackageCard({
     >
       {pkg.popular && (
         <div className="absolute right-0 top-0 rounded-bl-lg bg-secondary px-4 py-2 text-sm font-semibold text-foreground">
-          인기
+          추천
         </div>
       )}
       {pricingMeta.discountRate > 0 && (
@@ -86,13 +85,10 @@ export default function UnifiedPackageCard({
         >
           <Icon className="h-8 w-8" />
         </div>
-        <div className="mb-2 flex items-center justify-center gap-2">
-          <CardTitle className="text-2xl font-bold">{pkg.title}</CardTitle>
-          {pkg.popular && (
-            <Badge variant={getMerchandisingBadgeSpec("popular").variant}>
-              추천
-            </Badge>
-          )}
+        <div className="mb-2 flex items-center justify-center">
+          <CardTitle className="text-xl font-bold leading-tight break-keep text-balance bp-xl:text-2xl">
+            {pkg.title}
+          </CardTitle>
         </div>
         <CardDescription className="mb-4 text-base">
           {pkg.description}
@@ -107,7 +103,7 @@ export default function UnifiedPackageCard({
               {pkg.originalPrice.toLocaleString()}원
             </div>
           )}
-          <div className="text-sm text-muted-foreground">회당 {pricingMeta.perSession.toLocaleString()}원</div>
+          <div className="text-sm text-muted-foreground">회당 약 {pricingMeta.perSession.toLocaleString()}원</div>
           {pricingMeta.originalPerSession > 0 ? <div className="text-xs text-muted-foreground">정가 기준 회당 {pricingMeta.originalPerSession.toLocaleString()}원</div> : null}
         </div>
       </CardHeader>

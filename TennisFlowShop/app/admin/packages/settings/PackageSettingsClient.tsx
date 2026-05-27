@@ -395,23 +395,27 @@ export default function PackageSettingsClient() {
                       >
                         <CardHeader className="bg-muted/30 border-b">
                           <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-2">
-                              <Package className="h-5 w-5 text-primary" />
-                              <CardTitle className="text-lg">
-                                {pkg.name}
-                              </CardTitle>
-                              {pkg.isPopular && (
-                                <Badge
-                                  variant={
-                                    getMerchandisingBadgeSpec("popular").variant
-                                  }
-                                >
-                                  인기
-                                </Badge>
-                              )}
-                              {!pkg.isActive && (
-                                <Badge variant="secondary">비활성</Badge>
-                              )}
+                            <div className="min-w-0">
+                              <div className="flex items-center space-x-2">
+                                <Package className="h-5 w-5 text-primary" />
+                                <CardTitle className="truncate text-lg">
+                                  {pkg.name}
+                                </CardTitle>
+                              </div>
+                              <div className="mt-2 flex flex-wrap gap-1.5">
+                                {pkg.isPopular && (
+                                  <Badge
+                                    variant={
+                                      getMerchandisingBadgeSpec("popular").variant
+                                    }
+                                  >
+                                    추천
+                                  </Badge>
+                                )}
+                                {!pkg.isActive && (
+                                  <Badge variant="secondary">비활성</Badge>
+                                )}
+                              </div>
                             </div>
                             <div className="flex items-center space-x-2">
                               <Button
@@ -474,7 +478,7 @@ export default function PackageSettingsClient() {
                                 </div>
                               </div>
                               <p className="text-xs text-muted-foreground">
-                                할인율은 정가와 판매 가격을 기준으로 자동 계산됩니다.
+                                할인율과 절감액은 정가와 판매 가격을 기준으로 자동 계산됩니다.
                               </p>
 
                               <div className="grid grid-cols-2 gap-4">
@@ -617,7 +621,7 @@ export default function PackageSettingsClient() {
                                     }
                                   />
                                   <Label htmlFor={`popular-${pkg.id}`}>
-                                    인기 패키지
+                                    추천 패키지
                                   </Label>
                                 </div>
                               </div>
@@ -627,20 +631,25 @@ export default function PackageSettingsClient() {
                               {(() => {
                                 const meta = getPackagePricingMeta(pkg);
                                 return (
-                                  <div className="grid grid-cols-3 gap-2 rounded-lg border border-border bg-muted/30 p-3 text-center text-sm">
-                                    <div>
-                                      <p className="text-muted-foreground">회당 금액</p>
-                                      <p className="font-semibold text-foreground">{formatCurrency(meta.perSession)}</p>
+                                  <>
+                                    <div className="grid grid-cols-3 gap-2 rounded-lg border border-border bg-muted/30 p-3 text-center text-sm">
+                                      <div>
+                                        <p className="text-muted-foreground">회당 금액</p>
+                                        <p className="font-semibold text-foreground">{formatCurrency(meta.perSession)}</p>
+                                      </div>
+                                      <div>
+                                        <p className="text-muted-foreground">할인율</p>
+                                        <p className="font-semibold text-foreground">{meta.discountRate > 0 ? `${meta.discountRate}%` : "-"}</p>
+                                      </div>
+                                      <div>
+                                        <p className="text-muted-foreground">절감액</p>
+                                        <p className="font-semibold text-foreground">{meta.savingAmount > 0 ? formatCurrency(meta.savingAmount) : "-"}</p>
+                                      </div>
                                     </div>
-                                    <div>
-                                      <p className="text-muted-foreground">할인율</p>
-                                      <p className="font-semibold text-foreground">{meta.discountRate > 0 ? `${meta.discountRate}%` : "-"}</p>
-                                    </div>
-                                    <div>
-                                      <p className="text-muted-foreground">절감액</p>
-                                      <p className="font-semibold text-foreground">{meta.savingAmount > 0 ? formatCurrency(meta.savingAmount) : "-"}</p>
-                                    </div>
-                                  </div>
+                                    <p className="text-xs text-muted-foreground">
+                                      회당 금액은 판매 가격 ÷ 이용 횟수, 할인율/절감액은 정가 대비 판매 가격 기준으로 자동 계산됩니다.
+                                    </p>
+                                  </>
                                 );
                               })()}
                               <div className="flex items-center justify-between">
