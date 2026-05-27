@@ -162,6 +162,19 @@ function groupNextActionText(group: { guide: { nextAction?: string | null }; can
   return "조치 필요 없음";
 }
 
+function getOperationPriorityMeta(input: { warn: boolean; reviewLevel?: ReviewLevel; groupCancelRequested: boolean }) {
+  if (input.groupCancelRequested) {
+    return { label: "즉시 처리", description: "취소 요청", tone: "warning" as const };
+  }
+  if (input.warn) {
+    return { label: "주의", description: "운영 확인 필요", tone: "warning" as const };
+  }
+  if (input.reviewLevel === "action") {
+    return { label: "확인 필요", description: "검수 필요", tone: "info" as const };
+  }
+  return { label: "정상", description: "일반 처리", tone: "neutral" as const };
+}
+
 function statusHeadlineOf(item: OpItem) {
   const status = item.statusDisplayLabel?.trim() || item.statusLabel?.trim() || "";
   const flowLabel = flowLabelText(item);
@@ -1111,7 +1124,11 @@ export default function OperationsClient() {
         </section>
 
         <details className="mt-3 rounded-lg border border-border/70 bg-muted/20 px-3 py-2 text-sm">
-          <summary className="cursor-pointer font-semibold text-foreground">오늘 업무 처리 순서</summary>
+          <summary className="flex cursor-pointer items-center gap-2 font-semibold text-foreground">
+            <span>오늘 업무 처리 순서</span>
+            <Badge className={cn(badgeBase, badgeSizeSm, badgeToneClass("brand"))}>권장 처리 순서</Badge>
+          </summary>
+          <p className="mt-1 text-xs text-muted-foreground">처음 접속했다면 이 순서대로 확인하세요.</p>
           <ol className="mt-2 list-decimal space-y-1 pl-5 text-xs leading-relaxed text-muted-foreground">
             <li>취소 요청을 먼저 확인합니다.</li>
             <li>결제 대기/입금 확인 건을 처리합니다.</li>
@@ -1199,8 +1216,9 @@ export default function OperationsClient() {
           <div className={cn(adminSurface.filterCard, "mb-3 p-3 sm:p-3")}>
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div>
-                <p className="text-sm font-medium text-foreground">빠른 보기</p>
+                <p className="text-sm font-medium text-foreground">업무 큐</p>
                 <p className="mt-1 text-xs text-foreground/70">{activeQuickViewMeta.description}</p>
+                <p className="mt-1 text-xs text-muted-foreground">처리할 업무 유형을 빠르게 좁혀봅니다. 오늘 처리, 취소 요청, 결제 확인처럼 실제 업무 단위로 목록을 전환합니다.</p>
               </div>
               <div className="flex flex-wrap gap-2">
                 {QUICK_VIEWS.map((view) => (
@@ -1211,7 +1229,9 @@ export default function OperationsClient() {
               </div>
             </div>
           </div>
-          <p className="text-sm font-semibold text-foreground">업무 모드 전환</p>
+          <p className="mb-1 text-xs text-muted-foreground">일반 업무는 업무 큐로 전환하고, 특정 이슈 집중 점검은 정밀 검수 모드를 사용하세요.</p>
+          <p className="text-sm font-semibold text-foreground">정밀 검수 모드</p>
+          <p className="mt-1 text-xs text-muted-foreground">결제 불일치, 연결 검수, 단독 신청처럼 특정 운영 이슈를 집중 점검합니다.</p>
           <div className="mt-2 flex flex-wrap gap-2">
             <Button
               type="button"
@@ -1262,9 +1282,14 @@ export default function OperationsClient() {
           <CardHeader className="flex flex-row items-start justify-between gap-3 pb-2">
             <div>
               <CardTitle>고급 필터</CardTitle>
-              <CardDescription className="text-xs mt-1">검색, 종류, 시나리오, 연결, 문제 유형, 정렬 조건은 필요할 때만 열어 사용합니다.</CardDescription>
+              <CardDescription className="mt-1 text-xs">고급 필터는 특정 고객, 문서 ID, 시나리오, 문제 유형을 직접 좁힐 때 사용합니다. 일반 처리는 위의 업무 큐를 먼저 사용하세요.</CardDescription>
               {error && !shouldShowGlobalError && <p className="mt-1 text-[11px] text-warning">검색 결과를 새로 불러오지 못해 이전 결과를 유지 중입니다. 잠시 후 다시 시도해 주세요.</p>}
-              {activeFilterCount > 0 && <Badge className={cn(badgeBase, badgeSizeSm, "mt-2 " + badgeToneClass("brand"))}>적용된 필터 {activeFilterCount}개</Badge>}
+              {activeFilterCount > 0 && (
+                <>
+                  <Badge className={cn(badgeBase, badgeSizeSm, "mt-2 " + badgeToneClass("brand"))}>적용된 필터 {activeFilterCount}개</Badge>
+                  <p className="mt-1 text-[11px] text-muted-foreground">필터가 켜져 있어 일부 업무만 보입니다.</p>
+                </>
+              )}
             </div>
 
             <div className="flex shrink-0 gap-2">
@@ -1562,6 +1587,7 @@ export default function OperationsClient() {
                       const reasonSummary = summarizeReasonText(g.primarySignal?.description ?? reviewReasons[0]);
                       const reasonBullets = reviewReasons.map((reason) => toOperatorSentence(reason)).filter(Boolean);
                       const groupCancelRequested = g.items.some((it) => it.cancel?.status === "requested");
+                      const priorityMeta = getOperationPriorityMeta({ warn, reviewLevel: g.reviewLevel, groupCancelRequested });
                       const nextActionText = groupNextActionText({
                         guide: groupGuide,
                         cancelRequested: groupCancelRequested,
@@ -1621,12 +1647,8 @@ export default function OperationsClient() {
                             <TableCell className={cn(tdClasses, rowDensityClass)}>
                               <div className="space-y-1.5">
                                 <div className="flex flex-wrap items-center gap-1.5">
-                                  <Badge className={cn(badgeBase, badgeSizeSm, warn ? badgeToneClass("warning") : badgeToneClass("neutral"))}>{warn ? "주의" : "정상"}</Badge>
-                                  {!warn && g.reviewLevel === "action" && (
-                                    <Badge variant={getWorkflowMetaBadgeSpec("action_required").variant} className={cn(badgeBase, badgeSizeSm)}>
-                                      확인 필요
-                                    </Badge>
-                                  )}
+                                  <Badge className={cn(badgeBase, badgeSizeSm, badgeToneClass(priorityMeta.tone))}>{priorityMeta.label}</Badge>
+                                  <span className="text-xs text-foreground/80">{priorityMeta.description}</span>
                                   <span className="text-xs text-foreground/80">{isGroup ? `${g.items.length}건 그룹` : "단일 건"}</span>
                                 </div>
                                 <div className="flex items-center gap-1.5 text-xs text-foreground/75">
@@ -1860,6 +1882,7 @@ export default function OperationsClient() {
                   );
                   const actionableQuickTarget = quickActionTarget && MEANINGFUL_QUICK_ACTION_LABELS.has(quickActionTarget.label) ? quickActionTarget : null;
                   const groupCancelRequested = g.items.some((it) => it.cancel?.status === "requested");
+                  const priorityMeta = getOperationPriorityMeta({ warn, reviewLevel: g.reviewLevel, groupCancelRequested });
                   const nextActionText = groupNextActionText({
                     guide: groupGuide,
                     cancelRequested: groupCancelRequested,
@@ -1876,12 +1899,8 @@ export default function OperationsClient() {
                       <CardContent className="space-y-1.5 p-1.5">
                         <div className="space-y-0.5">
                           <div className="flex flex-wrap items-center gap-1.5">
-                            <Badge className={cn(badgeBase, badgeSizeSm, warn ? badgeToneClass("warning") : badgeToneClass("neutral"))}>{warn ? "주의" : "정상"}</Badge>
-                            {!warn && g.reviewLevel === "action" && (
-                              <Badge variant={getWorkflowMetaBadgeSpec("action_required").variant} className={cn(badgeBase, badgeSizeSm)}>
-                                확인 필요
-                              </Badge>
-                            )}
+                            <Badge className={cn(badgeBase, badgeSizeSm, badgeToneClass(priorityMeta.tone))}>{priorityMeta.label}</Badge>
+                            <span className="text-[11px] leading-tight text-foreground/80">{priorityMeta.description}</span>
                             <span className="text-[11px] leading-tight text-muted-foreground/90">{g.items.length > 1 ? `${g.items.length}건 그룹` : "단일 건"}</span>
                           </div>
                           <div className="flex items-center gap-1.5 text-xs leading-snug text-foreground/75">
@@ -1914,7 +1933,7 @@ export default function OperationsClient() {
 
                         <p className="text-sm font-semibold text-foreground line-clamp-1">{headline}</p>
                         <p className="text-[12px] text-foreground line-clamp-1">
-                          <span className="mr-1 font-semibold text-primary">다음 처리</span>
+                          <span className="mr-1 font-semibold text-primary">다음 처리:</span>
                           {nextActionText}
                         </p>
                         {hasReasonCard && (
