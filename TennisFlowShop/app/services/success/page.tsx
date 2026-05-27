@@ -183,7 +183,7 @@ export default async function StringServiceSuccessPage(props: Props) {
   // 방문 예약 희망 일시 라벨
   const visitTimeLabel = isVisit
     ? formatVisitTimeRange(stringDetails?.preferredDate, stringDetails?.preferredTime, (application as any)?.visitDurationMinutes ?? null, (application as any)?.visitSlotCount ?? null)
-    : `예약 불필요${isSelfShip || isCourierPickup ? " (자가발송/기사 수거)" : ""}`;
+    : "예약 불필요";
 
   // 패키지 정보 조회
   let appliedPass: any = null;
