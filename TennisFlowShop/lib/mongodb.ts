@@ -81,7 +81,6 @@ declare global {
   var _offlineIndexesReady: Promise<void> | null | undefined;
 }
 
-let client: MongoClient;
 let clientPromise: Promise<MongoClient>;
 
 if (!uri) {
@@ -134,19 +133,23 @@ if (!uri) {
       new Error("MONGODB_URI 환경변수가 설정되지 않았습니다."),
     );
   }
-} else if (process.env.NODE_ENV === "development") {
-  if (!global._mongoClientPromise) {
-    client = new MongoClient(uri, mongoClientOptions);
-    global._mongoClientPromise = client.connect();
-  }
-  clientPromise = global._mongoClientPromise!;
 } else {
-  // 서버리스/프로덕션에서도 런타임 인스턴스 내에서는 단일 커넥션 프라미스를 재사용한다.
-  if (!global._mongoClientPromise) {
-    client = new MongoClient(uri, mongoClientOptions);
-    global._mongoClientPromise = client.connect();
-  }
-  clientPromise = global._mongoClientPromise!;
+  const getMongoClient = async () => {
+    if (!global._mongoClientPromise) {
+      const client = new MongoClient(uri, mongoClientOptions);
+      global._mongoClientPromise = client.connect().catch(async (error) => {
+        global._mongoClientPromise = undefined;
+        await client.close().catch(() => undefined);
+        throw error;
+      });
+    }
+    return global._mongoClientPromise;
+  };
+
+  clientPromise = {
+    then: (onFulfilled, onRejected) =>
+      getMongoClient().then(onFulfilled, onRejected),
+  } as Promise<MongoClient>;
 }
 
 // 다른 곳에서 필요하면 default 로 가져다 쓸 수 있게 유지
@@ -158,7 +161,7 @@ export default clientPromise;
  * - 리뷰 인덱스를 생명주기당 1회만 보장(아이들포턴트)
  */
 export async function getDb() {
-  const c = await clientPromise; // 재할당하지 않도록 변수명 변경
+  const c = await clientPromise; // lazy connect + 실패한 Promise 재사용 방지
   const db = c.db(dbName);
 
   // 핵심: 인덱스 보장을 "순차 await" 하지 않고, 같은 요청 안에서 병렬로 시작한다.
