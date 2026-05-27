@@ -136,7 +136,7 @@ export const FilterPanel = React.memo(function FilterPanel({
     <div
       className={cn(
         "rounded-lg bp-sm:rounded-xl border border-border bg-card p-4 bp-sm:p-6 shadow-sm",
-        "bp-lg:max-h-[calc(100vh-120px)] bp-lg:overflow-y-auto bp-lg:overscroll-contain bp-lg:pr-1",
+        "bp-lg:max-h-[calc(100vh-116px)] bp-lg:overflow-y-auto bp-lg:overscroll-contain bp-lg:pr-3 bp-lg:[scrollbar-gutter:stable] bp-lg:[scrollbar-width:thin] bp-lg:[&::-webkit-scrollbar]:w-1.5 bp-lg:[&::-webkit-scrollbar-track]:bg-transparent bp-lg:[&::-webkit-scrollbar-thumb]:rounded-full bp-lg:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/25 bp-lg:hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/40",
       )}
     >
       {isLoadingInitial ? (
