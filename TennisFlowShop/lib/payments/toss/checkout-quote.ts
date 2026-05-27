@@ -4,6 +4,7 @@ import { applyPackageToServiceFee, resolvePackageUsage, resolveRequiredPassCount
 import { findOneActivePassForUser } from "@/lib/passes.service";
 import type { StringingApplicationInput } from "@/app/features/stringing-applications/api/submit-core";
 import { isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
+import { getEffectiveProductPrice } from "@/lib/product-pricing";
 
 export async function calculateCheckoutPayableAmount(params: {
   db: Db;
@@ -23,7 +24,7 @@ export async function calculateCheckoutPayableAmount(params: {
         const prod = await db.collection("products").findOne({ _id: new ObjectId(it.productId) });
         return {
           name: prod?.name ?? "알 수 없는 상품",
-          price: Number(prod?.price ?? 0),
+          price: getEffectiveProductPrice(prod),
           quantity,
           kind: "product" as const,
           mountingFee: Number.isFinite(Number((prod as any)?.mountingFee)) ? Number((prod as any).mountingFee) : 0,
