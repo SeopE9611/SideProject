@@ -196,7 +196,7 @@ export default async function ServicesPage() {
                 </div>
                 <h3 className="mb-2 text-xl font-bold">전화 예약</h3>
                 <p className="mb-3 text-sm text-muted-foreground">가장 빠른 예약은 전화로 문의해 주세요.</p>
-                <div className="mb-1 text-xl font-bold text-foreground bp-md:text-2xl">0507-1392-3493</div>
+                <div className="mb-1 text-xl font-bold text-foreground bp-md:text-2xl">010-5218-5248</div>
                 <p className="text-sm text-muted-foreground">운영 시간: 평일 10:00 - 22:00, 토요일 09:00 - 18:00</p>
               </div>
 

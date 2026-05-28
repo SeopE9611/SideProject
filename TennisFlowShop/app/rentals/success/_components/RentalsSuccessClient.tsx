@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import SiteContainer from '@/components/layout/SiteContainer';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
-import { badgeToneVariant } from '@/lib/badge-style';
-import { normalizeRentalStatus } from '@/lib/admin-ops-normalize';
-import { bankLabelMap, racketBrandLabel } from '@/lib/constants';
-import { ArrowRight, CheckCircle, Clock, CreditCard, MapPin, Package, Phone, Shield, Truck, Undo2 } from 'lucide-react';
-import Link from 'next/link';
+import SiteContainer from "@/components/layout/SiteContainer";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { normalizeRentalStatus } from "@/lib/admin-ops-normalize";
+import { badgeToneVariant } from "@/lib/badge-style";
+import { bankLabelMap, racketBrandLabel } from "@/lib/constants";
+import { ArrowRight, CheckCircle, Clock, MapPin, Package, Phone, Shield, Truck, Undo2 } from "lucide-react";
+import Link from "next/link";
 
 type Props = {
   data: {
@@ -37,7 +37,7 @@ type Props = {
       stringingSubmitted?: boolean | null;
       stringingApplicationId?: string | null;
     };
-    racket: { brand: string; model: string; condition: 'A' | 'B' | 'C' } | null;
+    racket: { brand: string; model: string; condition: "A" | "B" | "C" } | null;
     payment?: {
       method?: string;
       bank?: string | null;
@@ -76,11 +76,11 @@ type Props = {
 export default function RentalsSuccessClient({ data }: Props) {
   const dbWithService = Boolean(data.withStringService);
   const dbStringingApplied = Boolean(data.isStringServiceApplied);
-  const dbStringingApplicationId = typeof data.stringingApplicationId === 'string' ? data.stringingApplicationId : '';
+  const dbStringingApplicationId = typeof data.stringingApplicationId === "string" ? data.stringingApplicationId : "";
 
-  const hintedWithService = typeof data.queryHint?.withService === 'boolean' ? data.queryHint.withService : null;
-  const hintedStringingSubmitted = typeof data.queryHint?.stringingSubmitted === 'boolean' ? data.queryHint.stringingSubmitted : null;
-  const hintedStringingApplicationId = typeof data.queryHint?.stringingApplicationId === 'string' ? data.queryHint.stringingApplicationId : '';
+  const hintedWithService = typeof data.queryHint?.withService === "boolean" ? data.queryHint.withService : null;
+  const hintedStringingSubmitted = typeof data.queryHint?.stringingSubmitted === "boolean" ? data.queryHint.stringingSubmitted : null;
+  const hintedStringingApplicationId = typeof data.queryHint?.stringingApplicationId === "string" ? data.queryHint.stringingApplicationId : "";
 
   const withService = dbWithService;
   const stringingApplied = dbStringingApplied;
@@ -92,28 +92,24 @@ export default function RentalsSuccessClient({ data }: Props) {
     (Boolean(hintedStringingApplicationId) && hintedStringingApplicationId !== dbStringingApplicationId);
 
   const stringingApplicationHref = dbStringingApplicationId ? `/mypage?tab=orders&flowType=application&flowId=${encodeURIComponent(dbStringingApplicationId)}&from=orders` : null;
-  const isPickup = data.shipping?.shippingMethod === 'pickup';
+  const isPickup = data.shipping?.shippingMethod === "pickup";
 
-  const total = typeof data.total === 'number' ? data.total : data.fee + data.deposit + (data.stringPrice ?? 0) + (data.stringingFee ?? 0);
-  const bankKeyFromServer = data.payment?.bank || '';
-  const depositorFromServer = data.payment?.depositor || '';
-  const bankKeyFallback = (typeof window !== 'undefined' && sessionStorage.getItem('rentals-last-bank')) || '';
-  const depositorFallback = (typeof window !== 'undefined' && sessionStorage.getItem('rentals-last-depositor')) || '';
+  const total = typeof data.total === "number" ? data.total : data.fee + data.deposit + (data.stringPrice ?? 0) + (data.stringingFee ?? 0);
+  const bankKeyFromServer = data.payment?.bank || "";
+  const depositorFromServer = data.payment?.depositor || "";
+  const bankKeyFallback = (typeof window !== "undefined" && sessionStorage.getItem("rentals-last-bank")) || "";
+  const depositorFallback = (typeof window !== "undefined" && sessionStorage.getItem("rentals-last-depositor")) || "";
   const bankKey = bankKeyFromServer || bankKeyFallback;
   const depositor = depositorFromServer || depositorFallback;
   const bankInfo = bankKey ? (bankLabelMap as any)[bankKey] : null;
 
-  const refundBankKey = data.refundAccount?.bank || (typeof window !== 'undefined' && sessionStorage.getItem('rentals-refund-bank')) || '';
-  const refundAccount = data.refundAccount?.account || (typeof window !== 'undefined' && sessionStorage.getItem('rentals-refund-account')) || '';
-  const refundHolder = data.refundAccount?.holder || (typeof window !== 'undefined' && sessionStorage.getItem('rentals-refund-holder')) || '';
+  const refundBankKey = data.refundAccount?.bank || (typeof window !== "undefined" && sessionStorage.getItem("rentals-refund-bank")) || "";
+  const refundAccount = data.refundAccount?.account || (typeof window !== "undefined" && sessionStorage.getItem("rentals-refund-account")) || "";
+  const refundHolder = data.refundAccount?.holder || (typeof window !== "undefined" && sessionStorage.getItem("rentals-refund-holder")) || "";
   const refundBankInfo = refundBankKey ? (bankLabelMap as any)[refundBankKey] : null;
 
-  const isNicePaid = data.paymentInfo?.provider === 'nicepay' || data.payment?.method === 'nicepay';
-  const paymentMethodLabel = isNicePaid
-    ? data.paymentInfo?.easyPayProvider
-      ? `NicePay (${data.paymentInfo.easyPayProvider})`
-      : 'NicePay'
-    : '무통장입금';
+  const isNicePaid = data.paymentInfo?.provider === "nicepay" || data.payment?.method === "nicepay";
+  const paymentMethodLabel = isNicePaid ? (data.paymentInfo?.easyPayProvider ? `NicePay (${data.paymentInfo.easyPayProvider})` : "NicePay") : "무통장입금";
   return (
     <div className="min-h-full bg-muted/30">
       <div className="relative overflow-hidden bg-muted/30 text-foreground">
@@ -148,11 +144,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                 {withService && <span className="rounded-full border border-border px-2 py-0.5 text-xs font-medium text-muted-foreground">교체서비스 포함</span>}
               </CardTitle>
               <CardDescription className="mt-2 text-lg">
-                {withService
-                  ? '접수된 대여 및 교체서비스 정보를 함께 확인하세요.'
-                  : isPickup
-                    ? '접수된 대여 정보와 결제/수령 진행 상황을 확인하세요.'
-                    : '접수된 대여 정보와 결제/배송 진행 상황을 확인하세요.'}
+                {withService ? "접수된 대여 및 교체서비스 정보를 함께 확인하세요." : isPickup ? "접수된 대여 정보와 결제/수령 진행 상황을 확인하세요." : "접수된 대여 정보와 결제/배송 진행 상황을 확인하세요."}
               </CardDescription>
             </div>
             <CardContent className="p-4 md:p-6">
@@ -162,8 +154,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                 </p>
                 {withService && stringingApplicationId && (
                   <p>
-                    <span className="text-muted-foreground">교체서비스 신청 번호:</span>{' '}
-                    <span className="font-mono font-semibold text-foreground">{stringingApplicationId}</span>
+                    <span className="text-muted-foreground">교체서비스 신청 번호:</span> <span className="font-mono font-semibold text-foreground">{stringingApplicationId}</span>
                   </p>
                 )}
                 <p>
@@ -171,10 +162,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                 </p>
                 {withService && (
                   <p>
-                    <span className="text-muted-foreground">교체서비스 상태:</span>{' '}
-                    <span className="font-semibold text-foreground">
-                      {stringingApplied ? data.applicationSummary?.status || '접수완료' : '접수 확인 중'}
-                    </span>
+                    <span className="text-muted-foreground">교체서비스 상태:</span> <span className="font-semibold text-foreground">{stringingApplied ? data.applicationSummary?.status || "접수완료" : "접수 확인 중"}</span>
                   </p>
                 )}
               </div>
@@ -182,10 +170,8 @@ export default function RentalsSuccessClient({ data }: Props) {
               <div className="mt-4 rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm text-muted-foreground">
                 <h3 className="font-bold text-foreground">다음 단계</h3>
                 <p className="mt-2 leading-relaxed">
-                  {isPickup
-                    ? '매장 방문 전 대여 상태를 확인하고 신분증을 준비해주세요.'
-                    : '배송이 시작되면 진행 상황을 마이페이지에서 확인할 수 있습니다.'}
-                  {withService ? ' 교체서비스가 포함된 경우 장착 상태도 함께 확인할 수 있어요.' : ''}
+                  {isPickup ? "매장 방문 전 대여 상태를 확인하고 신분증을 준비해주세요." : "배송이 시작되면 진행 상황을 마이페이지에서 확인할 수 있습니다."}
+                  {withService ? " 교체서비스가 포함된 경우 장착 상태도 함께 확인할 수 있어요." : ""}
                 </p>
               </div>
 
@@ -198,9 +184,9 @@ export default function RentalsSuccessClient({ data }: Props) {
                 <div className="rounded-lg border border-border bg-muted/30 p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-semibold text-foreground">{data.racket ? `${racketBrandLabel(data.racket.brand)} ${data.racket.model}` : '라켓 정보 없음'}</p>
+                      <p className="font-semibold text-foreground">{data.racket ? `${racketBrandLabel(data.racket.brand)} ${data.racket.model}` : "라켓 정보 없음"}</p>
                       <div className="mt-1 flex items-center gap-2">
-                        <Badge variant={badgeToneVariant('brand')} className="px-2 py-0.5 text-xs">
+                        <Badge variant={badgeToneVariant("brand")} className="px-2 py-0.5 text-xs">
                           상태 {data.racket?.condition}
                         </Badge>
                         <span className="text-sm text-muted-foreground">대여 기간: {data.period}일</span>
@@ -224,7 +210,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                       </p>
                       {data.applicationSummary.stringNames.length > 0 && (
                         <p>
-                          <span className="text-muted-foreground">선택 스트링:</span> <span className="font-semibold text-foreground">{data.applicationSummary.stringNames.join(', ')}</span>
+                          <span className="text-muted-foreground">선택 스트링:</span> <span className="font-semibold text-foreground">{data.applicationSummary.stringNames.join(", ")}</span>
                         </p>
                       )}
                       {data.applicationSummary.tensionSummary && (
@@ -283,10 +269,24 @@ export default function RentalsSuccessClient({ data }: Props) {
                 {isNicePaid ? (
                   <div className="rounded-lg border border-border bg-background p-4 text-sm space-y-1">
                     <p className="text-muted-foreground">결제가 완료되었습니다.</p>
-                    <div>결제수단: <b>{paymentMethodLabel}</b></div>
-                    {data.paymentInfo?.approvedAt && <div>승인시각: <b>{new Date(data.paymentInfo.approvedAt).toLocaleString('ko-KR')}</b></div>}
-                    {data.paymentInfo?.cardCompany && <div>카드사: <b>{data.paymentInfo.cardCompany}</b></div>}
-                    {data.paymentInfo?.tid && <div>TID: <b>{data.paymentInfo.tid}</b></div>}
+                    <div>
+                      결제수단: <b>{paymentMethodLabel}</b>
+                    </div>
+                    {data.paymentInfo?.approvedAt && (
+                      <div>
+                        승인시각: <b>{new Date(data.paymentInfo.approvedAt).toLocaleString("ko-KR")}</b>
+                      </div>
+                    )}
+                    {data.paymentInfo?.cardCompany && (
+                      <div>
+                        카드사: <b>{data.paymentInfo.cardCompany}</b>
+                      </div>
+                    )}
+                    {data.paymentInfo?.tid && (
+                      <div>
+                        TID: <b>{data.paymentInfo.tid}</b>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="rounded-lg border border-border bg-background p-4 text-sm">
@@ -327,31 +327,31 @@ export default function RentalsSuccessClient({ data }: Props) {
                         <span className="text-muted-foreground">수령 방식:</span> <span className="font-semibold">방문 수령 선택됨</span>
                       </p>
                       <p>
-                        <span className="text-muted-foreground">이름:</span> <span className="font-semibold">{data.shipping?.name || '-'}</span>
+                        <span className="text-muted-foreground">이름:</span> <span className="font-semibold">{data.shipping?.name || "-"}</span>
                       </p>
                       <p>
-                        <span className="text-muted-foreground">연락처:</span> <span className="font-semibold">{data.shipping?.phone || '-'}</span>
+                        <span className="text-muted-foreground">연락처:</span> <span className="font-semibold">{data.shipping?.phone || "-"}</span>
                       </p>
                     </>
                   ) : (
                     <>
                       <p>
-                        <span className="text-muted-foreground">이름:</span> <span className="font-semibold">{data.shipping?.name || '-'}</span>
+                        <span className="text-muted-foreground">이름:</span> <span className="font-semibold">{data.shipping?.name || "-"}</span>
                       </p>
                       <p>
-                        <span className="text-muted-foreground">연락처:</span> <span className="font-semibold">{data.shipping?.phone || '-'}</span>
+                        <span className="text-muted-foreground">연락처:</span> <span className="font-semibold">{data.shipping?.phone || "-"}</span>
                       </p>
                       <p>
-                        <span className="text-muted-foreground">우편번호:</span> <span className="font-semibold">{data.shipping?.postalCode || '-'}</span>
+                        <span className="text-muted-foreground">우편번호:</span> <span className="font-semibold">{data.shipping?.postalCode || "-"}</span>
                       </p>
                       <p>
-                        <span className="text-muted-foreground">주소:</span> <span className="font-semibold">{data.shipping?.address || '-'}</span>
+                        <span className="text-muted-foreground">주소:</span> <span className="font-semibold">{data.shipping?.address || "-"}</span>
                       </p>
                       <p>
-                        <span className="text-muted-foreground">상세주소:</span> <span className="font-semibold">{data.shipping?.addressDetail || '-'}</span>
+                        <span className="text-muted-foreground">상세주소:</span> <span className="font-semibold">{data.shipping?.addressDetail || "-"}</span>
                       </p>
                       <p>
-                        <span className="text-muted-foreground">요청사항:</span> <span className="font-semibold">{data.shipping?.deliveryRequest || '-'}</span>
+                        <span className="text-muted-foreground">요청사항:</span> <span className="font-semibold">{data.shipping?.deliveryRequest || "-"}</span>
                       </p>
                     </>
                   )}
@@ -428,8 +428,8 @@ export default function RentalsSuccessClient({ data }: Props) {
                   <div className="flex items-start gap-3 rounded-lg bg-muted/30 p-4">
                     <Truck className="mt-0.5 h-5 w-5 text-muted-foreground" />
                     <div>
-                      <h4 className="mb-1 font-semibold text-foreground">{isPickup ? '방문 수령 안내' : '배송 안내'}</h4>
-                      <p className="text-sm text-muted-foreground">{isPickup ? '입금 확인 후 매장에서 수령 준비가 진행됩니다.' : '결제 완료 후 배송이 시작됩니다.'}</p>
+                      <h4 className="mb-1 font-semibold text-foreground">{isPickup ? "방문 수령 안내" : "배송 안내"}</h4>
+                      <p className="text-sm text-muted-foreground">{isPickup ? "입금 확인 후 매장에서 수령 준비가 진행됩니다." : "결제 완료 후 배송이 시작됩니다."}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3 rounded-lg bg-muted/30 p-4">
@@ -452,7 +452,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                     <Phone className="mt-0.5 h-5 w-5 text-muted-foreground" />
                     <div>
                       <h4 className="mb-1 font-semibold text-foreground">고객 지원</h4>
-                      <p className="text-sm text-muted-foreground">대여 관련 문의사항은 고객센터(0507-1392-3493)로 연락주세요.</p>
+                      <p className="text-sm text-muted-foreground">대여 관련 문의사항은 고객센터(010-5218-5248)로 연락주세요.</p>
                     </div>
                   </div>
                 </div>

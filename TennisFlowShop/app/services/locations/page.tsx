@@ -16,7 +16,7 @@ export default function LocationsPage() {
     {
       name: "도깨비테니스",
       address: "서울 동작구 노량진로 22 B1",
-      phone: "0507-1392-3493",
+      phone: "010-5218-5248",
       email: "korgis5813@naver.com",
       hours: {
         weekday: "10:00 - 22:00",
@@ -128,11 +128,7 @@ export default function LocationsPage() {
                   </div>
 
                   <Button className="w-full" asChild>
-                    <Link
-                      href="https://map.naver.com/p/entry/place/1907032343?c=15.00,0,0,0,dh&placePath=/home?from=map&fromPanelNum=1&additionalHeight=76&timestamp=202601042339&locale=ko&svcName=map_pcv5"
-                      target="_blank"
-                      rel="noreferrer"
-                    >
+                    <Link href="https://map.naver.com/p/entry/place/1907032343?c=15.00,0,0,0,dh&placePath=/home?from=map&fromPanelNum=1&additionalHeight=76&timestamp=202601042339&locale=ko&svcName=map_pcv5" target="_blank" rel="noreferrer">
                       네이버 지도 검색
                     </Link>
                   </Button>
@@ -167,7 +163,7 @@ export default function LocationsPage() {
                     <Phone className="h-5 w-5 text-primary" />
                     <div>
                       <div className="font-semibold">전화 예약</div>
-                      <div className="text-sm text-muted-foreground">0507-1392-3493</div>
+                      <div className="text-sm text-muted-foreground">010-5218-5248</div>
                       <div className="text-xs text-muted-foreground">평일 09:00-18:00, 토요일 09:00-12:00</div>
                     </div>
                   </div>
@@ -203,7 +199,7 @@ export default function LocationsPage() {
                 <Link href="/services">스트링 장착 예약</Link>
               </Button>
               <Button size="lg" variant="outline" asChild>
-                <Link href="tel:0507-1392-3493">전화 상담</Link>
+                <Link href="tel:010-5218-5248">전화 상담</Link>
               </Button>
             </div>
           </CardContent>

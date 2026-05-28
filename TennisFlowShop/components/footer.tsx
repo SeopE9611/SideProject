@@ -75,7 +75,7 @@ const Footer = () => {
                   <div className="flex items-start gap-2.5">
                     <Phone className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                     <div>
-                      <span className="block text-base font-bold leading-none text-foreground">0507-1392-3493</span>
+                      <span className="block text-base font-bold leading-none text-foreground">010-5218-5248</span>
                       <p className="mt-1 text-xs text-muted-foreground/95">영업 시간 내 상담 가능</p>
                     </div>
                   </div>
