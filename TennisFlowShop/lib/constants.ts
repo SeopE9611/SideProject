@@ -9,22 +9,22 @@ export const REFRESH_TOKEN_EXPIRES_IN = 60 * 60 * 24 * 7; // 7일
 export const bankLabelMap: Record<string, { label: string; account: string; holder: string }> = {
   kakao: {
     label: "카카오뱅크",
-    account: "3333211092155",
+    account: "3333-2110-92155",
     holder: "김재민",
   },
   shinhan: {
     label: "카카오뱅크",
-    account: "3333211092155",
+    account: "3333-2110-92155",
     holder: "김재민",
   },
   kookmin: {
     label: "카카오뱅크",
-    account: "3333211092155",
+    account: "3333-2110-92155",
     holder: "김재민",
   },
   woori: {
     label: "카카오뱅크",
-    account: "3333211092155",
+    account: "3333-2110-92155",
     holder: "김재민",
   },
 };

@@ -159,7 +159,7 @@ const Footer = () => {
                 </h3>
                 <div className="w-full space-y-2 text-xs leading-5 text-muted-foreground/95">
                   <p>무통장 입금 계좌</p>
-                  <p className="text-sm font-semibold text-foreground">카카오뱅크 3333211092155</p>
+                  <p className="text-sm font-semibold text-foreground">카카오뱅크 3333-2110-92155</p>
                   <p>예금주 김재민</p>
                   <p>입금 확인은 영업시간 내 순차 처리됩니다.</p>
                 </div>
