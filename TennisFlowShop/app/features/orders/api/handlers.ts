@@ -1189,13 +1189,14 @@ export async function createOrder(req: Request, executionContext?: CreateOrderEx
 
     const getErrorCode = (target: unknown) => {
       if (target && typeof target === "object") {
-        const bodyCode = (target as { body?: { code?: unknown } }).body?.code;
+        const body = (target as { body?: { code?: unknown; error?: unknown } }).body;
+        const bodyCode = body?.code;
         if (typeof bodyCode === "string" && bodyCode.trim()) return bodyCode.trim();
 
         const code = (target as { code?: unknown }).code;
         if (typeof code === "string" && code.trim()) return code.trim();
 
-        const bodyError = (target as { body?: { error?: unknown } }).body?.error;
+        const bodyError = body?.error;
         if (typeof bodyError === "string" && bodyError.trim() && isLikelyErrorCode(bodyError)) return bodyError.trim();
       }
       return "ORDER_CREATE_FAILED";
@@ -1217,22 +1218,32 @@ export async function createOrder(req: Request, executionContext?: CreateOrderEx
       return fallbackMessage;
     };
 
+    const getErrorField = (target: unknown, messageValue: string) => {
+      if (target && typeof target === "object") {
+        const bodyError = (target as { body?: { error?: unknown } }).body?.error;
+        if (typeof bodyError === "string" && bodyError.trim()) return bodyError.trim();
+      }
+
+      return messageValue;
+    };
+
     const status = getErrorStatus(error);
     const code = getErrorCode(error);
     const message = getErrorMessage(error);
+    const errorField = getErrorField(error, message);
 
     const responseBody =
       error && typeof error === "object" && "body" in error && typeof (error as { body?: unknown }).body === "object" && (error as { body?: unknown }).body
         ? {
             success: false,
             ...((error as { body: Record<string, unknown> }).body ?? {}),
-            error: message,
+            error: errorField,
             message,
             code,
           }
         : {
             success: false,
-            error: message,
+            error: errorField,
             message,
             code,
           };
