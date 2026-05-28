@@ -1163,6 +1163,9 @@ export async function createOrder(req: Request, executionContext?: CreateOrderEx
 
     const getErrorCode = (target: unknown) => {
       if (target && typeof target === "object") {
+        const bodyCode = (target as { body?: { code?: unknown } }).body?.code;
+        if (typeof bodyCode === "string" && bodyCode.trim()) return bodyCode.trim();
+
         const code = (target as { code?: unknown }).code;
         if (typeof code === "string" && code.trim()) return code.trim();
       }
@@ -1171,11 +1174,11 @@ export async function createOrder(req: Request, executionContext?: CreateOrderEx
 
     const getErrorMessage = (target: unknown) => {
       if (target && typeof target === "object") {
-        const bodyError = (target as { body?: { error?: unknown } }).body?.error;
-        if (typeof bodyError === "string" && bodyError.trim()) return bodyError.trim();
-
         const bodyMessage = (target as { body?: { message?: unknown } }).body?.message;
         if (typeof bodyMessage === "string" && bodyMessage.trim()) return bodyMessage.trim();
+
+        const bodyError = (target as { body?: { error?: unknown } }).body?.error;
+        if (typeof bodyError === "string" && bodyError.trim()) return bodyError.trim();
       }
 
       if (target instanceof Error && typeof target.message === "string" && target.message.trim()) {
