@@ -3,7 +3,6 @@ import HeroCourtBackdrop from "@/components/system/HeroCourtBackdrop";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { CUSTOM_STRING_MOUNTING_FEE } from "@/lib/stringing-pricing-policy";
 import { ArrowRight, Award, Calendar, CheckCircle, Clock, HelpCircle, PhoneCall, Shield, Star, Target, Trophy, Users, Zap } from "lucide-react";
 import Link from "next/link";
@@ -24,7 +23,7 @@ export default async function ServicesPage() {
       description: "강력한 파워와 반발력을 제공하는 스트링",
       features: ["최대한의 파워 제공", "부드러운 타구감", "관절에 부담이 적음", "낮은 장력에서도 충분한 반발력"],
       recommended: ["파워 중심의 플레이 스타일", "어깨나 팔꿈치에 부담을 줄이고 싶은 분", "초보자 및 중급자", "자연스러운 스윙으로 힘을 얻고 싶은 분"],
-      examples: ["바볼랏 VS 터치", "윌슨 NXT", "테크니화이버 X-One"],
+      examples: ["핀포인트", "엑스드라이브", "탑스핀", "사이버블루", "포커스헥스울트라"],
       icon: <Zap className="h-8 w-8" />,
       performance: { power: 95, control: 70, spin: 75, durability: 80 },
     },
@@ -34,7 +33,7 @@ export default async function ServicesPage() {
       description: "정확한 컨트롤과 스핀을 위한 스트링",
       features: ["최대한의 스핀 생성", "정확한 볼 컨트롤", "내구성이 우수함", "중상급자용 하드 히팅에 적합"],
       recommended: ["컨트롤과 스핀 중심의 플레이 스타일", "강한 스트로크로 공격하는 플레이어", "중급자 및 상급자", "정확한 샷 배치를 중요시하는 분"],
-      examples: ["바볼랏 RPM 블라스트", "솔린코 투어바이트", "폴리스타 스트라이크"],
+      examples: ["사이클론", "센서스로테이션", "폴리투어스핀", "포커스헥스"],
       icon: <Target className="h-8 w-8" />,
       performance: { power: 75, control: 95, spin: 90, durability: 85 },
     },
@@ -44,7 +43,7 @@ export default async function ServicesPage() {
       description: "파워와 컨트롤의 균형 잡힌 성능",
       features: ["파워와 컨트롤의 균형", "중간 정도의 타구감", "다양한 플레이 스타일에 적합", "하이브리드 구성으로 활용 가능"],
       recommended: ["올라운드 플레이 스타일", "다양한 샷을 구사하는 플레이어", "파워와 컨트롤 모두 중요시하는 분", "모든 수준의 플레이어"],
-      examples: ["럭실론 프로 스트링", "윌슨 레볼루션", "테크니화이버 멀티필"],
+      examples: ["엑스펜타", "사이버플래쉬", "폴리투어프로", "투어바이트소프트"],
       icon: <Trophy className="h-8 w-8" />,
       performance: { power: 85, control: 85, spin: 80, durability: 90 },
     },
@@ -145,9 +144,7 @@ export default async function ServicesPage() {
             <Card className="border border-border bg-card/95 shadow-md backdrop-blur-[1px]">
               <CardContent className="p-6 text-center bp-md:p-8">
                 <h1 className="text-3xl font-bold text-foreground sm:text-4xl">스트링 교체 서비스를 더 쉽게</h1>
-                <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-                  스트링 구매, 라켓 구매·대여, 보유 장비 신청까지 상황에 맞는 방식으로 접수할 수 있습니다.
-                </p>
+                <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">스트링 구매, 라켓 구매·대여, 보유 장비 신청까지 상황에 맞는 방식으로 접수할 수 있습니다.</p>
                 <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
                   <Button asChild>
                     <Link href="#service-start">신청 방식 선택하기</Link>
@@ -291,9 +288,7 @@ export default async function ServicesPage() {
                 <div className="h-2 bg-muted"></div>
 
                 <CardHeader className="text-center pb-4">
-                  <div className="mx-auto mb-4 w-20 h-20 rounded-full border border-border/60 bg-secondary flex items-center justify-center text-muted-foreground shadow-sm transition-shadow duration-300 group-hover:shadow-md">
-                    {type.icon}
-                  </div>
+                  <div className="mx-auto mb-4 w-20 h-20 rounded-full border border-border/60 bg-secondary flex items-center justify-center text-muted-foreground shadow-sm transition-shadow duration-300 group-hover:shadow-md">{type.icon}</div>
                   <CardTitle className="text-2xl font-bold mb-2">{type.title}</CardTitle>
                   <CardDescription className="text-base">{type.description}</CardDescription>
                 </CardHeader>
@@ -456,7 +451,6 @@ export default async function ServicesPage() {
                 </div>
               ))}
             </div>
-            
           </div>
         </div>
       </section>
