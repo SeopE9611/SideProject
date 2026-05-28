@@ -579,6 +579,9 @@ export async function submitStringingApplicationCore({
     const isColorStockAlreadyDeductedByOrderItem =
       Boolean(selectedColorFromOrderItem) &&
       selectedColorFromOrderItem === effectiveSelectedColor;
+    const isVariantStockAlreadyDeductedByOrderItem =
+      isStockAlreadyDeductedByOrderItem &&
+      isColorStockAlreadyDeductedByOrderItem;
 
     const stringProduct = await db.collection("products").findOne(
       { _id: stringProductObjectId },
@@ -658,7 +661,7 @@ export async function submitStringingApplicationCore({
 
     let didVariantDeduct = false;
 
-    if (hasVariantInventories && !alreadyDeductedGaugeStock) {
+    if (hasVariantInventories && !alreadyDeductedGaugeStock && !isVariantStockAlreadyDeductedByOrderItem) {
       const variantDeduction = await applyStringingVariantInventoryDeduction({
         db,
         productId: stringProductObjectId,
