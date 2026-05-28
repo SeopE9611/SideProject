@@ -1161,6 +1161,8 @@ export async function createOrder(req: Request, executionContext?: CreateOrderEx
       return 500;
     };
 
+    const isLikelyErrorCode = (value: string) => /^[A-Z][A-Z0-9_]*$/.test(value.trim());
+
     const getErrorCode = (target: unknown) => {
       if (target && typeof target === "object") {
         const bodyCode = (target as { body?: { code?: unknown } }).body?.code;
@@ -1168,6 +1170,9 @@ export async function createOrder(req: Request, executionContext?: CreateOrderEx
 
         const code = (target as { code?: unknown }).code;
         if (typeof code === "string" && code.trim()) return code.trim();
+
+        const bodyError = (target as { body?: { error?: unknown } }).body?.error;
+        if (typeof bodyError === "string" && bodyError.trim() && isLikelyErrorCode(bodyError)) return bodyError.trim();
       }
       return "ORDER_CREATE_FAILED";
     };
