@@ -23,6 +23,13 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const POSTAL_RE = /^\d{5}$/;
 const onlyDigits = (v: string) => String(v ?? "").replace(/\D/g, "");
 const isValidKoreanPhone = (v: string) => /^010\d{8}$/.test(onlyDigits(v));
+const PAYMENT_AMOUNT_CHANGED_MESSAGE =
+  "상품 가격, 배송비, 포인트 또는 패키지 사용 정보가 변경되어 결제 금액이 달라졌습니다. 주문 정보를 다시 확인한 뒤 다시 시도해주세요.";
+
+const normalizeWonAmount = (value: unknown) => {
+  const amount = Number(value);
+  return Number.isFinite(amount) && amount >= 0 ? Math.floor(amount) : NaN;
+};
 
 // checkout/page.tsx 의 input id를 활용해 첫 오류 필드로 포커스 이동
 const focusFirst = (ids: string[]) => {
@@ -128,6 +135,7 @@ export default function CheckoutButton({
   depositor,
   totalPrice,
   shippingFee,
+  payableAmount,
   selectedBank,
   deliveryRequest,
   saveAddress,
@@ -153,6 +161,7 @@ export default function CheckoutButton({
   depositor: string;
   totalPrice: number;
   shippingFee: number;
+  payableAmount: number;
   selectedBank: string;
   deliveryRequest: string;
   saveAddress: boolean;
@@ -345,6 +354,12 @@ export default function CheckoutButton({
         }
       }
 
+      const expectedPayableAmount = normalizeWonAmount(payableAmount);
+      if (!Number.isFinite(expectedPayableAmount)) {
+        showErrorToast("결제 금액을 확인할 수 없습니다. 주문 정보를 다시 확인해주세요.");
+        return;
+      }
+
       // 모든 검증 통과 후에만 lock + 로딩 ON
       submittingRef.current = true;
       setIsSubmitting(true);
@@ -386,6 +401,7 @@ export default function CheckoutButton({
         shippingFee,
         serviceFee,
         pointsToUse: safePointsToUse,
+        expectedPayableAmount,
         guestInfo: !user
           ? { name: nameTrim, phone: phoneDigits, email: emailTrim }
           : undefined,
@@ -418,6 +434,15 @@ export default function CheckoutButton({
             ? "주문 응답을 처리할 수 없습니다. 다시 시도해주세요."
             : "주문 실패: 서버 응답을 처리할 수 없습니다.",
         );
+        return;
+      }
+
+      if (data?.error === "PAYMENT_AMOUNT_MISMATCH" || data?.code === "PAYMENT_AMOUNT_MISMATCH") {
+        console.warn("[checkout] payment amount mismatch", {
+          clientAmount: data?.clientAmount,
+          serverAmount: data?.serverAmount,
+        });
+        showErrorToast(data?.message ?? PAYMENT_AMOUNT_CHANGED_MESSAGE);
         return;
       }
 

@@ -39,6 +39,15 @@ const toTrimmedString = (v: unknown) => {
 
 // 연락처: 숫자만 남기기 (클라에서는 이미 digits지만, 서버에서도 방어)
 const toPhoneDigits = (v: unknown) => toTrimmedString(v).replace(/\D/g, "");
+const PAYMENT_AMOUNT_CHANGED_MESSAGE =
+  "상품 가격, 배송비, 포인트 또는 패키지 사용 정보가 변경되어 결제 금액이 달라졌습니다. 주문 정보를 다시 확인한 뒤 다시 시도해주세요.";
+
+const normalizeWonAmountOrNull = (value: unknown): number | null => {
+  if (value === undefined || value === null || value === "") return null;
+  const amount = Number(value);
+  if (!Number.isFinite(amount) || amount < 0) return null;
+  return Math.floor(amount);
+};
 
 const OrderItemSchema = z.object({
   // createOrder 내부에서 new ObjectId(item.productId)를 호출하므로, 여기서 먼저 검증해 500을 방지합니다.
@@ -141,6 +150,7 @@ const CreateOrderBodySchema = z
     totalPrice: z.any().optional(),
     shippingFee: z.any().optional(),
     serviceFee: z.any().optional(),
+    expectedPayableAmount: z.coerce.number().optional(),
 
     // 포인트 사용(서버에서 100단위 보정/클램프는 기존 로직 그대로 사용)
     pointsToUse: z.coerce.number().optional(),
@@ -280,6 +290,7 @@ export async function createOrder(req: Request, executionContext?: CreateOrderEx
     const clientTotalPrice = body?.totalPrice;
     const clientShippingFee = body?.shippingFee;
     const clientServiceFee = body?.serviceFee;
+    const clientExpectedPayableAmountRaw = body?.expectedPayableAmount;
 
     // 최소 방어
     if (!Array.isArray(rawItems) || rawItems.length === 0) {
@@ -1009,6 +1020,19 @@ export async function createOrder(req: Request, executionContext?: CreateOrderEx
         }
 
         const payableTotalPrice = Math.max(0, computedTotalPrice - pointsToUse);
+        const expectedPayableAmount = normalizeWonAmountOrNull(clientExpectedPayableAmountRaw);
+
+        if (expectedPayableAmount !== null && expectedPayableAmount !== payableTotalPrice) {
+          throw new HttpError(409, {
+            success: false,
+            error: "PAYMENT_AMOUNT_MISMATCH",
+            code: "PAYMENT_AMOUNT_MISMATCH",
+            message: PAYMENT_AMOUNT_CHANGED_MESSAGE,
+            clientAmount: expectedPayableAmount,
+            serverAmount: payableTotalPrice,
+          });
+        }
+
         // 결제 은행(Checkout에서 paymentInfo.bank로 내려옴)
         const bankRaw = body?.paymentInfo?.bank;
         const bank = typeof bankRaw === "string" && bankRaw.trim() !== "" ? bankRaw.trim() : undefined;
