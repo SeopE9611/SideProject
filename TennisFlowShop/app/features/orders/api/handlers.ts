@@ -1148,13 +1148,68 @@ export async function createOrder(req: Request, executionContext?: CreateOrderEx
       { status: 201 },
     );
   } catch (error) {
-    if (error && typeof error === "object" && (error as any).status && (error as any).body) {
-      return NextResponse.json((error as any).body, {
-        status: (error as any).status,
-      });
+    const fallbackMessage = "주문 생성 중 오류 발생";
+
+    const getErrorStatus = (target: unknown) => {
+      if (target && typeof target === "object") {
+        const status = (target as { status?: unknown }).status;
+        if (typeof status === "number" && status >= 400 && status < 600) return status;
+
+        const statusCode = (target as { statusCode?: unknown }).statusCode;
+        if (typeof statusCode === "number" && statusCode >= 400 && statusCode < 600) return statusCode;
+      }
+      return 500;
+    };
+
+    const getErrorCode = (target: unknown) => {
+      if (target && typeof target === "object") {
+        const code = (target as { code?: unknown }).code;
+        if (typeof code === "string" && code.trim()) return code.trim();
+      }
+      return "ORDER_CREATE_FAILED";
+    };
+
+    const getErrorMessage = (target: unknown) => {
+      if (target && typeof target === "object") {
+        const bodyError = (target as { body?: { error?: unknown } }).body?.error;
+        if (typeof bodyError === "string" && bodyError.trim()) return bodyError.trim();
+
+        const bodyMessage = (target as { body?: { message?: unknown } }).body?.message;
+        if (typeof bodyMessage === "string" && bodyMessage.trim()) return bodyMessage.trim();
+      }
+
+      if (target instanceof Error && typeof target.message === "string" && target.message.trim()) {
+        return target.message.trim();
+      }
+
+      return fallbackMessage;
+    };
+
+    const status = getErrorStatus(error);
+    const code = getErrorCode(error);
+    const message = getErrorMessage(error);
+
+    const responseBody =
+      error && typeof error === "object" && "body" in error && typeof (error as { body?: unknown }).body === "object" && (error as { body?: unknown }).body
+        ? {
+            success: false,
+            ...((error as { body: Record<string, unknown> }).body ?? {}),
+            error: message,
+            message,
+            code,
+          }
+        : {
+            success: false,
+            error: message,
+            message,
+            code,
+          };
+
+    if (status >= 500) {
+      console.error("주문 POST 에러:", error);
     }
-    console.error("주문 POST 에러:", error);
-    return NextResponse.json({ success: false, error: "주문 생성 중 오류 발생" }, { status: 500 });
+
+    return NextResponse.json(responseBody, { status });
   }
 }
 
