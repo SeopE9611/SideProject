@@ -4,6 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
 
+const PAYMENT_AMOUNT_CHANGED_MESSAGE =
+  "상품 가격, 배송비, 포인트 또는 패키지 사용 정보가 변경되어 결제 금액이 달라졌습니다. 주문 정보를 다시 확인한 뒤 다시 시도해주세요.";
+
 export default function TossCheckoutButton({
   disabled,
   widgetReady,
@@ -60,7 +63,11 @@ export default function TossCheckoutButton({
 
       const expectedAmount = Math.floor(Number(payableAmount ?? NaN));
       if (!Number.isFinite(expectedAmount) || prepareAmount !== expectedAmount) {
-        throw new Error(`결제 금액이 변경되어 결제를 진행할 수 없습니다. 화면 금액(${Number.isFinite(expectedAmount) ? expectedAmount.toLocaleString() : "-"}원)과 서버 확정 금액(${Number.isFinite(prepareAmount) ? prepareAmount.toLocaleString() : "-"}원)이 다릅니다. 새로고침 후 다시 시도해주세요.`);
+        console.warn("[toss] payment amount mismatch", {
+          clientAmount: Number.isFinite(expectedAmount) ? expectedAmount : null,
+          serverAmount: Number.isFinite(prepareAmount) ? prepareAmount : null,
+        });
+        throw new Error(PAYMENT_AMOUNT_CHANGED_MESSAGE);
       }
 
       const widget = (window as any).__tossPaymentWidget;

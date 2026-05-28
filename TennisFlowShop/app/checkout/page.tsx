@@ -1866,6 +1866,7 @@ export default function CheckoutPage() {
                         depositor={depositor}
                         totalPrice={totalPrice}
                         shippingFee={shippingFee}
+                        payableAmount={payableTotalPrice}
                         selectedBank={selectedBank}
                         deliveryRequest={deliveryRequest}
                         saveAddress={saveAddress}
