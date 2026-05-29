@@ -19,9 +19,22 @@ export default function SideMenu() {
       return pathname === "/rackets" && search?.get("brand") === url.searchParams.get("brand");
     }
 
+    if (url.pathname === "/rackets") {
+      return pathname === "/rackets" && !search?.get("brand");
+    }
+
     // 스트링 브랜드 필터 활성화
     if (url.pathname === "/products" && url.searchParams.has("brand")) {
       return pathname === "/products" && search?.get("brand") === url.searchParams.get("brand");
+    }
+
+    // 스트링 재질 필터 활성화
+    if (url.pathname === "/products" && url.searchParams.has("material")) {
+      return pathname === "/products" && search?.get("material") === url.searchParams.get("material");
+    }
+
+    if (url.pathname === "/products") {
+      return pathname === "/products" && !search?.get("brand") && !search?.get("material");
     }
 
     // 일반 경로 활성화

@@ -318,6 +318,7 @@ const Header = () => {
         { name: "볼키", href: "/products?brand=volkl" },
         { name: "탑스핀", href: "/products?brand=topspin" },
         { name: "기타", href: "/products?brand=other" },
+        { name: "하이브리드", href: "/products?material=hybrid" },
       ],
     },
     rackets: {
