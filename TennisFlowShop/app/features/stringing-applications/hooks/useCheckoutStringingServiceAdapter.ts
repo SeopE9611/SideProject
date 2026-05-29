@@ -342,7 +342,9 @@ export default function useCheckoutStringingServiceAdapter({
     ) ?? null;
 
   const summary = useMemo(() => {
-    const collectionLabel = collectionMethodLabel(shared.formData.collectionMethod);
+    const collectionLabel = collectionMethodLabel(
+      shared.formData.collectionMethod,
+    );
     const lineCount = shared.linesForSubmit.length;
     const stringNames = Array.from(
       new Set(
@@ -395,25 +397,18 @@ export default function useCheckoutStringingServiceAdapter({
 
   const completion = useMemo(() => {
     const totalLineCount = shared.linesForSubmit.length;
-    const lineConfiguredCount = shared.linesForSubmit.filter((line) => {
-      const hasRacketType = String(line.racketType ?? "").trim().length > 0;
-      const hasTension =
-        String(line.tensionMain ?? "").trim().length > 0 ||
-        String(line.tensionCross ?? "").trim().length > 0;
-      return hasRacketType && hasTension;
-    }).length;
+    const lineConfiguredCount = shared.linesForSubmit.length;
 
     const basicConfigured =
       shared.formData.stringTypes.length > 0 && totalLineCount > 0;
     const needsVisitReservation = shared.formData.collectionMethod === "visit";
     const hasReservation =
       !!shared.formData.preferredDate && !!shared.formData.preferredTime;
-    const lineDone = totalLineCount > 0 && lineConfiguredCount === totalLineCount;
+    const lineDone =
+      totalLineCount > 0 && lineConfiguredCount === totalLineCount;
 
     const isReadyToSubmit =
-      basicConfigured &&
-      lineDone &&
-      (!needsVisitReservation || hasReservation);
+      basicConfigured && lineDone && (!needsVisitReservation || hasReservation);
 
     const statusLabel = isReadyToSubmit
       ? "접수 준비 완료"
