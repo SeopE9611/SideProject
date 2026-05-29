@@ -28,11 +28,15 @@ export function UserNav() {
   if (loading) {
     return (
       <div
-        className="flex items-center gap-2 text-muted-foreground"
+        className="flex h-9 w-[72px] items-center rounded-md px-2 xl:w-[96px] 2xl:w-[120px]"
         aria-live="polite"
         aria-busy="true"
       >
-        <UserIcon className="h-5 w-5" />
+        <span className="sr-only">사용자 상태 확인 중</span>
+        <span
+          aria-hidden="true"
+          className="h-3.5 w-full animate-pulse rounded-full bg-muted/70"
+        />
       </div>
     );
   }
