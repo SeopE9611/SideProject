@@ -246,10 +246,12 @@ export default async function ServicesPage() {
                       <p className="mt-1 text-sm leading-relaxed text-muted-foreground break-keep">{item.steps}</p>
                     </div>
 
-                    <span className="mt-auto inline-flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-card px-3 py-2.5 text-sm font-semibold text-foreground transition-colors group-hover:bg-secondary">
-                      <span>{item.cta}</span>
-                      <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                    </span>
+                    <div className="mt-auto pt-5">
+                      <span className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-card px-3 py-2.5 text-sm font-semibold text-foreground transition-colors group-hover:bg-secondary">
+                        <span>{item.cta}</span>
+                        <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                      </span>
+                    </div>
                   </div>
                 </Link>
               ))}

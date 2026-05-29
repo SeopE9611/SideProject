@@ -1776,59 +1776,74 @@ export default function StringServiceApplyPage() {
         {/* Main Content */}
         <div className="px-3 bp-sm:px-4 bp-md:px-6 bp-lg:px-6 mx-auto bp-lg:max-w-[1200px] bp-xl:max-w-7xl py-6 bp-sm:py-8 bp-lg:py-10">
           {/* Section Header */}
-          <div className="text-center mb-6 bp-sm:mb-8">
-            <h2 className="text-xl bp-sm:text-2xl font-semibold text-foreground">
-              어떤 방식으로 교체서비스를 신청하시겠어요?
+          <div className="mx-auto mb-6 max-w-3xl text-center bp-sm:mb-8">
+            <Badge variant="secondary">교체 서비스 신청</Badge>
+            <h2 className="mt-3 text-xl font-semibold text-foreground break-keep bp-sm:text-2xl">
+              1단계. 신청 방식을 선택해 주세요
             </h2>
-            <p className="mt-2 text-muted-foreground text-sm bp-sm:text-base">
-              필요한 방식 하나를 선택해 빠르게 교체 신청을 진행하세요.
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground break-keep bp-sm:text-base">
+              필요한 방식을 선택하면 다음 단계로 이동합니다. 지금은 신청 경로만 확정하는 단계입니다.
             </p>
           </div>
 
           {/* Option Cards */}
-          <div className="grid grid-cols-1 bp-md:grid-cols-2 bp-xl:grid-cols-4 gap-3 bp-sm:gap-4 bp-lg:gap-5 max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 gap-3 bp-md:grid-cols-2 bp-xl:grid-cols-4 bp-sm:gap-4 max-w-6xl mx-auto">
             {[
-              { badge: "추천", icon: <Grid2X2 className="h-8 w-8" />, title: "새 스트링 선택 후 교체 신청", target: "스트링을 고르고 결제와 함께 장착 신청까지 진행합니다.", steps: "스트링 선택 → 결제/장착 정보 입력", cta: "스트링 고르기", href: "/products?from=apply" },
-              { badge: "구매", icon: <MdSportsTennis className="h-9 w-9" />, title: "라켓 구매 후 교체 신청", target: "중고 라켓을 구매하면서 원하는 스트링으로 세팅합니다.", steps: "라켓 선택 → 스트링 선택 → 결제", cta: "라켓 구매하기", href: "/rackets?from=apply" },
-              { badge: "대여", icon: <MdSportsTennis className="h-9 w-9" />, title: "라켓 대여 후 교체 신청", target: "대여 라켓에 원하는 스트링 세팅을 함께 신청합니다.", steps: "라켓 대여 → 스트링 선택 → 대여 결제", cta: "대여 라켓 보기", href: "/rackets?from=apply&rentOnly=1" },
-              { badge: "보유 장비", icon: <File className="h-9 w-9" />, title: "보유 장비로 교체 신청", target: "가지고 있는 라켓이나 스트링으로 교체만 신청합니다.", steps: "신청서 작성 → 접수", cta: "보유 장비로 신청", href: "/services/apply?mode=single" },
+              { badge: "추천", stepLabel: "선택 01", icon: <Grid2X2 className="h-7 w-7" />, title: "새 스트링 선택", target: "스트링을 고른 뒤 장착 신청까지 이어갑니다.", steps: "스트링 선택 → 결제/장착 정보 입력", cta: "이 방식으로 진행", href: "/products?from=apply" },
+              { badge: "구매 연계", stepLabel: "선택 02", icon: <MdSportsTennis className="h-8 w-8" />, title: "라켓 구매와 함께", target: "라켓 구매 과정에서 원하는 세팅을 선택합니다.", steps: "라켓 선택 → 스트링 선택 → 결제", cta: "이 방식으로 진행", href: "/rackets?from=apply" },
+              { badge: "대여 연계", stepLabel: "선택 03", icon: <MdSportsTennis className="h-8 w-8" />, title: "라켓 대여와 함께", target: "대여 라켓에 필요한 스트링 세팅을 추가합니다.", steps: "라켓 대여 → 스트링 선택 → 대여 결제", cta: "이 방식으로 진행", href: "/rackets?from=apply&rentOnly=1" },
+              { badge: "보유 장비", stepLabel: "선택 04", icon: <File className="h-8 w-8" />, title: "보유 장비로 신청", target: "가지고 있는 라켓이나 스트링으로 작업만 신청합니다.", steps: "신청서 작성 → 접수", cta: "이 방식으로 진행", href: "/services/apply?mode=single" },
             ].map((item, index) => (
               <button
                 key={item.title}
                 type="button"
                 onClick={() => safePush(item.href)}
-                className={`group relative flex h-full flex-col bg-card rounded-2xl p-4 bp-sm:p-5 text-left border hover:shadow-lg transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${index === 0 ? "border-primary/40 bg-primary/5" : "border-border"}`}
+                className={`group flex h-full flex-col rounded-2xl border bg-card p-4 text-left shadow-sm transition-[border-color,background-color,box-shadow] duration-200 hover:border-primary/30 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${index === 0 ? "border-primary/40 bg-primary/5" : "border-border"}`}
               >
-                <div className="absolute -top-2.5 left-5">
-                  <Badge variant="secondary">{item.badge}</Badge>
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <span className="text-xs font-semibold text-muted-foreground">{item.stepLabel}</span>
+                  <Badge variant={index === 0 ? "brand" : "secondary"}>{item.badge}</Badge>
                 </div>
-                <div className="w-12 h-12 bp-sm:w-14 bp-sm:h-14 rounded-xl bg-background flex items-center justify-center mb-4 group-hover:bg-muted transition-colors">
-                  {item.icon}
+                <div className="mb-4 flex items-start gap-3">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-background text-foreground transition-colors group-hover:bg-muted">
+                    {item.icon}
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="text-base font-semibold leading-snug text-foreground break-keep">
+                      {item.title}
+                    </h3>
+                    <p className="mt-1 text-sm leading-relaxed text-muted-foreground break-keep">{item.target}</p>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <h3 className="text-base bp-sm:text-lg font-semibold leading-snug break-keep text-foreground mb-3">
-                    {item.title}
-                  </h3>
-                  <p className="text-xs font-semibold text-primary">핵심 안내</p>
-                  <p className="mt-1 text-sm text-muted-foreground leading-relaxed break-keep">{item.target}</p>
-                  <p className="mt-2 text-xs font-semibold text-primary">진행 흐름</p>
-                  <p className="mt-1 text-sm text-muted-foreground leading-relaxed break-keep">{item.steps}</p>
+                <div className="rounded-xl border border-border bg-muted/30 p-3">
+                  <p className="text-xs font-semibold text-primary">다음 진행</p>
+                  <p className="mt-1 text-sm leading-relaxed text-muted-foreground break-keep">{item.steps}</p>
                 </div>
-                <div className="mt-5 inline-flex w-fit items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-sm font-semibold text-foreground transition-colors group-hover:bg-secondary">
-                  <span>{item.cta}</span>
-                  <svg className="ml-1.5 w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                  </svg>
+                <div className="mt-auto pt-4">
+                  <span className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-sm font-semibold text-foreground transition-colors group-hover:bg-secondary">
+                    <span>{item.cta}</span>
+                    <svg className="h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                    </svg>
+                  </span>
                 </div>
               </button>
             ))}
           </div>
 
-          <div className="mt-4 rounded-xl border border-border bg-muted/30 p-3 bp-sm:p-4 flex flex-wrap justify-center gap-2 text-sm">
-            <Button type="button" variant="outline" onClick={() => safePush("/products/recommend")}>잘 모르겠어요. 추천받을래요.</Button>
-            <Button type="button" variant="outline" onClick={() => safePush("/services/pricing")}>가격 먼저 보기</Button>
-            <Button type="button" variant="outline" onClick={() => safePush("/services/locations")}>매장 위치/방문 안내</Button>
-            <Button type="button" variant="outline" onClick={() => safePush("/board/qna")}>고객센터 문의하기</Button>
+          <div className="mx-auto mt-4 max-w-5xl rounded-xl border border-border bg-muted/30 p-3 bp-sm:p-4">
+            <div className="mb-3 text-center bp-sm:text-left">
+              <p className="text-sm font-semibold text-foreground break-keep">신청 보조 도구</p>
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground break-keep">
+                신청 방식 선택 전에 필요한 정보만 가볍게 확인하세요.
+              </p>
+            </div>
+            <div className="flex flex-wrap justify-center gap-2 text-sm bp-sm:justify-start">
+              <Button type="button" variant="outline" onClick={() => safePush("/products/recommend")}>스트링 추천받기</Button>
+              <Button type="button" variant="outline" onClick={() => safePush("/services/pricing")}>가격 먼저 보기</Button>
+              <Button type="button" variant="outline" onClick={() => safePush("/services/locations")}>매장 위치/방문 안내</Button>
+              <Button type="button" variant="outline" onClick={() => safePush("/board/qna")}>고객센터 문의</Button>
+            </div>
           </div>
 
           <div className="mt-6 bp-sm:mt-8 grid grid-cols-1 bp-lg:grid-cols-2 gap-4 bp-sm:gap-5 max-w-6xl mx-auto">
