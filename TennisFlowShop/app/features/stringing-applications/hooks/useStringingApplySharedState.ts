@@ -392,9 +392,7 @@ export default function useStringingApplySharedState({
 
         for (let i = 0; i < useQty; i++) {
           const alias =
-            (formData.racketType || "").trim() ||
-            racketNameFromOrder ||
-            `라켓 ${lines.length + 1}`;
+            (formData.racketType || "").trim() || racketNameFromOrder || "";
 
           lines.push({
             id: `${prodId}-${i}`,
@@ -413,8 +411,7 @@ export default function useStringingApplySharedState({
       const useQty = formData.stringUseCounts[prodId] ?? 1;
 
       for (let i = 0; i < useQty; i++) {
-        const alias =
-          (formData.racketType || "").trim() || `라켓 ${lines.length + 1}`;
+        const alias = (formData.racketType || "").trim();
 
         lines.push({
           id: `${prodId}-${i}`,
