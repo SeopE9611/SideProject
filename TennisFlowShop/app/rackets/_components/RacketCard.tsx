@@ -76,10 +76,21 @@ function useRacketAvailability(id: string) {
   };
 }
 
-function RacketAvailBadge({ id }: { id: string }) {
-  const { qty, avail, rentedCount, isSold, isAllRented, ready } =
-    useRacketAvailability(id);
+type RacketAvailabilityState = ReturnType<typeof useRacketAvailability>;
 
+type RacketAvailBadgeProps = Pick<
+  RacketAvailabilityState,
+  "qty" | "avail" | "rentedCount" | "isSold" | "isAllRented" | "ready"
+>;
+
+function RacketAvailBadge({
+  qty,
+  avail,
+  rentedCount,
+  isSold,
+  isAllRented,
+  ready,
+}: RacketAvailBadgeProps) {
   // 로딩 중에 1/1 같은 가짜 값이 보이는 깜빡임 방지
   if (!ready) {
     return (
@@ -150,9 +161,8 @@ function RacketAvailBadge({ id }: { id: string }) {
 
 const RacketCard = React.memo(
   function RacketCard({ racket, viewMode, brandLabel, isApplyFlow = false }: Props) {
-    const { avail, isSold, isAllRented, ready } = useRacketAvailability(
-      racket.id,
-    );
+    const availability = useRacketAvailability(racket.id);
+    const { avail, isSold, ready } = availability;
     const canBuy = ready ? !isSold && avail > 0 : true; // 로딩 중엔 일단 true(서버에서 최종 검증)
     const canRent = racket.rental?.enabled
       ? ready
@@ -236,7 +246,7 @@ const RacketCard = React.memo(
                   </h3>
                   <div className="mt-2 flex flex-wrap items-center gap-1.5 bp-sm:gap-2">
                     <StatusBadge kind="condition" state={racket.condition} />
-                    <RacketAvailBadge id={racket.id} />
+                    <RacketAvailBadge {...availability} />
                     {!racket.rental?.enabled && (
                       <StatusBadge kind="rental" state="unavailable" />
                     )}
@@ -385,7 +395,7 @@ const RacketCard = React.memo(
           <div className="mt-2 flex flex-wrap items-center gap-1.5">
             <StatusBadge kind="condition" state={racket.condition} />
             <div className="ml-1">
-              <RacketAvailBadge id={racket.id} />
+              <RacketAvailBadge {...availability} />
             </div>
             {!racket.rental?.enabled && (
               <StatusBadge kind="rental" state="unavailable" />
