@@ -5,7 +5,7 @@ import type { Sort } from "mongodb";
 export const dynamic = "force-dynamic";
 
 // - 관리자/사용자 공용 목록(최소형): status !== 'inactive' 만 노출
-// - 쿼리 파라미터(brand/condition/min/max)는 후속 단계에서 확장 가능
+// - 쿼리 파라미터(brand/condition/min/max/minPrice/maxPrice/sort) 지원
 export async function GET(req: Request) {
   const db = (await clientPromise).db();
   const { searchParams } = new URL(req.url);
@@ -60,23 +60,33 @@ export async function GET(req: Request) {
     ];
   }
 
-  // 가격 범위 — 예: ?min=100000&max=200000
+  // 가격 범위 — 예: ?minPrice=100000&maxPrice=200000 (기존 min/max 별칭도 유지)
   if (minStr !== null && minStr.trim() !== "") {
     const min = Number(minStr);
-    if (!Number.isNaN(min)) q.price = { ...(q.price || {}), $gte: min };
+    if (Number.isFinite(min) && min >= 0) {
+      q.price = { ...(q.price || {}), $gte: min };
+    }
   }
   if (maxStr !== null && maxStr.trim() !== "") {
     const max = Number(maxStr);
-    if (!Number.isNaN(max)) q.price = { ...(q.price || {}), $lte: max };
+    if (Number.isFinite(max) && max >= 0) {
+      q.price = { ...(q.price || {}), $lte: max };
+    }
   }
 
   // 정렬 & 개수 제한
-  const sortParam = searchParams.get("sort");
+  const sortParam = searchParams.get("sort") ?? "latest";
   const limitParam = Number(searchParams.get("limit") ?? 0);
 
-  // createdAt 내림차순만 우선 지원 (필요 시 확장 가능)
-  let sort: Sort | undefined;
-  if (sortParam === "createdAt_desc") sort = { createdAt: -1 };
+  let sort: Sort;
+  if (sortParam === "price-low") {
+    sort = { price: 1, _id: -1 };
+  } else if (sortParam === "price-high") {
+    sort = { price: -1, _id: -1 };
+  } else {
+    // latest 기본값: createdAt이 없는 오래된 문서도 _id 보조 정렬로 안정화
+    sort = { createdAt: -1, _id: -1 };
+  }
 
   const limit =
     Number.isFinite(limitParam) && limitParam > 0
@@ -95,7 +105,7 @@ export async function GET(req: Request) {
     rental: 1,
   });
 
-  if (sort) cursor = cursor.sort(sort);
+  cursor = cursor.sort(sort);
   if (limit) cursor = cursor.limit(limit);
 
   // withTotal=1이면 total까지 같이 내려주기 위해 countDocuments를 병렬로 수행
