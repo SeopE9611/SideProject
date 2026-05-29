@@ -91,7 +91,7 @@ export const STRING_BRANDS = [
   { value: "head", label: "헤드" },
   { value: "yonex", label: "요넥스" },
   { value: "solinco", label: "솔린코" },
-  { value: "prince", label: "프린스" },
+  // { value: "prince", label: "프린스" },
   { value: "dunlop", label: "던롭" },
   { value: "msv", label: "MSV" },
   { value: "volkl", label: "볼키" },

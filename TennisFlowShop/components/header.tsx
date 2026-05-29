@@ -312,7 +312,7 @@ const Header = () => {
         { name: "헤드", href: "/products?brand=head" },
         { name: "테크니화이버", href: "/products?brand=tecnifibre" },
         { name: "솔린코", href: "/products?brand=solinco" },
-        { name: "프린스", href: "/products?brand=prince" },
+        // { name: "프린스", href: "/products?brand=prince" },
         { name: "던롭", href: "/products?brand=dunlop" },
         { name: "MSV", href: "/products?brand=msv" },
         { name: "볼키", href: "/products?brand=volkl" },

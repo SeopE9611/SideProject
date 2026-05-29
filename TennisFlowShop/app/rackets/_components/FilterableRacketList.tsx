@@ -72,7 +72,7 @@ const brands = [
   { label: "바볼랏", value: "babolat" },
   { label: "헤드", value: "head" },
   { label: "던롭", value: "dunlop" },
-  { label: "프린스", value: "prince" },
+  // { label: "프린스", value: "prince" },
   { label: "테크니화이버", value: "tecnifibre" },
 ];
 
