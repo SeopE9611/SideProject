@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useMemo, useRef, useState, type WheelEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import HeroSlider from "@/components/HeroSlider";
 import HorizontalProducts, { type HItem } from "@/components/HorizontalProducts";
@@ -178,30 +178,46 @@ export default function Home() {
   const [activeBrand, setActiveBrand] = useState<BrandKey>("all");
   const [activeStringBrand, setActiveStringBrand] = useState<StringBrandKey>("all");
   const router = useRouter();
+  const stringBrandRailRef = useRef<HTMLDivElement>(null);
+  const racketBrandRailRef = useRef<HTMLDivElement>(null);
 
-  const handleBrandRailWheel = useCallback((event: WheelEvent<HTMLDivElement>) => {
-    if (event.ctrlKey) return;
+  useEffect(() => {
+    const rails = [stringBrandRailRef.current, racketBrandRailRef.current].filter((rail): rail is HTMLDivElement => Boolean(rail));
 
-    const rail = event.currentTarget;
-    const maxScrollLeft = rail.scrollWidth - rail.clientWidth;
+    const handleWheel = (event: WheelEvent) => {
+      if (event.ctrlKey) return;
 
-    if (maxScrollLeft <= 0) return;
+      const rail = event.currentTarget as HTMLDivElement;
+      const maxScrollLeft = rail.scrollWidth - rail.clientWidth;
 
-    const absDeltaX = Math.abs(event.deltaX);
-    const absDeltaY = Math.abs(event.deltaY);
-    const delta = absDeltaX > absDeltaY ? event.deltaX : event.deltaY;
+      if (maxScrollLeft <= 0) return;
 
-    if (delta === 0) return;
+      const absDeltaX = Math.abs(event.deltaX);
+      const absDeltaY = Math.abs(event.deltaY);
+      const delta = absDeltaX > absDeltaY ? event.deltaX : event.deltaY;
 
-    const atStart = rail.scrollLeft <= 0;
-    const atEnd = rail.scrollLeft >= maxScrollLeft - 1;
+      if (delta === 0) return;
 
-    if ((delta < 0 && atStart) || (delta > 0 && atEnd)) {
-      return;
-    }
+      const atStart = rail.scrollLeft <= 0;
+      const atEnd = rail.scrollLeft >= maxScrollLeft - 1;
 
-    event.preventDefault();
-    rail.scrollLeft += delta;
+      if ((delta < 0 && atStart) || (delta > 0 && atEnd)) {
+        return;
+      }
+
+      event.preventDefault();
+      rail.scrollLeft += delta;
+    };
+
+    rails.forEach((rail) => {
+      rail.addEventListener("wheel", handleWheel, { passive: false });
+    });
+
+    return () => {
+      rails.forEach((rail) => {
+        rail.removeEventListener("wheel", handleWheel);
+      });
+    };
   }, []);
 
   // 회원가입 프로모션 이벤트
@@ -740,7 +756,7 @@ export default function Home() {
           </div>
           <div className="mb-8 bp-sm:mb-10">
             <div className="flex justify-center">
-              <div className={brandRailClass} onWheel={handleBrandRailWheel}>
+              <div ref={stringBrandRailRef} className={brandRailClass}>
                 <button
                   onClick={() => setActiveStringBrand("all")}
                   className={`shrink-0 px-5 bp-sm:px-6 bp-md:px-7 py-2.5 bp-sm:py-3 rounded-xl text-sm bp-sm:text-base font-semibold transition-[background-color,color,border-color,box-shadow,opacity] duration-300 whitespace-nowrap ${activeStringBrand === "all" ? "border border-primary/40 bg-primary/10 text-primary shadow-sm dark:border-primary/40 dark:bg-primary/15 dark:text-primary" : "bg-card border border-border/60 text-foreground hover:border-border hover:shadow-md"}`}
@@ -758,7 +774,7 @@ export default function Home() {
                 ))}
               </div>
             </div>
-            <p className="mt-2 text-center text-xs bp-sm:text-sm text-muted-foreground">모바일은 좌우 스와이프, PC는 마우스 휠로 더 많은 브랜드를 볼 수 있어요.</p>
+            <p className="mt-2 text-center text-xs bp-sm:text-sm text-muted-foreground">좌우 스와이프하거나 마우스 휠로 더 많은 브랜드를 볼 수 있어요.</p>
           </div>
 
           <HorizontalProducts
@@ -795,7 +811,7 @@ export default function Home() {
           </div>
           <div className="mb-8 bp-sm:mb-10">
             <div className="flex justify-center">
-              <div className={brandRailClass} onWheel={handleBrandRailWheel}>
+              <div ref={racketBrandRailRef} className={brandRailClass}>
                 <button
                   onClick={() => setActiveBrand("all")}
                   className={`shrink-0 px-5 bp-sm:px-6 bp-md:px-7 py-2.5 bp-sm:py-3 rounded-xl text-sm bp-sm:text-base font-semibold transition-[background-color,color,border-color,box-shadow,opacity] duration-300 whitespace-nowrap ${activeBrand === "all" ? "border border-primary/40 bg-primary/10 text-primary shadow-sm dark:border-primary/40 dark:bg-primary/15 dark:text-primary" : "bg-card border border-border/60 text-foreground hover:border-border hover:shadow-md"}`}
@@ -813,7 +829,7 @@ export default function Home() {
                 ))}
               </div>
             </div>
-            <p className="mt-2 text-center text-xs bp-sm:text-sm text-muted-foreground">모바일은 좌우 스와이프, PC는 마우스 휠로 더 많은 브랜드를 볼 수 있어요.</p>
+            <p className="mt-2 text-center text-xs bp-sm:text-sm text-muted-foreground">좌우 스와이프하거나 마우스 휠로 더 많은 브랜드를 볼 수 있어요.</p>
           </div>
           <HorizontalProducts
             title="중고 라켓"
