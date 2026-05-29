@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CUSTOM_STRING_MOUNTING_FEE } from "@/lib/stringing-pricing-policy";
-import { ArrowRight, Award, CheckCircle, Clock, File, Grid2X2, Shield, Star, Target, Trophy, Users, Zap } from "lucide-react";
+import { ArrowRight, Award, CheckCircle, Clock, File, Grid2X2, Package, RotateCw, Shield, ShoppingBag, Sliders, Star, Target, ThumbsUp, Users, Wrench, Zap } from "lucide-react";
 import Link from "next/link";
 
 import type { Metadata } from "next";
@@ -35,7 +35,7 @@ export default async function ServicesPage() {
       features: ["최대한의 스핀 생성", "정확한 볼 컨트롤", "내구성이 우수함", "중상급자용 하드 히팅에 적합"],
       recommended: ["컨트롤과 스핀 중심의 플레이 스타일", "강한 스트로크로 공격하는 플레이어", "중급자 및 상급자", "정확한 샷 배치를 중요시하는 분"],
       examples: ["볼키 사이클론", "탑스핀 센서스로테이션", "요넥스 폴리투어스핀", "Msv포커스헥스", "솔린코 하이퍼지"],
-      icon: <Target className="h-8 w-8" />,
+      icon: <RotateCw className="h-8 w-8" />,
       performance: { power: 75, control: 95, spin: 90, durability: 85 },
     },
     {
@@ -45,7 +45,7 @@ export default async function ServicesPage() {
       features: ["파워와 컨트롤의 균형", "중간 정도의 타구감", "다양한 플레이 스타일에 적합", "하이브리드 구성으로 활용 가능"],
       recommended: ["올라운드 플레이 스타일", "다양한 샷을 구사하는 플레이어", "파워와 컨트롤 모두 중요시하는 분", "모든 수준의 플레이어"],
       examples: ["핀포인트 엑스펜타", "탑스핀 사이버플래쉬", "요넥스 폴리투어프로", "솔린코 투어바이트소프트"],
-      icon: <Trophy className="h-8 w-8" />,
+      icon: <Shield className="h-8 w-8" />,
       performance: { power: 85, control: 85, spin: 80, durability: 90 },
     },
   ];
@@ -56,7 +56,7 @@ export default async function ServicesPage() {
       service: "보유/커스텀 스트링 장착",
       priceLabel: `${CUSTOM_STRING_MOUNTING_FEE.toLocaleString()}원`,
       description: "보유 스트링 또는 직접 입력 스트링 기준 교체비",
-      icon: <Clock className="h-6 w-6" />,
+      icon: <Wrench className="h-6 w-6" />,
       duration: "30-45분",
       popular: false,
     },
@@ -64,7 +64,7 @@ export default async function ServicesPage() {
       service: "스트링 상품 선택 장착",
       priceLabel: "상품별 상이",
       description: "선택한 스트링 상품과 신청 방식에 따라 최종 교체비가 안내됩니다.",
-      icon: <Shield className="h-6 w-6" />,
+      icon: <ShoppingBag className="h-6 w-6" />,
       duration: "30-45분",
       popular: true,
     },
@@ -72,7 +72,7 @@ export default async function ServicesPage() {
       service: "패키지 적용 신청",
       priceLabel: "교체비 무료",
       description: "패키지 적용 시 교체비가 무료입니다.",
-      icon: <Award className="h-6 w-6" />,
+      icon: <Package className="h-6 w-6" />,
       duration: "45-60분",
       popular: false,
     },
@@ -84,20 +84,20 @@ export default async function ServicesPage() {
       title: "장력 추천 서비스",
       description: "플레이 스타일과 라켓에 맞는 장력 추천을 무료로 안내합니다.",
       free: true,
-      icon: <Target className="h-5 w-5" />,
+      icon: <Sliders className="h-5 w-5" />,
     },
     {
       title: "스트링 추천 서비스",
       description: "개인의 플레이 스타일에 맞는 스트링/장력 조합을 무료로 안내합니다.",
       free: true,
-      icon: <Award className="h-5 w-5" />,
+      icon: <ThumbsUp className="h-5 w-5" />,
     },
     {
       title: "라켓 그립 교체",
       description: "부자재/작업 범위에 따라 비용이 달라져 별도 문의가 필요합니다.",
       free: false,
       priceLabel: "별도 문의",
-      icon: <Shield className="h-5 w-5" />,
+      icon: <Wrench className="h-5 w-5" />,
     },
   ];
 
@@ -232,9 +232,7 @@ export default async function ServicesPage() {
                   className={`group relative flex h-full flex-col rounded-2xl border p-4 text-left shadow-sm transition-[border-color,box-shadow,background-color] duration-200 hover:border-primary/30 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background bp-sm:p-5 ${item.featured ? "border-primary/40 bg-primary/5" : "border-border bg-card"}`}
                 >
                   <div className="mb-4 flex items-start justify-between gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-border bg-background text-foreground transition-colors group-hover:bg-muted bp-sm:h-14 bp-sm:w-14">
-                      {item.icon}
-                    </div>
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-border bg-background text-foreground transition-colors group-hover:bg-muted bp-sm:h-14 bp-sm:w-14">{item.icon}</div>
                     <Badge variant={item.featured ? "brand" : "secondary"}>{item.badge}</Badge>
                   </div>
 
