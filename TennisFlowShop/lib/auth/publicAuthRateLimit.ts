@@ -8,7 +8,12 @@ import { getDb } from "@/lib/mongodb";
 const AUTH_RATE_LIMIT_COLLECTION = "auth_rate_limit_windows";
 const TOO_MANY_REQUESTS_MESSAGE = "요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.";
 
-export type PublicAuthRouteId = "login" | "register" | "oauth_complete";
+export type PublicAuthRouteId =
+  | "login"
+  | "register"
+  | "oauth_complete"
+  | "forgot_password_request"
+  | "forgot_password_reset";
 
 type PublicAuthRateLimitPolicy = {
   limit: number;
@@ -32,6 +37,14 @@ export const AUTH_RATE_LIMIT_POLICIES: Record<PublicAuthRouteId, RoutePolicy> = 
   oauth_complete: {
     ip: { limit: 10, windowSec: 60 * 10 },
     identifier: { limit: 5, windowSec: 60 * 10 },
+  },
+  forgot_password_request: {
+    ip: { limit: 5, windowSec: 60 * 30 },
+    identifier: { limit: 3, windowSec: 60 * 30 },
+  },
+  forgot_password_reset: {
+    ip: { limit: 10, windowSec: 60 * 30 },
+    identifier: { limit: 5, windowSec: 60 * 30 },
   },
 };
 

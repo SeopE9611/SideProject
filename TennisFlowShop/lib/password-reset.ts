@@ -1,8 +1,6 @@
 import crypto from "crypto";
 import jwt, { type JwtPayload } from "jsonwebtoken";
 
-const RECOVERY_TOKEN_SECRET = process.env.RECOVERY_TOKEN_SECRET!;
-
 /**
  * 비밀번호 재설정 전용 JWT payload 타입
  * - sub: 사용자 ID
@@ -14,6 +12,18 @@ export type PasswordResetTokenPayload = JwtPayload & {
   email: string;
   type: "password_reset";
 };
+
+export function isRecoveryTokenSecretConfigured() {
+  return Boolean(process.env.RECOVERY_TOKEN_SECRET?.trim());
+}
+
+function getRecoveryTokenSecret() {
+  const secret = process.env.RECOVERY_TOKEN_SECRET?.trim();
+  if (!secret) {
+    throw new Error("RECOVERY_TOKEN_SECRET is not configured");
+  }
+  return secret;
+}
 
 /**
  * 비밀번호 재설정용 토큰 발급
@@ -29,7 +39,7 @@ export function createPasswordResetToken(userId: string, email: string) {
       email,
       type: "password_reset",
     },
-    RECOVERY_TOKEN_SECRET,
+    getRecoveryTokenSecret(),
     {
       expiresIn: "30m", // 30분 후 만료
     },
@@ -46,7 +56,7 @@ export function verifyPasswordResetToken(
   token: string,
 ): PasswordResetTokenPayload | null {
   try {
-    const decoded = jwt.verify(token, RECOVERY_TOKEN_SECRET);
+    const decoded = jwt.verify(token, getRecoveryTokenSecret());
 
     // jwt.verify의 반환 타입은 string | JwtPayload 이므로 안전하게 좁혀줍니다.
     if (typeof decoded === "string") return null;
