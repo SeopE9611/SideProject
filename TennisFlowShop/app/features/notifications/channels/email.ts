@@ -19,7 +19,15 @@ export async function sendEmail({
   const port = Number(process.env.SMPP_PORT || process.env.SMTP_PORT || 587); // 오타 대비 유지
   const user = process.env.SMTP_USER;
   const pass = process.env.SMTP_PASS;
-  const from = process.env.MAIL_FROM || "no-reply@example.com";
+  const from =
+    process.env.SMTP_FROM ||
+    process.env.MAIL_FROM ||
+    "도깨비테니스 <noreply@dokkaebitennis.com>";
+  const replyTo =
+    process.env.SMTP_REPLY_TO ||
+    process.env.SUPPORT_EMAIL ||
+    process.env.SMTP_FROM ||
+    process.env.MAIL_FROM;
 
   if (!host || !user || !pass) {
     throw new Error("SMTP env not set (SMTP_HOST/SMTP_USER/SMTP_PASS)");
@@ -66,6 +74,6 @@ export async function sendEmail({
     html,
     bcc: bcc ? guardRecipients(bcc) : undefined,
     attachments,
-    replyTo: process.env.SUPPORT_EMAIL || process.env.MAIL_FROM,
+    replyTo,
   });
 }

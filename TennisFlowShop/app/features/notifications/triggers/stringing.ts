@@ -17,6 +17,8 @@ async function fire(
     channels: ("email" | "slack" | "sms")[];
   },
 ) {
+  if (ctx.channels.length === 0) return;
+
   const rendered = await renderForEvent(eventType, {
     user: ctx.user,
     application: ctx.application,
@@ -41,7 +43,7 @@ export async function onApplicationSubmitted(params: {
   await fire("stringing.application_submitted", {
     ...params,
     dedupeKey,
-    channels: ["email", "slack", "sms"],
+    channels: ["slack", "sms"],
   });
 }
 
@@ -59,27 +61,23 @@ export async function onStatusUpdated(params: {
     await fire("stringing.service_completed", {
       ...params,
       dedupeKey: key,
-      channels: ["email", "sms"],
+      channels: ["sms"],
     });
     return;
   }
 
   if (app.status === "작업 중") {
-    // 작업 시작 알림도 원하면 문자 포함(원치 않으면 ['email']만)
+    // 작업 시작 알림도 문자로 유지
     await fire("stringing.service_in_progress", {
       ...params,
       dedupeKey: key,
-      channels: ["email", "sms"],
+      channels: ["sms"],
     });
     return;
   }
 
-  // 그 외(검토 중/접수완료 등): 이메일만 간단 공지
-  await fire("stringing.status_updated", {
-    ...params,
-    dedupeKey: key,
-    channels: ["email"],
-  });
+  // 그 외(검토 중/접수완료 등): 일반 이메일 알림은 발송하지 않음
+  return;
 }
 export async function onScheduleConfirmed(params: {
   user: UserCtx;
@@ -91,7 +89,7 @@ export async function onScheduleConfirmed(params: {
     ...params,
     adminDetailUrl: undefined,
     dedupeKey: key,
-    channels: ["email", "sms"],
+    channels: ["sms"],
   });
 }
 
@@ -104,7 +102,7 @@ export async function onScheduleUpdated(params: {
     ...params,
     adminDetailUrl: undefined,
     dedupeKey: key,
-    channels: ["email", "sms"],
+    channels: ["sms"],
   });
 }
 
@@ -117,7 +115,7 @@ export async function onApplicationCanceled(params: {
     ...params,
     adminDetailUrl: undefined,
     dedupeKey: key,
-    channels: ["email", "sms"],
+    channels: ["sms"],
   });
 }
 
@@ -130,6 +128,6 @@ export async function onScheduleCanceled(params: {
     ...params,
     adminDetailUrl: undefined,
     dedupeKey: key,
-    channels: ["email", "sms"],
+    channels: ["sms"],
   });
 }
