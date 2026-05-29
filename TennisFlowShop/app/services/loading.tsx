@@ -17,8 +17,8 @@ export default function ServicesLoading() {
           </div>
         </section>
 
-        <div className="grid gap-4 md:grid-cols-3">
-          {Array.from({ length: 3 }).map((_, index) => (
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, index) => (
             <Card key={index} className="border-border/50">
               <CardContent className="space-y-3 p-6">
                 <Skeleton className="h-5 w-36" />
