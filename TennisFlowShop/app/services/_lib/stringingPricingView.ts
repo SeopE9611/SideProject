@@ -22,6 +22,7 @@ export type MaterialSummary = {
   maxMountingFee: number | null;
   brands: string[];
   productNames: string[];
+  materialLabels: string[];
 };
 
 export type HybridGuideSummary = {
@@ -142,7 +143,8 @@ function toMaterialKey(material: string | undefined): MaterialKey {
 
 function materialDisplayLabel(material: string | undefined): string {
   const value = normalizeMaterialValue(material);
-  if (!value) return "";
+  if (!value) return "소재 미입력";
+  if (value === "other") return "기타";
   if (value === "hybrid") return "하이브리드";
   if (value === "natural_gut") return "내추럴 거트";
   if (value === "synthetic_gut" || value === "multifilament") {
@@ -210,6 +212,17 @@ export async function getStringingMaterialSummaries(): Promise<
       .slice(0, 3)
       .map(([name]) => name);
 
+    const materialCounter = new Map<string, number>();
+    for (const row of rows) {
+      const material = materialDisplayLabel(row.material);
+      materialCounter.set(material, (materialCounter.get(material) ?? 0) + 1);
+    }
+
+    const materialLabels = [...materialCounter.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([material]) => material);
+
     return {
       key,
       label: CATEGORY_META[key].label,
@@ -223,6 +236,7 @@ export async function getStringingMaterialSummaries(): Promise<
         .map((r) => String(r.name ?? "").trim())
         .filter(Boolean)
         .slice(0, 3),
+      materialLabels,
     };
   });
 }
