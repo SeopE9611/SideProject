@@ -1,3 +1,4 @@
+import { stringBrandLabel } from "@/lib/constants";
 import { getDb } from "@/lib/mongodb";
 
 type MaterialKey = "polyester" | "syntheticGut" | "naturalGut" | "other";
@@ -6,8 +7,8 @@ type ProductLite = {
   name?: string;
   brand?: string;
   material?: string;
-  price?: number;
-  mountingFee?: number;
+  price?: unknown;
+  mountingFee?: unknown;
   isDeleted?: boolean;
 };
 
@@ -42,10 +43,30 @@ const PRIMARY_MATERIAL_KEYS: MaterialKey[] = [
   "naturalGut",
 ];
 
+function normalizeMaterialValue(material: string | undefined): string {
+  return String(material ?? "").trim().toLowerCase();
+}
+
+function toPositiveNumber(value: unknown): number | null {
+  if (typeof value === "number" && Number.isFinite(value) && value > 0) {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    const normalized = Number(value.replace(/,/g, "").trim());
+    if (Number.isFinite(normalized) && normalized > 0) {
+      return normalized;
+    }
+  }
+
+  return null;
+}
+
 function isHybridMaterial(material: string | undefined): boolean {
-  const value = String(material ?? "").toLowerCase();
+  const value = normalizeMaterialValue(material);
   if (!value) return false;
 
+  if (value === "hybrid") return true;
   if (value.includes("hybrid") || value.includes("하이브리드")) return true;
 
   const separators = ["/", "+", "&"];
@@ -70,7 +91,14 @@ function isHybridMaterial(material: string | undefined): boolean {
 }
 
 function toMaterialKey(material: string | undefined): MaterialKey {
-  const value = String(material ?? "").toLowerCase();
+  const value = normalizeMaterialValue(material);
+
+  if (value === "natural_gut") return "naturalGut";
+  if (value === "synthetic_gut" || value === "multifilament") {
+    return "syntheticGut";
+  }
+  if (value === "polyester") return "polyester";
+
   if (
     value.includes("natural") ||
     value.includes("내추럴") ||
@@ -79,12 +107,13 @@ function toMaterialKey(material: string | undefined): MaterialKey {
     return "naturalGut";
   if (
     (value.includes("gut") || value.includes("거트")) &&
-    !(value.includes("synthetic") || value.includes("인조"))
+    !(value.includes("synthetic") || value.includes("인조") || value.includes("합성"))
   )
     return "naturalGut";
   if (
     value.includes("synthetic") ||
     value.includes("인조") ||
+    value.includes("합성") ||
     value.includes("multi") ||
     value.includes("멀티")
   )
@@ -93,13 +122,25 @@ function toMaterialKey(material: string | undefined): MaterialKey {
   return "other";
 }
 
+function materialDisplayLabel(material: string | undefined): string {
+  const value = normalizeMaterialValue(material);
+  if (!value) return "";
+  if (value === "hybrid") return "하이브리드";
+  if (value === "natural_gut") return "내추럴 거트";
+  if (value === "synthetic_gut" || value === "multifilament") {
+    return "인조쉽 / 멀티필라멘트";
+  }
+  if (value === "polyester") return "폴리에스터";
+  return String(material ?? "").trim();
+}
+
 async function fetchStringingProducts(): Promise<ProductLite[]> {
   try {
     const db = await getDb();
     return await db
       .collection<ProductLite>("products")
       .find(
-        { isDeleted: { $ne: true }, mountingFee: { $type: "number" as any, $gte: 0 } },
+        { isDeleted: { $ne: true }, mountingFee: { $exists: true } },
         {
           projection: {
             name: 1,
@@ -133,15 +174,15 @@ export async function getStringingMaterialSummaries(): Promise<
   return (Object.keys(CATEGORY_META) as MaterialKey[]).map((key) => {
     const rows = grouped.get(key) ?? [];
     const prices = rows
-      .map((r) => Number(r.price))
-      .filter((n) => Number.isFinite(n) && n > 0);
+      .map((r) => toPositiveNumber(r.price))
+      .filter((n): n is number => n != null);
     const fees = rows
-      .map((r) => Number(r.mountingFee))
-      .filter((n) => Number.isFinite(n) && n > 0);
+      .map((r) => toPositiveNumber(r.mountingFee))
+      .filter((n): n is number => n != null);
 
     const brandCounter = new Map<string, number>();
     for (const row of rows) {
-      const brand = String(row.brand ?? "").trim();
+      const brand = stringBrandLabel(String(row.brand ?? "").trim());
       if (!brand) continue;
       brandCounter.set(brand, (brandCounter.get(brand) ?? 0) + 1);
     }
@@ -174,7 +215,7 @@ export async function getHybridGuideSummary(): Promise<HybridGuideSummary> {
 
   const materialCounter = new Map<string, number>();
   for (const row of hybridRows) {
-    const material = String(row.material ?? "").trim();
+    const material = materialDisplayLabel(row.material);
     if (!material) continue;
     materialCounter.set(material, (materialCounter.get(material) ?? 0) + 1);
   }
