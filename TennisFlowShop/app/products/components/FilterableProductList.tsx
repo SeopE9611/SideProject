@@ -51,6 +51,7 @@ const materialLabelMap: Record<string, string> = {
   multifilament: "멀티필라멘트",
   natural_gut: "천연 거트",
   synthetic_gut: "합성 거트",
+  hybrid: "하이브리드",
 };
 
 // 가격 필터 기본값
