@@ -4,10 +4,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CUSTOM_STRING_MOUNTING_FEE } from "@/lib/stringing-pricing-policy";
-import { ArrowRight, Award, CheckCircle, Clock, Shield, Star, Target, Trophy, Users, Zap } from "lucide-react";
+import { ArrowRight, Award, CheckCircle, Clock, File, Grid2X2, Shield, Star, Target, Trophy, Users, Zap } from "lucide-react";
 import Link from "next/link";
 
 import type { Metadata } from "next";
+import { MdSportsTennis } from "react-icons/md";
 
 export const metadata: Metadata = {
   title: "장착 서비스",
@@ -130,7 +131,7 @@ export default async function ServicesPage() {
   const serviceStartOptions = [
     {
       badge: "추천",
-      icon: <Zap className="h-7 w-7" />,
+      icon: <Grid2X2 className="h-7 w-7" />,
       title: "새 스트링 구매 후 장착",
       description: "스트링을 새로 고르고 기존 라켓에 바로 장착 신청까지 이어갑니다.",
       steps: "스트링 선택 → 결제/장착 정보 입력 → 접수 완료",
@@ -140,7 +141,7 @@ export default async function ServicesPage() {
     },
     {
       badge: "구매 연계",
-      icon: <Trophy className="h-7 w-7" />,
+      icon: <MdSportsTennis className="h-7 w-7" />,
       title: "라켓 구매와 함께 장착",
       description: "중고 라켓을 구매하면서 원하는 스트링 세팅까지 한 번에 진행합니다.",
       steps: "라켓 선택 → 스트링 선택 → 결제 → 장착 접수",
@@ -150,7 +151,7 @@ export default async function ServicesPage() {
     },
     {
       badge: "대여 연계",
-      icon: <Target className="h-7 w-7" />,
+      icon: <MdSportsTennis className="h-7 w-7" />,
       title: "라켓 대여와 함께 장착",
       description: "대여 라켓에 원하는 스트링 세팅을 더해 바로 사용하기 좋게 준비합니다.",
       steps: "라켓 대여 → 스트링 선택 → 대여 결제 → 장착 접수",
@@ -160,7 +161,7 @@ export default async function ServicesPage() {
     },
     {
       badge: "보유 장비",
-      icon: <Shield className="h-7 w-7" />,
+      icon: <File className="h-7 w-7" />,
       title: "보유 라켓/보유 스트링으로 장착",
       description: "이미 가진 라켓이나 스트링으로 교체 작업만 맡기고 싶을 때 선택합니다.",
       steps: "신청서 작성 → 접수 → 비용 안내/진행",
