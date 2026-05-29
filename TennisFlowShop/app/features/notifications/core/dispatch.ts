@@ -1,7 +1,7 @@
 import { sendSMS } from "@/app/features/notifications/channels/sms";
 import { sendEmail } from "../channels/email";
 import { sendSlack } from "../channels/slack";
-import { markFailed, markSent } from "./outbox.repo";
+import { markSent } from "./outbox.repo";
 
 export async function dispatchOutbox(
   _id: any,
@@ -9,11 +9,13 @@ export async function dispatchOutbox(
   channels: ("email" | "slack" | "sms")[],
 ) {
   let hadError = false;
+  const outboxEmailEnabled = process.env.NOTIFY_OUTBOX_EMAIL_ENABLED === "true";
 
   for (const ch of channels) {
     try {
-      if (ch === "email" && rendered.email) {
-        await sendEmail(rendered.email);
+      if (ch === "email") {
+        if (!outboxEmailEnabled) continue;
+        if (rendered.email) await sendEmail(rendered.email);
       } else if (ch === "slack" && rendered.slack) {
         await sendSlack(rendered.slack.text);
       } else if (ch === "sms" && rendered.sms) {
