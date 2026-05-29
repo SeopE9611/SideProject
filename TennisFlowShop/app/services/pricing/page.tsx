@@ -19,10 +19,24 @@ const materialDescriptions: Record<string, string> = {
 };
 
 const won = (n: number | null) => (n == null ? null : `${n.toLocaleString("ko-KR")}원`);
+const mountingFeeWon = (n: number | null) => (n === 0 ? "무료" : won(n));
 
 function formatRange(min: number | null, max: number | null, emptyLabel: string) {
   const minText = won(min);
   const maxText = won(max);
+
+  if (!minText && !maxText) return emptyLabel;
+  if (minText && maxText) return min === max ? minText : `${minText} ~ ${maxText}`;
+  return minText ?? maxText ?? emptyLabel;
+}
+
+function formatMountingFeeRange(
+  min: number | null,
+  max: number | null,
+  emptyLabel: string,
+) {
+  const minText = mountingFeeWon(min);
+  const maxText = mountingFeeWon(max);
 
   if (!minText && !maxText) return emptyLabel;
   if (minText && maxText) return min === max ? minText : `${minText} ~ ${maxText}`;
@@ -148,7 +162,7 @@ export default async function PricingPage() {
             {primarySummaries.map((category) => {
               const hasProducts = category.count > 0;
               const productPriceRange = formatRange(category.minPrice, category.maxPrice, "가격 데이터 확인 필요");
-              const mountingFeeRange = formatRange(category.minMountingFee, category.maxMountingFee, "장착비 미등록");
+              const mountingFeeRange = formatMountingFeeRange(category.minMountingFee, category.maxMountingFee, "장착비 미등록");
 
               return (
                 <Card
@@ -229,7 +243,7 @@ export default async function PricingPage() {
                 </div>
                 <div className="rounded-xl border border-border bg-card p-3">
                   <p className="text-xs font-medium">장착비</p>
-                  <p className="mt-1 font-semibold text-foreground">{formatRange(otherSummary.minMountingFee, otherSummary.maxMountingFee, "장착비 미등록")}</p>
+                  <p className="mt-1 font-semibold text-foreground">{formatMountingFeeRange(otherSummary.minMountingFee, otherSummary.maxMountingFee, "장착비 미등록")}</p>
                 </div>
               </CardContent>
             </Card>
@@ -280,7 +294,7 @@ export default async function PricingPage() {
                 </div>
               </div>
               <Button asChild variant="outline">
-                <Link href="/products?material=hybrid" className="group">
+                <Link href="/products?from=apply&material=hybrid" className="group">
                   하이브리드 상품 보기
                   <ArrowRight className="transition-transform group-hover:translate-x-1" />
                 </Link>
