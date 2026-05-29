@@ -229,7 +229,7 @@ export default async function ServicesPage() {
                 <Link
                   key={item.title}
                   href={item.href}
-                  className={`group relative flex h-full flex-col rounded-2xl border p-4 text-left shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background bp-sm:p-5 ${item.featured ? "border-primary/40 bg-primary/5" : "border-border bg-card"}`}
+                  className={`group relative flex h-full flex-col rounded-2xl border p-4 text-left shadow-sm transition-[border-color,box-shadow,background-color] duration-200 hover:border-primary/30 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background bp-sm:p-5 ${item.featured ? "border-primary/40 bg-primary/5" : "border-border bg-card"}`}
                 >
                   <div className="mb-4 flex items-start justify-between gap-3">
                     <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-border bg-background text-foreground transition-colors group-hover:bg-muted bp-sm:h-14 bp-sm:w-14">
@@ -282,7 +282,7 @@ export default async function ServicesPage() {
                       <Link
                         key={link.label}
                         href={link.href}
-                        className="group flex h-full flex-col rounded-xl border border-border bg-card p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                        className="group flex h-full flex-col rounded-xl border border-border bg-card p-4 transition-[border-color,box-shadow,background-color] duration-200 hover:border-primary/30 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                       >
                         <span className="flex items-center justify-between gap-3 text-sm font-semibold text-foreground">
                           <span>{link.label}</span>

@@ -118,7 +118,7 @@ export default async function PricingPage() {
             {basicServices.map((service) => {
               const Icon = service.icon;
               return (
-                <Card key={service.name} className="transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg">
+                <Card key={service.name} className="transition-[border-color,box-shadow,background-color] duration-200 hover:border-primary/30 hover:shadow-md">
                   <CardHeader className="text-center break-keep">
                     <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full border border-primary/20 bg-primary/5">
                       <Icon className="h-5 w-5 text-foreground" />
@@ -167,7 +167,7 @@ export default async function PricingPage() {
               return (
                 <Card
                   key={category.key}
-                  className={`transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg ${hasProducts ? "" : "opacity-75"}`}
+                  className={`transition-[border-color,box-shadow,background-color] duration-200 hover:border-primary/30 hover:shadow-md ${hasProducts ? "" : "opacity-75"}`}
                 >
                   <CardHeader className="break-keep">
                     <CardTitle className="flex items-center gap-2">
@@ -233,17 +233,73 @@ export default async function PricingPage() {
           </div>
           {otherSummary?.count ? (
             <Card className="border-dashed bg-muted/30">
-              <CardHeader>
-                <CardTitle className="text-base">{otherSummary.label} (보조 분류)</CardTitle>
-              </CardHeader>
-              <CardContent className="grid gap-3 text-sm text-muted-foreground sm:grid-cols-2">
-                <div className="rounded-xl border border-border bg-card p-3">
-                  <p className="text-xs font-medium">상품가</p>
-                  <p className="mt-1 font-semibold text-foreground">{formatRange(otherSummary.minPrice, otherSummary.maxPrice, "가격 데이터 확인 필요")}</p>
+              <CardHeader className="break-keep">
+                <div className="flex flex-wrap items-center gap-2">
+                  <CardTitle className="text-base">기타/미분류 상품</CardTitle>
+                  <Badge variant="secondary">보조 분류</Badge>
                 </div>
-                <div className="rounded-xl border border-border bg-card p-3">
-                  <p className="text-xs font-medium">장착비</p>
-                  <p className="mt-1 font-semibold text-foreground">{formatMountingFeeRange(otherSummary.minMountingFee, otherSummary.maxMountingFee, "장착비 미등록")}</p>
+                <p className="text-sm text-muted-foreground">
+                  기타/미분류는 주요 소재 분류에 자동 매칭되지 않은 상품입니다. 등록 상품과 소재값을 확인해 필요하면 관리자 상품 정보에서 소재 분류를 정리해 주세요.
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-4 text-sm text-muted-foreground">
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <div className="rounded-xl border border-border bg-card p-3">
+                    <p className="text-xs font-medium">등록 상품</p>
+                    <p className="mt-1 font-semibold text-foreground">{otherSummary.count.toLocaleString("ko-KR")}개</p>
+                  </div>
+                  <div className="rounded-xl border border-border bg-card p-3">
+                    <p className="text-xs font-medium">상품가</p>
+                    <p className="mt-1 font-semibold text-foreground">{formatRange(otherSummary.minPrice, otherSummary.maxPrice, "가격 데이터 확인 필요")}</p>
+                  </div>
+                  <div className="rounded-xl border border-border bg-card p-3">
+                    <p className="text-xs font-medium">장착비</p>
+                    <p className="mt-1 font-semibold text-foreground">{formatMountingFeeRange(otherSummary.minMountingFee, otherSummary.maxMountingFee, "장착비 미등록")}</p>
+                  </div>
+                </div>
+                <div className="grid gap-4 md:grid-cols-3">
+                  <div className="space-y-2">
+                    <p className="text-xs font-medium">대표 브랜드</p>
+                    <div className="flex flex-wrap gap-2">
+                      {otherSummary.brands.length ? (
+                        otherSummary.brands.map((brand) => (
+                          <Badge key={brand} variant="secondary">
+                            {brand}
+                          </Badge>
+                        ))
+                      ) : (
+                        <span>데이터 없음</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-xs font-medium">대표 상품</p>
+                    <div className="flex flex-wrap gap-2">
+                      {otherSummary.productNames.length ? (
+                        otherSummary.productNames.map((name) => (
+                          <Badge key={name} variant="outline" className="max-w-full whitespace-normal break-keep text-left">
+                            {name}
+                          </Badge>
+                        ))
+                      ) : (
+                        <span>데이터 없음</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-xs font-medium">등록 소재값</p>
+                    <div className="flex flex-wrap gap-2">
+                      {otherSummary.materialLabels.length ? (
+                        otherSummary.materialLabels.map((material) => (
+                          <Badge key={material} variant="secondary">
+                            {material}
+                          </Badge>
+                        ))
+                      ) : (
+                        <span>데이터 없음</span>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -255,7 +311,7 @@ export default async function PricingPage() {
             <h2 className="font-bold text-2xl">하이브리드 조합 안내</h2>
             <p className="mt-2 text-sm text-muted-foreground">하이브리드는 단일 소재 가격표와 분리해 조합 기준으로 안내합니다.</p>
           </div>
-          <Card className="transition-all duration-200 hover:border-primary/30 hover:shadow-lg">
+          <Card className="transition-[border-color,box-shadow,background-color] duration-200 hover:border-primary/30 hover:shadow-md">
             <CardHeader className="break-keep">
               <CardTitle className="flex items-center gap-2">
                 <Shield className="h-5 w-5 text-foreground" />
