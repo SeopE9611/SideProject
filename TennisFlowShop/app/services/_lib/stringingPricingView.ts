@@ -62,6 +62,24 @@ function toPositiveNumber(value: unknown): number | null {
   return null;
 }
 
+function toNonNegativeNumber(value: unknown): number | null {
+  if (typeof value === "number" && Number.isFinite(value) && value >= 0) {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    const trimmed = value.replace(/,/g, "").trim();
+    if (!trimmed) return null;
+
+    const normalized = Number(trimmed);
+    if (Number.isFinite(normalized) && normalized >= 0) {
+      return normalized;
+    }
+  }
+
+  return null;
+}
+
 function isHybridMaterial(material: string | undefined): boolean {
   const value = normalizeMaterialValue(material);
   if (!value) return false;
@@ -177,7 +195,7 @@ export async function getStringingMaterialSummaries(): Promise<
       .map((r) => toPositiveNumber(r.price))
       .filter((n): n is number => n != null);
     const fees = rows
-      .map((r) => toPositiveNumber(r.mountingFee))
+      .map((r) => toNonNegativeNumber(r.mountingFee))
       .filter((n): n is number => n != null);
 
     const brandCounter = new Map<string, number>();
