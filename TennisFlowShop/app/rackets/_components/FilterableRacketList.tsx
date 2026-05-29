@@ -80,6 +80,12 @@ const brandLabelMap: Record<string, string> = Object.fromEntries(
   brands.map(({ value, label }) => [value.toLowerCase(), label]),
 );
 
+const parsePriceParam = (value: string | null): number | null => {
+  if (!value) return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
+};
+
 type Props = {
   initialBrand?: string | null;
   initialCondition?: string | null;
@@ -101,7 +107,6 @@ export default function FilterableRacketList({
   const [rentOnly, setRentOnly] = useState(
     () => searchParams.get("rentOnly") === "1",
   );
-
 
   // 필터 상태들
   const [selectedBrand, setSelectedBrand] = useState<string | null>(
@@ -150,8 +155,8 @@ export default function FilterableRacketList({
 
       const minPrice = searchParams.get("minPrice");
       const maxPrice = searchParams.get("maxPrice");
-      setPriceMin(minPrice ? Number(minPrice) : null);
-      setPriceMax(maxPrice ? Number(maxPrice) : null);
+      setPriceMin(parsePriceParam(minPrice));
+      setPriceMax(parsePriceParam(maxPrice));
       setSortOption(searchParams.get("sort") || "latest");
 
       const view = searchParams.get("view");
@@ -179,8 +184,8 @@ export default function FilterableRacketList({
 
     const minPrice = searchParams.get("minPrice");
     const maxPrice = searchParams.get("maxPrice");
-    const nextMin = minPrice ? Number(minPrice) : null;
-    const nextMax = maxPrice ? Number(maxPrice) : null;
+    const nextMin = parsePriceParam(minPrice);
+    const nextMax = parsePriceParam(maxPrice);
     if (nextMin !== priceMin) setPriceMin(nextMin);
     if (nextMax !== priceMax) setPriceMax(nextMax);
     const sort = searchParams.get("sort") || "latest";
@@ -201,6 +206,9 @@ export default function FilterableRacketList({
   if (selectedBrand) query.set("brand", selectedBrand);
   if (selectedCondition) query.set("cond", selectedCondition);
   if (submittedQuery) query.set("q", submittedQuery);
+  if (priceMin !== null) query.set("minPrice", String(priceMin));
+  if (priceMax !== null) query.set("maxPrice", String(priceMax));
+  query.set("sort", sortOption || "latest");
   const key = `/api/rackets${query.toString() ? `?${query.toString()}` : ""}`;
   const { data, isLoading, isValidating, error, mutate } =
     useSWR<RacketsApiResponse>(key, fetcher, {
@@ -213,10 +221,9 @@ export default function FilterableRacketList({
 
   /**
    * 중요:
-   * filterKey에는 "네트워크 재요청(SWR key 변경)"을 유발하는 값만 넣는다.
-   * - 라켓 페이지는 brand/cond/q/rentOnly만 서버에 보내고,
-   * - priceMin/priceMax/sortOption은 클라이언트 필터/정렬이므로 제외해야
-   *   네트워크 없는 변경에서 스켈레톤이 불필요하게 켜지지 않는다.
+   * filterKey에는 "네트워크 재요청(SWR key 변경)"을 유발하는 값을 넣는다.
+   * brand/cond/q/rentOnly에 더해 priceMin/priceMax/sortOption도 서버 필터/정렬로
+   * 처리하므로 변경 시 전환 스켈레톤과 visibleCount 리셋을 동일하게 적용한다.
    */
   const filterKey = useMemo(() => {
     return [
@@ -224,8 +231,19 @@ export default function FilterableRacketList({
       selectedCondition ?? "",
       submittedQuery ?? "",
       rentOnly ? "1" : "0",
+      priceMin !== null ? String(priceMin) : "",
+      priceMax !== null ? String(priceMax) : "",
+      sortOption || "latest",
     ].join("|");
-  }, [selectedBrand, selectedCondition, submittedQuery, rentOnly]);
+  }, [
+    selectedBrand,
+    selectedCondition,
+    submittedQuery,
+    rentOnly,
+    priceMin,
+    priceMax,
+    sortOption,
+  ]);
 
   useLayoutEffect(() => {
     if (isInitializingRef.current) return;
@@ -267,24 +285,11 @@ export default function FilterableRacketList({
     return { rackets: data.items ?? [], total: Number(data.total ?? 0) };
   }, [data]);
 
-  // 클라이언트 필터링 및 정렬
-  const racketsList = useCallback(() => {
-    let list = Array.isArray(rackets) ? [...rackets] : [];
-
-    // 가격 필터
-    if (priceMin !== null) list = list.filter((r) => r.price >= priceMin);
-    if (priceMax !== null) list = list.filter((r) => r.price <= priceMax);
-    // 정렬
-    if (sortOption === "price-low") {
-      list.sort((a, b) => a.price - b.price);
-    } else if (sortOption === "price-high") {
-      list.sort((a, b) => b.price - a.price);
-    }
-
-    return list;
-  }, [rackets, sortOption, priceMin, priceMax]);
-
-  const products = racketsList();
+  // 서버에서 필터/정렬이 반영된 전체 결과를 받고, 클라이언트에서는 표시 개수만 제어한다.
+  const products = useMemo(
+    () => (Array.isArray(rackets) ? rackets : []),
+    [rackets],
+  );
   const [visibleCount, setVisibleCount] = useState(12);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const hasMore = products.length > visibleCount;
@@ -340,7 +345,7 @@ export default function FilterableRacketList({
   useEffect(() => {
     setVisibleCount(12);
     setIsLoadingMore(false);
-  }, [filterKey, sortOption, priceMin, priceMax]);
+  }, [filterKey]);
 
   useEffect(() => {
     const mql = window.matchMedia("(min-width: 1200px)");
@@ -354,8 +359,9 @@ export default function FilterableRacketList({
     return () => mql.removeEventListener("change", onChange);
   }, []);
 
-  const effectiveViewMode: "grid" | "list" =
-    isDesktopViewport ? viewMode : "grid";
+  const effectiveViewMode: "grid" | "list" = isDesktopViewport
+    ? viewMode
+    : "grid";
 
   // draft를 현재 applied(selected) 값으로 동기화 (Sheet 열 때/취소할 때)
   const syncDraftFromApplied = useCallback(() => {
@@ -576,9 +582,7 @@ export default function FilterableRacketList({
 
       <div className="grid grid-cols-1 gap-5 bp-md:gap-8 bp-lg:grid-cols-[300px_minmax(0,1fr)] bp-xl:grid-cols-[320px_minmax(0,1fr)]">
         {/* 필터 사이드바 */}
-        <div
-          className={cn("hidden bp-lg:block", "space-y-4 bp-md:space-y-6")}
-        >
+        <div className={cn("hidden bp-lg:block", "space-y-4 bp-md:space-y-6")}>
           <div className="sticky top-20 self-start">
             <RacketFilterPanel {...desktopFilterPanelProps} />
           </div>
@@ -588,7 +592,9 @@ export default function FilterableRacketList({
         <div className="min-w-0">
           <div className="mb-4 rounded-xl border border-border/60 bg-card p-3 bp-sm:p-4 bp-md:mb-8">
             <div className="mb-3 space-y-1.5">
-              <p className="text-xs font-medium text-muted-foreground">라켓 목록</p>
+              <p className="text-xs font-medium text-muted-foreground">
+                라켓 목록
+              </p>
               <p className="text-sm leading-relaxed break-keep text-muted-foreground">
                 조건에 맞는 라켓을 확인하고 상세 페이지에서 구매·대여 정보를
                 확인하세요.
@@ -616,41 +622,45 @@ export default function FilterableRacketList({
             <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
               <div className="flex flex-wrap items-center gap-2 bp-sm:gap-3">
                 <div className="text-base bp-sm:text-lg font-semibold text-foreground">
-                {rentOnly ? (
-                  <>
-                    대여 가능 총{" "}
-                    {isInitialLikeLoading ? (
-                      <Skeleton className="inline-block h-5 w-12 align-middle" />
-                    ) : (
-                      <span className="font-bold text-foreground">{total}</span>
-                    )}
-                    개 라켓
-                    {isInitialLikeLoading ? (
-                      <Skeleton className="inline-block h-5 w-10 align-middle" />
-                    ) : (
-                      <span className="ml-2 text-sm text-muted-foreground">
-                        (표시중 {visibleProducts.length}개)
-                      </span>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    총{" "}
-                    {isInitialLikeLoading ? (
-                      <Skeleton className="inline-block h-5 w-12 align-middle" />
-                    ) : (
-                      <span className="font-bold text-foreground">{total}</span>
-                    )}
-                    개 라켓
-                    {isInitialLikeLoading ? (
-                      <Skeleton className="inline-block h-5 w-10 align-middle" />
-                    ) : (
-                      <span className="ml-2 text-sm text-muted-foreground">
-                        (표시중 {visibleProducts.length}개)
-                      </span>
-                    )}
-                  </>
-                )}
+                  {rentOnly ? (
+                    <>
+                      대여 가능 총{" "}
+                      {isInitialLikeLoading ? (
+                        <Skeleton className="inline-block h-5 w-12 align-middle" />
+                      ) : (
+                        <span className="font-bold text-foreground">
+                          {total}
+                        </span>
+                      )}
+                      개 라켓
+                      {isInitialLikeLoading ? (
+                        <Skeleton className="inline-block h-5 w-10 align-middle" />
+                      ) : (
+                        <span className="ml-2 text-sm text-muted-foreground">
+                          (표시중 {visibleProducts.length}개)
+                        </span>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      총{" "}
+                      {isInitialLikeLoading ? (
+                        <Skeleton className="inline-block h-5 w-12 align-middle" />
+                      ) : (
+                        <span className="font-bold text-foreground">
+                          {total}
+                        </span>
+                      )}
+                      개 라켓
+                      {isInitialLikeLoading ? (
+                        <Skeleton className="inline-block h-5 w-10 align-middle" />
+                      ) : (
+                        <span className="ml-2 text-sm text-muted-foreground">
+                          (표시중 {visibleProducts.length}개)
+                        </span>
+                      )}
+                    </>
+                  )}
                 </div>
                 <Button
                   type="button"
@@ -700,31 +710,35 @@ export default function FilterableRacketList({
                 </Select>
 
                 {isDesktopViewport && (
-                <div className="flex items-center border border-border rounded-lg p-1 bg-card shrink-0">
-                <Button
-                  type="button"
-                  variant={effectiveViewMode === "grid" ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => setViewMode("grid")}
-                  className="h-8 w-9 p-0"
-                  aria-label="그리드 보기"
-                  aria-pressed={effectiveViewMode === "grid"}
-                >
-                  <Grid3X3 className="w-4 h-4" />
-                </Button>
+                  <div className="flex items-center border border-border rounded-lg p-1 bg-card shrink-0">
+                    <Button
+                      type="button"
+                      variant={
+                        effectiveViewMode === "grid" ? "default" : "ghost"
+                      }
+                      size="sm"
+                      onClick={() => setViewMode("grid")}
+                      className="h-8 w-9 p-0"
+                      aria-label="그리드 보기"
+                      aria-pressed={effectiveViewMode === "grid"}
+                    >
+                      <Grid3X3 className="w-4 h-4" />
+                    </Button>
 
-                <Button
-                  type="button"
-                  variant={effectiveViewMode === "list" ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => setViewMode("list")}
-                  className="h-8 w-9 p-0"
-                  aria-label="리스트 보기"
-                  aria-pressed={effectiveViewMode === "list"}
-                >
-                  <List className="w-4 h-4" />
-                </Button>
-                </div>
+                    <Button
+                      type="button"
+                      variant={
+                        effectiveViewMode === "list" ? "default" : "ghost"
+                      }
+                      size="sm"
+                      onClick={() => setViewMode("list")}
+                      className="h-8 w-9 p-0"
+                      aria-label="리스트 보기"
+                      aria-pressed={effectiveViewMode === "list"}
+                    >
+                      <List className="w-4 h-4" />
+                    </Button>
+                  </div>
                 )}
               </div>
             </div>
