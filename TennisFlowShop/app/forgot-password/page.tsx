@@ -85,7 +85,7 @@ export default function ForgotPasswordPage() {
         <div className="mb-6">
           <Link
             href="/login"
-            className="inline-flex items-center text-sm text-primary hover:text-foreground hover:underline font-medium"
+            className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground hover:underline font-medium"
             onClick={(e) => {
               if (confirmLeaveIfDirty()) return;
               e.preventDefault();
@@ -100,7 +100,7 @@ export default function ForgotPasswordPage() {
           <div className="p-4 md:p-6 border-b border-border bg-muted/40 text-foreground">
             <div className="relative text-center">
               <div className="w-16 h-16 mx-auto mb-4 border border-border bg-secondary rounded-xl flex items-center justify-center">
-                <Shield className="h-8 w-8 text-primary" />
+                <Shield className="h-8 w-8 text-foreground" />
               </div>
               <CardTitle className="text-2xl font-bold text-foreground">
                 비밀번호 찾기
@@ -149,7 +149,7 @@ export default function ForgotPasswordPage() {
                     여기서도 "이메일이 실제 가입된 계정인지"를 노출하지 않도록
                     확정적 표현 대신 조건형 문구를 사용합니다.
                   */}
-                  <p className="text-sm font-semibold text-primary mb-2">
+                  <p className="text-sm font-semibold text-foreground mb-2">
                     {email}이 가입된 계정이라면 비밀번호 재설정 링크를
                     발송했습니다.
                   </p>

@@ -118,7 +118,7 @@ export default function ResetPasswordPage() {
           <Card className="border border-border bg-card shadow-sm overflow-hidden">
             <div className="p-4 md:p-6 border-b border-border bg-muted/40 text-center">
               <div className="w-16 h-16 mx-auto mb-4 border border-border bg-secondary rounded-xl flex items-center justify-center">
-                <ShieldAlert className="h-8 w-8 text-primary" />
+                <ShieldAlert className="h-8 w-8 text-foreground" />
               </div>
               <CardTitle className="text-2xl font-bold">
                 유효하지 않은 링크
@@ -148,7 +148,7 @@ export default function ResetPasswordPage() {
         <div className="mb-6">
           <Link
             href="/login"
-            className="inline-flex items-center text-sm text-primary hover:text-foreground hover:underline font-medium"
+            className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground hover:underline font-medium"
             onClick={(e) => {
               if (confirmLeaveIfDirty()) return;
               e.preventDefault();
@@ -162,7 +162,7 @@ export default function ResetPasswordPage() {
         <Card className="border border-border bg-card shadow-sm overflow-hidden">
           <div className="p-4 md:p-6 border-b border-border bg-muted/40 text-center">
             <div className="w-16 h-16 mx-auto mb-4 border border-border bg-secondary rounded-xl flex items-center justify-center">
-              <KeyRound className="h-8 w-8 text-primary" />
+              <KeyRound className="h-8 w-8 text-foreground" />
             </div>
             <CardTitle className="text-2xl font-bold">
               새 비밀번호 설정
@@ -217,7 +217,7 @@ export default function ResetPasswordPage() {
                   <div className="w-16 h-16 mx-auto mb-4 border border-border bg-secondary text-foreground rounded-full flex items-center justify-center">
                     <CheckCircle className="h-8 w-8" />
                   </div>
-                  <p className="text-sm font-semibold text-primary mb-2">
+                  <p className="text-sm font-semibold text-foreground mb-2">
                     비밀번호가 성공적으로 변경되었습니다.
                   </p>
                   <p className="text-xs text-muted-foreground">

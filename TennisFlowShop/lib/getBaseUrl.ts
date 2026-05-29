@@ -4,7 +4,7 @@
  * 1) NEXT_PUBLIC_SITE_URL  ← 프로덕션/프리뷰에서 권장
  * 2) NEXT_PUBLIC_BASE_URL  ← 로컬 개발용(프로덕션에서 현재 호스트와 불일치 시 무시)
  * 3) VERCEL_URL            ← Vercel 제공(host만, https 보정)
- * 4) http://localhost:3000
+ * 4) http://localhost:3000 (비프로덕션에서만)
  */
 export function getBaseUrl() {
   // 1) 명시 사이트 URL
@@ -37,6 +37,12 @@ export function getBaseUrl() {
   const vercel = process.env.VERCEL_URL;
   if (vercel) return `https://${vercel.replace(/\/+$/, "")}`;
 
-  // 4) 로컬
+  // 4) 로컬: 운영 환경에서는 메일/리다이렉트에 localhost가 섞이지 않도록 차단
+  if (process.env.NODE_ENV === "production") {
+    throw new Error(
+      "Public base URL is not configured (NEXT_PUBLIC_SITE_URL or VERCEL_URL required in production)",
+    );
+  }
+
   return "http://localhost:3000";
 }
