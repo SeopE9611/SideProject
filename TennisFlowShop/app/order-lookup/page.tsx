@@ -293,7 +293,7 @@ export default function OrderLookupPage() {
                       value={formData.name}
                       onChange={handleChange}
                       required
-                      className={`pl-10 h-12 border-2 transition-all duration-200 ${errors.name ? "border-destructive focus:border-destructive" : "border-border focus:border-border hover:border-border"}`}
+                      className={`pl-10 h-12 border-2 transition-[border-color,box-shadow] duration-200 ${errors.name ? "border-destructive focus:border-destructive" : "border-border focus:border-border hover:border-border"}`}
                     />
                     <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   </div>
@@ -323,7 +323,7 @@ export default function OrderLookupPage() {
                       value={formData.email}
                       onChange={handleChange}
                       required
-                      className={`pl-10 h-12 border-2 transition-all duration-200 ${errors.email ? "border-destructive focus:border-destructive" : "border-border focus:border-border hover:border-border"}`}
+                      className={`pl-10 h-12 border-2 transition-[border-color,box-shadow] duration-200 ${errors.email ? "border-destructive focus:border-destructive" : "border-border focus:border-border hover:border-border"}`}
                     />
                     <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   </div>
@@ -352,7 +352,7 @@ export default function OrderLookupPage() {
                       placeholder="01012345678 (- 제외)"
                       value={formData.phone}
                       onChange={handleChange}
-                      className="pl-10 h-12 border-2 border-border focus:border-border hover:border-border transition-all duration-200"
+                      className="pl-10 h-12 border-2 border-border focus:border-border hover:border-border transition-[border-color,box-shadow] duration-200"
                     />
                     <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   </div>
@@ -450,7 +450,7 @@ export default function OrderLookupPage() {
                 <Button
                   type="submit"
                   size="lg"
-                  className="w-full h-12 font-semibold bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+                  className="w-full h-12 font-semibold bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm transition-[background-color,box-shadow] duration-200 hover:shadow-md"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (

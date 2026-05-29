@@ -853,10 +853,10 @@ export default function RacketSelectStringClient({
                   <div
                     key={stringId}
                     className={[
-                      "group relative overflow-hidden rounded-2xl border border-border bg-card transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg",
+                      "group relative overflow-hidden rounded-2xl border border-border bg-card transition-[border-color,box-shadow,background-color] duration-200 hover:shadow-md",
                       isCurrent
                         ? "border-border ring-2 ring-ring"
-                        : "border-border hover:border-border",
+                        : "border-border hover:border-primary/30 hover:bg-muted/30",
                     ].join(" ")}
                   >
                     <div className="p-5 flex flex-col h-full">
@@ -1077,7 +1077,7 @@ export default function RacketSelectStringClient({
                         <div className="mt-4 grid grid-cols-1 gap-2">
                           <Button
                             variant="elevated"
-                            className="w-full whitespace-normal break-keep rounded-xl py-5 font-medium leading-tight transition-all duration-300"
+                            className="w-full whitespace-normal break-keep rounded-xl py-5 font-medium leading-tight transition-[background-color,box-shadow] duration-200"
                             disabled={disabledByGauge || disabledByColor || isSoldOut || isShort}
                             onClick={() => handleSelectString(p, selectedGauge || undefined, selectedColor || undefined)}
                           >
@@ -1116,7 +1116,7 @@ export default function RacketSelectStringClient({
             <Button
               onClick={loadMore}
               disabled={isFetchingMore}
-              className="px-8 py-6 rounded-xl font-medium bg-card border-2 border-border text-foreground hover:border-border hover:bg-muted disabled:opacity-50 transition-all duration-300"
+              className="px-8 py-6 rounded-xl font-medium bg-card border-2 border-border text-foreground hover:border-border hover:bg-muted disabled:opacity-50 transition-[border-color,background-color,box-shadow,opacity] duration-200"
             >
               {isFetchingMore ? (
                 <span className="flex items-center gap-2">

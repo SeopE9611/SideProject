@@ -451,7 +451,7 @@ export default function RentalSelectStringClient({
                 return (
                   <div
                     key={id}
-                    className="group relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+                    className="group relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-[border-color,box-shadow,background-color] duration-200 hover:border-primary/30 hover:bg-muted/30 hover:shadow-md"
                   >
                     <div className="p-5 flex flex-col h-full">
                       {/* String Image */}
@@ -597,7 +597,7 @@ export default function RentalSelectStringClient({
 
                       {/* Select Button */}
                       <Button
-                        className="mt-4 w-full whitespace-normal break-keep bg-primary py-5 font-medium leading-tight text-primary-foreground transition-all duration-300 hover:bg-primary/90"
+                        className="mt-4 w-full whitespace-normal break-keep bg-primary py-5 font-medium leading-tight text-primary-foreground transition-[background-color,box-shadow] duration-200 hover:bg-primary/90"
                         disabled={(isGaugeRequired && (!selectedGauge || isGaugeSoldOut || hasGaugeStockIssue)) || (isColorRequired && (!selectedColor || isColorOut || hasColorStockIssue))}
                         onClick={() => {
                           if (hasVariantInventories && !selectedColor) return alert("색상을 선택해주세요.");
