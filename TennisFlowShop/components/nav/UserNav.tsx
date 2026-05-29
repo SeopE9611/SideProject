@@ -33,7 +33,6 @@ export function UserNav() {
         aria-busy="true"
       >
         <UserIcon className="h-5 w-5" />
-        <span className="text-sm">사용자 확인 중</span>
       </div>
     );
   }
