@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type WheelEvent } from "react";
 
 import HeroSlider from "@/components/HeroSlider";
 import HorizontalProducts, { type HItem } from "@/components/HorizontalProducts";
@@ -172,11 +172,37 @@ const surfaceCardInteractiveClass = "rounded-2xl border border-border bg-card sh
 const surfaceIconWrapClass = "flex items-center justify-center rounded-2xl border border-border/60 bg-secondary text-foreground shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 group-hover:shadow-md";
 const surfacePanelClass = "rounded-3xl border border-border bg-card shadow-sm";
 const processStepSurfaceClass = "group flex flex-col items-center rounded-2xl border border-border/60 bg-background p-4 text-center shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 hover:shadow-md";
+const brandRailClass = "relative flex max-w-full flex-nowrap items-center gap-2 overflow-x-auto overscroll-x-contain pb-3 [scrollbar-color:hsl(var(--muted-foreground)/0.15)_transparent] [scrollbar-width:thin] bp-sm:gap-2.5 [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-muted-foreground/10 hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/30";
 
 export default function Home() {
   const [activeBrand, setActiveBrand] = useState<BrandKey>("all");
   const [activeStringBrand, setActiveStringBrand] = useState<StringBrandKey>("all");
   const router = useRouter();
+
+  const handleBrandRailWheel = useCallback((event: WheelEvent<HTMLDivElement>) => {
+    if (event.ctrlKey) return;
+
+    const rail = event.currentTarget;
+    const maxScrollLeft = rail.scrollWidth - rail.clientWidth;
+
+    if (maxScrollLeft <= 0) return;
+
+    const absDeltaX = Math.abs(event.deltaX);
+    const absDeltaY = Math.abs(event.deltaY);
+    const delta = absDeltaX > absDeltaY ? event.deltaX : event.deltaY;
+
+    if (delta === 0) return;
+
+    const atStart = rail.scrollLeft <= 0;
+    const atEnd = rail.scrollLeft >= maxScrollLeft - 1;
+
+    if ((delta < 0 && atStart) || (delta > 0 && atEnd)) {
+      return;
+    }
+
+    event.preventDefault();
+    rail.scrollLeft += delta;
+  }, []);
 
   // 회원가입 프로모션 이벤트
   const signupPromo = useMemo(
@@ -714,7 +740,7 @@ export default function Home() {
           </div>
           <div className="mb-8 bp-sm:mb-10">
             <div className="flex justify-center">
-              <div className="relative flex items-center gap-2 bp-sm:gap-2.5 overflow-x-auto pb-2 scrollbar-hide">
+              <div className={brandRailClass} onWheel={handleBrandRailWheel}>
                 <button
                   onClick={() => setActiveStringBrand("all")}
                   className={`shrink-0 px-5 bp-sm:px-6 bp-md:px-7 py-2.5 bp-sm:py-3 rounded-xl text-sm bp-sm:text-base font-semibold transition-[background-color,color,border-color,box-shadow,opacity] duration-300 whitespace-nowrap ${activeStringBrand === "all" ? "border border-primary/40 bg-primary/10 text-primary shadow-sm dark:border-primary/40 dark:bg-primary/15 dark:text-primary" : "bg-card border border-border/60 text-foreground hover:border-border hover:shadow-md"}`}
@@ -732,7 +758,7 @@ export default function Home() {
                 ))}
               </div>
             </div>
-            <p className="mt-2 text-center text-xs bp-sm:text-sm text-muted-foreground">좌우로 넘기면 더 많은 브랜드를 볼 수 있어요.</p>
+            <p className="mt-2 text-center text-xs bp-sm:text-sm text-muted-foreground">모바일은 좌우 스와이프, PC는 마우스 휠로 더 많은 브랜드를 볼 수 있어요.</p>
           </div>
 
           <HorizontalProducts
@@ -769,7 +795,7 @@ export default function Home() {
           </div>
           <div className="mb-8 bp-sm:mb-10">
             <div className="flex justify-center">
-              <div className="relative flex items-center gap-2 bp-sm:gap-2.5 overflow-x-auto pb-2 scrollbar-hide">
+              <div className={brandRailClass} onWheel={handleBrandRailWheel}>
                 <button
                   onClick={() => setActiveBrand("all")}
                   className={`shrink-0 px-5 bp-sm:px-6 bp-md:px-7 py-2.5 bp-sm:py-3 rounded-xl text-sm bp-sm:text-base font-semibold transition-[background-color,color,border-color,box-shadow,opacity] duration-300 whitespace-nowrap ${activeBrand === "all" ? "border border-primary/40 bg-primary/10 text-primary shadow-sm dark:border-primary/40 dark:bg-primary/15 dark:text-primary" : "bg-card border border-border/60 text-foreground hover:border-border hover:shadow-md"}`}
@@ -787,7 +813,7 @@ export default function Home() {
                 ))}
               </div>
             </div>
-            <p className="mt-2 text-center text-xs bp-sm:text-sm text-muted-foreground">좌우로 넘기면 더 많은 브랜드를 볼 수 있어요.</p>
+            <p className="mt-2 text-center text-xs bp-sm:text-sm text-muted-foreground">모바일은 좌우 스와이프, PC는 마우스 휠로 더 많은 브랜드를 볼 수 있어요.</p>
           </div>
           <HorizontalProducts
             title="중고 라켓"
