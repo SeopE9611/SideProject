@@ -242,13 +242,10 @@ function FinalPaymentConfirmCard({
         </div>
         {withStringService && <p className="rounded-lg border border-border/70 bg-secondary/20 px-3 py-2 text-xs text-foreground/85">결제 완료 후 교체서비스 신청 정보가 함께 접수됩니다.</p>}
         <div className="space-y-2 rounded-xl border border-border/70 bg-secondary/20 p-3 text-xs text-foreground">
-          <p>결제수단: {paymentMethod === "bank-transfer" ? "무통장입금" : "NICE 카드/간편결제"}</p>
-          {paymentMethod === "bank-transfer" ? (
+          {paymentMethod === "bank-transfer" && (
             <p className="text-muted-foreground">
               입금 계좌: {bankLabelMap[selectedBank as keyof typeof bankLabelMap]?.account ?? selectedBank} / 입금자명: {depositor.trim() || "미입력"}
             </p>
-          ) : (
-            <p className="text-muted-foreground">아래 버튼 클릭 후 NICE 인증 결제창에서 결제를 완료해주세요.</p>
           )}
         </div>
       </CardContent>
@@ -1252,9 +1249,7 @@ export default function CheckoutPage() {
                                 {(item.selectedColorLabel || item.selectedColor) && (
                                   <span className="inline-flex items-center gap-1 text-xs text-foreground/80 bg-muted/40 px-2 py-0.5 rounded-full">
                                     색상
-                                    {item.selectedColorHex && (
-                                      <span className="h-2.5 w-2.5 rounded-full border border-border/60" style={{ backgroundColor: item.selectedColorHex }} />
-                                    )}
+                                    {item.selectedColorHex && <span className="h-2.5 w-2.5 rounded-full border border-border/60" style={{ backgroundColor: item.selectedColorHex }} />}
                                     {item.selectedColorLabel || item.selectedColor}
                                   </span>
                                 )}
@@ -1806,8 +1801,6 @@ export default function CheckoutPage() {
                   />
                 </div>
 
-
-
                 <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 px-4 py-3 shadow-lg backdrop-blur bp-md:hidden pb-[calc(env(safe-area-inset-bottom)+0.75rem)]">
                   <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
                     <div className="min-w-0">
@@ -1889,7 +1882,16 @@ export default function CheckoutPage() {
                         onSuccessNavigationAbort={() => setIsIntentionalSuccessNavigation(false)}
                         payableAmount={payableTotalPrice}
                         payload={{
-                          items: orderItems.map((item) => ({ productId: item.id, quantity: item.quantity, kind: item.kind ?? "product", selectedGauge: item.selectedGauge, selectedColor: item.selectedColor, selectedColorLabel: item.selectedColorLabel, selectedColorHex: item.selectedColorHex, selectedColorImage: item.selectedColorImage })),
+                          items: orderItems.map((item) => ({
+                            productId: item.id,
+                            quantity: item.quantity,
+                            kind: item.kind ?? "product",
+                            selectedGauge: item.selectedGauge,
+                            selectedColor: item.selectedColor,
+                            selectedColorLabel: item.selectedColorLabel,
+                            selectedColorHex: item.selectedColorHex,
+                            selectedColorImage: item.selectedColorImage,
+                          })),
                           shippingInfo: {
                             name: name.trim(),
                             phone: phone.replace(/\D/g, ""),
