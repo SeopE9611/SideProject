@@ -48,7 +48,6 @@ export default function CheckoutStringingCompactEditor({ adapter }: Props) {
     visitSlotCountUi,
     visitDurationMinutesUi,
     visitTimeRange,
-    completion,
   } = adapter;
 
   const isVisit = formData.collectionMethod === "visit";
@@ -109,10 +108,6 @@ export default function CheckoutStringingCompactEditor({ adapter }: Props) {
     applyBulkToAllLines({ main, cross });
   }, [applyBulkToAllLines, linesForSubmit]);
 
-  const lineConfiguredDone =
-    completion.lineConfiguredCount === completion.totalLineCount &&
-    completion.totalLineCount > 0;
-
   return (
     <Accordion
       type="single"
@@ -127,22 +122,14 @@ export default function CheckoutStringingCompactEditor({ adapter }: Props) {
           <span className="flex min-w-0 flex-1 flex-col gap-1.5">
             <span className="inline-flex items-center gap-2 text-foreground">
               <Settings2 className="h-4 w-4 text-primary/80" />
-              교체할 라켓 정보
+              작업할 라켓
             </span>
             <span className="text-xs font-normal leading-relaxed text-muted-foreground">
-              선택한 스트링을 어떤 라켓에 장착할지 알려주세요. 라켓명, 희망
-              텐션, 요청사항은 필요할 때만 입력해도 됩니다.
+              선택한 스트링을 장착할 라켓과 요청사항을 입력하세요. 필요한 항목만
+              작성해도 됩니다.
             </span>
           </span>
-          <span
-            className={
-              lineConfiguredDone
-                ? "text-xs text-primary"
-                : "text-xs text-muted-foreground"
-            }
-          >
-            {lineConfiguredDone ? "선택 완료" : "확인 필요"}
-          </span>
+          <span className="text-xs text-muted-foreground">선택 입력</span>
         </AccordionTrigger>
         <AccordionContent value="detail" className="space-y-6 pb-5 pt-4">
           <section className="space-y-4 rounded-lg border border-border bg-muted/30 p-4">
@@ -227,23 +214,23 @@ export default function CheckoutStringingCompactEditor({ adapter }: Props) {
           <section className="space-y-4">
             <div className="space-y-1">
               <p className="text-sm font-semibold text-foreground">
-                라켓별 교체 정보 입력
+                라켓별 작업 정보
               </p>
               <p className="text-xs text-muted-foreground">
-                카드 제목의 라켓 번호는 구분용이며, 라켓명 입력값으로 저장되지
-                않습니다.
+                라켓 번호는 구분용이며, 입력하지 않아도 주문은 진행할 수
+                있습니다.
               </p>
             </div>
             {lineCount >= 2 && (
-              <div className="rounded-lg border border-border bg-muted/30 p-3.5">
+              <div className="rounded-lg border border-border bg-muted/20 p-3">
                 <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                   <div>
                     <p className="inline-flex items-center gap-1.5 text-xs font-semibold text-foreground">
                       <Sparkles className="h-3.5 w-3.5 text-primary/80" />
-                      빠른 설정
+                      여러 라켓에 한 번에 적용
                     </p>
                     <p className="mt-0.5 text-xs text-muted-foreground">
-                      여러 자루에 동일한 텐션/메모를 한 번에 적용합니다.
+                      공통 텐션과 메모를 빠르게 채웁니다.
                     </p>
                   </div>
                   <div className="flex gap-2">
@@ -268,7 +255,7 @@ export default function CheckoutStringingCompactEditor({ adapter }: Props) {
                 </div>
                 <div className="grid grid-cols-1 gap-3 bp-sm:grid-cols-2">
                   <Input
-                    className="h-10 px-3"
+                    className="h-9 px-3 text-sm"
                     value={bulkTensionMain}
                     onChange={(e) =>
                       setBulkTensionMain(toNumberText(e.target.value))
@@ -276,7 +263,7 @@ export default function CheckoutStringingCompactEditor({ adapter }: Props) {
                     placeholder="공통 메인 텐션"
                   />
                   <Input
-                    className="h-10 px-3"
+                    className="h-9 px-3 text-sm"
                     value={bulkTensionCross}
                     onChange={(e) =>
                       setBulkTensionCross(toNumberText(e.target.value))
@@ -288,7 +275,7 @@ export default function CheckoutStringingCompactEditor({ adapter }: Props) {
                       value={bulkLineNote}
                       onChange={(e) => setBulkLineNote(e.target.value)}
                       placeholder="공통 메모"
-                      className="min-h-[84px] px-3 py-2.5"
+                      className="min-h-[72px] px-3 py-2.5 text-sm"
                     />
                   </div>
                 </div>
@@ -305,8 +292,10 @@ export default function CheckoutStringingCompactEditor({ adapter }: Props) {
                     ? crossTension && crossTension !== mainTension
                       ? `${mainTension || "-"}/${crossTension} lbs`
                       : `${mainTension || crossTension} lbs`
-                    : "희망 텐션 미입력";
+                    : "텐션 미입력";
                 const note = String(line.note ?? "").trim();
+                const summaryTension =
+                  tensionSummary === "텐션 미입력" ? "미입력" : tensionSummary;
                 const hasLineInput =
                   !!racketName || !!mainTension || !!crossTension || !!note;
 
@@ -315,129 +304,112 @@ export default function CheckoutStringingCompactEditor({ adapter }: Props) {
                     key={line.id}
                     className="rounded-xl border border-border bg-card p-4 transition-[border-color,box-shadow,background-color] focus-within:border-primary/20 focus-within:bg-primary/5 bp-sm:p-5"
                   >
-                    <div className="flex flex-col gap-3 border-b border-border pb-4 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
-                      <div className="min-w-0 space-y-2">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <p className="text-sm font-semibold text-foreground">
-                            {displayRacketName}
-                          </p>
-                          <span className="rounded-full border border-border bg-muted/30 px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
-                            {hasLineInput ? "입력됨" : "선택 입력"}
-                          </span>
-                        </div>
-                        <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-                          <span>{line.stringName}</span>
-                          <span aria-hidden="true">·</span>
-                          <span>장착비 {formatWon(line.mountingFee)}</span>
-                        </div>
+                    <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
+                      <div className="min-w-0 space-y-1.5">
+                        <p className="truncate text-sm font-semibold text-foreground">
+                          {displayRacketName}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {line.stringName}
+                        </p>
                       </div>
-                      <div className="grid gap-1.5 rounded-lg border border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground bp-sm:min-w-[220px]">
-                        <span className="font-medium text-foreground">
-                          {previewText(
-                            racketName,
-                            "라켓명을 입력하지 않았습니다",
-                          )}
+                      <div className="flex shrink-0 items-center gap-2 bp-sm:flex-col bp-sm:items-end">
+                        <span className="text-xs font-medium text-foreground">
+                          장착비 {formatWon(line.mountingFee)}
                         </span>
-                        <span>{tensionSummary}</span>
-                        <span>{previewText(note, "요청사항 없음")}</span>
+                        <span className="rounded-full border border-border bg-muted/30 px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                          {hasLineInput ? "입력됨" : "선택 입력"}
+                        </span>
                       </div>
                     </div>
 
-                    <div className="mt-4 space-y-5">
-                      <div className="space-y-3">
-                        <p className="text-xs font-semibold text-foreground">
-                          라켓 정보
-                        </p>
+                    <div className="mt-3 rounded-lg border border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+                      <span>라켓명 {previewText(racketName, "미입력")}</span>
+                      <span className="mx-1.5" aria-hidden="true">
+                        ·
+                      </span>
+                      <span>텐션 {summaryTension}</span>
+                      <span className="mx-1.5" aria-hidden="true">
+                        ·
+                      </span>
+                      <span>요청 {previewText(note, "없음")}</span>
+                    </div>
+
+                    <div className="mt-4 space-y-3 border-t border-border pt-4">
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor={`checkout-racket-name-${line.id}`}
+                          className="text-xs text-muted-foreground"
+                        >
+                          라켓
+                        </Label>
+                        <Input
+                          id={`checkout-racket-name-${line.id}`}
+                          className="h-10 px-3"
+                          value={line.racketType ?? ""}
+                          onChange={(e) =>
+                            handleLineFieldChange(
+                              index,
+                              "racketType",
+                              e.target.value,
+                            )
+                          }
+                          placeholder="예: 윌슨 블레이드 98"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-3 bp-sm:grid-cols-2">
                         <div className="space-y-2">
-                          <div className="flex items-center gap-2">
-                            <Label
-                              htmlFor={`checkout-racket-name-${line.id}`}
-                              className="text-xs text-foreground"
-                            >
-                              라켓명
-                            </Label>
-                            <span className="rounded-full bg-muted/30 px-1.5 py-0.5 text-[10px] text-muted-foreground">
-                              선택
-                            </span>
-                          </div>
+                          <Label
+                            htmlFor={`checkout-tension-main-${line.id}`}
+                            className="text-xs text-muted-foreground"
+                          >
+                            메인 텐션
+                          </Label>
                           <Input
-                            id={`checkout-racket-name-${line.id}`}
+                            id={`checkout-tension-main-${line.id}`}
                             className="h-10 px-3"
-                            value={line.racketType ?? ""}
+                            value={line.tensionMain ?? ""}
                             onChange={(e) =>
                               handleLineFieldChange(
                                 index,
-                                "racketType",
-                                e.target.value,
+                                "tensionMain",
+                                toNumberText(e.target.value),
                               )
                             }
-                            placeholder="예: 윌슨 블레이드 98"
+                            placeholder="예: 52"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label
+                            htmlFor={`checkout-tension-cross-${line.id}`}
+                            className="text-xs text-muted-foreground"
+                          >
+                            크로스 텐션
+                          </Label>
+                          <Input
+                            id={`checkout-tension-cross-${line.id}`}
+                            className="h-10 px-3"
+                            value={line.tensionCross ?? ""}
+                            onChange={(e) =>
+                              handleLineFieldChange(
+                                index,
+                                "tensionCross",
+                                toNumberText(e.target.value),
+                              )
+                            }
+                            placeholder="예: 50"
                           />
                         </div>
                       </div>
 
-                      <div className="space-y-3">
-                        <p className="text-xs font-semibold text-foreground">
-                          교체 요청
-                        </p>
-                        <div className="grid grid-cols-1 gap-4 bp-sm:grid-cols-2">
-                          <div className="space-y-2">
-                            <Label
-                              htmlFor={`checkout-tension-main-${line.id}`}
-                              className="text-xs text-foreground"
-                            >
-                              메인 텐션
-                            </Label>
-                            <Input
-                              id={`checkout-tension-main-${line.id}`}
-                              className="h-10 px-3"
-                              value={line.tensionMain ?? ""}
-                              onChange={(e) =>
-                                handleLineFieldChange(
-                                  index,
-                                  "tensionMain",
-                                  toNumberText(e.target.value),
-                                )
-                              }
-                              placeholder="예: 52"
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label
-                              htmlFor={`checkout-tension-cross-${line.id}`}
-                              className="text-xs text-foreground"
-                            >
-                              크로스 텐션
-                            </Label>
-                            <Input
-                              id={`checkout-tension-cross-${line.id}`}
-                              className="h-10 px-3"
-                              value={line.tensionCross ?? ""}
-                              onChange={(e) =>
-                                handleLineFieldChange(
-                                  index,
-                                  "tensionCross",
-                                  toNumberText(e.target.value),
-                                )
-                              }
-                              placeholder="예: 50"
-                            />
-                          </div>
-                        </div>
-                      </div>
-
                       <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <Label
-                            htmlFor={`checkout-line-note-${line.id}`}
-                            className="text-xs font-semibold text-foreground"
-                          >
-                            요청사항
-                          </Label>
-                          <span className="rounded-full bg-muted/30 px-1.5 py-0.5 text-[10px] text-muted-foreground">
-                            선택
-                          </span>
-                        </div>
+                        <Label
+                          htmlFor={`checkout-line-note-${line.id}`}
+                          className="text-xs text-muted-foreground"
+                        >
+                          요청 메모
+                        </Label>
                         <Textarea
                           id={`checkout-line-note-${line.id}`}
                           value={line.note ?? ""}
@@ -445,7 +417,7 @@ export default function CheckoutStringingCompactEditor({ adapter }: Props) {
                             handleLineFieldChange(index, "note", e.target.value)
                           }
                           placeholder="예: 가로/세로 텐션을 다르게 요청하고 싶어요"
-                          className="min-h-[92px] px-3 py-2.5"
+                          className="min-h-[82px] px-3 py-2.5"
                         />
                       </div>
                     </div>
@@ -455,8 +427,8 @@ export default function CheckoutStringingCompactEditor({ adapter }: Props) {
             </div>
           </section>
 
-          <section className="space-y-2.5 rounded-lg border border-border bg-muted/30 p-4">
-            <p className="text-sm font-medium text-foreground">추가 요청</p>
+          <section className="space-y-2.5 rounded-lg border border-border bg-muted/20 p-4">
+            <p className="text-sm font-medium text-foreground">전체 요청사항</p>
             <Textarea
               id="checkout-stringing-requirements"
               value={formData.requirements ?? ""}
