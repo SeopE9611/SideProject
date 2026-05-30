@@ -825,11 +825,11 @@ export default function OrderDetailClient({
                 <ShoppingCart className="h-8 w-8 text-primary" />
               </div>
               <div className="min-w-0">
-                <h1 className="text-2xl bp-sm:text-3xl font-bold text-foreground">
+                <h1 className="break-keep text-xl font-bold leading-tight text-foreground bp-sm:text-3xl">
                   주문 상세정보
                 </h1>
-                <p className="text-muted-foreground mt-1 break-all text-sm">
-                  주문번호: {orderId}
+                <p className="mt-1 truncate text-sm text-muted-foreground" title={orderId}>
+                  주문번호: #{orderId.slice(-6).toUpperCase()}
                 </p>
               </div>
             </div>
@@ -840,10 +840,10 @@ export default function OrderDetailClient({
                 variant="outline"
                 size="sm"
                 onClick={() => router.push(backUrl ?? "/mypage?tab=orders")}
-                className="bg-card/70 backdrop-blur-sm border-border hover:bg-primary/10 dark:hover:bg-primary/20"
+                className="whitespace-nowrap bg-card/70 backdrop-blur-sm border-border hover:bg-primary/10 dark:hover:bg-primary/20"
               >
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                주문 목록으로 돌아가기
+                <span className="bp-sm:hidden">목록</span><span className="hidden bp-sm:inline">주문 목록으로 돌아가기</span>
               </Button>
 
               <Button
@@ -882,7 +882,7 @@ export default function OrderDetailClient({
                     주문일시
                   </span>
                 </div>
-                <p className="text-lg font-semibold text-foreground">
+                <p className="whitespace-nowrap text-lg font-semibold tabular-nums text-foreground">
                   {formatDate(orderDetail.date)}
                 </p>
               </div>
@@ -894,7 +894,7 @@ export default function OrderDetailClient({
                     총 결제금액
                   </span>
                 </div>
-                <p className="text-lg font-semibold text-foreground">
+                <p className="whitespace-nowrap text-lg font-semibold tabular-nums text-foreground">
                   {formatCurrency(orderDetail.total)}
                 </p>
               </div>
@@ -1576,7 +1576,7 @@ export default function OrderDetailClient({
                 {orderDetail.items.map((item, idx) => (
                   <div
                     key={idx}
-                    className="flex items-center p-4 bg-muted rounded-xl hover:bg-muted dark:hover:bg-card transition-colors space-x-4"
+                    className="flex items-start gap-4 rounded-xl bg-muted p-4 transition-colors hover:bg-muted dark:hover:bg-card"
                   >
                     {/* 상품 썸네일 */}
                     {item.imageUrl && (
@@ -1588,8 +1588,8 @@ export default function OrderDetailClient({
                     )}
 
                     {/* 상품명 + 수량 */}
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-foreground">
+                    <div className="min-w-0 flex-1">
+                      <h4 className="line-clamp-2 break-keep font-semibold text-foreground">
                         {item.name}
                       </h4>
                       <p className="text-sm text-foreground/80">
@@ -1612,11 +1612,11 @@ export default function OrderDetailClient({
                     </div>
 
                     {/* 가격 및 소계 */}
-                    <div className="text-right">
-                      <p className="font-semibold text-foreground">
+                    <div className="shrink-0 text-right">
+                      <p className="whitespace-nowrap font-semibold tabular-nums text-foreground">
                         {formatCurrency(item.price)}
                       </p>
-                      <p className="text-sm text-foreground/80">
+                      <p className="whitespace-nowrap text-sm tabular-nums text-foreground/80">
                         소계: {formatCurrency(item.price * item.quantity)}
                       </p>
                       <div className="mt-2">

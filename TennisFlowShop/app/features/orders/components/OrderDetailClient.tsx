@@ -490,8 +490,9 @@ export default function OrderDetailClient({ orderId }: Props) {
   const summaryBadgeClass = cn(
     badgeBase,
     badgeSizeSm,
-    "inline-flex w-fit self-start",
+    "inline-flex w-fit self-start shrink-0 whitespace-nowrap",
   );
+  const shortOrderId = orderDetail._id ? orderDetail._id.slice(-6).toUpperCase() : "-";
 
   // 대표 stage 카드/연결 가이드용 기준 신청서: 서버에서 선별한 latestActiveLinkedApplication 우선 사용
   const latestLinkedApplication =
@@ -906,29 +907,29 @@ export default function OrderDetailClient({ orderId }: Props) {
           {/* 개선된 관리자 헤더 */}
           <div className={cn("mb-6 p-5 lg:p-6", adminSurface.cardMuted)}>
             <div className="mb-4 flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-              <div className="flex items-center space-x-4">
+              <div className="flex min-w-0 items-center gap-3 sm:gap-4">
                 <div className="bg-card rounded-full p-3 shadow-md">
                   <Settings className="h-8 w-8 text-primary" />
                 </div>
-                <div>
-                  <h1 className="text-2xl font-semibold tracking-normal text-foreground lg:text-3xl">
+                <div className="min-w-0">
+                  <h1 className="break-keep text-xl font-semibold leading-tight tracking-normal text-foreground sm:text-2xl lg:text-3xl">
                     주문 관리
                   </h1>
-                  <p className="mt-1 text-sm text-foreground/75">
-                    주문 ID: {orderDetail._id}
+                  <p className="mt-1 truncate text-sm text-foreground/75" title={orderDetail._id}>
+                    주문 ID: #{shortOrderId}
                   </p>
                 </div>
               </div>
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2 sm:justify-end">
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-9 border-border bg-card hover:bg-muted"
+                  className="h-9 whitespace-nowrap border-border bg-card hover:bg-muted"
                   asChild
                 >
                   <Link href="/admin/orders">
                     <ArrowLeft className="mr-2 h-4 w-4" />
-                    주문 목록으로 돌아가기
+                    <span className="sm:hidden">목록</span><span className="hidden sm:inline">주문 목록으로 돌아가기</span>
                   </Link>
                 </Button>
                 <Button
@@ -946,7 +947,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                 </Button>
                 <Button
                   onClick={handleShippingUpdate}
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                  className="whitespace-nowrap bg-primary text-primary-foreground hover:bg-primary/90"
                 >
                   <Truck className="mr-2 h-4 w-4" />
                   {/* 방문 수령 주문은 배송 용어 대신 수령 용어로 노출 */}
@@ -974,7 +975,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                     주문일시
                   </span>
                 </div>
-                <p className="text-lg font-semibold text-foreground">
+                <p className="whitespace-nowrap text-lg font-semibold tabular-nums text-foreground">
                   {formatDate(orderDetail.date)}
                 </p>
               </div>
@@ -986,7 +987,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                     총 결제금액
                   </span>
                 </div>
-                <p className="text-lg font-semibold text-foreground">
+                <p className="whitespace-nowrap text-lg font-semibold tabular-nums text-foreground">
                   {formatCurrency(orderDetail.total)}
                 </p>
               </div>
@@ -2085,10 +2086,10 @@ export default function OrderDetailClient({ orderId }: Props) {
                   {orderDetail.items.map((item, idx) => (
                     <div
                       key={idx}
-                      className="flex items-center justify-between p-4 bg-muted rounded-xl hover:bg-muted dark:hover:bg-muted transition-colors"
+                      className="flex items-start justify-between gap-3 rounded-xl bg-muted p-4 transition-colors hover:bg-muted dark:hover:bg-muted"
                     >
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-foreground">
+                      <div className="min-w-0 flex-1">
+                        <h4 className="line-clamp-2 break-keep font-semibold text-foreground">
                           {item.name}
                         </h4>
                         <p className="text-sm text-foreground/80">
@@ -2109,11 +2110,11 @@ export default function OrderDetailClient({ orderId }: Props) {
                           </p>
                         )}
                       </div>
-                      <div className="text-right">
-                        <p className="font-semibold text-foreground">
+                      <div className="shrink-0 text-right">
+                        <p className="whitespace-nowrap font-semibold tabular-nums text-foreground">
                           {formatCurrency(item.price)}
                         </p>
-                        <p className="text-sm text-foreground/80">
+                        <p className="whitespace-nowrap text-sm tabular-nums text-foreground/80">
                           소계: {formatCurrency(item.price * item.quantity)}
                         </p>
                       </div>

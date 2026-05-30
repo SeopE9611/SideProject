@@ -698,7 +698,7 @@ export default function CartPageClient() {
                 <CardHeader variant="section" className="rounded-t-2xl">
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <CardTitle className="flex items-center gap-3">
+                      <CardTitle className="flex items-center gap-3 break-keep">
                         <span className="rounded-2xl bg-muted p-2 shadow-lg dark:bg-background">
                           <ShoppingBag className="h-5 w-5 text-primary" />
                         </span>
@@ -710,7 +710,7 @@ export default function CartPageClient() {
                     </div>
 
                     {/* 전체선택 / 선택n개 / 선택삭제 */}
-                    <div className="flex flex-wrap items-center justify-end gap-2 text-sm">
+                    <div className="flex flex-nowrap items-center justify-end gap-2 overflow-x-auto text-sm [&_button]:whitespace-nowrap">
                       <Button
                         variant="ghost"
                         size="sm"
@@ -813,11 +813,11 @@ export default function CartPageClient() {
                             <div className="min-w-0 flex-1">
                               <Link
                                 href={itemHref}
-                                className="block line-clamp-2 bp-sm:line-clamp-1 font-medium text-foreground transition-colors hover:text-primary dark:text-foreground dark:hover:text-primary"
+                                className="block line-clamp-2 break-keep font-medium text-foreground transition-colors hover:text-primary dark:text-foreground dark:hover:text-primary bp-sm:line-clamp-1"
                               >
                                 {item.name}
                               </Link>
-                              <div className="mt-0.5 text-sm text-muted-foreground">
+                              <div className="mt-0.5 whitespace-nowrap text-sm text-muted-foreground">
                                 개당{" "}
                                 <span className="tabular-nums font-medium text-foreground">
                                   {formatKRW(item.price)}원
@@ -829,7 +829,7 @@ export default function CartPageClient() {
                                 </div>
                               )}
                               {(item.selectedColorLabel || item.selectedColor) && (
-                                <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-muted/40 px-2 py-0.5 text-xs text-muted-foreground">
+                                <span className="mt-1 inline-flex max-w-full items-center gap-1 rounded-full bg-muted/40 px-2 py-0.5 text-xs text-muted-foreground [&>span:last-child]:truncate">
                                   색상
                                   {item.selectedColorHex && (
                                     <span
@@ -844,7 +844,7 @@ export default function CartPageClient() {
                                 <>
                                   <Badge
                                     variant="warning"
-                                    className="mt-1 px-2 py-0.5 text-xs font-medium"
+                                    className="mt-1 whitespace-nowrap px-2 py-0.5 text-xs font-medium"
                                   >
                                     교체서비스에 사용할 스트링
                                   </Badge>
@@ -872,7 +872,7 @@ export default function CartPageClient() {
                           </div>
 
                           {/* 하단(모바일) */}
-                          <div className="flex flex-wrap items-center gap-3 bp-sm:flex-nowrap bp-sm:justify-end bp-sm:flex-1">
+                          <div className="flex flex-wrap items-center gap-3 bp-sm:flex-1 bp-sm:flex-nowrap bp-sm:justify-end">
                             {/* 수량 스테퍼 (번들이면 잠금 + 링크로만 변경) */}
                             {lockStepper ? (
                               <div className="order-1 flex flex-col items-center">
@@ -997,11 +997,11 @@ export default function CartPageClient() {
                               </div>
                             )}
 
-                            <div className="order-2 ml-auto bp-sm:ml-0 text-right">
+                            <div className="order-2 ml-auto shrink-0 text-right bp-sm:ml-0">
                               <div className="text-sm text-foreground/75">
                                 합계
                               </div>
-                              <div className="tabular-nums text-lg font-semibold text-foreground">
+                              <div className="whitespace-nowrap tabular-nums text-lg font-semibold text-foreground">
                                 {formatKRW(item.price * item.quantity)}원
                               </div>
                             </div>

@@ -436,7 +436,7 @@ export default function OrderList() {
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 min-w-0">
-                      <h3 className="font-semibold text-foreground truncate">
+                      <h3 className="line-clamp-2 break-keep font-semibold text-foreground">
                         {getOrderCompositionTitle(order)}
                       </h3>
 
@@ -453,7 +453,7 @@ export default function OrderList() {
                         </Badge>
                       ) : null}
                     </div>
-                    <div className="mt-1 flex flex-wrap items-center gap-x-1 gap-y-1 text-sm text-foreground/80">
+                    <div className="mt-1 flex flex-nowrap items-center gap-x-1 overflow-x-auto whitespace-nowrap text-sm tabular-nums text-foreground/80">
                       <Calendar className="h-3 w-3" />
                       {formatDate(order.date)}
                     </div>
@@ -468,7 +468,7 @@ export default function OrderList() {
                   )}
                   <Badge
                     variant={getOrderStatusBadgeSpec(order.status).variant}
-                    className="px-3 py-1 text-xs font-medium"
+                    className="shrink-0 whitespace-nowrap px-3 py-1 text-xs font-medium"
                   >
                     {getOrderStatusLabelForDisplay(
                       order.status,
@@ -482,7 +482,7 @@ export default function OrderList() {
                       variant={
                         getWorkflowMetaBadgeSpec("cancel_requested").variant
                       }
-                      className="ml-1 text-[11px] font-medium"
+                      className="ml-1 shrink-0 whitespace-nowrap text-[11px] font-medium"
                     >
                       취소 요청됨
                     </Badge>
@@ -532,13 +532,13 @@ export default function OrderList() {
 
                       {/* 상품명 + 가격/수량 (모바일에서 자연스럽게 줄바꿈) */}
                       <div className="min-w-0 flex-1">
-                        <div className="text-sm font-medium text-foreground break-words">
+                        <div className="line-clamp-2 break-keep text-sm font-medium text-foreground">
                           {item.name}
                         </div>
                         <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-foreground/75">
-                          <span>{(item.price ?? 0).toLocaleString()}원</span>
+                          <span className="whitespace-nowrap tabular-nums">{(item.price ?? 0).toLocaleString()}원</span>
                           <span className="text-muted-foreground">×</span>
-                          <span>{item.quantity}개</span>
+                          <span className="whitespace-nowrap">{item.quantity}개</span>
                         </div>
                         {(() => {
                           const gauge = String(item.selectedGauge ?? "").trim();
@@ -562,7 +562,7 @@ export default function OrderList() {
               <div className="flex flex-col bp-sm:flex-row bp-sm:items-center bp-sm:justify-between gap-4 pt-4 border-t border-border/60 dark:border-border/60">
                 <div className="flex items-center gap-2">
                   <CreditCard className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-lg font-bold text-foreground">
+                  <span className="whitespace-nowrap text-lg font-bold tabular-nums text-foreground">
                     {typeof order.totalPrice === "number"
                       ? `${order.totalPrice.toLocaleString()}원`
                       : "총 결제 금액 정보 없음"}

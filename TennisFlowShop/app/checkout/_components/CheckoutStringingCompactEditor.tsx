@@ -159,7 +159,7 @@ export default function CheckoutStringingCompactEditor({
           </span>
           <Badge
             variant="secondary"
-            className="shrink-0 border border-border bg-card text-[11px]"
+            className="shrink-0 whitespace-nowrap border border-border bg-card text-[11px]"
           >
             필수
           </Badge>
@@ -377,17 +377,17 @@ export default function CheckoutStringingCompactEditor({
                   >
                     <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
                       <div className="min-w-0 space-y-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <p className="truncate text-sm font-semibold text-foreground">
+                        <div className="flex min-w-0 flex-wrap items-center gap-2">
+                          <p className="line-clamp-2 break-keep text-sm font-semibold text-foreground">
                             {displayTitle}
                           </p>
                           {lineCount > 1 && (
-                            <span className="rounded-full border border-border bg-muted/30 px-2 py-0.5 text-[11px] text-muted-foreground">
+                            <span className="shrink-0 whitespace-nowrap rounded-full border border-border bg-muted/30 px-2 py-0.5 text-[11px] text-muted-foreground">
                               {index + 1}번째 라켓
                             </span>
                           )}
                         </div>
-                        <p className="truncate text-xs text-muted-foreground">
+                        <p className="line-clamp-1 break-keep text-xs text-muted-foreground">
                           {line.stringName}
                         </p>
                       </div>
@@ -404,7 +404,7 @@ export default function CheckoutStringingCompactEditor({
                       </div>
                     </div>
 
-                    <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 rounded-lg border border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+                    <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 rounded-lg border border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground [&>span]:break-keep">
                       <span>
                         {racketName
                           ? previewText(racketName, "")

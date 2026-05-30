@@ -730,25 +730,25 @@ export default function TransactionFlowList() {
               </div>
               <CardContent className="relative space-y-4 p-4 bp-sm:p-6">
                 <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <p className="text-base font-semibold text-foreground">{displayTitle}</p>
-                    <p className="mt-1 text-xs text-foreground/75">
+                  <div className="min-w-0 flex-1">
+                    <p className="line-clamp-2 break-keep text-base font-semibold text-foreground">{displayTitle}</p>
+                    <p className="mt-1 whitespace-nowrap text-xs tabular-nums text-foreground/75">
                       {displayMetaLabel} · {displayDateLabel} {formatDate(displayDateValue)}
                       {standaloneApplicationIdMeta}
                     </p>
                   </div>
-                  <Badge variant={displayStatusBadgeSpec.variant}>{displayUserStatusLabel}</Badge>
+                  <Badge variant={displayStatusBadgeSpec.variant} className="shrink-0 whitespace-nowrap">{displayUserStatusLabel}</Badge>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2 text-xs">
-                  <Badge variant="outline">{flowKindBadgeLabel}</Badge>
-                  {linkedFlowBadgeLabel ? <Badge variant="secondary">{linkedFlowBadgeLabel}</Badge> : null}
+                <div className="flex flex-nowrap items-center gap-2 overflow-x-auto text-xs">
+                  <Badge variant="outline" className="shrink-0 whitespace-nowrap">{flowKindBadgeLabel}</Badge>
+                  {linkedFlowBadgeLabel ? <Badge variant="secondary" className="shrink-0 whitespace-nowrap">{linkedFlowBadgeLabel}</Badge> : null}
                   {todoPrimaryReason ? (
-                    <Badge variant={getWorkflowMetaBadgeSpec('action_required').variant}>
+                    <Badge variant={getWorkflowMetaBadgeSpec('action_required').variant} className="shrink-0 whitespace-nowrap">
                       해야 할 일: {todoPrimaryReason}
                     </Badge>
                   ) : null}
-                  {shouldShowFlowBadge ? <Badge variant="outline">{g.flowLabel}</Badge> : null}
+                  {shouldShowFlowBadge ? <Badge variant="outline" className="shrink-0 whitespace-nowrap">{g.flowLabel}</Badge> : null}
                   {showLinkedStatusBadge ? <Badge variant="secondary">{getLinkedApplicationStatusSummary(linkedApps)}</Badge> : null}
                   {isCancelRequested ? (
                     <Badge
@@ -887,7 +887,7 @@ export default function TransactionFlowList() {
                   ) : null}
                 </div>
 
-                <div className="flex flex-wrap items-center justify-end gap-2 border-t border-border/60 pt-3 md:pt-4">
+                <div className="flex flex-wrap items-center justify-end gap-2 border-t border-border/60 pt-3 md:pt-4 [&_button]:whitespace-nowrap">
                   {(() => {
                     type ActionDef = {
                       key: string;
