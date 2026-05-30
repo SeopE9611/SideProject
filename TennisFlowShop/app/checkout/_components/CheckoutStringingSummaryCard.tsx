@@ -26,7 +26,7 @@ export default function CheckoutStringingSummaryCard({ adapter }: Props) {
     ? "현재 설정으로 주문과 함께 교체서비스가 접수됩니다."
     : completion.needsVisitReservation && !completion.hasReservation
       ? "방문 예약만 완료하면 접수 준비가 완료됩니다."
-      : "추가 요청 없이 현재 설정으로 접수됩니다.";
+      : "별도 요청 없이 현재 설정으로 접수됩니다.";
 
   return (
     <div className="space-y-4 rounded-xl border border-border/70 bg-secondary/20 px-4 py-5 bp-sm:px-5">
@@ -49,15 +49,38 @@ export default function CheckoutStringingSummaryCard({ adapter }: Props) {
       </div>
 
       <div className="grid grid-cols-1 gap-x-5 gap-y-2.5 rounded-lg border border-border/70 bg-background p-3.5 text-sm bp-sm:grid-cols-2">
-        <p><span className="text-muted-foreground">접수 방식:</span> <span className="font-medium">{summary.collectionLabel}</span></p>
-        <p><span className="text-muted-foreground">작업 수량:</span> <span className="font-medium">{summary.lineCount}자루</span></p>
-        <p><span className="text-muted-foreground">선택 스트링:</span> <span className="font-medium">{summary.stringNames.join(", ") || "미선택"}</span></p>
-        <p><span className="text-muted-foreground">텐션:</span> <span className="font-medium">{summary.tensionSummary}</span></p>
+        <p>
+          <span className="text-muted-foreground">접수 방식:</span>{" "}
+          <span className="font-medium">{summary.collectionLabel}</span>
+        </p>
+        <p>
+          <span className="text-muted-foreground">작업 수량:</span>{" "}
+          <span className="font-medium">{summary.lineCount}자루</span>
+        </p>
+        <p>
+          <span className="text-muted-foreground">선택 스트링:</span>{" "}
+          <span className="font-medium">
+            {summary.stringNames.join(", ") || "미선택"}
+          </span>
+        </p>
+        <p>
+          <span className="text-muted-foreground">텐션:</span>{" "}
+          <span className="font-medium">{summary.tensionSummary}</span>
+        </p>
         {reservationLabel && (
-          <p><span className="text-muted-foreground">예약 정보:</span> <span className="font-medium">{reservationLabel}</span></p>
+          <p>
+            <span className="text-muted-foreground">예약 정보:</span>{" "}
+            <span className="font-medium">{reservationLabel}</span>
+          </p>
         )}
-        <p><span className="text-muted-foreground">교체서비스 비용:</span> <span className="font-medium">{summary.priceLabel}</span></p>
-        <p><span className="text-muted-foreground">추가 요청:</span> <span className="font-medium">{summary.requestPreview}</span></p>
+        <p>
+          <span className="text-muted-foreground">장착비:</span>{" "}
+          <span className="font-medium">{summary.priceLabel}</span>
+        </p>
+        <p>
+          <span className="text-muted-foreground">전체 요청사항:</span>{" "}
+          <span className="font-medium">{summary.requestPreview}</span>
+        </p>
       </div>
 
       <div className="rounded-lg border border-border/70 bg-background/70 p-3">
@@ -77,7 +100,8 @@ export default function CheckoutStringingSummaryCard({ adapter }: Props) {
             className="gap-1 border border-border/70 font-normal"
           >
             <CircleDot className="h-3 w-3" />
-            라켓별 설정 {completion.lineConfiguredCount}/{completion.totalLineCount} 완료
+            라켓별 작업 {completion.lineConfiguredCount}/
+            {completion.totalLineCount} 완료
           </Badge>
           {completion.needsVisitReservation && (
             <Badge
@@ -89,17 +113,23 @@ export default function CheckoutStringingSummaryCard({ adapter }: Props) {
             </Badge>
           )}
           {!completion.needsVisitReservation && (
-            <Badge variant="secondary" className="gap-1 border border-border/70 font-normal">
+            <Badge
+              variant="secondary"
+              className="gap-1 border border-border/70 font-normal"
+            >
               <CircleDot className="h-3 w-3" />
               방문 예약 없음
             </Badge>
           )}
           <Badge
-            variant={summary.requestPreview === "없음" ? "secondary" : "success"}
+            variant={
+              summary.requestPreview === "없음" ? "secondary" : "success"
+            }
             className="gap-1 border border-border/70 font-normal"
           >
             <CircleDot className="h-3 w-3" />
-            추가 요청 {summary.requestPreview === "없음" ? "없음" : "입력됨"}
+            전체 요청사항{" "}
+            {summary.requestPreview === "없음" ? "없음" : "입력됨"}
           </Badge>
         </div>
       </div>
