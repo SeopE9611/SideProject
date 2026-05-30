@@ -14,11 +14,13 @@ type CheckoutStringingServiceAdapter = ReturnType<
 type Props = {
   withStringService: boolean;
   adapter: CheckoutStringingServiceAdapter;
+  showValidationErrors?: boolean;
 };
 
 export default function CheckoutStringingServiceSections({
   withStringService,
   adapter,
+  showValidationErrors = false,
 }: Props) {
   if (!withStringService) return null;
 
@@ -33,7 +35,10 @@ export default function CheckoutStringingServiceSections({
         </CardTitle>
       </div>
       <CardContent className="space-y-4 p-4 bp-sm:p-5">
-        <CheckoutStringingCompactEditor adapter={adapter} />
+        <CheckoutStringingCompactEditor
+          adapter={adapter}
+          showValidationErrors={showValidationErrors}
+        />
         <CheckoutStringingSummaryCard adapter={adapter} />
       </CardContent>
     </Card>
