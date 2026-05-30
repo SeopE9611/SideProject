@@ -1003,11 +1003,11 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                   : 'flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bp-sm:mb-6',
               )}
             >
-              <div className="flex items-center space-x-4">
+              <div className="flex min-w-0 items-center gap-3 sm:gap-4">
                 <div className="bg-card rounded-full p-3 shadow-md">{isAdmin ? <Settings className="h-8 w-8 text-foreground" /> : <Target className="h-8 w-8 text-foreground" />}</div>
-                <div>
-                  <h1 className={cn('tracking-normal text-foreground', isAdmin ? 'text-2xl font-semibold lg:text-3xl' : 'text-2xl font-bold bp-sm:text-3xl')}>{isAdmin ? '스트링 신청 관리' : '교체서비스 신청 상세'}</h1>
-                  <p className="mt-1 break-all text-sm text-foreground/75">{isAdmin ? `신청 번호: #${toShortApplicationId(data.id)}` : `신청번호: ${data.id}`}</p>
+                <div className="min-w-0">
+                  <h1 className={cn('break-keep leading-tight tracking-normal text-foreground', isAdmin ? 'text-xl font-semibold sm:text-2xl lg:text-3xl' : 'text-xl font-bold sm:text-2xl bp-sm:text-3xl')}>{isAdmin ? '스트링 신청 관리' : '교체서비스 신청 상세'}</h1>
+                  <p className="mt-1 truncate text-sm text-foreground/75" title={data.id}>{isAdmin ? `신청 번호: #${toShortApplicationId(data.id)}` : `신청번호: #${toShortApplicationId(data.id)}`}</p>
                 </div>
               </div>
               <TooltipProvider>
@@ -1016,17 +1016,17 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                     asChild
                     variant="outline"
                     size="sm"
-                    className="basis-full border-border bg-card hover:bg-primary/10 sm:basis-auto sm:mr-1 sm:w-auto"
+                    className="basis-full whitespace-nowrap border-border bg-card hover:bg-primary/10 sm:basis-auto sm:mr-1 sm:w-auto"
                   >
                     <Link href={backUrl}>
                       <ArrowLeft className="w-4 h-4 mr-2" />
-                      신청 목록으로 돌아가기
+                      <span className="sm:hidden">목록</span><span className="hidden sm:inline">신청 목록으로 돌아가기</span>
                     </Link>
                   </Button>
 
                   {/* 사용자: 자가발송 운송장 등록/수정 버튼 */}
                   {!isAdmin && needsInboundTracking && (
-                    <Button asChild variant="outline" size="sm" className="border-border bg-card hover:bg-muted">
+                    <Button asChild variant="outline" size="sm" className="whitespace-nowrap border-border bg-card hover:bg-muted">
                       <Link href={inboundTrackingHref}>
                         <Truck className="w-4 h-4 mr-2" />
                         {hasTracking ? '라켓 발송 수정' : '라켓 발송 등록'}
@@ -1102,7 +1102,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   <span className={cn('text-sm font-medium', isAdmin ? 'text-muted-foreground' : 'text-foreground')}>신청일시</span>
                 </div>
-                <p className="text-lg font-semibold text-foreground">{new Date(data.requestedAt).toLocaleDateString()}</p>
+                <p className="whitespace-nowrap text-lg font-semibold tabular-nums text-foreground">{new Date(data.requestedAt).toLocaleDateString()}</p>
               </div>
 
               <div className={isAdmin ? summaryCardClass : 'bg-card/70 rounded-xl p-4 backdrop-blur-sm'}>
@@ -1110,7 +1110,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                   <CreditCard className="h-4 w-4 text-muted-foreground" />
                   <span className={cn('text-sm font-medium', isAdmin ? 'text-muted-foreground' : 'text-foreground')}>총 비용</span>
                 </div>
-                <p className="text-lg font-semibold text-foreground">{data.totalPrice.toLocaleString()}원</p>
+                <p className="whitespace-nowrap text-lg font-semibold tabular-nums text-foreground">{data.totalPrice.toLocaleString()}원</p>
               </div>
 
               <div className={isAdmin ? summaryCardClass : 'bg-card/70 rounded-xl p-4 backdrop-blur-sm'}>
@@ -1121,7 +1121,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                 {isAdmin ? (
                   <ApplicationStatusBadge status={data.status} />
                 ) : (
-                  <p className="text-lg font-semibold text-foreground">{racketTypeSummary}</p>
+                  <p className="line-clamp-2 break-keep text-lg font-semibold text-foreground">{racketTypeSummary}</p>
                 )}
               </div>
 
@@ -1138,7 +1138,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                     </Badge>
                   );
                 })() : (
-                  <p className="text-lg font-semibold text-foreground">{visitTimeLabel}</p>
+                  <p className="whitespace-nowrap text-lg font-semibold tabular-nums text-foreground">{visitTimeLabel}</p>
                 )}
               </div>
 
@@ -1148,7 +1148,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                     <Calendar className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm font-medium text-muted-foreground">희망 일시</span>
                   </div>
-                  <p className="text-lg font-semibold text-foreground">{visitTimeLabel}</p>
+                  <p className="whitespace-nowrap text-lg font-semibold tabular-nums text-foreground">{visitTimeLabel}</p>
                 </div>
               )}
             </div>
@@ -1156,10 +1156,10 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
             <div className={cn(isAdmin ? 'mt-4 flex flex-wrap items-center gap-3 text-sm text-foreground' : 'mt-4 space-y-2')}>
               {isAdmin && (
                 <>
-                  <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex min-w-0 flex-wrap items-center gap-2">
                     <Target className="h-4 w-4 text-muted-foreground" />
                     <span className="font-medium">라켓 종류</span>
-                    <span className="text-sm text-foreground">{racketTypeSummary}</span>
+                    <span className="min-w-0 line-clamp-2 break-keep text-sm text-foreground">{racketTypeSummary}</span>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
                     <Ticket className="h-4 w-4 text-muted-foreground" />
@@ -1174,17 +1174,17 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                 </>
               )}
               {data.orderId && (
-                <div className="flex flex-wrap items-center gap-2 text-sm text-foreground">
+                <div className="flex min-w-0 flex-wrap items-center gap-2 text-sm text-foreground">
                   <Truck className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-medium">주문 수령 방식</span>
+                  <span className="shrink-0 break-keep font-medium">주문 수령 방식</span>
                   <Badge className={`${badgeBase} ${badgeSizeSm} whitespace-nowrap ${linkedOrderPickupBadge?.color ?? badgeToneClass('danger')}`}>{linkedOrderPickupBadge?.label ?? '선택 없음'}</Badge>
                 </div>
               )}
 
               {shouldShowReturnMethod && (
-                <div className="flex flex-wrap items-center gap-2 text-sm text-foreground">
+                <div className="flex min-w-0 flex-wrap items-center gap-2 text-sm text-foreground">
                   <Truck className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-medium">반환 방식</span>
+                  <span className="shrink-0 break-keep font-medium">반환 방식</span>
                   <Badge className={`${badgeBase} ${badgeSizeSm} whitespace-nowrap ${shippingMethodBadge.color}`}>{shippingMethodBadge.label}</Badge>
                   {shippingMethodBadge.label === '선택 없음' && <span className="text-xs text-foreground/75">반환 방식이 아직 선택되지 않았습니다.</span>}
                 </div>
@@ -1197,9 +1197,9 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                 <p className="mt-1 text-xs text-foreground/75">
                   현재 단계: <span className="font-medium text-foreground">{userProgressSteps[currentStepIndex]?.label ?? '접수완료'}</span>
                 </p>
-                <div className="mt-2 flex flex-wrap gap-2">
+                <div className="mt-2 flex flex-nowrap gap-2 overflow-x-auto">
                   {userProgressSteps.map((step, index) => (
-                    <Badge key={step.key} variant={index <= currentStepIndex ? 'info' : 'neutral'}>
+                    <Badge key={step.key} variant={index <= currentStepIndex ? 'info' : 'neutral'} className="shrink-0 whitespace-nowrap">
                       {step.label}
                     </Badge>
                   ))}

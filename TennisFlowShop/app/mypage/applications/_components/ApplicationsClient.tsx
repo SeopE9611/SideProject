@@ -578,16 +578,16 @@ export default function ApplicationsClient() {
 
                 <CardContent className="relative space-y-4 p-4 md:p-6">
                   <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div>
-                      <h3 className="text-base font-semibold text-foreground">
+                    <div className="min-w-0 flex-1">
+                      <h3 className="line-clamp-2 break-keep text-base font-semibold text-foreground">
                         {title}
                       </h3>
-                      <p className="mt-1 text-xs text-foreground/75">
+                      <p className="mt-1 whitespace-nowrap text-xs tabular-nums text-foreground/75">
                         {app.type} · 신청일 {formatDateTime(app.appliedAt)}
                       </p>
                     </div>
                     <div
-                      className="flex items-center gap-2"
+                      className="flex shrink-0 items-center gap-2"
                       data-cy="mypage-application-status-wrap"
                     >
                       {isAcademyLesson ? (
@@ -599,7 +599,7 @@ export default function ApplicationsClient() {
                         {isAcademyLesson ? (
                           <Badge
                             variant={getAcademyStatusVariant(app.status)}
-                            className="text-[11px] font-medium"
+                            className="shrink-0 whitespace-nowrap text-[11px] font-medium"
                           >
                             {displayStatus}
                           </Badge>
@@ -610,7 +610,7 @@ export default function ApplicationsClient() {
                       {isCancelRequested ? (
                         <Badge
                           variant="warning"
-                          className="text-[11px] font-medium"
+                          className="shrink-0 whitespace-nowrap text-[11px] font-medium"
                         >
                           취소 요청됨
                         </Badge>
@@ -618,16 +618,16 @@ export default function ApplicationsClient() {
                     </div>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-2 text-xs">
-                    <Badge variant="outline">
+                  <div className="flex flex-nowrap items-center gap-2 overflow-x-auto text-xs">
+                    <Badge variant="outline" className="shrink-0 whitespace-nowrap">
                       {metaLinkLabel}
                       {metaLinkId ? ` · ${String(metaLinkId).slice(-6)}` : ""}
                     </Badge>
                     {isAcademyLesson ? (
-                      <Badge variant="outline">도깨비테니스 아카데미</Badge>
+                      <Badge variant="outline" className="shrink-0 whitespace-nowrap">도깨비테니스 아카데미</Badge>
                     ) : null}
                     {collectionLabel ? (
-                      <Badge variant="outline">
+                      <Badge variant="outline" className="shrink-0 whitespace-nowrap">
                         {collectionLabel.replace("접수 방식: ", "")}
                       </Badge>
                     ) : null}
@@ -643,7 +643,7 @@ export default function ApplicationsClient() {
                               <p className="text-xs uppercase tracking-wide text-muted-foreground">
                                 방문 희망일시
                               </p>
-                              <p className="font-medium text-foreground">
+                              <p className="whitespace-nowrap font-medium tabular-nums text-foreground">
                                 {visitTimeLabel}
                               </p>
                             </div>
@@ -655,7 +655,7 @@ export default function ApplicationsClient() {
                               <p className="text-xs uppercase tracking-wide text-muted-foreground">
                                 신청 대상
                               </p>
-                              <p className="font-medium text-foreground">
+                              <p className="line-clamp-2 break-keep font-medium text-foreground">
                                 {app.racketType?.trim() || "라켓 미입력"}
                               </p>
                             </div>
@@ -668,7 +668,7 @@ export default function ApplicationsClient() {
                             <p className="text-xs uppercase tracking-wide text-muted-foreground">
                               스트링
                             </p>
-                            <p className="font-medium text-foreground">
+                            <p className="line-clamp-2 break-keep font-medium text-foreground">
                               {app.stringType?.trim() || "미입력"}
                             </p>
                           </div>
@@ -821,7 +821,7 @@ export default function ApplicationsClient() {
                     </div>
                   ) : null}
 
-                  <div className="flex flex-wrap items-center gap-2 border-t border-border/60 pt-3 md:pt-4">
+                  <div className="flex flex-wrap items-center gap-2 border-t border-border/60 pt-3 md:pt-4 [&_button]:whitespace-nowrap">
                     {isStringService ? (
                       <Button
                         data-cy="mypage-application-detail-cta"

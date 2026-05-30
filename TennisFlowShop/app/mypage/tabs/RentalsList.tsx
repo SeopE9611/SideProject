@@ -211,11 +211,11 @@ export default function RentalsList() {
 
             <CardContent className="relative space-y-4 p-4 md:p-6">
               <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <h3 className="text-base font-semibold text-foreground">
+                <div className="min-w-0 flex-1">
+                  <h3 className="line-clamp-2 break-keep text-base font-semibold text-foreground">
                     {rentalTitle}
                   </h3>
-                  <p className="mt-1 text-xs text-foreground/75">
+                  <p className="mt-1 whitespace-nowrap text-xs tabular-nums text-foreground/75">
                     대여 기간 {r.days}일
                     {rentalMetaDate
                       ? ` · 최근 업데이트 ${formatDate(rentalMetaDate)}`
@@ -227,24 +227,24 @@ export default function RentalsList() {
                   {getStatusIcon(r.status)}
                   <Badge
                     variant={getStatusBadgeVariant(r.status)}
-                    className="px-3 py-1 text-xs font-medium"
+                    className="shrink-0 whitespace-nowrap px-3 py-1 text-xs font-medium"
                   >
                     {getStatusLabel(r.status)}
                   </Badge>
                   {r.cancelStatus === "requested" ? (
-                    <Badge variant="warning">취소 요청됨</Badge>
+                    <Badge variant="warning" className="shrink-0 whitespace-nowrap">취소 요청됨</Badge>
                   ) : null}
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center gap-2 text-xs">
+              <div className="flex flex-nowrap items-center gap-2 overflow-x-auto text-xs">
                 {r.stringingApplicationId ? (
-                  <Badge variant="outline">교체서비스 신청서 연결됨</Badge>
+                  <Badge variant="outline" className="shrink-0 whitespace-nowrap">교체서비스 신청서 연결됨</Badge>
                 ) : null}
                 {!r.stringingApplicationId && r.withStringService ? (
-                  <Badge variant="outline">교체서비스 포함</Badge>
+                  <Badge variant="outline" className="shrink-0 whitespace-nowrap">교체서비스 포함</Badge>
                 ) : null}
-                <Badge variant="outline">
+                <Badge variant="outline" className="shrink-0 whitespace-nowrap">
                   {r.hasReturnShipping
                     ? "반납 운송장 등록됨"
                     : "반납 운송장 미등록"}
@@ -258,7 +258,7 @@ export default function RentalsList() {
                     <div className="text-xs uppercase tracking-wide text-muted-foreground">
                       대여 수수료
                     </div>
-                    <div className="font-medium text-foreground">
+                    <div className="whitespace-nowrap font-medium tabular-nums text-foreground">
                       {fee.toLocaleString()}원
                     </div>
                   </div>
@@ -270,7 +270,7 @@ export default function RentalsList() {
                     <div className="text-xs uppercase tracking-wide text-muted-foreground">
                       보증금
                     </div>
-                    <div className="font-medium text-foreground">
+                    <div className="whitespace-nowrap font-medium tabular-nums text-foreground">
                       {deposit.toLocaleString()}원
                     </div>
                   </div>
@@ -282,7 +282,7 @@ export default function RentalsList() {
                     <div className="text-xs uppercase tracking-wide text-muted-foreground">
                       총 결제 예상
                     </div>
-                    <div className="font-medium text-foreground">
+                    <div className="whitespace-nowrap font-medium tabular-nums text-foreground">
                       {total.toLocaleString()}원
                     </div>
                   </div>
@@ -317,7 +317,7 @@ export default function RentalsList() {
                 ) : null}
               </div>
 
-              <div className="flex flex-wrap items-center gap-2 border-t border-border/60 pt-3 md:pt-4">
+              <div className="flex flex-wrap items-center gap-2 border-t border-border/60 pt-3 md:pt-4 [&_button]:whitespace-nowrap">
                 <Button
                   size="sm"
                   variant="outline"
