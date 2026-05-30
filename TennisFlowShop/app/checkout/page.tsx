@@ -1003,6 +1003,8 @@ export default function CheckoutPage() {
 
   const renderCheckout = (checkoutStringingAdapter?: CheckoutStringingServiceAdapter) => {
     const checkoutPackageUsage = resolveCheckoutPackageUsage(withStringService, checkoutStringingAdapter);
+    const hasStringingLineErrors = !!(withStringService && checkoutStringingAdapter?.hasLineValidationErrors);
+    const resolvedCanSubmit = canSubmit && !hasStringingLineErrors;
     const finalServiceFee = withStringService ? applyPackageToServiceFee(baseServiceFee, checkoutPackageUsage ?? { usingPackage: false }) : 0;
     const totalPrice = subtotal + shippingFee + finalServiceFee;
     const pointCapBase = Math.max(0, totalPrice - shippingFee);
@@ -1091,33 +1093,31 @@ export default function CheckoutPage() {
              */}
             {(lockServiceMode || withStringService) && (
               <nav aria-label="장착 서비스 진행 단계" className="mt-5">
-                <div className="inline-flex max-w-full flex-wrap items-center gap-2.5 rounded-2xl bg-card/80 p-3 ring-1 ring-border/50 shadow-sm">
+                <div className="inline-flex max-w-full flex-nowrap items-center gap-1.5 overflow-x-auto whitespace-nowrap rounded-2xl bg-card/80 p-2 ring-1 ring-border/50 shadow-sm [-ms-overflow-style:none] [scrollbar-width:none] bp-sm:gap-2.5 bp-sm:p-3 [&::-webkit-scrollbar]:hidden">
                   {/* 1) 스트링 선택: 이미 완료된 단계 */}
-                  <div className="flex items-center gap-2.5">
-                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-bold shadow-sm">
-                      <CheckCircle className="h-4 w-4" />
+                  <div className="flex shrink-0 items-center gap-1.5 bp-sm:gap-2.5">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold shadow-sm bp-sm:h-8 bp-sm:w-8 bp-sm:text-sm">
+                      <CheckCircle className="h-3.5 w-3.5 bp-sm:h-4 bp-sm:w-4" />
                     </span>
-                    <span className="font-semibold text-sm text-foreground">{stepperStep1Label}</span>
+                    <span className="text-xs font-semibold text-foreground bp-sm:text-sm"><span className="bp-sm:hidden">스트링</span><span className="hidden bp-sm:inline">{stepperStep1Label}</span></span>
                   </div>
 
-                  <div className="h-[2px] w-8 bg-primary/40 rounded-full" />
+                  <div className="h-[2px] w-4 shrink-0 rounded-full bg-primary/40 bp-sm:w-8" />
 
                   {/* 2) 결제/장착 정보: 현재 페이지(현재 단계) */}
-                  <div className="flex items-center gap-2.5">
-                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-bold shadow-sm ring-4 ring-primary/20">2</span>
-                    <span className="font-semibold text-sm text-foreground">결제·장착 정보</span>
+                  <div className="flex shrink-0 items-center gap-1.5 bp-sm:gap-2.5">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold shadow-sm ring-2 ring-primary/20 bp-sm:h-8 bp-sm:w-8 bp-sm:text-sm bp-sm:ring-4">2</span>
+                    <span className="text-xs font-semibold text-foreground bp-sm:text-sm"><span className="bp-sm:hidden">정보 입력</span><span className="hidden bp-sm:inline">결제·장착 정보</span></span>
                   </div>
 
-                  <div className="h-[2px] w-8 bg-border rounded-full" />
+                  <div className="h-[2px] w-4 shrink-0 rounded-full bg-border bp-sm:w-8" />
 
                   {/* 3) 접수 완료: 결제와 함께 서비스 신청이 함께 접수됨 */}
-                  <div className="flex items-center gap-2.5">
-                    <span className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-border bg-secondary text-muted-foreground text-sm font-bold">3</span>
-                    <span className="font-medium text-sm text-foreground/80">접수 완료</span>
+                  <div className="flex shrink-0 items-center gap-1.5 bp-sm:gap-2.5">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-border bg-secondary text-muted-foreground text-xs font-bold bp-sm:h-8 bp-sm:w-8 bp-sm:text-sm">3</span>
+                    <span className="text-xs font-medium text-foreground/80 bp-sm:text-sm"><span className="bp-sm:hidden">완료</span><span className="hidden bp-sm:inline">접수 완료</span></span>
                   </div>
                 </div>
-
-                <p className="mt-3 max-w-2xl break-keep text-sm leading-relaxed text-foreground/80">결제와 함께 교체서비스 신청이 접수되며, 현재 주문에 포함됩니다.</p>
               </nav>
             )}
 
@@ -1181,8 +1181,7 @@ export default function CheckoutPage() {
                       <h2 className={cn("break-keep text-base font-semibold text-foreground", !withStringService && "text-sm")}>{withStringService ? "교체서비스 포함 주문입니다" : "일반 상품 주문입니다"}</h2>
                       {withStringService ? (
                         <div className="space-y-1 text-sm leading-relaxed text-muted-foreground">
-                          <p className="break-keep">결제와 함께 교체서비스 신청이 접수됩니다. 선택한 스트링, 수령/배송 방식, 장착 요청사항을 확인해주세요.</p>
-                          <p className="break-keep text-xs text-muted-foreground/90">결제 전 새로고침이나 페이지 이동은 피해주세요.</p>
+                          <p className="break-keep">작업 정보와 수령/배송 방식만 확인하면 접수됩니다.</p>
                           {isStringOnlyServiceFlow && <p className="break-keep">{stringStandalonePausedNotice}</p>}
                         </div>
                       ) : (
@@ -1360,9 +1359,9 @@ export default function CheckoutPage() {
 
                 {/* 배송 정보/수령 정보 */}
                 <Card id="checkout-recipient-info" className="group scroll-mt-24 border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl">
-                  <div className="border-b border-border bg-secondary/50 p-5 bp-sm:p-6">
+                  <div className="border-b border-border bg-secondary/50 p-4 bp-sm:p-5">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20 bp-sm:h-10 bp-sm:w-10">
                         <MapPin className="h-5 w-5 text-primary" />
                       </div>
                       <div>
@@ -1371,9 +1370,9 @@ export default function CheckoutPage() {
                       </div>
                     </div>
                   </div>
-                  <CardContent className="p-5 bp-sm:p-6">
-                    <div className="space-y-5">
-                      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                  <CardContent className="p-4 bp-sm:p-5">
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                         <div className="space-y-2">
                           <Label htmlFor="recipient-name" className="flex items-center gap-2 text-sm font-medium">
                             <UserIcon className="h-4 w-4 text-muted-foreground" />
@@ -1434,8 +1433,8 @@ export default function CheckoutPage() {
 
                       {needsShippingAddress && (
                         <>
-                          <div className="space-y-4">
-                            <div className="flex items-center justify-between">
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between gap-3">
                               <Label htmlFor="address-postal" className="flex items-center gap-2 text-sm">
                                 <Home className="h-4 w-4 text-foreground" />
                                 우편번호
@@ -1453,13 +1452,13 @@ export default function CheckoutPage() {
                                 우편번호 찾기
                               </Button>
                             </div>
-                            <Input id="address-postal" readOnly value={postalCode} placeholder="우편번호" className={cn("bg-muted cursor-not-allowed max-w-[200px] border-2", showPostalCodeError && "border-destructive/30")} />
+                            <Input id="address-postal" readOnly value={postalCode} placeholder="우편번호" className={cn("h-10 max-w-[200px] cursor-not-allowed border-2 bg-muted", showPostalCodeError && "border-destructive/30")} />
                             <div className="min-h-[16px]">{showPostalCodeError && <p className="text-xs text-destructive">{fieldErrors.postalCode}</p>}</div>
                           </div>
 
                           <div className="space-y-2">
                             <Label htmlFor="address-main">기본 주소</Label>
-                            <Input id="address-main" readOnly value={address} placeholder="기본 주소" className={cn("bg-muted cursor-not-allowed border-2", showPostalCodeError && "border-destructive/30")} />
+                            <Input id="address-main" readOnly value={address} placeholder="기본 주소" className={cn("h-10 cursor-not-allowed border-2 bg-muted", showPostalCodeError && "border-destructive/30")} />
                           </div>
 
                           <div className="space-y-2">
@@ -1470,7 +1469,7 @@ export default function CheckoutPage() {
                               onChange={(e) => setAddressDetail(e.target.value)}
                               onBlur={() => touchField("addressDetail")}
                               placeholder="상세 주소를 입력하세요"
-                              className={cn("border-2 focus:border-border transition-colors", showAddressDetailError && "border-destructive/30 focus:border-destructive/30")}
+                              className={cn("h-10 border-2 transition-colors focus:border-border", showAddressDetailError && "border-destructive/30 focus:border-destructive/30")}
                             />
                             <div className="min-h-[16px]">{showAddressDetailError && <p className="text-xs text-destructive">{fieldErrors.addressDetail}</p>}</div>
                           </div>
@@ -1480,10 +1479,10 @@ export default function CheckoutPage() {
                               <MessageSquare className="h-4 w-4 text-foreground" />
                               배송 요청사항
                             </Label>
-                            <Textarea id="delivery-request" value={deliveryRequest} onChange={(e) => setDeliveryRequest(e.target.value)} placeholder="배송 시 요청사항을 입력하세요" className="border-2 focus:border-border transition-colors" />
+                            <Textarea id="delivery-request" value={deliveryRequest} onChange={(e) => setDeliveryRequest(e.target.value)} placeholder="배송 요청사항만 입력하세요" className="min-h-[76px] border-2 transition-colors focus:border-border" />
                           </div>
 
-                          <div className="bg-muted p-4 rounded-lg border border-border">
+                          <div className="rounded-lg border border-border bg-muted p-3">
                             <div className="flex items-center space-x-2">
                               <Checkbox id="save-address" checked={saveAddress} onCheckedChange={(checked) => setSaveAddress(!!checked)} disabled={!user} />
                               <label htmlFor="save-address" className={`text-sm font-medium ${!user ? "text-muted-foreground" : "text-foreground"}`}>
@@ -1662,7 +1661,7 @@ export default function CheckoutPage() {
                             <div className="min-h-[16px]">{showDepositorError && <p className="text-xs text-destructive">{fieldErrors.depositor}</p>}</div>
                           </div>
 
-                          <div className="bg-muted p-4 rounded-lg border border-border">
+                          <div className="rounded-lg border border-border bg-muted p-3">
                             <div className="flex items-center gap-2 mb-3">
                               <Shield className="h-5 w-5 text-primary" />
                               <p className="font-semibold text-foreground">무통장입금 안내</p>
@@ -1822,11 +1821,12 @@ export default function CheckoutPage() {
 
                 <Card id="checkout-payment-action" className="relative border border-border bg-card shadow-sm overflow-hidden">
                   <CardContent className="flex flex-col gap-4 p-4 bp-sm:p-6 shrink-0">
-                    {(fieldErrors.items || fieldErrors.bundle || (isMountingFeeReady && fieldErrors.composition)) && (
+                    {(fieldErrors.items || fieldErrors.bundle || (isMountingFeeReady && fieldErrors.composition) || hasStringingLineErrors) && (
                       <div className="w-full rounded-lg border border-destructive/30 bg-destructive/15 p-3 text-sm text-destructive dark:bg-destructive/20">
                         <p className="font-semibold mb-1">확인 필요</p>
                         {fieldErrors.items && <p>• {fieldErrors.items}</p>}
                         {fieldErrors.bundle && <p>• {fieldErrors.bundle}</p>}
+                        {hasStringingLineErrors && <p>• 교체서비스 라켓명과 텐션을 모두 입력해 주세요.</p>}
                         {fieldErrors.composition && (
                           <p>
                             • {fieldErrors.composition}{" "}
@@ -1849,7 +1849,7 @@ export default function CheckoutPage() {
                     )}
                     {paymentMethod === "bank-transfer" ? (
                       <CheckoutButton
-                        disabled={!canSubmit}
+                        disabled={!resolvedCanSubmit}
                         name={name}
                         phone={phone}
                         email={email}
@@ -1877,7 +1877,7 @@ export default function CheckoutPage() {
                       />
                     ) : nicePaymentsEnabled && !isZeroPayableAmount ? (
                       <NiceCheckoutButton
-                        disabled={!canSubmit}
+                        disabled={!resolvedCanSubmit}
                         onBeforeSuccessNavigation={() => setIsIntentionalSuccessNavigation(true)}
                         onSuccessNavigationAbort={() => setIsIntentionalSuccessNavigation(false)}
                         payableAmount={payableTotalPrice}

@@ -341,6 +341,29 @@ export default function useCheckoutStringingServiceAdapter({
       (it) => it.id === shared.formData.stringTypes?.[0],
     ) ?? null;
 
+  const lineValidationErrors = useMemo(() => {
+    return shared.linesForSubmit.map((line) => ({
+      racketType: String(line.racketType ?? "").trim()
+        ? ""
+        : "라켓명을 입력해 주세요.",
+      tensionMain: String(line.tensionMain ?? "").trim()
+        ? ""
+        : "메인 텐션을 입력해 주세요.",
+      tensionCross: String(line.tensionCross ?? "").trim()
+        ? ""
+        : "크로스 텐션을 입력해 주세요.",
+    }));
+  }, [shared.linesForSubmit]);
+
+  const hasLineValidationErrors = useMemo(
+    () =>
+      lineValidationErrors.some(
+        (line) =>
+          !!line.racketType || !!line.tensionMain || !!line.tensionCross,
+      ),
+    [lineValidationErrors],
+  );
+
   const summary = useMemo(() => {
     const collectionLabel = collectionMethodLabel(
       shared.formData.collectionMethod,
@@ -359,8 +382,8 @@ export default function useCheckoutStringingServiceAdapter({
           .map((line) => {
             const main = String(line.tensionMain ?? "").trim();
             const cross = String(line.tensionCross ?? "").trim();
-            if (!main && !cross) return "";
-            return cross && cross !== main ? `${main}/${cross}` : main || cross;
+            if (!main || !cross) return "";
+            return cross !== main ? `${main}/${cross}` : main;
           })
           .filter(Boolean),
       ),
@@ -373,7 +396,10 @@ export default function useCheckoutStringingServiceAdapter({
         ? `${shared.formData.preferredDate} ${shared.formData.preferredTime}`
         : null;
 
-    const requestRaw = String(shared.formData.requirements ?? "").trim();
+    const requestRaw = shared.linesForSubmit
+      .map((line) => String(line.note ?? "").trim())
+      .filter(Boolean)
+      .join(", ");
     const requestPreview = requestRaw
       ? requestRaw.length > 24
         ? `${requestRaw.slice(0, 24)}…`
@@ -397,7 +423,12 @@ export default function useCheckoutStringingServiceAdapter({
 
   const completion = useMemo(() => {
     const totalLineCount = shared.linesForSubmit.length;
-    const lineConfiguredCount = shared.linesForSubmit.length;
+    const lineConfiguredCount = shared.linesForSubmit.filter((line) => {
+      const racketType = String(line.racketType ?? "").trim();
+      const tensionMain = String(line.tensionMain ?? "").trim();
+      const tensionCross = String(line.tensionCross ?? "").trim();
+      return !!racketType && !!tensionMain && !!tensionCross;
+    }).length;
 
     const basicConfigured =
       shared.formData.stringTypes.length > 0 && totalLineCount > 0;
@@ -413,7 +444,7 @@ export default function useCheckoutStringingServiceAdapter({
     const statusLabel = isReadyToSubmit
       ? "접수 준비 완료"
       : basicConfigured
-        ? "추가 입력 필요"
+        ? "필수 정보 필요"
         : "기본 정보 필요";
 
     return {
@@ -462,6 +493,8 @@ export default function useCheckoutStringingServiceAdapter({
 
     summary,
     completion,
+    lineValidationErrors,
+    hasLineValidationErrors,
 
     ...shared,
   };

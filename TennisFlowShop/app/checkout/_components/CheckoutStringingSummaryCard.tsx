@@ -23,32 +23,32 @@ export default function CheckoutStringingSummaryCard({ adapter }: Props) {
     completion.lineConfiguredCount === completion.totalLineCount &&
     completion.totalLineCount > 0;
   const statusMessage = completion.isReadyToSubmit
-    ? "현재 설정으로 주문과 함께 교체서비스가 접수됩니다."
+    ? "교체서비스 접수 준비가 완료되었습니다."
     : completion.needsVisitReservation && !completion.hasReservation
-      ? "방문 예약만 완료하면 접수 준비가 완료됩니다."
-      : "별도 요청 없이 현재 설정으로 접수됩니다.";
+      ? "방문 예약과 필수 작업 정보를 확인해 주세요."
+      : "라켓명과 텐션을 입력해 주세요.";
 
   return (
-    <div className="space-y-4 rounded-xl border border-border/70 bg-secondary/20 px-4 py-5 bp-sm:px-5">
-      <div className="flex items-start justify-between gap-4">
-        <div>
+    <div className="space-y-3 rounded-xl border border-border/70 bg-muted/20 px-3 py-4 bp-sm:px-4">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
           <p className="flex items-center gap-2 text-sm font-semibold text-foreground">
             <ClipboardList className="h-4 w-4 text-primary" />
             교체서비스 요약
           </p>
-          <p className="mt-1.5 text-xs text-foreground/75">
-            주문과 함께 접수될 내용을 미리 확인하세요.
+          <p className="mt-1 break-keep text-xs text-foreground/75">
+            금액과 접수 상태만 간단히 확인하세요.
           </p>
         </div>
         <Badge
           variant={completion.isReadyToSubmit ? "success" : "secondary"}
-          className="mt-0.5 border border-border/70 bg-background/85"
+          className="mt-0.5 shrink-0 border border-border/70 bg-background/85 text-[11px]"
         >
           {completion.statusLabel}
         </Badge>
       </div>
 
-      <div className="grid grid-cols-1 gap-x-5 gap-y-2.5 rounded-lg border border-border/70 bg-background p-3.5 text-sm bp-sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-x-5 gap-y-2 rounded-lg border border-border/70 bg-background p-3 text-sm bp-sm:grid-cols-2">
         <p>
           <span className="text-muted-foreground">접수 방식:</span>{" "}
           <span className="font-medium">{summary.collectionLabel}</span>
@@ -69,7 +69,7 @@ export default function CheckoutStringingSummaryCard({ adapter }: Props) {
         </p>
         {reservationLabel && (
           <p>
-            <span className="text-muted-foreground">예약 정보:</span>{" "}
+            <span className="text-muted-foreground">예약:</span>{" "}
             <span className="font-medium">{reservationLabel}</span>
           </p>
         )}
@@ -77,64 +77,41 @@ export default function CheckoutStringingSummaryCard({ adapter }: Props) {
           <span className="text-muted-foreground">장착비:</span>{" "}
           <span className="font-medium">{summary.priceLabel}</span>
         </p>
-        <p>
-          <span className="text-muted-foreground">전체 요청사항:</span>{" "}
-          <span className="font-medium">{summary.requestPreview}</span>
-        </p>
+        {summary.requestPreview !== "없음" && (
+          <p className="bp-sm:col-span-2">
+            <span className="text-muted-foreground">작업 요청:</span>{" "}
+            <span className="font-medium">{summary.requestPreview}</span>
+          </p>
+        )}
       </div>
 
-      <div className="rounded-lg border border-border/70 bg-background/70 p-3">
-        <p className="mb-2 text-xs font-medium tracking-wide text-foreground/75">
-          진행 상태
-        </p>
-        <div className="flex flex-wrap gap-2 text-xs">
+      <div className="flex flex-wrap gap-2 text-xs">
+        <Badge
+          variant={completion.basicConfigured ? "success" : "secondary"}
+          className="gap-1 border border-border/70 font-normal"
+        >
+          <CircleDot className="h-3 w-3" />
+          기본 설정 {completion.basicConfigured ? "완료" : "미완료"}
+        </Badge>
+        <Badge
+          variant={lineConfiguredDone ? "success" : "secondary"}
+          className="gap-1 border border-border/70 font-normal"
+        >
+          <CircleDot className="h-3 w-3" />
+          필수 정보 {completion.lineConfiguredCount}/{completion.totalLineCount}
+        </Badge>
+        {completion.needsVisitReservation && (
           <Badge
-            variant={completion.basicConfigured ? "success" : "secondary"}
+            variant={completion.hasReservation ? "success" : "warning"}
             className="gap-1 border border-border/70 font-normal"
           >
             <CircleDot className="h-3 w-3" />
-            기본 설정 {completion.basicConfigured ? "완료" : "미완료"}
+            방문 예약 {completion.hasReservation ? "완료" : "필요"}
           </Badge>
-          <Badge
-            variant={lineConfiguredDone ? "success" : "secondary"}
-            className="gap-1 border border-border/70 font-normal"
-          >
-            <CircleDot className="h-3 w-3" />
-            라켓별 작업 {completion.lineConfiguredCount}/
-            {completion.totalLineCount} 완료
-          </Badge>
-          {completion.needsVisitReservation && (
-            <Badge
-              variant={completion.hasReservation ? "success" : "warning"}
-              className="gap-1 border border-border/70 font-normal"
-            >
-              <CircleDot className="h-3 w-3" />
-              방문 예약 {completion.hasReservation ? "완료" : "필요"}
-            </Badge>
-          )}
-          {!completion.needsVisitReservation && (
-            <Badge
-              variant="secondary"
-              className="gap-1 border border-border/70 font-normal"
-            >
-              <CircleDot className="h-3 w-3" />
-              방문 예약 없음
-            </Badge>
-          )}
-          <Badge
-            variant={
-              summary.requestPreview === "없음" ? "secondary" : "success"
-            }
-            className="gap-1 border border-border/70 font-normal"
-          >
-            <CircleDot className="h-3 w-3" />
-            전체 요청사항{" "}
-            {summary.requestPreview === "없음" ? "없음" : "입력됨"}
-          </Badge>
-        </div>
+        )}
       </div>
 
-      <p className="flex items-center gap-1.5 border-t border-border/70 pt-1 text-xs text-foreground">
+      <p className="flex items-center gap-1.5 border-t border-border/70 pt-2 text-xs text-foreground">
         {completion.isReadyToSubmit ? (
           <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
         ) : (
