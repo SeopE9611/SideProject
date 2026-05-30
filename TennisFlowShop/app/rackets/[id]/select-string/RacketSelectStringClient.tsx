@@ -633,17 +633,17 @@ export default function RacketSelectStringClient({
         className="py-8 bp-md:py-12 space-y-8 bp-md:space-y-10"
       >
         <div className="text-center space-y-3 max-w-2xl mx-auto">
-          <h1 className="text-2xl bp-md:text-4xl font-bold tracking-normal text-foreground">
+          <h1 className="break-keep text-2xl font-bold leading-tight tracking-normal text-foreground bp-md:text-4xl">
             스트링 선택
           </h1>
 
           {isFromCart ? (
-            <p className="text-sm bp-md:text-base text-muted-foreground leading-relaxed">
+            <p className="break-keep text-sm leading-relaxed text-muted-foreground bp-md:text-base">
               <span className="font-semibold">장바구니 번들 수정 모드</span>
               입니다. 수량과 스트링을 변경한 뒤 장바구니로 돌아갑니다.
             </p>
           ) : (
-            <p className="text-sm bp-md:text-base text-muted-foreground leading-relaxed">
+            <p className="break-keep text-sm leading-relaxed text-muted-foreground bp-md:text-base">
               라켓과 함께 구매하실 스트링을 선택해주세요. 선택한 스트링은 라켓과
               함께 한 번에 결제됩니다.
             </p>
@@ -670,13 +670,13 @@ export default function RacketSelectStringClient({
                 <div className="flex items-start gap-3">
                   <CheckCircle2 className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-xs font-medium text-success mb-1">
+                    <p className="mb-1 whitespace-nowrap text-xs font-medium text-success">
                       선택된 라켓
                     </p>
-                    <h3 className="text-xl font-bold text-foreground mb-1">
+                    <h3 className="mb-1 line-clamp-2 break-keep text-xl font-bold leading-snug text-foreground">
                       {racket.name}
                     </h3>
-                    <p className="text-lg font-semibold text-foreground">
+                    <p className="whitespace-nowrap tabular-nums text-lg font-semibold text-foreground">
                       {racket.price.toLocaleString()}원
                     </p>
                   </div>
@@ -744,7 +744,7 @@ export default function RacketSelectStringClient({
 
         {/* 스트링 목록 */}
         <div className="space-y-6">
-          <h2 className="text-2xl font-bold text-foreground text-center">
+          <h2 className="break-keep text-center text-2xl font-bold leading-tight text-foreground">
             사용 가능한 스트링
           </h2>
           {isLoadingInitial ? (
@@ -888,19 +888,19 @@ export default function RacketSelectStringClient({
 
                       <div className="flex-1 space-y-2">
                         <div className="flex items-start justify-between gap-2">
-                          <h3 className="font-semibold text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors">
+                          <h3 className="min-w-0 line-clamp-2 break-keep font-semibold leading-snug text-foreground transition-colors group-hover:text-primary">
                             {p.name}
                           </h3>
                           {isCurrent && (
                             <Badge
                               variant="brand"
-                              className="shrink-0 px-2 py-1 text-[11px] font-semibold"
+                              className="shrink-0 whitespace-nowrap px-2 py-1 text-[11px] font-semibold"
                             >
                               현재 선택
                             </Badge>
                           )}
                         </div>
-                        <p className="text-lg font-bold text-foreground">
+                        <p className="whitespace-nowrap tabular-nums text-lg font-bold text-foreground">
                           {Number(p.price ?? 0).toLocaleString()}원
                         </p>
                         {hasColorRows && (
@@ -916,7 +916,7 @@ export default function RacketSelectStringClient({
                                 <p className="text-xs text-muted-foreground">
                                   현재 색상: {selectedColorRow ? getColorLabel(selectedColorRow) : "미선택"}
                                 </p>
-                                <div className="flex flex-wrap gap-2">
+                                <div className="flex flex-nowrap gap-2 overflow-x-auto pb-1">
                                   {colorRows.map((row) => {
                                     const label = getColorLabel(row);
                                     const soldOut = hasVariantInventories
@@ -970,7 +970,7 @@ export default function RacketSelectStringClient({
                                           }));
                                         }}
                                         className={[
-                                          "h-10 min-w-10 rounded-md border px-2 text-xs transition",
+                                          "h-10 min-w-10 max-w-[6rem] shrink-0 truncate whitespace-nowrap rounded-md border px-2 text-xs transition",
                                           isSelected ? "border-ring ring-2 ring-ring/40" : "border-border",
                                           soldOut ? "opacity-50 cursor-not-allowed" : "hover:border-foreground/40",
                                         ].join(" ")}
@@ -1003,7 +1003,7 @@ export default function RacketSelectStringClient({
                                 }))
                               }
                             >
-                              <SelectTrigger className="h-9 text-left text-xs">
+                              <SelectTrigger className="h-9 text-left text-xs [&>span]:truncate">
                                 <SelectValue placeholder="게이지를 선택해주세요" />
                               </SelectTrigger>
                               <SelectContent>
@@ -1032,19 +1032,19 @@ export default function RacketSelectStringClient({
                         )}
                         {/* 재고 힌트 */}
                         {canShowStockHint && (
-                            <p className="text-xs text-warning">
+                            <p className="whitespace-nowrap text-xs text-warning">
                               현재 남은 수량 {effectiveStock}개
                             </p>
                           )}
                         {isShort && (
-                          <p className="text-xs text-destructive">
+                          <p className="break-keep text-xs text-destructive">
                             {hasGaugeRows
                               ? "선택한 게이지의 구매 가능 수량을 초과했습니다."
                               : `재고 ${stock}개로 번들 수량(${workCount}개)을 충족할 수 없어요`}
                           </p>
                         )}
                         {isSoldOut && (
-                          <p className="text-xs text-destructive">품절</p>
+                          <p className="break-keep text-xs text-destructive">품절</p>
                         )}
                       </div>
 
@@ -1052,7 +1052,7 @@ export default function RacketSelectStringClient({
                       {isFromCart ? (
                         <Button
                           variant="elevated"
-                          className="mt-4 w-full rounded-xl py-5 font-medium"
+                          className="mt-4 w-full whitespace-nowrap rounded-xl py-5 font-medium"
                           disabled={disabledByGauge || disabledByColor || isSoldOut || isShort}
                           onClick={() => handleSelectString(p, selectedGauge || undefined, selectedColor || undefined)}
                         >
@@ -1077,7 +1077,7 @@ export default function RacketSelectStringClient({
                         <div className="mt-4 grid grid-cols-1 gap-2">
                           <Button
                             variant="elevated"
-                            className="w-full whitespace-normal break-keep rounded-xl py-5 font-medium leading-tight transition-[background-color,box-shadow] duration-200"
+                            className="w-full whitespace-nowrap rounded-xl py-5 font-medium transition-[background-color,box-shadow] duration-200"
                             disabled={disabledByGauge || disabledByColor || isSoldOut || isShort}
                             onClick={() => handleSelectString(p, selectedGauge || undefined, selectedColor || undefined)}
                           >

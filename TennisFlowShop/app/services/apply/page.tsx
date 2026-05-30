@@ -1802,7 +1802,7 @@ export default function StringServiceApplyPage() {
               >
                 <div className="mb-3 flex items-center justify-between gap-3">
                   <span className="text-xs font-semibold text-muted-foreground">{item.stepLabel}</span>
-                  <Badge variant={index === 0 ? "brand" : "secondary"}>{item.badge}</Badge>
+                  <Badge variant={index === 0 ? "brand" : "secondary"} className="shrink-0 whitespace-nowrap">{item.badge}</Badge>
                 </div>
                 <div className="mb-4 flex items-start gap-3">
                   <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-background text-foreground transition-colors group-hover:bg-muted">
@@ -1820,7 +1820,7 @@ export default function StringServiceApplyPage() {
                   <p className="mt-1 text-sm leading-relaxed text-muted-foreground break-keep">{item.steps}</p>
                 </div>
                 <div className="mt-auto pt-4">
-                  <span className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-sm font-semibold text-foreground transition-colors group-hover:bg-secondary">
+                  <span className="inline-flex w-full items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-border bg-card px-3 py-2 text-sm font-semibold text-foreground transition-colors group-hover:bg-secondary">
                     <span>{item.cta}</span>
                     <svg className="h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
@@ -1839,10 +1839,10 @@ export default function StringServiceApplyPage() {
               </p>
             </div>
             <div className="flex flex-wrap justify-center gap-2 text-sm bp-sm:justify-start">
-              <Button type="button" variant="outline" onClick={() => safePush("/products/recommend")}>스트링 추천받기</Button>
-              <Button type="button" variant="outline" onClick={() => safePush("/services/pricing")}>가격 먼저 보기</Button>
-              <Button type="button" variant="outline" onClick={() => safePush("/services/locations")}>매장 위치/방문 안내</Button>
-              <Button type="button" variant="outline" onClick={() => safePush("/board/qna")}>고객센터 문의</Button>
+              <Button type="button" variant="outline" className="whitespace-nowrap" onClick={() => safePush("/products/recommend")}>스트링 추천받기</Button>
+              <Button type="button" variant="outline" className="whitespace-nowrap" onClick={() => safePush("/services/pricing")}>가격 먼저 보기</Button>
+              <Button type="button" variant="outline" className="whitespace-nowrap" onClick={() => safePush("/services/locations")}>매장 위치/방문 안내</Button>
+              <Button type="button" variant="outline" className="whitespace-nowrap" onClick={() => safePush("/board/qna")}>고객센터 문의</Button>
             </div>
           </div>
 

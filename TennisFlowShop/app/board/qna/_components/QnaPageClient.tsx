@@ -27,8 +27,8 @@ const CAT_LABELS: Record<string, string> = {
 };
 const CODE_TO_LABEL = CAT_LABELS; // 가독성용 alias
 const LABEL_TO_CODE: Record<string, string> = Object.fromEntries(Object.entries(CODE_TO_LABEL).map(([code, label]) => [label, code]));
-const qnaMobileTitleClampClass = "min-w-0 flex-1 truncate text-sm font-semibold leading-snug sm:text-base";
-const qnaMobileMetaWrapClass = "flex flex-wrap items-center gap-x-3.5 gap-y-1 text-xs text-muted-foreground";
+const qnaMobileTitleClampClass = "min-w-0 flex-1 line-clamp-2 break-keep text-sm font-semibold leading-snug sm:line-clamp-1 sm:text-base";
+const qnaMobileMetaWrapClass = "flex flex-wrap items-center gap-x-3.5 gap-y-1 text-xs text-muted-foreground [&>span]:shrink-0 [&>span]:whitespace-nowrap";
 const qnaStatusBadgeWrapClass = "shrink-0 self-start";
 
 type QnaItem = {
@@ -678,7 +678,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialLoadE
                           <div className="flex-1 min-w-0">
                             <div className="mb-1 flex items-start gap-2">
                               <div className="flex min-w-0 flex-1 items-center gap-2 flex-wrap">
-                                <Badge variant={getQnaCategoryBadgeSpec(qna.category).variant} className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`}>
+                                <Badge variant={getQnaCategoryBadgeSpec(qna.category).variant} className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0 whitespace-nowrap`}>
                                   {qna.category ?? "일반문의"}
                                 </Badge>
 
@@ -695,7 +695,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialLoadE
                               </div>
 
                               <div className={qnaStatusBadgeWrapClass}>
-                                <Badge variant={getAnswerStatusBadgeSpec(!!qna.answer).variant} className={`${badgeBaseOutlined} ${badgeSizeSm}`}>
+                                <Badge variant={getAnswerStatusBadgeSpec(!!qna.answer).variant} className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0 whitespace-nowrap`}>
                                   {qna.answer ? "답변 완료" : "답변 대기"}
                                 </Badge>
                               </div>

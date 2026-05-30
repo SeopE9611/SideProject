@@ -92,8 +92,8 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
       })
       .replace(/\.\s/g, ".")
       .replace(/\.$/, "");
-  const noticeMobileTitleClampClass = "flex-1 min-w-0 line-clamp-2 text-sm font-semibold leading-snug sm:line-clamp-1 sm:text-base";
-  const noticeMobileMetaWrapClass = "flex flex-wrap items-center gap-x-3.5 gap-y-1 text-xs text-muted-foreground";
+  const noticeMobileTitleClampClass = "flex-1 min-w-0 line-clamp-2 break-keep text-sm font-semibold leading-snug sm:line-clamp-1 sm:text-base";
+  const noticeMobileMetaWrapClass = "flex flex-wrap items-center gap-x-3.5 gap-y-1 text-xs text-muted-foreground [&>span]:shrink-0 [&>span]:whitespace-nowrap";
 
   // 목록 불러오기 (핀 우선 + 최신, 서버에서 정렬됨)
   // 입력용 상태 (타이핑 중)
@@ -270,8 +270,8 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
                 <HeaderIcon className="h-5 w-5 sm:h-6 sm:w-6" />
               </div>
               <div>
-                <h1 className="text-2xl sm:text-3xl md:text-[2rem] font-bold tracking-normal text-foreground">{pageTitle}</h1>
-                <p className="text-sm sm:text-base text-muted-foreground">{pageDescription}</p>
+                <h1 className="break-keep text-2xl font-bold leading-tight tracking-normal text-foreground sm:text-3xl md:text-[2rem]">{pageTitle}</h1>
+                <p className="break-keep text-sm text-muted-foreground sm:text-base">{pageDescription}</p>
               </div>
             </div>
           </div>
@@ -409,13 +409,13 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
                               <div className="mb-1 flex flex-wrap items-start justify-between gap-2">
                                 <div className="flex min-w-0 flex-1 items-center gap-2 flex-wrap">
                                   {notice.category && (
-                                    <Badge variant={noticeCategoryBadge.variant} className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`} title={notice.category ?? undefined}>
+                                    <Badge variant={noticeCategoryBadge.variant} className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0 whitespace-nowrap`} title={notice.category ?? undefined}>
                                       {notice.category}
                                     </Badge>
                                   )}
 
                                   {notice.isPinned && (
-                                    <Badge variant="brand" className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`} title={pinnedLabel} aria-label={pinnedLabel}>
+                                    <Badge variant="brand" className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0 whitespace-nowrap`} title={pinnedLabel} aria-label={pinnedLabel}>
                                       <Pin className="h-3 w-3" />
                                     </Badge>
                                   )}

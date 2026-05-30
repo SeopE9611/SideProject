@@ -291,10 +291,10 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
                   <Bell className="h-5 w-5 sm:h-6 sm:w-6" />
                 </div>
                 <div>
-                  <h1 className="text-2xl sm:text-3xl md:text-[2rem] font-bold tracking-normal text-foreground">
+                  <h1 className="break-keep text-2xl font-bold leading-tight tracking-normal text-foreground sm:text-3xl md:text-[2rem]">
                     {pageTitle}
                   </h1>
-                  <p className="text-sm sm:text-base text-muted-foreground">
+                  <p className="break-keep text-sm text-muted-foreground sm:text-base">
                     {pageDescription}
                   </p>
                 </div>
@@ -368,7 +368,7 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
                       </Badge>
                       {(imageAtts.length > 0 || fileAtts.length > 0) && (
                         <span
-                          className="flex items-center gap-1.5 text-muted-foreground"
+                          className="flex shrink-0 items-center gap-1.5 whitespace-nowrap text-muted-foreground"
                           aria-label="첨부 정보"
                         >
                           {imageAtts.length > 0 && (
@@ -398,12 +398,12 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
                       <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20 flex-shrink-0 mt-1">
                         <Bell className="h-5 w-5" />
                       </div>
-                      <h1 className="text-3xl font-bold text-foreground leading-tight">
+                      <h1 className="break-keep text-2xl font-bold leading-tight text-foreground sm:text-3xl">
                         {notice.title}
                       </h1>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
+                    <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground [&>div]:shrink-0 [&>div]:whitespace-nowrap">
                       <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4" />
                         <span className="font-medium">작성일</span>

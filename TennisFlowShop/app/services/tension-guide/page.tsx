@@ -424,12 +424,12 @@ export default function TensionGuidePage() {
                 전문가 텐션 가이드
               </span>
             </div>
-            <h1 className="font-bold text-3xl bp-sm:text-4xl bp-md:text-4xl bp-lg:text-5xl text-foreground mb-4 bp-md:mb-6 text-balance">
+            <h1 className="mb-4 break-keep text-balance text-3xl font-bold leading-tight text-foreground bp-sm:text-4xl bp-md:mb-6 bp-md:text-4xl bp-lg:text-5xl">
               나에게 맞는
               <br />
               <span className="text-primary">최적의 텐션</span>을 찾아보세요
             </h1>
-            <p className="text-base bp-sm:text-lg bp-md:text-xl text-muted-foreground max-w-2xl mx-auto mb-6 bp-md:mb-8 text-pretty px-2">
+            <p className="mx-auto mb-6 max-w-2xl break-keep px-2 text-pretty text-base text-muted-foreground bp-sm:text-lg bp-md:mb-8 bp-md:text-xl">
               플레이 스타일, 스윙 스피드, 스트링 타입에 따른 맞춤형 텐션
               가이드로 최고의 퍼포먼스를 경험하세요
             </p>
@@ -447,14 +447,14 @@ export default function TensionGuidePage() {
           <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-4 h-auto p-1 bg-muted">
             <TabsTrigger
               value="calculator"
-              className="py-2 bp-sm:py-3 text-[10px] bp-sm:text-xs bp-md:text-sm gap-1 bp-sm:gap-1.5"
+              className="gap-1 whitespace-nowrap py-2 text-[10px] bp-sm:gap-1.5 bp-sm:py-3 bp-sm:text-xs bp-md:text-sm"
             >
               <BarChart3 className="h-3 w-3 bp-sm:h-4 bp-sm:w-4" />
               <span className="hidden bp-sm:inline">텐션</span> 계산기
             </TabsTrigger>
             <TabsTrigger
               value="levels"
-              className="py-2 bp-sm:py-3 text-[10px] bp-sm:text-xs bp-md:text-sm gap-1 bp-sm:gap-1.5"
+              className="gap-1 whitespace-nowrap py-2 text-[10px] bp-sm:gap-1.5 bp-sm:py-3 bp-sm:text-xs bp-md:text-sm"
             >
               <Users className="h-3 w-3 bp-sm:h-4 bp-sm:w-4" />
               <span className="bp-xs:hidden">수준별</span>
@@ -462,7 +462,7 @@ export default function TensionGuidePage() {
             </TabsTrigger>
             <TabsTrigger
               value="strings"
-              className="py-2 bp-sm:py-3 text-[10px] bp-sm:text-xs bp-md:text-sm gap-1 bp-sm:gap-1.5"
+              className="gap-1 whitespace-nowrap py-2 text-[10px] bp-sm:gap-1.5 bp-sm:py-3 bp-sm:text-xs bp-md:text-sm"
             >
               <Layers className="h-3 w-3 bp-sm:h-4 bp-sm:w-4" />
               <span className="bp-xs:hidden">스트링</span>
@@ -470,7 +470,7 @@ export default function TensionGuidePage() {
             </TabsTrigger>
             <TabsTrigger
               value="tips"
-              className="py-2 bp-sm:py-3 text-[10px] bp-sm:text-xs bp-md:text-sm gap-1 bp-sm:gap-1.5"
+              className="gap-1 whitespace-nowrap py-2 text-[10px] bp-sm:gap-1.5 bp-sm:py-3 bp-sm:text-xs bp-md:text-sm"
             >
               <Lightbulb className="h-3 w-3 bp-sm:h-4 bp-sm:w-4" />
               <span className="bp-xs:hidden">팁</span>
@@ -485,7 +485,7 @@ export default function TensionGuidePage() {
               <div className="space-y-6">
                 <Card className="border border-border shadow-sm bg-card dark:bg-muted/90">
                   <CardHeader className="pb-4 bp-md:pb-6">
-                    <CardTitle className="flex items-center gap-2 text-base bp-md:text-lg text-foreground">
+                    <CardTitle className="flex items-center gap-2 break-keep text-base leading-snug text-foreground bp-md:text-lg">
                       <Settings2 className="h-4 w-4 bp-md:h-5 bp-md:w-5 text-primary" />
                       나의 플레이 정보
                     </CardTitle>
@@ -664,11 +664,11 @@ export default function TensionGuidePage() {
                         {selectedRange.min}LB ~ {selectedRange.max}LB
                       </p>
                       <div className="mt-3 flex flex-wrap gap-2">
-                        <Badge variant="secondary" className="text-xs">
+                        <Badge variant="secondary" className="max-w-[9rem] shrink-0 truncate whitespace-nowrap text-xs">
                           {gender === "female" ? "여자" : "남자"}{" "}
                           {selectedRange.min}~{selectedRange.max}LB
                         </Badge>
-                        <Badge variant="outline" className="text-xs">
+                        <Badge variant="outline" className="max-w-[9rem] shrink-0 truncate whitespace-nowrap text-xs">
                           {oppositeGender === "female" ? "여자" : "남자"}{" "}
                           {oppositeRange.min}~{oppositeRange.max}LB
                         </Badge>
@@ -803,7 +803,7 @@ export default function TensionGuidePage() {
                             <CardTitle className="text-base bp-sm:text-lg bp-md:text-xl mb-1 text-card-foreground">
                               {player.type}
                             </CardTitle>
-                            <div className="flex flex-wrap gap-2">
+                            <div className="flex flex-nowrap gap-2 overflow-x-auto pb-1">
                               <Badge
                                 variant="secondary"
                                 className="text-xs bp-md:text-sm px-2 bp-md:px-3 py-0.5 bp-md:py-1"
@@ -937,12 +937,12 @@ export default function TensionGuidePage() {
                       {string.characteristics}
                     </p>
 
-                    <div className="flex flex-wrap gap-2">
-                      <Badge variant="secondary" className="text-xs">
+                    <div className="flex flex-nowrap gap-2 overflow-x-auto pb-1">
+                      <Badge variant="secondary" className="max-w-[9rem] shrink-0 truncate whitespace-nowrap text-xs">
                         여자 {string.ranges.female.min}~
                         {string.ranges.female.max}LB
                       </Badge>
-                      <Badge variant="outline" className="text-xs">
+                      <Badge variant="outline" className="max-w-[9rem] shrink-0 truncate whitespace-nowrap text-xs">
                         남자 {string.ranges.male.min}~{string.ranges.male.max}LB
                       </Badge>
                     </div>
