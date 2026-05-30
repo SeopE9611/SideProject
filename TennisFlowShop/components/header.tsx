@@ -715,7 +715,7 @@ const Header = () => {
                         </Link>
 
                         {isAdmin && (
-                          <Badge variant="success" className="border border-border/60 px-2 py-0 text-[10px] h-5">
+                          <Badge variant="success" className="h-5 whitespace-nowrap border border-border/60 px-2 py-0 text-[10px]">
                             관리자
                           </Badge>
                         )}
@@ -724,12 +724,12 @@ const Header = () => {
                       {(hasKakao || hasNaver) && (
                         <div className="mt-2 flex flex-wrap gap-1.5">
                           {hasKakao && (
-                            <Badge variant={getSocialProviderBadgeSpec("kakao").variant} className="border border-border/60 text-[10px] h-5 px-2">
+                            <Badge variant={getSocialProviderBadgeSpec("kakao").variant} className="h-5 whitespace-nowrap border border-border/60 px-2 text-[10px]">
                               카카오
                             </Badge>
                           )}
                           {hasNaver && (
-                            <Badge variant={getSocialProviderBadgeSpec("naver").variant} className="border border-border/60 text-[10px] h-5 px-2">
+                            <Badge variant={getSocialProviderBadgeSpec("naver").variant} className="h-5 whitespace-nowrap border border-border/60 px-2 text-[10px]">
                               네이버
                             </Badge>
                           )}
@@ -1059,7 +1059,7 @@ const Header = () => {
                   <Button variant="ghost" className="h-9 px-2.5 2xl:px-3 rounded-full shrink-0" asChild>
                     <Link href="/mypage?tab=points" className="flex items-center gap-2">
                       <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-muted text-xs font-bold text-muted-foreground">P</span>
-                      <span className="hidden 2xl:inline-flex items-center gap-1 text-sm font-semibold tabular-nums">
+                      <span className="hidden 2xl:inline-flex min-w-0 items-center gap-1 whitespace-nowrap text-sm font-semibold tabular-nums">
                         {pointsStatus === "loading" ? (
                           <>
                             <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" aria-hidden="true" />

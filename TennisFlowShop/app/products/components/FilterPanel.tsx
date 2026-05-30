@@ -169,7 +169,7 @@ export const FilterPanel = React.memo(function FilterPanel({
         >
           <div className="flex items-center justify-between mb-2 bp-sm:mb-3">
             <div className="flex gap-2 items-center">
-              <h2 className="font-bold text-lg bp-sm:text-xl text-foreground">
+              <h2 className="break-keep text-lg font-bold leading-tight text-foreground bp-sm:text-xl">
                 필터
               </h2>
               {onClose && (
@@ -191,7 +191,7 @@ export const FilterPanel = React.memo(function FilterPanel({
                   variant="ghost"
                   size="sm"
                   onClick={onReset}
-                  className="text-xs h-7 bp-sm:h-8 px-2 bp-sm:px-3"
+                  className="h-7 whitespace-nowrap px-2 text-xs bp-sm:h-8 bp-sm:px-3"
                 >
                   초기화 ({activeFiltersCount})
                 </Button>
@@ -243,7 +243,7 @@ export const FilterPanel = React.memo(function FilterPanel({
               type="submit"
               size="sm"
               variant="default"
-              className="h-9 bp-sm:h-10 px-3 bp-sm:px-4 text-xs bp-sm:text-sm shrink-0"
+              className="h-9 shrink-0 whitespace-nowrap px-3 text-xs bp-sm:h-10 bp-sm:px-4 bp-sm:text-sm"
             >
               검색
             </Button>
@@ -330,7 +330,7 @@ export const FilterPanel = React.memo(function FilterPanel({
           </div>
           <div className="mt-4 bp-sm:mt-6 space-y-2">
             <h3 className="font-medium text-base bp-sm:text-lg">가격대</h3>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-nowrap gap-2 overflow-x-auto pb-1">
               {PRICE_PRESETS.map((preset) => {
                 const isActive =
                   priceRange[0] === preset.range[0] &&
@@ -358,12 +358,12 @@ export const FilterPanel = React.memo(function FilterPanel({
               <Button
                 type="button"
                 variant="outline"
-                className="flex-1"
+                className="flex-1 whitespace-nowrap"
                 onClick={onReset}
               >
                 초기화
               </Button>
-              <Button type="button" className="flex-1" onClick={onSearchSubmit}>
+              <Button type="button" className="flex-1 whitespace-nowrap" onClick={onSearchSubmit}>
                 필터 적용
               </Button>
             </div>

@@ -1318,22 +1318,22 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                     {typeof item.postNo === "number" && <span className="mr-2 text-sm font-semibold tabular-nums text-muted-foreground">{item.postNo}</span>}
 
                     {/* 카테고리 뱃지 */}
-                    <Badge variant={getBoardCategoryTone(config.boardType, item.category)} className={`mr-2 ${badgeSizeSm}`}>
+                    <Badge variant={getBoardCategoryTone(config.boardType, item.category)} className={`mr-2 ${badgeSizeSm} shrink-0 whitespace-nowrap`}>
                       {config.categoryMap[item.category ?? ""] ? getCategoryBadgeText(config.categoryMap[item.category ?? ""]) : "분류 없음"}
                     </Badge>
 
                     {config.brandOptionsByCategory?.[item.category ?? ""] && item.brand ? (
-                      <span className="mr-2 inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-[11px] font-semibold text-muted-foreground dark:text-muted">{config.brandLabelMap?.[item.brand] ?? item.brand}</span>
+                      <span className="mr-2 inline-flex max-w-[10rem] shrink-0 items-center truncate whitespace-nowrap rounded-full bg-muted px-2 py-0.5 text-[11px] font-semibold text-muted-foreground dark:text-muted">{config.brandLabelMap?.[item.brand] ?? item.brand}</span>
                     ) : null}
 
                     {item.title}
                   </CardTitle>
 
-                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 text-xs text-foreground/75 md:text-sm">
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 text-xs text-foreground/75 md:text-sm [&>span]:shrink-0 [&>span]:whitespace-nowrap">
                     {/* 작성자 */}
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <button type="button" className="font-medium underline-offset-4 hover:underline">
+                        <button type="button" className="max-w-[10rem] truncate whitespace-nowrap font-medium underline-offset-4 hover:underline">
                           {item.nickname || "회원"}
                         </button>
                       </DropdownMenuTrigger>
@@ -1388,21 +1388,21 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                     </DropdownMenu>
 
                     {/* 조회수 */}
-                    <span className="inline-flex items-center gap-1">
+                    <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap">
                       <Eye className="h-3 w-3" />
                       조회 {item.views ?? 0}
                     </span>
                     <span className="hidden text-border sm:inline">·</span>
 
                     {/* 댓글 수 */}
-                    <span className="inline-flex items-center gap-1">
+                    <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap">
                       <MessageSquare className="h-3 w-3" />
                       댓글 {item.commentsCount ?? 0}
                     </span>
                     <span className="hidden text-border sm:inline">·</span>
 
                     {/* 추천 수 */}
-                    <span className="inline-flex items-center gap-1">
+                    <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap">
                       <ThumbsUp className="h-3 w-3" />
                       추천 {item.likes ?? 0}
                     </span>
@@ -1688,7 +1688,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                             <Icon className="mt-0.5 h-4 w-4 shrink-0" />
                             <div className="min-w-0">
                               <p className="text-xs text-foreground/75">{label}</p>
-                              <p className="line-clamp-2 text-sm font-medium text-foreground">{target.title}</p>
+                              <p className="line-clamp-2 break-keep text-sm font-medium text-foreground">{target.title}</p>
                             </div>
                           </div>
                         </Link>

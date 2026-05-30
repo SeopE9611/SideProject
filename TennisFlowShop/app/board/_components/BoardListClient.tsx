@@ -113,7 +113,7 @@ const fmtDateTime = (v: string | Date) =>
     .replace(/\.$/, "");
 
 const boardListMobileTitleClampClass = "line-clamp-2 break-keep font-medium leading-snug text-foreground";
-const boardListMobileMetaWrapClass = "mt-2 flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5 text-xs leading-relaxed text-foreground/75";
+const boardListMobileMetaWrapClass = "mt-2 flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5 text-xs leading-relaxed text-foreground/75 [&_span]:shrink-0 [&_span]:whitespace-nowrap";
 
 // 판매상태 배지 variant 매핑
 function saleStatusBadgeVariant(status?: string | null): "success" | "warning" | "neutral" {
@@ -1071,7 +1071,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
 
                           {/* 분류 뱃지 */}
                           <div className="flex items-center justify-center">
-                            <Badge variant={getBoardCategoryTone(config.boardType, post.category)} className="px-1.5 py-0 text-[10px] leading-4">
+                            <Badge variant={getBoardCategoryTone(config.boardType, post.category)} className="shrink-0 whitespace-nowrap px-1.5 py-0 text-[10px] leading-4">
                               {config.categoryMap[post.category ?? ""] ? getCategoryBadgeText(config.categoryMap[post.category ?? ""]) : "분류"}
                             </Badge>
                           </div>
@@ -1079,19 +1079,19 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                           {/* 상품 정보: 제목 + 브랜드/모델/등급 */}
                           <div className="min-w-0 pr-3">
                             <div className="flex items-center gap-1">
-                              <span className="line-clamp-1 text-sm font-medium text-foreground group-hover:text-primary transition-colors">{post.title}</span>
+                              <span className="line-clamp-1 break-keep text-sm font-medium text-foreground transition-colors group-hover:text-primary">{post.title}</span>
                               {post.commentsCount ? <span className="shrink-0 text-[11px] font-medium text-primary">[{post.commentsCount}]</span> : null}
                               {post.images && post.images.length > 0 && <ImageIcon className="h-3 w-3 shrink-0 text-primary/60" aria-label="이미지 첨부 있음" />}
                               {post.attachments && post.attachments.length > 0 && <Paperclip className="h-3 w-3 shrink-0 text-muted-foreground/60" aria-label="파일 첨부 있음" />}
                             </div>
                             {post.marketMeta && (
-                              <div className="mt-0.5 flex items-center gap-1.5 text-xs text-foreground/75">
-                                {post.brand && <span className="font-medium text-muted-foreground">{getMarketBrandLabel(post.brand)}</span>}
+                              <div className="mt-0.5 flex min-w-0 items-center gap-1.5 text-xs text-foreground/75">
+                                {post.brand && <span className="shrink-0 whitespace-nowrap font-medium text-muted-foreground">{getMarketBrandLabel(post.brand)}</span>}
                                 {(post.marketMeta.racketSpec?.modelName || post.marketMeta.stringSpec?.modelName) && (
                                   <span className="line-clamp-1 text-muted-foreground/70">{post.marketMeta.racketSpec?.modelName ?? post.marketMeta.stringSpec?.modelName}</span>
                                 )}
                                 {post.marketMeta.conditionGrade && (
-                                  <Badge variant={conditionGradeBadgeVariant(post.marketMeta.conditionGrade)} className="px-1 py-0 text-[10px] leading-3.5">
+                                  <Badge variant={conditionGradeBadgeVariant(post.marketMeta.conditionGrade)} className="shrink-0 whitespace-nowrap px-1 py-0 text-[10px] leading-3.5">
                                     {post.marketMeta.conditionGrade}급
                                   </Badge>
                                 )}
@@ -1102,7 +1102,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                           {/* 가격 - 가장 눈에 띄게 */}
                           <div className="pr-1 text-right">
                             {post.marketMeta?.price != null ? (
-                              <span className="text-sm font-bold tabular-nums text-foreground">
+                              <span className="whitespace-nowrap text-sm font-bold tabular-nums text-foreground">
                                 {post.marketMeta.price.toLocaleString()}
                                 <span className="ml-0.5 text-[10px] font-normal text-muted-foreground">원</span>
                               </span>
@@ -1114,7 +1114,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                           {/* 판매상태 */}
                           <div className="flex items-center justify-center">
                             {post.marketMeta?.saleStatus && (
-                              <Badge variant={saleStatusBadgeVariant(post.marketMeta.saleStatus)} className="px-1.5 py-0 text-[10px] leading-4">
+                              <Badge variant={saleStatusBadgeVariant(post.marketMeta.saleStatus)} className="shrink-0 whitespace-nowrap px-1.5 py-0 text-[10px] leading-4">
                                 {getMarketSaleStatusLabel(post.marketMeta.saleStatus)}
                               </Badge>
                             )}
@@ -1178,7 +1178,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                           </div>
 
                           {/* 등록일 */}
-                          <div className="text-center text-xs text-foreground/75">{fmtDateTime(post.createdAt)}</div>
+                          <div className="whitespace-nowrap text-center text-xs text-foreground/75">{fmtDateTime(post.createdAt)}</div>
 
                           {/* 조회/추천 */}
                           <div className="text-center text-[11px] tabular-nums text-muted-foreground">
@@ -1194,7 +1194,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
 
                           {/* 분류 뱃지 */}
                           <div className="flex flex-col items-center justify-center gap-1">
-                            <Badge variant={getBoardCategoryTone(config.boardType, post.category)} className={badgeSizeSm}>
+                            <Badge variant={getBoardCategoryTone(config.boardType, post.category)} className={`${badgeSizeSm} shrink-0 whitespace-nowrap`}>
                               {config.categoryMap[post.category ?? ""] ? getCategoryBadgeText(config.categoryMap[post.category ?? ""]) : "분류 없음"}
                             </Badge>
                             {config.brandOptionsByCategory?.[post.category ?? ""] && post.brand ? <span className="text-xs text-foreground/75">{getMarketBrandLabel(post.brand)}</span> : null}
@@ -1203,7 +1203,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                           {/* 제목 */}
                           <div className="min-w-0">
                             <div className="flex items-center gap-1">
-                              <span className="line-clamp-1 text-foreground">{post.title}</span>
+                              <span className="line-clamp-1 break-keep text-foreground">{post.title}</span>
                               {post.commentsCount ? <span className="text-xs text-primary">[{post.commentsCount}]</span> : null}
                               {post.images && post.images.length > 0 && <ImageIcon className="h-4 w-4 shrink-0 ml-1 text-primary" aria-label="이미지 첨부 있음" />}
                               {post.attachments && post.attachments.length > 0 && <Paperclip className="h-4 w-4 shrink-0 ml-0.5 text-foreground" aria-label="파일 첨부 있음" />}
@@ -1270,16 +1270,16 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                           </div>
 
                           {/* 작성일 */}
-                          <div className="text-center text-xs text-foreground/75">{fmtDateTime(post.createdAt)}</div>
+                          <div className="whitespace-nowrap text-center text-xs text-foreground/75">{fmtDateTime(post.createdAt)}</div>
 
                           {/* 댓글 수 */}
-                          <div className="text-center text-xs text-foreground/75">{post.commentsCount ?? 0}</div>
+                          <div className="whitespace-nowrap text-center text-xs text-foreground/75">{post.commentsCount ?? 0}</div>
 
                           {/* 조회 수 */}
-                          <div className="text-center text-xs text-foreground/75">{post.views ?? 0}</div>
+                          <div className="whitespace-nowrap text-center text-xs text-foreground/75">{post.views ?? 0}</div>
 
                           {/* 추천 수 */}
-                          <div className="text-center text-xs text-foreground/75">{post.likes ?? 0}</div>
+                          <div className="whitespace-nowrap text-center text-xs text-foreground/75">{post.likes ?? 0}</div>
                         </Link>
                       );
                     })}
@@ -1298,22 +1298,22 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-1.5">
                             {post.marketMeta?.saleStatus && (
-                              <Badge variant={saleStatusBadgeVariant(post.marketMeta.saleStatus)} className="px-1.5 py-0 text-[10px] leading-4">
+                              <Badge variant={saleStatusBadgeVariant(post.marketMeta.saleStatus)} className="shrink-0 whitespace-nowrap px-1.5 py-0 text-[10px] leading-4">
                                 {getMarketSaleStatusLabel(post.marketMeta.saleStatus)}
                               </Badge>
                             )}
-                            <Badge variant={getBoardCategoryTone(config.boardType, post.category)} className="px-1.5 py-0 text-[10px] leading-4">
+                            <Badge variant={getBoardCategoryTone(config.boardType, post.category)} className="shrink-0 whitespace-nowrap px-1.5 py-0 text-[10px] leading-4">
                               {config.categoryMap[post.category ?? ""] ? getCategoryBadgeText(config.categoryMap[post.category ?? ""]) : "분류"}
                             </Badge>
                             {post.marketMeta?.conditionGrade && (
-                              <Badge variant={conditionGradeBadgeVariant(post.marketMeta.conditionGrade)} className="px-1 py-0 text-[10px] leading-3.5">
+                              <Badge variant={conditionGradeBadgeVariant(post.marketMeta.conditionGrade)} className="shrink-0 whitespace-nowrap px-1 py-0 text-[10px] leading-3.5">
                                 {post.marketMeta.conditionGrade}급
                               </Badge>
                             )}
                           </div>
                           {/* 가격 - 모바일에서도 가장 눈에 띄게 */}
                           {post.marketMeta?.price != null && (
-                            <span className="text-sm font-bold tabular-nums text-foreground">
+                            <span className="whitespace-nowrap text-sm font-bold tabular-nums text-foreground">
                               {post.marketMeta.price.toLocaleString()}
                               <span className="ml-0.5 text-[10px] font-normal text-muted-foreground">원</span>
                             </span>
@@ -1358,7 +1358,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                         {/* 1줄: 번호 + 분류 뱃지 */}
                         <div className="flex items-center gap-2 text-xs text-foreground/75">
                           <span className="text-[11px] tabular-nums">{typeof post.postNo === "number" ? post.postNo : "-"}</span>
-                          <Badge variant={getBoardCategoryTone(config.boardType, post.category)} className={badgeSizeSm}>
+                          <Badge variant={getBoardCategoryTone(config.boardType, post.category)} className={`${badgeSizeSm} shrink-0 whitespace-nowrap`}>
                             {config.categoryMap[post.category ?? ""] ? getCategoryBadgeText(config.categoryMap[post.category ?? ""]) : "분류 없음"}
                           </Badge>
                         </div>

@@ -298,10 +298,10 @@ export default function RentalSelectStringClient({
       >
         {/* Header */}
         <div className="text-center space-y-3 max-w-2xl mx-auto">
-          <h1 className="text-2xl bp-md:text-4xl font-bold tracking-normal text-foreground">
+          <h1 className="break-keep text-2xl font-bold leading-tight tracking-normal text-foreground bp-md:text-4xl">
             스트링 선택
           </h1>
-          <p className="text-sm bp-md:text-base text-muted-foreground leading-relaxed">
+          <p className="break-keep text-sm leading-relaxed text-muted-foreground bp-md:text-base">
             대여 라켓에 장착할 스트링을 선택해주세요. 선택한 스트링은 대여
             결제에 포함됩니다.
           </p>
@@ -334,7 +334,7 @@ export default function RentalSelectStringClient({
                     <p className="text-xs font-medium text-success mb-1">
                       선택된 라켓 (대여)
                     </p>
-                    <h3 className="text-xl font-bold text-foreground mb-1">
+                    <h3 className="mb-1 line-clamp-2 break-keep text-xl font-bold leading-snug text-foreground">
                       {title}
                     </h3>
                     <p className="text-sm text-muted-foreground">
@@ -351,7 +351,7 @@ export default function RentalSelectStringClient({
               <div className="hidden bp-md:block flex-shrink-0">
                 <Button
                   variant="outline"
-                  className="h-11"
+                  className="h-11 whitespace-nowrap"
                   onClick={() => goCheckout()}
                 >
                   스트링 없이 결제하기
@@ -364,7 +364,7 @@ export default function RentalSelectStringClient({
           <div className="bp-md:hidden flex justify-center">
             <Button
               variant="outline"
-              className="h-11 w-full max-w-xs"
+              className="h-11 w-full max-w-xs whitespace-nowrap"
               onClick={() => goCheckout()}
             >
               스트링 없이 결제하기
@@ -374,7 +374,7 @@ export default function RentalSelectStringClient({
 
         {/* Strings */}
         <div className="space-y-6">
-          <h2 className="text-2xl font-bold text-foreground text-center">
+          <h2 className="break-keep text-center text-2xl font-bold leading-tight text-foreground">
             사용 가능한 스트링
           </h2>
 
@@ -471,7 +471,7 @@ export default function RentalSelectStringClient({
 
                       {/* String Info */}
                       <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-foreground mb-2 line-clamp-2">
+                        <h3 className="mb-2 line-clamp-2 break-keep text-lg font-semibold leading-snug text-foreground">
                           {p.name}
                         </h3>
                         {p.shortDescription ? (
@@ -479,7 +479,7 @@ export default function RentalSelectStringClient({
                             {p.shortDescription}
                           </p>
                         ) : null}
-                        <p className="text-xl font-bold text-foreground">
+                        <p className="whitespace-nowrap tabular-nums text-xl font-bold text-foreground">
                           {Number(p.price ?? 0).toLocaleString()}원
                         </p>
 
@@ -492,7 +492,7 @@ export default function RentalSelectStringClient({
                                 setSelectedGaugeByStringId((prev) => ({ ...prev, [id]: value }))
                               }
                             >
-                              <SelectTrigger className="w-full">
+                              <SelectTrigger className="w-full [&>span]:truncate">
                                 <SelectValue placeholder="게이지를 선택해주세요" />
                               </SelectTrigger>
                               <SelectContent>
@@ -522,7 +522,7 @@ export default function RentalSelectStringClient({
                             {colorRows.length === 1 ? (
                               <p className="text-sm text-muted-foreground">색상: {getColorLabel(colorRows[0])}</p>
                             ) : (
-                              <div className="flex flex-wrap gap-2">
+                              <div className="flex flex-nowrap gap-2 overflow-x-auto pb-1">
                                 {colorRows.map((row) => {
                                   const variantFallbackImage = hasVariantInventories
                                     ? variantRows.find(
@@ -550,7 +550,7 @@ export default function RentalSelectStringClient({
                                       type="button"
                                       disabled={soldOut}
                                       onClick={() => setSelectedColorByStringId((prev) => ({ ...prev, [id]: row.value }))}
-                                      className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs transition ${selected ? "border-primary ring-2 ring-primary/40" : "border-border"} ${soldOut ? "opacity-50 cursor-not-allowed" : "hover:border-primary/60"}`}
+                                      className={`inline-flex max-w-[9rem] shrink-0 items-center gap-2 truncate whitespace-nowrap rounded-lg border px-3 py-2 text-xs transition ${selected ? "border-primary ring-2 ring-primary/40" : "border-border"} ${soldOut ? "opacity-50 cursor-not-allowed" : "hover:border-primary/60"}`}
                                     >
                                       {colorImage ? <img src={colorImage} alt={getColorLabel(row)} className="h-5 w-5 rounded object-cover" /> : row.colorHex ? <span className="h-4 w-4 rounded-full border" style={{ backgroundColor: row.colorHex }} /> : null}
                                       <span>{getColorLabel(row)}</span>
@@ -581,7 +581,7 @@ export default function RentalSelectStringClient({
                                             type="button"
                                             disabled={soldOut}
                                             onClick={() => setSelectedColorByStringId((prev) => ({ ...prev, [id]: value }))}
-                                            className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs transition ${selected ? "border-primary ring-2 ring-primary/40" : "border-border"} ${soldOut ? "opacity-50 cursor-not-allowed" : "hover:border-primary/60"}`}
+                                            className={`inline-flex max-w-[9rem] shrink-0 items-center gap-2 truncate whitespace-nowrap rounded-lg border px-3 py-2 text-xs transition ${selected ? "border-primary ring-2 ring-primary/40" : "border-border"} ${soldOut ? "opacity-50 cursor-not-allowed" : "hover:border-primary/60"}`}
                                           >
                                             <img src={colorImage} alt={colorLabel} className="h-5 w-5 rounded object-cover" />
                                             <span>{colorLabel}</span>
@@ -597,7 +597,7 @@ export default function RentalSelectStringClient({
 
                       {/* Select Button */}
                       <Button
-                        className="mt-4 w-full whitespace-normal break-keep bg-primary py-5 font-medium leading-tight text-primary-foreground transition-[background-color,box-shadow] duration-200 hover:bg-primary/90"
+                        className="mt-4 w-full whitespace-nowrap bg-primary py-5 font-medium text-primary-foreground transition-[background-color,box-shadow] duration-200 hover:bg-primary/90"
                         disabled={(isGaugeRequired && (!selectedGauge || isGaugeSoldOut || hasGaugeStockIssue)) || (isColorRequired && (!selectedColor || isColorOut || hasColorStockIssue))}
                         onClick={() => {
                           if (hasVariantInventories && !selectedColor) return alert("색상을 선택해주세요.");
@@ -642,7 +642,7 @@ export default function RentalSelectStringClient({
                         }}
                       >
                         <span className="flex items-center justify-center gap-2">
-                          이 스트링 선택하고 대여 계속하기
+                          대여 계속하기
                           <svg
                             className="w-4 h-4 shrink-0 group-hover:translate-x-1 transition-transform"
                             fill="none"
@@ -673,7 +673,7 @@ export default function RentalSelectStringClient({
             <div className="flex justify-center pt-4">
               <Button
                 variant="outline"
-                className="w-full max-w-xs mx-auto h-11 border-border hover:bg-muted/60"
+                className="mx-auto h-11 w-full max-w-xs whitespace-nowrap border-border hover:bg-muted/60"
                 onClick={loadMore}
                 disabled={isFetchingMore}
               >

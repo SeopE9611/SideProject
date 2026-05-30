@@ -281,7 +281,7 @@ export default function QnaDetailPage() {
               )}
               {!isLoading && error && (
                 <div className="space-y-3">
-                  <h1 className="text-2xl font-bold leading-tight text-foreground sm:text-3xl">
+                  <h1 className="break-keep text-2xl font-bold leading-tight text-foreground sm:text-3xl">
                     {errorTitle}
                   </h1>
                 </div>
@@ -289,17 +289,17 @@ export default function QnaDetailPage() {
               {!isLoading && !error && qna && (
                 <>
                   <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex shrink-0 items-center gap-2 whitespace-nowrap">
                       <Badge
                         variant={getQnaCategoryBadgeSpec(qna.category).variant}
-                        className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`}
+                        className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0 whitespace-nowrap`}
                       >
                         {qna.category ?? "일반문의"}
                       </Badge>
                       {qna.isSecret && (
                         <Badge
                           variant="secondary"
-                          className="shrink-0 text-xs inline-flex items-center gap-1"
+                          className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap text-xs"
                         >
                           <Lock className="h-3 w-3" /> 비밀글
                         </Badge>
@@ -308,7 +308,7 @@ export default function QnaDetailPage() {
                         <Link href={`/products/${qna.productRef.productId}`}>
                           <Badge
                             variant="secondary"
-                            className={`${badgeSizeSm} shrink-0`}
+                            className={`${badgeSizeSm} max-w-[12rem] shrink-0 truncate whitespace-nowrap`}
                           >
                             상품: {qna.productRef.name ?? "상품"}
                           </Badge>
@@ -317,7 +317,7 @@ export default function QnaDetailPage() {
                     </div>
                     <Badge
                       variant={getAnswerStatusBadgeSpec(!!qna.answer).variant}
-                      className={`${badgeBaseOutlined} ${badgeSizeSm}`}
+                      className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0 whitespace-nowrap`}
                     >
                       {qna.answer ? "답변 완료" : "답변 대기"}
                     </Badge>
@@ -327,13 +327,13 @@ export default function QnaDetailPage() {
                     <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-secondary text-foreground shadow-sm flex-shrink-0 mt-1">
                       <MessageSquare className="h-5 w-5" />
                     </div>
-                    <h1 className="text-2xl font-bold leading-tight text-foreground sm:text-3xl">
+                    <h1 className="break-keep text-2xl font-bold leading-tight text-foreground sm:text-3xl">
                       {qna.title}
                     </h1>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-muted-foreground sm:text-sm md:gap-6">
-                    <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-muted-foreground sm:text-sm md:gap-6 [&>div]:shrink-0 [&>div]:whitespace-nowrap">
+                    <div className="flex shrink-0 items-center gap-2 whitespace-nowrap">
                       <Avatar className="h-7 w-7 border-2 border-border">
                         <AvatarFallback className="text-xs font-medium bg-muted text-foreground">
                           {(qna.authorName ?? "익명").slice(0, 1)}
@@ -343,12 +343,12 @@ export default function QnaDetailPage() {
                         {qna.authorName ?? "익명"}
                       </span>
                     </div>
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex shrink-0 items-center gap-2 whitespace-nowrap">
                       <Calendar className="h-4 w-4" />
                       <span className="font-medium">작성일</span>
                       <span>{fmt(qna.createdAt)}</span>
                     </div>
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex shrink-0 items-center gap-2 whitespace-nowrap">
                       <Eye className="h-4 w-4" />
                       <span className="font-medium">조회수</span>
                       <span className="font-semibold text-primary">
@@ -615,7 +615,7 @@ export default function QnaDetailPage() {
                   )}
                 </div>
 
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-muted-foreground sm:text-sm md:gap-6">
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-muted-foreground sm:text-sm md:gap-6 [&>div]:shrink-0 [&>div]:whitespace-nowrap">
                   <div className="flex items-center gap-2">
                     <Avatar className="h-6 w-6 border border-border">
                       <AvatarFallback className="text-xs font-medium bg-muted text-foreground">

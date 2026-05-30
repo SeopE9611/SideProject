@@ -170,7 +170,7 @@ export default async function PricingPage() {
                   className={`transition-[border-color,box-shadow,background-color] duration-200 hover:border-primary/30 hover:shadow-md ${hasProducts ? "" : "opacity-75"}`}
                 >
                   <CardHeader className="break-keep">
-                    <CardTitle className="flex items-center gap-2">
+                    <CardTitle className="flex items-center gap-2 break-keep leading-snug">
                       <Shield className="h-5 w-5 text-foreground" />
                       {category.label}
                     </CardTitle>
@@ -185,19 +185,19 @@ export default async function PricingPage() {
                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-1">
                           <div className="rounded-xl border border-border bg-muted/30 p-3">
                             <p className="text-xs font-medium text-muted-foreground">상품가</p>
-                            <p className="mt-1 font-semibold text-foreground">{productPriceRange}</p>
+                            <p className="mt-1 whitespace-nowrap tabular-nums font-semibold text-foreground">{productPriceRange}</p>
                           </div>
                           <div className="rounded-xl border border-border bg-muted/30 p-3">
                             <p className="text-xs font-medium text-muted-foreground">장착비</p>
-                            <p className="mt-1 font-semibold text-foreground">{mountingFeeRange}</p>
+                            <p className="mt-1 whitespace-nowrap tabular-nums font-semibold text-foreground">{mountingFeeRange}</p>
                           </div>
                         </div>
                         <div className="space-y-2">
                           <p className="text-xs font-medium text-muted-foreground">대표 브랜드</p>
-                          <div className="flex flex-wrap gap-2">
+                          <div className="flex flex-nowrap gap-2 overflow-x-auto pb-1">
                             {category.brands.length ? (
                               category.brands.map((brand) => (
-                                <Badge key={brand} variant="secondary">
+                                <Badge key={brand} variant="secondary" className="max-w-[8rem] shrink-0 truncate whitespace-nowrap">
                                   {brand}
                                 </Badge>
                               ))
@@ -208,10 +208,10 @@ export default async function PricingPage() {
                         </div>
                         <div className="space-y-2">
                           <p className="text-xs font-medium text-muted-foreground">대표 상품</p>
-                          <div className="flex flex-wrap gap-2">
+                          <div className="flex flex-nowrap gap-2 overflow-x-auto pb-1">
                             {category.productNames.length ? (
                               category.productNames.map((name) => (
-                                <Badge key={name} variant="outline" className="max-w-full whitespace-normal break-keep text-left">
+                                <Badge key={name} variant="outline" className="max-w-[14rem] shrink-0 truncate whitespace-nowrap text-left">
                                   {name}
                                 </Badge>
                               ))
@@ -246,24 +246,24 @@ export default async function PricingPage() {
                 <div className="grid gap-3 sm:grid-cols-3">
                   <div className="rounded-xl border border-border bg-card p-3">
                     <p className="text-xs font-medium">등록 상품</p>
-                    <p className="mt-1 font-semibold text-foreground">{otherSummary.count.toLocaleString("ko-KR")}개</p>
+                    <p className="mt-1 whitespace-nowrap tabular-nums font-semibold text-foreground">{otherSummary.count.toLocaleString("ko-KR")}개</p>
                   </div>
                   <div className="rounded-xl border border-border bg-card p-3">
                     <p className="text-xs font-medium">상품가</p>
-                    <p className="mt-1 font-semibold text-foreground">{formatRange(otherSummary.minPrice, otherSummary.maxPrice, "가격 데이터 확인 필요")}</p>
+                    <p className="mt-1 whitespace-nowrap tabular-nums font-semibold text-foreground">{formatRange(otherSummary.minPrice, otherSummary.maxPrice, "가격 데이터 확인 필요")}</p>
                   </div>
                   <div className="rounded-xl border border-border bg-card p-3">
                     <p className="text-xs font-medium">장착비</p>
-                    <p className="mt-1 font-semibold text-foreground">{formatMountingFeeRange(otherSummary.minMountingFee, otherSummary.maxMountingFee, "장착비 미등록")}</p>
+                    <p className="mt-1 whitespace-nowrap tabular-nums font-semibold text-foreground">{formatMountingFeeRange(otherSummary.minMountingFee, otherSummary.maxMountingFee, "장착비 미등록")}</p>
                   </div>
                 </div>
                 <div className="grid gap-4 md:grid-cols-3">
                   <div className="space-y-2">
                     <p className="text-xs font-medium">대표 브랜드</p>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-nowrap gap-2 overflow-x-auto pb-1">
                       {otherSummary.brands.length ? (
                         otherSummary.brands.map((brand) => (
-                          <Badge key={brand} variant="secondary">
+                          <Badge key={brand} variant="secondary" className="max-w-[8rem] shrink-0 truncate whitespace-nowrap">
                             {brand}
                           </Badge>
                         ))
@@ -274,10 +274,10 @@ export default async function PricingPage() {
                   </div>
                   <div className="space-y-2">
                     <p className="text-xs font-medium">대표 상품</p>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-nowrap gap-2 overflow-x-auto pb-1">
                       {otherSummary.productNames.length ? (
                         otherSummary.productNames.map((name) => (
-                          <Badge key={name} variant="outline" className="max-w-full whitespace-normal break-keep text-left">
+                          <Badge key={name} variant="outline" className="max-w-[14rem] shrink-0 truncate whitespace-nowrap text-left">
                             {name}
                           </Badge>
                         ))
@@ -288,7 +288,7 @@ export default async function PricingPage() {
                   </div>
                   <div className="space-y-2">
                     <p className="text-xs font-medium">등록 소재값</p>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-nowrap gap-2 overflow-x-auto pb-1">
                       {otherSummary.materialLabels.length ? (
                         otherSummary.materialLabels.map((material) => (
                           <Badge key={material} variant="secondary">
@@ -313,7 +313,7 @@ export default async function PricingPage() {
           </div>
           <Card className="transition-[border-color,box-shadow,background-color] duration-200 hover:border-primary/30 hover:shadow-md">
             <CardHeader className="break-keep">
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 break-keep leading-snug">
                 <Shield className="h-5 w-5 text-foreground" />
                 하이브리드는 메인/크로스 스트링 조합입니다
               </CardTitle>
@@ -326,21 +326,21 @@ export default async function PricingPage() {
               <div className="grid gap-3 md:grid-cols-3">
                 <div className="rounded-xl border border-border bg-muted/30 p-3">
                   <p className="text-xs font-medium text-muted-foreground">등록 상품 수</p>
-                  <p className="mt-1 font-semibold text-foreground">{hybridGuide.count.toLocaleString("ko-KR")}개</p>
+                  <p className="mt-1 whitespace-nowrap tabular-nums font-semibold text-foreground">{hybridGuide.count.toLocaleString("ko-KR")}개</p>
                 </div>
                 <div className="rounded-xl border border-border bg-muted/30 p-3 md:col-span-2">
                   <p className="text-xs font-medium text-muted-foreground">대표 조합</p>
-                  <p className="mt-1 font-semibold text-foreground break-keep">
+                  <p className="mt-1 line-clamp-2 break-keep font-semibold text-foreground">
                     {hybridGuide.representativeMaterials.length ? hybridGuide.representativeMaterials.join(", ") : "데이터 없음"}
                   </p>
                 </div>
               </div>
               <div className="space-y-2">
                 <p className="text-xs font-medium text-muted-foreground">대표 상품</p>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-nowrap gap-2 overflow-x-auto pb-1">
                   {hybridGuide.representativeProducts.length ? (
                     hybridGuide.representativeProducts.map((name) => (
-                      <Badge key={name} variant="outline" className="whitespace-normal break-keep text-left">
+                      <Badge key={name} variant="outline" className="max-w-[14rem] shrink-0 truncate whitespace-nowrap text-left">
                         {name}
                       </Badge>
                     ))
@@ -349,7 +349,7 @@ export default async function PricingPage() {
                   )}
                 </div>
               </div>
-              <Button asChild variant="outline">
+              <Button asChild variant="outline" className="whitespace-nowrap">
                 <Link href="/products?from=apply&material=hybrid" className="group">
                   하이브리드 상품 보기
                   <ArrowRight className="transition-transform group-hover:translate-x-1" />
@@ -362,14 +362,14 @@ export default async function PricingPage() {
         <section className="grid gap-4 md:gap-6 lg:grid-cols-2">
           <Card>
             <CardHeader>
-              <CardTitle>추가 서비스 / 무료 지원</CardTitle>
+              <CardTitle className="break-keep leading-snug">추가 서비스 / 무료 지원</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {additionalServices.map((service) => (
                 <div key={service.name} className="border border-border rounded-lg p-3 break-keep">
                   <div className="flex items-center justify-between gap-3">
                     <p className="font-medium">{service.name}</p>
-                    <Badge variant="secondary">{service.policy}</Badge>
+                    <Badge variant="secondary" className="shrink-0 whitespace-nowrap">{service.policy}</Badge>
                   </div>
                   <p className="text-sm text-muted-foreground mt-1">{service.description}</p>
                 </div>
@@ -379,7 +379,7 @@ export default async function PricingPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 break-keep leading-snug">
                 <Truck className="h-5 w-5" />
                 예약 정책 안내
               </CardTitle>
@@ -393,7 +393,7 @@ export default async function PricingPage() {
 
         <Card className="bg-muted/40">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 break-keep leading-snug">
               <Zap className="h-5 w-5" />
               주의사항 / FAQ
             </CardTitle>
@@ -406,13 +406,13 @@ export default async function PricingPage() {
         </Card>
 
         <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <Button asChild size="lg">
+          <Button asChild size="lg" className="whitespace-nowrap">
             <Link href="/services/apply" className="group">
               교체 서비스 신청하기
               <ArrowRight className="transition-transform group-hover:translate-x-1" />
             </Link>
           </Button>
-          <Button asChild size="lg" variant="outline">
+          <Button asChild size="lg" variant="outline" className="whitespace-nowrap">
             <Link href="/products?from=apply" className="group">
               스트링 먼저 고르기
               <ArrowRight className="transition-transform group-hover:translate-x-1" />

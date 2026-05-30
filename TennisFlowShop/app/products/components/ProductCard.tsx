@@ -344,7 +344,7 @@ const ProductCard = React.memo(
                   asChild
                   variant="default"
                   size="sm"
-                  className="w-full h-10 text-xs sm:text-sm"
+                  className="w-full h-10 whitespace-nowrap text-xs sm:text-sm"
                 >
                   <Link href={detailHref}>
                     <Eye className="w-3 h-3 bp-sm:w-4 bp-sm:h-4 mr-1.5" />
@@ -359,7 +359,7 @@ const ProductCard = React.memo(
                     variant="outline"
                     onClick={handleStringSingleBuy}
                     disabled={isSoldOut}
-                    className="h-9 sm:h-10 text-xs sm:text-sm"
+                    className="h-9 whitespace-nowrap sm:h-10 text-xs sm:text-sm"
                   >
                     단품 구매
                   </Button>
@@ -391,7 +391,7 @@ const ProductCard = React.memo(
                   }}
                 />
               </div>
-              {shouldShowStandaloneServiceBadge && (<Badge variant="secondary" className="mt-2 w-fit text-[11px]">교체서비스 전용</Badge>)}
+              {shouldShowStandaloneServiceBadge && (<Badge variant="secondary" className="mt-2 w-fit shrink-0 whitespace-nowrap text-[11px]">교체서비스 전용</Badge>)}
             </div>
           </div>
         </Card>
@@ -438,10 +438,10 @@ const ProductCard = React.memo(
             className="block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             <div className="min-h-[48px]">
-            <div className="text-xs text-muted-foreground mb-1.5 font-medium">
+            <div className="mb-1.5 max-w-full truncate text-xs font-medium text-muted-foreground">
               {brandLabel}
             </div>
-            <CardTitle className="mb-2 min-h-[2.5rem] line-clamp-2 text-sm font-semibold text-foreground transition-colors group-hover:text-foreground sm:min-h-[3rem] sm:text-base">
+            <CardTitle className="mb-2 min-h-[2.5rem] line-clamp-2 break-keep text-sm font-semibold leading-snug text-foreground transition-colors group-hover:text-foreground sm:min-h-[3rem] sm:text-base">
               {product.name}
             </CardTitle>
             </div>
@@ -483,13 +483,13 @@ const ProductCard = React.memo(
               <div className="flex flex-col items-end justify-end text-right space-y-1">
                 {isSale && (
                   <div className="flex justify-end">
-                    <Badge variant="outline" className="h-5 rounded-full border-destructive/25 bg-destructive/10 px-2 text-[11px] font-semibold text-destructive">
+                    <Badge variant="outline" className="h-5 shrink-0 whitespace-nowrap rounded-full border-destructive/25 bg-destructive/10 px-2 text-[11px] font-semibold text-destructive">
                       {saleRate}% OFF
                     </Badge>
                   </div>
                 )}
-                <div className="text-lg font-bold text-foreground">{displayPrice.toLocaleString()}원</div>
-                {isSale && <div className="text-xs text-muted-foreground line-through">{regularPrice.toLocaleString()}원</div>}
+                <div className="whitespace-nowrap tabular-nums text-lg font-bold text-foreground">{displayPrice.toLocaleString()}원</div>
+                {isSale && <div className="whitespace-nowrap tabular-nums text-xs text-muted-foreground line-through">{regularPrice.toLocaleString()}원</div>}
               </div>
             </div>
           </Link>
@@ -497,7 +497,7 @@ const ProductCard = React.memo(
 
         <CardFooter className="mt-auto grid grid-cols-1 gap-2 p-3 pt-3 bp-sm:p-4">
           <div className="grid grid-cols-[minmax(0,1fr)_40px] gap-2">
-            <Button asChild type="button" variant="outline" className="h-10 text-sm">
+            <Button asChild type="button" variant="outline" className="h-10 whitespace-nowrap text-sm">
               <Link href={detailHref}>
                 <Eye className="h-4 w-4 mr-1.5" />
                 {isApplyFlow ? "이 스트링으로 교체 신청" : "상세 보기"}

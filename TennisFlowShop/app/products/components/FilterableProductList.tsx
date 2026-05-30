@@ -743,7 +743,7 @@ export default function FilterableProductList({
                   if (showFilters) cancelFiltersSheet();
                   else openFiltersSheet();
                 }}
-                className="bp-lg:hidden h-9 px-3 border-border hover:bg-primary/10 dark:hover:bg-primary/20 shrink-0"
+                className="bp-lg:hidden h-9 shrink-0 whitespace-nowrap px-3 border-border hover:bg-primary/10 dark:hover:bg-primary/20"
                 aria-expanded={showFilters}
                 aria-label="필터 열기"
               >
@@ -762,14 +762,14 @@ export default function FilterableProductList({
                     variant="ghost"
                     size="sm"
                     onClick={handleResetAll}
-                    className="h-7 px-2 text-xs"
+                    className="h-7 whitespace-nowrap px-2 text-xs"
                   >
                     전체 초기화
                   </Button>
                 </div>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-nowrap gap-2 overflow-x-auto pb-1">
                   {submittedQuery && (
-                    <span className="inline-flex items-center gap-1 rounded-full border border-border bg-muted px-2 py-1 text-xs">
+                    <span className="inline-flex max-w-[220px] shrink-0 items-center gap-1 rounded-full border border-border bg-muted px-2 py-1 text-xs whitespace-nowrap">
                       {`검색어 "${submittedQuery}"`}
                       <button
                         type="button"
@@ -787,7 +787,7 @@ export default function FilterableProductList({
                     </span>
                   )}
                   {selectedBrand && (
-                    <span className="inline-flex items-center gap-1 rounded-full border border-border bg-muted px-2 py-1 text-xs">
+                    <span className="inline-flex max-w-[220px] shrink-0 items-center gap-1 rounded-full border border-border bg-muted px-2 py-1 text-xs whitespace-nowrap">
                       브랜드 {brandLabelMap[selectedBrand] ?? selectedBrand}
                       <button
                         type="button"
@@ -800,7 +800,7 @@ export default function FilterableProductList({
                     </span>
                   )}
                   {selectedMaterial && (
-                    <span className="inline-flex items-center gap-1 rounded-full border border-border bg-muted px-2 py-1 text-xs">
+                    <span className="inline-flex max-w-[220px] shrink-0 items-center gap-1 rounded-full border border-border bg-muted px-2 py-1 text-xs whitespace-nowrap">
                       재질 {materialLabelMap[selectedMaterial] ?? selectedMaterial}
                       <button
                         type="button"
@@ -813,7 +813,7 @@ export default function FilterableProductList({
                     </span>
                   )}
                   {selectedBounce !== null && (
-                    <span className="inline-flex items-center gap-1 rounded-full border border-border bg-muted px-2 py-1 text-xs">
+                    <span className="inline-flex max-w-[220px] shrink-0 items-center gap-1 rounded-full border border-border bg-muted px-2 py-1 text-xs whitespace-nowrap">
                       반발력 {getScoreLabel(selectedBounce)}
                       <button
                         type="button"
@@ -826,7 +826,7 @@ export default function FilterableProductList({
                     </span>
                   )}
                   {selectedControl !== null && (
-                    <span className="inline-flex items-center gap-1 rounded-full border border-border bg-muted px-2 py-1 text-xs">
+                    <span className="inline-flex max-w-[220px] shrink-0 items-center gap-1 rounded-full border border-border bg-muted px-2 py-1 text-xs whitespace-nowrap">
                       컨트롤 {getScoreLabel(selectedControl)}
                       <button
                         type="button"
@@ -839,7 +839,7 @@ export default function FilterableProductList({
                     </span>
                   )}
                   {selectedSpin !== null && (
-                    <span className="inline-flex items-center gap-1 rounded-full border border-border bg-muted px-2 py-1 text-xs">
+                    <span className="inline-flex max-w-[220px] shrink-0 items-center gap-1 rounded-full border border-border bg-muted px-2 py-1 text-xs whitespace-nowrap">
                       스핀 {getScoreLabel(selectedSpin)}
                       <button
                         type="button"
@@ -852,7 +852,7 @@ export default function FilterableProductList({
                     </span>
                   )}
                   {selectedDurability !== null && (
-                    <span className="inline-flex items-center gap-1 rounded-full border border-border bg-muted px-2 py-1 text-xs">
+                    <span className="inline-flex max-w-[220px] shrink-0 items-center gap-1 rounded-full border border-border bg-muted px-2 py-1 text-xs whitespace-nowrap">
                       내구성 {getScoreLabel(selectedDurability)}
                       <button
                         type="button"
@@ -865,7 +865,7 @@ export default function FilterableProductList({
                     </span>
                   )}
                   {selectedComfort !== null && (
-                    <span className="inline-flex items-center gap-1 rounded-full border border-border bg-muted px-2 py-1 text-xs">
+                    <span className="inline-flex max-w-[220px] shrink-0 items-center gap-1 rounded-full border border-border bg-muted px-2 py-1 text-xs whitespace-nowrap">
                       편안함 {getScoreLabel(selectedComfort)}
                       <button
                         type="button"
@@ -878,7 +878,7 @@ export default function FilterableProductList({
                     </span>
                   )}
                   {priceChanged && (
-                    <span className="inline-flex items-center gap-1 rounded-full border border-border bg-muted px-2 py-1 text-xs">
+                    <span className="inline-flex max-w-[220px] shrink-0 items-center gap-1 rounded-full border border-border bg-muted px-2 py-1 text-xs whitespace-nowrap">
                       {getPriceChipLabel(priceRange)}
                       <button
                         type="button"

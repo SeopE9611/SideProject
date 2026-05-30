@@ -237,11 +237,11 @@ const RacketCard = React.memo(
             </div>
             <div className="flex flex-1 flex-col p-3 bp-sm:p-6 bp-md:p-7">
               <div className="flex flex-col bp-lg:flex-row bp-lg:justify-between bp-lg:items-start mb-3 bp-sm:mb-4 gap-3 bp-sm:gap-4">
-                <div className="flex-1">
-                  <div className="text-sm bp-sm:text-base text-muted-foreground mb-1.5 font-medium">
+                <div className="min-w-0 flex-1">
+                  <div className="mb-1.5 max-w-full truncate text-sm font-medium text-muted-foreground bp-sm:text-base">
                     {brandLabel}
                   </div>
-                  <h3 className="mb-2 min-h-[3.25rem] text-lg font-bold leading-snug bp-sm:mb-3 bp-sm:text-xl bp-md:min-h-[3.75rem] bp-md:text-2xl line-clamp-2">
+                  <h3 className="mb-2 min-h-[3.25rem] line-clamp-2 break-keep text-lg font-bold leading-snug bp-sm:mb-3 bp-sm:text-xl bp-md:min-h-[3.75rem] bp-md:text-2xl">
                     {racket.model}
                   </h3>
                   <div className="mt-2 flex flex-wrap items-center gap-1.5 bp-sm:gap-2">
@@ -252,8 +252,8 @@ const RacketCard = React.memo(
                     )}
                   </div>
                 </div>
-                <div className="text-left bp-lg:text-right">
-                  <div className="min-h-[2.75rem] text-lg font-bold text-foreground bp-sm:text-2xl bp-md:text-3xl">
+                <div className="shrink-0 text-left bp-lg:text-right">
+                  <div className="min-h-[2.75rem] whitespace-nowrap tabular-nums text-lg font-bold text-foreground bp-sm:text-2xl bp-md:text-3xl">
                     {racket.price.toLocaleString()}원
                   </div>
                   <div className="mt-3 grid grid-cols-1 bp-sm:grid-cols-2 gap-2 bp-lg:max-w-[340px] bp-lg:ml-auto">
@@ -261,7 +261,7 @@ const RacketCard = React.memo(
                       <Button
                         asChild
                         size="sm"
-                        className="h-auto min-h-9 text-xs bp-sm:text-base w-full justify-center whitespace-normal break-keep text-center leading-tight"
+                        className="h-auto min-h-9 text-xs bp-sm:text-base w-full justify-center whitespace-nowrap text-center"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <Link
@@ -275,7 +275,7 @@ const RacketCard = React.memo(
                     ) : (
                       <Button
                         size="sm"
-                        className="h-auto min-h-9 text-xs bp-sm:text-base w-full justify-center whitespace-normal break-keep text-center leading-tight"
+                        className="h-auto min-h-9 text-xs bp-sm:text-base w-full justify-center whitespace-nowrap text-center"
                         disabled
                         title={buyDisabledTitle}
                       >
@@ -294,7 +294,7 @@ const RacketCard = React.memo(
                           size="sm"
                           preventCardNav={true}
                           full={false}
-                          className="w-full justify-center whitespace-normal break-keep text-center leading-tight"
+                          className="w-full justify-center whitespace-nowrap text-center"
                         />
                       ) : (
                         <Button
@@ -414,7 +414,7 @@ const RacketCard = React.memo(
                 <Button
                   asChild
                   size="sm"
-                  className={isApplyFlow ? "h-auto min-h-10 w-full justify-center whitespace-normal break-keep text-center leading-tight" : "flex-1 min-w-0"}
+                  className={isApplyFlow ? "h-auto min-h-10 w-full justify-center whitespace-nowrap text-center" : "flex-1 min-w-0"}
                   onClick={(e) => e.stopPropagation()}
                 >
                   <Link
@@ -449,13 +449,13 @@ const RacketCard = React.memo(
                       size="sm"
                       preventCardNav={true}
                       full={false}
-                      className={isApplyFlow ? "w-full justify-center whitespace-normal break-keep text-center leading-tight" : "w-full justify-center"}
+                      className={isApplyFlow ? "w-full justify-center whitespace-nowrap text-center" : "w-full justify-center"}
                     />
                   </div>
                 ) : (
                   <Button
                     size="sm"
-                    className={isApplyFlow ? "w-full bg-muted text-muted-foreground cursor-not-allowed whitespace-normal break-keep text-center leading-tight" : "flex-1 min-w-0 bg-muted text-muted-foreground cursor-not-allowed"}
+                    className={isApplyFlow ? "w-full bg-muted text-muted-foreground cursor-not-allowed whitespace-nowrap text-center" : "flex-1 min-w-0 bg-muted text-muted-foreground cursor-not-allowed"}
                     disabled
                     aria-disabled
                     title={rentDisabledTitle}
@@ -467,7 +467,7 @@ const RacketCard = React.memo(
               ) : (
                 <Button
                   size="sm"
-                  className={isApplyFlow ? "w-full bg-muted text-muted-foreground cursor-not-allowed whitespace-normal break-keep text-center leading-tight" : "flex-1 min-w-0 bg-muted text-muted-foreground cursor-not-allowed"}
+                  className={isApplyFlow ? "w-full bg-muted text-muted-foreground cursor-not-allowed whitespace-nowrap text-center" : "flex-1 min-w-0 bg-muted text-muted-foreground cursor-not-allowed"}
                   disabled
                   aria-disabled
                   title={rentDisabledTitle}
