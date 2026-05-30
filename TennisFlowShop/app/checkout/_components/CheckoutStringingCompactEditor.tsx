@@ -30,11 +30,17 @@ type CheckoutStringingServiceAdapter = ReturnType<
   typeof useCheckoutStringingServiceAdapter
 >;
 
+type LineValidationField = "racketType" | "tensionMain" | "tensionCross";
+
 type Props = {
   adapter: CheckoutStringingServiceAdapter;
+  showValidationErrors?: boolean;
 };
 
-export default function CheckoutStringingCompactEditor({ adapter }: Props) {
+export default function CheckoutStringingCompactEditor({
+  adapter,
+  showValidationErrors = false,
+}: Props) {
   const {
     formData,
     setFormData,
@@ -61,6 +67,26 @@ export default function CheckoutStringingCompactEditor({ adapter }: Props) {
     String(formData?.defaultCrossTension ?? ""),
   );
   const [bulkLineNote, setBulkLineNote] = useState<string>("");
+  const [touchedLineFields, setTouchedLineFields] = useState<
+    Record<string, Partial<Record<LineValidationField, boolean>>>
+  >({});
+
+  const touchLineField = useCallback(
+    (lineKey: string, field: LineValidationField) => {
+      setTouchedLineFields((prev) => {
+        if (prev[lineKey]?.[field]) return prev;
+
+        return {
+          ...prev,
+          [lineKey]: {
+            ...(prev[lineKey] ?? {}),
+            [field]: true,
+          },
+        };
+      });
+    },
+    [],
+  );
 
   const applyBulkToAllLines = useCallback(
     (opts?: { main?: string; cross?: string; note?: string }) => {
@@ -307,6 +333,29 @@ export default function CheckoutStringingCompactEditor({ adapter }: Props) {
                   tensionMain: "",
                   tensionCross: "",
                 };
+                const lineKey = String(line.id ?? index);
+                const lineTouched = touchedLineFields[lineKey] ?? {};
+                const visibleLineErrors = {
+                  racketType:
+                    (showValidationErrors || lineTouched.racketType) &&
+                    lineErrors.racketType
+                      ? lineErrors.racketType
+                      : "",
+                  tensionMain:
+                    (showValidationErrors || lineTouched.tensionMain) &&
+                    lineErrors.tensionMain
+                      ? lineErrors.tensionMain
+                      : "",
+                  tensionCross:
+                    (showValidationErrors || lineTouched.tensionCross) &&
+                    lineErrors.tensionCross
+                      ? lineErrors.tensionCross
+                      : "",
+                };
+                const hasVisibleLineErrors =
+                  !!visibleLineErrors.racketType ||
+                  !!visibleLineErrors.tensionMain ||
+                  !!visibleLineErrors.tensionCross;
                 const isComplete =
                   !!racketName && !!mainTension && !!crossTension;
                 const tensionSummary =
@@ -321,7 +370,9 @@ export default function CheckoutStringingCompactEditor({ adapter }: Props) {
                     key={line.id}
                     className={cn(
                       "rounded-xl border bg-card p-3 transition-[border-color,box-shadow,background-color] focus-within:border-primary/20 focus-within:bg-primary/5 bp-sm:p-4",
-                      isComplete ? "border-border" : "border-destructive/30",
+                      isComplete || !hasVisibleLineErrors
+                        ? "border-border"
+                        : "border-destructive/30",
                     )}
                   >
                     <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
@@ -375,7 +426,7 @@ export default function CheckoutStringingCompactEditor({ adapter }: Props) {
                           id={`checkout-racket-name-${line.id}`}
                           className={cn(
                             "h-10 px-3",
-                            lineErrors.racketType &&
+                            visibleLineErrors.racketType &&
                               "border-destructive/30 focus-visible:ring-destructive/20",
                           )}
                           value={line.racketType ?? ""}
@@ -387,10 +438,11 @@ export default function CheckoutStringingCompactEditor({ adapter }: Props) {
                             )
                           }
                           placeholder="예: 윌슨 블레이드 98"
+                          onBlur={() => touchLineField(lineKey, "racketType")}
                         />
-                        {lineErrors.racketType && (
+                        {visibleLineErrors.racketType && (
                           <p className="text-xs text-destructive">
-                            {lineErrors.racketType}
+                            {visibleLineErrors.racketType}
                           </p>
                         )}
                       </div>
@@ -408,7 +460,7 @@ export default function CheckoutStringingCompactEditor({ adapter }: Props) {
                             id={`checkout-tension-main-${line.id}`}
                             className={cn(
                               "h-10 px-3",
-                              lineErrors.tensionMain &&
+                              visibleLineErrors.tensionMain &&
                                 "border-destructive/30 focus-visible:ring-destructive/20",
                             )}
                             value={line.tensionMain ?? ""}
@@ -421,10 +473,13 @@ export default function CheckoutStringingCompactEditor({ adapter }: Props) {
                             }
                             placeholder="예: 52"
                             inputMode="decimal"
+                            onBlur={() =>
+                              touchLineField(lineKey, "tensionMain")
+                            }
                           />
-                          {lineErrors.tensionMain && (
+                          {visibleLineErrors.tensionMain && (
                             <p className="text-xs text-destructive">
-                              {lineErrors.tensionMain}
+                              {visibleLineErrors.tensionMain}
                             </p>
                           )}
                         </div>
@@ -440,7 +495,7 @@ export default function CheckoutStringingCompactEditor({ adapter }: Props) {
                             id={`checkout-tension-cross-${line.id}`}
                             className={cn(
                               "h-10 px-3",
-                              lineErrors.tensionCross &&
+                              visibleLineErrors.tensionCross &&
                                 "border-destructive/30 focus-visible:ring-destructive/20",
                             )}
                             value={line.tensionCross ?? ""}
@@ -453,10 +508,13 @@ export default function CheckoutStringingCompactEditor({ adapter }: Props) {
                             }
                             placeholder="예: 50"
                             inputMode="decimal"
+                            onBlur={() =>
+                              touchLineField(lineKey, "tensionCross")
+                            }
                           />
-                          {lineErrors.tensionCross && (
+                          {visibleLineErrors.tensionCross && (
                             <p className="text-xs text-destructive">
-                              {lineErrors.tensionCross}
+                              {visibleLineErrors.tensionCross}
                             </p>
                           )}
                         </div>

@@ -305,6 +305,7 @@ export default function CheckoutPage() {
   const [withStringService, setWithStringService] = useState(false);
   const [isCheckoutSubmitting, setIsCheckoutSubmitting] = useState(false);
   const [isIntentionalSuccessNavigation, setIsIntentionalSuccessNavigation] = useState(false);
+  const [showStringingValidationErrors, setShowStringingValidationErrors] = useState(false);
 
   // 이탈 경고/초기값 스냅샷을 위한 초기화 플래그
   const initFlagsRef = useRef({
@@ -1005,6 +1006,10 @@ export default function CheckoutPage() {
     const checkoutPackageUsage = resolveCheckoutPackageUsage(withStringService, checkoutStringingAdapter);
     const hasStringingLineErrors = !!(withStringService && checkoutStringingAdapter?.hasLineValidationErrors);
     const resolvedCanSubmit = canSubmit && !hasStringingLineErrors;
+    const requestStringingValidationMessages = () => {
+      if (!hasStringingLineErrors) return;
+      setShowStringingValidationErrors(true);
+    };
     const finalServiceFee = withStringService ? applyPackageToServiceFee(baseServiceFee, checkoutPackageUsage ?? { usingPackage: false }) : 0;
     const totalPrice = subtotal + shippingFee + finalServiceFee;
     const pointCapBase = Math.max(0, totalPrice - shippingFee);
@@ -1497,7 +1502,7 @@ export default function CheckoutPage() {
                   </CardContent>
                 </Card>
 
-                {withStringService && checkoutStringingAdapter && <CheckoutStringingServiceSections withStringService={withStringService} adapter={checkoutStringingAdapter} />}
+                {withStringService && checkoutStringingAdapter && <CheckoutStringingServiceSections withStringService={withStringService} adapter={checkoutStringingAdapter} showValidationErrors={showStringingValidationErrors} />}
 
                 {/* 결제 정보 */}
                 <Card id="checkout-payment-info" className="group scroll-mt-24 border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl">
@@ -1811,6 +1816,7 @@ export default function CheckoutPage() {
                       variant="default"
                       className="shrink-0"
                       onClick={() => {
+                        requestStringingValidationMessages();
                         document.getElementById("checkout-payment-action")?.scrollIntoView({ behavior: "smooth", block: "start" });
                       }}
                     >
@@ -1848,40 +1854,43 @@ export default function CheckoutPage() {
                       </div>
                     )}
                     {paymentMethod === "bank-transfer" ? (
-                      <CheckoutButton
-                        disabled={!resolvedCanSubmit}
-                        name={name}
-                        phone={phone}
-                        email={email}
-                        postalCode={postalCode}
-                        address={address}
-                        addressDetail={addressDetail}
-                        depositor={depositor}
-                        totalPrice={totalPrice}
-                        shippingFee={shippingFee}
-                        payableAmount={payableTotalPrice}
-                        selectedBank={selectedBank}
-                        deliveryRequest={deliveryRequest}
-                        saveAddress={saveAddress}
-                        deliveryMethod={deliveryMethod}
-                        serviceTargetIds={serviceTargetIds}
-                        withStringService={withStringService}
-                        servicePickupMethod={servicePickupMethod}
-                        items={orderItems}
-                        serviceFee={finalServiceFee}
-                        pointsToUse={appliedPoints}
-                        stringingApplicationInput={stringingApplicationInput}
-                        onSubmittingChange={setIsCheckoutSubmitting}
-                        onBeforeSuccessNavigation={() => setIsIntentionalSuccessNavigation(true)}
-                        onSuccessNavigationAbort={() => setIsIntentionalSuccessNavigation(false)}
-                      />
+                      <div onPointerDownCapture={requestStringingValidationMessages} className="w-full">
+                        <CheckoutButton
+                          disabled={!resolvedCanSubmit}
+                          name={name}
+                          phone={phone}
+                          email={email}
+                          postalCode={postalCode}
+                          address={address}
+                          addressDetail={addressDetail}
+                          depositor={depositor}
+                          totalPrice={totalPrice}
+                          shippingFee={shippingFee}
+                          payableAmount={payableTotalPrice}
+                          selectedBank={selectedBank}
+                          deliveryRequest={deliveryRequest}
+                          saveAddress={saveAddress}
+                          deliveryMethod={deliveryMethod}
+                          serviceTargetIds={serviceTargetIds}
+                          withStringService={withStringService}
+                          servicePickupMethod={servicePickupMethod}
+                          items={orderItems}
+                          serviceFee={finalServiceFee}
+                          pointsToUse={appliedPoints}
+                          stringingApplicationInput={stringingApplicationInput}
+                          onSubmittingChange={setIsCheckoutSubmitting}
+                          onBeforeSuccessNavigation={() => setIsIntentionalSuccessNavigation(true)}
+                          onSuccessNavigationAbort={() => setIsIntentionalSuccessNavigation(false)}
+                        />
+                      </div>
                     ) : nicePaymentsEnabled && !isZeroPayableAmount ? (
-                      <NiceCheckoutButton
-                        disabled={!resolvedCanSubmit}
-                        onBeforeSuccessNavigation={() => setIsIntentionalSuccessNavigation(true)}
-                        onSuccessNavigationAbort={() => setIsIntentionalSuccessNavigation(false)}
-                        payableAmount={payableTotalPrice}
-                        payload={{
+                      <div onPointerDownCapture={requestStringingValidationMessages} className="w-full">
+                        <NiceCheckoutButton
+                          disabled={!resolvedCanSubmit}
+                          onBeforeSuccessNavigation={() => setIsIntentionalSuccessNavigation(true)}
+                          onSuccessNavigationAbort={() => setIsIntentionalSuccessNavigation(false)}
+                          payableAmount={payableTotalPrice}
+                          payload={{
                           items: orderItems.map((item) => ({
                             productId: item.id,
                             quantity: item.quantity,
@@ -1913,7 +1922,8 @@ export default function CheckoutPage() {
                           servicePickupMethod,
                           stringingApplicationInput: withStringService && stringingApplicationInput ? stringingApplicationInput : undefined,
                         }}
-                      />
+                        />
+                      </div>
                     ) : null}
                     {/* <Button variant="outline" className="w-full border-2 hover:bg-background dark:hover:bg-muted bg-transparent" asChild>
                       <Link href="/cart" data-no-unsaved-guard onClick={onLeaveCartClick}>
