@@ -203,7 +203,7 @@ export default function FinderRacketCard({ racket }: { racket: FinderRacket }) {
             </div>
 
             {/* 스펙 그리드 */}
-            <div className="mb-4 grid grid-cols-2 gap-x-4 gap-y-3 rounded-xl border border-border/60 bg-secondary/40 px-3 py-3 bp-lg:grid-cols-4 bp-sm:px-4 bp-sm:py-3.5">
+            <div className="mb-4 grid grid-cols-2 gap-x-4 gap-y-3 rounded-xl border border-border/60 bg-secondary/40 px-3 py-3 bp-xl:grid-cols-4 bp-sm:px-4 bp-sm:py-3.5">
               <SpecItem label="Head" value={fmt(spec.headSize, "")} />
               <SpecItem label="Weight" value={fmt(spec.weight, "g")} />
               <SpecItem label="Balance" value={fmt(spec.balance, "mm")} />
@@ -216,7 +216,7 @@ export default function FinderRacketCard({ racket }: { racket: FinderRacket }) {
                 value={
                   spec.pattern ? stringPatternLabel(String(spec.pattern)) : "-"
                 }
-                className="col-span-2 bp-lg:col-span-1"
+                className="col-span-2 bp-xl:col-span-1"
               />
               <SpecItem
                 label="Price"
