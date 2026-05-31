@@ -63,7 +63,7 @@ import {
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import useSWR, { mutate } from "swr";
 import useSWRInfinite from "swr/infinite";
@@ -171,35 +171,17 @@ interface OrderDetail {
     status: string;
     userConfirmedAt?: string | null;
     createdAt?: string | null;
-    updatedAt?: string | null;
-    collectionMethod?: string | null;
-    preferredDate?: string | null;
-    preferredTime?: string | null;
     needsInboundTracking?: boolean;
     racketCount?: number;
     receptionLabel?: string;
     tensionSummary?: string | null;
     stringNames?: string[];
     reservationLabel?: string | null;
-    totalPrice?: number | null;
-    requirements?: string | null;
-    lines?: Array<{
-      id?: string | null;
-      racketType?: string | null;
-      racketLabel?: string | null;
-      stringName?: string | null;
-      tensionMain?: string | null;
-      tensionCross?: string | null;
-      note?: string | null;
-    }>;
     shippingInfo?: {
-      collectionMethod?: string | null;
-      deliveryRequest?: string | null;
       selfShip?: {
         courier?: string | null;
         trackingNo?: string | null;
         shippedAt?: string | null;
-        note?: string | null;
       } | null;
     } | null;
   }[];
@@ -333,7 +315,6 @@ export default function OrderDetailClient({
   linkedApplicationHrefBuilder,
 }: Props) {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const resolvedBackUrl = backUrl ?? "/mypage?tab=orders";
   const resolvedBackQuery = new URLSearchParams(
     resolvedBackUrl.split("?")[1] ?? "",
@@ -392,15 +373,6 @@ export default function OrderDetailClient({
       revalidateOnReconnect: false,
     },
   );
-
-  useEffect(() => {
-    if (searchParams.get("focus") !== "stringing") return;
-    const target = document.getElementById("stringing-service");
-    if (!target) return;
-    window.requestAnimationFrame(() => {
-      target.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
-  }, [searchParams, orderDetail?._id]);
 
   // 상품 리뷰 작성 여부 맵: { [productId]: boolean }
   const [reviewedMap, setReviewedMap] = useState<Record<string, boolean>>({});
@@ -599,17 +571,13 @@ export default function OrderDetailClient({
   const primaryStringingApp = hasLinkedStringingApps
     ? linkedStringingApps[0]
     : undefined;
-  const isOrderCanceled = orderDetail.status === "취소";
-  const isPrimaryStringingAppCanceled = primaryStringingApp?.status === "취소";
   const getApplicationHref = (applicationId: string) => {
     if (linkedApplicationHrefBuilder)
       return linkedApplicationHrefBuilder(applicationId);
     return `/mypage?tab=orders&flowType=application&flowId=${applicationId}&from=orders${flowScopeQuery}`;
   };
   const shouldShowInboundShippingBlock = Boolean(
-    primaryStringingAppId &&
-      primaryStringingApp?.needsInboundTracking === true &&
-      !isPrimaryStringingAppCanceled,
+    primaryStringingAppId && primaryStringingApp?.needsInboundTracking === true,
   );
   const inboundShippingHref = primaryStringingAppId
     ? `/services/applications/${primaryStringingAppId}/shipping?${new URLSearchParams({ return: `/mypage?tab=orders&flowType=order&flowId=${orderId}&from=orders${flowScopeQuery}` }).toString()}`
@@ -858,12 +826,10 @@ export default function OrderDetailClient({
               </div>
               <div className="min-w-0">
                 <h1 className="break-keep text-xl font-bold leading-tight text-foreground bp-sm:text-3xl">
-                  이용 상세
+                  주문 상세정보
                 </h1>
                 <p className="mt-1 truncate text-sm text-muted-foreground" title={orderId}>
-                  {hasLinkedStringingApps || orderDetail.shippingInfo?.withStringService
-                    ? "스트링 구매 + 교체서비스"
-                    : "상품 주문"} · 주문번호: #{orderId.slice(-6).toUpperCase()}
+                  주문번호: #{orderId.slice(-6).toUpperCase()}
                 </p>
               </div>
             </div>
@@ -978,178 +944,167 @@ export default function OrderDetailClient({
             )}
           </div>
         )}
-        {(orderDetail.shippingInfo?.withStringService || hasLinkedStringingApps) && (
-          <section id="stringing-service" className="scroll-mt-24 space-y-4">
-            <Card className="rounded-xl border border-border bg-card shadow-md">
-              <CardHeader className="border-b border-border/60 bg-muted/30 rounded-t-xl">
-                <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
-                  <div>
-                    <CardTitle>교체서비스 정보</CardTitle>
-                    <CardDescription>
-                      이 주문과 함께 신청한 교체서비스 정보를 한 페이지에서 확인할 수 있습니다.
-                    </CardDescription>
+        {orderDetail.shippingInfo?.withStringService && (
+          <>
+            <div className="rounded-xl border border-border bg-muted/20 p-4">
+              <p className="text-sm font-semibold text-foreground">
+                연결된 교체서비스 요약
+              </p>
+              <p className="text-xs text-foreground/75 mt-1">
+                신청 가능 여부, 남은 신청 수량, 연결된 신청 상세를 한 곳에서
+                확인할 수 있어요.
+              </p>
+            </div>
+            {totalSlots > 0 && remainingSlots > 0 ? (
+              <div className="bg-muted/30 border border-border rounded-xl p-4 shadow-lg bp-sm:p-6">
+                <div className="flex flex-col gap-4 bp-md:flex-row bp-md:items-center bp-md:justify-between">
+                  <div className="flex items-start bp-sm:items-center space-x-3 min-w-0">
+                    <div className="bg-warning/10 dark:bg-warning/15 rounded-full p-2">
+                      <CheckCircle className="h-6 w-6 text-warning" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-warning">
+                        이 주문은 스트링 장착 서비스가 포함되어 있습니다.
+                      </p>
+                      <p className="text-sm text-warning">
+                        총 {totalSlots}개 중 <strong>{usedSlots}</strong>개를
+                        사용했으며, 남은 교체 가능 스트링은{" "}
+                        <strong>{remainingSlots}</strong>개입니다.
+                      </p>
+                      {stringServiceItemCount > 1 && (
+                        <p className="mt-1 text-xs text-warning">
+                          (상품 기준으로는 교체서비스 대상 스트링이{" "}
+                          {stringServiceItemCount}개 포함되어 있습니다.)
+                        </p>
+                      )}
+                      {hasSubmittedStringingApplication && (
+                        <p className="mt-1 text-xs text-warning">
+                          이미 교체서비스 접수가 완료된 주문이며, 남은 대상에
+                          한해 추가 신청이 가능합니다.
+                        </p>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    <Badge variant="secondary">주문</Badge>
-                    {hasLinkedStringingApps ? <Badge variant="secondary">교체서비스 연결</Badge> : null}
-                    {shouldShowInboundShippingBlock && !hasSelfShipTracking ? (
-                      <Badge variant="destructive">운송장 등록 필요</Badge>
-                    ) : null}
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4 p-4 bp-sm:p-6">
-                {hasLinkedStringingApps ? (
-                  linkedStringingApps.map((app, appIndex) => {
-                    const appSelfShipInfo = app.shippingInfo?.selfShip ?? null;
-                    const appHasTracking = Boolean(appSelfShipInfo?.trackingNo);
-                    const isApplicationCanceled = app.status === "취소";
-                    const appNeedsTracking =
-                      !isApplicationCanceled && app.needsInboundTracking === true;
-                    const appShippingHref = `/services/applications/${app.id}/shipping?${new URLSearchParams({ return: `/mypage?tab=orders&flowType=order&flowId=${orderId}&from=orders${flowScopeQuery}&focus=stringing` }).toString()}`;
-                    const lines = app.lines ?? [];
-                    const fallbackLine = {
-                      id: `${app.id}-summary`,
-                      racketLabel: null,
-                      racketType: null,
-                      stringName: app.stringNames?.join(", ") || null,
-                      tensionMain: app.tensionSummary ?? null,
-                      tensionCross: null,
-                      note: app.requirements ?? null,
-                    };
-                    const displayLines = lines.length > 0 ? lines : [fallbackLine];
-                    const isMultipleLines = displayLines.length > 1;
-                    const reservationLabel =
-                      app.reservationLabel ??
-                      (app.preferredDate && app.preferredTime
-                        ? `${app.preferredDate} ${app.preferredTime}`
-                        : "예약 불필요");
-
-                    return (
-                      <div key={app.id} className="rounded-xl border border-border bg-muted/20 p-4 shadow-sm">
-                        <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
-                          <div className="min-w-0 space-y-2">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <Badge
-                                variant={badgeToneVariant(getApplicationStatusTone(app.status))}
-                                className="px-2 py-0.5 text-xs font-medium"
-                              >
-                                {app.status ?? "상태 미정"}
-                              </Badge>
-                              <span className="text-sm font-semibold text-foreground">
-                                {app.receptionLabel ?? "접수 방식 확인 중"}
-                              </span>
-                              {linkedStringingApps.length > 1 ? (
-                                <span className="text-xs text-muted-foreground">신청 {appIndex + 1}</span>
-                              ) : null}
-                            </div>
-                            <div className="grid gap-2 text-sm text-foreground bp-sm:grid-cols-2">
-                              <p><span className="text-muted-foreground">희망 일시:</span> {reservationLabel}</p>
-                              <p><span className="text-muted-foreground">라켓 수:</span> {app.racketCount ?? displayLines.length}자루</p>
-                              <p><span className="text-muted-foreground">신청 금액:</span> {typeof app.totalPrice === "number" ? formatCurrency(app.totalPrice) : "확인 중"}</p>
-                              <p><span className="text-muted-foreground">최근 업데이트:</span> {app.updatedAt ? formatDate(app.updatedAt) : "-"}</p>
-                            </div>
-                          </div>
-                          {appNeedsTracking ? (
-                            <Button asChild size="sm" variant={appHasTracking ? "outline" : "default"} className="shrink-0">
-                              <Link href={appShippingHref}>{appHasTracking ? "운송장 수정" : "운송장 등록"}</Link>
-                            </Button>
-                          ) : null}
-                        </div>
-
-                        <div className="mt-4 space-y-3">
-                          <p className="text-sm font-semibold text-foreground">라켓 정보</p>
-                          <div className="grid gap-3 bp-md:grid-cols-2">
-                            {displayLines.map((line, lineIndex) => {
-                              const racketLabel = line.racketLabel || line.racketType || "라켓명 미입력";
-                              const normalizedRacketLabel =
-                                racketLabel && racketLabel !== "라켓명 미입력"
-                                  ? racketLabel
-                                  : null;
-                              const racketCardTitle = normalizedRacketLabel ?? "라켓 정보";
-                              const stringName = line.stringName || app.stringNames?.join(", ") || "스트링명 확인 중";
-                              const tensionMain = line.tensionMain || app.tensionSummary || "-";
-                              const tensionCross = line.tensionCross || line.tensionMain || null;
-                              const requestNote = line.note || app.requirements || null;
-                              return (
-                                <div key={line.id ?? `${app.id}-${lineIndex}`} className="rounded-lg border border-border/70 bg-card p-3 text-sm">
-                                  <div className="flex items-center justify-between gap-2">
-                                    <div className="min-w-0">
-                                      <p className="line-clamp-1 break-keep font-medium text-foreground">
-                                        {racketCardTitle}
-                                      </p>
-                                      {isMultipleLines ? (
-                                        <p className="text-xs text-muted-foreground">
-                                          {lineIndex + 1}번째 라켓
-                                        </p>
-                                      ) : null}
-                                    </div>
-                                    <Badge variant="outline" className="max-w-[12rem] shrink-0 truncate text-[11px]">{stringName}</Badge>
-                                  </div>
-                                  <dl className="mt-3 space-y-2 text-foreground">
-                                    <div className="flex gap-2"><dt className="w-20 shrink-0 text-muted-foreground">라켓명</dt><dd className="min-w-0 break-words">{racketLabel}</dd></div>
-                                    <div className="flex gap-2"><dt className="w-20 shrink-0 text-muted-foreground">스트링</dt><dd className="min-w-0 break-words">{stringName}</dd></div>
-                                    <div className="flex gap-2"><dt className="w-20 shrink-0 text-muted-foreground">텐션</dt><dd>메인 {tensionMain}{tensionCross ? ` / 크로스 ${tensionCross}` : ""}</dd></div>
-                                    {requestNote ? <div className="flex gap-2"><dt className="w-20 shrink-0 text-muted-foreground">요청사항</dt><dd className="min-w-0 whitespace-pre-wrap break-words">{requestNote}</dd></div> : null}
-                                  </dl>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-
-                        {appNeedsTracking ? (
-                          <div className="mt-4 rounded-lg border border-border bg-primary/5 p-3 text-sm dark:bg-primary/10">
-                            <div className="flex flex-wrap items-start justify-between gap-3">
-                              <div>
-                                <p className="font-semibold text-foreground">라켓 발송</p>
-                                <p className="mt-1 text-muted-foreground">상태: {appHasTracking ? "등록 완료" : "미등록"}</p>
-                              </div>
-                              <Button asChild size="sm" variant="outline" className="h-8">
-                                <Link href={appShippingHref}>{appHasTracking ? "운송장 수정" : "운송장 등록"}</Link>
-                              </Button>
-                            </div>
-                            <div className="mt-3 grid gap-2 bp-sm:grid-cols-2">
-                              <p><span className="text-muted-foreground">택배사:</span> {appSelfShipInfo?.courier?.trim() || "미등록"}</p>
-                              <p><span className="text-muted-foreground">운송장 번호:</span> {appSelfShipInfo?.trackingNo?.trim() || "미등록"}</p>
-                              <p><span className="text-muted-foreground">발송일:</span> {appSelfShipInfo?.shippedAt ? formatDate(appSelfShipInfo.shippedAt) : "미등록"}</p>
-                              {appSelfShipInfo?.note ? <p><span className="text-muted-foreground">메모:</span> {appSelfShipInfo.note}</p> : null}
-                            </div>
-                          </div>
-                        ) : null}
-
-                        <div className="mt-3 text-right">
-                          <Link href={getApplicationHref(app.id)} className="text-xs text-muted-foreground underline-offset-4 hover:underline">
-                            기존 신청서 보기
-                          </Link>
-                        </div>
-                      </div>
-                    );
-                  })
-                ) : !isOrderCanceled && totalSlots > 0 && remainingSlots > 0 ? (
-                  <div className="rounded-xl border border-warning/30 bg-warning/10 p-4 text-warning dark:bg-warning/15">
-                    <p className="font-semibold">이 주문은 교체서비스 신청 대상입니다.</p>
-                    <p className="mt-1 text-sm">총 {totalSlots}개 중 <strong>{usedSlots}</strong>개를 사용했으며, 남은 교체 가능 스트링은 <strong>{remainingSlots}</strong>개입니다.</p>
-                    <Button asChild className="mt-4 w-full bp-sm:w-auto">
-                      <Link href={`/services/apply?orderId=${orderDetail._id}`}>{hasSubmittedStringingApplication ? "교체서비스 추가 신청하기" : "교체서비스 신청하기"}</Link>
+                  <div className="flex justify-center bp-md:justify-end">
+                    <Button
+                      asChild
+                      variant="default"
+                      className="w-full bp-sm:max-w-xs bp-md:w-auto shadow-lg"
+                    >
+                      <Link href={`/services/apply?orderId=${orderDetail._id}`}>
+                        {hasSubmittedStringingApplication
+                          ? "교체서비스 추가 신청하기"
+                          : "교체서비스 신청하기"}
+                      </Link>
                     </Button>
                   </div>
-                ) : (
-                  <div className="rounded-xl border border-border bg-muted/20 p-4 text-sm text-muted-foreground">
-                    연결된 교체서비스 신청 정보를 확인 중입니다.
-                  </div>
-                )}
+                </div>
+              </div>
+            ) : totalSlots > 0 ? (
+              <div className="mt-4 bg-success/10 dark:bg-success/15 border border-border rounded-xl p-4 shadow-lg bp-sm:p-6">
+                <div className="flex flex-col bp-md:flex-row bp-md:items-start bp-md:justify-between gap-4">
+                  <div className="flex items-start space-x-3">
+                    <div className="bg-success/10 dark:bg-success/15 rounded-full p-2 mt-1">
+                      <CheckCircle className="h-6 w-6 text-success" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-success">
+                        이 주문으로 교체서비스 신청이 완료되었습니다.
+                      </p>
+                      <p className="text-sm text-success">
+                        이 주문에는 교체서비스 대상 스트링이{" "}
+                        <span className="font-semibold">
+                          {stringServiceItemCount}개
+                        </span>{" "}
+                        포함되어 있습니다.
+                      </p>
+                      <p className="text-sm text-success">
+                        실제 신청 접수 방식/텐션/예약 정보는 아래 요약 또는 신청
+                        상세에서 확인하실 수 있습니다.
+                      </p>
 
-                {primaryStringingAppId ? (
-                  <ServiceReviewCTA
-                    applicationId={primaryStringingAppId}
-                    userConfirmedAt={primaryStringingApp?.userConfirmedAt ?? null}
-                  />
-                ) : null}
-              </CardContent>
-            </Card>
-          </section>
-        )}
+                      {/* 사용자 오해 방지를 위해 접수 핵심 정보만 노출 */}
+                      {hasLinkedStringingApps && (
+                        <div className="mt-3 space-y-1 text-xs text-success">
+                          {linkedStringingApps.map((app) => (
+                            <div
+                              key={app.id}
+                              className="flex flex-wrap items-center justify-between gap-2"
+                            >
+                              <div className="flex flex-wrap items-center gap-2">
+                                <Badge
+                                  variant={badgeToneVariant(
+                                    getApplicationStatusTone(app.status),
+                                  )}
+                                  className="px-1.5 py-0.5 text-[11px] font-medium"
+                                >
+                                  {app.status ?? "상태 미정"}
+                                </Badge>
+                                {app.createdAt && (
+                                  <span>{formatDate(app.createdAt)}</span>
+                                )}
+                                <span>라인 {app.racketCount ?? 0}개</span>
+                                {app.receptionLabel && (
+                                  <span>· {app.receptionLabel}</span>
+                                )}
+                                {app.reservationLabel && (
+                                  <span>· 예약 {app.reservationLabel}</span>
+                                )}
+                              </div>
+                              {app.stringNames &&
+                                app.stringNames.length > 0 && (
+                                  <p className="text-[11px] text-success">
+                                    스트링: {app.stringNames.join(", ")}
+                                  </p>
+                                )}
+                              {app.tensionSummary && (
+                                <p className="text-[11px] text-success">
+                                  텐션: {app.tensionSummary}
+                                </p>
+                              )}
+                              <Button
+                                asChild
+                                variant="outline"
+                                className="h-7 w-full px-2 text-xs bp-sm:w-auto"
+                              >
+                                <Link href={getApplicationHref(app.id)}>
+                                  신청 상세
+                                </Link>
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    {/* [호환용] 리스트가 없고, 대표 신청 ID만 있는 경우 단일 버튼 유지 */}
+                    {!hasLinkedStringingApps && primaryStringingAppId && (
+                      <Button
+                        asChild
+                        variant="outline"
+                        className="w-full border-border bg-transparent text-success dark:border-border dark:text-success dark:hover:bg-success/15 bp-sm:w-auto"
+                      >
+                        <Link href={getApplicationHref(primaryStringingAppId)}>
+                          신청 상세 보기
+                        </Link>
+                      </Button>
+                    )}
+
+                    {primaryStringingAppId && (
+                      <ServiceReviewCTA
+                        applicationId={primaryStringingAppId}
+                        userConfirmedAt={
+                          primaryStringingApp?.userConfirmedAt ?? null
+                        }
+                        className="ml-2"
+                      />
+                    )}
+                  </div>
+                </div>
+              </div>
+            ) : null}
 
             <div id="reviews-cta" className="mt-4">
               {allReviewed ? (
@@ -1210,6 +1165,8 @@ export default function OrderDetailClient({
                 </div>
               )}
             </div>
+          </>
+        )}
 
         <div className="grid gap-6 bp-sm:gap-8 bp-lg:grid-cols-2">
           {/* 고객 정보 */}
@@ -1500,7 +1457,7 @@ export default function OrderDetailClient({
                     </>
                   )}
 
-                {shouldShowInboundShippingBlock && !hasLinkedStringingApps && (
+                {shouldShowInboundShippingBlock && (
                   <div className="rounded-lg border border-border bg-primary/5 p-3 dark:bg-primary/10">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="space-y-1">

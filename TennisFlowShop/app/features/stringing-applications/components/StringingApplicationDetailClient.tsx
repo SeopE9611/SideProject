@@ -366,7 +366,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
   const handleConfirmCancelRequest = (params: {
     reasonCode: string;
     reasonText?: string;
-    refundAccount?: {
+    refundAccount: {
       bank: string;
       account: string;
       holder: string;
@@ -382,7 +382,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
           body: JSON.stringify({
             reasonCode,
             reasonText,
-            ...(refundAccount ? { refundAccount } : {}),
+            refundAccount,
           }),
           credentials: 'include',
         });
@@ -731,18 +731,6 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
       : hasOrderLinkedPayment || hasRentalLinkedPayment
         ? (linkedPayment?.status ?? data.orderPaymentStatus ?? data.paymentStatus ?? '결제대기')
         : data.paymentStatus ?? '결제대기';
-  const normalizedPaymentProvider = String(linkedPayment?.provider ?? '')
-    .trim()
-    .toLowerCase();
-  const needsCancelRefundAccount =
-    !packageApplied &&
-    paymentStatus === '결제완료' &&
-    normalizedPaymentProvider !== 'nicepay';
-  const noCancelRefundAccountMessage = packageApplied
-    ? '패키지 사용 신청은 환불계좌 입력 없이 취소 요청할 수 있습니다. 승인 시 사용 회차 복원 기준으로 처리됩니다.'
-    : normalizedPaymentProvider === 'nicepay'
-      ? '카드 결제 취소는 환불계좌 없이 요청할 수 있습니다. 관리자 승인 후 결제사 취소 또는 주문 취소 흐름에 따라 처리됩니다.'
-      : '이 신청은 환불계좌 입력 없이 취소 요청할 수 있습니다.';
 
   // 취소 요청 상태 (한글/영문 모두 허용)
   const rawCancelStatus = normalizeAdminCancelRequestStatus((data.cancelRequest?.status ?? null) as string | null);
@@ -799,7 +787,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
     linkedDocs.push({
       kind: 'order',
       id: String(data.orderId),
-      href: isAdmin ? `/admin/orders/${data.orderId}` : `/mypage?tab=orders&flowType=order&flowId=${data.orderId}&${flowQuery.toString()}&focus=stringing`,
+      href: isAdmin ? `/admin/orders/${data.orderId}` : `/mypage?tab=orders&flowType=order&flowId=${data.orderId}&${flowQuery.toString()}`,
       subtitle: '연결된 주문',
     });
   }
@@ -1097,17 +1085,6 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                 </div>
               </TooltipProvider>
             </div>
-
-            {!isAdmin && data.orderId ? (
-              <div className="mb-4 flex flex-col gap-2 rounded-xl border border-primary/20 bg-primary/10 p-3 text-sm text-foreground dark:bg-primary/15 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
-                <span>이 교체서비스는 주문 상세에서 함께 확인할 수 있어요.</span>
-                <Button asChild size="sm" variant="outline" className="h-8 bg-card">
-                  <Link href={`/mypage?tab=orders&flowType=order&flowId=${data.orderId}&${flowQuery.toString()}&focus=stringing`}>
-                    이용 상세로 이동
-                  </Link>
-                </Button>
-              </div>
-            ) : null}
             {!isAdmin && userNextTodo && (
               <NextTodoCallout
                 className="mb-4"
@@ -1239,26 +1216,20 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                 rightSlot={
                   <div className="rounded-md border border-border/60 bg-background/70 px-3 py-2">
                     <p className="text-xs font-medium text-muted-foreground">환불 계좌 정보</p>
-                    {needsCancelRefundAccount || cancelInfo.refundAccount ? (
-                      <dl className="mt-2 space-y-1 text-xs text-foreground">
-                        <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
-                          <dt className="text-muted-foreground">환불 은행</dt>
-                          <dd>{cancelInfo.refundAccount?.bankLabel || '미입력'}</dd>
-                        </div>
-                        <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
-                          <dt className="text-muted-foreground">계좌번호</dt>
-                          <dd className="font-mono">{cancelInfo.refundAccount?.account || '미입력'}</dd>
-                        </div>
-                        <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
-                          <dt className="text-muted-foreground">예금주</dt>
-                          <dd>{cancelInfo.refundAccount?.holder || '미입력'}</dd>
-                        </div>
-                      </dl>
-                    ) : (
-                      <p className="mt-2 text-xs text-muted-foreground">
-                        이 취소 요청은 환불계좌 입력 대상이 아닙니다. 카드 결제/패키지/결제대기 건은 별도 계좌 정보 없이 처리됩니다.
-                      </p>
-                    )}
+                    <dl className="mt-2 space-y-1 text-xs text-foreground">
+                      <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
+                        <dt className="text-muted-foreground">환불 은행</dt>
+                        <dd>{cancelInfo.refundAccount?.bankLabel || '미입력'}</dd>
+                      </div>
+                      <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
+                        <dt className="text-muted-foreground">계좌번호</dt>
+                        <dd className="font-mono">{cancelInfo.refundAccount?.account || '미입력'}</dd>
+                      </div>
+                      <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
+                        <dt className="text-muted-foreground">예금주</dt>
+                        <dd>{cancelInfo.refundAccount?.holder || '미입력'}</dd>
+                      </div>
+                    </dl>
                   </div>
                 }
               />
@@ -2225,14 +2196,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
         </Dialog>
       )}
 
-      <CancelStringingDialog
-        open={isCancelDialogOpen}
-        onOpenChange={setIsCancelDialogOpen}
-        onConfirm={handleConfirmCancelRequest}
-        isSubmitting={isPending}
-        needsRefundAccount={needsCancelRefundAccount}
-        noRefundAccountMessage={noCancelRefundAccountMessage}
-      />
+      <CancelStringingDialog open={isCancelDialogOpen} onOpenChange={setIsCancelDialogOpen} onConfirm={handleConfirmCancelRequest} isSubmitting={isPending} />
     </main>
   );
 }

@@ -32,15 +32,13 @@ interface CancelStringingDialogProps {
   onConfirm: (params: {
     reasonCode: string;
     reasonText?: string;
-    refundAccount?: {
+    refundAccount: {
       bank: string;
       account: string;
       holder: string;
     };
   }) => void;
   isSubmitting?: boolean;
-  needsRefundAccount?: boolean;
-  noRefundAccountMessage?: string;
 }
 
 const CancelStringingDialog = ({
@@ -48,8 +46,6 @@ const CancelStringingDialog = ({
   onOpenChange,
   onConfirm,
   isSubmitting = false,
-  needsRefundAccount = true,
-  noRefundAccountMessage = "카드 결제 취소는 환불계좌 없이 요청할 수 있습니다. 관리자 승인 후 결제사 취소 또는 주문 취소 흐름에 따라 처리됩니다.",
 }: CancelStringingDialogProps) => {
   // 로컬 상태: 사유 선택값, 기타 입력값
   const [selectedReason, setSelectedReason] = useState<string | undefined>();
@@ -59,15 +55,13 @@ const CancelStringingDialog = ({
   const [refundHolder, setRefundHolder] = useState("");
 
   // 입력/선택이 있는 상태에서 이탈(뒤로가기/링크/탭닫기) 방지
-  const hasRefundAccountInput =
-    refundBank !== "" ||
-    refundAccount.trim().length > 0 ||
-    refundHolder.trim().length > 0;
   const isDirty =
     open &&
     (selectedReason !== undefined ||
       otherReason.trim().length > 0 ||
-      (needsRefundAccount && hasRefundAccountInput));
+      refundBank !== "" ||
+      refundAccount.trim().length > 0 ||
+      refundHolder.trim().length > 0);
   useUnsavedChangesGuard(isDirty);
 
   // X/오버레이/ESC/닫기 버튼으로 “모달 자체”를 닫을 때도 입력 유실 방지
@@ -99,32 +93,24 @@ const CancelStringingDialog = ({
       showErrorToast("기타 사유를 입력해주세요.");
       return;
     }
-    if (needsRefundAccount) {
-      const refundValidation = validateRefundAccountInput({
-        bank: refundBank,
-        account: refundAccount,
-        holder: refundHolder,
-      });
-      if (!refundValidation.ok) {
-        showErrorToast(refundValidation.message);
-        return;
-      }
-
-      onConfirm({
-        reasonCode: selectedReason,
-        reasonText: selectedReason === "기타" ? otherReason.trim() : undefined,
-        refundAccount: {
-          bank: refundValidation.value.bank,
-          account: refundValidation.value.account,
-          holder: refundValidation.value.holder,
-        },
-      });
+    const refundValidation = validateRefundAccountInput({
+      bank: refundBank,
+      account: refundAccount,
+      holder: refundHolder,
+    });
+    if (!refundValidation.ok) {
+      showErrorToast(refundValidation.message);
       return;
     }
 
     onConfirm({
       reasonCode: selectedReason,
       reasonText: selectedReason === "기타" ? otherReason.trim() : undefined,
+      refundAccount: {
+        bank: refundValidation.value.bank,
+        account: refundValidation.value.account,
+        holder: refundValidation.value.holder,
+      },
     });
   };
 
@@ -161,22 +147,16 @@ const CancelStringingDialog = ({
               onChange={(e) => setOtherReason(e.target.value)}
             />
           )}
-          {needsRefundAccount ? (
-            <RefundAccountFields
-              bank={refundBank}
-              account={refundAccount}
-              holder={refundHolder}
-              onBankChange={setRefundBank}
-              onAccountChange={setRefundAccount}
-              onHolderChange={setRefundHolder}
-              description="취소 승인 시 환불에 사용할 계좌입니다."
-              disabled={isSubmitting}
-            />
-          ) : (
-            <div className="rounded-md border border-border/60 bg-muted/30 p-3 text-sm text-muted-foreground">
-              {noRefundAccountMessage}
-            </div>
-          )}
+          <RefundAccountFields
+            bank={refundBank}
+            account={refundAccount}
+            holder={refundHolder}
+            onBankChange={setRefundBank}
+            onAccountChange={setRefundAccount}
+            onHolderChange={setRefundHolder}
+            description="취소 승인 시 환불에 사용할 계좌입니다."
+            disabled={isSubmitting}
+          />
         </div>
 
         <DialogFooter>

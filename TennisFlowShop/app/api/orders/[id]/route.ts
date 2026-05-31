@@ -84,12 +84,6 @@ function getApplicationLines(stringDetails: any): any[] {
   return [];
 }
 
-
-function nullableTrim(value: unknown): string | null {
-  const trimmed = String(value ?? "").trim();
-  return trimmed.length > 0 ? trimmed : null;
-}
-
 function getReceptionLabel(collectionMethod?: string | null): string {
   if (collectionMethod === "visit") return "방문 접수";
   if (collectionMethod === "courier_pickup") return "자가 발송(택배)";
@@ -404,21 +398,18 @@ export async function GET(
       .filter((item) => isMountableStringItem(item))
       .reduce((sum, item) => sum + (item.quantity ?? 1), 0);
 
-    // 이 주문으로 생성된 모든 스트링 신청서 조회
-    // - 화면 표시용: 취소 이력도 보여야 하므로 draft만 제외
-    // - 슬롯 계산용: 취소 신청서는 사용 슬롯에서 제외
-    const displayApps = await db
+    // 이 주문으로 생성된 모든 스트링 신청서 조회 (취소 제외)
+    const apps = await db
       .collection("stringing_applications")
       .find({
         orderId: { $in: [order._id, String(order._id)] },
-        status: { $ne: "draft" },
+        status: { $ne: "취소" },
       })
       .sort({ updatedAt: -1, createdAt: -1 })
       .toArray();
-    const activeApps = displayApps.filter((app: any) => app?.status !== "취소");
 
-    // 각 활성 신청서에서 사용된 슬롯(= 라켓 개수) 합산
-    const usedSlots = activeApps.reduce(
+    // 각 신청서에서 사용된 슬롯(= 라켓 개수) 합산
+    const usedSlots = apps.reduce(
       (sum, app) => sum + getApplicationLines(app?.stringDetails).length,
       0,
     );
@@ -428,7 +419,7 @@ export async function GET(
 
     const packagePassIds = Array.from(
       new Set(
-        displayApps
+        apps
           .map((app: any) => {
             const raw = app?.packagePassId;
             if (!raw) return null;
@@ -463,7 +454,7 @@ export async function GET(
     );
 
     // 이 주문과 연결된 신청서 요약 정보 배열
-    const stringingApplications = displayApps.map((app: any) => {
+    const stringingApplications = apps.map((app: any) => {
       const lines = getApplicationLines(app?.stringDetails);
       const stringNames = Array.from(
         new Set(
@@ -482,16 +473,6 @@ export async function GET(
       const collectionMethod = normalizeCollection(
         app?.collectionMethod ?? app?.shippingInfo?.collectionMethod ?? "self_ship",
       );
-      const normalizedLines = lines.map((line: any, index: number) => ({
-        id: nullableTrim(line?.id) ?? String(index),
-        racketType: nullableTrim(line?.racketType),
-        racketLabel:
-          nullableTrim(line?.racketLabel) ?? nullableTrim(line?.racketType),
-        stringName: nullableTrim(line?.stringName),
-        tensionMain: nullableTrim(line?.tensionMain),
-        tensionCross: nullableTrim(line?.tensionCross),
-        note: nullableTrim(line?.note),
-      }));
       const orderHasRacket =
         Array.isArray(order?.items) &&
         order.items.some((it: any) => it?.kind === "racket");
@@ -534,10 +515,6 @@ export async function GET(
         createdAt: app.createdAt ?? null,
         updatedAt: app.updatedAt ?? null,
         collectionMethod,
-        preferredDate: preferredDate || null,
-        preferredTime: preferredTime || null,
-        requirements: nullableTrim(app?.stringDetails?.requirements),
-        lines: normalizedLines,
         inboundRequired,
         needsInboundTracking,
         racketCount: lines.length,
@@ -552,14 +529,11 @@ export async function GET(
             ? `${preferredDate} ${preferredTime}`
             : null,
         shippingInfo: {
-          collectionMethod,
-          deliveryRequest: nullableTrim(app?.shippingInfo?.deliveryRequest),
           selfShip: selfShip
             ? {
-                courier: nullableTrim(selfShip.courier),
-                trackingNo: nullableTrim(selfShip.trackingNo),
-                shippedAt: toNullableIsoString(selfShip.shippedAt),
-                note: nullableTrim(selfShip.note),
+                courier: selfShip.courier ?? null,
+                trackingNo: selfShip.trackingNo ?? null,
+                shippedAt: selfShip.shippedAt ?? null,
               }
             : null,
         },

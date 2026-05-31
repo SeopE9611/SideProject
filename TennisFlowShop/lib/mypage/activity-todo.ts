@@ -6,35 +6,24 @@ export type ActivityTodoApplicationLike = {
 };
 
 export function normalizeMypageTodoStatus(status?: string | null): string {
-  const raw = String(status ?? "").trim();
-  if (!raw) return "";
+  const raw = String(status ?? '').trim();
+  if (!raw) return '';
   const lower = raw.toLowerCase();
 
-  if (["pending", "대기중"].includes(lower)) return "대기중";
-  if (["paid", "결제완료"].includes(lower)) return "결제완료";
-  if (["delivered", "배송완료"].includes(lower)) return "배송완료";
-  if (["requested", "접수완료", "received"].includes(lower)) return "접수완료";
-  if (["reviewing", "검토중", "검토 중"].includes(lower)) return "검토 중";
-  if (["completed", "완료", "교체완료"].includes(lower)) return "교체완료";
-  if (["canceled", "cancelled", "취소"].includes(lower)) return "취소";
-  if (["refunded", "refund", "환불"].includes(lower)) return "환불";
-  if (["rejected", "거절", "반려"].includes(lower)) return "거절";
+  if (['pending', '대기중'].includes(lower)) return '대기중';
+  if (['paid', '결제완료'].includes(lower)) return '결제완료';
+  if (['delivered', '배송완료'].includes(lower)) return '배송완료';
+  if (['requested', '접수완료', 'received'].includes(lower)) return '접수완료';
+  if (['reviewing', '검토중', '검토 중'].includes(lower)) return '검토 중';
+  if (['completed', '완료', '교체완료'].includes(lower)) return '교체완료';
+
   return raw;
-}
-
-function isTerminalCanceledTodoStatus(status?: string | null): boolean {
-  const normalized = normalizeMypageTodoStatus(status);
-
-  return normalized === "취소" || normalized === "환불" || normalized === "거절" || normalized === "반려";
 }
 
 export function isApplicationTodoActionable(app?: ActivityTodoApplicationLike | null): boolean {
   if (!app) return false;
-
   const status = normalizeMypageTodoStatus(app.status);
-  if (isTerminalCanceledTodoStatus(status)) return false;
-
-  return Boolean((app.needsInboundTracking && !app.hasTracking) || (status === "교체완료" && !app.userConfirmedAt));
+  return Boolean((app.needsInboundTracking && !app.hasTracking) || (status === '교체완료' && !app.userConfirmedAt));
 }
 
 export function isOrderTodoActionable(params: {
@@ -45,14 +34,11 @@ export function isOrderTodoActionable(params: {
   primaryApplication?: ActivityTodoApplicationLike | null;
 }): boolean {
   const status = normalizeMypageTodoStatus(params.status);
-
-  if (isTerminalCanceledTodoStatus(status)) return false;
-
-  const isConfirmed = Boolean(params.userConfirmedAt) || status === "구매확정";
+  const isConfirmed = Boolean(params.userConfirmedAt) || status === '구매확정';
   const hasPendingReview = (params.reviewPendingCount ?? 0) > 0;
   const hasActionableLinkedApplication = (params.linkedApplications ?? []).some((app) => isApplicationTodoActionable(app));
 
-  return Boolean(status === "배송완료" || hasActionableLinkedApplication || (isConfirmed && hasPendingReview) || isApplicationTodoActionable(params.primaryApplication));
+  return Boolean(status === '배송완료' || hasActionableLinkedApplication || (isConfirmed && hasPendingReview) || isApplicationTodoActionable(params.primaryApplication));
 }
 
 export function isRentalTodoActionable(params: {
@@ -62,5 +48,9 @@ export function isRentalTodoActionable(params: {
   withStringService?: boolean | null;
 }): boolean {
   const hasActionableLinkedApplication = (params.linkedApplications ?? []).some((app) => isApplicationTodoActionable(app));
-  return Boolean(hasActionableLinkedApplication || isApplicationTodoActionable(params.primaryApplication) || (!params.stringingApplicationId && params.withStringService));
+  return Boolean(
+    hasActionableLinkedApplication ||
+      isApplicationTodoActionable(params.primaryApplication) ||
+      (!params.stringingApplicationId && params.withStringService),
+  );
 }

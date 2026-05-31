@@ -159,87 +159,6 @@ function buildLinkedPaymentFromDoc(source: Exclude<LinkedPaymentSource, 'applica
   };
 }
 
-type StringingCancelPaymentContext = {
-  packageApplied: boolean;
-  status: string | null;
-  provider: string;
-};
-
-function normalizePaymentProvider(raw: unknown): string {
-  return String(raw ?? '').trim().toLowerCase();
-}
-
-function getObjectIdFromPaymentSource(paymentSource: string, prefix: 'order' | 'rental'): ObjectId | null {
-  const marker = `${prefix}:`;
-  if (!paymentSource.startsWith(marker)) return null;
-  const rawId = paymentSource.slice(marker.length).trim();
-  if (!ObjectId.isValid(rawId)) return null;
-  return new ObjectId(rawId);
-}
-
-function getObjectIdFromField(value: unknown): ObjectId | null {
-  if (!value) return null;
-  const rawId = String(value).trim();
-  if (!ObjectId.isValid(rawId)) return null;
-  return new ObjectId(rawId);
-}
-
-async function resolveStringingCancelPaymentContext(db: any, appDoc: any): Promise<StringingCancelPaymentContext> {
-  const packageApplied = Boolean(appDoc?.packageApplied || appDoc?.packageInfo?.applied);
-  if (packageApplied) {
-    return { packageApplied: true, status: '패키지 적용 완료', provider: '' };
-  }
-
-  const paymentSourceRaw = String(appDoc?.paymentSource ?? '').trim();
-  const orderObjectId = getObjectIdFromPaymentSource(paymentSourceRaw, 'order') ?? getObjectIdFromField(appDoc?.orderId);
-  const rentalObjectId = getObjectIdFromPaymentSource(paymentSourceRaw, 'rental') ?? getObjectIdFromField(appDoc?.rentalId);
-
-  let linkedPayment: LinkedPaymentPayload | null = null;
-  if (paymentSourceRaw.startsWith('order:') && orderObjectId) {
-    const order = await db.collection('orders').findOne(
-      { _id: orderObjectId },
-      { projection: { paymentStatus: 1, paymentInfo: 1 } },
-    );
-    if (order) linkedPayment = buildLinkedPaymentFromDoc('order', order);
-  }
-
-  if (!linkedPayment && paymentSourceRaw.startsWith('rental:') && rentalObjectId) {
-    const rental = await db.collection('rental_orders').findOne(
-      { _id: rentalObjectId },
-      { projection: { paymentStatus: 1, paymentInfo: 1 } },
-    );
-    if (rental) linkedPayment = buildLinkedPaymentFromDoc('rental', rental);
-  }
-
-  if (!linkedPayment && orderObjectId) {
-    const order = await db.collection('orders').findOne(
-      { _id: orderObjectId },
-      { projection: { paymentStatus: 1, paymentInfo: 1 } },
-    );
-    if (order) linkedPayment = buildLinkedPaymentFromDoc('order', order);
-  }
-
-  if (!linkedPayment && rentalObjectId) {
-    const rental = await db.collection('rental_orders').findOne(
-      { _id: rentalObjectId },
-      { projection: { paymentStatus: 1, paymentInfo: 1 } },
-    );
-    if (rental) linkedPayment = buildLinkedPaymentFromDoc('rental', rental);
-  }
-
-  const fallbackPaymentInfo = appDoc?.paymentInfo ?? {};
-  return {
-    packageApplied: false,
-    status: linkedPayment?.status ?? normalizeLinkedPaymentStatus(appDoc?.paymentStatus),
-    provider: normalizePaymentProvider(
-      linkedPayment?.provider ??
-        fallbackPaymentInfo?.provider ??
-        appDoc?.paymentProvider ??
-        appDoc?.paymentMethod,
-    ),
-  };
-}
-
 function getApplicationLines(stringDetails: any): any[] {
   // 통합 플로우 우선(lines) + 레거시(racketLines) fallback
   if (Array.isArray(stringDetails?.lines)) return stringDetails.lines;
@@ -1371,28 +1290,19 @@ export async function handleStringingCancelRequest(req: Request, { params }: { p
       reasonText?: string;
     };
 
-    const paymentContext = await resolveStringingCancelPaymentContext(db, appDoc);
-    const needsRefundAccount =
-      !paymentContext.packageApplied &&
-      paymentContext.status === '결제완료' &&
-      paymentContext.provider !== 'nicepay';
-
-    let refundAccount: { bank: string; account: string; holder: string } | undefined;
-    if (needsRefundAccount) {
-      const parsedRefundAccount = RefundAccountSchema.safeParse((body as any)?.refundAccount ?? null);
-      if (!parsedRefundAccount.success) {
-        return NextResponse.json(
-          {
-            ok: false,
-            errorCode: 'INVALID_REFUND_ACCOUNT',
-            message: '환불 계좌 정보를 정확히 입력해주세요.',
-            fieldErrors: parsedRefundAccount.error.flatten().fieldErrors,
-          },
-          { status: 400 },
-        );
-      }
-      refundAccount = parsedRefundAccount.data;
+    const parsedRefundAccount = RefundAccountSchema.safeParse((body as any)?.refundAccount ?? null);
+    if (!parsedRefundAccount.success) {
+      return NextResponse.json(
+        {
+          ok: false,
+          errorCode: 'INVALID_REFUND_ACCOUNT',
+          message: '환불 계좌 정보를 정확히 입력해주세요.',
+          fieldErrors: parsedRefundAccount.error.flatten().fieldErrors,
+        },
+        { status: 400 },
+      );
     }
+    const refundAccount = parsedRefundAccount.data;
 
     const reasonLabelMap: Record<string, string> = {
       CHANGE_MIND: '단순 변심',
@@ -1417,7 +1327,7 @@ export async function handleStringingCancelRequest(req: Request, { params }: { p
     const historyEntry: HistoryRecord = {
       status: '취소요청',
       date: new Date(),
-      description: `고객이 신청 취소를 요청했습니다. 사유: ${reasonLabel}${extra} · ${needsRefundAccount ? '환불 계좌 정보가 등록되었습니다.' : '환불계좌 입력 없이 접수되었습니다.'}`,
+      description: `고객이 신청 취소를 요청했습니다. 사유: ${reasonLabel}${extra} · 환불 계좌 정보가 등록되었습니다.`,
     };
 
     // 5) 신청서 문서에 취소 요청 정보 + 히스토리 추가
@@ -1427,7 +1337,7 @@ export async function handleStringingCancelRequest(req: Request, { params }: { p
       reasonCode: reasonCode ?? 'OTHER',
       reasonText: reasonText ?? '',
       requestedAt: now,
-      ...(refundAccount ? { refundAccount } : {}),
+      refundAccount,
     };
 
     await col.updateOne({ _id: new ObjectId(id) }, {
@@ -2087,28 +1997,19 @@ export async function handleApplicationCancelRequest(req: Request, { params }: {
     const reasonCode: string | undefined = typeof body.reasonCode === 'string' ? body.reasonCode.trim() : undefined;
     const reasonText: string | undefined = typeof body.reasonText === 'string' ? body.reasonText.trim() : undefined;
 
-    const paymentContext = await resolveStringingCancelPaymentContext(db, existing);
-    const needsRefundAccount =
-      !paymentContext.packageApplied &&
-      paymentContext.status === '결제완료' &&
-      paymentContext.provider !== 'nicepay';
-
-    let refundAccount: { bank: string; account: string; holder: string } | undefined;
-    if (needsRefundAccount) {
-      const parsedRefundAccount = RefundAccountSchema.safeParse(body.refundAccount ?? null);
-      if (!parsedRefundAccount.success) {
-        return NextResponse.json(
-          {
-            ok: false,
-            errorCode: 'INVALID_REFUND_ACCOUNT',
-            message: '환불 계좌 정보를 정확히 입력해주세요.',
-            fieldErrors: parsedRefundAccount.error.flatten().fieldErrors,
-          },
-          { status: 400 },
-        );
-      }
-      refundAccount = parsedRefundAccount.data;
+    const parsedRefundAccount = RefundAccountSchema.safeParse(body.refundAccount ?? null);
+    if (!parsedRefundAccount.success) {
+      return NextResponse.json(
+        {
+          ok: false,
+          errorCode: 'INVALID_REFUND_ACCOUNT',
+          message: '환불 계좌 정보를 정확히 입력해주세요.',
+          fieldErrors: parsedRefundAccount.error.flatten().fieldErrors,
+        },
+        { status: 400 },
+      );
     }
+    const refundAccount = parsedRefundAccount.data;
 
     const now = new Date();
 
@@ -2118,7 +2019,7 @@ export async function handleApplicationCancelRequest(req: Request, { params }: {
       reasonCode: reasonCode || '기타',
       reasonText: reasonText || '',
       requestedAt: now,
-      ...(refundAccount ? { refundAccount } : {}),
+      refundAccount,
       // handledAt / handledByAdminId 등은 승인/거절 시 채움 예정
     };
 
@@ -2129,7 +2030,7 @@ export async function handleApplicationCancelRequest(req: Request, { params }: {
     const historyEntry: HistoryRecord = {
       status: '취소요청',
       date: now,
-      description: `고객이 스트링 교체 서비스 신청 취소를 요청했습니다. 사유: ${descBase}${descDetail} · ${needsRefundAccount ? '환불 계좌 정보가 등록되었습니다.' : '환불계좌 입력 없이 접수되었습니다.'}`,
+      description: `고객이 스트링 교체 서비스 신청 취소를 요청했습니다. 사유: ${descBase}${descDetail} · 환불 계좌 정보가 등록되었습니다.`,
     };
 
     // 9) DB 업데이트
