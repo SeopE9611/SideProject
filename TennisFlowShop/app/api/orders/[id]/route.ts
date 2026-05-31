@@ -404,18 +404,21 @@ export async function GET(
       .filter((item) => isMountableStringItem(item))
       .reduce((sum, item) => sum + (item.quantity ?? 1), 0);
 
-    // 이 주문으로 생성된 모든 스트링 신청서 조회 (취소 제외)
-    const apps = await db
+    // 이 주문으로 생성된 모든 스트링 신청서 조회
+    // - 화면 표시용: 취소 이력도 보여야 하므로 draft만 제외
+    // - 슬롯 계산용: 취소 신청서는 사용 슬롯에서 제외
+    const displayApps = await db
       .collection("stringing_applications")
       .find({
         orderId: { $in: [order._id, String(order._id)] },
-        status: { $ne: "취소" },
+        status: { $ne: "draft" },
       })
       .sort({ updatedAt: -1, createdAt: -1 })
       .toArray();
+    const activeApps = displayApps.filter((app: any) => app?.status !== "취소");
 
-    // 각 신청서에서 사용된 슬롯(= 라켓 개수) 합산
-    const usedSlots = apps.reduce(
+    // 각 활성 신청서에서 사용된 슬롯(= 라켓 개수) 합산
+    const usedSlots = activeApps.reduce(
       (sum, app) => sum + getApplicationLines(app?.stringDetails).length,
       0,
     );
@@ -425,7 +428,7 @@ export async function GET(
 
     const packagePassIds = Array.from(
       new Set(
-        apps
+        displayApps
           .map((app: any) => {
             const raw = app?.packagePassId;
             if (!raw) return null;
@@ -460,7 +463,7 @@ export async function GET(
     );
 
     // 이 주문과 연결된 신청서 요약 정보 배열
-    const stringingApplications = apps.map((app: any) => {
+    const stringingApplications = displayApps.map((app: any) => {
       const lines = getApplicationLines(app?.stringDetails);
       const stringNames = Array.from(
         new Set(
