@@ -424,12 +424,12 @@ export default function TensionGuidePage() {
                 전문가 텐션 가이드
               </span>
             </div>
-            <h1 className="mb-4 break-keep text-balance text-3xl font-bold leading-tight text-foreground bp-sm:text-4xl bp-md:mb-6 bp-md:text-4xl bp-lg:text-5xl">
+            <h1 className="mb-4 text-balance text-2xl font-bold leading-tight text-foreground bp-md:mb-6 bp-md:text-3xl bp-lg:text-5xl">
               나에게 맞는
               <br />
               <span className="text-primary">최적의 텐션</span>을 찾아보세요
             </h1>
-            <p className="mx-auto mb-6 max-w-2xl break-keep px-2 text-pretty text-base text-muted-foreground bp-sm:text-lg bp-md:mb-8 bp-md:text-xl">
+            <p className="mx-auto mb-6 max-w-2xl px-2 text-pretty text-sm leading-relaxed text-muted-foreground bp-md:mb-8 bp-md:text-base bp-lg:text-lg">
               플레이 스타일, 스윙 스피드, 스트링 타입에 따른 맞춤형 텐션
               가이드로 최고의 퍼포먼스를 경험하세요
             </p>
@@ -442,19 +442,19 @@ export default function TensionGuidePage() {
         <Tabs
           value={activeSection}
           onValueChange={setActiveSection}
-          className="mb-6 bp-md:mb-12"
+          className="mb-6 overflow-x-auto pb-1 bp-md:mb-12"
         >
-          <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-4 h-auto p-1 bg-muted">
+          <TabsList className="mx-auto grid h-auto w-full min-w-[20rem] max-w-2xl grid-cols-4 bg-muted p-1">
             <TabsTrigger
               value="calculator"
-              className="gap-1 whitespace-nowrap py-2 text-[10px] bp-sm:gap-1.5 bp-sm:py-3 bp-sm:text-xs bp-md:text-sm"
+              className="gap-1 whitespace-nowrap py-2 text-xs bp-sm:gap-1.5 bp-sm:py-3 bp-sm:text-xs bp-md:text-sm"
             >
               <BarChart3 className="h-3 w-3 bp-sm:h-4 bp-sm:w-4" />
               <span className="hidden bp-sm:inline">텐션</span> 계산기
             </TabsTrigger>
             <TabsTrigger
               value="levels"
-              className="gap-1 whitespace-nowrap py-2 text-[10px] bp-sm:gap-1.5 bp-sm:py-3 bp-sm:text-xs bp-md:text-sm"
+              className="gap-1 whitespace-nowrap py-2 text-xs bp-sm:gap-1.5 bp-sm:py-3 bp-sm:text-xs bp-md:text-sm"
             >
               <Users className="h-3 w-3 bp-sm:h-4 bp-sm:w-4" />
               <span className="bp-xs:hidden">수준별</span>
@@ -462,7 +462,7 @@ export default function TensionGuidePage() {
             </TabsTrigger>
             <TabsTrigger
               value="strings"
-              className="gap-1 whitespace-nowrap py-2 text-[10px] bp-sm:gap-1.5 bp-sm:py-3 bp-sm:text-xs bp-md:text-sm"
+              className="gap-1 whitespace-nowrap py-2 text-xs bp-sm:gap-1.5 bp-sm:py-3 bp-sm:text-xs bp-md:text-sm"
             >
               <Layers className="h-3 w-3 bp-sm:h-4 bp-sm:w-4" />
               <span className="bp-xs:hidden">스트링</span>
@@ -470,7 +470,7 @@ export default function TensionGuidePage() {
             </TabsTrigger>
             <TabsTrigger
               value="tips"
-              className="gap-1 whitespace-nowrap py-2 text-[10px] bp-sm:gap-1.5 bp-sm:py-3 bp-sm:text-xs bp-md:text-sm"
+              className="gap-1 whitespace-nowrap py-2 text-xs bp-sm:gap-1.5 bp-sm:py-3 bp-sm:text-xs bp-md:text-sm"
             >
               <Lightbulb className="h-3 w-3 bp-sm:h-4 bp-sm:w-4" />
               <span className="bp-xs:hidden">팁</span>
@@ -496,7 +496,7 @@ export default function TensionGuidePage() {
                       <label className="block text-sm font-semibold text-foreground mb-3">
                         성별
                       </label>
-                      <div className="grid grid-cols-2 gap-2 bp-sm:gap-3">
+                      <div className="grid grid-cols-1 gap-2 bp-sm:grid-cols-2 bp-sm:gap-3">
                         {[
                           {
                             id: "female",
@@ -558,7 +558,7 @@ export default function TensionGuidePage() {
                       <label className="block text-sm font-semibold text-foreground mb-3">
                         스트링 타입
                       </label>
-                      <div className="grid grid-cols-2 gap-2 bp-sm:gap-3">
+                      <div className="grid grid-cols-1 gap-2 bp-sm:grid-cols-2 bp-sm:gap-3">
                         {stringTypes.map((st) => (
                           <button
                             key={st.id}
@@ -753,7 +753,7 @@ export default function TensionGuidePage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-2 gap-2 bp-sm:gap-3">
+                    <div className="grid grid-cols-1 gap-2 bp-sm:grid-cols-2 bp-sm:gap-3">
                       {environmentFactors.map((factor, index) => (
                         <div
                           key={index}
@@ -763,10 +763,10 @@ export default function TensionGuidePage() {
                             className={`h-4 w-4 mt-0.5 flex-shrink-0 ${factor.color}`}
                           />
                           <div>
-                            <div className="text-[10px] bp-sm:text-xs font-medium text-foreground">
+                            <div className="text-xs bp-sm:text-xs font-medium text-foreground">
                               {factor.factor}
                             </div>
-                            <div className="text-[10px] bp-sm:text-xs text-primary font-semibold">
+                            <div className="text-xs bp-sm:text-xs text-primary font-semibold">
                               {factor.adjustment}
                             </div>
                           </div>
@@ -833,7 +833,7 @@ export default function TensionGuidePage() {
                       <div className="mb-3 bp-md:mb-4">
                         <div className="space-y-2">
                           <div>
-                            <div className="flex items-center justify-between text-[10px] bp-sm:text-xs mb-1">
+                            <div className="flex items-center justify-between text-xs bp-sm:text-xs mb-1">
                               <span className="text-muted-foreground">
                                 여자
                               </span>
@@ -855,7 +855,7 @@ export default function TensionGuidePage() {
                             </div>
                           </div>
                           <div>
-                            <div className="flex items-center justify-between text-[10px] bp-sm:text-xs mb-1">
+                            <div className="flex items-center justify-between text-xs bp-sm:text-xs mb-1">
                               <span className="text-muted-foreground">
                                 남자
                               </span>
@@ -875,7 +875,7 @@ export default function TensionGuidePage() {
                               />
                             </div>
                           </div>
-                          <div className="flex justify-between text-[10px] bp-sm:text-xs text-muted-foreground">
+                          <div className="flex justify-between text-xs bp-sm:text-xs text-muted-foreground">
                             <span>{tensionAxis.min}LB</span>
                             <span>{tensionAxis.max}LB</span>
                           </div>
@@ -886,7 +886,7 @@ export default function TensionGuidePage() {
                         {player.characteristics.map((char, i) => (
                           <span
                             key={i}
-                            className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap px-2 py-1 bg-muted rounded-full text-[10px] bp-sm:text-xs text-muted-foreground"
+                            className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap px-2 py-1 bg-muted rounded-full text-xs bp-sm:text-xs text-muted-foreground"
                           >
                             <CheckCircle2 className="h-3 w-3 text-primary" />
                             {char}

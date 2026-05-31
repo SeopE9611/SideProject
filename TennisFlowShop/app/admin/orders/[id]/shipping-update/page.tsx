@@ -62,7 +62,7 @@ export default async function ShippingUpdatePage({
             <h1 className="text-2xl font-bold text-foreground mb-2">
               배송 정보 관리
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-sm leading-relaxed text-muted-foreground bp-md:text-base">
               주문 데이터를 불러올 수 없습니다.
             </p>
           </div>
@@ -162,10 +162,10 @@ export default async function ShippingUpdatePage({
               <Truck className="h-8 w-8 text-primary mx-auto" />
             )}
           </div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">
+          <h1 className="mb-2 text-2xl font-bold text-foreground bp-md:text-3xl">
             {pageTitle}
           </h1>
-          <p className="text-muted-foreground">{pageDesc}</p>
+          <p className="text-sm leading-relaxed text-muted-foreground bp-md:text-base">{pageDesc}</p>
         </div>
 
         <ShippingFormClient

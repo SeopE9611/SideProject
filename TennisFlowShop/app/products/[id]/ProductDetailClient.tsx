@@ -954,7 +954,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
       {/* Hero Section with Breadcrumb */}
       <div className="relative bg-muted/20 text-foreground py-5 sm:py-6 border-b border-border/60">
         <SiteContainer variant="wide" className="relative">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
             <div className="flex items-center gap-2 sm:gap-2.5 text-sm sm:text-base overflow-x-auto scrollbar-hide">
               <Link href="/" className="text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap">
                 홈
@@ -1088,7 +1088,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   <div className="space-y-4 sm:space-y-5 pt-5 sm:pt-6 border-t border-border/60">
                     {visibleColorRows.length > 0 && (
                       <div className="space-y-2 rounded-xl border border-border/60 bg-muted/30 p-3">
-                        <div className="flex items-center justify-between gap-3 min-w-0">
+                        <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:gap-3 min-w-0">
                           <span className="text-sm font-semibold text-foreground">색상 선택</span>
                           {selectedColorLabel && (
                             <span className="min-w-0 truncate text-xs text-muted-foreground" title={selectedColorLabel}>
@@ -1136,7 +1136,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         )}
                       </div>
                     )}
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
                       <span className="whitespace-nowrap font-semibold text-base sm:text-lg">수량</span>
 
                       <div className={cn("p-1", detailSurfaceSubtleInnerClass, "flex items-center")}>
@@ -1175,7 +1175,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
                     {isStringProduct && gaugeRows.length > 0 && (
                       <div className="space-y-2 rounded-xl border border-border/60 bg-muted/30 p-3">
-                        <div className="flex items-center justify-between gap-3 min-w-0">
+                        <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:gap-3 min-w-0">
                           <span className="text-sm font-semibold text-foreground">게이지 선택</span>
                           {gaugeOptions.length === 1 && <span className="text-xs text-muted-foreground">자동 선택</span>}
                         </div>
@@ -1203,7 +1203,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
                     <div className="flex flex-col gap-3 sm:gap-3.5">
                       {(hasVariantInventories ? selectedVariantSoldOut : product.inventory?.manageStock && product.inventory.stock <= 0) ? (
-                        <Button disabled variant="secondary" size="tall" className="h-12 w-full whitespace-nowrap sm:h-14">
+                        <Button disabled variant="secondary" size="tall" className="h-12 w-full whitespace-normal leading-snug sm:h-14 sm:whitespace-nowrap">
                           <X className="mr-2 h-5 w-5" />
                           {hasVariantInventories ? "선택한 색상/게이지 조합이 품절되었습니다" : "재고가 소진되었습니다"}
                         </Button>
@@ -1213,7 +1213,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                             <Button
                               variant="default"
                               size="tall"
-                              className="h-12 w-full whitespace-nowrap sm:h-14"
+                              className="h-12 w-full whitespace-normal leading-snug sm:h-14 sm:whitespace-nowrap"
                               onClick={handleBuyNow}
                               disabled={loading || effectiveStock <= 0 || quantity > effectiveStock || (isStringProduct && gaugeRows.length > 0 && !selectedGauge) || variantPurchaseBlocked}
                             >
@@ -1226,7 +1226,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                             <Button
                               variant={shouldEmphasizeServiceCta ? "default" : "secondary"}
                               size="tall"
-                              className="h-12 w-full gap-2 whitespace-nowrap sm:h-14"
+                              className="h-12 w-full gap-2 whitespace-normal leading-snug sm:h-14 sm:whitespace-nowrap"
                               disabled={loading || quantity > effectiveStock || (isStringProduct && gaugeRows.length > 0 && !selectedGauge) || variantPurchaseBlocked}
                               onClick={handleBuyNowWithService}
                             >
@@ -1239,7 +1239,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                             <Button
                               variant="outline"
                               size="lg"
-                              className="h-auto min-h-12 w-full whitespace-nowrap text-sm sm:text-base"
+                              className="h-auto min-h-12 w-full whitespace-normal leading-snug text-sm sm:text-base"
                               onClick={handleAddToCart}
                               disabled={loading || quantity > effectiveStock || (isStringProduct && gaugeRows.length > 0 && !selectedGauge) || variantPurchaseBlocked}
                             >
@@ -1252,7 +1252,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                               onClick={handleWishlist}
                               size="lg"
                               className={cn(
-                                "h-auto min-h-12 w-full whitespace-nowrap text-sm sm:text-base",
+                                "h-auto min-h-12 w-full whitespace-normal leading-snug text-sm sm:text-base",
                                 isWishlisted ? "border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/15" : "bg-background",
                                 isWishlistUnknown && "cursor-not-allowed opacity-70",
                               )}
@@ -1366,7 +1366,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="description" className="p-4 sm:p-8">
+              <TabsContent value="description" className="p-4 bp-md:p-8">
                 <div className="prose max-w-none">
                   <div className="flex items-center gap-3 mb-5 sm:mb-6">
                     <div className="w-10 sm:w-12 h-10 sm:h-12 border border-border/60 bg-secondary text-foreground rounded-lg flex items-center justify-center">
@@ -1382,7 +1382,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 </div>
               </TabsContent>
 
-              <TabsContent value="specifications" className="p-4 sm:p-8">
+              <TabsContent value="specifications" className="p-4 bp-md:p-8">
                 <div className="space-y-4 sm:space-y-6">
                   <div className="flex items-center gap-3 mb-5 sm:mb-6">
                     <div className="w-10 sm:w-12 h-10 sm:h-12 border border-border/60 bg-secondary text-foreground rounded-lg flex items-center justify-center">
@@ -1398,7 +1398,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         const displayValue = key === "색상" && selectedColorLabel ? selectedColorLabel : value;
                         return (
                           <div key={key} className="bg-muted/30 p-3 sm:p-4 rounded-lg border border-border">
-                            <div className="flex items-center justify-between">
+                            <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
                               <span className="font-semibold text-foreground text-sm sm:text-base">{key}</span>
                               <span className="min-w-0 truncate text-right text-muted-foreground font-medium text-sm sm:text-base">{String(displayValue)}</span>
                             </div>
@@ -1450,9 +1450,9 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 </div>
               </TabsContent>
 
-              <TabsContent value="reviews" className="p-4 sm:p-8">
+              <TabsContent value="reviews" className="p-4 bp-md:p-8">
                 <div className="space-y-4 sm:space-y-6">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
                     <div className="flex items-center gap-2 sm:gap-3">
                       <div className="w-10 sm:w-12 h-10 sm:h-12 bg-muted/30 rounded-lg flex items-center justify-center">
                         <Star className="h-4 w-4 sm:h-6 sm:w-6 text-primary" />
@@ -1697,7 +1697,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 </div>
               </TabsContent>
 
-              <TabsContent value="qna" className="p-4 sm:p-8">
+              <TabsContent value="qna" className="p-4 bp-md:p-8">
                 <div className="flex items-center justify-between mb-5 sm:mb-6">
                   <div className="flex items-center gap-2 sm:gap-3">
                     <div className="w-10 sm:w-12 h-10 sm:h-12 bg-muted/30 text-foreground rounded-lg flex items-center justify-center">
@@ -1786,7 +1786,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
               {/* 4칸 고정: 상품이 부족하면 플레이스홀더로 채움 */}
               {loadingRelated ? (
                 // 로딩 스켈레톤
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+                <div className="grid grid-cols-1 gap-3 bp-sm:grid-cols-2 sm:grid-cols-3 md:grid-cols-4">
                   {Array.from({ length: 4 }).map((_, i) => (
                     <div key={i} className="rounded-xl p-3 sm:p-4 bg-card/80 dark:bg-muted/80 shadow-sm animate-pulse">
                       <div className="aspect-square rounded-lg bg-muted mb-2 sm:mb-3"></div>
@@ -1796,7 +1796,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   ))}
                 </div>
               ) : (
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+                <div className="grid grid-cols-1 gap-3 bp-sm:grid-cols-2 sm:grid-cols-3 md:grid-cols-4">
                   {/* 실제 관련 상품 */}
                   {relatedFiltered.map((rp: any) => (
                     <Link key={rp._id} href={`/products/${rp._id}`}>

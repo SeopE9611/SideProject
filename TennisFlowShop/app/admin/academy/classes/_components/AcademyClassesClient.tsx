@@ -506,7 +506,7 @@ export default function AcademyClassesClient() {
             </Table>
           </div>
 
-          <div className="flex flex-col gap-2 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-2 text-sm leading-relaxed text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
             <div>
               총 {data?.pagination.total.toLocaleString("ko-KR") ?? 0}건 · {data?.pagination.page ?? page} / {data?.pagination.totalPages ?? 1}페이지
             </div>
@@ -546,7 +546,7 @@ export default function AcademyClassesClient() {
                 ? "클래스를 영구 삭제할까요?"
                 : "클래스를 숨김 처리할까요?"}
             </AlertDialogTitle>
-            <AlertDialogDescription className="break-keep leading-6">
+            <AlertDialogDescription className="leading-6">
               {pendingAction?.type === "delete"
                 ? "이 클래스를 영구 삭제할까요? 연결된 신청 내역이 없는 클래스만 삭제할 수 있으며, 삭제 후에는 복구할 수 없습니다."
                 : "이 클래스를 숨김 처리할까요? 고객 화면에는 노출되지 않지만, 기존 신청 내역과 운영 데이터는 보존됩니다."}

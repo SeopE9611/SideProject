@@ -241,7 +241,7 @@ export default function ProductsClient() {
         <Card className="mb-6 border-border bg-card">
           <CardContent className="p-4 sm:p-5">
             <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-sm font-medium text-foreground break-keep leading-relaxed">오늘의 상품 운영 우선순위를 먼저 확인하고 목록에서 바로 점검하세요.</p>
+              <p className="text-sm font-medium leading-relaxed text-foreground">오늘의 상품 운영 우선순위를 먼저 확인하고 목록에서 바로 점검하세요.</p>
               <Link href="/admin/operations" className="text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                 오늘 처리할 일 보기
               </Link>
@@ -254,14 +254,14 @@ export default function ProductsClient() {
                 "판매 상태/노출 관리: 비활성·비노출 상품이 의도된 상태인지 주기적으로 검토하세요.",
               ].map((guide) => (
                 <div key={guide} className="rounded-md border border-border bg-muted/40 px-3 py-2">
-                  <p className="text-sm text-foreground break-keep leading-relaxed">{guide}</p>
+                  <p className="text-sm leading-relaxed text-foreground">{guide}</p>
                 </div>
               ))}
             </div>
           </CardContent>
         </Card>
 
-        <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8 shrink-0">
+        <section className="mb-6 grid shrink-0 gap-3 sm:grid-cols-2 bp-md:mb-8 bp-md:gap-6 lg:grid-cols-4">
           {[
             {
               label: "전체 상품",
@@ -289,11 +289,11 @@ export default function ProductsClient() {
             },
           ].map((c, i) => (
             <Card key={i} className={adminSurface.kpiCard}>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
+              <CardContent className="p-4 bp-md:p-6">
+                <div className="flex items-center justify-between gap-3">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">{c.label}</p>
-                    <p className="text-3xl font-bold text-foreground">{hasResolvedData ? c.value : "-"}</p>
+                    <p className="text-2xl font-bold text-foreground bp-md:text-3xl">{hasResolvedData ? c.value : "-"}</p>
                   </div>
                   <div className={`${c.bgColor} rounded-xl p-3 border border-border`}>{c.icon}</div>
                 </div>
@@ -315,7 +315,7 @@ export default function ProductsClient() {
                 asChild
                 className={[
                   // 사이즈/레이아웃
-                  "h-9 px-4 rounded-lg font-medium inline-flex items-center gap-2",
+                  "h-auto min-h-9 w-full px-4 rounded-lg font-medium inline-flex items-center justify-center gap-2 whitespace-normal text-center leading-snug sm:w-auto",
                   // 색상(라이트/다크 모두 자연스러운 플랫)
                   "bg-primary text-primary-foreground hover:bg-primary/90",
                   // 경계/그림자: 지나치지 않게만
@@ -335,12 +335,12 @@ export default function ProductsClient() {
             </div>
           </CardHeader>
 
-          <CardContent className="space-y-6 flex-1 min-h-0 flex flex-col p-6">
+          <CardContent className="flex min-h-0 flex-1 flex-col space-y-5 p-4 bp-md:space-y-6 bp-md:p-6">
             {/* 검색/필터 */}
             <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 space-y-3 md:space-y-0">
               <div className="w-full space-y-3">
                 {/* 검색 */}
-                <div className="w-full max-w-md">
+                <div className="w-full md:max-w-md">
                   <div className="relative">
                     <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
                     <Input

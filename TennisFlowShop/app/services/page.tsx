@@ -198,8 +198,8 @@ export default async function ServicesPage() {
         <div className="container relative z-10">
           <div className="mx-auto max-w-4xl">
             <Card className="border border-border bg-card/95 shadow-md backdrop-blur-[1px]">
-              <CardContent className="p-6 text-center bp-md:p-8">
-                <h1 className="break-keep text-3xl font-bold leading-tight text-foreground sm:text-4xl">스트링 교체 서비스를 더 쉽게</h1>
+              <CardContent className="p-5 text-center bp-sm:p-6 bp-md:p-8">
+                <h1 className="text-2xl font-bold leading-tight text-foreground bp-md:text-3xl bp-lg:text-4xl">스트링 교체 서비스를 더 쉽게</h1>
                 <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">스트링 구매, 라켓 구매·대여, 보유 장비 신청까지 상황에 맞는 방식으로 접수할 수 있습니다.</p>
                 <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
                   <Button asChild>
@@ -221,7 +221,7 @@ export default async function ServicesPage() {
             <div className="mb-6 text-center bp-md:mb-8">
               <p className="text-sm font-semibold text-muted-foreground">신청 방식 먼저 선택하기</p>
               <h2 className="mt-1 break-keep text-2xl font-bold leading-tight text-foreground sm:text-3xl">어떤 방식으로 시작할까요?</h2>
-              <p className="mx-auto mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground break-keep">현재 상황에 맞는 시작 지점을 고르면 구매·대여·보유 장비 흐름에 맞춰 신청이 이어집니다.</p>
+              <p className="mx-auto mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">현재 상황에 맞는 시작 지점을 고르면 구매·대여·보유 장비 흐름에 맞춰 신청이 이어집니다.</p>
             </div>
 
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
@@ -237,12 +237,12 @@ export default async function ServicesPage() {
                   </div>
 
                   <div className="flex flex-1 flex-col">
-                    <h3 className="text-base font-semibold leading-snug text-foreground break-keep bp-sm:text-lg">{item.title}</h3>
-                    <p className="mt-3 text-sm leading-relaxed text-muted-foreground break-keep">{item.description}</p>
+                    <h3 className="break-keep text-base font-semibold leading-snug text-foreground bp-sm:text-lg">{item.title}</h3>
+                    <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{item.description}</p>
 
                     <div className="mt-4 rounded-xl border border-border bg-muted/30 p-3">
                       <p className="text-xs font-semibold text-primary">진행 흐름</p>
-                      <p className="mt-1 text-sm leading-relaxed text-muted-foreground break-keep">{item.steps}</p>
+                      <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{item.steps}</p>
                     </div>
 
                     <div className="mt-auto pt-5">
@@ -262,14 +262,14 @@ export default async function ServicesPage() {
                   <div className="space-y-3">
                     <Badge variant="secondary">도움이 필요할 때</Badge>
                     <div className="space-y-2">
-                      <h3 className="text-xl font-bold text-foreground break-keep">잘 모르겠다면 상담과 안내를 먼저 확인하세요</h3>
-                      <p className="text-sm leading-relaxed text-muted-foreground break-keep">추천 도우미, 가격 안내, FAQ, 전화 상담을 한곳에 모았습니다. 테니스 스트링 쇼핑은 첫 번째 신청 카드에서 바로 이어갈 수 있어요.</p>
+                      <h3 className="break-keep text-lg font-bold text-foreground bp-sm:text-xl">잘 모르겠다면 상담과 안내를 먼저 확인하세요</h3>
+                      <p className="text-sm leading-relaxed text-muted-foreground">추천 도우미, 가격 안내, FAQ, 전화 상담을 한곳에 모았습니다. 테니스 스트링 쇼핑은 첫 번째 신청 카드에서 바로 이어갈 수 있어요.</p>
                     </div>
                     <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
                       {serviceNoticeChips.map((notice) => (
                         <div key={notice.title} className="rounded-xl border border-border bg-card p-3">
                           <p className="text-sm font-semibold text-foreground">{notice.title}</p>
-                          <p className="mt-1 text-xs leading-relaxed text-muted-foreground break-keep">{notice.description}</p>
+                          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{notice.description}</p>
                         </div>
                       ))}
                     </div>
@@ -286,7 +286,7 @@ export default async function ServicesPage() {
                           <span>{link.label}</span>
                           <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-primary" />
                         </span>
-                        <span className="mt-2 text-sm leading-relaxed text-muted-foreground break-keep">{link.helper}</span>
+                        <span className="mt-2 text-sm leading-relaxed text-muted-foreground">{link.helper}</span>
                       </Link>
                     ))}
                   </div>
@@ -305,15 +305,15 @@ export default async function ServicesPage() {
               <Star className="w-4 h-4 mr-2" />
               프리미엄 스트링 컬렉션
             </Badge>
-            <h2 className="mb-6 break-keep text-3xl font-bold leading-tight text-foreground sm:text-4xl md:text-4xl">스트링 종류 안내</h2>
-            <p className="mx-auto max-w-3xl break-keep text-base leading-relaxed text-muted-foreground sm:text-xl">
+            <h2 className="mb-4 break-keep text-2xl font-bold leading-tight text-foreground bp-md:mb-6 bp-md:text-3xl bp-lg:text-4xl">스트링 종류 안내</h2>
+            <p className="mx-auto max-w-3xl text-sm leading-relaxed text-muted-foreground bp-md:text-base bp-lg:text-lg">
               플레이 스타일과 경기력 향상을 위한 다양한 특성의 스트링을 제공합니다.
               <br />
               자신에게 맞는 최적의 스트링을 선택해보세요.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 bp-md:grid-cols-2 bp-lg:grid-cols-3 gap-6 md:gap-8">
+          <div className="grid grid-cols-1 gap-4 bp-md:grid-cols-2 bp-md:gap-6 bp-lg:grid-cols-3 bp-lg:gap-8">
             {stringTypes.map((type) => (
               <Card key={type.id} className="group relative overflow-hidden border border-border shadow-sm hover:shadow-md transition-[box-shadow,border-color,background-color] duration-200 bg-card">
                 <div className="h-2 bg-muted"></div>
@@ -401,8 +401,8 @@ export default async function ServicesPage() {
               <Award className="w-4 h-4 mr-2" />
               투명한 가격 정책
             </Badge>
-            <h2 className="mb-6 break-keep text-3xl font-bold leading-tight text-foreground sm:text-4xl md:text-4xl">가격 안내</h2>
-            <p className="mx-auto max-w-3xl break-keep text-base leading-relaxed text-muted-foreground sm:text-xl">
+            <h2 className="mb-4 break-keep text-2xl font-bold leading-tight text-foreground bp-md:mb-6 bp-md:text-3xl bp-lg:text-4xl">가격 안내</h2>
+            <p className="mx-auto max-w-3xl text-sm leading-relaxed text-muted-foreground bp-md:text-base bp-lg:text-lg">
               합리적인 가격으로 최고의 스트링 장착 서비스를 제공합니다.
               <br />
               다양한 옵션 중 필요한 서비스를 선택하세요.
@@ -420,12 +420,12 @@ export default async function ServicesPage() {
                 <CardHeader className="text-center pb-4">
                   <div className={`mx-auto mb-4 w-16 h-16 rounded-full flex items-center justify-center shadow-sm ${item.popular ? "bg-secondary text-muted-foreground" : "bg-secondary text-muted-foreground"}`}>{item.icon}</div>
                   <CardTitle className={`break-keep text-lg font-bold leading-snug ${item.popular ? "text-foreground" : ""}`}>{item.service}</CardTitle>
-                  <div className={`whitespace-nowrap tabular-nums text-3xl font-bold ${item.popular ? "text-foreground" : "text-foreground"}`}>{item.priceLabel}</div>
+                  <div className={`whitespace-nowrap tabular-nums text-2xl font-bold bp-sm:text-3xl ${item.popular ? "text-foreground" : "text-foreground"}`}>{item.priceLabel}</div>
                   <div className={`text-sm ${item.popular ? "text-muted-foreground" : "text-muted-foreground"}`}>소요시간: {item.duration}</div>
                 </CardHeader>
 
                 <CardContent>
-                  <p className="break-keep text-center text-sm text-muted-foreground">{item.description}</p>
+                  <p className="text-center text-sm leading-relaxed text-muted-foreground">{item.description}</p>
                 </CardContent>
               </Card>
             ))}
@@ -466,12 +466,12 @@ export default async function ServicesPage() {
           </div>
 
           {/* 추가 서비스 */}
-          <div className="bg-card rounded-2xl p-4 md:p-8">
-            <h3 className="text-2xl font-bold mb-6 text-center text-foreground">추가 서비스</h3>
+          <div className="rounded-2xl bg-card p-4 bp-md:p-8">
+            <h3 className="mb-5 text-center text-xl font-bold text-foreground bp-md:mb-6 bp-md:text-2xl">추가 서비스</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {additionalServices.map((service) => (
                 <div key={service.title} className="border border-border rounded-xl p-4 md:p-6">
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="mb-4 flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
                     <div className="flex items-center">
                       <div className="w-10 h-10 bg-secondary rounded-lg flex items-center justify-center text-muted-foreground mr-3">{service.icon}</div>
                       <h4 className="font-bold">{service.title}</h4>
@@ -494,15 +494,15 @@ export default async function ServicesPage() {
               <Shield className="w-4 h-4 mr-2" />
               전문적인 프로세스
             </Badge>
-            <h2 className="mb-6 break-keep text-3xl font-bold leading-tight text-foreground sm:text-4xl md:text-4xl">스트링 장착 과정</h2>
-            <p className="mx-auto max-w-3xl break-keep text-base leading-relaxed text-muted-foreground sm:text-xl">
+            <h2 className="mb-4 break-keep text-2xl font-bold leading-tight text-foreground bp-md:mb-6 bp-md:text-3xl bp-lg:text-4xl">스트링 장착 과정</h2>
+            <p className="mx-auto max-w-3xl text-sm leading-relaxed text-muted-foreground bp-md:text-base bp-lg:text-lg">
               도깨비테니스는 세심한 과정을 통해
               <br />
               최고 품질의 스트링 장착 서비스를 제공합니다.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 bp-md:grid-cols-2 bp-lg:grid-cols-4 gap-6 md:gap-8">
+          <div className="grid grid-cols-1 gap-4 bp-md:grid-cols-2 bp-md:gap-6 bp-lg:grid-cols-4 bp-lg:gap-8">
             {processSteps.map((step) => (
               <div key={step.step} className="relative group">
                 {processSteps.indexOf(step) < processSteps.length - 1 && <div className="hidden bp-lg:block absolute top-16 left-full w-full h-0.5 bg-border/70 dark:bg-border/80 transform translate-x-4 z-0"></div>}
@@ -513,8 +513,8 @@ export default async function ServicesPage() {
                       <div className="w-20 h-20 bg-secondary rounded-full flex items-center justify-center text-muted-foreground mx-auto shadow-sm transition-shadow duration-300 group-hover:shadow-md">{step.icon}</div>
                       <div className="absolute -top-2 -right-2 w-8 h-8 bg-secondary rounded-full flex items-center justify-center text-foreground text-sm font-bold shadow-sm">{step.step}</div>
                     </div>
-                    <h3 className="text-xl font-bold mb-4">{step.title}</h3>
-                    <p className="text-muted-foreground leading-relaxed">{step.description}</p>
+                    <h3 className="mb-3 text-lg font-bold bp-md:mb-4 bp-md:text-xl">{step.title}</h3>
+                    <p className="text-sm leading-relaxed text-muted-foreground bp-md:text-base">{step.description}</p>
                   </CardContent>
                 </Card>
               </div>
@@ -527,8 +527,8 @@ export default async function ServicesPage() {
       <section className="py-12 bp-md:py-16 bp-lg:py-20 bg-muted/40">
         <div className="container">
           <div className="text-center mb-10">
-            <h2 className="mb-6 break-keep text-3xl font-bold leading-tight text-foreground sm:text-4xl md:text-4xl">고객 후기</h2>
-            <p className="mx-auto max-w-3xl break-keep text-base leading-relaxed text-muted-foreground sm:text-xl">도깨비테니스 스트링 서비스를 경험한 후기를 확인해보세요</p>
+            <h2 className="mb-4 break-keep text-2xl font-bold leading-tight text-foreground bp-md:mb-6 bp-md:text-3xl bp-lg:text-4xl">고객 후기</h2>
+            <p className="mx-auto max-w-3xl text-sm leading-relaxed text-muted-foreground bp-md:text-base bp-lg:text-lg">도깨비테니스 스트링 서비스를 경험한 후기를 확인해보세요</p>
           </div>
 
           <div className="text-center">

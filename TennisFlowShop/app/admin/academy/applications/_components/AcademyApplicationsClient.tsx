@@ -220,25 +220,25 @@ export default function AcademyApplicationsClient() {
           <div className="grid gap-2.5 text-sm sm:grid-cols-2 lg:grid-cols-4">
             <div className="rounded-lg border border-border/60 bg-muted/30 px-3 py-2.5">
               <p className="font-medium text-foreground">1) 신청 접수 확인</p>
-              <p className="mt-1 leading-relaxed break-keep text-muted-foreground">
+              <p className="mt-1 leading-relaxed text-muted-foreground">
                 신규 신청의 기본 정보와 접수 시점을 우선 확인합니다.
               </p>
             </div>
             <div className="rounded-lg border border-border/60 bg-muted/30 px-3 py-2.5">
               <p className="font-medium text-foreground">2) 상담·검토 진행</p>
-              <p className="mt-1 leading-relaxed break-keep text-muted-foreground">
+              <p className="mt-1 leading-relaxed text-muted-foreground">
                 레슨 목적과 가능 일정을 점검하며 상담 상태를 관리합니다.
               </p>
             </div>
             <div className="rounded-lg border border-border/60 bg-muted/30 px-3 py-2.5">
               <p className="font-medium text-foreground">3) 등록 확정 관리</p>
-              <p className="mt-1 leading-relaxed break-keep text-muted-foreground">
+              <p className="mt-1 leading-relaxed text-muted-foreground">
                 정원 및 상담 결과를 기준으로 등록 확정 여부를 반영합니다.
               </p>
             </div>
             <div className="rounded-lg border border-border/60 bg-muted/30 px-3 py-2.5">
               <p className="font-medium text-foreground">4) 모집 상태 확인</p>
-              <p className="mt-1 leading-relaxed break-keep text-muted-foreground">
+              <p className="mt-1 leading-relaxed text-muted-foreground">
                 클래스 모집·마감 상태와 신청 처리 현황을 함께 확인합니다.
               </p>
             </div>
@@ -291,13 +291,13 @@ export default function AcademyApplicationsClient() {
               </SelectContent>
             </Select>
 
-            <form className="flex w-full gap-2 lg:max-w-md" onSubmit={submitSearch}>
+            <form className="flex w-full flex-col gap-2 sm:flex-row lg:max-w-md" onSubmit={submitSearch}>
               <Input
                 value={keywordInput}
                 onChange={(event) => setKeywordInput(event.target.value)}
                 placeholder="이름, 연락처, 이메일, 목표, 클래스명 검색"
               />
-              <Button type="submit" variant="outline">
+              <Button type="submit" variant="outline" className="w-full sm:w-auto">
                 <Search className="mr-2 h-4 w-4" />
                 검색
               </Button>
