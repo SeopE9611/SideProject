@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import { Bug, Compass, MessageCircle, X } from "lucide-react";
 
 declare global {
@@ -66,6 +67,7 @@ export default function KakaoInquiryWidget() {
 
   // 목적 선택은 Kakao env와 무관하게 노출한다.
   const shouldHide = hideAll || (!canShowGuide && !canShowInquiry && !canShowBug);
+  const hideOnFinderTouch = pathname === "/rackets/finder";
 
   useEffect(() => {
     // 숨김 상태로 전환되면 패널은 닫아줌(UX + 상태 정리)
@@ -250,7 +252,10 @@ export default function KakaoInquiryWidget() {
 
   return (
     <div
-      className="fixed bottom-4 right-4 z-[70] bp-sm:bottom-4 bp-sm:right-4"
+      className={cn(
+        "fixed bottom-4 right-4 z-[70] bp-sm:bottom-4 bp-sm:right-4",
+        hideOnFinderTouch && "hidden bp-lg:block",
+      )}
       style={liftPx ? { transform: `translateY(-${liftPx}px)` } : undefined}
     >
       <div className="flex flex-col items-end gap-2 bp-sm:gap-3">
