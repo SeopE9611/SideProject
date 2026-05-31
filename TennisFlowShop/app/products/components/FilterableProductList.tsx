@@ -767,7 +767,7 @@ export default function FilterableProductList({
                     전체 초기화
                   </Button>
                 </div>
-                <div className="flex flex-nowrap gap-2 overflow-x-auto pb-1">
+                <div className="flex max-w-full flex-nowrap gap-2 overflow-x-auto pb-1">
                   {submittedQuery && (
                     <span className="inline-flex max-w-[220px] shrink-0 items-center gap-1 rounded-full border border-border bg-muted px-2 py-1 text-xs whitespace-nowrap">
                       {`검색어 "${submittedQuery}"`}

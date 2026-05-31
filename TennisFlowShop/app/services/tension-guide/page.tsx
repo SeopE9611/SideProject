@@ -806,13 +806,13 @@ export default function TensionGuidePage() {
                             <div className="flex max-w-full flex-nowrap gap-2 overflow-x-auto pb-1">
                               <Badge
                                 variant="secondary"
-                                className="text-xs bp-md:text-sm px-2 bp-md:px-3 py-0.5 bp-md:py-1"
+                                className="shrink-0 whitespace-nowrap text-xs bp-md:text-sm px-2 bp-md:px-3 py-0.5 bp-md:py-1"
                               >
                                 여자 {player.femaleTension}
                               </Badge>
                               <Badge
                                 variant="outline"
-                                className="text-xs bp-md:text-sm px-2 bp-md:px-3 py-0.5 bp-md:py-1"
+                                className="shrink-0 whitespace-nowrap text-xs bp-md:text-sm px-2 bp-md:px-3 py-0.5 bp-md:py-1"
                               >
                                 남자 {player.maleTension}
                               </Badge>
@@ -886,7 +886,7 @@ export default function TensionGuidePage() {
                         {player.characteristics.map((char, i) => (
                           <span
                             key={i}
-                            className="inline-flex items-center gap-1 px-2 py-1 bg-muted rounded-full text-[10px] bp-sm:text-xs text-muted-foreground"
+                            className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap px-2 py-1 bg-muted rounded-full text-[10px] bp-sm:text-xs text-muted-foreground"
                           >
                             <CheckCircle2 className="h-3 w-3 text-primary" />
                             {char}

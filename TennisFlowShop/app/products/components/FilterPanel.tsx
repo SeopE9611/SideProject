@@ -330,27 +330,29 @@ export const FilterPanel = React.memo(function FilterPanel({
           </div>
           <div className="mt-4 bp-sm:mt-6 space-y-2">
             <h3 className="font-medium text-base bp-sm:text-lg">가격대</h3>
-            <div className="flex flex-nowrap gap-2 overflow-x-auto pb-1">
-              {PRICE_PRESETS.map((preset) => {
-                const isActive =
-                  priceRange[0] === preset.range[0] &&
-                  priceRange[1] === preset.range[1];
-                return (
-                  <button
-                    key={preset.label}
-                    type="button"
-                    onClick={() => setPriceRange(preset.range)}
-                    className={cn(
-                      "rounded-md border px-3 py-1.5 text-xs bp-sm:text-sm transition-colors",
-                      isActive
-                        ? "border-primary bg-primary/15 text-primary dark:bg-primary/30 dark:text-primary-foreground"
-                        : "border-border bg-background text-muted-foreground hover:bg-muted",
-                    )}
-                  >
-                    {preset.label}
-                  </button>
-                );
-              })}
+            <div className="max-w-full overflow-x-auto pb-1">
+              <div className="flex w-max gap-2">
+                {PRICE_PRESETS.map((preset) => {
+                  const isActive =
+                    priceRange[0] === preset.range[0] &&
+                    priceRange[1] === preset.range[1];
+                  return (
+                    <button
+                      key={preset.label}
+                      type="button"
+                      onClick={() => setPriceRange(preset.range)}
+                      className={cn(
+                        "min-w-max shrink-0 whitespace-nowrap rounded-md border px-3 py-1.5 text-xs transition-colors bp-sm:text-sm",
+                        isActive
+                          ? "border-primary bg-primary/15 text-primary dark:bg-primary/30 dark:text-primary-foreground"
+                          : "border-border bg-background text-muted-foreground hover:bg-muted",
+                      )}
+                    >
+                      {preset.label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
           {onClose && (
