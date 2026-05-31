@@ -389,7 +389,7 @@ export default function AcademyClassesClient() {
                         <div className="line-clamp-2 max-w-[260px] break-keep font-medium text-foreground" title={item.name || "-"}>
                           {item.name || "-"}
                         </div>
-                        <div className="max-w-[260px] truncate text-xs text-muted-foreground">
+                        <div className="line-clamp-2 max-w-[260px] break-keep text-xs text-muted-foreground" title={item.description || "설명 미입력"}>
                           {item.description || "설명 미입력"}
                         </div>
                       </TableCell>
@@ -400,12 +400,12 @@ export default function AcademyClassesClient() {
                         </div>
                       </TableCell>
                       <TableCell className="min-w-0 px-3 py-3 text-sm">
-                        <div className="whitespace-nowrap shrink-0">{item.instructorName || "강사 미입력"}</div>
-                        <div className="max-w-[220px] truncate text-xs text-muted-foreground">
+                        <div className="max-w-[220px] truncate" title={item.instructorName || "강사 미입력"}>{item.instructorName || "강사 미입력"}</div>
+                        <div className="max-w-[220px] truncate text-xs text-muted-foreground" title={item.scheduleText || "일정 미입력"}>
                           {item.scheduleText || "일정 미입력"}
                         </div>
                         {item.location ? (
-                          <div className="max-w-[220px] truncate text-xs text-muted-foreground">
+                          <div className="max-w-[220px] truncate text-xs text-muted-foreground" title={item.location}>
                             {item.location}
                           </div>
                         ) : null}

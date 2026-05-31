@@ -1102,7 +1102,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                           {/* 가격 - 가장 눈에 띄게 */}
                           <div className="pr-1 text-right">
                             {post.marketMeta?.price != null ? (
-                              <span className="whitespace-nowrap text-sm font-bold tabular-nums text-foreground">
+                              <span className="shrink-0 whitespace-nowrap text-sm font-bold tabular-nums text-foreground">
                                 {post.marketMeta.price.toLocaleString()}
                                 <span className="ml-0.5 text-[10px] font-normal text-muted-foreground">원</span>
                               </span>
@@ -1295,8 +1295,8 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                     return isMarket ? (
                       <Link key={post.id} href={buildDetailHref(post.postNo ?? post.id)} className={["block rounded-lg border border-border bg-card px-3 py-3.5 transition-colors active:bg-muted/30", isSold ? "opacity-45" : ""].join(" ")}>
                         {/* 상단: 가격 + 상태/등급 뱃지 */}
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-1.5">
+                        <div className="flex min-w-0 items-start justify-between gap-2">
+                          <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto pb-1 pr-1">
                             {post.marketMeta?.saleStatus && (
                               <Badge variant={saleStatusBadgeVariant(post.marketMeta.saleStatus)} className="shrink-0 whitespace-nowrap px-1.5 py-0 text-[10px] leading-4">
                                 {getMarketSaleStatusLabel(post.marketMeta.saleStatus)}
@@ -1313,7 +1313,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                           </div>
                           {/* 가격 - 모바일에서도 가장 눈에 띄게 */}
                           {post.marketMeta?.price != null && (
-                            <span className="whitespace-nowrap text-sm font-bold tabular-nums text-foreground">
+                            <span className="shrink-0 whitespace-nowrap text-sm font-bold tabular-nums text-foreground">
                               {post.marketMeta.price.toLocaleString()}
                               <span className="ml-0.5 text-[10px] font-normal text-muted-foreground">원</span>
                             </span>
@@ -1332,7 +1332,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                           <div className="mt-1 text-xs text-foreground/75">
                             {post.brand && <span className="font-medium">{getMarketBrandLabel(post.brand)}</span>}
                             {post.brand && (post.marketMeta.racketSpec?.modelName || post.marketMeta.stringSpec?.modelName) && " "}
-                            <span className="text-muted-foreground/70">{post.marketMeta.racketSpec?.modelName ?? post.marketMeta.stringSpec?.modelName ?? ""}</span>
+                            <span className="line-clamp-2 break-keep text-muted-foreground/70" title={post.marketMeta.racketSpec?.modelName ?? post.marketMeta.stringSpec?.modelName ?? ""}>{post.marketMeta.racketSpec?.modelName ?? post.marketMeta.stringSpec?.modelName ?? ""}</span>
                           </div>
                         )}
 

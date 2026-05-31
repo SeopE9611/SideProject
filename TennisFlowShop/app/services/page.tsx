@@ -376,7 +376,7 @@ export default async function ServicesPage() {
                   {/* 대표 제품 */}
                   <div className="bg-muted rounded-xl border border-border p-4 text-foreground">
                     <h4 className="font-semibold mb-3">대표 제품</h4>
-                    <div className="flex flex-nowrap gap-2 overflow-x-auto pb-1">
+                    <div className="flex max-w-full flex-nowrap gap-2 overflow-x-auto pb-1">
                       {type.examples.map((example, idx) => (
                         <Badge key={idx} variant="secondary" className="max-w-[9rem] shrink-0 truncate whitespace-nowrap text-xs">
                           {example}
