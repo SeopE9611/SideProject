@@ -19,6 +19,7 @@ import { useCartStore } from "@/app/store/cartStore";
 import { CheckCircle2, Minus, Plus, ShoppingCart } from "lucide-react";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { Input } from "@/components/ui/input";
+import { stringColorLabel } from "@/lib/constants";
 import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 
@@ -92,8 +93,8 @@ function normalizeGaugeRows(product: any): GaugeInventoryRow[] {
 }
 
 function getGaugeLabel(row: GaugeInventoryRow) {
-  const rawLabel = String(row.label ?? "").trim();
-  return rawLabel || formatGaugeLabel(row.value);
+  const raw = String(row.label || row.value || "").trim();
+  return formatGaugeLabel(raw) || raw || "-";
 }
 
 function normalizeColorRows(product: any): ColorInventoryRow[] {
@@ -146,7 +147,8 @@ function normalizeColorRows(product: any): ColorInventoryRow[] {
 }
 
 function getColorLabel(row: ColorInventoryRow) {
-  return String(row.label || row.value || "").trim();
+  const raw = String(row.label || row.value || "").trim();
+  return stringColorLabel(raw) || raw || "-";
 }
 
 function isColorSoldOut(row: ColorInventoryRow) {

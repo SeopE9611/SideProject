@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { racketBrandLabel } from "@/lib/constants";
+import { racketBrandLabel, stringColorLabel } from "@/lib/constants";
 import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import { useInfiniteProducts } from "@/app/products/hooks/useInfiniteProducts";
 import SiteContainer from "@/components/layout/SiteContainer";
@@ -58,8 +58,8 @@ function normalizeGaugeRows(product: any): GaugeInventoryRow[] {
 }
 
 function getGaugeLabel(row: GaugeInventoryRow) {
-  const rawLabel = String(row.label ?? "").trim();
-  return rawLabel || formatGaugeLabel(row.value);
+  const raw = String(row.label || row.value || "").trim();
+  return formatGaugeLabel(raw) || raw || "-";
 }
 
 
@@ -119,7 +119,8 @@ function normalizeColorRows(product: any): ColorInventoryRow[] {
 }
 
 function getColorLabel(row: ColorInventoryRow) {
-  return String(row.label || row.value || "").trim();
+  const raw = String(row.label || row.value || "").trim();
+  return stringColorLabel(raw) || raw || "-";
 }
 
 function isColorSoldOut(row: ColorInventoryRow) {
@@ -574,7 +575,7 @@ export default function RentalSelectStringClient({
                                           fallbackVariant.colorImage ||
                                           p?.images?.[0] ||
                                           "/placeholder.svg";
-                                        const colorLabel = fallbackVariant.colorLabel || value;
+                                        const colorLabel = stringColorLabel(fallbackVariant.colorLabel || value) || value;
                                         return (
                                           <button
                                             key={value}
