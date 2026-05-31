@@ -399,7 +399,7 @@ export default function OrderList() {
 
         const stringServiceCTAHref =
           stringServiceCTAKind === "view" && order.stringingApplicationId
-            ? `/mypage?tab=orders&flowType=application&flowId=${order.stringingApplicationId}&from=orders`
+            ? `${detailHref}&focus=stringing`
             : stringServiceCTAKind === "apply" || stringServiceCTAKind === "add"
               ? `/services/apply?orderId=${order.id}`
               : null;
@@ -407,7 +407,7 @@ export default function OrderList() {
           stringServiceCTAKind === "add"
             ? "교체서비스 추가 신청하기"
             : stringServiceCTAKind === "view"
-              ? "교체서비스 보기"
+              ? "이용 상세 보기"
               : stringServiceCTAKind === "done"
                 ? "교체서비스 신청 완료"
                 : "교체서비스 신청하기";

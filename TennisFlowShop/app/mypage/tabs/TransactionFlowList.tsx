@@ -104,6 +104,22 @@ type ActivityResponse = {
 };
 
 const LIMIT = 5;
+
+const getStringingDetailHref = (
+  app: { id: string; orderId?: string | null; rentalId?: string | null },
+  flowQuery = 'from=orders',
+) => {
+  if (app.orderId) {
+    return `/mypage?tab=orders&flowType=order&flowId=${app.orderId}&${flowQuery}&focus=stringing`;
+  }
+
+  if (app.rentalId) {
+    return `/mypage?tab=orders&flowType=application&flowId=${app.id}&${flowQuery}`;
+  }
+
+  return `/mypage?tab=orders&flowType=application&flowId=${app.id}&${flowQuery}`;
+};
+
 const fetcher = (url: string) => authenticatedSWRFetcher<ActivityResponse>(url);
 const CancelOrderDialog = dynamic(() => import('@/app/mypage/orders/_components/CancelOrderDialog'), { loading: () => null });
 const CancelStringingDialog = dynamic(() => import('@/app/mypage/applications/_components/CancelStringingDialog'), { loading: () => null });
@@ -715,6 +731,10 @@ export default function TransactionFlowList() {
           const displayDateValue = displayKind === 'order' ? (g.order?.createdAt ?? g.sortAt) : displayKind === 'rental' ? (g.rental?.createdAt ?? g.sortAt) : (displayApplication?.createdAt ?? g.createdAt ?? g.sortAt);
           const detailTargetType: FlowDetailType = prefersApplicationView ? 'application' : g.detailTarget.type;
           const detailTargetId = prefersApplicationView && displayApplication?.id ? displayApplication.id : g.detailTarget.id;
+          const detailHref =
+            prefersApplicationView && displayApplication?.id
+              ? getStringingDetailHref(displayApplication, flowQuery)
+              : `/mypage?tab=orders&flowType=${detailTargetType}&flowId=${detailTargetId}&${flowQuery}`;
           const displayMetaLabel = prefersApplicationView ? '교체서비스 신청' : FLOW_TYPE_META_LABEL[g.flowType];
           const showLinkedStatusBadge = g.flowType !== 'application_only' && linkedCount > 0 && !prefersApplicationView;
           const standaloneApplicationIdMeta = isStandaloneApplication(displayApplication) && displayApplication?.id ? ` · #${shortId(displayApplication.id) ?? '-'}` : '';
@@ -905,7 +925,7 @@ export default function TransactionFlowList() {
                       priority: detailPriority,
                       node: (
                         <Button key="flow-detail" asChild size="sm" variant="outline" className="bg-transparent">
-                          <Link href={`/mypage?tab=orders&flowType=${detailTargetType}&flowId=${detailTargetId}&${flowQuery}`}>
+                          <Link href={detailHref}>
                             상세 보기 <ArrowRight className="ml-1 h-3.5 w-3.5" />
                           </Link>
                         </Button>
@@ -978,7 +998,7 @@ export default function TransactionFlowList() {
                           pinInline: true,
                           node: (
                             <Button key="order-linked-application" asChild size="sm" variant="outline" className="bg-transparent">
-                              <Link href={`/mypage?tab=orders&flowType=application&flowId=${primaryLinkedApplicationId}&${flowQuery}`}>교체서비스 보기</Link>
+                              <Link href={`/mypage?tab=orders&flowType=order&flowId=${orderId}&${flowQuery}&focus=stringing`}>이용 상세 보기</Link>
                             </Button>
                           ),
                         });
@@ -1132,7 +1152,7 @@ export default function TransactionFlowList() {
                         priority: 3,
                         node: (
                           <Button key="application-open-sheet" asChild size="sm" variant="default">
-                            <Link href={`/mypage?tab=orders&flowType=application&flowId=${actionableApplicationId}&${flowQuery}`}>교체서비스 보기</Link>
+                            <Link href={applicationActionTarget ? getStringingDetailHref(applicationActionTarget, flowQuery) : `/mypage?tab=orders&flowType=application&flowId=${actionableApplicationId}&${flowQuery}`}>이용 상세 보기</Link>
                           </Button>
                         ),
                       });

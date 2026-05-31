@@ -799,7 +799,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
     linkedDocs.push({
       kind: 'order',
       id: String(data.orderId),
-      href: isAdmin ? `/admin/orders/${data.orderId}` : `/mypage?tab=orders&flowType=order&flowId=${data.orderId}&${flowQuery.toString()}`,
+      href: isAdmin ? `/admin/orders/${data.orderId}` : `/mypage?tab=orders&flowType=order&flowId=${data.orderId}&${flowQuery.toString()}&focus=stringing`,
       subtitle: '연결된 주문',
     });
   }
@@ -1097,6 +1097,17 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                 </div>
               </TooltipProvider>
             </div>
+
+            {!isAdmin && data.orderId ? (
+              <div className="mb-4 flex flex-col gap-2 rounded-xl border border-primary/20 bg-primary/10 p-3 text-sm text-foreground dark:bg-primary/15 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
+                <span>이 교체서비스는 주문 상세에서 함께 확인할 수 있어요.</span>
+                <Button asChild size="sm" variant="outline" className="h-8 bg-card">
+                  <Link href={`/mypage?tab=orders&flowType=order&flowId=${data.orderId}&${flowQuery.toString()}&focus=stringing`}>
+                    이용 상세로 이동
+                  </Link>
+                </Button>
+              </div>
+            ) : null}
             {!isAdmin && userNextTodo && (
               <NextTodoCallout
                 className="mb-4"
