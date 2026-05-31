@@ -165,6 +165,8 @@ export default function ProductsClient() {
   const totalPages = hasResolvedData ? Math.max(1, Math.ceil(total / PAGE_SIZE)) : null;
   const currentPage = totalPages ? Math.min(page, totalPages) : null;
 
+  const hasActiveTableFilter = debouncedTerm.trim().length > 0 || brandFilter !== "all" || materialFilter !== "all" || statusFilter !== "all";
+
   // 전역 카운트(필터 무시)
   const totalsByStatus = data?.totalsByStatus ?? {
     active: 0,
@@ -530,6 +532,7 @@ export default function ProductsClient() {
                     {hasResolvedData &&
                       !hasDataError &&
                       !(isLoading || isValidating) &&
+                      !hasActiveTableFilter &&
                       items.length > 0 &&
                       Array.from({
                         length: Math.max(0, PAGE_SIZE - items.length),
