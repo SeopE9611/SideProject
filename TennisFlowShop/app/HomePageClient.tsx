@@ -577,7 +577,7 @@ export default function Home() {
         <SiteContainer>
           <div className="mb-8 bp-sm:mb-10 text-center">
             <p className="mb-2 text-sm font-semibold text-primary">처음 오셨다면 여기서 시작하세요</p>
-            <h2 className="font-brand-bold text-2xl bp-sm:text-3xl font-bold text-foreground tracking-normal">무엇을 도와드릴까요?</h2>
+            <h2 className="font-brand-bold text-2xl font-bold text-foreground tracking-normal bp-md:text-3xl">무엇을 도와드릴까요?</h2>
             <p className="mt-2 bp-sm:mt-3 text-sm bp-sm:text-base text-muted-foreground">원하는 목적을 고르면 필요한 단계로 바로 이동할 수 있어요.</p>
           </div>
           <div className="grid gap-4 bp-sm:gap-5 bp-md:gap-6 grid-cols-1 bp-md:grid-cols-2 bp-xl:grid-cols-3">
@@ -589,7 +589,7 @@ export default function Home() {
               <div>
                 <p className="mb-1 text-xs font-semibold text-primary">가장 많이 찾는 시작</p>
                 <h3 className="text-base bp-sm:text-lg font-semibold break-keep text-foreground">스트링 교체 신청</h3>
-                <p className="mt-2 text-sm leading-relaxed break-keep text-foreground/80">보유 라켓이 있거나 새 스트링을 구매해서 장착까지 맡기고 싶을 때 선택하세요.</p>
+                <p className="mt-2 text-sm leading-relaxed text-foreground/80">보유 라켓이 있거나 새 스트링을 구매해서 장착까지 맡기고 싶을 때 선택하세요.</p>
               </div>
             </Link>
 
@@ -599,7 +599,7 @@ export default function Home() {
               </div>
               <div>
                 <h3 className="text-base bp-sm:text-lg font-semibold break-keep text-foreground">새 스트링 선택 후 교체 신청</h3>
-                <p className="mt-2 text-sm leading-relaxed break-keep text-foreground/80">스트링을 새로 선택하고 교체서비스까지 한 번에 진행합니다.</p>
+                <p className="mt-2 text-sm leading-relaxed text-foreground/80">스트링을 새로 선택하고 교체서비스까지 한 번에 진행합니다.</p>
               </div>
             </Link>
 
@@ -609,7 +609,7 @@ export default function Home() {
               </div>
               <div>
                 <h3 className="text-base bp-sm:text-lg font-semibold break-keep text-foreground">라켓 구매/대여 후 교체 신청</h3>
-                <p className="mt-2 text-sm leading-relaxed break-keep text-foreground/80">라켓을 구매하거나 대여하면서 스트링 장착까지 함께 진행합니다.</p>
+                <p className="mt-2 text-sm leading-relaxed text-foreground/80">라켓을 구매하거나 대여하면서 스트링 장착까지 함께 진행합니다.</p>
               </div>
             </Link>
 
@@ -619,7 +619,7 @@ export default function Home() {
               </div>
               <div>
                 <h3 className="text-base bp-sm:text-lg font-semibold break-keep text-foreground">레슨을 신청하고 싶어요</h3>
-                <p className="mt-2 text-sm leading-relaxed break-keep text-foreground/80">아카데미 클래스와 레슨 신청 안내를 확인합니다.</p>
+                <p className="mt-2 text-sm leading-relaxed text-foreground/80">아카데미 클래스와 레슨 신청 안내를 확인합니다.</p>
               </div>
             </Link>
 
@@ -630,7 +630,7 @@ export default function Home() {
               <div className="flex flex-1 flex-col gap-4">
                 <div>
                   <h3 className="text-base bp-sm:text-lg font-semibold break-keep text-foreground">주문/신청 상태 확인</h3>
-                  <p className="mt-2 text-sm leading-relaxed break-keep text-foreground/80">마이페이지 주문조회에서 진행 상태를 확인할 수 있어요.</p>
+                  <p className="mt-2 text-sm leading-relaxed text-foreground/80">마이페이지 주문조회에서 진행 상태를 확인할 수 있어요.</p>
                 </div>
               </div>
             </div>
@@ -664,7 +664,7 @@ export default function Home() {
       <section ref={communitySectionRef} className="py-10 bp-sm:py-12 bp-md:py-16">
         <SiteContainer>
           <div className="mb-8 bp-sm:mb-10 text-center">
-            <h2 className="font-brand-bold text-2xl bp-sm:text-3xl font-bold text-foreground tracking-normal">소식 & 커뮤니티</h2>
+            <h2 className="font-brand-bold text-2xl font-bold text-foreground tracking-normal bp-md:text-3xl">소식 & 커뮤니티</h2>
             <p className="mt-2 bp-sm:mt-3 text-sm bp-sm:text-base text-muted-foreground">공지사항과 중고 거래 최신 소식을 확인하세요</p>
           </div>
           <div className="grid gap-5 bp-sm:gap-6 bp-lg:grid-cols-2">
@@ -688,7 +688,7 @@ export default function Home() {
         <SiteContainer>
           <div className={cn("p-6 bp-sm:p-8 bp-md:p-10", surfacePanelClass)}>
             <div className="mb-8 bp-sm:mb-10 text-center">
-              <h2 className="font-brand-bold text-2xl bp-sm:text-3xl font-bold text-foreground tracking-normal">스트링 교체 프로세스</h2>
+              <h2 className="font-brand-bold text-2xl font-bold text-foreground tracking-normal bp-md:text-3xl">스트링 교체 프로세스</h2>
               <p className="mt-2 bp-sm:mt-3 text-sm bp-sm:text-base text-muted-foreground">처음 방문해도 쉽게 이해할 수 있어요</p>
             </div>
             <div className="mb-8 bp-sm:mb-10 grid gap-6 bp-sm:gap-8 grid-cols-2 bp-lg:grid-cols-4">
@@ -751,7 +751,7 @@ export default function Home() {
       <section ref={stringsSectionRef} className="py-12 bp-sm:py-14 bp-md:py-20">
         <SiteContainer>
           <div className="mb-8 bp-sm:mb-10 text-center">
-            <h2 className="font-brand-bold text-2xl bp-sm:text-3xl bp-md:text-4xl font-bold text-foreground tracking-normal">스트링</h2>
+            <h2 className="font-brand-bold text-2xl font-bold text-foreground tracking-normal bp-sm:text-3xl bp-md:text-4xl">스트링</h2>
             <p className="mt-2 bp-sm:mt-3 text-sm bp-sm:text-base text-muted-foreground">프로가 선택하는 테니스 스트링</p>
           </div>
           <div className="mb-8 bp-sm:mb-10">
@@ -806,7 +806,7 @@ export default function Home() {
       <section ref={racketsSectionRef} className="py-12 bp-sm:py-14 bp-md:py-20">
         <SiteContainer>
           <div className="mb-8 bp-sm:mb-10 text-center">
-            <h2 className="font-brand-bold text-2xl bp-sm:text-3xl bp-md:text-4xl font-bold text-foreground tracking-normal">중고 라켓</h2>
+            <h2 className="font-brand-bold text-2xl font-bold text-foreground tracking-normal bp-sm:text-3xl bp-md:text-4xl">중고 라켓</h2>
             <p className="mt-2 bp-sm:mt-3 text-sm bp-sm:text-base text-muted-foreground">도깨비테니스에서 관리하는 라켓을 활용해보세요</p>
           </div>
           <div className="mb-8 bp-sm:mb-10">
