@@ -1,23 +1,8 @@
 "use client";
 
-import {
-  AlertTriangle,
-  ArrowDown,
-  ArrowUp,
-  ArrowUpDown,
-  CheckCircle,
-  CheckCircle2,
-  MoreHorizontal,
-  Package,
-  PackageSearch,
-  Plus,
-  Search,
-  TriangleAlert,
-  X,
-  XCircle,
-} from "lucide-react";
-import Link from "next/link";
+import { AlertTriangle, ArrowDown, ArrowUp, ArrowUpDown, CheckCircle, CheckCircle2, MoreHorizontal, Package, PackageSearch, Plus, Search, TriangleAlert, X, XCircle } from "lucide-react";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import type React from "react";
 import { useEffect, useState } from "react";
 import useSWR from "swr";
@@ -25,35 +10,15 @@ import useSWR from "swr";
 import BrandFilter from "@/app/admin/products/product-filters/BrandFilter";
 import MaterialFilter from "@/app/admin/products/product-filters/MaterialFilter";
 import StockStatusFilter from "@/app/admin/products/product-filters/StockStatusFilter";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { adminSurface } from "@/components/admin/admin-typography";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { runAdminActionWithToast } from "@/lib/admin/adminActionHelpers";
 import { adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
@@ -76,29 +41,22 @@ const STATUS_KEYS = ["active", "low_stock", "out_of_stock"] as const;
 type StatusKey = (typeof STATUS_KEYS)[number];
 
 // 상태 매핑(아이콘+색)
-const STATUS_UI: Record<
-  StatusKey,
-  { label: string; color: string; Icon: React.ElementType }
-> = {
+const STATUS_UI: Record<StatusKey, { label: string; color: string; Icon: React.ElementType }> = {
   active: {
     label: "판매중",
-    color:
-      "bg-muted text-foreground ring-1 ring-ring " +
-      "dark:bg-muted dark:text-foreground dark:ring-ring",
+    color: "bg-success/10 text-success ring-1 ring-success/30 " + "dark:bg-success/15 dark:text-success dark:ring-success/40",
     Icon: CheckCircle2,
   },
+
   low_stock: {
     label: "재고 부족",
-    color:
-      "bg-warning/10 text-warning ring-1 ring-warning/30 " +
-      "dark:bg-warning/15 dark:text-warning dark:ring-warning/40",
+    color: "bg-warning/10 text-warning ring-1 ring-warning/30 " + "dark:bg-warning/15 dark:text-warning dark:ring-warning/40",
     Icon: TriangleAlert,
   },
+
   out_of_stock: {
     label: "품절",
-    color:
-      "bg-muted text-foreground ring-1 ring-ring " +
-      "dark:bg-muted dark:text-foreground dark:ring-ring",
+    color: "bg-destructive/10 text-destructive ring-1 ring-destructive/30 " + "dark:bg-destructive/15 dark:text-destructive dark:ring-destructive/40",
     Icon: XCircle,
   },
 };
@@ -123,12 +81,8 @@ const MATERIAL_OPTIONS = [
   { id: "hybrid", label: "하이브리드" },
 ] as const;
 
-const BRAND_LABEL: Record<string, string> = Object.fromEntries(
-  BRAND_OPTIONS.map((o) => [o.id, o.label]),
-);
-const MATERIAL_LABEL: Record<string, string> = Object.fromEntries(
-  MATERIAL_OPTIONS.map((o) => [o.id, o.label]),
-);
+const BRAND_LABEL: Record<string, string> = Object.fromEntries(BRAND_OPTIONS.map((o) => [o.id, o.label]));
+const MATERIAL_LABEL: Record<string, string> = Object.fromEntries(MATERIAL_OPTIONS.map((o) => [o.id, o.label]));
 const brandLabel = (id?: string) => (id ? (BRAND_LABEL[id] ?? id) : "");
 const materialLabel = (id?: string) => (id ? (MATERIAL_LABEL[id] ?? id) : "");
 
@@ -142,10 +96,7 @@ function useDebounce<T>(value: T, delay = 250): T {
   return debounced;
 }
 
-const AdminConfirmDialog = dynamic(
-  () => import("@/components/admin/AdminConfirmDialog"),
-  { loading: () => null },
-);
+const AdminConfirmDialog = dynamic(() => import("@/components/admin/AdminConfirmDialog"), { loading: () => null });
 
 export default function ProductsClient() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -157,20 +108,11 @@ export default function ProductsClient() {
 
   const PAGE_SIZE = 10;
   const [page, setPage] = useState(1);
-  const [pendingDeleteProductId, setPendingDeleteProductId] = useState<
-    string | null
-  >(null);
+  const [pendingDeleteProductId, setPendingDeleteProductId] = useState<string | null>(null);
   const ROW_PX = 56; // 한 행 높이를 56px = h-14 로 고정
 
   // 허용되는 정렬 필드(서버 allowMap과 일치시켜야 함)
-  type SortField =
-    | "name"
-    | "brand"
-    | "gauge"
-    | "material"
-    | "price"
-    | "stock"
-    | "createdAt";
+  type SortField = "name" | "brand" | "gauge" | "material" | "price" | "stock" | "createdAt";
 
   const [sort, setSort] = useState<{
     field: SortField;
@@ -206,28 +148,21 @@ export default function ProductsClient() {
     totalsByStatus: Record<"active" | "low_stock" | "out_of_stock", number>; // 전역 통계(필터 무시)
   };
 
-  const { data, error, isLoading, isValidating, mutate } = useSWR<ApiRes>(
-    `/api/admin/products?${qs}`,
-    authenticatedSWRFetcher,
-    {
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-      keepPreviousData: true, // SWR v2 전환 중 깜빡임 줄어듬
-    },
-  );
+  const { data, error, isLoading, isValidating, mutate } = useSWR<ApiRes>(`/api/admin/products?${qs}`, authenticatedSWRFetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    keepPreviousData: true, // SWR v2 전환 중 깜빡임 줄어듬
+  });
 
   // 3차 보완: data 미확정(undefined)과 실제 빈 목록([])을 명확히 분리한다.
   const items = data?.items ?? [];
   const hasResolvedData = !!data;
   const hasDataError = !!error;
   const isListLoadingState = (isLoading || isValidating) && !hasResolvedData;
-  const isActualEmptyState =
-    hasResolvedData && !hasDataError && items.length === 0;
+  const isActualEmptyState = hasResolvedData && !hasDataError && items.length === 0;
   const commonErrorMessage = error ? getAdminErrorMessage(error) : null;
   const total = data?.total ?? 0;
-  const totalPages = hasResolvedData
-    ? Math.max(1, Math.ceil(total / PAGE_SIZE))
-    : null;
+  const totalPages = hasResolvedData ? Math.max(1, Math.ceil(total / PAGE_SIZE)) : null;
   const currentPage = totalPages ? Math.min(page, totalPages) : null;
 
   // 전역 카운트(필터 무시)
@@ -236,10 +171,7 @@ export default function ProductsClient() {
     low_stock: 0,
     out_of_stock: 0,
   };
-  const totalAll =
-    totalsByStatus.active +
-    totalsByStatus.low_stock +
-    totalsByStatus.out_of_stock;
+  const totalAll = totalsByStatus.active + totalsByStatus.low_stock + totalsByStatus.out_of_stock;
   const activeAll = totalsByStatus.active;
   const lowStockAll = totalsByStatus.low_stock;
   const outOfStockAll = totalsByStatus.out_of_stock;
@@ -247,8 +179,7 @@ export default function ProductsClient() {
   // 삭제 핸들러
   const handleDelete = async (id: string) => {
     const result = await runAdminActionWithToast({
-      action: () =>
-        adminMutator(`/api/admin/products/${id}`, { method: "DELETE" }),
+      action: () => adminMutator(`/api/admin/products/${id}`, { method: "DELETE" }),
       successMessage: "상품이 삭제되었습니다.",
       fallbackErrorMessage: "삭제 중 오류가 발생했습니다.",
     });
@@ -256,43 +187,18 @@ export default function ProductsClient() {
   };
 
   // 접근성(aria-sort) + 클릭 가능한 헤더
-  const renderSortButton = ({
-    field,
-    children,
-    align = "left",
-  }: {
-    field: SortField;
-    children: React.ReactNode;
-    align?: "left" | "center" | "right";
-  }) => {
+  const renderSortButton = ({ field, children, align = "left" }: { field: SortField; children: React.ReactNode; align?: "left" | "center" | "right" }) => {
     const active = !!sort && sort.field === field;
     return (
       <button
         type="button"
         onClick={() => handleSort(field)}
         aria-label={`${children} ${active ? (sort!.dir === "asc" ? "오름차순 정렬됨" : "내림차순 정렬됨") : "정렬 안 됨"}`}
-        className={cn(
-          "group inline-flex w-full items-center gap-1 select-none whitespace-nowrap",
-          align === "right"
-            ? "justify-end text-right"
-            : align === "center"
-              ? "justify-center text-center"
-              : "justify-start text-left",
-        )}
-        title={
-          active ? (sort!.dir === "asc" ? "오름차순" : "내림차순") : "등록순"
-        }
+        className={cn("group inline-flex w-full items-center gap-1 select-none whitespace-nowrap", align === "right" ? "justify-end text-right" : align === "center" ? "justify-center text-center" : "justify-start text-left")}
+        title={active ? (sort!.dir === "asc" ? "오름차순" : "내림차순") : "등록순"}
       >
         <span className="font-medium">{children}</span>
-        {active ? (
-          sort!.dir === "asc" ? (
-            <ArrowUp className="h-3.5 w-3.5 opacity-80" />
-          ) : (
-            <ArrowDown className="h-3.5 w-3.5 opacity-80" />
-          )
-        ) : (
-          <ArrowUpDown className="h-3.5 w-3.5 opacity-50 group-hover:opacity-80" />
-        )}
+        {active ? sort!.dir === "asc" ? <ArrowUp className="h-3.5 w-3.5 opacity-80" /> : <ArrowDown className="h-3.5 w-3.5 opacity-80" /> : <ArrowUpDown className="h-3.5 w-3.5 opacity-50 group-hover:opacity-80" />}
       </button>
     );
   };
@@ -332,11 +238,7 @@ export default function ProductsClient() {
   return (
     <div className={["min-h-screen", "bg-muted/30"].join(" ")}>
       <div className="container py-8 px-6">
-        {commonErrorMessage && (
-          <div className="text-center text-destructive">
-            {commonErrorMessage}
-          </div>
-        )}
+        {commonErrorMessage && <div className="text-center text-destructive">{commonErrorMessage}</div>}
         <AdminPageHeader
           title="상품 관리"
           description="판매 상품의 노출 상태, 가격, 재고, 색상 옵션, 배송비를 한 곳에서 관리합니다."
@@ -348,13 +250,8 @@ export default function ProductsClient() {
         <Card className="mb-6 border-border bg-card">
           <CardContent className="p-4 sm:p-5">
             <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-sm font-medium text-foreground break-keep leading-relaxed">
-                오늘의 상품 운영 우선순위를 먼저 확인하고 목록에서 바로 점검하세요.
-              </p>
-              <Link
-                href="/admin/operations"
-                className="text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-              >
+              <p className="text-sm font-medium text-foreground break-keep leading-relaxed">오늘의 상품 운영 우선순위를 먼저 확인하고 목록에서 바로 점검하세요.</p>
+              <Link href="/admin/operations" className="text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                 오늘 처리할 일 보기
               </Link>
             </div>
@@ -365,13 +262,8 @@ export default function ProductsClient() {
                 "가격·배송비 점검: 판매 가격, 할인 반영, 배송비 설정이 정확한지 확인하세요.",
                 "판매 상태/노출 관리: 비활성·비노출 상품이 의도된 상태인지 주기적으로 검토하세요.",
               ].map((guide) => (
-                <div
-                  key={guide}
-                  className="rounded-md border border-border bg-muted/40 px-3 py-2"
-                >
-                  <p className="text-sm text-foreground break-keep leading-relaxed">
-                    {guide}
-                  </p>
+                <div key={guide} className="rounded-md border border-border bg-muted/40 px-3 py-2">
+                  <p className="text-sm text-foreground break-keep leading-relaxed">{guide}</p>
                 </div>
               ))}
             </div>
@@ -388,7 +280,7 @@ export default function ProductsClient() {
             },
             {
               label: "판매 중",
-              icon: <CheckCircle className="h-6 w-6 text-foreground" />,
+              icon: <CheckCircle className="h-6 w-6 text-success" />,
               value: activeAll,
               bgColor: "bg-success/10 dark:bg-success/15",
             },
@@ -400,7 +292,7 @@ export default function ProductsClient() {
             },
             {
               label: "품절",
-              icon: <XCircle className="h-6 w-6 text-foreground" />,
+              icon: <XCircle className="h-6 w-6 text-destructive" />,
               value: outOfStockAll,
               bgColor: "bg-destructive/10 dark:bg-destructive/15",
             },
@@ -409,18 +301,10 @@ export default function ProductsClient() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">
-                      {c.label}
-                    </p>
-                    <p className="text-3xl font-bold text-foreground">
-                      {hasResolvedData ? c.value : "-"}
-                    </p>
+                    <p className="text-sm font-medium text-muted-foreground">{c.label}</p>
+                    <p className="text-3xl font-bold text-foreground">{hasResolvedData ? c.value : "-"}</p>
                   </div>
-                  <div
-                    className={`${c.bgColor} rounded-xl p-3 border border-border`}
-                  >
-                    {c.icon}
-                  </div>
+                  <div className={`${c.bgColor} rounded-xl p-3 border border-border`}>{c.icon}</div>
                 </div>
               </CardContent>
             </Card>
@@ -431,17 +315,9 @@ export default function ProductsClient() {
           <CardHeader className="bg-muted/50 border-b border-border pb-4 shrink-0">
             <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
               <div>
-                <CardTitle className="text-xl font-semibold text-foreground">
-                  스트링 목록
-                </CardTitle>
+                <CardTitle className="text-xl font-semibold text-foreground">스트링 목록</CardTitle>
                 <CardDescription className="text-foreground">
-                  {hasDataError
-                    ? "상품 목록을 불러오지 못했습니다."
-                    : hasResolvedData
-                      ? total > 0
-                        ? `총 ${total}개의 스트링이 검색되었습니다.`
-                        : "조건에 맞는 스트링이 없습니다."
-                      : "스트링 상품을 조회하고 관리합니다."}
+                  {hasDataError ? "상품 목록을 불러오지 못했습니다." : hasResolvedData ? (total > 0 ? `총 ${total}개의 스트링이 검색되었습니다.` : "조건에 맞는 스트링이 없습니다.") : "스트링 상품을 조회하고 관리합니다."}
                 </CardDescription>
               </div>
               <Button
@@ -484,12 +360,7 @@ export default function ProductsClient() {
                       className="pl-8 h-9 text-xs border-border focus:border-border dark:border-border dark:focus:border-border bg-card"
                     />
                     {searchTerm && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="absolute right-0 top-0 h-9 w-9 rounded-l-none px-3 hover:bg-muted dark:hover:bg-muted"
-                        onClick={() => handleSearchChange("")}
-                      >
+                      <Button variant="ghost" size="sm" className="absolute right-0 top-0 h-9 w-9 rounded-l-none px-3 hover:bg-muted dark:hover:bg-muted" onClick={() => handleSearchChange("")}>
                         <X className="h-4 w-4" />
                       </Button>
                     )}
@@ -498,34 +369,13 @@ export default function ProductsClient() {
 
                 {/* 필터 */}
                 <div className="grid w-full gap-2 border-t border-border pt-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
-                  <BrandFilter
-                    value={brandFilter}
-                    onChange={handleBrandFilterChange}
-                    options={BRAND_OPTIONS.map((o) => o.id)}
-                  />
-                  <MaterialFilter
-                    value={materialFilter}
-                    onChange={handleMaterialFilterChange}
-                    options={MATERIAL_OPTIONS.map((o) => o.id)}
-                  />
-                  <StockStatusFilter
-                    value={statusFilter}
-                    onChange={handleStatusFilterChange}
-                  />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={resetFilters}
-                    className="w-full border-border hover:bg-muted dark:border-border dark:hover:bg-card"
-                  >
+                  <BrandFilter value={brandFilter} onChange={handleBrandFilterChange} options={BRAND_OPTIONS.map((o) => o.id)} />
+                  <MaterialFilter value={materialFilter} onChange={handleMaterialFilterChange} options={MATERIAL_OPTIONS.map((o) => o.id)} />
+                  <StockStatusFilter value={statusFilter} onChange={handleStatusFilterChange} />
+                  <Button variant="outline" size="sm" onClick={resetFilters} className="w-full border-border hover:bg-muted dark:border-border dark:hover:bg-card">
                     필터 초기화
                   </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full bg-transparent border-border hover:bg-muted dark:border-border dark:hover:bg-card"
-                    onClick={() => setSort(null)}
-                  >
+                  <Button variant="outline" size="sm" className="w-full bg-transparent border-border hover:bg-muted dark:border-border dark:hover:bg-card" onClick={() => setSort(null)}>
                     정렬 초기화
                   </Button>
                 </div>
@@ -579,12 +429,8 @@ export default function ProductsClient() {
                           children: "재고",
                         })}
                       </TableHead>
-                      <TableHead className="w-[10%] text-center text-foreground">
-                        상태
-                      </TableHead>
-                      <TableHead className="w-[10%] text-right text-foreground">
-                        관리
-                      </TableHead>
+                      <TableHead className="w-[10%] text-center text-foreground">상태</TableHead>
+                      <TableHead className="w-[10%] text-right text-foreground">관리</TableHead>
                     </TableRow>
                   </TableHeader>
 
@@ -594,15 +440,9 @@ export default function ProductsClient() {
                         <TableCell colSpan={8} className="py-4">
                           <div className="space-y-2">
                             {Array.from({ length: 6 }).map((_, rowIdx) => (
-                              <div
-                                key={`admin-products-loading-row-${rowIdx}`}
-                                className="grid grid-cols-8 gap-2"
-                              >
+                              <div key={`admin-products-loading-row-${rowIdx}`} className="grid grid-cols-8 gap-2">
                                 {Array.from({ length: 8 }).map((__, colIdx) => (
-                                  <Skeleton
-                                    key={`admin-products-loading-cell-${rowIdx}-${colIdx}`}
-                                    className="h-7 w-full"
-                                  />
+                                  <Skeleton key={`admin-products-loading-cell-${rowIdx}-${colIdx}`} className="h-7 w-full" />
                                 ))}
                               </div>
                             ))}
@@ -614,27 +454,18 @@ export default function ProductsClient() {
                         <TableCell colSpan={8} className="py-16 text-center">
                           <div className="flex flex-col items-center gap-2">
                             <Search className="h-8 w-8 text-muted-foreground/50" />
-                            <p className="text-sm text-muted-foreground">
-                              등록된 상품이 없습니다.
-                            </p>
+                            <p className="text-sm text-muted-foreground">등록된 상품이 없습니다.</p>
                           </div>
                         </TableCell>
                       </TableRow>
                     ) : (
                       items.map((s) => {
-                        const statusKey: StatusKey = (s.computedStatus ??
-                          "active") as StatusKey;
+                        const statusKey: StatusKey = (s.computedStatus ?? "active") as StatusKey;
                         const S = STATUS_UI[statusKey];
                         return (
-                          <TableRow
-                            key={s._id}
-                            className="h-14 border-b border-border last:border-b-0 dark:border-border hover:bg-muted dark:hover:bg-card even:bg-muted dark:even:bg-card transition-colors"
-                          >
+                          <TableRow key={s._id} className="h-14 border-b border-border last:border-b-0 dark:border-border hover:bg-muted dark:hover:bg-card even:bg-muted dark:even:bg-card transition-colors">
                             <TableCell className="text-left align-middle py-3">
-                              <Link
-                                href={`/products/${s._id}`}
-                                className="hover:text-foreground dark:hover:text-foreground"
-                              >
+                              <Link href={`/products/${s._id}`} className="hover:text-foreground dark:hover:text-foreground">
                                 <div className="space-y-1">
                                   <div className="line-clamp-2 break-keep font-medium text-foreground" title={s.name}>
                                     {s.name}
@@ -647,45 +478,22 @@ export default function ProductsClient() {
                             </TableCell>
 
                             <TableCell className="text-center align-middle">
-                              <Badge
-                                variant="secondary"
-                                className="shrink-0 whitespace-nowrap rounded-full border border-border bg-muted px-2 py-0.5 text-foreground dark:border-border dark:bg-muted dark:text-foreground"
-                              >
+                              <Badge variant="secondary" className="shrink-0 whitespace-nowrap rounded-full border border-border bg-muted px-2 py-0.5 text-foreground dark:border-border dark:bg-muted dark:text-foreground">
                                 {brandLabel(s.brand)}
                               </Badge>
                             </TableCell>
 
-                            <TableCell className="whitespace-nowrap text-center align-middle text-foreground">
-                              {s.gauge}
-                            </TableCell>
-                            <TableCell className="whitespace-nowrap text-center align-middle text-foreground">
-                              {materialLabel(s.material)}
-                            </TableCell>
+                            <TableCell className="whitespace-nowrap text-center align-middle text-foreground">{s.gauge}</TableCell>
+                            <TableCell className="whitespace-nowrap text-center align-middle text-foreground">{materialLabel(s.material)}</TableCell>
 
-                            <TableCell className="whitespace-nowrap text-right align-middle font-medium tabular-nums text-foreground">
-                              {s.price?.toLocaleString?.() ?? s.price}원
-                            </TableCell>
+                            <TableCell className="whitespace-nowrap text-right align-middle font-medium tabular-nums text-foreground">{s.price?.toLocaleString?.() ?? s.price}원</TableCell>
 
                             <TableCell className="text-right align-middle">
-                              {s.inventory?.stock && s.inventory.stock > 0 ? (
-                                <span className="font-medium text-foreground">
-                                  {s.inventory.stock}
-                                </span>
-                              ) : (
-                                <span className="font-medium text-foreground">
-                                  품절
-                                </span>
-                              )}
+                              {s.inventory?.stock && s.inventory.stock > 0 ? <span className="font-medium text-foreground">{s.inventory.stock}</span> : <span className="font-medium text-foreground">품절</span>}
                             </TableCell>
 
                             <TableCell className="text-center align-middle">
-                              <Badge
-                                variant="secondary"
-                                className={cn(
-                                  "inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-2 py-1 text-xs font-medium",
-                                  S.color,
-                                )}
-                              >
+                              <Badge variant="secondary" className={cn("inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-2 py-1 text-xs font-medium", S.color)}>
                                 <S.Icon className="h-3.5 w-3.5" />
                                 {S.label}
                               </Badge>
@@ -694,38 +502,20 @@ export default function ProductsClient() {
                             <TableCell className="text-right align-middle">
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="p-0 hover:bg-muted dark:hover:bg-muted"
-                                  >
+                                  <Button variant="ghost" size="sm" className="p-0 hover:bg-muted dark:hover:bg-muted">
                                     <MoreHorizontal />
                                   </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent
-                                  align="end"
-                                  className="border-border"
-                                >
+                                <DropdownMenuContent align="end" className="border-border">
                                   <DropdownMenuLabel>작업</DropdownMenuLabel>
                                   <DropdownMenuItem asChild>
-                                    <Link href={`/products/${s._id}`}>
-                                      상세 보기
-                                    </Link>
+                                    <Link href={`/products/${s._id}`}>상세 보기</Link>
                                   </DropdownMenuItem>
                                   <DropdownMenuItem asChild>
-                                    <Link
-                                      href={`/admin/products/${s._id}/edit`}
-                                    >
-                                      수정
-                                    </Link>
+                                    <Link href={`/admin/products/${s._id}/edit`}>수정</Link>
                                   </DropdownMenuItem>
                                   <DropdownMenuSeparator />
-                                  <DropdownMenuItem
-                                    className="text-destructive"
-                                    onClick={() =>
-                                      setPendingDeleteProductId(s._id)
-                                    }
-                                  >
+                                  <DropdownMenuItem className="text-destructive" onClick={() => setPendingDeleteProductId(s._id)}>
                                     삭제
                                   </DropdownMenuItem>
                                 </DropdownMenuContent>
@@ -744,10 +534,7 @@ export default function ProductsClient() {
                       Array.from({
                         length: Math.max(0, PAGE_SIZE - items.length),
                       }).map((_, i) => (
-                        <TableRow
-                          key={`filler-${i}`}
-                          className="pointer-events-none"
-                        >
+                        <TableRow key={`filler-${i}`} className="pointer-events-none">
                           <TableCell colSpan={8} className="p-0">
                             <div className="h-14" />
                           </TableCell>
@@ -764,33 +551,14 @@ export default function ProductsClient() {
                 <span className="text-sm text-muted-foreground">
                   {currentPage ?? "-"} / {totalPages ?? "-"}
                 </span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    setPage((p) =>
-                      Math.max(1, Math.min(p, totalPages ?? 1) - 1),
-                    )
-                  }
-                  disabled={!currentPage || currentPage <= 1}
-                  className="border-border hover:bg-muted dark:hover:bg-muted"
-                >
+                <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, Math.min(p, totalPages ?? 1) - 1))} disabled={!currentPage || currentPage <= 1} className="border-border hover:bg-muted dark:hover:bg-muted">
                   이전
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() =>
-                    setPage((p) =>
-                      Math.min(
-                        totalPages ?? 1,
-                        Math.min(p, totalPages ?? 1) + 1,
-                      ),
-                    )
-                  }
-                  disabled={
-                    !currentPage || !totalPages || currentPage >= totalPages
-                  }
+                  onClick={() => setPage((p) => Math.min(totalPages ?? 1, Math.min(p, totalPages ?? 1) + 1))}
+                  disabled={!currentPage || !totalPages || currentPage >= totalPages}
                   className="border-border hover:bg-muted dark:hover:bg-muted"
                 >
                   다음
