@@ -95,9 +95,31 @@ export interface Application {
 
   // 사용자 확정 시각(없으면 null) - 교체확정 완료 여부 판단용
   userConfirmedAt?: string | null;
+  packageApplied?: boolean;
+  paymentStatus?: string | null;
+  paymentProvider?: string | null;
 }
 
 type AppResponse = { items: Application[]; total: number };
+
+type CancelStringingParams = {
+  reasonCode: string;
+  reasonText?: string;
+  refundAccount?: { bank: string; account: string; holder: string };
+};
+
+const shouldRequestCancelRefundAccount = (app?: Application | null) => {
+  if (!app) return true;
+  const normalizedProvider = String(app.paymentProvider ?? '').trim().toLowerCase();
+  return !app.packageApplied && app.paymentStatus === '결제완료' && normalizedProvider !== 'nicepay';
+};
+
+const getNoRefundAccountMessage = (app?: Application | null) => {
+  const normalizedProvider = String(app?.paymentProvider ?? '').trim().toLowerCase();
+  if (app?.packageApplied) return '패키지 사용 신청은 환불계좌 입력 없이 취소 요청할 수 있습니다. 승인 시 사용 회차 복원 기준으로 처리됩니다.';
+  if (normalizedProvider === 'nicepay') return '카드 결제 취소는 환불계좌 없이 요청할 수 있습니다. 관리자 승인 후 결제사 취소 또는 주문 취소 흐름에 따라 처리됩니다.';
+  return '이 신청은 환불계좌 입력 없이 취소 요청할 수 있습니다.';
+};
 
 const ApplicationsListSkeleton = ({ count = 3 }: { count?: number }) => (
   <div className="space-y-4">
@@ -276,15 +298,7 @@ export default function ApplicationsClient() {
     setCancelDialogOpen(true);
   };
 
-  const handleConfirmCancel = async (params: {
-    reasonCode: string;
-    reasonText?: string;
-    refundAccount: {
-      bank: string;
-      account: string;
-      holder: string;
-    };
-  }) => {
+  const handleConfirmCancel = async (params: CancelStringingParams) => {
     if (!targetId) return;
 
     try {
@@ -295,7 +309,11 @@ export default function ApplicationsClient() {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(params),
+          body: JSON.stringify({
+            reasonCode: params.reasonCode,
+            reasonText: params.reasonText,
+            ...(params.refundAccount ? { refundAccount: params.refundAccount } : {}),
+          }),
         },
       );
 
@@ -423,6 +441,9 @@ export default function ApplicationsClient() {
     () => (data ? data.flatMap((d) => d.items) : []),
     [data],
   );
+  const cancelTargetApplication = targetId
+    ? applications.find((app) => app.id === targetId) ?? null
+    : null;
 
   // 더 보기 여부
   const hasMore = useMemo(() => {
@@ -1037,6 +1058,8 @@ export default function ApplicationsClient() {
           }}
           onConfirm={handleConfirmCancel}
           isSubmitting={isCancelSubmitting}
+          needsRefundAccount={shouldRequestCancelRefundAccount(cancelTargetApplication)}
+          noRefundAccountMessage={getNoRefundAccountMessage(cancelTargetApplication)}
         />
       ) : null}
     </div>
