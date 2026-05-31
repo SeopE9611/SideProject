@@ -197,7 +197,7 @@ export default function StringingApplicationHistory({
           <CardTitle className="text-2xl font-semibold">처리 이력</CardTitle>
         </div>
 
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className="mt-1 text-sm leading-relaxed text-muted-foreground break-words">
           최신 변경이 맨 위에 표시됩니다.
         </p>
       </CardHeader>
@@ -240,10 +240,10 @@ export default function StringingApplicationHistory({
                 >
                   <Icon className={`h-6 w-6 ${iconClasses}`} />
                 </div>
-                <div className="flex-1">
-                  <div className="flex justify-between">
-                    <span className="font-semibold">{log.status}</span>
-                    <span className="text-sm text-muted-foreground">
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-col gap-1 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between bp-sm:gap-3">
+                    <span className="font-semibold leading-snug">{log.status}</span>
+                    <span className="shrink-0 text-sm text-muted-foreground">
                       {new Intl.DateTimeFormat("ko-KR", {
                         year: "numeric",
                         month: "2-digit",
@@ -264,7 +264,7 @@ export default function StringingApplicationHistory({
                       : "";
 
                     return (
-                      <p className="mt-1 text-sm text-foreground">
+                      <p className="mt-1 text-sm leading-relaxed text-foreground break-words">
                         {main?.trim()}
                         {detail && (
                           <span className="ml-1 font-medium text-primary">

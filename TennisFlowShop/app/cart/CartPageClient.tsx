@@ -696,9 +696,9 @@ export default function CartPageClient() {
             <div className="bp-lg:col-span-2 space-y-5">
               <Card className="border border-border bg-card shadow-sm">
                 <CardHeader variant="section" className="rounded-t-2xl">
-                  <div className="flex items-start justify-between gap-3">
+                  <div className="flex flex-col gap-4 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
                     <div>
-                      <CardTitle className="flex items-center gap-3 break-keep">
+                      <CardTitle className="flex min-w-0 items-center gap-3 text-lg bp-sm:text-xl">
                         <span className="rounded-2xl bg-muted p-2 shadow-lg dark:bg-background">
                           <ShoppingBag className="h-5 w-5 text-primary" />
                         </span>
@@ -710,7 +710,7 @@ export default function CartPageClient() {
                     </div>
 
                     {/* 전체선택 / 선택n개 / 선택삭제 */}
-                    <div className="flex flex-nowrap items-center justify-end gap-2 overflow-x-auto text-sm [&_button]:whitespace-nowrap">
+                    <div className="flex w-full flex-wrap items-center gap-2 text-sm bp-sm:w-auto bp-sm:justify-end [&_button]:shrink-0">
                       <Button
                         variant="ghost"
                         size="sm"
@@ -1073,7 +1073,7 @@ export default function CartPageClient() {
                   <div className="flex w-full flex-col justify-between gap-4 bp-sm:flex-row">
                     <Button
                       variant="outline"
-                      className="group"
+                      className="group w-full bp-sm:w-auto"
                       asChild
                     >
                       <Link
@@ -1086,7 +1086,7 @@ export default function CartPageClient() {
                     </Button>
                     <Button
                       variant="destructive"
-                      className=""
+                      className="w-full bp-sm:w-auto"
                       onClick={() => {
                         if (confirm("장바구니의 모든 상품을 비울까요?"))
                           clearCart();
@@ -1224,7 +1224,7 @@ export default function CartPageClient() {
                         {bundleEditHref ? (
                           <Button
                             asChild
-                            className="h-14 w-full text-lg font-semibold flex items-center justify-center gap-3"
+                            className="flex h-14 w-full items-center justify-center gap-2 whitespace-normal px-4 text-base font-semibold leading-snug bp-sm:gap-3 bp-sm:text-lg"
                           >
                             <Link href={bundleEditHref}>
                               <ShoppingBag className="h-5 w-5" />
@@ -1234,7 +1234,7 @@ export default function CartPageClient() {
                           </Button>
                         ) : (
                           <Button
-                            className="h-14 w-full text-lg font-semibold flex items-center justify-center gap-3"
+                            className="flex h-14 w-full items-center justify-center gap-2 whitespace-normal px-4 text-base font-semibold leading-snug bp-sm:gap-3 bp-sm:text-lg"
                             size="lg"
                             onClick={() =>
                               showErrorToast(serviceBlockToastMessage)
@@ -1300,22 +1300,22 @@ export default function CartPageClient() {
         ) : (
           <div className="mx-auto max-w-2xl">
             <Card className="border border-border bg-card shadow-sm text-center overflow-hidden">
-              <div className="bg-secondary/50 p-8 md:p-12">
-                <div className="mb-6 inline-flex h-24 w-24 items-center justify-center rounded-full border border-border bg-muted text-foreground shadow-sm">
-                  <PackageOpen className="h-12 w-12" />
+              <div className="bg-secondary/50 p-5 bp-sm:p-8 md:p-12">
+                <div className="mb-5 inline-flex h-20 w-20 items-center justify-center bp-sm:mb-6 bp-sm:h-24 bp-sm:w-24 rounded-full border border-border bg-muted text-foreground shadow-sm">
+                  <PackageOpen className="h-10 w-10 bp-sm:h-12 bp-sm:w-12" />
                 </div>
-                <h2 className="mb-4 text-3xl font-bold text-foreground">
+                <h2 className="mb-3 text-2xl font-bold text-foreground bp-md:mb-4 bp-md:text-3xl">
                   장바구니가 비어있습니다
                 </h2>
-                <p className="mb-6 md:mb-8 text-lg text-muted-foreground">
+                <p className="mb-6 text-sm leading-relaxed text-muted-foreground bp-sm:text-base md:mb-8">
                   마음에 드는 테니스 용품을 장바구니에 담아보세요!
                 </p>
                 <Button
-                  className="px-6 py-3 font-semibold md:px-8"
+                  className="w-full px-6 py-3 font-semibold bp-sm:w-auto md:px-8"
                   size="lg"
                   asChild
                 >
-                  <Link href="/products" className="flex items-center gap-3">
+                  <Link href="/products" className="flex items-center justify-center gap-3">
                     <ShoppingBag className="h-5 w-5" />
                     쇼핑하러 가기
                     <ArrowRight className="h-5 w-5" />

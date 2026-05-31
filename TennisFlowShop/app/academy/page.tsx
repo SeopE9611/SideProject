@@ -240,8 +240,8 @@ export default async function AcademyPage() {
                   <Sparkles className="h-4 w-4" />
                   도깨비테니스 레슨 안내
                 </div>
-                <h1 className="text-balance text-4xl font-bold tracking-tight text-foreground md:text-5xl lg:text-6xl">도깨비테니스 아카데미</h1>
-                <p className="max-w-xl text-pretty text-base leading-relaxed text-muted-foreground md:text-lg">
+                <h1 className="text-balance text-3xl font-bold tracking-tight text-foreground md:text-5xl lg:text-6xl">도깨비테니스 아카데미</h1>
+                <p className="max-w-xl text-pretty text-sm leading-relaxed text-muted-foreground bp-sm:text-base md:text-lg">
                   아카데미는 스트링/라켓 장비 서비스와 별도의 레슨 신청 흐름입니다. 입문자부터 실전 플레이어까지, 목표와 레벨에 맞춘 수업 방향을 상담하며 함께 찾아보세요.
                 </p>
               </div>
@@ -300,7 +300,7 @@ export default async function AcademyPage() {
         <section className="space-y-8" aria-labelledby="lesson-fees-heading">
           <div className="space-y-3">
             <p className="text-sm font-semibold uppercase tracking-wider text-primary">Lesson Program</p>
-            <h2 id="lesson-fees-heading" className="text-3xl font-bold tracking-tight text-foreground">
+            <h2 id="lesson-fees-heading" className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">
               레슨 프로그램 & 기준 수강료
             </h2>
             <p className="max-w-2xl text-base leading-relaxed text-muted-foreground">레슨 유형과 횟수별 기준 수강료를 카드형 안내로 정리했습니다. 수강료는 레슨 유형과 일정에 따라 상담 후 최종 확인될 수 있습니다.</p>
@@ -348,7 +348,7 @@ export default async function AcademyPage() {
         <section className="space-y-8" aria-labelledby="academy-contact-heading">
           <div className="space-y-3">
             <p className="text-sm font-semibold uppercase tracking-wider text-primary">Contact</p>
-            <h2 id="academy-contact-heading" className="text-3xl font-bold tracking-tight text-foreground">
+            <h2 id="academy-contact-heading" className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">
               상담 문의
             </h2>
             <p className="max-w-2xl text-base leading-relaxed text-muted-foreground">레슨 유형, 시간표, 수강 시작 가능일이 궁금하다면 담당자에게 문의해 주세요. 상담 후 등록이 확정되면 첫 방문 시 현장에서 결제를 안내합니다.</p>
@@ -384,7 +384,7 @@ export default async function AcademyPage() {
         <section className="space-y-8">
           <div className="space-y-3">
             <p className="text-sm font-semibold uppercase tracking-wider text-primary">Classes</p>
-            <h2 className="text-3xl font-bold tracking-tight text-foreground">현재 모집 중인 클래스</h2>
+            <h2 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">현재 모집 중인 클래스</h2>
             <p className="max-w-2xl text-base leading-relaxed text-muted-foreground">목적과 경험에 맞춰 상담 후 적합한 수업 방향을 안내합니다. 선택한 클래스는 상담 신청 기준으로 사용됩니다.</p>
           </div>
 
@@ -489,7 +489,7 @@ export default async function AcademyPage() {
         <section className="space-y-8">
           <div className="space-y-3">
             <p className="text-sm font-semibold uppercase tracking-wider text-primary">FAQ</p>
-            <h2 className="text-3xl font-bold tracking-tight text-foreground">자주 묻는 질문</h2>
+            <h2 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">자주 묻는 질문</h2>
             <p className="max-w-2xl text-base leading-relaxed text-muted-foreground">레슨 문의 전 자주 확인하는 내용을 정리했습니다.</p>
           </div>
 
@@ -511,19 +511,19 @@ export default async function AcademyPage() {
         </section>
 
         {/* CTA Section */}
-        <section className="relative overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br from-muted/50 to-muted/30 p-8 md:p-12">
+        <section className="relative overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br from-muted/50 to-muted/30 p-5 bp-sm:p-8 md:p-12">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" />
           <div className="relative mx-auto max-w-2xl space-y-6 text-center">
             <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
               <MessageCircle className="h-7 w-7 text-primary" />
             </div>
-            <h2 className="text-balance text-2xl font-bold tracking-tight text-foreground md:text-3xl">나에게 맞는 레슨이 궁금하다면 문의해 주세요</h2>
-            <p className="text-pretty text-base leading-relaxed text-muted-foreground">도깨비테니스 아카데미가 레벨, 목표, 가능한 일정을 확인해 상담을 도와드리고, 등록 확정 후 현장에서 결제를 안내해드립니다.</p>
+            <h2 className="text-balance text-xl font-bold tracking-tight text-foreground md:text-2xl lg:text-3xl">나에게 맞는 레슨이 궁금하다면 문의해 주세요</h2>
+            <p className="text-pretty text-sm leading-relaxed text-muted-foreground bp-sm:text-base">도깨비테니스 아카데미가 레벨, 목표, 가능한 일정을 확인해 상담을 도와드리고, 등록 확정 후 현장에서 결제를 안내해드립니다.</p>
             <div className="flex flex-col justify-center gap-3 pt-2 sm:flex-row">
-              <Button asChild size="lg" className="h-12 px-8">
+              <Button asChild size="lg" className="h-12 w-full px-8 sm:w-auto">
                 <Link href={userId ? "/academy/apply" : `/login?next=${encodeURIComponent("/academy/apply")}`}>레슨 신청하기</Link>
               </Button>
-              <Button asChild variant="outline" size="lg" className="h-12 px-8">
+              <Button asChild variant="outline" size="lg" className="h-12 w-full px-8 sm:w-auto">
                 <Link href="/board/qna/write?category=academy">문의글 작성하기</Link>
               </Button>
             </div>
