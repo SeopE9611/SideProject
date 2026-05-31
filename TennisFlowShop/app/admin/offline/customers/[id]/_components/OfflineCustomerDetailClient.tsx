@@ -184,7 +184,7 @@ function StatusBadge({ status, labels }: { status: string; labels: Record<string
     paid: "bg-success/10 text-success border-success/20",
     refunded: "bg-destructive/10 text-destructive border-destructive/20",
   };
-  return <span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium ${statusStyles[status] || "bg-muted text-muted-foreground border-border"}`}>{labels[status] || status}</span>;
+  return <span className={`inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full border px-2.5 py-1 text-xs font-medium ${statusStyles[status] || "bg-muted text-muted-foreground border-border"}`}>{labels[status] || status}</span>;
 }
 
 function Message({ type, children }: { type: "success" | "error" | "info"; children: ReactNode }) {
@@ -838,10 +838,10 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
       {/* Page Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">오프라인 고객 상세</h1>
+          <h1 className="break-keep text-2xl font-bold leading-tight tracking-tight text-foreground">오프라인 고객 상세</h1>
           <p className="mt-1 text-sm text-muted-foreground">고객 기본 정보와 오프라인 작업/매출 이력을 확인합니다.</p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex shrink-0 flex-wrap gap-2">
           <Button asChild variant="outline" size="sm">
             <Link href="/admin/offline">
               <ArrowLeft className="mr-2 h-4 w-4" />
@@ -860,21 +860,21 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
       {/* Customer Quick Info Banner */}
       <div className="rounded-xl border border-primary/20 bg-primary/5 p-5">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/20 text-primary">
+          <div className="flex min-w-0 items-center gap-4">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary">
               <User className="h-7 w-7" />
             </div>
-            <div>
-              <h2 className="text-xl font-bold text-foreground">{item.name || "이름 없음"}</h2>
+            <div className="min-w-0">
+              <h2 className="line-clamp-2 break-keep text-xl font-bold leading-tight text-foreground" title={item.name || "이름 없음"}>{item.name || "이름 없음"}</h2>
               <div className="mt-1 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-                <span className="flex items-center gap-1.5">
+                <span className="flex shrink-0 items-center gap-1.5 whitespace-nowrap tabular-nums">
                   <Phone className="h-3.5 w-3.5" />
                   {item.phoneMasked || item.phone || "-"}
                 </span>
                 {item.email && (
-                  <span className="flex items-center gap-1.5">
-                    <Mail className="h-3.5 w-3.5" />
-                    {item.email}
+                  <span className="flex min-w-0 items-center gap-1.5">
+                    <Mail className="h-3.5 w-3.5 shrink-0" />
+                    <span className="block max-w-[240px] truncate" title={item.email}>{item.email}</span>
                   </span>
                 )}
               </div>
@@ -882,18 +882,18 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {item.linkedUserId ? (
-              <Badge className="bg-success/10 text-success border-success/20">
+              <Badge className="shrink-0 whitespace-nowrap bg-success/10 text-success border-success/20">
                 <Link2 className="mr-1.5 h-3.5 w-3.5" />
                 온라인 연결됨
               </Badge>
             ) : (
-              <Badge variant="outline" className="text-muted-foreground">
+              <Badge variant="outline" className="shrink-0 whitespace-nowrap text-muted-foreground">
                 <Unlink className="mr-1.5 h-3.5 w-3.5" />
                 온라인 미연결
               </Badge>
             )}
             {item.tags?.map((tag) => (
-              <Badge key={tag} variant="secondary">
+              <Badge key={tag} variant="secondary" className="shrink-0 whitespace-nowrap">
                 {tag}
               </Badge>
             ))}
@@ -910,18 +910,18 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
             <SectionHeader icon={User} title="고객 기본 정보" description="휴대폰 번호와 연락처 정보" />
             <div className="space-y-4 p-6">
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <InfoItem icon={User} label="고객명" value={<span className="font-semibold">{item.name || "-"}</span>} />
+                <InfoItem icon={User} label="고객명" value={<span className="line-clamp-2 break-keep font-semibold" title={item.name || "-"}>{item.name || "-"}</span>} />
                 <InfoItem
                   icon={Phone}
                   label="휴대폰 번호"
                   value={
                     <div>
-                      <span>{item.phoneMasked || "-"}</span>
-                      {item.phone && <p className="mt-1 text-xs text-muted-foreground">원번호: {item.phone}</p>}
+                      <span className="whitespace-nowrap tabular-nums">{item.phoneMasked || "-"}</span>
+                      {item.phone && <p className="mt-1 whitespace-nowrap text-xs tabular-nums text-muted-foreground">원번호: {item.phone}</p>}
                     </div>
                   }
                 />
-                <InfoItem icon={Mail} label="이메일" value={item.email || "-"} />
+                <InfoItem icon={Mail} label="이메일" value={<span className="block max-w-[220px] truncate" title={item.email || "-"}>{item.email || "-"}</span>} />
                 <InfoItem icon={Calendar} label="마지막 방문일" value={formatDate(item.stats?.lastVisitedAt)} />
                 <InfoItem icon={Clock} label="등록일" value={formatDate(item.createdAt)} />
                 <InfoItem icon={Clock} label="수정일" value={formatDate(item.updatedAt)} />
@@ -933,7 +933,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                   <FileText className="h-3.5 w-3.5" />
                   메모
                 </div>
-                <p className="mt-2 whitespace-pre-wrap text-sm text-foreground">{item.memo || "등록된 메모가 없습니다."}</p>
+                <p className="mt-2 whitespace-pre-wrap break-keep text-sm leading-relaxed text-foreground">{item.memo || "등록된 메모가 없습니다."}</p>
               </div>
 
               <p className="text-xs text-muted-foreground">고객 정보 수정은 오프라인 관리 화면 또는 후속 단계에서 지원 예정입니다.</p>
@@ -948,9 +948,9 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
               description="포인트/패키지 연동을 위한 회원 연결"
               action={
                 item.linkedUserId ? (
-                  <Badge className="bg-success/10 text-success border-success/20">연결됨</Badge>
+                  <Badge className="shrink-0 whitespace-nowrap bg-success/10 text-success border-success/20">연결됨</Badge>
                 ) : (
-                  <Badge variant="outline" className="text-muted-foreground">
+                  <Badge variant="outline" className="shrink-0 whitespace-nowrap text-muted-foreground">
                     미연결
                   </Badge>
                 )
@@ -969,7 +969,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                         <p className="font-medium text-foreground">{item.linkedUser?.name || "회원 정보 없음"}</p>
                         <p className="text-sm text-muted-foreground">{item.linkedUser?.email || "-"}</p>
                         <p className="text-sm text-muted-foreground">{item.linkedUser?.phoneMasked || item.linkedUser?.phone || "-"}</p>
-                        <p className="mt-2 text-xs text-muted-foreground break-all">ID: {item.linkedUserId}</p>
+                        <p className="mt-2 text-xs text-muted-foreground truncate">ID: {item.linkedUserId}</p>
                       </div>
                     </div>
                   </div>
@@ -1052,7 +1052,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                             <div className="flex items-start justify-between gap-3">
                               <div className="min-w-0 flex-1">
                                 <p className="font-medium text-foreground">{candidate.name || "이름 없음"}</p>
-                                <p className="text-sm text-muted-foreground break-all">{candidate.email || "이메일 없음"}</p>
+                                <p className="text-sm text-muted-foreground truncate">{candidate.email || "이메일 없음"}</p>
                                 <p className="text-sm text-muted-foreground">{candidate.phoneMasked || "휴대폰 없음"}</p>
                                 <div className="mt-2 flex flex-wrap gap-1.5">
                                   {candidate.match.name && (
@@ -1154,7 +1154,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
               icon={Package}
               title="패키지/서비스권"
               description="보유 패키지 현황"
-              action={canUseLinkedFeatures && usablePasses.length > 0 ? <Badge className="bg-success/10 text-success border-success/20">{usablePasses.length}개 사용 가능</Badge> : null}
+              action={canUseLinkedFeatures && usablePasses.length > 0 ? <Badge className="shrink-0 whitespace-nowrap bg-success/10 text-success border-success/20">{usablePasses.length}개 사용 가능</Badge> : null}
             />
             <div className="p-6">
               {!canUseLinkedFeatures ? (
@@ -1285,7 +1285,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                     />
                   </FormField>
 
-                  <div className="flex flex-wrap items-center gap-3">
+                  <div className="flex min-w-0 flex-wrap items-center gap-3">
                     <Button type="button" onClick={handlePackageSell} disabled={isSellingPackage}>
                       <Gift className="mr-2 h-4 w-4" />
                       {isSellingPackage ? "패키지 판매/발급 중..." : "패키지 판매/발급"}
@@ -1312,17 +1312,17 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                   <p className="text-sm text-muted-foreground">표시할 패키지 판매/주문 내역이 없습니다.</p>
                 ) : (
                   <div className="overflow-x-auto rounded-lg border border-border/40">
-                    <table className="w-full min-w-[980px] text-left text-sm">
+                    <table className="min-w-[980px] text-left text-sm">
                       <thead className="bg-muted/50 text-xs text-muted-foreground">
                         <tr>
-                          <th className="px-4 py-3 font-medium">패키지</th>
-                          <th className="px-4 py-3 font-medium">횟수</th>
-                          <th className="px-4 py-3 font-medium">금액</th>
-                          <th className="px-4 py-3 font-medium">결제수단</th>
-                          <th className="px-4 py-3 font-medium">결제상태</th>
-                          <th className="px-4 py-3 font-medium">결제일</th>
-                          <th className="px-4 py-3 font-medium">출처</th>
-                          <th className="px-4 py-3 font-medium">환불 처리</th>
+                          <th className="whitespace-nowrap px-4 py-3 font-medium">패키지</th>
+                          <th className="whitespace-nowrap px-4 py-3 font-medium">횟수</th>
+                          <th className="whitespace-nowrap px-4 py-3 font-medium">금액</th>
+                          <th className="whitespace-nowrap px-4 py-3 font-medium">결제수단</th>
+                          <th className="whitespace-nowrap px-4 py-3 font-medium">결제상태</th>
+                          <th className="whitespace-nowrap px-4 py-3 font-medium">결제일</th>
+                          <th className="whitespace-nowrap px-4 py-3 font-medium">출처</th>
+                          <th className="whitespace-nowrap px-4 py-3 font-medium">환불 처리</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1332,23 +1332,23 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                           const isRefunding = refundingPackageOrderId === sale.id;
                           return (
                             <tr key={sale.id} className="border-t border-border/40 align-top transition-colors hover:bg-muted/30">
-                              <td className="px-4 py-3 font-medium text-foreground">{sale.packageName || "교체 서비스 패키지"}</td>
-                              <td className="px-4 py-3">{Number(sale.sessions ?? 0).toLocaleString("ko-KR")}회</td>
-                              <td className="px-4 py-3">
+                              <td className="px-4 py-3 font-medium text-foreground"><span className="line-clamp-2 max-w-[220px] break-keep" title={sale.packageName || "교체 서비스 패키지"}>{sale.packageName || "교체 서비스 패키지"}</span></td>
+                              <td className="whitespace-nowrap px-4 py-3 tabular-nums">{Number(sale.sessions ?? 0).toLocaleString("ko-KR")}회</td>
+                              <td className="whitespace-nowrap px-4 py-3 tabular-nums">
                                 <div>{formatCurrency(sale.price)}</div>
                                 {sale.isRefunded && <div className="mt-1 text-xs text-destructive">환불 {formatCurrency(sale.refundAmount ?? sale.price)}</div>}
                               </td>
-                              <td className="px-4 py-3">{PAYMENT_METHOD_LABELS[sale.paymentMethod as OfflinePaymentMethod] ?? sale.paymentMethod ?? "-"}</td>
-                              <td className="px-4 py-3">
+                              <td className="whitespace-nowrap px-4 py-3">{PAYMENT_METHOD_LABELS[sale.paymentMethod as OfflinePaymentMethod] ?? sale.paymentMethod ?? "-"}</td>
+                              <td className="whitespace-nowrap px-4 py-3">
                                 <div>{sale.paymentStatus || "-"}</div>
-                                {sale.isRefunded && <Badge variant="destructive" className="mt-1">환불 완료</Badge>}
+                                {sale.isRefunded && <Badge variant="destructive" className="mt-1 shrink-0 whitespace-nowrap">환불 완료</Badge>}
                               </td>
-                              <td className="px-4 py-3">
+                              <td className="whitespace-nowrap px-4 py-3 tabular-nums">
                                 <div>{formatDate(sale.paidAt || sale.createdAt)}</div>
                                 {sale.refundedAt && <div className="mt-1 text-xs text-muted-foreground">환불일 {formatDate(sale.refundedAt)}</div>}
                               </td>
                               <td className="px-4 py-3">
-                                <Badge variant={isOfflineSale ? "secondary" : "outline"}>{sale.sourceLabel || (isOfflineSale ? "오프라인 판매" : "온라인/기존 주문")}</Badge>
+                                <Badge variant={isOfflineSale ? "secondary" : "outline"} className="shrink-0 whitespace-nowrap">{sale.sourceLabel || (isOfflineSale ? "오프라인 판매" : "온라인/기존 주문")}</Badge>
                               </td>
                               <td className="px-4 py-3">
                                 {!isOfflineSale ? (
@@ -1419,23 +1419,23 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                 return (
                   <div key={record.id} className="rounded-lg border border-border/40 bg-card transition-shadow hover:shadow-sm">
                     {/* Record Header */}
-                    <button type="button" onClick={() => toggleRecordExpand(record.id)} className="flex w-full items-center justify-between p-4 text-left">
-                      <div className="flex flex-wrap items-center gap-3">
+                    <button type="button" onClick={() => toggleRecordExpand(record.id)} className="flex w-full items-start justify-between gap-3 p-4 text-left">
+                      <div className="flex min-w-0 flex-wrap items-center gap-3">
                         <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
                           <Calendar className="h-5 w-5" />
                         </div>
-                        <div>
+                        <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-2">
-                            <span className="font-medium text-foreground">{formatDate(record.occurredAt)}</span>
-                            <Badge variant="outline">{KIND_LABELS[record.kind] ?? record.kind}</Badge>
+                            <span className="whitespace-nowrap font-medium tabular-nums text-foreground">{formatDate(record.occurredAt)}</span>
+                            <Badge variant="outline" className="shrink-0 whitespace-nowrap">{KIND_LABELS[record.kind] ?? record.kind}</Badge>
                             <StatusBadge status={record.status} labels={RECORD_STATUS_LABELS} />
                           </div>
-                          <p className="mt-1 text-sm text-muted-foreground line-clamp-1">{record.lineSummary || formatLineSummary(record.lines)}</p>
+                          <p className="mt-1 line-clamp-2 break-keep text-sm text-muted-foreground">{record.lineSummary || formatLineSummary(record.lines)}</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-4">
+                      <div className="flex shrink-0 items-center gap-4">
                         <div className="text-right">
-                          <p className="font-semibold text-foreground">{formatCurrency(record.payment?.amount)}</p>
+                          <p className="whitespace-nowrap font-semibold tabular-nums text-foreground">{formatCurrency(record.payment?.amount)}</p>
                           <StatusBadge status={record.payment?.status || ""} labels={PAYMENT_STATUS_LABELS} />
                         </div>
                         {isExpanded ? <ChevronUp className="h-5 w-5 text-muted-foreground" /> : <ChevronDown className="h-5 w-5 text-muted-foreground" />}
@@ -1451,12 +1451,12 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                             <h4 className="text-sm font-medium text-foreground">기본 정보</h4>
                             <div className="space-y-2 text-sm">
                               <div className="flex justify-between">
-                                <span className="text-muted-foreground">결제 수단</span>
+                                <span className="shrink-0 whitespace-nowrap text-muted-foreground">결제 수단</span>
                                 <span className="text-foreground">{record.payment?.method ? PAYMENT_METHOD_LABELS[record.payment.method] : "-"}</span>
                               </div>
                               <div className="flex justify-between">
-                                <span className="text-muted-foreground">메모</span>
-                                <span className="text-foreground text-right max-w-[200px] truncate">{record.memo || "-"}</span>
+                                <span className="shrink-0 whitespace-nowrap text-muted-foreground">메모</span>
+                                <span className="line-clamp-2 max-w-[200px] break-keep text-right text-foreground" title={record.memo || "-"}>{record.memo || "-"}</span>
                               </div>
                             </div>
                             <Button asChild size="sm" variant="outline" className="w-full">
@@ -1467,7 +1467,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                           {/* Points Section */}
                           <div className="space-y-3">
                             <h4 className="text-sm font-medium text-foreground">포인트</h4>
-                            <div className="flex flex-wrap gap-2">
+                            <div className="flex shrink-0 flex-wrap gap-2">
                               <Badge variant={hasGrant ? "secondary" : "outline"} className={hasGrant ? "bg-success/10 text-success" : ""}>
                                 적립 {formatPoints(record.points?.earn)}
                               </Badge>
@@ -1492,7 +1492,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                                         <>
                                           <p>취소일: {formatDate(record.points?.grantRevertedAt)}</p>
                                           {record.points?.grantRevertReason && <p>사유: {record.points.grantRevertReason}</p>}
-                                          <p className="text-muted-foreground">취소된 포인트 처리는 같은 기록에서 다시 처리할 수 없습니다. 재처리가 필요한 경우 새 작업 기록 또는 관리자 포인트 조정 기능을 사용하세요.</p>
+                                          <p className="break-keep text-muted-foreground">취소된 포인트 처리는 같은 기록에서 다시 처리할 수 없습니다. 재처리가 필요한 경우 새 작업 기록 또는 관리자 포인트 조정 기능을 사용하세요.</p>
                                         </>
                                       ) : (
                                         <>
@@ -1533,7 +1533,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                                         <>
                                           <p>취소일: {formatDate(record.points?.deductRevertedAt)}</p>
                                           {record.points?.deductRevertReason && <p>사유: {record.points.deductRevertReason}</p>}
-                                          <p className="text-muted-foreground">취소된 포인트 처리는 같은 기록에서 다시 처리할 수 없습니다. 재처리가 필요한 경우 새 작업 기록 또는 관리자 포인트 조정 기능을 사용하세요.</p>
+                                          <p className="break-keep text-muted-foreground">취소된 포인트 처리는 같은 기록에서 다시 처리할 수 없습니다. 재처리가 필요한 경우 새 작업 기록 또는 관리자 포인트 조정 기능을 사용하세요.</p>
                                         </>
                                       ) : (
                                         <>
@@ -1585,7 +1585,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                             ) : hasActivePackageUsage ? (
                               <div className="space-y-3 rounded-lg border border-success/30 bg-success/5 p-3">
                                 <div>
-                                  <Badge className="bg-success/10 text-success border-success/20">
+                                  <Badge className="shrink-0 whitespace-nowrap bg-success/10 text-success border-success/20">
                                     <Check className="mr-1.5 h-3.5 w-3.5" />
                                     패키지 1회 사용 완료
                                   </Badge>
@@ -1612,7 +1612,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                                 )}
                               </div>
                             ) : (
-                              <Badge variant="outline" className="text-muted-foreground">
+                              <Badge variant="outline" className="shrink-0 whitespace-nowrap text-muted-foreground">
                                 패키지 미사용
                               </Badge>
                             )}

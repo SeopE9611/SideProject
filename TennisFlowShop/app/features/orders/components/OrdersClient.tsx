@@ -717,7 +717,7 @@ export default function OrdersClient() {
                 className={cn(
                   badgeBase,
                   badgeSizeSm,
-                  "whitespace-nowrap",
+                  "whitespace-nowrap shrink-0",
                   kindBadgeClass("order"),
                 )}
               >
@@ -727,7 +727,7 @@ export default function OrdersClient() {
                 className={cn(
                   badgeBase,
                   badgeSizeSm,
-                  "whitespace-nowrap",
+                  "whitespace-nowrap shrink-0",
                   kindBadgeClass("stringing_application"),
                 )}
               >
@@ -737,7 +737,7 @@ export default function OrdersClient() {
                 className={cn(
                   badgeBase,
                   badgeSizeSm,
-                  "whitespace-nowrap",
+                  "whitespace-nowrap shrink-0",
                   linkBadgeClass("integrated"),
                 )}
               >
@@ -747,7 +747,7 @@ export default function OrdersClient() {
                 className={cn(
                   badgeBase,
                   badgeSizeSm,
-                  "whitespace-nowrap",
+                  "whitespace-nowrap shrink-0",
                   linkBadgeClass("standalone"),
                 )}
               >
@@ -793,8 +793,8 @@ export default function OrdersClient() {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="relative min-h-[420px] overflow-x-auto scrollbar-hidden pr-2 md:overflow-x-visible md:pr-0">
-          <Table className="w-full table-auto border-separate text-xs [border-spacing-block:0.4rem] [border-spacing-inline:0]">
+        <CardContent className="relative min-h-[420px] overflow-x-auto scrollbar-hidden pr-2">
+          <Table className="min-w-[980px] table-auto border-separate text-xs [border-spacing-block:0.4rem] [border-spacing-inline:0]">
             <TableHeader className={cn("sticky top-0", adminSurface.tableHeader)}>
               <TableRow>
                 <TableHead className={cn(thClasses, "w-[140px]")}>
@@ -987,7 +987,7 @@ export default function OrdersClient() {
                           <TooltipProvider delayDuration={10}>
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <div className="flex flex-col items-start gap-1 max-w-[140px] cursor-pointer w-full">
+                                <div className="flex w-full max-w-[140px] cursor-pointer flex-col items-start gap-1" title={order.id}>
                                   <div className="flex items-center gap-1 truncate w-full justify-start">
                                     {/* 취소요청 상태일 때만 아이콘 노출 */}
                                     {order.cancelStatus === "requested" && (
@@ -997,7 +997,7 @@ export default function OrdersClient() {
                                       />
                                     )}
                                     {/* 실제 표시되는 주문 ID (짧게) */}
-                                    <span className="truncate">
+                                    <span className="truncate font-mono whitespace-nowrap">
                                       {shortenId(order.id)}
                                     </span>
                                   </div>
@@ -1234,32 +1234,34 @@ export default function OrdersClient() {
                         </TableCell>
                         {/* 고객 정보 셀 */}
                         <TableCell className={tdClasses}>
-                          <div className="flex flex-col items-center">
-                            <span className="flex items-center">
+                          <div className="mx-auto flex max-w-[180px] min-w-0 flex-col items-center">
+                            <span className="flex max-w-full min-w-0 items-center">
                               {/* "이름"만 남기기 */}
-                              {order.customer.name
-                                .replace(/\s*\(비회원\)\s*$/, "")
-                                .replace(/\s*\(탈퇴한 회원\)\s*$/, "")}
+                              <span className="line-clamp-2 break-keep text-center">
+                                {order.customer.name
+                                  .replace(/\s*\(비회원\)\s*$/, "")
+                                  .replace(/\s*\(탈퇴한 회원\)\s*$/, "")}
+                              </span>
                               {/*  탈퇴한 회원 레이블 (기존 getDisplayUserType) */}
                               {getDisplayUserType(order) && (
-                                <span className="ml-1 text-xs text-muted-foreground">
+                                <span className="ml-1 shrink-0 whitespace-nowrap text-xs text-muted-foreground">
                                   {getDisplayUserType(order)}
                                 </span>
                               )}
                               {/*  비회원 레이블 */}
                               {order.customer.name.endsWith("(비회원)") && (
-                                <span className="ml-1 text-xs text-muted-foreground">
+                                <span className="ml-1 shrink-0 whitespace-nowrap text-xs text-muted-foreground">
                                   (비회원)
                                 </span>
                               )}
                             </span>
-                            <span className="text-sm text-foreground/75">
+                            <span className="block max-w-full truncate text-sm text-foreground/75" title={order.customer.email}>
                               {order.customer.email}
                             </span>
                           </div>
                         </TableCell>
                         {/* 날짜 셀 */}
-                        <TableCell className="w-36 truncate whitespace-nowrap">
+                        <TableCell className="w-36 truncate whitespace-nowrap tabular-nums">
                           {formatDate(order.date)}
                         </TableCell>
                         {/* 상태 셀 */}
@@ -1272,7 +1274,7 @@ export default function OrdersClient() {
                                   className={cn(
                                     badgeBase,
                                     badgeSizeSm,
-                                    "whitespace-nowrap bg-destructive/10 text-destructive border border-destructive/30",
+                                    "whitespace-nowrap shrink-0 bg-destructive/10 text-destructive border border-destructive/30",
                                   )}
                                 >
                                   취소요청
@@ -1289,7 +1291,7 @@ export default function OrdersClient() {
                                     className={cn(
                                       badgeBase,
                                       badgeSizeSm,
-                                      "whitespace-nowrap",
+                                      "whitespace-nowrap shrink-0",
                                     )}
                                   >
                                     {getOrderStatusLabelForDisplay(
@@ -1302,7 +1304,7 @@ export default function OrdersClient() {
                                       className={cn(
                                         badgeBase,
                                         badgeSizeSm,
-                                        "whitespace-nowrap bg-destructive/10 text-destructive border border-destructive/30",
+                                        "whitespace-nowrap shrink-0 bg-destructive/10 text-destructive border border-destructive/30",
                                       )}
                                     >
                                       취소요청
@@ -1325,7 +1327,7 @@ export default function OrdersClient() {
                                 className={cn(
                                   badgeBase,
                                   badgeSizeSm,
-                                  "whitespace-nowrap",
+                                  "whitespace-nowrap shrink-0",
                                 )}
                               >
                                 {order.paymentStatus}
@@ -1351,7 +1353,7 @@ export default function OrdersClient() {
                                 className={cn(
                                   badgeBase,
                                   badgeSizeSm,
-                                  "whitespace-nowrap",
+                                  "whitespace-nowrap shrink-0",
                                 )}
                                 title={`수령방식 코드: ${String(m.code ?? "null")}`}
                               >
@@ -1371,7 +1373,7 @@ export default function OrdersClient() {
                                   className={cn(
                                     badgeBase,
                                     badgeSizeSm,
-                                    "whitespace-nowrap",
+                                    "whitespace-nowrap shrink-0",
                                     linkBadgeClass("standalone"),
                                   )}
                                 >
@@ -1387,7 +1389,7 @@ export default function OrdersClient() {
                                 className={cn(
                                   badgeBase,
                                   badgeSizeSm,
-                                  "whitespace-nowrap",
+                                  "whitespace-nowrap shrink-0",
                                 )}
                                 title="택배인 경우만 운송장 등록/미등록 의미가 있습니다."
                               >
@@ -1407,14 +1409,14 @@ export default function OrdersClient() {
                             className={cn(
                               badgeBase,
                               badgeSizeSm,
-                              "whitespace-nowrap",
+                              "whitespace-nowrap shrink-0",
                             )}
                           >
                             {order.type}
                           </Badge>
                         </TableCell>
                         {/* 금액 셀 */}
-                        <TableCell className={tdClasses}>
+                        <TableCell className={cn(tdClasses, "whitespace-nowrap tabular-nums")}>
                           {formatCurrency(order.total)}
                         </TableCell>
                         {/* 작업 메뉴 셀 */}
@@ -1429,9 +1431,9 @@ export default function OrdersClient() {
                                 <MoreHorizontal className="h-3.5 w-3.5" />
                               </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
+                            <DropdownMenuContent align="end" className="min-w-max">
                               <DropdownMenuLabel>작업</DropdownMenuLabel>
-                              <DropdownMenuItem asChild>
+                              <DropdownMenuItem asChild className="whitespace-nowrap">
                                 <Link
                                   href={
                                     order.__type === "stringing_application"
@@ -1458,6 +1460,7 @@ export default function OrdersClient() {
 
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
+                                className="whitespace-nowrap"
                                 onClick={() => {
                                   // 신청서 행이면 신청서 배송등록으로 바로 이동
                                   if (

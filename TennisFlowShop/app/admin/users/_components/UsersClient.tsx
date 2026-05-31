@@ -1023,10 +1023,10 @@ export default function UsersClient() {
             </p>
           </div>
 
-          <div className="relative overflow-x-hidden px-3 sm:px-4 pb-3">
+          <div className="relative overflow-x-auto px-3 pb-3 sm:px-4">
             <div className="relative rounded-2xl border border-border shadow-sm min-w-0">
               <Table
-                className="w-full table-fixed border-separate [border-spacing-block:0.35rem] [border-spacing-inline:0] text-xs [&_th]:text-center [&_td]:text-center"
+                className="min-w-[980px] table-fixed border-separate [border-spacing-block:0.35rem] [border-spacing-inline:0] text-xs [&_th]:text-center [&_td]:text-center"
                 aria-busy={shouldShowLoadingRows}
               >
                 {/* 열 폭 고정: 체크 / 회원 / 권한 / 전화 / 주소 / 활동 / 상태 / 작업 */}
@@ -1158,11 +1158,11 @@ export default function UsersClient() {
                           {/* 회원: 이름/이메일 두 줄 + 복사 */}
                           <TableCell className={cn(td, "w-[220px]")}>
                             <div className="min-w-0 flex flex-col items-center text-center mx-auto max-w-[200px]">
-                              <span className="font-medium truncate">
+                              <span className="line-clamp-2 max-w-full break-keep font-medium" title={u.name || "(이름없음)"}>
                                 {u.name || "(이름없음)"}
                               </span>
-                              <div className="flex items-center gap-1 text-xs text-foreground/75 min-w-0">
-                                <span className="truncate">{u.email}</span>
+                              <div className="flex max-w-full min-w-0 items-center gap-1 text-xs text-foreground/75">
+                                <span className="block max-w-[170px] truncate" title={u.email}>{u.email}</span>
                                 <button
                                   className="shrink-0 inline-flex h-4 w-4 items-center justify-center rounded hover:bg-background"
                                   onClick={() => copy(u.email)}
@@ -1179,7 +1179,7 @@ export default function UsersClient() {
                                     {u.socialProviders.includes("kakao") && (
                                       <Badge
                                         variant="warning"
-                                        className="text-[10px] h-5 px-2"
+                                        className="h-5 shrink-0 whitespace-nowrap px-2 text-[10px]"
                                       >
                                         카카오
                                       </Badge>
@@ -1187,7 +1187,7 @@ export default function UsersClient() {
                                     {u.socialProviders.includes("naver") && (
                                       <Badge
                                         variant="success"
-                                        className="text-[10px] h-5 px-2"
+                                        className="h-5 shrink-0 whitespace-nowrap px-2 text-[10px]"
                                       >
                                         네이버
                                       </Badge>
@@ -1201,7 +1201,7 @@ export default function UsersClient() {
                           <TableCell
                             className={cn(td, "w-[72px] whitespace-nowrap")}
                           >
-                            <Badge className={cn(badgeSm, roleColors[u.role])}>
+                            <Badge className={cn(badgeSm, roleColors[u.role], "shrink-0 whitespace-nowrap")}>
                               {u.role === "admin" ? "관리자" : "일반"}
                             </Badge>
                           </TableCell>
@@ -1242,7 +1242,7 @@ export default function UsersClient() {
                             )}
                           >
                             <div className="min-w-0 flex items-center justify-center gap-1">
-                              <span className="truncate block max-w-[250px]">
+                              <span className="line-clamp-2 block max-w-[250px] break-keep">
                                 {shortAddress(u.address)}
                               </span>
                               <button
@@ -1284,7 +1284,7 @@ export default function UsersClient() {
                             )}
                           >
                             <div className="flex justify-center">
-                              <Badge className={cn(badgeSm, STATUS[statusKey])}>
+                              <Badge className={cn(badgeSm, STATUS[statusKey], "shrink-0 whitespace-nowrap")}>
                                 {statusKey === "active"
                                   ? "활성"
                                   : statusKey === "suspended"
@@ -1306,13 +1306,14 @@ export default function UsersClient() {
                                   <MoreHorizontal className="h-4 w-4" />
                                 </Button>
                               </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem asChild>
+                              <DropdownMenuContent align="end" className="min-w-max">
+                                <DropdownMenuItem asChild className="whitespace-nowrap">
                                   <Link href={`/admin/users/${u.id}`}>
                                     상세 보기
                                   </Link>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
+                                  className="whitespace-nowrap"
                                   onSelect={(e) => {
                                     e.preventDefault();
                                     openPointsDialog(u.id, u.name);

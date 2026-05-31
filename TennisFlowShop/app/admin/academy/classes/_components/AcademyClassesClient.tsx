@@ -128,7 +128,7 @@ function ApplicationStatsCell({ item }: { item: AcademyClass }) {
   const confirmed = item.applicationStats?.confirmed ?? 0;
 
   return (
-    <div className="whitespace-nowrap">
+    <div className="whitespace-nowrap shrink-0">
       <div className="font-medium text-foreground">
         신청 {total.toLocaleString("ko-KR")}건
       </div>
@@ -335,8 +335,8 @@ export default function AcademyClassesClient() {
             </div>
           ) : null}
 
-          <div className={adminSurface.tableCard}>
-            <Table>
+          <div className={cn(adminSurface.tableCard, "overflow-x-auto")}>
+            <Table className="min-w-[980px]">
               <TableHeader className={adminSurface.tableHeader}>
                 <TableRow>
                   <TableHead className="whitespace-nowrap px-3">등록일</TableHead>
@@ -386,7 +386,7 @@ export default function AcademyClassesClient() {
                         <div className="text-muted-foreground">{createdAt.time}</div>
                       </TableCell>
                       <TableCell className="min-w-0 px-3 py-3">
-                        <div className="max-w-[260px] truncate font-medium text-foreground">
+                        <div className="line-clamp-2 max-w-[260px] break-keep font-medium text-foreground" title={item.name || "-"}>
                           {item.name || "-"}
                         </div>
                         <div className="max-w-[260px] truncate text-xs text-muted-foreground">
@@ -400,7 +400,7 @@ export default function AcademyClassesClient() {
                         </div>
                       </TableCell>
                       <TableCell className="min-w-0 px-3 py-3 text-sm">
-                        <div className="whitespace-nowrap">{item.instructorName || "강사 미입력"}</div>
+                        <div className="whitespace-nowrap shrink-0">{item.instructorName || "강사 미입력"}</div>
                         <div className="max-w-[220px] truncate text-xs text-muted-foreground">
                           {item.scheduleText || "일정 미입력"}
                         </div>
@@ -414,7 +414,7 @@ export default function AcademyClassesClient() {
                         <ApplicationStatsCell item={item} />
                       </TableCell>
                       <TableCell className="whitespace-nowrap px-3 py-3">
-                        <div className="text-sm font-medium text-foreground">
+                        <div className="text-sm font-medium tabular-nums text-foreground">
                           {formatPrice(item.price)}
                         </div>
                         <div className="mt-1">
@@ -422,7 +422,7 @@ export default function AcademyClassesClient() {
                         </div>
                       </TableCell>
                       <TableCell
-                        className="px-3 py-3 text-right"
+                        className="whitespace-nowrap px-3 py-3 text-right"
                         onClick={(event) => event.stopPropagation()}
                       >
                         <DropdownMenu>
@@ -436,8 +436,9 @@ export default function AcademyClassesClient() {
                               <MoreHorizontal className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
+                          <DropdownMenuContent align="end" className="min-w-max">
                             <DropdownMenuItem
+                              className="whitespace-nowrap"
                               onSelect={(event) => {
                                 event.preventDefault();
                                 goToDetail(classId);
@@ -447,6 +448,7 @@ export default function AcademyClassesClient() {
                               상세 보기
                             </DropdownMenuItem>
                             <DropdownMenuItem
+                              className="whitespace-nowrap"
                               onSelect={(event) => {
                                 event.preventDefault();
                                 goToEdit(classId);
@@ -456,6 +458,7 @@ export default function AcademyClassesClient() {
                               수정
                             </DropdownMenuItem>
                             <DropdownMenuItem
+                              className="whitespace-nowrap"
                               disabled={isHideDisabled}
                               onSelect={(event) => {
                                 event.preventDefault();
@@ -472,7 +475,7 @@ export default function AcademyClassesClient() {
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               disabled={isDeleteDisabled}
-                              className="text-destructive focus:text-destructive"
+                              className="whitespace-nowrap text-destructive focus:text-destructive"
                               onSelect={(event) => {
                                 event.preventDefault();
                                 if (isDeleteDisabled) {

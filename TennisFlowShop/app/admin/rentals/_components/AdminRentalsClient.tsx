@@ -405,7 +405,7 @@ export default function AdminRentalsClient() {
     const paymentLabel = item.paymentStatusLabel ?? (derivePaymentStatus(item) === "paid" ? "결제완료" : "결제대기");
     const pay = getPaymentStatusBadgeSpec(paymentLabel);
     return (
-      <Badge variant={pay.variant} className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap")}>
+      <Badge variant={pay.variant} className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap shrink-0")}>
         {paymentLabel}
       </Badge>
     );
@@ -597,32 +597,32 @@ export default function AdminRentalsClient() {
           </div>
           {/* “이 화면에서 무엇이 다른지”를 즉시 이해시키는 장치 */}
           <div className="px-6 -mt-2 mb-2 flex flex-wrap items-center gap-2 text-sm text-foreground/75">
-            <Badge variant={getKindBadge().variant} className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap")}>
+            <Badge variant={getKindBadge().variant} className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap shrink-0")}>
               {getKindBadge().label}
             </Badge>
-            <Badge variant="outline" className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap")}>
+            <Badge variant="outline" className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap shrink-0")}>
               단독
             </Badge>
-            <Badge variant="brand" className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap")}>
+            <Badge variant="brand" className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap shrink-0")}>
               교체서비스 포함
             </Badge>
-            <Badge variant="info" className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap")}>
+            <Badge variant="info" className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap shrink-0")}>
               신청서 연결
             </Badge>
-            <Badge variant={FLOW_BADGE_VARIANT[6]} className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap")}>
+            <Badge variant={FLOW_BADGE_VARIANT[6]} className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap shrink-0")}>
               {FLOW_SHORT[6]}
             </Badge>
-            <Badge variant={FLOW_BADGE_VARIANT[7]} className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap")}>
+            <Badge variant={FLOW_BADGE_VARIANT[7]} className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap shrink-0")}>
               {FLOW_SHORT[7]}
             </Badge>
-            <Badge variant={getSettlementBadge().variant} className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap")}>
+            <Badge variant={getSettlementBadge().variant} className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap shrink-0")}>
               {getSettlementBadge().label}
             </Badge>
             <span className="ml-1">• 신청서 연결이 있으면 신청서 상세로 바로 이동할 수 있습니다</span>
           </div>
         </CardHeader>
-        <CardContent className="overflow-x-auto md:overflow-x-visible scrollbar-hidden relative pr-2 md:pr-0">
-          <Table className="w-full table-auto border-separate [border-spacing-block:0.5rem] [border-spacing-inline:0] text-xs">
+        <CardContent className="relative overflow-x-auto scrollbar-hidden pr-2">
+          <Table className="min-w-[1040px] table-auto border-separate [border-spacing-block:0.5rem] [border-spacing-inline:0] text-xs">
             <TableHeader className={cn("sticky top-0", adminSurface.tableHeader)}>
               <TableRow>
                 <TableHead className={cn(thClasses, "w-[140px]")}>대여 ID</TableHead>
@@ -693,7 +693,7 @@ export default function AdminRentalsClient() {
                             <TooltipTrigger asChild>
                               <button
                                 type="button"
-                                className="inline-flex flex-col items-start gap-1 max-w-[140px] cursor-pointer"
+                                className="inline-flex max-w-[140px] cursor-pointer flex-col items-start gap-1" title={rid}
                                 onClick={() => {
                                   navigator.clipboard.writeText(rid);
                                   showSuccessToast("대여 ID가 클립보드에 복사되었습니다.");
@@ -702,7 +702,7 @@ export default function AdminRentalsClient() {
                                 <div className="inline-flex items-center gap-1 w-full truncate">
                                   {/* 취소요청 들어온 대여만 경고 아이콘 표시 */}
                                   {r.cancelRequest?.status === "requested" && <AlertTriangle className="h-3.5 w-3.5 text-primary shrink-0" aria-label="취소 요청된 대여" />}
-                                  <span className="inline-block truncate">{shortenId(rid)}</span>
+                                  <span className="inline-block truncate font-mono whitespace-nowrap">{shortenId(rid)}</span>
                                 </div>
 
                                 {/* 단독/교체서비스 포함/신청서 연결 여부 */}
@@ -811,29 +811,29 @@ export default function AdminRentalsClient() {
                       </TableCell>
 
                       <TableCell className={tdClasses}>
-                        <div className="flex flex-col items-center">
-                          <span>{r.customer?.name || "-"}</span>
-                          <span className="text-sm text-foreground/75">{r.customer?.email || "-"}</span>
+                        <div className="mx-auto flex max-w-[180px] min-w-0 flex-col items-center">
+                          <span className="line-clamp-2 break-keep text-center" title={r.customer?.name || "-"}>{r.customer?.name || "-"}</span>
+                          <span className="block max-w-full truncate text-sm text-foreground/75" title={r.customer?.email || "-"}>{r.customer?.email || "-"}</span>
                         </div>
                       </TableCell>
                       <TableCell className={tdClasses}>
                         {rid ? (
-                          <Link href={`/admin/rentals/${rid}`} className="underline-offset-2 hover:underline font-medium">
+                          <Link href={`/admin/rentals/${rid}`} className="line-clamp-2 max-w-[220px] break-keep font-medium underline-offset-2 hover:underline" title={`${racketBrandLabel(r.brand)} ${r.model}`}>
                             {racketBrandLabel(r.brand)} {r.model}
                           </Link>
                         ) : (
-                          <span>
+                          <span className="line-clamp-2 max-w-[220px] break-keep" title={`${racketBrandLabel(r.brand)} ${r.model}`}>
                             {racketBrandLabel(r.brand)} {r.model}
                           </span>
                         )}
                       </TableCell>
-                      <TableCell className="w-36 truncate whitespace-nowrap">{r.createdAt ? formatDate(r.createdAt) : "-"}</TableCell>
-                      <TableCell className={tdClasses}>{r.days}일</TableCell>
+                      <TableCell className="w-36 truncate whitespace-nowrap tabular-nums">{r.createdAt ? formatDate(r.createdAt) : "-"}</TableCell>
+                      <TableCell className={cn(tdClasses, "whitespace-nowrap tabular-nums")}>{r.days}일</TableCell>
                       <TableCell className={tdClasses}>
                         {(() => {
                           const spec = getRentalStatusBadgeSpec(r.status);
                           return (
-                            <Badge variant={spec.variant} className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap")}>
+                            <Badge variant={spec.variant} className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap shrink-0")}>
                               {rentalStatusLabels[r.status] || r.status}
                             </Badge>
                           );
@@ -845,7 +845,7 @@ export default function AdminRentalsClient() {
                           <ShippingBadge item={r} />
                         </div>
                       </TableCell>
-                      <TableCell className={tdClasses}>
+                      <TableCell className={cn(tdClasses, "whitespace-nowrap tabular-nums")}>
                         <div className="flex flex-col items-center">
                           <span className="font-semibold">{won(r.amount.total)}</span>
                           <span className="text-xs text-foreground/75">
@@ -868,9 +868,9 @@ export default function AdminRentalsClient() {
                               <MoreHorizontal className="h-3.5 w-3.5" />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
+                          <DropdownMenuContent align="end" className="min-w-max">
                             <DropdownMenuLabel>작업</DropdownMenuLabel>
-                            <DropdownMenuItem asChild>
+                            <DropdownMenuItem asChild className="whitespace-nowrap">
                               <Link href={`/admin/rentals/${rid}`}>
                                 <Eye className="mr-2 h-4 w-4" /> 상세 보기
                               </Link>
@@ -885,6 +885,7 @@ export default function AdminRentalsClient() {
                             <DropdownMenuSeparator />
                             {(r.status === "paid" || r.status === "out") && (
                               <DropdownMenuItem
+                                className="whitespace-nowrap"
                                 onClick={() =>
                                   setPendingAction({
                                     type: "return",

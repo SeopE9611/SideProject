@@ -127,7 +127,7 @@ function StatusBadge({ status, type }: { status: string; type: "record" | "payme
   const colorMap = colors[type] as Record<string, string>;
   const colorClass = colorMap[status] || "bg-muted text-muted-foreground border-border";
 
-  return <span className={cn("inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium", colorClass)}>{labels[status as keyof typeof labels] ?? status}</span>;
+  return <span className={cn("inline-flex shrink-0 items-center whitespace-nowrap rounded-md border px-2 py-0.5 text-xs font-medium", colorClass)}>{labels[status as keyof typeof labels] ?? status}</span>;
 }
 
 // Message Component
@@ -317,33 +317,33 @@ export default function OfflineAdminClient() {
       {/* Top Section: Selected Customer Quick View */}
       {selected && (
         <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex min-w-0 items-center gap-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
                 <User className="h-5 w-5" />
               </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold text-lg">{selected.name}</span>
-                  <Badge variant="secondary" className="text-xs">
+              <div className="min-w-0">
+                <div className="flex min-w-0 flex-wrap items-center gap-2">
+                  <span className="line-clamp-2 break-keep text-lg font-semibold" title={selected.name}>{selected.name}</span>
+                  <Badge variant="secondary" className="shrink-0 whitespace-nowrap text-xs">
                     {selected.source === "online" ? "온라인 회원" : "오프라인 명부"}
                   </Badge>
                 </div>
-                <div className="flex items-center gap-3 text-sm text-muted-foreground mt-0.5">
-                  <span className="flex items-center gap-1">
+                <div className="mt-0.5 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+                  <span className="flex shrink-0 items-center gap-1 whitespace-nowrap tabular-nums">
                     <Phone className="h-3 w-3" />
                     {maskPhone(selected.phone)}
                   </span>
                   {selected.email && (
-                    <span className="flex items-center gap-1">
-                      <Mail className="h-3 w-3" />
-                      {selected.email}
+                    <span className="flex min-w-0 items-center gap-1">
+                      <Mail className="h-3 w-3 shrink-0" />
+                      <span className="block max-w-[220px] truncate" title={selected.email}>{selected.email}</span>
                     </span>
                   )}
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex shrink-0 flex-wrap items-center gap-2">
               {selected.offlineCustomerId && (
                 <Button asChild variant="outline" size="sm">
                   <Link href={`/admin/offline/customers/${selected.offlineCustomerId}`}>
@@ -474,7 +474,7 @@ export default function OfflineAdminClient() {
                                 <p className="text-xs text-muted-foreground">{c.phoneMasked}</p>
                               </div>
                             </div>
-                            <div className="flex items-center gap-1">
+                            <div className="flex shrink-0 items-center gap-1">
                               <Button asChild size="sm" variant="ghost" className="opacity-0 group-hover:opacity-100 transition-opacity">
                                 <Link href={`/admin/offline/customers/${c.id}`}>
                                   <ExternalLink className="h-3 w-3" />
@@ -835,17 +835,17 @@ export default function OfflineAdminClient() {
           {!!records?.items?.length && (
             <div className="overflow-hidden rounded-xl border border-border/60">
               <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+                <table className="min-w-[900px] text-sm">
                   <thead>
                     <tr className="bg-muted/50">
-                      <th className="px-4 py-3 text-left font-medium text-muted-foreground">날짜</th>
-                      <th className="px-4 py-3 text-left font-medium text-muted-foreground">고객</th>
-                      <th className="px-4 py-3 text-left font-medium text-muted-foreground">유형</th>
-                      <th className="px-4 py-3 text-left font-medium text-muted-foreground">작업 내용</th>
-                      <th className="px-4 py-3 text-left font-medium text-muted-foreground">금액</th>
-                      <th className="px-4 py-3 text-left font-medium text-muted-foreground">결제</th>
-                      <th className="px-4 py-3 text-left font-medium text-muted-foreground">상태</th>
-                      <th className="px-4 py-3 text-left font-medium text-muted-foreground">관리</th>
+                      <th className="whitespace-nowrap px-4 py-3 text-left font-medium text-muted-foreground">날짜</th>
+                      <th className="whitespace-nowrap px-4 py-3 text-left font-medium text-muted-foreground">고객</th>
+                      <th className="whitespace-nowrap px-4 py-3 text-left font-medium text-muted-foreground">유형</th>
+                      <th className="whitespace-nowrap px-4 py-3 text-left font-medium text-muted-foreground">작업 내용</th>
+                      <th className="whitespace-nowrap px-4 py-3 text-left font-medium text-muted-foreground">금액</th>
+                      <th className="whitespace-nowrap px-4 py-3 text-left font-medium text-muted-foreground">결제</th>
+                      <th className="whitespace-nowrap px-4 py-3 text-left font-medium text-muted-foreground">상태</th>
+                      <th className="whitespace-nowrap px-4 py-3 text-left font-medium text-muted-foreground">관리</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/60">
@@ -854,12 +854,12 @@ export default function OfflineAdminClient() {
                         <td className="px-4 py-3 whitespace-nowrap">
                           <div className="flex items-center gap-2">
                             <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
-                            <span>{formatDate(r.occurredAt)}</span>
+                            <span className="tabular-nums">{formatDate(r.occurredAt)}</span>
                           </div>
                         </td>
                         <td className="px-4 py-3">
-                          <div>
-                            <p className="font-medium">
+                          <div className="min-w-0 max-w-[180px]">
+                            <p className="line-clamp-2 break-keep font-medium" title={r.customerName}>
                               {r.offlineCustomerId ? (
                                 <Link className="hover:text-primary transition-colors" href={`/admin/offline/customers/${r.offlineCustomerId}`}>
                                   {r.customerName}
@@ -868,16 +868,16 @@ export default function OfflineAdminClient() {
                                 r.customerName
                               )}
                             </p>
-                            <p className="text-xs text-muted-foreground">{r.customerPhoneMasked}</p>
+                            <p className="whitespace-nowrap text-xs tabular-nums text-muted-foreground">{r.customerPhoneMasked}</p>
                           </div>
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap">
                           <span className="text-foreground/80">{KIND_LABELS[r.kind as keyof typeof KIND_LABELS] ?? r.kind}</span>
                         </td>
                         <td className="px-4 py-3 max-w-[200px]">
-                          <span className="text-muted-foreground line-clamp-1">{formatLineSummary(r.lines)}</span>
+                          <span className="line-clamp-2 break-keep text-muted-foreground" title={formatLineSummary(r.lines)}>{formatLineSummary(r.lines)}</span>
                         </td>
-                        <td className="px-4 py-3 whitespace-nowrap font-medium">{formatCurrency(r.payment?.amount)}</td>
+                        <td className="px-4 py-3 whitespace-nowrap font-medium tabular-nums">{formatCurrency(r.payment?.amount)}</td>
                         <td className="px-4 py-3 whitespace-nowrap">
                           <StatusBadge status={r.payment?.status} type="payment" />
                         </td>
@@ -885,9 +885,9 @@ export default function OfflineAdminClient() {
                           <StatusBadge status={r.status} type="record" />
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap">
-                          <div className="flex items-center gap-1">
+                          <div className="flex shrink-0 items-center gap-1">
                             {r.offlineCustomerId && (
-                              <Button asChild size="sm" variant="ghost" className="h-8 w-8 p-0">
+                              <Button asChild size="sm" variant="ghost" className="h-8 w-8 shrink-0 p-0">
                                 <Link href={`/admin/offline/customers/${r.offlineCustomerId}`}>
                                   <ExternalLink className="h-3.5 w-3.5" />
                                 </Link>
@@ -896,7 +896,7 @@ export default function OfflineAdminClient() {
                             <Button
                               size="sm"
                               variant="ghost"
-                              className="h-8 w-8 p-0"
+                              className="h-8 w-8 shrink-0 p-0"
                               onClick={() => {
                                 const line = Array.isArray(r.lines) ? (r.lines[0] ?? {}) : {};
                                 setEditingRecord(r);
@@ -969,7 +969,7 @@ export default function OfflineAdminClient() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-8 w-8 p-0"
+                  className="h-8 w-8 shrink-0 p-0"
                   onClick={() => {
                     setEditingRecord(null);
                     setEditMessage(null);
@@ -987,9 +987,9 @@ export default function OfflineAdminClient() {
                     <User className="h-4 w-4" />
                   </div>
                   <div>
-                    <p className="font-medium">{editingRecord.customerName}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {editingRecord.customerPhoneMasked} · {formatLineSummary(editingRecord.lines)}
+                    <p className="line-clamp-2 break-keep font-medium" title={editingRecord.customerName}>{editingRecord.customerName}</p>
+                    <p className="line-clamp-2 break-keep text-xs text-muted-foreground">
+                      <span className="whitespace-nowrap tabular-nums">{editingRecord.customerPhoneMasked}</span> · {formatLineSummary(editingRecord.lines)}
                     </p>
                   </div>
                 </div>
