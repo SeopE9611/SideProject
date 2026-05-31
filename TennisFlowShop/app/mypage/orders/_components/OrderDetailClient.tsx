@@ -599,13 +599,17 @@ export default function OrderDetailClient({
   const primaryStringingApp = hasLinkedStringingApps
     ? linkedStringingApps[0]
     : undefined;
+  const isOrderCanceled = orderDetail.status === "취소";
+  const isPrimaryStringingAppCanceled = primaryStringingApp?.status === "취소";
   const getApplicationHref = (applicationId: string) => {
     if (linkedApplicationHrefBuilder)
       return linkedApplicationHrefBuilder(applicationId);
     return `/mypage?tab=orders&flowType=application&flowId=${applicationId}&from=orders${flowScopeQuery}`;
   };
   const shouldShowInboundShippingBlock = Boolean(
-    primaryStringingAppId && primaryStringingApp?.needsInboundTracking === true,
+    primaryStringingAppId &&
+      primaryStringingApp?.needsInboundTracking === true &&
+      !isPrimaryStringingAppCanceled,
   );
   const inboundShippingHref = primaryStringingAppId
     ? `/services/applications/${primaryStringingAppId}/shipping?${new URLSearchParams({ return: `/mypage?tab=orders&flowType=order&flowId=${orderId}&from=orders${flowScopeQuery}` }).toString()}`
@@ -999,7 +1003,9 @@ export default function OrderDetailClient({
                   linkedStringingApps.map((app, appIndex) => {
                     const appSelfShipInfo = app.shippingInfo?.selfShip ?? null;
                     const appHasTracking = Boolean(appSelfShipInfo?.trackingNo);
-                    const appNeedsTracking = app.needsInboundTracking === true;
+                    const isApplicationCanceled = app.status === "취소";
+                    const appNeedsTracking =
+                      !isApplicationCanceled && app.needsInboundTracking === true;
                     const appShippingHref = `/services/applications/${app.id}/shipping?${new URLSearchParams({ return: `/mypage?tab=orders&flowType=order&flowId=${orderId}&from=orders${flowScopeQuery}&focus=stringing` }).toString()}`;
                     const lines = app.lines ?? [];
                     const fallbackLine = {
@@ -1012,6 +1018,7 @@ export default function OrderDetailClient({
                       note: app.requirements ?? null,
                     };
                     const displayLines = lines.length > 0 ? lines : [fallbackLine];
+                    const isMultipleLines = displayLines.length > 1;
                     const reservationLabel =
                       app.reservationLabel ??
                       (app.preferredDate && app.preferredTime
@@ -1055,6 +1062,11 @@ export default function OrderDetailClient({
                           <div className="grid gap-3 bp-md:grid-cols-2">
                             {displayLines.map((line, lineIndex) => {
                               const racketLabel = line.racketLabel || line.racketType || "라켓명 미입력";
+                              const normalizedRacketLabel =
+                                racketLabel && racketLabel !== "라켓명 미입력"
+                                  ? racketLabel
+                                  : null;
+                              const racketCardTitle = normalizedRacketLabel ?? "라켓 정보";
                               const stringName = line.stringName || app.stringNames?.join(", ") || "스트링명 확인 중";
                               const tensionMain = line.tensionMain || app.tensionSummary || "-";
                               const tensionCross = line.tensionCross || line.tensionMain || null;
@@ -1062,8 +1074,17 @@ export default function OrderDetailClient({
                               return (
                                 <div key={line.id ?? `${app.id}-${lineIndex}`} className="rounded-lg border border-border/70 bg-card p-3 text-sm">
                                   <div className="flex items-center justify-between gap-2">
-                                    <p className="font-medium text-foreground">라켓 {lineIndex + 1}</p>
-                                    <Badge variant="outline" className="text-[11px]">{stringName}</Badge>
+                                    <div className="min-w-0">
+                                      <p className="line-clamp-1 break-keep font-medium text-foreground">
+                                        {racketCardTitle}
+                                      </p>
+                                      {isMultipleLines ? (
+                                        <p className="text-xs text-muted-foreground">
+                                          {lineIndex + 1}번째 라켓
+                                        </p>
+                                      ) : null}
+                                    </div>
+                                    <Badge variant="outline" className="max-w-[12rem] shrink-0 truncate text-[11px]">{stringName}</Badge>
                                   </div>
                                   <dl className="mt-3 space-y-2 text-foreground">
                                     <div className="flex gap-2"><dt className="w-20 shrink-0 text-muted-foreground">라켓명</dt><dd className="min-w-0 break-words">{racketLabel}</dd></div>
@@ -1099,13 +1120,13 @@ export default function OrderDetailClient({
 
                         <div className="mt-3 text-right">
                           <Link href={getApplicationHref(app.id)} className="text-xs text-muted-foreground underline-offset-4 hover:underline">
-                            문제가 있나요? 기존 신청 상세 열기
+                            기존 신청서 보기
                           </Link>
                         </div>
                       </div>
                     );
                   })
-                ) : totalSlots > 0 && remainingSlots > 0 ? (
+                ) : !isOrderCanceled && totalSlots > 0 && remainingSlots > 0 ? (
                   <div className="rounded-xl border border-warning/30 bg-warning/10 p-4 text-warning dark:bg-warning/15">
                     <p className="font-semibold">이 주문은 교체서비스 신청 대상입니다.</p>
                     <p className="mt-1 text-sm">총 {totalSlots}개 중 <strong>{usedSlots}</strong>개를 사용했으며, 남은 교체 가능 스트링은 <strong>{remainingSlots}</strong>개입니다.</p>
