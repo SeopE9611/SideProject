@@ -291,7 +291,7 @@ export default async function PricingPage() {
                     <div className="flex max-w-full flex-nowrap gap-2 overflow-x-auto pb-1">
                       {otherSummary.materialLabels.length ? (
                         otherSummary.materialLabels.map((material) => (
-                          <Badge key={material} variant="secondary">
+                          <Badge key={material} variant="secondary" className="max-w-[10rem] shrink-0 truncate whitespace-nowrap">
                             {material}
                           </Badge>
                         ))
