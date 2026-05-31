@@ -35,7 +35,7 @@ type OrdersScopeTabsProps = {
 export default function OrdersScopeTabs({ activeScope, className }: OrdersScopeTabsProps) {
   return (
     <nav className={cn("relative", className)} aria-label="거래/이용내역 하위 탭">
-      <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none sm:gap-2">
+      <div className="flex flex-wrap gap-1.5 pb-1 sm:gap-2">
         {SCOPE_ITEMS.map((item) => {
           const isActive = item.value === activeScope;
           return (
@@ -43,7 +43,7 @@ export default function OrdersScopeTabs({ activeScope, className }: OrdersScopeT
               key={item.value}
               href={item.href}
               className={cn(
-                "group relative flex items-center gap-2 whitespace-nowrap rounded-full px-4 py-2.5 text-sm font-medium",
+                "group relative flex min-w-fit items-center gap-2 whitespace-nowrap rounded-full px-3.5 py-2.5 text-sm font-medium bp-sm:px-4",
                 "transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2",
                 isActive
                   ? "bg-primary text-primary-foreground shadow-md shadow-primary/25"

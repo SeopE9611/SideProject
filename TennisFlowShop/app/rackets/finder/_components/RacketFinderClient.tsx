@@ -218,9 +218,9 @@ function RangeField({
 }) {
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
         <span className="text-sm font-medium text-foreground">{label}</span>
-        <span className="text-sm font-semibold text-primary tabular-nums">
+        <span className="ml-auto text-right text-sm font-semibold text-primary tabular-nums">
           {value[0].toLocaleString()}
           {suffix ?? ""} ~ {value[1].toLocaleString()}
           {suffix ?? ""}
@@ -232,7 +232,7 @@ function RangeField({
         max={max}
         step={step}
         onValueChange={(v) => onChange([v[0], v[1]])}
-        className="py-1"
+        className="py-2"
       />
     </div>
   );
