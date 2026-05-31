@@ -99,7 +99,10 @@ export const STRING_BRANDS = [
   { value: "other", label: "기타" },
 ] as const;
 
-export const stringBrandLabel = (v?: string) => STRING_BRANDS.find((b) => b.value === (v ?? "").toLowerCase())?.label ?? v ?? "";
+export const stringBrandLabel = (v?: string) => {
+  const key = String(v ?? "").trim().toLowerCase();
+  return STRING_BRANDS.find((b) => b.value === key)?.label ?? v ?? "";
+};
 
 // 정규화
 export function normalizeStringPattern(p: string) {

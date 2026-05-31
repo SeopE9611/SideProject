@@ -24,6 +24,7 @@ import { adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { showErrorToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
+import { STRING_BRANDS, stringBrandLabel } from "@/lib/constants";
 
 type Product = {
   _id: string;
@@ -62,16 +63,10 @@ const STATUS_UI: Record<StatusKey, { label: string; color: string; Icon: React.E
 };
 
 // 브랜드, 재질 매핑
-const BRAND_OPTIONS = [
-  { id: "babolat", label: "바볼랏" },
-  { id: "wilson", label: "윌슨" },
-  { id: "head", label: "헤드" },
-  { id: "yonex", label: "요넥스" },
-  { id: "luxilon", label: "럭실론" },
-  { id: "tecnifibre", label: "테크니화이버" },
-  { id: "solinco", label: "솔린코" },
-  { id: "dunlop", label: "던롭" },
-] as const;
+const BRAND_OPTIONS = STRING_BRANDS.map(({ value, label }) => ({
+  id: value,
+  label,
+}));
 
 const MATERIAL_OPTIONS = [
   { id: "polyester", label: "폴리에스터" },
@@ -81,9 +76,8 @@ const MATERIAL_OPTIONS = [
   { id: "hybrid", label: "하이브리드" },
 ] as const;
 
-const BRAND_LABEL: Record<string, string> = Object.fromEntries(BRAND_OPTIONS.map((o) => [o.id, o.label]));
 const MATERIAL_LABEL: Record<string, string> = Object.fromEntries(MATERIAL_OPTIONS.map((o) => [o.id, o.label]));
-const brandLabel = (id?: string) => (id ? (BRAND_LABEL[id] ?? id) : "");
+const brandLabel = stringBrandLabel;
 const materialLabel = (id?: string) => (id ? (MATERIAL_LABEL[id] ?? id) : "");
 
 // 입력 디바운스

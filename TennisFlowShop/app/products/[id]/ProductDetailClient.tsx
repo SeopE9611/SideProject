@@ -1,5 +1,6 @@
 "use client";
 import { useWishlist } from "@/app/features/wishlist/useWishlist";
+import ProductFeatureRadarChart from "@/app/products/components/ProductFeatureRadarChart";
 import type { User } from "@/app/store/authStore";
 import { useBuyNowStore } from "@/app/store/buyNowStore";
 import { type CartItem, useCartStore } from "@/app/store/cartStore";
@@ -10,23 +11,22 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { badgeBaseOutlined, badgeSizeSm, getAnswerStatusBadgeSpec, getQnaCategoryBadgeSpec, imageBadgeClass } from "@/lib/badge-style";
-import { showErrorToast, showSuccessToast } from "@/lib/toast";
-import { normalizeItemShippingFee } from "@/lib/shipping-fee";
-import { addRecentViewedItem } from "@/lib/recent-viewed";
-import { ENABLE_STRING_STANDALONE_ORDER } from "@/lib/orders/string-standalone-policy";
-import { hasPaidMountingFee, isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
-import { cn } from "@/lib/utils";
+import { stringBrandLabel } from "@/lib/constants";
 import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
-import ProductFeatureRadarChart from "@/app/products/components/ProductFeatureRadarChart";
+import { hasPaidMountingFee, isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
+import { ENABLE_STRING_STANDALONE_ORDER } from "@/lib/orders/string-standalone-policy";
 import { normalizeFeatureScoresTo100 } from "@/lib/product-feature-score";
+import { addRecentViewedItem } from "@/lib/recent-viewed";
+import { normalizeItemShippingFee } from "@/lib/shipping-fee";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import { cn } from "@/lib/utils";
 import {
   Activity,
   ArrowLeft,
-  Check,
   ChevronLeft,
   ChevronRight,
   Clock,
@@ -42,17 +42,13 @@ import {
   MoreHorizontal,
   Pencil,
   Plus,
-  RotateCcw,
   Settings,
-  Shield,
   ShoppingCart,
   Star,
   Target,
   Trash2,
-  Truck,
   Wrench,
   X,
-  Zap,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
@@ -80,8 +76,7 @@ const detailSurfaceSubtleInnerClass = "rounded-xl border border-border/60 bg-sec
 const detailSurfaceInfoItemClass = "flex items-center gap-3 rounded-xl border border-border/60 bg-secondary/40 p-3";
 type ProductBadge = "품절" | "SALE" | "NEW" | "추천" | "입고예정";
 
-const isTruthyBadgeField = (value: unknown) =>
-  value === true || value === "true" || value === 1;
+const isTruthyBadgeField = (value: unknown) => value === true || value === "true" || value === 1;
 
 function getProductDetailBadges(product: any): ProductBadge[] {
   const inventory = product?.inventory;
@@ -89,9 +84,7 @@ function getProductDetailBadges(product: any): ProductBadge[] {
   const salePrice = Number(inventory?.salePrice ?? 0);
   const regularPrice = Number(product?.price ?? 0);
 
-  const isOutOfStock =
-    inventory?.status === "outofstock" ||
-    (isTruthyBadgeField(inventory?.manageStock) && stock <= 0);
+  const isOutOfStock = inventory?.status === "outofstock" || (isTruthyBadgeField(inventory?.manageStock) && stock <= 0);
   const isSale = isTruthyBadgeField(inventory?.isSale) && salePrice > 0 && salePrice < regularPrice;
   const isNew = isTruthyBadgeField(inventory?.isNew);
   const isFeatured = isTruthyBadgeField(inventory?.isFeatured);
@@ -107,7 +100,6 @@ function getProductDetailBadges(product: any): ProductBadge[] {
   return badges.slice(0, 3);
 }
 
-
 type GaugeInventoryRow = {
   value: string;
   label?: string;
@@ -115,7 +107,6 @@ type GaugeInventoryRow = {
   isSoldOut: boolean;
   showWhenSoldOut?: boolean | null;
 };
-
 
 type ColorInventoryRow = {
   value: string;
@@ -149,7 +140,7 @@ function normalizeColorRows(product: any): ColorInventoryRow[] {
           image: typeof row?.image === "string" ? row.image.trim() : undefined,
           stock: Number.isFinite(stockNumber) && stockNumber > 0 ? stockNumber : 0,
           isSoldOut: row?.isSoldOut === true,
-        showWhenSoldOut: row?.showWhenSoldOut === false ? false : true,
+          showWhenSoldOut: row?.showWhenSoldOut === false ? false : true,
         };
       })
       .filter((row: ColorInventoryRow) => row.value.length > 0);
@@ -195,9 +186,7 @@ function normalizeGaugeDisplayLabel(row: GaugeInventoryRow): string {
   return formatGaugeLabel(row.value);
 }
 
-function getProductBadgeTone(
-  badge: ProductBadge,
-): Parameters<typeof imageBadgeClass>[0] {
+function getProductBadgeTone(badge: ProductBadge): Parameters<typeof imageBadgeClass>[0] {
   if (badge === "품절") return "danger";
   if (badge === "SALE") return "warning";
   if (badge === "NEW") return "brand";
@@ -212,6 +201,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const reviewsLen = reviews.length;
   const productShippingFee = normalizeItemShippingFee(product?.shippingFee);
   const productShippingLabel = productShippingFee > 0 ? `${productShippingFee.toLocaleString()}원 배송비` : "무료배송";
+
+  const displayBrandLabel = (value?: string) => stringBrandLabel(value);
   // ====== 사양/브랜드/색상/게이지 매핑 ======
   const BRAND_MAP: Record<string, string> = {
     luxilon: "럭실론",
@@ -279,10 +270,10 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const toDisplaySpec = () => {
     const spec = product?.specifications || {};
     const origin = spec.origin ?? spec.madeIn ?? spec.제조국 ?? product?.origin ?? product?.madeIn;
-    const brand = BRAND_MAP[product?.brand] ?? BRAND_MAP[spec.brand] ?? product?.brand ?? spec.brand;
+    const brand = displayBrandLabel(product?.brand || spec.brand);
     const material = MATERIAL_MAP[product?.material] ?? MATERIAL_MAP[spec.material] ?? spec.소재 ?? product?.material ?? spec.material;
-  const gaugeRaw = product?.gauge ?? spec.gauge ?? spec.게이지;
-  const gauge = gaugeOptions.length > 1 ? gaugeOptions.map((v: string) => formatGaugeLabel(v)).join(" / ") : (GAUGE_MAP[gaugeRaw] ?? formatGaugeLabel(gaugeRaw));
+    const gaugeRaw = product?.gauge ?? spec.gauge ?? spec.게이지;
+    const gauge = gaugeOptions.length > 1 ? gaugeOptions.map((v: string) => formatGaugeLabel(v)).join(" / ") : (GAUGE_MAP[gaugeRaw] ?? formatGaugeLabel(gaugeRaw));
     const color = COLOR_MAP[product?.color] ?? COLOR_MAP[spec.color] ?? spec.색상 ?? product?.color ?? spec.color;
     const lengthRaw = product?.length ?? spec.length ?? spec.길이;
     const length = typeof lengthRaw === "string" && /^\d+(\.\d+)?$/.test(lengthRaw) ? `${lengthRaw}m` : lengthRaw;
@@ -309,8 +300,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
   // 하이브리드 표시용 로컬 변수
   const hMain = hybridSpec?.main ?? {};
   const hCross = hybridSpec?.cross ?? {};
-  const hMainBrand = BRAND_MAP[hMain.brand] ?? hMain.brand;
-  const hCrossBrand = BRAND_MAP[hCross.brand] ?? hCross.brand;
+  const hMainBrand = displayBrandLabel(hMain.brand);
+  const hCrossBrand = displayBrandLabel(hCross.brand);
   const hMainGauge = GAUGE_MAP[hMain.gauge] ?? hMain.gauge;
   const hCrossGauge = GAUGE_MAP[hCross.gauge] ?? hCross.gauge;
   const hMainColor = COLOR_MAP[hMain.color] ?? hMain.color;
@@ -371,10 +362,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
     });
     return baseRows;
   }, [colorRows, hasVariantInventories, visibleVariantRows]);
-  const firstAvailableColor = useMemo(
-    () => visibleColorRows.find((row) => (hasVariantInventories ? getVariantsByColor(row.value).length > 0 : !isColorSoldOut(row))) ?? visibleColorRows[0],
-    [visibleColorRows, hasVariantInventories],
-  );
+  const firstAvailableColor = useMemo(() => visibleColorRows.find((row) => (hasVariantInventories ? getVariantsByColor(row.value).length > 0 : !isColorSoldOut(row))) ?? visibleColorRows[0], [visibleColorRows, hasVariantInventories]);
   const [selectedColor, setSelectedColor] = useState<string>("");
   useEffect(() => {
     if (!selectedColor && firstAvailableColor?.value) {
@@ -397,32 +385,32 @@ export default function ProductDetailClient({ product }: { product: any }) {
       }));
     }
     if (Array.isArray(product?.gaugeInventories) && product.gaugeInventories.length > 0) {
-      return product.gaugeInventories.map((row: any) => ({
-        value: String(row?.value ?? "").trim(),
-        label: typeof row?.label === "string" ? row.label : undefined,
-        stock: Number(row?.stock ?? 0),
-        isSoldOut: row?.isSoldOut === true,
-        showWhenSoldOut: row?.showWhenSoldOut === false ? false : true,
-      })).filter((row: GaugeInventoryRow) => row.value.length > 0);
+      return product.gaugeInventories
+        .map((row: any) => ({
+          value: String(row?.value ?? "").trim(),
+          label: typeof row?.label === "string" ? row.label : undefined,
+          stock: Number(row?.stock ?? 0),
+          isSoldOut: row?.isSoldOut === true,
+          showWhenSoldOut: row?.showWhenSoldOut === false ? false : true,
+        }))
+        .filter((row: GaugeInventoryRow) => row.value.length > 0);
     }
     if (Array.isArray(product?.gaugeOptions) && product.gaugeOptions.length > 0) {
-      return product.gaugeOptions.map((value: unknown) => String(value ?? "").trim()).filter(Boolean).map((value: string) => ({
-        value,
-        stock: Number(product?.inventory?.stock ?? 0),
-        isSoldOut: false,
-      }));
+      return product.gaugeOptions
+        .map((value: unknown) => String(value ?? "").trim())
+        .filter(Boolean)
+        .map((value: string) => ({
+          value,
+          stock: Number(product?.inventory?.stock ?? 0),
+          isSoldOut: false,
+        }));
     }
     return [];
   }, [hasVariantInventories, product, selectedColorVariants]);
   const gaugeOptions = useMemo(() => gaugeRows.map((row) => row.value), [gaugeRows]);
   const gaugeRowMap = useMemo(() => new Map(gaugeRows.map((row) => [row.value, row])), [gaugeRows]);
   const isMountableStringProduct = isMountableStringByFee(product?.mountingFee);
-  const isStringProduct =
-    product?.category === "string" ||
-    product?.category === "strings" ||
-    product?.kind === "string" ||
-    product?.kind === "strings" ||
-    isMountableStringProduct;
+  const isStringProduct = product?.category === "string" || product?.category === "strings" || product?.kind === "string" || product?.kind === "strings" || isMountableStringProduct;
   const [selectedGauge, setSelectedGauge] = useState<string>("");
   useEffect(() => {
     if (!isStringProduct || gaugeOptions.length !== 1) return;
@@ -457,16 +445,16 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const selectedVariantSoldOut = !isSellableVariant(selectedVariant);
   const variantHasNoSellableGauge = hasVariantInventories && !!selectedColor && getAvailableGaugesForColor(selectedColor).every((v) => !isSellableVariant(v));
   const effectiveStock = hasVariantInventories
-    ? (isSellableVariant(selectedVariant) ? Math.max(0, Number(selectedVariant?.stock ?? 0)) : 0)
+    ? isSellableVariant(selectedVariant)
+      ? Math.max(0, Number(selectedVariant?.stock ?? 0))
+      : 0
     : isStringProduct && gaugeOptions.length > 0 && selectedGaugeRow
       ? Math.max(0, Number(selectedGaugeRow.stock ?? 0))
       : stock;
   useEffect(() => {
     if (quantity > effectiveStock && effectiveStock > 0) setQuantity(effectiveStock);
   }, [effectiveStock, quantity]);
-  const variantPurchaseBlocked =
-    hasVariantInventories &&
-    (!selectedColor || !selectedGauge || !selectedVariant || selectedVariantSoldOut || quantity > effectiveStock || variantHasNoSellableGauge);
+  const variantPurchaseBlocked = hasVariantInventories && (!selectedColor || !selectedGauge || !selectedVariant || selectedVariantSoldOut || quantity > effectiveStock || variantHasNoSellableGauge);
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -556,7 +544,6 @@ export default function ProductDetailClient({ product }: { product: any }) {
     const current = (searchParams.get("tab") as DetailTab) ?? "description";
     setActiveTab(current);
   }, [searchParams]);
-
 
   const updateTabInUrl = (tab: DetailTab) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -777,9 +764,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
       showErrorToast("색상을 선택해주세요.");
       return false;
     }
-    const colorSoldOut = hasVariantInventories
-      ? !getVariantsByColor(selectedColorRow.value).some((v) => isSellableVariant(v))
-      : isColorSoldOut(selectedColorRow);
+    const colorSoldOut = hasVariantInventories ? !getVariantsByColor(selectedColorRow.value).some((v) => isSellableVariant(v)) : isColorSoldOut(selectedColorRow);
     if (colorSoldOut) {
       showErrorToast("선택한 색상은 현재 품절입니다.");
       return false;
@@ -983,7 +968,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
   };
 
   const productId = String(product?._id ?? product?.id ?? "");
-  const productBrandLabel = BRAND_MAP[(product?.brand ?? "").toLowerCase()] ?? product?.brand ?? "스트링";
+  const productBrandLabel = displayBrandLabel(product?.brand) || "스트링";
 
   useEffect(() => {
     if (!productId || !product?.name) return;
@@ -1023,13 +1008,19 @@ export default function ProductDetailClient({ product }: { product: any }) {
               <span className="text-foreground font-medium truncate max-w-[150px] sm:max-w-none">{product.name}</span>
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="ghost" className="text-muted-foreground hover:text-foreground hover:bg-muted/50 px-3 py-2 h-auto text-sm rounded-xl transition-[background-color,color,border-color,box-shadow,opacity] duration-200" onClick={() => router.back()}>
+              <Button
+                variant="ghost"
+                className="text-muted-foreground hover:text-foreground hover:bg-muted/50 px-3 py-2 h-auto text-sm rounded-xl transition-[background-color,color,border-color,box-shadow,opacity] duration-200"
+                onClick={() => router.back()}
+              >
                 <ArrowLeft className="mr-1.5 h-4 w-4" />
                 뒤로
               </Button>
               {isAdmin && (
                 <Link href={`/admin/products/${productId}/edit`}>
-                  <Button variant="outline" size="sm" className="rounded-xl">상품 수정</Button>
+                  <Button variant="outline" size="sm" className="rounded-xl">
+                    상품 수정
+                  </Button>
                 </Link>
               )}
             </div>
@@ -1066,13 +1057,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 {merchandisingBadges.length > 0 && (
                   <div className="absolute top-4 sm:top-5 left-4 sm:left-5 flex flex-wrap gap-2 sm:gap-2.5">
                     {merchandisingBadges.map((badge) => (
-                      <Badge
-                        key={`${product?._id ?? product?.name}-${badge}`}
-                        className={cn(
-                          "text-xs px-3 py-1 rounded-lg shadow-sm",
-                          imageBadgeClass(getProductBadgeTone(badge)),
-                        )}
-                      >
+                      <Badge key={`${product?._id ?? product?.name}-${badge}`} className={cn("text-xs px-3 py-1 rounded-lg shadow-sm", imageBadgeClass(getProductBadgeTone(badge)))}>
                         {badge}
                       </Badge>
                     ))}
@@ -1147,16 +1132,16 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         <div className="flex items-center justify-between gap-3 min-w-0">
                           <span className="text-sm font-semibold text-foreground">색상 선택</span>
                           {selectedColorLabel && (
-                            <span className="min-w-0 truncate text-xs text-muted-foreground" title={selectedColorLabel}>현재 색상: {selectedColorLabel}</span>
+                            <span className="min-w-0 truncate text-xs text-muted-foreground" title={selectedColorLabel}>
+                              현재 색상: {selectedColorLabel}
+                            </span>
                           )}
                         </div>
                         {visibleColorRows.length > 1 ? (
                           <div className="flex gap-2 overflow-x-auto pb-1">
                             {visibleColorRows.map((row) => {
                               const label = getColorLabel(row);
-                              const soldOut = hasVariantInventories
-                                ? !getVariantsByColor(row.value).some((v) => isSellableVariant(v))
-                                : isColorSoldOut(row);
+                              const soldOut = hasVariantInventories ? !getVariantsByColor(row.value).some((v) => isSellableVariant(v)) : isColorSoldOut(row);
                               const isSelected = selectedColor === row.value;
                               const hasImage = typeof row.image === "string" && row.image.trim().length > 0;
                               const hasSwatch = typeof row.colorHex === "string" && row.colorHex.trim().length > 0;
@@ -1182,9 +1167,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                   ) : (
                                     <span className="line-clamp-2 px-1 text-center leading-tight break-keep">{label}</span>
                                   )}
-                                  {soldOut && (
-                                    <span className="absolute bottom-0 left-0 right-0 bg-background/85 text-[10px] font-medium">품절</span>
-                                  )}
+                                  {soldOut && <span className="absolute bottom-0 left-0 right-0 bg-background/85 text-[10px] font-medium">품절</span>}
                                 </button>
                               );
                             })}
@@ -1198,14 +1181,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                       <span className="whitespace-nowrap font-semibold text-base sm:text-lg">수량</span>
 
                       <div className={cn("p-1", detailSurfaceSubtleInnerClass, "flex items-center")}>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-9 w-9 rounded-lg sm:h-10 sm:w-10"
-                          aria-label="수량 감소"
-                          disabled={!canDec}
-                          onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                        >
+                        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg sm:h-10 sm:w-10" aria-label="수량 감소" disabled={!canDec} onClick={() => setQuantity((q) => Math.max(1, q - 1))}>
                           <Minus className="h-4 w-4" />
                         </Button>
 
@@ -1242,9 +1218,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                       <div className="space-y-2 rounded-xl border border-border/60 bg-muted/30 p-3">
                         <div className="flex items-center justify-between gap-3 min-w-0">
                           <span className="text-sm font-semibold text-foreground">게이지 선택</span>
-                          {gaugeOptions.length === 1 && (
-                            <span className="text-xs text-muted-foreground">자동 선택</span>
-                          )}
+                          {gaugeOptions.length === 1 && <span className="text-xs text-muted-foreground">자동 선택</span>}
                         </div>
                         <Select value={selectedGauge} onValueChange={setSelectedGauge}>
                           <SelectTrigger className="w-full bg-background">
@@ -1264,14 +1238,12 @@ export default function ProductDetailClient({ product }: { product: any }) {
                             })}
                           </SelectContent>
                         </Select>
-                        {hasVariantInventories && variantHasNoSellableGauge && (
-                          <p className="text-xs text-destructive">선택 가능한 게이지가 없습니다.</p>
-                        )}
+                        {hasVariantInventories && variantHasNoSellableGauge && <p className="text-xs text-destructive">선택 가능한 게이지가 없습니다.</p>}
                       </div>
                     )}
 
                     <div className="flex flex-col gap-3 sm:gap-3.5">
-                      {(hasVariantInventories ? selectedVariantSoldOut : (product.inventory?.manageStock && product.inventory.stock <= 0)) ? (
+                      {(hasVariantInventories ? selectedVariantSoldOut : product.inventory?.manageStock && product.inventory.stock <= 0) ? (
                         <Button disabled variant="secondary" size="tall" className="h-12 w-full whitespace-nowrap sm:h-14">
                           <X className="mr-2 h-5 w-5" />
                           {hasVariantInventories ? "선택한 색상/게이지 조합이 품절되었습니다" : "재고가 소진되었습니다"}
@@ -1466,13 +1438,14 @@ export default function ProductDetailClient({ product }: { product: any }) {
                       .map(([key, value]) => {
                         const displayValue = key === "색상" && selectedColorLabel ? selectedColorLabel : value;
                         return (
-                        <div key={key} className="bg-muted/30 p-3 sm:p-4 rounded-lg border border-border">
-                          <div className="flex items-center justify-between">
-                            <span className="font-semibold text-foreground text-sm sm:text-base">{key}</span>
-                            <span className="min-w-0 truncate text-right text-muted-foreground font-medium text-sm sm:text-base">{String(displayValue)}</span>
+                          <div key={key} className="bg-muted/30 p-3 sm:p-4 rounded-lg border border-border">
+                            <div className="flex items-center justify-between">
+                              <span className="font-semibold text-foreground text-sm sm:text-base">{key}</span>
+                              <span className="min-w-0 truncate text-right text-muted-foreground font-medium text-sm sm:text-base">{String(displayValue)}</span>
+                            </div>
                           </div>
-                        </div>
-                      );})}
+                        );
+                      })}
                   </div>
                   {product?.material === "hybrid" && hybridSpec && (
                     <Card className="mt-4 sm:mt-6 border-0 shadow-none bg-transparent">
@@ -1873,7 +1846,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                           <img src={rp.images?.[0] || "/placeholder.svg"} alt={rp.name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
                         </div>
                         <CardContent className="p-3 sm:p-4">
-                          <div className="text-sm text-foreground/75 mb-0.5 sm:mb-1">{BRAND_MAP[rp.brand] ?? rp.brand}</div>
+                          <div className="text-sm text-foreground/75 mb-0.5 sm:mb-1">{displayBrandLabel(rp.brand) || rp.brand}</div>
                           <div className="font-medium line-clamp-2 mb-1.5 sm:mb-2 text-sm sm:text-base group-hover:text-foreground transition-colors">{rp.name}</div>
                           <div className="font-bold text-foreground text-sm sm:text-base">{Number(rp.price).toLocaleString()}원</div>
                         </CardContent>
