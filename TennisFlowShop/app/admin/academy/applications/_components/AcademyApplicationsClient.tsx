@@ -92,7 +92,7 @@ function getStatusTone(status: AcademyLessonApplicationStatus): BadgeSemanticTon
 
 function AcademyStatusBadge({ status }: { status: AcademyLessonApplicationStatus }) {
   return (
-    <Badge variant={badgeToneVariant(getStatusTone(status))}>
+    <Badge variant={badgeToneVariant(getStatusTone(status))} className="shrink-0 whitespace-nowrap">
       {getAcademyApplicationStatusLabel(status)}
     </Badge>
   );
@@ -120,7 +120,7 @@ function SelectedClassCell({
 
   return (
     <div className="min-w-0 max-w-[240px]">
-      <div className="truncate font-medium text-foreground">{classSnapshot.name}</div>
+      <div className="line-clamp-2 break-keep font-medium text-foreground" title={classSnapshot.name}>{classSnapshot.name}</div>
       <div className="truncate text-xs text-muted-foreground">
         {details.length ? details.join(" · ") : "클래스 상세 정보 미입력"}
       </div>
@@ -310,8 +310,8 @@ export default function AcademyApplicationsClient() {
             </div>
           ) : null}
 
-          <div className={adminSurface.tableCard}>
-            <Table>
+          <div className={cn(adminSurface.tableCard, "overflow-x-auto")}>
+            <Table className="min-w-[940px]">
               <TableHeader className={adminSurface.tableHeader}>
                 <TableRow>
                   <TableHead className="whitespace-nowrap px-3">접수일</TableHead>
@@ -355,13 +355,13 @@ export default function AcademyApplicationsClient() {
                         <div className="text-muted-foreground">{createdAt.time}</div>
                       </TableCell>
                       <TableCell className="min-w-0 px-3 py-3">
-                        <div className="font-medium text-foreground">
+                        <div className="max-w-[180px] truncate font-medium text-foreground" title={item.applicantName || "-"}>
                           {item.applicantName || "-"}
                         </div>
-                        <div className="text-xs text-muted-foreground">
+                        <div className="max-w-[180px] truncate text-xs text-muted-foreground" title={item.email || "이메일 미입력"}>
                           {item.email || "이메일 미입력"}
                         </div>
-                        <div className="text-xs text-muted-foreground">
+                        <div className="whitespace-nowrap text-xs text-muted-foreground">
                           {item.phone || "연락처 미입력"}
                         </div>
                       </TableCell>
@@ -374,7 +374,7 @@ export default function AcademyApplicationsClient() {
                           {getAcademyCurrentLevelLabel(item.currentLevel)}
                         </div>
                       </TableCell>
-                      <TableCell className="px-3 py-3 text-sm">
+                      <TableCell className="whitespace-nowrap px-3 py-3 text-sm">
                         <div className="max-w-[160px] truncate">
                           {item.preferredDays.length ? item.preferredDays.join(", ") : "-"}
                         </div>
@@ -386,7 +386,7 @@ export default function AcademyApplicationsClient() {
                         <AcademyStatusBadge status={item.status} />
                       </TableCell>
                       <TableCell
-                        className="px-3 py-3 text-right"
+                        className="whitespace-nowrap px-3 py-3 text-right"
                         onClick={(event) => event.stopPropagation()}
                       >
                         <DropdownMenu>
@@ -400,8 +400,9 @@ export default function AcademyApplicationsClient() {
                               <MoreHorizontal className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
+                          <DropdownMenuContent align="end" className="min-w-max">
                             <DropdownMenuItem
+                              className="whitespace-nowrap"
                               onSelect={(event) => {
                                 event.preventDefault();
                                 goToDetail(item._id);

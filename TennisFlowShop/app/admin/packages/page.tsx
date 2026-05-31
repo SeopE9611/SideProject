@@ -920,10 +920,10 @@ export default function PackageOrdersClient() {
               </p>
             </div>
           </CardHeader>
-          <CardContent className="overflow-x-auto md:overflow-x-visible relative px-3 sm:px-4">
-            <div className="relative overflow-x-hidden overflow-y-auto rounded-2xl border border-border shadow-sm max-h-[60vh] min-w-0">
+          <CardContent className="relative overflow-x-auto px-3 sm:px-4">
+            <div className="relative max-h-[60vh] min-w-0 overflow-x-auto overflow-y-auto rounded-2xl border border-border shadow-sm">
               <Table
-                className="w-full table-auto border-separate [border-spacing-block:0.5rem] [border-spacing-inline:0] text-xs"
+                className="min-w-[1120px] table-auto border-separate [border-spacing-block:0.5rem] [border-spacing-inline:0] text-xs"
                 aria-busy={isValidating && !shouldShowRows}
               >
                 <TableHeader className="sticky top-0 bg-card shadow-sm">
@@ -1171,16 +1171,16 @@ export default function PackageOrdersClient() {
                                 );
                                 const isGuest = cName.includes("(비회원)");
                                 return (
-                                  <div className="flex flex-col items-center text-center">
-                                    <span className="font-medium max-w-[200px] truncate">
+                                  <div className="flex min-w-0 flex-col items-center text-center">
+                                    <span className="line-clamp-2 max-w-[200px] break-keep font-medium" title={baseName}>
                                       {baseName}
                                       {isGuest && (
-                                        <span className="ml-1 text-xs text-muted-foreground">
+                                        <span className="ml-1 shrink-0 whitespace-nowrap text-xs text-muted-foreground">
                                           (비회원)
                                         </span>
                                       )}
                                     </span>
-                                    <span className="text-xs text-muted-foreground max-w-[200px] truncate">
+                                    <span className="max-w-[200px] truncate text-xs text-muted-foreground" title={cEmail}>
                                       {cEmail}
                                     </span>
                                   </div>
@@ -1317,7 +1317,7 @@ export default function PackageOrdersClient() {
                                   <Badge
                                     className={cn(
                                       badgeCls,
-                                      "font-medium",
+                                      "shrink-0 whitespace-nowrap font-medium",
                                       badgeSizeCls,
                                     )}
                                     title={`만료기준: ${formatDate(expirySource)}`}
@@ -1347,7 +1347,7 @@ export default function PackageOrdersClient() {
                                 return (
                                   <Badge
                                     variant={pay.variant}
-                                    className={cn("font-medium", badgeSizeCls)}
+                                    className={cn("shrink-0 whitespace-nowrap font-medium", badgeSizeCls)}
                                     aria-label={`결제상태 ${String(pkg.paymentStatus)}`}
                                   >
                                     {pkg.paymentStatus}
@@ -1364,7 +1364,7 @@ export default function PackageOrdersClient() {
                                 "whitespace-nowrap",
                               )}
                             >
-                              <span className="font-medium">
+                              <span className="font-medium tabular-nums">
                                 {formatCurrency(pkg.price)}
                               </span>
                             </TableCell>

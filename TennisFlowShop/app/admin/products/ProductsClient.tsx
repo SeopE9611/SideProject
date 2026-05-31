@@ -535,7 +535,7 @@ export default function ProductsClient() {
             {/* 테이블 */}
             <div className="flex-1">
               <div className="overflow-auto rounded-lg border border-border">
-                <Table className="table-fixed [&_tr]:border-0">
+                <Table className="min-w-[920px] table-fixed [&_tr]:border-0">
                   <TableHeader className="sticky top-0 z-10 backdrop-blur bg-muted supports-[backdrop-filter]:bg-muted dark:bg-card dark:supports-[backdrop-filter]:bg-card border-b border-border">
                     <TableRow className="border-b border-border">
                       <TableHead className="w-[32%] text-left text-foreground">
@@ -636,10 +636,10 @@ export default function ProductsClient() {
                                 className="hover:text-foreground dark:hover:text-foreground"
                               >
                                 <div className="space-y-1">
-                                  <div className="truncate font-medium text-foreground">
+                                  <div className="line-clamp-2 break-keep font-medium text-foreground" title={s.name}>
                                     {s.name}
                                   </div>
-                                  <div className="font-mono text-[11px] text-muted-foreground">
+                                  <div className="truncate font-mono text-[11px] text-muted-foreground" title={s.sku}>
                                     {s.sku}
                                   </div>
                                 </div>
@@ -649,20 +649,20 @@ export default function ProductsClient() {
                             <TableCell className="text-center align-middle">
                               <Badge
                                 variant="secondary"
-                                className="px-2 py-0.5 rounded-full border bg-muted text-foreground border-border dark:bg-muted dark:text-foreground dark:border-border"
+                                className="shrink-0 whitespace-nowrap rounded-full border border-border bg-muted px-2 py-0.5 text-foreground dark:border-border dark:bg-muted dark:text-foreground"
                               >
                                 {brandLabel(s.brand)}
                               </Badge>
                             </TableCell>
 
-                            <TableCell className="text-center align-middle text-foreground">
+                            <TableCell className="whitespace-nowrap text-center align-middle text-foreground">
                               {s.gauge}
                             </TableCell>
-                            <TableCell className="text-center align-middle text-foreground">
+                            <TableCell className="whitespace-nowrap text-center align-middle text-foreground">
                               {materialLabel(s.material)}
                             </TableCell>
 
-                            <TableCell className="text-right align-middle font-medium text-foreground">
+                            <TableCell className="whitespace-nowrap text-right align-middle font-medium tabular-nums text-foreground">
                               {s.price?.toLocaleString?.() ?? s.price}원
                             </TableCell>
 
@@ -682,7 +682,7 @@ export default function ProductsClient() {
                               <Badge
                                 variant="secondary"
                                 className={cn(
-                                  "inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium rounded-full border",
+                                  "inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-2 py-1 text-xs font-medium",
                                   S.color,
                                 )}
                               >

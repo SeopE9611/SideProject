@@ -316,15 +316,15 @@ function KpiCard({ title, value, sub, icon, trend, spark }: { title: string; val
   return (
     <Card className={cn("group relative overflow-hidden", adminSurface.kpiCard)}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-        <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
+        <CardTitle className="break-keep text-sm font-medium leading-tight text-muted-foreground">{title}</CardTitle>
         <div className="rounded-lg bg-primary/10 p-2 text-primary transition-colors group-hover:bg-primary/15 dark:bg-primary/20 dark:group-hover:bg-primary/25">{icon}</div>
       </CardHeader>
       <CardContent className="space-y-3">
-        <div className="text-3xl font-bold tracking-normal">{value}</div>
-        {sub && <p className="text-sm text-muted-foreground">{sub}</p>}
+        <div className="whitespace-nowrap text-3xl font-bold tracking-normal tabular-nums">{value}</div>
+        {sub && <p className="line-clamp-2 break-keep text-sm text-muted-foreground">{sub}</p>}
         <div className="flex items-end justify-between gap-3">
           {trend && (
-            <Badge variant="secondary" className="text-xs font-normal">
+            <Badge variant="secondary" className="shrink-0 whitespace-nowrap text-xs font-normal">
               {trend}
             </Badge>
           )}
@@ -405,7 +405,7 @@ export default function AdminDashboardClient() {
           scope="범위: 전체 운영 요약"
           helperText="세부 처리는 운영 통합 센터와 각 관리 페이지에서 진행합니다."
           actions={(
-            <Button variant="outline" disabled className="shrink-0">
+            <Button variant="outline" disabled className="shrink-0 whitespace-nowrap tabular-nums">
               <Activity className="mr-2 h-4 w-4" />
               새로고침
             </Button>
@@ -484,7 +484,7 @@ export default function AdminDashboardClient() {
         scope="범위: 전체 운영 요약"
         helperText={`세부 처리는 운영 통합 센터와 각 관리 페이지에서 진행합니다. · 최근 ${data.series.days}일 (${data.series.fromYmd} ~ ${data.series.toYmd})`}
         actions={(
-          <Button variant="outline" onClick={() => mutate()} className="shrink-0">
+          <Button variant="outline" onClick={() => mutate()} className="shrink-0 whitespace-nowrap tabular-nums">
             <Activity className="mr-2 h-4 w-4" />
             새로고침
           </Button>
@@ -497,7 +497,7 @@ export default function AdminDashboardClient() {
             <h2 className="text-2xl font-semibold tracking-normal">오늘 처리해야 할 일</h2>
             <p className="text-sm text-muted-foreground">보고 지표보다 먼저 확인해야 하는 운영 업무입니다.</p>
           </div>
-          <Button asChild variant="outline" className="w-fit bg-transparent">
+          <Button asChild variant="outline" className="w-fit shrink-0 whitespace-nowrap bg-transparent">
             <Link href="/admin/operations">오늘 처리함 열기</Link>
           </Button>
         </div>
@@ -508,9 +508,9 @@ export default function AdminDashboardClient() {
               <CardDescription>취소·장기 결제대기·연체</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
-              <div className="flex items-center justify-between"><span>취소 요청</span><Badge variant={data.kpi.queue.cancelRequests > 0 ? "destructive" : "secondary"}>{formatAdminNumber(data.kpi.queue.cancelRequests)}</Badge></div>
-              <div className="flex items-center justify-between"><span>결제 대기 24h+</span><Badge variant={data.kpi.queue.paymentPending24h > 0 ? "destructive" : "secondary"}>{formatAdminNumber(data.kpi.queue.paymentPending24h)}</Badge></div>
-              <div className="flex items-center justify-between"><span>대여 연체</span><Badge variant={data.kpi.queue.rentalOverdue > 0 ? "destructive" : "secondary"}>{formatAdminNumber(data.kpi.queue.rentalOverdue)}</Badge></div>
+              <div className="flex items-center justify-between"><span>취소 요청</span><Badge className="shrink-0 whitespace-nowrap" variant={data.kpi.queue.cancelRequests > 0 ? "destructive" : "secondary"}>{formatAdminNumber(data.kpi.queue.cancelRequests)}</Badge></div>
+              <div className="flex items-center justify-between"><span>결제 대기 24h+</span><Badge className="shrink-0 whitespace-nowrap" variant={data.kpi.queue.paymentPending24h > 0 ? "destructive" : "secondary"}>{formatAdminNumber(data.kpi.queue.paymentPending24h)}</Badge></div>
+              <div className="flex items-center justify-between"><span>대여 연체</span><Badge className="shrink-0 whitespace-nowrap" variant={data.kpi.queue.rentalOverdue > 0 ? "destructive" : "secondary"}>{formatAdminNumber(data.kpi.queue.rentalOverdue)}</Badge></div>
             </CardContent>
           </Card>
           <Card className="border-primary/30 bg-primary/5">
@@ -519,9 +519,9 @@ export default function AdminDashboardClient() {
               <CardDescription>배송·교체서비스·반납</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
-              <div className="flex items-center justify-between"><span>송장 등록 대기</span><Badge variant={data.kpi.queue.shippingPending > 0 ? "default" : "outline"}>{formatAdminNumber(data.kpi.queue.shippingPending)}</Badge></div>
-              <div className="flex items-center justify-between"><span>교체 3일+</span><Badge variant={data.kpi.queue.stringingAging3d > 0 ? "default" : "outline"}>{formatAdminNumber(data.kpi.queue.stringingAging3d)}</Badge></div>
-              <div className="flex items-center justify-between"><span>반납 임박 48h</span><Badge variant={data.kpi.queue.rentalDueSoon > 0 ? "default" : "outline"}>{formatAdminNumber(data.kpi.queue.rentalDueSoon)}</Badge></div>
+              <div className="flex items-center justify-between"><span>송장 등록 대기</span><Badge className="shrink-0 whitespace-nowrap" variant={data.kpi.queue.shippingPending > 0 ? "default" : "outline"}>{formatAdminNumber(data.kpi.queue.shippingPending)}</Badge></div>
+              <div className="flex items-center justify-between"><span>교체 3일+</span><Badge className="shrink-0 whitespace-nowrap" variant={data.kpi.queue.stringingAging3d > 0 ? "default" : "outline"}>{formatAdminNumber(data.kpi.queue.stringingAging3d)}</Badge></div>
+              <div className="flex items-center justify-between"><span>반납 임박 48h</span><Badge className="shrink-0 whitespace-nowrap" variant={data.kpi.queue.rentalDueSoon > 0 ? "default" : "outline"}>{formatAdminNumber(data.kpi.queue.rentalDueSoon)}</Badge></div>
             </CardContent>
           </Card>
           <Card className="border-info/40 bg-info/5">
@@ -530,9 +530,9 @@ export default function AdminDashboardClient() {
               <CardDescription>오프라인·알림·정산</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
-              <div className="flex items-center justify-between"><span>오프라인 미결제</span><Badge variant={offlineMetrics.pendingOfflineCount > 0 ? "destructive" : "secondary"}>{formatAdminNumber(offlineMetrics.pendingOfflineCount)}</Badge></div>
-              <div className="flex items-center justify-between"><span>알림 실패</span><Badge variant={data.kpi.queue.outboxFailed > 0 ? "destructive" : "secondary"}>{formatAdminNumber(data.kpi.queue.outboxFailed)}</Badge></div>
-              <div className="flex items-center justify-between"><span>지난달 정산</span><Badge variant={!data.settlements.hasPrevSnapshot ? "destructive" : "secondary"}>{!data.settlements.hasPrevSnapshot ? "미생성" : "OK"}</Badge></div>
+              <div className="flex items-center justify-between"><span>오프라인 미결제</span><Badge className="shrink-0 whitespace-nowrap" variant={offlineMetrics.pendingOfflineCount > 0 ? "destructive" : "secondary"}>{formatAdminNumber(offlineMetrics.pendingOfflineCount)}</Badge></div>
+              <div className="flex items-center justify-between"><span>알림 실패</span><Badge className="shrink-0 whitespace-nowrap" variant={data.kpi.queue.outboxFailed > 0 ? "destructive" : "secondary"}>{formatAdminNumber(data.kpi.queue.outboxFailed)}</Badge></div>
+              <div className="flex items-center justify-between"><span>지난달 정산</span><Badge className="shrink-0 whitespace-nowrap" variant={!data.settlements.hasPrevSnapshot ? "destructive" : "secondary"}>{!data.settlements.hasPrevSnapshot ? "미생성" : "OK"}</Badge></div>
             </CardContent>
           </Card>
           <Card className="border-border/60 bg-card">
@@ -541,9 +541,9 @@ export default function AdminDashboardClient() {
               <CardDescription>업무 시작 동선</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-2">
-              <Button asChild size="sm" variant="outline" className="justify-start bg-transparent"><Link href="/admin/orders">주문·교체서비스 처리</Link></Button>
-              <Button asChild size="sm" variant="outline" className="justify-start bg-transparent"><Link href="/admin/rentals">라켓 대여 처리</Link></Button>
-              <Button asChild size="sm" variant="outline" className="justify-start bg-transparent"><Link href="/admin/academy/applications">아카데미 상담</Link></Button>
+              <Button asChild size="sm" variant="outline" className="justify-start whitespace-nowrap bg-transparent"><Link href="/admin/orders">주문·교체서비스 처리</Link></Button>
+              <Button asChild size="sm" variant="outline" className="justify-start whitespace-nowrap bg-transparent"><Link href="/admin/rentals">라켓 대여 처리</Link></Button>
+              <Button asChild size="sm" variant="outline" className="justify-start whitespace-nowrap bg-transparent"><Link href="/admin/academy/applications">아카데미 상담</Link></Button>
             </CardContent>
           </Card>
         </div>
@@ -633,7 +633,7 @@ export default function AdminDashboardClient() {
               <div className="rounded-lg bg-background/60 px-3 py-2">
                 <div className="flex items-center justify-between">
                   <span className="text-sm">취소 요청</span>
-                  <Badge variant={data.kpi.queue.cancelRequests > 0 ? "destructive" : "secondary"}>{formatAdminNumber(data.kpi.queue.cancelRequests)}</Badge>
+                  <Badge className="shrink-0 whitespace-nowrap" variant={data.kpi.queue.cancelRequests > 0 ? "destructive" : "secondary"}>{formatAdminNumber(data.kpi.queue.cancelRequests)}</Badge>
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">
                   계좌 확인 필요 {formatAdminNumber(data.kpi.queue.cancelRequestsNeedingRefundAccount)}건 / 검토 가능 {formatAdminNumber(data.kpi.queue.cancelRequestsReadyForReview)}건
@@ -641,19 +641,19 @@ export default function AdminDashboardClient() {
               </div>
               <div className="flex items-center justify-between rounded-lg bg-background/60 px-3 py-2">
                 <span className="text-sm">결제 대기 24h+</span>
-                <Badge variant={data.kpi.queue.paymentPending24h > 0 ? "destructive" : "secondary"}>{formatAdminNumber(data.kpi.queue.paymentPending24h)}</Badge>
+                <Badge className="shrink-0 whitespace-nowrap" variant={data.kpi.queue.paymentPending24h > 0 ? "destructive" : "secondary"}>{formatAdminNumber(data.kpi.queue.paymentPending24h)}</Badge>
               </div>
               <div className="flex items-center justify-between rounded-lg bg-background/60 px-3 py-2">
                 <span className="text-sm">대여 연체</span>
-                <Badge variant={data.kpi.queue.rentalOverdue > 0 ? "destructive" : "secondary"}>{formatAdminNumber(data.kpi.queue.rentalOverdue)}</Badge>
+                <Badge className="shrink-0 whitespace-nowrap" variant={data.kpi.queue.rentalOverdue > 0 ? "destructive" : "secondary"}>{formatAdminNumber(data.kpi.queue.rentalOverdue)}</Badge>
               </div>
               <div className="flex items-center justify-between rounded-lg bg-background/60 px-3 py-2">
                 <span className="text-sm">교체 3일+</span>
-                <Badge variant={data.kpi.queue.stringingAging3d > 0 ? "destructive" : "secondary"}>{formatAdminNumber(data.kpi.queue.stringingAging3d)}</Badge>
+                <Badge className="shrink-0 whitespace-nowrap" variant={data.kpi.queue.stringingAging3d > 0 ? "destructive" : "secondary"}>{formatAdminNumber(data.kpi.queue.stringingAging3d)}</Badge>
               </div>
               <div className="flex items-center justify-between rounded-lg bg-background/60 px-3 py-2">
                 <span className="text-sm">지난달 정산 스냅샷</span>
-                <Badge variant={!data.settlements.hasPrevSnapshot ? "destructive" : "secondary"}>{!data.settlements.hasPrevSnapshot ? "미생성" : "OK"}</Badge>
+                <Badge className="shrink-0 whitespace-nowrap" variant={!data.settlements.hasPrevSnapshot ? "destructive" : "secondary"}>{!data.settlements.hasPrevSnapshot ? "미생성" : "OK"}</Badge>
               </div>
             </CardContent>
           </Card>
@@ -670,11 +670,11 @@ export default function AdminDashboardClient() {
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2">
                 <span className="text-sm">송장 등록 대기</span>
-                <Badge variant={data.kpi.queue.shippingPending > 0 ? "default" : "outline"}>{formatAdminNumber(data.kpi.queue.shippingPending)}</Badge>
+                <Badge className="shrink-0 whitespace-nowrap" variant={data.kpi.queue.shippingPending > 0 ? "default" : "outline"}>{formatAdminNumber(data.kpi.queue.shippingPending)}</Badge>
               </div>
               <div className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2">
                 <span className="text-sm">반납 임박 48h</span>
-                <Badge variant={data.kpi.queue.rentalDueSoon > 0 ? "default" : "outline"}>{formatAdminNumber(data.kpi.queue.rentalDueSoon)}</Badge>
+                <Badge className="shrink-0 whitespace-nowrap" variant={data.kpi.queue.rentalDueSoon > 0 ? "default" : "outline"}>{formatAdminNumber(data.kpi.queue.rentalDueSoon)}</Badge>
               </div>
               <Button size="sm" variant="outline" asChild className="mt-2 w-full bg-transparent">
                 <Link href="/admin/orders?preset=shippingPending">관리하기</Link>
@@ -694,11 +694,11 @@ export default function AdminDashboardClient() {
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2">
                 <span className="text-sm">재고 부족</span>
-                <Badge variant={data.kpi.inventory.lowStockProducts > 0 ? "destructive" : "outline"}>{formatAdminNumber(data.kpi.inventory.lowStockProducts)}</Badge>
+                <Badge className="shrink-0 whitespace-nowrap" variant={data.kpi.inventory.lowStockProducts > 0 ? "destructive" : "outline"}>{formatAdminNumber(data.kpi.inventory.lowStockProducts)}</Badge>
               </div>
               <div className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2">
                 <span className="text-sm">품절</span>
-                <Badge variant={data.kpi.inventory.outOfStockProducts > 0 ? "destructive" : "outline"}>{formatAdminNumber(data.kpi.inventory.outOfStockProducts)}</Badge>
+                <Badge className="shrink-0 whitespace-nowrap" variant={data.kpi.inventory.outOfStockProducts > 0 ? "destructive" : "outline"}>{formatAdminNumber(data.kpi.inventory.outOfStockProducts)}</Badge>
               </div>
               <Button size="sm" variant="outline" asChild className="mt-2 w-full bg-transparent">
                 <Link href="/admin/products?status=low_stock">재고 관리</Link>
@@ -718,11 +718,11 @@ export default function AdminDashboardClient() {
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2">
                 <span className="text-sm">알림 큐</span>
-                <Badge variant={data.kpi.queue.outboxQueued > 0 ? "default" : "outline"}>{formatAdminNumber(data.kpi.queue.outboxQueued)}</Badge>
+                <Badge className="shrink-0 whitespace-nowrap" variant={data.kpi.queue.outboxQueued > 0 ? "default" : "outline"}>{formatAdminNumber(data.kpi.queue.outboxQueued)}</Badge>
               </div>
               <div className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2">
                 <span className="text-sm">알림 실패</span>
-                <Badge variant={data.kpi.queue.outboxFailed > 0 ? "destructive" : "outline"}>{formatAdminNumber(data.kpi.queue.outboxFailed)}</Badge>
+                <Badge className="shrink-0 whitespace-nowrap" variant={data.kpi.queue.outboxFailed > 0 ? "destructive" : "outline"}>{formatAdminNumber(data.kpi.queue.outboxFailed)}</Badge>
               </div>
               <Button size="sm" variant="outline" asChild className="mt-2 w-full bg-transparent">
                 <Link href="/admin/notifications">알림 관리</Link>
@@ -784,7 +784,7 @@ export default function AdminDashboardClient() {
                         <p className="truncate text-xs text-muted-foreground">{p.brand || "-"}</p>
                       </div>
                       <div className="flex shrink-0 flex-col items-end gap-1">
-                        <Badge variant="secondary" className="text-xs">
+                        <Badge variant="secondary" className="shrink-0 whitespace-nowrap text-xs">
                           {formatAdminNumber(p.qty)}개
                         </Badge>
                         <span className="text-xs font-semibold">{formatAdminKRW(p.revenue)}</span>
@@ -826,7 +826,7 @@ export default function AdminDashboardClient() {
                           <p className="text-xs text-muted-foreground">판매량 및 매출</p>
                         </div>
                         <div className="flex shrink-0 flex-col items-end gap-1">
-                          <Badge variant="secondary" className="text-xs">
+                          <Badge variant="secondary" className="shrink-0 whitespace-nowrap text-xs">
                             {formatAdminNumber(b.qty)}개
                           </Badge>
                           <span className="text-xs font-semibold">{formatAdminKRW(b.revenue)}</span>
@@ -869,13 +869,13 @@ export default function AdminDashboardClient() {
                         : getWorkflowMetaBadgeSpec("action_required").variant;
 
                     return (
-                      <div key={`${it.kind}-${it.id}`} className="group flex items-start gap-3 rounded-lg border border-border/40 bg-background/60 p-3 transition-all hover:border-border/80 hover:shadow-sm">
+                      <div key={`${it.kind}-${it.id}`} className="group flex items-start gap-3 rounded-lg border border-border/40 bg-background/60 p-3 transition-colors hover:border-border/80 hover:shadow-sm">
                         <div className="min-w-0 flex-1 space-y-1">
-                          <Link href={it.href} className="block truncate text-sm font-medium group-hover:underline">
+                          <Link href={it.href} className="line-clamp-2 break-keep text-sm font-medium group-hover:underline">
                             {it.name}
                           </Link>
                           <div className="flex flex-wrap items-center gap-2">
-                            <Badge variant="outline" className="text-xs">
+                            <Badge variant="outline" className="shrink-0 whitespace-nowrap text-xs">
                               {it.kind}
                             </Badge>
                             {statusLabel && (
@@ -887,7 +887,7 @@ export default function AdminDashboardClient() {
                                       ).variant
                                     : "secondary"
                                 }
-                                className="text-xs"
+                                className="shrink-0 whitespace-nowrap text-xs"
                               >
                                 {statusLabel}
                               </Badge>
@@ -896,7 +896,7 @@ export default function AdminDashboardClient() {
                               <TooltipProvider delayDuration={50}>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <Badge variant={quickSignalTone} className="inline-flex cursor-help items-center gap-1 text-xs">
+                                    <Badge variant={quickSignalTone} className="inline-flex shrink-0 cursor-help items-center gap-1 whitespace-nowrap text-xs">
                                       {quickSignal.label}
                                       <CircleHelp className="h-3 w-3" />
                                     </Badge>
@@ -909,10 +909,10 @@ export default function AdminDashboardClient() {
                                 </Tooltip>
                               </TooltipProvider>
                             )}
-                            <span className="text-xs text-muted-foreground">{formatIsoToKstShort(it.createdAt)}</span>
+                            <span className="whitespace-nowrap text-xs tabular-nums text-muted-foreground">{formatIsoToKstShort(it.createdAt)}</span>
                           </div>
                         </div>
-                        <Badge variant="destructive" className="shrink-0">
+                        <Badge variant="destructive" className="shrink-0 whitespace-nowrap tabular-nums">
                           {formatAdminKRW(it.amount)}
                         </Badge>
                       </div>
@@ -937,19 +937,19 @@ export default function AdminDashboardClient() {
               ) : (
                 <div className="space-y-3">
                   {data.queueDetails.shippingPending.slice(0, 5).map((it) => (
-                    <div key={`${it.kind}-${it.id}`} className="group flex items-start gap-3 rounded-lg border border-border/40 bg-background/60 p-3 transition-all hover:border-border/80 hover:shadow-sm">
+                    <div key={`${it.kind}-${it.id}`} className="group flex items-start gap-3 rounded-lg border border-border/40 bg-background/60 p-3 transition-colors hover:border-border/80 hover:shadow-sm">
                       <div className="min-w-0 flex-1 space-y-1">
-                        <Link href={it.href} className="block truncate text-sm font-medium group-hover:underline">
+                        <Link href={it.href} className="line-clamp-2 break-keep text-sm font-medium group-hover:underline">
                           {it.name}
                         </Link>
                         <div className="flex flex-wrap items-center gap-2">
-                          <Badge variant="outline" className="text-xs">
+                          <Badge variant="outline" className="shrink-0 whitespace-nowrap text-xs">
                             {it.kind}
                           </Badge>
-                          <span className="text-xs text-muted-foreground">{formatIsoToKstShort(it.createdAt)}</span>
+                          <span className="whitespace-nowrap text-xs tabular-nums text-muted-foreground">{formatIsoToKstShort(it.createdAt)}</span>
                         </div>
                       </div>
-                      <Badge className="shrink-0">{formatAdminKRW(it.amount)}</Badge>
+                      <Badge className="shrink-0 whitespace-nowrap tabular-nums">{formatAdminKRW(it.amount)}</Badge>
                     </div>
                   ))}
                   <Button size="sm" variant="outline" asChild className="mt-2 w-full bg-transparent">
@@ -971,19 +971,19 @@ export default function AdminDashboardClient() {
               ) : (
                 <div className="space-y-3">
                   {data.queueDetails.paymentPending24h.slice(0, 5).map((it) => (
-                    <div key={`${it.kind}:${it.id}`} className="group flex items-start gap-3 rounded-lg border border-border/40 bg-background/60 p-3 transition-all hover:border-border/80 hover:shadow-sm">
+                    <div key={`${it.kind}:${it.id}`} className="group flex items-start gap-3 rounded-lg border border-border/40 bg-background/60 p-3 transition-colors hover:border-border/80 hover:shadow-sm">
                       <div className="min-w-0 flex-1 space-y-1">
-                        <Link href={it.href} className="block truncate text-sm font-medium group-hover:underline">
+                        <Link href={it.href} className="line-clamp-2 break-keep text-sm font-medium group-hover:underline">
                           {it.name || "(이름 없음)"}
                         </Link>
                         <div className="flex flex-wrap items-center gap-2">
-                          <Badge variant="outline" className="text-xs">
+                          <Badge variant="outline" className="shrink-0 whitespace-nowrap text-xs">
                             {it.kind}
                           </Badge>
-                          <span className="text-xs text-muted-foreground">{formatIsoToKstShort(it.createdAt)}</span>
+                          <span className="whitespace-nowrap text-xs tabular-nums text-muted-foreground">{formatIsoToKstShort(it.createdAt)}</span>
                         </div>
                       </div>
-                      <Badge variant="destructive" className="shrink-0">
+                      <Badge variant="destructive" className="shrink-0 whitespace-nowrap tabular-nums">
                         {it.hoursAgo}h
                       </Badge>
                     </div>
@@ -1007,19 +1007,19 @@ export default function AdminDashboardClient() {
               ) : (
                 <div className="space-y-3">
                   {data.queueDetails.stringingAging.slice(0, 5).map((it) => (
-                    <div key={it.id} className="group flex items-start gap-3 rounded-lg border border-border/40 bg-background/60 p-3 transition-all hover:border-border/80 hover:shadow-sm">
+                    <div key={it.id} className="group flex items-start gap-3 rounded-lg border border-border/40 bg-background/60 p-3 transition-colors hover:border-border/80 hover:shadow-sm">
                       <div className="min-w-0 flex-1 space-y-1">
-                        <Link href={it.href} className="block truncate text-sm font-medium group-hover:underline">
+                        <Link href={it.href} className="line-clamp-2 break-keep text-sm font-medium group-hover:underline">
                           {it.name}
                         </Link>
                         <div className="flex flex-wrap items-center gap-2">
-                          <Badge variant="outline" className="text-xs">
+                          <Badge variant="outline" className="shrink-0 whitespace-nowrap text-xs">
                             {labelStringingStatus(it.status)}
                           </Badge>
                           <span className="text-xs text-muted-foreground">{it.ageDays}일 경과</span>
                         </div>
                       </div>
-                      <Badge variant="secondary" className="shrink-0">
+                      <Badge variant="secondary" className="shrink-0 whitespace-nowrap tabular-nums">
                         {formatAdminKRW(it.totalPrice)}
                       </Badge>
                     </div>
@@ -1043,14 +1043,14 @@ export default function AdminDashboardClient() {
               ) : (
                 <div className="space-y-3">
                   {data.queueDetails.rentalOverdue.slice(0, 5).map((r) => (
-                    <div key={r.id} className="group flex items-start gap-3 rounded-lg border border-border/40 bg-background/60 p-3 transition-all hover:border-border/80 hover:shadow-sm">
+                    <div key={r.id} className="group flex items-start gap-3 rounded-lg border border-border/40 bg-background/60 p-3 transition-colors hover:border-border/80 hover:shadow-sm">
                       <div className="min-w-0 flex-1 space-y-1">
-                        <Link href={r.href} className="block truncate text-sm font-medium group-hover:underline">
+                        <Link href={r.href} className="line-clamp-2 break-keep text-sm font-medium group-hover:underline">
                           {r.name}
                         </Link>
                         <p className="text-xs text-muted-foreground">반납 기한: {formatIsoToKstShort(r.dueAt)}</p>
                       </div>
-                      <Badge variant="destructive" className="shrink-0">
+                      <Badge variant="destructive" className="shrink-0 whitespace-nowrap tabular-nums">
                         {r.overdueDays}일
                       </Badge>
                     </div>
@@ -1076,14 +1076,14 @@ export default function AdminDashboardClient() {
                   {data.queueDetails.rentalDueSoon.slice(0, 5).map((r) => {
                     const badgeLabel = r.dueInHours >= 24 ? `${Math.ceil(r.dueInHours / 24)}일` : `${r.dueInHours}시간`;
                     return (
-                      <div key={r.id} className="group flex items-start gap-3 rounded-lg border border-border/40 bg-background/60 p-3 transition-all hover:border-border/80 hover:shadow-sm">
+                      <div key={r.id} className="group flex items-start gap-3 rounded-lg border border-border/40 bg-background/60 p-3 transition-colors hover:border-border/80 hover:shadow-sm">
                         <div className="min-w-0 flex-1 space-y-1">
-                          <Link href={r.href} className="block truncate text-sm font-medium group-hover:underline">
+                          <Link href={r.href} className="line-clamp-2 break-keep text-sm font-medium group-hover:underline">
                             {r.name}
                           </Link>
                           <p className="text-xs text-muted-foreground">반납 기한: {formatIsoToKstShort(r.dueAt)}</p>
                         </div>
-                        <Badge variant="secondary" className="shrink-0">
+                        <Badge variant="secondary" className="shrink-0 whitespace-nowrap tabular-nums">
                           {badgeLabel}
                         </Badge>
                       </div>
@@ -1123,11 +1123,11 @@ export default function AdminDashboardClient() {
               </div>
               <div className="flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2">
                 <span className="text-sm">리뷰 7일</span>
-                <Badge variant="outline">{formatAdminNumber(data.kpi.reviews.delta7d)}</Badge>
+                <Badge className="shrink-0 whitespace-nowrap" variant="outline">{formatAdminNumber(data.kpi.reviews.delta7d)}</Badge>
               </div>
               <div className="flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2">
                 <span className="text-sm">5점 리뷰</span>
-                <Badge variant="outline">{formatAdminNumber(data.kpi.reviews.five)}</Badge>
+                <Badge className="shrink-0 whitespace-nowrap" variant="outline">{formatAdminNumber(data.kpi.reviews.five)}</Badge>
               </div>
               <Button size="sm" variant="outline" asChild className="mt-2 w-full bg-transparent">
                 <Link href="/admin/reviews">리뷰 관리</Link>
@@ -1147,11 +1147,11 @@ export default function AdminDashboardClient() {
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2">
                 <span className="text-sm">지급</span>
-                <Badge variant="secondary">{formatAdminNumber(data.kpi.points.issued7d)}P</Badge>
+                <Badge className="shrink-0 whitespace-nowrap" variant="secondary">{formatAdminNumber(data.kpi.points.issued7d)}P</Badge>
               </div>
               <div className="flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2">
                 <span className="text-sm">사용</span>
-                <Badge variant="outline">{formatAdminNumber(data.kpi.points.spent7d)}P</Badge>
+                <Badge className="shrink-0 whitespace-nowrap" variant="outline">{formatAdminNumber(data.kpi.points.spent7d)}P</Badge>
               </div>
               <Button size="sm" variant="outline" asChild className="mt-4 w-full bg-transparent">
                 <Link href="/admin/users">회원 관리</Link>
@@ -1171,15 +1171,15 @@ export default function AdminDashboardClient() {
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2">
                 <span className="text-sm">게시글 7일</span>
-                <Badge variant="outline">{formatAdminNumber(data.kpi.community.posts7d)}</Badge>
+                <Badge className="shrink-0 whitespace-nowrap" variant="outline">{formatAdminNumber(data.kpi.community.posts7d)}</Badge>
               </div>
               <div className="flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2">
                 <span className="text-sm">댓글 7일</span>
-                <Badge variant="outline">{formatAdminNumber(data.kpi.community.comments7d)}</Badge>
+                <Badge className="shrink-0 whitespace-nowrap" variant="outline">{formatAdminNumber(data.kpi.community.comments7d)}</Badge>
               </div>
               <div className="flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2">
                 <span className="text-sm">미처리 신고</span>
-                <Badge variant={data.kpi.community.pendingReports > 0 ? "destructive" : "secondary"}>{formatAdminNumber(data.kpi.community.pendingReports)}</Badge>
+                <Badge className="shrink-0 whitespace-nowrap" variant={data.kpi.community.pendingReports > 0 ? "destructive" : "secondary"}>{formatAdminNumber(data.kpi.community.pendingReports)}</Badge>
               </div>
               <Button size="sm" variant="outline" asChild className="w-full bg-transparent">
                 <Link href="/admin/boards?tab=reports">신고 관리</Link>
@@ -1206,15 +1206,15 @@ export default function AdminDashboardClient() {
               ) : (
                 <div className="space-y-3">
                   {data.inventoryList.lowStock.map((p) => (
-                    <div key={p.id} className="group flex items-center gap-3 rounded-lg border border-border/40 bg-background/60 p-3 transition-all hover:border-border/80 hover:shadow-sm">
+                    <div key={p.id} className="group flex items-center gap-3 rounded-lg border border-border/40 bg-background/60 p-3 transition-colors hover:border-border/80 hover:shadow-sm">
                       <div className="min-w-0 flex-1">
-                        <Link href={`/admin/products/${p.id}/edit`} className="block truncate text-sm font-medium group-hover:underline">
+                        <Link href={`/admin/products/${p.id}/edit`} className="line-clamp-2 break-keep text-sm font-medium group-hover:underline">
                           {p.name || "(이름 없음)"}
                         </Link>
                         <p className="truncate text-xs text-muted-foreground">{p.brand || "-"}</p>
                       </div>
                       <div className="shrink-0 text-right">
-                        <Badge variant="destructive">{formatAdminNumber(p.stock)}개</Badge>
+                        <Badge className="shrink-0 whitespace-nowrap" variant="destructive">{formatAdminNumber(p.stock)}개</Badge>
                         <p className="mt-1 text-xs text-muted-foreground">기준: {p.lowStock === null ? "-" : formatAdminNumber(p.lowStock)}</p>
                       </div>
                     </div>
@@ -1238,14 +1238,14 @@ export default function AdminDashboardClient() {
               ) : (
                 <div className="space-y-3">
                   {data.inventoryList.outOfStock.map((p) => (
-                    <div key={p.id} className="group flex items-center gap-3 rounded-lg border border-border/40 bg-background/60 p-3 transition-all hover:border-border/80 hover:shadow-sm">
+                    <div key={p.id} className="group flex items-center gap-3 rounded-lg border border-border/40 bg-background/60 p-3 transition-colors hover:border-border/80 hover:shadow-sm">
                       <div className="min-w-0 flex-1">
-                        <Link href={`/admin/products/${p.id}/edit`} className="block truncate text-sm font-medium group-hover:underline">
+                        <Link href={`/admin/products/${p.id}/edit`} className="line-clamp-2 break-keep text-sm font-medium group-hover:underline">
                           {p.name || "(이름 없음)"}
                         </Link>
                         <p className="truncate text-xs text-muted-foreground">{p.brand || "-"}</p>
                       </div>
-                      <Badge variant="destructive">{formatAdminNumber(p.stock)}개</Badge>
+                      <Badge className="shrink-0 whitespace-nowrap" variant="destructive">{formatAdminNumber(p.stock)}개</Badge>
                     </div>
                   ))}
                   <Button size="sm" variant="outline" asChild className="mt-2 w-full bg-transparent">
@@ -1283,15 +1283,15 @@ export default function AdminDashboardClient() {
                     );
                     const statusSpec = getOrderStatusBadgeSpec(rawStatusLabel);
                     return (
-                      <Link key={o.id} href={`/admin/orders/${o.id}`} className="group flex items-start gap-3 rounded-lg border border-border/40 bg-background/60 p-3 transition-all hover:border-border/80 hover:shadow-sm">
+                      <Link key={o.id} href={`/admin/orders/${o.id}`} className="group flex items-start gap-3 rounded-lg border border-border/40 bg-background/60 p-3 transition-colors hover:border-border/80 hover:shadow-sm">
                         <div className="min-w-0 flex-1 space-y-1">
                           <p className="truncate text-sm font-medium">{o.name}</p>
-                          <p className="text-xs text-muted-foreground">{formatIsoToKstShort(o.createdAt)}</p>
+                          <p className="whitespace-nowrap text-xs tabular-nums text-muted-foreground">{formatIsoToKstShort(o.createdAt)}</p>
                           <div className="flex flex-wrap gap-1">
-                            <Badge variant={paymentSpec.variant} className="text-xs">
+                            <Badge variant={paymentSpec.variant} className="shrink-0 whitespace-nowrap text-xs">
                               {labelPaymentStatus(o.paymentStatus)}
                             </Badge>
-                            <Badge variant={statusSpec.variant} className="text-xs">
+                            <Badge variant={statusSpec.variant} className="shrink-0 whitespace-nowrap text-xs">
                               {displayStatusLabel}
                             </Badge>
                           </div>
@@ -1324,15 +1324,15 @@ export default function AdminDashboardClient() {
                       labelStringingStatus(a.status),
                     );
                     return (
-                      <Link key={a.id} href={`/admin/applications/stringing/${a.id}`} className="group flex items-start gap-3 rounded-lg border border-border/40 bg-background/60 p-3 transition-all hover:border-border/80 hover:shadow-sm">
+                      <Link key={a.id} href={`/admin/applications/stringing/${a.id}`} className="group flex items-start gap-3 rounded-lg border border-border/40 bg-background/60 p-3 transition-colors hover:border-border/80 hover:shadow-sm">
                         <div className="min-w-0 flex-1 space-y-1">
                           <p className="truncate text-sm font-medium">{a.name}</p>
-                          <p className="text-xs text-muted-foreground">{formatIsoToKstShort(a.createdAt)}</p>
+                          <p className="whitespace-nowrap text-xs tabular-nums text-muted-foreground">{formatIsoToKstShort(a.createdAt)}</p>
                           <div className="flex flex-wrap gap-1">
-                            <Badge variant={paymentSpec.variant} className="text-xs">
+                            <Badge variant={paymentSpec.variant} className="shrink-0 whitespace-nowrap text-xs">
                               {labelPaymentStatus(a.paymentStatus)}
                             </Badge>
-                            <Badge variant={statusSpec.variant} className="text-xs">
+                            <Badge variant={statusSpec.variant} className="shrink-0 whitespace-nowrap text-xs">
                               {labelStringingStatus(a.status)}
                             </Badge>
                           </div>
@@ -1391,7 +1391,7 @@ export default function AdminDashboardClient() {
                 {data.dist.orderStatus.slice(0, 8).map((d) => (
                   <div key={d.label} className="flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2 text-sm">
                     <span className="truncate">{d.label}</span>
-                    <Badge variant="outline">{formatAdminNumber(d.count)}</Badge>
+                    <Badge className="shrink-0 whitespace-nowrap" variant="outline">{formatAdminNumber(d.count)}</Badge>
                   </div>
                 ))}
               </div>
@@ -1408,7 +1408,7 @@ export default function AdminDashboardClient() {
                 {data.dist.orderPaymentStatus.slice(0, 8).map((d) => (
                   <div key={d.label} className="flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2 text-sm">
                     <span className="truncate">{labelPaymentStatus(d.label)}</span>
-                    <Badge variant="outline">{formatAdminNumber(d.count)}</Badge>
+                    <Badge className="shrink-0 whitespace-nowrap" variant="outline">{formatAdminNumber(d.count)}</Badge>
                   </div>
                 ))}
               </div>
@@ -1425,7 +1425,7 @@ export default function AdminDashboardClient() {
                 {data.dist.applicationStatus.slice(0, 8).map((d) => (
                   <div key={d.label} className="flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2 text-sm">
                     <span className="truncate">{labelStringingStatus(d.label)}</span>
-                    <Badge variant="outline">{formatAdminNumber(d.count)}</Badge>
+                    <Badge className="shrink-0 whitespace-nowrap" variant="outline">{formatAdminNumber(d.count)}</Badge>
                   </div>
                 ))}
               </div>

@@ -115,7 +115,7 @@ function StatusBadge({ status }: { status: string }) {
     inactive: { label: "비노출", variant: "outline" },
   };
   const config = variants[status] || { label: status, variant: "outline" };
-  return <Badge variant={config.variant}>{config.label}</Badge>;
+  return <Badge variant={config.variant} className="shrink-0 whitespace-nowrap">{config.label}</Badge>;
 }
 
 function ConditionBadge({ condition }: { condition: string }) {
@@ -126,7 +126,7 @@ function ConditionBadge({ condition }: { condition: string }) {
     C: "C급 (보통)",
   };
   return (
-    <Badge className={meta.className}>
+    <Badge className={cn(meta.className, "shrink-0 whitespace-nowrap")}>
       {labelMap[condition] || meta.label}
     </Badge>
   );
@@ -354,7 +354,7 @@ export default function AdminRacketsClient() {
 
                 <div className="grid w-full gap-2 border-t border-border pt-3 sm:grid-cols-2 md:grid-cols-3">
                   <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="border-border">
+                    <SelectTrigger className="min-w-max border-border">
                       <SelectValue placeholder="상태 필터" />
                     </SelectTrigger>
                     <SelectContent>
@@ -370,7 +370,7 @@ export default function AdminRacketsClient() {
                     value={conditionFilter}
                     onValueChange={setConditionFilter}
                   >
-                    <SelectTrigger className="border-border">
+                    <SelectTrigger className="min-w-max border-border">
                       <SelectValue placeholder="등급 필터" />
                     </SelectTrigger>
                     <SelectContent>
@@ -424,7 +424,7 @@ export default function AdminRacketsClient() {
                 </div>
               ) : (
                 <div className="overflow-auto rounded-lg border border-border">
-                  <Table>
+                  <Table className="min-w-[860px]">
                     <TableHeader className="sticky top-0 z-10 backdrop-blur bg-muted/50 supports-[backdrop-filter]:bg-muted/50 dark:bg-muted/50 dark:supports-[backdrop-filter]:bg-muted/50 border-b border-border">
                       <TableRow className="border-b border-border">
                         <TableHead className="text-left text-primary">
@@ -457,7 +457,7 @@ export default function AdminRacketsClient() {
                           className="border-b border-border last:border-b-0 dark:border-border hover:bg-primary/10 dark:hover:bg-primary/20 even:bg-muted/30 dark:even:bg-card transition-colors"
                         >
                           <TableCell className="py-4">
-                            <div className="flex items-center gap-3">
+                            <div className="flex min-w-0 items-center gap-3">
                               {item.images?.[0] && (
                                 <img
                                   src={item.images[0] || "/placeholder.svg"}
@@ -465,17 +465,17 @@ export default function AdminRacketsClient() {
                                   className="h-12 w-12 rounded-lg object-cover"
                                 />
                               )}
-                              <div>
-                                <div className="font-semibold text-foreground">
+                              <div className="min-w-0">
+                                <div className="line-clamp-2 break-keep font-semibold text-foreground">
                                   {racketBrandLabel(item.brand)}
                                 </div>
-                                <div className="text-sm text-muted-foreground">
+                                <div className="line-clamp-2 break-keep text-sm text-muted-foreground" title={item.model}>
                                   {item.model}
                                 </div>
                               </div>
                             </div>
                           </TableCell>
-                          <TableCell className="text-right">
+                          <TableCell className="whitespace-nowrap text-right tabular-nums">
                             <span className="font-semibold text-foreground">
                               {item.price?.toLocaleString()}원
                             </span>
@@ -488,11 +488,12 @@ export default function AdminRacketsClient() {
                           </TableCell>
                           <TableCell className="text-center">
                             <Badge
-                              className={
+                              className={cn(
                                 item.rental?.enabled
                                   ? usedBadgeMeta("rental", "available").className
-                                  : usedBadgeMeta("rental", "unavailable").className
-                              }
+                                  : usedBadgeMeta("rental", "unavailable").className,
+                                "shrink-0 whitespace-nowrap",
+                              )}
                             >
                               {item.rental?.enabled ? "가능" : "불가"}
                             </Badge>
@@ -516,10 +517,10 @@ export default function AdminRacketsClient() {
                               </DropdownMenuTrigger>
                               <DropdownMenuContent
                                 align="end"
-                                className="border-border"
+                                className="min-w-max border-border"
                               >
                                 <DropdownMenuLabel>작업</DropdownMenuLabel>
-                                <DropdownMenuItem asChild>
+                                <DropdownMenuItem asChild className="whitespace-nowrap">
                                   <Link
                                     href={`/rackets/${item.id}`}
                                     className="flex items-center"
@@ -528,7 +529,7 @@ export default function AdminRacketsClient() {
                                     상세 보기
                                   </Link>
                                 </DropdownMenuItem>
-                                <DropdownMenuItem asChild>
+                                <DropdownMenuItem asChild className="whitespace-nowrap">
                                   <Link
                                     href={`/admin/rackets/${item.id}/edit`}
                                     className="flex items-center"

@@ -576,7 +576,7 @@ export default function AdminReviewListClient() {
             </DropdownMenuTrigger>
             <DropdownMenuContent
               align="end"
-              className="w-44"
+              className="w-44 min-w-max"
               onPointerDown={(e) => e.stopPropagation()}
               onClick={(e) => e.stopPropagation()}
             >
@@ -599,7 +599,7 @@ export default function AdminReviewListClient() {
 
       {/* 리스트 카드 */}
       <div className="bg-card shadow-sm">
-        <div className="max-h-[70vh] overflow-y-auto overflow-x-hidden">
+        <div className="max-h-[70vh] overflow-x-auto overflow-y-auto">
           {/* 헤더 라벨 */}
           <div
             className={`sticky top-0 z-[1] hidden lg:grid ${GRID} items-center gap-x-3 bg-card border-b border-border px-3 py-3 text-[13px] text-muted-foreground`}
@@ -680,17 +680,17 @@ export default function AdminReviewListClient() {
 
                   {/* 작성자 */}
                   <div className={`min-w-0 ${dim}`}>
-                    <div className="text-foreground font-medium truncate">
+                    <div className="truncate font-medium text-foreground" title={r.userName || r.userEmail || "-"}>
                       {r.userName || r.userEmail || "-"}
                     </div>
                     {r.userEmail && r.userName && (
-                      <div className="text-[12px] text-muted-foreground break-all">
+                      <div className="max-w-[180px] truncate text-[12px] text-muted-foreground" title={r.userEmail}>
                         {r.userEmail}
                       </div>
                     )}
                     {r.isDeleted && (
                       <div className="mt-0.5">
-                        <Badge variant="secondary" className="h-5">
+                        <Badge variant="secondary" className="h-5 shrink-0 whitespace-nowrap">
                           삭제됨
                         </Badge>
                       </div>
@@ -708,8 +708,7 @@ export default function AdminReviewListClient() {
                               expanded[r._id]
                                 ? "whitespace-pre-wrap"
                                 : "line-clamp-2",
-                              "break-words",
-                              "[overflow-wrap:anywhere]",
+                              "break-keep",
                             ].join(" ")}
                           >
                             {r.content}
@@ -809,14 +808,14 @@ export default function AdminReviewListClient() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent
                         align="end"
-                        className="w-44"
+                        className="w-44 min-w-max"
                         onPointerDown={(e) => e.stopPropagation()}
                         onClick={(e) => e.stopPropagation()}
                       >
                         <DropdownMenuItem
                           onPointerDown={(e) => e.stopPropagation()}
                           onSelect={() => setDetail(r)}
-                          className="cursor-pointer"
+                          className="cursor-pointer whitespace-nowrap"
                         >
                           <Eye className="mr-2 h-4 w-4" />
                           <span>상세 보기</span>
@@ -824,7 +823,7 @@ export default function AdminReviewListClient() {
                         <DropdownMenuItem
                           onPointerDown={(e) => e.stopPropagation()}
                           onSelect={() => toggleVisible(r)}
-                          className="cursor-pointer"
+                          className="cursor-pointer whitespace-nowrap"
                         >
                           {r.status === "visible" ? (
                             <>
@@ -840,7 +839,7 @@ export default function AdminReviewListClient() {
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onPointerDown={(e) => e.stopPropagation()}
-                          className="text-destructive focus:text-destructive cursor-pointer"
+                          className="cursor-pointer whitespace-nowrap text-destructive focus:text-destructive"
                           onSelect={() => setPendingDeleteReviewId(r._id)}
                         >
                           <Trash2 className="mr-2 h-4 w-4" />
