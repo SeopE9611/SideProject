@@ -104,6 +104,58 @@ export const stringBrandLabel = (v?: string) => {
   return STRING_BRANDS.find((b) => b.value === key)?.label ?? v ?? "";
 };
 
+// 스트링 소재
+export const STRING_MATERIALS = [
+  { value: "polyester", label: "폴리에스터" },
+  { value: "multifilament", label: "멀티필라멘트" },
+  { value: "monofilament", label: "모노필라멘트" },
+  { value: "natural_gut", label: "천연 거트" },
+  { value: "synthetic_gut", label: "합성 거트" },
+  { value: "hybrid", label: "하이브리드" },
+] as const;
+
+export const stringMaterialLabel = (v?: string | null) => {
+  const key = String(v ?? "").trim().toLowerCase();
+  return STRING_MATERIALS.find((m) => m.value === key)?.label ?? v ?? "";
+};
+
+// 스트링 색상
+export const STRING_COLORS = [
+  { value: "black", label: "블랙" },
+  { value: "white", label: "화이트" },
+  { value: "red", label: "레드" },
+  { value: "blue", label: "블루" },
+  { value: "yellow", label: "옐로우" },
+  { value: "green", label: "그린" },
+  { value: "orange", label: "오렌지" },
+  { value: "brown", label: "브라운" },
+  { value: "gray", label: "그레이" },
+  { value: "natural", label: "내추럴" },
+  { value: "pink", label: "핑크" },
+  { value: "purple", label: "퍼플" },
+  { value: "silver", label: "실버" },
+  { value: "gold", label: "골드" },
+  { value: "transparent", label: "투명" },
+] as const;
+
+export const stringColorLabel = (v?: string | null) => {
+  const key = String(v ?? "").trim().toLowerCase();
+  return STRING_COLORS.find((c) => c.value === key)?.label ?? v ?? "";
+};
+
+// 라켓 판매 상태
+export const RACKET_STATUS_OPTIONS = [
+  { value: "available", label: "판매가능" },
+  { value: "rented", label: "대여중" },
+  { value: "sold", label: "판매완료" },
+  { value: "inactive", label: "비노출" },
+] as const;
+
+export const racketStatusLabel = (v?: string | null) => {
+  const key = String(v ?? "").trim().toLowerCase();
+  return RACKET_STATUS_OPTIONS.find((s) => s.value === key)?.label ?? v ?? "";
+};
+
 // 정규화
 export function normalizeStringPattern(p: string) {
   return String(p ?? "")

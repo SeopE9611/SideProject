@@ -39,7 +39,8 @@ import {
 } from "@/lib/badge-style";
 import { buildAdminCancelRequestView } from "@/lib/cancel-request/admin-cancel-request-view";
 import { getRefundBankLabel } from "@/lib/cancel-request/refund-account";
-import { racketBrandLabel } from "@/lib/constants";
+import { racketBrandLabel, stringColorLabel } from "@/lib/constants";
+import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import {
@@ -925,7 +926,7 @@ export default function AdminRentalDetailClient() {
                   </p>
                   <p>
                     {isVariantStockMode
-                      ? `선택한 색상과 게이지 조합 기준으로 재고가 차감되었습니다. (색상 ${effectiveStockDeduction?.colorValue ?? "-"} / 게이지 ${effectiveStockDeduction?.gaugeValue ?? "-"})`
+                      ? `선택한 색상과 게이지 조합 기준으로 재고가 차감되었습니다. (색상 ${stringColorLabel(effectiveStockDeduction?.colorValue) || "-"} / 게이지 ${formatGaugeLabel(effectiveStockDeduction?.gaugeValue) || "-"})`
                       : "기존 색상/게이지 재고 기준으로 처리된 대여입니다."}
                   </p>
                   <p>

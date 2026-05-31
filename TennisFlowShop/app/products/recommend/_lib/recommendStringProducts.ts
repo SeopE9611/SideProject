@@ -1,4 +1,6 @@
 import { getRecommendedTensionRange } from "@/app/products/recommend/_lib/tension";
+import { stringMaterialLabel } from "@/lib/constants";
+import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import {
   hasPaidMountingFee,
   isMountableStringByFee,
@@ -105,7 +107,7 @@ export function recommendStringProducts(products: RecommendableProduct[], answer
       score: scoreProduct(product, answers),
       reasons: buildReasons(product, answers),
       tensionRange: getRecommendedTensionRange(answers, product),
-      badges: [product.material, product.gauge, product.tags?.beginner ? "입문 추천" : null, product.tags?.advanced ? "상급 추천" : null]
+      badges: [stringMaterialLabel(product.material), formatGaugeLabel(product.gauge), product.tags?.beginner ? "입문 추천" : null, product.tags?.advanced ? "상급 추천" : null]
         .filter((v): v is string => Boolean(v))
         .slice(0, 3),
     }));

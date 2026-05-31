@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { badgeBaseOutlined, badgeSizeSm, getAnswerStatusBadgeSpec, getQnaCategoryBadgeSpec, imageBadgeClass } from "@/lib/badge-style";
-import { stringBrandLabel } from "@/lib/constants";
+import { stringBrandLabel, stringColorLabel, stringMaterialLabel } from "@/lib/constants";
 import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import { hasPaidMountingFee, isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
 import { ENABLE_STRING_STANDALONE_ORDER } from "@/lib/orders/string-standalone-policy";
@@ -173,7 +173,7 @@ function normalizeColorRows(product: any): ColorInventoryRow[] {
 }
 
 function getColorLabel(row: ColorInventoryRow): string {
-  return String(row.label || row.value || "").trim();
+  return stringColorLabel(String(row.label || row.value || "").trim());
 }
 
 function isColorSoldOut(row: ColorInventoryRow): boolean {
@@ -204,47 +204,6 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
   const displayBrandLabel = (value?: string) => stringBrandLabel(value);
   // ====== 사양/브랜드/색상/게이지 매핑 ======
-  const BRAND_MAP: Record<string, string> = {
-    luxilon: "럭실론",
-    tecnifibre: "테크니화이버",
-    wilson: "윌슨",
-    babolat: "바볼랏",
-    head: "헤드",
-    yonex: "요넥스",
-    solinco: "솔린코",
-    dunlop: "던롭",
-  };
-
-  const MATERIAL_MAP: Record<string, string> = {
-    polyester: "폴리에스터",
-    multifilament: "멀티필라멘트",
-    natural_gut: "천연 거트",
-    synthetic_gut: "합성 거트",
-    hybrid: "하이브리드",
-  };
-
-  const COLOR_MAP: Record<string, string> = {
-    black: "블랙",
-    white: "화이트",
-    red: "레드",
-    blue: "블루",
-    yellow: "옐로우",
-    green: "그린",
-    orange: "오렌지",
-    silver: "실버",
-    gold: "골드",
-    transparent: "투명",
-  };
-
-  const GAUGE_MAP: Record<string, string> = {
-    "15L": "1.35mm (15L)",
-    "16": "1.30mm (16)",
-    "16L": "1.28mm (16L)",
-    "17": "1.25mm (17)",
-    "17L": "1.20mm (17L)",
-    "18": "1.15mm (18)",
-  };
-
   // ====== 태그(추천) 매핑 ======
   const PLAYER_TYPE_MAP: Record<string, string> = {
     beginner: "초보자",
@@ -271,10 +230,10 @@ export default function ProductDetailClient({ product }: { product: any }) {
     const spec = product?.specifications || {};
     const origin = spec.origin ?? spec.madeIn ?? spec.제조국 ?? product?.origin ?? product?.madeIn;
     const brand = displayBrandLabel(product?.brand || spec.brand);
-    const material = MATERIAL_MAP[product?.material] ?? MATERIAL_MAP[spec.material] ?? spec.소재 ?? product?.material ?? spec.material;
+    const material = stringMaterialLabel(product?.material) || stringMaterialLabel(spec.material) || spec.소재;
     const gaugeRaw = product?.gauge ?? spec.gauge ?? spec.게이지;
-    const gauge = gaugeOptions.length > 1 ? gaugeOptions.map((v: string) => formatGaugeLabel(v)).join(" / ") : (GAUGE_MAP[gaugeRaw] ?? formatGaugeLabel(gaugeRaw));
-    const color = COLOR_MAP[product?.color] ?? COLOR_MAP[spec.color] ?? spec.색상 ?? product?.color ?? spec.color;
+    const gauge = gaugeOptions.length > 1 ? gaugeOptions.map((v: string) => formatGaugeLabel(v)).join(" / ") : formatGaugeLabel(gaugeRaw);
+    const color = stringColorLabel(product?.color) || stringColorLabel(spec.color) || spec.색상;
     const lengthRaw = product?.length ?? spec.length ?? spec.길이;
     const length = typeof lengthRaw === "string" && /^\d+(\.\d+)?$/.test(lengthRaw) ? `${lengthRaw}m` : lengthRaw;
 
@@ -302,10 +261,10 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const hCross = hybridSpec?.cross ?? {};
   const hMainBrand = displayBrandLabel(hMain.brand);
   const hCrossBrand = displayBrandLabel(hCross.brand);
-  const hMainGauge = GAUGE_MAP[hMain.gauge] ?? hMain.gauge;
-  const hCrossGauge = GAUGE_MAP[hCross.gauge] ?? hCross.gauge;
-  const hMainColor = COLOR_MAP[hMain.color] ?? hMain.color;
-  const hCrossColor = COLOR_MAP[hCross.color] ?? hCross.color;
+  const hMainGauge = formatGaugeLabel(hMain.gauge);
+  const hCrossGauge = formatGaugeLabel(hCross.gauge);
+  const hMainColor = stringColorLabel(hMain.color);
+  const hCrossColor = stringColorLabel(hCross.color);
 
   // ====== 추천 태그 추출 ======
   const selectedPlayerTypes = Object.entries(PLAYER_TYPE_MAP)

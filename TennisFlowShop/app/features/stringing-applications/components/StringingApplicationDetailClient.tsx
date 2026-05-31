@@ -32,6 +32,8 @@ import { buildAdminCancelRequestView, normalizeAdminCancelRequestStatus } from '
 import { readCancelRequestError } from '@/lib/cancel-request/refund-account-client';
 import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
 import { normalizeOrderShippingMethod } from '@/lib/order-shipping';
+import { stringColorLabel } from '@/lib/constants';
+import { formatGaugeLabel } from '@/lib/formatGaugeLabel';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 import { ArrowLeft, Calendar, CheckCircle2, Clock, CreditCard, Edit3, Mail, MapPin, Pencil, Phone, Settings, ShoppingCart, Target, Ticket, Truck, User, XCircle } from 'lucide-react';
@@ -1809,7 +1811,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                         </p>
                         <p>
                           {isVariantStockMode
-                            ? `선택한 색상과 게이지 조합 기준으로 재고가 차감되었습니다. (색상 ${effectiveStockDeduction?.colorValue ?? '-'} / 게이지 ${effectiveStockDeduction?.gaugeValue ?? '-'})`
+                            ? `선택한 색상과 게이지 조합 기준으로 재고가 차감되었습니다. (색상 ${stringColorLabel(effectiveStockDeduction?.colorValue) || '-'} / 게이지 ${formatGaugeLabel(effectiveStockDeduction?.gaugeValue) || '-'})`
                             : '기존 색상/게이지 재고 기준으로 처리된 신청서입니다.'}
                         </p>
                         <p>

@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useBackNavigationGuard } from "@/lib/hooks/useBackNavigationGuard";
 import { useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
 import { isNicePaymentsEnabled, isTossPaymentsEnabled } from "@/lib/payments/provider-flags";
+import { racketStatusLabel } from "@/lib/constants";
 import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { showErrorToast } from "@/lib/toast";
 import { useRouter } from "next/navigation";
@@ -403,7 +404,7 @@ export default function RacketPurchaseCheckoutClient({ racket }: { racket: Racke
           />
         ) : null}
 
-        {racket.status !== "available" && <div className="text-sm text-destructive">현재 판매 가능한 라켓이 아닙니다. (status: {racket.status})</div>}
+        {racket.status !== "available" && <div className="text-sm text-destructive">현재 판매 가능한 라켓이 아닙니다. (상태: {racketStatusLabel(racket.status)})</div>}
       </div>
     </div>
   );
