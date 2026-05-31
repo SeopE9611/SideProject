@@ -846,11 +846,11 @@ export default function OrderDetailClient({
     <main className="w-full">
       <SiteContainer
         variant="wide"
-        className="px-0 py-4 bp-sm:px-4 bp-sm:py-6 space-y-5 bp-sm:space-y-8 bp-md:px-6"
+        className="px-0 py-4 bp-sm:px-4 bp-sm:py-6 space-y-5 bp-sm:space-y-8 bp-md:px-6 bp-lg:px-0"
       >
-        <div className="bg-muted/30 rounded-2xl border border-border p-4 shadow-lg bp-sm:p-6 bp-md:p-8">
+        <div className="bg-muted/30 rounded-2xl border border-border p-4 shadow-lg bp-sm:p-5 bp-lg:p-8">
           {/* 헤더: 제목과 액션 버튼 */}
-          <div className="flex flex-col bp-md:flex-row bp-md:items-center bp-md:justify-between gap-4 bp-md:gap-6">
+          <div className="flex flex-col gap-4 bp-lg:flex-row bp-lg:items-center bp-lg:justify-between bp-lg:gap-6">
             {/* 제목 섹션 */}
             <div className="flex items-center space-x-4 min-w-0 flex-1">
               <div className="bg-card rounded-full p-3 shadow-md shrink-0">
@@ -869,12 +869,12 @@ export default function OrderDetailClient({
             </div>
 
             {/* 액션 버튼 섹션 */}
-            <div className="flex flex-wrap gap-2 shrink-0 bp-md:justify-end">
+            <div className="grid w-full grid-cols-1 gap-2 shrink-0 bp-sm:grid-cols-2 bp-lg:flex bp-lg:w-auto bp-lg:flex-wrap bp-lg:justify-end">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => router.push(backUrl ?? "/mypage?tab=orders")}
-                className="whitespace-nowrap bg-card/70 backdrop-blur-sm border-border hover:bg-primary/10 dark:hover:bg-primary/20"
+                className="w-full whitespace-nowrap bg-card/70 backdrop-blur-sm border-border hover:bg-primary/10 dark:hover:bg-primary/20 bp-lg:w-auto"
               >
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 <span className="bp-sm:hidden">목록</span><span className="hidden bp-sm:inline">주문 목록으로 돌아가기</span>
@@ -888,7 +888,7 @@ export default function OrderDetailClient({
                 className={cn(
                   isEditMode
                     ? ""
-                    : "bg-card/70 backdrop-blur-sm border-border hover:bg-primary/10 dark:hover:bg-primary/20",
+                    : "w-full bg-card/70 backdrop-blur-sm border-border hover:bg-primary/10 dark:hover:bg-primary/20 bp-lg:w-auto",
                 )}
               >
                 <Pencil className="mr-1 h-4 w-4" />
@@ -900,6 +900,7 @@ export default function OrderDetailClient({
                   variant="destructive"
                   size="sm"
                   onClick={() => setCancelDialogOpen(true)}
+                  className="w-full bp-sm:col-span-2 bp-lg:w-auto"
                 >
                   주문 취소 요청
                 </Button>
@@ -908,32 +909,32 @@ export default function OrderDetailClient({
           </div>
           {/* 주문 상태 및 요약 섹션 */}
           <div className="mt-5 bp-sm:mt-8">
-            <div className="grid grid-cols-1 gap-4 bp-sm:gap-6 bp-md:grid-cols-3">
-              <div className="bg-card/70 rounded-xl p-4 backdrop-blur-sm">
+            <div className="grid grid-cols-1 gap-3 bp-sm:grid-cols-2 bp-sm:gap-4 bp-lg:grid-cols-3 bp-lg:gap-6">
+              <div className="bg-card/70 rounded-xl p-3 backdrop-blur-sm bp-sm:p-4">
                 <div className="flex items-center space-x-2 mb-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium text-foreground">
                     주문일시
                   </span>
                 </div>
-                <p className="whitespace-nowrap text-lg font-semibold tabular-nums text-foreground">
+                <p className="whitespace-nowrap text-base font-semibold tabular-nums text-foreground bp-sm:text-lg">
                   {formatDate(orderDetail.date)}
                 </p>
               </div>
 
-              <div className="bg-card/70 rounded-xl p-4 backdrop-blur-sm">
+              <div className="bg-card/70 rounded-xl p-3 backdrop-blur-sm bp-sm:p-4">
                 <div className="flex items-center space-x-2 mb-2">
                   <CreditCard className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium text-foreground">
                     총 결제금액
                   </span>
                 </div>
-                <p className="whitespace-nowrap text-lg font-semibold tabular-nums text-foreground">
+                <p className="whitespace-nowrap text-base font-semibold tabular-nums text-foreground bp-sm:text-lg">
                   {formatCurrency(orderDetail.total)}
                 </p>
               </div>
 
-              <div className="bg-card/70 rounded-xl p-4 backdrop-blur-sm">
+              <div className="bg-card/70 rounded-xl p-3 backdrop-blur-sm bp-sm:p-4">
                 <div className="flex items-center space-x-2 mb-2">
                   <Truck className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium text-foreground">
@@ -1211,7 +1212,7 @@ export default function OrderDetailClient({
               )}
             </div>
 
-        <div className="grid gap-6 bp-sm:gap-8 bp-lg:grid-cols-2">
+        <div className="grid gap-4 bp-sm:gap-6 bp-lg:grid-cols-2">
           {/* 고객 정보 */}
           <Card variant="elevatedGradient">
             <CardHeader variant="sectionGradient">
@@ -1221,7 +1222,7 @@ export default function OrderDetailClient({
               </CardTitle>
             </CardHeader>
             {editingCustomer ? (
-              <CardContent className="p-4 bp-sm:p-6">
+              <CardContent className="p-4 bp-lg:p-6">
                 <CustomerEditForm
                   initialData={{
                     name: orderDetail.customer.name,
@@ -1242,9 +1243,9 @@ export default function OrderDetailClient({
                 />
               </CardContent>
             ) : (
-              <CardContent className="p-4 bp-sm:p-6">
+              <CardContent className="p-4 bp-lg:p-6">
                 <div className="space-y-4">
-                  <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
+                  <div className="flex items-start gap-3 rounded-lg bg-muted p-3">
                     <User className="h-4 w-4 text-muted-foreground" />
                     <div>
                       <p className="text-sm text-foreground/80">이름</p>
@@ -1254,17 +1255,17 @@ export default function OrderDetailClient({
                     </div>
                   </div>
 
-                  <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
+                  <div className="flex items-start gap-3 rounded-lg bg-muted p-3">
                     <Mail className="h-4 w-4 text-muted-foreground" />
-                    <div>
+                    <div className="min-w-0">
                       <p className="text-sm text-foreground/80">이메일</p>
-                      <p className="font-semibold text-foreground">
+                      <p className="break-words font-semibold text-foreground">
                         {orderDetail.customer.email ?? "이메일 없음"}
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
+                  <div className="flex items-start gap-3 rounded-lg bg-muted p-3">
                     <Phone className="h-4 w-4 text-muted-foreground" />
                     <div>
                       <p className="text-sm text-foreground/80">전화번호</p>
@@ -1274,11 +1275,11 @@ export default function OrderDetailClient({
                     </div>
                   </div>
 
-                  <div className="flex items-start space-x-3 p-3 bg-muted rounded-lg">
+                  <div className="flex items-start gap-3 rounded-lg bg-muted p-3">
                     <MapPin className="h-4 w-4 text-muted-foreground mt-1" />
-                    <div>
+                    <div className="min-w-0">
                       <p className="text-sm text-foreground/80">주소</p>
-                      <p className="font-semibold text-foreground">
+                      <p className="break-words font-semibold text-foreground">
                         {orderDetail.customer.address ?? "주소 없음"}
                       </p>
                       {orderDetail.customer.addressDetail && (
@@ -1363,9 +1364,9 @@ export default function OrderDetailClient({
                 </span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-4 bp-sm:p-6">
+            <CardContent className="p-4 bp-lg:p-6">
               <div className="space-y-4">
-                <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
+                <div className="flex items-start gap-3 rounded-lg bg-muted p-3">
                   <Truck className="h-4 w-4 text-muted-foreground" />
                   <div>
                     <p className="text-sm text-foreground/80">
@@ -1377,7 +1378,7 @@ export default function OrderDetailClient({
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
+                <div className="flex items-start gap-3 rounded-lg bg-muted p-3">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   <div>
                     <p className="text-sm text-foreground/80">
@@ -1400,7 +1401,7 @@ export default function OrderDetailClient({
                 {showDeliveryOnlyFields &&
                   orderDetail.shippingInfo.invoice?.trackingNumber && (
                     <>
-                      <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
+                      <div className="flex items-start gap-3 rounded-lg bg-muted p-3">
                         <div>
                           <p className="text-sm text-foreground/80">
                             택배사
@@ -1417,12 +1418,12 @@ export default function OrderDetailClient({
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
+                      <div className="flex items-start gap-3 rounded-lg bg-muted p-3">
                         <div>
                           <p className="text-sm text-foreground/80">
                             운송장 번호
                           </p>
-                          <p className="font-semibold text-foreground">
+                          <p className="break-words font-semibold text-foreground">
                             {orderDetail.shippingInfo.invoice.trackingNumber}
                           </p>
                         </div>
@@ -1557,9 +1558,9 @@ export default function OrderDetailClient({
                 <span>결제 정보</span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-4 bp-sm:p-6">
+            <CardContent className="p-4 bp-lg:p-6">
               <div className="space-y-4">
-                <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
+                <div className="flex items-start gap-3 rounded-lg bg-muted p-3">
                   <div>
                     <p className="text-sm text-foreground/80">결제 상태</p>
                     {(() => {
@@ -1614,7 +1615,7 @@ export default function OrderDetailClient({
                 <span>주문 항목</span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-4 bp-sm:p-6">
+            <CardContent className="p-4 bp-lg:p-6">
               <div className="space-y-4">
                 {orderDetail.items.map((item, idx) => (
                   <div
@@ -1655,7 +1656,7 @@ export default function OrderDetailClient({
                     </div>
 
                     {/* 가격 및 소계 */}
-                    <div className="shrink-0 text-right">
+                    <div className="w-full shrink-0 text-left bp-sm:w-auto bp-sm:text-right">
                       <p className="whitespace-nowrap font-semibold tabular-nums text-foreground">
                         {formatCurrency(item.price)}
                       </p>
@@ -1706,7 +1707,7 @@ export default function OrderDetailClient({
               </CardDescription>
             </CardHeader>
             {editingRequest ? (
-              <CardContent className="p-4 bp-sm:p-6">
+              <CardContent className="p-4 bp-lg:p-6">
                 <RequestEditForm
                   initialData={orderDetail.shippingInfo.deliveryRequest || ""}
                   orderId={orderId}
@@ -1719,7 +1720,7 @@ export default function OrderDetailClient({
                 />
               </CardContent>
             ) : (
-              <CardContent className="p-4 bp-sm:p-6">
+              <CardContent className="p-4 bp-lg:p-6">
                 {orderDetail.shippingInfo.deliveryRequest ? (
                   <div className="bg-muted border border-border rounded-lg p-4">
                     <p className="text-foreground whitespace-pre-line">

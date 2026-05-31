@@ -203,13 +203,13 @@ export default function OrderHistory({
 
   return (
     <Card className="md:col-span-3 rounded-xl border border-border bg-card text-card-foreground shadow-md dark:bg-card">
-      <CardHeader className="pb-3 border-b border-border/60 bg-muted/30 dark:bg-card rounded-t-xl">
-        <CardTitle>처리 이력</CardTitle>
-        <p className="shrink-0 text-sm text-muted-foreground">
+      <CardHeader className="border-b border-border/60 bg-muted/30 pb-3 dark:bg-card rounded-t-xl">
+        <CardTitle className="text-lg font-semibold bp-sm:text-xl">처리 이력</CardTitle>
+        <p className="text-xs text-muted-foreground bp-sm:shrink-0 bp-sm:text-sm">
           최신 변경이 맨 위에 표시됩니다.
         </p>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-4 bp-sm:p-6">
         {/* 로딩 중일 때 스켈레톤 5줄 */}
         {isInitialLoading || isPageTransitionLoading ? (
           Array.from({ length: LIMIT }).map((_, i) => (
@@ -251,16 +251,16 @@ export default function OrderHistory({
               isVisitPickup,
             );
             return (
-              <div key={idx} className="flex space-x-4 py-3">
+              <div key={idx} className="flex gap-3 py-3 bp-sm:gap-4">
                 <div
-                  className={`h-10 w-10 flex items-center justify-center rounded-full border ${wrapperClasses}`}
+                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border bp-sm:h-10 bp-sm:w-10 ${wrapperClasses}`}
                 >
-                  <Icon className={`h-6 w-6 ${iconClasses}`} />
+                  <Icon className={`h-5 w-5 bp-sm:h-6 bp-sm:w-6 ${iconClasses}`} />
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-col gap-1 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between bp-sm:gap-3">
-                    <span className="font-semibold leading-snug">{displayStatus}</span>
-                    <span className="shrink-0 text-sm text-muted-foreground">
+                    <span className="break-keep font-semibold leading-snug">{displayStatus}</span>
+                    <span className="text-xs text-muted-foreground bp-sm:shrink-0 bp-sm:text-sm">
                       {formatHistoryDate(item.date)}
                     </span>
                   </div>
