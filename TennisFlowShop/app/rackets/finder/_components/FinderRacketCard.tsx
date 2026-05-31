@@ -78,13 +78,21 @@ function fmt(n: number | null | undefined, suffix?: string) {
   return `${n}${suffix ?? ""}`;
 }
 
-function SpecItem({ label, value }: { label: string; value: string }) {
+function SpecItem({
+  label,
+  value,
+  className,
+}: {
+  label: string;
+  value: string;
+  className?: string;
+}) {
   return (
-    <div className="min-w-0 space-y-0.5">
-      <span className="block whitespace-nowrap text-xs uppercase tracking-wide text-foreground/75">
+    <div className={cn("min-w-0 space-y-0.5", className)}>
+      <span className="block whitespace-nowrap text-[10px] uppercase tracking-wide text-foreground/70 bp-sm:text-xs">
         {label}
       </span>
-      <span className="block truncate whitespace-nowrap text-sm font-semibold leading-snug tabular-nums text-foreground">
+      <span className="block break-keep text-sm font-semibold leading-snug tabular-nums text-foreground">
         {value}
       </span>
     </div>
@@ -139,15 +147,15 @@ export default function FinderRacketCard({ racket }: { racket: FinderRacket }) {
   return (
     <article className="group relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md">
       <div className="p-4 bp-sm:p-5">
-        <div className="flex flex-col bp-sm:flex-row gap-4">
+        <div className="flex flex-col bp-md:flex-row gap-4">
           {/* 이미지 영역 */}
-          <div className="relative h-32 w-full bp-sm:h-36 bp-sm:w-36 shrink-0 overflow-hidden rounded-xl bg-muted/50 dark:bg-muted/30">
+          <div className="relative aspect-[4/3] w-full shrink-0 overflow-hidden rounded-xl bg-muted/60 dark:bg-muted/30 bp-md:h-36 bp-md:w-36 bp-md:aspect-auto">
             {img ? (
               <Image
                 src={img || "/placeholder.svg"}
                 alt={`${brandText} ${racket.model}`}
                 fill
-                className="object-cover transition-transform duration-300 group-hover:scale-105"
+                className="object-contain p-2 transition-transform duration-300 group-hover:scale-105"
                 unoptimized
               />
             ) : (
@@ -195,7 +203,7 @@ export default function FinderRacketCard({ racket }: { racket: FinderRacket }) {
             </div>
 
             {/* 스펙 그리드 */}
-            <div className="mb-4 grid grid-cols-2 gap-x-4 gap-y-3 rounded-xl border border-border/60 bg-secondary/40 px-3 py-3 bp-md:[grid-template-columns:repeat(auto-fit,minmax(8.5rem,1fr))] bp-xl:grid-cols-4 bp-sm:px-4 bp-sm:py-3.5">
+            <div className="mb-4 grid grid-cols-2 gap-x-4 gap-y-3 rounded-xl border border-border/60 bg-secondary/40 px-3 py-3 bp-lg:grid-cols-4 bp-sm:px-4 bp-sm:py-3.5">
               <SpecItem label="Head" value={fmt(spec.headSize, "")} />
               <SpecItem label="Weight" value={fmt(spec.weight, "g")} />
               <SpecItem label="Balance" value={fmt(spec.balance, "mm")} />
@@ -208,6 +216,7 @@ export default function FinderRacketCard({ racket }: { racket: FinderRacket }) {
                 value={
                   spec.pattern ? stringPatternLabel(String(spec.pattern)) : "-"
                 }
+                className="col-span-2 bp-lg:col-span-1"
               />
               <SpecItem
                 label="Price"
@@ -218,7 +227,7 @@ export default function FinderRacketCard({ racket }: { racket: FinderRacket }) {
             </div>
 
             {/* 액션 버튼 */}
-            <div className="mt-auto flex flex-wrap items-center gap-2.5 bp-sm:gap-2">
+            <div className="mt-auto grid grid-cols-2 gap-2 bp-lg:flex bp-lg:flex-wrap bp-lg:items-center">
               <RacketSpecQuickViewDialog
                 racket={compareItem}
                 trigger={
@@ -226,7 +235,7 @@ export default function FinderRacketCard({ racket }: { racket: FinderRacket }) {
                     type="button"
                     variant="outline"
                     size="sm"
-                    className="min-w-[7.5rem] flex-1 whitespace-nowrap rounded-lg bg-transparent bp-sm:flex-none"
+                    className="h-10 w-full min-w-0 whitespace-nowrap rounded-lg bg-transparent px-2 text-xs bp-sm:text-sm bp-lg:h-9 bp-lg:min-w-[7.5rem] bp-lg:w-auto bp-lg:flex-none"
                   >
                     <Info className="mr-1.5 h-3.5 w-3.5" />
                     상세 스펙
@@ -239,7 +248,7 @@ export default function FinderRacketCard({ racket }: { racket: FinderRacket }) {
                 size="sm"
                 variant={selected ? "default" : "outline"}
                 className={cn(
-                  "min-w-[7.5rem] flex-1 whitespace-nowrap rounded-lg bp-sm:flex-none",
+                  "h-10 w-full min-w-0 whitespace-nowrap rounded-lg px-2 text-xs bp-sm:text-sm bp-lg:h-9 bp-lg:min-w-[7.5rem] bp-lg:w-auto bp-lg:flex-none",
                   selected && "bg-secondary text-foreground",
                 )}
                 onClick={() => {
@@ -264,7 +273,7 @@ export default function FinderRacketCard({ racket }: { racket: FinderRacket }) {
                 {selected ? "비교 선택됨" : "비교하기"}
               </Button>
 
-              <Button asChild size="sm" className="min-w-[7.5rem] flex-1 whitespace-nowrap rounded-lg bp-sm:flex-none">
+              <Button asChild size="sm" className="h-10 w-full min-w-0 whitespace-nowrap rounded-lg px-2 text-xs bp-sm:text-sm bp-lg:h-9 bp-lg:min-w-[7.5rem] bp-lg:w-auto bp-lg:flex-none">
                 <Link href={`/rackets/${racket.id}/select-string`}>
                   <ShoppingCart className="mr-1.5 h-3.5 w-3.5" />
                   구매하기
@@ -280,7 +289,7 @@ export default function FinderRacketCard({ racket }: { racket: FinderRacket }) {
                   size="sm"
                   preventCardNav={true}
                   full={false}
-                  className="min-w-[7.5rem] flex-1 whitespace-nowrap rounded-lg bp-sm:flex-none"
+                  className="h-10 w-full min-w-0 whitespace-nowrap rounded-lg px-2 text-xs bp-sm:text-sm bp-lg:h-9 bp-lg:min-w-[7.5rem] bp-lg:w-auto bp-lg:flex-none"
                 />
               ) : (
                 <Button
@@ -288,16 +297,10 @@ export default function FinderRacketCard({ racket }: { racket: FinderRacket }) {
                   variant="secondary"
                   disabled
                   title={rentalDisabledReason ?? undefined}
-                  className="min-w-[7.5rem] flex-1 whitespace-nowrap rounded-lg opacity-50 bp-sm:flex-none"
+                  className="h-10 w-full min-w-0 whitespace-nowrap rounded-lg px-2 text-xs opacity-50 bp-sm:text-sm bp-lg:h-9 bp-lg:min-w-[7.5rem] bp-lg:w-auto bp-lg:flex-none"
                 >
                   대여 불가
                 </Button>
-              )}
-
-              {rentalDisabledReason && (
-                <span className="text-xs text-foreground/75">
-                  ({rentalDisabledReason})
-                </span>
               )}
             </div>
           </div>
