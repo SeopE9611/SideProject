@@ -194,7 +194,7 @@ export default async function PricingPage() {
                         </div>
                         <div className="space-y-2">
                           <p className="text-xs font-medium text-muted-foreground">대표 브랜드</p>
-                          <div className="flex flex-nowrap gap-2 overflow-x-auto pb-1">
+                          <div className="flex max-w-full flex-nowrap gap-2 overflow-x-auto pb-1">
                             {category.brands.length ? (
                               category.brands.map((brand) => (
                                 <Badge key={brand} variant="secondary" className="max-w-[8rem] shrink-0 truncate whitespace-nowrap">
@@ -208,7 +208,7 @@ export default async function PricingPage() {
                         </div>
                         <div className="space-y-2">
                           <p className="text-xs font-medium text-muted-foreground">대표 상품</p>
-                          <div className="flex flex-nowrap gap-2 overflow-x-auto pb-1">
+                          <div className="flex max-w-full flex-nowrap gap-2 overflow-x-auto pb-1">
                             {category.productNames.length ? (
                               category.productNames.map((name) => (
                                 <Badge key={name} variant="outline" className="max-w-[14rem] shrink-0 truncate whitespace-nowrap text-left">
@@ -260,7 +260,7 @@ export default async function PricingPage() {
                 <div className="grid gap-4 md:grid-cols-3">
                   <div className="space-y-2">
                     <p className="text-xs font-medium">대표 브랜드</p>
-                    <div className="flex flex-nowrap gap-2 overflow-x-auto pb-1">
+                    <div className="flex max-w-full flex-nowrap gap-2 overflow-x-auto pb-1">
                       {otherSummary.brands.length ? (
                         otherSummary.brands.map((brand) => (
                           <Badge key={brand} variant="secondary" className="max-w-[8rem] shrink-0 truncate whitespace-nowrap">
@@ -274,7 +274,7 @@ export default async function PricingPage() {
                   </div>
                   <div className="space-y-2">
                     <p className="text-xs font-medium">대표 상품</p>
-                    <div className="flex flex-nowrap gap-2 overflow-x-auto pb-1">
+                    <div className="flex max-w-full flex-nowrap gap-2 overflow-x-auto pb-1">
                       {otherSummary.productNames.length ? (
                         otherSummary.productNames.map((name) => (
                           <Badge key={name} variant="outline" className="max-w-[14rem] shrink-0 truncate whitespace-nowrap text-left">
@@ -288,7 +288,7 @@ export default async function PricingPage() {
                   </div>
                   <div className="space-y-2">
                     <p className="text-xs font-medium">등록 소재값</p>
-                    <div className="flex flex-nowrap gap-2 overflow-x-auto pb-1">
+                    <div className="flex max-w-full flex-nowrap gap-2 overflow-x-auto pb-1">
                       {otherSummary.materialLabels.length ? (
                         otherSummary.materialLabels.map((material) => (
                           <Badge key={material} variant="secondary">
@@ -337,7 +337,7 @@ export default async function PricingPage() {
               </div>
               <div className="space-y-2">
                 <p className="text-xs font-medium text-muted-foreground">대표 상품</p>
-                <div className="flex flex-nowrap gap-2 overflow-x-auto pb-1">
+                <div className="flex max-w-full flex-nowrap gap-2 overflow-x-auto pb-1">
                   {hybridGuide.representativeProducts.length ? (
                     hybridGuide.representativeProducts.map((name) => (
                       <Badge key={name} variant="outline" className="max-w-[14rem] shrink-0 truncate whitespace-nowrap text-left">

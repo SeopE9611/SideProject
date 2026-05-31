@@ -355,7 +355,7 @@ export default function AcademyApplicationsClient() {
                         <div className="text-muted-foreground">{createdAt.time}</div>
                       </TableCell>
                       <TableCell className="min-w-0 px-3 py-3">
-                        <div className="max-w-[180px] truncate font-medium text-foreground" title={item.applicantName || "-"}>
+                        <div className="line-clamp-2 max-w-[180px] break-keep font-medium text-foreground" title={item.applicantName || "-"}>
                           {item.applicantName || "-"}
                         </div>
                         <div className="max-w-[180px] truncate text-xs text-muted-foreground" title={item.email || "이메일 미입력"}>
@@ -375,10 +375,10 @@ export default function AcademyApplicationsClient() {
                         </div>
                       </TableCell>
                       <TableCell className="whitespace-nowrap px-3 py-3 text-sm">
-                        <div className="max-w-[160px] truncate">
+                        <div className="max-w-[160px] truncate" title={item.preferredDays.length ? item.preferredDays.join(", ") : "-"}>
                           {item.preferredDays.length ? item.preferredDays.join(", ") : "-"}
                         </div>
-                        <div className="max-w-[160px] truncate text-xs text-muted-foreground">
+                        <div className="max-w-[160px] truncate text-xs text-muted-foreground" title={item.preferredTimeText || "희망 시간 미입력"}>
                           {item.preferredTimeText || "희망 시간 미입력"}
                         </div>
                       </TableCell>

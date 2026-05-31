@@ -803,7 +803,7 @@ export default function TensionGuidePage() {
                             <CardTitle className="text-base bp-sm:text-lg bp-md:text-xl mb-1 text-card-foreground">
                               {player.type}
                             </CardTitle>
-                            <div className="flex flex-nowrap gap-2 overflow-x-auto pb-1">
+                            <div className="flex max-w-full flex-nowrap gap-2 overflow-x-auto pb-1">
                               <Badge
                                 variant="secondary"
                                 className="text-xs bp-md:text-sm px-2 bp-md:px-3 py-0.5 bp-md:py-1"
@@ -937,7 +937,7 @@ export default function TensionGuidePage() {
                       {string.characteristics}
                     </p>
 
-                    <div className="flex flex-nowrap gap-2 overflow-x-auto pb-1">
+                    <div className="flex max-w-full flex-nowrap gap-2 overflow-x-auto pb-1">
                       <Badge variant="secondary" className="max-w-[9rem] shrink-0 truncate whitespace-nowrap text-xs">
                         여자 {string.ranges.female.min}~
                         {string.ranges.female.max}LB

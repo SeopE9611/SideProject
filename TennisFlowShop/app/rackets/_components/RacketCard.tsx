@@ -238,10 +238,10 @@ const RacketCard = React.memo(
             <div className="flex flex-1 flex-col p-3 bp-sm:p-6 bp-md:p-7">
               <div className="flex flex-col bp-lg:flex-row bp-lg:justify-between bp-lg:items-start mb-3 bp-sm:mb-4 gap-3 bp-sm:gap-4">
                 <div className="min-w-0 flex-1">
-                  <div className="mb-1.5 max-w-full truncate text-sm font-medium text-muted-foreground bp-sm:text-base">
+                  <div className="mb-1.5 max-w-full truncate text-sm font-medium text-muted-foreground bp-sm:text-base" title={brandLabel}>
                     {brandLabel}
                   </div>
-                  <h3 className="mb-2 min-h-[3.25rem] line-clamp-2 break-keep text-lg font-bold leading-snug bp-sm:mb-3 bp-sm:text-xl bp-md:min-h-[3.75rem] bp-md:text-2xl">
+                  <h3 className="mb-2 min-h-[3.25rem] line-clamp-2 break-keep text-lg font-bold leading-snug bp-sm:mb-3 bp-sm:text-xl bp-md:min-h-[3.75rem] bp-md:text-2xl" title={racket.model}>
                     {racket.model}
                   </h3>
                   <div className="mt-2 flex flex-wrap items-center gap-1.5 bp-sm:gap-2">
@@ -269,7 +269,14 @@ const RacketCard = React.memo(
                           onClick={(e) => e.stopPropagation()}
                         >
                           <ShoppingCart className="w-4 h-4 bp-sm:w-5 bp-sm:h-5 mr-1.5" />
-                          {isApplyFlow ? "스트링 선택 후 구매" : "구매하기"}
+                          {isApplyFlow ? (
+                            <>
+                              <span className="bp-sm:hidden">스트링 선택</span>
+                              <span className="hidden bp-sm:inline">스트링 선택 후 구매</span>
+                            </>
+                          ) : (
+                            "구매하기"
+                          )}
                         </Link>
                       </Button>
                     ) : (
@@ -385,10 +392,10 @@ const RacketCard = React.memo(
           </div>
         </div>
         <CardContent className="flex flex-1 flex-col p-3 bp-sm:p-6">
-          <div className="text-xs bp-sm:text-base text-muted-foreground mb-2 font-medium">
+          <div className="mb-2 max-w-full truncate text-xs font-medium text-muted-foreground bp-sm:text-base" title={brandLabel}>
             {brandLabel}
           </div>
-          <CardTitle className="mb-3 min-h-[3rem] text-base line-clamp-2 transition-colors group-hover:text-primary dark:group-hover:text-primary bp-sm:min-h-[3.5rem] bp-sm:text-lg bp-md:text-xl">
+          <CardTitle className="mb-3 min-h-[3rem] line-clamp-2 break-keep text-base leading-snug transition-colors group-hover:text-primary dark:group-hover:text-primary bp-sm:min-h-[3.5rem] bp-sm:text-lg bp-md:text-xl" title={racket.model}>
             {racket.model}
           </CardTitle>
 
@@ -423,7 +430,14 @@ const RacketCard = React.memo(
                     className="w-full justify-center text-center"
                   >
                     <ShoppingCart className="w-4 h-4 mr-1.5" />
-                    {isApplyFlow ? "스트링 선택 후 구매" : "구매하기"}
+                    {isApplyFlow ? (
+                      <>
+                        <span className="bp-sm:hidden">스트링 선택</span>
+                        <span className="hidden bp-sm:inline">스트링 선택 후 구매</span>
+                      </>
+                    ) : (
+                      "구매하기"
+                    )}
                   </Link>
                 </Button>
               ) : (

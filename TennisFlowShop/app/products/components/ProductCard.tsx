@@ -288,10 +288,10 @@ const ProductCard = React.memo(
             <div className="flex-1 p-4 bp-md:p-5">
               <div className="flex flex-col gap-3 mb-3">
                 <div className="flex-1">
-                  <div className="text-sm text-foreground/80 mb-1 font-medium">
+                  <div className="text-sm text-foreground/80 mb-1 font-medium" title={brandLabel}>
                     {brandLabel}
                   </div>
-                  <h3 className="text-base sm:text-lg md:text-xl font-bold mb-2 text-foreground line-clamp-2">
+                  <h3 className="text-base sm:text-lg md:text-xl font-bold mb-2 text-foreground line-clamp-2 break-keep" title={product.name}>
                     {product.name}
                   </h3>
                   <div className="flex items-center gap-2 mb-2">
@@ -348,7 +348,14 @@ const ProductCard = React.memo(
                 >
                   <Link href={detailHref}>
                     <Eye className="w-3 h-3 bp-sm:w-4 bp-sm:h-4 mr-1.5" />
-                    {isApplyFlow ? "이 스트링으로 교체 신청" : "상세 보기"}
+                    {isApplyFlow ? (
+                      <>
+                        <span className="sm:hidden">교체 신청</span>
+                        <span className="hidden sm:inline">이 스트링으로 교체 신청</span>
+                      </>
+                    ) : (
+                      "상세 보기"
+                    )}
                   </Link>
                 </Button>
 
@@ -438,10 +445,10 @@ const ProductCard = React.memo(
             className="block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             <div className="min-h-[48px]">
-            <div className="mb-1.5 max-w-full truncate text-xs font-medium text-muted-foreground">
+            <div className="mb-1.5 max-w-full truncate text-xs font-medium text-muted-foreground" title={brandLabel}>
               {brandLabel}
             </div>
-            <CardTitle className="mb-2 min-h-[2.5rem] line-clamp-2 break-keep text-sm font-semibold leading-snug text-foreground transition-colors group-hover:text-foreground sm:min-h-[3rem] sm:text-base">
+            <CardTitle className="mb-2 min-h-[2.5rem] line-clamp-2 break-keep text-sm font-semibold leading-snug text-foreground transition-colors group-hover:text-foreground sm:min-h-[3rem] sm:text-base" title={product.name}>
               {product.name}
             </CardTitle>
             </div>
@@ -500,7 +507,14 @@ const ProductCard = React.memo(
             <Button asChild type="button" variant="outline" className="h-10 whitespace-nowrap text-sm">
               <Link href={detailHref}>
                 <Eye className="h-4 w-4 mr-1.5" />
-                {isApplyFlow ? "이 스트링으로 교체 신청" : "상세 보기"}
+                {isApplyFlow ? (
+                  <>
+                    <span className="sm:hidden">교체 신청</span>
+                    <span className="hidden sm:inline">이 스트링으로 교체 신청</span>
+                  </>
+                ) : (
+                  "상세 보기"
+                )}
               </Link>
             </Button>
             <div className="flex justify-end">
