@@ -8,10 +8,12 @@ import {
 } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+import { HelpCircle, Search, X } from "lucide-react";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef, useEffect } from "react";
 
 type FaqCategory =
   | "전체"
@@ -126,6 +128,8 @@ const FAQ_ITEMS: FaqItem[] = [
 export default function SupportFaqSearch() {
   const [selectedCategory, setSelectedCategory] = useState<FaqCategory>("전체");
   const [searchQuery, setSearchQuery] = useState("");
+  const [isFocused, setIsFocused] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const filteredFaqs = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -150,23 +154,61 @@ export default function SupportFaqSearch() {
     : filteredFaqs;
   const hiddenFaqCount = filteredFaqs.length - visibleFaqs.length;
 
+  const clearSearch = () => {
+    setSearchQuery("");
+    inputRef.current?.focus();
+  };
+
   return (
-    <Card className="border border-border bg-card shadow-sm">
-      <CardHeader className="space-y-3 p-4 sm:p-5 md:p-6">
-        <CardTitle className="text-xl sm:text-2xl font-semibold">
-          자주 묻는 질문
-        </CardTitle>
-        <p className="text-sm text-muted-foreground">
-          주문, 결제, 배송, 교체서비스 관련 자주 묻는 내용을 먼저 확인해보세요.
-        </p>
-        <Input
-          type="text"
-          value={searchQuery}
-          onChange={(event) => setSearchQuery(event.target.value)}
-          placeholder="궁금한 내용을 검색해보세요"
-          aria-label="자주 묻는 질문 검색"
-        />
-        <div className="flex flex-wrap gap-2">
+    <Card className="border-border overflow-hidden">
+      <CardHeader className="border-b border-border bg-muted/30 p-5 md:p-6">
+        <div className="flex items-start gap-4">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-background">
+            <HelpCircle className="h-5 w-5 text-muted-foreground" />
+          </div>
+          <div className="flex-1">
+            <h2 className="text-xl font-semibold text-foreground">
+              자주 묻는 질문
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              자주 묻는 내용을 먼저 확인해보세요.
+            </p>
+          </div>
+        </div>
+
+        {/* Search Input */}
+        <div className="mt-5">
+          <div className={cn(
+            "relative transition-all duration-200",
+            isFocused && "ring-2 ring-ring ring-offset-2 ring-offset-background rounded-lg"
+          )}>
+            <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              ref={inputRef}
+              type="text"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
+              placeholder="검색어를 입력하세요"
+              className="h-12 border-border bg-background pl-11 pr-10 text-base focus-visible:ring-0 focus-visible:ring-offset-0"
+              aria-label="자주 묻는 질문 검색"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={clearSearch}
+                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                aria-label="검색어 지우기"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Category Filter */}
+        <div className="mt-4 flex flex-wrap gap-2">
           {FAQ_CATEGORIES.map((category) => {
             const isActive = selectedCategory === category;
             return (
@@ -174,83 +216,87 @@ export default function SupportFaqSearch() {
                 key={category}
                 type="button"
                 onClick={() => setSelectedCategory(category)}
-                className="rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                className={cn(
+                  "rounded-full px-4 py-2 text-sm font-medium transition-all",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                  isActive
+                    ? "bg-foreground text-background"
+                    : "bg-background text-muted-foreground hover:bg-muted hover:text-foreground"
+                )}
                 aria-pressed={isActive}
               >
-                <Badge
-                  variant={isActive ? "brand" : "outline"}
-                  className="px-3 py-1 text-xs sm:text-sm"
-                >
-                  {category}
-                </Badge>
+                {category}
               </button>
             );
           })}
         </div>
       </CardHeader>
 
-      <CardContent className="p-4 pt-0 sm:p-5 sm:pt-0 md:p-6 md:pt-0 space-y-4">
+      <CardContent className="p-5 md:p-6">
         {filteredFaqs.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-border bg-muted/20 px-4 py-6 text-center">
-            <p className="text-sm font-medium text-foreground">
-              검색 결과가 없습니다.
+          <div className="py-12 text-center">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+              <Search className="h-6 w-6 text-muted-foreground" />
+            </div>
+            <p className="text-base font-medium text-foreground">
+              검색 결과가 없습니다
             </p>
             <p className="mt-1 text-sm text-muted-foreground">
               다른 검색어를 입력하거나 Q&A 문의로 남겨주세요.
             </p>
+            <Button asChild className="mt-4" size="sm">
+              <Link href="/board/qna/write">문의하기</Link>
+            </Button>
           </div>
         ) : (
-          <>
-            <Accordion
-              type="single"
-              className="rounded-lg border border-border px-3 sm:px-4"
-            >
+          <div className="space-y-4">
+            <Accordion type="single" collapsible className="space-y-2">
               {visibleFaqs.map((faq) => (
-                <AccordionItem key={faq.id} value={faq.id}>
+                <AccordionItem
+                  key={faq.id}
+                  value={faq.id}
+                  className="rounded-lg border border-border bg-card px-4 data-[state=open]:bg-muted/30"
+                >
                   <AccordionTrigger
                     value={faq.id}
-                    className="gap-3 py-3.5 sm:py-4"
+                    className="gap-3 py-4 hover:no-underline [&[data-state=open]>svg]:rotate-180"
                   >
                     <span className="flex min-w-0 flex-col items-start gap-2 text-left">
-                      <Badge variant="outline" className="px-2 py-0.5 text-xs">
+                      <Badge 
+                        variant="secondary" 
+                        className="px-2 py-0.5 text-xs font-normal"
+                      >
                         {faq.category}
                       </Badge>
-                      <span className="text-sm font-medium leading-relaxed sm:text-base sm:leading-snug">
-                        Q. {faq.question}
+                      <span className="text-sm font-medium leading-relaxed text-foreground sm:text-base">
+                        {faq.question}
                       </span>
                     </span>
                   </AccordionTrigger>
                   <AccordionContent
                     value={faq.id}
-                    className="pb-4 text-sm text-muted-foreground leading-relaxed"
+                    className="pb-4 text-sm leading-relaxed text-muted-foreground"
                   >
-                    A. {faq.answer}
+                    {faq.answer}
                   </AccordionContent>
                 </AccordionItem>
               ))}
             </Accordion>
-            {hiddenFaqCount > 0 && (
-              <div className="rounded-lg border border-dashed border-border bg-muted/20 px-4 py-3 text-sm text-muted-foreground">
-                자주 찾는 도움말 {visibleFaqs.length}개를 먼저 보여드려요. 더
-                많은 도움말은 검색하거나 카테고리를 선택해 확인해 주세요.
-              </div>
-            )}
-          </>
-        )}
 
-        <div className="rounded-lg border border-border bg-muted/20 px-4 py-4">
-          <p className="text-sm text-foreground">
-            원하는 답변을 찾지 못했다면 Q&A 문의로 남겨주세요.
-          </p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <Button asChild size="sm">
-              <Link href="/board/qna/write">문의하기</Link>
-            </Button>
-            <Button asChild size="sm" variant="outline">
-              <Link href="/board/qna">전체 문의 보기</Link>
-            </Button>
+            {hiddenFaqCount > 0 && (
+              <p className="py-2 text-center text-sm text-muted-foreground">
+                {visibleFaqs.length}개의 질문을 표시 중입니다. 더 많은 질문은 검색하거나 카테고리를 선택해 확인하세요.
+              </p>
+            )}
+
+            <div className="flex items-center justify-center gap-3 pt-4 border-t border-border">
+              <span className="text-sm text-muted-foreground">원하는 답변을 찾지 못하셨나요?</span>
+              <Button asChild size="sm" variant="outline">
+                <Link href="/board/qna/write">Q&A 문의하기</Link>
+              </Button>
+            </div>
           </div>
-        </div>
+        )}
       </CardContent>
     </Card>
   );

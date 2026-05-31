@@ -8,9 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { badgeBaseOutlined, badgeSizeSm, getAnswerStatusBadgeSpec, getNoticeCategoryBadgeSpec, getQnaCategoryBadgeSpec } from "@/lib/badge-style";
+import { cn } from "@/lib/utils";
 import type { LucideIcon } from "lucide-react";
-import { Bell, Eye, Gift, Headset, ImageIcon, Lock, MessageSquare, PackageSearch, Paperclip, Pin, ShoppingBag } from "lucide-react";
+import { ArrowRight, Bell, ChevronRight, Eye, Gift, Headset, ImageIcon, Lock, MessageSquare, PackageSearch, Paperclip, Pin, Search, ShoppingBag, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import useSWR from "swr";
@@ -66,7 +68,6 @@ async function fetcherAllow401<T>(url: string): Promise<T | null> {
   const res = await fetch(url, { credentials: "include" });
   const data = (await res.json().catch(() => null)) as any;
 
-  // 비로그인(401)은 '에러'가 아니라 '로그인 안 됨' 상태로 취급
   if (res.status === 401) return null;
 
   if (!res.ok) {
@@ -85,111 +86,112 @@ const fmt = (v: string | Date) =>
     })
     .replace(/\.\s/g, ".")
     .replace(/\.$/, "");
-const supportCardHeaderClass = "flex-row items-center justify-between gap-2 space-y-0 bg-muted/30 border-b p-3 sm:p-4";
-const supportCardHeaderTitleClass = "flex min-w-0 items-center gap-2";
-const supportCardHeaderActionClass = "flex shrink-0 items-center gap-1.5";
-const supportMobileTitleClampClass = "min-w-0 flex-1 line-clamp-2 text-sm font-semibold leading-snug sm:line-clamp-1 sm:text-base";
-const supportMobileMetaWrapClass = "flex flex-wrap items-center gap-x-3.5 gap-y-1 text-xs text-muted-foreground";
-const supportMobileActionBadgeWrapClass = "shrink-0 self-start";
-const supportQnaInlineTitleClass = "min-w-0 flex-1 line-clamp-2 text-sm font-semibold leading-snug sm:line-clamp-1 sm:text-base";
 
-// ---------------------- 문의 진입 카드 ----------------------
+// ---------------------- 퀵 액션 카드 ----------------------
 
-type SupportEntryAction = {
-  href: string;
-  label: string;
-  variant?: "default" | "outline";
-};
-
-type SupportEntryCardProps = {
+type QuickActionProps = {
   icon: LucideIcon;
   title: string;
   description: string;
-  actions: SupportEntryAction[];
+  href: string;
+  variant?: "default" | "primary";
 };
 
-const supportEntryCards: SupportEntryCardProps[] = [
+const quickActions: QuickActionProps[] = [
   {
     icon: MessageSquare,
-    title: "주문·배송·교체서비스 문의",
-    description: "상품 주문, 배송, 교체서비스 진행 상태와 상품 문의는 Q&A를 이용해주세요. 운영자가 확인 후 답변합니다.",
-    actions: [{ href: "/board/qna", label: "Q&A 문의하기", variant: "default" }],
+    title: "Q&A 문의하기",
+    description: "주문, 배송, 서비스 문의",
+    href: "/board/qna/write",
+    variant: "primary",
   },
   {
     icon: PackageSearch,
     title: "비회원 주문 조회",
-    description: "회원가입 없이 주문한 내역을 이름, 연락처, 이메일로 확인합니다.",
-    actions: [{ href: "/order-lookup", label: "비회원 주문 조회", variant: "outline" }],
+    description: "주문 내역 확인",
+    href: "/order-lookup",
   },
   {
     icon: Headset,
-    title: "아카데미 레슨 문의",
-    description: "레슨 유형, 일정, 수강료, 신청 상태가 궁금하다면 아카데미 페이지를 확인하거나 문의를 남겨주세요.",
-    actions: [
-      { href: "/academy", label: "아카데미 보기", variant: "outline" },
-      { href: "/board/qna/write?category=academy", label: "아카데미 문의하기", variant: "default" },
-    ],
-  },
-  {
-    icon: Bell,
-    title: "공지사항",
-    description: "운영 안내, 배송 일정, 서비스 변경 사항을 확인합니다.",
-    actions: [{ href: "/board/notice", label: "공지사항 보기", variant: "outline" }],
-  },
-  {
-    icon: Gift,
-    title: "이벤트",
-    description: "진행 중인 이벤트와 혜택을 확인합니다.",
-    actions: [{ href: "/board/event", label: "이벤트 보기", variant: "outline" }],
+    title: "아카데미 문의",
+    description: "레슨 일정 및 수강료",
+    href: "/board/qna/write?category=academy",
   },
   {
     icon: ShoppingBag,
-    title: "중고거래/개인 연락",
-    description: "중고거래 관련 연락은 쪽지 또는 중고거래 게시판을 이용합니다. 쪽지는 사용자 간 연락이 필요할 때 활용해주세요.",
-    actions: [
-      { href: "/board/market", label: "중고거래 보기", variant: "outline" },
-      { href: "/messages", label: "쪽지함 보기", variant: "outline" },
-    ],
+    title: "중고거래",
+    description: "중고 장비 거래",
+    href: "/board/market",
   },
 ];
 
-function SupportEntryCard({ icon: Icon, title, description, actions }: SupportEntryCardProps) {
+function QuickActionCard({ icon: Icon, title, description, href, variant = "default" }: QuickActionProps) {
   return (
-    <Card className="flex h-full flex-col border border-border bg-card shadow-sm">
-      <CardHeader className="space-y-3 p-4 sm:p-5">
-        <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-muted/30">
-            <Icon className="h-5 w-5 text-foreground" aria-hidden="true" />
-          </div>
-          <div className="min-w-0 space-y-1">
-            <CardTitle className="break-keep text-base font-semibold leading-tight text-foreground sm:text-lg">{title}</CardTitle>
-            <p className="break-keep text-sm leading-relaxed text-muted-foreground">{description}</p>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="mt-auto flex flex-wrap gap-2.5 px-4 pb-4 pt-0 sm:px-5 sm:pb-5">
-        {actions.map((action) => (
-          <Button key={action.href} asChild size="sm" variant={action.variant ?? "outline"} className="min-h-10 whitespace-nowrap">
-            <Link href={action.href}>{action.label}</Link>
-          </Button>
-        ))}
-      </CardContent>
-    </Card>
+    <Link
+      href={href}
+      className={cn(
+        "group relative flex flex-col gap-3 rounded-xl border p-5 transition-all duration-200",
+        "hover:shadow-md hover:-translate-y-0.5",
+        variant === "primary" 
+          ? "border-primary/20 bg-primary/5 hover:border-primary/30 hover:bg-primary/10" 
+          : "border-border bg-card hover:border-border/80"
+      )}
+    >
+      <div className={cn(
+        "flex h-10 w-10 items-center justify-center rounded-lg transition-colors",
+        variant === "primary" 
+          ? "bg-primary text-primary-foreground" 
+          : "bg-muted text-muted-foreground group-hover:bg-muted/80"
+      )}>
+        <Icon className="h-5 w-5" />
+      </div>
+      <div className="space-y-1">
+        <h3 className="font-semibold text-foreground group-hover:text-foreground/90">{title}</h3>
+        <p className="text-sm text-muted-foreground">{description}</p>
+      </div>
+      <ChevronRight className="absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground/50 transition-transform group-hover:translate-x-1" />
+    </Link>
   );
 }
 
-function FiveLineSkeleton() {
+// ---------------------- 안내 링크 ----------------------
+
+type InfoLinkProps = {
+  icon: LucideIcon;
+  title: string;
+  href: string;
+};
+
+const infoLinks: InfoLinkProps[] = [
+  { icon: Bell, title: "공지사항", href: "/board/notice" },
+  { icon: Gift, title: "이벤트", href: "/board/event" },
+  { icon: Headset, title: "아카데미", href: "/academy" },
+  { icon: MessageSquare, title: "쪽지함", href: "/messages" },
+];
+
+function InfoLinkItem({ icon: Icon, title, href }: InfoLinkProps) {
   return (
-    <div className="space-y-4">
+    <Link
+      href={href}
+      className="group flex items-center gap-3 rounded-lg px-4 py-3 transition-colors hover:bg-muted/50"
+    >
+      <Icon className="h-4 w-4 text-muted-foreground" />
+      <span className="text-sm font-medium text-foreground">{title}</span>
+      <ArrowRight className="ml-auto h-4 w-4 text-muted-foreground opacity-0 transition-all group-hover:opacity-100 group-hover:translate-x-0.5" />
+    </Link>
+  );
+}
+
+// ---------------------- 스켈레톤 ----------------------
+
+function ListSkeleton() {
+  return (
+    <div className="space-y-3">
       {[...Array(5)].map((_, i) => (
-        <div key={i} className="border-b border-border last:border-0 pb-4 last:pb-0">
-          <div className="space-y-2">
-            <Skeleton className="h-5 w-3/4" />
-            <div className="flex items-center space-x-4">
-              <Skeleton className="h-3 w-16" />
-              <Skeleton className="h-3 w-12" />
-            </div>
-          </div>
+        <div key={i} className="flex items-center gap-3 py-2">
+          <Skeleton className="h-5 w-16 rounded" />
+          <Skeleton className="h-5 flex-1 rounded" />
+          <Skeleton className="h-4 w-20 rounded" />
         </div>
       ))}
     </div>
@@ -200,286 +202,197 @@ function ErrorBox({ message = "데이터를 불러오는 중 오류가 발생했
   return <AsyncState kind="error" variant="inline" title={message} onAction={onRetry} />;
 }
 
-// ---------------------- 공지 카드 ----------------------
+// ---------------------- 공지/이벤트 리스트 ----------------------
 
-function NoticeCard({ items, isAdmin, isLoading, error, onRetry, mode = "notice" }: { items: NoticeItem[]; isAdmin?: boolean; isLoading?: boolean; error?: any; onRetry?: () => void; mode?: "notice" | "event" }) {
+function NoticeList({ items, isAdmin, isLoading, error, onRetry, mode = "notice" }: { items: NoticeItem[]; isAdmin?: boolean; isLoading?: boolean; error?: any; onRetry?: () => void; mode?: "notice" | "event" }) {
   const supportQuery = "from=support&returnTo=%2Fsupport";
   const isEventMode = mode === "event";
   const basePath = isEventMode ? "/board/event" : "/board/notice";
   const writePath = isEventMode ? "/board/event/write" : "/board/notice/write";
-  const cardTitle = isEventMode ? "이벤트" : "공지사항";
-  const writeLabel = isEventMode ? "글 쓰기" : "글 쓰기";
-  const listLabel = "전체 보기";
   const emptyTitle = isEventMode ? "등록된 이벤트가 없습니다." : "등록된 공지가 없습니다.";
   const emptyDescription = isEventMode ? "새로운 이벤트가 등록되면 이곳에 표시됩니다." : "새 소식이 등록되면 이곳에서 바로 확인할 수 있어요.";
-  const shouldShowEventHint = isEventMode && items.length > 0 && items.length < 3;
-  const HeaderIcon = isEventMode ? Gift : Bell;
   const loadErrorMessage = isEventMode ? "이벤트 불러오기에 실패했습니다." : "공지 불러오기에 실패했습니다.";
-  const pinnedLabel = isEventMode ? "고정 이벤트" : "고정 공지";
+  const pinnedLabel = isEventMode ? "고정" : "고정";
+
+  if (error) return <ErrorBox message={loadErrorMessage} onRetry={onRetry} />;
+  if (isLoading) return <ListSkeleton />;
+  if (items.length === 0) return <AsyncState kind="empty" variant="card" title={emptyTitle} description={emptyDescription} />;
+
   return (
-    <Card className="border border-border bg-card shadow-sm h-full">
-      <CardHeader className={supportCardHeaderClass}>
-        <CardTitle className={supportCardHeaderTitleClass}>
-          <HeaderIcon className="h-4 w-4 shrink-0 text-primary" />
-          <span className="min-w-0 truncate text-base font-semibold leading-tight break-keep sm:text-lg">{cardTitle}</span>
-        </CardTitle>
-        <div className={supportCardHeaderActionClass}>
-          {isAdmin && (
-            <Button asChild size="sm" variant="ghost" className="h-8 px-2.5 text-xs border-border whitespace-nowrap">
-              <Link href={writePath} aria-label={writeLabel} title={writeLabel}>
-                <span className="lg:hidden" aria-hidden="true">
-                  +
-                </span>
-                <span className="hidden lg:inline">+ {writeLabel}</span>
-              </Link>
-            </Button>
-          )}
-          <Button asChild size="sm" variant="ghost" className="h-8 px-2.5 text-xs whitespace-nowrap">
-            <Link href={basePath} aria-label={listLabel} title={listLabel}>
-              <span className="lg:hidden" aria-hidden="true">
-                →
+    <div className="space-y-1">
+      {items.map((notice) => (
+        <Link
+          key={notice._id}
+          href={`${basePath}/${notice._id}?${supportQuery}`}
+          className="group flex items-start gap-3 rounded-lg px-3 py-3 transition-colors hover:bg-muted/50"
+        >
+          <div className="flex shrink-0 items-center gap-1.5 pt-0.5">
+            {notice.isPinned && (
+              <Badge variant="brand" className={`${badgeBaseOutlined} ${badgeSizeSm}`} title={pinnedLabel}>
+                <Pin className="h-3 w-3" />
+              </Badge>
+            )}
+            {!!notice.category && (
+              <Badge variant={getNoticeCategoryBadgeSpec(notice.category).variant} className={`${badgeBaseOutlined} ${badgeSizeSm}`}>
+                {notice.category}
+              </Badge>
+            )}
+          </div>
+          
+          <span className="flex-1 line-clamp-1 text-sm font-medium text-foreground group-hover:text-foreground/80" title={notice.title}>
+            {notice.title}
+          </span>
+          
+          <div className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground">
+            {(notice.hasImage || notice.hasFile) && (
+              <span className="flex items-center gap-1">
+                {notice.hasImage && <ImageIcon className="h-3 w-3" />}
+                {notice.hasFile && <Paperclip className="h-3 w-3" />}
               </span>
-              <span className="hidden lg:inline">{listLabel} →</span>
-            </Link>
+            )}
+            <span className="flex items-center gap-1">
+              <Eye className="h-3 w-3" />
+              {notice.viewCount ?? 0}
+            </span>
+            <span className="w-20 text-right">{fmt(notice.createdAt)}</span>
+          </div>
+        </Link>
+      ))}
+      
+      <div className="flex items-center justify-between pt-2">
+        <Button asChild variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+          <Link href={basePath}>
+            전체 보기
+            <ArrowRight className="ml-1 h-4 w-4" />
+          </Link>
+        </Button>
+        {isAdmin && (
+          <Button asChild variant="outline" size="sm">
+            <Link href={writePath}>글 쓰기</Link>
           </Button>
-        </div>
-      </CardHeader>
-      <CardContent className="p-4 md:p-6">
-        <div className="space-y-4">
-          {error ? (
-            <ErrorBox message={loadErrorMessage} onRetry={onRetry} />
-          ) : isLoading ? (
-            <FiveLineSkeleton />
-          ) : items.length === 0 ? (
-            <AsyncState kind="empty" variant="card" title={emptyTitle} description={emptyDescription} />
-          ) : (
-            <>
-              {items.map((notice) => (
-                <div key={notice._id} className="border-b border-border last:border-0 pb-4 last:pb-0">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1 min-w-0">
-                      {/* 제목 줄 */}
-                      <div className="mb-1 flex min-w-0 items-start gap-2">
-                        <div className="flex shrink-0 flex-wrap items-center gap-1.5 pt-0.5">
-                          {!!notice.category && (
-                            <Badge variant={getNoticeCategoryBadgeSpec(notice.category).variant} className={`${badgeBaseOutlined} ${badgeSizeSm}`} title={notice.category ?? undefined}>
-                              {notice.category}
-                            </Badge>
-                          )}
-
-                          {notice.isPinned && (
-                            <Badge variant="brand" className={`${badgeBaseOutlined} ${badgeSizeSm}`} title={pinnedLabel} aria-label={pinnedLabel}>
-                              <Pin className="h-3 w-3" />
-                            </Badge>
-                          )}
-                        </div>
-
-                        {/* 말줄임 제목 (부모 flex-1 + min-w-0 중요) */}
-                        <Link href={`${basePath}/${notice._id}?${supportQuery}`} className={`${supportMobileTitleClampClass} text-foreground transition-colors hover:text-foreground`} title={notice.title}>
-                          {notice.title}
-                        </Link>
-                      </div>
-
-                      {/* 메타 정보 */}
-                      <div className={supportMobileMetaWrapClass}>
-                        <span>{fmt(notice.createdAt)}</span>
-                        <span className="inline-flex items-center gap-1">
-                          <Eye className="h-3.5 w-3.5" />
-                          {notice.viewCount ?? 0}
-                        </span>
-                        {(notice.hasImage || notice.hasFile) && (
-                          <span className="flex items-center gap-1.5" aria-label="첨부 정보">
-                            {notice.hasImage && (
-                              <span title="이미지 첨부" aria-label="이미지 첨부">
-                                <ImageIcon className="h-3.5 w-3.5" aria-hidden="true" />
-                              </span>
-                            )}
-                            {notice.hasFile && (
-                              <span title="첨부파일 있음" aria-label="첨부파일 있음">
-                                <Paperclip className="h-3.5 w-3.5" aria-hidden="true" />
-                              </span>
-                            )}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-              {shouldShowEventHint && <div className="rounded-lg border border-dashed border-border bg-muted/20 px-4 py-3 text-sm text-muted-foreground">진행 중인 이벤트를 확인해보세요. 새로운 이벤트가 등록되면 이곳에 함께 표시됩니다.</div>}
-            </>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+        )}
+      </div>
+    </div>
   );
 }
 
-// ---------------------- Q&A 카드 ----------------------
+// ---------------------- Q&A 리스트 ----------------------
 
-function QnaCard({ items, viewerId, isAdmin, isLoading, error, onRetry }: { items: QnaItem[]; viewerId?: string | null; isAdmin?: boolean; isLoading?: boolean; error?: any; onRetry?: () => void }) {
-  const [secretBlock, setSecretBlock] = useState<{
-    open: boolean;
-    item?: QnaItem;
-  }>({ open: false });
+function QnaList({ items, viewerId, isAdmin, isLoading, error, onRetry }: { items: QnaItem[]; viewerId?: string | null; isAdmin?: boolean; isLoading?: boolean; error?: any; onRetry?: () => void }) {
+  const [secretBlock, setSecretBlock] = useState<{ open: boolean; item?: QnaItem }>({ open: false });
   const supportQuery = "from=support&returnTo=%2Fsupport";
 
+  if (error) return <ErrorBox message="Q&A 불러오기에 실패했습니다." onRetry={onRetry} />;
+  if (isLoading) return <ListSkeleton />;
+  if (items.length === 0) return <AsyncState kind="empty" variant="card" title="등록된 문의가 없습니다." description="궁금한 점이 있다면 첫 문의를 남겨주세요." />;
+
   return (
-    <Card className="border border-border bg-card shadow-sm h-full">
-      <CardHeader className={supportCardHeaderClass}>
-        <CardTitle className={supportCardHeaderTitleClass}>
-          <MessageSquare className="h-4 w-4 shrink-0 text-success" />
-          <span className="min-w-0 truncate text-base font-semibold leading-tight break-keep sm:text-lg">Q&amp;A 문의</span>
-        </CardTitle>
-        <div className={supportCardHeaderActionClass}>
-          <Button asChild size="sm" variant="default" className="h-8 px-2.5 text-xs whitespace-nowrap">
-            <Link href="/board/qna/write" aria-label="문의하기" title="문의하기">
-              <span className="lg:hidden" aria-hidden="true">
-                +
+    <>
+      <Dialog open={secretBlock.open} onOpenChange={(open) => setSecretBlock((p) => ({ ...p, open }))}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Lock className="h-4 w-4" />
+              비밀글 열람 안내
+            </DialogTitle>
+            <DialogDescription className="space-y-2">
+              <span className="block">
+                이 문의는 <b>비밀글</b>로 등록되어 <b>작성자와 관리자만</b> 확인할 수 있습니다.
               </span>
-              <span className="hidden lg:inline">+ 문의하기</span>
+              {!viewerId ? <span className="block">작성자 계정이라면 로그인 후 다시 확인해 주세요.</span> : <span className="block">현재 계정으로는 이 문의를 열람할 수 없습니다.</span>}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-wrap gap-2 sm:justify-end">
+            <Button variant="outline" asChild>
+              <Link href="/board/qna">목록으로</Link>
+            </Button>
+            {!viewerId && secretBlock.item?._id && (
+              <Button asChild>
+                <Link href={`/login?next=${encodeURIComponent(`/board/qna/${secretBlock.item._id}?${supportQuery}`)}`}>로그인</Link>
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <div className="space-y-1">
+        {items.map((qna) => {
+          const canOpenSecret = !qna.isSecret || !!isAdmin || (viewerId && qna.authorId && viewerId === qna.authorId);
+
+          const RowContent = (
+            <div className="flex items-start gap-3">
+              <div className="flex shrink-0 items-center gap-1.5 pt-0.5">
+                <Badge variant={getQnaCategoryBadgeSpec(qna.category ?? undefined).variant} className={`${badgeBaseOutlined} ${badgeSizeSm}`}>
+                  {qna.category ?? "일반"}
+                </Badge>
+                {qna.isSecret && (
+                  <Lock className="h-3 w-3 text-muted-foreground" />
+                )}
+              </div>
+              
+              <span className="flex-1 line-clamp-1 text-sm font-medium text-foreground" title={qna.title}>
+                {qna.title}
+              </span>
+              
+              <div className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground">
+                <Badge variant={getAnswerStatusBadgeSpec(!!qna.answer).variant} className={`${badgeBaseOutlined} ${badgeSizeSm}`}>
+                  {qna.answer ? "답변완료" : "대기중"}
+                </Badge>
+                {(qna.hasImage || qna.hasFile) && (
+                  <span className="flex items-center gap-1">
+                    {qna.hasImage && <ImageIcon className="h-3 w-3" />}
+                    {qna.hasFile && <Paperclip className="h-3 w-3" />}
+                  </span>
+                )}
+                <span className="w-20 text-right">{fmt(qna.createdAt)}</span>
+              </div>
+            </div>
+          );
+
+          if (qna.isSecret && !canOpenSecret) {
+            return (
+              <button
+                key={qna._id}
+                type="button"
+                className="w-full rounded-lg px-3 py-3 text-left transition-colors hover:bg-muted/50"
+                onClick={() => setSecretBlock({ open: true, item: qna })}
+              >
+                {RowContent}
+              </button>
+            );
+          }
+
+          return (
+            <Link key={qna._id} href={`/board/qna/${qna._id}?${supportQuery}`} className="block rounded-lg px-3 py-3 transition-colors hover:bg-muted/50">
+              {RowContent}
+            </Link>
+          );
+        })}
+
+        <div className="flex items-center justify-between pt-2">
+          <Button asChild variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+            <Link href="/board/qna">
+              전체 보기
+              <ArrowRight className="ml-1 h-4 w-4" />
             </Link>
           </Button>
-          <Button asChild size="sm" variant="ghost" className="h-8 px-2.5 text-xs whitespace-nowrap">
-            <Link href="/board/qna" aria-label="전체 보기" title="전체 보기">
-              <span className="lg:hidden" aria-hidden="true">
-                →
-              </span>
-              <span className="hidden lg:inline">전체 보기 →</span>
-            </Link>
+          <Button asChild size="sm">
+            <Link href="/board/qna/write">문의하기</Link>
           </Button>
         </div>
-      </CardHeader>
-      <CardContent className="p-4 md:p-6">
-        <Dialog open={secretBlock.open} onOpenChange={(open) => setSecretBlock((p) => ({ ...p, open }))}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <Lock className="h-4 w-4" />
-                비밀글 열람 안내
-              </DialogTitle>
-              <DialogDescription className="space-y-2">
-                <span className="block">
-                  이 문의는 <b>비밀글</b>로 등록되어 <b>작성자와 관리자만</b> 확인할 수 있습니다.
-                </span>
-                {!viewerId ? <span className="block">작성자 계정이라면 로그인 후 다시 확인해 주세요.</span> : <span className="block">현재 계정으로는 이 문의를 열람할 수 없습니다.</span>}
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter className="flex-wrap gap-2 sm:justify-end">
-              <Button variant="outline" asChild>
-                <Link href="/board/qna">목록으로 돌아가기</Link>
-              </Button>
-              <Button variant="outline" asChild>
-                <Link href="/support">고객센터 홈</Link>
-              </Button>
-              {!viewerId && secretBlock.item?._id && (
-                <Button asChild>
-                  <Link href={`/login?next=${encodeURIComponent(`/board/qna/${secretBlock.item._id}?${supportQuery}`)}`}>로그인하고 확인</Link>
-                </Button>
-              )}
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-        <div className="space-y-4">
-          {error ? (
-            <ErrorBox message="Q&A 불러오기에 실패했습니다." onRetry={onRetry} />
-          ) : isLoading ? (
-            <FiveLineSkeleton />
-          ) : items.length === 0 ? (
-            <AsyncState kind="empty" variant="card" title="등록된 문의가 없습니다." description="궁금한 점이 있다면 첫 문의를 남겨주세요." />
-          ) : (
-            items.map((qna) => {
-              const canOpenSecret = !qna.isSecret || !!isAdmin || (viewerId && qna.authorId && viewerId === qna.authorId);
-
-              const RowInner = (
-                <div className="border-b border-border last:border-0 pb-4 last:pb-0">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1 min-w-0">
-                      {/* 제목 줄 */}
-                      <div className="mb-1 flex items-start gap-2">
-                        <div className="flex min-w-0 flex-1 items-start gap-2 overflow-hidden">
-                          <Badge variant={getQnaCategoryBadgeSpec(qna.category ?? undefined).variant} className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`} title={qna.category ?? undefined}>
-                            {qna.category ?? "일반문의"}
-                          </Badge>
-
-                          {qna.isSecret && (
-                            <Badge variant="secondary" className="shrink-0 text-xs inline-flex items-center gap-1">
-                              <Lock className="h-3 w-3" />
-                              비밀글
-                            </Badge>
-                          )}
-
-                          <span className={`${supportQnaInlineTitleClass} text-foreground`} title={qna.title}>
-                            {qna.title}
-                          </span>
-                        </div>
-
-                        <div className={supportMobileActionBadgeWrapClass}>
-                          <Badge variant={getAnswerStatusBadgeSpec(!!qna.answer).variant} className={`${badgeBaseOutlined} ${badgeSizeSm}`} title={qna.answer ? "답변 완료" : "답변 대기"}>
-                            {qna.answer ? "답변 완료" : "답변 대기"}
-                          </Badge>
-                        </div>
-                      </div>
-
-                      <div className={supportMobileMetaWrapClass}>
-                        <span>{qna.authorName ?? "익명"}</span>
-                        <span>{fmt(qna.createdAt)}</span>
-                        <span className="inline-flex items-center gap-1">
-                          <MessageSquare className="h-3.5 w-3.5" />
-                          답변 {qna.answer ? 1 : 0}개
-                        </span>
-                        {(qna.hasImage || qna.hasFile) && (
-                          <span className="flex items-center gap-1.5" aria-label="첨부 정보">
-                            {qna.hasImage && (
-                              <span title="이미지 첨부" aria-label="이미지 첨부">
-                                <ImageIcon className="h-3.5 w-3.5" aria-hidden="true" />
-                              </span>
-                            )}
-                            {qna.hasFile && (
-                              <span title="첨부파일 있음" aria-label="첨부파일 있음">
-                                <Paperclip className="h-3.5 w-3.5" aria-hidden="true" />
-                              </span>
-                            )}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-              // 비밀글 + 권한 없음: 상세로 안 보내고 모달로 1차 차단
-              if (qna.isSecret && !canOpenSecret) {
-                return (
-                  <button key={qna._id} type="button" className="block w-full text-left" onClick={() => setSecretBlock({ open: true, item: qna })}>
-                    {RowInner}
-                  </button>
-                );
-              }
-
-              // 권한 있거나 일반글: 상세로 이동
-              return (
-                <Link key={qna._id} href={`/board/qna/${qna._id}?${supportQuery}`} className="block">
-                  {RowInner}
-                </Link>
-              );
-            })
-          )}
-        </div>
-      </CardContent>
-    </Card>
+      </div>
+    </>
   );
 }
 
 // ---------------------- 페이지 컴포넌트 ----------------------
 
 export default function SupportPage() {
-  // 공지/Q&A 묶어서 가져오는 기존 API 재사용
   const { data, error, isLoading, mutate } = useSWR<BoardsMainRes>("/api/boards/main", fetcher);
   const notices = data?.notices ?? [];
   const events = data?.events ?? [];
   const qnas = data?.qna ?? [];
 
-  // 관리자 여부 확인 (공지 쓰기 버튼 제어)
   const { data: me } = useSWR<MeRes | null>("/api/users/me", fetcherAllow401, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
@@ -489,41 +402,125 @@ export default function SupportPage() {
   const viewerId = me?.id ?? null;
 
   return (
-    <div className="min-h-screen bg-muted/30">
-      <SiteContainer className="space-y-6 py-6 md:space-y-8 md:py-8">
-        {/* 헤더 */}
-        <div className="text-center space-y-3 md:space-y-4">
-          <div className="flex items-center justify-center gap-3 mb-2">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted/30 shadow-lg">
-              <Headset className="h-6 w-6 text-foreground" />
+    <div className="min-h-screen bg-background">
+      {/* Hero Section */}
+      <div className="relative overflow-hidden border-b border-border bg-gradient-to-b from-muted/50 to-background">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,hsl(var(--muted)/0.4),transparent_50%)]" />
+        <SiteContainer className="relative py-12 md:py-16">
+          <div className="mx-auto max-w-2xl text-center">
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-1.5 text-sm text-muted-foreground">
+              <Sparkles className="h-4 w-4" />
+              <span>고객센터</span>
             </div>
-            <h1 className="break-keep text-3xl font-bold tracking-normal text-foreground md:text-4xl">무엇을 도와드릴까요?</h1>
+            <h1 className="mb-4 text-3xl font-bold tracking-tight text-foreground md:text-4xl lg:text-5xl">
+              무엇을 도와드릴까요?
+            </h1>
+            <p className="mb-8 text-base text-muted-foreground md:text-lg">
+              주문, 배송, 서비스 관련 궁금한 점을 빠르게 해결해 드립니다.
+            </p>
+            
+            {/* Search Bar */}
+            <div className="relative mx-auto max-w-lg">
+              <div className="group relative">
+                <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-foreground" />
+                <Link
+                  href="#faq"
+                  className="flex h-14 w-full items-center rounded-xl border border-border bg-card pl-12 pr-4 text-muted-foreground shadow-sm transition-all hover:border-border/80 hover:shadow-md focus:outline-none"
+                >
+                  <span>자주 묻는 질문 검색하기</span>
+                </Link>
+              </div>
+            </div>
           </div>
-          <p className="mx-auto max-w-2xl break-keep text-sm leading-relaxed text-muted-foreground md:text-base">고객센터는 공지사항, 이벤트, Q&A 문의, 매장/예약 안내, 주문/서비스 문의를 확인하는 공간입니다.</p>
-        </div>
+        </SiteContainer>
+      </div>
 
-        <section aria-labelledby="support-entry-title" className="space-y-3">
-          <div className="space-y-1">
-            <h2 id="support-entry-title" className="break-keep text-xl font-semibold text-foreground">
-              문의·확인 목적별 바로가기
-            </h2>
-            <p className="break-keep text-sm leading-relaxed text-muted-foreground">상황에 맞는 메뉴를 선택하면 더 빠르게 확인하거나 문의할 수 있어요.</p>
+      <SiteContainer className="py-8 md:py-12">
+        {/* Quick Actions */}
+        <section className="mb-10 md:mb-14">
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold text-foreground">빠른 문의</h2>
+            <p className="mt-1 text-sm text-muted-foreground">자주 사용하는 메뉴에 바로 접근하세요.</p>
           </div>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {supportEntryCards.map((card) => (
-              <SupportEntryCard key={card.title} {...card} />
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {quickActions.map((action) => (
+              <QuickActionCard key={action.href} {...action} />
             ))}
           </div>
         </section>
 
-        <SupportFaqSearch />
+        {/* Info Links */}
+        <section className="mb-10 md:mb-14">
+          <Card className="border-border">
+            <CardContent className="p-2">
+              <div className="grid grid-cols-2 md:grid-cols-4">
+                {infoLinks.map((link, index) => (
+                  <div key={link.href} className={cn(
+                    "relative",
+                    index < infoLinks.length - 1 && "after:absolute after:right-0 after:top-1/2 after:-translate-y-1/2 after:h-8 after:w-px after:bg-border md:after:block",
+                    index % 2 === 0 && index < infoLinks.length - 2 && "after:hidden sm:after:block"
+                  )}>
+                    <InfoLinkItem {...link} />
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </section>
 
-        {/* 고객센터 하단 카드: 모바일 1열, 중간 폭 2열, 넓은 화면 3열 */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-3 items-start">
-          <NoticeCard items={notices} isAdmin={isAdmin} isLoading={isLoading} error={error} onRetry={() => mutate()} />
-          <NoticeCard mode="event" items={events} isAdmin={isAdmin} isLoading={isLoading} error={error} onRetry={() => mutate()} />
-          <QnaCard items={qnas} viewerId={viewerId} isAdmin={isAdmin} isLoading={isLoading} error={error} onRetry={() => mutate()} />
-        </div>
+        {/* FAQ Section */}
+        <section id="faq" className="mb-10 md:mb-14 scroll-mt-20">
+          <SupportFaqSearch />
+        </section>
+
+        {/* Boards Section */}
+        <section>
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold text-foreground">게시판</h2>
+            <p className="mt-1 text-sm text-muted-foreground">공지사항, 이벤트, Q&A를 확인하세요.</p>
+          </div>
+          
+          <Card className="border-border">
+            <Tabs defaultValue="notice" className="w-full">
+              <CardHeader className="border-b border-border p-0">
+                <TabsList className="h-auto w-full justify-start gap-0 rounded-none border-0 bg-transparent p-0">
+                  <TabsTrigger 
+                    value="notice" 
+                    className="relative rounded-none border-b-2 border-transparent px-6 py-4 text-muted-foreground data-[state=active]:border-foreground data-[state=active]:text-foreground data-[state=active]:shadow-none"
+                  >
+                    <Bell className="mr-2 h-4 w-4" />
+                    공지사항
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="event" 
+                    className="relative rounded-none border-b-2 border-transparent px-6 py-4 text-muted-foreground data-[state=active]:border-foreground data-[state=active]:text-foreground data-[state=active]:shadow-none"
+                  >
+                    <Gift className="mr-2 h-4 w-4" />
+                    이벤트
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="qna" 
+                    className="relative rounded-none border-b-2 border-transparent px-6 py-4 text-muted-foreground data-[state=active]:border-foreground data-[state=active]:text-foreground data-[state=active]:shadow-none"
+                  >
+                    <MessageSquare className="mr-2 h-4 w-4" />
+                    Q&A
+                  </TabsTrigger>
+                </TabsList>
+              </CardHeader>
+              <CardContent className="p-4 md:p-6">
+                <TabsContent value="notice" className="mt-0">
+                  <NoticeList items={notices} isAdmin={isAdmin} isLoading={isLoading} error={error} onRetry={() => mutate()} />
+                </TabsContent>
+                <TabsContent value="event" className="mt-0">
+                  <NoticeList mode="event" items={events} isAdmin={isAdmin} isLoading={isLoading} error={error} onRetry={() => mutate()} />
+                </TabsContent>
+                <TabsContent value="qna" className="mt-0">
+                  <QnaList items={qnas} viewerId={viewerId} isAdmin={isAdmin} isLoading={isLoading} error={error} onRetry={() => mutate()} />
+                </TabsContent>
+              </CardContent>
+            </Tabs>
+          </Card>
+        </section>
       </SiteContainer>
     </div>
   );
