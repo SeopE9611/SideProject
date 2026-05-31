@@ -24,7 +24,7 @@ import { adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { showErrorToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
-import { STRING_BRANDS, stringBrandLabel } from "@/lib/constants";
+import { STRING_BRANDS, STRING_MATERIALS, stringBrandLabel, stringMaterialLabel } from "@/lib/constants";
 
 type Product = {
   _id: string;
@@ -68,17 +68,12 @@ const BRAND_OPTIONS = STRING_BRANDS.map(({ value, label }) => ({
   label,
 }));
 
-const MATERIAL_OPTIONS = [
-  { id: "polyester", label: "폴리에스터" },
-  { id: "multifilament", label: "멀티필라멘트" },
-  { id: "natural_gut", label: "천연 거트" },
-  { id: "synthetic_gut", label: "합성 거트" },
-  { id: "hybrid", label: "하이브리드" },
-] as const;
-
-const MATERIAL_LABEL: Record<string, string> = Object.fromEntries(MATERIAL_OPTIONS.map((o) => [o.id, o.label]));
+const MATERIAL_OPTIONS = STRING_MATERIALS.map(({ value, label }) => ({
+  id: value,
+  label,
+}));
 const brandLabel = stringBrandLabel;
-const materialLabel = (id?: string) => (id ? (MATERIAL_LABEL[id] ?? id) : "");
+const materialLabel = stringMaterialLabel;
 
 // 입력 디바운스
 function useDebounce<T>(value: T, delay = 250): T {

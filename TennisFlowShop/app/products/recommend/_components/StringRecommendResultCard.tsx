@@ -2,7 +2,8 @@ import type { RecommendedStringProduct } from "@/app/products/recommend/_types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { stringBrandLabel } from "@/lib/constants";
+import { stringBrandLabel, stringMaterialLabel } from "@/lib/constants";
+import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -27,7 +28,7 @@ export default function StringRecommendResultCard({ result, rank }: StringRecomm
           <CardTitle className="mt-1 text-base">{product.name}</CardTitle>
           <p className="mt-2 text-sm font-semibold">{product.price.toLocaleString()}원</p>
           <p className="text-xs text-muted-foreground">
-            소재 {product.material ?? "-"} · 게이지 {product.gauge ?? "-"}
+            소재 {stringMaterialLabel(product.material) || "-"} · 게이지 {formatGaugeLabel(product.gauge) || "-"}
           </p>
         </div>
       </CardHeader>

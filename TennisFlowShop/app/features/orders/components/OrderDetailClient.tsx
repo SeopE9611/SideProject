@@ -72,6 +72,7 @@ import {
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { adminSurface } from "@/components/admin/admin-typography";
 import { cn } from "@/lib/utils";
+import { stringColorLabel } from "@/lib/constants";
 import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import {
   ArrowLeft,
@@ -1388,8 +1389,8 @@ export default function OrderDetailClient({ orderId }: Props) {
                     <div className="space-y-1">
                       {variantStockDeductionItems.map((item, index) => (
                         <p key={`${item.name}-${index}`}>
-                          {item.name}: 색상 {item.stockDeduction?.colorValue ?? "-"} / 게이지{" "}
-                          {item.stockDeduction?.gaugeValue ?? "-"}
+                          {item.name}: 색상 {stringColorLabel(item.stockDeduction?.colorValue) || "-"} / 게이지{" "}
+                          {formatGaugeLabel(item.stockDeduction?.gaugeValue) || "-"}
                         </p>
                       ))}
                     </div>

@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
+import { stringMaterialLabel } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { Filter, Grid3X3, List, Search } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -46,13 +47,6 @@ const brands = [
 const brandLabelMap: Record<string, string> = Object.fromEntries(
   brands.map(({ value, label }) => [value, label]),
 );
-const materialLabelMap: Record<string, string> = {
-  polyester: "폴리에스터",
-  multifilament: "멀티필라멘트",
-  natural_gut: "천연 거트",
-  synthetic_gut: "합성 거트",
-  hybrid: "하이브리드",
-};
 
 // 가격 필터 기본값
 const DEFAULT_MIN_PRICE = 0;
@@ -801,7 +795,7 @@ export default function FilterableProductList({
                   )}
                   {selectedMaterial && (
                     <span className="inline-flex max-w-[220px] shrink-0 items-center gap-1 rounded-full border border-border bg-muted px-2 py-1 text-xs whitespace-nowrap">
-                      재질 {materialLabelMap[selectedMaterial] ?? selectedMaterial}
+                      재질 {stringMaterialLabel(selectedMaterial)}
                       <button
                         type="button"
                         aria-label="재질 필터 해제"

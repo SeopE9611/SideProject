@@ -8,6 +8,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
+import { stringMaterialLabel } from "@/lib/constants";
 import { Filter } from "lucide-react";
 
 interface Props {
@@ -16,13 +17,6 @@ interface Props {
   options: string[]; // ex) ["polyester", "multifilament", ...]
 }
 
-const MATERIAL_LABEL: Record<string, string> = {
-  polyester: "폴리에스터",
-  multifilament: "멀티필라멘트",
-  natural_gut: "천연 거트",
-  synthetic_gut: "합성 거트",
-  hybrid: "하이브리드",
-};
 
 export default function MaterialFilter({ value, onChange, options }: Props) {
   return (
@@ -35,7 +29,7 @@ export default function MaterialFilter({ value, onChange, options }: Props) {
         <SelectItem value="all">재질 전체</SelectItem>
         {options.map((m) => (
           <SelectItem key={m} value={m}>
-            {MATERIAL_LABEL[m] ?? m}
+            {stringMaterialLabel(m)}
           </SelectItem>
         ))}
       </SelectContent>
