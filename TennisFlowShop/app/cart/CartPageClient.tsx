@@ -412,8 +412,10 @@ export default function CartPageClient() {
   // - blockServiceCheckout: 구성/수량 불일치면 장바구니에서 이미 막히는 상태
   const shouldEnterCheckoutWithService =
     (!blockServiceCheckout && isBundleLocked) || hasMountableStringOnlyFlow;
-  const stringStandalonePausedNotice =
-    "현재 스트링 단품 구매는 운영하지 않으며, 선택한 스트링은 교체서비스 신청용으로 사용됩니다.";
+  const stringStandalonePausedNoticeLines = [
+    "스트링 단품 구매는 현재 운영하지 않습니다.",
+    "선택한 스트링은 교체서비스 신청용으로 사용됩니다.",
+  ];
   const checkoutBasePath = shouldEnterCheckoutWithService
     ? "/checkout?withService=1"
     : "/checkout";
@@ -672,14 +674,14 @@ export default function CartPageClient() {
           </div>
 
           {cartItems.length > 0 && (
-            <div className="flex items-center gap-6 text-sm">
+            <div className="flex flex-col items-start gap-2 text-sm bp-sm:flex-row bp-sm:items-center bp-sm:gap-6">
               <div className="flex items-center gap-2">
-                <div className="h-2 w-2 animate-pulse rounded-full bg-muted" />
-                <span>총 {cartItems.length}개 상품</span>
+                <div className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-muted" />
+                <span className="whitespace-nowrap">총 {cartItems.length}개 상품</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Star className="h-4 w-4 text-warning" />
-                <span>상품별 배송비 정책이 적용됩니다.</span>
+              <div className="flex min-w-0 items-center gap-2 break-keep leading-relaxed">
+                <Star className="h-4 w-4 shrink-0 text-warning" />
+                <span>상품별 배송비 정책 적용</span>
               </div>
             </div>
           )}
@@ -688,7 +690,11 @@ export default function CartPageClient() {
 
       <SiteContainer
         variant="wide"
-        className="pt-6 bp-sm:pt-8 pb-40 bp-sm:pb-32 bp-md:py-8"
+        className={
+          cartItems.length > 0
+            ? "pt-6 pb-56 bp-sm:pt-8 bp-sm:pb-48 bp-md:py-8"
+            : "pt-6 pb-12 bp-sm:pt-8 bp-sm:pb-16 bp-md:py-8"
+        }
       >
         {cartItems.length > 0 ? (
           <div className="grid grid-cols-1 gap-6 bp-lg:grid-cols-3">
@@ -1269,9 +1275,11 @@ export default function CartPageClient() {
                     ) : (
                       <>
                         {hasMountableStringOnlyFlow && (
-                          <p className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-sm leading-relaxed text-muted-foreground">
-                            {stringStandalonePausedNotice}
-                          </p>
+                          <div className="space-y-1 rounded-lg border border-primary/20 bg-primary/5 p-3 text-sm leading-relaxed text-muted-foreground break-keep">
+                            {stringStandalonePausedNoticeLines.map((line) => (
+                              <p key={line}>{line}</p>
+                            ))}
+                          </div>
                         )}
                         <p className="rounded-lg border border-border/60 bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
                           최신 재고는 주문 시 다시 확인됩니다.
@@ -1431,9 +1439,11 @@ export default function CartPageClient() {
               ) : (
                 <>
                   {hasMountableStringOnlyFlow && (
-                    <p className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-sm leading-relaxed text-muted-foreground">
-                      {stringStandalonePausedNotice}
-                    </p>
+                    <div className="space-y-1 rounded-lg border border-primary/20 bg-primary/5 p-3 text-sm leading-relaxed text-muted-foreground break-keep">
+                      {stringStandalonePausedNoticeLines.map((line) => (
+                        <p key={line}>{line}</p>
+                      ))}
+                    </div>
                   )}
                   <Button
                     type="button"

@@ -77,8 +77,8 @@ export default function WishlistSidebar({
             "bg-muted/50 dark:bg-card/40 border-b border-border",
         )}
       >
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
+        <div className="flex flex-col items-start gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
+          <CardTitle className="flex items-center gap-2 break-keep whitespace-nowrap">
             <Heart className="h-5 w-5 text-foreground" />
             {title}
           </CardTitle>
@@ -90,7 +90,7 @@ export default function WishlistSidebar({
                 showErrorToast("위시리스트 비우기에 실패했습니다.");
               });
             }}
-            className="border-border bg-transparent hover:bg-primary/10 dark:hover:bg-primary/20"
+            className="w-full justify-center border-border bg-transparent hover:bg-primary/10 bp-sm:w-auto dark:hover:bg-primary/20"
           >
             <Trash2 className="h-4 w-4 mr-2" />
             위시리스트 비우기
