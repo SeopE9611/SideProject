@@ -291,20 +291,20 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
                   <Bell className="h-5 w-5 sm:h-6 sm:w-6" />
                 </div>
                 <div>
-                  <h1 className="break-keep text-2xl font-bold leading-tight tracking-normal text-foreground sm:text-3xl md:text-[2rem]">
+                  <h1 className="text-xl font-bold leading-tight tracking-normal text-foreground sm:text-2xl md:text-[2rem]">
                     {pageTitle}
                   </h1>
-                  <p className="break-keep text-sm text-muted-foreground sm:text-base">
+                  <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">
                     {pageDescription}
                   </p>
                 </div>
               </div>
             </div>
-            <div className="flex w-full flex-wrap items-center justify-start gap-2 sm:w-auto sm:justify-end">
-              <Button asChild variant="outline" size="sm">
+            <div className="grid w-full grid-cols-1 gap-2 sm:w-auto sm:grid-cols-2">
+              <Button asChild variant="outline" size="sm" className="w-full whitespace-normal leading-snug">
                 <Link href={listHref}>{sectionLabel} 목록으로</Link>
               </Button>
-              <Button asChild variant="outline" size="sm">
+              <Button asChild variant="outline" size="sm" className="w-full whitespace-normal leading-snug">
                 <Link href="/support">고객센터 홈으로</Link>
               </Button>
             </div>
@@ -346,7 +346,7 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
                 </div>
               )}
               {!isLoading && !error && notice && (
-                <div className="flex items-start justify-between gap-4">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                   {/* 왼쪽: 배지 · 제목 · 메타 */}
                   <div className="flex-1 min-w-0">
                     <div className="mb-4 flex flex-wrap items-center gap-2.5">
@@ -398,12 +398,12 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
                       <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20 flex-shrink-0 mt-1">
                         <Bell className="h-5 w-5" />
                       </div>
-                      <h1 className="break-keep text-2xl font-bold leading-tight text-foreground sm:text-3xl">
+                      <h1 className="min-w-0 text-xl font-bold leading-tight text-foreground sm:text-2xl md:text-3xl">
                         {notice.title}
                       </h1>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground [&>div]:shrink-0 [&>div]:whitespace-nowrap">
+                    <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted-foreground">
                       <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4" />
                         <span className="font-medium">작성일</span>
@@ -429,12 +429,12 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
 
                   {/* 오른쪽: 관리자 액션 */}
                   {isAdmin && (
-                    <div className="shrink-0 flex flex-col gap-2">
-                      <Button variant="outline" onClick={onEdit}>
+                    <div className="grid w-full grid-cols-2 gap-2 sm:w-auto sm:grid-cols-1 sm:shrink-0">
+                      <Button variant="outline" onClick={onEdit} className="w-full">
                         <Pencil className="h-4 w-4 mr-1" />
                         수정
                       </Button>
-                      <Button variant="destructive" onClick={onDelete}>
+                      <Button variant="destructive" onClick={onDelete} className="w-full">
                         <Trash2 className="h-4 w-4 mr-1" />
                         삭제
                       </Button>
@@ -453,7 +453,7 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
             )}
             {!isLoading && !error && notice && (
               <>
-                <div className="prose prose-lg max-w-none prose-gray dark:prose-invert">
+                <div className="prose max-w-none prose-gray dark:prose-invert sm:prose-lg">
                   <div className="whitespace-pre-line break-words leading-relaxed text-foreground">
                     {String(notice.content || "")}
                   </div>

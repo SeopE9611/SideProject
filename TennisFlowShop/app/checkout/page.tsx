@@ -167,11 +167,11 @@ function FinalPaymentConfirmCard({
       </div>
       <CardContent className="space-y-5 p-5 bp-sm:p-6">
         <div className="space-y-3 text-sm">
-          <div className="flex items-center justify-between py-1">
+          <div className="flex flex-col gap-1 py-1 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
             <span className="text-foreground/80">주문 상품 ({orderItemsCount}개)</span>
             <span className="font-semibold">{subtotal.toLocaleString()}원</span>
           </div>
-          <div className="flex items-center justify-between py-1">
+          <div className="flex flex-col gap-1 py-1 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
             <span className="text-foreground/80">배송비</span>
             {!isShippingFeeReady ? (
               <Skeleton className="h-5 w-16 rounded" />
@@ -188,7 +188,7 @@ function FinalPaymentConfirmCard({
             )}
           </div>
           {withStringService && (
-            <div className="flex items-center justify-between py-1">
+            <div className="flex flex-col gap-1 py-1 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
               <span className="text-foreground/80">교체서비스 비용</span>
               {!isMountingFeeReady ? (
                 <Skeleton className="h-5 w-20 rounded" />
@@ -202,19 +202,19 @@ function FinalPaymentConfirmCard({
             </div>
           )}
           {withStringService && packageUsage?.canApplyPackage && (
-            <div className="flex items-center justify-between py-1">
+            <div className="flex flex-col gap-1 py-1 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
               <span className="text-foreground/80">패키지 적용</span>
               <span className="font-semibold">{packageUsage.usingPackage ? "적용됨" : "미사용"}</span>
             </div>
           )}
           {withStringService && packageUsage?.usingPackage && baseServiceFee > 0 && (
-            <div className="flex items-center justify-between py-1">
+            <div className="flex flex-col gap-1 py-1 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
               <span className="text-foreground/80">패키지 차감 서비스비</span>
               <span className="font-semibold text-destructive">-{baseServiceFee.toLocaleString()}원</span>
             </div>
           )}
           {appliedPoints > 0 && (
-            <div className="flex items-center justify-between py-1">
+            <div className="flex flex-col gap-1 py-1 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
               <span className="text-foreground/80">포인트 사용</span>
               <span className="font-semibold text-destructive">-{appliedPoints.toLocaleString()}원</span>
             </div>
@@ -224,16 +224,16 @@ function FinalPaymentConfirmCard({
         <div className="h-px bg-border/70" />
 
         <div className="space-y-3">
-          <div className="flex items-center justify-between text-sm">
+          <div className="flex flex-col gap-1 text-sm bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
             <span className="text-foreground/90">합계</span>
             {!isShippingFeeReady ? <Skeleton className="h-5 w-24 rounded" /> : <span className="font-semibold">{totalPrice.toLocaleString()}원</span>}
           </div>
-          <div className="flex items-center justify-between rounded-xl bg-primary/10 p-4 -mx-1">
+          <div className="flex flex-col gap-2 rounded-xl bg-primary/10 p-4 -mx-1 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
             <span className="text-base bp-sm:text-lg font-bold">결제 예정 금액</span>
             {!isShippingFeeReady ? (
               <Skeleton className="h-9 w-32 rounded" />
             ) : (
-              <span className="text-2xl bp-sm:text-3xl font-bold text-primary">
+              <span className="text-xl font-bold text-primary bp-sm:text-2xl bp-md:text-3xl">
                 {payableTotalPrice.toLocaleString()}
                 <span className="text-base font-semibold ml-0.5">원</span>
               </span>
@@ -244,7 +244,8 @@ function FinalPaymentConfirmCard({
         <div className="space-y-2 rounded-xl border border-border/70 bg-secondary/20 p-3 text-xs text-foreground">
           {paymentMethod === "bank-transfer" && (
             <p className="text-muted-foreground">
-              입금 계좌: {bankLabelMap[selectedBank as keyof typeof bankLabelMap]?.account ?? selectedBank} / 입금자명: {depositor.trim() || "미입력"}
+              입금 계좌: {bankLabelMap[selectedBank as keyof typeof bankLabelMap]?.account ?? selectedBank}
+              <span className="block mt-1">입금자명: {depositor.trim() || "미입력"}</span>
             </p>
           )}
         </div>
@@ -1082,7 +1083,7 @@ export default function CheckoutPage() {
                   <CreditCard className="h-6 w-6 bp-sm:h-7 bp-sm:w-7" />
                 </div>
                 <div>
-                  <h1 className="break-keep text-2xl font-bold leading-tight tracking-normal bp-sm:text-3xl bp-md:text-4xl">주문/결제</h1>
+                  <h1 className="text-2xl font-bold leading-tight tracking-normal bp-sm:text-3xl bp-md:text-4xl">주문/결제</h1>
                   <p className="mt-1 break-keep text-sm text-muted-foreground bp-sm:text-base">배송/수령/결제정보를 확인하고 주문을 완료하세요</p>
                 </div>
               </div>
@@ -1180,7 +1181,7 @@ export default function CheckoutPage() {
                 <section aria-label="현재 주문 성격 및 작성 안내" className={cn("rounded-2xl border border-border bg-card px-4 py-3 shadow-sm bp-sm:px-5", withStringService ? "ring-1 ring-primary/20" : "bg-muted/30")}>
                   <div className="flex items-start gap-3">
                     <div className={cn("flex h-8 w-8 shrink-0 items-center justify-center rounded-full ring-1", withStringService ? "bg-primary/10 text-primary ring-primary/20" : "bg-muted/60 text-muted-foreground ring-border/60")}>
-                      {withStringService ? <CheckCircle className="h-4 w-4" /> : <Info className="h-4 w-4" />}
+                      {withStringService ? <CheckCircle className="mt-0.5 h-4 w-4 shrink-0" /> : <Info className="h-4 w-4" />}
                     </div>
                     <div className="min-w-0 space-y-1">
                       <h2 className={cn("break-keep text-base font-semibold text-foreground", !withStringService && "text-sm")}>{withStringService ? "교체서비스 포함 주문입니다" : "일반 상품 주문입니다"}</h2>
@@ -1207,7 +1208,7 @@ export default function CheckoutPage() {
                           <Package className="h-5 w-5 text-primary" />
                         </div>
                         <div>
-                          <CardTitle className="break-keep text-lg font-bold bp-sm:text-xl">주문 상품</CardTitle>
+                          <CardTitle className="text-lg font-bold bp-sm:text-xl">주문 상품</CardTitle>
                         </div>
                       </div>
                       <Badge variant="secondary" className="shrink-0 whitespace-nowrap px-3 py-1 text-xs font-semibold">
@@ -1645,8 +1646,8 @@ export default function CheckoutPage() {
                               <SelectTrigger className="border-2 focus:border-border">
                                 <SelectValue placeholder="입금 계좌를 선택하세요" />
                               </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="kakao">
+                              <SelectContent className="w-[var(--radix-select-trigger-width)]">
+                                <SelectItem value="kakao" className="whitespace-normal break-words leading-snug">
                                   카카오뱅크 {bankLabelMap.kakao.account} (예금주: {bankLabelMap.kakao.holder})
                                 </SelectItem>
                               </SelectContent>
@@ -1672,16 +1673,16 @@ export default function CheckoutPage() {
                               <p className="font-semibold text-foreground">무통장입금 안내</p>
                             </div>
                             <ul className="space-y-2 text-sm text-foreground">
-                              <li className="flex items-center gap-2 text-base bp-sm:text-lg">
-                                <CheckCircle className="h-4 w-4" />
+                              <li className="flex items-start gap-2 text-sm leading-relaxed bp-sm:text-base">
+                                <CheckCircle className="mt-0.5 h-4 w-4 shrink-0" />
                                 주문 후 24시간 이내에 입금해 주셔야 주문이 정상 처리됩니다.
                               </li>
-                              <li className="flex items-center gap-2 text-base bp-sm:text-lg">
-                                <CheckCircle className="h-4 w-4" />
+                              <li className="flex items-start gap-2 text-sm leading-relaxed bp-sm:text-base">
+                                <CheckCircle className="mt-0.5 h-4 w-4 shrink-0" />
                                 입금자명이 주문자명과 다를 경우, 고객센터로 연락 부탁드립니다.
                               </li>
-                              <li className="flex items-center gap-2 text-base bp-sm:text-lg">
-                                <CheckCircle className="h-4 w-4" />
+                              <li className="flex items-start gap-2 text-sm leading-relaxed bp-sm:text-base">
+                                <CheckCircle className="mt-0.5 h-4 w-4 shrink-0" />
                                 {needsShippingAddress ? "입금 확인 후 배송이 시작됩니다." : "입금 확인 후 매장 수령 준비가 시작됩니다."}
                               </li>
                             </ul>
@@ -1814,7 +1815,7 @@ export default function CheckoutPage() {
                     <Button
                       type="button"
                       variant="default"
-                      className="shrink-0"
+                      className="shrink-0 whitespace-normal px-3 text-xs leading-snug bp-sm:text-sm"
                       onClick={() => {
                         requestStringingValidationMessages();
                         document.getElementById("checkout-payment-action")?.scrollIntoView({ behavior: "smooth", block: "start" });

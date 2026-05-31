@@ -703,7 +703,7 @@ export default function RacketFinderClient() {
             {/* 스트링 패턴 */}
             <div className="space-y-3">
               <SectionLabel>스트링 패턴</SectionLabel>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 gap-2 bp-sm:grid-cols-2">
                 {STRING_PATTERN_OPTIONS.map((patternOption) => {
                   const key = normalizePattern(patternOption.value);
                   const checked = draft.patterns.includes(key);
@@ -711,13 +711,14 @@ export default function RacketFinderClient() {
                     <label
                       key={patternOption.value}
                       className={cn(
-                        "flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-200",
+                        "flex cursor-pointer items-start gap-2 rounded-lg px-3 py-2 text-sm leading-snug transition-[background-color,color,border-color,box-shadow,opacity] duration-200",
                         "bg-background/50 dark:bg-background/30 hover:bg-background/80 dark:hover:bg-background/50",
                         checked &&
                           "bg-secondary ring-1 ring-border",
                       )}
                     >
                       <Checkbox
+                        className="mt-0.5 shrink-0"
                         checked={checked}
                         onCheckedChange={(v) => {
                           setDraft((prev) => {
@@ -729,9 +730,18 @@ export default function RacketFinderClient() {
                         }}
                       />
                       <span
-                        className={cn(checked && "font-medium text-primary")}
+                        className={cn("min-w-0 leading-snug", checked && "font-medium text-primary")}
                       >
-                        {patternOption.label}
+                        {patternOption.label.includes("(") ? (
+                          <>
+                            <span className="block">{patternOption.label.split(" (")[0]}</span>
+                            <span className="block text-xs text-muted-foreground">
+                              {patternOption.label.split(" (")[1]?.replace(")", "")}
+                            </span>
+                          </>
+                        ) : (
+                          patternOption.label
+                        )}
                       </span>
                     </label>
                   );
@@ -947,7 +957,7 @@ export default function RacketFinderClient() {
           )}
 
           {!hasSearched ? (
-            <div className="rounded-2xl bg-muted/30 dark:bg-muted/10 ring-1 ring-muted/50 dark:ring-muted/20 p-6 md:p-8 text-center">
+            <div className="rounded-2xl bg-muted/30 dark:bg-muted/10 ring-1 ring-muted/50 dark:ring-muted/20 p-5 md:p-8 text-center">
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-secondary">
                 <Search className="h-8 w-8 text-primary" />
               </div>
@@ -996,7 +1006,7 @@ export default function RacketFinderClient() {
               </p>
             </div>
           ) : items.length === 0 ? (
-            <div className="rounded-2xl bg-muted/30 dark:bg-muted/10 ring-1 ring-muted/50 dark:ring-muted/20 p-6 md:p-8 text-center">
+            <div className="rounded-2xl bg-muted/30 dark:bg-muted/10 ring-1 ring-muted/50 dark:ring-muted/20 p-5 md:p-8 text-center">
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted/50">
                 <Search className="h-8 w-8 text-muted-foreground" />
               </div>

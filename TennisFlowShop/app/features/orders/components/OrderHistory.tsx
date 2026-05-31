@@ -205,7 +205,7 @@ export default function OrderHistory({
     <Card className="md:col-span-3 rounded-xl border border-border bg-card text-card-foreground shadow-md dark:bg-card">
       <CardHeader className="pb-3 border-b border-border/60 bg-muted/30 dark:bg-card rounded-t-xl">
         <CardTitle>처리 이력</CardTitle>
-        <p className="text-sm text-muted-foreground">
+        <p className="shrink-0 text-sm text-muted-foreground">
           최신 변경이 맨 위에 표시됩니다.
         </p>
       </CardHeader>
@@ -257,14 +257,14 @@ export default function OrderHistory({
                 >
                   <Icon className={`h-6 w-6 ${iconClasses}`} />
                 </div>
-                <div className="flex-1">
-                  <div className="flex justify-between">
-                    <span className="font-semibold">{displayStatus}</span>
-                    <span className="text-sm text-muted-foreground">
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-col gap-1 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between bp-sm:gap-3">
+                    <span className="font-semibold leading-snug">{displayStatus}</span>
+                    <span className="shrink-0 text-sm text-muted-foreground">
                       {formatHistoryDate(item.date)}
                     </span>
                   </div>
-                  <p className="mt-1 text-sm text-muted-foreground">
+                  <p className="mt-1 text-sm leading-relaxed text-muted-foreground break-words">
                     {getHistoryDescriptionForDisplay(item)}
                   </p>
                 </div>
