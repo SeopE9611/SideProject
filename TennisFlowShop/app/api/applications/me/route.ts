@@ -109,6 +109,36 @@ function toStringArray(value: unknown): string[] {
   return value.filter((item): item is string => typeof item === "string");
 }
 
+
+function normalizeLinkedPaymentStatus(raw: unknown): string | null {
+  const value = String(raw ?? "").trim();
+  if (!value) return null;
+  const lower = value.toLowerCase();
+  if (lower === "pending") return "결제대기";
+  if (lower === "paid") return "결제완료";
+  if (lower === "failed") return "결제실패";
+  if (lower === "canceled" || lower === "cancelled") return "결제취소";
+  if (lower === "refunded") return "환불완료";
+  return value;
+}
+
+function buildPaymentContext(doc: Document | null | undefined) {
+  const paymentInfo = doc?.paymentInfo as Document | undefined;
+  return {
+    paymentStatus:
+      normalizeLinkedPaymentStatus(doc?.paymentStatus) ??
+      normalizeLinkedPaymentStatus(paymentInfo?.status),
+    paymentProvider:
+      typeof paymentInfo?.provider === "string"
+        ? paymentInfo.provider
+        : typeof doc?.paymentProvider === "string"
+          ? doc.paymentProvider
+          : typeof doc?.paymentMethod === "string"
+            ? doc.paymentMethod
+            : null,
+  };
+}
+
 function getCreatedAtTime(doc: Document): number {
   const date = new Date(doc.createdAt ?? 0);
   return Number.isNaN(date.getTime()) ? 0 : date.getTime();
@@ -289,17 +319,47 @@ export async function GET(req: Request) {
     orderObjectIds.push(oid);
   }
 
+  const rentalIdSet = new Set<string>();
+  const rentalObjectIds: ObjectId[] = [];
+  for (const doc of rawList as any[]) {
+    const rid = toObjectIdMaybe((doc as any).rentalId);
+    if (!rid) continue;
+    const key = rid.toString();
+    if (rentalIdSet.has(key)) continue;
+    rentalIdSet.add(key);
+    rentalObjectIds.push(rid);
+  }
+
   const orderHasRacketById = new Map<string, boolean>();
+  const orderPaymentContextById = new Map<string, { paymentStatus: string | null; paymentProvider: string | null }>();
   if (orderObjectIds.length > 0) {
     const orders = await db
       .collection("orders")
-      .find({ _id: { $in: orderObjectIds } }, { projection: { items: 1 } })
+      .find(
+        { _id: { $in: orderObjectIds } },
+        { projection: { items: 1, paymentStatus: 1, paymentInfo: 1, paymentProvider: 1, paymentMethod: 1 } },
+      )
       .toArray();
     for (const o of orders as any[]) {
       const hasRacket =
         Array.isArray(o.items) &&
-        o.items.some((it: any) => it?.kind === "racket");
+        o.items.some((it: any) => it?.kind === "racket" || it?.kind === "used_racket");
       orderHasRacketById.set(String(o._id), hasRacket);
+      orderPaymentContextById.set(String(o._id), buildPaymentContext(o));
+    }
+  }
+
+  const rentalPaymentContextById = new Map<string, { paymentStatus: string | null; paymentProvider: string | null }>();
+  if (rentalObjectIds.length > 0) {
+    const rentals = await db
+      .collection("rental_orders")
+      .find(
+        { _id: { $in: rentalObjectIds } },
+        { projection: { paymentStatus: 1, paymentInfo: 1, paymentProvider: 1, paymentMethod: 1 } },
+      )
+      .toArray();
+    for (const rental of rentals as any[]) {
+      rentalPaymentContextById.set(String(rental._id), buildPaymentContext(rental));
     }
   }
 
@@ -391,6 +451,20 @@ export async function GET(req: Request) {
           cancelReasonSummary = cancel.reasonText;
         }
       }
+      const packageApplied = Boolean((doc as any).packageApplied || (doc as any).packageInfo?.applied);
+      const linkedPaymentContext = orderIdStr
+        ? orderPaymentContextById.get(orderIdStr)
+        : (doc as any).rentalId
+          ? rentalPaymentContextById.get(String((doc as any).rentalId))
+          : undefined;
+      const fallbackPaymentContext = buildPaymentContext(doc as Document);
+      const paymentStatus = packageApplied
+        ? "패키지 적용 완료"
+        : (linkedPaymentContext?.paymentStatus ?? fallbackPaymentContext.paymentStatus);
+      const paymentProvider = packageApplied
+        ? null
+        : (linkedPaymentContext?.paymentProvider ?? fallbackPaymentContext.paymentProvider);
+
       return {
         id: doc._id.toString(),
         type: "스트링 장착 서비스",
@@ -463,6 +537,11 @@ export async function GET(req: Request) {
             : typeof (doc as any).userConfirmedAt === "string"
               ? (doc as any).userConfirmedAt
               : null,
+
+        // 취소 요청 모달 환불계좌 표시 판단용 결제 맥락
+        packageApplied,
+        paymentStatus,
+        paymentProvider,
 
         // 마이페이지 목록 카드용 취소 요청 정보
         cancelStatus: rawCancelStatus, //'요청' | '승인' | '거절' | 'none'

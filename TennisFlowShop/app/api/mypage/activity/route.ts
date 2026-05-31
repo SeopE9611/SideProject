@@ -40,6 +40,29 @@ function resolveOrderPaymentStatus(o: any): string {
   return '결제대기';
 }
 
+function resolvePaymentProvider(doc: any): string | null {
+  const provider = String(doc?.paymentInfo?.provider ?? doc?.paymentProvider ?? doc?.paymentMethod ?? '').trim();
+  return provider || null;
+}
+
+function resolveStringingPaymentContext(
+  appDoc: any,
+  linkedPayment?: { paymentStatus?: string | null; paymentProvider?: string | null } | null,
+) {
+  const packageApplied = Boolean(appDoc?.packageApplied || appDoc?.packageInfo?.applied);
+  if (packageApplied) {
+    return { packageApplied, paymentStatus: '패키지 적용 완료', paymentProvider: null as string | null };
+  }
+
+  return {
+    packageApplied,
+    paymentStatus:
+      linkedPayment?.paymentStatus ??
+      (appDoc?.paymentStatus || appDoc?.paymentInfo?.status ? resolveOrderPaymentStatus(appDoc) : null),
+    paymentProvider: linkedPayment?.paymentProvider ?? resolvePaymentProvider(appDoc),
+  };
+}
+
 
 type ActivityOrderSummary = {
   id: string;
@@ -114,6 +137,9 @@ type ActivityApplicationSummary = {
   inboundRequired: boolean; // 고객→매장 입고가 필요한가?
   needsInboundTracking: boolean; // 입고가 필요하고 + 자가발송(self_ship)이라 운송장 입력이 필요한가?
   collectionMethod: string;
+  packageApplied?: boolean;
+  paymentStatus?: string | null;
+  paymentProvider?: string | null;
 };
 
 export type ActivityGroup = {
@@ -348,6 +374,10 @@ export async function GET(req: Request) {
             stringingApplicationId: 1,
             stringing: 1,
             shipping: 1,
+            paymentStatus: 1,
+            paymentInfo: 1,
+            paymentProvider: 1,
+            paymentMethod: 1,
             cancelRequest: 1,
           },
         },
@@ -371,6 +401,12 @@ export async function GET(req: Request) {
           rentalId: 1,
           userConfirmedAt: 1,
           cancelRequest: 1,
+          packageApplied: 1,
+          packageInfo: 1,
+          paymentStatus: 1,
+          paymentInfo: 1,
+          paymentProvider: 1,
+          paymentMethod: 1,
         },
       })
       .sort({ updatedAt: -1, createdAt: -1 })
@@ -467,6 +503,12 @@ export async function GET(req: Request) {
           rentalId: 1,
           userConfirmedAt: 1,
           cancelRequest: 1,
+          packageApplied: 1,
+          packageInfo: 1,
+          paymentStatus: 1,
+          paymentInfo: 1,
+          paymentProvider: 1,
+          paymentMethod: 1,
         },
       },
     )
@@ -475,6 +517,18 @@ export async function GET(req: Request) {
   // orderId/rentalId → applicationSummary 매핑
   const appByOrderId = new Map<string, ActivityApplicationSummary[]>();
   const appByRentalId = new Map<string, ActivityApplicationSummary[]>();
+  const orderPaymentContextById = new Map(
+    (orders as any[]).map((order) => [
+      String(order._id),
+      { paymentStatus: resolveOrderPaymentStatus(order), paymentProvider: resolvePaymentProvider(order) },
+    ]),
+  );
+  const rentalPaymentContextById = new Map(
+    (rentals as any[]).map((rental) => [
+      String(rental._id),
+      { paymentStatus: resolveOrderPaymentStatus(rental), paymentProvider: resolvePaymentProvider(rental) },
+    ]),
+  );
 
   for (const doc of linkedApps as any[]) {
     const details = doc.stringDetails ?? {};
@@ -501,6 +555,12 @@ export async function GET(req: Request) {
 
     const createdAt = toISO(doc.appliedAt ?? doc.createdAt);
     const updatedAt = toISO(doc.updatedAt ?? doc.appliedAt ?? doc.createdAt);
+    const linkedPaymentContext = orderIdStr
+      ? orderPaymentContextById.get(orderIdStr)
+      : doc.rentalId
+        ? rentalPaymentContextById.get(String(doc.rentalId))
+        : undefined;
+    const paymentContext = resolveStringingPaymentContext(doc, linkedPaymentContext);
 
     const app: ActivityApplicationSummary = {
       id: String(doc._id),
@@ -517,6 +577,9 @@ export async function GET(req: Request) {
       inboundRequired,
       needsInboundTracking,
       collectionMethod,
+      packageApplied: paymentContext.packageApplied,
+      paymentStatus: paymentContext.paymentStatus,
+      paymentProvider: paymentContext.paymentProvider,
     };
 
     if (doc.orderId) {
@@ -697,6 +760,7 @@ export async function GET(req: Request) {
     const createdAt = toISO(doc.appliedAt ?? doc.createdAt ?? new ObjectId(doc._id).getTimestamp());
     const updatedAt = toISO(doc.updatedAt ?? doc.appliedAt ?? doc.createdAt ?? new ObjectId(doc._id).getTimestamp());
     const sortAt = isoMax(updatedAt, createdAt);
+    const paymentContext = resolveStringingPaymentContext(doc);
     groups.push({
       key: `application:${String(doc._id)}`,
       kind: 'application',
@@ -722,6 +786,9 @@ export async function GET(req: Request) {
         inboundRequired,
         needsInboundTracking,
         collectionMethod,
+        packageApplied: paymentContext.packageApplied,
+        paymentStatus: paymentContext.paymentStatus,
+        paymentProvider: paymentContext.paymentProvider,
       },
     });
   }
