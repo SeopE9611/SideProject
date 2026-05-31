@@ -194,7 +194,7 @@ export default function StringingApplicationHistory({
       <CardHeader className="pb-3 border-b border-border/60 bg-muted/30 dark:bg-card rounded-t-xl">
         <div className="flex items-center gap-2">
           <Calendar className="h-5 w-5 text-foreground" />
-          <CardTitle className="text-2xl font-semibold">처리 이력</CardTitle>
+          <CardTitle className="text-lg font-semibold bp-sm:text-xl">처리 이력</CardTitle>
         </div>
 
         <p className="mt-1 text-sm leading-relaxed text-muted-foreground break-words">
@@ -202,7 +202,7 @@ export default function StringingApplicationHistory({
         </p>
       </CardHeader>
 
-      <CardContent>
+      <CardContent className="p-4 bp-sm:p-6">
         {isLoading || isPageTransitionLoading ? (
           Array.from({ length: LIMIT }).map((_, i) => (
             <div key={i} className="flex animate-pulse space-x-4 py-3">
@@ -233,17 +233,17 @@ export default function StringingApplicationHistory({
             return (
               <div
                 key={idx}
-                className={`flex space-x-4 py-3 ${idx === 0 ? "rounded-lg bg-muted dark:bg-card px-3 -mx-3" : ""}`}
+                className={`flex gap-3 py-3 bp-sm:gap-4 ${idx === 0 ? "rounded-lg bg-muted dark:bg-card px-3 -mx-3" : ""}`}
               >
                 <div
-                  className={`h-10 w-10 flex items-center justify-center rounded-full border ${wrapperClasses}`}
+                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border bp-sm:h-10 bp-sm:w-10 ${wrapperClasses}`}
                 >
-                  <Icon className={`h-6 w-6 ${iconClasses}`} />
+                  <Icon className={`h-5 w-5 bp-sm:h-6 bp-sm:w-6 ${iconClasses}`} />
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-col gap-1 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between bp-sm:gap-3">
-                    <span className="font-semibold leading-snug">{log.status}</span>
-                    <span className="shrink-0 text-sm text-muted-foreground">
+                    <span className="break-keep font-semibold leading-snug">{log.status}</span>
+                    <span className="text-xs text-muted-foreground bp-sm:shrink-0 bp-sm:text-sm">
                       {new Intl.DateTimeFormat("ko-KR", {
                         year: "numeric",
                         month: "2-digit",
