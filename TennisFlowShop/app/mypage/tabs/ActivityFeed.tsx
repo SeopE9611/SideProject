@@ -800,7 +800,7 @@ export default function ActivityFeed() {
 
                         {/* 2) 상세 */}
                         <Button asChild size="sm" variant="outline" className="rounded-lg bg-transparent flex-1 min-w-[120px]">
-                          <Link href={detailHref}>상세</Link>
+                          <Link href={detailHref}>{detailLabel}</Link>
                         </Button>
 
                         {/* 3) 더보기(리뷰/교체확정은 여기로 묶음) */}
