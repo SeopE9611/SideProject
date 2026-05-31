@@ -562,6 +562,9 @@ export default function ApplicationsClient() {
               : hasRentalLink
                 ? rentalId
                 : null;
+            const detailHref = hasOrderLink && orderId
+              ? `/mypage?tab=orders&flowType=order&flowId=${orderId}&from=orders&focus=stringing`
+              : `/mypage?tab=orders&flowType=application&flowId=${app.id}&from=orders`;
 
             return (
               <Card
@@ -828,13 +831,11 @@ export default function ApplicationsClient() {
                         variant="outline"
                         size="sm"
                         onClick={() =>
-                          router.push(
-                            `/mypage?tab=orders&flowType=application&flowId=${app.id}&from=orders`,
-                          )
+                          router.push(detailHref)
                         }
                         className="bg-transparent"
                       >
-                        상세 보기
+                        이용 상세 보기
                         <ArrowRight className="ml-1 h-3 w-3" />
                       </Button>
                     ) : null}
