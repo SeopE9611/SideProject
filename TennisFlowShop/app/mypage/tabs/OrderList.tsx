@@ -297,18 +297,12 @@ export default function OrderList() {
         const totalSlots = order.stringService?.totalSlots ?? 0;
         const usedSlots = order.stringService?.usedSlots ?? 0;
         const remainingSlots = order.stringService?.remainingSlots ?? Math.max(totalSlots - usedSlots, 0);
-        const canApplyMoreStringService = order.canApplyMoreStringService ?? (Boolean(order.shippingInfo?.withStringService) && totalSlots > 0 && remainingSlots > 0);
+        const isOrderTerminalCanceled = order.status === "취소" || order.status === "환불";
+        const canApplyMoreStringService = !isOrderTerminalCanceled && (order.canApplyMoreStringService ?? (Boolean(order.shippingInfo?.withStringService) && totalSlots > 0 && remainingSlots > 0));
         const hasSubmittedStringingApplication = hasLinkedApplication || order.isStringServiceApplied === true || usedSlots > 0;
 
-        const stringServiceCTAKind: "apply" | "add" | "done" | null = !order.shippingInfo?.withStringService
-          ? null
-          : canApplyMoreStringService
-            ? hasSubmittedStringingApplication
-              ? "add"
-              : "apply"
-            : hasSubmittedStringingApplication
-              ? "done"
-              : "apply";
+        const stringServiceCTAKind: "apply" | "add" | "done" | null =
+          isOrderTerminalCanceled || !order.shippingInfo?.withStringService ? null : canApplyMoreStringService ? (hasSubmittedStringingApplication ? "add" : "apply") : hasSubmittedStringingApplication ? "done" : "apply";
 
         const stringServiceCTAHref = stringServiceCTAKind === "apply" || stringServiceCTAKind === "add" ? `/services/apply?orderId=${order.id}` : null;
         const stringServiceCTALabel = stringServiceCTAKind === "add" ? "교체서비스 추가 신청하기" : stringServiceCTAKind === "done" ? "교체서비스 신청 완료" : "교체서비스 신청하기";

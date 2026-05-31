@@ -766,7 +766,7 @@ export default function TransactionFlowList() {
               : userStatusLabel;
           const statusBadgeSpec = getStatusBadgeSpec(g, userStatusLabel);
           const linkedCount = g.kind === "order" ? (g.order?.linkedApplicationCount ?? 0) : g.kind === "rental" ? (g.rental?.linkedApplicationCount ?? 0) : 0;
-          const needsTrackingAction = Boolean(applicationActionTarget?.needsInboundTracking && !applicationActionTarget?.hasTracking);
+          const needsTrackingAction = isApplicationTrackingNeeded(applicationActionTarget);
           const normalizedMetaLabel = normalizeLabel(FLOW_TYPE_META_LABEL[g.flowType]);
           const normalizedFlowLabel = normalizeLabel(g.flowLabel);
           const todoPrimaryReason = scope === "todo" || scope === "all" ? getTodoPrimaryReason(g) : null;
@@ -1136,7 +1136,7 @@ export default function TransactionFlowList() {
                     }
 
                     if (isApplicationActionContext && applicationActionTarget?.id) {
-                      if (applicationActionTarget.needsInboundTracking ?? false) {
+                      if (isApplicationTrackingNeeded(applicationActionTarget)) {
                         actions.push({
                           key: "application-shipping",
                           priority: 0,
