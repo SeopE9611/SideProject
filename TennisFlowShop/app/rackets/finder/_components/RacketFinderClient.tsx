@@ -19,6 +19,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { Slider } from "@/components/ui/slider";
 import {
   GRIP_SIZE_OPTIONS,
@@ -267,6 +275,7 @@ export default function RacketFinderClient() {
   const [page, setPage] = useState(1);
   const pageSize = 12;
   const [hasSearched, setHasSearched] = useState(false);
+  const [filterSheetOpen, setFilterSheetOpen] = useState(false);
   const ALL = "__all__";
 
   const syncUrl = (f: Filters, nextPage: number) => {
@@ -408,6 +417,7 @@ export default function RacketFinderClient() {
     setPage(1);
     setHasSearched(true);
     syncUrl(next, 1);
+    setFilterSheetOpen(false);
   };
   const reset = () => {
     setDraft(DEFAULT);
@@ -536,6 +546,262 @@ export default function RacketFinderClient() {
     return list;
   }, [applied, hasSearched, applyNow]);
 
+
+  const renderFilterControls = () => (
+    <div className="space-y-6">
+      {/* 검색어 */}
+      <div className="space-y-2">
+        <SectionLabel>모델/키워드 검색</SectionLabel>
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={draft.q}
+            onChange={(e) => setDraft((p) => ({ ...p, q: e.target.value }))}
+            placeholder="예) ezone, vcore, blade..."
+            className="pl-9 bg-background/50 dark:bg-background/30 focus-visible:ring-primary/50"
+          />
+        </div>
+      </div>
+
+      {/* 브랜드 & 컨디션 */}
+      <div className="space-y-3">
+        <SectionLabel>브랜드 / 컨디션</SectionLabel>
+        <div className="grid grid-cols-2 gap-3">
+          <Select
+            value={draft.brand || undefined}
+            onValueChange={(v) =>
+              setDraft((p) => ({ ...p, brand: v === ALL ? "" : v }))
+            }
+          >
+            <SelectTrigger className="bg-background/50 dark:bg-background/30 focus:ring-primary/50">
+              <SelectValue placeholder="전체 브랜드" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ALL}>전체</SelectItem>
+              {RACKET_BRANDS.map((b) => (
+                <SelectItem key={b.value} value={b.value}>
+                  {b.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select
+            value={draft.condition || undefined}
+            onValueChange={(v) =>
+              setDraft((p) => ({ ...p, condition: v === ALL ? "" : v }))
+            }
+          >
+            <SelectTrigger className="bg-background/50 dark:bg-background/30 focus:ring-primary/50">
+              <SelectValue placeholder="전체 컨디션" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ALL}>전체</SelectItem>
+              <SelectItem value="A">A (최상)</SelectItem>
+              <SelectItem value="B">B (상)</SelectItem>
+              <SelectItem value="C">C (보통)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* 기본 스펙 슬라이더 */}
+      <div className="space-y-4">
+        <SectionLabel>기본 스펙</SectionLabel>
+        <RangeField
+          label="가격"
+          value={draft.price}
+          min={0}
+          max={600000}
+          step={10000}
+          suffix="원"
+          onChange={(v) => setDraft((p) => ({ ...p, price: v }))}
+        />
+        <RangeField
+          label="헤드 사이즈"
+          value={draft.headSize}
+          min={80}
+          max={120}
+          step={1}
+          suffix=" sq.in"
+          onChange={(v) => setDraft((p) => ({ ...p, headSize: v }))}
+        />
+        <RangeField
+          label="무게"
+          value={draft.weight}
+          min={200}
+          max={380}
+          step={1}
+          suffix="g"
+          onChange={(v) => setDraft((p) => ({ ...p, weight: v }))}
+        />
+      </div>
+      <div className="space-y-4">
+        <RangeField
+          label="밸런스"
+          value={draft.balance}
+          min={280}
+          max={380}
+          step={1}
+          suffix="mm"
+          onChange={(v) => setDraft((p) => ({ ...p, balance: v }))}
+        />
+        <RangeField
+          label="길이"
+          value={draft.lengthIn}
+          min={25}
+          max={29}
+          step={0.1}
+          suffix="in"
+          onChange={(v) => setDraft((p) => ({ ...p, lengthIn: v }))}
+        />
+        <RangeField
+          label="강성 (RA)"
+          value={draft.stiffnessRa}
+          min={45}
+          max={80}
+          step={1}
+          suffix=""
+          onChange={(v) => setDraft((p) => ({ ...p, stiffnessRa: v }))}
+        />
+        <RangeField
+          label="스윙웨이트 (SW)"
+          value={draft.swingWeight}
+          min={250}
+          max={390}
+          step={1}
+          suffix=""
+          onChange={(v) => setDraft((p) => ({ ...p, swingWeight: v }))}
+        />
+      </div>
+
+      {/* 스트링 패턴 */}
+      <div className="space-y-3">
+        <SectionLabel>스트링 패턴</SectionLabel>
+        <div className="grid grid-cols-1 gap-2 bp-sm:grid-cols-2">
+          {STRING_PATTERN_OPTIONS.map((patternOption) => {
+            const key = normalizePattern(patternOption.value);
+            const checked = draft.patterns.includes(key);
+            return (
+              <label
+                key={patternOption.value}
+                className={cn(
+                  "flex cursor-pointer items-start gap-2 rounded-lg px-3 py-2 text-sm leading-snug transition-[background-color,color,border-color,box-shadow,opacity] duration-200",
+                  "bg-background/50 dark:bg-background/30 hover:bg-background/80 dark:hover:bg-background/50",
+                  checked && "bg-secondary ring-1 ring-border",
+                )}
+              >
+                <Checkbox
+                  className="mt-0.5 shrink-0"
+                  checked={checked}
+                  onCheckedChange={(v) => {
+                    setDraft((prev) => {
+                      const set = new Set(prev.patterns);
+                      if (v) set.add(key);
+                      else set.delete(key);
+                      return { ...prev, patterns: Array.from(set) };
+                    });
+                  }}
+                />
+                <span
+                  className={cn(
+                    "min-w-0 leading-snug",
+                    checked && "font-medium text-primary",
+                  )}
+                >
+                  {patternOption.label.includes("(") ? (
+                    <>
+                      <span className="block">
+                        {patternOption.label.split(" (")[0]}
+                      </span>
+                      <span className="block text-xs text-muted-foreground">
+                        {patternOption.label.split(" (")[1]?.replace(")", "")}
+                      </span>
+                    </>
+                  ) : (
+                    patternOption.label
+                  )}
+                </span>
+              </label>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 그립 사이즈 */}
+      <div className="space-y-3">
+        <SectionLabel>그립 사이즈</SectionLabel>
+        <div className="grid grid-cols-1 gap-2">
+          {GRIP_SIZE_OPTIONS.map((gripOption) => {
+            const checked = draft.gripSizes.includes(gripOption.value);
+            return (
+              <label
+                key={gripOption.value}
+                className={cn(
+                  "flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-200",
+                  "bg-background/50 dark:bg-background/30 hover:bg-background/80 dark:hover:bg-background/50",
+                  checked && "bg-secondary ring-1 ring-border",
+                )}
+              >
+                <Checkbox
+                  checked={checked}
+                  onCheckedChange={(v) => {
+                    setDraft((prev) => {
+                      const set = new Set(prev.gripSizes);
+                      if (v) set.add(gripOption.value);
+                      else set.delete(gripOption.value);
+                      return { ...prev, gripSizes: Array.from(set) };
+                    });
+                  }}
+                />
+                <span className={cn(checked && "font-medium text-primary")}>
+                  {gripOption.label}
+                </span>
+              </label>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 상세 검색 */}
+      <div className="space-y-4 pt-4 border-t border-muted/50">
+        <div className="flex items-center gap-2">
+          <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
+          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            상세 검색
+          </span>
+        </div>
+
+        <label
+          className={cn(
+            "flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 transition-[background-color,color,border-color,box-shadow,opacity] duration-200",
+            "bg-background/50 dark:bg-background/30 hover:bg-background/80 dark:hover:bg-background/50",
+            draft.strict && "bg-muted ring-1 ring-ring",
+          )}
+        >
+          <Checkbox
+            checked={draft.strict}
+            onCheckedChange={(v) => setDraft((p) => ({ ...p, strict: !!v }))}
+          />
+          <div className="flex-1">
+            <div
+              className={cn("text-sm font-medium", draft.strict && "text-primary")}
+            >
+              정확도 모드
+            </div>
+            <div className="text-xs text-muted-foreground">스펙 누락 상품 제외</div>
+          </div>
+          {draft.strict && <Sparkles className="h-4 w-4 text-primary" />}
+        </label>
+      </div>
+
+      {/* 검색 버튼 */}
+      <Button className="w-full h-11 font-semibold" onClick={apply}>
+        <Search className="mr-2 h-4 w-4" />
+        검색하기
+      </Button>
+    </div>
+  );
+
   return (
     <div className="space-y-4 md:space-y-6">
       <div className="space-y-2">
@@ -555,7 +821,7 @@ export default function RacketFinderClient() {
       </div>
 
       <div className="bp-lg:grid bp-lg:grid-cols-[320px_1fr] bp-lg:gap-8 space-y-4 md:space-y-6 bp-lg:space-y-0">
-        <aside className="h-fit rounded-2xl bg-muted/30 p-4 md:p-5 dark:bg-muted/10 ring-1 ring-muted/50 dark:ring-muted/20">
+        <aside className="hidden h-fit rounded-2xl bg-muted/30 p-4 ring-1 ring-muted/50 dark:bg-muted/10 bp-lg:block bp-lg:p-5">
           <div className="flex items-center justify-between pb-4">
             <div className="flex items-center gap-2">
               <Filter className="h-4 w-4 text-primary" />
@@ -571,268 +837,88 @@ export default function RacketFinderClient() {
               초기화
             </Button>
           </div>
-
-          <div className="space-y-6">
-            {/* 검색어 */}
-            <div className="space-y-2">
-              <SectionLabel>모델/키워드 검색</SectionLabel>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  value={draft.q}
-                  onChange={(e) =>
-                    setDraft((p) => ({ ...p, q: e.target.value }))
-                  }
-                  placeholder="예) ezone, vcore, blade..."
-                  className="pl-9 bg-background/50 dark:bg-background/30 focus-visible:ring-primary/50"
-                />
-              </div>
-            </div>
-
-            {/* 브랜드 & 컨디션 */}
-            <div className="space-y-3">
-              <SectionLabel>브랜드 / 컨디션</SectionLabel>
-              <div className="grid grid-cols-2 gap-3">
-                <Select
-                  value={draft.brand || undefined}
-                  onValueChange={(v) =>
-                    setDraft((p) => ({ ...p, brand: v === ALL ? "" : v }))
-                  }
-                >
-                  <SelectTrigger className="bg-background/50 dark:bg-background/30 focus:ring-primary/50">
-                    <SelectValue placeholder="전체 브랜드" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={ALL}>전체</SelectItem>
-                    {RACKET_BRANDS.map((b) => (
-                      <SelectItem key={b.value} value={b.value}>
-                        {b.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Select
-                  value={draft.condition || undefined}
-                  onValueChange={(v) =>
-                    setDraft((p) => ({ ...p, condition: v === ALL ? "" : v }))
-                  }
-                >
-                  <SelectTrigger className="bg-background/50 dark:bg-background/30 focus:ring-primary/50">
-                    <SelectValue placeholder="전체 컨디션" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={ALL}>전체</SelectItem>
-                    <SelectItem value="A">A (최상)</SelectItem>
-                    <SelectItem value="B">B (상)</SelectItem>
-                    <SelectItem value="C">C (보통)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* 기본 스펙 슬라이더 */}
-            <div className="space-y-4">
-              <SectionLabel>기본 스펙</SectionLabel>
-              <RangeField
-                label="가격"
-                value={draft.price}
-                min={0}
-                max={600000}
-                step={10000}
-                suffix="원"
-                onChange={(v) => setDraft((p) => ({ ...p, price: v }))}
-              />
-              <RangeField
-                label="헤드 사이즈"
-                value={draft.headSize}
-                min={80}
-                max={120}
-                step={1}
-                suffix=" sq.in"
-                onChange={(v) => setDraft((p) => ({ ...p, headSize: v }))}
-              />
-              <RangeField
-                label="무게"
-                value={draft.weight}
-                min={200}
-                max={380}
-                step={1}
-                suffix="g"
-                onChange={(v) => setDraft((p) => ({ ...p, weight: v }))}
-              />
-            </div>
-            <div className="space-y-4">
-              <RangeField
-                label="밸런스"
-                value={draft.balance}
-                min={280}
-                max={380}
-                step={1}
-                suffix="mm"
-                onChange={(v) => setDraft((p) => ({ ...p, balance: v }))}
-              />
-              <RangeField
-                label="길이"
-                value={draft.lengthIn}
-                min={25}
-                max={29}
-                step={0.1}
-                suffix=" in"
-                onChange={(v) => setDraft((p) => ({ ...p, lengthIn: v }))}
-              />
-              <RangeField
-                label="강성 (RA)"
-                value={draft.stiffnessRa}
-                min={45}
-                max={80}
-                step={1}
-                suffix=""
-                onChange={(v) => setDraft((p) => ({ ...p, stiffnessRa: v }))}
-              />
-              <RangeField
-                label="스윙웨이트 (SW)"
-                value={draft.swingWeight}
-                min={250}
-                max={390}
-                step={1}
-                suffix=""
-                onChange={(v) => setDraft((p) => ({ ...p, swingWeight: v }))}
-              />
-            </div>
-
-            {/* 스트링 패턴 */}
-            <div className="space-y-3">
-              <SectionLabel>스트링 패턴</SectionLabel>
-              <div className="grid grid-cols-1 gap-2 bp-sm:grid-cols-2">
-                {STRING_PATTERN_OPTIONS.map((patternOption) => {
-                  const key = normalizePattern(patternOption.value);
-                  const checked = draft.patterns.includes(key);
-                  return (
-                    <label
-                      key={patternOption.value}
-                      className={cn(
-                        "flex cursor-pointer items-start gap-2 rounded-lg px-3 py-2 text-sm leading-snug transition-[background-color,color,border-color,box-shadow,opacity] duration-200",
-                        "bg-background/50 dark:bg-background/30 hover:bg-background/80 dark:hover:bg-background/50",
-                        checked &&
-                          "bg-secondary ring-1 ring-border",
-                      )}
-                    >
-                      <Checkbox
-                        className="mt-0.5 shrink-0"
-                        checked={checked}
-                        onCheckedChange={(v) => {
-                          setDraft((prev) => {
-                            const set = new Set(prev.patterns);
-                            if (v) set.add(key);
-                            else set.delete(key);
-                            return { ...prev, patterns: Array.from(set) };
-                          });
-                        }}
-                      />
-                      <span
-                        className={cn("min-w-0 leading-snug", checked && "font-medium text-primary")}
-                      >
-                        {patternOption.label.includes("(") ? (
-                          <>
-                            <span className="block">{patternOption.label.split(" (")[0]}</span>
-                            <span className="block text-xs text-muted-foreground">
-                              {patternOption.label.split(" (")[1]?.replace(")", "")}
-                            </span>
-                          </>
-                        ) : (
-                          patternOption.label
-                        )}
-                      </span>
-                    </label>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* 그립 사이즈 */}
-            <div className="space-y-3">
-              <SectionLabel>그립 사이즈</SectionLabel>
-              <div className="grid grid-cols-1 gap-2">
-                {GRIP_SIZE_OPTIONS.map((gripOption) => {
-                  const checked = draft.gripSizes.includes(gripOption.value);
-                  return (
-                    <label
-                      key={gripOption.value}
-                      className={cn(
-                        "flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-200",
-                        "bg-background/50 dark:bg-background/30 hover:bg-background/80 dark:hover:bg-background/50",
-                        checked &&
-                          "bg-secondary ring-1 ring-border",
-                      )}
-                    >
-                      <Checkbox
-                        checked={checked}
-                        onCheckedChange={(v) => {
-                          setDraft((prev) => {
-                            const set = new Set(prev.gripSizes);
-                            if (v) set.add(gripOption.value);
-                            else set.delete(gripOption.value);
-                            return { ...prev, gripSizes: Array.from(set) };
-                          });
-                        }}
-                      />
-                      <span
-                        className={cn(checked && "font-medium text-primary")}
-                      >
-                        {gripOption.label}
-                      </span>
-                    </label>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* 상세 검색 */}
-            <div className="space-y-4 pt-4 border-t border-muted/50">
-              <div className="flex items-center gap-2">
-                <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
-                <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  상세 검색
-                </span>
-              </div>
-
-              <label
-                className={cn(
-                  "flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 transition-[background-color,color,border-color,box-shadow,opacity] duration-200",
-                  "bg-background/50 dark:bg-background/30 hover:bg-background/80 dark:hover:bg-background/50",
-                  draft.strict && "bg-muted ring-1 ring-ring",
-                )}
-              >
-                <Checkbox
-                  checked={draft.strict}
-                  onCheckedChange={(v) =>
-                    setDraft((p) => ({ ...p, strict: !!v }))
-                  }
-                />
-                <div className="flex-1">
-                  <div
-                    className={cn(
-                      "text-sm font-medium",
-                      draft.strict && "text-primary",
-                    )}
-                  >
-                    정확도 모드
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    스펙 누락 상품 제외
-                  </div>
-                </div>
-                {draft.strict && <Sparkles className="h-4 w-4 text-primary" />}
-              </label>
-            </div>
-
-            {/* 검색 버튼 */}
-            <Button className="w-full h-11 font-semibold" onClick={apply}>
-              <Search className="mr-2 h-4 w-4" />
-              검색하기
-            </Button>
-          </div>
+          {renderFilterControls()}
         </aside>
+
+        <div className="rounded-2xl border border-border bg-card p-3 shadow-sm bp-sm:p-4 bp-lg:hidden">
+          <div className="grid grid-cols-2 gap-2 bp-sm:grid-cols-[auto_auto_1fr_auto] bp-sm:items-center">
+            <Sheet open={filterSheetOpen} onOpenChange={setFilterSheetOpen}>
+              <SheetTrigger asChild>
+                <Button type="button" variant="outline" className="h-10 justify-center whitespace-nowrap">
+                  <Filter className="mr-2 h-4 w-4" />
+                  필터
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="bottom" className="flex max-h-[88dvh] flex-col gap-0 overflow-hidden rounded-t-3xl p-0">
+                <SheetHeader className="border-b border-border px-4 pb-3 pt-4 text-left">
+                  <SheetTitle className="flex items-center gap-2 text-base">
+                    <Filter className="h-4 w-4 text-primary" />
+                    라켓 필터
+                  </SheetTitle>
+                  <SheetDescription>
+                    원하는 스펙을 조정한 뒤 검색하기를 눌러 결과에 반영하세요.
+                  </SheetDescription>
+                </SheetHeader>
+                <div className="flex-1 overflow-y-auto px-4 py-5">
+                  {renderFilterControls()}
+                </div>
+              </SheetContent>
+            </Sheet>
+
+            <Button
+              variant="ghost"
+              onClick={reset}
+              className="h-10 justify-center whitespace-nowrap text-muted-foreground hover:text-foreground"
+            >
+              <RotateCcw className="mr-2 h-4 w-4" />
+              초기화
+            </Button>
+
+            <div className="col-span-2 flex min-w-0 items-center gap-2 text-sm text-muted-foreground bp-sm:col-span-1">
+              {hasSearched ? (
+                <>
+                  <Badge
+                    variant={getMerchandisingBadgeSpec("recommended").variant}
+                    className="rounded-lg px-2.5 py-1 font-semibold"
+                  >
+                    {isLoading
+                      ? "준비 중"
+                      : hasDataError
+                        ? "-"
+                        : `${(total ?? 0).toLocaleString()}개`}
+                  </Badge>
+                  <span className="whitespace-nowrap">
+                    페이지 {isLoading || hasDataError ? "-" : page} / {hasResolvedTotalPages ? totalPages : "-"}
+                  </span>
+                </>
+              ) : (
+                <span>필터 선택 후 검색해 주세요</span>
+              )}
+            </div>
+
+            {hasSearched && (
+              <Select
+                value={applied.sort}
+                onValueChange={(v) => {
+                  const ok = SORT_OPTIONS.some((o) => o.value === (v as SortKey));
+                  if (!ok) return;
+                  applyNow({ ...applied, sort: v as SortKey });
+                }}
+              >
+                <SelectTrigger className="col-span-2 h-10 w-full bg-background/80 focus:ring-primary/50 bp-sm:col-span-1 bp-sm:w-[160px] dark:bg-muted/30">
+                  <SelectValue placeholder="정렬" />
+                </SelectTrigger>
+                <SelectContent>
+                  {SORT_OPTIONS.map((o) => (
+                    <SelectItem key={o.value} value={o.value}>
+                      {o.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          </div>
+        </div>
 
         {/* Results */}
         <div className="space-y-5">
