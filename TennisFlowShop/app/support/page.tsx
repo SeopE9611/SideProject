@@ -106,12 +106,6 @@ const quickActions: QuickActionProps[] = [
     variant: "primary",
   },
   {
-    icon: PackageSearch,
-    title: "비회원 주문 조회",
-    description: "주문 내역 확인",
-    href: "/order-lookup",
-  },
-  {
     icon: Headset,
     title: "아카데미 문의",
     description: "레슨 일정 및 수강료",
