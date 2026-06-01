@@ -24,7 +24,7 @@ export default async function ServicesPage() {
       description: "강력한 파워와 반발력을 제공하는 스트링",
       features: ["최대한의 파워 제공", "부드러운 타구감", "관절에 부담이 적음", "낮은 장력에서도 충분한 반발력"],
       recommended: ["파워 중심의 플레이 스타일", "어깨나 팔꿈치에 부담을 줄이고 싶은 분", "초보자 및 중급자", "자연스러운 스윙으로 힘을 얻고 싶은 분"],
-      examples: ["핀포인트", "엑스드라이브", "탑스핀 ", "사이버블루", "포커스헥스울트라"],
+      examples: ["핀포인트 엑스드라이브", "탑스핀 사이버블루", "포커스헥스울트라"],
       icon: <Zap className="h-8 w-8" />,
       performance: { power: 95, control: 70, spin: 75, durability: 80 },
     },
