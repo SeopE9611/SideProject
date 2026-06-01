@@ -14,8 +14,24 @@ export const metadata: Metadata = {
   title: "장착 서비스",
 };
 
+const formatPriceRange = (
+  min: number | null | undefined,
+  max: number | null | undefined,
+  emptyLabel = "-",
+) => {
+  if (min == null && max == null) return emptyLabel;
+  if (min != null && max != null) {
+    return min === max
+      ? `${min.toLocaleString("ko-KR")}원`
+      : `${min.toLocaleString("ko-KR")}~${max.toLocaleString("ko-KR")}원`;
+  }
+
+  const value = min ?? max;
+  return value == null ? emptyLabel : `${value.toLocaleString("ko-KR")}원`;
+};
+
 export default async function ServicesPage() {
-  const { primarySummaries, otherSummary, hybridGuide } = await getStringingPricingView();
+  const { primarySummaries, hybridGuide } = await getStringingPricingView();
   // 스트링 유형 데이터
   const stringTypes = [
     {
@@ -439,7 +455,7 @@ export default async function ServicesPage() {
                 <CardContent className="text-sm text-muted-foreground">
                   {cat.count === 0
                     ? "등록된 상품 데이터 없음"
-                    : `상품가 ${cat.minPrice?.toLocaleString() ?? "-"}~${cat.maxPrice?.toLocaleString() ?? "-"}원 / 장착비 ${cat.minMountingFee?.toLocaleString() ?? "-"}~${cat.maxMountingFee?.toLocaleString() ?? "-"}원`}
+                    : `상품가 ${formatPriceRange(cat.minPrice, cat.maxPrice)} / 장착비 ${formatPriceRange(cat.minMountingFee, cat.maxMountingFee)}`}
                 </CardContent>
               </Card>
             ))}
@@ -452,16 +468,6 @@ export default async function ServicesPage() {
                 <p>등록된 하이브리드 상품: {hybridGuide.count.toLocaleString()}개</p>
               </CardContent>
             </Card>
-            {otherSummary?.count ? (
-              <Card className="bg-card border-dashed md:col-span-2">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-base">{otherSummary.label} (보조 분류)</CardTitle>
-                </CardHeader>
-                <CardContent className="text-sm text-muted-foreground">
-                  상품가 {otherSummary.minPrice?.toLocaleString() ?? "-"}~{otherSummary.maxPrice?.toLocaleString() ?? "-"}원 / 장착비 {otherSummary.minMountingFee?.toLocaleString() ?? "-"}~{otherSummary.maxMountingFee?.toLocaleString() ?? "-"}원
-                </CardContent>
-              </Card>
-            ) : null}
           </div>
 
           {/* 추가 서비스 */}
