@@ -200,12 +200,15 @@ export default function MypageClient({ user }: Props) {
   const todoCardDescription = hasTodoItems ? "바로 확인" : "처리 완료";
 
   return (
-    <div className="min-h-full bg-background">
-      <div className="absolute inset-0 opacity-5 dark:opacity-10 bp-xs:hidden bg-cross-line-pattern" />
+    <div className="relative min-h-full bg-background">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 opacity-5 dark:opacity-10 bp-xs:hidden bg-cross-line-pattern"
+      />
 
       <div className={pageTone.heroPanel}>
-        <div className="absolute inset-0 bg-muted/40"></div>
-        <div className="absolute inset-0 bp-xs:hidden">
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-muted/40"></div>
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 bp-xs:hidden">
           <div className="absolute top-10 left-10 w-20 h-20 bg-card/10 rounded-full animate-pulse" />
           <div className="absolute top-32 right-20 w-16 h-16 bg-card/5 rounded-full" />
           <div className="absolute bottom-20 left-1/4 w-12 h-12 bg-card/10 rounded-full animate-pulse" />
