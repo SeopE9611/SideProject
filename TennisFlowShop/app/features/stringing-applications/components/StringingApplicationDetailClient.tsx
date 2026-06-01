@@ -1243,16 +1243,16 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                     <p className="text-xs font-medium text-muted-foreground">환불 계좌 정보</p>
                     {needsCancelRefundAccount || cancelInfo.refundAccount ? (
                       <dl className="mt-2 space-y-1 text-xs text-foreground">
-                        <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
-                          <dt className="text-muted-foreground">환불 은행</dt>
+                        <div className="grid gap-1 sm:grid-cols-[72px_minmax(0,1fr)] sm:gap-2">
+                          <dt className="break-keep text-muted-foreground">환불 은행</dt>
                           <dd>{cancelInfo.refundAccount?.bankLabel || '미입력'}</dd>
                         </div>
-                        <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
-                          <dt className="text-muted-foreground">계좌번호</dt>
-                          <dd className="font-mono">{cancelInfo.refundAccount?.account || '미입력'}</dd>
+                        <div className="grid gap-1 sm:grid-cols-[72px_minmax(0,1fr)] sm:gap-2">
+                          <dt className="break-keep text-muted-foreground">계좌번호</dt>
+                          <dd className="break-words font-mono">{cancelInfo.refundAccount?.account || '미입력'}</dd>
                         </div>
-                        <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
-                          <dt className="text-muted-foreground">예금주</dt>
+                        <div className="grid gap-1 sm:grid-cols-[72px_minmax(0,1fr)] sm:gap-2">
+                          <dt className="break-keep text-muted-foreground">예금주</dt>
                           <dd>{cancelInfo.refundAccount?.holder || '미입력'}</dd>
                         </div>
                       </dl>
@@ -1915,7 +1915,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                         {itemSummary.map((item) => (
                           <div key={`${item.id}-${item.name}-${item.price}`} className="grid grid-cols-[minmax(0,1.6fr)_80px_100px_110px] px-4 py-2 text-sm border-t border-border/70">
                             <div className="pr-2">
-                              <p className="font-medium text-foreground truncate">{item.name}</p>
+                              <p className="line-clamp-2 break-keep font-medium text-foreground">{item.name}</p>
                             </div>
                             <div className="text-center text-xs text-foreground/75">x {item.quantity}개</div>
                             <div className="text-right text-foreground">{item.price.toLocaleString()}원</div>

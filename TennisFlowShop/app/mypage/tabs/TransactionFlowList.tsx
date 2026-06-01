@@ -802,7 +802,7 @@ export default function TransactionFlowList() {
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <p className="line-clamp-2 break-keep text-base font-semibold text-foreground">{displayTitle}</p>
-                    <p className="mt-1 whitespace-nowrap text-xs tabular-nums text-foreground/75">
+                    <p className="mt-1 whitespace-normal break-keep text-xs tabular-nums text-foreground/75">
                       {displayMetaLabel} · {displayDateLabel} {formatDate(displayDateValue)}
                       {standaloneApplicationIdMeta}
                     </p>
@@ -812,7 +812,7 @@ export default function TransactionFlowList() {
                   </Badge>
                 </div>
 
-                <div className="flex flex-nowrap items-center gap-2 overflow-x-auto text-xs">
+                <div className="flex flex-wrap items-center gap-2 text-xs">
                   <Badge variant="outline" className="shrink-0 whitespace-nowrap">
                     {flowKindBadgeLabel}
                   </Badge>
