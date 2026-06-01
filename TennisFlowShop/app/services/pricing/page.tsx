@@ -65,9 +65,8 @@ export default async function PricingPage() {
     },
     {
       name: "패키지 적용 신청",
-      price: "교체비 무료",
       time: "30-60분",
-      description: "사용 가능한 패키지 횟수가 있으면 교체비가 무료입니다.",
+      description: "사용가능한 패키지 횟수가 있으면 교체비 대신 패키지 잔여횟수가 차감됩니다",
       features: ["패키지 잔여 횟수 기준", "적용 불가 시 일반 정책으로 계산", "신청 방식에 따라 최종 금액 상이"],
       icon: PackageCheck,
     },

@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CUSTOM_STRING_MOUNTING_FEE } from "@/lib/stringing-pricing-policy";
-import { ArrowRight, Award, CheckCircle, Clock, File, Grid2X2, Package, RotateCw, Shield, ShoppingBag, Sliders, Star, Target, ThumbsUp, Users, Wrench, Zap } from "lucide-react";
+import { ArrowRight, Award, CheckCircle, File, Grid2X2, Package, RotateCw, Shield, ShoppingBag, Sliders, Star, Target, ThumbsUp, Users, Wrench, Zap } from "lucide-react";
 import Link from "next/link";
 
 import type { Metadata } from "next";
@@ -70,8 +70,7 @@ export default async function ServicesPage() {
     },
     {
       service: "패키지 적용 신청",
-      priceLabel: "교체비 무료",
-      description: "패키지 적용 시 교체비가 무료입니다.",
+      description: "사용가능한 패키지 횟수가 있으면 교체비 대신 패키지 잔여횟수가 차감됩니다",
       icon: <Package className="h-6 w-6" />,
       duration: "45-60분",
       popular: false,
