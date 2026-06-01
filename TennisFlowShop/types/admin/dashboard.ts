@@ -84,6 +84,7 @@ export type DashboardMetrics = {
       cancelRequestsReadyForReview: number;
       shippingPending: number;
       paymentPending24h: number;
+      packagePaymentCheck: number;
       rentalOverdue: number;
       rentalDueSoon: number;
       passExpiringSoon: number;

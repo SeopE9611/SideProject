@@ -527,9 +527,10 @@ export default function AdminDashboardClient() {
           <Card className="border-info/40 bg-info/5">
             <CardHeader className="pb-2">
               <CardTitle className="text-base">확인 필요</CardTitle>
-              <CardDescription>오프라인·알림·정산</CardDescription>
+              <CardDescription>패키지·오프라인·알림·정산</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
+              <div className="flex items-center justify-between"><span>패키지 결제확인</span><Badge className="shrink-0 whitespace-nowrap" variant={data.kpi.queue.packagePaymentCheck > 0 ? "destructive" : "secondary"}>{formatAdminNumber(data.kpi.queue.packagePaymentCheck)}</Badge></div>
               <div className="flex items-center justify-between"><span>오프라인 미결제</span><Badge className="shrink-0 whitespace-nowrap" variant={offlineMetrics.pendingOfflineCount > 0 ? "destructive" : "secondary"}>{formatAdminNumber(offlineMetrics.pendingOfflineCount)}</Badge></div>
               <div className="flex items-center justify-between"><span>알림 실패</span><Badge className="shrink-0 whitespace-nowrap" variant={data.kpi.queue.outboxFailed > 0 ? "destructive" : "secondary"}>{formatAdminNumber(data.kpi.queue.outboxFailed)}</Badge></div>
               <div className="flex items-center justify-between"><span>지난달 정산</span><Badge className="shrink-0 whitespace-nowrap" variant={!data.settlements.hasPrevSnapshot ? "destructive" : "secondary"}>{!data.settlements.hasPrevSnapshot ? "미생성" : "OK"}</Badge></div>
@@ -543,6 +544,7 @@ export default function AdminDashboardClient() {
             <CardContent className="grid gap-2">
               <Button asChild size="sm" variant="outline" className="justify-start whitespace-nowrap bg-transparent"><Link href="/admin/orders">주문·교체서비스 처리</Link></Button>
               <Button asChild size="sm" variant="outline" className="justify-start whitespace-nowrap bg-transparent"><Link href="/admin/rentals">라켓 대여 처리</Link></Button>
+              <Button asChild size="sm" variant="outline" className="justify-start whitespace-nowrap bg-transparent"><Link href="/admin/packages?payment=결제대기">패키지 결제/활성화</Link></Button>
               <Button asChild size="sm" variant="outline" className="justify-start whitespace-nowrap bg-transparent"><Link href="/admin/academy/applications">아카데미 상담</Link></Button>
             </CardContent>
           </Card>

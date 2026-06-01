@@ -494,9 +494,16 @@ export async function GET(
                         },
                         then: "취소",
                       },
-                      // 남은 횟수 0 이하면 종료
+                      // 패스 미발급이면 대기
+                      { case: { $not: ["$passDoc"] }, then: "대기" },
+                      // 패스가 실제로 있고 남은 횟수 0 이하면 종료
                       {
-                        case: { $lte: [{ $ifNull: ["$passDoc.remainingCount", 0] }, 0] },
+                        case: {
+                          $and: [
+                            { $ne: ["$passDoc", null] },
+                            { $lte: [{ $ifNull: ["$passDoc.remainingCount", 0] }, 0] },
+                          ],
+                        },
                         then: "종료",
                       },
                       // 시간 만료
@@ -509,8 +516,6 @@ export async function GET(
                         },
                         then: "만료",
                       },
-                      // 패스 미발급이면 대기
-                      { case: { $not: ["$passDoc"] }, then: "대기" },
                       // 일시정지/legacy suspended 또는 결제미완료
                       {
                         case: {

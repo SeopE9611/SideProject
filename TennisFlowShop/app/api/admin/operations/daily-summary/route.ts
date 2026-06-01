@@ -124,6 +124,7 @@ export async function GET(req: Request) {
     total:
       operationTaskCounts.cancelRequests +
       operationTaskCounts.paymentCheck +
+      operationTaskCounts.packagePaymentCheck +
       operationTaskCounts.shippingMissing +
       operationTaskCounts.stringingWork +
       operationTaskCounts.rentalDue +
@@ -133,12 +134,12 @@ export async function GET(req: Request) {
   };
 
   const urgentRemaining = remaining.cancelRequests + remaining.rentalDue;
-  const watchRemaining = remaining.paymentCheck + remaining.shippingMissing + remaining.stringingWork + remaining.linkedReview + remaining.offline + remaining.academyApplications;
+  const watchRemaining = remaining.paymentCheck + remaining.packagePaymentCheck + remaining.shippingMissing + remaining.stringingWork + remaining.linkedReview + remaining.offline + remaining.academyApplications;
   let message = "오늘 주요 업무가 안정적으로 정리되었습니다.";
   if (urgentRemaining > 0) {
     message = "긴급 처리 업무가 남아 있습니다. 취소 요청과 대여 반납/연체를 먼저 확인하세요.";
   } else if (watchRemaining > 0) {
-    message = "확인 필요한 업무가 남아 있습니다. 결제, 배송, 교체서비스, 상담 대기 건을 점검하세요.";
+    message = "확인 필요한 업무가 남아 있습니다. 결제, 패키지 결제/활성화, 배송, 교체서비스, 상담 대기 건을 점검하세요.";
   }
 
   const response: AdminDailyOperationsSummaryResponse = {

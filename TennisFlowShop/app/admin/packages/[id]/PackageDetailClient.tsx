@@ -447,7 +447,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
           </div>
         </div>
 
-        <Card className={cn("border-border bg-card/80 dark:bg-card dark:border-border", adminSurface.tableCard)}>
+        <Card className={cn("mb-6 border-border bg-card/80 dark:bg-card dark:border-border", adminSurface.tableCard)}>
           <CardHeader className="border-b border-border">
             <CardTitle className="flex items-center gap-2">
               <History className="h-5 w-5 text-primary" />
