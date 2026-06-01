@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 
 import AcademyApplyClient from "@/app/academy/apply/_components/AcademyApplyClient";
 import { Button } from "@/components/ui/button";
+import { getAcademyScheduleDisplay } from "@/lib/academy-display";
 import { getCurrentUserId } from "@/lib/hooks/get-current-user";
 import { getDb } from "@/lib/mongodb";
 import {
@@ -204,6 +205,7 @@ export default async function AcademyApplyPage({ searchParams }: { searchParams?
 
   const [selectedClass, initialApplicantInfo, activeApplications] = await Promise.all([getPublicAcademyClassById(classId ?? null), getApplicantProfile(userId), getActiveApplications(userId)]);
   const duplicateApplication = selectedClass ? activeApplications.find((application) => application.classId === selectedClass._id) : null;
+  const selectedClassSchedule = selectedClass ? getAcademyScheduleDisplay(selectedClass.scheduleText) : null;
 
   return (
     <main className="min-h-screen bg-background">
@@ -304,37 +306,38 @@ export default async function AcademyApplyPage({ searchParams }: { searchParams?
                     <div className="mb-4">
                       <p className="mb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">선택한 클래스</p>
                       <h3 className="text-xl font-semibold text-foreground">{selectedClass.name}</h3>
-                      {selectedClass.description && <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{selectedClass.description}</p>}
+                      {selectedClass.description && <p className="mt-2 whitespace-pre-line break-keep break-words text-sm leading-relaxed text-muted-foreground">{selectedClass.description}</p>}
                     </div>
 
                     {/* Class Details Grid */}
                     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                       <div className="flex items-center gap-3 rounded-xl bg-muted/50 p-3">
-                        <Users className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                          <p className="text-xs text-muted-foreground">정원</p>
-                          <p className="text-sm font-medium text-foreground">{formatClassCapacity(selectedClass.capacity)}</p>
+                        <Users className="h-4 w-4 shrink-0 text-muted-foreground" />
+                        <div className="min-w-0">
+                          <p className="shrink-0 whitespace-nowrap break-keep text-xs text-muted-foreground">정원</p>
+                          <p className="min-w-0 whitespace-normal break-keep break-words text-sm font-medium text-foreground">{formatClassCapacity(selectedClass.capacity)}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3 rounded-xl bg-muted/50 p-3">
-                        <MapPin className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                          <p className="text-xs text-muted-foreground">장소</p>
-                          <p className="text-sm font-medium text-foreground">{selectedClass.location || "상담 후 안내"}</p>
+                        <MapPin className="h-4 w-4 shrink-0 text-muted-foreground" />
+                        <div className="min-w-0">
+                          <p className="shrink-0 whitespace-nowrap break-keep text-xs text-muted-foreground">장소</p>
+                          <p className="min-w-0 whitespace-normal break-keep break-words text-sm font-medium text-foreground">{selectedClass.location || "상담 후 안내"}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3 rounded-xl bg-muted/50 p-3">
+                        <Calendar className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                        <div className="min-w-0 space-y-0.5 whitespace-normal break-keep break-words">
+                          <p className="shrink-0 whitespace-nowrap break-keep text-xs text-muted-foreground">일정</p>
+                          <p className="text-sm font-semibold text-foreground">{selectedClassSchedule?.daysText}</p>
+                          {selectedClassSchedule?.timeText && <p className="text-sm font-medium text-muted-foreground">{selectedClassSchedule.timeText}</p>}
                         </div>
                       </div>
                       <div className="flex items-center gap-3 rounded-xl bg-muted/50 p-3">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                          <p className="text-xs text-muted-foreground">일정</p>
-                          <p className="text-sm font-medium text-foreground">{selectedClass.scheduleText || "상담 후 조율"}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3 rounded-xl bg-muted/50 p-3">
-                        <Wallet className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                          <p className="text-xs text-muted-foreground">수강료</p>
-                          <p className="text-sm font-medium text-foreground">{formatClassPrice(selectedClass.price)}</p>
+                        <Wallet className="h-4 w-4 shrink-0 text-muted-foreground" />
+                        <div className="min-w-0">
+                          <p className="shrink-0 whitespace-nowrap break-keep text-xs text-muted-foreground">수강료</p>
+                          <p className="min-w-0 whitespace-normal break-keep break-words text-sm font-medium text-foreground">{formatClassPrice(selectedClass.price)}</p>
                         </div>
                       </div>
                     </div>

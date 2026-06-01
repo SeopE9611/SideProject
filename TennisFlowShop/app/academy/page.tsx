@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { getAcademyScheduleDisplay } from "@/lib/academy-display";
 import { getCurrentUserId } from "@/lib/hooks/get-current-user";
 import { getDb } from "@/lib/mongodb";
 import {
@@ -395,6 +396,7 @@ export default async function AcademyPage() {
                 const existingApplication = activeApplicationByClassId.get(academyClass._id);
                 const applyHref = `/academy/apply?classId=${academyClass._id}`;
                 const loginHref = `/login?next=${encodeURIComponent(applyHref)}`;
+                const scheduleDisplay = getAcademyScheduleDisplay(academyClass.scheduleText);
 
                 return (
                   <Card key={academyClass._id} className={`group flex h-full flex-col border-border/60 bg-card transition-all duration-300 hover:shadow-lg ${isClosed ? "opacity-75" : "hover:border-primary/30"}`}>
@@ -409,33 +411,36 @@ export default async function AcademyPage() {
                       <CardTitle className="text-xl leading-tight">{academyClass.name}</CardTitle>
                     </CardHeader>
                     <CardContent className="flex flex-1 flex-col gap-4 pt-0">
-                      <p className="text-sm leading-relaxed text-muted-foreground">{academyClass.description || "도깨비테니스에서 레벨과 목표에 맞춰 안내하는 아카데미 클래스입니다."}</p>
+                      <p className="whitespace-pre-line break-keep break-words text-sm leading-relaxed text-muted-foreground">{academyClass.description || "도깨비테니스에서 레벨과 목표에 맞춰 안내하는 아카데미 클래스입니다."}</p>
 
                       <div className="space-y-3 rounded-xl border border-border/40 bg-muted/30 p-4">
                         <div className="flex items-center gap-3 text-sm">
                           <User className="h-4 w-4 shrink-0 text-muted-foreground" />
-                          <span className="font-medium text-foreground">강사</span>
-                          <span className="text-muted-foreground">{academyClass.instructorName || "상담 후 안내"}</span>
+                          <span className="shrink-0 whitespace-nowrap break-keep font-medium text-foreground">강사</span>
+                          <span className="min-w-0 whitespace-normal break-keep break-words text-muted-foreground">{academyClass.instructorName || "상담 후 안내"}</span>
                         </div>
                         <div className="flex items-center gap-3 text-sm">
                           <MapPin className="h-4 w-4 shrink-0 text-muted-foreground" />
-                          <span className="font-medium text-foreground">장소</span>
-                          <span className="text-muted-foreground">{academyClass.location || "상담 후 안내"}</span>
+                          <span className="shrink-0 whitespace-nowrap break-keep font-medium text-foreground">장소</span>
+                          <span className="min-w-0 whitespace-normal break-keep break-words text-muted-foreground">{academyClass.location || "상담 후 안내"}</span>
                         </div>
-                        <div className="flex items-center gap-3 text-sm">
-                          <Calendar className="h-4 w-4 shrink-0 text-muted-foreground" />
-                          <span className="font-medium text-foreground">일정</span>
-                          <span className="text-muted-foreground">{academyClass.scheduleText || "상담 후 조율"}</span>
+                        <div className="flex items-start gap-3 text-sm">
+                          <Calendar className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                          <span className="shrink-0 whitespace-nowrap break-keep font-medium text-foreground">일정</span>
+                          <div className="min-w-0 space-y-0.5 whitespace-normal break-keep break-words">
+                            <p className="text-sm font-semibold text-foreground">{scheduleDisplay.daysText}</p>
+                            {scheduleDisplay.timeText && <p className="text-sm text-muted-foreground">{scheduleDisplay.timeText}</p>}
+                          </div>
                         </div>
                         <div className="flex items-center gap-3 text-sm">
                           <Users className="h-4 w-4 shrink-0 text-muted-foreground" />
-                          <span className="font-medium text-foreground">정원</span>
-                          <span className="text-muted-foreground">{typeof academyClass.capacity === "number" && academyClass.capacity > 0 ? `${academyClass.capacity}명` : "상담 후 안내"}</span>
+                          <span className="shrink-0 whitespace-nowrap break-keep font-medium text-foreground">정원</span>
+                          <span className="min-w-0 whitespace-normal break-keep break-words text-muted-foreground">{typeof academyClass.capacity === "number" && academyClass.capacity > 0 ? `${academyClass.capacity}명` : "상담 후 안내"}</span>
                         </div>
                         <div className="flex items-center gap-3 text-sm">
                           <Wallet className="h-4 w-4 shrink-0 text-muted-foreground" />
-                          <span className="font-medium text-foreground">가격</span>
-                          <span className="font-semibold text-primary">{formatClassPrice(academyClass.price)}</span>
+                          <span className="shrink-0 whitespace-nowrap break-keep font-medium text-foreground">가격</span>
+                          <span className="min-w-0 whitespace-normal break-keep break-words font-semibold text-primary">{formatClassPrice(academyClass.price)}</span>
                         </div>
                       </div>
 
