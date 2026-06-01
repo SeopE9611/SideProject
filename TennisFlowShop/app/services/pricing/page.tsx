@@ -30,11 +30,7 @@ function formatRange(min: number | null, max: number | null, emptyLabel: string)
   return minText ?? maxText ?? emptyLabel;
 }
 
-function formatMountingFeeRange(
-  min: number | null,
-  max: number | null,
-  emptyLabel: string,
-) {
+function formatMountingFeeRange(min: number | null, max: number | null, emptyLabel: string) {
   const minText = mountingFeeWon(min);
   const maxText = mountingFeeWon(max);
 
@@ -164,10 +160,7 @@ export default async function PricingPage() {
               const mountingFeeRange = formatMountingFeeRange(category.minMountingFee, category.maxMountingFee, "장착비 미등록");
 
               return (
-                <Card
-                  key={category.key}
-                  className={`transition-[border-color,box-shadow,background-color] duration-200 hover:border-primary/30 hover:shadow-md ${hasProducts ? "" : "opacity-75"}`}
-                >
+                <Card key={category.key} className={`transition-[border-color,box-shadow,background-color] duration-200 hover:border-primary/30 hover:shadow-md ${hasProducts ? "" : "opacity-75"}`}>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 break-keep leading-snug">
                       <Shield className="h-5 w-5 text-foreground" />
@@ -221,16 +214,14 @@ export default async function PricingPage() {
                         </div>
                       </>
                     ) : (
-                      <p className="rounded-xl border border-dashed border-border bg-muted/30 p-4 text-muted-foreground break-keep">
-                        현재 등록된 상품 데이터가 없습니다.
-                      </p>
+                      <p className="rounded-xl border border-dashed border-border bg-muted/30 p-4 text-muted-foreground break-keep">현재 등록된 상품 데이터가 없습니다.</p>
                     )}
                   </CardContent>
                 </Card>
               );
             })}
           </div>
-          {otherSummary?.count ? (
+          {/* {otherSummary?.count ? (
             <Card className="border-dashed bg-muted/30">
               <CardHeader>
                 <div className="flex flex-wrap items-center gap-2">
@@ -302,10 +293,10 @@ export default async function PricingPage() {
                 </div>
               </CardContent>
             </Card>
-          ) : null}
+          ) : null} */}
         </section>
 
-        <section className="space-y-4 md:space-y-6">
+        {/* <section className="space-y-4 md:space-y-6">
           <div className="text-center">
             <h2 className="text-xl font-bold bp-md:text-2xl">하이브리드 조합 안내</h2>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">하이브리드는 단일 소재 가격표와 분리해 조합 기준으로 안내합니다.</p>
@@ -329,9 +320,7 @@ export default async function PricingPage() {
                 </div>
                 <div className="rounded-xl border border-border bg-muted/30 p-3 md:col-span-2">
                   <p className="text-xs font-medium text-muted-foreground">대표 조합</p>
-                  <p className="mt-1 line-clamp-2 break-words font-semibold text-foreground">
-                    {hybridGuide.representativeMaterials.length ? hybridGuide.representativeMaterials.join(", ") : "데이터 없음"}
-                  </p>
+                  <p className="mt-1 line-clamp-2 break-words font-semibold text-foreground">{hybridGuide.representativeMaterials.length ? hybridGuide.representativeMaterials.join(", ") : "데이터 없음"}</p>
                 </div>
               </div>
               <div className="space-y-2">
@@ -356,7 +345,7 @@ export default async function PricingPage() {
               </Button>
             </CardContent>
           </Card>
-        </section>
+        </section> */}
 
         <section className="grid gap-4 md:gap-6 lg:grid-cols-2">
           <Card>
@@ -368,7 +357,9 @@ export default async function PricingPage() {
                 <div key={service.name} className="rounded-lg border border-border p-3">
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                     <p className="font-medium">{service.name}</p>
-                    <Badge variant="secondary" className="shrink-0 whitespace-nowrap">{service.policy}</Badge>
+                    <Badge variant="secondary" className="shrink-0 whitespace-nowrap">
+                      {service.policy}
+                    </Badge>
                   </div>
                   <p className="text-sm text-muted-foreground mt-1">{service.description}</p>
                 </div>

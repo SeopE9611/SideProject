@@ -402,7 +402,7 @@ export default async function ServicesPage() {
             </Badge>
             <h2 className="mb-4 break-keep text-2xl font-bold leading-tight text-foreground bp-md:mb-6 bp-md:text-3xl bp-lg:text-4xl">가격 안내</h2>
             <p className="mx-auto max-w-3xl text-sm leading-relaxed text-muted-foreground bp-md:text-base bp-lg:text-lg">
-              합리적인 가격으로 최고의 스트링 장착 서비스를 제공합니다.
+              합리적 가격으로 최고의 스트링 서비스를 제공합니다.
               <br />
               다양한 옵션 중 필요한 서비스를 선택하세요.
             </p>
