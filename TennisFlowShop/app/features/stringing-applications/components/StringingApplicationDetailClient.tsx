@@ -1652,31 +1652,31 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                     {data.packageInfo && (
                       <div className={data.packageInfo.applied ? 'p-3 rounded-lg border border-border bg-muted dark:border-border dark:bg-muted' : 'p-3 rounded-lg border border-border bg-muted/80 /60 dark:bg-background/40'}>
                         <div className="flex items-start gap-2">
-                          <div className="mt-0.5">
+                          <div className="mt-0.5 shrink-0">
                             <Ticket className="h-4 w-4 text-foreground" />
                           </div>
-                          <div className="flex-1 text-xs leading-relaxed">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="font-semibold text-foreground">패키지 사용 정보</span>
-                              <Badge variant="outline" className={data.packageInfo.applied ? 'border-border text-foreground' : 'border-border text-muted-foreground '}>
+                          <div className="min-w-0 flex-1 text-xs leading-relaxed">
+                            <div className="mb-1 flex min-w-0 flex-col items-start gap-1.5 bp-sm:flex-row bp-sm:items-center bp-sm:gap-2">
+                              <span className="break-keep whitespace-normal font-semibold text-foreground">패키지 사용 정보</span>
+                              <Badge variant="outline" className={cn('whitespace-normal break-keep text-left leading-relaxed', data.packageInfo.applied ? 'border-border text-foreground' : 'border-border text-muted-foreground ')}>
                                 {data.packageInfo.applied ? '이번 신청에 패키지 적용' : '이번 신청에는 패키지 미사용'}
                               </Badge>
                             </div>
 
                             {/* 본문 설명 */}
                             {data.packageInfo.applied ? (
-                              <p className="text-foreground">
+                              <p className="break-keep text-foreground">
                                 이번 신청에서 패키지 <span className="font-semibold">{data.packageInfo.useCount}회</span>가 차감되었습니다.
                               </p>
                             ) : (
-                              <p className="text-muted-foreground">
+                              <p className="break-keep text-muted-foreground">
                                 이 신청은 패키지 기준으로는 <span className="font-semibold">{data.packageInfo.useCount}회</span>에 해당하지만, 실제로 패키지는 사용되지 않았습니다.
                               </p>
                             )}
 
                             {/* 패스 정보가 있는 경우에만 상세 숫자 표시 */}
                             {data.packageInfo.passId && (
-                              <div className="mt-2 flex flex-wrap gap-2 text-sm text-foreground/75">
+                              <div className="mt-2 flex flex-wrap gap-2 text-sm text-foreground/75 [&>span]:break-keep">
                                 {data.packageInfo.passTitle && <span className="font-medium">{data.packageInfo.passTitle}</span>}
                                 {typeof data.packageInfo.packageSize === 'number' && <span>총 {data.packageInfo.packageSize}회</span>}
                                 {typeof data.packageInfo.usedCount === 'number' && <span>사용 {data.packageInfo.usedCount}회</span>}
@@ -1692,8 +1692,8 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                     {/* 패키지 사용 정보 카드 아래에 차감 이력 표시 */}
                     {data.packageConsumptions && data.packageConsumptions.length > 0 && (
                       <div className="mt-3 rounded-lg border border-dashed border-border bg-muted px-3 py-2 text-xs text-foreground/60 dark:bg-muted">
-                        <div className="mb-1 flex items-center justify-between">
-                          <div className="flex items-center gap-1">
+                        <div className="mb-1 flex flex-col gap-1 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
+                          <div className="flex items-center gap-1 break-keep">
                             <Clock className="h-3.5 w-3.5 text-foreground" />
                             <span className="font-semibold">패키지 차감 이력</span>
                           </div>
@@ -1701,7 +1701,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                         </div>
                         <ul className="space-y-1.5">
                           {data.packageConsumptions.map((c) => (
-                            <li key={c.id} className="flex items-center justify-between">
+                            <li key={c.id} className="flex flex-col gap-0.5 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
                               <span className="text-sm text-foreground/75">
                                 {new Date(c.usedAt).toLocaleString('ko-KR', {
                                   dateStyle: 'short',
@@ -1864,15 +1864,15 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                       {isLineDetailsExpanded && (
                         <div className="space-y-3">
                           {data.lines.map((line, index) => (
-                            <div key={line.id ?? index} className="rounded-xl px-3 py-3 ring-1 ring-ring bg-card/70 dark:ring-ring dark:bg-background/40 bp-sm:px-4">
+                            <div key={line.id ?? index} className="min-w-0 rounded-xl px-3 py-3 ring-1 ring-ring bg-card/70 dark:ring-ring dark:bg-background/40 bp-sm:px-4">
                               {/* 라켓 이름 + 순번 */}
                               <div className="mb-2 flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
-                                <p className="font-medium text-foreground">
+                                <p className="min-w-0 break-keep font-medium text-foreground">
                                   라켓 {index + 1}
                                   {line.racketType ? ` · ${line.racketType}` : ''}
                                 </p>
                                 {(line.tensionMain || line.tensionCross) && (
-                                  <Badge variant="info" className="px-2 py-1 text-xs">
+                                  <Badge variant="info" className="whitespace-normal break-keep px-2 py-1 text-left text-xs">
                                     텐션 {line.tensionMain ? `${line.tensionMain}LB` : '-'} / {line.tensionCross ? `${line.tensionCross}LB` : '-'}
                                   </Badge>
                                 )}
@@ -1880,13 +1880,13 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
 
                               {/* 스트링 이름 */}
                               {line.stringName && (
-                                <p className="text-xs text-foreground">
+                                <p className="min-w-0 break-keep text-xs text-foreground">
                                   스트링: <span className="font-medium">{line.stringName}</span>
                                 </p>
                               )}
 
                               {/* 라켓별 메모 */}
-                              {line.note && <p className="mt-2 text-xs text-foreground/75 leading-relaxed">메모: {line.note}</p>}
+                              {line.note && <p className="mt-2 break-keep text-xs leading-relaxed text-foreground/75">메모: {line.note}</p>}
                             </div>
                           ))}
                         </div>
@@ -1899,7 +1899,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                     <section className="space-y-2">
                       <div className="flex items-center gap-2 text-foreground">
                         <ShoppingCart className="w-5 h-5" />
-                        <span className="font-medium">장착 상품 정보</span>
+                        <span className="break-keep font-medium">장착 상품 정보</span>
                       </div>
 
                       <div className="hidden overflow-hidden rounded-xl ring-1 ring-ring bg-card/80 dark:ring-ring dark:bg-background/60 bp-lg:block">
@@ -1926,15 +1926,15 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
 
                       <div className="space-y-3 bp-lg:hidden">
                         {itemSummary.map((item) => (
-                          <div key={`${item.id}-${item.name}-${item.price}-mobile`} className="rounded-xl border border-border/70 bg-card/80 p-3 text-sm">
-                            <p className="break-words font-medium text-foreground">{item.name}</p>
-                            <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-foreground/75">
-                              <span>수량</span>
-                              <span className="text-right font-medium text-foreground">x {item.quantity}개</span>
-                              <span>단가</span>
-                              <span className="text-right font-medium text-foreground">{item.price.toLocaleString()}원</span>
-                              <span>소계</span>
-                              <span className="whitespace-nowrap text-right font-semibold text-primary">{item.subtotal.toLocaleString()}원</span>
+                          <div key={`${item.id}-${item.name}-${item.price}-mobile`} className="min-w-0 rounded-xl border border-border/70 bg-card/80 p-3 text-sm">
+                            <div className="space-y-1">
+                              <p className="break-keep text-xs font-medium text-muted-foreground">장착 상품</p>
+                              <p className="min-w-0 break-keep font-medium leading-relaxed text-foreground">{item.name}</p>
+                            </div>
+                            <div className="mt-3 space-y-1.5 rounded-lg bg-muted/50 p-3 text-sm text-foreground/80">
+                              <p className="break-keep"><span className="text-muted-foreground">수량:</span> <span className="font-medium text-foreground">{item.quantity}개</span></p>
+                              <p className="break-keep"><span className="text-muted-foreground">단가:</span> <span className="font-medium text-foreground">{item.price.toLocaleString()}원</span></p>
+                              <p className="break-keep"><span className="text-muted-foreground">소계:</span> <span className="font-semibold text-primary">{item.subtotal.toLocaleString()}원</span></p>
                             </div>
                           </div>
                         ))}
@@ -1948,7 +1948,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                       <Target className="w-5 h-5" />
                       <span className="font-medium">라켓 종류</span>
                     </div>
-                    <div className="max-w-xs break-keep text-sm text-foreground bp-sm:text-right">{racketTypeSummary}</div>
+                    <div className="w-full break-keep text-sm text-foreground bp-sm:max-w-xs bp-sm:text-right">{racketTypeSummary}</div>
                   </section>
                 </div>
               </CardContent>

@@ -1620,23 +1620,23 @@ export default function OrderDetailClient({
                 {orderDetail.items.map((item, idx) => (
                   <div
                     key={idx}
-                    className="flex items-start gap-4 rounded-xl bg-muted p-4 transition-colors hover:bg-muted dark:hover:bg-card"
+                    className="flex flex-col gap-4 rounded-xl bg-muted p-4 transition-colors hover:bg-muted dark:hover:bg-card bp-sm:flex-row bp-sm:items-start"
                   >
                     {/* 상품 썸네일 */}
                     {item.imageUrl && (
                       <img
                         src={item.imageUrl}
                         alt={item.name}
-                        className="w-12 h-12 object-cover rounded"
+                        className="h-12 w-12 shrink-0 object-cover rounded"
                       />
                     )}
 
                     {/* 상품명 + 수량 */}
-                    <div className="min-w-0 flex-1">
+                    <div className="w-full min-w-0 flex-1">
                       <h4 className="line-clamp-2 break-keep font-semibold text-foreground">
                         {item.name}
                       </h4>
-                      <p className="text-sm text-foreground/80">
+                      <p className="break-keep text-sm text-foreground/80">
                         수량: {item.quantity}개
                       </p>
                       {item.selectedGauge && <p className="text-xs text-foreground/70">게이지: {formatGaugeLabel(item.selectedGauge)}</p>}
@@ -1656,9 +1656,9 @@ export default function OrderDetailClient({
                     </div>
 
                     {/* 가격 및 소계 */}
-                    <div className="w-full shrink-0 text-left bp-sm:w-auto bp-sm:text-right">
+                    <div className="w-full shrink-0 rounded-lg border border-border/60 bg-background/60 p-3 text-left bp-sm:w-auto bp-sm:border-0 bp-sm:bg-transparent bp-sm:p-0 bp-sm:text-right">
                       <p className="whitespace-nowrap font-semibold tabular-nums text-foreground">
-                        {formatCurrency(item.price)}
+                        가격: {formatCurrency(item.price)}
                       </p>
                       <p className="whitespace-nowrap text-sm tabular-nums text-foreground/80">
                         소계: {formatCurrency(item.price * item.quantity)}
