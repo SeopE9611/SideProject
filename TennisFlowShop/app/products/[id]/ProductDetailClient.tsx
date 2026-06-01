@@ -1286,17 +1286,21 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 <h4 className="mb-3 break-keep text-sm font-semibold text-foreground sm:mb-4 sm:text-base">추천 대상</h4>
                 <div className="space-y-2 sm:space-y-2.5">
                   {selectedPlayerTypes.length > 0 && (
-                    <div className="flex items-center gap-3 rounded-xl border border-border/60 bg-secondary/40 p-3 text-sm sm:text-base">
-                      <div className="w-2.5 h-2.5 bg-muted-foreground/70 rounded-full shrink-0"></div>
-                      <span className="text-muted-foreground">플레이어:</span>
-                      <span className="min-w-0 break-keep font-medium text-foreground">{selectedPlayerTypes.join(", ")}</span>
+                    <div className="flex flex-col items-start gap-2 rounded-xl border border-border/60 bg-secondary/40 p-3 text-sm sm:flex-row sm:items-start sm:gap-3 sm:text-base">
+                      <div className="flex shrink-0 items-center gap-3">
+                        <div className="h-2.5 w-2.5 shrink-0 rounded-full bg-muted-foreground/70"></div>
+                        <span className="shrink-0 whitespace-nowrap break-keep text-muted-foreground">플레이어:</span>
+                      </div>
+                      <span className="min-w-0 whitespace-normal break-keep break-words font-medium leading-relaxed text-foreground">{selectedPlayerTypes.join(", ")}</span>
                     </div>
                   )}
                   {selectedPlayStyles.length > 0 && (
-                    <div className="flex items-center gap-3 rounded-xl border border-border/60 bg-secondary/40 p-3 text-sm sm:text-base">
-                      <div className="w-2.5 h-2.5 bg-muted-foreground/70 rounded-full shrink-0"></div>
-                      <span className="text-muted-foreground">스타일:</span>
-                      <span className="min-w-0 break-keep font-medium text-foreground">{selectedPlayStyles.join(", ")}</span>
+                    <div className="flex flex-col items-start gap-2 rounded-xl border border-border/60 bg-secondary/40 p-3 text-sm sm:flex-row sm:items-start sm:gap-3 sm:text-base">
+                      <div className="flex shrink-0 items-center gap-3">
+                        <div className="h-2.5 w-2.5 shrink-0 rounded-full bg-muted-foreground/70"></div>
+                        <span className="shrink-0 whitespace-nowrap break-keep text-muted-foreground">스타일:</span>
+                      </div>
+                      <span className="min-w-0 whitespace-normal break-keep break-words font-medium leading-relaxed text-foreground">{selectedPlayStyles.join(", ")}</span>
                     </div>
                   )}
                 </div>
@@ -1305,7 +1309,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
               <div>
                 <h4 className="mb-3 break-keep text-sm font-semibold text-foreground sm:mb-4 sm:text-base">추가 특성</h4>
                 {additionalFeaturesText ? (
-                  <p className="rounded-xl border border-border/60 bg-secondary/40 p-3 text-sm leading-relaxed text-muted-foreground sm:text-base whitespace-pre-line break-words">{additionalFeaturesText}</p>
+                  <p className="whitespace-pre-line break-keep break-words rounded-xl border border-border/60 bg-secondary/40 p-3 text-sm leading-relaxed text-muted-foreground sm:text-base">{additionalFeaturesText}</p>
                 ) : (
                   <p className="rounded-xl border border-border/60 bg-secondary/40 p-3 text-sm italic text-muted-foreground sm:text-base">추가 특성 정보가 없습니다.</p>
                 )}
