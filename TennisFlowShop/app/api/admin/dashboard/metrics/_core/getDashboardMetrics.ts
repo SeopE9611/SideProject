@@ -4,7 +4,7 @@ import { getRefundBankLabel } from "@/lib/cancel-request/refund-account";
 import { labelOrderStatus } from "@/lib/admin/status-labels";
 import { getOrderStatusLabelForDisplay } from "@/lib/order-shipping";
 import type { AdminDashboardMetricsResponseDto } from "@/types/admin/dashboard";
-import type { Db } from "mongodb";
+import type { Db, Document, Filter } from "mongodb";
 import type { UnknownDoc } from "./metrics-pure-utils";
 import {
   CANCEL_REQUESTED_VALUES,
@@ -26,6 +26,66 @@ import {
   toYmd,
 } from "./metrics-pure-utils";
 /** Responsibility: query collection + aggregation transform + DTO mapping (legacy core). */
+
+const PACKAGE_PAYMENT_PENDING_VALUES = [
+  ...PAYMENT_PENDING_VALUES,
+  "unpaid",
+  "ready",
+  "bank_pending",
+  "대기중",
+  "입금확인",
+  "활성화대기",
+];
+
+const PACKAGE_TERMINAL_STATUS_VALUES = [
+  "취소",
+  "취소완료",
+  "환불완료",
+  "배송완료",
+  "구매확정",
+  "completed",
+  "cancelled",
+  "canceled",
+  "refunded",
+  "refund_completed",
+  "delivered",
+  "purchase_confirmed",
+];
+
+const PACKAGE_PAYMENT_CANCELLED_VALUES = [
+  "결제취소",
+  "취소",
+  "환불",
+  "환불완료",
+  "refunded",
+  "cancelled",
+  "canceled",
+];
+
+const PACKAGE_PAYMENT_CHECK_STATUS_VALUES = [
+  "주문접수",
+  "결제대기",
+  "입금확인",
+  "활성화대기",
+  "pending",
+  "ready",
+  "bank_pending",
+];
+
+const packagePaymentCheckFilter: Filter<Document> = {
+  $and: [
+    EXCLUDE_OFFLINE_PACKAGE_ORDERS_FILTER,
+    {
+      $or: [
+        { paymentStatus: { $in: PACKAGE_PAYMENT_PENDING_VALUES } },
+        { "paymentInfo.status": { $in: PACKAGE_PAYMENT_PENDING_VALUES } },
+        { status: { $in: PACKAGE_PAYMENT_CHECK_STATUS_VALUES } },
+      ],
+    },
+    { status: { $nin: PACKAGE_TERMINAL_STATUS_VALUES } },
+    { paymentStatus: { $nin: PACKAGE_PAYMENT_CANCELLED_VALUES } },
+  ],
+};
 
 /**
  * Admin Dashboard Metrics API
@@ -119,6 +179,7 @@ type DashboardMetrics = {
       cancelRequestsReadyForReview: number;
       shippingPending: number;
       paymentPending24h: number;
+      packagePaymentCheck: number;
       rentalOverdue: number;
       rentalDueSoon: number;
       passExpiringSoon: number;
@@ -1239,16 +1300,18 @@ export async function getDashboardMetrics(db: Db) {
   const paymentPending24hPackagesP = packageOrdersCol.countDocuments({
     $and: [
       EXCLUDE_OFFLINE_PACKAGE_ORDERS_FILTER,
-      { paymentStatus: { $in: PAYMENT_PENDING_VALUES }, createdAt: { $lte: oneDayAgo } },
+      { paymentStatus: { $in: PACKAGE_PAYMENT_PENDING_VALUES }, createdAt: { $lte: oneDayAgo } },
     ],
   });
+
+  const packagePaymentCheckP = packageOrdersCol.countDocuments(packagePaymentCheckFilter);
 
   const paymentPending24hPackagesListP = packageOrdersCol
     .find(
       {
         $and: [
           EXCLUDE_OFFLINE_PACKAGE_ORDERS_FILTER,
-          { paymentStatus: { $in: PAYMENT_PENDING_VALUES }, createdAt: { $lte: oneDayAgo } },
+          { paymentStatus: { $in: PACKAGE_PAYMENT_PENDING_VALUES }, createdAt: { $lte: oneDayAgo } },
         ],
       },
       {
@@ -1602,6 +1665,7 @@ export async function getDashboardMetrics(db: Db) {
     paymentPending24hRentalsList,
     paymentPending24hPackages,
     paymentPending24hPackagesList,
+    packagePaymentCheck,
 
     shippingPendingOrdersList,
     shippingPendingApps,
@@ -1702,6 +1766,7 @@ export async function getDashboardMetrics(db: Db) {
     paymentPending24hRentalsListP,
     paymentPending24hPackagesP,
     paymentPending24hPackagesListP,
+    packagePaymentCheckP,
 
     shippingPendingOrdersListP,
     shippingPendingAppsP,
@@ -2146,6 +2211,7 @@ export async function getDashboardMetrics(db: Db) {
         cancelRequestsReadyForReview: Number(orderCancelRequestsReadyForReview || 0) + Number(rentalCancelRequestsReadyForReview || 0) + Number(appCancelRequestsReadyForReview || 0),
         shippingPending: Number(shippingPending || 0) + Number(shippingPendingApps || 0),
         paymentPending24h,
+        packagePaymentCheck: Number(packagePaymentCheck || 0),
         rentalOverdue: Number(overdueRentals || 0),
         rentalDueSoon: Number(dueSoonRentals || 0),
         passExpiringSoon: Number(passExpiringSoon || 0),

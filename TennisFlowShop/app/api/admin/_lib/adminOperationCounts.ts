@@ -1,6 +1,6 @@
 import type { Db, Document, Filter } from "mongodb";
 
-import { OFFLINE_PACKAGE_ORDER_FILTER } from "@/app/api/admin/offline/_lib/packageOrderOffline";
+import { EXCLUDE_OFFLINE_PACKAGE_ORDERS_FILTER, OFFLINE_PACKAGE_ORDER_FILTER } from "@/app/api/admin/offline/_lib/packageOrderOffline";
 import type { SidebarBadgeKey } from "@/components/admin/sidebar-navigation";
 import type { OperationTaskCounts } from "@/types/admin/operations";
 
@@ -31,6 +31,8 @@ const PAYMENT_PENDING_VALUES = [
   "bank_pending",
   "결제대기",
   "대기중",
+  "입금확인",
+  "활성화대기",
 ];
 const PAYMENT_DONE_VALUES = [
   "paid",
@@ -38,6 +40,16 @@ const PAYMENT_DONE_VALUES = [
   "payment_completed",
   "결제완료",
 ];
+const PAYMENT_CANCELLED_VALUES = [
+  "결제취소",
+  "취소",
+  "환불",
+  "환불완료",
+  "refunded",
+  "cancelled",
+  "canceled",
+];
+
 const VISIT_PICKUP_VALUES = [
   "visit",
   "pickup",
@@ -220,6 +232,34 @@ const paymentCheckFilter: Filter<Document> = {
       ],
     },
     { status: { $nin: TERMINAL_STATUS_VALUES } },
+  ],
+};
+
+
+const packagePaymentCheckFilter: Filter<Document> = {
+  $and: [
+    EXCLUDE_OFFLINE_PACKAGE_ORDERS_FILTER,
+    {
+      $or: [
+        { paymentStatus: { $in: PAYMENT_PENDING_VALUES } },
+        { "paymentInfo.status": { $in: PAYMENT_PENDING_VALUES } },
+        {
+          status: {
+            $in: [
+              "주문접수",
+              "결제대기",
+              "입금확인",
+              "활성화대기",
+              "pending",
+              "ready",
+              "bank_pending",
+            ],
+          },
+        },
+      ],
+    },
+    { status: { $nin: TERMINAL_STATUS_VALUES } },
+    { paymentStatus: { $nin: PAYMENT_CANCELLED_VALUES } },
   ],
 };
 
@@ -440,6 +480,7 @@ export async function countAdminOperationTaskCounts(db: Db): Promise<OperationTa
     orderPaymentCheck,
     stringingPaymentCheck,
     rentalPaymentCheck,
+    packagePaymentCheck,
     orderShippingMissing,
     stringingShippingMissing,
     rentalShippingMissing,
@@ -455,6 +496,7 @@ export async function countAdminOperationTaskCounts(db: Db): Promise<OperationTa
     safeCount(db, "orders", paymentCheckFilter, "order payment check"),
     safeCount(db, "stringing_applications", paymentCheckFilter, "stringing payment check"),
     safeCount(db, "rental_orders", paymentCheckFilter, "rental payment check"),
+    safeCount(db, "packageOrders", packagePaymentCheckFilter, "package payment check"),
     safeCount(db, "orders", orderShippingMissingFilter, "order shipping missing"),
     safeCount(db, "stringing_applications", stringingShippingMissingFilter, "stringing shipping missing"),
     safeCount(db, "rental_orders", rentalShippingMissingFilter, "rental shipping missing"),
@@ -468,6 +510,7 @@ export async function countAdminOperationTaskCounts(db: Db): Promise<OperationTa
   return {
     cancelRequests: orderCancelRequests + stringingCancelRequests + rentalCancelRequests,
     paymentCheck: orderPaymentCheck + stringingPaymentCheck + rentalPaymentCheck,
+    packagePaymentCheck,
     shippingMissing: orderShippingMissing + stringingShippingMissing + rentalShippingMissing,
     stringingWork,
     rentalDue,
@@ -507,6 +550,7 @@ export async function countAdminNavigationSummary(db: Db): Promise<{
     orderAndStringing +
     rentals +
     offline +
+    operationTaskCounts.packagePaymentCheck +
     academyApplications +
     notifications +
     reviews +
@@ -518,6 +562,7 @@ export async function countAdminNavigationSummary(db: Db): Promise<{
     rentals,
     offline,
     academyApplications,
+    packages: operationTaskCounts.packagePaymentCheck,
     notifications,
     reviews,
     boards,

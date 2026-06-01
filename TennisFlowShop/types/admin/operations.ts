@@ -98,6 +98,7 @@ export type AdminOperationsSummary = {
 export type OperationTaskCounts = {
   cancelRequests: number;
   paymentCheck: number;
+  packagePaymentCheck: number;
   shippingMissing: number;
   stringingWork: number;
   rentalDue: number;

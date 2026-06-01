@@ -903,6 +903,16 @@ export default function OperationsClient() {
         tone: "warning" as const,
       },
       {
+        title: "패키지 결제/활성화",
+        count: taskCounts?.packagePaymentCheck ?? 0,
+        description: "패키지 주문의 입금/결제 확인 후 이용권을 활성화하세요.",
+        action: "패키지 보기",
+        onClick: () => {
+          router.push("/admin/packages?payment=결제대기");
+        },
+        tone: "warning" as const,
+      },
+      {
         title: "배송/출고 처리",
         count: taskCounts?.shippingMissing ?? 0,
         description: "배송지와 수령 방식을 확인하고 운송장 또는 방문 수령 정보를 정리하세요.",
@@ -938,7 +948,7 @@ export default function OperationsClient() {
         tone: "warning" as const,
       },
     ];
-  }, [taskCounts]);
+  }, [router, taskCounts]);
 
   const activeKpi = useMemo(() => {
     if (warnFilter === "warn") return "urgent";
@@ -1182,6 +1192,7 @@ export default function OperationsClient() {
                   ? [
                       dailySummaryInlineValue("취소", dailySummary.remaining.cancelRequests),
                       dailySummaryInlineValue("결제", dailySummary.remaining.paymentCheck),
+                      dailySummaryInlineValue("패키지", dailySummary.remaining.packagePaymentCheck),
                       dailySummaryInlineValue("배송", dailySummary.remaining.shippingMissing),
                       dailySummaryInlineValue("교체", dailySummary.remaining.stringingWork),
                       dailySummaryInlineValue("반납", dailySummary.remaining.rentalDue),
