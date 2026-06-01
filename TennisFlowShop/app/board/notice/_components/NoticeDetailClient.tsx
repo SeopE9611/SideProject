@@ -403,7 +403,7 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
                       </h1>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted-foreground">
+                    <div className="grid gap-2 text-sm text-muted-foreground sm:flex sm:flex-wrap sm:items-center sm:gap-x-5 sm:gap-y-2">
                       <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4" />
                         <span className="font-medium">작성일</span>
@@ -582,11 +582,11 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
                                   <FileText className="h-5 w-5" />
                                 </div>
                                 <div className="min-w-0 flex-1">
-                                  <div className="truncate font-medium text-foreground">
+                                  <div className="line-clamp-2 break-words font-medium text-foreground">
                                     {name}
                                   </div>
                                   {size && (
-                                    <div className="text-sm text-muted-foreground truncate">
+                                    <div className="break-words text-sm text-muted-foreground">
                                       {size}
                                     </div>
                                   )}

@@ -532,7 +532,7 @@ export default function TensionGuidePage() {
                       <label className="block text-sm font-semibold text-foreground mb-3">
                         스윙 스피드
                       </label>
-                      <div className="grid grid-cols-3 gap-2 bp-sm:gap-3">
+                      <div className="grid grid-cols-1 gap-2 bp-sm:grid-cols-2 bp-md:grid-cols-3 bp-sm:gap-3">
                         {swingSpeedOptions.map((option) => (
                           <button
                             key={option.id}
@@ -589,7 +589,7 @@ export default function TensionGuidePage() {
                       <label className="block text-sm font-semibold text-foreground mb-3">
                         플레이 스타일
                       </label>
-                      <div className="grid grid-cols-3 gap-2 bp-sm:gap-3">
+                      <div className="grid grid-cols-1 gap-2 bp-sm:grid-cols-2 bp-md:grid-cols-3 bp-sm:gap-3">
                         {playStyleOptions.map((option) => (
                           <button
                             key={option.id}
@@ -664,11 +664,11 @@ export default function TensionGuidePage() {
                         {selectedRange.min}LB ~ {selectedRange.max}LB
                       </p>
                       <div className="mt-3 flex flex-wrap gap-2">
-                        <Badge variant="secondary" className="max-w-[9rem] shrink-0 truncate whitespace-nowrap text-xs">
+                        <Badge variant="secondary" className="max-w-[10rem] shrink-0 whitespace-normal break-keep text-left text-xs leading-snug">
                           {gender === "female" ? "여자" : "남자"}{" "}
                           {selectedRange.min}~{selectedRange.max}LB
                         </Badge>
-                        <Badge variant="outline" className="max-w-[9rem] shrink-0 truncate whitespace-nowrap text-xs">
+                        <Badge variant="outline" className="max-w-[10rem] shrink-0 whitespace-normal break-keep text-left text-xs leading-snug">
                           {oppositeGender === "female" ? "여자" : "남자"}{" "}
                           {oppositeRange.min}~{oppositeRange.max}LB
                         </Badge>
@@ -938,11 +938,11 @@ export default function TensionGuidePage() {
                     </p>
 
                     <div className="flex max-w-full flex-nowrap gap-2 overflow-x-auto pb-1">
-                      <Badge variant="secondary" className="max-w-[9rem] shrink-0 truncate whitespace-nowrap text-xs">
+                      <Badge variant="secondary" className="max-w-[10rem] shrink-0 whitespace-normal break-keep text-left text-xs leading-snug">
                         여자 {string.ranges.female.min}~
                         {string.ranges.female.max}LB
                       </Badge>
-                      <Badge variant="outline" className="max-w-[9rem] shrink-0 truncate whitespace-nowrap text-xs">
+                      <Badge variant="outline" className="max-w-[10rem] shrink-0 whitespace-normal break-keep text-left text-xs leading-snug">
                         남자 {string.ranges.male.min}~{string.ranges.male.max}LB
                       </Badge>
                     </div>

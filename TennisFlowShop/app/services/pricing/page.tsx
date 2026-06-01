@@ -177,11 +177,11 @@ export default async function PricingPage() {
                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-1">
                           <div className="rounded-xl border border-border bg-muted/30 p-3">
                             <p className="text-xs font-medium text-muted-foreground">상품가</p>
-                            <p className="mt-1 whitespace-nowrap tabular-nums font-semibold text-foreground">{productPriceRange}</p>
+                            <p className="mt-1 break-keep tabular-nums font-semibold text-foreground">{productPriceRange}</p>
                           </div>
                           <div className="rounded-xl border border-border bg-muted/30 p-3">
                             <p className="text-xs font-medium text-muted-foreground">장착비</p>
-                            <p className="mt-1 whitespace-nowrap tabular-nums font-semibold text-foreground">{mountingFeeRange}</p>
+                            <p className="mt-1 break-keep tabular-nums font-semibold text-foreground">{mountingFeeRange}</p>
                           </div>
                         </div>
                         <div className="space-y-2">
@@ -189,7 +189,7 @@ export default async function PricingPage() {
                           <div className="flex max-w-full flex-nowrap gap-2 overflow-x-auto pb-1">
                             {category.brands.length ? (
                               category.brands.map((brand) => (
-                                <Badge key={brand} variant="secondary" className="max-w-[8rem] shrink-0 truncate whitespace-nowrap">
+                                <Badge key={brand} variant="secondary" className="max-w-[10rem] shrink-0 whitespace-normal break-keep text-left leading-snug">
                                   {brand}
                                 </Badge>
                               ))
@@ -233,18 +233,18 @@ export default async function PricingPage() {
                 </p>
               </CardHeader>
               <CardContent className="space-y-4 text-sm text-muted-foreground">
-                <div className="grid gap-3 sm:grid-cols-3">
+                <div className="grid gap-3 md:grid-cols-3">
                   <div className="rounded-xl border border-border bg-card p-3">
                     <p className="text-xs font-medium">등록 상품</p>
-                    <p className="mt-1 whitespace-nowrap tabular-nums font-semibold text-foreground">{otherSummary.count.toLocaleString("ko-KR")}개</p>
+                    <p className="mt-1 break-keep tabular-nums font-semibold text-foreground">{otherSummary.count.toLocaleString("ko-KR")}개</p>
                   </div>
                   <div className="rounded-xl border border-border bg-card p-3">
                     <p className="text-xs font-medium">상품가</p>
-                    <p className="mt-1 whitespace-nowrap tabular-nums font-semibold text-foreground">{formatRange(otherSummary.minPrice, otherSummary.maxPrice, "가격 데이터 확인 필요")}</p>
+                    <p className="mt-1 break-keep tabular-nums font-semibold text-foreground">{formatRange(otherSummary.minPrice, otherSummary.maxPrice, "가격 데이터 확인 필요")}</p>
                   </div>
                   <div className="rounded-xl border border-border bg-card p-3">
                     <p className="text-xs font-medium">장착비</p>
-                    <p className="mt-1 whitespace-nowrap tabular-nums font-semibold text-foreground">{formatMountingFeeRange(otherSummary.minMountingFee, otherSummary.maxMountingFee, "장착비 미등록")}</p>
+                    <p className="mt-1 break-keep tabular-nums font-semibold text-foreground">{formatMountingFeeRange(otherSummary.minMountingFee, otherSummary.maxMountingFee, "장착비 미등록")}</p>
                   </div>
                 </div>
                 <div className="grid gap-4 md:grid-cols-3">
@@ -253,7 +253,7 @@ export default async function PricingPage() {
                     <div className="flex max-w-full flex-nowrap gap-2 overflow-x-auto pb-1">
                       {otherSummary.brands.length ? (
                         otherSummary.brands.map((brand) => (
-                          <Badge key={brand} variant="secondary" className="max-w-[8rem] shrink-0 truncate whitespace-nowrap">
+                          <Badge key={brand} variant="secondary" className="max-w-[10rem] shrink-0 whitespace-normal break-keep text-left leading-snug">
                             {brand}
                           </Badge>
                         ))
@@ -281,7 +281,7 @@ export default async function PricingPage() {
                     <div className="flex max-w-full flex-nowrap gap-2 overflow-x-auto pb-1">
                       {otherSummary.materialLabels.length ? (
                         otherSummary.materialLabels.map((material) => (
-                          <Badge key={material} variant="secondary" className="max-w-[10rem] shrink-0 truncate whitespace-nowrap">
+                          <Badge key={material} variant="secondary" className="max-w-[12rem] shrink-0 whitespace-normal break-keep text-left leading-snug">
                             {material}
                           </Badge>
                         ))
@@ -316,7 +316,7 @@ export default async function PricingPage() {
               <div className="grid gap-3 md:grid-cols-3">
                 <div className="rounded-xl border border-border bg-muted/30 p-3">
                   <p className="text-xs font-medium text-muted-foreground">등록 상품 수</p>
-                  <p className="mt-1 whitespace-nowrap tabular-nums font-semibold text-foreground">{hybridGuide.count.toLocaleString("ko-KR")}개</p>
+                  <p className="mt-1 break-keep tabular-nums font-semibold text-foreground">{hybridGuide.count.toLocaleString("ko-KR")}개</p>
                 </div>
                 <div className="rounded-xl border border-border bg-muted/30 p-3 md:col-span-2">
                   <p className="text-xs font-medium text-muted-foreground">대표 조합</p>

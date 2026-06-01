@@ -860,7 +860,7 @@ export default function OrderDetailClient({
                 <h1 className="break-keep text-xl font-bold leading-tight text-foreground bp-sm:text-3xl">
                   이용 상세
                 </h1>
-                <p className="mt-1 truncate text-sm text-muted-foreground" title={orderId}>
+                <p className="mt-1 break-keep text-sm text-muted-foreground" title={orderId}>
                   {hasLinkedStringingApps || orderDetail.shippingInfo?.withStringService
                     ? "스트링 구매 + 교체서비스"
                     : "상품 주문"} · 주문번호: #{orderId.slice(-6).toUpperCase()}
@@ -1085,7 +1085,7 @@ export default function OrderDetailClient({
                                         </p>
                                       ) : null}
                                     </div>
-                                    <Badge variant="outline" className="max-w-[12rem] shrink-0 truncate text-[11px]">{stringName}</Badge>
+                                    <Badge variant="outline" className="max-w-[14rem] shrink-0 whitespace-normal break-keep text-left text-[11px] leading-snug">{stringName}</Badge>
                                   </div>
                                   <dl className="mt-3 space-y-2 text-foreground">
                                     <div className="flex gap-2"><dt className="w-20 shrink-0 text-muted-foreground">라켓명</dt><dd className="min-w-0 break-words">{racketLabel}</dd></div>

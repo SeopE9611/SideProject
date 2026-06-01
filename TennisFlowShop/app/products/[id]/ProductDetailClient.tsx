@@ -1048,7 +1048,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 <div className="space-y-5 sm:space-y-6">
                   {/* 브랜드와 제품명 */}
                   <div>
-                    <span className="inline-block max-w-full truncate text-sm sm:text-base text-muted-foreground font-medium mb-2">{productBrandLabel}</span>
+                    <span className="inline-block max-w-full break-keep text-sm sm:text-base text-muted-foreground font-medium mb-2">{productBrandLabel}</span>
                     <h1 className="text-xl sm:text-2xl bp-lg:text-3xl font-bold text-foreground leading-tight tracking-normal break-keep">{product.name}</h1>
                     <div className="mt-3 flex items-center gap-3">
                       <div className="flex items-center gap-0.5">
@@ -1091,7 +1091,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:gap-3 min-w-0">
                           <span className="text-sm font-semibold text-foreground">색상 선택</span>
                           {selectedColorLabel && (
-                            <span className="min-w-0 truncate text-xs text-muted-foreground" title={selectedColorLabel}>
+                            <span className="min-w-0 break-words text-xs text-muted-foreground" title={selectedColorLabel}>
                               현재 색상: {selectedColorLabel}
                             </span>
                           )}
@@ -1332,7 +1332,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
               <TabsList className="w-full grid grid-cols-2 md:grid-cols-4 h-auto gap-1 sm:gap-1.5 bg-muted/30 rounded-none p-1 sm:p-1.5 border-b border-border/60">
                 <TabsTrigger
                   value="description"
-                  className="min-w-0 h-12 sm:h-14 md:h-16 px-3 text-sm sm:text-base md:text-lg font-medium truncate rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-md data-[state=active]:text-foreground transition-[background-color,color,border-color,box-shadow,opacity] duration-200"
+                  className="min-w-0 h-12 sm:h-14 md:h-16 px-3 text-sm sm:text-base md:text-lg font-medium whitespace-normal break-keep leading-tight rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-md data-[state=active]:text-foreground transition-[background-color,color,border-color,box-shadow,opacity] duration-200"
                 >
                   <FileText className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
                   <span className="hidden sm:inline">상품 설명</span>
@@ -1340,7 +1340,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 </TabsTrigger>
                 <TabsTrigger
                   value="specifications"
-                  className="min-w-0 h-12 sm:h-14 md:h-16 px-3 text-sm sm:text-base md:text-lg font-medium truncate rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-md data-[state=active]:text-foreground transition-[background-color,color,border-color,box-shadow,opacity] duration-200"
+                  className="min-w-0 h-12 sm:h-14 md:h-16 px-3 text-sm sm:text-base md:text-lg font-medium whitespace-normal break-keep leading-tight rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-md data-[state=active]:text-foreground transition-[background-color,color,border-color,box-shadow,opacity] duration-200"
                 >
                   <Settings className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
                   <span className="hidden sm:inline">상세 스펙</span>
@@ -1348,7 +1348,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 </TabsTrigger>
                 <TabsTrigger
                   value="reviews"
-                  className="min-w-0 h-12 sm:h-14 md:h-16 px-3 text-sm sm:text-base md:text-lg font-medium truncate rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-md data-[state=active]:text-foreground transition-[background-color,color,border-color,box-shadow,opacity] duration-200"
+                  className="min-w-0 h-12 sm:h-14 md:h-16 px-3 text-sm sm:text-base md:text-lg font-medium whitespace-normal break-keep leading-tight rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-md data-[state=active]:text-foreground transition-[background-color,color,border-color,box-shadow,opacity] duration-200"
                 >
                   <Star className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
                   <span className="hidden sm:inline">리뷰</span>
@@ -1357,7 +1357,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 </TabsTrigger>
                 <TabsTrigger
                   value="qna"
-                  className="min-w-0 h-12 sm:h-14 md:h-16 px-3 text-sm sm:text-base md:text-lg font-medium truncate rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-md data-[state=active]:text-foreground transition-[background-color,color,border-color,box-shadow,opacity] duration-200"
+                  className="min-w-0 h-12 sm:h-14 md:h-16 px-3 text-sm sm:text-base md:text-lg font-medium whitespace-normal break-keep leading-tight rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-md data-[state=active]:text-foreground transition-[background-color,color,border-color,box-shadow,opacity] duration-200"
                 >
                   <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
                   <span className="hidden sm:inline">문의</span>
@@ -1400,7 +1400,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                           <div key={key} className="bg-muted/30 p-3 sm:p-4 rounded-lg border border-border">
                             <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
                               <span className="font-semibold text-foreground text-sm sm:text-base">{key}</span>
-                              <span className="min-w-0 truncate text-right text-muted-foreground font-medium text-sm sm:text-base">{String(displayValue)}</span>
+                              <span className="min-w-0 break-words text-left text-muted-foreground font-medium text-sm sm:text-right sm:text-base">{String(displayValue)}</span>
                             </div>
                           </div>
                         );
@@ -1753,7 +1753,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                           {q.answer ? "답변 완료" : "답변 대기"}
                                         </Badge>
                                       </div>
-                                      <div className="font-semibold text-foreground truncate hover:text-foreground text-sm sm:text-base">{q.title}</div>
+                                      <div className="line-clamp-2 break-keep font-semibold text-foreground hover:text-foreground text-sm sm:text-base">{q.title}</div>
                                       <div className="flex items-center gap-3 sm:gap-4 text-sm text-foreground/75">
                                         <span>{q.authorName ?? "익명"}</span>
                                         <span>{fmtDate(q.createdAt)}</span>
@@ -1786,7 +1786,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
               {/* 4칸 고정: 상품이 부족하면 플레이스홀더로 채움 */}
               {loadingRelated ? (
                 // 로딩 스켈레톤
-                <div className="grid grid-cols-1 gap-3 bp-sm:grid-cols-2 sm:grid-cols-3 md:grid-cols-4">
+                <div className="grid grid-cols-1 gap-3 bp-sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                   {Array.from({ length: 4 }).map((_, i) => (
                     <div key={i} className="rounded-xl p-3 sm:p-4 bg-card/80 dark:bg-muted/80 shadow-sm animate-pulse">
                       <div className="aspect-square rounded-lg bg-muted mb-2 sm:mb-3"></div>
@@ -1796,7 +1796,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   ))}
                 </div>
               ) : (
-                <div className="grid grid-cols-1 gap-3 bp-sm:grid-cols-2 sm:grid-cols-3 md:grid-cols-4">
+                <div className="grid grid-cols-1 gap-3 bp-sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                   {/* 실제 관련 상품 */}
                   {relatedFiltered.map((rp: any) => (
                     <Link key={rp._id} href={`/products/${rp._id}`}>

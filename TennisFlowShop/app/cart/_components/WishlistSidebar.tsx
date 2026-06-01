@@ -120,7 +120,7 @@ export default function WishlistSidebar({
               <div className="flex-1 min-w-0">
                 <Link
                   href={`/products/${it.id}`}
-                  className="block truncate text-[15px] font-medium transition-colors hover:text-primary hover:underline"
+                  className="block line-clamp-2 break-keep text-[15px] font-medium transition-colors hover:text-primary hover:underline"
                 >
                   {it.name}
                 </Link>
