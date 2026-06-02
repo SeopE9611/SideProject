@@ -1,5 +1,6 @@
 import type { Db, Document, Filter } from "mongodb";
 
+import { createPackagePaymentCheckFilter } from "@/app/api/admin/_lib/packagePaymentCheckFilter";
 import { EXCLUDE_OFFLINE_PACKAGE_ORDERS_FILTER, OFFLINE_PACKAGE_ORDER_FILTER } from "@/app/api/admin/offline/_lib/packageOrderOffline";
 import type { SidebarBadgeKey } from "@/components/admin/sidebar-navigation";
 import type { OperationTaskCounts } from "@/types/admin/operations";
@@ -236,32 +237,7 @@ const paymentCheckFilter: Filter<Document> = {
 };
 
 
-const packagePaymentCheckFilter: Filter<Document> = {
-  $and: [
-    EXCLUDE_OFFLINE_PACKAGE_ORDERS_FILTER,
-    {
-      $or: [
-        { paymentStatus: { $in: PAYMENT_PENDING_VALUES } },
-        { "paymentInfo.status": { $in: PAYMENT_PENDING_VALUES } },
-        {
-          status: {
-            $in: [
-              "주문접수",
-              "결제대기",
-              "입금확인",
-              "활성화대기",
-              "pending",
-              "ready",
-              "bank_pending",
-            ],
-          },
-        },
-      ],
-    },
-    { status: { $nin: TERMINAL_STATUS_VALUES } },
-    { paymentStatus: { $nin: PAYMENT_CANCELLED_VALUES } },
-  ],
-};
+const packagePaymentCheckFilter = createPackagePaymentCheckFilter();
 
 const missingTrackingFilter: Filter<Document> = {
   $and: [

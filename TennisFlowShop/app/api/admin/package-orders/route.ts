@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
+import { createPackagePaymentCheckFilter } from "@/app/api/admin/_lib/packagePaymentCheckFilter";
 import { requireAdmin } from "@/lib/admin.guard";
 
 type SortKey =
@@ -36,11 +37,15 @@ export async function GET(req: Request) {
     const q = (sp.get("q") || "").trim();
     const status = sp.get("status");
     const payment = sp.get("payment");
+    const preset = sp.get("preset");
     const pkg = sp.get("package");
     const service = sp.get("service");
     const sortParam = sp.get("sort");
 
     const match: any = {};
+    if (preset === "payment-check") {
+      match.$and = [createPackagePaymentCheckFilter()];
+    }
     // if (status && status !== 'all') match.status = status;
     if (payment && payment !== "all") match.paymentStatus = payment;
     if (pkg && pkg !== "all") match["packageInfo.sessions"] = Number(pkg);
