@@ -248,13 +248,13 @@ export default async function AcademyPage() {
               </div>
 
               <div className="flex flex-col gap-3 sm:flex-row">
-                <Button asChild size="lg" className="h-12 px-8 text-base">
+                <Button asChild size="lg" wrap="responsive" className="h-12 px-8 text-base">
                   <Link href={userId ? "/academy/apply" : `/login?next=${encodeURIComponent("/academy/apply")}`}>
                     <GraduationCap className="mr-2 h-5 w-5" />
                     {userId ? "레슨 신청하기" : "로그인 후 신청"}
                   </Link>
                 </Button>
-                <Button asChild size="lg" variant="outline" className="h-12 px-8 text-base">
+                <Button asChild size="lg" variant="outline" wrap="responsive" className="h-12 px-8 text-base">
                   <Link href="/board/qna/write?category=academy">
                     <MessageCircle className="mr-2 h-5 w-5" />
                     문의하기
@@ -301,10 +301,10 @@ export default async function AcademyPage() {
         <section className="space-y-8" aria-labelledby="lesson-fees-heading">
           <div className="space-y-3">
             <p className="text-sm font-semibold uppercase tracking-wider text-primary">Lesson Program</p>
-            <h2 id="lesson-fees-heading" className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">
+            <h2 id="lesson-fees-heading" className="text-balance text-2xl font-bold tracking-tight text-foreground md:text-3xl">
               레슨 프로그램 & 기준 수강료
             </h2>
-            <p className="max-w-2xl text-base leading-relaxed text-muted-foreground">레슨 유형과 횟수별 기준 수강료를 카드형 안내로 정리했습니다. 수강료는 레슨 유형과 일정에 따라 상담 후 최종 확인될 수 있습니다.</p>
+            <p className="max-w-2xl break-words text-base leading-relaxed text-muted-foreground">레슨 유형과 횟수별 기준 수강료를 카드형 안내로 정리했습니다. 수강료는 레슨 유형과 일정에 따라 상담 후 최종 확인될 수 있습니다.</p>
           </div>
 
           <div className="grid gap-6 lg:grid-cols-3">
@@ -331,10 +331,10 @@ export default async function AcademyPage() {
                       <div key={`${program.category}-${item.title}-${item.detail}`} className="rounded-xl border border-border/40 bg-muted/30 p-4 transition-all duration-200 hover:border-primary/20 hover:bg-muted/50">
                         <div className="flex items-center justify-between gap-4">
                           <div className="min-w-0">
-                            <p className="font-semibold text-foreground">{item.title}</p>
-                            <p className="text-sm text-muted-foreground">{item.detail}</p>
+                            <p className="break-keep font-semibold text-foreground">{item.title}</p>
+                            <p className="whitespace-nowrap text-sm text-muted-foreground">{item.detail}</p>
                           </div>
-                          <p className="shrink-0 text-lg font-bold text-primary">{item.price}</p>
+                          <p className="shrink-0 whitespace-nowrap tabular-nums text-lg font-bold text-primary">{item.price}</p>
                         </div>
                       </div>
                     ))}
@@ -352,7 +352,7 @@ export default async function AcademyPage() {
             <h2 id="academy-contact-heading" className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">
               상담 문의
             </h2>
-            <p className="max-w-2xl text-base leading-relaxed text-muted-foreground">레슨 유형, 시간표, 수강 시작 가능일이 궁금하다면 담당자에게 문의해 주세요. 상담 후 등록이 확정되면 첫 방문 시 현장에서 결제를 안내합니다.</p>
+            <p className="max-w-2xl break-words text-base leading-relaxed text-muted-foreground">레슨 유형, 시간표, 수강 시작 가능일이 궁금하다면 담당자에게 문의해 주세요. 상담 후 등록이 확정되면 첫 방문 시 현장에서 결제를 안내합니다.</p>
           </div>
 
           <div className="grid gap-6 md:grid-cols-2">
@@ -362,12 +362,12 @@ export default async function AcademyPage() {
                   <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-primary/10 transition-colors group-hover:bg-primary/15">
                     <User className="h-8 w-8 text-primary" />
                   </div>
-                  <div className="flex-1 space-y-1">
+                  <div className="min-w-0 flex-1 space-y-1">
                     <Badge variant="outline" className="mb-2">
                       {contact.role}
                     </Badge>
-                    <h3 className="text-xl font-semibold text-foreground">{contact.name}</h3>
-                    <a href={`tel:${contact.phone.replaceAll("-", "")}`} className="inline-flex items-center gap-2 text-lg font-medium text-primary transition-colors hover:text-primary/80">
+                    <h3 className="break-keep text-xl font-semibold leading-tight text-foreground">{contact.name}</h3>
+                    <a href={`tel:${contact.phone.replaceAll("-", "")}`} className="inline-flex items-center gap-2 whitespace-nowrap text-lg font-medium text-primary transition-colors hover:text-primary/80">
                       <Phone className="h-4 w-4" />
                       {contact.phone}
                     </a>
@@ -385,8 +385,8 @@ export default async function AcademyPage() {
         <section className="space-y-8">
           <div className="space-y-3">
             <p className="text-sm font-semibold uppercase tracking-wider text-primary">Classes</p>
-            <h2 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">현재 모집 중인 클래스</h2>
-            <p className="max-w-2xl text-base leading-relaxed text-muted-foreground">목적과 경험에 맞춰 상담 후 적합한 수업 방향을 안내합니다. 선택한 클래스는 상담 신청 기준으로 사용됩니다.</p>
+            <h2 className="text-balance text-2xl font-bold tracking-tight text-foreground md:text-3xl">현재 모집 중인 클래스</h2>
+            <p className="max-w-2xl break-words text-base leading-relaxed text-muted-foreground">목적과 경험에 맞춰 상담 후 적합한 수업 방향을 안내합니다. 선택한 클래스는 상담 신청 기준으로 사용됩니다.</p>
           </div>
 
           {academyClasses.length > 0 ? (
@@ -408,10 +408,10 @@ export default async function AcademyPage() {
                         <Badge variant="outline">{academyClass.lessonTypeLabel}</Badge>
                         <Badge variant="outline">{academyClass.levelLabel}</Badge>
                       </div>
-                      <CardTitle className="text-xl leading-tight">{academyClass.name}</CardTitle>
+                      <CardTitle className="text-balance break-keep text-xl leading-tight">{academyClass.name}</CardTitle>
                     </CardHeader>
                     <CardContent className="flex flex-1 flex-col gap-4 pt-0">
-                      <p className="whitespace-pre-line break-keep break-words text-sm leading-relaxed text-muted-foreground">{academyClass.description || "도깨비테니스에서 레벨과 목표에 맞춰 안내하는 아카데미 클래스입니다."}</p>
+                      <p className="whitespace-pre-line break-words text-sm leading-relaxed text-muted-foreground">{academyClass.description || "도깨비테니스에서 레벨과 목표에 맞춰 안내하는 아카데미 클래스입니다."}</p>
 
                       <div className="space-y-3 rounded-xl border border-border/40 bg-muted/30 p-4">
                         <div className="flex items-center gap-3 text-sm">
@@ -428,8 +428,8 @@ export default async function AcademyPage() {
                           <Calendar className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                           <span className="shrink-0 whitespace-nowrap break-keep font-medium text-foreground">일정</span>
                           <div className="min-w-0 space-y-0.5 whitespace-normal break-keep break-words">
-                            <p className="text-sm font-semibold text-foreground">{scheduleDisplay.daysText}</p>
-                            {scheduleDisplay.timeText && <p className="text-sm text-muted-foreground">{scheduleDisplay.timeText}</p>}
+                            <p className="break-keep text-sm font-semibold leading-snug text-foreground">{scheduleDisplay.daysText}</p>
+                            {scheduleDisplay.timeText && <p className="whitespace-nowrap text-sm text-muted-foreground">{scheduleDisplay.timeText}</p>}
                           </div>
                         </div>
                         <div className="flex items-center gap-3 text-sm">
@@ -440,29 +440,29 @@ export default async function AcademyPage() {
                         <div className="flex items-center gap-3 text-sm">
                           <Wallet className="h-4 w-4 shrink-0 text-muted-foreground" />
                           <span className="shrink-0 whitespace-nowrap break-keep font-medium text-foreground">가격</span>
-                          <span className="min-w-0 whitespace-normal break-keep break-words font-semibold text-primary">{formatClassPrice(academyClass.price)}</span>
+                          <span className="min-w-0 whitespace-nowrap break-keep font-semibold text-primary">{formatClassPrice(academyClass.price)}</span>
                         </div>
                       </div>
 
                       <div className="mt-auto flex flex-col gap-2 pt-2">
                         {existingApplication ? (
-                          <Button asChild variant="outline" className="w-full border-primary/30 bg-primary/5 text-primary hover:border-primary/50 hover:bg-primary/10">
+                          <Button asChild variant="outline" wrap="responsive" className="w-full border-primary/30 bg-primary/5 text-primary hover:border-primary/50 hover:bg-primary/10">
                             <Link href={`/mypage/academy-applications/${existingApplication.id}`}>
                               <CheckCircle2 className="mr-2 h-4 w-4" />
                               신청 완료
                             </Link>
                           </Button>
                         ) : isClosed ? (
-                          <div className="flex gap-2">
+                          <div className="flex flex-col gap-2 bp-sm:flex-row">
                             <Button disabled variant="secondary" className="flex-1">
                               모집 마감
                             </Button>
-                            <Button asChild variant="outline" className="flex-1">
+                            <Button asChild variant="outline" wrap="responsive" className="flex-1">
                               <Link href="/board/qna/write?category=academy">문의하기</Link>
                             </Button>
                           </div>
                         ) : (
-                          <Button asChild className="w-full">
+                          <Button asChild wrap="responsive" className="w-full">
                             <Link href={userId ? applyHref : loginHref}>{userId ? "레슨 신청하기" : "로그인 후 신청"}</Link>
                           </Button>
                         )}
@@ -525,10 +525,10 @@ export default async function AcademyPage() {
             <h2 className="text-balance text-xl font-bold tracking-tight text-foreground md:text-2xl lg:text-3xl">나에게 맞는 레슨이 궁금하다면 문의해 주세요</h2>
             <p className="text-pretty text-sm leading-relaxed text-muted-foreground bp-sm:text-base">도깨비테니스 아카데미가 레벨, 목표, 가능한 일정을 확인해 상담을 도와드리고, 등록 확정 후 현장에서 결제를 안내해드립니다.</p>
             <div className="flex flex-col justify-center gap-3 pt-2 sm:flex-row">
-              <Button asChild size="lg" className="h-12 w-full px-8 sm:w-auto">
+              <Button asChild size="lg" wrap="responsive" className="h-12 w-full px-8 sm:w-auto">
                 <Link href={userId ? "/academy/apply" : `/login?next=${encodeURIComponent("/academy/apply")}`}>레슨 신청하기</Link>
               </Button>
-              <Button asChild variant="outline" size="lg" className="h-12 w-full px-8 sm:w-auto">
+              <Button asChild variant="outline" size="lg" wrap="responsive" className="h-12 w-full px-8 sm:w-auto">
                 <Link href="/board/qna/write?category=academy">문의글 작성하기</Link>
               </Button>
             </div>

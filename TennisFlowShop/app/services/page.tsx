@@ -217,10 +217,10 @@ export default async function ServicesPage() {
                 <h1 className="text-2xl font-bold leading-tight text-foreground bp-md:text-3xl bp-lg:text-4xl">스트링 교체 서비스를 더 쉽게</h1>
                 <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">스트링 구매, 라켓 구매·대여, 보유 장비 신청까지 상황에 맞는 방식으로 접수할 수 있습니다.</p>
                 <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
-                  <Button asChild>
+                  <Button asChild wrap="responsive">
                     <Link href="#service-start">신청 방식 선택하기</Link>
                   </Button>
-                  <Button variant="outline" asChild>
+                  <Button variant="outline" asChild wrap="responsive">
                     <Link href="#pricing">가격 안내 보기</Link>
                   </Button>
                 </div>
@@ -244,16 +244,16 @@ export default async function ServicesPage() {
                 <Link
                   key={item.title}
                   href={item.href}
-                  className={`group relative flex h-full flex-col rounded-2xl border p-4 text-left shadow-sm transition-[border-color,box-shadow,background-color] duration-200 hover:border-primary/30 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background bp-sm:p-5 ${item.featured ? "border-primary/40 bg-primary/5" : "border-border bg-card"}`}
+                  className={`group relative flex h-full min-w-0 flex-col rounded-2xl border p-4 text-left shadow-sm transition-[border-color,box-shadow,background-color] duration-200 hover:border-primary/30 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background bp-sm:p-5 ${item.featured ? "border-primary/40 bg-primary/5" : "border-border bg-card"}`}
                 >
-                  <div className="mb-4 flex items-start justify-between gap-3">
+                  <div className="mb-4 flex min-w-0 items-start justify-between gap-3">
                     <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-border bg-background text-foreground transition-colors group-hover:bg-muted bp-sm:h-14 bp-sm:w-14">{item.icon}</div>
-                    <Badge variant={item.featured ? "brand" : "secondary"}>{item.badge}</Badge>
+                    <Badge variant={item.featured ? "brand" : "secondary"} className="shrink-0">{item.badge}</Badge>
                   </div>
 
                   <div className="flex flex-1 flex-col">
                     <h3 className="break-keep text-base font-semibold leading-snug text-foreground bp-sm:text-lg">{item.title}</h3>
-                    <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{item.description}</p>
+                    <p className="mt-3 break-words text-sm leading-relaxed text-muted-foreground">{item.description}</p>
 
                     <div className="mt-4 rounded-xl border border-border bg-muted/30 p-3">
                       <p className="text-xs font-semibold text-primary">진행 흐름</p>
@@ -261,8 +261,8 @@ export default async function ServicesPage() {
                     </div>
 
                     <div className="mt-auto pt-5">
-                      <span className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-card px-3 py-2.5 text-sm font-semibold text-foreground transition-colors group-hover:bg-secondary">
-                        <span>{item.cta}</span>
+                      <span className="inline-flex min-h-10 w-full items-center justify-center gap-2 whitespace-normal break-keep text-center leading-snug rounded-lg border border-border bg-card px-3 py-2.5 text-sm font-semibold text-foreground transition-colors group-hover:bg-secondary">
+                        <span className="min-w-0">{item.cta}</span>
                         <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                       </span>
                     </div>
@@ -295,13 +295,13 @@ export default async function ServicesPage() {
                       <Link
                         key={link.label}
                         href={link.href}
-                        className="group flex h-full flex-col rounded-xl border border-border bg-card p-4 transition-[border-color,box-shadow,background-color] duration-200 hover:border-primary/30 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                        className="group flex h-full min-w-0 flex-col rounded-xl border border-border bg-card p-4 transition-[border-color,box-shadow,background-color] duration-200 hover:border-primary/30 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                       >
-                        <span className="flex items-center justify-between gap-3 text-sm font-semibold text-foreground">
-                          <span>{link.label}</span>
+                        <span className="flex min-w-0 items-center justify-between gap-3 text-sm font-semibold text-foreground">
+                          <span className="min-w-0 truncate">{link.label}</span>
                           <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-primary" />
                         </span>
-                        <span className="mt-2 text-sm leading-relaxed text-muted-foreground">{link.helper}</span>
+                        <span className="mt-2 break-words text-sm leading-relaxed text-muted-foreground">{link.helper}</span>
                       </Link>
                     ))}
                   </div>
@@ -335,8 +335,8 @@ export default async function ServicesPage() {
 
                 <CardHeader className="text-center pb-4">
                   <div className="mx-auto mb-4 w-20 h-20 rounded-full border border-border/60 bg-secondary flex items-center justify-center text-muted-foreground shadow-sm transition-shadow duration-300 group-hover:shadow-md">{type.icon}</div>
-                  <CardTitle className="text-2xl font-bold mb-2">{type.title}</CardTitle>
-                  <CardDescription className="text-base">{type.description}</CardDescription>
+                  <CardTitle className="mb-2 break-keep text-2xl font-bold leading-tight">{type.title}</CardTitle>
+                  <CardDescription className="text-pretty text-base leading-relaxed">{type.description}</CardDescription>
                 </CardHeader>
 
                 <CardContent className="space-y-4 md:space-y-6">
@@ -366,7 +366,7 @@ export default async function ServicesPage() {
                       {type.features.map((feature, idx) => (
                         <li key={idx} className="flex items-start text-sm">
                           <div className="w-2 h-2 rounded-full bg-muted-foreground/70 mt-2 mr-3 flex-shrink-0"></div>
-                          <span>{feature}</span>
+                          <span className="min-w-0 break-words">{feature}</span>
                         </li>
                       ))}
                     </ul>
@@ -382,7 +382,7 @@ export default async function ServicesPage() {
                       {type.recommended.slice(0, 2).map((rec, idx) => (
                         <li key={idx} className="flex items-start text-sm">
                           <ArrowRight className="w-3 h-3 mt-1 mr-2 text-muted-foreground flex-shrink-0" />
-                          <span>{rec}</span>
+                          <span className="min-w-0 break-words">{rec}</span>
                         </li>
                       ))}
                     </ul>
@@ -450,9 +450,9 @@ export default async function ServicesPage() {
             {primarySummaries.map((cat) => (
               <Card key={cat.key} className="bg-card">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-base">{cat.label}</CardTitle>
+                  <CardTitle className="break-keep text-base leading-tight">{cat.label}</CardTitle>
                 </CardHeader>
-                <CardContent className="text-sm text-muted-foreground">
+                <CardContent className="break-words text-sm leading-relaxed text-muted-foreground">
                   {cat.count === 0
                     ? "등록된 상품 데이터 없음"
                     : `상품가 ${formatPriceRange(cat.minPrice, cat.maxPrice)} / 장착비 ${formatPriceRange(cat.minMountingFee, cat.maxMountingFee)}`}
@@ -461,11 +461,11 @@ export default async function ServicesPage() {
             ))}
             <Card className="bg-card border-dashed md:col-span-2">
               <CardHeader className="pb-2">
-                <CardTitle className="text-base">하이브리드 조합 안내</CardTitle>
+                <CardTitle className="break-keep text-base leading-tight">하이브리드 조합 안내</CardTitle>
               </CardHeader>
               <CardContent className="text-sm text-muted-foreground space-y-1">
                 <p>하이브리드는 단일 재질이 아닌 조합 방식으로, 단일 재질 가격대와 분리해 안내합니다.</p>
-                <p>등록된 하이브리드 상품: {hybridGuide.count.toLocaleString()}개</p>
+                <p className="whitespace-nowrap tabular-nums">등록된 하이브리드 상품: {hybridGuide.count.toLocaleString()}개</p>
               </CardContent>
             </Card>
           </div>
@@ -537,7 +537,7 @@ export default async function ServicesPage() {
           </div>
 
           <div className="text-center">
-            <Button size="lg" variant="default" className="shadow-sm hover:shadow-md transition-[background-color,color,border-color,box-shadow,opacity] duration-200" asChild>
+            <Button size="lg" variant="default" wrap="responsive" className="shadow-sm hover:shadow-md transition-[background-color,color,border-color,box-shadow,opacity] duration-200" asChild>
               <Link href="/reviews">
                 <Star className="w-5 h-5 mr-2" />
                 서비스 후기 보기

@@ -301,9 +301,9 @@ export default function MypageClient({ user }: Props) {
                       <User className="h-6 w-6 text-primary" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <CardTitle className="line-clamp-2 break-keep text-lg">{user.name}</CardTitle>
+                      <CardTitle className="line-clamp-2 break-words text-lg leading-tight">{user.name}</CardTitle>
                       <div className="flex items-center gap-2 flex-wrap mt-1">
-                        <span className="break-words text-sm text-foreground">{user.email}</span>
+                        <span className="min-w-0 break-all text-sm text-foreground">{user.email}</span>
                         {user.oauthProviders?.length ? (
                           <>
                             {user.oauthProviders.includes("kakao") && (
@@ -337,41 +337,41 @@ export default function MypageClient({ user }: Props) {
                 <CardContent className="p-3 bp-sm:p-4 bp-lg:p-6">
                   <p className="mb-2 px-1 text-xs font-medium text-muted-foreground">내 상세 내역</p>
                   <div className="pb-1">
-                    <TabsList className="grid h-auto w-full grid-cols-2 gap-1.5 bg-muted p-1 bp-sm:grid-cols-3 bp-lg:grid-cols-7">
-                      <TabsTrigger value="orders" className="flex min-w-0 flex-col items-center gap-1 px-2 py-2.5 whitespace-nowrap leading-tight data-[state=active]:bg-card data-[state=active]:shadow-md dark:data-[state=active]:bg-card bp-sm:gap-1.5 bp-sm:px-3 bp-sm:py-3">
+                    <TabsList className="grid h-auto w-full grid-cols-2 gap-1 bg-muted p-1 bp-sm:grid-cols-3 bp-sm:gap-1.5 bp-lg:grid-cols-7">
+                      <TabsTrigger value="orders" className="flex min-w-0 flex-col items-center gap-1 px-1.5 py-2.5 whitespace-nowrap leading-tight data-[state=active]:bg-card data-[state=active]:shadow-md dark:data-[state=active]:bg-card bp-sm:gap-1.5 bp-sm:px-3 bp-sm:py-3">
                         <ClipboardList className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                         <span className="text-center text-xs font-medium leading-tight break-keep bp-sm:text-sm"><span className="bp-lg:hidden">거래/이용</span><span className="hidden bp-lg:inline">거래/이용 내역</span></span>
                       </TabsTrigger>
 
-                      <TabsTrigger value="academy" className="flex min-w-0 flex-col items-center gap-1 px-2 py-2.5 whitespace-nowrap leading-tight data-[state=active]:bg-card data-[state=active]:shadow-md dark:data-[state=active]:bg-card bp-sm:gap-1.5 bp-sm:px-3 bp-sm:py-3">
+                      <TabsTrigger value="academy" className="flex min-w-0 flex-col items-center gap-1 px-1.5 py-2.5 whitespace-nowrap leading-tight data-[state=active]:bg-card data-[state=active]:shadow-md dark:data-[state=active]:bg-card bp-sm:gap-1.5 bp-sm:px-3 bp-sm:py-3">
                         <GraduationCap className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                         <span className="text-center text-xs font-medium leading-tight break-keep bp-sm:text-sm"><span className="bp-lg:hidden">클래스</span><span className="hidden bp-lg:inline">클래스 신청</span></span>
                       </TabsTrigger>
 
                       <TabsTrigger
                         value="wishlist"
-                        className="flex min-w-0 flex-col items-center gap-1 px-2 py-2.5 whitespace-nowrap leading-tight data-[state=active]:bg-card data-[state=active]:shadow-md dark:data-[state=active]:bg-card bp-sm:gap-1.5 bp-sm:px-3 bp-sm:py-3"
+                        className="flex min-w-0 flex-col items-center gap-1 px-1.5 py-2.5 whitespace-nowrap leading-tight data-[state=active]:bg-card data-[state=active]:shadow-md dark:data-[state=active]:bg-card bp-sm:gap-1.5 bp-sm:px-3 bp-sm:py-3"
                       >
                         <Heart className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                         <span className="text-center text-xs font-medium leading-tight break-keep bp-sm:text-sm"><span className="bp-lg:hidden">찜</span><span className="hidden bp-lg:inline">찜한 상품</span></span>
                       </TabsTrigger>
 
-                      <TabsTrigger value="reviews" className="flex min-w-0 flex-col items-center gap-1 px-2 py-2.5 whitespace-nowrap leading-tight data-[state=active]:bg-card data-[state=active]:shadow-md dark:data-[state=active]:bg-card bp-sm:gap-1.5 bp-sm:px-3 bp-sm:py-3">
+                      <TabsTrigger value="reviews" className="flex min-w-0 flex-col items-center gap-1 px-1.5 py-2.5 whitespace-nowrap leading-tight data-[state=active]:bg-card data-[state=active]:shadow-md dark:data-[state=active]:bg-card bp-sm:gap-1.5 bp-sm:px-3 bp-sm:py-3">
                         <MessageSquare className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                         <span className="text-center text-xs font-medium leading-tight break-keep bp-sm:text-sm"><span className="bp-lg:hidden">리뷰</span><span className="hidden bp-lg:inline">리뷰 관리</span></span>
                       </TabsTrigger>
 
-                      <TabsTrigger value="qna" className="flex min-w-0 flex-col items-center gap-1 px-2 py-2.5 whitespace-nowrap leading-tight data-[state=active]:bg-card data-[state=active]:shadow-md dark:data-[state=active]:bg-card bp-sm:gap-1.5 bp-sm:px-3 bp-sm:py-3">
+                      <TabsTrigger value="qna" className="flex min-w-0 flex-col items-center gap-1 px-1.5 py-2.5 whitespace-nowrap leading-tight data-[state=active]:bg-card data-[state=active]:shadow-md dark:data-[state=active]:bg-card bp-sm:gap-1.5 bp-sm:px-3 bp-sm:py-3">
                         <MessageCircleQuestion className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                         <span className="text-center text-xs font-medium leading-tight break-keep bp-sm:text-sm"><span className="bp-lg:hidden">Q&A</span><span className="hidden bp-lg:inline">Q&A 내역</span></span>
                       </TabsTrigger>
 
-                      <TabsTrigger value="passes" className="flex min-w-0 flex-col items-center gap-1 px-2 py-2.5 whitespace-nowrap leading-tight data-[state=active]:bg-card data-[state=active]:shadow-md dark:data-[state=active]:bg-card bp-sm:gap-1.5 bp-sm:px-3 bp-sm:py-3">
+                      <TabsTrigger value="passes" className="flex min-w-0 flex-col items-center gap-1 px-1.5 py-2.5 whitespace-nowrap leading-tight data-[state=active]:bg-card data-[state=active]:shadow-md dark:data-[state=active]:bg-card bp-sm:gap-1.5 bp-sm:px-3 bp-sm:py-3">
                         <Ticket className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                         <span className="text-center text-xs font-medium leading-tight bp-sm:text-sm">패키지</span>
                       </TabsTrigger>
 
-                      <TabsTrigger value="points" className="flex min-w-0 flex-col items-center gap-1 px-2 py-2.5 whitespace-nowrap leading-tight data-[state=active]:bg-card data-[state=active]:shadow-md dark:data-[state=active]:bg-card bp-sm:gap-1.5 bp-sm:px-3 bp-sm:py-3">
+                      <TabsTrigger value="points" className="flex min-w-0 flex-col items-center gap-1 px-1.5 py-2.5 whitespace-nowrap leading-tight data-[state=active]:bg-card data-[state=active]:shadow-md dark:data-[state=active]:bg-card bp-sm:gap-1.5 bp-sm:px-3 bp-sm:py-3">
                         <ReceiptCent className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                         <span className="text-center text-xs font-medium leading-tight break-keep bp-sm:text-sm"><span className="bp-lg:hidden">포인트</span><span className="hidden bp-lg:inline">적립 포인트</span></span>
                       </TabsTrigger>

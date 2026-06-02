@@ -71,9 +71,9 @@ function MobileBrandGrid({ brands, onPick }: { brands: { name: string; href: str
 }
 
 const mobileMenuItemClass =
-  "group w-full justify-between rounded-lg px-3 py-2.5 text-sm font-semibold text-foreground/85 hover:text-foreground hover:bg-secondary transition-[background-color,color,border-color,box-shadow,opacity] relative z-0 hover:shadow-sm hover:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background";
+  "group w-full min-w-0 justify-between rounded-lg px-3 py-2.5 text-sm font-semibold text-foreground/85 hover:text-foreground hover:bg-secondary transition-[background-color,color,border-color,box-shadow,opacity] relative z-0 hover:shadow-sm hover:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background";
 const mobileNestedGroupClass = "mt-1.5 pl-1";
-const mobileNestedTriggerClass = "px-3 py-2 text-sm font-semibold text-foreground/75 hover:text-foreground rounded-lg hover:bg-secondary";
+const mobileNestedTriggerClass = "min-w-0 px-3 py-2 text-sm font-semibold text-foreground/75 hover:text-foreground rounded-lg hover:bg-secondary";
 
 const Header = () => {
   const router = useRouter();
@@ -450,12 +450,12 @@ const Header = () => {
         >
           {/* 상단 로고/검색 */}
           <div className="shrink-0 border-b border-border bg-muted/30 px-4 pt-5 pb-3 bp-sm:px-5 bp-sm:pt-6 bp-sm:pb-4">
-            <Link href="/" className="inline-flex items-center gap-2 group" aria-label="도깨비테니스 홈" onClick={() => setOpen(false)}>
+            <Link href="/" className="inline-flex min-w-0 items-center gap-2 group" aria-label="도깨비테니스 홈" onClick={() => setOpen(false)}>
               <div className="relative h-7 w-7 shrink-0 overflow-hidden">
                 <Image src="/brand/symbol-light.png" alt="" aria-hidden="true" fill className="object-contain dark:hidden" priority />
                 <Image src="/brand/symbol-dark.png" alt="" aria-hidden="true" fill className="hidden object-contain dark:block" priority />
               </div>
-              <div className="font-brand-bold font-bold text-lg text-foreground whitespace-nowrap">도깨비테니스</div>
+              <div className="min-w-0 truncate whitespace-nowrap font-brand-bold text-lg font-bold text-foreground">도깨비테니스</div>
             </Link>
             <div className="mt-4">
               <SearchPreview placeholder="스트링 / 라켓 검색." className="w-full rounded-lg border-border focus-within:border-border focus-within:ring-2 focus-within:ring-ring transition-colors" onSelect={() => setOpen(false)} />
@@ -517,7 +517,7 @@ const Header = () => {
                       router.push("/services/apply");
                     }}
                   >
-                    <span className="font-semibold text-primary">교체서비스 시작하기</span>
+                    <span className="min-w-0 truncate font-semibold text-primary">교체서비스 시작하기</span>
                     <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200" />
                   </Button>
 
@@ -533,7 +533,7 @@ const Header = () => {
                               <Button
                                 key={it.name}
                                 variant="ghost"
-                                className="w-full justify-between rounded-md px-3 py-2 text-sm font-medium text-foreground/75 hover:text-foreground hover:bg-secondary transition-[background-color,color,border-color,box-shadow,opacity]"
+                                className="w-full min-w-0 justify-between rounded-md px-3 py-2 text-sm font-medium text-foreground/75 hover:text-foreground hover:bg-secondary transition-[background-color,color,border-color,box-shadow,opacity]"
                                 onClick={() => {
                                   setOpen(false);
                                   router.push(it.href);
@@ -565,7 +565,7 @@ const Header = () => {
 
               <Button
                 variant="ghost"
-                className="group w-full justify-between rounded-lg px-3 py-3 text-base font-bold text-foreground hover:bg-secondary transition-[background-color,color,border-color,box-shadow,opacity] relative z-0 hover:shadow-sm hover:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                className="group w-full min-w-0 justify-between rounded-lg px-3 py-3 text-base font-bold text-foreground hover:bg-secondary transition-[background-color,color,border-color,box-shadow,opacity] relative z-0 hover:shadow-sm hover:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 onClick={() => {
                   setOpen(false);
                   router.push(NAV_LINKS.academy.href);
@@ -971,7 +971,7 @@ const Header = () => {
               </div>
 
               {/* 검색 (PC 전용) */}
-              <div className="justify-self-center min-w-0 w-full px-2 xl:px-3 2xl:px-4">
+              <div className="hidden min-w-0 justify-self-center px-2 bp-lg:block bp-lg:w-full xl:px-3 2xl:px-4">
                 <div className="w-full max-w-[420px] xl:max-w-[520px] 2xl:max-w-[640px] mx-auto">
                   <SearchPreview
                     placeholder="스트링 / 라켓 검색..."
@@ -998,7 +998,7 @@ const Header = () => {
               ) : null}
 
               {/* 아이콘/유저 */}
-              <div className="justify-self-end flex items-center gap-1.5 xl:gap-2 2xl:gap-3 min-w-fit shrink-0 pl-2">
+              <div className="justify-self-end flex min-w-0 items-center gap-1.5 xl:gap-2 2xl:gap-3 min-w-fit shrink-0 pl-2">
                 <SheetTrigger asChild>
                   <Button variant="ghost" size="icon" className="bp-lg:hidden rounded-full hover:bg-secondary p-2 transition-[background-color,color,border-color,box-shadow,opacity] duration-300 focus-visible:ring-2 ring-ring" aria-label="메뉴 열기">
                     <Menu className="h-5 w-5" />
@@ -1026,7 +1026,7 @@ const Header = () => {
                     <Gift className="!h-5 !w-5" />
                   </Button>
                 </Link>
-                <Link href="/messages">
+                <Link href="/messages" className="hidden bp-sm:inline-flex">
                   <Button
                     variant="ghost"
                     size="icon"
