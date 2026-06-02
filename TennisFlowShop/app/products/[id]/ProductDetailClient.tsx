@@ -73,7 +73,7 @@ const ReviewEditDialog = dynamic(() => import("./ReviewEditDialog"), {
 });
 
 const detailSurfaceSubtleInnerClass = "rounded-xl border border-border/60 bg-secondary/50";
-const detailSurfaceInfoItemClass = "flex items-center gap-3 rounded-xl border border-border/60 bg-secondary/40 p-3";
+const detailSurfaceInfoItemClass = "flex min-w-0 items-center gap-3 rounded-xl border border-border/60 bg-secondary/40 p-3";
 type ProductBadge = "품절" | "SALE" | "NEW" | "추천" | "입고예정";
 
 const isTruthyBadgeField = (value: unknown) => value === true || value === "true" || value === 1;
@@ -955,7 +955,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
       <div className="relative bg-muted/20 text-foreground py-5 sm:py-6 border-b border-border/60">
         <SiteContainer variant="wide" className="relative">
           <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
-            <div className="flex items-center gap-2 sm:gap-2.5 text-sm sm:text-base overflow-x-auto scrollbar-hide">
+            <div className="flex min-w-0 items-center gap-2 overflow-x-auto text-sm scrollbar-hide sm:gap-2.5 sm:text-base">
               <Link href="/" className="text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap">
                 홈
               </Link>
@@ -964,7 +964,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 상품
               </Link>
               <span className="text-muted-foreground/50">/</span>
-              <span className="text-foreground font-medium truncate max-w-[150px] sm:max-w-none">{product.name}</span>
+              <span className="max-w-[150px] truncate font-medium text-foreground sm:max-w-none">{product.name}</span>
             </div>
             <div className="flex items-center gap-2">
               <Button
@@ -1048,15 +1048,15 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 <div className="space-y-5 sm:space-y-6">
                   {/* 브랜드와 제품명 */}
                   <div>
-                    <span className="inline-block max-w-full break-keep text-sm sm:text-base text-muted-foreground font-medium mb-2">{productBrandLabel}</span>
-                    <h1 className="text-xl sm:text-2xl bp-lg:text-3xl font-bold text-foreground leading-tight tracking-normal break-keep">{product.name}</h1>
-                    <div className="mt-3 flex items-center gap-3">
+                    <span className="inline-block max-w-full truncate text-sm sm:text-base text-muted-foreground font-medium mb-2">{productBrandLabel}</span>
+                    <h1 className="text-balance break-words text-xl font-bold leading-tight tracking-normal text-foreground sm:text-2xl bp-lg:text-3xl">{product.name}</h1>
+                    <div className="mt-3 flex flex-wrap items-center gap-3">
                       <div className="flex items-center gap-0.5">
                         {[...Array(5)].map((_, i) => (
                           <Star key={i} className={`h-4 w-4 sm:h-5 sm:w-5 ${i < Math.floor(averageRating) ? "text-foreground fill-current" : "text-muted-foreground/30 fill-current"}`} />
                         ))}
                       </div>
-                      <span className="break-keep text-sm sm:text-base text-muted-foreground">
+                      <span className="whitespace-nowrap text-sm text-muted-foreground sm:text-base">
                         {averageRating.toFixed(1)} ({reviewsLen}개 리뷰)
                       </span>
                     </div>
@@ -1132,7 +1132,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                             })}
                           </div>
                         ) : (
-                          <p className="text-sm text-muted-foreground">색상: {selectedColorLabel || getColorLabel(visibleColorRows[0])}</p>
+                          <p className="break-words text-sm text-muted-foreground">색상: {selectedColorLabel || getColorLabel(visibleColorRows[0])}</p>
                         )}
                       </div>
                     )}
@@ -1180,7 +1180,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                           {gaugeOptions.length === 1 && <span className="text-xs text-muted-foreground">자동 선택</span>}
                         </div>
                         <Select value={selectedGauge} onValueChange={setSelectedGauge}>
-                          <SelectTrigger className="w-full bg-background">
+                          <SelectTrigger className="w-full min-w-0 bg-background">
                             <SelectValue placeholder="게이지를 선택하세요" />
                           </SelectTrigger>
                           <SelectContent>
@@ -1203,7 +1203,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
                     <div className="flex flex-col gap-3 sm:gap-3.5">
                       {(hasVariantInventories ? selectedVariantSoldOut : product.inventory?.manageStock && product.inventory.stock <= 0) ? (
-                        <Button disabled variant="secondary" size="tall" className="h-12 w-full whitespace-normal leading-snug sm:h-14 sm:whitespace-nowrap">
+                        <Button disabled variant="secondary" size="tall" wrap="normal" className="h-12 w-full sm:h-14">
                           <X className="mr-2 h-5 w-5" />
                           {hasVariantInventories ? "선택한 색상/게이지 조합이 품절되었습니다" : "재고가 소진되었습니다"}
                         </Button>
@@ -1213,7 +1213,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
                             <Button
                               variant="default"
                               size="tall"
-                              className="h-12 w-full whitespace-normal leading-snug sm:h-14 sm:whitespace-nowrap"
+                              wrap="responsive"
+                              className="h-12 w-full sm:h-14"
                               onClick={handleBuyNow}
                               disabled={loading || effectiveStock <= 0 || quantity > effectiveStock || (isStringProduct && gaugeRows.length > 0 && !selectedGauge) || variantPurchaseBlocked}
                             >
@@ -1226,7 +1227,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
                             <Button
                               variant={shouldEmphasizeServiceCta ? "default" : "secondary"}
                               size="tall"
-                              className="h-12 w-full gap-2 whitespace-normal leading-snug sm:h-14 sm:whitespace-nowrap"
+                              wrap="responsive"
+                              className="h-12 w-full gap-2 sm:h-14"
                               disabled={loading || quantity > effectiveStock || (isStringProduct && gaugeRows.length > 0 && !selectedGauge) || variantPurchaseBlocked}
                               onClick={handleBuyNowWithService}
                             >
@@ -1239,7 +1241,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
                             <Button
                               variant="outline"
                               size="lg"
-                              className="h-auto min-h-12 w-full whitespace-normal leading-snug text-sm sm:text-base"
+                              wrap="responsive"
+                              className="h-auto min-h-12 w-full text-sm sm:text-base"
                               onClick={handleAddToCart}
                               disabled={loading || quantity > effectiveStock || (isStringProduct && gaugeRows.length > 0 && !selectedGauge) || variantPurchaseBlocked}
                             >
@@ -1252,12 +1255,13 @@ export default function ProductDetailClient({ product }: { product: any }) {
                               onClick={handleWishlist}
                               size="lg"
                               className={cn(
-                                "h-auto min-h-12 w-full whitespace-normal leading-snug text-sm sm:text-base",
+                                "h-auto min-h-12 w-full text-sm sm:text-base",
                                 isWishlisted ? "border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/15" : "bg-background",
                                 isWishlistUnknown && "cursor-not-allowed opacity-70",
                               )}
                               aria-disabled={busy || isWishlistUnknown}
                               aria-label={isWishlistUnknown ? "위시리스트 상태 확인 중" : "위시리스트"}
+                              wrap="responsive"
                             >
                               <Heart className={`mr-2 h-4 w-4 sm:h-5 sm:w-5 ${isWishlisted ? "text-destructive fill-current" : isWishlistUnknown ? "text-muted-foreground/70" : ""}`} />
                               위시리스트
