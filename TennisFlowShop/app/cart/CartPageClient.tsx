@@ -795,7 +795,7 @@ export default function CartPageClient() {
                       >
                         <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center">
                           {/* 상단(모바일): 체크+썸네일+이름 */}
-                          <div className="flex items-center gap-3 min-w-0">
+                          <div className="flex min-w-0 flex-1 items-center gap-3">
                             <input
                               type="checkbox"
                               checked={selectedLineKeys.includes(lineKey)}
@@ -819,7 +819,7 @@ export default function CartPageClient() {
                             <div className="min-w-0 flex-1">
                               <Link
                                 href={itemHref}
-                                className="block line-clamp-2 break-keep font-medium text-foreground transition-colors hover:text-primary dark:text-foreground dark:hover:text-primary bp-sm:line-clamp-1"
+                                className="block line-clamp-2 break-words font-medium text-foreground transition-colors hover:text-primary dark:text-foreground dark:hover:text-primary bp-sm:line-clamp-1"
                               >
                                 {item.name}
                               </Link>
@@ -830,7 +830,7 @@ export default function CartPageClient() {
                                 </span>
                               </div>
                               {item.selectedGauge && (
-                                <div className="mt-1 text-xs text-muted-foreground">
+                                <div className="mt-1 whitespace-nowrap text-xs text-muted-foreground">
                                   게이지: {formatGaugeLabel(item.selectedGauge)}
                                 </div>
                               )}
@@ -850,7 +850,7 @@ export default function CartPageClient() {
                                 <>
                                   <Badge
                                     variant="warning"
-                                    className="mt-1 whitespace-nowrap px-2 py-0.5 text-xs font-medium"
+                                    wrap="normal" className="mt-1 max-w-full px-2 py-0.5 text-xs font-medium"
                                   >
                                     교체서비스에 사용할 스트링
                                   </Badge>
@@ -878,7 +878,7 @@ export default function CartPageClient() {
                           </div>
 
                           {/* 하단(모바일) */}
-                          <div className="flex flex-wrap items-center gap-3 bp-sm:flex-1 bp-sm:flex-nowrap bp-sm:justify-end">
+                          <div className="flex min-w-0 flex-wrap items-center gap-3 bp-sm:flex-1 bp-sm:flex-nowrap bp-sm:justify-end">
                             {/* 수량 스테퍼 (번들이면 잠금 + 링크로만 변경) */}
                             {lockStepper ? (
                               <div className="order-1 flex flex-col items-center">
@@ -1230,7 +1230,7 @@ export default function CartPageClient() {
                         {bundleEditHref ? (
                           <Button
                             asChild
-                            className="flex h-14 w-full items-center justify-center gap-2 whitespace-normal px-4 text-base font-semibold leading-snug bp-sm:gap-3 bp-sm:text-lg"
+                            wrap="responsive" className="flex h-14 w-full items-center justify-center gap-2 px-4 text-base font-semibold bp-sm:gap-3 bp-sm:text-lg"
                           >
                             <Link href={bundleEditHref}>
                               <ShoppingBag className="h-5 w-5" />
@@ -1240,7 +1240,7 @@ export default function CartPageClient() {
                           </Button>
                         ) : (
                           <Button
-                            className="flex h-14 w-full items-center justify-center gap-2 whitespace-normal px-4 text-base font-semibold leading-snug bp-sm:gap-3 bp-sm:text-lg"
+                            wrap="responsive" className="flex h-14 w-full items-center justify-center gap-2 px-4 text-base font-semibold bp-sm:gap-3 bp-sm:text-lg"
                             size="lg"
                             onClick={() =>
                               showErrorToast(serviceBlockToastMessage)
@@ -1287,6 +1287,7 @@ export default function CartPageClient() {
                         <Button
                           className="h-14 w-full font-semibold"
                           size="lg"
+                          wrap="responsive"
                           disabled={isCheckingCheckoutStock}
                           onClick={handleCheckoutClick}
                         >

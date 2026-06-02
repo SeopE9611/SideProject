@@ -216,13 +216,13 @@ const ProductCard = React.memo(
                 </Badge>
               )}
             </div>
-            <div className="flex-1 p-4 bp-md:p-5">
+            <div className="min-w-0 flex-1 p-4 bp-md:p-5">
               <div className="flex flex-col gap-3 mb-3">
-                <div className="flex-1">
-                  <div className="text-sm text-foreground/80 mb-1 font-medium" title={brandLabel}>
+                <div className="min-w-0 flex-1">
+                  <div className="mb-1 max-w-full truncate text-sm font-medium text-foreground/80" title={brandLabel}>
                     {brandLabel}
                   </div>
-                  <h3 className="text-base sm:text-lg md:text-xl font-bold mb-2 text-foreground line-clamp-2 break-keep" title={product.name}>
+                  <h3 className="mb-2 line-clamp-2 break-words text-base font-bold text-foreground sm:text-lg md:text-xl" title={product.name}>
                     {product.name}
                   </h3>
                   <div className="flex items-center gap-2 mb-2">
@@ -231,10 +231,10 @@ const ProductCard = React.memo(
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2 flex-wrap">
-                  <div className="text-xl sm:text-2xl font-bold text-primary">{displayPrice.toLocaleString()}원</div>
-                  {isSale && <span className="text-sm text-muted-foreground line-through">{regularPrice.toLocaleString()}원</span>}
+                  <div className="whitespace-nowrap tabular-nums text-xl font-bold text-primary sm:text-2xl">{displayPrice.toLocaleString()}원</div>
+                  {isSale && <span className="whitespace-nowrap tabular-nums text-sm text-muted-foreground line-through">{regularPrice.toLocaleString()}원</span>}
                   {isSale && (
-                    <Badge variant="destructive" className="text-xs">
+                    <Badge variant="destructive" className="shrink-0 whitespace-nowrap text-xs">
                       {saleRate}% OFF
                     </Badge>
                   )}
@@ -245,7 +245,7 @@ const ProductCard = React.memo(
                 <div className="mb-3">
                   <div className="grid grid-cols-2 gap-1.5 text-[11px] sm:text-xs">
                     {featureEntries.map((feature, index) => (
-                      <div key={feature.key} className={cn(productMetaPillClass, featureEntries.length % 2 === 1 && index === featureEntries.length - 1 && "col-span-2")}>
+                      <div key={feature.key} className={cn(productMetaPillClass, "min-w-0", featureEntries.length % 2 === 1 && index === featureEntries.length - 1 && "col-span-2")}>
                         <div className="flex min-w-0 items-center justify-between gap-1">
                           <span className="shrink-0 whitespace-nowrap text-muted-foreground font-medium">{feature.label}</span>
                           <span className="shrink-0 whitespace-nowrap tabular-nums font-semibold text-primary">{feature.value}/100</span>
@@ -257,7 +257,7 @@ const ProductCard = React.memo(
               )}
 
               <div className="grid grid-cols-[minmax(0,1fr)_40px] gap-2 max-w-md">
-                <Button asChild variant="default" size="sm" className="w-full h-10 whitespace-nowrap text-xs sm:text-sm">
+                <Button asChild variant="default" size="sm" wrap="responsive" className="w-full h-10 text-xs sm:text-sm">
                   <Link href={detailHref}>
                     <Eye className="w-3 h-3 bp-sm:w-4 bp-sm:h-4 mr-1.5" />
                     {isApplyFlow ? (
@@ -325,12 +325,12 @@ const ProductCard = React.memo(
 
         {/* 카드 콘텐츠 */}
         <CardContent className="flex flex-1 flex-col p-4 sm:p-5">
-          <Link href={detailHref} className="block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+          <Link href={detailHref} className="block min-w-0 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
             <div className="min-h-[48px]">
               <div className="mb-1.5 max-w-full truncate text-xs font-medium text-muted-foreground" title={brandLabel}>
                 {brandLabel}
               </div>
-              <CardTitle className="mb-2 min-h-[2.5rem] line-clamp-2 break-keep text-sm font-semibold leading-snug text-foreground transition-colors group-hover:text-foreground sm:min-h-[3rem] sm:text-base" title={product.name}>
+              <CardTitle className="mb-2 min-h-[2.5rem] line-clamp-2 break-words text-sm font-semibold leading-snug text-foreground transition-colors group-hover:text-foreground sm:min-h-[3rem] sm:text-base" title={product.name}>
                 {product.name}
               </CardTitle>
             </div>
@@ -371,7 +371,7 @@ const ProductCard = React.memo(
 
         <CardFooter className="mt-auto grid grid-cols-1 gap-2 p-3 pt-3 bp-sm:p-4">
           <div className="grid grid-cols-[minmax(0,1fr)_40px] gap-2">
-            <Button asChild type="button" variant="outline" className="h-10 whitespace-nowrap text-sm">
+            <Button asChild type="button" variant="outline" wrap="responsive" className="h-10 text-sm">
               <Link href={detailHref}>
                 <Eye className="h-4 w-4 mr-1.5" />
                 {isApplyFlow ? (
