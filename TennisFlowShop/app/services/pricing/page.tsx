@@ -337,7 +337,7 @@ export default async function PricingPage() {
                   )}
                 </div>
               </div>
-              <Button asChild variant="outline" className="w-full whitespace-normal leading-snug sm:w-auto sm:whitespace-nowrap">
+              <Button asChild variant="outline" className="w-full sm:w-auto">
                 <Link href="/products?from=apply&material=hybrid" className="group">
                   하이브리드 상품 보기
                   <ArrowRight className="transition-transform group-hover:translate-x-1" />
@@ -396,13 +396,13 @@ export default async function PricingPage() {
         </Card>
 
         <div className="flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
-          <Button asChild size="lg" className="w-full whitespace-normal leading-snug sm:w-auto sm:whitespace-nowrap">
+          <Button asChild size="lg" className="w-full sm:w-auto">
             <Link href="/services/apply" className="group">
               교체 서비스 신청하기
               <ArrowRight className="transition-transform group-hover:translate-x-1" />
             </Link>
           </Button>
-          <Button asChild size="lg" variant="outline" className="w-full whitespace-normal leading-snug sm:w-auto sm:whitespace-nowrap">
+          <Button asChild size="lg" variant="outline" className="w-full sm:w-auto">
             <Link href="/products?from=apply" className="group">
               스트링 먼저 고르기
               <ArrowRight className="transition-transform group-hover:translate-x-1" />

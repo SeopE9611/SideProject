@@ -1038,7 +1038,7 @@ export default function OperationsClient() {
                   <CardDescription className="min-h-[44px] break-words text-sm leading-relaxed text-foreground/80">{task.description}</CardDescription>
                 </CardHeader>
                 <CardContent className="p-3 pt-0">
-                  <Button type="button" size="sm" variant="outline" wrap="responsive" className="h-8 w-full bg-background/70 text-sm" onClick={task.onClick}>
+                  <Button type="button" size="sm" variant="outline" wrap="responsive" className="min-h-8 w-full bg-background/70 py-1 text-sm" onClick={task.onClick}>
                     {task.action}
                   </Button>
                 </CardContent>
@@ -1053,7 +1053,7 @@ export default function OperationsClient() {
                 <CardDescription className="min-h-[44px] break-words text-sm leading-relaxed text-foreground/80">오프라인 미결제, 패키지 발급 실패, 보정 필요 항목을 확인하세요.</CardDescription>
               </CardHeader>
               <CardContent className="p-3 pt-0">
-                <Button asChild size="sm" variant="outline" wrap="responsive" className="h-8 w-full bg-background/70 text-sm">
+                <Button asChild size="sm" variant="outline" wrap="responsive" className="min-h-8 w-full bg-background/70 py-1 text-sm">
                   <Link href="/admin/offline/reconciliation">바로 처리</Link>
                 </Button>
               </CardContent>
@@ -1067,7 +1067,7 @@ export default function OperationsClient() {
                 <CardDescription className="min-h-[44px] break-words text-sm leading-relaxed text-foreground/80">신규 신청, 검토 중, 상담 대기, 등록 확정 대기 건을 확인하세요.</CardDescription>
               </CardHeader>
               <CardContent className="p-3 pt-0">
-                <Button asChild size="sm" variant="outline" wrap="responsive" className="h-8 w-full bg-background/70 text-sm">
+                <Button asChild size="sm" variant="outline" wrap="responsive" className="min-h-8 w-full bg-background/70 py-1 text-sm">
                   <Link href="/admin/academy/applications">바로 처리</Link>
                 </Button>
               </CardContent>

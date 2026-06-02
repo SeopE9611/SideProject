@@ -1203,7 +1203,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
                     <div className="flex flex-col gap-3 sm:gap-3.5">
                       {(hasVariantInventories ? selectedVariantSoldOut : product.inventory?.manageStock && product.inventory.stock <= 0) ? (
-                        <Button disabled variant="secondary" size="tall" wrap="normal" className="h-12 w-full sm:h-14">
+                        <Button disabled variant="secondary" size="tall" wrap="normal" className="min-h-12 w-full sm:min-h-14">
                           <X className="mr-2 h-5 w-5" />
                           {hasVariantInventories ? "선택한 색상/게이지 조합이 품절되었습니다" : "재고가 소진되었습니다"}
                         </Button>
@@ -1213,7 +1213,6 @@ export default function ProductDetailClient({ product }: { product: any }) {
                             <Button
                               variant="default"
                               size="tall"
-                              wrap="responsive"
                               className="h-12 w-full sm:h-14"
                               onClick={handleBuyNow}
                               disabled={loading || effectiveStock <= 0 || quantity > effectiveStock || (isStringProduct && gaugeRows.length > 0 && !selectedGauge) || variantPurchaseBlocked}
@@ -1228,7 +1227,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                               variant={shouldEmphasizeServiceCta ? "default" : "secondary"}
                               size="tall"
                               wrap="responsive"
-                              className="h-12 w-full gap-2 sm:h-14"
+                              className="min-h-12 w-full gap-2 sm:min-h-14"
                               disabled={loading || quantity > effectiveStock || (isStringProduct && gaugeRows.length > 0 && !selectedGauge) || variantPurchaseBlocked}
                               onClick={handleBuyNowWithService}
                             >

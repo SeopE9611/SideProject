@@ -1122,22 +1122,22 @@ export default function CartPageClient() {
                   </div>
                   <CardContent className="space-y-5 bp-sm:space-y-6 p-4 bp-sm:p-6">
                     <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground">상품 금액</span>
-                        <span className="tabular-nums text-lg font-semibold">
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="min-w-0 break-words text-muted-foreground">상품 금액</span>
+                        <span className="shrink-0 whitespace-nowrap text-right text-lg font-semibold tabular-nums">
                           {formatKRW(subtotal)}원
                         </span>
                       </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground">배송비</span>
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="min-w-0 break-words text-muted-foreground">배송비</span>
                         {!isShippingFeeReady ? (
                           <Skeleton className="h-6 w-20 rounded-md" />
                         ) : (
                           <span
                             className={
                               shippingFee === 0
-                                ? "font-semibold text-primary"
-                                : "font-semibold"
+                                ? "shrink-0 whitespace-nowrap text-right font-semibold text-primary"
+                                : "shrink-0 whitespace-nowrap text-right font-semibold tabular-nums"
                             }
                           >
                             {shippingFee > 0
@@ -1147,12 +1147,12 @@ export default function CartPageClient() {
                         )}
                       </div>
                       <Separator className="opacity-40" />
-                      <div className="flex items-center justify-between text-xl font-bold">
-                        <span>총 결제 금액</span>
+                      <div className="flex items-center justify-between gap-3 text-xl font-bold">
+                        <span className="min-w-0 break-words">총 결제 금액</span>
                         {!isShippingFeeReady ? (
                           <Skeleton className="h-7 w-28 rounded-md" />
                         ) : (
-                          <span className="tabular-nums text-primary">
+                          <span className="shrink-0 whitespace-nowrap text-right tabular-nums text-primary">
                             {formatKRW(total)}원
                           </span>
                         )}
@@ -1230,7 +1230,7 @@ export default function CartPageClient() {
                         {bundleEditHref ? (
                           <Button
                             asChild
-                            wrap="responsive" className="flex h-14 w-full items-center justify-center gap-2 px-4 text-base font-semibold bp-sm:gap-3 bp-sm:text-lg"
+                            className="flex h-14 w-full items-center justify-center gap-2 px-4 text-base font-semibold bp-sm:gap-3 bp-sm:text-lg"
                           >
                             <Link href={bundleEditHref}>
                               <ShoppingBag className="h-5 w-5" />
@@ -1240,7 +1240,7 @@ export default function CartPageClient() {
                           </Button>
                         ) : (
                           <Button
-                            wrap="responsive" className="flex h-14 w-full items-center justify-center gap-2 px-4 text-base font-semibold bp-sm:gap-3 bp-sm:text-lg"
+                            className="flex h-14 w-full items-center justify-center gap-2 px-4 text-base font-semibold bp-sm:gap-3 bp-sm:text-lg"
                             size="lg"
                             onClick={() =>
                               showErrorToast(serviceBlockToastMessage)
@@ -1287,7 +1287,6 @@ export default function CartPageClient() {
                         <Button
                           className="h-14 w-full font-semibold"
                           size="lg"
-                          wrap="responsive"
                           disabled={isCheckingCheckoutStock}
                           onClick={handleCheckoutClick}
                         >

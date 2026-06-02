@@ -167,16 +167,16 @@ function FinalPaymentConfirmCard({
       </div>
       <CardContent className="space-y-5 p-5 bp-sm:p-6">
         <div className="space-y-3 text-sm">
-          <div className="flex flex-col gap-1 py-1 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
-            <span className="text-foreground/80">주문 상품 ({orderItemsCount}개)</span>
-            <span className="whitespace-nowrap font-semibold tabular-nums">{subtotal.toLocaleString()}원</span>
+          <div className="flex items-center justify-between gap-3 py-1">
+            <span className="min-w-0 break-words text-foreground/80">주문 상품 ({orderItemsCount}개)</span>
+            <span className="shrink-0 whitespace-nowrap text-right font-semibold tabular-nums">{subtotal.toLocaleString()}원</span>
           </div>
-          <div className="flex flex-col gap-1 py-1 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
-            <span className="text-foreground/80">배송비</span>
+          <div className="flex items-center justify-between gap-3 py-1">
+            <span className="min-w-0 break-words text-foreground/80">배송비</span>
             {!isShippingFeeReady ? (
               <Skeleton className="h-5 w-16 rounded" />
             ) : (
-              <span className="whitespace-nowrap font-semibold tabular-nums">
+              <span className="shrink-0 whitespace-nowrap text-right font-semibold tabular-nums">
                 {shippingFee > 0 ? (
                   `${shippingFee.toLocaleString()}원`
                 ) : (
@@ -188,12 +188,12 @@ function FinalPaymentConfirmCard({
             )}
           </div>
           {withStringService && (
-            <div className="flex flex-col gap-1 py-1 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
-              <span className="text-foreground/80">교체서비스 비용</span>
+            <div className="flex items-center justify-between gap-3 py-1">
+              <span className="min-w-0 break-words text-foreground/80">교체서비스 비용</span>
               {!isMountingFeeReady ? (
                 <Skeleton className="h-5 w-20 rounded" />
               ) : serviceFee > 0 ? (
-                <span className="whitespace-nowrap font-semibold tabular-nums">{serviceFee.toLocaleString()}원</span>
+                <span className="shrink-0 whitespace-nowrap text-right font-semibold tabular-nums">{serviceFee.toLocaleString()}원</span>
               ) : (
                 <Badge variant="outline" className="text-xs border-primary/30 text-primary">
                   패키지
@@ -202,21 +202,21 @@ function FinalPaymentConfirmCard({
             </div>
           )}
           {withStringService && packageUsage?.canApplyPackage && (
-            <div className="flex flex-col gap-1 py-1 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
-              <span className="text-foreground/80">패키지 적용</span>
-              <span className="font-semibold">{packageUsage.usingPackage ? "적용됨" : "미사용"}</span>
+            <div className="flex items-center justify-between gap-3 py-1">
+              <span className="min-w-0 break-words text-foreground/80">패키지 적용</span>
+              <span className="shrink-0 whitespace-nowrap text-right font-semibold">{packageUsage.usingPackage ? "적용됨" : "미사용"}</span>
             </div>
           )}
           {withStringService && packageUsage?.usingPackage && baseServiceFee > 0 && (
-            <div className="flex flex-col gap-1 py-1 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
-              <span className="text-foreground/80">패키지 차감 서비스비</span>
-              <span className="whitespace-nowrap font-semibold tabular-nums text-destructive">-{baseServiceFee.toLocaleString()}원</span>
+            <div className="flex items-center justify-between gap-3 py-1">
+              <span className="min-w-0 break-words text-foreground/80">패키지 차감 서비스비</span>
+              <span className="shrink-0 whitespace-nowrap text-right font-semibold tabular-nums text-destructive">-{baseServiceFee.toLocaleString()}원</span>
             </div>
           )}
           {appliedPoints > 0 && (
-            <div className="flex flex-col gap-1 py-1 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
-              <span className="text-foreground/80">포인트 사용</span>
-              <span className="whitespace-nowrap font-semibold tabular-nums text-destructive">-{appliedPoints.toLocaleString()}원</span>
+            <div className="flex items-center justify-between gap-3 py-1">
+              <span className="min-w-0 break-words text-foreground/80">포인트 사용</span>
+              <span className="shrink-0 whitespace-nowrap text-right font-semibold tabular-nums text-destructive">-{appliedPoints.toLocaleString()}원</span>
             </div>
           )}
         </div>
@@ -224,16 +224,16 @@ function FinalPaymentConfirmCard({
         <div className="h-px bg-border/70" />
 
         <div className="space-y-3">
-          <div className="flex flex-col gap-1 text-sm bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
-            <span className="text-foreground/90">합계</span>
-            {!isShippingFeeReady ? <Skeleton className="h-5 w-24 rounded" /> : <span className="whitespace-nowrap font-semibold tabular-nums">{totalPrice.toLocaleString()}원</span>}
+          <div className="flex items-center justify-between gap-3 text-sm">
+            <span className="min-w-0 break-words text-foreground/90">합계</span>
+            {!isShippingFeeReady ? <Skeleton className="h-5 w-24 rounded" /> : <span className="shrink-0 whitespace-nowrap text-right font-semibold tabular-nums">{totalPrice.toLocaleString()}원</span>}
           </div>
-          <div className="flex flex-col gap-2 rounded-xl bg-primary/10 p-4 -mx-1 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
-            <span className="text-base bp-sm:text-lg font-bold">결제 예정 금액</span>
+          <div className="-mx-1 flex items-center justify-between gap-3 rounded-xl bg-primary/10 p-4">
+            <span className="min-w-0 break-words text-base font-bold bp-sm:text-lg">결제 예정 금액</span>
             {!isShippingFeeReady ? (
               <Skeleton className="h-9 w-32 rounded" />
             ) : (
-              <span className="whitespace-nowrap text-xl font-bold tabular-nums text-primary bp-sm:text-2xl bp-md:text-3xl">
+              <span className="shrink-0 whitespace-nowrap text-right text-xl font-bold tabular-nums text-primary bp-sm:text-2xl bp-md:text-3xl">
                 {payableTotalPrice.toLocaleString()}
                 <span className="text-base font-semibold ml-0.5">원</span>
               </span>
@@ -1226,7 +1226,7 @@ export default function CheckoutPage() {
                         </p>
                         {bundleRacketId && (
                           <div className="mt-3">
-                            <Button type="button" variant="outline" size="sm" wrap="responsive" className="h-8" asChild>
+                            <Button type="button" variant="outline" size="sm" className="h-8" asChild>
                               <Link href={`/rackets/${bundleRacketId}/select-string`} data-no-unsaved-guard onClick={onLeaveCartClick}>
                                 수량/스트링 변경
                               </Link>
