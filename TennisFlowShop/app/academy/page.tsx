@@ -248,13 +248,13 @@ export default async function AcademyPage() {
               </div>
 
               <div className="flex flex-col gap-3 sm:flex-row">
-                <Button asChild size="lg" wrap="responsive" className="h-12 px-8 text-base">
+                <Button asChild size="lg" className="h-12 px-8 text-base">
                   <Link href={userId ? "/academy/apply" : `/login?next=${encodeURIComponent("/academy/apply")}`}>
                     <GraduationCap className="mr-2 h-5 w-5" />
                     {userId ? "레슨 신청하기" : "로그인 후 신청"}
                   </Link>
                 </Button>
-                <Button asChild size="lg" variant="outline" wrap="responsive" className="h-12 px-8 text-base">
+                <Button asChild size="lg" variant="outline" className="h-12 px-8 text-base">
                   <Link href="/board/qna/write?category=academy">
                     <MessageCircle className="mr-2 h-5 w-5" />
                     문의하기
@@ -525,10 +525,10 @@ export default async function AcademyPage() {
             <h2 className="text-balance text-xl font-bold tracking-tight text-foreground md:text-2xl lg:text-3xl">나에게 맞는 레슨이 궁금하다면 문의해 주세요</h2>
             <p className="text-pretty text-sm leading-relaxed text-muted-foreground bp-sm:text-base">도깨비테니스 아카데미가 레벨, 목표, 가능한 일정을 확인해 상담을 도와드리고, 등록 확정 후 현장에서 결제를 안내해드립니다.</p>
             <div className="flex flex-col justify-center gap-3 pt-2 sm:flex-row">
-              <Button asChild size="lg" wrap="responsive" className="h-12 w-full px-8 sm:w-auto">
+              <Button asChild size="lg" className="h-12 w-full px-8 sm:w-auto">
                 <Link href={userId ? "/academy/apply" : `/login?next=${encodeURIComponent("/academy/apply")}`}>레슨 신청하기</Link>
               </Button>
-              <Button asChild variant="outline" size="lg" wrap="responsive" className="h-12 w-full px-8 sm:w-auto">
+              <Button asChild variant="outline" size="lg" className="h-12 w-full px-8 sm:w-auto">
                 <Link href="/board/qna/write?category=academy">문의글 작성하기</Link>
               </Button>
             </div>

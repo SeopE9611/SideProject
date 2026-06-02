@@ -799,33 +799,33 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                   {/* 결제 금액 - 안전한 데이터 처리 */}
                   <div className="rounded-xl border border-border bg-background p-6">
                     <div className="space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-muted-foreground">상품 금액</span>
-                        <span className="font-semibold">{formatPrice(productAmount)}원</span>
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="min-w-0 break-words text-muted-foreground">상품 금액</span>
+                        <span className="shrink-0 whitespace-nowrap text-right font-semibold tabular-nums">{formatPrice(productAmount)}원</span>
                       </div>
 
                       {withStringService && (
-                        <div className="flex justify-between items-center">
-                          <span className="text-muted-foreground">교체서비스 비용</span>
-                          <span className="font-semibold">{formatPrice(normalizedServiceFee)}원</span>
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="min-w-0 break-words text-muted-foreground">교체서비스 비용</span>
+                          <span className="shrink-0 whitespace-nowrap text-right font-semibold tabular-nums">{formatPrice(normalizedServiceFee)}원</span>
                         </div>
                       )}
 
-                      <div className="flex justify-between items-center">
-                        <span className="text-muted-foreground">{isVisitPickup ? "추가 비용" : "배송비"}</span>
-                        <span className="font-semibold">{formatPrice(normalizedShippingFee)}원</span>
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="min-w-0 break-words text-muted-foreground">{isVisitPickup ? "추가 비용" : "배송비"}</span>
+                        <span className="shrink-0 whitespace-nowrap text-right font-semibold tabular-nums">{formatPrice(normalizedShippingFee)}원</span>
                       </div>
 
                       {normalizedPointsUsed > 0 && (
-                        <div className="flex justify-between items-center">
-                          <span className="text-muted-foreground">포인트 사용</span>
-                          <span className="font-semibold text-primary">-{formatPrice(normalizedPointsUsed)}원</span>
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="min-w-0 break-words text-muted-foreground">포인트 사용</span>
+                          <span className="shrink-0 whitespace-nowrap text-right font-semibold tabular-nums text-primary">-{formatPrice(normalizedPointsUsed)}원</span>
                         </div>
                       )}
 
-                      <div className="flex justify-between items-center text-2xl font-bold pt-2">
-                        <span className="text-foreground">총 결제 금액</span>
-                        <span className="text-primary">{formatPrice(order.totalPrice)}원</span>
+                      <div className="flex items-center justify-between gap-3 pt-2 text-2xl font-bold">
+                        <span className="min-w-0 break-words text-foreground">총 결제 금액</span>
+                        <span className="shrink-0 whitespace-nowrap text-right tabular-nums text-primary">{formatPrice(order.totalPrice)}원</span>
                       </div>
 
                       <p className="text-sm text-muted-foreground">

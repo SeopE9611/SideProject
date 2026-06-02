@@ -794,18 +794,18 @@ export default function OrderDetailPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="flex justify-between items-center py-2">
-                      <span className="text-muted-foreground">상품 금액</span>
-                      <span className="font-semibold">{formatCurrency(order.totalPrice - order.shippingFee)}</span>
+                    <div className="flex items-center justify-between gap-3 py-2">
+                      <span className="min-w-0 break-words text-muted-foreground">상품 금액</span>
+                      <span className="shrink-0 whitespace-nowrap text-right font-semibold tabular-nums">{formatCurrency(order.totalPrice - order.shippingFee)}</span>
                     </div>
-                    <div className="flex justify-between items-center py-2">
-                      <span className="text-muted-foreground">배송비</span>
-                      <span className="font-semibold">{order.shippingFee > 0 ? formatCurrency(order.shippingFee) : "무료"}</span>
+                    <div className="flex items-center justify-between gap-3 py-2">
+                      <span className="min-w-0 break-words text-muted-foreground">배송비</span>
+                      <span className="shrink-0 whitespace-nowrap text-right font-semibold tabular-nums">{order.shippingFee > 0 ? formatCurrency(order.shippingFee) : "무료"}</span>
                     </div>
                     <Separator className="my-4" />
-                    <div className="flex justify-between items-center py-2">
-                      <span className="text-lg font-bold text-foreground">총 결제금액</span>
-                      <span className="text-xl font-bold text-primary">{formatCurrency(order.totalPrice)}</span>
+                    <div className="flex items-center justify-between gap-3 py-2">
+                      <span className="min-w-0 break-words text-lg font-bold text-foreground">총 결제금액</span>
+                      <span className="shrink-0 whitespace-nowrap text-right text-xl font-bold tabular-nums text-primary">{formatCurrency(order.totalPrice)}</span>
                     </div>
 
                     {/* Benefits */}

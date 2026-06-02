@@ -255,7 +255,7 @@ export default function QnaDetailPage() {
                 </div>
               </div>
             </div>
-            <div className="flex w-full flex-wrap items-center justify-start gap-2 sm:w-auto sm:justify-end">
+            <div className="grid w-full grid-cols-1 gap-2 sm:w-auto sm:grid-cols-2">
               <Button asChild variant="outline" size="sm">
                 <Link href={listHref} onClick={confirmLeave}>
                   Q&amp;A 목록으로

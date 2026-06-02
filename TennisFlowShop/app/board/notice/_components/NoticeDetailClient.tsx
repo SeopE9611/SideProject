@@ -301,10 +301,10 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
               </div>
             </div>
             <div className="grid w-full grid-cols-1 gap-2 sm:w-auto sm:grid-cols-2">
-              <Button asChild variant="outline" size="sm" className="w-full whitespace-normal leading-snug">
+              <Button asChild variant="outline" size="sm" className="w-full">
                 <Link href={listHref}>{sectionLabel} 목록으로</Link>
               </Button>
-              <Button asChild variant="outline" size="sm" className="w-full whitespace-normal leading-snug">
+              <Button asChild variant="outline" size="sm" className="w-full">
                 <Link href="/support">고객센터 홈으로</Link>
               </Button>
             </div>
@@ -326,7 +326,7 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
                     {errorTitle}
                   </div>
                   <p className="text-sm text-muted-foreground">{errorBody}</p>
-                  <div className="flex flex-wrap items-center justify-center gap-2">
+                  <div className="grid grid-cols-1 gap-2 sm:inline-flex sm:grid-cols-none sm:items-center sm:justify-center">
                     {(error as FetchError | undefined)?.status === 401 && (
                       <Button asChild>
                         <Link

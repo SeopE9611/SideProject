@@ -257,7 +257,7 @@ const ProductCard = React.memo(
               )}
 
               <div className="grid grid-cols-[minmax(0,1fr)_40px] gap-2 max-w-md">
-                <Button asChild variant="default" size="sm" wrap="responsive" className="w-full h-10 text-xs sm:text-sm">
+                <Button asChild variant="default" size="sm" className="h-10 w-full text-xs sm:text-sm">
                   <Link href={detailHref}>
                     <Eye className="w-3 h-3 bp-sm:w-4 bp-sm:h-4 mr-1.5" />
                     {isApplyFlow ? (
@@ -371,7 +371,7 @@ const ProductCard = React.memo(
 
         <CardFooter className="mt-auto grid grid-cols-1 gap-2 p-3 pt-3 bp-sm:p-4">
           <div className="grid grid-cols-[minmax(0,1fr)_40px] gap-2">
-            <Button asChild type="button" variant="outline" wrap="responsive" className="h-10 text-sm">
+            <Button asChild type="button" variant="outline" className="h-10 text-sm">
               <Link href={detailHref}>
                 <Eye className="h-4 w-4 mr-1.5" />
                 {isApplyFlow ? (
