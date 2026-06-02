@@ -121,17 +121,17 @@ export default function RentDialog({
             </div>
 
             <div className="bg-background p-4 rounded-lg border border-border space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">
+              <div className="flex items-center justify-between gap-3">
+                <span className="min-w-0 break-words text-sm text-muted-foreground">
                   대여 수수료
                 </span>
-                <span className="font-bold text-foreground">
+                <span className="shrink-0 whitespace-nowrap text-right font-bold text-foreground tabular-nums">
                   {fee.toLocaleString()}원
                 </span>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">보증금</span>
-                <span className="font-bold text-foreground">
+              <div className="flex items-center justify-between gap-3">
+                <span className="min-w-0 break-words text-sm text-muted-foreground">보증금</span>
+                <span className="shrink-0 whitespace-nowrap text-right font-bold text-foreground tabular-nums">
                   {(rental.deposit ?? 0).toLocaleString()}원
                 </span>
               </div>

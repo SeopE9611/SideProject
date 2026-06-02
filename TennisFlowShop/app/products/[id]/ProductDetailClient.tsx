@@ -1226,8 +1226,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                             <Button
                               variant={shouldEmphasizeServiceCta ? "default" : "secondary"}
                               size="tall"
-                              wrap="responsive"
-                              className="min-h-12 w-full gap-2 sm:min-h-14"
+                              className="min-h-12 w-full gap-2 whitespace-nowrap sm:min-h-14"
                               disabled={loading || quantity > effectiveStock || (isStringProduct && gaugeRows.length > 0 && !selectedGauge) || variantPurchaseBlocked}
                               onClick={handleBuyNowWithService}
                             >
@@ -1240,8 +1239,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                             <Button
                               variant="outline"
                               size="lg"
-                              wrap="responsive"
-                              className="h-auto min-h-12 w-full text-sm sm:text-base"
+                              className="h-auto min-h-12 w-full whitespace-nowrap text-sm sm:text-base"
                               onClick={handleAddToCart}
                               disabled={loading || quantity > effectiveStock || (isStringProduct && gaugeRows.length > 0 && !selectedGauge) || variantPurchaseBlocked}
                             >
@@ -1260,7 +1258,6 @@ export default function ProductDetailClient({ product }: { product: any }) {
                               )}
                               aria-disabled={busy || isWishlistUnknown}
                               aria-label={isWishlistUnknown ? "위시리스트 상태 확인 중" : "위시리스트"}
-                              wrap="responsive"
                             >
                               <Heart className={`mr-2 h-4 w-4 sm:h-5 sm:w-5 ${isWishlisted ? "text-destructive fill-current" : isWishlistUnknown ? "text-muted-foreground/70" : ""}`} />
                               위시리스트

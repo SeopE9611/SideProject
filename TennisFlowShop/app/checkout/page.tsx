@@ -1815,7 +1815,7 @@ export default function CheckoutPage() {
                     <Button
                       type="button"
                       variant="default"
-                      wrap="responsive" className="shrink-0 px-3 text-xs bp-sm:text-sm"
+                      className="shrink-0 whitespace-nowrap px-3 text-xs bp-sm:text-sm"
                       onClick={() => {
                         requestStringingValidationMessages();
                         document.getElementById("checkout-payment-action")?.scrollIntoView({ behavior: "smooth", block: "start" });

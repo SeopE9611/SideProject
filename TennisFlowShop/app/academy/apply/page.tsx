@@ -315,7 +315,7 @@ export default async function AcademyApplyPage({ searchParams }: { searchParams?
                         <Users className="h-4 w-4 shrink-0 text-muted-foreground" />
                         <div className="min-w-0">
                           <p className="shrink-0 whitespace-nowrap break-keep text-xs text-muted-foreground">정원</p>
-                          <p className="min-w-0 whitespace-normal break-keep break-words text-sm font-medium text-foreground">{formatClassCapacity(selectedClass.capacity)}</p>
+                          <p className="min-w-0 whitespace-nowrap break-keep text-sm font-medium text-foreground tabular-nums">{formatClassCapacity(selectedClass.capacity)}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3 rounded-xl bg-muted/50 p-3">
@@ -337,7 +337,7 @@ export default async function AcademyApplyPage({ searchParams }: { searchParams?
                         <Wallet className="h-4 w-4 shrink-0 text-muted-foreground" />
                         <div className="min-w-0">
                           <p className="shrink-0 whitespace-nowrap break-keep text-xs text-muted-foreground">수강료</p>
-                          <p className="min-w-0 whitespace-normal break-keep break-words text-sm font-medium text-foreground">{formatClassPrice(selectedClass.price)}</p>
+                          <p className="min-w-0 whitespace-nowrap break-keep text-sm font-medium text-foreground tabular-nums">{formatClassPrice(selectedClass.price)}</p>
                         </div>
                       </div>
                     </div>

@@ -140,11 +140,11 @@ export default function LoginGate({ next, variant = "default" }: { next: string;
             </CardContent>
 
             <CardFooter className="px-8 pb-8">
-              <div className="flex flex-wrap gap-3">
-                <Button asChild variant="default">
+              <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                <Button asChild variant="default" className="whitespace-nowrap">
                   <Link href={loginHref}>로그인·회원가입하기</Link>
                 </Button>
-                <Button asChild variant="outline">
+                <Button asChild variant="outline" className="whitespace-nowrap">
                   <Link href={v.secondary.href}>{v.secondary.label}</Link>
                 </Button>
               </div>
