@@ -92,7 +92,7 @@ export default function HomeMarketPreview() {
             kind="empty"
             variant="card"
             title="등록된 게시글이 없습니다"
-            description="새 글이 등록되면 이곳에서 가장 먼저 볼 수 있어요."
+            description="새 글이 등록되면 바로 확인할 수 있어요."
             icon={<Tags className="h-4 w-4" />}
             className="mx-2 my-2"
           />

@@ -92,7 +92,7 @@ export default function HomeNoticePreview() {
             kind="empty"
             variant="card"
             title="등록된 공지사항이 없습니다"
-            description="새 소식이 등록되면 이곳에서 확인할 수 있어요."
+            description="새 소식이 등록되면 바로 확인할 수 있어요."
             icon={<Bell className="h-4 w-4" />}
             className="mx-2 my-2"
           />

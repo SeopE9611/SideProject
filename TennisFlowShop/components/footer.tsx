@@ -49,7 +49,7 @@ const Footer = () => {
     <footer className="relative mt-8 w-full overflow-hidden border-t border-border bg-card bp-sm:mt-12">
       <div className="pointer-events-none absolute inset-0 bg-muted/15 opacity-60" />
 
-      <div className="bp-lg:pl-64 bp-lg:pr-8 xl:pl-72 xl:pr-12 2xl:pr-16 py-6 bp-sm:py-8">
+      <div className="bp-lg:pl-72 bp-lg:pr-8 xl:pl-80 xl:pr-12 2xl:pr-16 py-6 bp-sm:py-8">
         <SiteContainer variant="wide">
           <div className="space-y-6 bp-sm:space-y-8">
             {/* <div className="grid w-full grid-cols-1 items-start gap-5 border-b border-border/80 pb-5 bp-md:grid-cols-[1.2fr_1fr] bp-md:gap-8 bp-sm:pb-6">
@@ -182,7 +182,7 @@ const Footer = () => {
       </div>
 
       <div className="border-t border-border bg-muted/35">
-        <div className="bp-lg:pl-64 bp-lg:pr-8 xl:pl-72 xl:pr-12 2xl:pr-16 py-4 bp-sm:py-5">
+        <div className="bp-lg:pl-72 bp-lg:pr-8 xl:pl-80 xl:pr-12 2xl:pr-16 py-4 bp-sm:py-5">
           <SiteContainer variant="wide">
             <div className="flex flex-col gap-4 bp-md:flex-row bp-md:items-center bp-md:justify-between">
               <div className="min-w-0 space-y-2.5 text-xs leading-5 text-muted-foreground/95 bp-sm:text-[13px]">
