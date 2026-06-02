@@ -82,7 +82,7 @@ function getStatusTone(status: AcademyClassStatus): BadgeSemanticTone {
 
 function AcademyClassStatusBadge({ status }: { status: AcademyClassStatus }) {
   return (
-    <Badge variant={badgeToneVariant(getStatusTone(status))}>
+    <Badge variant={badgeToneVariant(getStatusTone(status))} className="shrink-0 whitespace-nowrap">
       {getAcademyClassStatusLabel(status)}
     </Badge>
   );
@@ -128,7 +128,7 @@ function ApplicationStatsCell({ item }: { item: AcademyClass }) {
   const confirmed = item.applicationStats?.confirmed ?? 0;
 
   return (
-    <div className="whitespace-nowrap shrink-0">
+    <div className="shrink-0 whitespace-nowrap tabular-nums">
       <div className="font-medium text-foreground">
         신청 {total.toLocaleString("ko-KR")}건
       </div>
@@ -144,7 +144,7 @@ function SummaryCard({ label, value, active }: { label: string; value: number; a
     <Card className={cn(adminSurface.kpiCard, active ? "border-primary/50 bg-primary/5" : "")}>
       <CardContent className="p-4">
         <div className="text-xs font-medium text-muted-foreground">{label}</div>
-        <div className="mt-2 text-2xl font-semibold text-foreground">{value.toLocaleString("ko-KR")}</div>
+        <div className="mt-2 whitespace-nowrap text-2xl font-semibold tabular-nums text-foreground">{value.toLocaleString("ko-KR")}</div>
       </CardContent>
     </Card>
   );
@@ -336,13 +336,13 @@ export default function AcademyClassesClient() {
           ) : null}
 
           <div className={cn(adminSurface.tableCard, "overflow-x-auto")}>
-            <Table className="min-w-[980px]">
+            <Table className="min-w-[1040px] table-fixed">
               <TableHeader className={adminSurface.tableHeader}>
                 <TableRow>
                   <TableHead className="whitespace-nowrap px-3">등록일</TableHead>
-                  <TableHead className="whitespace-nowrap px-3">클래스</TableHead>
+                  <TableHead className="w-[280px] whitespace-nowrap px-3">클래스</TableHead>
                   <TableHead className="whitespace-nowrap px-3">수업 정보</TableHead>
-                  <TableHead className="whitespace-nowrap px-3">운영 정보</TableHead>
+                  <TableHead className="w-[240px] whitespace-nowrap px-3">운영 정보</TableHead>
                   <TableHead className="whitespace-nowrap px-3">신청 현황</TableHead>
                   <TableHead className="whitespace-nowrap px-3">가격/상태</TableHead>
                   <TableHead className="whitespace-nowrap px-3 text-right">관리</TableHead>
@@ -386,10 +386,10 @@ export default function AcademyClassesClient() {
                         <div className="text-muted-foreground">{createdAt.time}</div>
                       </TableCell>
                       <TableCell className="min-w-0 px-3 py-3">
-                        <div className="line-clamp-2 max-w-[260px] break-keep font-medium text-foreground" title={item.name || "-"}>
+                        <div className="line-clamp-2 max-w-[260px] break-words font-medium text-foreground" title={item.name || "-"}>
                           {item.name || "-"}
                         </div>
-                        <div className="line-clamp-2 max-w-[260px] break-keep text-xs text-muted-foreground" title={item.description || "설명 미입력"}>
+                        <div className="line-clamp-2 max-w-[260px] break-words text-xs leading-relaxed text-muted-foreground" title={item.description || "설명 미입력"}>
                           {item.description || "설명 미입력"}
                         </div>
                       </TableCell>
@@ -401,7 +401,7 @@ export default function AcademyClassesClient() {
                       </TableCell>
                       <TableCell className="min-w-0 px-3 py-3 text-sm">
                         <div className="max-w-[220px] truncate" title={item.instructorName || "강사 미입력"}>{item.instructorName || "강사 미입력"}</div>
-                        <div className="max-w-[220px] truncate text-xs text-muted-foreground" title={item.scheduleText || "일정 미입력"}>
+                        <div className="line-clamp-2 max-w-[220px] break-words text-xs leading-relaxed text-muted-foreground" title={item.scheduleText || "일정 미입력"}>
                           {item.scheduleText || "일정 미입력"}
                         </div>
                         {item.location ? (
@@ -414,7 +414,7 @@ export default function AcademyClassesClient() {
                         <ApplicationStatsCell item={item} />
                       </TableCell>
                       <TableCell className="whitespace-nowrap px-3 py-3">
-                        <div className="text-sm font-medium tabular-nums text-foreground">
+                        <div className="whitespace-nowrap text-sm font-medium tabular-nums text-foreground">
                           {formatPrice(item.price)}
                         </div>
                         <div className="mt-1">
