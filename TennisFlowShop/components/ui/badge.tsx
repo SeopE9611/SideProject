@@ -34,9 +34,14 @@ const badgeVariants = cva(
         service:
           "border-warning/50 bg-warning/12 text-warning dark:border-warning/55 dark:bg-warning/20 dark:text-warning",
       },
+      wrap: {
+        nowrap: "whitespace-nowrap",
+        normal: "whitespace-normal break-keep text-left leading-snug",
+      },
     },
     defaultVariants: {
       variant: "neutral",
+      wrap: "nowrap",
     },
   },
 );
@@ -46,9 +51,9 @@ export interface BadgeProps
     React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof badgeVariants> {}
 
-function Badge({ className, variant, ...props }: BadgeProps) {
+function Badge({ className, variant, wrap, ...props }: BadgeProps) {
   return (
-    <div className={cn(badgeVariants({ variant }), className)} {...props} />
+    <div className={cn(badgeVariants({ variant, wrap }), className)} {...props} />
   );
 }
 
