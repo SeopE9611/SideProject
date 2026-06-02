@@ -358,21 +358,21 @@ export default async function AcademyPage() {
           <div className="grid gap-6 md:grid-cols-2">
             {academyContacts.map((contact) => (
               <Card key={contact.phone} className="group border-border/60 bg-card transition-all duration-300 hover:border-primary/30 hover:shadow-lg">
-                <CardContent className="flex flex-col gap-6 p-6 sm:flex-row sm:items-center">
+                <CardContent className="flex flex-col gap-5 p-6 sm:flex-row sm:items-center">
                   <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-primary/10 transition-colors group-hover:bg-primary/15">
                     <User className="h-8 w-8 text-primary" />
                   </div>
-                  <div className="min-w-0 flex-1 space-y-1">
-                    <Badge variant="outline" className="mb-2">
-                      {contact.role}
-                    </Badge>
-                    <h3 className="break-keep text-xl font-semibold leading-tight text-foreground">{contact.name}</h3>
+                  <div className="min-w-0 flex-1 space-y-1.5">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="break-keep text-xl font-semibold leading-tight text-foreground">{contact.name}</h3>
+                      <Badge variant="outline">{contact.role}</Badge>
+                    </div>
                     <a href={`tel:${contact.phone.replaceAll("-", "")}`} className="inline-flex items-center gap-2 whitespace-nowrap text-lg font-medium text-primary transition-colors hover:text-primary/80">
                       <Phone className="h-4 w-4" />
                       {contact.phone}
                     </a>
                   </div>
-                  <Button asChild variant="outline" size="lg" className="w-full shrink-0 sm:w-auto">
+                  <Button asChild variant="outline" size="lg" className="w-full shrink-0 whitespace-nowrap sm:w-auto">
                     <Link href={`tel:${contact.phone.replaceAll("-", "")}`}>전화하기</Link>
                   </Button>
                 </CardContent>

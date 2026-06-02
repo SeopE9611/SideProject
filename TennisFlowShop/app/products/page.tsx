@@ -44,16 +44,16 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
         className="py-6 bp-sm:py-8 bp-md:py-12 bp-lg:max-w-[1600px] bp-xl:max-w-[1680px]"
       >
         <Card className="mb-4 border-border bg-muted/30 bp-sm:mb-6">
-          <CardContent className="flex flex-col gap-4 p-4 md:flex-row md:items-center md:justify-between">
-            <div className="space-y-1">
-              <p className="text-sm font-semibold text-foreground">
+          <CardContent className="flex flex-col gap-4 p-4 sm:p-5 md:flex-row md:items-center md:justify-between">
+            <div className="min-w-0 space-y-1">
+              <p className="text-balance text-sm font-semibold text-foreground">
                 어떤 스트링이 맞을지 모르겠나요?
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p className="break-words text-sm leading-relaxed text-muted-foreground">
                 간단한 질문에 답하면 플레이 성향에 맞는 스트링 선택 방향을 확인할 수 있어요.
               </p>
             </div>
-            <Button asChild className="shrink-0">
+            <Button asChild className="w-full shrink-0 whitespace-nowrap md:w-auto">
               <Link href="/products/recommend">스트링 추천받기</Link>
             </Button>
           </CardContent>
