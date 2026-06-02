@@ -544,7 +544,7 @@ export default function AdminDashboardClient() {
             <CardContent className="grid gap-2">
               <Button asChild size="sm" variant="outline" className="justify-start whitespace-nowrap bg-transparent"><Link href="/admin/orders">주문·교체서비스 처리</Link></Button>
               <Button asChild size="sm" variant="outline" className="justify-start whitespace-nowrap bg-transparent"><Link href="/admin/rentals">라켓 대여 처리</Link></Button>
-              <Button asChild size="sm" variant="outline" className="justify-start whitespace-nowrap bg-transparent"><Link href="/admin/packages?payment=결제대기">패키지 결제/활성화</Link></Button>
+              <Button asChild size="sm" variant="outline" className="justify-start whitespace-nowrap bg-transparent"><Link href="/admin/packages?preset=payment-check">패키지 결제/활성화</Link></Button>
               <Button asChild size="sm" variant="outline" className="justify-start whitespace-nowrap bg-transparent"><Link href="/admin/academy/applications">아카데미 상담</Link></Button>
             </CardContent>
           </Card>

@@ -908,7 +908,7 @@ export default function OperationsClient() {
         description: "패키지 주문의 입금/결제 확인 후 이용권을 활성화하세요.",
         action: "패키지 보기",
         onClick: () => {
-          router.push("/admin/packages?payment=결제대기");
+          router.push("/admin/packages?preset=payment-check");
         },
         tone: "warning" as const,
       },

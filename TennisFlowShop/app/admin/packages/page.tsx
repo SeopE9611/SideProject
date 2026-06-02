@@ -85,6 +85,9 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 
+const PAYMENT_CHECK_PRESET = "payment-check" as const;
+type PackagePresetFilter = typeof PAYMENT_CHECK_PRESET | null;
+
 function SortableTH({
   k,
   className = "",
@@ -184,6 +187,7 @@ export default function PackageOrdersClient() {
     packageTypeFilter: "all" | PackageType;
     paymentFilter: "all" | PaymentStatus;
     serviceTypeFilter: "all" | ServiceType;
+    presetFilter: PackagePresetFilter;
     sortBy: SortKey | null;
     sortDirection: "asc" | "desc";
   }>({
@@ -197,6 +201,7 @@ export default function PackageOrdersClient() {
       packageTypeFilter: DEFAULTS.package,
       paymentFilter: DEFAULTS.payment,
       serviceTypeFilter: DEFAULTS.service,
+      presetFilter: null,
       sortBy: DEFAULTS.sortBy,
       sortDirection: DEFAULTS.sortDirection,
     },
@@ -248,6 +253,10 @@ export default function PackageOrdersClient() {
         packageTypeFilter: isPackageTypeFilter(normalizedPkg)
           ? normalizedPkg
           : defaults.packageTypeFilter,
+        presetFilter:
+          sp.get("preset") === PAYMENT_CHECK_PRESET
+            ? PAYMENT_CHECK_PRESET
+            : defaults.presetFilter,
         sortBy,
         sortDirection,
       };
@@ -261,6 +270,7 @@ export default function PackageOrdersClient() {
           : "all",
       payment: queryState.paymentFilter,
       service: queryState.serviceTypeFilter,
+      preset: queryState.presetFilter,
       sort: queryState.sortBy
         ? `${queryState.sortBy}:${queryState.sortDirection}`
         : undefined,
@@ -273,6 +283,7 @@ export default function PackageOrdersClient() {
       "packageTypeFilter",
       "paymentFilter",
       "serviceTypeFilter",
+      "presetFilter",
       "sortBy",
       "sortDirection",
     ],
@@ -285,6 +296,7 @@ export default function PackageOrdersClient() {
     packageTypeFilter,
     paymentFilter,
     serviceTypeFilter,
+    presetFilter,
     sortBy,
     sortDirection,
   } = state;
@@ -305,6 +317,7 @@ export default function PackageOrdersClient() {
             : "all",
         payment: paymentFilter,
         service: serviceTypeFilter,
+        preset: presetFilter,
         sort: sortBy ? `${sortBy}:${sortDirection}` : undefined,
         page,
         limit,
@@ -315,6 +328,7 @@ export default function PackageOrdersClient() {
       packageTypeFilter,
       paymentFilter,
       serviceTypeFilter,
+      presetFilter,
       sortBy,
       sortDirection,
       page,
@@ -575,7 +589,8 @@ export default function PackageOrdersClient() {
     statusFilter !== "all" ||
     packageTypeFilter !== "all" ||
     paymentFilter !== "all" ||
-    serviceTypeFilter !== "all";
+    serviceTypeFilter !== "all" ||
+    presetFilter === PAYMENT_CHECK_PRESET;
 
   // 필터 리셋
   const resetFilters = () => {
@@ -585,6 +600,7 @@ export default function PackageOrdersClient() {
       packageTypeFilter: "all",
       paymentFilter: "all",
       serviceTypeFilter: "all",
+      presetFilter: null,
       page: 1,
     });
   };
@@ -905,6 +921,17 @@ export default function PackageOrdersClient() {
                   필터 초기화
                 </Button>
               </div>
+
+              {presetFilter === PAYMENT_CHECK_PRESET && (
+                <div className="flex flex-wrap items-center gap-2 border-t pt-3">
+                  <Badge variant="secondary" className="w-fit">
+                    패키지 결제/활성화 대기
+                  </Badge>
+                  <span className="text-xs text-muted-foreground">
+                    온라인 패키지 주문 중 결제 확인 또는 활성화 처리가 필요한 건만 표시합니다.
+                  </span>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

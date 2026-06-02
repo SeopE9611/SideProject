@@ -1,3 +1,4 @@
+import { createPackagePaymentCheckFilter, PACKAGE_PAYMENT_PENDING_VALUES } from "@/app/api/admin/_lib/packagePaymentCheckFilter";
 import { buildOfflineRevenueSummary } from "@/app/api/admin/offline/_lib/revenueSummary";
 import { EXCLUDE_OFFLINE_PACKAGE_ORDERS_FILTER } from "@/app/api/admin/offline/_lib/packageOrderOffline";
 import { getRefundBankLabel } from "@/lib/cancel-request/refund-account";
@@ -27,65 +28,7 @@ import {
 } from "./metrics-pure-utils";
 /** Responsibility: query collection + aggregation transform + DTO mapping (legacy core). */
 
-const PACKAGE_PAYMENT_PENDING_VALUES = [
-  ...PAYMENT_PENDING_VALUES,
-  "unpaid",
-  "ready",
-  "bank_pending",
-  "대기중",
-  "입금확인",
-  "활성화대기",
-];
-
-const PACKAGE_TERMINAL_STATUS_VALUES = [
-  "취소",
-  "취소완료",
-  "환불완료",
-  "배송완료",
-  "구매확정",
-  "completed",
-  "cancelled",
-  "canceled",
-  "refunded",
-  "refund_completed",
-  "delivered",
-  "purchase_confirmed",
-];
-
-const PACKAGE_PAYMENT_CANCELLED_VALUES = [
-  "결제취소",
-  "취소",
-  "환불",
-  "환불완료",
-  "refunded",
-  "cancelled",
-  "canceled",
-];
-
-const PACKAGE_PAYMENT_CHECK_STATUS_VALUES = [
-  "주문접수",
-  "결제대기",
-  "입금확인",
-  "활성화대기",
-  "pending",
-  "ready",
-  "bank_pending",
-];
-
-const packagePaymentCheckFilter: Filter<Document> = {
-  $and: [
-    EXCLUDE_OFFLINE_PACKAGE_ORDERS_FILTER,
-    {
-      $or: [
-        { paymentStatus: { $in: PACKAGE_PAYMENT_PENDING_VALUES } },
-        { "paymentInfo.status": { $in: PACKAGE_PAYMENT_PENDING_VALUES } },
-        { status: { $in: PACKAGE_PAYMENT_CHECK_STATUS_VALUES } },
-      ],
-    },
-    { status: { $nin: PACKAGE_TERMINAL_STATUS_VALUES } },
-    { paymentStatus: { $nin: PACKAGE_PAYMENT_CANCELLED_VALUES } },
-  ],
-};
+const packagePaymentCheckFilter = createPackagePaymentCheckFilter();
 
 /**
  * Admin Dashboard Metrics API
