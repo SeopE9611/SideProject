@@ -615,7 +615,7 @@ export default function RentalsDetailClient({
               <>
                 <p>
                   <span className="text-muted-foreground">신청 상태:</span>{" "}
-                  <span className="font-semibold text-foreground">
+                  <span className="whitespace-nowrap font-semibold text-foreground">
                     {data.applicationSummary.status}
                   </span>
                 </p>
@@ -692,7 +692,7 @@ export default function RentalsDetailClient({
                   <Package className="h-4 w-4 text-muted-foreground" />
                   <div className="flex-1">
                     <p className="text-sm text-foreground/80">스트링 상품</p>
-                    <p className="font-semibold text-foreground">
+                    <p className="whitespace-nowrap font-semibold text-foreground tabular-nums">
                       {stringPrice.toLocaleString()}원
                     </p>
                   </div>
@@ -707,7 +707,7 @@ export default function RentalsDetailClient({
                     <p className="text-sm text-foreground/80">
                       교체서비스 비용
                     </p>
-                    <p className="font-semibold text-foreground">
+                    <p className="whitespace-nowrap font-semibold text-foreground tabular-nums">
                       {stringingFee.toLocaleString()}원
                     </p>
                   </div>
@@ -769,7 +769,7 @@ export default function RentalsDetailClient({
                 <CreditCard className="h-4 w-4 text-muted-foreground" />
                 <div className="flex-1">
                   <p className="text-sm text-foreground/80">대여 수수료</p>
-                  <p className="font-semibold text-foreground">
+                  <p className="whitespace-nowrap font-semibold text-foreground tabular-nums">
                     {fee.toLocaleString()}원
                   </p>
                 </div>
@@ -779,7 +779,7 @@ export default function RentalsDetailClient({
                 <Package className="h-4 w-4 text-muted-foreground" />
                 <div className="flex-1">
                   <p className="text-sm text-foreground/80">보증금</p>
-                  <p className="font-semibold text-foreground">
+                  <p className="whitespace-nowrap font-semibold text-foreground tabular-nums">
                     {deposit.toLocaleString()}원
                   </p>
                 </div>
@@ -789,7 +789,7 @@ export default function RentalsDetailClient({
                 <TrendingUp className="h-4 w-4 text-primary" />
                 <div className="flex-1">
                   <p className="text-sm text-foreground/80">총 결제 금액</p>
-                  <p className="text-xl font-bold text-primary">
+                  <p className="whitespace-nowrap text-xl font-bold text-primary tabular-nums">
                     {total.toLocaleString()}원
                   </p>
                 </div>

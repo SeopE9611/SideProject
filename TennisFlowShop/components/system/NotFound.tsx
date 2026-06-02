@@ -30,13 +30,13 @@ export default function NotFound() {
 
         {/* 버튼들 */}
         <div className="w-full flex flex-col sm:flex-row gap-4">
-          <Button className="flex-1" asChild>
+          <Button className="flex-1 whitespace-nowrap" asChild>
             <Link href="/">
               <Home className="mr-2 h-4 w-4" />
               홈으로 돌아가기
             </Link>
           </Button>
-          <Button variant="outline" className="flex-1" asChild>
+          <Button variant="outline" className="flex-1 whitespace-nowrap" asChild>
             <Link href="/board/qna/write">
               문의하기
               <ArrowRight className="ml-2 h-4 w-4" />

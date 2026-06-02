@@ -234,20 +234,20 @@ function NoticeList({ items, isAdmin, isLoading, error, onRetry, mode = "notice"
               <Eye className="h-3 w-3" />
               {notice.viewCount ?? 0}
             </span>
-            <span className="w-20 text-right">{fmt(notice.createdAt)}</span>
+            <span className="w-20 shrink-0 whitespace-nowrap text-right tabular-nums">{fmt(notice.createdAt)}</span>
           </div>
         </Link>
       ))}
 
       <div className="flex items-center justify-between pt-2">
-        <Button asChild variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+        <Button asChild variant="ghost" size="sm" className="whitespace-nowrap text-muted-foreground hover:text-foreground">
           <Link href={basePath}>
             전체 보기
             <ArrowRight className="ml-1 h-4 w-4" />
           </Link>
         </Button>
         {isAdmin && (
-          <Button asChild variant="outline" size="sm">
+          <Button asChild variant="outline" size="sm" className="whitespace-nowrap">
             <Link href={writePath}>글 쓰기</Link>
           </Button>
         )}
@@ -283,11 +283,11 @@ function QnaList({ items, viewerId, isAdmin, isLoading, error, onRetry }: { item
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex-wrap gap-2 sm:justify-end">
-            <Button variant="outline" asChild>
+            <Button variant="outline" asChild className="whitespace-nowrap">
               <Link href="/board/qna">목록으로</Link>
             </Button>
             {!viewerId && secretBlock.item?._id && (
-              <Button asChild>
+              <Button asChild className="whitespace-nowrap">
                 <Link href={`/login?next=${encodeURIComponent(`/board/qna/${secretBlock.item._id}?${supportQuery}`)}`}>로그인</Link>
               </Button>
             )}
@@ -322,7 +322,7 @@ function QnaList({ items, viewerId, isAdmin, isLoading, error, onRetry }: { item
                     {qna.hasFile && <Paperclip className="h-3 w-3" />}
                   </span>
                 )}
-                <span className="w-20 text-right">{fmt(qna.createdAt)}</span>
+                <span className="w-20 shrink-0 whitespace-nowrap text-right tabular-nums">{fmt(qna.createdAt)}</span>
               </div>
             </div>
           );
@@ -343,13 +343,13 @@ function QnaList({ items, viewerId, isAdmin, isLoading, error, onRetry }: { item
         })}
 
         <div className="flex items-center justify-between pt-2">
-          <Button asChild variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+          <Button asChild variant="ghost" size="sm" className="whitespace-nowrap text-muted-foreground hover:text-foreground">
             <Link href="/board/qna">
               전체 보기
               <ArrowRight className="ml-1 h-4 w-4" />
             </Link>
           </Button>
-          <Button asChild size="sm">
+          <Button asChild size="sm" className="whitespace-nowrap">
             <Link href="/board/qna/write">문의하기</Link>
           </Button>
         </div>

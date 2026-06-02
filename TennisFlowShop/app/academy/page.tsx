@@ -435,7 +435,7 @@ export default async function AcademyPage() {
                         <div className="flex items-center gap-3 text-sm">
                           <Users className="h-4 w-4 shrink-0 text-muted-foreground" />
                           <span className="shrink-0 whitespace-nowrap break-keep font-medium text-foreground">정원</span>
-                          <span className="min-w-0 whitespace-normal break-keep break-words text-muted-foreground">{typeof academyClass.capacity === "number" && academyClass.capacity > 0 ? `${academyClass.capacity}명` : "상담 후 안내"}</span>
+                          <span className="min-w-0 whitespace-nowrap break-keep text-muted-foreground tabular-nums">{typeof academyClass.capacity === "number" && academyClass.capacity > 0 ? `${academyClass.capacity}명` : "상담 후 안내"}</span>
                         </div>
                         <div className="flex items-center gap-3 text-sm">
                           <Wallet className="h-4 w-4 shrink-0 text-muted-foreground" />
@@ -446,7 +446,7 @@ export default async function AcademyPage() {
 
                       <div className="mt-auto flex flex-col gap-2 pt-2">
                         {existingApplication ? (
-                          <Button asChild variant="outline" wrap="responsive" className="w-full border-primary/30 bg-primary/5 text-primary hover:border-primary/50 hover:bg-primary/10">
+                          <Button asChild variant="outline" className="w-full whitespace-nowrap border-primary/30 bg-primary/5 text-primary hover:border-primary/50 hover:bg-primary/10">
                             <Link href={`/mypage/academy-applications/${existingApplication.id}`}>
                               <CheckCircle2 className="mr-2 h-4 w-4" />
                               신청 완료
@@ -457,12 +457,12 @@ export default async function AcademyPage() {
                             <Button disabled variant="secondary" className="flex-1">
                               모집 마감
                             </Button>
-                            <Button asChild variant="outline" wrap="responsive" className="flex-1">
+                            <Button asChild variant="outline" className="flex-1 whitespace-nowrap">
                               <Link href="/board/qna/write?category=academy">문의하기</Link>
                             </Button>
                           </div>
                         ) : (
-                          <Button asChild wrap="responsive" className="w-full">
+                          <Button asChild className="w-full whitespace-nowrap">
                             <Link href={userId ? applyHref : loginHref}>{userId ? "레슨 신청하기" : "로그인 후 신청"}</Link>
                           </Button>
                         )}

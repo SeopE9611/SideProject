@@ -190,7 +190,7 @@ export default function SupportFaqSearch() {
             </div>
             <p className="text-base font-medium text-foreground">검색 결과가 없습니다</p>
             <p className="mt-1 text-sm text-muted-foreground">다른 검색어를 입력하거나 Q&A 문의로 남겨주세요.</p>
-            <Button asChild className="mt-4" size="sm">
+            <Button asChild className="mt-4 whitespace-nowrap" size="sm">
               <Link href="/board/qna/write">문의하기</Link>
             </Button>
           </div>
@@ -216,9 +216,9 @@ export default function SupportFaqSearch() {
 
             {hiddenFaqCount > 0 && <p className="py-2 text-center text-sm text-muted-foreground">{visibleFaqs.length}개의 질문을 표시 중입니다. 더 많은 질문은 검색하거나 카테고리를 선택해 확인하세요.</p>}
 
-            <div className="flex items-center justify-center gap-3 pt-4 border-t border-border">
+            <div className="flex flex-col items-center justify-center gap-3 border-t border-border pt-4 sm:flex-row">
               <span className="text-sm text-muted-foreground">원하는 답변을 찾지 못하셨나요?</span>
-              <Button asChild size="sm" variant="outline">
+              <Button asChild size="sm" variant="outline" className="whitespace-nowrap">
                 <Link href="/board/qna/write">Q&A 문의하기</Link>
               </Button>
             </div>

@@ -188,8 +188,8 @@ export default async function ServicesPage() {
 
   const serviceHelpLinks = [
     { label: "스트링 추천 도우미", href: "/products/recommend", helper: "플레이 성향에 맞는 스트링을 먼저 좁혀보세요." },
-    { label: "가격 먼저 보기", href: "#pricing", helper: "현재 페이지의 가격 안내로 바로 이동합니다." },
-    { label: "자주 묻는 질문", href: "/board/qna", helper: "예약·신청 관련 문의를 확인하거나 남길 수 있어요." },
+    { label: "가격 먼저 보기", href: "#pricing", helper: "가격 안내 섹션으로 이동합니다." },
+    { label: "자주 묻는 질문", href: "/board/qna", helper: "예약·신청 문의를 확인합니다." },
     { label: "전화 상담", href: "tel:01052185248", helper: "010-5218-5248 · 평일 10:00-22:00, 토요일 09:00-18:00" },
   ];
 
@@ -217,10 +217,10 @@ export default async function ServicesPage() {
                 <h1 className="text-2xl font-bold leading-tight text-foreground bp-md:text-3xl bp-lg:text-4xl">스트링 교체 서비스를 더 쉽게</h1>
                 <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">스트링 구매, 라켓 구매·대여, 보유 장비 신청까지 상황에 맞는 방식으로 접수할 수 있습니다.</p>
                 <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
-                  <Button asChild wrap="responsive">
+                  <Button asChild className="whitespace-nowrap">
                     <Link href="#service-start">신청 방식 선택하기</Link>
                   </Button>
-                  <Button variant="outline" asChild wrap="responsive">
+                  <Button variant="outline" asChild className="whitespace-nowrap">
                     <Link href="#pricing">가격 안내 보기</Link>
                   </Button>
                 </div>
@@ -537,7 +537,7 @@ export default async function ServicesPage() {
           </div>
 
           <div className="text-center">
-            <Button size="lg" variant="default" wrap="responsive" className="shadow-sm hover:shadow-md transition-[background-color,color,border-color,box-shadow,opacity] duration-200" asChild>
+            <Button size="lg" variant="default" className="whitespace-nowrap shadow-sm hover:shadow-md transition-[background-color,color,border-color,box-shadow,opacity] duration-200" asChild>
               <Link href="/reviews">
                 <Star className="w-5 h-5 mr-2" />
                 서비스 후기 보기
