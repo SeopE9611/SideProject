@@ -158,10 +158,10 @@ const infoLinks: InfoLinkProps[] = [
 
 function InfoLinkItem({ icon: Icon, title, href }: InfoLinkProps) {
   return (
-    <Link href={href} className="group flex items-center gap-3 rounded-lg px-4 py-3 transition-colors hover:bg-muted/50">
-      <Icon className="h-4 w-4 text-muted-foreground" />
-      <span className="text-sm font-medium text-foreground">{title}</span>
-      <ArrowRight className="ml-auto h-4 w-4 text-muted-foreground opacity-0 transition-all group-hover:opacity-100 group-hover:translate-x-0.5" />
+    <Link href={href} className="group flex min-h-14 items-center gap-3 rounded-xl border border-border/60 bg-background px-4 py-3 transition-colors hover:border-primary/20 hover:bg-muted/50">
+      <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
+      <span className="whitespace-nowrap text-sm font-medium text-foreground">{title}</span>
+      <ArrowRight className="ml-auto h-4 w-4 shrink-0 text-muted-foreground opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100" />
     </Link>
   );
 }
@@ -418,19 +418,10 @@ export default function SupportPage() {
         {/* Info Links */}
         <section className="mb-10 md:mb-14">
           <Card className="border-border">
-            <CardContent className="p-2">
-              <div className="grid grid-cols-2 md:grid-cols-4">
-                {infoLinks.map((link, index) => (
-                  <div
-                    key={link.href}
-                    className={cn(
-                      "relative",
-                      index < infoLinks.length - 1 && "after:absolute after:right-0 after:top-1/2 after:-translate-y-1/2 after:h-8 after:w-px after:bg-border md:after:block",
-                      index % 2 === 0 && index < infoLinks.length - 2 && "after:hidden sm:after:block",
-                    )}
-                  >
-                    <InfoLinkItem {...link} />
-                  </div>
+            <CardContent className="p-3">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                {infoLinks.map((link) => (
+                  <InfoLinkItem key={link.href} {...link} />
                 ))}
               </div>
             </CardContent>
