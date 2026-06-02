@@ -260,7 +260,7 @@ function InteractiveDonutChart({ data, labelFormatter }: { data: Array<{ label: 
   }
 
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center">
       <div className="h-[160px] w-[160px] shrink-0">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
@@ -290,10 +290,10 @@ function InteractiveDonutChart({ data, labelFormatter }: { data: Array<{ label: 
           </PieChart>
         </ResponsiveContainer>
       </div>
-      <div className="flex flex-1 flex-col gap-1.5 text-sm">
+      <div className="flex min-w-0 flex-1 flex-col gap-1.5 text-sm">
         {chartData.slice(0, 5).map((d, idx) => (
-          <div key={d.originalLabel} className="flex items-center justify-between rounded px-2 py-1 transition-colors hover:bg-muted/30">
-            <div className="flex items-center gap-2">
+          <div key={d.originalLabel} className="flex min-w-0 items-center justify-between gap-2 rounded px-2 py-1 transition-colors hover:bg-muted/30">
+            <div className="flex min-w-0 items-center gap-2">
               <div
                 className="h-2.5 w-2.5 rounded-sm"
                 style={{
@@ -302,7 +302,7 @@ function InteractiveDonutChart({ data, labelFormatter }: { data: Array<{ label: 
               />
               <span className="truncate text-muted-foreground">{d.name}</span>
             </div>
-            <span className="font-medium tabular-nums">{formatAdminNumber(d.value)}</span>
+            <span className="shrink-0 whitespace-nowrap font-medium tabular-nums">{formatAdminNumber(d.value)}</span>
           </div>
         ))}
       </div>
@@ -315,13 +315,13 @@ function InteractiveDonutChart({ data, labelFormatter }: { data: Array<{ label: 
 function KpiCard({ title, value, sub, icon, trend, spark }: { title: string; value: string; sub?: string; icon: ReactNode; trend?: string; spark?: ReactNode }) {
   return (
     <Card className={cn("group relative overflow-hidden", adminSurface.kpiCard)}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-        <CardTitle className="break-keep text-sm font-medium leading-tight text-muted-foreground">{title}</CardTitle>
-        <div className="rounded-lg bg-primary/10 p-2 text-primary transition-colors group-hover:bg-primary/15 dark:bg-primary/20 dark:group-hover:bg-primary/25">{icon}</div>
+      <CardHeader className="flex flex-row items-start justify-between gap-3 space-y-0 pb-3">
+        <CardTitle className="min-w-0 break-words text-sm font-medium leading-tight text-muted-foreground">{title}</CardTitle>
+        <div className="shrink-0 rounded-lg bg-primary/10 p-2 text-primary transition-colors group-hover:bg-primary/15 dark:bg-primary/20 dark:group-hover:bg-primary/25">{icon}</div>
       </CardHeader>
       <CardContent className="space-y-3">
-        <div className="whitespace-nowrap text-3xl font-bold tracking-normal tabular-nums">{value}</div>
-        {sub && <p className="line-clamp-2 break-keep text-sm text-muted-foreground">{sub}</p>}
+        <div className="overflow-hidden text-ellipsis whitespace-nowrap text-3xl font-bold tracking-normal tabular-nums">{value}</div>
+        {sub && <p className="line-clamp-2 break-words text-sm leading-relaxed text-muted-foreground">{sub}</p>}
         <div className="flex items-end justify-between gap-3">
           {trend && (
             <Badge variant="secondary" className="shrink-0 whitespace-nowrap text-xs font-normal">
@@ -508,9 +508,9 @@ export default function AdminDashboardClient() {
               <CardDescription>취소·장기 결제대기·연체</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
-              <div className="flex items-center justify-between"><span>취소 요청</span><Badge className="shrink-0 whitespace-nowrap" variant={data.kpi.queue.cancelRequests > 0 ? "destructive" : "secondary"}>{formatAdminNumber(data.kpi.queue.cancelRequests)}</Badge></div>
-              <div className="flex items-center justify-between"><span>결제 대기 24h+</span><Badge className="shrink-0 whitespace-nowrap" variant={data.kpi.queue.paymentPending24h > 0 ? "destructive" : "secondary"}>{formatAdminNumber(data.kpi.queue.paymentPending24h)}</Badge></div>
-              <div className="flex items-center justify-between"><span>대여 연체</span><Badge className="shrink-0 whitespace-nowrap" variant={data.kpi.queue.rentalOverdue > 0 ? "destructive" : "secondary"}>{formatAdminNumber(data.kpi.queue.rentalOverdue)}</Badge></div>
+              <div className="flex min-w-0 items-center justify-between gap-2"><span className="min-w-0 break-words">취소 요청</span><Badge className="shrink-0 whitespace-nowrap" variant={data.kpi.queue.cancelRequests > 0 ? "destructive" : "secondary"}>{formatAdminNumber(data.kpi.queue.cancelRequests)}</Badge></div>
+              <div className="flex min-w-0 items-center justify-between gap-2"><span className="min-w-0 break-words">결제 대기 24h+</span><Badge className="shrink-0 whitespace-nowrap" variant={data.kpi.queue.paymentPending24h > 0 ? "destructive" : "secondary"}>{formatAdminNumber(data.kpi.queue.paymentPending24h)}</Badge></div>
+              <div className="flex min-w-0 items-center justify-between gap-2"><span className="min-w-0 break-words">대여 연체</span><Badge className="shrink-0 whitespace-nowrap" variant={data.kpi.queue.rentalOverdue > 0 ? "destructive" : "secondary"}>{formatAdminNumber(data.kpi.queue.rentalOverdue)}</Badge></div>
             </CardContent>
           </Card>
           <Card className="border-primary/30 bg-primary/5">
@@ -519,9 +519,9 @@ export default function AdminDashboardClient() {
               <CardDescription>배송·교체서비스·반납</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
-              <div className="flex items-center justify-between"><span>송장 등록 대기</span><Badge className="shrink-0 whitespace-nowrap" variant={data.kpi.queue.shippingPending > 0 ? "default" : "outline"}>{formatAdminNumber(data.kpi.queue.shippingPending)}</Badge></div>
-              <div className="flex items-center justify-between"><span>교체 3일+</span><Badge className="shrink-0 whitespace-nowrap" variant={data.kpi.queue.stringingAging3d > 0 ? "default" : "outline"}>{formatAdminNumber(data.kpi.queue.stringingAging3d)}</Badge></div>
-              <div className="flex items-center justify-between"><span>반납 임박 48h</span><Badge className="shrink-0 whitespace-nowrap" variant={data.kpi.queue.rentalDueSoon > 0 ? "default" : "outline"}>{formatAdminNumber(data.kpi.queue.rentalDueSoon)}</Badge></div>
+              <div className="flex min-w-0 items-center justify-between gap-2"><span className="min-w-0 break-words">송장 등록 대기</span><Badge className="shrink-0 whitespace-nowrap" variant={data.kpi.queue.shippingPending > 0 ? "default" : "outline"}>{formatAdminNumber(data.kpi.queue.shippingPending)}</Badge></div>
+              <div className="flex min-w-0 items-center justify-between gap-2"><span className="min-w-0 break-words">교체 3일+</span><Badge className="shrink-0 whitespace-nowrap" variant={data.kpi.queue.stringingAging3d > 0 ? "default" : "outline"}>{formatAdminNumber(data.kpi.queue.stringingAging3d)}</Badge></div>
+              <div className="flex min-w-0 items-center justify-between gap-2"><span className="min-w-0 break-words">반납 임박 48h</span><Badge className="shrink-0 whitespace-nowrap" variant={data.kpi.queue.rentalDueSoon > 0 ? "default" : "outline"}>{formatAdminNumber(data.kpi.queue.rentalDueSoon)}</Badge></div>
             </CardContent>
           </Card>
           <Card className="border-info/40 bg-info/5">
@@ -530,10 +530,10 @@ export default function AdminDashboardClient() {
               <CardDescription>패키지·오프라인·알림·정산</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
-              <div className="flex items-center justify-between"><span>패키지 결제확인</span><Badge className="shrink-0 whitespace-nowrap" variant={data.kpi.queue.packagePaymentCheck > 0 ? "destructive" : "secondary"}>{formatAdminNumber(data.kpi.queue.packagePaymentCheck)}</Badge></div>
-              <div className="flex items-center justify-between"><span>오프라인 미결제</span><Badge className="shrink-0 whitespace-nowrap" variant={offlineMetrics.pendingOfflineCount > 0 ? "destructive" : "secondary"}>{formatAdminNumber(offlineMetrics.pendingOfflineCount)}</Badge></div>
-              <div className="flex items-center justify-between"><span>알림 실패</span><Badge className="shrink-0 whitespace-nowrap" variant={data.kpi.queue.outboxFailed > 0 ? "destructive" : "secondary"}>{formatAdminNumber(data.kpi.queue.outboxFailed)}</Badge></div>
-              <div className="flex items-center justify-between"><span>지난달 정산</span><Badge className="shrink-0 whitespace-nowrap" variant={!data.settlements.hasPrevSnapshot ? "destructive" : "secondary"}>{!data.settlements.hasPrevSnapshot ? "미생성" : "OK"}</Badge></div>
+              <div className="flex min-w-0 items-center justify-between gap-2"><span className="min-w-0 break-words">패키지 결제확인</span><Badge className="shrink-0 whitespace-nowrap" variant={data.kpi.queue.packagePaymentCheck > 0 ? "destructive" : "secondary"}>{formatAdminNumber(data.kpi.queue.packagePaymentCheck)}</Badge></div>
+              <div className="flex min-w-0 items-center justify-between gap-2"><span className="min-w-0 break-words">오프라인 미결제</span><Badge className="shrink-0 whitespace-nowrap" variant={offlineMetrics.pendingOfflineCount > 0 ? "destructive" : "secondary"}>{formatAdminNumber(offlineMetrics.pendingOfflineCount)}</Badge></div>
+              <div className="flex min-w-0 items-center justify-between gap-2"><span className="min-w-0 break-words">알림 실패</span><Badge className="shrink-0 whitespace-nowrap" variant={data.kpi.queue.outboxFailed > 0 ? "destructive" : "secondary"}>{formatAdminNumber(data.kpi.queue.outboxFailed)}</Badge></div>
+              <div className="flex min-w-0 items-center justify-between gap-2"><span className="min-w-0 break-words">지난달 정산</span><Badge className="shrink-0 whitespace-nowrap" variant={!data.settlements.hasPrevSnapshot ? "destructive" : "secondary"}>{!data.settlements.hasPrevSnapshot ? "미생성" : "OK"}</Badge></div>
             </CardContent>
           </Card>
           <Card className="border-border/60 bg-card">
@@ -542,9 +542,9 @@ export default function AdminDashboardClient() {
               <CardDescription>업무 시작 동선</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-2">
-              <Button asChild size="sm" variant="outline" className="justify-start whitespace-nowrap bg-transparent"><Link href="/admin/orders">주문·교체서비스 처리</Link></Button>
+              <Button asChild size="sm" variant="outline" wrap="responsive" className="justify-start bg-transparent"><Link href="/admin/orders">주문·교체서비스 처리</Link></Button>
               <Button asChild size="sm" variant="outline" className="justify-start whitespace-nowrap bg-transparent"><Link href="/admin/rentals">라켓 대여 처리</Link></Button>
-              <Button asChild size="sm" variant="outline" className="justify-start whitespace-nowrap bg-transparent"><Link href="/admin/packages?preset=payment-check">패키지 결제/활성화</Link></Button>
+              <Button asChild size="sm" variant="outline" wrap="responsive" className="justify-start bg-transparent"><Link href="/admin/packages?preset=payment-check">패키지 결제/활성화</Link></Button>
               <Button asChild size="sm" variant="outline" className="justify-start whitespace-nowrap bg-transparent"><Link href="/admin/academy/applications">아카데미 상담</Link></Button>
             </CardContent>
           </Card>
@@ -1298,7 +1298,7 @@ export default function AdminDashboardClient() {
                             </Badge>
                           </div>
                         </div>
-                        <div className="shrink-0 text-sm font-semibold">{formatAdminKRW(o.totalPrice)}</div>
+                        <div className="shrink-0 whitespace-nowrap text-sm font-semibold tabular-nums">{formatAdminKRW(o.totalPrice)}</div>
                       </Link>
                     );
                   })()
@@ -1339,7 +1339,7 @@ export default function AdminDashboardClient() {
                             </Badge>
                           </div>
                         </div>
-                        <div className="shrink-0 text-sm font-semibold">{formatAdminKRW(a.totalPrice)}</div>
+                        <div className="shrink-0 whitespace-nowrap text-sm font-semibold tabular-nums">{formatAdminKRW(a.totalPrice)}</div>
                       </Link>
                     );
                   })()

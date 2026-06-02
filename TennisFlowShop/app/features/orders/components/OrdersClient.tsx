@@ -794,13 +794,13 @@ export default function OrdersClient() {
           </div>
         </CardHeader>
         <CardContent className="relative min-h-[420px] overflow-x-auto scrollbar-hidden pr-2">
-          <Table className="min-w-[980px] table-auto border-separate text-xs [border-spacing-block:0.4rem] [border-spacing-inline:0]">
+          <Table className="min-w-[1040px] table-fixed border-separate text-xs [border-spacing-block:0.4rem] [border-spacing-inline:0]">
             <TableHeader className={cn("sticky top-0", adminSurface.tableHeader)}>
               <TableRow>
-                <TableHead className={cn(thClasses, "w-[140px]")}>
+                <TableHead className={cn(thClasses, "w-[150px]")}>
                   주문 ID
                 </TableHead>
-                <TableHead className={cn(thClasses, "text-center")}>고객</TableHead>
+                <TableHead className={cn(thClasses, "w-[190px] text-center")}>고객</TableHead>
                 <TableHead className={cn(thClasses, "w-36")}>
                   <div className="flex items-center justify-center gap-2">
                     <span
@@ -826,26 +826,26 @@ export default function OrdersClient() {
                     />
                   </div>
                 </TableHead>
-                <TableHead className={cn(thClasses, "text-center")}>
+                <TableHead className={cn(thClasses, "w-[112px] text-center")}>
                   상태
                 </TableHead>
-                <TableHead className={cn(thClasses, "text-center")}>
+                <TableHead className={cn(thClasses, "w-[96px] text-center")}>
                   결제
                 </TableHead>
-                <TableHead className={cn(thClasses, "text-center")}>
+                <TableHead className={cn(thClasses, "w-[100px] text-center")}>
                   수령방식
                 </TableHead>
-                <TableHead className={cn(thClasses, "text-center")}>
+                <TableHead className={cn(thClasses, "w-[120px] text-center")}>
                   운송장
                 </TableHead>
-                <TableHead className={cn(thClasses, "text-center")}>
+                <TableHead className={cn(thClasses, "w-[88px] text-center")}>
                   유형
                 </TableHead>
                 <TableHead
                   onClick={() => handleSort("total")}
                   className={cn(
                     thClasses,
-                    "text-center cursor-pointer select-none",
+                    "w-[104px] cursor-pointer select-none text-center",
                     sortBy === "total" && "text-primary",
                   )}
                 >
@@ -859,7 +859,7 @@ export default function OrdersClient() {
                     )}
                   />
                 </TableHead>
-                <TableHead className={cn(thClasses, "text-center")}>
+                <TableHead className={cn(thClasses, "w-[48px] text-center")}>
                   …
                 </TableHead>
               </TableRow>
@@ -987,8 +987,8 @@ export default function OrdersClient() {
                           <TooltipProvider delayDuration={10}>
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <div className="flex w-full max-w-[140px] cursor-pointer flex-col items-start gap-1" title={order.id}>
-                                  <div className="flex items-center gap-1 truncate w-full justify-start">
+                                <div className="flex w-full max-w-[150px] cursor-pointer flex-col items-start gap-1" title={order.id}>
+                                  <div className="flex items-center gap-1 w-full min-w-0 justify-start">
                                     {/* 취소요청 상태일 때만 아이콘 노출 */}
                                     {order.cancelStatus === "requested" && (
                                       <AlertTriangle
@@ -997,7 +997,7 @@ export default function OrdersClient() {
                                       />
                                     )}
                                     {/* 실제 표시되는 주문 ID (짧게) */}
-                                    <span className="truncate font-mono whitespace-nowrap">
+                                    <span className="truncate whitespace-nowrap font-mono">
                                       {shortenId(order.id)}
                                     </span>
                                   </div>
@@ -1234,10 +1234,10 @@ export default function OrdersClient() {
                         </TableCell>
                         {/* 고객 정보 셀 */}
                         <TableCell className={tdClasses}>
-                          <div className="mx-auto flex max-w-[180px] min-w-0 flex-col items-center">
-                            <span className="flex max-w-full min-w-0 items-center">
+                          <div className="mx-auto flex max-w-[180px] min-w-0 flex-col items-center overflow-hidden">
+                            <span className="flex max-w-full min-w-0 items-center overflow-hidden">
                               {/* "이름"만 남기기 */}
-                              <span className="line-clamp-2 break-keep text-center">
+                              <span className="line-clamp-2 min-w-0 break-words text-center">
                                 {order.customer.name
                                   .replace(/\s*\(비회원\)\s*$/, "")
                                   .replace(/\s*\(탈퇴한 회원\)\s*$/, "")}
@@ -1261,13 +1261,13 @@ export default function OrdersClient() {
                           </div>
                         </TableCell>
                         {/* 날짜 셀 */}
-                        <TableCell className="w-36 truncate whitespace-nowrap tabular-nums">
+                        <TableCell className="w-36 whitespace-nowrap text-center tabular-nums">
                           {formatDate(order.date)}
                         </TableCell>
                         {/* 상태 셀 */}
                         <TableCell className={tdClasses}>
                           {order.__type === "stringing_application" ? (
-                            <div className="flex flex-col items-start gap-1">
+                            <div className="flex flex-col items-center gap-1">
                               <ApplicationStatusBadge status={order.status} />
                               {order.cancelStatus === "requested" && (
                                 <Badge
@@ -1285,7 +1285,7 @@ export default function OrdersClient() {
                             (() => {
                               const st = getOrderStatusBadgeSpec(order.status);
                               return (
-                                <div className="flex flex-col items-start gap-1">
+                                <div className="flex flex-col items-center gap-1">
                                   <Badge
                                     variant={st.variant}
                                     className={cn(
@@ -1416,7 +1416,7 @@ export default function OrdersClient() {
                           </Badge>
                         </TableCell>
                         {/* 금액 셀 */}
-                        <TableCell className={cn(tdClasses, "whitespace-nowrap tabular-nums")}>
+                        <TableCell className={cn(tdClasses, "whitespace-nowrap text-right tabular-nums")}>
                           {formatCurrency(order.total)}
                         </TableCell>
                         {/* 작업 메뉴 셀 */}

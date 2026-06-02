@@ -420,20 +420,20 @@ export default function OfflineAdminClient() {
                       </div>
                       <div className="space-y-2">
                         {onlineItems.map((u: any) => (
-                          <div key={u.id} className="group flex items-center justify-between rounded-lg border border-border/60 p-3 transition-all hover:border-primary/40 hover:bg-primary/5">
-                            <div className="flex items-center gap-3">
+                          <div key={u.id} className="group flex min-w-0 items-center justify-between gap-3 rounded-lg border border-border/60 p-3 transition-all hover:border-primary/40 hover:bg-primary/5">
+                            <div className="flex min-w-0 items-center gap-3">
                               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-muted-foreground">
                                 <User className="h-4 w-4" />
                               </div>
-                              <div>
-                                <p className="font-medium text-sm">{u.name || "이름 없음"}</p>
-                                <p className="text-xs text-muted-foreground">{u.phone ? maskPhone(u.phone) : u.email || "정보 없음"}</p>
+                              <div className="min-w-0">
+                                <p className="truncate text-sm font-medium">{u.name || "이름 없음"}</p>
+                                <p className="truncate text-xs text-muted-foreground" title={u.phone ? maskPhone(u.phone) : u.email || "정보 없음"}>{u.phone ? maskPhone(u.phone) : u.email || "정보 없음"}</p>
                               </div>
                             </div>
                             <Button
                               size="sm"
                               variant="ghost"
-                              className="opacity-0 group-hover:opacity-100 transition-opacity"
+                              className="shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
                               onClick={() =>
                                 setSelected({
                                   source: "online",
@@ -464,23 +464,23 @@ export default function OfflineAdminClient() {
                       </div>
                       <div className="space-y-2">
                         {offlineItems.map((c: any) => (
-                          <div key={c.id} className="group flex items-center justify-between rounded-lg border border-border/60 p-3 transition-all hover:border-primary/40 hover:bg-primary/5">
-                            <div className="flex items-center gap-3">
+                          <div key={c.id} className="group flex min-w-0 items-center justify-between gap-3 rounded-lg border border-border/60 p-3 transition-all hover:border-primary/40 hover:bg-primary/5">
+                            <div className="flex min-w-0 items-center gap-3">
                               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary">
                                 <User className="h-4 w-4" />
                               </div>
-                              <div>
-                                <p className="font-medium text-sm">{c.name || "이름 없음"}</p>
-                                <p className="text-xs text-muted-foreground">{c.phoneMasked}</p>
+                              <div className="min-w-0">
+                                <p className="truncate text-sm font-medium">{c.name || "이름 없음"}</p>
+                                <p className="whitespace-nowrap text-xs tabular-nums text-muted-foreground">{c.phoneMasked}</p>
                               </div>
                             </div>
                             <div className="flex shrink-0 items-center gap-1">
-                              <Button asChild size="sm" variant="ghost" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Button asChild size="sm" variant="ghost" className="shrink-0 opacity-0 transition-opacity group-hover:opacity-100">
                                 <Link href={`/admin/offline/customers/${c.id}`}>
                                   <ExternalLink className="h-3 w-3" />
                                 </Link>
                               </Button>
-                              <Button size="sm" variant="ghost" className="opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => selectOfflineCustomer(c.id)}>
+                              <Button size="sm" variant="ghost" className="shrink-0 opacity-0 transition-opacity group-hover:opacity-100" onClick={() => selectOfflineCustomer(c.id)}>
                                 선택 <ChevronRight className="ml-1 h-3 w-3" />
                               </Button>
                             </div>
@@ -835,13 +835,13 @@ export default function OfflineAdminClient() {
           {!!records?.items?.length && (
             <div className="overflow-hidden rounded-xl border border-border/60">
               <div className="overflow-x-auto">
-                <table className="min-w-[900px] text-sm">
+                <table className="min-w-[960px] table-fixed text-sm">
                   <thead>
                     <tr className="bg-muted/50">
                       <th className="whitespace-nowrap px-4 py-3 text-left font-medium text-muted-foreground">날짜</th>
-                      <th className="whitespace-nowrap px-4 py-3 text-left font-medium text-muted-foreground">고객</th>
+                      <th className="w-[200px] whitespace-nowrap px-4 py-3 text-left font-medium text-muted-foreground">고객</th>
                       <th className="whitespace-nowrap px-4 py-3 text-left font-medium text-muted-foreground">유형</th>
-                      <th className="whitespace-nowrap px-4 py-3 text-left font-medium text-muted-foreground">작업 내용</th>
+                      <th className="w-[240px] whitespace-nowrap px-4 py-3 text-left font-medium text-muted-foreground">작업 내용</th>
                       <th className="whitespace-nowrap px-4 py-3 text-left font-medium text-muted-foreground">금액</th>
                       <th className="whitespace-nowrap px-4 py-3 text-left font-medium text-muted-foreground">결제</th>
                       <th className="whitespace-nowrap px-4 py-3 text-left font-medium text-muted-foreground">상태</th>
@@ -852,14 +852,14 @@ export default function OfflineAdminClient() {
                     {(records?.items || []).map((r: any) => (
                       <tr key={r.id} className="transition-colors hover:bg-muted/30">
                         <td className="px-4 py-3 whitespace-nowrap">
-                          <div className="flex items-center gap-2">
+                          <div className="flex shrink-0 items-center gap-2">
                             <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
                             <span className="tabular-nums">{formatDate(r.occurredAt)}</span>
                           </div>
                         </td>
                         <td className="px-4 py-3">
                           <div className="min-w-0 max-w-[180px]">
-                            <p className="line-clamp-2 break-keep font-medium" title={r.customerName}>
+                            <p className="line-clamp-2 break-words font-medium" title={r.customerName}>
                               {r.offlineCustomerId ? (
                                 <Link className="hover:text-primary transition-colors" href={`/admin/offline/customers/${r.offlineCustomerId}`}>
                                   {r.customerName}
@@ -874,8 +874,8 @@ export default function OfflineAdminClient() {
                         <td className="px-4 py-3 whitespace-nowrap">
                           <span className="text-foreground/80">{KIND_LABELS[r.kind as keyof typeof KIND_LABELS] ?? r.kind}</span>
                         </td>
-                        <td className="px-4 py-3 max-w-[200px]">
-                          <span className="line-clamp-2 break-keep text-muted-foreground" title={formatLineSummary(r.lines)}>{formatLineSummary(r.lines)}</span>
+                        <td className="max-w-[240px] px-4 py-3">
+                          <span className="line-clamp-2 break-words text-muted-foreground" title={formatLineSummary(r.lines)}>{formatLineSummary(r.lines)}</span>
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap font-medium tabular-nums">{formatCurrency(r.payment?.amount)}</td>
                         <td className="px-4 py-3 whitespace-nowrap">
@@ -987,7 +987,7 @@ export default function OfflineAdminClient() {
                     <User className="h-4 w-4" />
                   </div>
                   <div>
-                    <p className="line-clamp-2 break-keep font-medium" title={editingRecord.customerName}>{editingRecord.customerName}</p>
+                    <p className="line-clamp-2 break-words font-medium" title={editingRecord.customerName}>{editingRecord.customerName}</p>
                     <p className="line-clamp-2 break-keep text-xs text-muted-foreground">
                       <span className="whitespace-nowrap tabular-nums">{editingRecord.customerPhoneMasked}</span> · {formatLineSummary(editingRecord.lines)}
                     </p>

@@ -1021,24 +1021,24 @@ export default function OperationsClient() {
 
         <section className="mt-4 space-y-3 rounded-xl border border-border bg-card p-3 shadow-sm bp-sm:p-4">
           <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-            <div>
+            <div className="min-w-0">
               <h2 className="text-base font-semibold text-foreground">오늘 바로 처리할 업무</h2>
               <p className="text-sm text-muted-foreground">건수가 있는 항목부터 열어 처리하면 됩니다.</p>
             </div>
-            <p className="text-sm text-muted-foreground">전체 처리 필요 기준입니다. 검색과 필터는 아래 목록에만 적용됩니다.</p>
+            <p className="max-w-full break-words text-sm leading-relaxed text-muted-foreground sm:max-w-[360px] sm:text-right">전체 처리 필요 기준입니다. 검색과 필터는 아래 목록에만 적용됩니다.</p>
           </div>
           <div className="grid gap-3.5 bp-sm:grid-cols-2 bp-lg:grid-cols-4 bp-lg:gap-4">
             {practicalTaskCards.map((task) => (
               <Card key={task.title} className={cn("border-border bg-card shadow-sm", task.tone === "urgent" && "border-warning/40 bg-warning/5", task.tone === "warning" && "border-info/40 bg-info/5")}>
                 <CardHeader className="p-3 pb-2.5">
-                  <CardTitle className="flex items-baseline justify-between gap-2 text-sm font-semibold">
-                    <span>{task.title}</span>
-                    <span className="text-lg font-bold text-foreground">{task.count}건</span>
+                  <CardTitle className="flex min-w-0 items-baseline justify-between gap-2 text-sm font-semibold">
+                    <span className="min-w-0 break-words">{task.title}</span>
+                    <span className="shrink-0 whitespace-nowrap text-lg font-bold tabular-nums text-foreground">{task.count}건</span>
                   </CardTitle>
-                  <CardDescription className="min-h-[44px] break-keep text-sm leading-relaxed text-foreground/80">{task.description}</CardDescription>
+                  <CardDescription className="min-h-[44px] break-words text-sm leading-relaxed text-foreground/80">{task.description}</CardDescription>
                 </CardHeader>
                 <CardContent className="p-3 pt-0">
-                  <Button type="button" size="sm" variant="outline" className="h-8 w-full whitespace-nowrap bg-background/70 text-sm" onClick={task.onClick}>
+                  <Button type="button" size="sm" variant="outline" wrap="responsive" className="h-8 w-full bg-background/70 text-sm" onClick={task.onClick}>
                     {task.action}
                   </Button>
                 </CardContent>
@@ -1046,28 +1046,28 @@ export default function OperationsClient() {
             ))}
             <Card className="border-border bg-card shadow-sm">
               <CardHeader className="p-3 pb-2">
-                <CardTitle className="flex items-baseline justify-between gap-2 text-sm font-semibold">
-                  <span>오프라인 미결제/보정</span>
-                  <span className="text-lg font-bold text-foreground">{taskCounts?.offline ?? 0}건</span>
+                <CardTitle className="flex min-w-0 items-baseline justify-between gap-2 text-sm font-semibold">
+                  <span className="min-w-0 break-words">오프라인 미결제/보정</span>
+                  <span className="shrink-0 whitespace-nowrap text-lg font-bold tabular-nums text-foreground">{taskCounts?.offline ?? 0}건</span>
                 </CardTitle>
-                <CardDescription className="min-h-[44px] break-keep text-sm leading-relaxed text-foreground/80">오프라인 미결제, 패키지 발급 실패, 보정 필요 항목을 확인하세요.</CardDescription>
+                <CardDescription className="min-h-[44px] break-words text-sm leading-relaxed text-foreground/80">오프라인 미결제, 패키지 발급 실패, 보정 필요 항목을 확인하세요.</CardDescription>
               </CardHeader>
               <CardContent className="p-3 pt-0">
-                <Button asChild size="sm" variant="outline" className="h-8 w-full whitespace-nowrap bg-background/70 text-sm">
+                <Button asChild size="sm" variant="outline" wrap="responsive" className="h-8 w-full bg-background/70 text-sm">
                   <Link href="/admin/offline/reconciliation">바로 처리</Link>
                 </Button>
               </CardContent>
             </Card>
             <Card className="border-border bg-card shadow-sm">
               <CardHeader className="p-3 pb-2">
-                <CardTitle className="flex items-baseline justify-between gap-2 text-sm font-semibold">
-                  <span>아카데미 상담</span>
-                  <span className="text-lg font-bold text-foreground">{taskCounts?.academyApplications ?? 0}건</span>
+                <CardTitle className="flex min-w-0 items-baseline justify-between gap-2 text-sm font-semibold">
+                  <span className="min-w-0 break-words">아카데미 상담</span>
+                  <span className="shrink-0 whitespace-nowrap text-lg font-bold tabular-nums text-foreground">{taskCounts?.academyApplications ?? 0}건</span>
                 </CardTitle>
-                <CardDescription className="min-h-[44px] break-keep text-sm leading-relaxed text-foreground/80">신규 신청, 검토 중, 상담 대기, 등록 확정 대기 건을 확인하세요.</CardDescription>
+                <CardDescription className="min-h-[44px] break-words text-sm leading-relaxed text-foreground/80">신규 신청, 검토 중, 상담 대기, 등록 확정 대기 건을 확인하세요.</CardDescription>
               </CardHeader>
               <CardContent className="p-3 pt-0">
-                <Button asChild size="sm" variant="outline" className="h-8 w-full whitespace-nowrap bg-background/70 text-sm">
+                <Button asChild size="sm" variant="outline" wrap="responsive" className="h-8 w-full bg-background/70 text-sm">
                   <Link href="/admin/academy/applications">바로 처리</Link>
                 </Button>
               </CardContent>
@@ -1661,11 +1661,11 @@ export default function OperationsClient() {
                               <div className="space-y-1.5">
                                 <div className="flex flex-wrap items-center gap-1.5">
                                   <Badge className={cn(badgeBase, badgeSizeSm, badgeToneClass(priorityMeta.tone))}>{priorityMeta.label}</Badge>
-                                  <span className="text-xs text-foreground/80">{priorityMeta.description}</span>
+                                  <span className="min-w-0 break-words text-xs text-foreground/80">{priorityMeta.description}</span>
                                   <span className="text-xs text-foreground/80">{isGroup ? `${g.items.length}건 그룹` : "단일 건"}</span>
                                 </div>
-                                <div className="flex items-center gap-1.5 text-xs text-foreground/75">
-                                  <span>{docLabel}</span>
+                                <div className="flex min-w-0 items-center gap-1.5 text-xs text-foreground/75">
+                                  <span className="truncate font-mono">{docLabel}</span>
                                   <Button
                                     size="sm"
                                     variant="ghost"
@@ -1696,8 +1696,8 @@ export default function OperationsClient() {
                                   )}
                                   <div className="min-w-0 space-y-0.5">
                                     <p className="text-xs text-foreground/75 leading-tight">{scenarioLabel}</p>
-                                    <p className="text-[13px] font-medium text-foreground/85 leading-tight">{customerPrimary}</p>
-                                    {customerName && customerEmail && <p className="text-xs text-foreground/75 leading-tight">{customerEmail}</p>}
+                                    <p className="truncate text-[13px] font-medium leading-tight text-foreground/85">{customerPrimary}</p>
+                                    {customerName && customerEmail && <p className="truncate text-xs leading-tight text-foreground/75">{customerEmail}</p>}
                                   </div>
                                 </div>
                                 <p className="text-[15px] font-semibold leading-tight text-foreground line-clamp-1">{headline}</p>
@@ -1731,7 +1731,7 @@ export default function OperationsClient() {
                             <TableCell className={cn(tdClasses, rowDensityClass, "font-semibold text-right")}>
                               <div className="flex flex-col items-end gap-1.5">
                                 <div className="text-right">
-                                  <span className="text-xs text-foreground/75">{isGroup ? "대표 문서 금액" : opsKindLabel(g.anchor.kind)}</span>
+                                  <span className="whitespace-nowrap text-xs text-foreground/75">{isGroup ? "대표 문서 금액" : opsKindLabel(g.anchor.kind)}</span>
                                   <p className="text-lg font-extrabold whitespace-nowrap tracking-normal">{won(g.anchor.amount)}</p>
                                 </div>
                                 {(() => {
@@ -1818,7 +1818,7 @@ export default function OperationsClient() {
                                             <p className="text-xs text-foreground/75">{formatKST(item.createdAt)}</p>
                                           </div>
                                           <div className="text-right">
-                                            <p className="font-semibold text-foreground">{won(item.amount)}</p>
+                                            <p className="whitespace-nowrap font-semibold tabular-nums text-foreground">{won(item.amount)}</p>
                                             <p className="text-xs text-foreground/75">{item.kind === "stringing_application" ? "신청서" : item.kind === "rental" ? "대여" : "주문"}</p>
                                             {amountMeaningText(item) ? <p className="text-xs text-foreground/85">{amountMeaningText(item)}</p> : null}
                                           </div>
@@ -2015,7 +2015,7 @@ export default function OperationsClient() {
                                         <p className="text-muted-foreground/90">결제 상태: {item.paymentLabel || "정보 없음"}</p>
                                       </div>
                                       <div className="text-right">
-                                        <p className="font-semibold text-foreground">{won(item.amount)}</p>
+                                        <p className="whitespace-nowrap font-semibold tabular-nums text-foreground">{won(item.amount)}</p>
                                         <p className="text-xs leading-snug text-foreground/75">{item.kind === "stringing_application" ? "신청서" : item.kind === "rental" ? "대여" : "주문"}</p>
                                       </div>
                                     </div>

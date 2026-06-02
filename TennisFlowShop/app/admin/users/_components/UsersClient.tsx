@@ -1026,7 +1026,7 @@ export default function UsersClient() {
           <div className="relative overflow-x-auto px-3 pb-3 sm:px-4">
             <div className="relative rounded-2xl border border-border shadow-sm min-w-0">
               <Table
-                className="min-w-[980px] table-fixed border-separate [border-spacing-block:0.35rem] [border-spacing-inline:0] text-xs [&_th]:text-center [&_td]:text-center"
+                className="min-w-[1020px] table-fixed border-separate [border-spacing-block:0.35rem] [border-spacing-inline:0] text-xs [&_th]:text-center [&_td]:text-center"
                 aria-busy={shouldShowLoadingRows}
               >
                 {/* 열 폭 고정: 체크 / 회원 / 권한 / 전화 / 주소 / 활동 / 상태 / 작업 */}
@@ -1051,7 +1051,7 @@ export default function UsersClient() {
                         className="mx-auto"
                       />
                     </TableHead>
-                    <TableHead className={cn(th, "w-[220px]")}>회원</TableHead>
+                    <TableHead className={cn(th, "w-[240px]")}>회원</TableHead>
                     <TableHead className={cn(th, "w-[72px]")}>권한</TableHead>
                     <TableHead className={cn(th, "w-[110px]")}>전화</TableHead>
                     <TableHead className={cn(th, "w-[280px]")}>주소</TableHead>
@@ -1156,13 +1156,13 @@ export default function UsersClient() {
                           </TableCell>
 
                           {/* 회원: 이름/이메일 두 줄 + 복사 */}
-                          <TableCell className={cn(td, "w-[220px]")}>
-                            <div className="min-w-0 flex flex-col items-center text-center mx-auto max-w-[200px]">
-                              <span className="line-clamp-2 max-w-full break-keep font-medium" title={u.name || "(이름없음)"}>
+                          <TableCell className={cn(td, "w-[240px]")}>
+                            <div className="mx-auto flex max-w-[220px] min-w-0 flex-col items-center overflow-hidden text-center">
+                              <span className="line-clamp-2 max-w-full break-words font-medium" title={u.name || "(이름없음)"}>
                                 {u.name || "(이름없음)"}
                               </span>
-                              <div className="flex max-w-full min-w-0 items-center gap-1 text-xs text-foreground/75">
-                                <span className="block max-w-[170px] truncate" title={u.email}>{u.email}</span>
+                              <div className="flex max-w-full min-w-0 items-center gap-1 overflow-hidden text-xs text-foreground/75">
+                                <span className="block max-w-[190px] truncate" title={u.email}>{u.email}</span>
                                 <button
                                   className="shrink-0 inline-flex h-4 w-4 items-center justify-center rounded hover:bg-background"
                                   onClick={() => copy(u.email)}
@@ -1241,8 +1241,8 @@ export default function UsersClient() {
                               u.addressDetail,
                             )}
                           >
-                            <div className="min-w-0 flex items-center justify-center gap-1">
-                              <span className="line-clamp-2 block max-w-[250px] break-keep">
+                            <div className="flex min-w-0 items-center justify-center gap-1 overflow-hidden">
+                              <span className="line-clamp-2 block max-w-[250px] break-words">
                                 {shortAddress(u.address)}
                               </span>
                               <button
@@ -1268,7 +1268,7 @@ export default function UsersClient() {
                           <TableCell
                             className={cn(td, "w-[150px] whitespace-nowrap")}
                           >
-                            <div className="flex flex-col items-center leading-tight">
+                            <div className="flex flex-col items-center whitespace-nowrap leading-tight">
                               <span className="text-[12px]">{joined.date}</span>
                               <span className="text-xs text-foreground/75">
                                 {last.time ? `${last.date} ${last.time}` : "-"}

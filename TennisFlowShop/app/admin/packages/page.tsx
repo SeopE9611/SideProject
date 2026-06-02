@@ -727,16 +727,16 @@ export default function PackageOrdersClient() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
           <Card className={adminSurface.kpiCard}>
             <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
+              <div className="flex min-w-0 items-center justify-between gap-3">
+                <div className="min-w-0">
                   <p className="text-sm font-medium text-muted-foreground">
                     총 패키지
                   </p>
-                  <div className="text-3xl font-bold text-foreground">
+                  <div className="overflow-hidden text-ellipsis whitespace-nowrap text-3xl font-bold tabular-nums text-foreground">
                     {kpiTotal === null ? "-" : kpiTotal}
                   </div>
                 </div>
-                <div className="bg-primary/10 rounded-xl p-3 text-foreground dark:bg-primary/20">
+                <div className="shrink-0 bg-primary/10 rounded-xl p-3 text-foreground dark:bg-primary/20">
                   <Package className="h-6 w-6" />
                 </div>
               </div>
@@ -745,16 +745,16 @@ export default function PackageOrdersClient() {
 
           <Card className={adminSurface.kpiCard}>
             <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
+              <div className="flex min-w-0 items-center justify-between gap-3">
+                <div className="min-w-0">
                   <p className="text-sm font-medium text-muted-foreground">
                     활성 패키지
                   </p>
-                  <div className="text-3xl font-bold text-success">
+                  <div className="overflow-hidden text-ellipsis whitespace-nowrap text-3xl font-bold tabular-nums text-success">
                     {kpiActive === null ? "-" : kpiActive}
                   </div>
                 </div>
-                <div className="bg-success/10 dark:bg-success/15 rounded-xl p-3">
+                <div className="shrink-0 bg-success/10 dark:bg-success/15 rounded-xl p-3">
                   <Calendar className="h-6 w-6 text-success" />
                 </div>
               </div>
@@ -763,18 +763,18 @@ export default function PackageOrdersClient() {
 
           <Card className={adminSurface.kpiCard}>
             <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
+              <div className="flex min-w-0 items-center justify-between gap-3">
+                <div className="min-w-0">
                   <p className="text-sm font-medium text-muted-foreground">
                     총 매출
                   </p>
-                  <div className="text-3xl font-bold text-foreground">
+                  <div className="overflow-hidden text-ellipsis whitespace-nowrap text-3xl font-bold tabular-nums text-foreground">
                     {kpiRevenue === null
                       ? "집계 중"
                       : formatCurrency(kpiRevenue)}
                   </div>
                 </div>
-                <div className="bg-muted rounded-xl p-3">
+                <div className="shrink-0 bg-muted rounded-xl p-3">
                   <CreditCard className="h-6 w-6 text-foreground" />
                 </div>
               </div>
@@ -783,16 +783,16 @@ export default function PackageOrdersClient() {
 
           <Card className={adminSurface.kpiCard}>
             <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
+              <div className="flex min-w-0 items-center justify-between gap-3">
+                <div className="min-w-0">
                   <p className="text-sm font-medium text-muted-foreground">
                     만료 예정
                   </p>
-                  <div className="text-3xl font-bold text-warning">
+                  <div className="overflow-hidden text-ellipsis whitespace-nowrap text-3xl font-bold tabular-nums text-warning">
                     {kpiExpSoon === null ? "-" : kpiExpSoon}
                   </div>
                 </div>
-                <div className="bg-warning/10 dark:bg-warning/15 rounded-xl p-3">
+                <div className="shrink-0 bg-warning/10 dark:bg-warning/15 rounded-xl p-3">
                   <Calendar className="h-6 w-6 text-warning" />
                 </div>
               </div>
@@ -939,7 +939,7 @@ export default function PackageOrdersClient() {
         {/* 패키지 목록 테이블 */}
         <Card className={adminSurface.tableCard}>
           <CardHeader>
-            <div className="flex items-center justify-between">
+            <div className="flex min-w-0 items-center justify-between gap-3">
               <CardTitle>패키지 목록</CardTitle>
               <p className="text-sm text-muted-foreground" aria-live="polite">
                 총 {hasResolvedTotal && totalCount !== null ? totalCount : "-"}
@@ -1198,8 +1198,8 @@ export default function PackageOrdersClient() {
                                 );
                                 const isGuest = cName.includes("(비회원)");
                                 return (
-                                  <div className="flex min-w-0 flex-col items-center text-center">
-                                    <span className="line-clamp-2 max-w-[200px] break-keep font-medium" title={baseName}>
+                                  <div className="flex min-w-0 flex-col items-center overflow-hidden text-center">
+                                    <span className="line-clamp-2 max-w-[200px] break-words font-medium" title={baseName}>
                                       {baseName}
                                       {isGuest && (
                                         <span className="ml-1 shrink-0 whitespace-nowrap text-xs text-muted-foreground">
@@ -1207,7 +1207,7 @@ export default function PackageOrdersClient() {
                                         </span>
                                       )}
                                     </span>
-                                    <span className="max-w-[200px] truncate text-xs text-muted-foreground" title={cEmail}>
+                                    <span className="block max-w-[200px] truncate text-xs text-muted-foreground" title={cEmail}>
                                       {cEmail}
                                     </span>
                                   </div>
@@ -1289,8 +1289,8 @@ export default function PackageOrdersClient() {
                               return (
                                 <TableCell className={cn(tdClasses, col.buy)}>
                                   <div className="flex flex-col items-center leading-tight">
-                                    <span className="text-sm">{date}</span>
-                                    <span className="text-xs text-muted-foreground">
+                                    <span className="whitespace-nowrap text-sm tabular-nums">{date}</span>
+                                    <span className="whitespace-nowrap text-xs tabular-nums text-muted-foreground">
                                       {time}
                                     </span>
                                   </div>
@@ -1307,8 +1307,8 @@ export default function PackageOrdersClient() {
                                   className={cn(tdClasses, col.expire)}
                                 >
                                   <div className="flex flex-col items-center leading-tight">
-                                    <span className="text-sm">{date}</span>
-                                    <span className="text-xs text-muted-foreground">
+                                    <span className="whitespace-nowrap text-sm tabular-nums">{date}</span>
+                                    <span className="whitespace-nowrap text-xs tabular-nums text-muted-foreground">
                                       {time}
                                     </span>
                                     {listState.label !== "취소" &&
@@ -1391,7 +1391,7 @@ export default function PackageOrdersClient() {
                                 "whitespace-nowrap",
                               )}
                             >
-                              <span className="font-medium tabular-nums">
+                              <span className="whitespace-nowrap font-medium tabular-nums">
                                 {formatCurrency(pkg.price)}
                               </span>
                             </TableCell>
