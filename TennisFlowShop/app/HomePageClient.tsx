@@ -667,7 +667,7 @@ export default function Home() {
             <h2 className="font-brand-bold text-2xl font-bold text-foreground tracking-normal bp-md:text-3xl">소식 & 커뮤니티</h2>
             <p className="mt-2 bp-sm:mt-3 text-sm bp-sm:text-base text-muted-foreground">공지사항과 중고 거래 최신 소식을 확인하세요</p>
           </div>
-          <div className="grid gap-5 bp-sm:gap-6 bp-lg:grid-cols-2">
+          <div className="grid gap-5 bp-sm:gap-6 bp-xl:grid-cols-2">
             {shouldLoadCommunity ? (
               <>
                 <HomeNoticePreview />
