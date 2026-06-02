@@ -35,7 +35,7 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
 );
 Card.displayName = "Card";
 
-const cardHeaderVariants = cva("flex flex-col space-y-1.5 p-6", {
+const cardHeaderVariants = cva("flex flex-col space-y-1.5 p-5 sm:p-6", {
   variants: {
     variant: {
       default: "",
@@ -70,7 +70,7 @@ const CardTitle = React.forwardRef<
   <h3
     ref={ref}
     className={cn(
-      "text-xl font-semibold leading-tight tracking-normal",
+      "text-lg font-semibold leading-tight tracking-normal sm:text-xl",
       className,
     )}
     {...props}
@@ -84,7 +84,7 @@ const CardDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <p
     ref={ref}
-    className={cn("text-sm text-foreground/80", className)}
+    className={cn("break-words text-sm leading-relaxed text-foreground/80", className)}
     {...props}
   />
 ));
@@ -94,7 +94,7 @@ const CardContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("p-6 pt-0", className)} {...props} />
+  <div ref={ref} className={cn("p-5 pt-0 sm:p-6 sm:pt-0", className)} {...props} />
 ));
 CardContent.displayName = "CardContent";
 
@@ -104,7 +104,7 @@ const CardFooter = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("flex items-center p-6 pt-0", className)}
+    className={cn("flex items-center p-5 pt-0 sm:p-6 sm:pt-0", className)}
     {...props}
   />
 ));

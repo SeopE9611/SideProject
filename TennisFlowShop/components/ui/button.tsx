@@ -28,10 +28,29 @@ const buttonVariants = cva(
         tall: "h-12 rounded-xl px-6 text-base",
         icon: "h-10 w-10 rounded-lg",
       },
+      wrap: {
+        nowrap: "whitespace-nowrap",
+        normal: "h-auto whitespace-normal break-keep text-center leading-snug",
+        responsive:
+          "h-auto whitespace-normal break-keep text-center leading-snug sm:whitespace-nowrap sm:leading-normal",
+      },
     },
+    compoundVariants: [
+      { wrap: "normal", size: "default", class: "min-h-10" },
+      { wrap: "normal", size: "sm", class: "min-h-9" },
+      { wrap: "normal", size: "lg", class: "min-h-11" },
+      { wrap: "normal", size: "tall", class: "min-h-12" },
+      { wrap: "normal", size: "icon", class: "h-10 min-h-10 whitespace-nowrap leading-normal" },
+      { wrap: "responsive", size: "default", class: "min-h-10 sm:h-10" },
+      { wrap: "responsive", size: "sm", class: "min-h-9 sm:h-9" },
+      { wrap: "responsive", size: "lg", class: "min-h-11 sm:h-11" },
+      { wrap: "responsive", size: "tall", class: "min-h-12 sm:h-12" },
+      { wrap: "responsive", size: "icon", class: "h-10 min-h-10 whitespace-nowrap leading-normal" },
+    ],
     defaultVariants: {
       variant: "default",
       size: "default",
+      wrap: "nowrap",
     },
   },
 );
@@ -40,9 +59,9 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   asChild?: boolean;
 }
 
-const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(({ className, variant, size, asChild = false, ...props }, ref) => {
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(({ className, variant, size, wrap, asChild = false, ...props }, ref) => {
   const Comp = asChild ? Slot : "button";
-  return <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} />;
+  return <Comp className={cn(buttonVariants({ variant, size, wrap, className }))} ref={ref} {...props} />;
 });
 Button.displayName = "Button";
 
