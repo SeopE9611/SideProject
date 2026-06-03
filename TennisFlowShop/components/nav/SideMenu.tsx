@@ -165,7 +165,10 @@ export default function SideMenu() {
             </AccordionContent>
           </AccordionItem>
 
-          <Link href={NAV_LINKS.academy.href} className={topLevelLinkClass(NAV_LINKS.academy.href)}>
+          <Link
+            href={NAV_LINKS.academy.href}
+            className={cn(topLevelLinkClass(NAV_LINKS.academy.href), "my-1.5")}
+          >
             <span className="flex items-center justify-between">
               {NAV_LINKS.academy.name}
               <ChevronRight className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-[background-color,color,border-color,box-shadow,opacity] duration-200" />
