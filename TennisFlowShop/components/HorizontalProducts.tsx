@@ -39,6 +39,7 @@ type Props = {
   /** 필요하면 슬라이드 폭 커스터마이징용 (기본은 2/3/4장 구조) */
   cardWidthClass?: string;
   showHeader?: boolean;
+  showMoreCard?: boolean;
 
   // API 호환용 (지금은 안 씀)
   firstPageSlots?: number;
@@ -61,6 +62,7 @@ export default function HorizontalProducts({
   moreHref,
   cardWidthClass,
   showHeader = true,
+  showMoreCard = true,
   firstPageSlots,
   moveMoreToSecondWhen5Plus,
   loading,
@@ -145,18 +147,22 @@ export default function HorizontalProducts({
 
     // 1~(itemsPerPage - 1)개: 빈칸 + 더많은상품 카드로 한 화면 맞추기
     if (items.length < itemsPerPage) {
-      const placeholderCount = Math.max(0, itemsPerPage - 1 - items.length);
+      const placeholderCount = showMoreCard
+        ? Math.max(0, itemsPerPage - 1 - items.length)
+        : Math.max(0, itemsPerPage - items.length);
       for (let i = 0; i < placeholderCount; i++) {
         list.push({ kind: "placeholder" });
       }
-      list.push({ kind: "more" });
+      if (showMoreCard) list.push({ kind: "more" });
       return list;
     }
 
     // itemsPerPage 이상: 아이템 전부 + 더많은상품(맨 뒤)
-    list.push({ kind: "more" });
+    if (showMoreCard) {
+      list.push({ kind: "more" });
+    }
     return list;
-  }, [items, itemsPerPage, loading, error]);
+  }, [items, itemsPerPage, loading, error, showMoreCard]);
 
   const shouldCenter = slides.length <= itemsPerPage;
 
