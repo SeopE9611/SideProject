@@ -34,17 +34,17 @@ export const RACKET_BRANDS = [
   { value: "head", label: "헤드" },
   { value: "wilson", label: "윌슨" },
   { value: "babolat", label: "바볼랏" },
-  // { value: 'yonex', label: '요넥스' },
-  // { value: 'dunlop', label: '던롭' },
-  // { value: 'prince', label: '프린스' },
+  { value: "yonex", label: "요넥스" },
+  { value: "dunlop", label: "던롭" },
+  { value: "prince", label: "프린스" },
   { value: "tecnifibre", label: "테크니화이버" },
   { value: "other", label: "기타" },
 ] as const;
 
 export type RacketBrand = (typeof RACKET_BRANDS)[number]["value"];
 
-export const racketBrandLabel = (v?: string) => {
-  const key = (v ?? "").toLowerCase();
+export const racketBrandLabel = (v?: string | null) => {
+  const key = String(v ?? "").trim().toLowerCase();
   return RACKET_BRANDS.find((b) => b.value === key)?.label ?? v ?? "";
 };
 // 라켓 검색/등록/수정에서 공통으로 쓰는 스트링 패턴 옵션

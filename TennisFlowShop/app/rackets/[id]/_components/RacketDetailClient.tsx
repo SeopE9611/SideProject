@@ -104,7 +104,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
   const isReviewsTabActive = activeTab === "reviews";
 
   useEffect(() => {
-    if (!isReviewsTabActive || hasRequestedReviewUser) return;
+    if (hasRequestedReviewUser) return;
     setHasRequestedReviewUser(true);
     fetch("/api/users/me", { credentials: "include" })
       .then((res) => res.json())
@@ -113,7 +113,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
         else setUser(data);
       })
       .catch(() => setUser(null));
-  }, [isReviewsTabActive, hasRequestedReviewUser]);
+  }, [hasRequestedReviewUser]);
 
   const isAdmin = !!user && ((user as any).role === "admin" || (user as any).role === "ADMIN" || (user as any).isAdmin === true || (Array.isArray((user as any).roles) && (user as any).roles.includes("admin")));
 
@@ -384,10 +384,20 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
               {racketBrandLabel(racket.brand)} {racket.model}
             </span>
           </div>
-          <Button variant="ghost" className="mb-4 p-0 text-foreground hover:bg-secondary" onClick={() => router.back()}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            이전 페이지로
-          </Button>
+          <div className="mb-4 flex flex-wrap items-center gap-2">
+            <Button variant="ghost" className="p-0 text-foreground hover:bg-secondary" onClick={() => router.back()}>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              이전 페이지로
+            </Button>
+            {isAdmin && racketId && (
+              <Button asChild variant="outline" size="sm" className="rounded-xl">
+                <Link href={`/admin/rackets/${racketId}/edit`}>
+                  <Pencil className="mr-1.5 h-4 w-4" />
+                  라켓 수정
+                </Link>
+              </Button>
+            )}
+          </div>
         </SiteContainer>
       </div>
 

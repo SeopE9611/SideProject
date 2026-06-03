@@ -83,6 +83,16 @@ export async function GET(req: Request) {
     sort = { price: 1, _id: -1 };
   } else if (sortParam === "price-high") {
     sort = { price: -1, _id: -1 };
+  } else if (sortParam === "reviews-desc") {
+    sort = { reviewCount: -1, ratingCount: -1, createdAt: -1, _id: -1 };
+  } else if (sortParam === "sales-desc") {
+    sort = {
+      purchaseCount: -1,
+      salesCount: -1,
+      orderCount: -1,
+      createdAt: -1,
+      _id: -1,
+    };
   } else {
     // latest 기본값: createdAt이 없는 오래된 문서도 _id 보조 정렬로 안정화
     sort = { createdAt: -1, _id: -1 };
@@ -103,6 +113,11 @@ export async function GET(req: Request) {
     images: 1,
     status: 1,
     rental: 1,
+    reviewCount: 1,
+    ratingCount: 1,
+    purchaseCount: 1,
+    salesCount: 1,
+    orderCount: 1,
   });
 
   cursor = cursor.sort(sort);
