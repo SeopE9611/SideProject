@@ -284,7 +284,7 @@ export default function FinderRacketCard({ racket }: { racket: FinderRacket }) {
                 <RentDialog
                   id={racket.id}
                   rental={racket.rental}
-                  brand={racket.brand}
+                  brand={brandText}
                   model={racket.model}
                   size="sm"
                   preventCardNav={true}

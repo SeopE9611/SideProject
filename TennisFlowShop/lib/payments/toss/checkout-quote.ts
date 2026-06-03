@@ -5,6 +5,7 @@ import { findOneActivePassForUser } from "@/lib/passes.service";
 import type { StringingApplicationInput } from "@/app/features/stringing-applications/api/submit-core";
 import { isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
 import { getEffectiveProductPrice } from "@/lib/product-pricing";
+import { racketBrandLabel } from "@/lib/constants";
 
 export async function calculateCheckoutPayableAmount(params: {
   db: Db;
@@ -34,7 +35,7 @@ export async function calculateCheckoutPayableAmount(params: {
       }
       const racket = await db.collection("used_rackets").findOne({ _id: new ObjectId(it.productId) });
       return {
-        name: racket ? `${racket.brand} ${racket.model}`.trim() : "알 수 없는 라켓",
+        name: racket ? `${racketBrandLabel(String(racket.brand ?? ""))} ${racket.model}`.trim() : "알 수 없는 라켓",
         price: Number(racket?.price ?? 0),
         quantity,
         kind: "racket" as const,
