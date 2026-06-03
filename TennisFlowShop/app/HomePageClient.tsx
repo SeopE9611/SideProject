@@ -172,7 +172,8 @@ const surfaceCardInteractiveClass = "rounded-2xl border border-border bg-card sh
 const surfaceIconWrapClass = "flex items-center justify-center rounded-2xl border border-border/60 bg-secondary text-foreground shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 group-hover:shadow-md";
 const surfacePanelClass = "rounded-3xl border border-border bg-card shadow-sm";
 const processStepSurfaceClass = "group flex flex-col items-center rounded-2xl border border-border/60 bg-background p-4 text-center shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 hover:shadow-md";
-const brandRailClass = "relative flex max-w-full flex-nowrap items-center gap-2 overflow-x-auto overscroll-x-contain pb-3 [scrollbar-color:hsl(var(--muted-foreground)/0.15)_transparent] [scrollbar-width:thin] bp-sm:gap-2.5 [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-muted-foreground/10 hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/30";
+const brandRailClass =
+  "relative flex max-w-full flex-nowrap items-center gap-2 overflow-x-auto overscroll-x-contain pb-3 [scrollbar-color:hsl(var(--muted-foreground)/0.15)_transparent] [scrollbar-width:thin] bp-sm:gap-2.5 [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-muted-foreground/10 hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/30";
 
 export default function Home() {
   const [activeBrand, setActiveBrand] = useState<BrandKey>("all");
@@ -368,7 +369,7 @@ export default function Home() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
       const json = await res.json();
-      const items: RItem[] = Array.isArray(json) ? json : json.items ?? [];
+      const items: RItem[] = Array.isArray(json) ? json : (json.items ?? []);
       const total = typeof json?.total === "number" ? json.total : items.length;
       setRackByBrand((prev) => ({
         ...prev,
@@ -511,7 +512,7 @@ export default function Home() {
     }));
   }, [rackByBrand, activeBrand]);
 
-  const stringTotal = activeStringBrand === "all" ? allProductsTotal : stringTotalsByBrand[activeStringBrand] ?? premiumItems.length;
+  const stringTotal = activeStringBrand === "all" ? allProductsTotal : (stringTotalsByBrand[activeStringBrand] ?? premiumItems.length);
   const hasMoreStringProducts = stringTotal > premiumItems.length;
 
   const usedRacketsLoading = Boolean(racketsLoadingByBrand[activeBrand]);
@@ -655,31 +656,6 @@ export default function Home() {
           </div>
         </SiteContainer>
       </section>
-      {/* 라켓 검색 바로가기 (Hero 아래 CTA 블록) */}
-      <section className="py-6 bp-sm:py-8">
-        <SiteContainer>
-          <Link href="/rackets/finder" className="group block">
-            <div className={cn("flex flex-col gap-5 p-6 bp-sm:p-7 bp-md:flex-row bp-md:items-center bp-md:justify-between bp-md:p-8", surfaceCardInteractiveClass)}>
-              <div className="flex items-center gap-4 bp-sm:gap-5">
-                <div className={cn("h-12 w-12 bp-sm:h-14 bp-sm:w-14", surfaceIconWrapClass)}>
-                  <Search className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
-                </div>
-                <div className="min-w-0">
-                  <div className="text-base bp-sm:text-lg font-bold text-foreground">라켓 검색</div>
-                  <p className="mt-1.5 text-sm bp-sm:text-base text-muted-foreground leading-relaxed">
-                    <span className="block bp-sm:inline">헤드/무게/밸런스/RA/SW</span>
-                    <span className="block bp-sm:inline bp-sm:ml-1">범위로 중고 라켓을 빠르게 좁혀보세요.</span>
-                  </p>
-                </div>
-              </div>
-
-              <div className="shrink-0 inline-flex items-center justify-center rounded-xl border border-border/70 bg-card px-5 py-2.5 text-sm bp-sm:text-base font-semibold text-foreground shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 group-hover:shadow-md">
-                바로가기
-              </div>
-            </div>
-          </Link>
-        </SiteContainer>
-      </section>
 
       {/* 서비스 플로우 */}
       <section className="py-10 bp-sm:py-12 bp-md:py-16">
@@ -745,7 +721,7 @@ export default function Home() {
         </SiteContainer>
       </section>
 
-            {/* 공지사항/중고거래 섹션 */}
+      {/* 공지사항/중고거래 섹션 */}
       <section ref={communitySectionRef} className="py-10 bp-sm:py-12 bp-md:py-16">
         <SiteContainer>
           <div className="mb-8 bp-sm:mb-10 text-center">
@@ -870,6 +846,32 @@ export default function Home() {
             errorDescription="네트워크/서버 상태를 확인 후 다시 시도해 주세요."
             showHeader={false}
           />
+        </SiteContainer>
+      </section>
+
+      {/* 라켓 검색 바로가기 (Hero 아래 CTA 블록) */}
+      <section className="py-6 bp-sm:py-8">
+        <SiteContainer>
+          <Link href="/rackets/finder" className="group block">
+            <div className={cn("flex flex-col gap-5 p-6 bp-sm:p-7 bp-md:flex-row bp-md:items-center bp-md:justify-between bp-md:p-8", surfaceCardInteractiveClass)}>
+              <div className="flex items-center gap-4 bp-sm:gap-5">
+                <div className={cn("h-12 w-12 bp-sm:h-14 bp-sm:w-14", surfaceIconWrapClass)}>
+                  <Search className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
+                </div>
+                <div className="min-w-0">
+                  <div className="text-base bp-sm:text-lg font-bold text-foreground">라켓 검색</div>
+                  <p className="mt-1.5 text-sm bp-sm:text-base text-muted-foreground leading-relaxed">
+                    <span className="block bp-sm:inline">헤드/무게/밸런스/RA/SW</span>
+                    <span className="block bp-sm:inline bp-sm:ml-1">범위로 중고 라켓을 빠르게 좁혀보세요.</span>
+                  </p>
+                </div>
+              </div>
+
+              <div className="shrink-0 inline-flex items-center justify-center rounded-xl border border-border/70 bg-card px-5 py-2.5 text-sm bp-sm:text-base font-semibold text-foreground shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 group-hover:shadow-md">
+                바로가기
+              </div>
+            </div>
+          </Link>
         </SiteContainer>
       </section>
     </div>
