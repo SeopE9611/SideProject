@@ -22,6 +22,13 @@ type PerformanceFilterConfig = {
   setter: (v: number | null) => void;
   featureKey: string;
 };
+const EXPOSURE_OPTIONS = [
+  { label: "전체", value: "all" },
+  { label: "추천", value: "featured" },
+  { label: "신상품", value: "new" },
+  { label: "할인", value: "sale" },
+];
+
 const PRICE_PRESETS: { label: string; range: [number, number] }[] = [
   { label: "전체", range: [0, 200000] },
   { label: "1만원 이하", range: [0, 10000] },
@@ -49,6 +56,8 @@ type Props = {
   setSearchQuery: (v: string) => void;
   priceRange: [number, number];
   setPriceRange: (v: [number, number]) => void;
+  exposureFilter: string;
+  onExposureChange: (value: string) => void;
   resetKey: number;
   activeFiltersCount: number;
   onReset: () => void;
@@ -81,6 +90,8 @@ export const FilterPanel = React.memo(function FilterPanel({
   setSearchQuery,
   priceRange,
   setPriceRange,
+  exposureFilter,
+  onExposureChange,
   resetKey,
   activeFiltersCount,
   onReset,
@@ -297,6 +308,26 @@ export const FilterPanel = React.memo(function FilterPanel({
             </Select>
           </div>
 
+          <div className="mb-4 space-y-2 bp-sm:mb-6">
+            <Label className="text-sm font-medium text-foreground">
+              혜택
+            </Label>
+            <div className="grid grid-cols-2 gap-2 bp-sm:grid-cols-4">
+              {EXPOSURE_OPTIONS.map((option) => (
+                <Button
+                  key={option.value}
+                  type="button"
+                  variant={exposureFilter === option.value ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => onExposureChange(option.value)}
+                  className="h-9 whitespace-nowrap px-2 text-xs bp-sm:text-sm"
+                >
+                  {option.label}
+                </Button>
+              ))}
+            </div>
+          </div>
+
           <div className="space-y-3 bp-sm:space-y-4">
             <h3 className="font-medium text-base bp-sm:text-lg">성능</h3>
             <p className="text-xs text-muted-foreground leading-relaxed break-keep">
@@ -331,8 +362,7 @@ export const FilterPanel = React.memo(function FilterPanel({
           </div>
           <div className="mt-4 bp-sm:mt-6 space-y-2">
             <h3 className="font-medium text-base bp-sm:text-lg">가격대</h3>
-            <div className="max-w-full overflow-x-auto pb-1">
-              <div className="flex w-max gap-2">
+            <div className="grid grid-cols-2 gap-2 bp-sm:grid-cols-3">
                 {PRICE_PRESETS.map((preset) => {
                   const isActive =
                     priceRange[0] === preset.range[0] &&
@@ -343,7 +373,7 @@ export const FilterPanel = React.memo(function FilterPanel({
                       type="button"
                       onClick={() => setPriceRange(preset.range)}
                       className={cn(
-                        "min-w-max shrink-0 whitespace-nowrap rounded-md border px-3 py-1.5 text-xs transition-colors bp-sm:text-sm",
+                        "whitespace-nowrap rounded-md border px-3 py-1.5 text-xs transition-colors bp-sm:text-sm",
                         isActive
                           ? "border-primary bg-primary/15 text-primary dark:bg-primary/30 dark:text-primary-foreground"
                           : "border-border bg-background text-muted-foreground hover:bg-muted",
@@ -353,7 +383,6 @@ export const FilterPanel = React.memo(function FilterPanel({
                     </button>
                   );
                 })}
-              </div>
             </div>
           </div>
           {onClose && (

@@ -38,6 +38,9 @@ type Product = {
     manageStock?: boolean;
     allowBackorder?: boolean;
     hideGaugeStock?: boolean;
+    isFeatured?: boolean;
+    isNew?: boolean;
+    isSale?: boolean;
   };
 };
 
@@ -59,6 +62,7 @@ type Filters = {
    * - purpose=stringing : 교체 서비스용 "스트링" 상품만 노출
    */
   purpose?: string;
+  exposure?: string;
 };
 
 type ResponseShape = {
@@ -94,6 +98,8 @@ function buildQueryString(filters: Filters, page: number) {
   if (filters.maxPrice !== undefined)
     params.set("maxPrice", String(filters.maxPrice));
   if (filters.purpose) params.set("purpose", filters.purpose);
+  if (filters.exposure && filters.exposure !== "all")
+    params.set("exposure", filters.exposure);
   params.set("page", String(page));
   return params.toString();
 }

@@ -20,6 +20,7 @@ export async function GET(req: Request) {
   const brand = searchParams.get("brand")?.trim();
   const cond = searchParams.get("cond")?.trim(); // 'A' | 'B' | 'C'
   const keyword = searchParams.get("q")?.trim() || null;
+  const exposure = searchParams.get("exposure") || "all";
 
   // 가격 범위 파라미터: min/max + minPrice/maxPrice(별칭) 둘 다 지원
   const minStr = searchParams.get("min") ?? searchParams.get("minPrice");
@@ -54,6 +55,10 @@ export async function GET(req: Request) {
 
   // 대여 가능만 보기: rental.enabled=true
   if (rentOnly) q["rental.enabled"] = true;
+
+  if (exposure === "featured") q["marketing.isFeatured"] = true;
+  else if (exposure === "new") q["marketing.isNew"] = true;
+  else if (exposure === "sale") q["marketing.isSale"] = true;
 
   // 키워드 검색: model(기본) + brand(보조)
   if (keyword) {

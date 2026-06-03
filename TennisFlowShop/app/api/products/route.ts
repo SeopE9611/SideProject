@@ -19,7 +19,7 @@ type ProductDoc = {
     durability?: number;
     comfort?: number;
   };
-  inventory?: { isFeatured?: boolean };
+  inventory?: { isFeatured?: boolean; isNew?: boolean; isSale?: boolean };
   ratingCount?: number;
   ratingAvg?: number;
   ratingAverage?: number;
@@ -92,6 +92,7 @@ export async function GET(req: NextRequest) {
     const maxPrice = params.get("maxPrice");
     const purpose = params.get("purpose");
     const isFeatured = params.get("isFeatured"); // 'true' | 'false'
+    const exposure = params.get("exposure") || "all";
     const exclude = params.get("exclude"); // string(ObjectId)
 
     // 페이징
@@ -119,6 +120,9 @@ export async function GET(req: NextRequest) {
     if (q) filter.name = { $regex: q, $options: "i" };
     if (material) filter.material = material;
     if (isFeatured === "true") filter["inventory.isFeatured"] = true;
+    if (exposure === "featured") filter["inventory.isFeatured"] = true;
+    else if (exposure === "new") filter["inventory.isNew"] = true;
+    else if (exposure === "sale") filter["inventory.isSale"] = true;
 
     // 가격 범위 필터(기존 훅(useInfiniteProducts)에서 이미 사용중인 파라미터를 서버에서 반영)
     if (minPrice || maxPrice) {
