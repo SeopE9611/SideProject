@@ -681,29 +681,6 @@ export default function Home() {
         </SiteContainer>
       </section>
 
-      {/* 공지사항/중고거래 섹션 */}
-      <section ref={communitySectionRef} className="py-10 bp-sm:py-12 bp-md:py-16">
-        <SiteContainer>
-          <div className="mb-8 bp-sm:mb-10 text-center">
-            <h2 className="font-brand-bold text-2xl font-bold text-foreground tracking-normal bp-md:text-3xl">소식 & 커뮤니티</h2>
-            <p className="mt-2 bp-sm:mt-3 text-sm bp-sm:text-base text-muted-foreground">공지사항과 중고 거래 최신 소식을 확인하세요</p>
-          </div>
-          <div className="grid gap-5 bp-sm:gap-6 bp-xl:grid-cols-2">
-            {shouldLoadCommunity ? (
-              <>
-                <HomeNoticePreview />
-                <HomeMarketPreview />
-              </>
-            ) : (
-              <>
-                <div className="h-[300px] animate-pulse rounded-2xl border border-border/60 bg-card shadow-sm" />
-                <div className="h-[300px] animate-pulse rounded-2xl border border-border/60 bg-card shadow-sm" />
-              </>
-            )}
-          </div>
-        </SiteContainer>
-      </section>
-
       {/* 서비스 플로우 */}
       <section className="py-10 bp-sm:py-12 bp-md:py-16">
         <SiteContainer>
@@ -764,6 +741,29 @@ export default function Home() {
                 </Link>
               </Button>
             </div>
+          </div>
+        </SiteContainer>
+      </section>
+
+            {/* 공지사항/중고거래 섹션 */}
+      <section ref={communitySectionRef} className="py-10 bp-sm:py-12 bp-md:py-16">
+        <SiteContainer>
+          <div className="mb-8 bp-sm:mb-10 text-center">
+            <h2 className="font-brand-bold text-2xl font-bold text-foreground tracking-normal bp-md:text-3xl">소식 & 커뮤니티</h2>
+            <p className="mt-2 bp-sm:mt-3 text-sm bp-sm:text-base text-muted-foreground">공지사항과 중고 거래 최신 소식을 확인하세요</p>
+          </div>
+          <div className="grid gap-5 bp-sm:gap-6 bp-xl:grid-cols-2">
+            {shouldLoadCommunity ? (
+              <>
+                <HomeNoticePreview />
+                <HomeMarketPreview />
+              </>
+            ) : (
+              <>
+                <div className="h-[300px] animate-pulse rounded-2xl border border-border/60 bg-card shadow-sm" />
+                <div className="h-[300px] animate-pulse rounded-2xl border border-border/60 bg-card shadow-sm" />
+              </>
+            )}
           </div>
         </SiteContainer>
       </section>
