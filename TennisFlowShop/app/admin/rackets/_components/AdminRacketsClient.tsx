@@ -377,7 +377,7 @@ export default function AdminRacketsClient() {
 
                 <div className="grid w-full gap-2 border-t border-border pt-3 sm:grid-cols-2 md:grid-cols-4">
                   <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="min-w-max border-border">
+                    <SelectTrigger className="h-9 w-full min-w-0 border-border text-xs">
                       <SelectValue placeholder="상태 필터" />
                     </SelectTrigger>
                     <SelectContent>
@@ -393,7 +393,7 @@ export default function AdminRacketsClient() {
                     value={conditionFilter}
                     onValueChange={setConditionFilter}
                   >
-                    <SelectTrigger className="min-w-max border-border">
+                    <SelectTrigger className="h-9 w-full min-w-0 border-border text-xs">
                       <SelectValue placeholder="등급 필터" />
                     </SelectTrigger>
                     <SelectContent>
@@ -408,7 +408,7 @@ export default function AdminRacketsClient() {
                     value={exposureFilter}
                     onValueChange={setExposureFilter}
                   >
-                    <SelectTrigger className="min-w-max border-border">
+                    <SelectTrigger className="h-9 w-full min-w-0 border-border text-xs">
                       <SelectValue placeholder="노출 유형" />
                     </SelectTrigger>
                     <SelectContent>
@@ -428,7 +428,7 @@ export default function AdminRacketsClient() {
                       setConditionFilter("all");
                       setExposureFilter("all");
                     }}
-                    className="w-full border-border hover:bg-primary/10 dark:hover:bg-primary/20 dark:border-border"
+                    className="h-9 w-full border-border text-xs hover:bg-primary/10 dark:hover:bg-primary/20 dark:border-border"
                   >
                     필터 초기화
                   </Button>

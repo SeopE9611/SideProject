@@ -373,7 +373,7 @@ export default function ProductsClient() {
                   <MaterialFilter value={materialFilter} onChange={handleMaterialFilterChange} options={MATERIAL_OPTIONS.map((o) => o.id)} />
                   <StockStatusFilter value={statusFilter} onChange={handleStatusFilterChange} />
                   <Select value={exposureFilter} onValueChange={handleExposureFilterChange}>
-                    <SelectTrigger className="w-full h-9 text-xs">
+                    <SelectTrigger className="h-9 w-full min-w-0 text-xs">
                       <SelectValue placeholder="노출 유형 전체" />
                     </SelectTrigger>
                     <SelectContent>
@@ -383,10 +383,10 @@ export default function ProductsClient() {
                       <SelectItem value="sale">할인 상품</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Button variant="outline" size="sm" onClick={resetFilters} className="w-full border-border hover:bg-muted dark:border-border dark:hover:bg-card">
+                  <Button variant="outline" size="sm" onClick={resetFilters} className="h-9 w-full border-border text-xs hover:bg-muted dark:border-border dark:hover:bg-card">
                     필터 초기화
                   </Button>
-                  <Button variant="outline" size="sm" className="w-full bg-transparent border-border hover:bg-muted dark:border-border dark:hover:bg-card" onClick={() => setSort(null)}>
+                  <Button variant="outline" size="sm" className="h-9 w-full bg-transparent border-border text-xs hover:bg-muted dark:border-border dark:hover:bg-card" onClick={() => setSort(null)}>
                     정렬 초기화
                   </Button>
                 </div>
