@@ -259,6 +259,8 @@ export default function Home() {
   const [shouldLoadRackets, setShouldLoadRackets] = useState(false);
   const stringsFetchedRef = useRef(false);
   const [stringByBrand, setStringByBrand] = useState<Record<string, ApiProduct[]>>({});
+  const [allProductsTotal, setAllProductsTotal] = useState(0);
+  const [stringTotalsByBrand, setStringTotalsByBrand] = useState<Record<string, number>>({});
   const [stringsLoadingByBrand, setStringsLoadingByBrand] = useState<Record<string, boolean>>({});
   const [stringsErrorByBrand, setStringsErrorByBrand] = useState<Record<string, boolean>>({});
 
@@ -351,6 +353,7 @@ export default function Home() {
     };
   };
   const [rackByBrand, setRackByBrand] = useState<Record<string, RItem[]>>({});
+  const [racketTotalsByBrand, setRacketTotalsByBrand] = useState<Record<string, number>>({});
   const [racketsLoadingByBrand, setRacketsLoadingByBrand] = useState<Record<string, boolean>>({});
   const [racketsErrorByBrand, setRacketsErrorByBrand] = useState<Record<string, boolean>>({});
 
@@ -359,19 +362,23 @@ export default function Home() {
     setRacketsErrorByBrand((prev) => ({ ...prev, [brand]: false }));
 
     try {
-      const qs = brand === "all" ? "?sort=createdAt_desc&limit=12" : `?brand=${brand}&sort=createdAt_desc&limit=12`;
+      const qs = brand === "all" ? "?sort=createdAt_desc&limit=10&withTotal=1" : `?brand=${brand}&sort=createdAt_desc&limit=10&withTotal=1`;
 
       const res = await fetch(`/api/rackets${qs}`, { credentials: "include" });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-      const list = await res.json();
+      const json = await res.json();
+      const items: RItem[] = Array.isArray(json) ? json : json.items ?? [];
+      const total = typeof json?.total === "number" ? json.total : items.length;
       setRackByBrand((prev) => ({
         ...prev,
-        [brand]: Array.isArray(list) ? list : [],
+        [brand]: items,
       }));
+      setRacketTotalsByBrand((prev) => ({ ...prev, [brand]: total }));
     } catch {
       // “빈 목록”과 구분하기 위해 error 플래그를 세움
       setRackByBrand((prev) => ({ ...prev, [brand]: [] }));
+      setRacketTotalsByBrand((prev) => ({ ...prev, [brand]: 0 }));
       setRacketsErrorByBrand((prev) => ({ ...prev, [brand]: true }));
     } finally {
       setRacketsLoadingByBrand((prev) => ({ ...prev, [brand]: false }));
@@ -383,7 +390,7 @@ export default function Home() {
     setProductsError(false);
 
     try {
-      const res = await fetch("/api/products?limit=48", {
+      const res = await fetch("/api/products?limit=10", {
         credentials: "include",
       });
       // status code 기반으로 실패 판정 (빈 목록과 “에러”를 분리)
@@ -391,9 +398,12 @@ export default function Home() {
 
       const json = await res.json();
       const items: ApiProduct[] = json.products ?? json.items ?? [];
+      const total = typeof json?.pagination?.total === "number" ? json.pagination.total : items.length;
       setAllProducts(items);
+      setAllProductsTotal(total);
     } catch {
       setAllProducts([]);
+      setAllProductsTotal(0);
       setProductsError(true);
     } finally {
       setLoading(false);
@@ -405,13 +415,16 @@ export default function Home() {
     setStringsLoadingByBrand((prev) => ({ ...prev, [brand]: true }));
     setStringsErrorByBrand((prev) => ({ ...prev, [brand]: false }));
     try {
-      const res = await fetch(`/api/products?brand=${brand}&sort=createdAt_desc&limit=12`, { credentials: "include" });
+      const res = await fetch(`/api/products?brand=${brand}&sort=createdAt_desc&limit=10`, { credentials: "include" });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
       const items: ApiProduct[] = json.products ?? json.items ?? [];
+      const total = typeof json?.pagination?.total === "number" ? json.pagination.total : items.length;
       setStringByBrand((prev) => ({ ...prev, [brand]: items }));
+      setStringTotalsByBrand((prev) => ({ ...prev, [brand]: total }));
     } catch {
       setStringByBrand((prev) => ({ ...prev, [brand]: [] }));
+      setStringTotalsByBrand((prev) => ({ ...prev, [brand]: 0 }));
       setStringsErrorByBrand((prev) => ({ ...prev, [brand]: true }));
     } finally {
       setStringsLoadingByBrand((prev) => ({ ...prev, [brand]: false }));
@@ -498,8 +511,13 @@ export default function Home() {
     }));
   }, [rackByBrand, activeBrand]);
 
+  const stringTotal = activeStringBrand === "all" ? allProductsTotal : stringTotalsByBrand[activeStringBrand] ?? premiumItems.length;
+  const hasMoreStringProducts = stringTotal > premiumItems.length;
+
   const usedRacketsLoading = Boolean(racketsLoadingByBrand[activeBrand]);
   const usedRacketsError = Boolean(racketsErrorByBrand[activeBrand]);
+  const racketTotal = racketTotalsByBrand[activeBrand] ?? usedRacketsItems.length;
+  const hasMoreRacketProducts = racketTotal > usedRacketsItems.length;
 
   // throw new Error('[TEST] app/error.tsx 동작 확인용(홈 페이지)');
   return (
@@ -578,7 +596,7 @@ export default function Home() {
           <div className="mb-8 bp-sm:mb-10 text-center">
             <p className="mb-2 text-sm font-semibold text-primary">처음 오셨다면 여기서 시작하세요</p>
             <h2 className="font-brand-bold text-2xl font-bold text-foreground tracking-normal bp-md:text-3xl">무엇을 도와드릴까요?</h2>
-            <p className="mt-2 bp-sm:mt-3 text-sm bp-sm:text-base text-muted-foreground">원하는 목적을 고르면 필요한 단계로 바로 이동할 수 있어요.</p>
+            <p className="mt-2 bp-sm:mt-3 text-sm bp-sm:text-base text-muted-foreground">원하는 목적을 고르면 바로 이동할 수 있어요.</p>
           </div>
           <div className="grid gap-4 bp-sm:gap-5 bp-md:gap-6 grid-cols-1 bp-md:grid-cols-2 bp-xl:grid-cols-3">
             <Link href="/services/apply" className={cn("group relative flex h-full flex-col gap-4 p-5 bp-sm:p-6 bp-md:p-7 border-primary/40 bg-primary/5", surfaceCardInteractiveClass)}>
@@ -618,7 +636,7 @@ export default function Home() {
                 <BookOpen className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
               </div>
               <div>
-                <h3 className="text-base bp-sm:text-lg font-semibold break-keep text-foreground">레슨을 신청하고 싶어요</h3>
+                <h3 className="text-base bp-sm:text-lg font-semibold break-keep text-foreground">아카데미 / 레슨 신청</h3>
                 <p className="mt-2 text-sm leading-relaxed text-foreground/80">아카데미 클래스와 레슨 신청 안내를 확인합니다.</p>
               </div>
             </Link>
@@ -630,7 +648,7 @@ export default function Home() {
               <div className="flex flex-1 flex-col gap-4">
                 <div>
                   <h3 className="text-base bp-sm:text-lg font-semibold break-keep text-foreground">주문/신청 상태 확인</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-foreground/80">마이페이지 주문조회에서 진행 상태를 확인할 수 있어요.</p>
+                  <p className="mt-2 text-sm leading-relaxed text-foreground/80">마이페이지에서 진행 상태를 확인할 수 있어요.</p>
                 </div>
               </div>
             </div>
@@ -642,13 +660,16 @@ export default function Home() {
         <SiteContainer>
           <Link href="/rackets/finder" className="group block">
             <div className={cn("flex flex-col gap-5 p-6 bp-sm:p-7 bp-md:flex-row bp-md:items-center bp-md:justify-between bp-md:p-8", surfaceCardInteractiveClass)}>
-              <div className="flex items-start gap-4 bp-sm:gap-5">
-                <div className={cn("h-14 w-14 bp-sm:h-16 bp-sm:w-16", surfaceIconWrapClass)}>
-                  <Search className="h-6 w-6 bp-sm:h-7 bp-sm:w-7" />
+              <div className="flex items-center gap-4 bp-sm:gap-5">
+                <div className={cn("h-12 w-12 bp-sm:h-14 bp-sm:w-14", surfaceIconWrapClass)}>
+                  <Search className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
                 </div>
                 <div className="min-w-0">
                   <div className="text-base bp-sm:text-lg font-bold text-foreground">라켓 검색</div>
-                  <p className="mt-1.5 text-sm bp-sm:text-base text-muted-foreground">헤드/무게/밸런스/RA/SW 범위로 중고 라켓을 빠르게 좁혀보세요.</p>
+                  <p className="mt-1.5 text-sm bp-sm:text-base text-muted-foreground leading-relaxed">
+                    <span className="block bp-sm:inline">헤드/무게/밸런스/RA/SW</span>
+                    <span className="block bp-sm:inline bp-sm:ml-1">범위로 중고 라켓을 빠르게 좁혀보세요.</span>
+                  </p>
                 </div>
               </div>
 
@@ -699,8 +720,8 @@ export default function Home() {
                   </div>
                   <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">1</div>
                 </div>
-                <h3 className="mb-1 bp-sm:mb-1.5 text-sm bp-sm:text-base font-semibold text-foreground">신청 방식 선택</h3>
-                <p className="text-sm text-foreground/80">스트링 구매·라켓 구매/대여·보유 장비 중 선택</p>
+                <h3 className="mb-1 bp-sm:mb-1.5 text-xs bp-sm:text-sm font-semibold text-foreground">신청 방식 선택</h3>
+                <p className="text-xs bp-sm:text-sm leading-relaxed text-foreground/80">스트링 구매·라켓 구매/대여·보유 장비 중 선택</p>
               </div>
               <div className={processStepSurfaceClass}>
                 <div className="relative mb-3 bp-sm:mb-4">
@@ -709,8 +730,8 @@ export default function Home() {
                   </div>
                   <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">2</div>
                 </div>
-                <h3 className="mb-1 bp-sm:mb-1.5 text-sm bp-sm:text-base font-semibold text-foreground">방문/택배</h3>
-                <p className="text-sm text-foreground/80">방문 예약 또는 택배 발송</p>
+                <h3 className="mb-1 bp-sm:mb-1.5 text-xs bp-sm:text-sm font-semibold text-foreground">방문/택배</h3>
+                <p className="text-xs bp-sm:text-sm leading-relaxed text-foreground/80">방문 예약 또는 택배 발송</p>
               </div>
 
               <div className={processStepSurfaceClass}>
@@ -720,8 +741,8 @@ export default function Home() {
                   </div>
                   <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">3</div>
                 </div>
-                <h3 className="mb-1 bp-sm:mb-1.5 text-sm bp-sm:text-base font-semibold text-foreground">작업 진행</h3>
-                <p className="text-sm text-foreground/80">장착/텐션 세팅 후 검수</p>
+                <h3 className="mb-1 bp-sm:mb-1.5 text-xs bp-sm:text-sm font-semibold text-foreground">작업 진행</h3>
+                <p className="text-xs bp-sm:text-sm leading-relaxed text-foreground/80">장착/텐션 세팅 후 검수</p>
               </div>
 
               <div className={processStepSurfaceClass}>
@@ -731,8 +752,8 @@ export default function Home() {
                   </div>
                   <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">4</div>
                 </div>
-                <h3 className="mb-1 bp-sm:mb-1.5 text-sm bp-sm:text-base font-semibold text-foreground">수령</h3>
-                <p className="text-sm text-foreground/80">방문 수령 또는 배송</p>
+                <h3 className="mb-1 bp-sm:mb-1.5 text-xs bp-sm:text-sm font-semibold text-foreground">수령</h3>
+                <p className="text-xs bp-sm:text-sm leading-relaxed text-foreground/80">방문 수령 또는 배송</p>
               </div>
             </div>
             <div className="text-center">
@@ -780,7 +801,8 @@ export default function Home() {
           <HorizontalProducts
             title="스트링"
             subtitle={activeStringBrand === "all" ? "브랜드로 골라보기" : `${stringBrandLabel(activeStringBrand)} 추천`}
-            items={premiumItems}
+            items={premiumItems.slice(0, 10)}
+            showMoreCard={hasMoreStringProducts}
             moreHref={activeStringBrand === "all" ? "/products" : `/products?brand=${activeStringBrand}`}
             firstPageSlots={4}
             moveMoreToSecondWhen5Plus={true}
@@ -834,7 +856,8 @@ export default function Home() {
           <HorizontalProducts
             title="중고 라켓"
             subtitle={activeBrand === "all" ? "도깨비테니스 중고" : `${racketBrandLabel(activeBrand)} 중고`}
-            items={usedRacketsItems}
+            items={usedRacketsItems.slice(0, 10)}
+            showMoreCard={hasMoreRacketProducts}
             moreHref={activeBrand === "all" ? "/rackets" : `/rackets?brand=${activeBrand}`}
             firstPageSlots={4}
             moveMoreToSecondWhen5Plus={true}
