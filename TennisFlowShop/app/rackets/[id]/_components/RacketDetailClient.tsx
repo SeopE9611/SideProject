@@ -1,22 +1,50 @@
 "use client";
 
-import { CompareRacketItem, useRacketCompareStore } from "@/app/store/racketCompareStore";
+import {
+  CompareRacketItem,
+  useRacketCompareStore,
+} from "@/app/store/racketCompareStore";
 import StatusBadge from "@/components/badges/StatusBadge";
 import SiteContainer from "@/components/layout/SiteContainer";
 import MaskedBlock from "@/components/reviews/MaskedBlock";
-import HeroCourtBackdrop from "@/components/system/HeroCourtBackdrop";
 import RecentViewedItems from "@/components/recent-viewed/RecentViewedItems";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { racketStockBadgeVariant } from "@/lib/badge-style";
-import { gripSizeLabel, racketBrandLabel, stringPatternLabel } from "@/lib/constants";
+import {
+  gripSizeLabel,
+  racketBrandLabel,
+  stringPatternLabel,
+} from "@/lib/constants";
 import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { addRecentViewedItem } from "@/lib/recent-viewed";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
-import { ArrowLeft, Calendar, ChevronLeft, ChevronRight, Eye, EyeOff, FileText, Loader2, MoreHorizontal, Pencil, Scale, Settings, ShoppingCart, Star, Trash2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  Eye,
+  EyeOff,
+  FileText,
+  Loader2,
+  MoreHorizontal,
+  Pencil,
+  Scale,
+  Settings,
+  ShoppingCart,
+  Star,
+  Trash2,
+} from "lucide-react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
@@ -36,13 +64,19 @@ const RentDialog = dynamic(() => import("./RentDialog"), {
   loading: () => null,
 });
 
-const ReviewImageViewerDialog = dynamic(() => import("./ReviewImageViewerDialog"), { loading: () => null });
+const ReviewImageViewerDialog = dynamic(
+  () => import("./ReviewImageViewerDialog"),
+  { loading: () => null },
+);
 
 const ReviewEditDialog = dynamic(() => import("./ReviewEditDialog"), {
   loading: () => null,
 });
 
-export default function RacketDetailClient({ racket, stock }: RacketDetailClientProps) {
+export default function RacketDetailClient({
+  racket,
+  stock,
+}: RacketDetailClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const rentSectionRef = useRef<HTMLDivElement>(null);
@@ -70,7 +104,10 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
   const racketId = String(racket?.id ?? racket?._id ?? "");
   const canBuy = !soldOut && racketId !== "";
   const racketShippingFee = normalizeItemShippingFee(racket?.shippingFee);
-  const racketShippingLabel = racketShippingFee > 0 ? `${racketShippingFee.toLocaleString()}원 배송비` : "무료배송";
+  const racketShippingLabel =
+    racketShippingFee > 0
+      ? `${racketShippingFee.toLocaleString()}원 배송비`
+      : "무료배송";
   const brandLabel = racketBrandLabel(racket?.brand);
 
   useEffect(() => {
@@ -85,7 +122,14 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
       href: `/rackets/${racketId}`,
       price: Number.isFinite(safePrice) ? safePrice : null,
     });
-  }, [brandLabel, racket?.condition, racket?.images, racket?.model, racket?.price, racketId]);
+  }, [
+    brandLabel,
+    racket?.condition,
+    racket?.images,
+    racket?.model,
+    racket?.price,
+    racketId,
+  ]);
 
   // 리뷰 탭 표시를 위한 데이터
   // - racket API에서 reviews/reviewSummary를 함께 내려주도록 되어 있어야 함
@@ -115,14 +159,35 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
       .catch(() => setUser(null));
   }, [hasRequestedReviewUser]);
 
-  const isAdmin = !!user && ((user as any).role === "admin" || (user as any).role === "ADMIN" || (user as any).isAdmin === true || (Array.isArray((user as any).roles) && (user as any).roles.includes("admin")));
+  const isAdmin =
+    !!user &&
+    ((user as any).role === "admin" ||
+      (user as any).role === "ADMIN" ||
+      (user as any).isAdmin === true ||
+      (Array.isArray((user as any).roles) &&
+        (user as any).roles.includes("admin")));
 
   // 화면에 보이는 개수만큼만 가져와 병합(과한 트래픽 방지)
   const reviewsCount = reviewsLen || 10;
-  const { data: adminReviews, mutate: mutateAdminReviews } = useSWR(isReviewsTabActive && isAdmin ? `/api/reviews/admin?productId=${racketId}&limit=${reviewsCount}` : null, fetcher, { revalidateOnFocus: false });
-  const { data: myReview, mutate: mutateMyReview } = useSWR(isReviewsTabActive && user ? `/api/reviews/self?productId=${racketId}` : null, fetcher, { revalidateOnFocus: false });
+  const { data: adminReviews, mutate: mutateAdminReviews } = useSWR(
+    isReviewsTabActive && isAdmin
+      ? `/api/reviews/admin?productId=${racketId}&limit=${reviewsCount}`
+      : null,
+    fetcher,
+    { revalidateOnFocus: false },
+  );
+  const { data: myReview, mutate: mutateMyReview } = useSWR(
+    isReviewsTabActive && user
+      ? `/api/reviews/self?productId=${racketId}`
+      : null,
+    fetcher,
+    { revalidateOnFocus: false },
+  );
 
-  const isMine = (rv: any) => !!rv?.ownedByMe || (!!(myReview as any)?._id && String(rv?._id) === String((myReview as any)._id));
+  const isMine = (rv: any) =>
+    !!rv?.ownedByMe ||
+    (!!(myReview as any)?._id &&
+      String(rv?._id) === String((myReview as any)._id));
 
   // 서버가 내려준 racket.reviews는 숨김 리뷰를 마스킹
   // myReview가 있으면 동일 _id 항목을 원문으로 덮어쓰기 + 마스킹 해제
@@ -132,7 +197,9 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
 
     // 내 리뷰 덮어쓰기 (있을 때만)
     if (myReview && (myReview as any)._id) {
-      const i = next.findIndex((r: any) => String(r._id) === String((myReview as any)._id));
+      const i = next.findIndex(
+        (r: any) => String(r._id) === String((myReview as any)._id),
+      );
       if (i !== -1) {
         next = [...next];
         next[i] = {
@@ -149,7 +216,9 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
 
     // 관리자면 표시 중인 항목 범위에서 원문으로 덮어쓰기
     if (isAdmin && Array.isArray(adminReviews) && adminReviews.length > 0) {
-      const map = new Map((adminReviews as any[]).map((r: any) => [String(r._id), r]));
+      const map = new Map(
+        (adminReviews as any[]).map((r: any) => [String(r._id), r]),
+      );
       next = next.map((r: any) => {
         const raw = map.get(String(r._id));
         if (!raw) return r;
@@ -196,7 +265,8 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
     setViewerOpen(true);
   };
   const nextViewer = () => setViewerIndex((i) => (i + 1) % viewerImages.length);
-  const prevViewer = () => setViewerIndex((i) => (i - 1 + viewerImages.length) % viewerImages.length);
+  const prevViewer = () =>
+    setViewerIndex((i) => (i - 1 + viewerImages.length) % viewerImages.length);
 
   const openEdit = (review: any) => {
     setEditing(review);
@@ -290,17 +360,36 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
   const isAllRented = !isSold && soldOut && rentedCount > 0; // 전량 대여중(임시 품절)
 
   // 버튼/라벨용 문구
-  const stockLabel = isSold ? "판매 완료" : isAllRented ? `전량 대여중 (${rentedCount}/${stock.quantity})` : `가용 ${stock.available}/${stock.quantity}${rentedCount > 0 ? ` · 대여중 ${rentedCount}` : ""}`;
-  const rentalState = !racket?.rental?.enabled || isSold ? "unavailable" : isAllRented ? "rented" : "available";
+  const stockLabel = isSold
+    ? "판매 완료"
+    : isAllRented
+      ? `전량 대여중 (${rentedCount}/${stock.quantity})`
+      : `가용 ${stock.available}/${stock.quantity}${rentedCount > 0 ? ` · 대여중 ${rentedCount}` : ""}`;
+  const rentalState =
+    !racket?.rental?.enabled || isSold
+      ? "unavailable"
+      : isAllRented
+        ? "rented"
+        : "available";
 
   const images = racket.images || [];
   const open = searchParams.get("open"); // 'rent' 면 자동 오픈
 
   // 비교(Compare) 연동
-  const { items: compareItems, add: addToCompare, remove: removeFromCompare } = useRacketCompareStore();
+  const {
+    items: compareItems,
+    add: addToCompare,
+    remove: removeFromCompare,
+  } = useRacketCompareStore();
 
-  const compareCount = useMemo(() => (compareItems || []).filter(Boolean).length, [compareItems]);
-  const isCompared = useMemo(() => (compareItems || []).some((x: any) => x?.id === racketId), [compareItems, racketId]);
+  const compareCount = useMemo(
+    () => (compareItems || []).filter(Boolean).length,
+    [compareItems],
+  );
+  const isCompared = useMemo(
+    () => (compareItems || []).some((x: any) => x?.id === racketId),
+    [compareItems, racketId],
+  );
 
   const compareItem = useMemo<CompareRacketItem>(() => {
     const toNum = (v: any) => {
@@ -365,38 +454,53 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
   };
 
   return (
-    <div className="min-h-full bg-muted/30">
-      {/* Hero Section with Breadcrumb */}
-      <div className="relative bg-muted text-foreground py-8 border border-primary/20 rounded-2xl">
-        <div className="absolute inset-0 bg-overlay/20"></div>
-        <HeroCourtBackdrop className="h-full w-full text-primary opacity-[0.10] dark:opacity-[0.12]" />
-        <SiteContainer variant="wide" className="relative z-10">
-          <div className="flex items-center gap-2 text-sm mb-4 opacity-90">
-            <Link href="/" className="hover:text-primary transition-colors">
-              홈
-            </Link>
-            <span>/</span>
-            <Link href="/rackets" className="hover:text-primary transition-colors">
-              중고 라켓
-            </Link>
-            <span>/</span>
-            <span className="text-primary">
-              {racketBrandLabel(racket.brand)} {racket.model}
-            </span>
-          </div>
-          <div className="mb-4 flex flex-wrap items-center gap-2">
-            <Button variant="ghost" className="p-0 text-foreground hover:bg-secondary" onClick={() => router.back()}>
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              이전 페이지로
-            </Button>
-            {isAdmin && racketId && (
-              <Button asChild variant="outline" size="sm" className="rounded-xl">
-                <Link href={`/admin/rackets/${racketId}/edit`}>
-                  <Pencil className="mr-1.5 h-4 w-4" />
-                  라켓 수정
-                </Link>
+    <div className="min-h-full bg-background pb-24 bp-md:pb-10">
+      <div className="relative bg-muted/20 text-foreground py-5 sm:py-6 border-b border-border/60">
+        <SiteContainer variant="wide" className="relative">
+          <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
+            <div className="flex min-w-0 items-center gap-2 overflow-x-auto text-sm scrollbar-hide sm:gap-2.5 sm:text-base">
+              <Link
+                href="/"
+                className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
+              >
+                홈
+              </Link>
+              <span className="shrink-0 text-muted-foreground/60">/</span>
+              <Link
+                href="/rackets"
+                className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
+              >
+                중고 라켓
+              </Link>
+              <span className="shrink-0 text-muted-foreground/60">/</span>
+              <span className="max-w-[150px] truncate font-medium text-foreground sm:max-w-none">
+                {racketBrandLabel(racket.brand)} {racket.model}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                className="text-muted-foreground hover:text-foreground hover:bg-muted/50 px-3 py-2 h-auto text-sm rounded-xl transition-[background-color,color,border-color,box-shadow,opacity] duration-200"
+                onClick={() => router.back()}
+              >
+                <ArrowLeft className="mr-1.5 h-4 w-4" />
+                뒤로
               </Button>
-            )}
+              {isAdmin && racketId && (
+                <Button
+                  asChild
+                  variant="outline"
+                  size="sm"
+                  className="rounded-xl"
+                >
+                  <Link href={`/admin/rackets/${racketId}/edit`}>
+                    <Pencil className="mr-1.5 h-4 w-4" />
+                    라켓 수정
+                  </Link>
+                </Button>
+              )}
+            </div>
           </div>
         </SiteContainer>
       </div>
@@ -408,9 +512,16 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
             <Card className="overflow-hidden border border-border bg-card shadow-sm">
               <div className="relative aspect-square">
                 {images.length > 0 ? (
-                  <Image src={images[selectedImageIndex] || "/placeholder.svg"} alt={`${racketBrandLabel(racket.brand)} ${racket.model}`} fill className="object-cover transition-transform duration-300 hover:scale-105" />
+                  <Image
+                    src={images[selectedImageIndex] || "/placeholder.svg"}
+                    alt={`${racketBrandLabel(racket.brand)} ${racket.model}`}
+                    fill
+                    className="object-cover transition-transform duration-300 hover:scale-105"
+                  />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground">이미지 없음</div>
+                  <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground">
+                    이미지 없음
+                  </div>
                 )}
                 {images.length > 1 && (
                   <>
@@ -433,10 +544,17 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                   </>
                 )}
                 <div className="absolute top-4 left-4 flex gap-2">
-                  <Badge variant="brand" className="border bg-background/95 shadow-sm backdrop-blur-sm dark:bg-card/95">
+                  <Badge
+                    variant="brand"
+                    className="border bg-background/95 shadow-sm backdrop-blur-sm dark:bg-card/95"
+                  >
                     중고
                   </Badge>
-                  <StatusBadge kind="rental" state={rentalState} surface="image" />
+                  <StatusBadge
+                    kind="rental"
+                    state={rentalState}
+                    surface="image"
+                  />
                 </div>
               </div>
             </Card>
@@ -444,9 +562,18 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
             {images.length > 1 && (
               <div className="grid grid-cols-4 gap-2">
                 {images.slice(0, 5).map((image: string, index: number) => (
-                  <Card key={index} className={`overflow-hidden cursor-pointer transition-all duration-200 ${selectedImageIndex === index ? "ring-2 ring-ring shadow-lg" : "hover:shadow-md"}`} onClick={() => setSelectedImageIndex(index)}>
+                  <Card
+                    key={index}
+                    className={`overflow-hidden cursor-pointer transition-all duration-200 ${selectedImageIndex === index ? "ring-2 ring-ring shadow-lg" : "hover:shadow-md"}`}
+                    onClick={() => setSelectedImageIndex(index)}
+                  >
                     <div className="aspect-square relative">
-                      <Image src={image || "/placeholder.svg"} alt={`${racketBrandLabel(racket.brand)} ${racket.model} ${index + 1}`} fill className="object-cover" />
+                      <Image
+                        src={image || "/placeholder.svg"}
+                        alt={`${racketBrandLabel(racket.brand)} ${racket.model} ${index + 1}`}
+                        fill
+                        className="object-cover"
+                      />
                     </div>
                   </Card>
                 ))}
@@ -464,28 +591,43 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                     <Badge variant="outline" className="mb-2">
                       {racketBrandLabel(racket.brand)}
                     </Badge>
-                    <h1 className="text-2xl lg:text-3xl font-bold text-foreground">{racket.model}</h1>
+                    <h1 className="text-2xl lg:text-3xl font-bold text-foreground">
+                      {racket.model}
+                    </h1>
                     <div className="mt-2 flex items-center gap-2">
                       <StatusBadge kind="condition" state={racket.condition} />
 
                       {racket?.rental?.enabled === false ? (
                         <StatusBadge kind="rental" state="unavailable" />
                       ) : (
-                        <div className="flex items-center gap-2 flex-wrap" title={`보유 ${stock.quantity}개 / 대여중 ${rentedCount}개 / 가용 ${stock.available}개`}>
+                        <div
+                          className="flex items-center gap-2 flex-wrap"
+                          title={`보유 ${stock.quantity}개 / 대여중 ${rentedCount}개 / 가용 ${stock.available}개`}
+                        >
                           {isSold ? (
-                            <Badge variant={racketStockBadgeVariant("sold")}>판매 완료</Badge>
+                            <Badge variant={racketStockBadgeVariant("sold")}>
+                              판매 완료
+                            </Badge>
                           ) : isAllRented ? (
-                            <Badge variant={racketStockBadgeVariant("allRented")}>
+                            <Badge
+                              variant={racketStockBadgeVariant("allRented")}
+                            >
                               전량 대여중 ({rentedCount}/{stock.quantity})
                             </Badge>
                           ) : (
-                            <Badge variant={racketStockBadgeVariant("available")}>
+                            <Badge
+                              variant={racketStockBadgeVariant("available")}
+                            >
                               가용 {stock.available}/{stock.quantity}
                             </Badge>
                           )}
 
                           {/* 보조: 대여중 수량 (가용 상태일 때만 추가로 강조) */}
-                          {rentedCount > 0 && !isSold && !isAllRented && <Badge variant={racketStockBadgeVariant("rented")}>대여중 {rentedCount}</Badge>}
+                          {rentedCount > 0 && !isSold && !isAllRented && (
+                            <Badge variant={racketStockBadgeVariant("rented")}>
+                              대여중 {rentedCount}
+                            </Badge>
+                          )}
                         </div>
                       )}
                     </div>
@@ -494,23 +636,39 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                   {/* 가격 정보 */}
                   <div className="space-y-2">
                     <div className="flex items-baseline gap-3">
-                      <span className="text-3xl font-bold text-primary">{racket.price?.toLocaleString()}원</span>
+                      <span className="text-3xl font-bold text-primary">
+                        {racket.price?.toLocaleString()}원
+                      </span>
                     </div>
-                    <div className="text-xs text-muted-foreground bg-muted border border-border rounded-lg p-3">* 중고 상품 특성상 단순 변심 환불이 제한될 수 있어요.</div>
+                    <div className="text-xs text-muted-foreground bg-muted border border-border rounded-lg p-3">
+                      * 중고 상품 특성상 단순 변심 환불이 제한될 수 있어요.
+                    </div>
                   </div>
 
                   {/* CTA 영역 */}
                   <div ref={rentSectionRef} className="space-y-3 pt-4 border-t">
                     <div className="rounded-xl border border-primary/20 bg-primary/5 p-3">
-                      <h2 className="text-base font-bold text-foreground">이 라켓으로 무엇을 할까요?</h2>
-                      <p className="mt-1 text-sm text-muted-foreground">구매, 대여, 비교 액션을 나눠서 선택할 수 있어요.</p>
+                      <h2 className="text-base font-bold text-foreground">
+                        이 라켓으로 무엇을 할까요?
+                      </h2>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        구매, 대여, 비교 액션을 나눠서 선택할 수 있어요.
+                      </p>
                     </div>
                     <div className="flex gap-2">
                       <Button
                         className="flex-1 min-w-0 h-12"
-                        onClick={() => router.push(`/rackets/${racketId}/select-string`)}
+                        onClick={() =>
+                          router.push(`/rackets/${racketId}/select-string`)
+                        }
                         disabled={soldOut}
-                        title={soldOut ? (isAllRented ? "현재 전량 대여중이라 구매/대여가 불가합니다. 반납 시 다시 가능합니다." : "판매가 종료된 상품입니다.") : undefined}
+                        title={
+                          soldOut
+                            ? isAllRented
+                              ? "현재 전량 대여중이라 구매/대여가 불가합니다. 반납 시 다시 가능합니다."
+                              : "판매가 종료된 상품입니다."
+                            : undefined
+                        }
                       >
                         <ShoppingCart className="mr-2 h-4 w-4" />
                         {soldOut ? "품절(구매 불가)" : "스트링 선택 후 구매"}
@@ -518,17 +676,31 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
 
                       {racket?.rental?.enabled ? (
                         soldOut ? (
-                          <Button className="flex-1 bg-muted text-muted-foreground dark:bg-card dark:text-muted-foreground" disabled title="현재 대여 가능 수량이 없습니다.">
+                          <Button
+                            className="flex-1 bg-muted text-muted-foreground dark:bg-card dark:text-muted-foreground"
+                            disabled
+                            title="현재 대여 가능 수량이 없습니다."
+                          >
                             <Calendar className="mr-2 h-4 w-4" />
                             품절(대여 불가)
                           </Button>
                         ) : (
                           <div className="flex-1 min-w-0">
-                            <RentDialog id={racketId} rental={racket.rental} brand={brandLabel} model={racket.model} autoOpen={autoOpen} full />
+                            <RentDialog
+                              id={racketId}
+                              rental={racket.rental}
+                              brand={brandLabel}
+                              model={racket.model}
+                              autoOpen={autoOpen}
+                              full
+                            />
                           </div>
                         )
                       ) : (
-                        <Button className="flex-1 bg-muted text-muted-foreground dark:bg-card dark:text-muted-foreground" disabled>
+                        <Button
+                          className="flex-1 bg-muted text-muted-foreground dark:bg-card dark:text-muted-foreground"
+                          disabled
+                        >
                           <Calendar className="mr-2 h-4 w-4" />
                           대여 불가
                         </Button>
@@ -541,27 +713,51 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                         className={`flex-1 h-12 ${isCompared ? "bg-secondary border-border text-foreground hover:bg-secondary/80" : "bg-card border-border text-foreground"}`}
                         onClick={toggleCompare}
                         disabled={!racketId}
-                        title={!racketId ? "상품 ID가 없어 비교 목록에 담을 수 없습니다." : !isCompared && compareCount >= 4 ? "비교는 최대 4개까지 가능합니다." : undefined}
+                        title={
+                          !racketId
+                            ? "상품 ID가 없어 비교 목록에 담을 수 없습니다."
+                            : !isCompared && compareCount >= 4
+                              ? "비교는 최대 4개까지 가능합니다."
+                              : undefined
+                        }
                       >
                         <Scale className="mr-2 h-4 w-4" />
-                        {isCompared ? `비교 선택됨 (${compareCount}/4)` : `다른 라켓과 비교 (${compareCount}/4)`}
+                        {isCompared
+                          ? `비교 선택됨 (${compareCount}/4)`
+                          : `다른 라켓과 비교 (${compareCount}/4)`}
                       </Button>
 
-                      <Button variant="outline" className="flex-1 h-12" onClick={() => router.push("/rackets/compare")} disabled={compareCount < 2} title={compareCount < 2 ? "비교는 최소 2개부터 가능합니다." : undefined}>
+                      <Button
+                        variant="outline"
+                        className="flex-1 h-12"
+                        onClick={() => router.push("/rackets/compare")}
+                        disabled={compareCount < 2}
+                        title={
+                          compareCount < 2
+                            ? "비교는 최소 2개부터 가능합니다."
+                            : undefined
+                        }
+                      >
                         비교하기{compareCount < 2 ? "(2개↑)" : ""}
                       </Button>
                     </div>
 
-                    {racket?.rental?.enabled === false && racket?.rental?.disabledReason && (
-                      <div className="mt-3 text-sm text-foreground border border-destructive/30 bg-destructive/10 dark:bg-destructive/15 rounded-lg p-3">대여 불가 사유: {racket.rental.disabledReason}</div>
-                    )}
+                    {racket?.rental?.enabled === false &&
+                      racket?.rental?.disabledReason && (
+                        <div className="mt-3 text-sm text-foreground border border-destructive/30 bg-destructive/10 dark:bg-destructive/15 rounded-lg p-3">
+                          대여 불가 사유: {racket.rental.disabledReason}
+                        </div>
+                      )}
                   </div>
                 </div>
               </CardContent>
             </Card>
 
             <div>
-              <Link href="/rackets" className="text-sm text-primary hover:underline inline-flex items-center">
+              <Link
+                href="/rackets"
+                className="text-sm text-primary hover:underline inline-flex items-center"
+              >
                 <ArrowLeft className="mr-1 h-3 w-3" />
                 목록으로
               </Link>
@@ -572,7 +768,11 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
         {/* 스펙 카드 */}
         <Card className="mt-6 border border-border bg-card shadow-sm md:mt-8">
           <CardContent className="p-0">
-            <Tabs value={activeTab} onValueChange={(v) => updateTabInUrl(v as any)} className="w-full">
+            <Tabs
+              value={activeTab}
+              onValueChange={(v) => updateTabInUrl(v as any)}
+              className="w-full"
+            >
               <TabsList className="w-full grid grid-cols-3 h-16 bg-muted/30 rounded-t-lg">
                 <TabsTrigger
                   value="description"
@@ -588,7 +788,10 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                   <Settings className="h-4 w-4 mr-2" />
                   상세 스펙
                 </TabsTrigger>
-                <TabsTrigger value="reviews" className="text-base font-medium h-full data-[state=active]:bg-card data-[state=active]:shadow-md data-[state=active]:text-primary dark:data-[state=active]:bg-card dark:data-[state=active]:text-primary">
+                <TabsTrigger
+                  value="reviews"
+                  className="text-base font-medium h-full data-[state=active]:bg-card data-[state=active]:shadow-md data-[state=active]:text-primary dark:data-[state=active]:bg-card dark:data-[state=active]:text-primary"
+                >
                   <Star className="h-4 w-4 mr-2" />
                   리뷰
                   <span className="ml-1">({reviewsLen})</span>
@@ -601,12 +804,17 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                     <div className="w-12 h-12 rounded-lg border border-border bg-secondary text-foreground flex items-center justify-center">
                       <FileText className="h-6 w-6" />
                     </div>
-                    <h3 className="text-2xl font-bold text-foreground">상품 설명</h3>
+                    <h3 className="text-2xl font-bold text-foreground">
+                      상품 설명
+                    </h3>
                   </div>
                   <div className="rounded-lg bg-muted p-4 md:p-6">
                     <p className="text-foreground leading-relaxed text-lg">
-                      {racketBrandLabel(racket.brand)} {racket.model} 중고 라켓입니다. 상태 등급은 {racket.condition}이며, 전문가의 검수를 거쳐 안전하게 사용하실 수 있습니다.
-                      {racket?.rental?.enabled && " 대여 서비스도 이용 가능합니다."}
+                      {racketBrandLabel(racket.brand)} {racket.model} 중고
+                      라켓입니다. 상태 등급은 {racket.condition}이며, 전문가의
+                      검수를 거쳐 안전하게 사용하실 수 있습니다.
+                      {racket?.rental?.enabled &&
+                        " 대여 서비스도 이용 가능합니다."}
                     </p>
                   </div>
                 </div>
@@ -618,56 +826,80 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                     <div className="w-12 h-12 rounded-lg border border-border bg-secondary text-foreground flex items-center justify-center">
                       <Settings className="h-6 w-6" />
                     </div>
-                    <h3 className="text-2xl font-bold text-foreground">상세 스펙</h3>
+                    <h3 className="text-2xl font-bold text-foreground">
+                      상세 스펙
+                    </h3>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {racket.spec?.weight && (
                       <div className="bg-muted p-4 rounded-lg border border-border">
                         <div className="flex items-center justify-between">
-                          <span className="font-semibold text-primary">무게</span>
-                          <span className="text-foreground font-medium">{racket.spec.weight} g</span>
+                          <span className="font-semibold text-primary">
+                            무게
+                          </span>
+                          <span className="text-foreground font-medium">
+                            {racket.spec.weight} g
+                          </span>
                         </div>
                       </div>
                     )}
                     {racket.spec?.balance && (
                       <div className="bg-muted p-4 rounded-lg border border-border">
                         <div className="flex items-center justify-between">
-                          <span className="font-semibold text-primary">밸런스</span>
-                          <span className="text-foreground font-medium">{racket.spec.balance} mm</span>
+                          <span className="font-semibold text-primary">
+                            밸런스
+                          </span>
+                          <span className="text-foreground font-medium">
+                            {racket.spec.balance} mm
+                          </span>
                         </div>
                       </div>
                     )}
                     {racket.spec?.headSize && (
                       <div className="bg-muted p-4 rounded-lg border border-border">
                         <div className="flex items-center justify-between">
-                          <span className="font-semibold text-primary">헤드사이즈</span>
-                          <span className="text-foreground font-medium">{racket.spec.headSize} in²</span>
+                          <span className="font-semibold text-primary">
+                            헤드사이즈
+                          </span>
+                          <span className="text-foreground font-medium">
+                            {racket.spec.headSize} in²
+                          </span>
                         </div>
                       </div>
                     )}
                     {racket.spec?.pattern && (
                       <div className="bg-muted p-4 rounded-lg border border-border">
                         <div className="flex items-center justify-between">
-                          <span className="font-semibold text-primary">패턴</span>
+                          <span className="font-semibold text-primary">
+                            패턴
+                          </span>
                           {/* raw value(g2/16x19 등)를 그대로 노출하지 않고 공통 라벨로 통일 */}
-                          <span className="text-foreground font-medium">{stringPatternLabel(String(racket.spec.pattern))}</span>
+                          <span className="text-foreground font-medium">
+                            {stringPatternLabel(String(racket.spec.pattern))}
+                          </span>
                         </div>
                       </div>
                     )}
                     {racket.spec?.gripSize && (
                       <div className="bg-muted p-4 rounded-lg border border-border">
                         <div className="flex items-center justify-between">
-                          <span className="font-semibold text-primary">그립</span>
+                          <span className="font-semibold text-primary">
+                            그립
+                          </span>
                           {/* g2/G2/별칭 입력값이 와도 사용자에게는 읽기 쉬운 라벨로 표시 */}
-                          <span className="text-foreground font-medium">{gripSizeLabel(String(racket.spec.gripSize))}</span>
+                          <span className="text-foreground font-medium">
+                            {gripSizeLabel(String(racket.spec.gripSize))}
+                          </span>
                         </div>
                       </div>
                     )}
                     <div className="bg-muted p-4 rounded-lg border border-border">
                       <div className="flex items-center justify-between">
                         <span className="font-semibold text-primary">상태</span>
-                        <span className="text-foreground font-medium">{racket.condition}</span>
+                        <span className="text-foreground font-medium">
+                          {racket.condition}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -680,10 +912,16 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                       <div className="w-12 h-12 bg-primary text-primary-foreground rounded-lg flex items-center justify-center">
                         <Star className="h-6 w-6" />
                       </div>
-                      <h3 className="text-2xl font-bold text-foreground">고객 리뷰</h3>
+                      <h3 className="text-2xl font-bold text-foreground">
+                        고객 리뷰
+                      </h3>
                     </div>
 
-                    <Button asChild variant="outline" className="border border-border bg-secondary text-foreground hover:bg-secondary/80 shadow-sm">
+                    <Button
+                      asChild
+                      variant="outline"
+                      className="border border-border bg-secondary text-foreground hover:bg-secondary/80 shadow-sm"
+                    >
                       <Link href={`/reviews/write?productId=${racketId}`}>
                         <Pencil className="h-4 w-4 mr-2" />
                         리뷰 작성하기
@@ -694,28 +932,49 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                   {mergedReviews.length > 0 ? (
                     <div className="space-y-4">
                       {mergedReviews.map((review: any, index: number) => (
-                        <Card key={String(review?._id ?? index)} className="border border-border shadow-sm bg-card">
+                        <Card
+                          key={String(review?._id ?? index)}
+                          className="border border-border shadow-sm bg-card"
+                        >
                           <CardContent className="p-5 space-y-3">
                             <div className="flex items-start justify-between gap-4">
                               <div className="flex items-start gap-3 min-w-0">
-                                <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-sm font-bold text-foreground shrink-0">{(review?.user ?? "익명").slice(0, 1)}</div>
+                                <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-sm font-bold text-foreground shrink-0">
+                                  {(review?.user ?? "익명").slice(0, 1)}
+                                </div>
 
                                 <div className="min-w-0">
                                   <div className="flex items-center gap-2">
-                                    <div className="font-bold text-foreground truncate">{review?.status === "hidden" ? (review?.ownedByMe ? `${review?.user ?? "내 리뷰"} (비공개)` : "비공개 리뷰") : (review?.user ?? "익명")}</div>
+                                    <div className="font-bold text-foreground truncate">
+                                      {review?.status === "hidden"
+                                        ? review?.ownedByMe
+                                          ? `${review?.user ?? "내 리뷰"} (비공개)`
+                                          : "비공개 리뷰"
+                                        : (review?.user ?? "익명")}
+                                    </div>
 
                                     {review?.status === "hidden" && (
-                                      <Badge variant="outline" className="text-xs">
+                                      <Badge
+                                        variant="outline"
+                                        className="text-xs"
+                                      >
                                         비공개
                                       </Badge>
                                     )}
                                   </div>
 
-                                  {review?.date ? <div className="text-xs text-muted-foreground mt-0.5">{review.date}</div> : null}
+                                  {review?.date ? (
+                                    <div className="text-xs text-muted-foreground mt-0.5">
+                                      {review.date}
+                                    </div>
+                                  ) : null}
 
                                   <div className="flex items-center gap-0.5 mt-1">
                                     {Array.from({ length: 5 }).map((_, i) => (
-                                      <Star key={i} className={`h-4 w-4 ${i < Number(review?.rating ?? 0) ? "text-primary fill-primary" : "text-muted-foreground/40"}`} />
+                                      <Star
+                                        key={i}
+                                        className={`h-4 w-4 ${i < Number(review?.rating ?? 0) ? "text-primary fill-primary" : "text-muted-foreground/40"}`}
+                                      />
                                     ))}
                                   </div>
                                 </div>
@@ -726,68 +985,107 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                                 {(isAdmin || isMine(review)) && (
                                   <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8"
+                                      >
                                         <MoreHorizontal className="h-4 w-4" />
                                       </Button>
                                     </DropdownMenuTrigger>
 
-                                    <DropdownMenuContent align="end" className="w-44">
+                                    <DropdownMenuContent
+                                      align="end"
+                                      className="w-44"
+                                    >
                                       {/* 비공개/공개 토글: 내 리뷰 or 관리자 */}
                                       <DropdownMenuItem
                                         onClick={async () => {
                                           if (!review?._id) return;
 
-                                          const nextStatus = review?.status === "hidden" ? "visible" : "hidden";
+                                          const nextStatus =
+                                            review?.status === "hidden"
+                                              ? "visible"
+                                              : "hidden";
                                           setBusyReviewId(String(review._id));
 
                                           // 낙관적 업데이트
                                           if (isMine(review)) {
                                             mutateMyReview?.((prev: any) => {
-                                              if (!prev?._id || String(prev._id) !== String(review._id)) return prev;
+                                              if (
+                                                !prev?._id ||
+                                                String(prev._id) !==
+                                                  String(review._id)
+                                              )
+                                                return prev;
                                               return {
                                                 ...prev,
                                                 status: nextStatus,
                                               };
                                             }, false);
                                           } else if (isAdmin) {
-                                            mutateAdminReviews?.((prev: any[] | undefined) => {
-                                              if (!Array.isArray(prev)) return prev;
-                                              return prev.map((r) =>
-                                                String(r._id) === String(review._id)
-                                                  ? {
-                                                      ...r,
-                                                      status: nextStatus,
-                                                    }
-                                                  : r,
-                                              );
-                                            }, false);
+                                            mutateAdminReviews?.(
+                                              (prev: any[] | undefined) => {
+                                                if (!Array.isArray(prev))
+                                                  return prev;
+                                                return prev.map((r) =>
+                                                  String(r._id) ===
+                                                  String(review._id)
+                                                    ? {
+                                                        ...r,
+                                                        status: nextStatus,
+                                                      }
+                                                    : r,
+                                                );
+                                              },
+                                              false,
+                                            );
                                           }
 
                                           try {
-                                            const res = await fetch(`/api/reviews/${review._id}`, {
-                                              method: "PATCH",
-                                              credentials: "include",
-                                              headers: {
-                                                "Content-Type": "application/json",
+                                            const res = await fetch(
+                                              `/api/reviews/${review._id}`,
+                                              {
+                                                method: "PATCH",
+                                                credentials: "include",
+                                                headers: {
+                                                  "Content-Type":
+                                                    "application/json",
+                                                },
+                                                body: JSON.stringify({
+                                                  status: nextStatus,
+                                                }),
                                               },
-                                              body: JSON.stringify({
-                                                status: nextStatus,
-                                              }),
-                                            });
-                                            if (!res.ok) throw new Error("상태 변경 실패");
+                                            );
+                                            if (!res.ok)
+                                              throw new Error("상태 변경 실패");
 
                                             // 탭 유지 + 서버 리프레시
-                                            const params = new URLSearchParams(searchParams.toString());
+                                            const params = new URLSearchParams(
+                                              searchParams.toString(),
+                                            );
                                             params.set("tab", "reviews");
-                                            router.replace(`?${params.toString()}`, { scroll: false });
+                                            router.replace(
+                                              `?${params.toString()}`,
+                                              { scroll: false },
+                                            );
                                             router.refresh();
 
-                                            showSuccessToast(nextStatus === "hidden" ? "비공개로 전환했어요." : "공개로 전환했어요.");
+                                            showSuccessToast(
+                                              nextStatus === "hidden"
+                                                ? "비공개로 전환했어요."
+                                                : "공개로 전환했어요.",
+                                            );
                                           } catch (err: any) {
                                             // 롤백(재검증)
-                                            if (isMine(review)) await mutateMyReview?.();
-                                            else if (isAdmin) await mutateAdminReviews?.();
-                                            showErrorToast(err?.message || "상태 변경에 실패했습니다.");
+                                            if (isMine(review))
+                                              await mutateMyReview?.();
+                                            else if (isAdmin)
+                                              await mutateAdminReviews?.();
+                                            showErrorToast(
+                                              err?.message ||
+                                                "상태 변경에 실패했습니다.",
+                                            );
                                           } finally {
                                             setBusyReviewId(null);
                                           }
@@ -807,7 +1105,9 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                                       </DropdownMenuItem>
 
                                       {/* 수정: 내 리뷰 or 관리자 */}
-                                      <DropdownMenuItem onClick={() => openEdit(review)}>
+                                      <DropdownMenuItem
+                                        onClick={() => openEdit(review)}
+                                      >
                                         <Pencil className="mr-2 h-4 w-4" />
                                         수정하기
                                       </DropdownMenuItem>
@@ -820,26 +1120,44 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                                             className="text-destructive focus:text-destructive"
                                             onClick={async () => {
                                               if (!review?._id) return;
-                                              if (!confirm("정말 삭제할까요?")) return;
+                                              if (!confirm("정말 삭제할까요?"))
+                                                return;
 
-                                              setBusyReviewId(String(review._id));
+                                              setBusyReviewId(
+                                                String(review._id),
+                                              );
                                               try {
-                                                const res = await fetch(`/api/reviews/${review._id}`, {
-                                                  method: "DELETE",
-                                                  credentials: "include",
-                                                });
-                                                if (!res.ok) throw new Error("삭제 실패");
+                                                const res = await fetch(
+                                                  `/api/reviews/${review._id}`,
+                                                  {
+                                                    method: "DELETE",
+                                                    credentials: "include",
+                                                  },
+                                                );
+                                                if (!res.ok)
+                                                  throw new Error("삭제 실패");
 
                                                 // 재검증 + 탭 유지
                                                 await mutateAdminReviews?.();
-                                                const params = new URLSearchParams(searchParams.toString());
+                                                const params =
+                                                  new URLSearchParams(
+                                                    searchParams.toString(),
+                                                  );
                                                 params.set("tab", "reviews");
-                                                router.replace(`?${params.toString()}`, { scroll: false });
+                                                router.replace(
+                                                  `?${params.toString()}`,
+                                                  { scroll: false },
+                                                );
                                                 router.refresh();
 
-                                                showSuccessToast("리뷰를 삭제했어요.");
+                                                showSuccessToast(
+                                                  "리뷰를 삭제했어요.",
+                                                );
                                               } catch (err: any) {
-                                                showErrorToast(err?.message || "리뷰 삭제에 실패했습니다.");
+                                                showErrorToast(
+                                                  err?.message ||
+                                                    "리뷰 삭제에 실패했습니다.",
+                                                );
                                               } finally {
                                                 setBusyReviewId(null);
                                               }
@@ -856,23 +1174,50 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                               </div>
                             </div>
 
-                            {review?.masked ? <MaskedBlock /> : <p className="text-sm text-foreground whitespace-pre-line">{review?.content || ""}</p>}
+                            {review?.masked ? (
+                              <MaskedBlock />
+                            ) : (
+                              <p className="text-sm text-foreground whitespace-pre-line">
+                                {review?.content || ""}
+                              </p>
+                            )}
 
                             {/* 이미지 썸네일 → 뷰어 */}
-                            {Array.isArray(review?.photos) && review.photos.length > 0 ? (
+                            {Array.isArray(review?.photos) &&
+                            review.photos.length > 0 ? (
                               <div className="flex gap-2 overflow-x-auto pb-1">
-                                {review.photos.slice(0, 4).map((src: string, i: number) => (
-                                  <button key={i} type="button" onClick={() => openViewer(review.photos, i)} className="relative h-20 w-20 shrink-0 overflow-hidden rounded-md border border-border bg-muted" title="확대 보기">
-                                    <Image src={src} alt={`리뷰 이미지 ${i + 1}`} fill className="object-cover" />
-                                    {/* 4장 넘어가면 +N 표시 */}
-                                    {i === 3 && review.photos.length > 4 ? <div className="absolute inset-0 bg-foreground/45 flex items-center justify-center text-background text-sm font-semibold">+{review.photos.length - 4}</div> : null}
-                                  </button>
-                                ))}
+                                {review.photos
+                                  .slice(0, 4)
+                                  .map((src: string, i: number) => (
+                                    <button
+                                      key={i}
+                                      type="button"
+                                      onClick={() =>
+                                        openViewer(review.photos, i)
+                                      }
+                                      className="relative h-20 w-20 shrink-0 overflow-hidden rounded-md border border-border bg-muted"
+                                      title="확대 보기"
+                                    >
+                                      <Image
+                                        src={src}
+                                        alt={`리뷰 이미지 ${i + 1}`}
+                                        fill
+                                        className="object-cover"
+                                      />
+                                      {/* 4장 넘어가면 +N 표시 */}
+                                      {i === 3 && review.photos.length > 4 ? (
+                                        <div className="absolute inset-0 bg-foreground/45 flex items-center justify-center text-background text-sm font-semibold">
+                                          +{review.photos.length - 4}
+                                        </div>
+                                      ) : null}
+                                    </button>
+                                  ))}
                               </div>
                             ) : null}
 
                             {/* 작업 중 오버레이 */}
-                            {busyReviewId && String(busyReviewId) === String(review?._id) ? (
+                            {busyReviewId &&
+                            String(busyReviewId) === String(review?._id) ? (
                               <div className="pt-2 flex items-center gap-2 text-xs text-muted-foreground">
                                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
                                 처리 중...
@@ -883,7 +1228,9 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                       ))}
                     </div>
                   ) : (
-                    <div className="rounded-lg border border-border bg-muted p-4 text-muted-foreground md:p-6">아직 등록된 리뷰가 없습니다.</div>
+                    <div className="rounded-lg border border-border bg-muted p-4 text-muted-foreground md:p-6">
+                      아직 등록된 리뷰가 없습니다.
+                    </div>
                   )}
                 </div>
               </TabsContent>
@@ -894,22 +1241,51 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
       </SiteContainer>
 
       {/* 모달성 리뷰 UI는 필요 시점에만 로드 */}
-      {viewerOpen ? <ReviewImageViewerDialog open={viewerOpen} onOpenChange={setViewerOpen} images={viewerImages} index={viewerIndex} onPrev={prevViewer} onNext={nextViewer} /> : null}
+      {viewerOpen ? (
+        <ReviewImageViewerDialog
+          open={viewerOpen}
+          onOpenChange={setViewerOpen}
+          images={viewerImages}
+          index={viewerIndex}
+          onPrev={prevViewer}
+          onNext={nextViewer}
+        />
+      ) : null}
 
       {editOpen && editing ? (
-        <ReviewEditDialog open={editOpen} onOpenChange={setEditOpen} editForm={editForm} setEditForm={setEditForm} hoverRating={hoverRating} setHoverRating={setHoverRating} busy={!!busyReviewId} onClose={closeEdit} onSubmit={submitEdit} />
+        <ReviewEditDialog
+          open={editOpen}
+          onOpenChange={setEditOpen}
+          editForm={editForm}
+          setEditForm={setEditForm}
+          hoverRating={hoverRating}
+          setHoverRating={setHoverRating}
+          busy={!!busyReviewId}
+          onClose={closeEdit}
+          onSubmit={submitEdit}
+        />
       ) : null}
 
       {/* 모바일 전용 하단 Sticky */}
-      <div data-bottom-sticky="1" className="fixed inset-x-0 bottom-0 z-50 md:hidden border-t border-border/60">
+      <div
+        data-bottom-sticky="1"
+        className="fixed inset-x-0 bottom-0 z-50 md:hidden border-t border-border/60"
+      >
         <div className="bg-card shadow-[0_-4px_16px_rgba(0,0,0,0.08)] dark:shadow-[0_-4px_16px_rgba(0,0,0,0.3)]">
           <div className="mx-auto max-w-6xl px-4 py-3 pb-[env(safe-area-inset-bottom)]">
             <div className="flex items-center gap-3 pb-3 border-b border-border/60 dark:border-border/60">
               <div className="relative w-14 h-14 rounded-md overflow-hidden bg-muted dark:bg-card shrink-0 border border-border">
                 {images[0] ? (
-                  <Image src={images[0] || "/placeholder.svg"} alt={`${racketBrandLabel(racket.brand)} ${racket.model}`} fill className="object-cover" />
+                  <Image
+                    src={images[0] || "/placeholder.svg"}
+                    alt={`${racketBrandLabel(racket.brand)} ${racket.model}`}
+                    fill
+                    className="object-cover"
+                  />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">이미지 없음</div>
+                  <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">
+                    이미지 없음
+                  </div>
                 )}
               </div>
 
@@ -918,7 +1294,9 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                   {racketBrandLabel(racket.brand)} {racket.model}
                 </div>
                 <div className="mt-1 flex items-baseline gap-2">
-                  <span className="text-lg font-bold text-foreground">{racket.price?.toLocaleString()}원</span>
+                  <span className="text-lg font-bold text-foreground">
+                    {racket.price?.toLocaleString()}원
+                  </span>
                 </div>
               </div>
             </div>
@@ -926,9 +1304,19 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
             <div className="pt-3 flex gap-2">
               <button
                 type="button"
-                onClick={() => router.push(`/rackets/${racketId}/select-string`)}
+                onClick={() =>
+                  router.push(`/rackets/${racketId}/select-string`)
+                }
                 disabled={!canBuy}
-                title={!canBuy ? (racketId === "" ? "상품 ID가 없어 구매 경로를 만들 수 없습니다." : isAllRented ? "현재 전량 대여중입니다." : "판매가 종료된 상품입니다.") : undefined}
+                title={
+                  !canBuy
+                    ? racketId === ""
+                      ? "상품 ID가 없어 구매 경로를 만들 수 없습니다."
+                      : isAllRented
+                        ? "현재 전량 대여중입니다."
+                        : "판매가 종료된 상품입니다."
+                    : undefined
+                }
                 className={`flex-1 h-12 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 ${canBuy ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground cursor-not-allowed"}`}
               >
                 <ShoppingCart className="h-4 w-4" />
@@ -936,12 +1324,27 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
               </button>
               {racket?.rental?.enabled && !soldOut && racketId !== "" ? (
                 <div className="flex-1 min-w-0">
-                  <RentDialog id={racketId} rental={racket.rental} brand={brandLabel} model={racket.model} autoOpen={autoOpen} full />
+                  <RentDialog
+                    id={racketId}
+                    rental={racket.rental}
+                    brand={brandLabel}
+                    model={racket.model}
+                    autoOpen={autoOpen}
+                    full
+                  />
                 </div>
               ) : (
-                <button type="button" disabled className="flex-1 h-12 rounded-lg border border-border bg-muted dark:bg-card text-muted-foreground font-semibold text-sm cursor-not-allowed flex items-center justify-center gap-2">
+                <button
+                  type="button"
+                  disabled
+                  className="flex-1 h-12 rounded-lg border border-border bg-muted dark:bg-card text-muted-foreground font-semibold text-sm cursor-not-allowed flex items-center justify-center gap-2"
+                >
                   <Calendar className="h-4 w-4" />
-                  {racket?.rental?.enabled === false ? "대여 불가" : soldOut ? "품절" : "대여 불가"}
+                  {racket?.rental?.enabled === false
+                    ? "대여 불가"
+                    : soldOut
+                      ? "품절"
+                      : "대여 불가"}
                 </button>
               )}
             </div>
@@ -951,26 +1354,41 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                 type="button"
                 onClick={toggleCompare}
                 disabled={!racketId}
-                title={!racketId ? "상품 ID가 없어 비교 목록에 담을 수 없습니다." : !isCompared && compareCount >= 4 ? "비교는 최대 4개까지 가능합니다." : undefined}
+                title={
+                  !racketId
+                    ? "상품 ID가 없어 비교 목록에 담을 수 없습니다."
+                    : !isCompared && compareCount >= 4
+                      ? "비교는 최대 4개까지 가능합니다."
+                      : undefined
+                }
                 className={`h-11 rounded-lg border text-sm font-semibold flex items-center justify-center gap-2 ${isCompared ? "border-border bg-secondary text-foreground" : "border-border bg-card text-foreground"} ${!racketId || (!isCompared && compareCount >= 4) ? "opacity-60 cursor-not-allowed" : ""}`}
               >
                 <Scale className="h-4 w-4" />
-                {isCompared ? `비교 선택됨 (${compareCount}/4)` : `비교 담기 (${compareCount}/4)`}
+                {isCompared
+                  ? `비교 선택됨 (${compareCount}/4)`
+                  : `비교 담기 (${compareCount}/4)`}
               </button>
 
               <button
                 type="button"
                 onClick={() => router.push("/rackets/compare")}
                 disabled={compareCount < 2}
-                title={compareCount < 2 ? "비교는 최소 2개부터 가능합니다." : undefined}
+                title={
+                  compareCount < 2
+                    ? "비교는 최소 2개부터 가능합니다."
+                    : undefined
+                }
                 className={`h-11 rounded-lg border text-sm font-semibold flex items-center justify-center gap-2 ${compareCount < 2 ? "border-border bg-muted text-muted-foreground cursor-not-allowed" : "border-border bg-card text-foreground"}`}
               >
                 비교하기
               </button>
             </div>
-            {racket?.rental?.enabled === false && racket?.rental?.disabledReason && (
-              <p className="mt-3 text-sm text-foreground border border-destructive/30 bg-destructive/10 dark:bg-destructive/15 rounded px-3 py-2">대여 불가 사유: {racket.rental.disabledReason}</p>
-            )}
+            {racket?.rental?.enabled === false &&
+              racket?.rental?.disabledReason && (
+                <p className="mt-3 text-sm text-foreground border border-destructive/30 bg-destructive/10 dark:bg-destructive/15 rounded px-3 py-2">
+                  대여 불가 사유: {racket.rental.disabledReason}
+                </p>
+              )}
           </div>
         </div>
       </div>
