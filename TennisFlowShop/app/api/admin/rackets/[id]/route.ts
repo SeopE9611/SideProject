@@ -43,7 +43,12 @@ export async function GET(
   if (!doc) return NextResponse.json({ message: "Not Found" }, { status: 404 });
   return NextResponse.json({
     ...doc,
-    shippingFee: normalizeItemShippingFee((doc as Record<string, unknown>).shippingFee),
+    marketing: normalizeRacketMarketing(
+      (doc as Record<string, unknown>).marketing,
+    ),
+    shippingFee: normalizeItemShippingFee(
+      (doc as Record<string, unknown>).shippingFee,
+    ),
     id: doc._id.toString(),
     _id: undefined,
   });
@@ -124,8 +129,19 @@ export async function PATCH(
       disabledReason: enabled ? "" : disabledReason,
     },
     quantity: Math.max(1, Number(body.quantity ?? 1)),
+    marketing: normalizeRacketMarketing(body.marketing),
     updatedAt: new Date(),
   };
+
+  if (
+    set.marketing.isSale &&
+    (set.marketing.salePrice < 1 || set.marketing.salePrice >= set.price)
+  ) {
+    return NextResponse.json(
+      { message: "할인가는 1원 이상이며 정가보다 낮아야 합니다." },
+      { status: 400 },
+    );
+  }
 
   if (!set.brand || !set.model) {
     return NextResponse.json(
@@ -261,4 +277,12 @@ export async function DELETE(
     req,
   );
   return NextResponse.json({ ok: true });
+}
+function normalizeRacketMarketing(value: any) {
+  return {
+    isFeatured: value?.isFeatured === true,
+    isNew: value?.isNew === true,
+    isSale: value?.isSale === true,
+    salePrice: Math.max(0, Number(value?.salePrice ?? 0) || 0),
+  };
 }

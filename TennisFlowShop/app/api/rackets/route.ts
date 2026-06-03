@@ -3,6 +3,14 @@ import clientPromise from "@/lib/mongodb";
 import type { Sort } from "mongodb";
 
 export const dynamic = "force-dynamic";
+function normalizeRacketMarketing(value: any) {
+  return {
+    isFeatured: value?.isFeatured === true,
+    isNew: value?.isNew === true,
+    isSale: value?.isSale === true,
+    salePrice: Math.max(0, Number(value?.salePrice ?? 0) || 0),
+  };
+}
 
 // - 관리자/사용자 공용 목록(최소형): status !== 'inactive' 만 노출
 // - 쿼리 파라미터(brand/condition/min/max/minPrice/maxPrice/sort) 지원
@@ -118,6 +126,7 @@ export async function GET(req: Request) {
     purchaseCount: 1,
     salesCount: 1,
     orderCount: 1,
+    marketing: 1,
   });
 
   cursor = cursor.sort(sort);
@@ -133,7 +142,11 @@ export async function GET(req: Request) {
   // _id는 제거하고 id만 내려주기(깔끔)
   const items = docs.map((r: any) => {
     const { _id, ...rest } = r;
-    return { ...rest, id: String(_id) };
+    return {
+      ...rest,
+      marketing: normalizeRacketMarketing((rest as any).marketing),
+      id: String(_id),
+    };
   });
 
   // 기본(기존 호환): 배열 그대로 반환

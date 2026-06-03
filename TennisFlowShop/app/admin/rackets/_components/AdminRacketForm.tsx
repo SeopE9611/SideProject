@@ -4,13 +4,36 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { FormField, FormFieldGroup, FormSection, StepIndicator, StepNavigation, StepProgress, type Step } from "@/components/admin/product-form";
+import {
+  FormField,
+  FormFieldGroup,
+  FormSection,
+  StepIndicator,
+  StepNavigation,
+  StepProgress,
+  type Step,
+} from "@/components/admin/product-form";
 import { Boxes, DollarSign, FileText, ImageIcon, Settings } from "lucide-react";
 import ImageUploader from "@/components/admin/ImageUploader";
-import { GRIP_SIZE_OPTIONS, RACKET_BRANDS, STRING_PATTERN_OPTIONS, normalizeAndValidateGripSize, normalizeAndValidateStringPattern, racketBrandLabel, racketStatusLabel, type RacketBrand } from "@/lib/constants";
+import {
+  GRIP_SIZE_OPTIONS,
+  RACKET_BRANDS,
+  STRING_PATTERN_OPTIONS,
+  normalizeAndValidateGripSize,
+  normalizeAndValidateStringPattern,
+  racketBrandLabel,
+  racketStatusLabel,
+  type RacketBrand,
+} from "@/lib/constants";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { asRecord, safeNumber } from "@/lib/admin/parsers";
 import { useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
@@ -19,66 +42,893 @@ type BrandState = RacketBrand | "";
 const MODEL_MIN = 2;
 const MODEL_MAX = 80;
 const PRICE_MIN = 1;
-const isFiniteNumber = (v: unknown) => Number.isFinite(safeNumber(v, Number.NaN));
+const isFiniteNumber = (v: unknown) =>
+  Number.isFinite(safeNumber(v, Number.NaN));
 const nonNegative = (v: unknown) => isFiniteNumber(v) && safeNumber(v) >= 0;
-const positiveOrNull = (v: unknown) => (v == null || v === "" ? true : isFiniteNumber(v) && safeNumber(v) >= 1);
+const positiveOrNull = (v: unknown) =>
+  v == null || v === "" ? true : isFiniteNumber(v) && safeNumber(v) >= 1;
 
 const STEPS: Step[] = [
   { id: "basic", label: "기본 정보", icon: <FileText className="h-4 w-4" /> },
   { id: "specs", label: "상세 스펙", icon: <Settings className="h-4 w-4" /> },
-  { id: "rental", label: "대여/재고", icon: <DollarSign className="h-4 w-4" /> },
+  {
+    id: "rental",
+    label: "판매/대여/재고",
+    icon: <DollarSign className="h-4 w-4" />,
+  },
   { id: "images", label: "이미지", icon: <ImageIcon className="h-4 w-4" /> },
 ];
 
 export type RacketForm = {
-  brand: BrandState; model: string; year: number | null; price: number; shippingFee: number; condition: "A" | "B" | "C"; status: "available" | "rented" | "sold" | "inactive";
-  spec: { weight: number | null; balance: number | null; headSize: number | null; lengthIn: number | null; swingWeight: number | null; stiffnessRa: number | null; pattern: string; gripSize: string; };
-  rental: { enabled: boolean; deposit: number; fee: { d7: number; d15: number; d30: number }; disabledReason?: string; };
-  images: string[]; quantity: number; searchKeywords?: string[];
+  brand: BrandState;
+  model: string;
+  year: number | null;
+  price: number;
+  shippingFee: number;
+  condition: "A" | "B" | "C";
+  status: "available" | "rented" | "sold" | "inactive";
+  spec: {
+    weight: number | null;
+    balance: number | null;
+    headSize: number | null;
+    lengthIn: number | null;
+    swingWeight: number | null;
+    stiffnessRa: number | null;
+    pattern: string;
+    gripSize: string;
+  };
+  rental: {
+    enabled: boolean;
+    deposit: number;
+    fee: { d7: number; d15: number; d30: number };
+    disabledReason?: string;
+  };
+  marketing: {
+    isFeatured: boolean;
+    isNew: boolean;
+    isSale: boolean;
+    salePrice: number;
+  };
+  images: string[];
+  quantity: number;
+  searchKeywords?: string[];
 };
-type RacketCondition = RacketForm["condition"]; type RacketStatus = RacketForm["status"];
-const RACKET_CONDITIONS: readonly RacketCondition[] = ["A", "B", "C"]; const RACKET_STATUSES: readonly RacketStatus[] = ["available", "rented", "sold", "inactive"];
-const toCondition = (v: unknown): RacketCondition => (RACKET_CONDITIONS.includes(v as RacketCondition) ? (v as RacketCondition) : "B");
-const toStatus = (v: unknown): RacketStatus => (RACKET_STATUSES.includes(v as RacketStatus) ? (v as RacketStatus) : "available");
-const toNullableNumber = (v: unknown): number | null => { const n = safeNumber(v, Number.NaN); return Number.isFinite(n) ? n : null; };
-const getInitialPattern = (v: unknown) => normalizeAndValidateStringPattern(String(v ?? ""));
-const getInitialGripSize = (v: unknown) => normalizeAndValidateGripSize(String(v ?? ""));
+type RacketCondition = RacketForm["condition"];
+type RacketStatus = RacketForm["status"];
+const RACKET_CONDITIONS: readonly RacketCondition[] = ["A", "B", "C"];
+const RACKET_STATUSES: readonly RacketStatus[] = [
+  "available",
+  "rented",
+  "sold",
+  "inactive",
+];
+const toCondition = (v: unknown): RacketCondition =>
+  RACKET_CONDITIONS.includes(v as RacketCondition)
+    ? (v as RacketCondition)
+    : "B";
+const toStatus = (v: unknown): RacketStatus =>
+  RACKET_STATUSES.includes(v as RacketStatus)
+    ? (v as RacketStatus)
+    : "available";
+const toNullableNumber = (v: unknown): number | null => {
+  const n = safeNumber(v, Number.NaN);
+  return Number.isFinite(n) ? n : null;
+};
+const getInitialPattern = (v: unknown) =>
+  normalizeAndValidateStringPattern(String(v ?? ""));
+const getInitialGripSize = (v: unknown) =>
+  normalizeAndValidateGripSize(String(v ?? ""));
 
-export default function AdminRacketForm({ initial, submitLabel, onSubmit }: { initial?: Partial<RacketForm>; submitLabel: string; onSubmit: (data: RacketForm) => Promise<void> }) {
-  const [form, setForm] = useState<RacketForm>({ brand: (initial?.brand as BrandState) ?? "", model: initial?.model ?? "", year: initial?.year ?? null, price: initial?.price ?? 0, shippingFee: initial?.shippingFee ?? 3000, quantity: initial?.quantity ?? 1, condition: toCondition(initial?.condition), status: toStatus(initial?.status), spec: { weight: initial?.spec?.weight ?? null, balance: initial?.spec?.balance ?? null, headSize: initial?.spec?.headSize ?? null, lengthIn: toNullableNumber(asRecord(initial?.spec).lengthIn), swingWeight: toNullableNumber(asRecord(initial?.spec).swingWeight), stiffnessRa: toNullableNumber(asRecord(initial?.spec).stiffnessRa), pattern: getInitialPattern(initial?.spec?.pattern), gripSize: getInitialGripSize(initial?.spec?.gripSize) }, rental: { enabled: initial?.rental?.enabled ?? false, deposit: initial?.rental?.deposit ?? 0, fee: { d7: initial?.rental?.fee?.d7 ?? 0, d15: initial?.rental?.fee?.d15 ?? 0, d30: initial?.rental?.fee?.d30 ?? 0 }, disabledReason: initial?.rental?.disabledReason ?? "" }, images: Array.isArray(initial?.images) ? initial.images : [] });
-  const [searchKeywordsText, setSearchKeywordsText] = useState(Array.isArray(initial?.searchKeywords) ? initial.searchKeywords.join(", ") : "");
-  const [loading, setLoading] = useState(false); const [currentStepIndex, setCurrentStepIndex] = useState(0); const [completedSteps, setCompletedSteps] = useState<string[]>([]);
-  const currentStep = STEPS[currentStepIndex]; const submitRef = useRef(false); const stepContentRef = useRef<HTMLDivElement | null>(null); const shouldScrollAfterStepChangeRef = useRef(false);
-  const baselineRef = useRef<string | null>(null); const snapshot = useMemo(() => JSON.stringify({ form, searchKeywordsText }), [form, searchKeywordsText]);
-  useEffect(() => { if (baselineRef.current === null) baselineRef.current = snapshot; }, [snapshot]);
-  useUnsavedChangesGuard(baselineRef.current !== null && baselineRef.current !== snapshot && !loading);
+export default function AdminRacketForm({
+  initial,
+  submitLabel,
+  onSubmit,
+}: {
+  initial?: Partial<RacketForm>;
+  submitLabel: string;
+  onSubmit: (data: RacketForm) => Promise<void>;
+}) {
+  const [form, setForm] = useState<RacketForm>({
+    brand: (initial?.brand as BrandState) ?? "",
+    model: initial?.model ?? "",
+    year: initial?.year ?? null,
+    price: initial?.price ?? 0,
+    shippingFee: initial?.shippingFee ?? 3000,
+    quantity: initial?.quantity ?? 1,
+    condition: toCondition(initial?.condition),
+    status: toStatus(initial?.status),
+    spec: {
+      weight: initial?.spec?.weight ?? null,
+      balance: initial?.spec?.balance ?? null,
+      headSize: initial?.spec?.headSize ?? null,
+      lengthIn: toNullableNumber(asRecord(initial?.spec).lengthIn),
+      swingWeight: toNullableNumber(asRecord(initial?.spec).swingWeight),
+      stiffnessRa: toNullableNumber(asRecord(initial?.spec).stiffnessRa),
+      pattern: getInitialPattern(initial?.spec?.pattern),
+      gripSize: getInitialGripSize(initial?.spec?.gripSize),
+    },
+    rental: {
+      enabled: initial?.rental?.enabled ?? false,
+      deposit: initial?.rental?.deposit ?? 0,
+      fee: {
+        d7: initial?.rental?.fee?.d7 ?? 0,
+        d15: initial?.rental?.fee?.d15 ?? 0,
+        d30: initial?.rental?.fee?.d30 ?? 0,
+      },
+      disabledReason: initial?.rental?.disabledReason ?? "",
+    },
+    marketing: {
+      isFeatured: initial?.marketing?.isFeatured ?? false,
+      isNew: initial?.marketing?.isNew ?? false,
+      isSale: initial?.marketing?.isSale ?? false,
+      salePrice: initial?.marketing?.salePrice ?? 0,
+    },
+    images: Array.isArray(initial?.images) ? initial.images : [],
+  });
+  const [searchKeywordsText, setSearchKeywordsText] = useState(
+    Array.isArray(initial?.searchKeywords)
+      ? initial.searchKeywords.join(", ")
+      : "",
+  );
+  const [loading, setLoading] = useState(false);
+  const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  const [completedSteps, setCompletedSteps] = useState<string[]>([]);
+  const currentStep = STEPS[currentStepIndex];
+  const submitRef = useRef(false);
+  const stepContentRef = useRef<HTMLDivElement | null>(null);
+  const shouldScrollAfterStepChangeRef = useRef(false);
+  const baselineRef = useRef<string | null>(null);
+  const snapshot = useMemo(
+    () => JSON.stringify({ form, searchKeywordsText }),
+    [form, searchKeywordsText],
+  );
   useEffect(() => {
-    if (!shouldScrollAfterStepChangeRef.current || !stepContentRef.current) return; shouldScrollAfterStepChangeRef.current = false;
-    requestAnimationFrame(() => { stepContentRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }); const f = stepContentRef.current?.querySelector<HTMLElement>("input:not([type='hidden']):not([type='file']):not([disabled]), textarea:not([disabled]), button[role='combobox']:not([disabled]), [data-radix-select-trigger]:not([disabled])"); f?.focus?.({ preventScroll: true }); });
+    if (baselineRef.current === null) baselineRef.current = snapshot;
+  }, [snapshot]);
+  useUnsavedChangesGuard(
+    baselineRef.current !== null &&
+      baselineRef.current !== snapshot &&
+      !loading,
+  );
+  useEffect(() => {
+    if (!shouldScrollAfterStepChangeRef.current || !stepContentRef.current)
+      return;
+    shouldScrollAfterStepChangeRef.current = false;
+    requestAnimationFrame(() => {
+      stepContentRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+      const f = stepContentRef.current?.querySelector<HTMLElement>(
+        "input:not([type='hidden']):not([type='file']):not([disabled]), textarea:not([disabled]), button[role='combobox']:not([disabled]), [data-radix-select-trigger]:not([disabled])",
+      );
+      f?.focus?.({ preventScroll: true });
+    });
   }, [currentStepIndex]);
-  const go = (i: number) => { if (i < 0 || i >= STEPS.length) return; shouldScrollAfterStepChangeRef.current = true; setCurrentStepIndex(i); };
-
-  const validateAndBuild = () => {
-    const modelTrim = form.model.trim(); const patternTrim = form.spec.pattern.trim(); const gripTrim = form.spec.gripSize.trim();
-    if (!form.brand) return [0, "브랜드를 선택하세요."] as const; if (!modelTrim || modelTrim.length < MODEL_MIN || modelTrim.length > MODEL_MAX) return [0, `모델명은 ${MODEL_MIN}~${MODEL_MAX}자입니다.`] as const;
-    if (!isFiniteNumber(form.price) || Number(form.price) < PRICE_MIN) return [0, `가격은 ${PRICE_MIN}원 이상 입력하세요.`] as const; if (!nonNegative(form.shippingFee)) return [0, "배송비는 0 이상 숫자만 입력하세요."] as const;
-    if (!isFiniteNumber(form.quantity) || Number(form.quantity) < 1) return [2, "보유 수량은 1 이상이어야 합니다."] as const;
-    if (form.year != null) { const y = Number(form.year); const now = new Date().getFullYear(); if (!Number.isFinite(y) || y < 1900 || y > now + 1) return [0, "연식(year)이 유효하지 않습니다."] as const; }
-    if (!positiveOrNull(form.spec.weight) || !positiveOrNull(form.spec.balance) || !positiveOrNull(form.spec.headSize) || !positiveOrNull(form.spec.lengthIn) || !positiveOrNull(form.spec.swingWeight) || !positiveOrNull(form.spec.stiffnessRa)) return [1, "스펙 수치는 1 이상 숫자만 입력하세요."] as const;
-    const normalizedPattern = normalizeAndValidateStringPattern(patternTrim); const normalizedGripSize = normalizeAndValidateGripSize(gripTrim);
-    if (!normalizedPattern || !normalizedGripSize) return [1, "스트링 패턴/그립 사이즈를 선택하세요."] as const;
-    if (!form.rental.enabled && !form.rental.disabledReason?.trim()) return [2, "대여 불가 사유를 입력하세요."] as const;
-    if (form.rental.enabled && (!nonNegative(form.rental.deposit) || !nonNegative(form.rental.fee.d7) || !nonNegative(form.rental.fee.d15) || !nonNegative(form.rental.fee.d30))) return [2, "보증금/대여료는 0 이상 숫자만 입력하세요."] as const;
-    return [null, { ...form, model: modelTrim, year: form.year != null ? Number(form.year) : null, price: Number(form.price || 0), shippingFee: Math.max(0, Number(form.shippingFee || 0)), quantity: Math.max(1, Number(form.quantity || 1)), spec: { ...form.spec, weight: form.spec.weight != null ? Number(form.spec.weight) : null, balance: form.spec.balance != null ? Number(form.spec.balance) : null, headSize: form.spec.headSize != null ? Number(form.spec.headSize) : null, lengthIn: form.spec.lengthIn != null ? Number(form.spec.lengthIn) : null, swingWeight: form.spec.swingWeight != null ? Number(form.spec.swingWeight) : null, stiffnessRa: form.spec.stiffnessRa != null ? Number(form.spec.stiffnessRa) : null, pattern: normalizedPattern, gripSize: normalizedGripSize }, rental: { enabled: !!form.rental.enabled, deposit: Number(form.rental.deposit || 0), fee: { d7: Number(form.rental.fee.d7 || 0), d15: Number(form.rental.fee.d15 || 0), d30: Number(form.rental.fee.d30 || 0) }, disabledReason: form.rental.enabled ? "" : form.rental.disabledReason?.trim() || "" }, images: form.images || [], searchKeywords: searchKeywordsText.split(",").map((k) => k.trim()).filter(Boolean) }] as const;
+  const go = (i: number) => {
+    if (i < 0 || i >= STEPS.length) return;
+    shouldScrollAfterStepChangeRef.current = true;
+    setCurrentStepIndex(i);
   };
 
-  return <form onSubmit={async (e) => { e.preventDefault(); if (currentStep.id !== "images") return; if (loading || submitRef.current) return; const [step, payloadOrMessage] = validateAndBuild(); if (typeof step === "number") { go(step); showErrorToast(payloadOrMessage as string); return; } setLoading(true); submitRef.current = true; try { await onSubmit(payloadOrMessage as RacketForm); baselineRef.current = JSON.stringify({ form: payloadOrMessage, searchKeywordsText }); showSuccessToast("저장되었습니다."); } catch { showErrorToast("저장 중 오류가 발생했습니다."); } finally { setLoading(false); submitRef.current = false; } }} className="space-y-6">
-    <div className="rounded-2xl border border-border/60 bg-card/80 p-6 shadow-sm"><div className="flex items-center justify-between"><h3 className="text-lg font-semibold">{initial ? "라켓 수정" : "라켓 등록"}</h3><StepIndicator current={currentStepIndex + 1} total={STEPS.length} /></div><p className="text-sm text-muted-foreground mt-1">{initial ? "라켓 정보를 수정해주세요." : "새 라켓 정보를 입력해주세요."}</p><div className="mt-4"><StepProgress steps={STEPS} currentStep={currentStep.id} completedSteps={completedSteps} onStepClick={(id) => { const idx = STEPS.findIndex((s) => s.id === id); if (idx >= 0) go(idx); }} /></div></div>
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]"><div ref={stepContentRef}>{currentStep.id === "basic" && <FormSection title="기본 정보" description="라켓의 기본 정보를 입력하세요" icon={<FileText className="h-4 w-4" />}><FormFieldGroup columns={2}><FormField label="브랜드" required><Select value={form.brand} onValueChange={(v: RacketBrand) => setForm({ ...form, brand: v })}><SelectTrigger><SelectValue placeholder="브랜드 선택" /></SelectTrigger><SelectContent>{RACKET_BRANDS.map((b) => <SelectItem key={b.value} value={b.value}>{b.label}</SelectItem>)}</SelectContent></Select></FormField><FormField label="모델" required><Input value={form.model} onChange={(e) => setForm({ ...form, model: e.target.value })} /></FormField><FormField label="연식"><Input type="number" value={form.year ?? ""} onChange={(e) => setForm({ ...form, year: e.target.value ? Number(e.target.value) : null })} /></FormField><FormField label="가격(원)" required><Input type="number" value={form.price} onChange={(e) => setForm({ ...form, price: Number(e.target.value || 0) })} /></FormField><FormField label="배송비(원)"><Input type="number" min={0} value={form.shippingFee} onChange={(e) => setForm({ ...form, shippingFee: Math.max(0, Number(e.target.value || 0)) })} /></FormField><FormField label="보유 수량"><Input type="number" min={1} value={form.quantity} onChange={(e) => setForm({ ...form, quantity: Math.max(1, Number(e.target.value || 1)) })} /></FormField><FormField label="상태 등급"><Select value={form.condition} onValueChange={(value: RacketCondition) => setForm({ ...form, condition: value })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="A">A급</SelectItem><SelectItem value="B">B급</SelectItem><SelectItem value="C">C급</SelectItem></SelectContent></Select></FormField><FormField label="판매 상태"><Select value={form.status} onValueChange={(value: RacketStatus) => setForm({ ...form, status: value })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="available">판매가능</SelectItem><SelectItem value="rented">대여중</SelectItem><SelectItem value="sold">판매완료</SelectItem><SelectItem value="inactive">비노출</SelectItem></SelectContent></Select></FormField></FormFieldGroup><FormField label="검색 키워드" className="mt-6"><Input value={searchKeywordsText} onChange={(e) => setSearchKeywordsText(e.target.value)} /></FormField></FormSection>}
-      {currentStep.id === "specs" && <FormSection title="상세 스펙" description="라켓 상세 스펙" icon={<Settings className="h-4 w-4" />}><FormFieldGroup columns={2}><FormField label="무게(g)"><Input type="number" value={form.spec.weight ?? ""} onChange={(e) => setForm({ ...form, spec: { ...form.spec, weight: e.target.value ? Number(e.target.value) : null } })} /></FormField><FormField label="밸런스(mm)"><Input type="number" value={form.spec.balance ?? ""} onChange={(e) => setForm({ ...form, spec: { ...form.spec, balance: e.target.value ? Number(e.target.value) : null } })} /></FormField><FormField label="헤드 사이즈(in²)"><Input type="number" value={form.spec.headSize ?? ""} onChange={(e) => setForm({ ...form, spec: { ...form.spec, headSize: e.target.value ? Number(e.target.value) : null } })} /></FormField><FormField label="길이(in)"><Input type="number" value={form.spec.lengthIn ?? ""} onChange={(e) => setForm({ ...form, spec: { ...form.spec, lengthIn: e.target.value ? Number(e.target.value) : null } })} /></FormField><FormField label="스윙웨이트"><Input type="number" value={form.spec.swingWeight ?? ""} onChange={(e) => setForm({ ...form, spec: { ...form.spec, swingWeight: e.target.value ? Number(e.target.value) : null } })} /></FormField><FormField label="강성(RA)"><Input type="number" value={form.spec.stiffnessRa ?? ""} onChange={(e) => setForm({ ...form, spec: { ...form.spec, stiffnessRa: e.target.value ? Number(e.target.value) : null } })} /></FormField><FormField label="스트링 패턴"><Select value={form.spec.pattern || undefined} onValueChange={(v) => setForm({ ...form, spec: { ...form.spec, pattern: v } })}><SelectTrigger><SelectValue placeholder="선택" /></SelectTrigger><SelectContent>{STRING_PATTERN_OPTIONS.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent></Select></FormField><FormField label="그립 사이즈"><Select value={form.spec.gripSize || undefined} onValueChange={(v) => setForm({ ...form, spec: { ...form.spec, gripSize: v } })}><SelectTrigger><SelectValue placeholder="선택" /></SelectTrigger><SelectContent>{GRIP_SIZE_OPTIONS.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent></Select></FormField></FormFieldGroup></FormSection>}
-      {currentStep.id === "rental" && <FormSection title="대여/재고 설정" description="대여 상태 및 요금 설정" icon={<DollarSign className="h-4 w-4" />}><div className="flex items-center justify-between mb-4"><Label>대여 가능</Label><Switch checked={form.rental.enabled} onCheckedChange={(checked) => setForm({ ...form, rental: { ...form.rental, enabled: checked } })} /></div>{!form.rental.enabled ? <FormField label="대여 불가 사유"><Textarea value={form.rental.disabledReason} onChange={(e) => setForm({ ...form, rental: { ...form.rental, disabledReason: e.target.value } })} /></FormField> : <FormFieldGroup columns={2}><FormField label="보증금"><Input type="number" value={form.rental.deposit} onChange={(e) => setForm({ ...form, rental: { ...form.rental, deposit: Number(e.target.value || 0) } })} /></FormField><FormField label="7일 대여료"><Input type="number" value={form.rental.fee.d7} onChange={(e) => setForm({ ...form, rental: { ...form.rental, fee: { ...form.rental.fee, d7: Number(e.target.value || 0) } } })} /></FormField><FormField label="15일 대여료"><Input type="number" value={form.rental.fee.d15} onChange={(e) => setForm({ ...form, rental: { ...form.rental, fee: { ...form.rental.fee, d15: Number(e.target.value || 0) } } })} /></FormField><FormField label="30일 대여료"><Input type="number" value={form.rental.fee.d30} onChange={(e) => setForm({ ...form, rental: { ...form.rental, fee: { ...form.rental.fee, d30: Number(e.target.value || 0) } } })} /></FormField></FormFieldGroup>}</FormSection>}
-      {currentStep.id === "images" && <FormSection title="이미지" description="이미지 업로드/대표 설정" icon={<ImageIcon className="h-4 w-4" />}><ImageUploader value={form.images} onChange={(next) => setForm({ ...form, images: next })} max={10} variant="racket" enablePrimary /></FormSection>}
-      </div><div className="hidden lg:block"><div className="sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto rounded-2xl border border-border/60 bg-card/80 p-4 shadow-sm"><h4 className="font-semibold mb-3">라켓 미리보기</h4><div className="space-y-2 text-sm"><p><b>{form.model || "모델명 미입력"}</b></p><p>{form.brand ? racketBrandLabel(form.brand) : "브랜드 미선택"}</p><p>가격: {Number(form.price || 0).toLocaleString()}원</p><p>대여: {form.rental.enabled ? "가능" : "불가"}</p><p>보증금: {Number(form.rental.deposit || 0).toLocaleString()}원</p><p>요금: 7일 {form.rental.fee.d7.toLocaleString()} / 15일 {form.rental.fee.d15.toLocaleString()} / 30일 {form.rental.fee.d30.toLocaleString()}</p><p>재고: {form.quantity}</p><p>상태: {racketStatusLabel(form.status)}</p><p>이미지: {form.images.length}장</p><div className="pt-2 flex flex-wrap gap-2"><Badge variant="secondary">무게 {form.spec.weight ?? "-"}</Badge><Badge variant="secondary">밸런스 {form.spec.balance ?? "-"}</Badge><Badge variant="secondary">헤드 {form.spec.headSize ?? "-"}</Badge><Badge variant="secondary">패턴 {form.spec.pattern || "-"}</Badge><Badge variant="secondary">그립 {form.spec.gripSize || "-"}</Badge></div></div></div></div></div>
-    <StepNavigation currentStepIndex={currentStepIndex} totalSteps={STEPS.length} isSubmitting={loading} submitLabel={submitLabel} backHref="/admin/rackets" onPrevious={() => { setCompletedSteps((prev) => prev.filter((id) => id !== currentStep.id)); go(currentStepIndex - 1); }} onNext={() => { setCompletedSteps((prev) => Array.from(new Set([...prev, currentStep.id]))); go(currentStepIndex + 1); }} onSubmit={() => undefined} />
-  </form>;
+  const validateAndBuild = () => {
+    const modelTrim = form.model.trim();
+    const patternTrim = form.spec.pattern.trim();
+    const gripTrim = form.spec.gripSize.trim();
+    if (!form.brand) return [0, "브랜드를 선택하세요."] as const;
+    if (
+      !modelTrim ||
+      modelTrim.length < MODEL_MIN ||
+      modelTrim.length > MODEL_MAX
+    )
+      return [0, `모델명은 ${MODEL_MIN}~${MODEL_MAX}자입니다.`] as const;
+    if (!isFiniteNumber(form.price) || Number(form.price) < PRICE_MIN)
+      return [2, `가격은 ${PRICE_MIN}원 이상 입력하세요.`] as const;
+    if (!nonNegative(form.shippingFee))
+      return [2, "배송비는 0 이상 숫자만 입력하세요."] as const;
+    if (!isFiniteNumber(form.quantity) || Number(form.quantity) < 1)
+      return [2, "보유 수량은 1 이상이어야 합니다."] as const;
+    if (form.year != null) {
+      const y = Number(form.year);
+      const now = new Date().getFullYear();
+      if (!Number.isFinite(y) || y < 1900 || y > now + 1)
+        return [0, "연식(year)이 유효하지 않습니다."] as const;
+    }
+    if (
+      !positiveOrNull(form.spec.weight) ||
+      !positiveOrNull(form.spec.balance) ||
+      !positiveOrNull(form.spec.headSize) ||
+      !positiveOrNull(form.spec.lengthIn) ||
+      !positiveOrNull(form.spec.swingWeight) ||
+      !positiveOrNull(form.spec.stiffnessRa)
+    )
+      return [1, "스펙 수치는 1 이상 숫자만 입력하세요."] as const;
+    const normalizedPattern = normalizeAndValidateStringPattern(patternTrim);
+    const normalizedGripSize = normalizeAndValidateGripSize(gripTrim);
+    if (!normalizedPattern || !normalizedGripSize)
+      return [1, "스트링 패턴/그립 사이즈를 선택하세요."] as const;
+    if (!form.rental.enabled && !form.rental.disabledReason?.trim())
+      return [2, "대여 불가 사유를 입력하세요."] as const;
+    if (
+      form.rental.enabled &&
+      (!nonNegative(form.rental.deposit) ||
+        !nonNegative(form.rental.fee.d7) ||
+        !nonNegative(form.rental.fee.d15) ||
+        !nonNegative(form.rental.fee.d30))
+    )
+      return [2, "보증금/대여료는 0 이상 숫자만 입력하세요."] as const;
+    if (
+      form.marketing.isSale &&
+      (!isFiniteNumber(form.marketing.salePrice) ||
+        Number(form.marketing.salePrice) < 1)
+    )
+      return [2, "할인 상품은 할인가를 1원 이상 입력하세요."] as const;
+    if (
+      form.marketing.isSale &&
+      Number(form.marketing.salePrice) >= Number(form.price)
+    )
+      return [2, "할인가는 정가보다 낮아야 합니다."] as const;
+    return [
+      null,
+      {
+        ...form,
+        model: modelTrim,
+        year: form.year != null ? Number(form.year) : null,
+        price: Number(form.price || 0),
+        shippingFee: Math.max(0, Number(form.shippingFee || 0)),
+        quantity: Math.max(1, Number(form.quantity || 1)),
+        spec: {
+          ...form.spec,
+          weight: form.spec.weight != null ? Number(form.spec.weight) : null,
+          balance: form.spec.balance != null ? Number(form.spec.balance) : null,
+          headSize:
+            form.spec.headSize != null ? Number(form.spec.headSize) : null,
+          lengthIn:
+            form.spec.lengthIn != null ? Number(form.spec.lengthIn) : null,
+          swingWeight:
+            form.spec.swingWeight != null
+              ? Number(form.spec.swingWeight)
+              : null,
+          stiffnessRa:
+            form.spec.stiffnessRa != null
+              ? Number(form.spec.stiffnessRa)
+              : null,
+          pattern: normalizedPattern,
+          gripSize: normalizedGripSize,
+        },
+        rental: {
+          enabled: !!form.rental.enabled,
+          deposit: Number(form.rental.deposit || 0),
+          fee: {
+            d7: Number(form.rental.fee.d7 || 0),
+            d15: Number(form.rental.fee.d15 || 0),
+            d30: Number(form.rental.fee.d30 || 0),
+          },
+          disabledReason: form.rental.enabled
+            ? ""
+            : form.rental.disabledReason?.trim() || "",
+        },
+        images: form.images || [],
+        searchKeywords: searchKeywordsText
+          .split(",")
+          .map((k) => k.trim())
+          .filter(Boolean),
+      },
+    ] as const;
+  };
+
+  return (
+    <form
+      onSubmit={async (e) => {
+        e.preventDefault();
+        if (currentStep.id !== "images") return;
+        if (loading || submitRef.current) return;
+        const [step, payloadOrMessage] = validateAndBuild();
+        if (typeof step === "number") {
+          go(step);
+          showErrorToast(payloadOrMessage as string);
+          return;
+        }
+        setLoading(true);
+        submitRef.current = true;
+        try {
+          await onSubmit(payloadOrMessage as RacketForm);
+          baselineRef.current = JSON.stringify({
+            form: payloadOrMessage,
+            searchKeywordsText,
+          });
+          showSuccessToast("저장되었습니다.");
+        } catch {
+          showErrorToast("저장 중 오류가 발생했습니다.");
+        } finally {
+          setLoading(false);
+          submitRef.current = false;
+        }
+      }}
+      className="space-y-6"
+    >
+      <div className="rounded-2xl border border-border/60 bg-card/80 p-6 shadow-sm">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold">
+            {initial ? "라켓 수정" : "라켓 등록"}
+          </h3>
+          <StepIndicator current={currentStepIndex + 1} total={STEPS.length} />
+        </div>
+        <p className="text-sm text-muted-foreground mt-1">
+          {initial
+            ? "라켓 정보를 수정해주세요."
+            : "새 라켓 정보를 입력해주세요."}
+        </p>
+        <div className="mt-4">
+          <StepProgress
+            steps={STEPS}
+            currentStep={currentStep.id}
+            completedSteps={completedSteps}
+            onStepClick={(id) => {
+              const idx = STEPS.findIndex((s) => s.id === id);
+              if (idx >= 0) go(idx);
+            }}
+          />
+        </div>
+      </div>
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <div ref={stepContentRef}>
+          {currentStep.id === "basic" && (
+            <FormSection
+              title="기본 정보"
+              description="라켓의 기본 정보를 입력하세요"
+              icon={<FileText className="h-4 w-4" />}
+            >
+              <FormFieldGroup columns={2}>
+                <FormField label="브랜드" required>
+                  <Select
+                    value={form.brand}
+                    onValueChange={(v: RacketBrand) =>
+                      setForm({ ...form, brand: v })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="브랜드 선택" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {RACKET_BRANDS.map((b) => (
+                        <SelectItem key={b.value} value={b.value}>
+                          {b.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormField>
+                <FormField label="모델" required>
+                  <Input
+                    value={form.model}
+                    onChange={(e) =>
+                      setForm({ ...form, model: e.target.value })
+                    }
+                  />
+                </FormField>
+                <FormField label="연식">
+                  <Input
+                    type="number"
+                    value={form.year ?? ""}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        year: e.target.value ? Number(e.target.value) : null,
+                      })
+                    }
+                  />
+                </FormField>
+                <FormField label="상태 등급">
+                  <Select
+                    value={form.condition}
+                    onValueChange={(value: RacketCondition) =>
+                      setForm({ ...form, condition: value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="A">A급</SelectItem>
+                      <SelectItem value="B">B급</SelectItem>
+                      <SelectItem value="C">C급</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormField>
+              </FormFieldGroup>
+              <FormField label="검색 키워드" className="mt-6">
+                <Input
+                  value={searchKeywordsText}
+                  onChange={(e) => setSearchKeywordsText(e.target.value)}
+                />
+              </FormField>
+            </FormSection>
+          )}
+          {currentStep.id === "specs" && (
+            <FormSection
+              title="상세 스펙"
+              description="라켓 상세 스펙"
+              icon={<Settings className="h-4 w-4" />}
+            >
+              <FormFieldGroup columns={2}>
+                <FormField label="무게(g)">
+                  <Input
+                    type="number"
+                    value={form.spec.weight ?? ""}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        spec: {
+                          ...form.spec,
+                          weight: e.target.value
+                            ? Number(e.target.value)
+                            : null,
+                        },
+                      })
+                    }
+                  />
+                </FormField>
+                <FormField label="밸런스(mm)">
+                  <Input
+                    type="number"
+                    value={form.spec.balance ?? ""}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        spec: {
+                          ...form.spec,
+                          balance: e.target.value
+                            ? Number(e.target.value)
+                            : null,
+                        },
+                      })
+                    }
+                  />
+                </FormField>
+                <FormField label="헤드 사이즈(in²)">
+                  <Input
+                    type="number"
+                    value={form.spec.headSize ?? ""}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        spec: {
+                          ...form.spec,
+                          headSize: e.target.value
+                            ? Number(e.target.value)
+                            : null,
+                        },
+                      })
+                    }
+                  />
+                </FormField>
+                <FormField label="길이(in)">
+                  <Input
+                    type="number"
+                    value={form.spec.lengthIn ?? ""}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        spec: {
+                          ...form.spec,
+                          lengthIn: e.target.value
+                            ? Number(e.target.value)
+                            : null,
+                        },
+                      })
+                    }
+                  />
+                </FormField>
+                <FormField label="스윙웨이트">
+                  <Input
+                    type="number"
+                    value={form.spec.swingWeight ?? ""}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        spec: {
+                          ...form.spec,
+                          swingWeight: e.target.value
+                            ? Number(e.target.value)
+                            : null,
+                        },
+                      })
+                    }
+                  />
+                </FormField>
+                <FormField label="강성(RA)">
+                  <Input
+                    type="number"
+                    value={form.spec.stiffnessRa ?? ""}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        spec: {
+                          ...form.spec,
+                          stiffnessRa: e.target.value
+                            ? Number(e.target.value)
+                            : null,
+                        },
+                      })
+                    }
+                  />
+                </FormField>
+                <FormField label="스트링 패턴">
+                  <Select
+                    value={form.spec.pattern || undefined}
+                    onValueChange={(v) =>
+                      setForm({ ...form, spec: { ...form.spec, pattern: v } })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="선택" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {STRING_PATTERN_OPTIONS.map((o) => (
+                        <SelectItem key={o.value} value={o.value}>
+                          {o.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormField>
+                <FormField label="그립 사이즈">
+                  <Select
+                    value={form.spec.gripSize || undefined}
+                    onValueChange={(v) =>
+                      setForm({ ...form, spec: { ...form.spec, gripSize: v } })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="선택" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {GRIP_SIZE_OPTIONS.map((o) => (
+                        <SelectItem key={o.value} value={o.value}>
+                          {o.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormField>
+              </FormFieldGroup>
+            </FormSection>
+          )}
+          {currentStep.id === "rental" && (
+            <div className="space-y-6">
+              <FormSection
+                title="판매/재고 설정"
+                description="가격, 배송비, 판매 상태, 보유 수량"
+                icon={<DollarSign className="h-4 w-4" />}
+              >
+                <FormFieldGroup columns={2}>
+                  <FormField label="가격" required>
+                    <Input
+                      type="number"
+                      value={form.price}
+                      onChange={(e) =>
+                        setForm({ ...form, price: Number(e.target.value || 0) })
+                      }
+                    />
+                  </FormField>
+                  <FormField label="배송비">
+                    <Input
+                      type="number"
+                      value={form.shippingFee}
+                      onChange={(e) =>
+                        setForm({
+                          ...form,
+                          shippingFee: Number(e.target.value || 0),
+                        })
+                      }
+                    />
+                  </FormField>
+                  <FormField label="판매 상태">
+                    <Select
+                      value={form.status}
+                      onValueChange={(v) =>
+                        setForm({ ...form, status: v as RacketStatus })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="available">판매가능</SelectItem>
+                        <SelectItem value="rented">대여중</SelectItem>
+                        <SelectItem value="sold">판매완료</SelectItem>
+                        <SelectItem value="inactive">비노출</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormField>
+                  <FormField label="보유 수량" required>
+                    <Input
+                      type="number"
+                      value={form.quantity}
+                      onChange={(e) =>
+                        setForm({
+                          ...form,
+                          quantity: Number(e.target.value || 1),
+                        })
+                      }
+                    />
+                  </FormField>
+                </FormFieldGroup>
+              </FormSection>
+              <FormSection
+                title="대여 설정"
+                description="대여 가능 여부 및 기간별 요금"
+                icon={<Boxes className="h-4 w-4" />}
+              >
+                <div className="flex items-center justify-between mb-4 rounded-xl border border-border/60 bg-muted/20 p-4">
+                  <Label>대여 가능</Label>
+                  <Switch
+                    checked={form.rental.enabled}
+                    onCheckedChange={(checked) =>
+                      setForm({
+                        ...form,
+                        rental: { ...form.rental, enabled: checked },
+                      })
+                    }
+                  />
+                </div>
+                {!form.rental.enabled ? (
+                  <FormField label="대여 불가 사유">
+                    <Textarea
+                      value={form.rental.disabledReason}
+                      onChange={(e) =>
+                        setForm({
+                          ...form,
+                          rental: {
+                            ...form.rental,
+                            disabledReason: e.target.value,
+                          },
+                        })
+                      }
+                    />
+                  </FormField>
+                ) : (
+                  <FormFieldGroup columns={2}>
+                    <FormField label="보증금">
+                      <Input
+                        type="number"
+                        value={form.rental.deposit}
+                        onChange={(e) =>
+                          setForm({
+                            ...form,
+                            rental: {
+                              ...form.rental,
+                              deposit: Number(e.target.value || 0),
+                            },
+                          })
+                        }
+                      />
+                    </FormField>
+                    <FormField label="7일 대여료">
+                      <Input
+                        type="number"
+                        value={form.rental.fee.d7}
+                        onChange={(e) =>
+                          setForm({
+                            ...form,
+                            rental: {
+                              ...form.rental,
+                              fee: {
+                                ...form.rental.fee,
+                                d7: Number(e.target.value || 0),
+                              },
+                            },
+                          })
+                        }
+                      />
+                    </FormField>
+                    <FormField label="15일 대여료">
+                      <Input
+                        type="number"
+                        value={form.rental.fee.d15}
+                        onChange={(e) =>
+                          setForm({
+                            ...form,
+                            rental: {
+                              ...form.rental,
+                              fee: {
+                                ...form.rental.fee,
+                                d15: Number(e.target.value || 0),
+                              },
+                            },
+                          })
+                        }
+                      />
+                    </FormField>
+                    <FormField label="30일 대여료">
+                      <Input
+                        type="number"
+                        value={form.rental.fee.d30}
+                        onChange={(e) =>
+                          setForm({
+                            ...form,
+                            rental: {
+                              ...form.rental,
+                              fee: {
+                                ...form.rental.fee,
+                                d30: Number(e.target.value || 0),
+                              },
+                            },
+                          })
+                        }
+                      />
+                    </FormField>
+                  </FormFieldGroup>
+                )}
+              </FormSection>
+              <FormSection
+                title="노출 옵션"
+                description="추천, 신상품, 할인 배지를 설정합니다."
+                icon={<DollarSign className="h-4 w-4" />}
+              >
+                <div className="grid gap-3 md:grid-cols-3">
+                  <div className="flex items-center justify-between rounded-xl border border-border/60 bg-muted/20 p-4">
+                    <Label>추천 상품</Label>
+                    <Switch
+                      checked={form.marketing.isFeatured}
+                      onCheckedChange={(checked) =>
+                        setForm({
+                          ...form,
+                          marketing: { ...form.marketing, isFeatured: checked },
+                        })
+                      }
+                    />
+                  </div>
+                  <div className="flex items-center justify-between rounded-xl border border-border/60 bg-muted/20 p-4">
+                    <Label>신상품</Label>
+                    <Switch
+                      checked={form.marketing.isNew}
+                      onCheckedChange={(checked) =>
+                        setForm({
+                          ...form,
+                          marketing: { ...form.marketing, isNew: checked },
+                        })
+                      }
+                    />
+                  </div>
+                  <div className="flex items-center justify-between rounded-xl border border-border/60 bg-muted/20 p-4">
+                    <Label>할인 상품</Label>
+                    <Switch
+                      checked={form.marketing.isSale}
+                      onCheckedChange={(checked) =>
+                        setForm({
+                          ...form,
+                          marketing: { ...form.marketing, isSale: checked },
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+                {form.marketing.isSale && (
+                  <FormField label="할인가">
+                    <Input
+                      type="number"
+                      value={form.marketing.salePrice}
+                      onChange={(e) =>
+                        setForm({
+                          ...form,
+                          marketing: {
+                            ...form.marketing,
+                            salePrice: Number(e.target.value || 0),
+                          },
+                        })
+                      }
+                    />
+                  </FormField>
+                )}
+              </FormSection>
+            </div>
+          )}
+          {currentStep.id === "images" && (
+            <FormSection
+              title="이미지"
+              description="이미지 업로드/대표 설정"
+              icon={<ImageIcon className="h-4 w-4" />}
+            >
+              <ImageUploader
+                value={form.images}
+                onChange={(next) => setForm({ ...form, images: next })}
+                max={10}
+                variant="racket"
+                enablePrimary
+              />
+            </FormSection>
+          )}
+        </div>
+        <div className="hidden lg:block">
+          <div className="sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto rounded-2xl border border-border/60 bg-card/80 p-4 shadow-sm">
+            <h4 className="font-semibold mb-3">라켓 미리보기</h4>
+            <div className="space-y-2 text-sm">
+              <p>
+                <b>{form.model || "모델명 미입력"}</b>
+              </p>
+              <p>
+                {form.brand ? racketBrandLabel(form.brand) : "브랜드 미선택"}
+              </p>
+              {form.marketing.isSale &&
+              form.marketing.salePrice > 0 &&
+              form.marketing.salePrice < form.price ? (
+                <p>
+                  <b className="text-primary">
+                    {Number(form.marketing.salePrice).toLocaleString()}원
+                  </b>{" "}
+                  <span className="line-through text-muted-foreground">
+                    {Number(form.price || 0).toLocaleString()}원
+                  </span>
+                </p>
+              ) : (
+                <p>가격: {Number(form.price || 0).toLocaleString()}원</p>
+              )}
+              <div className="flex flex-wrap gap-1">
+                {form.marketing.isNew && <Badge variant="secondary">NEW</Badge>}
+                {form.marketing.isFeatured && (
+                  <Badge variant="secondary">추천</Badge>
+                )}
+                {form.marketing.isSale &&
+                  form.marketing.salePrice > 0 &&
+                  form.marketing.salePrice < form.price && (
+                    <Badge variant="destructive">SALE</Badge>
+                  )}
+              </div>
+              <p>대여: {form.rental.enabled ? "가능" : "불가"}</p>
+              <p>
+                보증금: {Number(form.rental.deposit || 0).toLocaleString()}원
+              </p>
+              <p>
+                요금: 7일 {form.rental.fee.d7.toLocaleString()} / 15일{" "}
+                {form.rental.fee.d15.toLocaleString()} / 30일{" "}
+                {form.rental.fee.d30.toLocaleString()}
+              </p>
+              <p>재고: {form.quantity}</p>
+              <p>상태: {racketStatusLabel(form.status)}</p>
+              <p>이미지: {form.images.length}장</p>
+              <div className="pt-2 flex flex-wrap gap-2">
+                <Badge variant="secondary">
+                  무게 {form.spec.weight ?? "-"}
+                </Badge>
+                <Badge variant="secondary">
+                  밸런스 {form.spec.balance ?? "-"}
+                </Badge>
+                <Badge variant="secondary">
+                  헤드 {form.spec.headSize ?? "-"}
+                </Badge>
+                <Badge variant="secondary">
+                  패턴 {form.spec.pattern || "-"}
+                </Badge>
+                <Badge variant="secondary">
+                  그립 {form.spec.gripSize || "-"}
+                </Badge>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <StepNavigation
+        currentStepIndex={currentStepIndex}
+        totalSteps={STEPS.length}
+        isSubmitting={loading}
+        submitLabel={submitLabel}
+        backHref="/admin/rackets"
+        onPrevious={() => {
+          setCompletedSteps((prev) =>
+            prev.filter((id) => id !== currentStep.id),
+          );
+          go(currentStepIndex - 1);
+        }}
+        onNext={() => {
+          setCompletedSteps((prev) =>
+            Array.from(new Set([...prev, currentStep.id])),
+          );
+          go(currentStepIndex + 1);
+        }}
+        onSubmit={() => undefined}
+      />
+    </form>
+  );
 }

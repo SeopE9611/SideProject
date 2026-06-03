@@ -108,6 +108,7 @@ export type ProductDetailResponse = {
 };
 
 export type ProductListStatus = "all" | "active" | "low_stock" | "out_of_stock";
+export type ProductExposureFilter = "all" | "featured" | "new" | "sale";
 
 export type ProductListSortKey =
   | "name"
@@ -125,6 +126,7 @@ export interface AdminProductsListRequestDto {
   brand: string;
   material: string;
   status: ProductListStatus;
+  exposure: ProductExposureFilter;
   sortField: ProductListSortKey | null;
   sortDirection: "asc" | "desc";
 }

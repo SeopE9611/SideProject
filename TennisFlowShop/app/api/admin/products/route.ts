@@ -11,6 +11,7 @@ import type {
   AdminProductCreateRequestDto,
   AdminProductListItemDto,
   ProductListStatus,
+  ProductExposureFilter,
 } from "@/types/admin/products";
 
 type ProductDoc = Record<string, unknown>;
@@ -62,6 +63,11 @@ function parseStatus(value: string | null): ProductListStatus {
   return "all";
 }
 
+function parseExposure(value: string | null): ProductExposureFilter {
+  if (value === "featured" || value === "new" || value === "sale") return value;
+  return "all";
+}
+
 function parseSort(
   value: string | null,
 ): Pick<AdminProductsListRequestDto, "sortField" | "sortDirection"> {
@@ -101,6 +107,7 @@ function parseListRequest(url: URL): AdminProductsListRequestDto {
     brand: url.searchParams.get("brand") ?? "all",
     material: url.searchParams.get("material") ?? "all",
     status: parseStatus(url.searchParams.get("status")),
+    exposure: parseExposure(url.searchParams.get("exposure")),
     sortField: sort.sortField,
     sortDirection: sort.sortDirection,
   };
@@ -150,6 +157,9 @@ function buildFilter(dto: AdminProductsListRequestDto): Filter<Document> {
 
   if (dto.brand !== "all") filter.brand = dto.brand;
   if (dto.material !== "all") filter.material = dto.material;
+  if (dto.exposure === "featured") filter["inventory.isFeatured"] = true;
+  if (dto.exposure === "new") filter["inventory.isNew"] = true;
+  if (dto.exposure === "sale") filter["inventory.isSale"] = true;
 
   if (dto.status === "out_of_stock") {
     filter["inventory.stock"] = 0;
@@ -320,14 +330,12 @@ export async function POST(req: NextRequest) {
     }
 
     const db = await getDb();
-    const result = await db
-      .collection("products")
-      .insertOne({
-        ...requestDto.raw,
-        name: requestDto.name,
-        price: requestDto.price,
-        shippingFee: requestDto.shippingFee,
-      });
+    const result = await db.collection("products").insertOne({
+      ...requestDto.raw,
+      name: requestDto.name,
+      price: requestDto.price,
+      shippingFee: requestDto.shippingFee,
+    });
 
     const createdDoc = {
       ...requestDto.raw,

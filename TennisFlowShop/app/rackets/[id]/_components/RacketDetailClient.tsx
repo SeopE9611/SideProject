@@ -109,6 +109,14 @@ export default function RacketDetailClient({
       ? `${racketShippingFee.toLocaleString()}원 배송비`
       : "무료배송";
   const brandLabel = racketBrandLabel(racket?.brand);
+  const salePrice = Number(racket?.marketing?.salePrice ?? 0);
+  const basePrice = Number(racket?.price ?? 0);
+  const hasSalePrice = Boolean(
+    racket?.marketing?.isSale && salePrice > 0 && salePrice < basePrice,
+  );
+  const discountRate = hasSalePrice
+    ? Math.round(((basePrice - salePrice) / basePrice) * 100)
+    : 0;
 
   useEffect(() => {
     if (!racketId || !racket?.model) return;
@@ -555,6 +563,15 @@ export default function RacketDetailClient({
                     state={rentalState}
                     surface="image"
                   />
+                  {racket?.marketing?.isNew && (
+                    <Badge variant="secondary">NEW</Badge>
+                  )}
+                  {racket?.marketing?.isFeatured && (
+                    <Badge variant="secondary">추천</Badge>
+                  )}
+                  {hasSalePrice && (
+                    <Badge variant="destructive">{discountRate}% SALE</Badge>
+                  )}
                 </div>
               </div>
             </Card>
@@ -594,8 +611,18 @@ export default function RacketDetailClient({
                     <h1 className="text-2xl lg:text-3xl font-bold text-foreground">
                       {racket.model}
                     </h1>
-                    <div className="mt-2 flex items-center gap-2">
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
                       <StatusBadge kind="condition" state={racket.condition} />
+
+                      {racket?.marketing?.isNew && (
+                        <Badge variant="secondary">NEW</Badge>
+                      )}
+                      {racket?.marketing?.isFeatured && (
+                        <Badge variant="secondary">추천</Badge>
+                      )}
+                      {hasSalePrice && (
+                        <Badge variant="destructive">SALE</Badge>
+                      )}
 
                       {racket?.rental?.enabled === false ? (
                         <StatusBadge kind="rental" state="unavailable" />
@@ -636,9 +663,20 @@ export default function RacketDetailClient({
                   {/* 가격 정보 */}
                   <div className="space-y-2">
                     <div className="flex items-baseline gap-3">
-                      <span className="text-3xl font-bold text-primary">
-                        {racket.price?.toLocaleString()}원
-                      </span>
+                      {hasSalePrice ? (
+                        <>
+                          <span className="text-3xl font-bold text-primary">
+                            {salePrice.toLocaleString()}원
+                          </span>
+                          <span className="text-lg text-muted-foreground line-through">
+                            {racket.price?.toLocaleString()}원
+                          </span>
+                        </>
+                      ) : (
+                        <span className="text-3xl font-bold text-primary">
+                          {racket.price?.toLocaleString()}원
+                        </span>
+                      )}
                     </div>
                     <div className="text-xs text-muted-foreground bg-muted border border-border rounded-lg p-3">
                       * 중고 상품 특성상 단순 변심 환불이 제한될 수 있어요.
@@ -1295,8 +1333,17 @@ export default function RacketDetailClient({
                 </div>
                 <div className="mt-1 flex items-baseline gap-2">
                   <span className="text-lg font-bold text-foreground">
-                    {racket.price?.toLocaleString()}원
+                    {(hasSalePrice
+                      ? salePrice
+                      : racket.price
+                    )?.toLocaleString()}
+                    원
                   </span>
+                  {hasSalePrice && (
+                    <span className="text-xs text-muted-foreground line-through">
+                      {racket.price?.toLocaleString()}원
+                    </span>
+                  )}
                 </div>
               </div>
             </div>

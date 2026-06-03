@@ -99,6 +99,12 @@ type Item = {
   };
   images?: string[];
   quantity?: number;
+  marketing?: {
+    isFeatured?: boolean;
+    isNew?: boolean;
+    isSale?: boolean;
+    salePrice?: number;
+  };
 };
 
 function StatusBadge({ status }: { status: string }) {
@@ -115,7 +121,11 @@ function StatusBadge({ status }: { status: string }) {
     inactive: { label: "비노출", variant: "outline" },
   };
   const config = variants[status] || { label: status, variant: "outline" };
-  return <Badge variant={config.variant} className="shrink-0 whitespace-nowrap">{config.label}</Badge>;
+  return (
+    <Badge variant={config.variant} className="shrink-0 whitespace-nowrap">
+      {config.label}
+    </Badge>
+  );
 }
 
 function ConditionBadge({ condition }: { condition: string }) {
@@ -133,19 +143,28 @@ function ConditionBadge({ condition }: { condition: string }) {
 }
 
 export default function AdminRacketsClient() {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [conditionFilter, setConditionFilter] = useState<string>("all");
+  const [exposureFilter, setExposureFilter] = useState<string>("all");
+
+  const qs = new URLSearchParams({
+    page: "1",
+    pageSize: "50",
+    q: searchQuery,
+    status: statusFilter === "all" ? "" : statusFilter,
+    exposure: exposureFilter,
+  });
+
   const { data, isLoading, error } = useSWR<{
     items: Item[];
     total: number;
     page: number;
     pageSize: number;
-  }>("/api/admin/rackets?page=1&pageSize=50", authenticatedSWRFetcher, {
+  }>(`/api/admin/rackets?${qs.toString()}`, authenticatedSWRFetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
   });
-
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [conditionFilter, setConditionFilter] = useState<string>("all");
 
   const commonErrorMessage = error ? getAdminErrorMessage(error) : null;
   // 로딩/에러/실데이터를 분리해서 상단 설명과 본문 상태가 충돌하지 않도록 관리한다.
@@ -156,18 +175,12 @@ export default function AdminRacketsClient() {
     if (!items.length) return [];
 
     return items.filter((item) => {
-      const matchesSearch =
-        item.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.model.toLowerCase().includes(searchQuery.toLowerCase());
-
-      const matchesStatus =
-        statusFilter === "all" || item.status === statusFilter;
       const matchesCondition =
         conditionFilter === "all" || item.condition === conditionFilter;
 
-      return matchesSearch && matchesStatus && matchesCondition;
+      return matchesCondition;
     });
-  }, [items, searchQuery, statusFilter, conditionFilter]);
+  }, [items, conditionFilter]);
 
   const stats = useMemo(() => {
     const total = filteredItems.length;
@@ -217,29 +230,40 @@ export default function AdminRacketsClient() {
           helperText="신규 등록 전 가격·배송비·재고 정보를 확인하고, 대여 가능 라켓은 상태와 노출 여부를 우선 점검하세요."
         />
 
-        <section className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 shrink-0" aria-label="라켓 관리 업무 가이드">
+        <section
+          className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 shrink-0"
+          aria-label="라켓 관리 업무 가이드"
+        >
           {[
             {
               title: "신규 라켓 등록",
-              description: "브랜드, 모델, 대표 이미지와 기본 정보를 먼저 확인한 뒤 등록하세요.",
+              description:
+                "브랜드, 모델, 대표 이미지와 기본 정보를 먼저 확인한 뒤 등록하세요.",
             },
             {
               title: "판매·대여 상태 확인",
-              description: "판매 가능, 대여 중, 비노출 상태를 점검해 운영 우선순위를 정리하세요.",
+              description:
+                "판매 가능, 대여 중, 비노출 상태를 점검해 운영 우선순위를 정리하세요.",
             },
             {
               title: "재고·가격·배송비 점검",
-              description: "재고 수량과 판매가, 배송비를 함께 확인해 주문 이슈를 예방하세요.",
+              description:
+                "재고 수량과 판매가, 배송비를 함께 확인해 주문 이슈를 예방하세요.",
             },
             {
               title: "노출·상세 정보 관리",
-              description: "고객이 보는 상세 정보와 노출 상태를 주기적으로 업데이트하세요.",
+              description:
+                "고객이 보는 상세 정보와 노출 상태를 주기적으로 업데이트하세요.",
             },
           ].map((guide) => (
             <Card key={guide.title} className="border-border/70 bg-muted/30">
               <CardContent className="p-4">
-                <p className="text-sm font-semibold leading-relaxed break-keep text-foreground">{guide.title}</p>
-                <p className="mt-1 text-sm leading-relaxed break-keep text-muted-foreground">{guide.description}</p>
+                <p className="text-sm font-semibold leading-relaxed break-keep text-foreground">
+                  {guide.title}
+                </p>
+                <p className="mt-1 text-sm leading-relaxed break-keep text-muted-foreground">
+                  {guide.description}
+                </p>
               </CardContent>
             </Card>
           ))}
@@ -281,10 +305,7 @@ export default function AdminRacketsClient() {
               bgColor: "bg-destructive/10 dark:bg-destructive/15",
             },
           ].map((c, i) => (
-            <Card
-              key={i}
-              className={adminSurface.kpiCard}
-            >
+            <Card key={i} className={adminSurface.kpiCard}>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -306,7 +327,9 @@ export default function AdminRacketsClient() {
           ))}
         </section>
 
-        <Card className={cn(adminSurface.tableCard, "flex-1 min-h-0 flex flex-col")}>
+        <Card
+          className={cn(adminSurface.tableCard, "flex-1 min-h-0 flex flex-col")}
+        >
           <CardHeader className="bg-muted/30 border-b border-border pb-4 shrink-0">
             <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
               <div>
@@ -352,7 +375,7 @@ export default function AdminRacketsClient() {
                   </div>
                 </div>
 
-                <div className="grid w-full gap-2 border-t border-border pt-3 sm:grid-cols-2 md:grid-cols-3">
+                <div className="grid w-full gap-2 border-t border-border pt-3 sm:grid-cols-2 md:grid-cols-4">
                   <Select value={statusFilter} onValueChange={setStatusFilter}>
                     <SelectTrigger className="min-w-max border-border">
                       <SelectValue placeholder="상태 필터" />
@@ -381,6 +404,21 @@ export default function AdminRacketsClient() {
                     </SelectContent>
                   </Select>
 
+                  <Select
+                    value={exposureFilter}
+                    onValueChange={setExposureFilter}
+                  >
+                    <SelectTrigger className="min-w-max border-border">
+                      <SelectValue placeholder="노출 유형" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">전체 노출 유형</SelectItem>
+                      <SelectItem value="featured">추천 상품</SelectItem>
+                      <SelectItem value="new">신상품</SelectItem>
+                      <SelectItem value="sale">할인 상품</SelectItem>
+                    </SelectContent>
+                  </Select>
+
                   <Button
                     variant="outline"
                     size="sm"
@@ -388,6 +426,7 @@ export default function AdminRacketsClient() {
                       setSearchQuery("");
                       setStatusFilter("all");
                       setConditionFilter("all");
+                      setExposureFilter("all");
                     }}
                     className="w-full border-border hover:bg-primary/10 dark:hover:bg-primary/20 dark:border-border"
                   >
@@ -469,8 +508,22 @@ export default function AdminRacketsClient() {
                                 <div className="line-clamp-2 break-keep font-semibold text-foreground">
                                   {racketBrandLabel(item.brand)}
                                 </div>
-                                <div className="line-clamp-2 break-keep text-sm text-muted-foreground" title={item.model}>
+                                <div
+                                  className="line-clamp-2 break-keep text-sm text-muted-foreground"
+                                  title={item.model}
+                                >
                                   {item.model}
+                                </div>
+                                <div className="mt-1 flex flex-wrap gap-1">
+                                  {item.marketing?.isNew && (
+                                    <Badge variant="secondary">NEW</Badge>
+                                  )}
+                                  {item.marketing?.isFeatured && (
+                                    <Badge variant="secondary">추천</Badge>
+                                  )}
+                                  {item.marketing?.isSale && (
+                                    <Badge variant="destructive">SALE</Badge>
+                                  )}
                                 </div>
                               </div>
                             </div>
@@ -490,8 +543,10 @@ export default function AdminRacketsClient() {
                             <Badge
                               className={cn(
                                 item.rental?.enabled
-                                  ? usedBadgeMeta("rental", "available").className
-                                  : usedBadgeMeta("rental", "unavailable").className,
+                                  ? usedBadgeMeta("rental", "available")
+                                      .className
+                                  : usedBadgeMeta("rental", "unavailable")
+                                      .className,
                                 "shrink-0 whitespace-nowrap",
                               )}
                             >
@@ -520,7 +575,10 @@ export default function AdminRacketsClient() {
                                 className="min-w-max border-border"
                               >
                                 <DropdownMenuLabel>작업</DropdownMenuLabel>
-                                <DropdownMenuItem asChild className="whitespace-nowrap">
+                                <DropdownMenuItem
+                                  asChild
+                                  className="whitespace-nowrap"
+                                >
                                   <Link
                                     href={`/rackets/${item.id}`}
                                     className="flex items-center"
@@ -529,7 +587,10 @@ export default function AdminRacketsClient() {
                                     상세 보기
                                   </Link>
                                 </DropdownMenuItem>
-                                <DropdownMenuItem asChild className="whitespace-nowrap">
+                                <DropdownMenuItem
+                                  asChild
+                                  className="whitespace-nowrap"
+                                >
                                   <Link
                                     href={`/admin/rackets/${item.id}/edit`}
                                     className="flex items-center"
