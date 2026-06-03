@@ -18,6 +18,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { runAdminActionWithToast } from "@/lib/admin/adminActionHelpers";
 import { adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
@@ -94,6 +95,7 @@ export default function ProductsClient() {
   const [brandFilter, setBrandFilter] = useState<string>("all");
   const [materialFilter, setMaterialFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [exposureFilter, setExposureFilter] = useState<string>("all");
 
   const PAGE_SIZE = 10;
   const [page, setPage] = useState(1);
@@ -125,6 +127,7 @@ export default function ProductsClient() {
     brand: brandFilter,
     material: materialFilter,
     status: statusFilter,
+    exposure: exposureFilter,
   });
   if (sort) sp.set("sort", `${sort.field}:${sort.dir}`);
   const qs = sp.toString();
@@ -154,7 +157,7 @@ export default function ProductsClient() {
   const totalPages = hasResolvedData ? Math.max(1, Math.ceil(total / PAGE_SIZE)) : null;
   const currentPage = totalPages ? Math.min(page, totalPages) : null;
 
-  const hasActiveTableFilter = debouncedTerm.trim().length > 0 || brandFilter !== "all" || materialFilter !== "all" || statusFilter !== "all";
+  const hasActiveTableFilter = debouncedTerm.trim().length > 0 || brandFilter !== "all" || materialFilter !== "all" || statusFilter !== "all" || exposureFilter !== "all";
 
   // 전역 카운트(필터 무시)
   const totalsByStatus = data?.totalsByStatus ?? {
@@ -214,6 +217,11 @@ export default function ProductsClient() {
     setPage(1);
   };
 
+  const handleExposureFilterChange = (value: string) => {
+    setExposureFilter(value);
+    setPage(1);
+  };
+
   useEffect(() => {
     if (commonErrorMessage) showErrorToast(commonErrorMessage);
   }, [commonErrorMessage]);
@@ -222,6 +230,7 @@ export default function ProductsClient() {
     setBrandFilter("all");
     setMaterialFilter("all");
     setStatusFilter("all");
+    setExposureFilter("all");
     setSearchTerm("");
     setPage(1);
   };
@@ -363,6 +372,17 @@ export default function ProductsClient() {
                   <BrandFilter value={brandFilter} onChange={handleBrandFilterChange} options={BRAND_OPTIONS.map((o) => o.id)} />
                   <MaterialFilter value={materialFilter} onChange={handleMaterialFilterChange} options={MATERIAL_OPTIONS.map((o) => o.id)} />
                   <StockStatusFilter value={statusFilter} onChange={handleStatusFilterChange} />
+                  <Select value={exposureFilter} onValueChange={handleExposureFilterChange}>
+                    <SelectTrigger className="w-full h-9 text-xs">
+                      <SelectValue placeholder="노출 유형 전체" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">노출 유형 전체</SelectItem>
+                      <SelectItem value="featured">추천 상품</SelectItem>
+                      <SelectItem value="new">신상품</SelectItem>
+                      <SelectItem value="sale">할인 상품</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <Button variant="outline" size="sm" onClick={resetFilters} className="w-full border-border hover:bg-muted dark:border-border dark:hover:bg-card">
                     필터 초기화
                   </Button>

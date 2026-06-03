@@ -2,6 +2,15 @@ import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 
+function normalizeRacketMarketing(value: any) {
+  return {
+    isFeatured: value?.isFeatured === true,
+    isNew: value?.isNew === true,
+    isSale: value?.isSale === true,
+    salePrice: Math.max(0, Number(value?.salePrice ?? 0) || 0),
+  };
+}
+
 type UsedRacketDoc = { _id: ObjectId | string } & Record<string, unknown>;
 type ReviewAggRow = {
   _id: ObjectId;
@@ -113,7 +122,12 @@ export async function getRacketDetailPayload(
   return {
     ...doc,
     id: String(doc._id),
-    shippingFee: normalizeItemShippingFee((doc as Record<string, unknown>).shippingFee),
+    marketing: normalizeRacketMarketing(
+      (doc as Record<string, unknown>).marketing,
+    ),
+    shippingFee: normalizeItemShippingFee(
+      (doc as Record<string, unknown>).shippingFee,
+    ),
     _id: undefined,
     reviews: (reviews ?? []).map((r) => ({
       _id: r._id,

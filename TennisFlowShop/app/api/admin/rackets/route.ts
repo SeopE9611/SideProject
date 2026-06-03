@@ -11,6 +11,14 @@ import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 
 export const dynamic = "force-dynamic";
+function normalizeRacketMarketing(value: any) {
+  return {
+    isFeatured: value?.isFeatured === true,
+    isNew: value?.isNew === true,
+    isSale: value?.isSale === true,
+    salePrice: Math.max(0, Number(value?.salePrice ?? 0) || 0),
+  };
+}
 
 // 숫자 쿼리 파싱 NaN 방지 + 범위 보정(skip/limit 런타임 에러 예방)
 function parseIntParam(
@@ -30,6 +38,7 @@ export async function GET(req: Request) {
   const brand = searchParams.get("brand")?.trim();
   const qtext = searchParams.get("q")?.trim();
   const status = searchParams.get("status")?.trim();
+  const exposure = searchParams.get("exposure")?.trim();
   const page = parseIntParam(searchParams.get("page"), {
     defaultValue: 1,
     min: 1,
@@ -44,6 +53,9 @@ export async function GET(req: Request) {
   const q: any = {};
   if (brand) q.brand = { $regex: new RegExp(`^${brand}$`, "i") };
   if (status) q.status = status;
+  if (exposure === "featured") q["marketing.isFeatured"] = true;
+  if (exposure === "new") q["marketing.isNew"] = true;
+  if (exposure === "sale") q["marketing.isSale"] = true;
   if (qtext)
     q.$or = [
       { brand: { $regex: qtext, $options: "i" } },
@@ -68,6 +80,7 @@ export async function GET(req: Request) {
         rental: 1,
         images: 1,
         quantity: 1,
+        marketing: 1,
       })
       .toArray(),
     db.collection("used_rackets").countDocuments(q),
@@ -75,6 +88,7 @@ export async function GET(req: Request) {
 
   const mapped = items.map((r: any) => ({
     ...r,
+    marketing: normalizeRacketMarketing(r.marketing),
     id: r._id.toString(),
     _id: undefined,
   }));
@@ -156,9 +170,20 @@ export async function POST(req: Request) {
       disabledReason: String(body?.rental?.disabledReason ?? "").trim(),
     },
     quantity: Math.max(1, Number(body.quantity ?? 1)),
+    marketing: normalizeRacketMarketing(body.marketing),
     createdAt: new Date(),
     updatedAt: new Date(),
   };
+
+  if (
+    doc.marketing.isSale &&
+    (doc.marketing.salePrice < 1 || doc.marketing.salePrice >= doc.price)
+  ) {
+    return NextResponse.json(
+      { message: "할인가는 1원 이상이며 정가보다 낮아야 합니다." },
+      { status: 400 },
+    );
+  }
 
   if (doc.rental.enabled === false && !doc.rental.disabledReason) {
     return NextResponse.json(

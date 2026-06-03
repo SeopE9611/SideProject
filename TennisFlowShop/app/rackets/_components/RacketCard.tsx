@@ -35,6 +35,12 @@ type RacketItem = {
     deposit: number;
     fee: { d7: number; d15: number; d30: number };
   };
+  marketing?: {
+    isFeatured?: boolean;
+    isNew?: boolean;
+    isSale?: boolean;
+    salePrice?: number;
+  };
 };
 
 type Props = {
@@ -188,6 +194,51 @@ const RacketCard = React.memo(
       : undefined;
     const displayBrandLabel = racketBrandLabel(racket.brand) || brandLabel;
     const buyLabel = isApplyFlow ? "스트링 선택" : "구매하기";
+    const salePrice = Number(racket.marketing?.salePrice ?? 0);
+    const hasSalePrice = Boolean(
+      racket.marketing?.isSale && salePrice > 0 && salePrice < racket.price,
+    );
+    const discountRate = hasSalePrice
+      ? Math.round(((racket.price - salePrice) / racket.price) * 100)
+      : 0;
+
+    const marketingBadges = (
+      <div className="flex flex-wrap items-center gap-1.5">
+        {racket.marketing?.isNew && <Badge variant="secondary">NEW</Badge>}
+        {racket.marketing?.isFeatured && (
+          <Badge variant="secondary">추천</Badge>
+        )}
+        {hasSalePrice && (
+          <Badge variant="destructive">{discountRate}% SALE</Badge>
+        )}
+      </div>
+    );
+
+    const priceBlock = (align: "left" | "right" = "left") => (
+      <div
+        className={cn("tabular-nums", align === "right" && "bp-md:text-right")}
+      >
+        {hasSalePrice ? (
+          <div
+            className={cn(
+              "flex flex-wrap items-baseline gap-2",
+              align === "right" && "bp-md:justify-end",
+            )}
+          >
+            <span className="font-bold text-primary">
+              {salePrice.toLocaleString()}원
+            </span>
+            <span className="text-sm text-muted-foreground line-through">
+              {racket.price.toLocaleString()}원
+            </span>
+          </div>
+        ) : (
+          <span className="font-bold text-foreground">
+            {racket.price.toLocaleString()}원
+          </span>
+        )}
+      </div>
+    );
 
     const actionButtons = (options?: {
       compact?: boolean;
@@ -323,13 +374,14 @@ const RacketCard = React.memo(
                   {!racket.rental?.enabled && (
                     <StatusBadge kind="rental" state="unavailable" />
                   )}
+                  {marketingBadges}
                 </div>
               </div>
             </div>
 
             <div className="flex shrink-0 flex-col justify-between border-t border-border/60 p-4 bp-md:w-[280px] bp-lg:w-[300px] bp-md:border-l bp-md:border-t-0 bp-md:p-5">
-              <div className="whitespace-nowrap tabular-nums text-xl font-bold text-foreground bp-md:text-right bp-md:text-2xl">
-                {racket.price.toLocaleString()}원
+              <div className="text-xl bp-md:text-2xl">
+                {priceBlock("right")}
               </div>
               <div className="mt-4 space-y-2">
                 {actionButtons({ compact: true, stackOnNarrow: true })}
@@ -399,13 +451,14 @@ const RacketCard = React.memo(
             {!racket.rental?.enabled && (
               <StatusBadge kind="rental" state="unavailable" />
             )}
+            {marketingBadges}
           </div>
         </CardContent>
 
         <CardFooter className="mt-auto p-3 pt-0 bp-sm:p-6 bp-sm:pt-0">
           <div className="w-full">
-            <div className="min-h-[2.5rem] text-base font-bold text-foreground bp-sm:text-xl bp-md:text-2xl">
-              {racket.price.toLocaleString()}원
+            <div className="min-h-[2.5rem] text-base bp-sm:text-xl bp-md:text-2xl">
+              {priceBlock()}
             </div>
 
             <div className="mt-3">
@@ -420,7 +473,12 @@ const RacketCard = React.memo(
     prev.racket.id === next.racket.id &&
     prev.viewMode === next.viewMode &&
     prev.brandLabel === next.brandLabel &&
-    Boolean(prev.isApplyFlow) === Boolean(next.isApplyFlow),
+    Boolean(prev.isApplyFlow) === Boolean(next.isApplyFlow) &&
+    prev.racket.marketing?.isFeatured === next.racket.marketing?.isFeatured &&
+    prev.racket.marketing?.isNew === next.racket.marketing?.isNew &&
+    prev.racket.marketing?.isSale === next.racket.marketing?.isSale &&
+    prev.racket.marketing?.salePrice === next.racket.marketing?.salePrice &&
+    prev.racket.price === next.racket.price,
 );
 
 export default RacketCard;
