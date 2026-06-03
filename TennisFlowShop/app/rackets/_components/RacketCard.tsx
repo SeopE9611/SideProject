@@ -189,89 +189,96 @@ const RacketCard = React.memo(
     const displayBrandLabel = racketBrandLabel(racket.brand) || brandLabel;
     const buyLabel = isApplyFlow ? "스트링 선택" : "구매하기";
 
-    const actionButtons = (compact = false) => (
-      <div className="grid grid-cols-2 gap-2">
-        {canBuy ? (
-          <Button
-            asChild
-            size="sm"
-            className={cn(
-              "h-10 w-full min-w-0 justify-center whitespace-nowrap text-center",
-              compact ? "text-xs bp-sm:text-sm" : "text-sm",
-            )}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Link
-              href={`/rackets/${racket.id}/select-string`}
-              onClick={(e) => e.stopPropagation()}
-              className="w-full justify-center text-center"
-            >
-              <ShoppingCart className="mr-1.5 h-4 w-4" />
-              {buyLabel}
-            </Link>
-          </Button>
-        ) : (
-          <Button
-            size="sm"
-            className={cn(
-              "h-10 w-full min-w-0 justify-center whitespace-nowrap text-center",
-              compact ? "text-xs bp-sm:text-sm" : "text-sm",
-            )}
-            disabled
-            title={buyDisabledTitle}
-          >
-            <ShoppingCart className="mr-1.5 h-4 w-4" />
-            품절
-          </Button>
-        )}
+    const actionButtons = (options?: {
+      compact?: boolean;
+      stackOnNarrow?: boolean;
+    }) => {
+      const compact = options?.compact ?? false;
+      const stackOnNarrow = options?.stackOnNarrow ?? false;
+      const buttonClassName = cn(
+        "inline-flex h-10 w-full min-w-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 text-center font-semibold [&_svg]:mr-0 [&_svg]:shrink-0",
+        compact ? "text-[12px] bp-sm:text-xs bp-md:text-sm" : "text-sm",
+      );
+      const disabledButtonClassName = cn(
+        buttonClassName,
+        "border border-border bg-muted/70 text-muted-foreground cursor-not-allowed opacity-100 disabled:opacity-100",
+      );
+      const iconClassName = "h-4 w-4 shrink-0";
 
-        {racket.rental?.enabled ? (
-          canRent ? (
-            <RentDialog
-              id={racket.id}
-              rental={racket.rental}
-              brand={displayBrandLabel}
-              model={racket.model}
+      return (
+        <div
+          className={cn(
+            "grid w-full gap-2",
+            stackOnNarrow ? "grid-cols-1 bp-sm:grid-cols-2" : "grid-cols-2",
+          )}
+        >
+          {canBuy ? (
+            <Button
+              asChild
               size="sm"
-              preventCardNav={true}
-              full={false}
-              className={cn(
-                "h-10 w-full min-w-0 justify-center whitespace-nowrap text-center",
-                compact ? "text-xs bp-sm:text-sm" : "text-sm",
-              )}
-            />
+              className={buttonClassName}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Link
+                href={`/rackets/${racket.id}/select-string`}
+                onClick={(e) => e.stopPropagation()}
+                className="inline-flex w-full min-w-0 items-center justify-center gap-1.5 text-center"
+              >
+                <ShoppingCart className={iconClassName} />
+                {buyLabel}
+              </Link>
+            </Button>
           ) : (
             <Button
               size="sm"
-              className={cn(
-                "h-10 w-full min-w-0 justify-center whitespace-nowrap bg-muted text-muted-foreground cursor-not-allowed",
-                compact ? "text-xs bp-sm:text-sm" : "text-sm",
-              )}
+              className={disabledButtonClassName}
+              disabled
+              title={buyDisabledTitle}
+            >
+              <ShoppingCart className={iconClassName} />
+              품절
+            </Button>
+          )}
+
+          {racket.rental?.enabled ? (
+            canRent ? (
+              <RentDialog
+                id={racket.id}
+                rental={racket.rental}
+                brand={displayBrandLabel}
+                model={racket.model}
+                size="sm"
+                preventCardNav={true}
+                full={false}
+                className={buttonClassName}
+              />
+            ) : (
+              <Button
+                size="sm"
+                className={disabledButtonClassName}
+                disabled
+                aria-disabled
+                title={rentDisabledTitle}
+              >
+                <Briefcase className={iconClassName} />
+                품절
+              </Button>
+            )
+          ) : (
+            <Button
+              size="sm"
+              className={disabledButtonClassName}
               disabled
               aria-disabled
               title={rentDisabledTitle}
             >
-              <Briefcase className="mr-1.5 h-4 w-4" />
-              품절
+              <Briefcase className={iconClassName} />
+              대여 불가
             </Button>
-          )
-        ) : (
-          <Button
-            size="sm"
-            className={cn(
-              "h-10 w-full min-w-0 justify-center whitespace-nowrap bg-muted text-muted-foreground cursor-not-allowed",
-              compact ? "text-xs bp-sm:text-sm" : "text-sm",
-            )}
-            disabled
-            aria-disabled
-            title={rentDisabledTitle}
-          >
-            <Briefcase className="mr-1.5 h-4 w-4" />
-            대여 불가
-          </Button>
-        )}
-      </div>
-    );
+          )}
+        </div>
+      );
+    };
 
     if (viewMode === "list") {
       return (
@@ -320,23 +327,23 @@ const RacketCard = React.memo(
               </div>
             </div>
 
-            <div className="flex shrink-0 flex-col justify-between border-t border-border/60 p-4 bp-md:w-[260px] bp-md:border-l bp-md:border-t-0 bp-md:p-5">
+            <div className="flex shrink-0 flex-col justify-between border-t border-border/60 p-4 bp-md:w-[280px] bp-lg:w-[300px] bp-md:border-l bp-md:border-t-0 bp-md:p-5">
               <div className="whitespace-nowrap tabular-nums text-xl font-bold text-foreground bp-md:text-right bp-md:text-2xl">
                 {racket.price.toLocaleString()}원
               </div>
               <div className="mt-4 space-y-2">
-                {actionButtons(true)}
+                {actionButtons({ compact: true, stackOnNarrow: true })}
                 <Button
                   asChild
                   size="sm"
                   variant="outline"
-                  className="h-9 w-full justify-center whitespace-nowrap bg-background text-xs bp-sm:text-sm"
+                  className="h-10 w-full justify-center whitespace-nowrap rounded-lg bg-background text-xs font-semibold bp-sm:text-sm"
                 >
                   <Link
                     href={`/rackets/${racket.id}`}
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <Eye className="mr-1.5 h-4 w-4" />
+                    <Eye className="mr-1.5 h-4 w-4 shrink-0" />
                     상세 보기
                   </Link>
                 </Button>
@@ -401,7 +408,9 @@ const RacketCard = React.memo(
               {racket.price.toLocaleString()}원
             </div>
 
-            <div className="mt-3">{actionButtons(true)}</div>
+            <div className="mt-3">
+              {actionButtons({ compact: true, stackOnNarrow: false })}
+            </div>
           </div>
         </CardFooter>
       </Card>
