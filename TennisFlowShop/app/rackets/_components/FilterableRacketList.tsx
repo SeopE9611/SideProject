@@ -105,6 +105,7 @@ export default function FilterableRacketList({
   );
   const [priceMin, setPriceMin] = useState<number | null>(null);
   const [priceMax, setPriceMax] = useState<number | null>(null);
+  const [exposureFilter, setExposureFilter] = useState("all");
 
   // 검색어
   const [searchQuery, setSearchQuery] = useState("");
@@ -119,6 +120,7 @@ export default function FilterableRacketList({
   );
   const [draftPriceMin, setDraftPriceMin] = useState<number | null>(null);
   const [draftPriceMax, setDraftPriceMax] = useState<number | null>(null);
+  const [draftExposureFilter, setDraftExposureFilter] = useState("all");
   const [draftSearchQuery, setDraftSearchQuery] = useState("");
   const [draftRentOnly, setDraftRentOnly] = useState(
     () => searchParams.get("rentOnly") === "1",
@@ -148,6 +150,9 @@ export default function FilterableRacketList({
       const maxPrice = searchParams.get("maxPrice");
       setPriceMin(parsePriceParam(minPrice));
       setPriceMax(parsePriceParam(maxPrice));
+
+      const exposure = searchParams.get("exposure") || "all";
+      setExposureFilter(["featured", "new", "sale"].includes(exposure) ? exposure : "all");
       setSortOption(searchParams.get("sort") || "latest");
 
       const view = searchParams.get("view");
@@ -179,6 +184,10 @@ export default function FilterableRacketList({
     const nextMax = parsePriceParam(maxPrice);
     if (nextMin !== priceMin) setPriceMin(nextMin);
     if (nextMax !== priceMax) setPriceMax(nextMax);
+
+    const exposure = searchParams.get("exposure") || "all";
+    const nextExposure = ["featured", "new", "sale"].includes(exposure) ? exposure : "all";
+    if (nextExposure !== exposureFilter) setExposureFilter(nextExposure);
     const sort = searchParams.get("sort") || "latest";
     if (sort !== sortOption) setSortOption(sort);
 
@@ -199,6 +208,7 @@ export default function FilterableRacketList({
   if (submittedQuery) query.set("q", submittedQuery);
   if (priceMin !== null) query.set("minPrice", String(priceMin));
   if (priceMax !== null) query.set("maxPrice", String(priceMax));
+  if (exposureFilter !== "all") query.set("exposure", exposureFilter);
   query.set("sort", sortOption || "latest");
   const key = `/api/rackets${query.toString() ? `?${query.toString()}` : ""}`;
   const { data, isLoading, isValidating, error, mutate } =
@@ -224,6 +234,7 @@ export default function FilterableRacketList({
       rentOnly ? "1" : "0",
       priceMin !== null ? String(priceMin) : "",
       priceMax !== null ? String(priceMax) : "",
+      exposureFilter,
       sortOption || "latest",
     ].join("|");
   }, [
@@ -233,6 +244,7 @@ export default function FilterableRacketList({
     rentOnly,
     priceMin,
     priceMax,
+    exposureFilter,
     sortOption,
   ]);
 
@@ -320,6 +332,7 @@ export default function FilterableRacketList({
     setSelectedCondition(null);
     setPriceMin(null);
     setPriceMax(null);
+    setExposureFilter("all");
     setSortOption("latest");
     setViewMode("grid");
     setRentOnly(false);
@@ -360,6 +373,7 @@ export default function FilterableRacketList({
     setDraftCondition(selectedCondition);
     setDraftPriceMin(priceMin);
     setDraftPriceMax(priceMax);
+    setDraftExposureFilter(exposureFilter);
     setDraftSearchQuery(searchQuery);
     setDraftRentOnly(rentOnly);
   }, [
@@ -367,6 +381,7 @@ export default function FilterableRacketList({
     selectedCondition,
     priceMin,
     priceMax,
+    exposureFilter,
     searchQuery,
     rentOnly,
   ]);
@@ -390,6 +405,7 @@ export default function FilterableRacketList({
     setPriceMin(draftPriceMin);
     setPriceMax(draftPriceMax);
     setRentOnly(draftRentOnly);
+    setExposureFilter(draftExposureFilter);
 
     // 검색어는 submittedQuery만 서버 요청에 반영되므로 적용 시점에 커밋
     setSearchQuery(draftSearchQuery);
@@ -403,6 +419,7 @@ export default function FilterableRacketList({
     draftPriceMin,
     draftPriceMax,
     draftRentOnly,
+    draftExposureFilter,
     draftSearchQuery,
   ]);
 
@@ -414,6 +431,7 @@ export default function FilterableRacketList({
     setDraftPriceMin(null);
     setDraftPriceMax(null);
     setDraftRentOnly(false);
+    setDraftExposureFilter("all");
     setDraftSearchQuery("");
   }, []);
 
@@ -468,6 +486,7 @@ export default function FilterableRacketList({
     submittedQuery,
     priceChanged,
     rentOnly,
+    exposureFilter !== "all",
   ].filter(Boolean).length;
   const draftPriceChanged = draftPriceMin !== null || draftPriceMax !== null;
   const activeDraftCount = [
@@ -476,6 +495,7 @@ export default function FilterableRacketList({
     draftSearchQuery,
     draftPriceChanged,
     draftRentOnly,
+    draftExposureFilter !== "all",
   ].filter(Boolean).length;
 
   // 상태 -> URL 반영
@@ -501,6 +521,7 @@ export default function FilterableRacketList({
     setOrDelete("minPrice", priceMin !== null ? String(priceMin) : null);
     setOrDelete("maxPrice", priceMax !== null ? String(priceMax) : null);
     setOrDelete("rentOnly", rentOnly ? "1" : null);
+    setOrDelete("exposure", exposureFilter !== "all" ? exposureFilter : null);
 
     const newSearch = params.toString();
     if (newSearch === lastSerializedRef.current) return;
@@ -517,6 +538,7 @@ export default function FilterableRacketList({
     priceMin,
     priceMax,
     rentOnly,
+    exposureFilter,
     router,
     pathname,
     searchParams,
@@ -536,6 +558,8 @@ export default function FilterableRacketList({
     onChangePriceMax: setPriceMax,
     rentOnly,
     setRentOnly,
+    exposureFilter,
+    onExposureChange: setExposureFilter,
     resetKey,
     activeFiltersCount,
     onReset: handleResetAll,
@@ -563,6 +587,8 @@ export default function FilterableRacketList({
     onChangePriceMax: setDraftPriceMax,
     rentOnly: draftRentOnly,
     setRentOnly: setDraftRentOnly,
+    exposureFilter: draftExposureFilter,
+    onExposureChange: setDraftExposureFilter,
     resetKey: draftResetKey,
     activeFiltersCount: activeDraftCount,
     onReset: handleResetAllDraft,
@@ -712,6 +738,15 @@ export default function FilterableRacketList({
                       {priceMax !== null
                         ? `${priceMax.toLocaleString()}원`
                         : "제한 없음"}
+                    </span>
+                  )}
+                  {exposureFilter !== "all" && (
+                    <span className="inline-flex shrink-0 items-center rounded-full border border-border bg-muted px-2 py-1 text-xs whitespace-nowrap">
+                      {exposureFilter === "featured"
+                        ? "추천"
+                        : exposureFilter === "new"
+                          ? "신상품"
+                          : "할인"}
                     </span>
                   )}
                   {rentOnly && (

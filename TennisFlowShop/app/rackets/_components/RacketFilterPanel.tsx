@@ -14,6 +14,13 @@ import { Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SkeletonFilterDetailed } from "@/app/products/components/SkeletonProductCard";
 
+const EXPOSURE_OPTIONS = [
+  { label: "전체", value: "all" },
+  { label: "추천", value: "featured" },
+  { label: "신상품", value: "new" },
+  { label: "할인", value: "sale" },
+];
+
 const RACKET_PRICE_PRESETS: { label: string; range: [number, number] }[] = [
   { label: "전체", range: [0, 10000000] },
   { label: "5만원 이하", range: [0, 50000] },
@@ -35,6 +42,8 @@ type Props = {
   onChangePriceMax: (v: number | null) => void;
   rentOnly: boolean;
   setRentOnly: (v: boolean) => void;
+  exposureFilter: string;
+  onExposureChange: (value: string) => void;
   resetKey: number;
   activeFiltersCount: number;
   onReset: () => void;
@@ -61,6 +70,8 @@ export default function RacketFilterPanel({
   onChangePriceMax,
   rentOnly,
   setRentOnly,
+  exposureFilter,
+  onExposureChange,
   resetKey,
   activeFiltersCount,
   onReset,
@@ -260,13 +271,33 @@ export default function RacketFilterPanel({
             </div>
           </div>
 
+          {/* 혜택 */}
+          <div className="mb-5 space-y-2">
+            <Label className="text-sm font-medium text-foreground">
+              혜택
+            </Label>
+            <div className="grid grid-cols-2 gap-2 bp-sm:grid-cols-4">
+              {EXPOSURE_OPTIONS.map((option) => (
+                <Button
+                  key={option.value}
+                  type="button"
+                  variant={exposureFilter === option.value ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => onExposureChange(option.value)}
+                  className="h-9 whitespace-nowrap px-2 text-xs bp-sm:text-sm"
+                >
+                  {option.label}
+                </Button>
+              ))}
+            </div>
+          </div>
+
           {/* 가격대 */}
           <div className="space-y-2">
             <Label className="text-sm font-medium text-foreground">
               가격대
             </Label>
-            <div className="max-w-full overflow-x-auto pb-1">
-              <div className="flex w-max gap-2">
+            <div className="grid grid-cols-2 gap-2 bp-sm:grid-cols-3">
                 {RACKET_PRICE_PRESETS.map((preset) => {
                   const effectiveMin = priceMin ?? 0;
                   const effectiveMax = priceMax ?? 10000000;
@@ -288,7 +319,7 @@ export default function RacketFilterPanel({
                         onChangePriceMax(preset.range[1]);
                       }}
                       className={cn(
-                        "min-w-max shrink-0 whitespace-nowrap rounded-md border px-3 py-1.5 text-xs transition-colors bp-sm:text-sm",
+                        "whitespace-nowrap rounded-md border px-3 py-1.5 text-xs transition-colors bp-sm:text-sm",
                         isActive
                           ? "border-primary bg-primary/15 text-primary dark:bg-primary/30 dark:text-primary-foreground"
                           : "border-border bg-background text-muted-foreground hover:bg-muted",
@@ -298,9 +329,27 @@ export default function RacketFilterPanel({
                     </button>
                   );
                 })}
-              </div>
             </div>
           </div>
+          {onClose && (
+            <div className="mt-6 flex gap-2 border-t border-border pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                className="flex-1 whitespace-nowrap"
+                onClick={onReset}
+              >
+                초기화
+              </Button>
+              <Button
+                type="button"
+                className="flex-1 whitespace-nowrap"
+                onClick={onSearchSubmit}
+              >
+                필터 적용
+              </Button>
+            </div>
+          )}
         </motion.div>
       </AnimatePresence>
     </div>
