@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useBackNavigationGuard } from "@/lib/hooks/useBackNavigationGuard";
 import { useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
 import { isNicePaymentsEnabled, isTossPaymentsEnabled } from "@/lib/payments/provider-flags";
-import { racketStatusLabel } from "@/lib/constants";
+import { racketBrandLabel, racketStatusLabel } from "@/lib/constants";
 import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { showErrorToast } from "@/lib/toast";
 import { useRouter } from "next/navigation";
@@ -288,7 +288,7 @@ export default function RacketPurchaseCheckoutClient({ racket }: { racket: Racke
       <div className="rounded-lg border p-4">
         <div className="text-lg font-semibold">라켓 구매</div>
         <div className="mt-2 text-sm text-muted-foreground">
-          {racket.brand} {racket.model}
+          {racketBrandLabel(racket.brand)} {racket.model}
         </div>
         <div className="mt-1 text-sm">가격: {racket.price.toLocaleString()}원</div>
       </div>

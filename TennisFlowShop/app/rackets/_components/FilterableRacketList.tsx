@@ -26,6 +26,7 @@ import RacketCard from "./RacketCard";
 import RacketFilterPanel from "./RacketFilterPanel";
 import { SkeletonProductCard } from "@/app/products/components/SkeletonProductCard";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { RACKET_BRANDS, racketBrandLabel } from "@/lib/constants";
 
 const fetcher = async (url: string) => {
   const res = await fetch(url, { credentials: "include" });
@@ -65,20 +66,7 @@ type RacketsApiResponse =
   | RacketItem[]
   | { items: RacketItem[]; total: number; page?: number; pageSize?: number };
 
-// 브랜드 리스트
-const brands = [
-  { label: "요넥스", value: "yonex" },
-  { label: "윌슨", value: "wilson" },
-  { label: "바볼랏", value: "babolat" },
-  { label: "헤드", value: "head" },
-  { label: "던롭", value: "dunlop" },
-  // { label: "프린스", value: "prince" },
-  { label: "테크니화이버", value: "tecnifibre" },
-];
-
-const brandLabelMap: Record<string, string> = Object.fromEntries(
-  brands.map(({ value, label }) => [value.toLowerCase(), label]),
-);
+const brands = RACKET_BRANDS.map(({ value, label }) => ({ value, label }));
 
 const parsePriceParam = (value: string | null): number | null => {
   if (!value) return null;
@@ -132,6 +120,9 @@ export default function FilterableRacketList({
   const [draftPriceMin, setDraftPriceMin] = useState<number | null>(null);
   const [draftPriceMax, setDraftPriceMax] = useState<number | null>(null);
   const [draftSearchQuery, setDraftSearchQuery] = useState("");
+  const [draftRentOnly, setDraftRentOnly] = useState(
+    () => searchParams.get("rentOnly") === "1",
+  );
   const [draftResetKey, setDraftResetKey] = useState(0);
 
   // 토글 (모바일용)
@@ -370,7 +361,15 @@ export default function FilterableRacketList({
     setDraftPriceMin(priceMin);
     setDraftPriceMax(priceMax);
     setDraftSearchQuery(searchQuery);
-  }, [selectedBrand, selectedCondition, priceMin, priceMax, searchQuery]);
+    setDraftRentOnly(rentOnly);
+  }, [
+    selectedBrand,
+    selectedCondition,
+    priceMin,
+    priceMax,
+    searchQuery,
+    rentOnly,
+  ]);
 
   // Sheet 열기: 열릴 때마다 draft를 applied로 맞춰서 "현재 상태"를 보여줌
   const openFiltersSheet = useCallback(() => {
@@ -390,6 +389,7 @@ export default function FilterableRacketList({
     setSelectedCondition(draftCondition);
     setPriceMin(draftPriceMin);
     setPriceMax(draftPriceMax);
+    setRentOnly(draftRentOnly);
 
     // 검색어는 submittedQuery만 서버 요청에 반영되므로 적용 시점에 커밋
     setSearchQuery(draftSearchQuery);
@@ -402,6 +402,7 @@ export default function FilterableRacketList({
     draftCondition,
     draftPriceMin,
     draftPriceMax,
+    draftRentOnly,
     draftSearchQuery,
   ]);
 
@@ -412,6 +413,7 @@ export default function FilterableRacketList({
     setDraftCondition(null);
     setDraftPriceMin(null);
     setDraftPriceMax(null);
+    setDraftRentOnly(false);
     setDraftSearchQuery("");
   }, []);
 
@@ -473,6 +475,7 @@ export default function FilterableRacketList({
     draftCondition,
     draftSearchQuery,
     draftPriceChanged,
+    draftRentOnly,
   ].filter(Boolean).length;
 
   // 상태 -> URL 반영
@@ -531,6 +534,8 @@ export default function FilterableRacketList({
     priceMax,
     onChangePriceMin: setPriceMin,
     onChangePriceMax: setPriceMax,
+    rentOnly,
+    setRentOnly,
     resetKey,
     activeFiltersCount,
     onReset: handleResetAll,
@@ -556,6 +561,8 @@ export default function FilterableRacketList({
     priceMax: draftPriceMax,
     onChangePriceMin: setDraftPriceMin,
     onChangePriceMax: setDraftPriceMax,
+    rentOnly: draftRentOnly,
+    setRentOnly: setDraftRentOnly,
     resetKey: draftResetKey,
     activeFiltersCount: activeDraftCount,
     onReset: handleResetAllDraft,
@@ -590,76 +597,26 @@ export default function FilterableRacketList({
 
         {/* 상품 목록 */}
         <div className="min-w-0">
-          <div className="mb-4 rounded-xl border border-border/60 bg-card p-3 bp-sm:p-4 bp-md:mb-8">
-            <div className="mb-3 space-y-1.5">
-              <p className="text-xs font-medium text-muted-foreground">
-                라켓 목록
-              </p>
-              <p className="text-sm leading-relaxed break-keep text-muted-foreground">
-                조건에 맞는 라켓을 확인하고 상세 페이지에서 구매·대여 정보를
-                확인하세요.
-              </p>
-            </div>
-
-            <div className="mb-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-              {isApplyFlow && (
-                <span className="rounded-full bg-secondary px-2.5 py-1 break-keep">
-                  라켓 선택 후 스트링 장착 흐름으로 이어집니다.
-                </span>
-              )}
-              {rentOnly && (
-                <span className="rounded-full bg-secondary px-2.5 py-1 break-keep">
-                  대여 가능한 라켓만 모아보고 있습니다.
-                </span>
-              )}
-              {activeFiltersCount > 0 && (
-                <span className="rounded-full border border-border px-2.5 py-1 whitespace-nowrap">
-                  적용 중인 조건 {activeFiltersCount}개
-                </span>
-              )}
-            </div>
-
+          <div className="mb-6 space-y-3 bp-md:mb-8">
             <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
               <div className="flex flex-wrap items-center gap-2 bp-sm:gap-3">
-                <div className="text-base bp-sm:text-lg font-semibold text-foreground">
-                  {rentOnly ? (
-                    <>
-                      대여 가능 총{" "}
-                      {isInitialLikeLoading ? (
-                        <Skeleton className="inline-block h-5 w-12 align-middle" />
-                      ) : (
-                        <span className="font-bold text-foreground">
-                          {total}
-                        </span>
-                      )}
-                      개 라켓
-                      {isInitialLikeLoading ? (
-                        <Skeleton className="inline-block h-5 w-10 align-middle" />
-                      ) : (
-                        <span className="ml-2 text-sm text-muted-foreground">
-                          (표시중 {visibleProducts.length}개)
-                        </span>
-                      )}
-                    </>
+                <div
+                  className="text-base font-semibold tabular-nums text-foreground bp-sm:text-lg"
+                  aria-live="polite"
+                >
+                  {rentOnly ? "대여 가능 총" : "총"}{" "}
+                  {isInitialLikeLoading ? (
+                    <Skeleton className="inline-block h-5 w-12 align-middle" />
                   ) : (
-                    <>
-                      총{" "}
-                      {isInitialLikeLoading ? (
-                        <Skeleton className="inline-block h-5 w-12 align-middle" />
-                      ) : (
-                        <span className="font-bold text-foreground">
-                          {total}
-                        </span>
-                      )}
-                      개 라켓
-                      {isInitialLikeLoading ? (
-                        <Skeleton className="inline-block h-5 w-10 align-middle" />
-                      ) : (
-                        <span className="ml-2 text-sm text-muted-foreground">
-                          (표시중 {visibleProducts.length}개)
-                        </span>
-                      )}
-                    </>
+                    <span className="font-bold text-primary">{total}</span>
+                  )}
+                  개 라켓
+                  {isInitialLikeLoading ? (
+                    <Skeleton className="ml-2 inline-block h-5 w-10 align-middle" />
+                  ) : (
+                    <span className="ml-2 text-sm text-muted-foreground">
+                      (표시중 {visibleProducts.length}개)
+                    </span>
                   )}
                 </div>
                 <Button
@@ -670,47 +627,31 @@ export default function FilterableRacketList({
                     if (showFilters) cancelFiltersSheet();
                     else openFiltersSheet();
                   }}
-                  className="bp-lg:hidden h-9 px-3 border-border hover:bg-secondary whitespace-nowrap"
+                  className="h-9 whitespace-nowrap border-border px-3 hover:bg-secondary bp-lg:hidden"
                   aria-expanded={showFilters}
                   aria-label="필터 열기"
                 >
-                  <Filter className="w-4 h-4 mr-2" />
-                  필터{activeDraftCount > 0 && `(${activeDraftCount})`}
+                  <Filter className="mr-2 h-4 w-4" />
+                  필터{activeFiltersCount > 0 && `(${activeFiltersCount})`}
                 </Button>
-                {!isApplyFlow && (
-                  <Button
-                    type="button"
-                    variant={rentOnly ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setRentOnly((v) => !v)}
-                    className={cn(
-                      "h-9 px-3 whitespace-nowrap",
-                      rentOnly
-                        ? "border-border"
-                        : "border-border hover:bg-secondary",
-                    )}
-                    aria-pressed={rentOnly}
-                    aria-label="대여 가능 라켓만 보기 토글"
-                  >
-                    대여만 보기
-                  </Button>
-                )}
               </div>
 
               <div className="flex items-center justify-between gap-2 bp-sm:justify-end bp-sm:gap-3">
                 <Select value={sortOption} onValueChange={setSortOption}>
-                  <SelectTrigger className="h-9 w-full min-w-0 bp-sm:w-[180px] rounded-lg border-2 focus:border-border dark:focus:border-border bg-card text-sm">
+                  <SelectTrigger className="h-9 w-full min-w-0 rounded-lg border-2 bg-card text-sm focus:border-border bp-sm:w-[180px] dark:focus:border-border">
                     <SelectValue placeholder="정렬" />
                   </SelectTrigger>
-                  <SelectContent className="dark:bg-card dark:border-border">
+                  <SelectContent className="dark:border-border dark:bg-card">
                     <SelectItem value="latest">최신순</SelectItem>
+                    <SelectItem value="sales-desc">구매 많은순</SelectItem>
+                    <SelectItem value="reviews-desc">리뷰 많은순</SelectItem>
                     <SelectItem value="price-low">가격 낮은순</SelectItem>
                     <SelectItem value="price-high">가격 높은순</SelectItem>
                   </SelectContent>
                 </Select>
 
                 {isDesktopViewport && (
-                  <div className="flex items-center border border-border rounded-lg p-1 bg-card shrink-0">
+                  <div className="flex shrink-0 items-center rounded-lg border border-border bg-card p-1">
                     <Button
                       type="button"
                       variant={
@@ -722,7 +663,7 @@ export default function FilterableRacketList({
                       aria-label="그리드 보기"
                       aria-pressed={effectiveViewMode === "grid"}
                     >
-                      <Grid3X3 className="w-4 h-4" />
+                      <Grid3X3 className="h-4 w-4" />
                     </Button>
 
                     <Button
@@ -736,12 +677,60 @@ export default function FilterableRacketList({
                       aria-label="리스트 보기"
                       aria-pressed={effectiveViewMode === "list"}
                     >
-                      <List className="w-4 h-4" />
+                      <List className="h-4 w-4" />
                     </Button>
                   </div>
                 )}
               </div>
             </div>
+
+            {activeFiltersCount > 0 && (
+              <div className="rounded-lg border border-border bg-card p-3">
+                <div className="flex max-w-full flex-nowrap gap-2 overflow-x-auto pb-1">
+                  {submittedQuery && (
+                    <span className="inline-flex shrink-0 items-center rounded-full border border-border bg-muted px-2 py-1 text-xs whitespace-nowrap">
+                      검색어 “{submittedQuery}”
+                    </span>
+                  )}
+                  {selectedBrand && (
+                    <span className="inline-flex shrink-0 items-center rounded-full border border-border bg-muted px-2 py-1 text-xs whitespace-nowrap">
+                      브랜드 {racketBrandLabel(selectedBrand)}
+                    </span>
+                  )}
+                  {selectedCondition && (
+                    <span className="inline-flex shrink-0 items-center rounded-full border border-border bg-muted px-2 py-1 text-xs whitespace-nowrap">
+                      상태 {selectedCondition}
+                    </span>
+                  )}
+                  {priceChanged && (
+                    <span className="inline-flex shrink-0 items-center rounded-full border border-border bg-muted px-2 py-1 text-xs whitespace-nowrap">
+                      가격{" "}
+                      {priceMin !== null
+                        ? `${priceMin.toLocaleString()}원`
+                        : "0원"}
+                      ~
+                      {priceMax !== null
+                        ? `${priceMax.toLocaleString()}원`
+                        : "제한 없음"}
+                    </span>
+                  )}
+                  {rentOnly && (
+                    <span className="inline-flex shrink-0 items-center rounded-full border border-border bg-muted px-2 py-1 text-xs whitespace-nowrap">
+                      대여 가능
+                    </span>
+                  )}
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleResetAll}
+                    className="h-7 shrink-0 whitespace-nowrap px-2 text-xs"
+                  >
+                    전체 초기화
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* 콘텐츠 */}
@@ -796,9 +785,7 @@ export default function FilterableRacketList({
                   key={racket.id}
                   racket={racket}
                   viewMode={effectiveViewMode}
-                  brandLabel={
-                    brandLabelMap[racket.brand.toLowerCase()] ?? racket.brand
-                  }
+                  brandLabel={racketBrandLabel(racket.brand)}
                   isApplyFlow={isApplyFlow}
                 />
               ))}

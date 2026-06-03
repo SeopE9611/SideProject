@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import StatusBadge from "@/components/badges/StatusBadge";
+import { racketBrandLabel } from "@/lib/constants";
 
 // 간단 fetcher (쿠키 포함 필요 시 credentials 옵션)
 const fetcher = (url: string) =>
@@ -111,7 +112,7 @@ export default function RacketsClient() {
                 {it.images?.[0] ? (
                   <Image
                     src={it.images[0]}
-                    alt={`${it.brand} ${it.model}`}
+                    alt={`${racketBrandLabel(it.brand)} ${it.model}`}
                     fill
                     sizes="(max-width:768px) 50vw, (max-width:1200px) 33vw, 25vw"
                     className="object-cover"
@@ -123,12 +124,18 @@ export default function RacketsClient() {
                 )}
                 {it.rental?.enabled === false && (
                   <div className="absolute top-2 left-2 shadow">
-                    <StatusBadge kind="rental" state="unavailable" surface="image" />
+                    <StatusBadge
+                      kind="rental"
+                      state="unavailable"
+                      surface="image"
+                    />
                   </div>
                 )}
               </div>
               <div className="p-3 space-y-1">
-                <div className="text-sm text-muted-foreground">{it.brand}</div>
+                <div className="text-sm text-muted-foreground">
+                  {racketBrandLabel(it.brand)}
+                </div>
                 <div className="font-medium group-hover:underline">
                   {it.model}
                 </div>

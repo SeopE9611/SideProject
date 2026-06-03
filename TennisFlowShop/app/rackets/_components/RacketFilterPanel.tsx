@@ -14,6 +14,14 @@ import { Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SkeletonFilterDetailed } from "@/app/products/components/SkeletonProductCard";
 
+const RACKET_PRICE_PRESETS: { label: string; range: [number, number] }[] = [
+  { label: "전체", range: [0, 10000000] },
+  { label: "5만원 이하", range: [0, 50000] },
+  { label: "5만원 ~ 10만원", range: [50000, 100000] },
+  { label: "10만원 ~ 15만원", range: [100000, 150000] },
+  { label: "15만원 이상", range: [150000, 10000000] },
+];
+
 type Props = {
   selectedBrand: string | null;
   setSelectedBrand: (v: string | null) => void;
@@ -25,6 +33,8 @@ type Props = {
   priceMax: number | null;
   onChangePriceMin: (v: number | null) => void;
   onChangePriceMax: (v: number | null) => void;
+  rentOnly: boolean;
+  setRentOnly: (v: boolean) => void;
   resetKey: number;
   activeFiltersCount: number;
   onReset: () => void;
@@ -49,6 +59,8 @@ export default function RacketFilterPanel({
   priceMax,
   onChangePriceMin,
   onChangePriceMax,
+  rentOnly,
+  setRentOnly,
   resetKey,
   activeFiltersCount,
   onReset,
@@ -150,14 +162,22 @@ export default function RacketFilterPanel({
                 </button>
               )}
             </div>
-            <Button type="submit" size="sm" variant="default" className="h-10 px-4">
+            <Button
+              type="submit"
+              size="sm"
+              variant="default"
+              className="h-10 px-4"
+            >
               검색
             </Button>
           </form>
 
           {/* 브랜드 */}
           <div className="mb-5 space-y-2">
-            <Label htmlFor="brand" className="block text-sm font-medium text-foreground">
+            <Label
+              htmlFor="brand"
+              className="block text-sm font-medium text-foreground"
+            >
               브랜드
             </Label>
             <Select
@@ -182,9 +202,12 @@ export default function RacketFilterPanel({
 
           {/* 상태 등급 */}
           <div className="mb-5 space-y-2">
-            <Label className="text-sm font-medium text-foreground">상태 등급</Label>
+            <Label className="text-sm font-medium text-foreground">
+              상태 등급
+            </Label>
             <p className="text-xs text-muted-foreground leading-relaxed break-keep">
-              A는 사용감이 적은 최상급, B는 일반 사용감이 있는 양호, C는 사용감이 비교적 있는 보통 상태입니다.
+              A는 사용감이 적은 최상급, B는 일반 사용감이 있는 양호, C는
+              사용감이 비교적 있는 보통 상태입니다.
             </p>
             <Select
               value={selectedCondition ?? "all"}
@@ -204,43 +227,78 @@ export default function RacketFilterPanel({
             </Select>
           </div>
 
-          {/* 가격 범위 */}
-          <div className="space-y-2">
-            <Label className="text-sm font-medium text-foreground">가격 범위</Label>
-            <div className="flex gap-2 items-center">
-              <Input
-                type="number"
-                value={priceMin ?? ""}
-                onChange={(e) => {
-                  const raw = e.target.value.replace(/\D/g, "");
-                  onChangePriceMin(raw === "" ? null : Number(raw));
-                }}
-                placeholder="최소"
-                className="rounded-lg border border-input bg-background"
-              />
-              <span className="text-muted-foreground">~</span>
-              <Input
-                type="number"
-                value={priceMax ?? ""}
-                onChange={(e) => {
-                  const raw = e.target.value.replace(/\D/g, "");
-                  onChangePriceMax(raw === "" ? null : Number(raw));
-                }}
-                placeholder="최대"
-                className="rounded-lg border border-input bg-background"
-              />
+          {/* 이용 유형 */}
+          <div className="mb-5 space-y-2">
+            <Label className="text-sm font-medium text-foreground">
+              이용 유형
+            </Label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setRentOnly(false)}
+                className={cn(
+                  "rounded-md border px-3 py-2 text-sm font-medium transition-colors",
+                  !rentOnly
+                    ? "border-primary bg-primary/15 text-primary dark:bg-primary/30 dark:text-primary-foreground"
+                    : "border-border bg-background text-muted-foreground hover:bg-muted",
+                )}
+              >
+                전체
+              </button>
+              <button
+                type="button"
+                onClick={() => setRentOnly(true)}
+                className={cn(
+                  "rounded-md border px-3 py-2 text-sm font-medium transition-colors",
+                  rentOnly
+                    ? "border-primary bg-primary/15 text-primary dark:bg-primary/30 dark:text-primary-foreground"
+                    : "border-border bg-background text-muted-foreground hover:bg-muted",
+                )}
+              >
+                대여 가능
+              </button>
             </div>
-            <div className="flex justify-between text-xs text-muted-foreground mt-2">
-              <span>
-                {priceMin !== null
-                  ? `₩${priceMin.toLocaleString()}`
-                  : "최소 미설정"}
-              </span>
-              <span>
-                {priceMax !== null
-                  ? `₩${priceMax.toLocaleString()}`
-                  : "최대 미설정"}
-              </span>
+          </div>
+
+          {/* 가격대 */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium text-foreground">
+              가격대
+            </Label>
+            <div className="max-w-full overflow-x-auto pb-1">
+              <div className="flex w-max gap-2">
+                {RACKET_PRICE_PRESETS.map((preset) => {
+                  const effectiveMin = priceMin ?? 0;
+                  const effectiveMax = priceMax ?? 10000000;
+                  const isActive =
+                    effectiveMin === preset.range[0] &&
+                    effectiveMax === preset.range[1];
+
+                  return (
+                    <button
+                      key={preset.label}
+                      type="button"
+                      onClick={() => {
+                        if (preset.label === "전체") {
+                          onChangePriceMin(null);
+                          onChangePriceMax(null);
+                          return;
+                        }
+                        onChangePriceMin(preset.range[0]);
+                        onChangePriceMax(preset.range[1]);
+                      }}
+                      className={cn(
+                        "min-w-max shrink-0 whitespace-nowrap rounded-md border px-3 py-1.5 text-xs transition-colors bp-sm:text-sm",
+                        isActive
+                          ? "border-primary bg-primary/15 text-primary dark:bg-primary/30 dark:text-primary-foreground"
+                          : "border-border bg-background text-muted-foreground hover:bg-muted",
+                      )}
+                    >
+                      {preset.label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </motion.div>
