@@ -4,6 +4,7 @@ import {
   submitStringingApplicationCore,
   type StringingApplicationInput,
 } from "@/app/features/stringing-applications/api/submit-core";
+import { getEffectiveProductPrice } from "@/lib/product-pricing";
 import { deductPoints, getPointsSummary } from "@/lib/points.service";
 import type { MongoClient, Db } from "mongodb";
 import { ObjectId } from "mongodb";
@@ -308,6 +309,7 @@ export async function createRentalOrderCore(params: {
           projection: {
             name: 1,
             price: 1,
+            inventory: 1,
             mountingFee: 1,
             images: 1,
             gaugeOptions: 1,
@@ -383,7 +385,7 @@ export async function createRentalOrderCore(params: {
       requested: true,
       stringId: (s as any)._id,
       name: String((s as any).name ?? ""),
-      price: Number((s as any).price ?? 0),
+      price: getEffectiveProductPrice(s),
       mountingFee: Number((s as any).mountingFee ?? 0),
       image: firstImg,
       ...(selectedGauge ? { selectedGauge } : {}),
@@ -425,6 +427,7 @@ export async function createRentalOrderCore(params: {
     15: racket.rental?.fee?.d15 ?? 0,
     30: racket.rental?.fee?.d30 ?? 0,
   } as const;
+  // TODO: 라켓 대여료 할인은 구매 salePrice와 별도 정책으로 설계 필요. 예: rental.saleFee.d7/d15/d30 또는 rental.discount.enabled/rate.
   const fee = feeMap[days] ?? 0;
   const deposit = Number(racket.rental?.deposit ?? 0);
   const stringPrice = requested ? Number(stringingSnap?.price ?? 0) : 0;
