@@ -160,6 +160,39 @@ const ProductCard = React.memo(
       ...(inventory?.isFeatured === true || inventory?.isFeatured === "true" || inventory?.isFeatured === 1 ? (["추천"] as const) : []),
     ];
 
+    const soldOutOverlay = isSoldOut ? (
+      <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-background/45 backdrop-blur-sm">
+        <Badge variant="secondary" className="rounded-full border border-border/70 bg-card/95 px-4 py-1.5 text-sm font-bold text-foreground shadow-sm">
+          품절
+        </Badge>
+      </div>
+    ) : null;
+
+    const priceBlock = (align: "left" | "right" = "right") => (
+      <div className={cn("flex flex-col gap-1 tabular-nums", align === "right" ? "items-end text-right" : "items-start text-left")}>
+        {isSale ? (
+          <>
+            <div className={cn("flex items-baseline gap-1.5", align === "right" && "justify-end")}>
+              <span className="text-[11px] text-muted-foreground">할인가</span>
+              <span className="whitespace-nowrap text-lg font-bold text-foreground bp-sm:text-xl">{displayPrice.toLocaleString()}원</span>
+            </div>
+            <div className={cn("flex flex-wrap items-center gap-1.5", align === "right" && "justify-end")}>
+              <span className="text-[11px] text-muted-foreground">정가</span>
+              <span className="whitespace-nowrap text-xs text-muted-foreground line-through">{regularPrice.toLocaleString()}원</span>
+              <Badge variant="outline" className={cn("shrink-0 whitespace-nowrap text-xs", badgeToneClass("danger"))}>
+                {saleRate}% OFF
+              </Badge>
+            </div>
+          </>
+        ) : (
+          <div className={cn("flex items-baseline gap-1.5", align === "right" && "justify-end")}>
+            <span className="text-[11px] text-muted-foreground">판매가</span>
+            <span className="whitespace-nowrap text-lg font-bold text-foreground bp-sm:text-xl">{displayPrice.toLocaleString()}원</span>
+          </div>
+        )}
+      </div>
+    );
+
     const detailHref = isApplyFlow ? `/products/${product._id}?from=apply` : `/products/${product._id}`;
 
     const setBuyNowItem = useBuyNowStore((s) => s.setItem);
@@ -217,8 +250,9 @@ const ProductCard = React.memo(
           <div className="flex flex-col bp-md:flex-row relative z-10">
             <div className="relative w-full bp-md:w-[280px] bp-xl:w-[320px] aspect-[4/3] flex-shrink-0 overflow-hidden bg-secondary/30">
               <Image src={(product.images?.[0] as string) || "/placeholder.svg?height=200&width=200&query=tennis+string"} alt={product.name} fill sizes="(max-width: 768px) 100vw, (max-width: 1536px) 280px, 320px" className="object-contain" />
+              {soldOutOverlay}
               {merchandisingBadges.length > 0 && (
-                <div className="absolute left-3 top-3 z-10 flex flex-wrap gap-1.5">
+                <div className="absolute left-3 top-3 z-20 flex flex-wrap gap-1.5">
                   {merchandisingBadges.map((badge) => (
                     <Badge key={`${product._id}-${badge}`} className={cn(merchandisingImageBadgeClass(badge))}>
                       {badge}
@@ -233,7 +267,7 @@ const ProductCard = React.memo(
                   <div className="mb-1 max-w-full truncate text-sm font-medium text-foreground/80" title={brandLabel}>
                     {brandLabel}
                   </div>
-                  <h3 className="mb-2 line-clamp-2 break-words text-base font-bold text-foreground sm:text-lg md:text-xl" title={product.name}>
+                  <h3 className="mb-2 line-clamp-2 break-words text-base font-bold text-foreground sm:text-lg md:text-xl bp-lg:line-clamp-3" title={product.name}>
                     {product.name}
                   </h3>
                   <div className="flex items-center gap-2 mb-2">
@@ -241,15 +275,7 @@ const ProductCard = React.memo(
                     <span className="text-sm text-foreground/80">({ratingCount})</span>
                   </div>
                 </div>
-                <div className="flex items-baseline gap-2 flex-wrap">
-                  <div className="whitespace-nowrap tabular-nums text-xl font-bold text-primary sm:text-2xl">{displayPrice.toLocaleString()}원</div>
-                  {isSale && <span className="whitespace-nowrap tabular-nums text-sm text-muted-foreground line-through">{regularPrice.toLocaleString()}원</span>}
-                  {isSale && (
-                    <Badge variant="outline" className={cn("shrink-0 whitespace-nowrap text-xs", badgeToneClass("danger"))}>
-                      {saleRate}% OFF
-                    </Badge>
-                  )}
-                </div>
+                {priceBlock("left")}
               </div>
 
               {featureEntries.length > 0 && (
@@ -326,9 +352,10 @@ const ProductCard = React.memo(
           <Link href={detailHref} aria-label={`${product.name} ${isApplyFlow ? "교체 신청" : "상세 보기"}`} className="absolute inset-0 block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
             <Image src={(product.images?.[0] as string) || "/placeholder.svg?height=300&width=300&query=tennis+string"} alt={product.name} fill sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover" />
           </Link>
+          {soldOutOverlay}
 
           {merchandisingBadges.length > 0 && (
-            <div className="absolute left-3 top-3 z-10 flex flex-wrap gap-1.5">
+            <div className="absolute left-3 top-3 z-20 flex flex-wrap gap-1.5">
               {merchandisingBadges.map((badge) => (
                 <Badge key={`${product._id}-${badge}`} className={cn(merchandisingImageBadgeClass(badge))}>
                   {badge}
@@ -341,11 +368,11 @@ const ProductCard = React.memo(
         {/* 카드 콘텐츠 */}
         <CardContent className="flex flex-1 flex-col p-4 sm:p-5">
           <Link href={detailHref} className="block min-w-0 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
-            <div className="min-h-[48px]">
+            <div>
               <div className="mb-1.5 max-w-full truncate text-xs font-medium text-muted-foreground" title={brandLabel}>
                 {brandLabel}
               </div>
-              <CardTitle className="mb-2 min-h-[2.5rem] line-clamp-2 break-words text-sm font-semibold leading-snug text-foreground transition-colors group-hover:text-foreground sm:min-h-[3rem] sm:text-base" title={product.name}>
+              <CardTitle className="mb-2 line-clamp-2 break-words text-sm font-semibold leading-snug text-foreground transition-colors group-hover:text-foreground sm:text-base bp-lg:line-clamp-3" title={product.name}>
                 {product.name}
               </CardTitle>
             </div>
@@ -369,17 +396,7 @@ const ProductCard = React.memo(
             )}
 
             <div className="flex min-h-[64px] justify-end pt-1">
-              <div className="flex flex-col items-end justify-end text-right space-y-1">
-                {isSale && (
-                  <div className="flex justify-end">
-                    <Badge variant="outline" className={cn("h-5 shrink-0 whitespace-nowrap rounded-full px-2 text-[11px] font-semibold", badgeToneClass("danger"))}>
-                      {saleRate}% OFF
-                    </Badge>
-                  </div>
-                )}
-                <div className="whitespace-nowrap tabular-nums text-lg font-bold text-foreground">{displayPrice.toLocaleString()}원</div>
-                {isSale && <div className="whitespace-nowrap tabular-nums text-xs text-muted-foreground line-through">{regularPrice.toLocaleString()}원</div>}
-              </div>
+              {priceBlock("right")}
             </div>
           </Link>
         </CardContent>

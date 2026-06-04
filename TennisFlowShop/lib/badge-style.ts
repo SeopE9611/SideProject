@@ -51,10 +51,10 @@ export type MerchandisingImageBadgeLabel = "NEW" | "추천";
 
 export function merchandisingImageBadgeClass(label: MerchandisingImageBadgeLabel) {
   if (label === "NEW") {
-    return "h-6 rounded-md border border-blue-300 bg-blue-50 px-2.5 text-[11px] font-semibold leading-none text-blue-700 dark:border-blue-700 dark:bg-blue-950/40 dark:text-blue-300";
+    return "h-7 rounded-lg border border-blue-300 bg-blue-100 px-3 text-xs font-bold leading-none text-blue-700 dark:border-blue-700 dark:bg-blue-950/60 dark:text-blue-200";
   }
 
-  return "h-6 rounded-md border border-emerald-300 bg-emerald-50 px-2.5 text-[11px] font-semibold leading-none text-emerald-700 dark:border-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300";
+  return "h-7 rounded-lg border border-emerald-300 bg-emerald-100 px-3 text-xs font-bold leading-none text-emerald-700 dark:border-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-200";
 }
 
 export const SEMANTIC_BADGE_VARIANT = {

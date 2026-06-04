@@ -207,31 +207,35 @@ const RacketCard = React.memo(
       </div>
     );
 
-    const priceBlock = (align: "left" | "right" = "left") => (
+    const priceBlock = (align: "left" | "right" = "right") => (
       <div
-        className={cn("tabular-nums", align === "right" && "bp-md:text-right")}
+        className={cn("flex flex-col gap-1 tabular-nums", align === "right" ? "items-end text-right" : "items-start text-left")}
       >
         {hasSalePrice ? (
-          <div
-            className={cn(
-              "flex flex-wrap items-baseline gap-2",
-              align === "right" && "bp-md:justify-end",
-            )}
-          >
-            <span className="font-bold text-primary">
-              {salePrice.toLocaleString()}원
-            </span>
-            <span className="text-sm text-muted-foreground line-through">
+          <>
+            <div className={cn("flex items-baseline gap-1.5", align === "right" && "justify-end")}>
+              <span className="text-[11px] text-muted-foreground">할인가</span>
+              <span className="whitespace-nowrap text-lg font-bold text-foreground bp-sm:text-xl">
+                {salePrice.toLocaleString()}원
+              </span>
+            </div>
+            <div className={cn("flex flex-wrap items-center gap-1.5", align === "right" && "justify-end")}>
+              <span className="text-[11px] text-muted-foreground">정가</span>
+              <span className="whitespace-nowrap text-xs text-muted-foreground line-through">
+                {racket.price.toLocaleString()}원
+              </span>
+              <Badge variant="outline" className={cn("shrink-0 whitespace-nowrap text-xs", benefitBadgeClass.off)}>
+                {discountRate}% OFF
+              </Badge>
+            </div>
+          </>
+        ) : (
+          <div className={cn("flex items-baseline gap-1.5", align === "right" && "justify-end")}>
+            <span className="text-[11px] text-muted-foreground">판매가</span>
+            <span className="whitespace-nowrap text-lg font-bold text-foreground bp-sm:text-xl">
               {racket.price.toLocaleString()}원
             </span>
-            <Badge variant="outline" className={cn("shrink-0 whitespace-nowrap text-xs", benefitBadgeClass.off)}>
-              {discountRate}% OFF
-            </Badge>
           </div>
-        ) : (
-          <span className="font-bold text-foreground">
-            {racket.price.toLocaleString()}원
-          </span>
         )}
       </div>
     );
@@ -359,7 +363,7 @@ const RacketCard = React.memo(
                 </div>
                 <Link href={`/rackets/${racket.id}`} className="block min-w-0">
                   <h3
-                    className="line-clamp-2 break-keep text-lg font-bold leading-snug text-foreground bp-sm:text-xl"
+                    className="line-clamp-2 break-keep text-lg font-bold leading-snug text-foreground bp-sm:text-xl bp-lg:line-clamp-3"
                     title={racket.model}
                   >
                     {racket.model}
@@ -377,7 +381,7 @@ const RacketCard = React.memo(
             </div>
 
             <div className="flex shrink-0 flex-col justify-between border-t border-border/60 p-4 bp-md:w-[280px] bp-lg:w-[300px] bp-md:border-l bp-md:border-t-0 bp-md:p-5">
-              <div className="text-xl bp-md:text-2xl">
+              <div>
                 {priceBlock("right")}
               </div>
               <div className="mt-4 space-y-2">
@@ -434,7 +438,7 @@ const RacketCard = React.memo(
           </div>
           <Link href={`/rackets/${racket.id}`} className="block min-w-0">
             <CardTitle
-              className="mb-2 min-h-[2.75rem] line-clamp-2 break-keep text-base leading-snug transition-colors group-hover:text-primary dark:group-hover:text-primary bp-sm:min-h-[3.25rem] bp-sm:text-lg bp-md:text-xl"
+              className="mb-2 line-clamp-2 break-keep text-base leading-snug transition-colors group-hover:text-primary dark:group-hover:text-primary bp-sm:text-lg bp-md:text-xl bp-lg:line-clamp-3"
               title={racket.model}
             >
               {racket.model}
@@ -453,7 +457,7 @@ const RacketCard = React.memo(
 
         <CardFooter className="mt-auto p-3 pt-0 bp-sm:p-6 bp-sm:pt-0">
           <div className="w-full">
-            <div className="min-h-[2.5rem] text-base bp-sm:text-xl bp-md:text-2xl">
+            <div>
               {priceBlock()}
             </div>
 
