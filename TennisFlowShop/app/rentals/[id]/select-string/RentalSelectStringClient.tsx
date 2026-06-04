@@ -191,6 +191,29 @@ function getVariantBySelection(product: any, colorValue: string, gaugeValue: str
   );
 }
 
+function hasSelectableStringStock(product: any) {
+  const variantRows = normalizeVariantRows(product);
+  if (variantRows.length > 0) {
+    return variantRows.some((row) => isSellableVariant(row));
+  }
+
+  const gaugeRows = normalizeGaugeRows(product);
+  if (gaugeRows.length > 0) {
+    return gaugeRows.some((row) => !row.isSoldOut && row.stock > 0);
+  }
+
+  const colorRows = normalizeColorRows(product);
+  if (colorRows.length > 0) {
+    return colorRows.some((row) => !isColorSoldOut(row));
+  }
+
+  if (product?.inventory?.manageStock === true) {
+    return Number(product?.inventory?.stock ?? 0) > 0;
+  }
+
+  return true;
+}
+
 export default function RentalSelectStringClient({
   racket,
   period,
@@ -202,6 +225,7 @@ export default function RentalSelectStringClient({
   const [selectedGaugeByStringId, setSelectedGaugeByStringId] = useState<Record<string, string>>({});
   const [selectedColorByStringId, setSelectedColorByStringId] = useState<Record<string, string>>({});
   const [stringSearchQuery, setStringSearchQuery] = useState("");
+  const [debouncedStringSearchQuery, setDebouncedStringSearchQuery] = useState("");
   const [stockFilter, setStockFilter] = useState<"all" | "available">("all");
 
   const { products, isLoadingInitial, isFetchingMore, hasMore, loadMore } =
@@ -292,23 +316,24 @@ export default function RentalSelectStringClient({
     const url = `/rentals/${encodeURIComponent(racket.id)}/checkout?${params.toString()}`;
     router.push(url);
   };
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setDebouncedStringSearchQuery(stringSearchQuery.trim());
+    }, 300);
+
+    return () => window.clearTimeout(timer);
+  }, [stringSearchQuery]);
+
   const filteredProducts = useMemo(() => {
-    const query = stringSearchQuery.trim().toLowerCase();
+    const query = debouncedStringSearchQuery.toLowerCase();
     return (products ?? []).filter((product: any) => {
       const haystack = [product?.name, product?.brand, product?.material]
         .map((value) => String(value ?? "").toLowerCase())
         .join(" ");
       const matchesQuery = !query || haystack.includes(query);
-      const stock = Number(product?.inventory?.stock ?? 0);
-      const hasSelectableStock =
-        normalizeVariantRows(product).some((row) => isSellableVariant(row)) ||
-        normalizeGaugeRows(product).some((row) => !row.isSoldOut && row.stock > 0) ||
-        normalizeColorRows(product).some((row) => !isColorSoldOut(row)) ||
-        product?.inventory?.manageStock !== true ||
-        stock > 0;
-      return matchesQuery && (stockFilter === "all" || hasSelectableStock);
+      return matchesQuery && (stockFilter === "all" || hasSelectableStringStock(product));
     });
-  }, [products, stockFilter, stringSearchQuery]);
+  }, [debouncedStringSearchQuery, products, stockFilter]);
 
 
   return (
@@ -407,21 +432,29 @@ export default function RentalSelectStringClient({
             </p>
           </div>
           <div className="grid gap-2 rounded-2xl border border-border bg-card p-3 shadow-sm bp-md:grid-cols-[minmax(0,1fr)_180px]">
-            <Input
-              value={stringSearchQuery}
-              onChange={(event) => setStringSearchQuery(event.target.value)}
-              placeholder="스트링명/브랜드 검색"
-              className="h-10"
-            />
+            <div className="space-y-1">
+              <Input
+                value={stringSearchQuery}
+                onChange={(event) => setStringSearchQuery(event.target.value)}
+                placeholder="스트링명/브랜드 검색"
+                className="h-10"
+              />
+              <p className="px-1 text-xs text-muted-foreground">
+                입력을 멈추면 자동으로 검색됩니다.
+              </p>
+            </div>
             <Select value={stockFilter} onValueChange={(value) => setStockFilter(value as "all" | "available")}>
               <SelectTrigger className="h-10">
                 <SelectValue placeholder="재고 필터" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">전체 스트링</SelectItem>
-                <SelectItem value="available">선택 가능 재고만</SelectItem>
+                <SelectItem value="available">재고 있는 스트링만</SelectItem>
               </SelectContent>
             </Select>
+            <p className="break-keep text-xs leading-relaxed text-muted-foreground bp-md:col-span-2">
+              “재고 있는 스트링만”은 선택 가능한 색상/게이지 조합이 하나 이상 있는 상품을 보여줍니다.
+            </p>
           </div>
 
           {isLoadingInitial ? (
@@ -444,6 +477,23 @@ export default function RentalSelectStringClient({
               <p className="mt-2 break-keep text-sm text-muted-foreground">스트링 상품의 장착 서비스 설정을 확인해주세요.</p>
               <Button asChild variant="outline" className="mt-4">
                 <Link href="/services/apply">교체서비스 신청 화면으로 돌아가기</Link>
+              </Button>
+            </div>
+          ) : filteredProducts.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-border bg-card p-6 text-center">
+              <p className="text-base font-semibold text-foreground">조건에 맞는 스트링이 없습니다.</p>
+              <p className="mt-2 break-keep text-sm text-muted-foreground">검색어 또는 재고 필터를 다시 확인해 주세요.</p>
+              <Button
+                type="button"
+                variant="outline"
+                className="mt-4"
+                onClick={() => {
+                  setStringSearchQuery("");
+                  setDebouncedStringSearchQuery("");
+                  setStockFilter("all");
+                }}
+              >
+                검색/필터 초기화
               </Button>
             </div>
           ) : (
@@ -715,7 +765,7 @@ export default function RentalSelectStringClient({
           )}
 
           {/* Load More */}
-          {hasMore && (
+          {hasMore && filteredProducts.length > 0 && (
             <div className="flex justify-center pt-4">
               <Button
                 variant="outline"

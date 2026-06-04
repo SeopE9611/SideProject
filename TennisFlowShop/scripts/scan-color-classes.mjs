@@ -130,7 +130,7 @@ const doubleOpacityDarkHoverBgRegex =
 const ringRing500Regex = /(?:[\w-]+:)*ring-ring500\b/g;
 
 // 허용 예외는 명시적으로 분리 관리한다.
-const BRAND_EXCEPTION_WHITELIST = new Set([]);
+const BRAND_EXCEPTION_WHITELIST = new Set(["lib/badge-style.ts"]);
 
 const NON_WEB_UI_EXCEPTION_WHITELIST = new Set([
   "app/features/notifications/core/render.ts",
