@@ -19,7 +19,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { badgeToneClass, racketStockBadgeVariant } from "@/lib/badge-style";
+import { badgeToneClass, racketStockBadgeVariant, usedBadgeMeta } from "@/lib/badge-style";
 import {
   gripSizeLabel,
   racketBrandLabel,
@@ -29,6 +29,7 @@ import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { getEffectiveRacketPrice, getRacketDiscountRate } from "@/lib/racket-pricing";
 import { addRecentViewedItem } from "@/lib/recent-viewed";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import { cn } from "@/lib/utils";
 import {
   ArrowLeft,
   Calendar,
@@ -74,6 +75,22 @@ const ReviewEditDialog = dynamic(() => import("./ReviewEditDialog"), {
   loading: () => null,
 });
 
+function ConditionBadge({ state }: { state: string }) {
+  const meta = usedBadgeMeta("condition", state);
+
+  return (
+    <Badge
+      variant="neutral"
+      className={cn(
+        "rounded px-2 py-0.5 text-xs font-medium shadow-sm",
+        meta.className,
+      )}
+    >
+      상태: {meta.label}
+    </Badge>
+  );
+}
+
 export default function RacketDetailClient({
   racket,
   stock,
@@ -116,8 +133,7 @@ export default function RacketDetailClient({
   const benefitBadgeClass = {
     featured: badgeToneClass("success"),
     new: badgeToneClass("info"),
-    off: badgeToneClass("danger"),
-  };
+    };
 
   useEffect(() => {
     if (!racketId || !racket?.model) return;
@@ -126,7 +142,7 @@ export default function RacketDetailClient({
       type: "racket",
       id: racketId,
       name: `${brandLabel} ${racket.model}`.trim(),
-      subtitle: racket?.condition ? `상태 ${racket.condition}` : "라켓",
+      subtitle: racket?.condition ? `상태: ${usedBadgeMeta("condition", racket.condition).label}` : "라켓",
       image: racket?.images?.[0],
       href: `/rackets/${racketId}`,
       price: Number.isFinite(safePrice) ? safePrice : null,
@@ -605,7 +621,7 @@ export default function RacketDetailClient({
                       {racket.model}
                     </h1>
                     <div className="mt-2 flex flex-wrap items-center gap-2">
-                      <StatusBadge kind="condition" state={racket.condition} />
+                      <ConditionBadge state={racket.condition} />
 
                       {racket?.rental?.enabled === false ? (
                         <StatusBadge kind="rental" state="unavailable" />
@@ -644,7 +660,7 @@ export default function RacketDetailClient({
                   </div>
 
                   {/* 혜택 배지 */}
-                  {(racket?.marketing?.isFeatured || racket?.marketing?.isNew || hasSalePrice) && (
+                  {(racket?.marketing?.isFeatured || racket?.marketing?.isNew) && (
                     <div className="flex flex-wrap items-center gap-2">
                       {racket?.marketing?.isFeatured && (
                         <Badge variant="outline" className={benefitBadgeClass.featured}>추천</Badge>
@@ -652,30 +668,29 @@ export default function RacketDetailClient({
                       {racket?.marketing?.isNew && (
                         <Badge variant="outline" className={benefitBadgeClass.new}>NEW</Badge>
                       )}
-                      {hasSalePrice && (
-                        <Badge variant="outline" className={benefitBadgeClass.off}>{discountRate}% OFF</Badge>
-                      )}
                     </div>
                   )}
 
                   {/* 가격 정보 */}
                   <div className="space-y-2">
-                    <div className="flex items-baseline gap-3">
+                    <div className="flex items-baseline gap-3 flex-wrap">
                       {hasSalePrice ? (
                         <>
-                          <span className="text-3xl font-bold text-primary">
-                            {salePrice.toLocaleString()}원
+                          <span className="whitespace-nowrap tabular-nums text-3xl sm:text-4xl font-bold text-foreground tracking-normal">
+                            {salePrice.toLocaleString()}
+                            <span className="text-xl sm:text-2xl font-medium ml-0.5">원</span>
                           </span>
-                          <span className="text-lg text-muted-foreground line-through">
+                          <span className="whitespace-nowrap tabular-nums text-lg sm:text-xl text-muted-foreground/60 line-through">
                             {racket.price?.toLocaleString()}원
                           </span>
-                          <Badge variant="outline" className={benefitBadgeClass.off}>
+                          <span className="shrink-0 whitespace-nowrap text-sm font-semibold text-destructive bg-destructive/10 px-2.5 py-1 rounded-lg">
                             {discountRate}% OFF
-                          </Badge>
+                          </span>
                         </>
                       ) : (
-                        <span className="text-3xl font-bold text-primary">
-                          {racket.price?.toLocaleString()}원
+                        <span className="whitespace-nowrap tabular-nums text-3xl sm:text-4xl font-bold text-foreground tracking-normal">
+                          {racket.price?.toLocaleString()}
+                          <span className="text-xl sm:text-2xl font-medium ml-0.5">원</span>
                         </span>
                       )}
                     </div>
@@ -850,7 +865,7 @@ export default function RacketDetailClient({
                   <div className="rounded-lg bg-muted p-4 md:p-6">
                     <p className="text-foreground leading-relaxed text-lg">
                       {racketBrandLabel(racket.brand)} {racket.model} 중고
-                      라켓입니다. 상태 등급은 {racket.condition}이며, 전문가의
+                      라켓입니다. 상태 등급은 {usedBadgeMeta("condition", racket.condition).label}이며, 전문가의
                       검수를 거쳐 안전하게 사용하실 수 있습니다.
                       {racket?.rental?.enabled &&
                         " 대여 서비스도 이용 가능합니다."}
@@ -937,7 +952,7 @@ export default function RacketDetailClient({
                       <div className="flex items-center justify-between">
                         <span className="font-semibold text-primary">상태</span>
                         <span className="text-foreground font-medium">
-                          {racket.condition}
+                          상태: {usedBadgeMeta("condition", racket.condition).label}
                         </span>
                       </div>
                     </div>
@@ -1345,9 +1360,6 @@ export default function RacketDetailClient({
                       <span className="text-xs text-muted-foreground line-through">
                         {racket.price?.toLocaleString()}원
                       </span>
-                      <Badge variant="outline" className={benefitBadgeClass.off}>
-                        {discountRate}% OFF
-                      </Badge>
                     </>
                   )}
                 </div>
