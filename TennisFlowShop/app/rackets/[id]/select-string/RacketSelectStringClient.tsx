@@ -13,7 +13,7 @@ import {
   getVariantBySelection,
   isSellableVariant,
   getColorLabel,
-} from "@/app/components/select-string/StringCard";
+} from "@/lib/products/string-stock";
 
 type RacketMini = {
   id: string;
@@ -377,8 +377,8 @@ export default function RacketSelectStringClient({
       initialSelectedGauge={initialSelectedGauge}
       initialSelectedColor={initialSelectedColor}
       isCartEditMode={isFromCart}
-      ctaLabel={isFromCart ? "이 스트링으로 변경" : "이 스트링 선택하고 구매 계속하기"}
-      ctaSubLabel={isFromCart ? "장바구니로 돌아갑니다" : "선택한 스트링은 라켓과 함께 한 번에 결제됩니다"}
+      ctaLabel={isFromCart ? "이 스트링으로 변경" : "구매 계속하기"}
+      ctaSubLabel={isFromCart ? "장바구니로 돌아갑니다" : "선택한 스트링은 라켓과 함께 결제됩니다"}
     />
   );
 }

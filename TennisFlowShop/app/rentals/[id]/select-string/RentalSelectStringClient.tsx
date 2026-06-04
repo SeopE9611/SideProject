@@ -72,7 +72,7 @@ export default function RentalSelectStringClient({
       onSkipString={handleSkipString}
       showQuantityControls={false}
       ctaLabel="대여 계속하기"
-      ctaSubLabel="선택 후 장착 정보 입력 단계로 이어집니다"
+      ctaSubLabel="선택 후 장착 정보 입력 단계로 이동합니다"
     />
   );
 }

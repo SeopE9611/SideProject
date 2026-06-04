@@ -10,6 +10,7 @@ import { badgeToneClass, merchandisingImageBadgeClass } from "@/lib/badge-style"
 import { isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
 import { ENABLE_STRING_STANDALONE_ORDER } from "@/lib/orders/string-standalone-policy";
 import { normalizeFeatureScoreTo100 } from "@/lib/product-feature-score";
+import { hasSelectableStringStock } from "@/lib/products/string-stock";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { Eye, Heart, Star } from "lucide-react";
@@ -31,6 +32,12 @@ export type Product = {
   ratingAvg?: number; // reviews API가 업데이트하는 필드
   ratingCount?: number; // 리뷰 개수
   ratingAverage?: number; // 레거시/호환(maintenance에서 쓰던 키)
+  gaugeOptions?: string[];
+  gaugeInventories?: unknown[];
+  color?: string;
+  colorOptions?: string[];
+  colorInventories?: unknown[];
+  variantInventories?: unknown[];
   inventory?: {
     stock?: number;
     status?: "instock" | "outofstock" | "backorder" | string;
@@ -150,7 +157,8 @@ const ProductCard = React.memo(
     const allowBackorder = inventory?.allowBackorder === true;
     const status = String(inventory?.status ?? "");
 
-    const isSoldOut = status === "outofstock" || (manageStock && (stockRaw ?? 0) <= 0 && !allowBackorder);
+    const optionBasedSoldOut = !hasSelectableStringStock(product);
+    const isSoldOut = status === "outofstock" || optionBasedSoldOut || (manageStock && (stockRaw ?? 0) <= 0 && !allowBackorder);
     const stockForItem = typeof stockRaw === "number" ? stockRaw : undefined;
     const canCheckoutWithService = isMountableStringByFee(product.mountingFee);
     const featureEntries = getFeatureEntries(product.features);
@@ -367,7 +375,7 @@ const ProductCard = React.memo(
 
         {/* 카드 콘텐츠 */}
         <CardContent className="flex flex-1 flex-col p-4 sm:p-5">
-          <Link href={detailHref} className="block min-w-0 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+          <Link href={detailHref} className="flex min-w-0 flex-1 flex-col rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
             <div>
               <div className="mb-1.5 max-w-full truncate text-xs font-medium text-muted-foreground" title={brandLabel}>
                 {brandLabel}
@@ -395,7 +403,7 @@ const ProductCard = React.memo(
               </div>
             )}
 
-            <div className="flex min-h-[64px] justify-end pt-1">
+            <div className="mt-auto flex justify-end pt-4">
               {priceBlock("right")}
             </div>
           </Link>

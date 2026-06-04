@@ -16,6 +16,18 @@ type ProductColorInventory = {
   isSoldOut: boolean;
 };
 
+type ProductVariantInventory = {
+  colorValue: string;
+  colorLabel?: string;
+  colorHex?: string;
+  colorImage?: string;
+  gaugeValue: string;
+  gaugeLabel?: string;
+  stock: number;
+  isSoldOut: boolean;
+  showWhenSoldOut?: boolean | null;
+};
+
 type Product = {
   _id: string;
   name: string;
@@ -32,6 +44,7 @@ type Product = {
   color?: string;
   colorOptions?: string[];
   colorInventories?: ProductColorInventory[];
+  variantInventories?: ProductVariantInventory[];
   inventory?: {
     stock?: number;
     status?: "instock" | "outofstock" | "backorder" | string;
@@ -113,27 +126,15 @@ export function useInfiniteProducts(filters: Filters) {
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // 이전 filters 문자열로 비교해서 필터가 바뀌면 리셋
+  // 이전 filters 문자열로 비교해서 필터가 바뀌면 1페이지를 교체 요청한다.
   const lastSerialized = useRef("");
+  const requestSeq = useRef(0);
   const serializedFilters = buildQueryString(filters, 1); // page=1 for comparison
-
-  useEffect(() => {
-    if (serializedFilters !== lastSerialized.current) {
-      // 필터가 바뀐 경우: 리셋 상태
-      lastSerialized.current = serializedFilters;
-      setProducts([]);
-      setPage(1);
-      setHasMore(true);
-      setTotal(null); // 필터 변경 시 total도 초기화(이전 값 잠깐 보이는 현상 방지)
-      setError(null);
-      // initial load
-      fetchPage(1, true);
-    }
-  }, [serializedFilters]);
 
   // 실제 데이터를 가져오는 함수
   const fetchPage = useCallback(
     async (targetPage: number, replace = false) => {
+      const requestId = targetPage === 1 || replace ? ++requestSeq.current : requestSeq.current;
       try {
         if (targetPage === 1) setIsLoadingInitial(true);
         else setIsFetchingMore(true);
@@ -145,6 +146,7 @@ export function useInfiniteProducts(filters: Filters) {
           throw new Error(`서버 오류: ${res.status}`);
         }
         const data: ResponseShape = await res.json();
+        if (requestId !== requestSeq.current) return;
 
         // 누적 또는 교체
         setProducts((prev) =>
@@ -156,15 +158,29 @@ export function useInfiniteProducts(filters: Filters) {
         setPage(data.pagination.page);
         setTotal(data.pagination.total); // 서버 total 반영
       } catch (err: any) {
+        if (requestId !== requestSeq.current) return;
         console.error("상품 로드 실패", err);
         setError(err.message || "알 수 없는 오류");
       } finally {
-        setIsLoadingInitial(false);
-        setIsFetchingMore(false);
+        if (requestId === requestSeq.current) {
+          setIsLoadingInitial(false);
+          setIsFetchingMore(false);
+        }
       }
     },
     [filters],
   );
+
+  useEffect(() => {
+    if (serializedFilters !== lastSerialized.current) {
+      // 필터 변경 중에는 기존 목록/total을 유지하고, 응답 완료 후 새 1페이지로 교체한다.
+      lastSerialized.current = serializedFilters;
+      setPage(1);
+      setHasMore(true);
+      setError(null);
+      fetchPage(1, true);
+    }
+  }, [serializedFilters]);
 
   // 다음 페이지 요청 헬퍼
   const loadMore = useCallback(() => {
