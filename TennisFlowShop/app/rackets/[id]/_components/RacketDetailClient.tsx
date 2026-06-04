@@ -4,7 +4,6 @@ import {
   CompareRacketItem,
   useRacketCompareStore,
 } from "@/app/store/racketCompareStore";
-import StatusBadge from "@/components/badges/StatusBadge";
 import SiteContainer from "@/components/layout/SiteContainer";
 import MaskedBlock from "@/components/reviews/MaskedBlock";
 import RecentViewedItems from "@/components/recent-viewed/RecentViewedItems";
@@ -19,7 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { badgeToneClass, racketStockBadgeVariant, usedBadgeMeta } from "@/lib/badge-style";
+import { badgeToneClass, usedBadgeMeta } from "@/lib/badge-style";
 import {
   gripSizeLabel,
   racketBrandLabel,
@@ -75,21 +74,6 @@ const ReviewEditDialog = dynamic(() => import("./ReviewEditDialog"), {
   loading: () => null,
 });
 
-function ConditionBadge({ state }: { state: string }) {
-  const meta = usedBadgeMeta("condition", state);
-
-  return (
-    <Badge
-      variant="neutral"
-      className={cn(
-        "rounded px-2 py-0.5 text-xs font-medium shadow-sm",
-        meta.className,
-      )}
-    >
-      상태: {meta.label}
-    </Badge>
-  );
-}
 
 export default function RacketDetailClient({
   racket,
@@ -120,7 +104,6 @@ export default function RacketDetailClient({
 
   // 라켓 ID 정규화
   const racketId = String(racket?.id ?? racket?._id ?? "");
-  const canBuy = !soldOut && racketId !== "";
   const racketShippingFee = normalizeItemShippingFee(racket?.shippingFee);
   const racketShippingLabel =
     racketShippingFee > 0
@@ -142,7 +125,7 @@ export default function RacketDetailClient({
       type: "racket",
       id: racketId,
       name: `${brandLabel} ${racket.model}`.trim(),
-      subtitle: racket?.condition ? `상태: ${usedBadgeMeta("condition", racket.condition).label}` : "라켓",
+      subtitle: "라켓",
       image: racket?.images?.[0],
       href: `/rackets/${racketId}`,
       price: Number.isFinite(safePrice) ? safePrice : null,
@@ -384,19 +367,6 @@ export default function RacketDetailClient({
   const isSold = stock.quantity <= 0; // 판매 완료(보유 0)
   const isAllRented = !isSold && soldOut && rentedCount > 0; // 전량 대여중(임시 품절)
 
-  // 버튼/라벨용 문구
-  const stockLabel = isSold
-    ? "판매 완료"
-    : isAllRented
-      ? `전량 대여중 (${rentedCount}/${stock.quantity})`
-      : `가용 ${stock.available}/${stock.quantity}${rentedCount > 0 ? ` · 대여중 ${rentedCount}` : ""}`;
-  const rentalState =
-    !racket?.rental?.enabled || isSold
-      ? "unavailable"
-      : isAllRented
-        ? "rented"
-        : "available";
-
   const images = racket.images || [];
   const open = searchParams.get("open"); // 'rent' 면 자동 오픈
 
@@ -503,7 +473,7 @@ export default function RacketDetailClient({
               </span>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-end gap-2">
               <Button
                 variant="ghost"
                 className="text-muted-foreground hover:text-foreground hover:bg-muted/50 px-3 py-2 h-auto text-sm rounded-xl transition-[background-color,color,border-color,box-shadow,opacity] duration-200"
@@ -530,7 +500,7 @@ export default function RacketDetailClient({
         </SiteContainer>
       </div>
 
-      <SiteContainer variant="wide" className="py-8 pb-28 md:pb-24">
+      <SiteContainer variant="wide" className="py-8 pb-12 md:pb-16">
         <div className="grid grid-cols-1 gap-6 md:gap-8 lg:grid-cols-5">
           {/* 상품 이미지 */}
           <div className="lg:col-span-3 space-y-4">
@@ -568,20 +538,20 @@ export default function RacketDetailClient({
                     </Button>
                   </>
                 )}
-                <div className="absolute top-4 left-4 flex gap-2">
-                  <Badge
-                    variant="brand"
-                    className="border bg-background/95 shadow-sm backdrop-blur-sm dark:bg-card/95"
-                  >
-                    중고
-                  </Badge>
-                  <StatusBadge
-                    kind="rental"
-                    state={rentalState}
-                    surface="image"
-                  />
-
-                </div>
+                {(racket?.marketing?.isFeatured || racket?.marketing?.isNew) && (
+                  <div className="absolute top-4 left-4 flex flex-wrap gap-2">
+                    {racket?.marketing?.isFeatured && (
+                      <Badge variant="outline" className={cn("border bg-background/95 shadow-sm backdrop-blur-sm dark:bg-card/95", benefitBadgeClass.featured)}>
+                        추천
+                      </Badge>
+                    )}
+                    {racket?.marketing?.isNew && (
+                      <Badge variant="outline" className={cn("border bg-background/95 shadow-sm backdrop-blur-sm dark:bg-card/95", benefitBadgeClass.new)}>
+                        NEW
+                      </Badge>
+                    )}
+                  </div>
+                )}
               </div>
             </Card>
 
@@ -620,56 +590,7 @@ export default function RacketDetailClient({
                     <h1 className="text-2xl lg:text-3xl font-bold text-foreground">
                       {racket.model}
                     </h1>
-                    <div className="mt-2 flex flex-wrap items-center gap-2">
-                      <ConditionBadge state={racket.condition} />
-
-                      {racket?.rental?.enabled === false ? (
-                        <StatusBadge kind="rental" state="unavailable" />
-                      ) : (
-                        <div
-                          className="flex items-center gap-2 flex-wrap"
-                          title={`보유 ${stock.quantity}개 / 대여중 ${rentedCount}개 / 가용 ${stock.available}개`}
-                        >
-                          {isSold ? (
-                            <Badge variant={racketStockBadgeVariant("sold")}>
-                              판매 완료
-                            </Badge>
-                          ) : isAllRented ? (
-                            <Badge
-                              variant={racketStockBadgeVariant("allRented")}
-                            >
-                              전량 대여중 ({rentedCount}/{stock.quantity})
-                            </Badge>
-                          ) : (
-                            <Badge
-                              variant={racketStockBadgeVariant("available")}
-                            >
-                              가용 {stock.available}/{stock.quantity}
-                            </Badge>
-                          )}
-
-                          {/* 보조: 대여중 수량 (가용 상태일 때만 추가로 강조) */}
-                          {rentedCount > 0 && !isSold && !isAllRented && (
-                            <Badge variant={racketStockBadgeVariant("rented")}>
-                              대여중 {rentedCount}
-                            </Badge>
-                          )}
-                        </div>
-                      )}
-                    </div>
                   </div>
-
-                  {/* 혜택 배지 */}
-                  {(racket?.marketing?.isFeatured || racket?.marketing?.isNew) && (
-                    <div className="flex flex-wrap items-center gap-2">
-                      {racket?.marketing?.isFeatured && (
-                        <Badge variant="outline" className={benefitBadgeClass.featured}>추천</Badge>
-                      )}
-                      {racket?.marketing?.isNew && (
-                        <Badge variant="outline" className={benefitBadgeClass.new}>NEW</Badge>
-                      )}
-                    </div>
-                  )}
 
                   {/* 가격 정보 */}
                   <div className="space-y-2">
@@ -706,10 +627,10 @@ export default function RacketDetailClient({
                         이 라켓으로 무엇을 할까요?
                       </h2>
                       <p className="mt-1 text-sm text-muted-foreground">
-                        구매, 대여, 비교 액션을 나눠서 선택할 수 있어요.
+                        라켓 수량: {stock.available}개
                       </p>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="grid grid-cols-1 gap-2 bp-sm:grid-cols-2">
                       <Button
                         className="flex-1 min-w-0 h-12"
                         onClick={() =>
@@ -761,10 +682,10 @@ export default function RacketDetailClient({
                       )}
                     </div>
                     {/* 비교 버튼(상세에서도 비교 담기/이동 가능) */}
-                    <div className="flex gap-2">
+                    <div className="grid grid-cols-2 gap-2">
                       <Button
                         variant="outline"
-                        className={`flex-1 h-12 ${isCompared ? "bg-secondary border-border text-foreground hover:bg-secondary/80" : "bg-card border-border text-foreground"}`}
+                        className={`h-11 px-2 text-sm ${isCompared ? "bg-secondary border-border text-foreground hover:bg-secondary/80" : "bg-card border-border text-foreground"}`}
                         onClick={toggleCompare}
                         disabled={!racketId}
                         title={
@@ -776,14 +697,12 @@ export default function RacketDetailClient({
                         }
                       >
                         <Scale className="mr-2 h-4 w-4" />
-                        {isCompared
-                          ? `비교 선택됨 (${compareCount}/4)`
-                          : `다른 라켓과 비교 (${compareCount}/4)`}
+                        비교담기 ({compareCount}/4)
                       </Button>
 
                       <Button
                         variant="outline"
-                        className="flex-1 h-12"
+                        className="h-11 px-2 text-sm"
                         onClick={() => router.push("/rackets/compare")}
                         disabled={compareCount < 2}
                         title={
@@ -792,7 +711,7 @@ export default function RacketDetailClient({
                             : undefined
                         }
                       >
-                        비교하기{compareCount < 2 ? "(2개↑)" : ""}
+                        비교하기
                       </Button>
                     </div>
 
@@ -1320,143 +1239,6 @@ export default function RacketDetailClient({
         />
       ) : null}
 
-      {/* 모바일 전용 하단 Sticky */}
-      <div
-        data-bottom-sticky="1"
-        className="fixed inset-x-0 bottom-0 z-50 md:hidden border-t border-border/60"
-      >
-        <div className="bg-card shadow-[0_-4px_16px_rgba(0,0,0,0.08)] dark:shadow-[0_-4px_16px_rgba(0,0,0,0.3)]">
-          <div className="mx-auto max-w-6xl px-4 py-3 pb-[env(safe-area-inset-bottom)]">
-            <div className="flex items-center gap-3 pb-3 border-b border-border/60 dark:border-border/60">
-              <div className="relative w-14 h-14 rounded-md overflow-hidden bg-muted dark:bg-card shrink-0 border border-border">
-                {images[0] ? (
-                  <Image
-                    src={images[0] || "/placeholder.svg"}
-                    alt={`${racketBrandLabel(racket.brand)} ${racket.model}`}
-                    fill
-                    className="object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">
-                    이미지 없음
-                  </div>
-                )}
-              </div>
-
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-semibold text-foreground truncate leading-tight">
-                  {racketBrandLabel(racket.brand)} {racket.model}
-                </div>
-                <div className="mt-1 flex items-baseline gap-2">
-                  <span className="text-lg font-bold text-foreground">
-                    {(hasSalePrice
-                      ? salePrice
-                      : racket.price
-                    )?.toLocaleString()}
-                    원
-                  </span>
-                  {hasSalePrice && (
-                    <>
-                      <span className="text-xs text-muted-foreground line-through">
-                        {racket.price?.toLocaleString()}원
-                      </span>
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-3 flex gap-2">
-              <button
-                type="button"
-                onClick={() =>
-                  router.push(`/rackets/${racketId}/select-string`)
-                }
-                disabled={!canBuy}
-                title={
-                  !canBuy
-                    ? racketId === ""
-                      ? "상품 ID가 없어 구매 경로를 만들 수 없습니다."
-                      : isAllRented
-                        ? "현재 전량 대여중입니다."
-                        : "판매가 종료된 상품입니다."
-                    : undefined
-                }
-                className={`flex-1 h-12 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 ${canBuy ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground cursor-not-allowed"}`}
-              >
-                <ShoppingCart className="h-4 w-4" />
-                {soldOut ? "품절(구매 불가)" : "스트링 선택 후 구매"}
-              </button>
-              {racket?.rental?.enabled && !soldOut && racketId !== "" ? (
-                <div className="flex-1 min-w-0">
-                  <RentDialog
-                    id={racketId}
-                    rental={racket.rental}
-                    brand={brandLabel}
-                    model={racket.model}
-                    autoOpen={autoOpen}
-                    full
-                  />
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  disabled
-                  className="flex-1 h-12 rounded-lg border border-border bg-muted dark:bg-card text-muted-foreground font-semibold text-sm cursor-not-allowed flex items-center justify-center gap-2"
-                >
-                  <Calendar className="h-4 w-4" />
-                  {racket?.rental?.enabled === false
-                    ? "대여 불가"
-                    : soldOut
-                      ? "품절"
-                      : "대여 불가"}
-                </button>
-              )}
-            </div>
-            {/* 모바일: 비교(토글/이동) */}
-            <div className="pt-2 grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={toggleCompare}
-                disabled={!racketId}
-                title={
-                  !racketId
-                    ? "상품 ID가 없어 비교 목록에 담을 수 없습니다."
-                    : !isCompared && compareCount >= 4
-                      ? "비교는 최대 4개까지 가능합니다."
-                      : undefined
-                }
-                className={`h-11 rounded-lg border text-sm font-semibold flex items-center justify-center gap-2 ${isCompared ? "border-border bg-secondary text-foreground" : "border-border bg-card text-foreground"} ${!racketId || (!isCompared && compareCount >= 4) ? "opacity-60 cursor-not-allowed" : ""}`}
-              >
-                <Scale className="h-4 w-4" />
-                {isCompared
-                  ? `비교 선택됨 (${compareCount}/4)`
-                  : `비교 담기 (${compareCount}/4)`}
-              </button>
-
-              <button
-                type="button"
-                onClick={() => router.push("/rackets/compare")}
-                disabled={compareCount < 2}
-                title={
-                  compareCount < 2
-                    ? "비교는 최소 2개부터 가능합니다."
-                    : undefined
-                }
-                className={`h-11 rounded-lg border text-sm font-semibold flex items-center justify-center gap-2 ${compareCount < 2 ? "border-border bg-muted text-muted-foreground cursor-not-allowed" : "border-border bg-card text-foreground"}`}
-              >
-                비교하기
-              </button>
-            </div>
-            {racket?.rental?.enabled === false &&
-              racket?.rental?.disabledReason && (
-                <p className="mt-3 text-sm text-foreground border border-destructive/30 bg-destructive/10 dark:bg-destructive/15 rounded px-3 py-2">
-                  대여 불가 사유: {racket.rental.disabledReason}
-                </p>
-              )}
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

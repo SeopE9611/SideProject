@@ -1,10 +1,9 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
+import HorizontalProducts, { type HItem } from "@/components/HorizontalProducts";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { clearRecentViewedItems, getRecentViewedItems, type RecentViewedType } from "@/lib/recent-viewed";
-import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 type RecentViewedItemsProps = {
@@ -17,11 +16,6 @@ type RecentViewedItemsProps = {
 const typeLabelMap: Record<RecentViewedType, string> = {
   product: "스트링",
   racket: "라켓",
-};
-
-const formatPrice = (price?: number | null) => {
-  if (typeof price !== "number" || !Number.isFinite(price) || price <= 0) return null;
-  return `${price.toLocaleString()}원`;
 };
 
 export default function RecentViewedItems({
@@ -69,32 +63,21 @@ export default function RecentViewedItems({
           </Button>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
-            {filteredItems.map((item) => {
-              const imageSrc = item.image || "/placeholder.svg";
-              const priceLabel = formatPrice(item.price);
-              return (
-                <Link
-                  key={`${item.type}-${item.id}`}
-                  href={item.href}
-                  aria-label={`${typeLabelMap[item.type]} 상세로 이동: ${item.name}`}
-                  className="group overflow-hidden rounded-xl border border-border/60 bg-background transition-[background-color,color,border-color,box-shadow,opacity] duration-200 hover:border-border hover:shadow-sm"
-                >
-                  <div className="relative aspect-square w-full overflow-hidden bg-muted/30">
-                    <img src={imageSrc} alt={item.name} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
-                  </div>
-                  <div className="space-y-1.5 p-2.5 sm:p-3">
-                    <Badge variant="secondary" className="text-[11px]">
-                      {typeLabelMap[item.type]}
-                    </Badge>
-                    <p className="line-clamp-2 text-sm font-semibold text-foreground">{item.name}</p>
-                    {item.subtitle ? <p className="line-clamp-1 text-xs text-muted-foreground">{item.subtitle}</p> : null}
-                    {priceLabel ? <p className="text-sm font-semibold text-foreground">{priceLabel}</p> : null}
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
+          <HorizontalProducts
+            title={title}
+            items={filteredItems.map((item): HItem => ({
+              _id: `${item.type}-${item.id}`,
+              name: item.name,
+              price: item.price ?? 0,
+              images: item.image ? [item.image] : [],
+              brand: item.type === "racket" ? typeLabelMap[item.type] : item.subtitle || typeLabelMap[item.type],
+              href: item.href,
+            }))}
+            moreHref="/products"
+            showHeader={false}
+            showMoreCard={false}
+            cardWidthClass="flex-none basis-[calc((100%-12px)/2)] bp-sm:basis-[calc((100%-16px)/2)] bp-md-only:basis-[calc((100%-40px)/3)] bp-lg:basis-[calc((100%-72px)/4)]"
+          />
         </CardContent>
       </Card>
     </section>

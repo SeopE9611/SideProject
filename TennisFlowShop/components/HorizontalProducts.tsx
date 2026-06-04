@@ -1,9 +1,8 @@
 "use client";
 
-import StatusBadge from "@/components/badges/StatusBadge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { imageBadgeClass, usedBadgeMeta } from "@/lib/badge-style";
+import { imageBadgeClass } from "@/lib/badge-style";
 import { getEffectiveRacketPrice, getRacketDiscountRate } from "@/lib/racket-pricing";
 import { cn } from "@/lib/utils";
 import type { EmblaCarouselType, EmblaOptionsType } from "embla-carousel";
@@ -26,8 +25,6 @@ export type HItem = {
   images?: string[];
   brand?: string;
   href?: string;
-  condition?: "A" | "B" | "C" | "D";
-  rentalEnabled?: boolean;
   merchandisingBadges?: Array<"품절" | "SALE" | "NEW" | "추천" | "입고예정">;
   inventory?: { isSale?: boolean | string | number; salePrice?: number | string | null };
   marketing?: { isFeatured?: boolean; isNew?: boolean; isSale?: boolean; salePrice?: number | string | null };
@@ -57,15 +54,6 @@ type Props = {
   errorDescription?: string;
 };
 
-function ConditionImageBadge({ state }: { state: string }) {
-  const meta = usedBadgeMeta("condition", state, "image");
-
-  return (
-    <Badge className={cn("text-xs px-2.5 py-0.5 rounded-md shadow-sm", meta.className)}>
-      상태: {meta.label}
-    </Badge>
-  );
-}
 
 export default function HorizontalProducts({
   title,
@@ -249,26 +237,14 @@ export default function HorizontalProducts({
           <div className="flex items-center justify-center h-full text-3xl bp-sm:text-4xl bp-md:text-5xl font-bold text-muted-foreground/50">{(p.brand ?? "D").charAt(0)}</div>
         )}
 
-        {((typeof p.rentalEnabled === "boolean" || p.condition) || (p.merchandisingBadges?.length ?? 0) > 0) && (
+        {(p.merchandisingBadges?.length ?? 0) > 0 && (
           <div className="absolute top-2.5 left-2.5 right-2.5 bp-sm:top-3 bp-sm:left-3 bp-sm:right-3 flex items-center gap-2 z-10">
-            {typeof p.rentalEnabled === "boolean" && !p.rentalEnabled && <StatusBadge kind="rental" state="unavailable" surface="image" />}
-            {p.condition && <ConditionImageBadge state={p.condition} />}
-            {(p.merchandisingBadges ?? []).slice(0, 2).map((label) => (
+            {(p.merchandisingBadges ?? []).filter((label) => label === "NEW" || label === "추천").slice(0, 2).map((label) => (
               <Badge
                 key={`${p._id}-${label}`}
                 className={cn(
                   "text-xs px-2.5 py-0.5 rounded-md shadow-sm",
-                  imageBadgeClass(
-                    label === "품절"
-                      ? "danger"
-                      : label === "SALE"
-                        ? "warning"
-                        : label === "NEW"
-                          ? "brand"
-                          : label === "추천"
-                            ? "success"
-                            : "info",
-                  ),
+                  imageBadgeClass(label === "NEW" ? "brand" : "success"),
                 )}
               >
                 {label}

@@ -43,34 +43,16 @@ const isTruthyBadgeField = (value: unknown) => value === true || value === "true
 
 type MerchandisingBadge = NonNullable<HItem["merchandisingBadges"]>[number];
 
-const toFiniteNumber = (value: unknown) => {
-  const numberValue = Number(value);
-  return Number.isFinite(numberValue) ? numberValue : 0;
-};
-
 const getMerchandisingBadges = (product: ApiProduct): MerchandisingBadge[] => {
   const inventory = product.inventory;
 
-  const stock = toFiniteNumber(inventory?.stock);
-  const salePrice = toFiniteNumber(inventory?.salePrice);
-
-  const isOutOfStock = inventory?.status === "outofstock" || (isTruthyBadgeField(inventory?.manageStock) && stock <= 0);
-
-  const isSale = isTruthyBadgeField(inventory?.isSale) && salePrice > 0;
-
   const isNew = isTruthyBadgeField(inventory?.isNew) || isTruthyBadgeField(product.isNew);
-
   const isFeatured = isTruthyBadgeField(inventory?.isFeatured);
-
-  const isBackorder = inventory?.status === "backorder";
 
   const badges: MerchandisingBadge[] = [];
 
-  if (isOutOfStock) badges.push("품절");
-  if (isSale) badges.push("SALE");
   if (isNew) badges.push("NEW");
   if (isFeatured) badges.push("추천");
-  if (isBackorder) badges.push("입고예정");
 
   return badges.slice(0, 2);
 };
@@ -512,9 +494,6 @@ export default function Home() {
       images: r.images ?? [],
       brand: racketBrandLabel?.(r.brand) ?? r.brand ?? "",
       href: `/rackets/${r.id}`,
-      // 배지에 사용할 원본값 그대로 전달
-      condition: r.condition as "A" | "B" | "C" | "D" | undefined,
-      rentalEnabled: r?.rental?.enabled ?? undefined,
       marketing: r.marketing,
       merchandisingBadges: [
         ...(r.marketing?.isFeatured ? (["추천"] as const) : []),

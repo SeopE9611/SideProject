@@ -5,6 +5,7 @@ import type { User } from "@/app/store/authStore";
 import { useBuyNowStore } from "@/app/store/buyNowStore";
 import { type CartItem, useCartStore } from "@/app/store/cartStore";
 import SiteContainer from "@/components/layout/SiteContainer";
+import HorizontalProducts, { type HItem } from "@/components/HorizontalProducts";
 import RecentViewedItems from "@/components/recent-viewed/RecentViewedItems";
 import MaskedBlock from "@/components/reviews/MaskedBlock";
 import { Badge } from "@/components/ui/badge";
@@ -74,30 +75,20 @@ const ReviewEditDialog = dynamic(() => import("./ReviewEditDialog"), {
 
 const detailSurfaceSubtleInnerClass = "rounded-xl border border-border/60 bg-secondary/50";
 const detailSurfaceInfoItemClass = "flex min-w-0 items-center gap-3 rounded-xl border border-border/60 bg-secondary/40 p-3";
-type ProductBadge = "품절" | "SALE" | "NEW" | "추천" | "입고예정";
+type ProductBadge = "NEW" | "추천";
 
 const isTruthyBadgeField = (value: unknown) => value === true || value === "true" || value === 1;
 
 function getProductDetailBadges(product: any): ProductBadge[] {
   const inventory = product?.inventory;
-  const stock = Number(inventory?.stock ?? 0);
-  const salePrice = Number(inventory?.salePrice ?? 0);
-  const regularPrice = Number(product?.price ?? 0);
-
-  const isOutOfStock = inventory?.status === "outofstock" || (isTruthyBadgeField(inventory?.manageStock) && stock <= 0);
-  const isSale = isTruthyBadgeField(inventory?.isSale) && salePrice > 0 && salePrice < regularPrice;
   const isNew = isTruthyBadgeField(inventory?.isNew);
   const isFeatured = isTruthyBadgeField(inventory?.isFeatured);
-  const isBackorder = inventory?.status === "backorder";
 
   const badges: ProductBadge[] = [];
-  if (isOutOfStock) badges.push("품절");
-  if (isSale) badges.push("SALE");
   if (isNew) badges.push("NEW");
   if (isFeatured) badges.push("추천");
-  if (isBackorder) badges.push("입고예정");
 
-  return badges.slice(0, 3);
+  return badges.slice(0, 2);
 }
 
 type GaugeInventoryRow = {
@@ -187,11 +178,7 @@ function normalizeGaugeDisplayLabel(row: GaugeInventoryRow): string {
 }
 
 function getProductBadgeTone(badge: ProductBadge): Parameters<typeof imageBadgeClass>[0] {
-  if (badge === "품절") return "danger";
-  if (badge === "SALE") return "warning";
-  if (badge === "NEW") return "brand";
-  if (badge === "추천") return "success";
-  return "info";
+  return badge === "NEW" ? "brand" : "success";
 }
 
 export default function ProductDetailClient({ product }: { product: any }) {
@@ -966,7 +953,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
               <span className="text-muted-foreground/50">/</span>
               <span className="max-w-[150px] truncate font-medium text-foreground sm:max-w-none">{product.name}</span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-end gap-2">
               <Button
                 variant="ghost"
                 className="text-muted-foreground hover:text-foreground hover:bg-muted/50 px-3 py-2 h-auto text-sm rounded-xl transition-[background-color,color,border-color,box-shadow,opacity] duration-200"
@@ -1017,7 +1004,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   <div className="absolute top-4 sm:top-5 left-4 sm:left-5 flex flex-wrap gap-2 sm:gap-2.5">
                     {merchandisingBadges.map((badge) => (
                       <Badge key={`${product?._id ?? product?.name}-${badge}`} className={cn("text-xs px-3 py-1 rounded-lg shadow-sm", imageBadgeClass(getProductBadgeTone(badge)))}>
-                        {badge === "SALE" ? `${saleRate}% OFF` : badge}
+                        {badge}
                       </Badge>
                     ))}
                   </div>
@@ -1136,10 +1123,10 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         )}
                       </div>
                     )}
-                    <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
-                      <span className="whitespace-nowrap font-semibold text-base sm:text-lg">수량</span>
+                    <div className="flex items-center justify-between gap-3 rounded-xl border border-border/60 bg-muted/30 p-3">
+                      <span className="whitespace-nowrap text-sm font-semibold text-foreground">수량 선택</span>
 
-                      <div className={cn("p-1", detailSurfaceSubtleInnerClass, "flex items-center")}>
+                      <div className={cn("flex w-auto shrink-0 items-center p-1", detailSurfaceSubtleInnerClass)}>
                         <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg sm:h-10 sm:w-10" aria-label="수량 감소" disabled={!canDec} onClick={() => setQuantity((q) => Math.max(1, q - 1))}>
                           <Minus className="h-4 w-4" />
                         </Button>
@@ -1782,54 +1769,30 @@ export default function ProductDetailClient({ product }: { product: any }) {
         {viewerOpen && <ReviewPhotoViewerDialog open={viewerOpen} images={viewerImages} index={viewerIndex} onClose={closeViewer} onPrev={prevViewer} onNext={nextViewer} onChangeIndex={setViewerIndex} />}
 
         <div ref={relatedSectionRef} className="mt-8 sm:mt-12">
-          <Card className="border-0 shadow-xl bg-card/90 backdrop-blur-sm dark:bg-muted/90">
+          <Card className="rounded-3xl border border-border/60 bg-card shadow-sm">
             <CardHeader>
-              <CardTitle className="text-xl sm:text-2xl font-bold bg-muted/30 text-foreground">관련 상품</CardTitle>
+              <CardTitle className="text-lg sm:text-xl">관련 상품</CardTitle>
             </CardHeader>
             <CardContent>
-              {/* 4칸 고정: 상품이 부족하면 플레이스홀더로 채움 */}
-              {loadingRelated ? (
-                // 로딩 스켈레톤
-                <div className="grid grid-cols-1 gap-3 bp-sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                  {Array.from({ length: 4 }).map((_, i) => (
-                    <div key={i} className="rounded-xl p-3 sm:p-4 bg-card/80 dark:bg-muted/80 shadow-sm animate-pulse">
-                      <div className="aspect-square rounded-lg bg-muted mb-2 sm:mb-3"></div>
-                      <div className="h-4 rounded bg-muted mb-1.5 sm:mb-2"></div>
-                      <div className="h-4 w-1/2 rounded bg-muted"></div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 gap-3 bp-sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                  {/* 실제 관련 상품 */}
-                  {relatedFiltered.map((rp: any) => (
-                    <Link key={rp._id} href={`/products/${rp._id}`}>
-                      <Card className="h-full overflow-hidden transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md group border border-border">
-                        <div className="relative aspect-square overflow-hidden bg-muted/30">
-                          <img src={rp.images?.[0] || "/placeholder.svg"} alt={rp.name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
-                        </div>
-                        <CardContent className="p-3 sm:p-4">
-                          <div className="text-sm text-foreground/75 mb-0.5 sm:mb-1">{displayBrandLabel(rp.brand) || rp.brand}</div>
-                          <div className="font-medium line-clamp-2 mb-1.5 sm:mb-2 text-sm sm:text-base group-hover:text-foreground transition-colors">{rp.name}</div>
-                          <div className="font-bold text-foreground text-sm sm:text-base">{Number(rp.price).toLocaleString()}원</div>
-                        </CardContent>
-                      </Card>
-                    </Link>
-                  ))}
-
-                  {/* 플레이스홀더로 4칸 채우기 */}
-                  {Array.from({
-                    length: Math.max(0, 4 - relatedFiltered.length),
-                  }).map((_, i) => (
-                    <div key={`rel-ph-${i}`} className="rounded-xl p-3 sm:p-4 border-2 border-dashed border-border/70 dark:border-border/70 bg-muted/30 text-center flex flex-col">
-                      <div className="aspect-square rounded-lg bg-muted mb-2 sm:mb-3 flex items-center justify-center">
-                        <span className="text-muted-foreground text-sm">준비 중</span>
-                      </div>
-                      <div className="text-sm text-muted-foreground">곧 상품이 업데이트됩니다.</div>
-                    </div>
-                  ))}
-                </div>
-              )}
+              <HorizontalProducts
+                title="관련 상품"
+                items={relatedFiltered.map((rp: any): HItem => ({
+                  _id: String(rp._id),
+                  name: rp.name,
+                  price: Number(rp.price ?? 0),
+                  images: rp.images ?? [],
+                  brand: displayBrandLabel(rp.brand) || rp.brand,
+                  href: `/products/${rp._id}`,
+                  merchandisingBadges: getProductDetailBadges(rp),
+                  inventory: rp.inventory,
+                }))}
+                moreHref="/products"
+                showHeader={false}
+                showMoreCard={false}
+                loading={loadingRelated}
+                emptyTitle="관련 상품이 없습니다"
+                emptyDescription="다른 스트링도 둘러보세요."
+              />
             </CardContent>
           </Card>
 
