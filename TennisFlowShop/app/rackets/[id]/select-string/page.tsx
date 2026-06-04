@@ -2,7 +2,7 @@ import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 import { racketBrandLabel } from "@/lib/constants";
 import { getEffectiveRacketPrice, getRacketDiscountRate } from "@/lib/racket-pricing";
-import RacketSelectStringClient from "@/app/rackets/[id]/select-string/RacketSelectStringClient";
+import RacketSelectStringClient from "./RacketSelectStringClient";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { cookies } from "next/headers";
