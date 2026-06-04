@@ -285,8 +285,8 @@ export default function OrderList() {
         const hasLinkedApplication = Boolean(order.stringingApplicationId);
 
         // 교체서비스가 연결된 주문은 "상세 보기"와 "이용 상세 보기"를 따로 보여주지 않고,
-        // 기본 상세 버튼 자체를 통합 상세로 보냅니다.
-        const primaryDetailHref = hasLinkedApplication ? `${detailHref}&focus=stringing` : detailHref;
+        // 기본 상세 버튼 자체를 대표 신청서 상세로 보냅니다.
+        const primaryDetailHref = hasLinkedApplication ? `/mypage?tab=orders&flowType=application&flowId=${order.stringingApplicationId}&from=orders` : detailHref;
 
         const primaryDetailLabel = hasLinkedApplication ? "이용 상세 보기" : "상세 보기";
 
