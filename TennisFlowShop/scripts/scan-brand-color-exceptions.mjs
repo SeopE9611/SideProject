@@ -10,6 +10,7 @@ const BRAND_EXCEPTION_WHITELIST = new Set([
   "app/login/_components/SocialAuthButtons.tsx",
   "app/login/_components/LoginPageClient.tsx",
   "app/admin/users/_components/UsersClient.tsx",
+  "lib/badge-style.ts",
 ]);
 
 const NON_WEB_UI_EXCEPTION_WHITELIST = new Set([
