@@ -29,7 +29,7 @@ export function badgeToneClass(tone: BadgeSemanticTone) {
 }
 
 const IMAGE_BADGE_SURFACE =
-  "border bg-background/95 shadow-sm backdrop-blur-sm dark:bg-card/95";
+  "border bg-background shadow-sm dark:bg-card";
 
 const IMAGE_BADGE = {
   neutral: `${IMAGE_BADGE_SURFACE} border-border text-foreground`,
@@ -45,6 +45,14 @@ export type BadgeSurface = "inline" | "image";
 
 export function imageBadgeClass(tone: BadgeSemanticTone) {
   return IMAGE_BADGE[tone];
+}
+
+export type MerchandisingImageBadgeLabel = "NEW" | "추천";
+
+export function merchandisingImageBadgeClass(label: MerchandisingImageBadgeLabel) {
+  return `h-6 rounded-md px-2.5 text-[11px] font-semibold leading-none ${imageBadgeClass(
+    label === "NEW" ? "brand" : "success",
+  )}`;
 }
 
 export const SEMANTIC_BADGE_VARIANT = {

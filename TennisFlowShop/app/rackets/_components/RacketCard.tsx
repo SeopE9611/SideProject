@@ -11,7 +11,7 @@ import { Briefcase, Eye, ShoppingCart } from "lucide-react";
 import useSWR from "swr";
 import { racketBrandLabel } from "@/lib/constants";
 import StatusBadge from "@/components/badges/StatusBadge";
-import { badgeToneClass, badgeToneVariant, usedBadgeMeta } from "@/lib/badge-style";
+import { badgeToneClass, badgeToneVariant, merchandisingImageBadgeClass, usedBadgeMeta } from "@/lib/badge-style";
 import { cn } from "@/lib/utils";
 import { getEffectiveRacketPrice, getRacketDiscountRate } from "@/lib/racket-pricing";
 
@@ -121,7 +121,7 @@ function RacketAvailBadge({
         variant={badgeToneVariant("neutral")}
         className="px-2 py-1 text-xs font-medium whitespace-nowrap animate-pulse"
       >
-        수량 확인중
+        라켓 가용수량 확인중
       </Badge>
     );
   }
@@ -133,7 +133,7 @@ function RacketAvailBadge({
         variant={badgeToneVariant("neutral")}
         className="px-2 py-1 text-xs font-medium whitespace-nowrap"
       >
-        판매 완료 (재고 0)
+        라켓 가용수량 (0/0)
       </Badge>
     );
   }
@@ -145,40 +145,18 @@ function RacketAvailBadge({
         variant={badgeToneVariant("danger")}
         className="px-2 py-1 text-xs font-medium whitespace-nowrap"
       >
-        전량 대여중 ({rentedCount}/{qty})
+        라켓 가용수량 (0/{qty})
       </Badge>
     );
   }
 
-  // “대여중 0”이면 19/19 같은 표기가 어색하므로 “재고 n개”로 표현
-  if (rentedCount === 0) {
-    return (
-      <Badge
-        variant={badgeToneVariant("brand")}
-        className="px-2 py-1 text-xs font-medium whitespace-nowrap"
-      >
-        재고 {qty}개
-      </Badge>
-    );
-  }
-
-  // 대여중이 있으면 분수(가용/보유) + 대여중 배지로 정보량 확보
   return (
-    <div className="flex flex-wrap items-center gap-1">
-      <Badge
-        variant={badgeToneVariant("brand")}
-        className="px-2 py-1 text-xs font-medium whitespace-nowrap"
-      >
-        가용 {avail}/{qty}
-      </Badge>
-
-      <Badge
-        variant={badgeToneVariant("neutral")}
-        className="px-2 py-1 text-xs font-medium whitespace-nowrap"
-      >
-        대여중 {rentedCount}
-      </Badge>
-    </div>
+    <Badge
+      variant={badgeToneVariant("brand")}
+      className="px-2 py-1 text-xs font-medium whitespace-nowrap"
+    >
+      라켓 가용수량 ({avail}/{qty})
+    </Badge>
   );
 }
 
@@ -215,17 +193,17 @@ const RacketCard = React.memo(
     const discountRate = getRacketDiscountRate(racket);
     const hasSalePrice = discountRate > 0;
     const benefitBadgeClass = {
-      featured: badgeToneClass("success"),
-      new: badgeToneClass("info"),
       off: badgeToneClass("danger"),
     };
 
     const marketingBadges = (
-      <div className="flex flex-wrap items-center gap-1.5">
+      <div className="absolute left-3 top-3 z-10 flex flex-wrap gap-1.5">
         {racket.marketing?.isFeatured && (
-          <Badge variant="outline" className={benefitBadgeClass.featured}>추천</Badge>
+          <Badge className={cn(merchandisingImageBadgeClass("추천"))}>추천</Badge>
         )}
-        {racket.marketing?.isNew && <Badge variant="outline" className={benefitBadgeClass.new}>NEW</Badge>}
+        {racket.marketing?.isNew && (
+          <Badge className={cn(merchandisingImageBadgeClass("NEW"))}>NEW</Badge>
+        )}
       </div>
     );
 
@@ -358,6 +336,7 @@ const RacketCard = React.memo(
               className="relative block w-full aspect-[4/3] overflow-hidden bg-muted/30 bp-md:w-[240px] bp-md:aspect-square bp-xl:w-[280px]"
               aria-label={`${displayBrandLabel} ${racket.model} 상세 보기`}
             >
+              {(racket.marketing?.isFeatured || racket.marketing?.isNew) && marketingBadges}
               <Image
                 src={
                   racket.images?.[0] ||
@@ -386,16 +365,14 @@ const RacketCard = React.memo(
                     {racket.model}
                   </h3>
                 </Link>
-                <div className="mt-3 flex flex-wrap items-center gap-1.5 bp-sm:gap-2">
+                <div className="mt-2 flex flex-wrap items-center gap-1.5 bp-sm:gap-2">
                   <ConditionBadge state={racket.condition} />
                   <RacketAvailBadge {...availability} />
                   {!racket.rental?.enabled && (
                     <StatusBadge kind="rental" state="unavailable" />
                   )}
                 </div>
-                {(racket.marketing?.isFeatured || racket.marketing?.isNew) && (
-                  <div className="mt-2">{marketingBadges}</div>
-                )}
+
               </div>
             </div>
 
@@ -436,6 +413,7 @@ const RacketCard = React.memo(
           className="relative block w-full aspect-[4/3] overflow-hidden bg-muted/30"
           aria-label={`${displayBrandLabel} ${racket.model} 상세 보기`}
         >
+          {(racket.marketing?.isFeatured || racket.marketing?.isNew) && marketingBadges}
           <Image
             src={
               racket.images?.[0] ||
@@ -456,25 +434,21 @@ const RacketCard = React.memo(
           </div>
           <Link href={`/rackets/${racket.id}`} className="block min-w-0">
             <CardTitle
-              className="mb-3 min-h-[3rem] line-clamp-2 break-keep text-base leading-snug transition-colors group-hover:text-primary dark:group-hover:text-primary bp-sm:min-h-[3.5rem] bp-sm:text-lg bp-md:text-xl"
+              className="mb-2 min-h-[2.75rem] line-clamp-2 break-keep text-base leading-snug transition-colors group-hover:text-primary dark:group-hover:text-primary bp-sm:min-h-[3.25rem] bp-sm:text-lg bp-md:text-xl"
               title={racket.model}
             >
               {racket.model}
             </CardTitle>
           </Link>
 
-          <div className="mt-2 flex flex-wrap items-center gap-1.5">
+          <div className="mt-1 flex flex-wrap items-center gap-1.5">
             <ConditionBadge state={racket.condition} />
-            <div className="ml-1">
-              <RacketAvailBadge {...availability} />
-            </div>
+            <RacketAvailBadge {...availability} />
             {!racket.rental?.enabled && (
               <StatusBadge kind="rental" state="unavailable" />
             )}
           </div>
-          {(racket.marketing?.isFeatured || racket.marketing?.isNew) && (
-            <div className="mt-2">{marketingBadges}</div>
-          )}
+
         </CardContent>
 
         <CardFooter className="mt-auto p-3 pt-0 bp-sm:p-6 bp-sm:pt-0">

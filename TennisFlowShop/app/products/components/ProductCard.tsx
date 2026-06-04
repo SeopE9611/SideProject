@@ -6,7 +6,7 @@ import { usePdpBundleStore } from "@/app/store/pdpBundleStore";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardTitle } from "@/components/ui/card";
-import { badgeToneClass, imageBadgeClass } from "@/lib/badge-style";
+import { badgeToneClass, merchandisingImageBadgeClass } from "@/lib/badge-style";
 import { isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
 import { ENABLE_STRING_STANDALONE_ORDER } from "@/lib/orders/string-standalone-policy";
 import { normalizeFeatureScoreTo100 } from "@/lib/product-feature-score";
@@ -37,6 +37,8 @@ export type Product = {
     manageStock?: boolean;
     allowBackorder?: boolean;
     isSale?: boolean | string | number;
+    isFeatured?: boolean | string | number;
+    isNew?: boolean | string | number;
     salePrice?: number | string | null;
   };
 };
@@ -153,6 +155,10 @@ const ProductCard = React.memo(
     const canCheckoutWithService = isMountableStringByFee(product.mountingFee);
     const featureEntries = getFeatureEntries(product.features);
     const shouldShowStandaloneServiceBadge = !isApplyFlow && canCheckoutWithService && !ENABLE_STRING_STANDALONE_ORDER;
+    const merchandisingBadges = [
+      ...(inventory?.isNew === true || inventory?.isNew === "true" || inventory?.isNew === 1 || product.isNew ? (["NEW"] as const) : []),
+      ...(inventory?.isFeatured === true || inventory?.isFeatured === "true" || inventory?.isFeatured === 1 ? (["추천"] as const) : []),
+    ];
 
     const detailHref = isApplyFlow ? `/products/${product._id}?from=apply` : `/products/${product._id}`;
 
@@ -211,10 +217,14 @@ const ProductCard = React.memo(
           <div className="flex flex-col bp-md:flex-row relative z-10">
             <div className="relative w-full bp-md:w-[280px] bp-xl:w-[320px] aspect-[4/3] flex-shrink-0 overflow-hidden bg-secondary/30">
               <Image src={(product.images?.[0] as string) || "/placeholder.svg?height=200&width=200&query=tennis+string"} alt={product.name} fill sizes="(max-width: 768px) 100vw, (max-width: 1536px) 280px, 320px" className="object-contain" />
-              {product.isNew && (
-                <Badge variant="info" className={cn("absolute right-2 top-2", imageBadgeClass("info"))}>
-                  NEW
-                </Badge>
+              {merchandisingBadges.length > 0 && (
+                <div className="absolute left-3 top-3 z-10 flex flex-wrap gap-1.5">
+                  {merchandisingBadges.map((badge) => (
+                    <Badge key={`${product._id}-${badge}`} className={cn(merchandisingImageBadgeClass(badge))}>
+                      {badge}
+                    </Badge>
+                  ))}
+                </div>
               )}
             </div>
             <div className="min-w-0 flex-1 p-4 bp-md:p-5">
@@ -317,10 +327,14 @@ const ProductCard = React.memo(
             <Image src={(product.images?.[0] as string) || "/placeholder.svg?height=300&width=300&query=tennis+string"} alt={product.name} fill sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover" />
           </Link>
 
-          {product.isNew && (
-            <Badge variant="info" className={cn("absolute right-2 top-2 z-10 text-xs sm:right-3 sm:top-3", imageBadgeClass("info"))}>
-              NEW
-            </Badge>
+          {merchandisingBadges.length > 0 && (
+            <div className="absolute left-3 top-3 z-10 flex flex-wrap gap-1.5">
+              {merchandisingBadges.map((badge) => (
+                <Badge key={`${product._id}-${badge}`} className={cn(merchandisingImageBadgeClass(badge))}>
+                  {badge}
+                </Badge>
+              ))}
+            </div>
           )}
         </div>
 

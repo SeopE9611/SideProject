@@ -2,7 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { imageBadgeClass } from "@/lib/badge-style";
+import { merchandisingImageBadgeClass } from "@/lib/badge-style";
 import { getEffectiveRacketPrice, getRacketDiscountRate } from "@/lib/racket-pricing";
 import { cn } from "@/lib/utils";
 import type { EmblaCarouselType, EmblaOptionsType } from "embla-carousel";
@@ -242,10 +242,7 @@ export default function HorizontalProducts({
             {(p.merchandisingBadges ?? []).filter((label) => label === "NEW" || label === "추천").slice(0, 2).map((label) => (
               <Badge
                 key={`${p._id}-${label}`}
-                className={cn(
-                  "text-xs px-2.5 py-0.5 rounded-md shadow-sm",
-                  imageBadgeClass(label === "NEW" ? "brand" : "success"),
-                )}
+                className={cn(merchandisingImageBadgeClass(label))}
               >
                 {label}
               </Badge>

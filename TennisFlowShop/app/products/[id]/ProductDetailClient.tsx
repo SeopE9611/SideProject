@@ -15,7 +15,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { badgeBaseOutlined, badgeSizeSm, getAnswerStatusBadgeSpec, getQnaCategoryBadgeSpec, imageBadgeClass } from "@/lib/badge-style";
+import { badgeBaseOutlined, badgeSizeSm, getAnswerStatusBadgeSpec, getQnaCategoryBadgeSpec, merchandisingImageBadgeClass } from "@/lib/badge-style";
 import { stringBrandLabel, stringColorLabel, stringMaterialLabel } from "@/lib/constants";
 import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import { hasPaidMountingFee, isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
@@ -175,10 +175,6 @@ function normalizeGaugeDisplayLabel(row: GaugeInventoryRow): string {
   const rawLabel = String(row.label ?? "").trim();
   if (rawLabel) return rawLabel;
   return formatGaugeLabel(row.value);
-}
-
-function getProductBadgeTone(badge: ProductBadge): Parameters<typeof imageBadgeClass>[0] {
-  return badge === "NEW" ? "brand" : "success";
 }
 
 export default function ProductDetailClient({ product }: { product: any }) {
@@ -941,8 +937,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
       {/* Hero Section with Breadcrumb */}
       <div className="relative bg-muted/20 text-foreground py-5 sm:py-6 border-b border-border/60">
         <SiteContainer variant="wide" className="relative">
-          <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
-            <div className="flex min-w-0 items-center gap-2 overflow-x-auto text-sm scrollbar-hide sm:gap-2.5 sm:text-base">
+          <div className="flex min-w-0 items-center justify-between gap-3">
+            <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden text-sm sm:gap-2.5 sm:text-base">
               <Link href="/" className="text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap">
                 홈
               </Link>
@@ -951,12 +947,12 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 상품
               </Link>
               <span className="text-muted-foreground/50">/</span>
-              <span className="max-w-[150px] truncate font-medium text-foreground sm:max-w-none">{product.name}</span>
+              <span className="min-w-0 flex-1 truncate font-medium text-foreground">{product.name}</span>
             </div>
-            <div className="flex items-center justify-end gap-2">
+            <div className="flex shrink-0 items-center justify-end gap-1.5 sm:gap-2">
               <Button
                 variant="ghost"
-                className="text-muted-foreground hover:text-foreground hover:bg-muted/50 px-3 py-2 h-auto text-sm rounded-xl transition-[background-color,color,border-color,box-shadow,opacity] duration-200"
+                className="h-9 whitespace-nowrap rounded-xl px-2.5 text-sm text-muted-foreground transition-[background-color,color,border-color,box-shadow,opacity] duration-200 hover:bg-muted/50 hover:text-foreground sm:px-3"
                 onClick={() => router.back()}
               >
                 <ArrowLeft className="mr-1.5 h-4 w-4" />
@@ -964,7 +960,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
               </Button>
               {isAdmin && (
                 <Link href={`/admin/products/${productId}/edit`}>
-                  <Button variant="outline" size="sm" className="rounded-xl">
+                  <Button variant="outline" size="sm" className="h-9 whitespace-nowrap rounded-xl px-2.5 sm:px-3">
                     상품 수정
                   </Button>
                 </Link>
@@ -1003,7 +999,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 {merchandisingBadges.length > 0 && (
                   <div className="absolute top-4 sm:top-5 left-4 sm:left-5 flex flex-wrap gap-2 sm:gap-2.5">
                     {merchandisingBadges.map((badge) => (
-                      <Badge key={`${product?._id ?? product?.name}-${badge}`} className={cn("text-xs px-3 py-1 rounded-lg shadow-sm", imageBadgeClass(getProductBadgeTone(badge)))}>
+                      <Badge key={`${product?._id ?? product?.name}-${badge}`} className={cn(merchandisingImageBadgeClass(badge))}>
                         {badge}
                       </Badge>
                     ))}
@@ -1389,7 +1385,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         const displayValue = key === "색상" && selectedColorLabel ? selectedColorLabel : value;
                         return (
                           <div key={key} className="bg-muted/30 p-3 sm:p-4 rounded-lg border border-border">
-                            <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
+                            <div className="flex min-w-0 items-center justify-between gap-3">
                               <span className="font-semibold text-foreground text-sm sm:text-base">{key}</span>
                               <span className="min-w-0 break-words text-left text-muted-foreground font-medium text-sm sm:text-right sm:text-base">{String(displayValue)}</span>
                             </div>
@@ -1443,7 +1439,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
               <TabsContent value="reviews" className="p-4 bp-md:p-8">
                 <div className="space-y-4 sm:space-y-6">
-                  <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
+                  <div className="flex min-w-0 items-center justify-between gap-3">
                     <div className="flex items-center gap-2 sm:gap-3">
                       <div className="w-10 sm:w-12 h-10 sm:h-12 bg-muted/30 rounded-lg flex items-center justify-center">
                         <Star className="h-4 w-4 sm:h-6 sm:w-6 text-primary" />
