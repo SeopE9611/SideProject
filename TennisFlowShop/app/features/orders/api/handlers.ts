@@ -11,6 +11,7 @@ import { deductPoints } from "@/lib/points.service";
 import { normalizeEmailForSearch } from "@/lib/search-email";
 import { calcOrderShippingFeeWithBundlePolicy, normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { getEffectiveProductPrice } from "@/lib/product-pricing";
+import { getEffectiveRacketPrice } from "@/lib/racket-pricing";
 import type { DBOrder } from "@/lib/types/order-db";
 import { ObjectId, type Db } from "mongodb";
 import { cookies } from "next/headers";
@@ -882,7 +883,7 @@ export async function createOrder(req: Request, executionContext?: CreateOrderEx
             return {
               productId: rid,
               name: racketName,
-              price: Number(racket?.price ?? 0),
+              price: getEffectiveRacketPrice(racket),
               imageUrl: (racket as any)?.images?.[0] ?? null,
               quantity,
               kind: "racket" as const,

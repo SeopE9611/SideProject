@@ -3,6 +3,7 @@ import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 import RentalsCheckoutClient from "@/app/rentals/[id]/checkout/_components/RentalsCheckoutClient";
 import { verifyAccessToken } from "@/lib/auth.utils";
+import { getEffectiveProductPrice } from "@/lib/product-pricing";
 import { cookies } from "next/headers";
 import LoginGate from "@/components/system/LoginGate";
 
@@ -69,6 +70,7 @@ async function getInitialForRacket(
           projection: {
             name: 1,
             price: 1,
+            inventory: 1,
             mountingFee: 1,
             images: 1,
             thumbnail: 1,
@@ -84,7 +86,7 @@ async function getInitialForRacket(
       selectedString = {
         id: stringId,
         name: (p as any).name ?? "",
-        price: Number((p as any).price ?? 0),
+        price: getEffectiveProductPrice(p),
         mountingFee: Number((p as any).mountingFee ?? 0),
         image: img,
       };
