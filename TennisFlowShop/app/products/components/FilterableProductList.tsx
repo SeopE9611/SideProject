@@ -349,11 +349,11 @@ export default function FilterableProductList({
   }, [isUiTransitioning, isLoadingInitial, error]);
 
   const loadedCount = (productsList ?? []).length;
-  const isInitialLikeLoading = isLoadingInitial || isUiTransitioning;
-  const showInlineLoadingSkeleton = isInitialLikeLoading;
+  const showInlineLoadingSkeleton = isLoadingInitial && loadedCount === 0;
   const hasInitialFetchSettled = total !== null || error !== null;
-  const canShowEmptyState = hasInitialFetchSettled && loadedCount === 0;
-  const isCountLoading = isInitialLikeLoading || total === null;
+  const canShowEmptyState = hasInitialFetchSettled && loadedCount === 0 && !isLoadingInitial;
+  const isCountLoading = total === null && loadedCount === 0;
+  const isBackgroundRefreshing = isUiTransitioning && loadedCount > 0;
 
   // 검색 제출 handler
   const handleSearchSubmit = useCallback(() => {
@@ -755,6 +755,9 @@ export default function FilterableProductList({
                     (표시중 {loadedCount}개)
                   </span>
                 )}
+                {isBackgroundRefreshing ? (
+                  <span className="ml-2 text-xs font-medium text-muted-foreground">조회 중...</span>
+                ) : null}
               </div>
               <Button
                 type="button"
@@ -1028,8 +1031,10 @@ export default function FilterableProductList({
           ) : (
             <>
               <div
+                aria-busy={isBackgroundRefreshing}
                 className={cn(
-                  "grid gap-4 bp-md:gap-6",
+                  "grid gap-4 bp-md:gap-6 transition-opacity",
+                  isBackgroundRefreshing && "opacity-70",
                   viewMode === "grid"
                     ? "grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-2 bp-2xl:grid-cols-3 bp-3xl:grid-cols-4"
                     : "grid-cols-1",

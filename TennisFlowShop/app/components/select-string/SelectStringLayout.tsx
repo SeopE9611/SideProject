@@ -14,16 +14,15 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { useInfiniteProducts } from "@/app/products/hooks/useInfiniteProducts";
+import { StringCard } from "./StringCard";
 import {
-  StringCard,
-  normalizeGaugeRows,
-  normalizeColorRows,
   getVisibleColorRows,
   getVariantsByColor,
-  getVariantBySelection,
-  isSellableVariant,
   hasSelectableStringStock,
-} from "./StringCard";
+  isSellableVariant,
+  normalizeColorRows,
+  normalizeGaugeRows,
+} from "@/lib/products/string-stock";
 import { cn } from "@/lib/utils";
 import {
   ArrowLeft,
@@ -246,8 +245,8 @@ export default function SelectStringLayout({
   };
 
   // Determine CTA labels
-  const finalCtaLabel = ctaLabel ?? (flowType === "rental" ? "대여 계속하기" : isCartEditMode ? "이 스트링으로 변경" : "이 스트링 선택하고 구매 계속하기");
-  const finalCtaSubLabel = ctaSubLabel ?? (flowType === "rental" ? "선택 후 장착 정보 입력 단계로 이어집니다" : "선택한 스트링은 라켓과 함께 한 번에 결제됩니다");
+  const finalCtaLabel = ctaLabel ?? (flowType === "rental" ? "대여 계속하기" : isCartEditMode ? "이 스트링으로 변경" : "구매 계속하기");
+  const finalCtaSubLabel = ctaSubLabel ?? (flowType === "rental" ? "선택 후 장착 정보 입력 단계로 이동합니다" : "선택한 스트링은 라켓과 함께 결제됩니다");
 
   return (
     <div className="min-h-screen bg-background">
@@ -302,9 +301,9 @@ export default function SelectStringLayout({
                 )}
               </div>
               
-              <div className="flex items-center gap-2">
+              <div className="flex w-full items-center gap-2 bp-sm:w-auto">
                 <Select value={stockFilter} onValueChange={(v) => setStockFilter(v as "all" | "available")}>
-                  <SelectTrigger className="h-10 w-[140px]">
+                  <SelectTrigger className="h-10 w-full bp-sm:w-[180px]">
                     <Filter className="mr-2 h-4 w-4" />
                     <SelectValue />
                   </SelectTrigger>

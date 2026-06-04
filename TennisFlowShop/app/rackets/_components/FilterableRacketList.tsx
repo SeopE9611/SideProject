@@ -215,6 +215,7 @@ export default function FilterableRacketList({
   const key = `/api/rackets${query.toString() ? `?${query.toString()}` : ""}`;
   const { data, isLoading, isValidating, error, mutate } =
     useSWR<RacketsApiResponse>(key, fetcher, {
+      keepPreviousData: true,
       revalidateOnFocus: false, // 탭/창 복귀 시 재요청 방지
       revalidateOnReconnect: false, // (원하면 true 유지 가능)
     });
@@ -277,10 +278,10 @@ export default function FilterableRacketList({
     }
   }, [isUiTransitioning, isLoading, isValidating, error]);
 
-  // 전환 중 + 실제 로딩을 초기 로딩처럼 취급 (0개 1프레임 노출 방지)
-  const isInitialLikeLoading = isLoading || isValidating || isUiTransitioning;
-  const isBackgroundRefreshing = !!data && isValidating;
-  const showInlineLoadingSkeleton = isInitialLikeLoading;
+  // 최초 진입에만 카드 스켈레톤을 표시하고, 필터 변경 중에는 기존 목록을 유지한다.
+  const showInlineLoadingSkeleton = isLoading && !data;
+  const isInitialLikeLoading = showInlineLoadingSkeleton;
+  const isBackgroundRefreshing = !!data && (isValidating || isUiTransitioning);
 
   // 배열/객체 응답을 rackets/total로 통일
   const { rackets, total } = useMemo(() => {
@@ -650,6 +651,9 @@ export default function FilterableRacketList({
                       (표시중 {visibleProducts.length}개)
                     </span>
                   )}
+                  {isBackgroundRefreshing ? (
+                    <span className="ml-2 text-xs font-medium text-muted-foreground">조회 중...</span>
+                  ) : null}
                 </div>
                 <Button
                   type="button"
@@ -810,8 +814,10 @@ export default function FilterableRacketList({
             </div>
           ) : (
             <div
+              aria-busy={isBackgroundRefreshing}
               className={cn(
-                "grid gap-4 bp-md:gap-6",
+                "grid gap-4 bp-md:gap-6 transition-opacity",
+                isBackgroundRefreshing && "opacity-70",
                 effectiveViewMode === "grid"
                   ? "grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-2 bp-2xl:grid-cols-3 bp-3xl:grid-cols-4"
                   : "grid-cols-1",
