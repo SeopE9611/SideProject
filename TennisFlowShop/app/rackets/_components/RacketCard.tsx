@@ -11,8 +11,9 @@ import { Briefcase, Eye, ShoppingCart } from "lucide-react";
 import useSWR from "swr";
 import { racketBrandLabel } from "@/lib/constants";
 import StatusBadge from "@/components/badges/StatusBadge";
-import { badgeToneVariant } from "@/lib/badge-style";
+import { badgeToneClass, badgeToneVariant } from "@/lib/badge-style";
 import { cn } from "@/lib/utils";
+import { getEffectiveRacketPrice, getRacketDiscountRate } from "@/lib/racket-pricing";
 
 const RentDialog = dynamic(
   () => import("@/app/rackets/[id]/_components/RentDialog"),
@@ -194,23 +195,21 @@ const RacketCard = React.memo(
       : undefined;
     const displayBrandLabel = racketBrandLabel(racket.brand) || brandLabel;
     const buyLabel = isApplyFlow ? "스트링 선택" : "구매하기";
-    const salePrice = Number(racket.marketing?.salePrice ?? 0);
-    const hasSalePrice = Boolean(
-      racket.marketing?.isSale && salePrice > 0 && salePrice < racket.price,
-    );
-    const discountRate = hasSalePrice
-      ? Math.round(((racket.price - salePrice) / racket.price) * 100)
-      : 0;
+    const salePrice = getEffectiveRacketPrice(racket);
+    const discountRate = getRacketDiscountRate(racket);
+    const hasSalePrice = discountRate > 0;
+    const benefitBadgeClass = {
+      featured: badgeToneClass("success"),
+      new: badgeToneClass("info"),
+      off: badgeToneClass("danger"),
+    };
 
     const marketingBadges = (
       <div className="flex flex-wrap items-center gap-1.5">
-        {racket.marketing?.isNew && <Badge variant="secondary">NEW</Badge>}
         {racket.marketing?.isFeatured && (
-          <Badge variant="secondary">추천</Badge>
+          <Badge variant="outline" className={benefitBadgeClass.featured}>추천</Badge>
         )}
-        {hasSalePrice && (
-          <Badge variant="destructive">{discountRate}% SALE</Badge>
-        )}
+        {racket.marketing?.isNew && <Badge variant="outline" className={benefitBadgeClass.new}>NEW</Badge>}
       </div>
     );
 
@@ -231,6 +230,9 @@ const RacketCard = React.memo(
             <span className="text-sm text-muted-foreground line-through">
               {racket.price.toLocaleString()}원
             </span>
+            <Badge variant="outline" className={cn("shrink-0 whitespace-nowrap text-xs", benefitBadgeClass.off)}>
+              {discountRate}% OFF
+            </Badge>
           </div>
         ) : (
           <span className="font-bold text-foreground">
@@ -374,8 +376,10 @@ const RacketCard = React.memo(
                   {!racket.rental?.enabled && (
                     <StatusBadge kind="rental" state="unavailable" />
                   )}
-                  {marketingBadges}
                 </div>
+                {(racket.marketing?.isFeatured || racket.marketing?.isNew) && (
+                  <div className="mt-2">{marketingBadges}</div>
+                )}
               </div>
             </div>
 
@@ -451,8 +455,10 @@ const RacketCard = React.memo(
             {!racket.rental?.enabled && (
               <StatusBadge kind="rental" state="unavailable" />
             )}
-            {marketingBadges}
           </div>
+          {(racket.marketing?.isFeatured || racket.marketing?.isNew) && (
+            <div className="mt-2">{marketingBadges}</div>
+          )}
         </CardContent>
 
         <CardFooter className="mt-auto p-3 pt-0 bp-sm:p-6 bp-sm:pt-0">

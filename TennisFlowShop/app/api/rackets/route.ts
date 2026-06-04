@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
 import type { Sort } from "mongodb";
+import { parseBenefitFilters } from "@/lib/benefit-labels";
 
 export const dynamic = "force-dynamic";
 function normalizeRacketMarketing(value: any) {
@@ -56,9 +57,15 @@ export async function GET(req: Request) {
   // 대여 가능만 보기: rental.enabled=true
   if (rentOnly) q["rental.enabled"] = true;
 
-  if (exposure === "featured") q["marketing.isFeatured"] = true;
-  else if (exposure === "new") q["marketing.isNew"] = true;
-  else if (exposure === "sale") q["marketing.isSale"] = true;
+  const exposureFilters = parseBenefitFilters(exposure);
+  if (exposureFilters.length > 0) {
+    const exposureOr = exposureFilters.map((item) => {
+      if (item === "featured") return { "marketing.isFeatured": true };
+      if (item === "new") return { "marketing.isNew": true };
+      return { "marketing.isSale": true };
+    });
+    q.$and = [...(q.$and ?? []), { $or: exposureOr }];
+  }
 
   // 키워드 검색: model(기본) + brand(보조)
   if (keyword) {

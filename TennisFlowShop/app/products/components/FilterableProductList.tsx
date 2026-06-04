@@ -15,6 +15,7 @@ import {
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { stringMaterialLabel } from "@/lib/constants";
+import { formatBenefitFilterLabel, parseBenefitFilters, serializeBenefitFilters } from "@/lib/benefit-labels";
 import { cn } from "@/lib/utils";
 import { Filter, Grid3X3, List, Search } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -95,7 +96,7 @@ export default function FilterableProductList({
   const [selectedComfort, setSelectedComfort] = useState<number | null>(null);
   const [priceRange, setPriceRange] =
     useState<[number, number]>(DEFAULT_PRICE_RANGE);
-  const [exposureFilter, setExposureFilter] = useState("all");
+  const [exposureFilter, setExposureFilter] = useState<string[]>([]);
 
   // 모바일(Sheet) 전용: 임시 선택값(draft)
   // - Sheet 안에서 선택해도 즉시 서버 조회가 일어나지 않게 하기 위함
@@ -111,7 +112,7 @@ export default function FilterableProductList({
   const [draftComfort, setDraftComfort] = useState<number | null>(null);
   const [draftPriceRange, setDraftPriceRange] =
     useState<[number, number]>(DEFAULT_PRICE_RANGE);
-  const [draftExposureFilter, setDraftExposureFilter] = useState("all");
+  const [draftExposureFilter, setDraftExposureFilter] = useState<string[]>([]);
 
   // 모바일에서 검색 입력도 draft로만 관리 (취소 시 되돌리기 위함)
   const [draftSearchQuery, setDraftSearchQuery] = useState("");
@@ -178,8 +179,7 @@ export default function FilterableProductList({
         maxPrice ? Number(maxPrice) : DEFAULT_MAX_PRICE,
       ]);
 
-      const exposure = searchParams.get("exposure") || "all";
-      setExposureFilter(["featured", "new", "sale"].includes(exposure) ? exposure : "all");
+      setExposureFilter(parseBenefitFilters(searchParams.get("exposure")));
 
       setSortOption(searchParams.get("sort") || "latest");
 
@@ -233,9 +233,8 @@ export default function FilterableProductList({
     ];
     if (pr[0] !== priceRange[0] || pr[1] !== priceRange[1]) setPriceRange(pr);
 
-    const exposure = searchParams.get("exposure") || "all";
-    const nextExposure = ["featured", "new", "sale"].includes(exposure) ? exposure : "all";
-    if (nextExposure !== exposureFilter) setExposureFilter(nextExposure);
+    const nextExposure = parseBenefitFilters(searchParams.get("exposure"));
+    if (nextExposure.join(",") !== exposureFilter.join(",")) setExposureFilter(nextExposure);
 
     const sort = searchParams.get("sort") || "latest";
     if (sort !== sortOption) setSortOption(sort);
@@ -275,7 +274,7 @@ export default function FilterableProductList({
     minPrice: minPriceParam,
     maxPrice: maxPriceParam,
     purpose: isApplyFlow ? "stringing" : undefined,
-    exposure: exposureFilter,
+    exposure: serializeBenefitFilters(exposureFilter) ?? "all",
   });
 
   /**
@@ -300,7 +299,7 @@ export default function FilterableProductList({
       sortOption ?? "",
       priceRange[0],
       priceRange[1],
-      exposureFilter,
+      exposureFilter.join(","),
     ].join("|");
   }, [
     selectedBrand,
@@ -384,7 +383,7 @@ export default function FilterableProductList({
     setSelectedControl(null);
     setSelectedComfort(null);
     setPriceRange(DEFAULT_PRICE_RANGE);
-    setExposureFilter("all");
+    setExposureFilter([]);
     setSortOption("latest");
     setViewMode("grid");
     setSearchQuery("");
@@ -477,7 +476,7 @@ export default function FilterableProductList({
     setDraftControl(null);
     setDraftComfort(null);
     setDraftPriceRange(DEFAULT_PRICE_RANGE);
-    setDraftExposureFilter("all");
+    setDraftExposureFilter([]);
     setDraftSearchQuery("");
   }, []);
 
@@ -521,7 +520,7 @@ export default function FilterableProductList({
     selectedControl,
     selectedComfort,
     submittedQuery,
-    exposureFilter !== "all",
+    exposureFilter.length > 0,
     priceChanged,
   ].filter(Boolean).length;
 
@@ -537,9 +536,11 @@ export default function FilterableProductList({
     draftControl,
     draftComfort,
     draftSearchQuery,
-    draftExposureFilter !== "all",
+    draftExposureFilter.length > 0,
     draftPriceChanged,
   ].filter(Boolean).length;
+  const exposureLabel = formatBenefitFilterLabel(exposureFilter);
+  const productCountPrefix = exposureLabel ? `${exposureLabel} 상품 총` : "총";
   const getScoreLabel = (value: number) => `${value} 이상`;
   const getPriceChipLabel = (range: [number, number]) => {
     if (range[0] === 0 && range[1] === 10000) return "1만원 이하";
@@ -581,7 +582,7 @@ export default function FilterableProductList({
       selectedComfort !== null ? String(selectedComfort) : null,
     );
     setOrDelete("q", submittedQuery ? submittedQuery : null);
-    setOrDelete("exposure", exposureFilter !== "all" ? exposureFilter : null);
+    setOrDelete("exposure", serializeBenefitFilters(exposureFilter));
 
     // 기본값이면 URL에 굳이 남기지 않기(기존 동작 유지)
     setOrDelete(
@@ -740,7 +741,7 @@ export default function FilterableProductList({
                 className="text-base bp-sm:text-lg font-semibold text-foreground tabular-nums"
                 aria-live="polite"
               >
-                총{" "}
+                {productCountPrefix}{" "}
                 {isCountLoading ? (
                   <Skeleton className="inline-block h-5 w-12 align-middle" />
                 ) : (
@@ -897,17 +898,13 @@ export default function FilterableProductList({
                       </button>
                     </span>
                   )}
-                  {exposureFilter !== "all" && (
+                  {exposureLabel && (
                     <span className="inline-flex max-w-[220px] shrink-0 items-center gap-1 rounded-full border border-border bg-muted px-2 py-1 text-xs whitespace-nowrap">
-                      {exposureFilter === "featured"
-                        ? "추천"
-                        : exposureFilter === "new"
-                          ? "신상품"
-                          : "할인"}
+                      {exposureLabel}
                       <button
                         type="button"
                         aria-label="혜택 필터 해제"
-                        onClick={() => setExposureFilter("all")}
+                        onClick={() => setExposureFilter([])}
                         className="text-muted-foreground hover:text-foreground"
                       >
                         ×
@@ -931,9 +928,9 @@ export default function FilterableProductList({
               </div>
             )}
 
-            <div className="flex items-center justify-between gap-3 bp-sm:justify-end">
+            <div className="flex items-center justify-end gap-3">
               {/* 뷰 모드 토글 */}
-              {!isMobileViewport && <div className="flex items-center border border-border rounded-lg p-1 bg-card">
+              {!isMobileViewport && <div className="flex shrink-0 items-center border border-border rounded-lg p-1 bg-card">
                 <Button
                   type="button"
                   variant={viewMode === "grid" ? "default" : "ghost"}
@@ -960,7 +957,7 @@ export default function FilterableProductList({
 
               {/* 정렬 */}
               <Select value={sortOption} onValueChange={setSortOption}>
-                <SelectTrigger className="h-9 w-[150px] bp-sm:w-[180px] rounded-lg border-2 focus:border-border dark:focus:border-border bg-card text-sm">
+                <SelectTrigger className="h-9 w-full min-w-0 rounded-lg border-2 bg-card text-sm focus:border-border bp-sm:w-[180px] dark:focus:border-border">
                   <SelectValue placeholder="정렬" />
                 </SelectTrigger>
                 <SelectContent className="dark:bg-card dark:border-border">

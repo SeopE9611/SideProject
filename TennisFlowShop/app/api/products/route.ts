@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
+import { parseBenefitFilters } from "@/lib/benefit-labels";
 import { getHangulInitials } from "@/lib/hangul-utils";
 import { ObjectId } from "mongodb";
 import type { Filter } from "mongodb";
@@ -120,9 +121,15 @@ export async function GET(req: NextRequest) {
     if (q) filter.name = { $regex: q, $options: "i" };
     if (material) filter.material = material;
     if (isFeatured === "true") filter["inventory.isFeatured"] = true;
-    if (exposure === "featured") filter["inventory.isFeatured"] = true;
-    else if (exposure === "new") filter["inventory.isNew"] = true;
-    else if (exposure === "sale") filter["inventory.isSale"] = true;
+    const exposureFilters = parseBenefitFilters(exposure);
+    if (exposureFilters.length > 0) {
+      const exposureOr = exposureFilters.map((item) => {
+        if (item === "featured") return { "inventory.isFeatured": true };
+        if (item === "new") return { "inventory.isNew": true };
+        return { "inventory.isSale": true };
+      });
+      (filter as any).$and = [...(((filter as any).$and as any[]) ?? []), { $or: exposureOr }];
+    }
 
     // 가격 범위 필터(기존 훅(useInfiniteProducts)에서 이미 사용중인 파라미터를 서버에서 반영)
     if (minPrice || maxPrice) {
