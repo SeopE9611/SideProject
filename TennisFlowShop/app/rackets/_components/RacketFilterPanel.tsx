@@ -22,10 +22,10 @@ const EXPOSURE_OPTIONS = [
 
 const RACKET_PRICE_PRESETS: { label: string; range: [number, number] }[] = [
   { label: "전체", range: [0, 10000000] },
-  { label: "5만원 이하", range: [0, 50000] },
-  { label: "5만원 ~ 10만원", range: [50000, 100000] },
-  { label: "10만원 ~ 15만원", range: [100000, 150000] },
-  { label: "15만원 이상", range: [150000, 10000000] },
+  { label: "~5만원", range: [0, 50000] },
+  { label: "5~10만원", range: [50000, 100000] },
+  { label: "10~15만원", range: [100000, 150000] },
+  { label: "15만원~", range: [150000, 10000000] },
 ];
 
 type Props = {
@@ -337,7 +337,7 @@ export default function RacketFilterPanel({
                         onChangePriceMax(preset.range[1]);
                       }}
                       className={cn(
-                        "whitespace-nowrap rounded-md border px-3 py-1.5 text-xs transition-colors bp-sm:text-sm",
+                        "min-w-0 w-full overflow-hidden text-ellipsis whitespace-nowrap rounded-md border px-2 py-1.5 text-[11px] transition-colors bp-sm:text-xs",
                         isActive
                           ? "border-primary bg-primary/15 text-primary dark:bg-primary/30 dark:text-primary-foreground"
                           : "border-border bg-background text-muted-foreground hover:bg-muted",

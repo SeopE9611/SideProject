@@ -30,10 +30,10 @@ const EXPOSURE_OPTIONS = [
 
 const PRICE_PRESETS: { label: string; range: [number, number] }[] = [
   { label: "전체", range: [0, 200000] },
-  { label: "1만원 이하", range: [0, 10000] },
-  { label: "1만원 ~ 2만원", range: [10000, 20000] },
-  { label: "2만원 ~ 3만원", range: [20000, 30000] },
-  { label: "3만원 이상", range: [30000, 200000] },
+  { label: "~1만원", range: [0, 10000] },
+  { label: "1~2만원", range: [10000, 20000] },
+  { label: "2~3만원", range: [20000, 30000] },
+  { label: "3만원~", range: [30000, 200000] },
 ];
 
 type Props = {
@@ -391,7 +391,7 @@ export const FilterPanel = React.memo(function FilterPanel({
                       type="button"
                       onClick={() => setPriceRange(preset.range)}
                       className={cn(
-                        "whitespace-nowrap rounded-md border px-3 py-1.5 text-xs transition-colors bp-sm:text-sm",
+                        "min-w-0 w-full overflow-hidden text-ellipsis whitespace-nowrap rounded-md border px-2 py-1.5 text-[11px] transition-colors bp-sm:text-xs",
                         isActive
                           ? "border-primary bg-primary/15 text-primary dark:bg-primary/30 dark:text-primary-foreground"
                           : "border-border bg-background text-muted-foreground hover:bg-muted",

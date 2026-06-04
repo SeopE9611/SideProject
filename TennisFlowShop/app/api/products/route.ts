@@ -20,7 +20,7 @@ type ProductDoc = {
     durability?: number;
     comfort?: number;
   };
-  inventory?: { isFeatured?: boolean; isNew?: boolean; isSale?: boolean };
+  inventory?: { isFeatured?: boolean; isNew?: boolean; isSale?: boolean; salePrice?: number };
   ratingCount?: number;
   ratingAvg?: number;
   ratingAverage?: number;
