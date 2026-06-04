@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { racketBrandLabel, stringColorLabel } from "@/lib/constants";
@@ -200,6 +201,8 @@ export default function RentalSelectStringClient({
   const router = useRouter();
   const [selectedGaugeByStringId, setSelectedGaugeByStringId] = useState<Record<string, string>>({});
   const [selectedColorByStringId, setSelectedColorByStringId] = useState<Record<string, string>>({});
+  const [stringSearchQuery, setStringSearchQuery] = useState("");
+  const [stockFilter, setStockFilter] = useState<"all" | "available">("all");
 
   const { products, isLoadingInitial, isFetchingMore, hasMore, loadMore } =
     useInfiniteProducts({
@@ -282,7 +285,6 @@ export default function RentalSelectStringClient({
   }, [products, selectedColorByStringId]);
 
   const goCheckout = (stringId?: string, selectedGauge?: string, selectedColor?: string) => {
-    const base = `/rentals/${encodeURIComponent(racket.id)}/checkout?period=${period}`;
     const params = new URLSearchParams(`period=${period}`);
     if (stringId) params.set("stringId", stringId);
     if (selectedGauge) params.set("selectedGauge", selectedGauge);
@@ -290,6 +292,24 @@ export default function RentalSelectStringClient({
     const url = `/rentals/${encodeURIComponent(racket.id)}/checkout?${params.toString()}`;
     router.push(url);
   };
+  const filteredProducts = useMemo(() => {
+    const query = stringSearchQuery.trim().toLowerCase();
+    return (products ?? []).filter((product: any) => {
+      const haystack = [product?.name, product?.brand, product?.material]
+        .map((value) => String(value ?? "").toLowerCase())
+        .join(" ");
+      const matchesQuery = !query || haystack.includes(query);
+      const stock = Number(product?.inventory?.stock ?? 0);
+      const hasSelectableStock =
+        normalizeVariantRows(product).some((row) => isSellableVariant(row)) ||
+        normalizeGaugeRows(product).some((row) => !row.isSoldOut && row.stock > 0) ||
+        normalizeColorRows(product).some((row) => !isColorSoldOut(row)) ||
+        product?.inventory?.manageStock !== true ||
+        stock > 0;
+      return matchesQuery && (stockFilter === "all" || hasSelectableStock);
+    });
+  }, [products, stockFilter, stringSearchQuery]);
+
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -344,6 +364,9 @@ export default function RentalSelectStringClient({
                         {period}일
                       </span>
                     </p>
+                    <p className="mt-1 break-keep text-xs text-muted-foreground">
+                      라켓 가용수량은 대여 결제 직전 다시 검증되며, 대여로 인해 실제 가용수량은 변동될 수 있습니다.
+                    </p>
                   </div>
                 </div>
               </div>
@@ -375,9 +398,31 @@ export default function RentalSelectStringClient({
 
         {/* Strings */}
         <div className="space-y-6">
-          <h2 className="break-keep text-center text-2xl font-bold leading-tight text-foreground">
-            사용 가능한 스트링
-          </h2>
+          <div className="space-y-3 text-center">
+            <h2 className="break-keep text-2xl font-bold leading-tight text-foreground">
+              사용 가능한 스트링
+            </h2>
+            <p className="break-keep text-sm text-muted-foreground">
+              선택한 색상/게이지 조합에 따라 재고가 달라질 수 있으며, 스트링별 재고 현황은 실시간으로 변동될 수 있습니다.
+            </p>
+          </div>
+          <div className="grid gap-2 rounded-2xl border border-border bg-card p-3 shadow-sm bp-md:grid-cols-[minmax(0,1fr)_180px]">
+            <Input
+              value={stringSearchQuery}
+              onChange={(event) => setStringSearchQuery(event.target.value)}
+              placeholder="스트링명/브랜드 검색"
+              className="h-10"
+            />
+            <Select value={stockFilter} onValueChange={(value) => setStockFilter(value as "all" | "available")}>
+              <SelectTrigger className="h-10">
+                <SelectValue placeholder="재고 필터" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">전체 스트링</SelectItem>
+                <SelectItem value="available">선택 가능 재고만</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
           {isLoadingInitial ? (
             <div className="grid grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-3 gap-4 bp-md:gap-6">
@@ -402,8 +447,8 @@ export default function RentalSelectStringClient({
               </Button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-3 gap-4 bp-md:gap-6">
-              {(products ?? []).map((p: any) => {
+            <div className="grid grid-cols-1 gap-3 bp-lg:grid-cols-2">
+              {filteredProducts.map((p: any) => {
                 const stringImage = p?.images?.[0] ?? p?.imageUrl;
                 const id = String(p?._id ?? "");
                 const hasVariantInventories =
@@ -454,14 +499,14 @@ export default function RentalSelectStringClient({
                     key={id}
                     className="group relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-[border-color,box-shadow,background-color] duration-200 hover:border-primary/30 hover:bg-muted/30 hover:shadow-md"
                   >
-                    <div className="p-5 flex flex-col h-full">
+                    <div className="grid h-full gap-3 p-3 bp-sm:grid-cols-[104px_minmax(0,1fr)] bp-md:p-4">
                       {/* String Image */}
-                      <div className="mb-4 rounded-xl overflow-hidden bg-muted/30 aspect-square flex items-center justify-center">
+                      <div className="overflow-hidden rounded-xl bg-muted/30 aspect-square flex items-center justify-center">
                         {stringImage ? (
                           <img
                             src={stringImage || "/placeholder.svg"}
                             alt={p.name}
-                            className="w-full h-full object-cover"
+                            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">
@@ -471,29 +516,29 @@ export default function RentalSelectStringClient({
                       </div>
 
                       {/* String Info */}
-                      <div className="flex-1">
-                        <h3 className="mb-2 line-clamp-2 break-keep text-lg font-semibold leading-snug text-foreground">
+                      <div className="min-w-0">
+                        <h3 className="mb-2 line-clamp-2 break-keep text-sm font-semibold leading-snug text-foreground bp-sm:text-base">
                           {p.name}
                         </h3>
                         {p.shortDescription ? (
-                          <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                          <p className="mb-2 line-clamp-2 text-xs text-muted-foreground">
                             {p.shortDescription}
                           </p>
                         ) : null}
-                        <p className="whitespace-nowrap tabular-nums text-xl font-bold text-foreground">
+                        <p className="whitespace-nowrap tabular-nums text-base font-bold text-foreground bp-sm:text-lg">
                           {Number(p.price ?? 0).toLocaleString()}원
                         </p>
 
                         {isGaugeRequired ? (
                           <div className="mt-3 space-y-2">
-                            <p className="text-sm font-medium text-foreground">게이지 선택</p>
+                            <p className="text-xs font-medium text-foreground">게이지 선택</p>
                             <Select
                               value={selectedGauge}
                               onValueChange={(value) =>
                                 setSelectedGaugeByStringId((prev) => ({ ...prev, [id]: value }))
                               }
                             >
-                              <SelectTrigger className="w-full [&>span]:truncate">
+                              <SelectTrigger className="h-9 w-full text-xs [&>span]:truncate">
                                 <SelectValue placeholder="게이지를 선택해주세요" />
                               </SelectTrigger>
                               <SelectContent>
@@ -519,9 +564,9 @@ export default function RentalSelectStringClient({
 
                         {colorRows.length > 0 ? (
                           <div className="mt-3 space-y-2">
-                            <p className="text-sm font-medium text-foreground">색상 선택</p>
+                            <p className="text-xs font-medium text-foreground">색상 선택</p>
                             {colorRows.length === 1 ? (
-                              <p className="text-sm text-muted-foreground">색상: {getColorLabel(colorRows[0])}</p>
+                              <p className="text-xs text-muted-foreground">색상: {getColorLabel(colorRows[0])}</p>
                             ) : (
                               <div className="flex flex-nowrap gap-2 overflow-x-auto pb-1">
                                 {colorRows.map((row) => {
@@ -598,7 +643,7 @@ export default function RentalSelectStringClient({
 
                       {/* Select Button */}
                       <Button
-                        className="mt-4 w-full whitespace-nowrap bg-primary py-5 font-medium text-primary-foreground transition-[background-color,box-shadow] duration-200 hover:bg-primary/90"
+                        className="mt-3 h-10 w-full whitespace-nowrap bg-primary font-medium text-primary-foreground transition-[background-color,box-shadow] duration-200 hover:bg-primary/90"
                         disabled={(isGaugeRequired && (!selectedGauge || isGaugeSoldOut || hasGaugeStockIssue)) || (isColorRequired && (!selectedColor || isColorOut || hasColorStockIssue))}
                         onClick={() => {
                           if (hasVariantInventories && !selectedColor) return alert("색상을 선택해주세요.");

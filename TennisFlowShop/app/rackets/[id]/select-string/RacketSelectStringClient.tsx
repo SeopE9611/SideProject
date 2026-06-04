@@ -262,6 +262,8 @@ export default function RacketSelectStringClient({
   const [workCount, setWorkCount] = useState<number>(1);
   const [selectedGaugeByStringId, setSelectedGaugeByStringId] = useState<Record<string, string>>({});
   const [selectedColorByStringId, setSelectedColorByStringId] = useState<Record<string, string>>({});
+  const [stringSearchQuery, setStringSearchQuery] = useState("");
+  const [stockFilter, setStockFilter] = useState<"all" | "available">("all");
 
   const clampWorkCount = (v: number, stringStock?: number) => {
     if (!Number.isFinite(v)) return 1;
@@ -300,6 +302,24 @@ export default function RacketSelectStringClient({
     () => (isFromCart ? initialStringId : null),
     [isFromCart, initialStringId],
   );
+
+  const filteredProducts = useMemo(() => {
+    const query = stringSearchQuery.trim().toLowerCase();
+    return products.filter((product: any) => {
+      const haystack = [product?.name, product?.brand, product?.material]
+        .map((value) => String(value ?? "").toLowerCase())
+        .join(" ");
+      const matchesQuery = !query || haystack.includes(query);
+      const stock = Number(product?.inventory?.stock ?? 0);
+      const hasSelectableStock =
+        normalizeVariantRows(product).some((row) => isSellableVariant(row)) ||
+        normalizeGaugeRows(product).some((row) => !row.isSoldOut && row.stock > 0) ||
+        normalizeColorRows(product).some((row) => !isColorSoldOut(row)) ||
+        product?.inventory?.manageStock !== true ||
+        stock > 0;
+      return matchesQuery && (stockFilter === "all" || hasSelectableStock);
+    });
+  }, [products, stockFilter, stringSearchQuery]);
 
   useEffect(() => {
     if (!isFromCart || !initialStringId || !initialSelectedGauge || products.length === 0) return;
@@ -730,6 +750,9 @@ export default function RacketSelectStringClient({
                   <span className="font-medium">라켓별 세부 장착 정보</span>도
                   자동 생성됩니다.
                 </p>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  라켓 가용수량 ({Math.min(workCount, racket.maxQty ?? workCount)}/{racket.maxQty ?? workCount}) · 대여로 인해 실제 가용수량은 변동될 수 있습니다.
+                </p>
               </div>
 
               <div className="flex items-center gap-2 self-start bp-md:self-auto">
@@ -775,9 +798,31 @@ export default function RacketSelectStringClient({
 
         {/* 스트링 목록 */}
         <div className="space-y-6">
-          <h2 className="break-keep text-center text-2xl font-bold leading-tight text-foreground">
-            사용 가능한 스트링
-          </h2>
+          <div className="space-y-3 text-center">
+            <h2 className="break-keep text-2xl font-bold leading-tight text-foreground">
+              사용 가능한 스트링
+            </h2>
+            <p className="break-keep text-sm text-muted-foreground">
+              선택한 색상/게이지 조합에 따라 재고가 달라질 수 있으며, 스트링별 재고 현황은 실시간으로 변동될 수 있습니다.
+            </p>
+          </div>
+          <div className="grid gap-2 rounded-2xl border border-border bg-card p-3 shadow-sm bp-md:grid-cols-[minmax(0,1fr)_180px]">
+            <Input
+              value={stringSearchQuery}
+              onChange={(event) => setStringSearchQuery(event.target.value)}
+              placeholder="스트링명/브랜드 검색"
+              className="h-10"
+            />
+            <Select value={stockFilter} onValueChange={(value) => setStockFilter(value as "all" | "available")}>
+              <SelectTrigger className="h-10">
+                <SelectValue placeholder="재고 필터" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">전체 스트링</SelectItem>
+                <SelectItem value="available">선택 가능 재고만</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           {isLoadingInitial ? (
             <div className="grid grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-3 gap-4 bp-md:gap-6 items-start">
               {Array.from({ length: 6 }).map((_, idx) => (
@@ -801,8 +846,8 @@ export default function RacketSelectStringClient({
               </Button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-3 gap-4 bp-md:gap-6 items-start">
-              {products.map((p: any) => {
+            <div className="grid grid-cols-1 gap-3 bp-lg:grid-cols-2">
+              {filteredProducts.map((p: any) => {
                 const stringId = String(p._id);
                 const stringImage = p?.images?.[0] ?? p?.imageUrl;
                 const hasVariantInventories =
@@ -890,18 +935,18 @@ export default function RacketSelectStringClient({
                         : "border-border hover:border-primary/30 hover:bg-muted/30",
                     ].join(" ")}
                   >
-                    <div className="p-5 flex flex-col h-full">
-                      <div className="mb-4 rounded-xl overflow-hidden bg-muted/30 aspect-square flex items-center justify-center">
+                    <div className="grid h-full gap-3 p-3 bp-sm:grid-cols-[104px_minmax(0,1fr)] bp-md:p-4">
+                      <div className="overflow-hidden rounded-xl bg-muted/30 aspect-square flex items-center justify-center">
                         {stringImage ? (
                           <img
                             src={stringImage || "/placeholder.svg"}
                             alt={p.name}
-                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                           />
                         ) : (
                           <div className="text-muted-foreground">
                             <svg
-                              className="w-16 h-16"
+                              className="h-10 w-10"
                               fill="none"
                               viewBox="0 0 24 24"
                               stroke="currentColor"
@@ -917,7 +962,7 @@ export default function RacketSelectStringClient({
                         )}
                       </div>
 
-                      <div className="flex-1 space-y-2">
+                      <div className="min-w-0 space-y-2">
                         <div className="flex items-start justify-between gap-2">
                           <h3 className="min-w-0 line-clamp-2 break-keep font-semibold leading-snug text-foreground transition-colors group-hover:text-primary">
                             {p.name}
@@ -931,7 +976,7 @@ export default function RacketSelectStringClient({
                             </Badge>
                           )}
                         </div>
-                        <p className="whitespace-nowrap tabular-nums text-lg font-bold text-foreground">
+                        <p className="whitespace-nowrap tabular-nums text-base font-bold text-foreground bp-sm:text-lg">
                           {Number(p.price ?? 0).toLocaleString()}원
                         </p>
                         {hasColorRows && (
@@ -1108,7 +1153,7 @@ export default function RacketSelectStringClient({
                         <div className="mt-4 grid grid-cols-1 gap-2">
                           <Button
                             variant="elevated"
-                            className="w-full whitespace-nowrap rounded-xl py-5 font-medium transition-[background-color,box-shadow] duration-200"
+                            className="h-10 w-full whitespace-nowrap rounded-xl font-medium transition-[background-color,box-shadow] duration-200"
                             disabled={disabledByGauge || disabledByColor || isSoldOut || isShort}
                             onClick={() => handleSelectString(p, selectedGauge || undefined, selectedColor || undefined)}
                           >

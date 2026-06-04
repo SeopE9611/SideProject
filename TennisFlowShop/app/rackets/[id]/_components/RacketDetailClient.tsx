@@ -18,7 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { badgeToneClass, usedBadgeMeta } from "@/lib/badge-style";
+import { merchandisingImageBadgeClass, usedBadgeMeta } from "@/lib/badge-style";
 import {
   gripSizeLabel,
   racketBrandLabel,
@@ -113,10 +113,6 @@ export default function RacketDetailClient({
   const salePrice = getEffectiveRacketPrice(racket);
   const discountRate = getRacketDiscountRate(racket);
   const hasSalePrice = discountRate > 0;
-  const benefitBadgeClass = {
-    featured: badgeToneClass("success"),
-    new: badgeToneClass("info"),
-    };
 
   useEffect(() => {
     if (!racketId || !racket?.model) return;
@@ -213,6 +209,7 @@ export default function RacketDetailClient({
         next[i] = {
           ...next[i],
           user: (myReview as any).userName ?? next[i].user,
+          rating: (myReview as any).rating ?? next[i].rating,
           content: (myReview as any).content,
           photos: (myReview as any).photos ?? [],
           masked: false,
@@ -233,6 +230,7 @@ export default function RacketDetailClient({
         return {
           ...r,
           user: raw.userName ?? r.user,
+          rating: raw.rating ?? r.rating,
           content: raw.content,
           photos: raw.photos ?? [],
           status: raw.status,
@@ -244,6 +242,12 @@ export default function RacketDetailClient({
 
     return next;
   }, [baseReviews, myReview, isAdmin, adminReviews]);
+
+  const reviewCount = mergedReviews.length;
+  const averageRating =
+    reviewCount > 0
+      ? mergedReviews.reduce((sum: number, review: any) => sum + (Number(review?.rating) || 0), 0) / reviewCount
+      : 0;
 
   // 인라인 수정 다이얼로그 상태/핸들러
   const [editOpen, setEditOpen] = useState(false);
@@ -452,8 +456,8 @@ export default function RacketDetailClient({
     <div className="min-h-full bg-background pb-24 bp-md:pb-10">
       <div className="relative bg-muted/20 text-foreground py-5 sm:py-6 border-b border-border/60">
         <SiteContainer variant="wide" className="relative">
-          <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
-            <div className="flex min-w-0 items-center gap-2 overflow-x-auto text-sm scrollbar-hide sm:gap-2.5 sm:text-base">
+          <div className="flex min-w-0 items-center justify-between gap-3">
+            <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden text-sm sm:gap-2.5 sm:text-base">
               <Link
                 href="/"
                 className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
@@ -468,15 +472,15 @@ export default function RacketDetailClient({
                 중고 라켓
               </Link>
               <span className="shrink-0 text-muted-foreground/60">/</span>
-              <span className="max-w-[150px] truncate font-medium text-foreground sm:max-w-none">
+              <span className="min-w-0 flex-1 truncate font-medium text-foreground">
                 {racketBrandLabel(racket.brand)} {racket.model}
               </span>
             </div>
 
-            <div className="flex items-center justify-end gap-2">
+            <div className="flex shrink-0 items-center justify-end gap-1.5 sm:gap-2">
               <Button
                 variant="ghost"
-                className="text-muted-foreground hover:text-foreground hover:bg-muted/50 px-3 py-2 h-auto text-sm rounded-xl transition-[background-color,color,border-color,box-shadow,opacity] duration-200"
+                className="h-9 whitespace-nowrap rounded-xl px-2.5 text-sm text-muted-foreground transition-[background-color,color,border-color,box-shadow,opacity] duration-200 hover:bg-muted/50 hover:text-foreground sm:px-3"
                 onClick={() => router.back()}
               >
                 <ArrowLeft className="mr-1.5 h-4 w-4" />
@@ -487,7 +491,7 @@ export default function RacketDetailClient({
                   asChild
                   variant="outline"
                   size="sm"
-                  className="rounded-xl"
+                  className="h-9 whitespace-nowrap rounded-xl px-2.5 sm:px-3"
                 >
                   <Link href={`/admin/rackets/${racketId}/edit`}>
                     <Pencil className="mr-1.5 h-4 w-4" />
@@ -539,16 +543,12 @@ export default function RacketDetailClient({
                   </>
                 )}
                 {(racket?.marketing?.isFeatured || racket?.marketing?.isNew) && (
-                  <div className="absolute top-4 left-4 flex flex-wrap gap-2">
+                  <div className="absolute left-4 top-4 flex flex-wrap gap-2">
                     {racket?.marketing?.isFeatured && (
-                      <Badge variant="outline" className={cn("border bg-background/95 shadow-sm backdrop-blur-sm dark:bg-card/95", benefitBadgeClass.featured)}>
-                        추천
-                      </Badge>
+                      <Badge className={cn(merchandisingImageBadgeClass("추천"))}>추천</Badge>
                     )}
                     {racket?.marketing?.isNew && (
-                      <Badge variant="outline" className={cn("border bg-background/95 shadow-sm backdrop-blur-sm dark:bg-card/95", benefitBadgeClass.new)}>
-                        NEW
-                      </Badge>
+                      <Badge className={cn(merchandisingImageBadgeClass("NEW"))}>NEW</Badge>
                     )}
                   </div>
                 )}
@@ -590,6 +590,16 @@ export default function RacketDetailClient({
                     <h1 className="text-2xl lg:text-3xl font-bold text-foreground">
                       {racket.model}
                     </h1>
+                    <div className="mt-3 flex flex-wrap items-center gap-3">
+                      <div className="flex items-center gap-0.5">
+                        {[...Array(5)].map((_, i) => (
+                          <Star key={i} className={`h-4 w-4 sm:h-5 sm:w-5 ${i < Math.floor(averageRating) ? "fill-current text-foreground" : "fill-current text-muted-foreground/30"}`} />
+                        ))}
+                      </div>
+                      <span className="whitespace-nowrap text-sm text-muted-foreground sm:text-base">
+                        {averageRating.toFixed(1)} ({reviewCount}개 리뷰)
+                      </span>
+                    </div>
                   </div>
 
                   {/* 가격 정보 */}
@@ -627,7 +637,7 @@ export default function RacketDetailClient({
                         이 라켓으로 무엇을 할까요?
                       </h2>
                       <p className="mt-1 text-sm text-muted-foreground">
-                        라켓 수량: {stock.available}개
+                        스트링 선택 후 구매하거나 대여 일정을 선택할 수 있어요.
                       </p>
                     </div>
                     <div className="grid grid-cols-1 gap-2 bp-sm:grid-cols-2">
@@ -767,7 +777,7 @@ export default function RacketDetailClient({
                 >
                   <Star className="h-4 w-4 mr-2" />
                   리뷰
-                  <span className="ml-1">({reviewsLen})</span>
+                  <span className="ml-1">({reviewCount})</span>
                 </TabsTrigger>
               </TabsList>
 
