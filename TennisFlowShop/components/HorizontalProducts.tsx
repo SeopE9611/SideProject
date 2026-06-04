@@ -3,7 +3,8 @@
 import StatusBadge from "@/components/badges/StatusBadge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { imageBadgeClass } from "@/lib/badge-style";
+import { imageBadgeClass, usedBadgeMeta } from "@/lib/badge-style";
+import { getEffectiveRacketPrice, getRacketDiscountRate } from "@/lib/racket-pricing";
 import { cn } from "@/lib/utils";
 import type { EmblaCarouselType, EmblaOptionsType } from "embla-carousel";
 import useEmblaCarousel from "embla-carousel-react";
@@ -29,6 +30,7 @@ export type HItem = {
   rentalEnabled?: boolean;
   merchandisingBadges?: Array<"품절" | "SALE" | "NEW" | "추천" | "입고예정">;
   inventory?: { isSale?: boolean | string | number; salePrice?: number | string | null };
+  marketing?: { isFeatured?: boolean; isNew?: boolean; isSale?: boolean; salePrice?: number | string | null };
 };
 
 type Props = {
@@ -54,6 +56,16 @@ type Props = {
   errorTitle?: string;
   errorDescription?: string;
 };
+
+function ConditionImageBadge({ state }: { state: string }) {
+  const meta = usedBadgeMeta("condition", state, "image");
+
+  return (
+    <Badge className={cn("text-xs px-2.5 py-0.5 rounded-md shadow-sm", meta.className)}>
+      상태: {meta.label}
+    </Badge>
+  );
+}
 
 export default function HorizontalProducts({
   title,
@@ -217,10 +229,13 @@ export default function HorizontalProducts({
   const ItemCard = ({ p }: { p: HItem }) => (
     (() => {
       const regularPrice = Number(p.price ?? 0);
-      const salePrice = Number(p.inventory?.salePrice ?? 0);
-      const isSale = (p.inventory?.isSale === true || p.inventory?.isSale === "true" || p.inventory?.isSale === 1) && salePrice > 0 && salePrice < regularPrice;
+      const racketSaleRate = p.marketing ? getRacketDiscountRate(p) : 0;
+      const salePrice = p.marketing ? getEffectiveRacketPrice(p) : Number(p.inventory?.salePrice ?? 0);
+      const isSale = p.marketing
+        ? racketSaleRate > 0
+        : (p.inventory?.isSale === true || p.inventory?.isSale === "true" || p.inventory?.isSale === 1) && salePrice > 0 && salePrice < regularPrice;
       const displayPrice = isSale ? salePrice : regularPrice;
-      const saleRate = isSale ? Math.round(((regularPrice - salePrice) / regularPrice) * 100) : 0;
+      const saleRate = p.marketing ? racketSaleRate : (isSale ? Math.round(((regularPrice - salePrice) / regularPrice) * 100) : 0);
       return (
     <Link
       key={p._id}
@@ -237,7 +252,7 @@ export default function HorizontalProducts({
         {((typeof p.rentalEnabled === "boolean" || p.condition) || (p.merchandisingBadges?.length ?? 0) > 0) && (
           <div className="absolute top-2.5 left-2.5 right-2.5 bp-sm:top-3 bp-sm:left-3 bp-sm:right-3 flex items-center gap-2 z-10">
             {typeof p.rentalEnabled === "boolean" && !p.rentalEnabled && <StatusBadge kind="rental" state="unavailable" surface="image" />}
-            {p.condition && <StatusBadge kind="condition" state={p.condition} surface="image" />}
+            {p.condition && <ConditionImageBadge state={p.condition} />}
             {(p.merchandisingBadges ?? []).slice(0, 2).map((label) => (
               <Badge
                 key={`${p._id}-${label}`}
@@ -270,7 +285,14 @@ export default function HorizontalProducts({
           <div className="text-base bp-sm:text-lg bp-md:text-xl bp-lg:text-2xl font-bold text-foreground tracking-normal">
             {displayPrice.toLocaleString()}<span className="text-sm bp-sm:text-base bp-md:text-lg font-medium ml-0.5">원</span>
           </div>
-          {isSale && <div className="flex items-center gap-2"><span className="text-xs text-muted-foreground line-through">{regularPrice.toLocaleString()}원</span><span className="text-xs font-semibold text-destructive">{saleRate}% OFF</span></div>}
+          {isSale && (
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground line-through">{regularPrice.toLocaleString()}원</span>
+              <Badge variant="outline" className="shrink-0 whitespace-nowrap text-xs border-destructive/30 bg-destructive/10 text-destructive">
+                {saleRate}% OFF
+              </Badge>
+            </div>
+          )}
         </div>
       </div>
     </Link>

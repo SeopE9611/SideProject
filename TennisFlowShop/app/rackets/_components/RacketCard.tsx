@@ -11,7 +11,7 @@ import { Briefcase, Eye, ShoppingCart } from "lucide-react";
 import useSWR from "swr";
 import { racketBrandLabel } from "@/lib/constants";
 import StatusBadge from "@/components/badges/StatusBadge";
-import { badgeToneClass, badgeToneVariant } from "@/lib/badge-style";
+import { badgeToneClass, badgeToneVariant, usedBadgeMeta } from "@/lib/badge-style";
 import { cn } from "@/lib/utils";
 import { getEffectiveRacketPrice, getRacketDiscountRate } from "@/lib/racket-pricing";
 
@@ -89,6 +89,22 @@ type RacketAvailBadgeProps = Pick<
   RacketAvailabilityState,
   "qty" | "avail" | "rentedCount" | "isSold" | "isAllRented" | "ready"
 >;
+
+function ConditionBadge({ state }: { state: string }) {
+  const meta = usedBadgeMeta("condition", state);
+
+  return (
+    <Badge
+      variant="neutral"
+      className={cn(
+        "rounded px-2 py-0.5 text-xs font-medium shadow-sm",
+        meta.className,
+      )}
+    >
+      상태: {meta.label}
+    </Badge>
+  );
+}
 
 function RacketAvailBadge({
   qty,
@@ -371,7 +387,7 @@ const RacketCard = React.memo(
                   </h3>
                 </Link>
                 <div className="mt-3 flex flex-wrap items-center gap-1.5 bp-sm:gap-2">
-                  <StatusBadge kind="condition" state={racket.condition} />
+                  <ConditionBadge state={racket.condition} />
                   <RacketAvailBadge {...availability} />
                   {!racket.rental?.enabled && (
                     <StatusBadge kind="rental" state="unavailable" />
@@ -448,7 +464,7 @@ const RacketCard = React.memo(
           </Link>
 
           <div className="mt-2 flex flex-wrap items-center gap-1.5">
-            <StatusBadge kind="condition" state={racket.condition} />
+            <ConditionBadge state={racket.condition} />
             <div className="ml-1">
               <RacketAvailBadge {...availability} />
             </div>

@@ -352,6 +352,12 @@ export default function Home() {
       deposit?: number;
       fee?: { d7?: number; d15?: number; d30?: number };
     };
+    marketing?: {
+      isFeatured?: boolean;
+      isNew?: boolean;
+      isSale?: boolean;
+      salePrice?: number;
+    };
   };
   const [rackByBrand, setRackByBrand] = useState<Record<string, RItem[]>>({});
   const [racketTotalsByBrand, setRacketTotalsByBrand] = useState<Record<string, number>>({});
@@ -509,6 +515,11 @@ export default function Home() {
       // 배지에 사용할 원본값 그대로 전달
       condition: r.condition as "A" | "B" | "C" | "D" | undefined,
       rentalEnabled: r?.rental?.enabled ?? undefined,
+      marketing: r.marketing,
+      merchandisingBadges: [
+        ...(r.marketing?.isFeatured ? (["추천"] as const) : []),
+        ...(r.marketing?.isNew ? (["NEW"] as const) : []),
+      ],
     }));
   }, [rackByBrand, activeBrand]);
 
