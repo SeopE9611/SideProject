@@ -1017,7 +1017,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   <div className="absolute top-4 sm:top-5 left-4 sm:left-5 flex flex-wrap gap-2 sm:gap-2.5">
                     {merchandisingBadges.map((badge) => (
                       <Badge key={`${product?._id ?? product?.name}-${badge}`} className={cn("text-xs px-3 py-1 rounded-lg shadow-sm", imageBadgeClass(getProductBadgeTone(badge)))}>
-                        {badge}
+                        {badge === "SALE" ? `${saleRate}% OFF` : badge}
                       </Badge>
                     ))}
                   </div>

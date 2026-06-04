@@ -20,13 +20,18 @@ import { CheckCircle2, Minus, Plus, ShoppingCart } from "lucide-react";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { Input } from "@/components/ui/input";
 import { stringColorLabel } from "@/lib/constants";
+import { badgeToneClass } from "@/lib/badge-style";
 import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import { cn } from "@/lib/utils";
 
 type RacketMini = {
   id: string;
   name: string;
   price: number;
+  regularPrice?: number;
+  salePrice?: number;
+  discountRate?: number;
   image?: string;
   status?: string;
   maxQty?: number;
@@ -418,7 +423,16 @@ export default function RacketSelectStringClient({
         stock: racket.maxQty, // maxQty를 재고 상한으로 활용 (없으면 undefined)
       });
     } else {
-      updateQuantity(racket.id, qty);
+      removeItem(racket.id);
+      addItem({
+        id: racket.id,
+        name: racket.name,
+        price: racket.price,
+        quantity: qty,
+        image: racket.image,
+        kind: "racket",
+        stock: racket.maxQty,
+      });
     }
 
     // 2) 스트링 라인: cart 편집 모드(from=cart)에서만 “기존 스트링 교체”를 명시적으로 처리
@@ -678,9 +692,24 @@ export default function RacketSelectStringClient({
                     <h3 className="mb-1 line-clamp-2 break-keep text-xl font-bold leading-snug text-foreground">
                       {racket.name}
                     </h3>
-                    <p className="whitespace-nowrap tabular-nums text-lg font-semibold text-foreground">
-                      {racket.price.toLocaleString()}원
-                    </p>
+                    <div className="flex flex-wrap items-baseline gap-2 tabular-nums">
+                      <span className="whitespace-nowrap text-lg font-semibold text-primary">
+                        {racket.price.toLocaleString()}원
+                      </span>
+                      {Number(racket.discountRate ?? 0) > 0 && Number(racket.regularPrice ?? 0) > racket.price && (
+                        <>
+                          <span className="whitespace-nowrap text-sm text-muted-foreground line-through">
+                            {Number(racket.regularPrice).toLocaleString()}원
+                          </span>
+                          <Badge
+                            variant="outline"
+                            className={cn("shrink-0 whitespace-nowrap text-xs", badgeToneClass("danger"))}
+                          >
+                            {racket.discountRate}% OFF
+                          </Badge>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>

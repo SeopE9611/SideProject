@@ -1,6 +1,7 @@
 import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 import { racketBrandLabel } from "@/lib/constants";
+import { getEffectiveRacketPrice, getRacketDiscountRate } from "@/lib/racket-pricing";
 import RacketSelectStringClient from "@/app/rackets/[id]/select-string/RacketSelectStringClient";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { verifyAccessToken } from "@/lib/auth.utils";
@@ -104,10 +105,14 @@ export default async function Page({ params }: { params: Promise<Params> }) {
     );
   }
 
+  const discountRate = getRacketDiscountRate(doc);
   const racket = {
     id: String(doc._id),
     name: `${racketBrandLabel(doc.brand)} ${doc.model}`.trim(),
-    price: Number(doc.price ?? 0),
+    price: getEffectiveRacketPrice(doc),
+    regularPrice: Number(doc.price ?? 0),
+    salePrice: discountRate > 0 ? getEffectiveRacketPrice(doc) : undefined,
+    discountRate,
     image: Array.isArray(doc.images) ? doc.images[0] : undefined,
     status: doc.status,
     maxQty: sellableQty,

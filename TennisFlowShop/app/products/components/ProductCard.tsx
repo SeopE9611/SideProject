@@ -6,6 +6,7 @@ import { usePdpBundleStore } from "@/app/store/pdpBundleStore";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardTitle } from "@/components/ui/card";
+import { badgeToneClass, imageBadgeClass } from "@/lib/badge-style";
 import { isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
 import { ENABLE_STRING_STANDALONE_ORDER } from "@/lib/orders/string-standalone-policy";
 import { normalizeFeatureScoreTo100 } from "@/lib/product-feature-score";
@@ -211,7 +212,7 @@ const ProductCard = React.memo(
             <div className="relative w-full bp-md:w-[280px] bp-xl:w-[320px] aspect-[4/3] flex-shrink-0 overflow-hidden bg-secondary/30">
               <Image src={(product.images?.[0] as string) || "/placeholder.svg?height=200&width=200&query=tennis+string"} alt={product.name} fill sizes="(max-width: 768px) 100vw, (max-width: 1536px) 280px, 320px" className="object-contain" />
               {product.isNew && (
-                <Badge variant="info" className="absolute right-2 top-2 border bg-background/95 shadow-sm backdrop-blur-sm dark:bg-card/95">
+                <Badge variant="info" className={cn("absolute right-2 top-2", imageBadgeClass("info"))}>
                   NEW
                 </Badge>
               )}
@@ -234,7 +235,7 @@ const ProductCard = React.memo(
                   <div className="whitespace-nowrap tabular-nums text-xl font-bold text-primary sm:text-2xl">{displayPrice.toLocaleString()}원</div>
                   {isSale && <span className="whitespace-nowrap tabular-nums text-sm text-muted-foreground line-through">{regularPrice.toLocaleString()}원</span>}
                   {isSale && (
-                    <Badge variant="destructive" className="shrink-0 whitespace-nowrap text-xs">
+                    <Badge variant="outline" className={cn("shrink-0 whitespace-nowrap text-xs", badgeToneClass("danger"))}>
                       {saleRate}% OFF
                     </Badge>
                   )}
@@ -317,7 +318,7 @@ const ProductCard = React.memo(
           </Link>
 
           {product.isNew && (
-            <Badge variant="info" className="absolute right-2 sm:right-3 top-2 sm:top-3 z-10 border bg-background/95 text-xs shadow-sm backdrop-blur-sm dark:bg-card/95">
+            <Badge variant="info" className={cn("absolute right-2 top-2 z-10 text-xs sm:right-3 sm:top-3", imageBadgeClass("info"))}>
               NEW
             </Badge>
           )}
@@ -357,7 +358,7 @@ const ProductCard = React.memo(
               <div className="flex flex-col items-end justify-end text-right space-y-1">
                 {isSale && (
                   <div className="flex justify-end">
-                    <Badge variant="outline" className="h-5 shrink-0 whitespace-nowrap rounded-full border-destructive/25 bg-destructive/10 px-2 text-[11px] font-semibold text-destructive">
+                    <Badge variant="outline" className={cn("h-5 shrink-0 whitespace-nowrap rounded-full px-2 text-[11px] font-semibold", badgeToneClass("danger"))}>
                       {saleRate}% OFF
                     </Badge>
                   </div>

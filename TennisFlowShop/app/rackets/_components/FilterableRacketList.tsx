@@ -27,6 +27,7 @@ import RacketFilterPanel from "./RacketFilterPanel";
 import { SkeletonProductCard } from "@/app/products/components/SkeletonProductCard";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { RACKET_BRANDS, racketBrandLabel } from "@/lib/constants";
+import { formatBenefitFilterLabel, parseBenefitFilters, serializeBenefitFilters } from "@/lib/benefit-labels";
 
 const fetcher = async (url: string) => {
   const res = await fetch(url, { credentials: "include" });
@@ -105,7 +106,7 @@ export default function FilterableRacketList({
   );
   const [priceMin, setPriceMin] = useState<number | null>(null);
   const [priceMax, setPriceMax] = useState<number | null>(null);
-  const [exposureFilter, setExposureFilter] = useState("all");
+  const [exposureFilter, setExposureFilter] = useState<string[]>([]);
 
   // 검색어
   const [searchQuery, setSearchQuery] = useState("");
@@ -120,7 +121,7 @@ export default function FilterableRacketList({
   );
   const [draftPriceMin, setDraftPriceMin] = useState<number | null>(null);
   const [draftPriceMax, setDraftPriceMax] = useState<number | null>(null);
-  const [draftExposureFilter, setDraftExposureFilter] = useState("all");
+  const [draftExposureFilter, setDraftExposureFilter] = useState<string[]>([]);
   const [draftSearchQuery, setDraftSearchQuery] = useState("");
   const [draftRentOnly, setDraftRentOnly] = useState(
     () => searchParams.get("rentOnly") === "1",
@@ -151,8 +152,7 @@ export default function FilterableRacketList({
       setPriceMin(parsePriceParam(minPrice));
       setPriceMax(parsePriceParam(maxPrice));
 
-      const exposure = searchParams.get("exposure") || "all";
-      setExposureFilter(["featured", "new", "sale"].includes(exposure) ? exposure : "all");
+      setExposureFilter(parseBenefitFilters(searchParams.get("exposure")));
       setSortOption(searchParams.get("sort") || "latest");
 
       const view = searchParams.get("view");
@@ -185,9 +185,8 @@ export default function FilterableRacketList({
     if (nextMin !== priceMin) setPriceMin(nextMin);
     if (nextMax !== priceMax) setPriceMax(nextMax);
 
-    const exposure = searchParams.get("exposure") || "all";
-    const nextExposure = ["featured", "new", "sale"].includes(exposure) ? exposure : "all";
-    if (nextExposure !== exposureFilter) setExposureFilter(nextExposure);
+    const nextExposure = parseBenefitFilters(searchParams.get("exposure"));
+    if (nextExposure.join(",") !== exposureFilter.join(",")) setExposureFilter(nextExposure);
     const sort = searchParams.get("sort") || "latest";
     if (sort !== sortOption) setSortOption(sort);
 
@@ -208,7 +207,10 @@ export default function FilterableRacketList({
   if (submittedQuery) query.set("q", submittedQuery);
   if (priceMin !== null) query.set("minPrice", String(priceMin));
   if (priceMax !== null) query.set("maxPrice", String(priceMax));
-  if (exposureFilter !== "all") query.set("exposure", exposureFilter);
+  {
+    const serializedExposure = serializeBenefitFilters(exposureFilter);
+    if (serializedExposure) query.set("exposure", serializedExposure);
+  }
   query.set("sort", sortOption || "latest");
   const key = `/api/rackets${query.toString() ? `?${query.toString()}` : ""}`;
   const { data, isLoading, isValidating, error, mutate } =
@@ -234,7 +236,7 @@ export default function FilterableRacketList({
       rentOnly ? "1" : "0",
       priceMin !== null ? String(priceMin) : "",
       priceMax !== null ? String(priceMax) : "",
-      exposureFilter,
+      exposureFilter.join(","),
       sortOption || "latest",
     ].join("|");
   }, [
@@ -332,7 +334,7 @@ export default function FilterableRacketList({
     setSelectedCondition(null);
     setPriceMin(null);
     setPriceMax(null);
-    setExposureFilter("all");
+    setExposureFilter([]);
     setSortOption("latest");
     setViewMode("grid");
     setRentOnly(false);
@@ -431,7 +433,7 @@ export default function FilterableRacketList({
     setDraftPriceMin(null);
     setDraftPriceMax(null);
     setDraftRentOnly(false);
-    setDraftExposureFilter("all");
+    setDraftExposureFilter([]);
     setDraftSearchQuery("");
   }, []);
 
@@ -486,7 +488,7 @@ export default function FilterableRacketList({
     submittedQuery,
     priceChanged,
     rentOnly,
-    exposureFilter !== "all",
+    exposureFilter.length > 0,
   ].filter(Boolean).length;
   const draftPriceChanged = draftPriceMin !== null || draftPriceMax !== null;
   const activeDraftCount = [
@@ -495,8 +497,12 @@ export default function FilterableRacketList({
     draftSearchQuery,
     draftPriceChanged,
     draftRentOnly,
-    draftExposureFilter !== "all",
+    draftExposureFilter.length > 0,
   ].filter(Boolean).length;
+
+  const exposureLabel = formatBenefitFilterLabel(exposureFilter);
+  const racketCountPrefix = `${rentOnly ? "대여 가능 " : ""}${exposureLabel ? `${exposureLabel} 라켓 총` : "총"}`;
+  const racketCountSuffix = exposureLabel ? "개" : "개 라켓";
 
   // 상태 -> URL 반영
   useEffect(() => {
@@ -521,7 +527,7 @@ export default function FilterableRacketList({
     setOrDelete("minPrice", priceMin !== null ? String(priceMin) : null);
     setOrDelete("maxPrice", priceMax !== null ? String(priceMax) : null);
     setOrDelete("rentOnly", rentOnly ? "1" : null);
-    setOrDelete("exposure", exposureFilter !== "all" ? exposureFilter : null);
+    setOrDelete("exposure", serializeBenefitFilters(exposureFilter));
 
     const newSearch = params.toString();
     if (newSearch === lastSerializedRef.current) return;
@@ -630,13 +636,13 @@ export default function FilterableRacketList({
                   className="text-base font-semibold tabular-nums text-foreground bp-sm:text-lg"
                   aria-live="polite"
                 >
-                  {rentOnly ? "대여 가능 총" : "총"}{" "}
+                  {racketCountPrefix}{" "}
                   {isInitialLikeLoading ? (
                     <Skeleton className="inline-block h-5 w-12 align-middle" />
                   ) : (
                     <span className="font-bold text-primary">{total}</span>
                   )}
-                  개 라켓
+                  {racketCountSuffix}
                   {isInitialLikeLoading ? (
                     <Skeleton className="ml-2 inline-block h-5 w-10 align-middle" />
                   ) : (
@@ -740,13 +746,9 @@ export default function FilterableRacketList({
                         : "제한 없음"}
                     </span>
                   )}
-                  {exposureFilter !== "all" && (
+                  {exposureLabel && (
                     <span className="inline-flex shrink-0 items-center rounded-full border border-border bg-muted px-2 py-1 text-xs whitespace-nowrap">
-                      {exposureFilter === "featured"
-                        ? "추천"
-                        : exposureFilter === "new"
-                          ? "신상품"
-                          : "할인"}
+                      {exposureLabel}
                     </span>
                   )}
                   {rentOnly && (
