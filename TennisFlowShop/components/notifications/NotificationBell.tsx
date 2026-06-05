@@ -2,6 +2,7 @@
 
 import { Bell } from "lucide-react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { NotificationPanel } from "@/components/notifications/NotificationPanel";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,7 @@ type NotificationBellProps = {
 };
 
 export function NotificationBell({ enabled, mode = "desktop", onNavigate, className }: NotificationBellProps) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const { count, status } = useUnreadNotificationCount(enabled);
   const unreadCount = status === "ready" ? (count ?? 0) : 0;
@@ -46,6 +48,32 @@ export function NotificationBell({ enabled, mode = "desktop", onNavigate, classN
       )}
     </Button>
   );
+
+  if (mode === "mobileCard") {
+    return (
+      <Button
+        variant="ghost"
+        size="icon"
+        className={cn(
+          "relative h-8 w-8 shrink-0 rounded-full p-0 hover:bg-secondary focus-visible:ring-2 ring-ring",
+          className,
+        )}
+        aria-label={unreadCount > 0 ? `읽지 않은 알림 ${unreadCount}개` : "알림"}
+        title="알림"
+        onClick={() => {
+          onNavigate?.();
+          router.push("/notifications");
+        }}
+      >
+        <Bell className="h-5 w-5" aria-hidden="true" />
+        {unreadCount > 0 && (
+          <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
+            {badge}
+          </span>
+        )}
+      </Button>
+    );
+  }
 
   if (isMobile) {
     return (

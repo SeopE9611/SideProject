@@ -37,12 +37,22 @@ export function useNotificationList({ enabled, limit = 10 }: { enabled: boolean;
   });
 
   const markAsRead = async (id: string) => {
-    await fetch(`/api/notifications/${id}/read`, { method: "PATCH", credentials: "include" });
+    const res = await fetch(`/api/notifications/${id}/read`, { method: "PATCH", credentials: "include" });
+    if (!res.ok) {
+      const message = `notification markAsRead failed: ${res.status}`;
+      console.error(message);
+      throw new Error(message);
+    }
     await Promise.all([mutate(), globalMutate("/api/notifications/unread-count")]);
   };
 
   const markAllAsRead = async () => {
-    await fetch("/api/notifications/read-all", { method: "POST", credentials: "include" });
+    const res = await fetch("/api/notifications/read-all", { method: "POST", credentials: "include" });
+    if (!res.ok) {
+      const message = `notification markAllAsRead failed: ${res.status}`;
+      console.error(message);
+      throw new Error(message);
+    }
     await Promise.all([mutate(), globalMutate("/api/notifications/unread-count")]);
   };
 
