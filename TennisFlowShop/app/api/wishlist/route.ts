@@ -3,8 +3,129 @@ import { cookies } from "next/headers";
 import { ObjectId } from "mongodb";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { getDb } from "@/lib/mongodb";
+import {
+  getColorLabel,
+  getGaugeLabel,
+  getVariantBySelection,
+  isColorSoldOut,
+  isSellableVariant,
+  normalizeColorRows,
+  normalizeGaugeRows,
+  normalizeVariantRows,
+} from "@/lib/products/string-stock";
 
 // 내 위시리스트 목록 + 상품 요약
+
+
+const WISHLIST_OPTION_FIELDS = [
+  "selectedGauge",
+  "selectedColor",
+  "selectedColorLabel",
+  "selectedColorHex",
+  "selectedColorImage",
+] as const;
+
+function cleanOptionValue(value: unknown) {
+  return typeof value === "string" && value.trim() ? value.trim() : undefined;
+}
+
+function buildWishlistOptionPayload(body: any) {
+  return WISHLIST_OPTION_FIELDS.reduce<Record<string, string>>((acc, field) => {
+    const value = cleanOptionValue(body?.[field]);
+    if (value) acc[field] = value;
+    return acc;
+  }, {});
+}
+
+function getWishlistOptionState(row: any) {
+  const product = row.product ?? {};
+  const selectedColor = cleanOptionValue(row.selectedColor);
+  const selectedGauge = cleanOptionValue(row.selectedGauge);
+  const variantRows = normalizeVariantRows(product);
+  const colorRows = normalizeColorRows(product);
+  const gaugeRows = normalizeGaugeRows(product);
+  const hasVariants = variantRows.length > 0;
+  const requiresColor = hasVariants || colorRows.length > 0;
+  const requiresGauge = hasVariants || gaugeRows.length > 0;
+  const requiresOption = requiresColor || requiresGauge;
+  const hasSelectedOption =
+    (!requiresColor || !!selectedColor) && (!requiresGauge || !!selectedGauge);
+
+  if (requiresOption && !hasSelectedOption) {
+    return {
+      requiresOption,
+      hasSelectedOption: false,
+      optionAvailable: false,
+      optionStock: 0,
+      optionStatusMessage: "옵션 선택 필요",
+    };
+  }
+
+  if (hasVariants) {
+    const variant = selectedColor && selectedGauge ? getVariantBySelection(product, selectedColor, selectedGauge) : undefined;
+    const optionStock = Math.max(0, Number(variant?.stock ?? 0));
+    const optionAvailable = !!variant && isSellableVariant(variant);
+    return {
+      requiresOption,
+      hasSelectedOption,
+      optionAvailable,
+      optionStock,
+      optionStatusMessage: optionAvailable ? "구매 가능" : "품절",
+    };
+  }
+
+  if (requiresGauge && selectedGauge) {
+    const gauge = gaugeRows.find((row) => row.value === selectedGauge);
+    const optionStock = Math.max(0, Number(gauge?.stock ?? 0));
+    const optionAvailable = !!gauge && gauge.isSoldOut !== true && optionStock > 0;
+    return {
+      requiresOption,
+      hasSelectedOption,
+      optionAvailable,
+      optionStock,
+      optionStatusMessage: optionAvailable ? "구매 가능" : "품절",
+    };
+  }
+
+  if (requiresColor && selectedColor) {
+    const color = colorRows.find((row) => row.value === selectedColor);
+    const optionStock = Math.max(0, Number(color?.stock ?? 0));
+    const optionAvailable = !!color && !isColorSoldOut(color);
+    return {
+      requiresOption,
+      hasSelectedOption,
+      optionAvailable,
+      optionStock,
+      optionStatusMessage: optionAvailable ? "구매 가능" : "품절",
+    };
+  }
+
+  const stock = Math.max(0, Number(product?.inventory?.stock ?? 0));
+  const managesStock = product?.inventory?.manageStock === true;
+  const optionAvailable = !managesStock || stock > 0;
+  return {
+    requiresOption,
+    hasSelectedOption,
+    optionAvailable,
+    optionStock: stock,
+    optionStatusMessage: optionAvailable ? "구매 가능" : "품절",
+  };
+}
+
+function compactInventoryRows(product: any) {
+  return {
+    inventory: product?.inventory ?? null,
+    variantInventories: normalizeVariantRows(product),
+    colorInventories: normalizeColorRows(product).map((row) => ({
+      ...row,
+      label: row.label ? getColorLabel(row) : row.label,
+    })),
+    gaugeInventories: normalizeGaugeRows(product).map((row) => ({
+      ...row,
+      label: row.label ? getGaugeLabel(row) : row.label,
+    })),
+  };
+}
 
 function safeVerifyAccessToken(token?: string | null) {
   if (!token) return null;
@@ -46,7 +167,7 @@ export async function GET() {
             as: "product",
             pipeline: [
               { $match: { isDeleted: { $ne: true } } },
-              { $project: { name: 1, price: 1, images: 1, inventory: 1 } },
+              { $project: { name: 1, price: 1, images: 1, inventory: 1, gaugeOptions: 1, gaugeInventories: 1, color: 1, colorOptions: 1, colorInventories: 1, variantInventories: 1 } },
             ],
           },
         },
@@ -56,6 +177,11 @@ export async function GET() {
             _id: 0,
             productId: 1,
             createdAt: 1,
+            selectedGauge: 1,
+            selectedColor: 1,
+            selectedColorLabel: 1,
+            selectedColorHex: 1,
+            selectedColorImage: 1,
             product: 1,
           },
         },
@@ -63,14 +189,25 @@ export async function GET() {
       .toArray();
 
     return NextResponse.json({
-      items: rows.map((r) => ({
-        id: r.productId.toString(),
-        name: r.product.name,
-        price: r.product.price,
-        image: r.product.images?.[0] || "/placeholder.svg",
-        stock: r.product?.inventory?.stock ?? 0,
-        createdAt: r.createdAt,
-      })),
+      items: rows.map((r) => {
+        const optionState = getWishlistOptionState(r);
+        const inventoryState = compactInventoryRows(r.product);
+        return {
+          id: r.productId.toString(),
+          name: r.product.name,
+          price: r.product.price,
+          image: r.selectedColorImage || r.product.images?.[0] || "/placeholder.svg",
+          stock: optionState.optionStock ?? r.product?.inventory?.stock ?? 0,
+          createdAt: r.createdAt,
+          selectedGauge: r.selectedGauge,
+          selectedColor: r.selectedColor,
+          selectedColorLabel: r.selectedColorLabel,
+          selectedColorHex: r.selectedColorHex,
+          selectedColorImage: r.selectedColorImage,
+          ...inventoryState,
+          ...optionState,
+        };
+      }),
       total: rows.length,
     });
   } catch (e) {
@@ -132,9 +269,12 @@ export async function POST(req: Request) {
         { status: 404 },
       );
 
+    const optionPayload = buildWishlistOptionPayload(body);
+
     await wishlists.insertOne({
       userId: new ObjectId(userId),
       productId: new ObjectId(productId),
+      ...optionPayload,
       createdAt: new Date(),
     });
 
