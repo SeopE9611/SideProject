@@ -57,7 +57,7 @@ export function merchandisingImageBadgeVariant(
 }
 
 export const merchandisingImageBadgeClass =
-  "h-7 px-3 text-xs font-bold leading-none shadow-md ring-1 ring-white/25";
+  "h-7 px-3 text-xs font-bold leading-none ring-1 ring-white/25";
 
 export const SEMANTIC_BADGE_VARIANT = {
   neutral: "neutral",
