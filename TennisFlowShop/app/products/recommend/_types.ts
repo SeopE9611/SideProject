@@ -56,6 +56,12 @@ export type RecommendableProduct = {
   image?: string;
   material?: string;
   gauge?: string;
+  gaugeOptions?: string[];
+  gaugeInventories?: unknown[];
+  color?: string;
+  colorOptions?: string[];
+  colorInventories?: unknown[];
+  variantInventories?: unknown[];
   mountingFee?: number;
   shippingFee?: number;
   features?: {
@@ -84,6 +90,7 @@ export type RecommendableProduct = {
     allowBackorder?: boolean;
     isSale?: boolean;
     salePrice?: number;
+    hideGaugeStock?: boolean;
   };
 };
 
@@ -100,4 +107,8 @@ export type RecommendedStringProduct = {
   reasons: string[];
   tensionRange: TensionRange;
   badges: string[];
+  matchSummary?: {
+    label: string;
+    value: string;
+  }[];
 };
