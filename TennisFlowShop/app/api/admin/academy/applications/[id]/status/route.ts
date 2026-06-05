@@ -3,6 +3,7 @@ import { ObjectId, type Db, type Document, type Filter } from "mongodb";
 
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 import { requireAdmin } from "@/lib/admin.guard";
+import { createUserNotification } from "@/lib/notifications/user-notification.service";
 import {
   getAcademyApplicationStatusLabel,
   isAcademyApplicationStatus,
@@ -244,7 +245,7 @@ export async function PATCH(
   const _id = new ObjectId(id);
   const current = await collection.findOne(
     { _id },
-    { projection: { status: 1 } },
+    { projection: { status: 1, userId: 1, classSnapshot: 1, customerMessage: 1 } },
   );
 
   if (!current) {
@@ -286,6 +287,36 @@ export async function PATCH(
   let classAutoClosed = false;
   let classAutoClosedConfirmedCount: number | null = null;
   let classAutoClosedCapacity: number | null = null;
+
+  if (current.status !== status && updated.userId) {
+    try {
+      const titleByStatus: Record<string, string> = {
+        reviewing: "레슨 신청이 검토 중으로 변경되었습니다.",
+        contacted: "레슨 상담이 완료되었습니다.",
+        confirmed: "레슨 등록이 확정되었습니다.",
+        cancelled: "레슨 신청이 취소 처리되었습니다.",
+      };
+      const className =
+        typeof updated.classSnapshot?.name === "string"
+          ? updated.classSnapshot.name
+          : "";
+      await createUserNotification(guard.db, {
+        userId: updated.userId,
+        type: "academy_status",
+        title: titleByStatus[status] ?? "레슨 신청 상태가 변경되었습니다.",
+        body: className ? `${className} 신청 상태가 변경되었습니다.` : undefined,
+        href: "/mypage",
+        source: {
+          collection: "academy_lesson_applications",
+          id: _id,
+          kind: "status",
+        },
+        dedupeKey: `academy:${_id.toString()}:status:${status}`,
+      });
+    } catch (error) {
+      console.error("[admin academy application status] create notification failed", error);
+    }
+  }
 
   if (status === "confirmed") {
     try {

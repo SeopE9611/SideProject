@@ -13,6 +13,7 @@ import { ensureRevenueReportSnapshotIndexes } from "@/lib/revenueReportSnapshots
 import { ensureUsedRacketsIndexes } from "@/lib/usedRackets.indexes";
 import { ensureUserIndexes } from "@/lib/users.indexes";
 import { ensureOfflineIndexes } from "@/lib/offline/offline.repository";
+import { ensureUserNotificationIndexes } from "@/lib/notifications.indexes";
 import { ensureWishlistIndexes } from "@/lib/wishlist.indexes";
 import { MongoClient, type MongoClientOptions } from "mongodb";
 
@@ -66,6 +67,9 @@ declare global {
 
   // 메시지 컬렉션 인덱스 보장 상태
   var _messagesIndexesReady: Promise<void> | null | undefined;
+
+  // 사용자 인앱 알림 컬렉션 인덱스 보장 상태
+  var _userNotificationIndexesReady: Promise<void> | null | undefined;
 
   // 포인트(적립금) 원장 컬렉션 인덱스 보장 상태
   var _pointsIndexesReady: Promise<void> | null | undefined;
@@ -208,6 +212,19 @@ export async function getDb() {
     });
   }
 
+  // user_notifications 인덱스 보장(1회)
+  if (!global._userNotificationIndexesReady) {
+    global._userNotificationIndexesReady = ensureUserNotificationIndexes(
+      db,
+    ).catch((e) => {
+      console.error(
+        "[user_notifications] ensureUserNotificationIndexes failed",
+        e,
+      );
+      global._userNotificationIndexesReady = null;
+    });
+  }
+
   // points 인덱스 보장(1회)
   if (!global._pointsIndexesReady) {
     global._pointsIndexesReady = ensurePointsIndexes(db).catch((e) => {
@@ -311,6 +328,7 @@ export async function getDb() {
     global._boardsIndexesReady,
     global._rentalsIndexesReady,
     global._messagesIndexesReady,
+    global._userNotificationIndexesReady,
     global._pointsIndexesReady,
     global._usedRacketsIndexesReady,
     global._wishlistIndexesReady,

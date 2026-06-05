@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { getDb } from "@/lib/mongodb";
+import { createUserNotification } from "@/lib/notifications/user-notification.service";
 import { getCurrentUser } from "@/lib/hooks/get-current-user";
 import {
   mapMessageListItem,
@@ -203,5 +204,20 @@ export async function POST(req: NextRequest) {
   };
 
   const res = await db.collection("messages").insertOne(doc);
+
+  try {
+    await createUserNotification(db, {
+      userId: toOid,
+      type: "message",
+      title: "새 쪽지가 도착했어요",
+      body: `${me.name ?? "회원"}님이 쪽지를 보냈습니다.`,
+      href: "/messages",
+      source: { collection: "messages", id: res.insertedId, kind: "direct" },
+      dedupeKey: `message:${res.insertedId.toString()}`,
+    });
+  } catch (error) {
+    console.error("[messages/send] create user notification failed", error);
+  }
+
   return NextResponse.json({ ok: true, id: res.insertedId.toString() });
 }

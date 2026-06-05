@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { getDb } from "@/lib/mongodb";
 import { getCurrentUser } from "@/lib/hooks/get-current-user";
+import { createUserNotifications } from "@/lib/notifications/user-notification.service";
 import {
   mapMessageListItem,
   notExpiredClause,
@@ -153,6 +154,31 @@ export async function POST(req: NextRequest) {
   const res = await db
     .collection("messages")
     .insertMany(docs, { ordered: false });
+
+  try {
+    const bodyPreview = title || body.slice(0, 80);
+    await createUserNotifications(
+      db,
+      users.map((u, index) => {
+        const messageId = res.insertedIds[index];
+        return {
+          userId: u._id,
+          type: "message",
+          title: "관리자 공지가 도착했어요",
+          body: bodyPreview,
+          href: "/messages",
+          source: {
+            collection: "messages",
+            id: messageId,
+            kind: "admin_broadcast",
+          },
+          dedupeKey: `message:${messageId.toString()}`,
+        };
+      }),
+    );
+  } catch (error) {
+    console.error("[messages/admin] create user notifications failed", error);
+  }
 
   return NextResponse.json({
     ok: true,

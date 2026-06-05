@@ -6,6 +6,7 @@ import { verifyAccessToken, verifyOrderAccessToken } from "@/lib/auth.utils";
 import { issuePassesForPaidOrder } from "@/lib/passes.service";
 import jwt from "jsonwebtoken";
 import { deductPoints, grantPoints } from "@/lib/points.service";
+import { createUserNotification } from "@/lib/notifications/user-notification.service";
 import { z } from "zod";
 import {
   getAdminCancelPolicyMessage,
@@ -987,6 +988,30 @@ export async function PATCH(
       return new NextResponse("주문 상태 업데이트에 실패했습니다.", {
         status: 500,
       });
+    }
+
+    if (__prevStatus !== nextStatus && existing.userId && ObjectId.isValid(String(existing.userId))) {
+      try {
+        const titleByStatus: Record<string, string> = {
+          결제완료: "주문 결제가 확인되었습니다.",
+          배송중: "주문이 배송중으로 변경되었습니다.",
+          배송완료: "주문 배송이 완료되었습니다.",
+          취소: "주문이 취소되었습니다.",
+          환불: "주문이 환불 처리되었습니다.",
+        };
+        const displayOrderId = String((existing as any).orderId ?? (existing as any).orderNumber ?? _id.toString());
+        await createUserNotification(db, {
+          userId: existing.userId,
+          type: "order_status",
+          title: titleByStatus[nextStatus] ?? "주문 상태가 변경되었습니다.",
+          body: `주문 ${displayOrderId}의 상태가 ${nextStatus}(으)로 변경되었습니다.`,
+          href: "/mypage?tab=orders",
+          source: { collection: "orders", id: _id, kind: "status" },
+          dedupeKey: `order:${_id.toString()}:status:${nextStatus}`,
+        });
+      } catch (error) {
+        console.error("[orders] create status notification failed", error);
+      }
     }
 
     // 패스 발급 멱등 트리거

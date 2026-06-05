@@ -4,6 +4,7 @@ import { useCartStore } from "@/app/store/cartStore";
 import SearchPreview from "@/components/SearchPreview";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { UserNav } from "@/components/nav/UserNav";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { ThemeToggle } from "@/components/theme-toggle";
 import {
   Accordion,
@@ -614,8 +615,14 @@ const Header = () => {
                       </Link>
                     </div>
 
-                    <DropdownMenu modal={false}>
-                      <DropdownMenuTrigger asChild>
+                    <div className="flex shrink-0 items-center gap-1">
+                      <NotificationBell
+                        enabled={!loading && !!user}
+                        mode="mobileCard"
+                        onNavigate={() => setOpen(false)}
+                      />
+                      <DropdownMenu modal={false}>
+                        <DropdownMenuTrigger asChild>
                         <Button
                           variant="ghost"
                           size="icon"
@@ -679,7 +686,8 @@ const Header = () => {
                           로그아웃
                         </DropdownMenuItem>
                       </DropdownMenuContent>
-                    </DropdownMenu>
+                      </DropdownMenu>
+                    </div>
                   </div>
 
                   <div className="mt-2 flex min-w-0 items-center gap-3 text-xs font-semibold text-muted-foreground">
@@ -1130,6 +1138,12 @@ const Header = () => {
                 >
                   <UserIcon className="h-5 w-5" />
                 </Button>
+                {user && (
+                  <NotificationBell
+                    enabled={!loading && !!user}
+                    mode="mobileHeader"
+                  />
+                )}
                 <Link href="/cart">
                   <Button
                     variant="ghost"
@@ -1337,29 +1351,6 @@ const Header = () => {
                     <Gift className="!h-5 !w-5" />
                   </Button>
                 </Link>
-                <Link href="/messages" className="hidden bp-sm:inline-flex">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="relative h-10 w-10 rounded-full hover:bg-secondary p-0 transition-[background-color,color,border-color,box-shadow,opacity] duration-300 focus-visible:ring-2 ring-ring shrink-0"
-                    aria-label={
-                      resolvedUnreadCount !== null && resolvedUnreadCount > 0
-                        ? `읽지 않은 쪽지 ${resolvedUnreadCount}개`
-                        : "쪽지함"
-                    }
-                    title="쪽지함"
-                  >
-                    <Mail className="!h-5 !w-5" />
-                    {resolvedUnreadCount !== null &&
-                      resolvedUnreadCount > 0 && (
-                        <span className="absolute -top-1 -right-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground">
-                          {resolvedUnreadCount > 99
-                            ? "99+"
-                            : resolvedUnreadCount}
-                        </span>
-                      )}
-                  </Button>
-                </Link>
                 <Link href="/cart">
                   <Button
                     variant="ghost"
@@ -1407,6 +1398,10 @@ const Header = () => {
                       </span>
                     </Link>
                   </Button>
+                )}
+
+                {user && (
+                  <NotificationBell enabled={!loading && !!user} mode="desktop" />
                 )}
 
                 <div className="max-w-[88px] xl:max-w-[110px] 2xl:max-w-[150px] overflow-hidden shrink-0">
