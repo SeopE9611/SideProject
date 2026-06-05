@@ -71,10 +71,10 @@ function MobileBrandGrid({ brands, onPick }: { brands: { name: string; href: str
 }
 
 const mobileMenuItemClass =
-  "group w-full min-w-0 justify-between rounded-lg px-3 py-2.5 text-sm font-semibold text-foreground/85 hover:text-foreground hover:bg-secondary transition-[background-color,color,border-color,box-shadow,opacity] relative z-0 hover:shadow-sm hover:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background";
-const mobileNestedGroupClass = "mt-1.5 pl-1";
-const mobileNestedTriggerClass = "min-w-0 px-3 py-2 text-sm font-semibold text-foreground/75 hover:text-foreground rounded-lg hover:bg-secondary";
-const mobileMenuGroupClass = "mt-3 pt-0";
+  "group w-full min-w-0 justify-between rounded-lg px-3 py-2 text-sm font-semibold text-foreground/85 hover:text-foreground hover:bg-secondary transition-[background-color,color,border-color,box-shadow,opacity] relative z-0 hover:shadow-sm hover:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background";
+const mobileNestedGroupClass = "mt-1 pl-1";
+const mobileNestedTriggerClass = "min-w-0 px-3 py-1.5 text-sm font-semibold text-foreground/75 hover:text-foreground rounded-lg hover:bg-secondary";
+const mobileMenuGroupClass = "mt-1.5 pt-0";
 const mobileGroupTitleClass = "min-w-0 break-keep whitespace-normal text-foreground";
 
 const Header = () => {
@@ -462,13 +462,138 @@ const Header = () => {
             <div className="mt-4">
               <SearchPreview placeholder="스트링 / 라켓 검색." className="w-full rounded-lg border-border focus-within:border-border focus-within:ring-2 focus-within:ring-ring transition-colors" onSelect={() => setOpen(false)} />
             </div>
+            <div className="mt-3">
+              {user && (
+                <div className="rounded-2xl border border-border bg-card/90 p-3 shadow-sm">
+                  <div className="flex min-w-0 items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <div className="min-w-0 truncate text-sm font-bold leading-5 text-foreground">{displayName} 님</div>
+                      <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[11px] font-medium leading-4 text-muted-foreground">
+                        {hasKakao && (
+                          <Badge variant={getSocialProviderBadgeSpec("kakao").variant} className="h-4 shrink-0 whitespace-nowrap border border-border/60 px-1.5 text-[10px] leading-none">
+                            카카오
+                          </Badge>
+                        )}
+                        {hasNaver && (
+                          <Badge variant={getSocialProviderBadgeSpec("naver").variant} className="h-4 shrink-0 whitespace-nowrap border border-border/60 px-1.5 text-[10px] leading-none">
+                            네이버
+                          </Badge>
+                        )}
+                        {isAdmin && (
+                          <Badge variant="success" className="h-4 shrink-0 whitespace-nowrap border border-border/60 px-1.5 py-0 text-[10px] leading-none">
+                            관리자
+                          </Badge>
+                        )}
+                        {(hasKakao || hasNaver || isAdmin) && <span className="shrink-0 text-muted-foreground/50">·</span>}
+                        <Link href="/mypage?tab=points" onClick={() => setOpen(false)} className="inline-flex min-w-0 items-center gap-1 tabular-nums hover:text-foreground" aria-label="포인트 보기">
+                          <span className="text-[10px] font-bold">P</span>
+                          {pointsStatus === "loading" ? (
+                            <>
+                              <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
+                              <span className="sr-only">포인트 불러오는 중</span>
+                            </>
+                          ) : pointsStatus === "error" ? (
+                            <span>-</span>
+                          ) : (
+                            <span>{(pointsBalance ?? 0).toLocaleString()}P</span>
+                          )}
+                        </Link>
+                      </div>
+                    </div>
+
+                    <DropdownMenu modal={false}>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="-mr-1 -mt-1 h-8 w-8 shrink-0 rounded-full text-muted-foreground hover:bg-secondary hover:text-foreground" aria-label="사용자 메뉴 더보기">
+                          <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" sideOffset={8} collisionPadding={12} className="z-[60] w-44">
+                        <DropdownMenuItem
+                          className="h-9"
+                          onSelect={() => {
+                            setOpen(false);
+                            router.push("/mypage");
+                          }}
+                        >
+                          마이페이지
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="h-9"
+                          onSelect={() => {
+                            setOpen(false);
+                            router.push("/board/event");
+                          }}
+                        >
+                          이벤트
+                        </DropdownMenuItem>
+                        {isAdmin && (
+                          <DropdownMenuItem
+                            className="h-9"
+                            onSelect={() => {
+                              setOpen(false);
+                              router.push("/admin/dashboard");
+                            }}
+                          >
+                            관리자 페이지
+                          </DropdownMenuItem>
+                        )}
+                        <DropdownMenuItem
+                          className="h-9 text-destructive focus:text-destructive"
+                          onSelect={async () => {
+                            // 로그아웃 직전 캐시를 선제적으로 비워
+                            // 계정 전환 시 stale 포인트가 보이는 플래시를 예방합니다.
+                            headerPointsCache = null;
+                            await fetch("/api/logout", {
+                              method: "POST",
+                              credentials: "include",
+                            });
+                            window.location.href = "/";
+                          }}
+                        >
+                          로그아웃
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+
+                  <div className="mt-2 flex min-w-0 items-center gap-3 text-xs font-semibold text-muted-foreground">
+                    <button
+                      type="button"
+                      className="inline-flex min-w-0 items-center gap-1 rounded-md py-1 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      aria-label="쪽지함으로 이동"
+                      onClick={() => {
+                        setOpen(false);
+                        router.push("/messages");
+                      }}
+                    >
+                      <Mail className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                      <span>쪽지</span>
+                      {resolvedUnreadCount !== null && resolvedUnreadCount > 0 && <span className="tabular-nums text-destructive">{resolvedUnreadCount > 99 ? "99+" : resolvedUnreadCount}</span>}
+                    </button>
+                    <button
+                      type="button"
+                      className="inline-flex min-w-0 items-center gap-1 rounded-md py-1 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      aria-label="장바구니로 이동"
+                      onClick={() => {
+                        setOpen(false);
+                        router.push("/cart");
+                      }}
+                    >
+                      <ShoppingCart className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                      <span>장바구니</span>
+                      {cartCount > 0 && <span className="tabular-nums text-primary">{cartBadge}</span>}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain scrollbar-hide bg-card px-3 py-3 pb-[calc(env(safe-area-inset-bottom)+24px)] bp-sm:px-4">
             <Accordion type="single" className="space-y-1">
               {/* 스트링 */}
               <AccordionItem value="strings" className="border-none">
-                <AccordionTrigger value="strings" className="py-3 px-3 rounded-lg hover:bg-secondary hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group">
+                <AccordionTrigger value="strings" className="py-2.5 px-3 rounded-lg hover:bg-secondary hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group">
                   <span className="inline-flex items-center gap-2.5 text-base font-bold">
                     {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
                       <Grid2X2 className="h-4 w-4" />
@@ -568,7 +693,7 @@ const Header = () => {
               <div className={mobileMenuGroupClass}>
                 <Button
                   variant="ghost"
-                  className="group w-full min-w-0 justify-between rounded-lg px-3 py-3 text-base font-bold text-foreground hover:bg-secondary transition-[background-color,color,border-color,box-shadow,opacity] relative z-0 hover:shadow-sm hover:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                  className="group w-full min-w-0 justify-between rounded-lg px-3 py-2.5 text-base font-bold text-foreground hover:bg-secondary transition-[background-color,color,border-color,box-shadow,opacity] relative z-0 hover:shadow-sm hover:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                   onClick={() => {
                     setOpen(false);
                     router.push(NAV_LINKS.academy.href);
@@ -581,7 +706,7 @@ const Header = () => {
 
               {/* 중고 라켓 */}
               <AccordionItem value="rackets" className={cn("border-none", mobileMenuGroupClass)}>
-                <AccordionTrigger value="rackets" className="py-3 px-3 rounded-lg hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group">
+                <AccordionTrigger value="rackets" className="py-2.5 px-3 rounded-lg hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group">
                   <span className="inline-flex items-center gap-2.5 text-base font-bold">
                     {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
                       <MdSportsTennis className="h-4 w-4" />
@@ -628,7 +753,7 @@ const Header = () => {
 
               {/* 게시판 */}
               <AccordionItem value="boards" className={cn("border-none", mobileMenuGroupClass)}>
-                <AccordionTrigger value="boards" className="py-3 px-3 rounded-lg hover:bg-secondary hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group">
+                <AccordionTrigger value="boards" className="py-2.5 px-3 rounded-lg hover:bg-secondary hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group">
                   <span className="inline-flex items-center gap-2.5 text-base font-bold">
                     {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
                       <MessageSquareText className="h-4 w-4" />
@@ -656,7 +781,7 @@ const Header = () => {
 
               {/* 고객센터 */}
               <AccordionItem value="support" className={cn("border-none", mobileMenuGroupClass)}>
-                <AccordionTrigger value="support" className="py-3 px-3 rounded-lg hover:bg-secondary hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group">
+                <AccordionTrigger value="support" className="py-2.5 px-3 rounded-lg hover:bg-secondary hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group">
                   <span className="inline-flex items-center gap-2.5 text-base font-bold">
                     {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
                       <MessageSquare className="h-4 w-4" />
@@ -683,141 +808,9 @@ const Header = () => {
               </AccordionItem>
             </Accordion>
 
-            {/* 하단 사용자 영역(모바일) */}
-            <div className="mt-4 space-y-3">
-              {user ? (
-                <>
-                  {/* 사용자 정보 카드 */}
-                  <div className="rounded-2xl border border-border bg-muted/30 p-3">
-                    <div className="flex min-w-0 flex-col gap-3">
-                      <div className="min-w-0">
-                        <div className="flex min-w-0 flex-wrap items-center gap-1.5">
-                          <span className="min-w-0 max-w-[140px] truncate text-sm font-bold text-foreground">{displayName} 님</span>
-                          {hasKakao && (
-                            <Badge variant={getSocialProviderBadgeSpec("kakao").variant} className="h-5 shrink-0 whitespace-nowrap border border-border/60 px-2 text-[10px]">
-                              카카오
-                            </Badge>
-                          )}
-                          {hasNaver && (
-                            <Badge variant={getSocialProviderBadgeSpec("naver").variant} className="h-5 shrink-0 whitespace-nowrap border border-border/60 px-2 text-[10px]">
-                              네이버
-                            </Badge>
-                          )}
-                          {isAdmin && (
-                            <Badge variant="success" className="h-5 shrink-0 whitespace-nowrap border border-border/60 px-2 py-0 text-[10px]">
-                              관리자
-                            </Badge>
-                          )}
-                        </div>
-
-                        <Link href="/mypage?tab=points" onClick={() => setOpen(false)} className="mt-1 inline-flex min-w-0 items-center gap-1.5 text-xs font-semibold tabular-nums text-muted-foreground hover:text-foreground" aria-label="포인트 보기">
-                          <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-background text-[10px] font-bold text-muted-foreground">P</span>
-                          {pointsStatus === "loading" ? (
-                            <>
-                              <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" aria-hidden="true" />
-                              <span className="sr-only">포인트 불러오는 중</span>
-                            </>
-                          ) : pointsStatus === "error" ? (
-                            <span>-</span>
-                          ) : (
-                            <span>{(pointsBalance ?? 0).toLocaleString()}P</span>
-                          )}
-                        </Link>
-                      </div>
-
-                      {/* 빠른 액션 */}
-                      <div className="grid grid-cols-3 gap-2">
-                        <Button
-                          variant="outline"
-                          className="relative h-10 w-full min-w-0 justify-center gap-1.5 rounded-xl border-border bg-background px-2 hover:bg-secondary"
-                          aria-label="쪽지함으로 이동"
-                          onClick={() => {
-                            setOpen(false);
-                            router.push("/messages");
-                          }}
-                        >
-                          <Mail className="h-4 w-4 shrink-0" aria-hidden="true" />
-                          <span className="min-w-0 truncate text-sm">쪽지</span>
-                          {resolvedUnreadCount !== null && resolvedUnreadCount > 0 && (
-                            <span className="absolute -top-1 -right-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground">
-                              {resolvedUnreadCount > 99 ? "99+" : resolvedUnreadCount}
-                            </span>
-                          )}
-                        </Button>
-
-                        <Button
-                          variant="outline"
-                          className="relative h-10 w-full min-w-0 justify-center gap-1.5 rounded-xl border-border bg-background px-2 hover:bg-secondary"
-                          aria-label="장바구니로 이동"
-                          onClick={() => {
-                            setOpen(false);
-                            router.push("/cart");
-                          }}
-                        >
-                          <ShoppingCart className="h-4 w-4 shrink-0" aria-hidden="true" />
-                          <span className="min-w-0 truncate text-sm">장바구니</span>
-                          {cartCount > 0 && <span className="absolute -top-1 -right-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">{cartBadge}</span>}
-                        </Button>
-
-                        <DropdownMenu modal={false}>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="outline" className="h-10 w-full min-w-0 justify-center gap-1.5 rounded-xl border-border bg-background px-2 hover:bg-secondary" aria-label="사용자 메뉴 더보기">
-                              <MoreHorizontal className="h-4 w-4 shrink-0" aria-hidden="true" />
-                              <span className="min-w-0 truncate text-sm">더보기</span>
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" side="top" sideOffset={8} collisionPadding={12} className="z-[60] w-44">
-                            <DropdownMenuItem
-                              className="h-9"
-                              onSelect={() => {
-                                setOpen(false);
-                                router.push("/mypage");
-                              }}
-                            >
-                              마이페이지
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              className="h-9"
-                              onSelect={() => {
-                                setOpen(false);
-                                router.push("/board/event");
-                              }}
-                            >
-                              이벤트
-                            </DropdownMenuItem>
-                            {isAdmin && (
-                              <DropdownMenuItem
-                                className="h-9"
-                                onSelect={() => {
-                                  setOpen(false);
-                                  router.push("/admin/dashboard");
-                                }}
-                              >
-                                관리자 페이지
-                              </DropdownMenuItem>
-                            )}
-                            <DropdownMenuItem
-                              className="h-9 text-destructive focus:text-destructive"
-                              onSelect={async () => {
-                                // 로그아웃 직전 캐시를 선제적으로 비워
-                                // 계정 전환 시 stale 포인트가 보이는 플래시를 예방합니다.
-                                headerPointsCache = null;
-                                await fetch("/api/logout", {
-                                  method: "POST",
-                                  credentials: "include",
-                                });
-                                window.location.href = "/";
-                              }}
-                            >
-                              로그아웃
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                    </div>
-                  </div>
-                </>
-              ) : (
+            {/* 하단 보조 영역(모바일) */}
+            <div className="mt-3 space-y-3">
+              {!user && (
                 <div className="space-y-3 rounded-2xl border border-border bg-muted/30 p-4">
                   <p className="break-keep text-sm leading-5 text-muted-foreground">
                     로그인하면 주문 조회와 교체서비스 신청 내역을 확인할 수 있어요.
