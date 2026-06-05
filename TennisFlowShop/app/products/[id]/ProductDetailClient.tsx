@@ -4,8 +4,8 @@ import ProductFeatureRadarChart from "@/app/products/components/ProductFeatureRa
 import type { User } from "@/app/store/authStore";
 import { useBuyNowStore } from "@/app/store/buyNowStore";
 import { type CartItem, useCartStore } from "@/app/store/cartStore";
-import SiteContainer from "@/components/layout/SiteContainer";
 import HorizontalProducts, { type HItem } from "@/components/HorizontalProducts";
+import SiteContainer from "@/components/layout/SiteContainer";
 import RecentViewedItems from "@/components/recent-viewed/RecentViewedItems";
 import MaskedBlock from "@/components/reviews/MaskedBlock";
 import { Badge } from "@/components/ui/badge";
@@ -504,8 +504,14 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const { data: adminReviews, mutate: mutateAdminReviews } = useSWR(activeTab === "reviews" && isAdmin ? `/api/reviews/admin?productId=${product._id}&limit=${reviewsCount}` : null, fetcher, { revalidateOnFocus: false });
 
   const { has, findItem, updateOptions, toggle } = useWishlist();
-  const wishState = has(product._id);
+
+  // 위시리스트 훅 내부의 id는 문자열 기준이므로,
+  // product._id도 문자열로 변환해서 비교 기준을 통일
+  const wishlistProductId = product._id.toString();
+
+  const wishState = has(wishlistProductId);
   const isWishlisted = wishState === true;
+
   // 위시리스트 미확정(unknown) 상태를 false(찜 안 함)와 분리한다.
   const isWishlistUnknown = wishState === null;
   const [busy, setBusy] = useState(false);
@@ -727,15 +733,10 @@ export default function ProductDetailClient({ product }: { product: any }) {
     selectedGauge: selectedGauge || undefined,
     ...selectedColorPayload,
   };
-  const currentWishlistItem = findItem(product._id.toString());
+  const currentWishlistItem = findItem(wishlistProductId);
   const hasCurrentWishlistOption = Boolean(wishlistOptionPayload.selectedGauge || wishlistOptionPayload.selectedColor);
-  const isDifferentWishlistOption =
-    currentWishlistItem?.selectedGauge !== wishlistOptionPayload.selectedGauge ||
-    currentWishlistItem?.selectedColor !== wishlistOptionPayload.selectedColor;
-  const shouldUpdateWishlistOption =
-    isWishlisted &&
-    hasCurrentWishlistOption &&
-    (!currentWishlistItem?.hasSelectedOption || isDifferentWishlistOption);
+  const isDifferentWishlistOption = currentWishlistItem?.selectedGauge !== wishlistOptionPayload.selectedGauge || currentWishlistItem?.selectedColor !== wishlistOptionPayload.selectedColor;
+  const shouldUpdateWishlistOption = isWishlisted && hasCurrentWishlistOption && (!currentWishlistItem?.hasSelectedOption || isDifferentWishlistOption);
   const wishlistButtonLabel = shouldUpdateWishlistOption ? "선택 옵션으로 업데이트" : "위시리스트";
 
   const requireGaugeSelection = () => {
@@ -899,12 +900,12 @@ export default function ProductDetailClient({ product }: { product: any }) {
     setBusy(true);
     try {
       if (shouldUpdateWishlistOption) {
-        await updateOptions(product._id.toString(), wishlistOptionPayload);
+        await updateOptions(wishlistProductId, wishlistOptionPayload);
         showSuccessToast("위시리스트 옵션을 업데이트했습니다.");
         return;
       }
 
-      await toggle(product._id.toString(), wishlistOptionPayload); // 항상 서버에 요청
+      await toggle(wishlistProductId, wishlistOptionPayload);
       showSuccessToast(isWishlisted ? "위시리스트에서 제거했습니다." : "위시리스트에 추가했습니다.");
     } catch (e: any) {
       if (e?.message === "unauthorized") {
@@ -925,11 +926,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
       disabled={busy || isWishlistUnknown}
       onClick={handleWishlist}
       size="lg"
-      className={cn(
-        "h-auto min-h-12 w-full text-sm sm:text-base",
-        isWishlisted ? "border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/15" : "bg-background",
-        isWishlistUnknown && "cursor-not-allowed opacity-70",
-      )}
+      className={cn("h-auto min-h-12 w-full text-sm sm:text-base", isWishlisted ? "border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/15" : "bg-background", isWishlistUnknown && "cursor-not-allowed opacity-70")}
       aria-disabled={busy || isWishlistUnknown}
       aria-label={isWishlistUnknown ? "위시리스트 상태 확인 중" : wishlistButtonLabel}
     >
@@ -1125,7 +1122,9 @@ export default function ProductDetailClient({ product }: { product: any }) {
                             const isSelected = selectedColor === row.value;
                             const swatchImage =
                               row.image?.trim() ||
-                              getVariantsByColor(row.value).find((v) => v.colorImage?.trim())?.colorImage?.trim();
+                              getVariantsByColor(row.value)
+                                .find((v) => v.colorImage?.trim())
+                                ?.colorImage?.trim();
                             const hasImage = !!swatchImage;
                             const hasSwatch = typeof row.colorHex === "string" && row.colorHex.trim().length > 0;
 
@@ -1798,16 +1797,18 @@ export default function ProductDetailClient({ product }: { product: any }) {
             <CardContent>
               <HorizontalProducts
                 title="관련 상품"
-                items={relatedFiltered.map((rp: any): HItem => ({
-                  _id: String(rp._id),
-                  name: rp.name,
-                  price: Number(rp.price ?? 0),
-                  images: rp.images ?? [],
-                  brand: displayBrandLabel(rp.brand) || rp.brand,
-                  href: `/products/${rp._id}`,
-                  merchandisingBadges: getProductDetailBadges(rp),
-                  inventory: rp.inventory,
-                }))}
+                items={relatedFiltered.map(
+                  (rp: any): HItem => ({
+                    _id: String(rp._id),
+                    name: rp.name,
+                    price: Number(rp.price ?? 0),
+                    images: rp.images ?? [],
+                    brand: displayBrandLabel(rp.brand) || rp.brand,
+                    href: `/products/${rp._id}`,
+                    merchandisingBadges: getProductDetailBadges(rp),
+                    inventory: rp.inventory,
+                  }),
+                )}
                 moreHref="/products"
                 showHeader={false}
                 showMoreCard={false}
