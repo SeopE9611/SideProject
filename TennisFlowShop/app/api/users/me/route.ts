@@ -5,12 +5,14 @@ import { ObjectId } from "mongodb";
 import { getDb } from "@/lib/mongodb";
 import { performance } from "node:perf_hooks";
 import { getReservedDisplayNameErrorMessage } from "@/lib/reserved-display-name";
+import { createApiPerfLogger } from "@/lib/api/perf";
 
 // 환경변수에서 JWT 비밀키 로딩
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET!;
 
 // GET: 현재 로그인한 사용자 정보 조회
 export async function GET() {
+  const perf = createApiPerfLogger("GET /api/users/me");
   // 서버 쿠키 저장소에서 accessToken 읽기
   const jar = await cookies();
   const accessToken = jar.get("accessToken")?.value;
@@ -43,29 +45,31 @@ export async function GET() {
     }
 
     const t2 = performance.now();
-    const db = await getDb();
+    const db = await perf.measure("dbConnect", () => getDb());
     dbg && console.log("[me] getDb", (performance.now() - t2).toFixed(1), "ms");
     const t3 = performance.now();
-    const user = await db.collection("users").findOne(
-      { _id: new ObjectId(sub) },
-      {
-        // 상단 공통 경로에서 자주 호출되는 API이므로,
-        // 실제 응답에 쓰는 필드 + 계정 상태 판별 필드만 최소 투영합니다.
-        // (문서 전체 로드를 피해서 네트워크/디코딩 비용을 줄임)
-        projection: {
-          name: 1,
-          email: 1,
-          role: 1,
-          oauth: 1,
-          phone: 1,
-          address: 1,
-          addressDetail: 1,
-          postalCode: 1,
-          pointsBalance: 1,
-          isDeleted: 1,
-          isSuspended: 1,
+    const user = await perf.measure("query", () =>
+      db.collection("users").findOne(
+        { _id: new ObjectId(sub) },
+        {
+          // 상단 공통 경로에서 자주 호출되는 API이므로,
+          // 실제 응답에 쓰는 필드 + 계정 상태 판별 필드만 최소 투영합니다.
+          // (문서 전체 로드를 피해서 네트워크/디코딩 비용을 줄임)
+          projection: {
+            name: 1,
+            email: 1,
+            role: 1,
+            oauth: 1,
+            phone: 1,
+            address: 1,
+            addressDetail: 1,
+            postalCode: 1,
+            pointsBalance: 1,
+            isDeleted: 1,
+            isSuspended: 1,
+          },
         },
-      },
+      ),
     );
     dbg &&
       console.log("[me] findOne", (performance.now() - t3).toFixed(1), "ms");
@@ -97,7 +101,7 @@ export async function GET() {
       oauth?.kakao?.id ? "kakao" : null,
       oauth?.naver?.id ? "naver" : null,
     ].filter(Boolean) as Array<"kakao" | "naver">;
-    return NextResponse.json({
+    const response = NextResponse.json({
       id: user._id.toString(),
       name: user.name ?? null,
       email: user.email ?? null,
@@ -113,6 +117,8 @@ export async function GET() {
           : 0, // 마이페이지(적립금 표시)에서 바로 쓰도록 포함
       socialProviders,
     });
+    perf.log();
+    return response;
   } catch (err: any) {
     // 토큰 오류(만료/변조)
     if (

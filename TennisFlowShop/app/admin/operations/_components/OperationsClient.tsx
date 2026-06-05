@@ -16,7 +16,7 @@ import {
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
-import useSWR from "swr";
+import useSWR, { useSWRConfig } from "swr";
 
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { adminSurface } from "@/components/admin/admin-typography";
@@ -929,6 +929,11 @@ export default function OperationsClient() {
     warn: onlyWarn ? "1" : undefined,
   });
   const key = `/api/admin/operations?${queryString}`;
+  const navigationSummaryKey = "/api/admin/navigation-summary";
+  const { cache } = useSWRConfig();
+  const cachedNavigationSummary = cache.get(navigationSummaryKey)?.data as
+    | NavigationSummaryResponse
+    | undefined;
 
   const { data, isLoading, error, mutate } =
     useSWR<AdminOperationsListResponseDto>(key, authenticatedSWRFetcher, {
@@ -937,12 +942,14 @@ export default function OperationsClient() {
       keepPreviousData: true,
     });
   const { data: navigationSummary } = useSWR<NavigationSummaryResponse>(
-    "/api/admin/navigation-summary",
+    navigationSummaryKey,
     authenticatedSWRFetcher,
     {
       revalidateOnFocus: false,
       shouldRetryOnError: false,
       dedupingInterval: 30_000,
+      fallbackData: cachedNavigationSummary,
+      revalidateIfStale: !cachedNavigationSummary,
     },
   );
   const { data: dailySummary, error: dailySummaryError } =

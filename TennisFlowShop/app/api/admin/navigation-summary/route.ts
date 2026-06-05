@@ -2,15 +2,21 @@ import { NextResponse } from "next/server";
 
 import { countAdminNavigationSummary } from "@/app/api/admin/_lib/adminOperationCounts";
 import { requireAdmin } from "@/lib/admin.guard";
+import { createApiPerfLogger } from "@/lib/api/perf";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
-  const guard = await requireAdmin(req);
+  const perf = createApiPerfLogger("GET /api/admin/navigation-summary");
+  const guard = await perf.measure("authAndDb", () => requireAdmin(req));
   if (!guard.ok) return guard.res;
 
   const { db } = guard;
-  const { counts, operationTaskCounts } = await countAdminNavigationSummary(db);
+  const { counts, operationTaskCounts } = await perf.measure("query", () =>
+    countAdminNavigationSummary(db),
+  );
 
-  return NextResponse.json({ counts, operationTaskCounts });
+  const response = NextResponse.json({ counts, operationTaskCounts });
+  perf.log();
+  return response;
 }
