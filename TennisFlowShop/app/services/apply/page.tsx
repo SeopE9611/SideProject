@@ -1779,9 +1779,8 @@ export default function StringServiceApplyPage() {
         <div className="px-3 bp-sm:px-4 bp-md:px-6 bp-lg:px-6 mx-auto bp-lg:max-w-[1200px] bp-xl:max-w-7xl py-6 bp-sm:py-8 bp-lg:py-10">
           {/* Section Header */}
           <div className="mx-auto mb-6 max-w-3xl text-center bp-sm:mb-8">
-            <Badge variant="secondary">교체 서비스 신청</Badge>
             <h2 className="mt-3 text-xl font-semibold text-foreground break-keep bp-sm:text-2xl">
-              1단계. 신청 방식을 선택해 주세요
+              신청 방식을 선택해 주세요
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground break-keep bp-sm:text-base">
               필요한 방식을 선택하면 다음 단계로 이동합니다. 지금은 신청 경로만
@@ -1891,51 +1890,6 @@ export default function StringServiceApplyPage() {
                 </div>
               </button>
             ))}
-          </div>
-
-          <div className="mx-auto mt-4 max-w-5xl rounded-xl border border-border bg-muted/30 p-3 bp-sm:p-4">
-            <div className="mb-3 text-center bp-sm:text-left">
-              <p className="text-sm font-semibold text-foreground break-keep">
-                신청 보조 도구
-              </p>
-              <p className="mt-1 text-xs leading-relaxed text-muted-foreground break-keep">
-                신청 방식 선택 전에 필요한 정보만 가볍게 확인하세요.
-              </p>
-            </div>
-            <div className="flex flex-wrap justify-center gap-2 text-sm bp-sm:justify-start">
-              <Button
-                type="button"
-                variant="outline"
-                className="whitespace-nowrap"
-                onClick={() => safePush("/products/recommend")}
-              >
-                스트링 추천받기
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                className="whitespace-nowrap"
-                onClick={() => safePush("/services/pricing")}
-              >
-                가격 먼저 보기
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                className="whitespace-nowrap"
-                onClick={() => safePush("/services/locations")}
-              >
-                매장 위치/방문 안내
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                className="whitespace-nowrap"
-                onClick={() => safePush("/board/qna")}
-              >
-                고객센터 문의
-              </Button>
-            </div>
           </div>
 
           <div className="mt-6 bp-sm:mt-8 grid grid-cols-1 bp-lg:grid-cols-2 gap-4 bp-sm:gap-5 max-w-6xl mx-auto">
