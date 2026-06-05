@@ -25,9 +25,6 @@ const FEATURE_LABELS: Record<FeatureKey, string> = {
 
 function normalizeFeatureScore(value: number | undefined): number {
   if (!value || value <= 0) return 0;
-  if (value <= 1) return value;
-  if (value <= 5) return value / 5;
-  if (value <= 10) return value / 10;
   return Math.min(1, value / 100);
 }
 

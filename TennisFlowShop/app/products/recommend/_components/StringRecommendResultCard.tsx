@@ -31,9 +31,11 @@ export default function StringRecommendResultCard({
     salePrice > 0 &&
     salePrice < regularPrice;
   const displayPrice = isSale ? salePrice : regularPrice;
-  const saleRate = Math.round(
-    ((regularPrice - salePrice) / regularPrice) * 100,
-  );
+  const saleRate =
+    isSale && regularPrice > 0
+      ? Math.round(((regularPrice - salePrice) / regularPrice) * 100)
+      : 0;
+  const primaryGauge = product.gauge || product.gaugeOptions?.[0];
 
   return (
     <Card className="rounded-2xl">
@@ -85,7 +87,7 @@ export default function StringRecommendResultCard({
           )}
           <p className="text-xs text-muted-foreground">
             소재 {stringMaterialLabel(product.material) || "-"} · 게이지{" "}
-            {formatGaugeLabel(product.gauge) || "-"}
+            {formatGaugeLabel(primaryGauge) || "-"}
           </p>
         </div>
       </CardHeader>
