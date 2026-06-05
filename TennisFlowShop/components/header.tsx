@@ -467,8 +467,8 @@ const Header = () => {
                 <div className="rounded-2xl border border-border bg-card/90 p-3 shadow-sm">
                   <div className="flex min-w-0 items-start justify-between gap-2">
                     <div className="min-w-0 flex-1">
-                      <div className="min-w-0 truncate text-sm font-bold leading-5 text-foreground">{displayName} 님</div>
-                      <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[11px] font-medium leading-4 text-muted-foreground">
+                      <div className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5">
+                        <div className="min-w-0 max-w-[150px] truncate text-sm font-bold leading-5 text-foreground bp-sm:max-w-[180px]">{displayName} 님</div>
                         {hasKakao && (
                           <Badge variant={getSocialProviderBadgeSpec("kakao").variant} className="h-4 shrink-0 whitespace-nowrap border border-border/60 px-1.5 text-[10px] leading-none">
                             카카오
@@ -484,21 +484,25 @@ const Header = () => {
                             관리자
                           </Badge>
                         )}
-                        {(hasKakao || hasNaver || isAdmin) && <span className="shrink-0 text-muted-foreground/50">·</span>}
-                        <Link href="/mypage?tab=points" onClick={() => setOpen(false)} className="inline-flex min-w-0 items-center gap-1 tabular-nums hover:text-foreground" aria-label="포인트 보기">
-                          <span className="text-[10px] font-bold">P</span>
-                          {pointsStatus === "loading" ? (
-                            <>
-                              <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
-                              <span className="sr-only">포인트 불러오는 중</span>
-                            </>
-                          ) : pointsStatus === "error" ? (
-                            <span>-</span>
-                          ) : (
-                            <span>{(pointsBalance ?? 0).toLocaleString()}P</span>
-                          )}
-                        </Link>
                       </div>
+                      <Link
+                        href="/mypage?tab=points"
+                        onClick={() => setOpen(false)}
+                        className="mt-1 inline-flex min-w-0 items-center gap-1 text-[11px] font-medium leading-4 text-muted-foreground tabular-nums hover:text-foreground"
+                        aria-label="포인트 보기"
+                      >
+                        <span className="text-[10px] font-bold">P</span>
+                        {pointsStatus === "loading" ? (
+                          <>
+                            <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
+                            <span className="sr-only">포인트 불러오는 중</span>
+                          </>
+                        ) : pointsStatus === "error" ? (
+                          <span>-</span>
+                        ) : (
+                          <span>{(pointsBalance ?? 0).toLocaleString()}P</span>
+                        )}
+                      </Link>
                     </div>
 
                     <DropdownMenu modal={false}>
@@ -559,7 +563,7 @@ const Header = () => {
                   <div className="mt-2 flex min-w-0 items-center gap-3 text-xs font-semibold text-muted-foreground">
                     <button
                       type="button"
-                      className="inline-flex min-w-0 items-center gap-1 rounded-md py-1 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="inline-flex min-h-8 min-w-0 items-center gap-1 rounded-md px-2 py-1.5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       aria-label="쪽지함으로 이동"
                       onClick={() => {
                         setOpen(false);
@@ -572,7 +576,7 @@ const Header = () => {
                     </button>
                     <button
                       type="button"
-                      className="inline-flex min-w-0 items-center gap-1 rounded-md py-1 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="inline-flex min-h-8 min-w-0 items-center gap-1 rounded-md px-2 py-1.5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       aria-label="장바구니로 이동"
                       onClick={() => {
                         setOpen(false);
@@ -845,14 +849,16 @@ const Header = () => {
               willChange: "transform",
             }}
           >
-            <div className="flex items-center justify-between w-full bp-lg:hidden">
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full hover:bg-secondary p-2 focus-visible:ring-2 ring-ring" aria-label="메뉴 열기">
-                  <Menu className="h-5 w-5" />
-                </Button>
-              </SheetTrigger>
+            <div className="grid w-full grid-cols-[88px_minmax(0,1fr)_88px] items-center bp-lg:hidden">
+              <div className="justify-self-start">
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon" className="rounded-full hover:bg-secondary p-2 focus-visible:ring-2 ring-ring" aria-label="메뉴 열기">
+                    <Menu className="h-5 w-5" />
+                  </Button>
+                </SheetTrigger>
+              </div>
 
-              <Link href="/" className="inline-flex items-center gap-1.5 group" aria-label="도깨비테니스 홈" onClick={() => setOpen(false)}>
+              <Link href="/" className="inline-flex min-w-0 items-center justify-center gap-1.5 justify-self-center group" aria-label="도깨비테니스 홈" onClick={() => setOpen(false)}>
                 <div className="relative h-7 w-7 shrink-0 overflow-hidden">
                   <Image src="/brand/symbol-light.png" alt="" aria-hidden="true" fill className="object-contain dark:hidden" priority />
                   <Image src="/brand/symbol-dark.png" alt="" aria-hidden="true" fill className="hidden object-contain dark:block" priority />
@@ -860,7 +866,23 @@ const Header = () => {
                 <div className="font-brand-bold font-bold text-[15px] tracking-normal text-foreground group-hover:text-foreground transition-colors whitespace-nowrap">도깨비테니스</div>
               </Link>
 
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-0.5 justify-self-end">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-full hover:bg-secondary p-2 focus-visible:ring-2 ring-ring"
+                  aria-label={user ? "마이페이지" : "로그인"}
+                  onClick={() => {
+                    if (user) {
+                      router.push("/mypage");
+                      return;
+                    }
+                    const nextPath = typeof window !== "undefined" ? `${window.location.pathname}${window.location.search}` : pathname || "/";
+                    router.push(`/login?next=${encodeURIComponent(nextPath)}`);
+                  }}
+                >
+                  <UserIcon className="h-5 w-5" />
+                </Button>
                 <Link href="/cart">
                   <Button variant="ghost" size="icon" className="relative rounded-full hover:bg-secondary p-2 focus-visible:ring-2 ring-ring" aria-label="장바구니">
                     <ShoppingCart className="h-5 w-5" />
