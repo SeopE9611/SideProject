@@ -82,6 +82,8 @@ export type RecommendableProduct = {
     status?: string;
     manageStock?: boolean;
     allowBackorder?: boolean;
+    isSale?: boolean;
+    salePrice?: number;
   };
 };
 

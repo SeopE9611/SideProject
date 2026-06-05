@@ -1,6 +1,7 @@
 import { getRecommendedTensionRange } from "@/app/products/recommend/_lib/tension";
 import { stringMaterialLabel } from "@/lib/constants";
 import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
+import { getEffectiveProductPrice } from "@/lib/product-pricing";
 import {
   hasPaidMountingFee,
   isMountableStringByFee,
@@ -64,7 +65,8 @@ function scoreProduct(
     score += durability * 10;
   }
 
-  const price = Number(product.price ?? 0);
+  // 할인 상품은 추천 순위가 실제 구매 부담에 맞도록 실판매가 기준으로 예산 점수를 계산한다.
+  const price = getEffectiveProductPrice(product);
   if (answers.budget === "value")
     score += price <= 15000 ? 10 : price <= 30000 ? 4 : 0;
   if (answers.budget === "mid")

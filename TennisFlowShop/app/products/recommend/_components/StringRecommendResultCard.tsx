@@ -24,6 +24,16 @@ export default function StringRecommendResultCard({
 }: StringRecommendResultCardProps) {
   const { product } = result;
   const productHref = `/products/${product.id}?from=apply`;
+  const regularPrice = Number(product.price ?? 0);
+  const salePrice = Number(product.inventory?.salePrice ?? 0);
+  const isSale =
+    product.inventory?.isSale === true &&
+    salePrice > 0 &&
+    salePrice < regularPrice;
+  const displayPrice = isSale ? salePrice : regularPrice;
+  const saleRate = Math.round(
+    ((regularPrice - salePrice) / regularPrice) * 100,
+  );
 
   return (
     <Card className="rounded-2xl">
@@ -48,9 +58,31 @@ export default function StringRecommendResultCard({
             {stringBrandLabel(product.brand) || "브랜드 정보 없음"}
           </p>
           <CardTitle className="mt-1 text-base">{product.name}</CardTitle>
-          <p className="mt-2 text-sm font-semibold">
-            {product.price.toLocaleString()}원
-          </p>
+          {isSale ? (
+            <div className="mt-2 space-y-1 tabular-nums">
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-[11px] text-muted-foreground">
+                  할인가
+                </span>
+                <span className="text-sm font-semibold">
+                  {displayPrice.toLocaleString()}원
+                </span>
+              </div>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="text-[11px] text-muted-foreground">정가</span>
+                <span className="text-xs text-muted-foreground line-through">
+                  {regularPrice.toLocaleString()}원
+                </span>
+                <Badge variant="destructive" className="text-[10px]">
+                  {saleRate}% OFF
+                </Badge>
+              </div>
+            </div>
+          ) : (
+            <p className="mt-2 text-sm font-semibold">
+              {displayPrice.toLocaleString()}원
+            </p>
+          )}
           <p className="text-xs text-muted-foreground">
             소재 {stringMaterialLabel(product.material) || "-"} · 게이지{" "}
             {formatGaugeLabel(product.gauge) || "-"}
