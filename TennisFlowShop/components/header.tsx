@@ -74,7 +74,7 @@ const mobileMenuItemClass =
   "group w-full min-w-0 justify-between rounded-lg px-3 py-2.5 text-sm font-semibold text-foreground/85 hover:text-foreground hover:bg-secondary transition-[background-color,color,border-color,box-shadow,opacity] relative z-0 hover:shadow-sm hover:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background";
 const mobileNestedGroupClass = "mt-1.5 pl-1";
 const mobileNestedTriggerClass = "min-w-0 px-3 py-2 text-sm font-semibold text-foreground/75 hover:text-foreground rounded-lg hover:bg-secondary";
-const mobileMenuGroupClass = "mt-5 border-t border-border/80 pt-5";
+const mobileMenuGroupClass = "mt-3 pt-0";
 const mobileGroupTitleClass = "min-w-0 break-keep whitespace-normal text-foreground";
 
 const Header = () => {
@@ -684,38 +684,32 @@ const Header = () => {
             </Accordion>
 
             {/* 하단 사용자 영역(모바일) */}
-            <div className="mt-6 border-t border-border bg-card pt-4 space-y-3">
+            <div className="mt-4 space-y-3">
               {user ? (
                 <>
                   {/* 사용자 정보 카드 */}
                   <div className="rounded-2xl border border-border bg-muted/30 p-4">
-                    <div className="min-w-0 space-y-2">
-                      <div className="flex min-w-0 flex-wrap items-center gap-2">
-                        <span className="min-w-0 break-keep text-sm font-bold text-foreground">
-                          <span className="break-words">{displayName}</span> 님
-                        </span>
+                    <div className="min-w-0">
+                      <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                        <span className="min-w-0 max-w-[150px] truncate text-sm font-bold text-foreground">{displayName} 님</span>
+                        {hasKakao && (
+                          <Badge variant={getSocialProviderBadgeSpec("kakao").variant} className="h-5 shrink-0 whitespace-nowrap border border-border/60 px-2 text-[10px]">
+                            카카오
+                          </Badge>
+                        )}
+                        {hasNaver && (
+                          <Badge variant={getSocialProviderBadgeSpec("naver").variant} className="h-5 shrink-0 whitespace-nowrap border border-border/60 px-2 text-[10px]">
+                            네이버
+                          </Badge>
+                        )}
                         {isAdmin && (
-                          <Badge variant="success" className="h-5 whitespace-nowrap border border-border/60 px-2 py-0 text-[10px]">
+                          <Badge variant="success" className="h-5 shrink-0 whitespace-nowrap border border-border/60 px-2 py-0 text-[10px]">
                             관리자
                           </Badge>
                         )}
                       </div>
 
-                      <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                        {hasKakao && (
-                          <Badge variant={getSocialProviderBadgeSpec("kakao").variant} className="h-5 whitespace-nowrap border border-border/60 px-2 text-[10px]">
-                            카카오
-                          </Badge>
-                        )}
-                        {hasNaver && (
-                          <Badge variant={getSocialProviderBadgeSpec("naver").variant} className="h-5 whitespace-nowrap border border-border/60 px-2 text-[10px]">
-                            네이버
-                          </Badge>
-                        )}
-                        {isAdmin && <span className="whitespace-nowrap">관리자</span>}
-                      </div>
-
-                      <Link href="/mypage?tab=points" onClick={() => setOpen(false)} className="inline-flex min-w-0 items-center gap-1.5 text-xs font-semibold tabular-nums text-foreground/80 hover:text-foreground" aria-label="포인트 보기">
+                      <Link href="/mypage?tab=points" onClick={() => setOpen(false)} className="mt-1 inline-flex min-w-0 items-center gap-1.5 text-xs font-semibold tabular-nums text-muted-foreground hover:text-foreground" aria-label="포인트 보기">
                         <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-background text-[10px] font-bold text-muted-foreground">P</span>
                         {pointsStatus === "loading" ? (
                           <>
@@ -735,7 +729,7 @@ const Header = () => {
                   <div className="grid grid-cols-2 gap-2">
                     <Button
                       variant="outline"
-                      className="relative h-9 w-full justify-center gap-2 rounded-lg border-border bg-background hover:bg-secondary"
+                      className="relative h-10 w-full justify-center gap-2 rounded-xl border-border bg-background hover:bg-secondary"
                       onClick={() => {
                         setOpen(false);
                         router.push("/messages");
@@ -752,7 +746,7 @@ const Header = () => {
 
                     <Button
                       variant="outline"
-                      className="relative h-9 w-full justify-center gap-2 rounded-lg border-border bg-background hover:bg-secondary"
+                      className="relative h-10 w-full justify-center gap-2 rounded-xl border-border bg-background hover:bg-secondary"
                       onClick={() => {
                         setOpen(false);
                         router.push("/cart");
@@ -779,13 +773,12 @@ const Header = () => {
 
                     <Button
                       variant="outline"
-                      className="h-9 w-full justify-center gap-2 rounded-xl transition-[background-color,color,border-color,box-shadow,opacity] duration-200"
+                      className="h-10 w-full justify-center rounded-xl transition-[background-color,color,border-color,box-shadow,opacity] duration-200"
                       onClick={() => {
                         setOpen(false);
                         router.push("/board/event");
                       }}
                     >
-                      <Gift className="h-4 w-4" />
                       이벤트
                     </Button>
 
