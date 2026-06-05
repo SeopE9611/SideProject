@@ -1,21 +1,31 @@
 "use client";
 import AsyncState from "@/components/system/AsyncState";
+import type { HomePreviewNotice } from "@/lib/home/home-preview";
 import { Bell, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import useSWR from "swr";
 
-type Notice = { _id: string; title: string; createdAt: string };
+type Notice = HomePreviewNotice;
 const fetcher = async (u: string) => {
   const res = await fetch(u, { credentials: "include" });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.json();
 };
 
-export default function HomeNoticePreview() {
+type HomeNoticePreviewProps = {
+  initialItems?: Notice[];
+};
+
+export default function HomeNoticePreview({
+  initialItems,
+}: HomeNoticePreviewProps) {
   const { data, error, isLoading, mutate } = useSWR<{
     ok: boolean;
     items: Notice[];
-  }>("/api/boards?type=notice&excludeCategory=event&limit=5", fetcher);
+  }>("/api/boards?type=notice&excludeCategory=event&limit=5", fetcher, {
+    fallbackData: initialItems ? { ok: true, items: initialItems } : undefined,
+    revalidateOnMount: initialItems ? false : undefined,
+  });
   const items = data?.ok ? data.items : [];
   const hasError = Boolean(error) || (data && !data.ok);
 

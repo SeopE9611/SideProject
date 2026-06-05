@@ -21,6 +21,7 @@ import {
   SIGNUP_BONUS_POINTS,
   SIGNUP_BONUS_START_DATE,
 } from "@/lib/points.policy";
+import type { HomePreviewData } from "@/lib/home/home-preview";
 import { cn } from "@/lib/utils";
 import {
   BadgeCheck,
@@ -201,7 +202,11 @@ const processStepSurfaceClass =
 const brandRailClass =
   "relative flex max-w-full flex-nowrap items-center gap-2 overflow-x-auto overscroll-x-contain pb-3 [scrollbar-color:hsl(var(--muted-foreground)/0.15)_transparent] [scrollbar-width:thin] bp-sm:gap-2.5 [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-muted-foreground/10 hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/30";
 
-export default function Home() {
+type HomePageClientProps = {
+  initialHomeData?: HomePreviewData | null;
+};
+
+export default function Home({ initialHomeData }: HomePageClientProps) {
   const [activeBrand, setActiveBrand] = useState<BrandKey>("all");
   const [activeStringBrand, setActiveStringBrand] =
     useState<StringBrandKey>("all");
@@ -285,14 +290,23 @@ export default function Home() {
   const communitySectionRef = useRef<HTMLElement | null>(null);
   const stringsSectionRef = useRef<HTMLElement | null>(null);
   const racketsSectionRef = useRef<HTMLElement | null>(null);
-  const [shouldLoadCommunity, setShouldLoadCommunity] = useState(false);
-  const [shouldLoadStrings, setShouldLoadStrings] = useState(false);
-  const [shouldLoadRackets, setShouldLoadRackets] = useState(false);
-  const stringsFetchedRef = useRef(false);
+  const hasInitialProducts = Boolean(initialHomeData?.products);
+  const hasInitialRackets = Boolean(initialHomeData?.rackets);
+  const hasInitialCommunity = Boolean(
+    initialHomeData?.notices || initialHomeData?.marketPosts,
+  );
+  const [shouldLoadCommunity, setShouldLoadCommunity] =
+    useState(hasInitialCommunity);
+  const [shouldLoadStrings, setShouldLoadStrings] =
+    useState(hasInitialProducts);
+  const [shouldLoadRackets, setShouldLoadRackets] = useState(hasInitialRackets);
+  const stringsFetchedRef = useRef(hasInitialProducts);
   const [stringByBrand, setStringByBrand] = useState<
     Record<string, ApiProduct[]>
   >({});
-  const [allProductsTotal, setAllProductsTotal] = useState(0);
+  const [allProductsTotal, setAllProductsTotal] = useState(
+    initialHomeData?.products?.total ?? 0,
+  );
   const [stringTotalsByBrand, setStringTotalsByBrand] = useState<
     Record<string, number>
   >({});
@@ -379,8 +393,12 @@ export default function Home() {
   }, []);
 
   // 전체 상품 + 로딩
-  const [allProducts, setAllProducts] = useState<ApiProduct[]>([]);
-  const [loading, setLoading] = useState(true);
+  // 홈 공개 미리보기 데이터는 사용자별 데이터가 아니므로 서버 initialData로 먼저 렌더링해
+  // 초기 빈 화면/스켈레톤 시간을 줄이고, 클라이언트 fetch는 실패/재시도 fallback으로 유지한다.
+  const [allProducts, setAllProducts] = useState<ApiProduct[]>(
+    initialHomeData?.products?.items ?? [],
+  );
+  const [loading, setLoading] = useState(!hasInitialProducts);
   const [productsError, setProductsError] = useState(false);
 
   // 탭별 데이터 캐시: brand -> items
@@ -403,10 +421,12 @@ export default function Home() {
       salePrice?: number;
     };
   };
-  const [rackByBrand, setRackByBrand] = useState<Record<string, RItem[]>>({});
+  const [rackByBrand, setRackByBrand] = useState<Record<string, RItem[]>>(
+    initialHomeData?.rackets ? { all: initialHomeData.rackets.items } : {},
+  );
   const [racketTotalsByBrand, setRacketTotalsByBrand] = useState<
     Record<string, number>
-  >({});
+  >(initialHomeData?.rackets ? { all: initialHomeData.rackets.total } : {});
   const [racketsLoadingByBrand, setRacketsLoadingByBrand] = useState<
     Record<string, boolean>
   >({});
@@ -997,8 +1017,10 @@ export default function Home() {
           <div className="grid gap-5 bp-sm:gap-6 bp-xl:grid-cols-2">
             {shouldLoadCommunity ? (
               <>
-                <HomeNoticePreview />
-                <HomeMarketPreview />
+                <HomeNoticePreview initialItems={initialHomeData?.notices} />
+                <HomeMarketPreview
+                  initialItems={initialHomeData?.marketPosts}
+                />
               </>
             ) : (
               <>
