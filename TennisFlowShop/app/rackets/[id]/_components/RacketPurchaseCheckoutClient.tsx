@@ -275,7 +275,7 @@ export default function RacketPurchaseCheckoutClient({ racket }: { racket: Racke
           <div className="space-y-1">
             <p className="text-sm font-semibold text-foreground">새로운 라켓 구매 흐름을 이용할 수 있어요</p>
             <p className="text-sm text-muted-foreground">
-              라켓과 스트링을 함께 선택한 뒤 한 번에 결제하는 새 흐름을 권장합니다. 기존 결제 진행 중이거나 복구 링크로 들어오신 경우에는 현재 화면에서 계속 진행할 수 있어요.
+              라켓과 스트링을 함께 선택한 뒤 한{'\u00A0'}번에 결제하는 새 흐름을 권장합니다. 기존 결제 진행 중이거나 복구 링크로 들어오신 경우에는 현재 화면에서 계속 진행할 수 있어요.
             </p>
             <p className="text-xs text-muted-foreground">현재 화면에서도 기존 결제 흐름은 계속 사용할 수 있습니다.</p>
           </div>

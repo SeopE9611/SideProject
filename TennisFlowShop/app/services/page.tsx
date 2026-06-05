@@ -147,7 +147,7 @@ export default async function ServicesPage() {
     {
       badge: "추천",
       icon: <Grid2X2 className="h-7 w-7" />,
-      title: "새 스트링 구매 후 장착",
+      title: "새\u00A0스트링 구매 후 장착",
       description: "스트링을 새로 고르고 기존 라켓에 바로 장착 신청까지 이어갑니다.",
       steps: "스트링 선택 → 결제/장착 정보 입력 → 접수 완료",
       href: "/products?from=apply",
@@ -158,7 +158,7 @@ export default async function ServicesPage() {
       badge: "구매 연계",
       icon: <MdSportsTennis className="h-7 w-7" />,
       title: "라켓 구매와 함께 장착",
-      description: "중고 라켓을 구매하면서 원하는 스트링 세팅까지 한 번에 진행합니다.",
+      description: "중고 라켓을 구매하면서 원하는 스트링 세팅까지 한\u00A0번에 진행합니다.",
       steps: "라켓 선택 → 스트링 선택 → 결제 → 장착 접수",
       href: "/rackets?from=apply",
       cta: "라켓 고르고 신청하기",
@@ -278,7 +278,7 @@ export default async function ServicesPage() {
                     <Badge variant="secondary">도움이 필요할 때</Badge>
                     <div className="space-y-2">
                       <h3 className="break-keep text-lg font-bold text-foreground bp-sm:text-xl">잘 모르겠다면 상담과 안내를 먼저 확인하세요</h3>
-                      <p className="text-sm leading-relaxed text-muted-foreground">추천 도우미, 가격 안내, FAQ, 전화 상담을 한곳에 모았습니다. 테니스 스트링 쇼핑은 첫 번째 신청 카드에서 바로 이어갈 수 있어요.</p>
+                      <p className="text-sm leading-relaxed text-muted-foreground">추천 도우미, 가격 안내, FAQ, 전화 상담을 한{'\u00A0'}곳에 모았습니다. 테니스 스트링 쇼핑은 첫 번째 신청 카드에서 바로 이어갈 수 있어요.</p>
                     </div>
                     <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
                       {serviceNoticeChips.map((notice) => (
