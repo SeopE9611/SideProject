@@ -102,6 +102,22 @@ export default function StringRecommendResultCard({
             <li key={reason}>{reason}</li>
           ))}
         </ul>
+        {result.matchSummary && result.matchSummary.length > 0 ? (
+          <div className="rounded-lg border bg-background p-3 text-sm">
+            <p className="font-medium">추천 기준</p>
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {result.matchSummary.map((item) => (
+                <Badge
+                  key={`${item.label}-${item.value}`}
+                  variant="secondary"
+                  className="font-normal"
+                >
+                  {item.label}: {item.value}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        ) : null}
         <div className="rounded-lg border bg-muted/40 p-3 text-sm">
           <p className="font-medium">
             {result.tensionRange.label}: {result.tensionRange.min}~

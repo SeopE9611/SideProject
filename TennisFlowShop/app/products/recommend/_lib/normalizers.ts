@@ -58,6 +58,22 @@ export function normalizeRecommendableProduct(
     image: pickImage(raw),
     material: typeof raw.material === "string" ? raw.material : undefined,
     gauge: typeof raw.gauge === "string" ? raw.gauge : undefined,
+    gaugeOptions: Array.isArray(raw.gaugeOptions)
+      ? raw.gaugeOptions.map(String).filter(Boolean)
+      : undefined,
+    gaugeInventories: Array.isArray(raw.gaugeInventories)
+      ? raw.gaugeInventories
+      : undefined,
+    color: typeof raw.color === "string" ? raw.color : undefined,
+    colorOptions: Array.isArray(raw.colorOptions)
+      ? raw.colorOptions.map(String).filter(Boolean)
+      : undefined,
+    colorInventories: Array.isArray(raw.colorInventories)
+      ? raw.colorInventories
+      : undefined,
+    variantInventories: Array.isArray(raw.variantInventories)
+      ? raw.variantInventories
+      : undefined,
     mountingFee: toOptionalFiniteNumber(raw.mountingFee),
     shippingFee: toNumber(raw.shippingFee, 0),
     features: {
@@ -86,6 +102,7 @@ export function normalizeRecommendableProduct(
       allowBackorder: toBoolean(inventoryRaw.allowBackorder),
       isSale: toBoolean(inventoryRaw.isSale),
       salePrice: toNumber(inventoryRaw.salePrice, 0),
+      hideGaugeStock: toBoolean(inventoryRaw.hideGaugeStock),
     },
   };
 }
