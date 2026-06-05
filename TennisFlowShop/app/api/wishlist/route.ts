@@ -118,11 +118,11 @@ function compactInventoryRows(product: any) {
     variantInventories: normalizeVariantRows(product),
     colorInventories: normalizeColorRows(product).map((row) => ({
       ...row,
-      label: row.label ? getColorLabel(row) : row.label,
+      label: getColorLabel(row),
     })),
     gaugeInventories: normalizeGaugeRows(product).map((row) => ({
       ...row,
-      label: row.label ? getGaugeLabel(row) : row.label,
+      label: getGaugeLabel(row),
     })),
   };
 }

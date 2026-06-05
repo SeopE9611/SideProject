@@ -503,7 +503,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
   const { data: adminReviews, mutate: mutateAdminReviews } = useSWR(activeTab === "reviews" && isAdmin ? `/api/reviews/admin?productId=${product._id}&limit=${reviewsCount}` : null, fetcher, { revalidateOnFocus: false });
 
-  const { has, toggle, isValidating } = useWishlist();
+  const { has, findItem, updateOptions, toggle } = useWishlist();
   const wishState = has(product._id);
   const isWishlisted = wishState === true;
   // 위시리스트 미확정(unknown) 상태를 false(찜 안 함)와 분리한다.
@@ -723,6 +723,20 @@ export default function ProductDetailClient({ product }: { product: any }) {
           selectedColorImage: selectedVariant?.colorImage?.trim() || selectedColorRow.image || colorImage || product.images?.[0] || "/placeholder.svg",
         }
       : {};
+  const wishlistOptionPayload = {
+    selectedGauge: selectedGauge || undefined,
+    ...selectedColorPayload,
+  };
+  const currentWishlistItem = findItem(product._id.toString());
+  const hasCurrentWishlistOption = Boolean(wishlistOptionPayload.selectedGauge || wishlistOptionPayload.selectedColor);
+  const isDifferentWishlistOption =
+    currentWishlistItem?.selectedGauge !== wishlistOptionPayload.selectedGauge ||
+    currentWishlistItem?.selectedColor !== wishlistOptionPayload.selectedColor;
+  const shouldUpdateWishlistOption =
+    isWishlisted &&
+    hasCurrentWishlistOption &&
+    (!currentWishlistItem?.hasSelectedOption || isDifferentWishlistOption);
+  const wishlistButtonLabel = shouldUpdateWishlistOption ? "선택 옵션으로 업데이트" : "위시리스트";
 
   const requireGaugeSelection = () => {
     if (!isStringProduct || gaugeRows.length === 0) return true;
@@ -884,10 +898,13 @@ export default function ProductDetailClient({ product }: { product: any }) {
     if (busy || isWishlistUnknown) return;
     setBusy(true);
     try {
-      await toggle(product._id.toString(), {
-        selectedGauge: selectedGauge || undefined,
-        ...selectedColorPayload,
-      }); // 항상 서버에 요청
+      if (shouldUpdateWishlistOption) {
+        await updateOptions(product._id.toString(), wishlistOptionPayload);
+        showSuccessToast("위시리스트 옵션을 업데이트했습니다.");
+        return;
+      }
+
+      await toggle(product._id.toString(), wishlistOptionPayload); // 항상 서버에 요청
       showSuccessToast(isWishlisted ? "위시리스트에서 제거했습니다." : "위시리스트에 추가했습니다.");
     } catch (e: any) {
       if (e?.message === "unauthorized") {
@@ -901,6 +918,25 @@ export default function ProductDetailClient({ product }: { product: any }) {
       setBusy(false);
     }
   };
+
+  const renderWishlistButton = () => (
+    <Button
+      variant="outline"
+      disabled={busy || isWishlistUnknown}
+      onClick={handleWishlist}
+      size="lg"
+      className={cn(
+        "h-auto min-h-12 w-full text-sm sm:text-base",
+        isWishlisted ? "border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/15" : "bg-background",
+        isWishlistUnknown && "cursor-not-allowed opacity-70",
+      )}
+      aria-disabled={busy || isWishlistUnknown}
+      aria-label={isWishlistUnknown ? "위시리스트 상태 확인 중" : wishlistButtonLabel}
+    >
+      <Heart className={`mr-2 h-4 w-4 sm:h-5 sm:w-5 ${isWishlisted ? "text-destructive fill-current" : isWishlistUnknown ? "text-muted-foreground/70" : ""}`} />
+      {wishlistButtonLabel}
+    </Button>
+  );
 
   const nextImage = () => {
     if (images.length === 0) return;
@@ -1188,10 +1224,13 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
                     <div className="flex flex-col gap-3 sm:gap-3.5">
                       {(hasVariantInventories ? selectedVariantSoldOut : product.inventory?.manageStock && product.inventory.stock <= 0) ? (
-                        <Button disabled variant="secondary" size="tall" wrap="normal" className="min-h-12 w-full sm:min-h-14">
-                          <X className="mr-2 h-5 w-5" />
-                          {hasVariantInventories ? "선택한 색상/게이지 조합이 품절되었습니다" : "재고가 소진되었습니다"}
-                        </Button>
+                        <div className="space-y-3">
+                          <Button disabled variant="secondary" size="tall" wrap="normal" className="min-h-12 w-full sm:min-h-14">
+                            <X className="mr-2 h-5 w-5" />
+                            {hasVariantInventories ? "선택한 색상/게이지 조합이 품절되었습니다" : "재고가 소진되었습니다"}
+                          </Button>
+                          {renderWishlistButton()}
+                        </div>
                       ) : (
                         <>
                           {ENABLE_STRING_STANDALONE_ORDER && (
@@ -1231,22 +1270,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                               <ShoppingCart className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                               {cartCtaLabel}
                             </Button>
-                            <Button
-                              variant="outline"
-                              disabled={busy || isWishlistUnknown}
-                              onClick={handleWishlist}
-                              size="lg"
-                              className={cn(
-                                "h-auto min-h-12 w-full text-sm sm:text-base",
-                                isWishlisted ? "border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/15" : "bg-background",
-                                isWishlistUnknown && "cursor-not-allowed opacity-70",
-                              )}
-                              aria-disabled={busy || isWishlistUnknown}
-                              aria-label={isWishlistUnknown ? "위시리스트 상태 확인 중" : "위시리스트"}
-                            >
-                              <Heart className={`mr-2 h-4 w-4 sm:h-5 sm:w-5 ${isWishlisted ? "text-destructive fill-current" : isWishlistUnknown ? "text-muted-foreground/70" : ""}`} />
-                              위시리스트
-                            </Button>
+                            {renderWishlistButton()}
                           </div>
                         </>
                       )}
