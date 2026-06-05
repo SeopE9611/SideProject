@@ -1105,7 +1105,10 @@ export default function CheckoutPage() {
                     <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold shadow-sm bp-sm:h-8 bp-sm:w-8 bp-sm:text-sm">
                       <CheckCircle className="h-3.5 w-3.5 bp-sm:h-4 bp-sm:w-4" />
                     </span>
-                    <span className="whitespace-nowrap text-xs font-semibold text-foreground bp-sm:text-sm"><span className="bp-sm:hidden">스트링</span><span className="hidden bp-sm:inline">{stepperStep1Label}</span></span>
+                    <span className="whitespace-nowrap text-xs font-semibold text-foreground bp-sm:text-sm">
+                      <span className="bp-sm:hidden">스트링</span>
+                      <span className="hidden bp-sm:inline">{stepperStep1Label}</span>
+                    </span>
                   </div>
 
                   <div className="h-[2px] w-4 shrink-0 rounded-full bg-primary/40 bp-sm:w-8" />
@@ -1113,7 +1116,10 @@ export default function CheckoutPage() {
                   {/* 2) 결제/장착 정보: 현재 페이지(현재 단계) */}
                   <div className="flex shrink-0 items-center gap-1.5 bp-sm:gap-2.5">
                     <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold shadow-sm ring-2 ring-primary/20 bp-sm:h-8 bp-sm:w-8 bp-sm:text-sm bp-sm:ring-4">2</span>
-                    <span className="whitespace-nowrap text-xs font-semibold text-foreground bp-sm:text-sm"><span className="bp-sm:hidden">정보 입력</span><span className="hidden bp-sm:inline">결제·장착 정보</span></span>
+                    <span className="whitespace-nowrap text-xs font-semibold text-foreground bp-sm:text-sm">
+                      <span className="bp-sm:hidden">정보 입력</span>
+                      <span className="hidden bp-sm:inline">결제·장착 정보</span>
+                    </span>
                   </div>
 
                   <div className="h-[2px] w-4 shrink-0 rounded-full bg-border bp-sm:w-8" />
@@ -1121,7 +1127,10 @@ export default function CheckoutPage() {
                   {/* 3) 접수 완료: 결제와 함께 서비스 신청이 함께 접수됨 */}
                   <div className="flex shrink-0 items-center gap-1.5 bp-sm:gap-2.5">
                     <span className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-border bg-secondary text-muted-foreground text-xs font-bold bp-sm:h-8 bp-sm:w-8 bp-sm:text-sm">3</span>
-                    <span className="whitespace-nowrap text-xs font-medium text-foreground/80 bp-sm:text-sm"><span className="bp-sm:hidden">완료</span><span className="hidden bp-sm:inline">접수 완료</span></span>
+                    <span className="whitespace-nowrap text-xs font-medium text-foreground/80 bp-sm:text-sm">
+                      <span className="bp-sm:hidden">완료</span>
+                      <span className="hidden bp-sm:inline">접수 완료</span>
+                    </span>
                   </div>
                 </div>
               </nav>
@@ -1440,25 +1449,27 @@ export default function CheckoutPage() {
                       {needsShippingAddress && (
                         <>
                           <div className="space-y-2">
-                            <div className="flex items-center justify-between gap-3">
-                              <Label htmlFor="address-postal" className="flex items-center gap-2 text-sm">
-                                <Home className="h-4 w-4 text-foreground" />
-                                우편번호
-                              </Label>
+                            <Label htmlFor="address-postal" className="flex items-center gap-2 text-sm">
+                              <Home className="h-4 w-4 text-foreground" />
+                              우편번호
+                            </Label>
+
+                            <div className="flex gap-2 max-w-[400px]">
+                              <Input id="address-postal" readOnly value={postalCode} placeholder="우편번호" className={cn("h-10 flex-1 cursor-not-allowed border-2 bg-muted", showPostalCodeError && "border-destructive/30")} />
                               <Button
                                 type="button"
                                 variant="outline"
-                                size="sm"
                                 onClick={() => {
                                   touchField("postalCode");
                                   handleFindPostcode();
                                 }}
-                                className=""
+                                className="h-10 shrink-0"
                               >
                                 우편번호 찾기
                               </Button>
                             </div>
-                            <Input id="address-postal" readOnly value={postalCode} placeholder="우편번호" className={cn("h-10 max-w-[200px] cursor-not-allowed border-2 bg-muted", showPostalCodeError && "border-destructive/30")} />
+
+                            {/* 에러 메시지 영역 */}
                             <div className="min-h-[16px]">{showPostalCodeError && <p className="text-xs text-destructive">{fieldErrors.postalCode}</p>}</div>
                           </div>
 
@@ -1485,7 +1496,13 @@ export default function CheckoutPage() {
                               <MessageSquare className="h-4 w-4 text-foreground" />
                               배송 요청사항
                             </Label>
-                            <Textarea id="delivery-request" value={deliveryRequest} onChange={(e) => setDeliveryRequest(e.target.value)} placeholder="배송 요청사항만 입력하세요" className="min-h-[76px] border-2 transition-colors focus:border-border" />
+                            <Textarea
+                              id="delivery-request"
+                              value={deliveryRequest}
+                              onChange={(e) => setDeliveryRequest(e.target.value)}
+                              placeholder="배송 요청사항만 입력하세요"
+                              className="min-h-[76px] border-2 transition-colors focus:border-border"
+                            />
                           </div>
 
                           <div className="rounded-lg border border-border bg-muted p-3">
@@ -1892,37 +1909,37 @@ export default function CheckoutPage() {
                           onSuccessNavigationAbort={() => setIsIntentionalSuccessNavigation(false)}
                           payableAmount={payableTotalPrice}
                           payload={{
-                          items: orderItems.map((item) => ({
-                            productId: item.id,
-                            quantity: item.quantity,
-                            kind: item.kind ?? "product",
-                            selectedGauge: item.selectedGauge,
-                            selectedColor: item.selectedColor,
-                            selectedColorLabel: item.selectedColorLabel,
-                            selectedColorHex: item.selectedColorHex,
-                            selectedColorImage: item.selectedColorImage,
-                          })),
-                          shippingInfo: {
-                            name: name.trim(),
-                            phone: phone.replace(/\D/g, ""),
-                            address: address.trim(),
-                            addressDetail: addressDetail.trim(),
-                            postalCode: postalCode.replace(/\D/g, ""),
-                            depositor: "나이스결제",
-                            deliveryRequest: deliveryRequest.trim(),
-                            deliveryMethod,
-                            withStringService,
-                          },
-                          paymentInfo: { method: "나이스페이" },
-                          totalPrice,
-                          shippingFee,
-                          serviceFee: finalServiceFee,
-                          pointsToUse: appliedPoints,
-                          guestInfo: !user ? { name: name.trim(), phone: phone.replace(/\D/g, ""), email: email.trim().toLowerCase() } : undefined,
-                          isStringServiceApplied: withStringService,
-                          servicePickupMethod,
-                          stringingApplicationInput: withStringService && stringingApplicationInput ? stringingApplicationInput : undefined,
-                        }}
+                            items: orderItems.map((item) => ({
+                              productId: item.id,
+                              quantity: item.quantity,
+                              kind: item.kind ?? "product",
+                              selectedGauge: item.selectedGauge,
+                              selectedColor: item.selectedColor,
+                              selectedColorLabel: item.selectedColorLabel,
+                              selectedColorHex: item.selectedColorHex,
+                              selectedColorImage: item.selectedColorImage,
+                            })),
+                            shippingInfo: {
+                              name: name.trim(),
+                              phone: phone.replace(/\D/g, ""),
+                              address: address.trim(),
+                              addressDetail: addressDetail.trim(),
+                              postalCode: postalCode.replace(/\D/g, ""),
+                              depositor: "나이스결제",
+                              deliveryRequest: deliveryRequest.trim(),
+                              deliveryMethod,
+                              withStringService,
+                            },
+                            paymentInfo: { method: "나이스페이" },
+                            totalPrice,
+                            shippingFee,
+                            serviceFee: finalServiceFee,
+                            pointsToUse: appliedPoints,
+                            guestInfo: !user ? { name: name.trim(), phone: phone.replace(/\D/g, ""), email: email.trim().toLowerCase() } : undefined,
+                            isStringServiceApplied: withStringService,
+                            servicePickupMethod,
+                            stringingApplicationInput: withStringService && stringingApplicationInput ? stringingApplicationInput : undefined,
+                          }}
                         />
                       </div>
                     ) : null}
