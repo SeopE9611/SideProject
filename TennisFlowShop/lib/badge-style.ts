@@ -29,16 +29,16 @@ export function badgeToneClass(tone: BadgeSemanticTone) {
 }
 
 const IMAGE_BADGE_SURFACE =
-  "border bg-background shadow-sm dark:bg-card";
+  "border-transparent shadow-md ring-1 ring-white/25";
 
 const IMAGE_BADGE = {
-  neutral: `${IMAGE_BADGE_SURFACE} border-border text-foreground`,
-  info: `${IMAGE_BADGE_SURFACE} border-info/55 text-info`,
-  success: `${IMAGE_BADGE_SURFACE} border-success/55 text-success`,
-  warning: `${IMAGE_BADGE_SURFACE} border-warning/60 text-warning`,
-  danger: `${IMAGE_BADGE_SURFACE} border-destructive/60 text-destructive`,
-  brand: `${IMAGE_BADGE_SURFACE} border-primary/55 text-primary`,
-  destructive: `${IMAGE_BADGE_SURFACE} border-destructive/60 text-destructive`,
+  neutral: `${IMAGE_BADGE_SURFACE} bg-foreground text-background`,
+  info: `${IMAGE_BADGE_SURFACE} bg-info text-info-foreground`,
+  success: `${IMAGE_BADGE_SURFACE} bg-success text-success-foreground`,
+  warning: `${IMAGE_BADGE_SURFACE} bg-warning text-warning-foreground`,
+  danger: `${IMAGE_BADGE_SURFACE} bg-destructive text-destructive-foreground`,
+  brand: `${IMAGE_BADGE_SURFACE} bg-primary text-primary-foreground`,
+  destructive: `${IMAGE_BADGE_SURFACE} bg-destructive text-destructive-foreground`,
 } as const;
 
 export type BadgeSurface = "inline" | "image";
@@ -49,13 +49,16 @@ export function imageBadgeClass(tone: BadgeSemanticTone) {
 
 export type MerchandisingImageBadgeLabel = "NEW" | "추천";
 
-export function merchandisingImageBadgeClass(label: MerchandisingImageBadgeLabel) {
-  if (label === "NEW") {
-    return "h-7 rounded-lg border border-blue-300 bg-blue-100 px-3 text-xs font-bold leading-none text-blue-700 dark:border-blue-700 dark:bg-blue-950/60 dark:text-blue-200";
-  }
+export type MerchandisingImageBadgeVariant = "info_solid" | "success_solid";
 
-  return "h-7 rounded-lg border border-emerald-300 bg-emerald-100 px-3 text-xs font-bold leading-none text-emerald-700 dark:border-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-200";
+export function merchandisingImageBadgeVariant(
+  label: MerchandisingImageBadgeLabel,
+): MerchandisingImageBadgeVariant {
+  return label === "NEW" ? "info_solid" : "success_solid";
 }
+
+export const merchandisingImageBadgeClass =
+  "h-7 px-3 text-xs font-bold leading-none shadow-md ring-1 ring-white/25";
 
 export const SEMANTIC_BADGE_VARIANT = {
   neutral: "neutral",

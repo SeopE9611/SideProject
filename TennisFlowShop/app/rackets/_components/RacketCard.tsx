@@ -11,7 +11,7 @@ import { Briefcase, Eye, ShoppingCart } from "lucide-react";
 import useSWR from "swr";
 import { racketBrandLabel } from "@/lib/constants";
 import StatusBadge from "@/components/badges/StatusBadge";
-import { badgeToneClass, badgeToneVariant, merchandisingImageBadgeClass, usedBadgeMeta } from "@/lib/badge-style";
+import { badgeToneClass, badgeToneVariant, merchandisingImageBadgeClass, merchandisingImageBadgeVariant, usedBadgeMeta } from "@/lib/badge-style";
 import { cn } from "@/lib/utils";
 import { getEffectiveRacketPrice, getRacketDiscountRate } from "@/lib/racket-pricing";
 
@@ -199,10 +199,10 @@ const RacketCard = React.memo(
     const marketingBadges = (
       <div className="absolute left-3 top-3 z-10 flex flex-wrap gap-1.5">
         {racket.marketing?.isFeatured && (
-          <Badge className={cn(merchandisingImageBadgeClass("추천"))}>추천</Badge>
+          <Badge variant={merchandisingImageBadgeVariant("추천")} shape="pill" className={cn(merchandisingImageBadgeClass)}>추천</Badge>
         )}
         {racket.marketing?.isNew && (
-          <Badge className={cn(merchandisingImageBadgeClass("NEW"))}>NEW</Badge>
+          <Badge variant={merchandisingImageBadgeVariant("NEW")} shape="pill" className={cn(merchandisingImageBadgeClass)}>NEW</Badge>
         )}
       </div>
     );

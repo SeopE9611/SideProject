@@ -167,7 +167,7 @@ export default function FinderRacketCard({ racket }: { racket: FinderRacket }) {
             {cond && (
               <div
                 className={cn(
-                  "absolute top-2 left-2 rounded-lg px-2 py-1 text-xs font-bold",
+                  "absolute top-2 left-2 rounded-full px-2 py-1 text-xs font-bold",
                   cond.className,
                 )}
               >
