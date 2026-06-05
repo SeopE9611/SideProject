@@ -30,13 +30,17 @@ function inferNicepayMode(apiBaseRaw: string): NicepayMode {
 }
 
 function getNicepayMeta() {
-  const approveApiBase = String(process.env.NICEPAY_APPROVE_API_BASE ?? "").trim();
+  const approveApiBase = String(
+    process.env.NICEPAY_APPROVE_API_BASE ?? "",
+  ).trim();
   const hasClientId = Boolean(
     String(
       process.env.NICEPAY_CLIENT_KEY ?? process.env.NICEPAY_CLIENT_ID ?? "",
     ).trim(),
   );
-  const hasSecretKey = Boolean(String(process.env.NICEPAY_SECRET_KEY ?? "").trim());
+  const hasSecretKey = Boolean(
+    String(process.env.NICEPAY_SECRET_KEY ?? "").trim(),
+  );
   const enabledRaw = String(
     process.env.NEXT_PUBLIC_ENABLE_NICE_PAYMENTS ??
       process.env.ENABLE_NICE_PAYMENTS ??
@@ -117,16 +121,14 @@ export async function PATCH(req: Request) {
       : (prevValue.stripeSecretKey ?? ""),
   };
 
-  await db
-    .collection<any>(SETTINGS_COLLECTION)
-    .updateOne(
-      { _id: DOC_ID },
-      {
-        $set: { value: toSave, updatedAt: new Date() },
-        $setOnInsert: { _id: DOC_ID },
-      },
-      { upsert: true },
-    );
+  await db.collection<any>(SETTINGS_COLLECTION).updateOne(
+    { _id: DOC_ID },
+    {
+      $set: { value: toSave, updatedAt: new Date() },
+      $setOnInsert: { _id: DOC_ID },
+    },
+    { upsert: true },
+  );
 
   await appendAdminAudit(
     db,

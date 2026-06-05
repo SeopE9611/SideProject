@@ -55,9 +55,7 @@ export async function ensureRevenueReportSnapshotIndexes(db: Db) {
 function isNamespaceNotFoundError(error: unknown): boolean {
   if (typeof error !== "object" || error === null) return false;
   const maybeError = error as { code?: unknown; codeName?: unknown };
-  return (
-    maybeError.codeName === "NamespaceNotFound" || maybeError.code === 26
-  );
+  return maybeError.codeName === "NamespaceNotFound" || maybeError.code === 26;
 }
 
 function isNamespaceExistsError(error: unknown): boolean {

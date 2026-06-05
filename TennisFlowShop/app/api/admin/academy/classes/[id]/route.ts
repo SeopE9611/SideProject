@@ -21,8 +21,10 @@ const COLLECTION_NAME = "academy_classes";
 const APPLICATION_COLLECTION_NAME = "academy_lesson_applications";
 const DETAIL_APPLICATION_LIMIT = 50;
 
-
-type ApplicationStats = Record<AcademyLessonApplicationStatus | "total", number>;
+type ApplicationStats = Record<
+  AcademyLessonApplicationStatus | "total",
+  number
+>;
 
 function createEmptyApplicationStats(): ApplicationStats {
   return {
@@ -71,7 +73,8 @@ function serializeClass(doc: Document) {
     instructorName:
       typeof doc.instructorName === "string" ? doc.instructorName : null,
     location: typeof doc.location === "string" ? doc.location : null,
-    scheduleText: typeof doc.scheduleText === "string" ? doc.scheduleText : null,
+    scheduleText:
+      typeof doc.scheduleText === "string" ? doc.scheduleText : null,
     capacity: typeof doc.capacity === "number" ? doc.capacity : null,
     enrolledCount:
       typeof doc.enrolledCount === "number" ? doc.enrolledCount : 0,
@@ -90,10 +93,7 @@ function buildClassApplicationFilter(classId: string): Filter<Document> {
   }
 
   return {
-    $or: [
-      { classId: { $in: matchers } },
-      { "classSnapshot.classId": classId },
-    ],
+    $or: [{ classId: { $in: matchers } }, { "classSnapshot.classId": classId }],
   };
 }
 
@@ -118,7 +118,9 @@ function serializeApplicationSummary(doc: Document) {
     status: typeof doc.status === "string" ? doc.status : "submitted",
     statusLabel: getAcademyApplicationStatusLabel(doc.status),
     hasCustomerMessage: customerMessage.length > 0,
-    customerMessagePreview: customerMessage ? customerMessage.slice(0, 80) : null,
+    customerMessagePreview: customerMessage
+      ? customerMessage.slice(0, 80)
+      : null,
     createdAt: serializeValue(doc.createdAt) ?? null,
     updatedAt: serializeValue(doc.updatedAt) ?? null,
   };
@@ -151,10 +153,10 @@ async function getClassApplicationDetail(db: Db, classId: string) {
       .limit(DETAIL_APPLICATION_LIMIT)
       .toArray(),
     collection
-      .aggregate<{ _id: AcademyLessonApplicationStatus; count: number }>([
-        { $match: filter },
-        { $group: { _id: "$status", count: { $sum: 1 } } },
-      ])
+      .aggregate<{
+        _id: AcademyLessonApplicationStatus;
+        count: number;
+      }>([{ $match: filter }, { $group: { _id: "$status", count: { $sum: 1 } } }])
       .toArray(),
   ]);
 
@@ -182,7 +184,8 @@ function parseOptionalNonNegativeNumber(
   value: unknown,
   fieldLabel: string,
 ): { value: number | null } | { error: string } {
-  if (value === null || value === undefined || value === "") return { value: null };
+  if (value === null || value === undefined || value === "")
+    return { value: null };
   const numeric = typeof value === "number" ? value : Number(value);
   if (!Number.isFinite(numeric) || numeric < 0) {
     return { error: `${fieldLabel}은 0 이상의 숫자로 입력해 주세요.` };
@@ -190,9 +193,9 @@ function parseOptionalNonNegativeNumber(
   return { value: Math.trunc(numeric) };
 }
 
-function validateClassPayload(payload: Record<string, unknown>):
-  | { ok: true; value: ClassPayload }
-  | { ok: false; message: string } {
+function validateClassPayload(
+  payload: Record<string, unknown>,
+): { ok: true; value: ClassPayload } | { ok: false; message: string } {
   const name = typeof payload.name === "string" ? payload.name.trim() : "";
   if (!name) return { ok: false, message: "클래스명을 입력해 주세요." };
   if (name.length > 80) {
@@ -200,7 +203,10 @@ function validateClassPayload(payload: Record<string, unknown>):
   }
 
   const description = normalizeOptionalText(payload.description, 1000);
-  if (typeof payload.description === "string" && payload.description.trim().length > 1000) {
+  if (
+    typeof payload.description === "string" &&
+    payload.description.trim().length > 1000
+  ) {
     return { ok: false, message: "설명은 1000자 이하로 입력해 주세요." };
   }
 
@@ -223,7 +229,10 @@ function validateClassPayload(payload: Record<string, unknown>):
   }
 
   const location = normalizeOptionalText(payload.location, 100);
-  if (typeof payload.location === "string" && payload.location.trim().length > 100) {
+  if (
+    typeof payload.location === "string" &&
+    payload.location.trim().length > 100
+  ) {
     return { ok: false, message: "장소는 100자 이하로 입력해 주세요." };
   }
 
@@ -235,8 +244,12 @@ function validateClassPayload(payload: Record<string, unknown>):
     return { ok: false, message: "일정 안내는 200자 이하로 입력해 주세요." };
   }
 
-  const capacityResult = parseOptionalNonNegativeNumber(payload.capacity, "정원");
-  if ("error" in capacityResult) return { ok: false, message: capacityResult.error };
+  const capacityResult = parseOptionalNonNegativeNumber(
+    payload.capacity,
+    "정원",
+  );
+  if ("error" in capacityResult)
+    return { ok: false, message: capacityResult.error };
 
   const priceResult = parseOptionalNonNegativeNumber(payload.price, "가격");
   if ("error" in priceResult) return { ok: false, message: priceResult.error };
@@ -320,7 +333,8 @@ export async function PATCH(
   }
 
   const body = (await req.json().catch(() => null)) as unknown;
-  const payload = body && typeof body === "object" ? (body as Record<string, unknown>) : {};
+  const payload =
+    body && typeof body === "object" ? (body as Record<string, unknown>) : {};
   const validation = validateClassPayload(payload);
   if (!validation.ok) {
     return NextResponse.json(
@@ -329,11 +343,13 @@ export async function PATCH(
     );
   }
 
-  const updated = await guard.db.collection(COLLECTION_NAME).findOneAndUpdate(
-    { _id: new ObjectId(id) },
-    { $set: { ...validation.value, updatedAt: new Date().toISOString() } },
-    { returnDocument: "after" },
-  );
+  const updated = await guard.db
+    .collection(COLLECTION_NAME)
+    .findOneAndUpdate(
+      { _id: new ObjectId(id) },
+      { $set: { ...validation.value, updatedAt: new Date().toISOString() } },
+      { returnDocument: "after" },
+    );
 
   if (!updated) {
     return NextResponse.json(
@@ -362,11 +378,13 @@ export async function DELETE(
     );
   }
 
-  const updated = await guard.db.collection(COLLECTION_NAME).findOneAndUpdate(
-    { _id: new ObjectId(id) },
-    { $set: { status: "hidden", updatedAt: new Date().toISOString() } },
-    { returnDocument: "after" },
-  );
+  const updated = await guard.db
+    .collection(COLLECTION_NAME)
+    .findOneAndUpdate(
+      { _id: new ObjectId(id) },
+      { $set: { status: "hidden", updatedAt: new Date().toISOString() } },
+      { returnDocument: "after" },
+    );
 
   if (!updated) {
     return NextResponse.json(

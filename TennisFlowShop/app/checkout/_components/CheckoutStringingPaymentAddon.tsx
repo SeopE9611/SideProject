@@ -41,8 +41,13 @@ export default function CheckoutStringingPaymentAddon({
         <p className="text-xs text-foreground/75">
           선택한 결제수단 기준으로 상품과 교체서비스 전체 주문에 적용됩니다.
         </p>
-        <p className="text-xs text-foreground/75">패키지를 사용하지 않으면 교체서비스 비용이 결제금액에 포함됩니다.</p>
-        <p className="text-xs text-foreground/75">패키지를 사용하면 보유 횟수에서 차감되고 결제금액에서 교체서비스 비용이 제외됩니다.</p>
+        <p className="text-xs text-foreground/75">
+          패키지를 사용하지 않으면 교체서비스 비용이 결제금액에 포함됩니다.
+        </p>
+        <p className="text-xs text-foreground/75">
+          패키지를 사용하면 보유 횟수에서 차감되고 결제금액에서 교체서비스
+          비용이 제외됩니다.
+        </p>
       </div>
 
       <div
@@ -125,8 +130,8 @@ export default function CheckoutStringingPaymentAddon({
           </>
         ) : (
           <p className="text-xs text-foreground/75">
-            사용 가능한 교체서비스 패키지가 없어 이번 주문의 교체서비스는 일반 결제로
-            접수됩니다.
+            사용 가능한 교체서비스 패키지가 없어 이번 주문의 교체서비스는 일반
+            결제로 접수됩니다.
           </p>
         )}
       </div>

@@ -25,16 +25,26 @@ export function normalizeMypageTodoStatus(status?: string | null): string {
 function isTerminalCanceledTodoStatus(status?: string | null): boolean {
   const normalized = normalizeMypageTodoStatus(status);
 
-  return normalized === "취소" || normalized === "환불" || normalized === "거절" || normalized === "반려";
+  return (
+    normalized === "취소" ||
+    normalized === "환불" ||
+    normalized === "거절" ||
+    normalized === "반려"
+  );
 }
 
-export function isApplicationTodoActionable(app?: ActivityTodoApplicationLike | null): boolean {
+export function isApplicationTodoActionable(
+  app?: ActivityTodoApplicationLike | null,
+): boolean {
   if (!app) return false;
 
   const status = normalizeMypageTodoStatus(app.status);
   if (isTerminalCanceledTodoStatus(status)) return false;
 
-  return Boolean((app.needsInboundTracking && !app.hasTracking) || (status === "교체완료" && !app.userConfirmedAt));
+  return Boolean(
+    (app.needsInboundTracking && !app.hasTracking) ||
+    (status === "교체완료" && !app.userConfirmedAt),
+  );
 }
 
 export function isOrderTodoActionable(params: {
@@ -50,9 +60,16 @@ export function isOrderTodoActionable(params: {
 
   const isConfirmed = Boolean(params.userConfirmedAt) || status === "구매확정";
   const hasPendingReview = (params.reviewPendingCount ?? 0) > 0;
-  const hasActionableLinkedApplication = (params.linkedApplications ?? []).some((app) => isApplicationTodoActionable(app));
+  const hasActionableLinkedApplication = (params.linkedApplications ?? []).some(
+    (app) => isApplicationTodoActionable(app),
+  );
 
-  return Boolean(status === "배송완료" || hasActionableLinkedApplication || (isConfirmed && hasPendingReview) || isApplicationTodoActionable(params.primaryApplication));
+  return Boolean(
+    status === "배송완료" ||
+    hasActionableLinkedApplication ||
+    (isConfirmed && hasPendingReview) ||
+    isApplicationTodoActionable(params.primaryApplication),
+  );
 }
 
 export function isRentalTodoActionable(params: {
@@ -61,6 +78,12 @@ export function isRentalTodoActionable(params: {
   stringingApplicationId?: string | null;
   withStringService?: boolean | null;
 }): boolean {
-  const hasActionableLinkedApplication = (params.linkedApplications ?? []).some((app) => isApplicationTodoActionable(app));
-  return Boolean(hasActionableLinkedApplication || isApplicationTodoActionable(params.primaryApplication) || (!params.stringingApplicationId && params.withStringService));
+  const hasActionableLinkedApplication = (params.linkedApplications ?? []).some(
+    (app) => isApplicationTodoActionable(app),
+  );
+  return Boolean(
+    hasActionableLinkedApplication ||
+    isApplicationTodoActionable(params.primaryApplication) ||
+    (!params.stringingApplicationId && params.withStringService),
+  );
 }

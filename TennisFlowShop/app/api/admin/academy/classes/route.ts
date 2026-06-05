@@ -73,7 +73,10 @@ function serializeValue(value: unknown): unknown {
   return value;
 }
 
-function serializeClass(doc: Document, applicationStats = createEmptyApplicationStats()) {
+function serializeClass(
+  doc: Document,
+  applicationStats = createEmptyApplicationStats(),
+) {
   return {
     _id: String(serializeValue(doc._id)),
     name: typeof doc.name === "string" ? doc.name : "",
@@ -83,7 +86,8 @@ function serializeClass(doc: Document, applicationStats = createEmptyApplication
     instructorName:
       typeof doc.instructorName === "string" ? doc.instructorName : null,
     location: typeof doc.location === "string" ? doc.location : null,
-    scheduleText: typeof doc.scheduleText === "string" ? doc.scheduleText : null,
+    scheduleText:
+      typeof doc.scheduleText === "string" ? doc.scheduleText : null,
     capacity: typeof doc.capacity === "number" ? doc.capacity : null,
     enrolledCount:
       typeof doc.enrolledCount === "number" ? doc.enrolledCount : 0,
@@ -113,7 +117,8 @@ function parseOptionalNonNegativeNumber(
   value: unknown,
   fieldLabel: string,
 ): { value: number | null } | { error: string } {
-  if (value === null || value === undefined || value === "") return { value: null };
+  if (value === null || value === undefined || value === "")
+    return { value: null };
   const numeric = typeof value === "number" ? value : Number(value);
   if (!Number.isFinite(numeric) || numeric < 0) {
     return { error: `${fieldLabel}은 0 이상의 숫자로 입력해 주세요.` };
@@ -121,9 +126,9 @@ function parseOptionalNonNegativeNumber(
   return { value: Math.trunc(numeric) };
 }
 
-function validateClassPayload(payload: Record<string, unknown>):
-  | { ok: true; value: ClassPayload }
-  | { ok: false; message: string } {
+function validateClassPayload(
+  payload: Record<string, unknown>,
+): { ok: true; value: ClassPayload } | { ok: false; message: string } {
   const name = typeof payload.name === "string" ? payload.name.trim() : "";
   if (!name) return { ok: false, message: "클래스명을 입력해 주세요." };
   if (name.length > 80) {
@@ -131,7 +136,10 @@ function validateClassPayload(payload: Record<string, unknown>):
   }
 
   const description = normalizeOptionalText(payload.description, 1000);
-  if (typeof payload.description === "string" && payload.description.trim().length > 1000) {
+  if (
+    typeof payload.description === "string" &&
+    payload.description.trim().length > 1000
+  ) {
     return { ok: false, message: "설명은 1000자 이하로 입력해 주세요." };
   }
 
@@ -154,7 +162,10 @@ function validateClassPayload(payload: Record<string, unknown>):
   }
 
   const location = normalizeOptionalText(payload.location, 100);
-  if (typeof payload.location === "string" && payload.location.trim().length > 100) {
+  if (
+    typeof payload.location === "string" &&
+    payload.location.trim().length > 100
+  ) {
     return { ok: false, message: "장소는 100자 이하로 입력해 주세요." };
   }
 
@@ -166,8 +177,12 @@ function validateClassPayload(payload: Record<string, unknown>):
     return { ok: false, message: "일정 안내는 200자 이하로 입력해 주세요." };
   }
 
-  const capacityResult = parseOptionalNonNegativeNumber(payload.capacity, "정원");
-  if ("error" in capacityResult) return { ok: false, message: capacityResult.error };
+  const capacityResult = parseOptionalNonNegativeNumber(
+    payload.capacity,
+    "정원",
+  );
+  if ("error" in capacityResult)
+    return { ok: false, message: capacityResult.error };
 
   const priceResult = parseOptionalNonNegativeNumber(payload.price, "가격");
   if ("error" in priceResult) return { ok: false, message: priceResult.error };
@@ -194,10 +209,7 @@ function validateClassPayload(payload: Record<string, unknown>):
   };
 }
 
-async function getApplicationStatsByClassId(
-  db: Db,
-  classes: Document[],
-) {
+async function getApplicationStatsByClassId(db: Db, classes: Document[]) {
   const classIdStrings = classes
     .map((item) => String(serializeValue(item._id)))
     .filter(Boolean);
@@ -304,7 +316,9 @@ export async function GET(req: Request) {
   }
 
   const sortSpec =
-    sort === "oldest" ? ({ createdAt: 1 } as const) : ({ createdAt: -1 } as const);
+    sort === "oldest"
+      ? ({ createdAt: 1 } as const)
+      : ({ createdAt: -1 } as const);
   const collection = guard.db.collection(COLLECTION_NAME);
 
   const [itemsRaw, total, countRows] = await Promise.all([
@@ -316,9 +330,10 @@ export async function GET(req: Request) {
       .toArray(),
     collection.countDocuments(filter),
     collection
-      .aggregate<{ _id: AcademyClassStatus; count: number }>([
-        { $group: { _id: "$status", count: { $sum: 1 } } },
-      ])
+      .aggregate<{
+        _id: AcademyClassStatus;
+        count: number;
+      }>([{ $group: { _id: "$status", count: { $sum: 1 } } }])
       .toArray(),
   ]);
 
@@ -367,7 +382,8 @@ export async function POST(req: Request) {
   if (!csrf.ok) return csrf.res;
 
   const body = (await req.json().catch(() => null)) as unknown;
-  const payload = body && typeof body === "object" ? (body as Record<string, unknown>) : {};
+  const payload =
+    body && typeof body === "object" ? (body as Record<string, unknown>) : {};
   const validation = validateClassPayload(payload);
   if (!validation.ok) {
     return NextResponse.json(
@@ -393,4 +409,3 @@ export async function POST(req: Request) {
     item: serializeClass(inserted ?? { _id: result.insertedId, ...doc }),
   });
 }
-

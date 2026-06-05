@@ -126,7 +126,9 @@ export function AccordionContent({ value, className, children }: ContentProps) {
       data-state={open ? "open" : "closed"}
       className={cn(
         "grid overflow-hidden transition-all duration-200 ease-out",
-        open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0 pointer-events-none",
+        open
+          ? "grid-rows-[1fr] opacity-100"
+          : "grid-rows-[0fr] opacity-0 pointer-events-none",
       )}
     >
       <div className={cn("min-h-0", className)}>{children}</div>

@@ -1,6 +1,18 @@
 "use client";
 
-import { ArrowLeft, ChevronLeft, ChevronRight, Eye, FileText, Flag, MessageSquare, MoreVertical, Pencil, ThumbsUp, Trash2 } from "lucide-react";
+import {
+  ArrowLeft,
+  ChevronLeft,
+  ChevronRight,
+  Eye,
+  FileText,
+  Flag,
+  MessageSquare,
+  MoreVertical,
+  Pencil,
+  ThumbsUp,
+  Trash2,
+} from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -12,8 +24,21 @@ import ErrorBox from "@/app/board/_components/ErrorBox";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -23,14 +48,28 @@ import { badgeSizeSm, getBoardCategoryTone } from "@/lib/badge-style";
 import { communityFetch } from "@/lib/community/communityFetch.client";
 import { boardFetcher, parseApiError } from "@/lib/fetchers/boardFetcher";
 import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
-import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
-import { getMarketBrandLabel, getMarketConditionGradeLabel, getMarketRacketFieldLabel, getMarketSaleStatusLabel, getMarketStringColorLabel, getMarketStringLengthLabel, getMarketStringMaterialLabel } from "@/lib/market";
+import {
+  UNSAVED_CHANGES_MESSAGE,
+  useUnsavedChangesGuard,
+} from "@/lib/hooks/useUnsavedChangesGuard";
+import {
+  getMarketBrandLabel,
+  getMarketConditionGradeLabel,
+  getMarketRacketFieldLabel,
+  getMarketSaleStatusLabel,
+  getMarketStringColorLabel,
+  getMarketStringLengthLabel,
+  getMarketStringMaterialLabel,
+} from "@/lib/market";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import type { CommunityComment, CommunityPost } from "@/lib/types/community";
 import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-const MessageComposeDialog = dynamic(() => import("@/app/messages/_components/MessageComposeDialog"), { loading: () => null });
+const MessageComposeDialog = dynamic(
+  () => import("@/app/messages/_components/MessageComposeDialog"),
+  { loading: () => null },
+);
 
 const LEVEL_LABEL: Record<string, string> = {
   "1.0": "1.0",
@@ -57,9 +96,12 @@ const STYLE_LABEL: Record<string, string> = {
   other: "기타",
 };
 // 작성하지 않은 프로필 정보 - 처리
-const v = (x: any) => (x === null || x === undefined || String(x).trim() === "" ? "-" : String(x));
-const label = (map: Record<string, string>, v?: string) => (v ? (map[v] ?? v) : "-");
-const marketText = (value?: string | null) => (typeof value === "string" && value.trim() ? value : "-");
+const v = (x: any) =>
+  x === null || x === undefined || String(x).trim() === "" ? "-" : String(x);
+const label = (map: Record<string, string>, v?: string) =>
+  v ? (map[v] ?? v) : "-";
+const marketText = (value?: string | null) =>
+  typeof value === "string" && value.trim() ? value : "-";
 const marketNumberText = (value?: number | null, unit?: string) => {
   if (value === null || value === undefined) return "-";
   return unit ? `${value}${unit}` : String(value);
@@ -69,7 +111,9 @@ type Props = {
   id: string;
 };
 
-type DetailResponse = { ok: true; item: CommunityPost } | { ok: false; error: string };
+type DetailResponse =
+  | { ok: true; item: CommunityPost }
+  | { ok: false; error: string };
 type CommunityNavListResponse = {
   ok: true;
   items: Array<{ id: string; title: string }>;
@@ -169,7 +213,8 @@ function CommentItem({
   onCancelEditReply,
   onSaveEdit,
 }: CommentItemProps) {
-  const isCommentAuthor = !!userId && !!comment.userId && userId === comment.userId;
+  const isCommentAuthor =
+    !!userId && !!comment.userId && userId === comment.userId;
   const isEditingComment = !isReply && editingCommentId === comment.id;
   const isEditingReply = isReply && editingReplyId === comment.id;
   const isEditing = isEditingComment || isEditingReply;
@@ -186,16 +231,25 @@ function CommentItem({
         <div className="flex items-center gap-3">
           <div className="flex flex-col gap-0.5">
             {comment.status === "deleted" ? (
-              <span className="text-sm font-semibold text-muted-foreground">{comment.nickname ?? "회원"}</span>
+              <span className="text-sm font-semibold text-muted-foreground">
+                {comment.nickname ?? "회원"}
+              </span>
             ) : (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button type="button" className="text-left text-sm font-semibold text-foreground underline-offset-4 hover:underline dark:text-foreground">
+                  <button
+                    type="button"
+                    className="text-left text-sm font-semibold text-foreground underline-offset-4 hover:underline dark:text-foreground"
+                  >
                     {comment.nickname ?? "회원"}
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="w-44">
-                  <DropdownMenuItem onClick={() => onNavigateAuthorPosts(comment)}>이 작성자의 글 보기</DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => onNavigateAuthorPosts(comment)}
+                  >
+                    이 작성자의 글 보기
+                  </DropdownMenuItem>
                   <DropdownMenuItem
                     disabled={!comment.userId || comment.userId === userId}
                     onClick={(e) => {
@@ -206,11 +260,23 @@ function CommentItem({
                   >
                     쪽지 보내기
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onOpenAuthorProfile(comment)}>작성자 테니스 프로필</DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => onOpenAuthorProfile(comment)}
+                  >
+                    작성자 테니스 프로필
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
-            <span className="text-xs text-foreground/75">{new Date(comment.createdAt).toLocaleString("ko-KR", { year: "2-digit", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" })}</span>
+            <span className="text-xs text-foreground/75">
+              {new Date(comment.createdAt).toLocaleString("ko-KR", {
+                year: "2-digit",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </span>
           </div>
         </div>
         {!isDeleted && (
@@ -220,7 +286,11 @@ function CommentItem({
                 <button
                   type="button"
                   className="rounded-lg px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground dark:hover:bg-muted dark:hover:text-foreground"
-                  onClick={() => (isReply ? onStartEditReply(comment) : onStartEditComment(comment.id))}
+                  onClick={() =>
+                    isReply
+                      ? onStartEditReply(comment)
+                      : onStartEditComment(comment.id)
+                  }
                 >
                   수정
                 </button>
@@ -246,7 +316,9 @@ function CommentItem({
         )}
       </div>
       {isDeleted ? (
-        <p className="text-sm italic text-muted-foreground">삭제된 댓글입니다.</p>
+        <p className="text-sm italic text-muted-foreground">
+          삭제된 댓글입니다.
+        </p>
       ) : isEditing ? (
         <div className="space-y-2.5">
           <Textarea
@@ -255,11 +327,24 @@ function CommentItem({
             data-reply-edit-id={isReply ? comment.id : undefined}
             className="min-h-[80px] resize-none border-border text-sm focus-visible:ring-1 focus-visible:ring-ring dark:border-border dark:focus-visible:ring-ring"
             defaultValue={comment.content}
-            onChange={(e) => (isReply ? onReplyEditDraftChange(comment.id, e.currentTarget.value) : onCommentEditDraftChange(comment.id, e.currentTarget.value))}
+            onChange={(e) =>
+              isReply
+                ? onReplyEditDraftChange(comment.id, e.currentTarget.value)
+                : onCommentEditDraftChange(comment.id, e.currentTarget.value)
+            }
             disabled={isCommentSubmitting}
           />
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" size="sm" onClick={() => (isReply ? onCancelEditReply(comment.id) : onCancelEditComment())} disabled={isCommentSubmitting} className="h-8 px-4 text-xs bg-transparent">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                isReply ? onCancelEditReply(comment.id) : onCancelEditComment()
+              }
+              disabled={isCommentSubmitting}
+              className="h-8 px-4 text-xs bg-transparent"
+            >
               취소
             </Button>
             <Button
@@ -267,14 +352,24 @@ function CommentItem({
               size="sm"
               disabled={isCommentSubmitting}
               className="h-8 bg-primary px-4 text-xs text-primary-foreground hover:bg-primary/90"
-              onClick={() => onSaveEdit(comment.id, isReply ? (replyEditInputRef.current?.value ?? "") : (commentEditInputRef.current?.value ?? ""), isReply)}
+              onClick={() =>
+                onSaveEdit(
+                  comment.id,
+                  isReply
+                    ? (replyEditInputRef.current?.value ?? "")
+                    : (commentEditInputRef.current?.value ?? ""),
+                  isReply,
+                )
+              }
             >
               저장
             </Button>
           </div>
         </div>
       ) : (
-        <p className="text-sm leading-relaxed text-muted-foreground">{comment.content}</p>
+        <p className="text-sm leading-relaxed text-muted-foreground">
+          {comment.content}
+        </p>
       )}
       {!isEditing && !isReply && !isDeleted && (
         <div className="mt-3">
@@ -301,16 +396,32 @@ function CommentItem({
             data-reply-composer-id={comment.id}
             className="min-h-[70px] resize-none border-border bg-card text-sm focus-visible:ring-1 focus-visible:ring-ring dark:border-border dark:focus-visible:ring-ring"
             defaultValue={replyDraft}
-            onChange={(e) => onReplyDraftChange(comment.id, e.currentTarget.value)}
+            onChange={(e) =>
+              onReplyDraftChange(comment.id, e.currentTarget.value)
+            }
             disabled={isReplySubmitting}
             placeholder={`@${comment.nickname ?? "회원"} 님께 답글을 남겨 보세요.`}
           />
-          {replyError && <p className="text-xs text-destructive">{replyError}</p>}
+          {replyError && (
+            <p className="text-xs text-destructive">{replyError}</p>
+          )}
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" size="sm" onClick={() => onReplyCancel(comment.id)} disabled={isReplySubmitting} className="h-8 px-4 text-xs">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => onReplyCancel(comment.id)}
+              disabled={isReplySubmitting}
+              className="h-8 px-4 text-xs"
+            >
               취소
             </Button>
-            <Button type="submit" size="sm" disabled={isReplySubmitting} className="h-8 bg-primary px-4 text-xs text-primary-foreground hover:bg-primary/90">
+            <Button
+              type="submit"
+              size="sm"
+              disabled={isReplySubmitting}
+              className="h-8 bg-primary px-4 text-xs text-primary-foreground hover:bg-primary/90"
+            >
               {isReplySubmitting ? "작성 중..." : "등록"}
             </Button>
           </div>
@@ -361,11 +472,16 @@ function DetailSkeleton() {
     </Card>
   );
 }
-export default function BoardDetailClient({ id, config }: Props & { config: BoardTypeConfig }) {
+export default function BoardDetailClient({
+  id,
+  config,
+}: Props & { config: BoardTypeConfig }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const listQuery = searchParams.toString();
-  const listHref = listQuery ? `${config.routePrefix}?${listQuery}` : config.routePrefix;
+  const listHref = listQuery
+    ? `${config.routePrefix}?${listQuery}`
+    : config.routePrefix;
   const navListQuery = useMemo(() => {
     const params = new URLSearchParams(searchParams.toString());
     params.delete("openProfile");
@@ -383,7 +499,9 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
 
   // 작성자 프로필
   const [isAuthorProfileOpen, setIsAuthorProfileOpen] = useState(false);
-  const [authorOverview, setAuthorOverview] = useState<AuthorOverview | null>(null);
+  const [authorOverview, setAuthorOverview] = useState<AuthorOverview | null>(
+    null,
+  );
   const [isAuthorLoading, setIsAuthorLoading] = useState(false);
   const [authorTarget, setAuthorTarget] = useState<{
     userId: string | null;
@@ -402,7 +520,10 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
       showErrorToast("로그인 후 이용할 수 있습니다.");
       // 입력 중인 내용이 있으면 로그인 이동 전에 한 번 더 확인
       if (!confirmLeaveIfDirty()) return;
-      const redirectTo = typeof window !== "undefined" ? window.location.pathname + window.location.search : `${config.routePrefix}/${id}`;
+      const redirectTo =
+        typeof window !== "undefined"
+          ? window.location.pathname + window.location.search
+          : `${config.routePrefix}/${id}`;
       router.push(`/login?next=${encodeURIComponent(redirectTo)}`);
       return;
     }
@@ -413,12 +534,16 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
     setComposeOpen(true);
   };
 
-  async function handleOpenAuthorProfile(target?: { userId?: string | null; nickname?: string | null }) {
+  async function handleOpenAuthorProfile(target?: {
+    userId?: string | null;
+    nickname?: string | null;
+  }) {
     // 게시글 데이터가 없으면 방어
     if (!item) return;
 
     const targetUserId = target?.userId ?? item.userId ?? null;
-    const targetNickname = (target?.nickname ?? item.nickname ?? "회원").trim() || "회원";
+    const targetNickname =
+      (target?.nickname ?? item.nickname ?? "회원").trim() || "회원";
 
     // 모달 상단/링크 등에 사용할 '대상 작성자'를 고정
     setAuthorTarget({ userId: targetUserId, nickname: targetNickname });
@@ -434,9 +559,12 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
     setIsAuthorLoading(true);
 
     try {
-      const res = await fetch(`/api/community/authors/${targetUserId}/overview`, {
-        credentials: "include",
-      });
+      const res = await fetch(
+        `/api/community/authors/${targetUserId}/overview`,
+        {
+          credentials: "include",
+        },
+      );
 
       if (!res.ok) {
         showErrorToast("작성자 정보를 불러오지 못했습니다.");
@@ -462,11 +590,14 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
   const [openCommentReport, setOpenCommentReport] = useState(false); // 모달 오픈 여부
   const [commentReportReason, setCommentReportReason] = useState(""); // 신고 사유
   const [isCommentReporting, setIsCommentReporting] = useState(false); // 처리 중 플래그
-  const [targetComment, setTargetComment] = useState<CommunityComment | null>(null); // 신고 대상 댓글
+  const [targetComment, setTargetComment] = useState<CommunityComment | null>(
+    null,
+  ); // 신고 대상 댓글
 
   // 댓글 신고 닫기(입력 유실 방지)
   const closeCommentReport = () => {
-    if (commentReportReason.trim() && !window.confirm(UNSAVED_CHANGES_MESSAGE)) return;
+    if (commentReportReason.trim() && !window.confirm(UNSAVED_CHANGES_MESSAGE))
+      return;
     setOpenCommentReport(false);
     setTargetComment(null);
     setCommentReportReason("");
@@ -475,19 +606,30 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
   // 조회수 중복 방지 TTL (24시간)
   const VIEW_TTL_MS = 1000 * 60 * 60 * 24;
 
-  const { data, error, isLoading, mutate } = useSWR<DetailResponse>(`/api/community/posts/${id}?type=${config.boardType}`, (url: string) => boardFetcher<DetailResponse>(url), {
-    revalidateOnMount: true,
-    revalidateIfStale: true,
-    dedupingInterval: 0,
-  });
+  const { data, error, isLoading, mutate } = useSWR<DetailResponse>(
+    `/api/community/posts/${id}?type=${config.boardType}`,
+    (url: string) => boardFetcher<DetailResponse>(url),
+    {
+      revalidateOnMount: true,
+      revalidateIfStale: true,
+      dedupingInterval: 0,
+    },
+  );
 
   const item = data && data.ok ? data.item : null;
-  const detailError = parseApiError(error, "글을 불러오는 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
-  const { data: navListData } = useSWR<CommunityNavListResponse>(item && shouldLoadNavList ? `/api/community/posts?${navListQuery}` : null, (url: string) => boardFetcher<CommunityNavListResponse>(url), {
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
-    dedupingInterval: 30_000,
-  });
+  const detailError = parseApiError(
+    error,
+    "글을 불러오는 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
+  );
+  const { data: navListData } = useSWR<CommunityNavListResponse>(
+    item && shouldLoadNavList ? `/api/community/posts?${navListQuery}` : null,
+    (url: string) => boardFetcher<CommunityNavListResponse>(url),
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      dedupingInterval: 30_000,
+    },
+  );
 
   useEffect(() => {
     if (!item || shouldLoadNavList) return;
@@ -511,11 +653,15 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
   }, [item, shouldLoadNavList]);
 
   const { prevPost, nextPost } = useMemo(() => {
-    if (!item || !navListData?.items?.length) return { prevPost: null, nextPost: null };
-    const idx = navListData.items.findIndex((candidate) => candidate.id === item.id);
+    if (!item || !navListData?.items?.length)
+      return { prevPost: null, nextPost: null };
+    const idx = navListData.items.findIndex(
+      (candidate) => candidate.id === item.id,
+    );
     if (idx < 0) return { prevPost: null, nextPost: null };
     return {
-      prevPost: idx < navListData.items.length - 1 ? navListData.items[idx + 1] : null,
+      prevPost:
+        idx < navListData.items.length - 1 ? navListData.items[idx + 1] : null,
       nextPost: idx > 0 ? navListData.items[idx - 1] : null,
     };
   }, [item, navListData]);
@@ -563,9 +709,12 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
         // TTL이 지났거나 기록이 없으면 /view 호출
         (async () => {
           try {
-            const res = await communityFetch(`/api/community/posts/${item.id}/view`, {
-              method: "POST",
-            });
+            const res = await communityFetch(
+              `/api/community/posts/${item.id}/view`,
+              {
+                method: "POST",
+              },
+            );
 
             const json = await res.json().catch(() => null);
 
@@ -600,9 +749,12 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
     // 항상 /view 호출 → 서버에서 userId 기준으로 중복 방지
     (async () => {
       try {
-        const res = await communityFetch(`/api/community/posts/${item.id}/view`, {
-          method: "POST",
-        });
+        const res = await communityFetch(
+          `/api/community/posts/${item.id}/view`,
+          {
+            method: "POST",
+          },
+        );
 
         const json = await res.json().catch(() => null);
 
@@ -628,8 +780,15 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
   const isNotFound = (error as any)?.error === "not_found";
 
   const isAuthor = !!user && !!item?.userId && user.id === item.userId;
-  const userLike = user as ({ role?: string; isAdmin?: boolean; roles?: string[] } & typeof user) | null;
-  const isAdmin = !!(userLike && (userLike.role === "admin" || userLike.isAdmin === true || (Array.isArray(userLike.roles) && userLike.roles.includes("admin"))));
+  const userLike = user as
+    | ({ role?: string; isAdmin?: boolean; roles?: string[] } & typeof user)
+    | null;
+  const isAdmin = !!(
+    userLike &&
+    (userLike.role === "admin" ||
+      userLike.isAdmin === true ||
+      (Array.isArray(userLike.roles) && userLike.roles.includes("admin")))
+  );
   const canDeletePost = isAuthor || isAdmin;
 
   // 댓글 입력 폼 상태
@@ -641,8 +800,12 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
   const [editingReplyId, setEditingReplyId] = useState<string | null>(null);
 
   // 댓글/답글 수정 입력값(unsaved changes 감지용)
-  const [commentEditDrafts, setCommentEditDrafts] = useState<Record<string, string>>({});
-  const [replyEditDrafts, setReplyEditDrafts] = useState<Record<string, string>>({});
+  const [commentEditDrafts, setCommentEditDrafts] = useState<
+    Record<string, string>
+  >({});
+  const [replyEditDrafts, setReplyEditDrafts] = useState<
+    Record<string, string>
+  >({});
 
   // 대댓글 입력 상태
   // - replyingToId: 현재 어느 댓글에 답글 폼이 열려 있는지
@@ -653,7 +816,9 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
   const [replyError, setReplyError] = useState<string | null>(null);
 
   // 루트 댓글별 전체 답글 펼침 상태
-  const [expandedRootIds, setExpandedRootIds] = useState<Set<string>>(new Set());
+  const [expandedRootIds, setExpandedRootIds] = useState<Set<string>>(
+    new Set(),
+  );
   // 특정 루트 댓글의 답글 접기/펼치기 토글
   const toggleRootReplies = (commentId: string) => {
     setExpandedRootIds((prev) => {
@@ -668,12 +833,23 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
   const [commentPage, setCommentPage] = useState(1);
 
   // 댓글 목록 SWR (게시글이 로드된 후에만 요청)
-  const commentsKey = item ? `/api/community/posts/${item.id}/comments?page=${commentPage}&limit=${COMMENT_LIMIT}` : null;
-  const { data: commentsData, isLoading: isCommentsLoading, mutate: mutateComments } = useSWR<CommentsResponse>(commentsKey, (url: string) => boardFetcher<CommentsResponse>(url));
+  const commentsKey = item
+    ? `/api/community/posts/${item.id}/comments?page=${commentPage}&limit=${COMMENT_LIMIT}`
+    : null;
+  const {
+    data: commentsData,
+    isLoading: isCommentsLoading,
+    mutate: mutateComments,
+  } = useSWR<CommentsResponse>(commentsKey, (url: string) =>
+    boardFetcher<CommentsResponse>(url),
+  );
   const comments = commentsData && commentsData.ok ? commentsData.items : [];
 
   // 전체 댓글 수(루트 + 대댓글) → 상단 뱃지 표시용
-  const totalComments = commentsData && commentsData.ok ? commentsData.total : (item?.commentsCount ?? 0);
+  const totalComments =
+    commentsData && commentsData.ok
+      ? commentsData.total
+      : (item?.commentsCount ?? 0);
 
   // 루트 댓글 수 → 실제 페이지 수 계산용
   const totalRootComments =
@@ -681,18 +857,24 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
       ? (commentsData.rootTotal ?? totalComments) // rootTotal 없으면 total로 fallback
       : totalComments;
 
-  const totalCommentPages = Math.max(1, Math.ceil(totalRootComments / COMMENT_LIMIT));
+  const totalCommentPages = Math.max(
+    1,
+    Math.ceil(totalRootComments / COMMENT_LIMIT),
+  );
 
   // 루트 댓글과 대댓글 분리
   const rootComments = comments.filter((c) => !c.parentId);
 
-  const repliesByParentId = comments.reduce<Record<string, CommunityComment[]>>((acc, c) => {
-    if (c.parentId) {
-      if (!acc[c.parentId]) acc[c.parentId] = [];
-      acc[c.parentId].push(c);
-    }
-    return acc;
-  }, {});
+  const repliesByParentId = comments.reduce<Record<string, CommunityComment[]>>(
+    (acc, c) => {
+      if (c.parentId) {
+        if (!acc[c.parentId]) acc[c.parentId] = [];
+        acc[c.parentId].push(c);
+      }
+      return acc;
+    },
+    {},
+  );
 
   const sortRepliesAsc = (replies: CommunityComment[]) =>
     [...replies].sort((a, b) => {
@@ -712,26 +894,56 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
 
   const isDirtyAny = useMemo(() => {
     const hasCommentDraft = commentContent.trim().length > 0;
-    const hasReplyDraft = Object.values(replyDrafts).some((v) => v.trim().length > 0);
+    const hasReplyDraft = Object.values(replyDrafts).some(
+      (v) => v.trim().length > 0,
+    );
 
     const hasEditDraft = (() => {
       if (!editingCommentId) return false;
-      const cur = (commentEditDrafts[editingCommentId] ?? originalEditingContent).trim();
+      const cur = (
+        commentEditDrafts[editingCommentId] ?? originalEditingContent
+      ).trim();
       return cur !== originalEditingContent.trim();
     })();
     const hasReplyEditDraft = (() => {
       if (!editingReplyId) return false;
-      const cur = (replyEditDrafts[editingReplyId] ?? originalEditingReplyContent).trim();
+      const cur = (
+        replyEditDrafts[editingReplyId] ?? originalEditingReplyContent
+      ).trim();
       return cur !== originalEditingReplyContent.trim();
     })();
 
     const hasPostReportDraft = reason.trim().length > 0;
     const hasCommentReportDraft = commentReportReason.trim().length > 0;
 
-    return hasCommentDraft || hasReplyDraft || hasEditDraft || hasReplyEditDraft || hasPostReportDraft || hasCommentReportDraft;
-  }, [commentContent, replyDrafts, editingCommentId, editingReplyId, commentEditDrafts, replyEditDrafts, originalEditingContent, originalEditingReplyContent, reason, commentReportReason]);
+    return (
+      hasCommentDraft ||
+      hasReplyDraft ||
+      hasEditDraft ||
+      hasReplyEditDraft ||
+      hasPostReportDraft ||
+      hasCommentReportDraft
+    );
+  }, [
+    commentContent,
+    replyDrafts,
+    editingCommentId,
+    editingReplyId,
+    commentEditDrafts,
+    replyEditDrafts,
+    originalEditingContent,
+    originalEditingReplyContent,
+    reason,
+    commentReportReason,
+  ]);
 
-  const isBusyAny = isCommentSubmitting || isReplySubmitting || isDeleting || isLiking || isReporting || isCommentReporting;
+  const isBusyAny =
+    isCommentSubmitting ||
+    isReplySubmitting ||
+    isDeleting ||
+    isLiking ||
+    isReporting ||
+    isCommentReporting;
 
   // 뒤로가기/탭닫기 등 브라우저 이탈 방지
   useUnsavedChangesGuard(isDirtyAny && !isBusyAny);
@@ -750,7 +962,12 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
 
   useEffect(() => {
     // 로딩 끝, 2페이지 이상인데, 컨텐츠는 없고, 루트 댓글 수는 0이 아님 → 한 페이지 뒤로 밀기
-    if (!isCommentsLoading && commentPage > 1 && comments.length === 0 && totalRootComments > 0) {
+    if (
+      !isCommentsLoading &&
+      commentPage > 1 &&
+      comments.length === 0 &&
+      totalRootComments > 0
+    ) {
       setCommentPage((prev) => Math.max(1, prev - 1));
     }
   }, [isCommentsLoading, commentPage, comments.length, totalRootComments]);
@@ -786,14 +1003,22 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
       await mutateComments();
     } catch (err) {
       console.error(err);
-      setCommentError(parseApiError(err, "댓글 작성에 실패했습니다. 잠시 후 다시 시도해 주세요.").message);
+      setCommentError(
+        parseApiError(
+          err,
+          "댓글 작성에 실패했습니다. 잠시 후 다시 시도해 주세요.",
+        ).message,
+      );
     } finally {
       setIsCommentSubmitting(false);
     }
   };
 
   // 대댓글 작성 핸들러
-  const handleSubmitReply = async (parentId: string, contentOverride?: string) => {
+  const handleSubmitReply = async (
+    parentId: string,
+    contentOverride?: string,
+  ) => {
     if (!item) return;
 
     if (!user) {
@@ -830,7 +1055,12 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
       await mutateComments();
     } catch (err) {
       console.error(err);
-      setReplyError(parseApiError(err, "답글 작성에 실패했습니다. 잠시 후 다시 시도해 주세요.").message);
+      setReplyError(
+        parseApiError(
+          err,
+          "답글 작성에 실패했습니다. 잠시 후 다시 시도해 주세요.",
+        ).message,
+      );
     } finally {
       setIsReplySubmitting(false);
     }
@@ -942,7 +1172,12 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
       await mutateComments();
     } catch (err) {
       console.error(err);
-      setCommentError(parseApiError(err, "댓글 수정에 실패했습니다. 잠시 후 다시 시도해 주세요.").message);
+      setCommentError(
+        parseApiError(
+          err,
+          "댓글 수정에 실패했습니다. 잠시 후 다시 시도해 주세요.",
+        ).message,
+      );
     } finally {
       setIsCommentSubmitting(false);
     }
@@ -950,7 +1185,11 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
 
   // 댓글 삭제
   const handleDeleteComment = async (commentId: string) => {
-    if (!window.confirm("이 댓글을 삭제하시겠습니까? 삭제 후에는 되돌릴 수 없습니다.")) {
+    if (
+      !window.confirm(
+        "이 댓글을 삭제하시겠습니까? 삭제 후에는 되돌릴 수 없습니다.",
+      )
+    ) {
       return;
     }
 
@@ -966,7 +1205,12 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
       await mutateComments();
     } catch (err) {
       console.error(err);
-      setCommentError(parseApiError(err, "댓글 삭제에 실패했습니다. 잠시 후 다시 시도해 주세요.").message);
+      setCommentError(
+        parseApiError(
+          err,
+          "댓글 삭제에 실패했습니다. 잠시 후 다시 시도해 주세요.",
+        ).message,
+      );
     } finally {
       setIsCommentSubmitting(false);
     }
@@ -977,7 +1221,11 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
     if (!item) return;
     if (isDeleting) return;
 
-    const confirmed = window.confirm(isAdmin && !isAuthor ? "관리자 권한으로 이 게시글을 삭제하시겠습니까? 삭제 후 복구할 수 없습니다." : "정말로 이 게시글을 삭제하시겠습니까? 되돌릴 수 없습니다.");
+    const confirmed = window.confirm(
+      isAdmin && !isAuthor
+        ? "관리자 권한으로 이 게시글을 삭제하시겠습니까? 삭제 후 복구할 수 없습니다."
+        : "정말로 이 게시글을 삭제하시겠습니까? 되돌릴 수 없습니다.",
+    );
     if (!confirmed) return;
 
     try {
@@ -998,7 +1246,12 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
       router.refresh();
     } catch (err) {
       console.error(err);
-      alert(parseApiError(err, "글 삭제에 실패했습니다. 잠시 후 다시 시도해 주세요.").message);
+      alert(
+        parseApiError(
+          err,
+          "글 삭제에 실패했습니다. 잠시 후 다시 시도해 주세요.",
+        ).message,
+      );
     } finally {
       setIsDeleting(false);
     }
@@ -1024,10 +1277,15 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
         method: "POST",
       });
 
-      const json = (await res.json().catch(() => null)) as { ok: true; liked: boolean; likes: number } | { ok: false; error?: string } | null;
+      const json = (await res.json().catch(() => null)) as
+        | { ok: true; liked: boolean; likes: number }
+        | { ok: false; error?: string }
+        | null;
 
       if (!res.ok || !json || !("ok" in json) || !json.ok) {
-        const msg = (json as any)?.error ?? "추천 처리에 실패했습니다. 잠시 후 다시 시도해 주세요.";
+        const msg =
+          (json as any)?.error ??
+          "추천 처리에 실패했습니다. 잠시 후 다시 시도해 주세요.";
         alert(msg);
         return;
       }
@@ -1049,7 +1307,12 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
       );
     } catch (err) {
       console.error(err);
-      alert(parseApiError(err, "추천 처리에 실패했습니다. 잠시 후 다시 시도해 주세요.").message);
+      alert(
+        parseApiError(
+          err,
+          "추천 처리에 실패했습니다. 잠시 후 다시 시도해 주세요.",
+        ).message,
+      );
     } finally {
       setIsLiking(false);
     }
@@ -1066,11 +1329,14 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
     try {
       setIsReporting(true);
 
-      const res = await communityFetch(`/api/community/posts/${item.id}/report`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ reason }),
-      });
+      const res = await communityFetch(
+        `/api/community/posts/${item.id}/report`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ reason }),
+        },
+      );
 
       if (!res.ok) {
         const data = await res.json().catch(() => null);
@@ -1136,11 +1402,14 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
     try {
       setIsCommentReporting(true);
 
-      const res = await communityFetch(`/api/community/comments/${targetComment.id}/report`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ reason: commentReportReason }),
-      });
+      const res = await communityFetch(
+        `/api/community/comments/${targetComment.id}/report`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ reason: commentReportReason }),
+        },
+      );
 
       if (!res.ok) {
         if (res.status === 401) {
@@ -1148,7 +1417,9 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
           return;
         }
         if (res.status === 429) {
-          showErrorToast("이미 최근에 신고한 댓글입니다. 잠시 후 다시 시도해 주세요.");
+          showErrorToast(
+            "이미 최근에 신고한 댓글입니다. 잠시 후 다시 시도해 주세요.",
+          );
           return;
         }
 
@@ -1157,7 +1428,9 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
           return;
         }
 
-        showErrorToast("알 수 없는 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
+        showErrorToast(
+          "알 수 없는 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
+        );
         return;
       }
 
@@ -1201,10 +1474,16 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
   const handleNavigateAuthorPosts = (comment: CommunityComment) => {
     if (!confirmLeaveIfDirty()) return;
     if (!comment.userId) return;
-    router.push(`${config.routePrefix}?authorId=${comment.userId}&authorName=${encodeURIComponent(comment.nickname ?? "회원")}`);
+    router.push(
+      `${config.routePrefix}?authorId=${comment.userId}&authorName=${encodeURIComponent(comment.nickname ?? "회원")}`,
+    );
   };
 
-  const handleCommentSave = (commentId: string, content: string, _isReplyEdit: boolean) => {
+  const handleCommentSave = (
+    commentId: string,
+    content: string,
+    _isReplyEdit: boolean,
+  ) => {
     if (!content.trim()) {
       setCommentError("댓글 내용을 입력해 주세요.");
       return;
@@ -1216,7 +1495,9 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
     if (!editingCommentId) return;
     const active = document.activeElement as HTMLElement | null;
     if (active?.dataset?.commentEditId === editingCommentId) return;
-    const el = document.querySelector<HTMLTextAreaElement>(`textarea[data-comment-edit-id="${editingCommentId}"]`);
+    const el = document.querySelector<HTMLTextAreaElement>(
+      `textarea[data-comment-edit-id="${editingCommentId}"]`,
+    );
     el?.focus();
   }, [editingCommentId]);
 
@@ -1224,7 +1505,9 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
     if (!replyingToId) return;
     const active = document.activeElement as HTMLElement | null;
     if (active?.dataset?.replyComposerId === replyingToId) return;
-    const el = document.querySelector<HTMLTextAreaElement>(`textarea[data-reply-composer-id="${replyingToId}"]`);
+    const el = document.querySelector<HTMLTextAreaElement>(
+      `textarea[data-reply-composer-id="${replyingToId}"]`,
+    );
     el?.focus();
   }, [replyingToId]);
 
@@ -1232,7 +1515,9 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
     if (!editingReplyId) return;
     const active = document.activeElement as HTMLElement | null;
     if (active?.dataset?.replyEditId === editingReplyId) return;
-    const el = document.querySelector<HTMLTextAreaElement>(`textarea[data-reply-edit-id="${editingReplyId}"]`);
+    const el = document.querySelector<HTMLTextAreaElement>(
+      `textarea[data-reply-edit-id="${editingReplyId}"]`,
+    );
     el?.focus();
   }, [editingReplyId]);
 
@@ -1256,14 +1541,21 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
             <div className="mb-1 text-sm text-foreground/80">
               <span className="font-medium text-success">게시판</span>
               <span className="mx-1">›</span>
-              <Link href={listHref} className="text-muted-foreground underline-offset-2 hover:underline">
+              <Link
+                href={listHref}
+                className="text-muted-foreground underline-offset-2 hover:underline"
+              >
                 {config.boardTitle}
               </Link>
               <span className="mx-1">›</span>
               <span>글 상세</span>
             </div>
-            <h1 className="font-bold text-2xl tracking-normal text-foreground md:text-3xl">{config.boardTitle} 글 상세</h1>
-            <p className="mt-1 text-sm text-foreground/80 md:text-base">{config.boardTitle}에 작성된 글의 상세 내용을 확인할 수 있습니다.</p>
+            <h1 className="font-bold text-2xl tracking-normal text-foreground md:text-3xl">
+              {config.boardTitle} 글 상세
+            </h1>
+            <p className="mt-1 text-sm text-foreground/80 md:text-base">
+              {config.boardTitle}에 작성된 글의 상세 내용을 확인할 수 있습니다.
+            </p>
           </div>
 
           <div className="flex w-full flex-wrap gap-2 sm:w-auto sm:flex-nowrap">
@@ -1293,7 +1585,11 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
           <Card className="border border-border bg-card shadow-sm">
             <CardContent className="p-4 md:p-6 space-y-4">
               <ErrorBox
-                message={isNotFound ? "해당 글을 찾을 수 없습니다. 삭제되었거나 주소가 잘못되었을 수 있습니다." : detailError.message}
+                message={
+                  isNotFound
+                    ? "해당 글을 찾을 수 없습니다. 삭제되었거나 주소가 잘못되었을 수 있습니다."
+                    : detailError.message
+                }
                 status={detailError.status}
                 fallbackMessage="글을 불러오는 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요."
               />
@@ -1302,7 +1598,9 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                   <Link href={listHref}>목록으로</Link>
                 </Button>
                 <Button asChild size="sm">
-                  <Link href={`${config.routePrefix}/write`}>새 글 작성하기</Link>
+                  <Link href={`${config.routePrefix}/write`}>
+                    새 글 작성하기
+                  </Link>
                 </Button>
               </div>
             </CardContent>
@@ -1315,15 +1613,32 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
               <div className="flex items-start gap-3">
                 <div className="flex-1 space-y-2">
                   <CardTitle className="text-base leading-snug md:text-lg">
-                    {typeof item.postNo === "number" && <span className="mr-2 text-sm font-semibold tabular-nums text-muted-foreground">{item.postNo}</span>}
+                    {typeof item.postNo === "number" && (
+                      <span className="mr-2 text-sm font-semibold tabular-nums text-muted-foreground">
+                        {item.postNo}
+                      </span>
+                    )}
 
                     {/* 카테고리 뱃지 */}
-                    <Badge variant={getBoardCategoryTone(config.boardType, item.category)} className={`mr-2 ${badgeSizeSm} shrink-0 whitespace-nowrap`}>
-                      {config.categoryMap[item.category ?? ""] ? getCategoryBadgeText(config.categoryMap[item.category ?? ""]) : "분류 없음"}
+                    <Badge
+                      variant={getBoardCategoryTone(
+                        config.boardType,
+                        item.category,
+                      )}
+                      className={`mr-2 ${badgeSizeSm} shrink-0 whitespace-nowrap`}
+                    >
+                      {config.categoryMap[item.category ?? ""]
+                        ? getCategoryBadgeText(
+                            config.categoryMap[item.category ?? ""],
+                          )
+                        : "분류 없음"}
                     </Badge>
 
-                    {config.brandOptionsByCategory?.[item.category ?? ""] && item.brand ? (
-                      <span className="mr-2 inline-flex max-w-[10rem] shrink-0 items-center truncate whitespace-nowrap rounded-full bg-muted px-2 py-0.5 text-[11px] font-semibold text-muted-foreground dark:text-muted">{config.brandLabelMap?.[item.brand] ?? item.brand}</span>
+                    {config.brandOptionsByCategory?.[item.category ?? ""] &&
+                    item.brand ? (
+                      <span className="mr-2 inline-flex max-w-[10rem] shrink-0 items-center truncate whitespace-nowrap rounded-full bg-muted px-2 py-0.5 text-[11px] font-semibold text-muted-foreground dark:text-muted">
+                        {config.brandLabelMap?.[item.brand] ?? item.brand}
+                      </span>
                     ) : null}
 
                     {item.title}
@@ -1333,7 +1648,10 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                     {/* 작성자 */}
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <button type="button" className="max-w-[10rem] truncate whitespace-nowrap font-medium underline-offset-4 hover:underline">
+                        <button
+                          type="button"
+                          className="max-w-[10rem] truncate whitespace-nowrap font-medium underline-offset-4 hover:underline"
+                        >
                           {item.nickname || "회원"}
                         </button>
                       </DropdownMenuTrigger>
@@ -1345,7 +1663,9 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                             if (!item.userId) return;
                             if (!confirmLeaveIfDirty()) return;
                             const authorName = item.nickname ?? "";
-                            router.push(`${config.routePrefix}?authorId=${item.userId}&authorName=${encodeURIComponent(authorName)}`);
+                            router.push(
+                              `${config.routePrefix}?authorId=${item.userId}&authorName=${encodeURIComponent(authorName)}`,
+                            );
                           }}
                         >
                           이 작성자의 글 보기
@@ -1358,9 +1678,15 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                               e.stopPropagation();
 
                               if (!user) {
-                                const redirectTo = typeof window !== "undefined" ? window.location.pathname + window.location.search : `${config.routePrefix}/${id}`;
+                                const redirectTo =
+                                  typeof window !== "undefined"
+                                    ? window.location.pathname +
+                                      window.location.search
+                                    : `${config.routePrefix}/${id}`;
                                 if (!confirmLeaveIfDirty()) return;
-                                router.push(`/login?next=${encodeURIComponent(redirectTo)}`);
+                                router.push(
+                                  `/login?next=${encodeURIComponent(redirectTo)}`,
+                                );
                                 return;
                               }
 
@@ -1415,7 +1741,11 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                 {/* 더보기 메뉴 (신고/수정/삭제) */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 text-muted-foreground hover:text-foreground">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 shrink-0 text-muted-foreground hover:text-foreground"
+                    >
                       <MoreVertical className="h-4 w-4" />
                       <span className="sr-only">게시글 메뉴</span>
                     </Button>
@@ -1434,9 +1764,17 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                       </DropdownMenuItem>
                     )}
                     {canDeletePost && (
-                      <DropdownMenuItem onClick={handleDelete} disabled={isDeleting} className="gap-2 text-destructive focus:text-destructive">
+                      <DropdownMenuItem
+                        onClick={handleDelete}
+                        disabled={isDeleting}
+                        className="gap-2 text-destructive focus:text-destructive"
+                      >
                         <Trash2 className="h-4 w-4" />
-                        {isDeleting ? "삭제 중..." : isAdmin && !isAuthor ? "관리자 삭제" : "삭제"}
+                        {isDeleting
+                          ? "삭제 중..."
+                          : isAdmin && !isAuthor
+                            ? "관리자 삭제"
+                            : "삭제"}
                       </DropdownMenuItem>
                     )}
                     {canDeletePost && <DropdownMenuSeparator />}
@@ -1465,7 +1803,9 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                   <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
                     {/* 가격 헤더 영역 */}
                     <div className="border-b border-border bg-muted/40 px-5 py-4 md:px-6">
-                      <p className="mb-1 text-xs font-medium text-muted-foreground">판매 가격</p>
+                      <p className="mb-1 text-xs font-medium text-muted-foreground">
+                        판매 가격
+                      </p>
                       <p className="text-3xl font-extrabold tracking-normal text-foreground">
                         {item.marketMeta.price?.toLocaleString?.() ?? "-"}
                         <span className="ml-0.5 text-lg font-semibold">원</span>
@@ -1474,20 +1814,42 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                       <div className="mt-3 flex flex-wrap items-center gap-2">
                         {(() => {
                           const status = item.marketMeta.saleStatus;
-                          const statusLabel = getMarketSaleStatusLabel(status) || "-";
-                          const variant = status === "selling" ? "success" : status === "reserved" ? "warning" : status === "sold" ? "neutral" : "outline";
+                          const statusLabel =
+                            getMarketSaleStatusLabel(status) || "-";
+                          const variant =
+                            status === "selling"
+                              ? "success"
+                              : status === "reserved"
+                                ? "warning"
+                                : status === "sold"
+                                  ? "neutral"
+                                  : "outline";
                           return (
-                            <Badge variant={variant as any} className={badgeSizeSm}>
+                            <Badge
+                              variant={variant as any}
+                              className={badgeSizeSm}
+                            >
                               {statusLabel}
                             </Badge>
                           );
                         })()}
                         {(() => {
                           const grade = item.marketMeta.conditionGrade;
-                          const gradeLabel = getMarketConditionGradeLabel(grade) || "-";
-                          const variant = grade === "S" ? "info" : grade === "A" ? "success" : grade === "B" ? "warning" : "neutral";
+                          const gradeLabel =
+                            getMarketConditionGradeLabel(grade) || "-";
+                          const variant =
+                            grade === "S"
+                              ? "info"
+                              : grade === "A"
+                                ? "success"
+                                : grade === "B"
+                                  ? "warning"
+                                  : "neutral";
                           return (
-                            <Badge variant={variant as any} className={badgeSizeSm}>
+                            <Badge
+                              variant={variant as any}
+                              className={badgeSizeSm}
+                            >
                               {gradeLabel}
                             </Badge>
                           );
@@ -1497,20 +1859,43 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                     {/* 보조 메타 정보 2열 그리드 */}
                     <div className="grid grid-cols-2 divide-x divide-border text-sm md:grid-cols-4">
                       <div className="px-4 py-3 md:px-5">
-                        <p className="mb-0.5 text-sm text-foreground/75">브랜드</p>
-                        <p className="font-semibold text-foreground">{getMarketBrandLabel(item.brand) || "-"}</p>
+                        <p className="mb-0.5 text-sm text-foreground/75">
+                          브랜드
+                        </p>
+                        <p className="font-semibold text-foreground">
+                          {getMarketBrandLabel(item.brand) || "-"}
+                        </p>
                       </div>
                       <div className="px-4 py-3 md:px-5">
-                        <p className="mb-0.5 text-sm text-foreground/75">모델명</p>
-                        <p className="font-semibold text-foreground">{marketText(item.marketMeta.racketSpec?.modelName ?? item.marketMeta.stringSpec?.modelName)}</p>
+                        <p className="mb-0.5 text-sm text-foreground/75">
+                          모델명
+                        </p>
+                        <p className="font-semibold text-foreground">
+                          {marketText(
+                            item.marketMeta.racketSpec?.modelName ??
+                              item.marketMeta.stringSpec?.modelName,
+                          )}
+                        </p>
                       </div>
                       <div className="px-4 py-3 md:px-5 border-t border-border md:border-t-0">
-                        <p className="mb-0.5 text-sm text-foreground/75">카테고리</p>
-                        <p className="font-semibold text-foreground">{config.categoryMap[item.category ?? ""] ? getCategoryBadgeText(config.categoryMap[item.category ?? ""]) : "-"}</p>
+                        <p className="mb-0.5 text-sm text-foreground/75">
+                          카테고리
+                        </p>
+                        <p className="font-semibold text-foreground">
+                          {config.categoryMap[item.category ?? ""]
+                            ? getCategoryBadgeText(
+                                config.categoryMap[item.category ?? ""],
+                              )
+                            : "-"}
+                        </p>
                       </div>
                       <div className="px-4 py-3 md:px-5 border-t border-border md:border-t-0">
-                        <p className="mb-0.5 text-sm text-foreground/75">등록일</p>
-                        <p className="font-semibold text-foreground">{fmtDateTime(item.createdAt)}</p>
+                        <p className="mb-0.5 text-sm text-foreground/75">
+                          등록일
+                        </p>
+                        <p className="font-semibold text-foreground">
+                          {fmtDateTime(item.createdAt)}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -1519,23 +1904,34 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                   {item.marketMeta.conditionNote ? (
                     <div className="rounded-xl border border-border bg-card px-5 py-4 shadow-sm md:px-6">
                       <div className="mb-2 flex items-center gap-2">
-                        <span className="text-sm font-semibold text-foreground">상태 설명</span>
-                        <span className="text-sm text-foreground/75">판매자가 작성한 실물 컨디션 메모입니다.</span>
+                        <span className="text-sm font-semibold text-foreground">
+                          상태 설명
+                        </span>
+                        <span className="text-sm text-foreground/75">
+                          판매자가 작성한 실물 컨디션 메모입니다.
+                        </span>
                       </div>
-                      <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/85">{item.marketMeta.conditionNote}</p>
+                      <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/85">
+                        {item.marketMeta.conditionNote}
+                      </p>
                     </div>
                   ) : null}
 
                   {/* ── 3. 세부 스펙 (타일 그리드) ── */}
-                  {(item.category === "racket" || item.category === "string") && (
+                  {(item.category === "racket" ||
+                    item.category === "string") && (
                     <div className="rounded-xl border border-border bg-card px-5 py-4 shadow-sm md:px-6">
-                      <p className="mb-4 text-sm font-semibold text-foreground">세부 스펙</p>
+                      <p className="mb-4 text-sm font-semibold text-foreground">
+                        세부 스펙
+                      </p>
 
                       {item.category === "racket" ? (
                         <div className="space-y-4">
                           {/* 기본 프레임 정보 */}
                           <div>
-                            <p className="mb-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">프레임 정보</p>
+                            <p className="mb-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                              프레임 정보
+                            </p>
                             <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
                               {(
                                 [
@@ -1545,16 +1941,28 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                                   { key: "lengthIn" as const, unit: "in" },
                                 ] as const
                               ).map(({ key, unit }) => (
-                                <div key={key} className="rounded-lg border border-border bg-muted/30 px-3 py-2.5">
-                                  <p className="text-sm text-foreground/75">{getMarketRacketFieldLabel(key)}</p>
-                                  <p className="mt-0.5 text-sm font-semibold text-foreground">{marketNumberText(item.marketMeta!.racketSpec?.[key], unit)}</p>
+                                <div
+                                  key={key}
+                                  className="rounded-lg border border-border bg-muted/30 px-3 py-2.5"
+                                >
+                                  <p className="text-sm text-foreground/75">
+                                    {getMarketRacketFieldLabel(key)}
+                                  </p>
+                                  <p className="mt-0.5 text-sm font-semibold text-foreground">
+                                    {marketNumberText(
+                                      item.marketMeta!.racketSpec?.[key],
+                                      unit,
+                                    )}
+                                  </p>
                                 </div>
                               ))}
                             </div>
                           </div>
                           {/* 플레이 성향 정보 */}
                           <div>
-                            <p className="mb-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">플레이 성향</p>
+                            <p className="mb-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                              플레이 성향
+                            </p>
                             <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
                               {(
                                 [
@@ -1565,18 +1973,40 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                                   { key: "stiffnessRa" as const, unit: "RA" },
                                 ] as const
                               ).map(({ key, unit }) => (
-                                <div key={key} className="rounded-lg border border-border bg-muted/30 px-3 py-2.5">
-                                  <p className="text-sm text-foreground/75">{getMarketRacketFieldLabel(key)}</p>
-                                  <p className="mt-0.5 text-sm font-semibold text-foreground">{marketNumberText(item.marketMeta!.racketSpec?.[key], unit)}</p>
+                                <div
+                                  key={key}
+                                  className="rounded-lg border border-border bg-muted/30 px-3 py-2.5"
+                                >
+                                  <p className="text-sm text-foreground/75">
+                                    {getMarketRacketFieldLabel(key)}
+                                  </p>
+                                  <p className="mt-0.5 text-sm font-semibold text-foreground">
+                                    {marketNumberText(
+                                      item.marketMeta!.racketSpec?.[key],
+                                      unit,
+                                    )}
+                                  </p>
                                 </div>
                               ))}
                               <div className="rounded-lg border border-border bg-muted/30 px-3 py-2.5">
-                                <p className="text-sm text-foreground/75">{getMarketRacketFieldLabel("pattern")}</p>
-                                <p className="mt-0.5 text-sm font-semibold text-foreground">{marketText(item.marketMeta.racketSpec?.pattern)}</p>
+                                <p className="text-sm text-foreground/75">
+                                  {getMarketRacketFieldLabel("pattern")}
+                                </p>
+                                <p className="mt-0.5 text-sm font-semibold text-foreground">
+                                  {marketText(
+                                    item.marketMeta.racketSpec?.pattern,
+                                  )}
+                                </p>
                               </div>
                               <div className="rounded-lg border border-border bg-muted/30 px-3 py-2.5">
-                                <p className="text-sm text-foreground/75">{getMarketRacketFieldLabel("gripSize")}</p>
-                                <p className="mt-0.5 text-sm font-semibold text-foreground">{marketText(item.marketMeta.racketSpec?.gripSize)}</p>
+                                <p className="text-sm text-foreground/75">
+                                  {getMarketRacketFieldLabel("gripSize")}
+                                </p>
+                                <p className="mt-0.5 text-sm font-semibold text-foreground">
+                                  {marketText(
+                                    item.marketMeta.racketSpec?.gripSize,
+                                  )}
+                                </p>
                               </div>
                             </div>
                           </div>
@@ -1586,19 +2016,33 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                         <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
                           <div className="rounded-lg border border-border bg-muted/30 px-3 py-2.5">
                             <p className="text-sm text-foreground/75">재질</p>
-                            <p className="mt-0.5 text-sm font-semibold text-foreground">{getMarketStringMaterialLabel(item.marketMeta.stringSpec?.material) || "-"}</p>
+                            <p className="mt-0.5 text-sm font-semibold text-foreground">
+                              {getMarketStringMaterialLabel(
+                                item.marketMeta.stringSpec?.material,
+                              ) || "-"}
+                            </p>
                           </div>
                           <div className="rounded-lg border border-border bg-muted/30 px-3 py-2.5">
                             <p className="text-sm text-foreground/75">게이지</p>
-                            <p className="mt-0.5 text-sm font-semibold text-foreground">{marketText(item.marketMeta.stringSpec?.gauge)}</p>
+                            <p className="mt-0.5 text-sm font-semibold text-foreground">
+                              {marketText(item.marketMeta.stringSpec?.gauge)}
+                            </p>
                           </div>
                           <div className="rounded-lg border border-border bg-muted/30 px-3 py-2.5">
                             <p className="text-sm text-foreground/75">색상</p>
-                            <p className="mt-0.5 text-sm font-semibold text-foreground">{getMarketStringColorLabel(item.marketMeta.stringSpec?.color) || "-"}</p>
+                            <p className="mt-0.5 text-sm font-semibold text-foreground">
+                              {getMarketStringColorLabel(
+                                item.marketMeta.stringSpec?.color,
+                              ) || "-"}
+                            </p>
                           </div>
                           <div className="rounded-lg border border-border bg-muted/30 px-3 py-2.5">
                             <p className="text-sm text-foreground/75">길이</p>
-                            <p className="mt-0.5 text-sm font-semibold text-foreground">{getMarketStringLengthLabel(item.marketMeta.stringSpec?.length) || "-"}</p>
+                            <p className="mt-0.5 text-sm font-semibold text-foreground">
+                              {getMarketStringLengthLabel(
+                                item.marketMeta.stringSpec?.length,
+                              ) || "-"}
+                            </p>
                           </div>
                         </div>
                       )}
@@ -1611,8 +2055,20 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                 <div className="mb-6 space-y-4">
                   {item.images.map((url, idx) => (
                     <div key={url + idx} className="flex justify-center">
-                      <button type="button" onClick={() => window.open(url, "_blank", "noopener,noreferrer")} className="relative block w-full max-w-3xl overflow-hidden rounded-xl bg-card dark:bg-muted hover:bg-card transition">
-                        <Image src={url || "/placeholder.svg"} alt={`첨부 이미지 ${idx + 1}`} width={1200} height={800} className="w-full h-auto max-h-[560px] object-contain bg-card dark:bg-muted" />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          window.open(url, "_blank", "noopener,noreferrer")
+                        }
+                        className="relative block w-full max-w-3xl overflow-hidden rounded-xl bg-card dark:bg-muted hover:bg-card transition"
+                      >
+                        <Image
+                          src={url || "/placeholder.svg"}
+                          alt={`첨부 이미지 ${idx + 1}`}
+                          width={1200}
+                          height={800}
+                          className="w-full h-auto max-h-[560px] object-contain bg-card dark:bg-muted"
+                        />
                       </button>
                     </div>
                   ))}
@@ -1620,40 +2076,68 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
               )}
 
               {/* 본문 */}
-              <div className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">{item.content}</div>
+              <div className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
+                {item.content}
+              </div>
 
               {/* 첨부파일 */}
               {attachments.length > 0 && (
                 <div className="mt-8 space-y-3 border-t border-border pt-4">
                   <div className="flex items-center gap-2">
                     <FileText className="h-4 w-4 text-primary" />
-                    <span className="text-sm font-semibold text-foreground">첨부파일</span>
-                    <span className="text-xs text-foreground/75">{attachments.length}개</span>
+                    <span className="text-sm font-semibold text-foreground">
+                      첨부파일
+                    </span>
+                    <span className="text-xs text-foreground/75">
+                      {attachments.length}개
+                    </span>
                   </div>
 
                   <div className="grid gap-3 sm:grid-cols-2">
                     {attachments.map((att, index) => {
                       const url = typeof att === "string" ? att : att.url;
-                      const name = typeof att === "string" ? `attachment-${index + 1}` : att.name || `attachment-${index + 1}`;
-                      const size = typeof att === "object" && att.size ? `${(att.size / 1024 / 1024).toFixed(2)} MB` : "";
+                      const name =
+                        typeof att === "string"
+                          ? `attachment-${index + 1}`
+                          : att.name || `attachment-${index + 1}`;
+                      const size =
+                        typeof att === "object" && att.size
+                          ? `${(att.size / 1024 / 1024).toFixed(2)} MB`
+                          : "";
 
                       if (!url) return null;
 
                       return (
-                        <div key={`${url}-${index}`} className="flex items-center justify-between rounded-lg border border-border bg-muted/50 px-3 py-2 text-xs shadow-sm dark:border-border">
+                        <div
+                          key={`${url}-${index}`}
+                          className="flex items-center justify-between rounded-lg border border-border bg-muted/50 px-3 py-2 text-xs shadow-sm dark:border-border"
+                        >
                           <div className="flex min-w-0 flex-1 items-center gap-3">
                             <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md border border-border bg-secondary">
                               <FileText className="h-4 w-4 text-primary" />
                             </div>
                             <div className="min-w-0 flex-1">
-                              <div className="truncate font-medium text-foreground" title={name}>
+                              <div
+                                className="truncate font-medium text-foreground"
+                                title={name}
+                              >
                                 {name}
                               </div>
-                              {size && <div className="text-sm text-foreground/75">{size}</div>}
+                              {size && (
+                                <div className="text-sm text-foreground/75">
+                                  {size}
+                                </div>
+                              )}
                             </div>
                           </div>
 
-                          <Button type="button" variant="outline" size="sm" className="ml-3 flex-shrink-0 bg-transparent" onClick={() => handleDownload(url, name)}>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="ml-3 flex-shrink-0 bg-transparent"
+                            onClick={() => handleDownload(url, name)}
+                          >
                             다운로드
                           </Button>
                         </div>
@@ -1663,7 +2147,11 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                 </div>
               )}
 
-              <section ref={navSectionRef} className="mt-8 space-y-3 border-t pt-4" aria-label="글 이동">
+              <section
+                ref={navSectionRef}
+                className="mt-8 space-y-3 border-t pt-4"
+                aria-label="글 이동"
+              >
                 <div className="grid gap-2 md:grid-cols-2">
                   {(
                     [
@@ -1681,14 +2169,26 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                       },
                     ] as const
                   ).map(({ key, label, icon: Icon, target }) => (
-                    <Button key={key} asChild={!!target} variant="outline" className="h-auto min-h-16 justify-start px-4 py-3 text-left" disabled={!target}>
+                    <Button
+                      key={key}
+                      asChild={!!target}
+                      variant="outline"
+                      className="h-auto min-h-16 justify-start px-4 py-3 text-left"
+                      disabled={!target}
+                    >
                       {target ? (
-                        <Link href={`${config.routePrefix}/${target.id}${listQuery ? `?${listQuery}` : ""}`}>
+                        <Link
+                          href={`${config.routePrefix}/${target.id}${listQuery ? `?${listQuery}` : ""}`}
+                        >
                           <div className="flex w-full items-start gap-3">
                             <Icon className="mt-0.5 h-4 w-4 shrink-0" />
                             <div className="min-w-0">
-                              <p className="text-xs text-foreground/75">{label}</p>
-                              <p className="line-clamp-2 break-keep text-sm font-medium text-foreground">{target.title}</p>
+                              <p className="text-xs text-foreground/75">
+                                {label}
+                              </p>
+                              <p className="line-clamp-2 break-keep text-sm font-medium text-foreground">
+                                {target.title}
+                              </p>
                             </div>
                           </div>
                         </Link>
@@ -1697,7 +2197,9 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                           <Icon className="mt-0.5 h-4 w-4 shrink-0" />
                           <span className="min-w-0">
                             <span className="block text-xs">{label}</span>
-                            <span className="block line-clamp-1 text-sm">이동할 글이 없습니다.</span>
+                            <span className="block line-clamp-1 text-sm">
+                              이동할 글이 없습니다.
+                            </span>
                           </span>
                         </span>
                       )}
@@ -1707,7 +2209,10 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
               </section>
 
               {/* 안내 문구 */}
-              <p className="mt-6 text-xs text-foreground/75">게시글 이용 시 커뮤니티 가이드를 준수해 주세요. 신고가 반복되는 경우 글이 숨김 처리될 수 있습니다.</p>
+              <p className="mt-6 text-xs text-foreground/75">
+                게시글 이용 시 커뮤니티 가이드를 준수해 주세요. 신고가 반복되는
+                경우 글이 숨김 처리될 수 있습니다.
+              </p>
 
               {/* 게시글 신고 다이얼로그 */}
               <Dialog
@@ -1723,16 +2228,35 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                 <DialogContent className="max-w-md">
                   <DialogHeader>
                     <DialogTitle>이 게시글을 신고하시겠습니까?</DialogTitle>
-                    <p className="text-sm text-foreground/80">허위 신고 또는 악의적 신고는 이용 제한 대상이 될 수 있습니다.</p>
+                    <p className="text-sm text-foreground/80">
+                      허위 신고 또는 악의적 신고는 이용 제한 대상이 될 수
+                      있습니다.
+                    </p>
                   </DialogHeader>
 
-                  <Textarea placeholder="신고 사유를 구체적으로 작성해주세요. (최소 10자)" value={reason} onChange={(e) => setReason(e.target.value)} className="h-32" disabled={isReporting} />
+                  <Textarea
+                    placeholder="신고 사유를 구체적으로 작성해주세요. (최소 10자)"
+                    value={reason}
+                    onChange={(e) => setReason(e.target.value)}
+                    className="h-32"
+                    disabled={isReporting}
+                  />
 
                   <DialogFooter className="gap-2 sm:justify-end">
-                    <Button type="button" variant="outline" onClick={() => setOpenReport(false)} disabled={isReporting}>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setOpenReport(false)}
+                      disabled={isReporting}
+                    >
                       취소
                     </Button>
-                    <Button type="button" variant="destructive" onClick={handleSubmitReport} disabled={isReporting}>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      onClick={handleSubmitReport}
+                      disabled={isReporting}
+                    >
                       {isReporting ? "신고 중..." : "신고하기"}
                     </Button>
                   </DialogFooter>
@@ -1752,14 +2276,21 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                 <DialogContent>
                   <DialogHeader>
                     <DialogTitle>댓글 신고하기</DialogTitle>
-                    <DialogDescription>신고 사유를 자세히 작성해 주세요. 운영자가 검토 후 필요한 조치를 진행합니다.</DialogDescription>
+                    <DialogDescription>
+                      신고 사유를 자세히 작성해 주세요. 운영자가 검토 후 필요한
+                      조치를 진행합니다.
+                    </DialogDescription>
                   </DialogHeader>
 
                   <div className="space-y-2">
                     {targetComment && (
                       <div className="rounded-md border bg-muted px-3 py-2 text-xs text-foreground/75">
-                        <div className="font-medium mb-1">신고 대상: {targetComment.nickname ?? "회원"}</div>
-                        <div className="line-clamp-2 whitespace-pre-wrap">{targetComment.content}</div>
+                        <div className="font-medium mb-1">
+                          신고 대상: {targetComment.nickname ?? "회원"}
+                        </div>
+                        <div className="line-clamp-2 whitespace-pre-wrap">
+                          {targetComment.content}
+                        </div>
                       </div>
                     )}
 
@@ -1775,10 +2306,18 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                   </div>
 
                   <DialogFooter>
-                    <Button type="button" variant="outline" onClick={closeCommentReport}>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={closeCommentReport}
+                    >
                       취소
                     </Button>
-                    <Button type="button" onClick={handleSubmitCommentReport} disabled={isCommentReporting}>
+                    <Button
+                      type="button"
+                      onClick={handleSubmitCommentReport}
+                      disabled={isCommentReporting}
+                    >
                       {isCommentReporting ? "신고 중..." : "신고하기"}
                     </Button>
                   </DialogFooter>
@@ -1789,20 +2328,44 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
               {item && (
                 <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   {/* 추천 버튼 */}
-                  <Button type="button" variant={item.likedByMe ? "default" : "outline"} size="sm" onClick={handleToggleLike} disabled={isLiking} className="h-10 w-full gap-2 text-sm sm:w-auto sm:min-w-[160px]">
+                  <Button
+                    type="button"
+                    variant={item.likedByMe ? "default" : "outline"}
+                    size="sm"
+                    onClick={handleToggleLike}
+                    disabled={isLiking}
+                    className="h-10 w-full gap-2 text-sm sm:w-auto sm:min-w-[160px]"
+                  >
                     <ThumbsUp className="h-4 w-4" />
-                    {isLiking ? "처리 중..." : item.likedByMe ? `추천 취소 (${item.likes ?? 0})` : `추천 (${item.likes ?? 0})`}
+                    {isLiking
+                      ? "처리 중..."
+                      : item.likedByMe
+                        ? `추천 취소 (${item.likes ?? 0})`
+                        : `추천 (${item.likes ?? 0})`}
                   </Button>
 
                   {/* 목록/새글 버튼 */}
                   <div className="grid grid-cols-2 gap-2 sm:flex sm:gap-2">
-                    <Button asChild variant="outline" size="sm" className="h-10 w-full text-sm sm:w-auto sm:min-w-[100px]">
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="sm"
+                      className="h-10 w-full text-sm sm:w-auto sm:min-w-[100px]"
+                    >
                       <Link href={listHref} onClick={onNavLinkClick}>
                         목록으로
                       </Link>
                     </Button>
-                    <Button asChild variant="default" size="sm" className="h-10 w-full text-sm sm:w-auto sm:min-w-[100px]">
-                      <Link href={`${config.routePrefix}/write`} onClick={onNavLinkClick}>
+                    <Button
+                      asChild
+                      variant="default"
+                      size="sm"
+                      className="h-10 w-full text-sm sm:w-auto sm:min-w-[100px]"
+                    >
+                      <Link
+                        href={`${config.routePrefix}/write`}
+                        onClick={onNavLinkClick}
+                      >
                         새 글 작성
                       </Link>
                     </Button>
@@ -1819,7 +2382,9 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
               <CardTitle className="flex items-center gap-3 text-base font-semibold text-foreground">
                 <MessageSquare className="h-5 w-5 text-muted-foreground" />
                 <span>댓글</span>
-                <span className="flex h-6 min-w-[28px] items-center justify-center rounded-full bg-primary px-2.5 text-sm font-medium text-primary-foreground">{totalComments}</span>
+                <span className="flex h-6 min-w-[28px] items-center justify-center rounded-full bg-primary px-2.5 text-sm font-medium text-primary-foreground">
+                  {totalComments}
+                </span>
               </CardTitle>
             </CardHeader>
 
@@ -1835,10 +2400,20 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                       onChange={(e) => setCommentContent(e.target.value)}
                       disabled={isCommentSubmitting}
                     />
-                    {commentError && <p className="text-xs text-destructive">{commentError}</p>}
+                    {commentError && (
+                      <p className="text-xs text-destructive">{commentError}</p>
+                    )}
                     <div className="flex justify-end">
-                      <Button type="button" size="sm" className="h-9 bg-primary px-5 text-sm text-primary-foreground hover:bg-primary/90" disabled={isCommentSubmitting} onClick={handleSubmitComment}>
-                        {isCommentSubmitting && <span className="mr-2 h-3 w-3 animate-spin rounded-full border-2 border-border border-t-transparent dark:border-border dark:border-t-transparent" />}
+                      <Button
+                        type="button"
+                        size="sm"
+                        className="h-9 bg-primary px-5 text-sm text-primary-foreground hover:bg-primary/90"
+                        disabled={isCommentSubmitting}
+                        onClick={handleSubmitComment}
+                      >
+                        {isCommentSubmitting && (
+                          <span className="mr-2 h-3 w-3 animate-spin rounded-full border-2 border-border border-t-transparent dark:border-border dark:border-t-transparent" />
+                        )}
                         <span>등록</span>
                       </Button>
                     </div>
@@ -1846,7 +2421,9 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                 ) : (
                   <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/50 px-4 py-3.5 dark:border-border">
                     <MessageSquare className="h-5 w-5 text-muted-foreground" />
-                    <p className="text-sm text-foreground/80">로그인 후 댓글을 작성할 수 있습니다.</p>
+                    <p className="text-sm text-foreground/80">
+                      로그인 후 댓글을 작성할 수 있습니다.
+                    </p>
                   </div>
                 )}
               </div>
@@ -1858,7 +2435,10 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                 {isCommentsLoading && (
                   <div className="space-y-3">
                     {Array.from({ length: 3 }).map((_, i) => (
-                      <div key={i} className="space-y-3 rounded-xl border border-border bg-card p-5">
+                      <div
+                        key={i}
+                        className="space-y-3 rounded-xl border border-border bg-card p-5"
+                      >
                         <div className="flex items-center gap-3">
                           <Skeleton className="h-9 w-9 rounded-full" />
                           <div className="space-y-2">
@@ -1875,22 +2455,30 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                 {!isCommentsLoading && comments.length === 0 && (
                   <div className="flex flex-col items-center justify-center py-10 md:py-16 text-center">
                     <MessageSquare className="mb-3 h-12 w-12 text-muted-foreground" />
-                    <p className="text-sm font-medium text-muted-foreground">첫 댓글을 남겨보세요</p>
+                    <p className="text-sm font-medium text-muted-foreground">
+                      첫 댓글을 남겨보세요
+                    </p>
                   </div>
                 )}
 
                 {!isCommentsLoading && comments.length > 0 && (
                   <ul className="space-y-3">
                     {rootComments.map((c) => {
-                      const replies = sortRepliesAsc(repliesByParentId[c.id] ?? []);
+                      const replies = sortRepliesAsc(
+                        repliesByParentId[c.id] ?? [],
+                      );
                       const isExpanded = expandedRootIds.has(c.id);
 
                       const MAX_COLLAPSED_REPLIES = 3;
                       const totalReplies = replies.length;
 
-                      const visibleReplies = isExpanded ? replies : replies.slice(0, MAX_COLLAPSED_REPLIES);
+                      const visibleReplies = isExpanded
+                        ? replies
+                        : replies.slice(0, MAX_COLLAPSED_REPLIES);
 
-                      const hiddenCount = isExpanded ? 0 : Math.max(0, totalReplies - MAX_COLLAPSED_REPLIES);
+                      const hiddenCount = isExpanded
+                        ? 0
+                        : Math.max(0, totalReplies - MAX_COLLAPSED_REPLIES);
 
                       return (
                         <li key={c.id} className="space-y-2.5">
@@ -1919,7 +2507,12 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                             onStartEditReply={startEditReply}
                             onDeleteComment={handleDeleteComment}
                             onOpenCommentReport={openCommentReportDialog}
-                            onReplyDraftChange={(commentId, value) => setReplyDrafts((prev) => ({ ...prev, [commentId]: value }))}
+                            onReplyDraftChange={(commentId, value) =>
+                              setReplyDrafts((prev) => ({
+                                ...prev,
+                                [commentId]: value,
+                              }))
+                            }
                             onReplyCancel={(commentId) => {
                               setReplyDrafts((prev) => {
                                 const next = { ...prev };
@@ -1937,8 +2530,18 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                               void handleSubmitReply(commentId, content);
                             }}
                             onStartReply={handleStartReply}
-                            onCommentEditDraftChange={(commentId, value) => setCommentEditDrafts((prev) => ({ ...prev, [commentId]: value }))}
-                            onReplyEditDraftChange={(commentId, value) => setReplyEditDrafts((prev) => ({ ...prev, [commentId]: value }))}
+                            onCommentEditDraftChange={(commentId, value) =>
+                              setCommentEditDrafts((prev) => ({
+                                ...prev,
+                                [commentId]: value,
+                              }))
+                            }
+                            onReplyEditDraftChange={(commentId, value) =>
+                              setReplyEditDrafts((prev) => ({
+                                ...prev,
+                                [commentId]: value,
+                              }))
+                            }
                             onCancelEditComment={cancelEditComment}
                             onCancelEditReply={cancelEditReply}
                             onSaveEdit={handleCommentSave}
@@ -1959,10 +2562,15 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                                     isReplySubmitting={isReplySubmitting}
                                     replyDraft={replyDrafts[reply.id] ?? ""}
                                     replyError={replyError}
-                                    onNavigateAuthorPosts={handleNavigateAuthorPosts}
+                                    onNavigateAuthorPosts={
+                                      handleNavigateAuthorPosts
+                                    }
                                     onSendMessage={(comment) => {
                                       if (!comment.userId) return;
-                                      openCompose(comment.userId, comment.nickname);
+                                      openCompose(
+                                        comment.userId,
+                                        comment.nickname,
+                                      );
                                     }}
                                     onOpenAuthorProfile={(comment) =>
                                       handleOpenAuthorProfile({
@@ -1973,8 +2581,15 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                                     onStartEditComment={startEditComment}
                                     onStartEditReply={startEditReply}
                                     onDeleteComment={handleDeleteComment}
-                                    onOpenCommentReport={openCommentReportDialog}
-                                    onReplyDraftChange={(commentId, value) => setReplyDrafts((prev) => ({ ...prev, [commentId]: value }))}
+                                    onOpenCommentReport={
+                                      openCommentReportDialog
+                                    }
+                                    onReplyDraftChange={(commentId, value) =>
+                                      setReplyDrafts((prev) => ({
+                                        ...prev,
+                                        [commentId]: value,
+                                      }))
+                                    }
                                     onReplyCancel={(commentId) => {
                                       setReplyDrafts((prev) => {
                                         const next = { ...prev };
@@ -1986,14 +2601,35 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                                     }}
                                     onSubmitReply={(commentId, content) => {
                                       if (!content.trim()) {
-                                        setReplyError("답글 내용을 입력해 주세요.");
+                                        setReplyError(
+                                          "답글 내용을 입력해 주세요.",
+                                        );
                                         return;
                                       }
-                                      void handleSubmitReply(commentId, content);
+                                      void handleSubmitReply(
+                                        commentId,
+                                        content,
+                                      );
                                     }}
                                     onStartReply={handleStartReply}
-                                    onCommentEditDraftChange={(commentId, value) => setCommentEditDrafts((prev) => ({ ...prev, [commentId]: value }))}
-                                    onReplyEditDraftChange={(commentId, value) => setReplyEditDrafts((prev) => ({ ...prev, [commentId]: value }))}
+                                    onCommentEditDraftChange={(
+                                      commentId,
+                                      value,
+                                    ) =>
+                                      setCommentEditDrafts((prev) => ({
+                                        ...prev,
+                                        [commentId]: value,
+                                      }))
+                                    }
+                                    onReplyEditDraftChange={(
+                                      commentId,
+                                      value,
+                                    ) =>
+                                      setReplyEditDrafts((prev) => ({
+                                        ...prev,
+                                        [commentId]: value,
+                                      }))
+                                    }
                                     onCancelEditComment={cancelEditComment}
                                     onCancelEditReply={cancelEditReply}
                                     onSaveEdit={handleCommentSave}
@@ -2031,10 +2667,30 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                       {commentPage} / {totalCommentPages}
                     </span>
                     <div className="flex w-full flex-wrap gap-2 sm:w-auto sm:flex-nowrap">
-                      <Button type="button" variant="outline" size="sm" disabled={commentPage <= 1} onClick={() => setCommentPage((p) => Math.max(1, p - 1))} className="h-8 px-4 text-xs">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={commentPage <= 1}
+                        onClick={() =>
+                          setCommentPage((p) => Math.max(1, p - 1))
+                        }
+                        className="h-8 px-4 text-xs"
+                      >
                         이전
                       </Button>
-                      <Button type="button" variant="outline" size="sm" disabled={commentPage >= totalCommentPages} onClick={() => setCommentPage((p) => Math.min(totalCommentPages, p + 1))} className="h-8 px-4 text-xs">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={commentPage >= totalCommentPages}
+                        onClick={() =>
+                          setCommentPage((p) =>
+                            Math.min(totalCommentPages, p + 1),
+                          )
+                        }
+                        className="h-8 px-4 text-xs"
+                      >
                         다음
                       </Button>
                     </div>
@@ -2056,8 +2712,12 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
           >
             <DialogContent className="max-w-5xl max-h-screen overflow-y-auto">
               <DialogHeader className="pb-4 border-b border-border">
-                <DialogTitle className="text-lg font-semibold text-foreground">작성자 프로필</DialogTitle>
-                {authorTarget?.nickname ? `${authorTarget.nickname}님의 커뮤니티 활동 정보입니다.` : "작성자 정보"}
+                <DialogTitle className="text-lg font-semibold text-foreground">
+                  작성자 프로필
+                </DialogTitle>
+                {authorTarget?.nickname
+                  ? `${authorTarget.nickname}님의 커뮤니티 활동 정보입니다.`
+                  : "작성자 정보"}
               </DialogHeader>
 
               {isAuthorLoading && (
@@ -2091,19 +2751,34 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                   </TabsList>
 
                   {/* 작성자(커뮤니티) 탭 */}
-                  <TabsContent value="community" className="mt-5 md:mt-6 space-y-4 md:space-y-6">
+                  <TabsContent
+                    value="community"
+                    className="mt-5 md:mt-6 space-y-4 md:space-y-6"
+                  >
                     {/* 기본 정보 */}
                     <div className="space-y-3">
-                      <h3 className="text-sm font-semibold text-foreground pb-2 border-b border-border">기본 정보</h3>
+                      <h3 className="text-sm font-semibold text-foreground pb-2 border-b border-border">
+                        기본 정보
+                      </h3>
                       <div className="space-y-2 text-sm">
                         <div className="flex items-center gap-2">
-                          <span className="text-muted-foreground w-20">이름</span>
-                          <span className="text-sm font-medium">{authorTarget?.nickname ?? "회원"}</span>
+                          <span className="text-muted-foreground w-20">
+                            이름
+                          </span>
+                          <span className="text-sm font-medium">
+                            {authorTarget?.nickname ?? "회원"}
+                          </span>
                         </div>
                         {authorOverview?.firstActivityAt && (
                           <div className="flex items-center gap-2">
-                            <span className="text-muted-foreground w-20">첫 활동일</span>
-                            <span className="text-foreground">{new Date(authorOverview.firstActivityAt).toLocaleDateString("ko-KR")}</span>
+                            <span className="text-muted-foreground w-20">
+                              첫 활동일
+                            </span>
+                            <span className="text-foreground">
+                              {new Date(
+                                authorOverview.firstActivityAt,
+                              ).toLocaleDateString("ko-KR")}
+                            </span>
                           </div>
                         )}
                       </div>
@@ -2112,15 +2787,25 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                     {/* 활동량 */}
                     {authorOverview && (
                       <div className="space-y-3">
-                        <h3 className="text-sm font-semibold text-foreground pb-2 border-b border-border">커뮤니티 활동</h3>
+                        <h3 className="text-sm font-semibold text-foreground pb-2 border-b border-border">
+                          커뮤니티 활동
+                        </h3>
                         <div className="flex gap-4 md:gap-6">
                           <div className="flex-1 rounded-lg border border-border bg-muted/50 dark:bg-background/40 p-4">
-                            <div className="text-xs text-foreground/75 mb-1">작성 글</div>
-                            <div className="text-2xl font-semibold text-foreground">{authorOverview.stats.posts}</div>
+                            <div className="text-xs text-foreground/75 mb-1">
+                              작성 글
+                            </div>
+                            <div className="text-2xl font-semibold text-foreground">
+                              {authorOverview.stats.posts}
+                            </div>
                           </div>
                           <div className="flex-1 rounded-lg border border-border bg-muted/50 dark:bg-background/40 p-4">
-                            <div className="text-xs text-foreground/75 mb-1">작성댓글</div>
-                            <div className="text-2xl font-semibold text-foreground">{authorOverview.stats.comments}</div>
+                            <div className="text-xs text-foreground/75 mb-1">
+                              작성댓글
+                            </div>
+                            <div className="text-2xl font-semibold text-foreground">
+                              {authorOverview.stats.comments}
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -2129,68 +2814,137 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                     {/* 최근 작성 글 */}
                     {authorOverview?.recentPosts?.length ? (
                       <div className="space-y-3">
-                        <h3 className="text-sm font-semibold text-foreground pb-2 border-b border-border">최근 작성 글</h3>
+                        <h3 className="text-sm font-semibold text-foreground pb-2 border-b border-border">
+                          최근 작성 글
+                        </h3>
                         <ul className="space-y-2">
                           {authorOverview.recentPosts.map((p) => (
-                            <li key={p.id} className="flex items-center justify-between gap-3 text-sm hover:bg-muted/50 dark:hover:bg-background/40 rounded-md p-2 -mx-2 transition-colors">
-                              <Link href={`${config.routePrefix}/${p.id}`} className="truncate text-foreground hover:text-muted-foreground dark:hover:text-muted-foreground flex-1">
+                            <li
+                              key={p.id}
+                              className="flex items-center justify-between gap-3 text-sm hover:bg-muted/50 dark:hover:bg-background/40 rounded-md p-2 -mx-2 transition-colors"
+                            >
+                              <Link
+                                href={`${config.routePrefix}/${p.id}`}
+                                className="truncate text-foreground hover:text-muted-foreground dark:hover:text-muted-foreground flex-1"
+                              >
                                 {p.title || "(제목 없음)"}
                               </Link>
-                              <span className="shrink-0 text-xs text-foreground/75">{new Date(p.createdAt).toLocaleDateString("ko-KR")}</span>
+                              <span className="shrink-0 text-xs text-foreground/75">
+                                {new Date(p.createdAt).toLocaleDateString(
+                                  "ko-KR",
+                                )}
+                              </span>
                             </li>
                           ))}
                         </ul>
                       </div>
                     ) : (
-                      <p className="text-sm text-foreground/80 text-center py-4">아직 활동 기록이 없거나, 공개 게시글이 없습니다.</p>
+                      <p className="text-sm text-foreground/80 text-center py-4">
+                        아직 활동 기록이 없거나, 공개 게시글이 없습니다.
+                      </p>
                     )}
                   </TabsContent>
 
                   {/* 테니스 탭 */}
                   <TabsContent value="tennis" className="mt-5 md:mt-6">
                     {!authorOverview?.tennisProfile ? (
-                      <div className="text-sm text-foreground/80 text-center py-8">작성자가 테니스 프로필을 공개하지 않았습니다.</div>
+                      <div className="text-sm text-foreground/80 text-center py-8">
+                        작성자가 테니스 프로필을 공개하지 않았습니다.
+                      </div>
                     ) : (
                       <div className="space-y-4 md:space-y-6">
                         {/* 기본 정보 */}
                         <div className="space-y-3">
-                          <h3 className="text-sm font-semibold text-foreground pb-2 border-b border-border">플레이어 정보</h3>
+                          <h3 className="text-sm font-semibold text-foreground pb-2 border-b border-border">
+                            플레이어 정보
+                          </h3>
                           <div className="grid grid-cols-3 gap-4">
                             <div className="rounded-lg border border-border bg-muted/50 dark:bg-background/40 p-3">
-                              <div className="text-xs text-foreground/75 mb-1">실력</div>
-                              <div className="text-sm font-medium text-foreground">{label(LEVEL_LABEL, authorOverview.tennisProfile.level)}</div>
+                              <div className="text-xs text-foreground/75 mb-1">
+                                실력
+                              </div>
+                              <div className="text-sm font-medium text-foreground">
+                                {label(
+                                  LEVEL_LABEL,
+                                  authorOverview.tennisProfile.level,
+                                )}
+                              </div>
                             </div>
                             <div className="rounded-lg border border-border bg-muted/50 dark:bg-background/40 p-3">
-                              <div className="text-xs text-foreground/75 mb-1">사용 손</div>
-                              <div className="text-sm font-medium text-foreground">{label(HAND_LABEL, authorOverview.tennisProfile.hand)}</div>
+                              <div className="text-xs text-foreground/75 mb-1">
+                                사용 손
+                              </div>
+                              <div className="text-sm font-medium text-foreground">
+                                {label(
+                                  HAND_LABEL,
+                                  authorOverview.tennisProfile.hand,
+                                )}
+                              </div>
                             </div>
                             <div className="rounded-lg border border-border bg-muted/50 dark:bg-background/40 p-3">
-                              <div className="text-xs text-foreground/75 mb-1">스타일</div>
-                              <div className="text-sm font-medium text-foreground">{label(STYLE_LABEL, authorOverview.tennisProfile.playStyle)}</div>
+                              <div className="text-xs text-foreground/75 mb-1">
+                                스타일
+                              </div>
+                              <div className="text-sm font-medium text-foreground">
+                                {label(
+                                  STYLE_LABEL,
+                                  authorOverview.tennisProfile.playStyle,
+                                )}
+                              </div>
                             </div>
                           </div>
                         </div>
 
                         {/* 라켓 */}
                         <div className="space-y-3">
-                          <h3 className="text-sm font-semibold text-foreground pb-2 border-b border-border">메인 라켓</h3>
+                          <h3 className="text-sm font-semibold text-foreground pb-2 border-b border-border">
+                            메인 라켓
+                          </h3>
                           <div className="rounded-lg border border-border p-4">
                             <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
                               <div className="flex items-center gap-2">
-                                <span className="text-muted-foreground w-16">브랜드</span>
-                                <span className="text-foreground font-medium">{v(authorOverview.tennisProfile.mainRacket?.brand)}</span>
+                                <span className="text-muted-foreground w-16">
+                                  브랜드
+                                </span>
+                                <span className="text-foreground font-medium">
+                                  {v(
+                                    authorOverview.tennisProfile.mainRacket
+                                      ?.brand,
+                                  )}
+                                </span>
                               </div>
                               <div className="flex items-center gap-2">
-                                <span className="text-muted-foreground w-16">모델</span>
-                                <span className="text-foreground font-medium">{v(authorOverview.tennisProfile.mainRacket?.model)}</span>
+                                <span className="text-muted-foreground w-16">
+                                  모델
+                                </span>
+                                <span className="text-foreground font-medium">
+                                  {v(
+                                    authorOverview.tennisProfile.mainRacket
+                                      ?.model,
+                                  )}
+                                </span>
                               </div>
                               <div className="flex items-center gap-2">
-                                <span className="text-muted-foreground w-16">무게</span>
-                                <span className="text-foreground">{v(authorOverview.tennisProfile.mainRacket?.weight)}</span>
+                                <span className="text-muted-foreground w-16">
+                                  무게
+                                </span>
+                                <span className="text-foreground">
+                                  {v(
+                                    authorOverview.tennisProfile.mainRacket
+                                      ?.weight,
+                                  )}
+                                </span>
                               </div>
                               <div className="flex items-center gap-2">
-                                <span className="text-muted-foreground w-16">밸런스</span>
-                                <span className="text-foreground">{v(authorOverview.tennisProfile.mainRacket?.balance)}</span>
+                                <span className="text-muted-foreground w-16">
+                                  밸런스
+                                </span>
+                                <span className="text-foreground">
+                                  {v(
+                                    authorOverview.tennisProfile.mainRacket
+                                      ?.balance,
+                                  )}
+                                </span>
                               </div>
                             </div>
                           </div>
@@ -2198,32 +2952,76 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
 
                         {/* 스트링 */}
                         <div className="space-y-3">
-                          <h3 className="text-sm font-semibold text-foreground pb-2 border-b border-border">메인 스트링</h3>
+                          <h3 className="text-sm font-semibold text-foreground pb-2 border-b border-border">
+                            메인 스트링
+                          </h3>
                           <div className="rounded-lg border border-border p-4">
                             <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
                               <div className="flex items-center gap-2">
-                                <span className="text-muted-foreground w-20">브랜드</span>
-                                <span className="text-foreground font-medium">{v(authorOverview.tennisProfile.mainString?.brand)}</span>
+                                <span className="text-muted-foreground w-20">
+                                  브랜드
+                                </span>
+                                <span className="text-foreground font-medium">
+                                  {v(
+                                    authorOverview.tennisProfile.mainString
+                                      ?.brand,
+                                  )}
+                                </span>
                               </div>
                               <div className="flex items-center gap-2">
-                                <span className="text-muted-foreground w-20">모델</span>
-                                <span className="text-foreground font-medium">{v(authorOverview.tennisProfile.mainString?.model)}</span>
+                                <span className="text-muted-foreground w-20">
+                                  모델
+                                </span>
+                                <span className="text-foreground font-medium">
+                                  {v(
+                                    authorOverview.tennisProfile.mainString
+                                      ?.model,
+                                  )}
+                                </span>
                               </div>
                               <div className="flex items-center gap-2">
-                                <span className="text-muted-foreground w-20">게이지</span>
-                                <span className="text-foreground">{v(authorOverview.tennisProfile.mainString?.gauge)}</span>
+                                <span className="text-muted-foreground w-20">
+                                  게이지
+                                </span>
+                                <span className="text-foreground">
+                                  {v(
+                                    authorOverview.tennisProfile.mainString
+                                      ?.gauge,
+                                  )}
+                                </span>
                               </div>
                               <div className="flex items-center gap-2">
-                                <span className="text-muted-foreground w-20">재질</span>
-                                <span className="text-foreground">{v(authorOverview.tennisProfile.mainString?.material)}</span>
+                                <span className="text-muted-foreground w-20">
+                                  재질
+                                </span>
+                                <span className="text-foreground">
+                                  {v(
+                                    authorOverview.tennisProfile.mainString
+                                      ?.material,
+                                  )}
+                                </span>
                               </div>
                               <div className="flex items-center gap-2">
-                                <span className="text-muted-foreground w-20">메인 텐션</span>
-                                <span className="text-foreground">{authorOverview.tennisProfile.mainString?.tensionMain ? `${authorOverview.tennisProfile.mainString.tensionMain}LB` : "-"}</span>
+                                <span className="text-muted-foreground w-20">
+                                  메인 텐션
+                                </span>
+                                <span className="text-foreground">
+                                  {authorOverview.tennisProfile.mainString
+                                    ?.tensionMain
+                                    ? `${authorOverview.tennisProfile.mainString.tensionMain}LB`
+                                    : "-"}
+                                </span>
                               </div>
                               <div className="flex items-center gap-2">
-                                <span className="text-muted-foreground w-20">크로스 텐션</span>
-                                <span className="text-foreground">{authorOverview.tennisProfile.mainString?.tensionCross ? `${authorOverview.tennisProfile.mainString.tensionCross}LB` : "-"}</span>
+                                <span className="text-muted-foreground w-20">
+                                  크로스 텐션
+                                </span>
+                                <span className="text-foreground">
+                                  {authorOverview.tennisProfile.mainString
+                                    ?.tensionCross
+                                    ? `${authorOverview.tennisProfile.mainString.tensionCross}LB`
+                                    : "-"}
+                                </span>
                               </div>
                             </div>
                           </div>
@@ -2231,9 +3029,15 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
 
                         {/* 소개 */}
                         <div className="space-y-3">
-                          <h3 className="text-sm font-semibold text-foreground pb-2 border-b border-border">소개</h3>
+                          <h3 className="text-sm font-semibold text-foreground pb-2 border-b border-border">
+                            소개
+                          </h3>
                           <div className="rounded-lg border border-border bg-muted/50 dark:bg-background/40 p-4">
-                            <p className="text-sm text-foreground/80 whitespace-pre-wrap leading-relaxed">{authorOverview.tennisProfile.note?.trim() ? authorOverview.tennisProfile.note : "소개를 입력하지 않았습니다."}</p>
+                            <p className="text-sm text-foreground/80 whitespace-pre-wrap leading-relaxed">
+                              {authorOverview.tennisProfile.note?.trim()
+                                ? authorOverview.tennisProfile.note
+                                : "소개를 입력하지 않았습니다."}
+                            </p>
                           </div>
                         </div>
                       </div>
@@ -2241,11 +3045,30 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                   </TabsContent>
 
                   <div className="flex items-center justify-between pt-4 md:pt-6 mt-4 md:mt-6 border-t border-border">
-                    <Button variant="outline" size="sm" asChild disabled={!item} className="h-9 bg-transparent">
-                      <Link href={authorTarget?.userId ? `${config.routePrefix}?authorId=${authorTarget.userId}&authorName=${encodeURIComponent(authorTarget.nickname ?? "")}` : "#"}>이 작성자의 글 보기</Link>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      asChild
+                      disabled={!item}
+                      className="h-9 bg-transparent"
+                    >
+                      <Link
+                        href={
+                          authorTarget?.userId
+                            ? `${config.routePrefix}?authorId=${authorTarget.userId}&authorName=${encodeURIComponent(authorTarget.nickname ?? "")}`
+                            : "#"
+                        }
+                      >
+                        이 작성자의 글 보기
+                      </Link>
                     </Button>
 
-                    <Button variant="ghost" size="sm" onClick={() => setIsAuthorProfileOpen(false)} className="h-9">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsAuthorProfileOpen(false)}
+                      className="h-9"
+                    >
                       닫기
                     </Button>
                   </div>

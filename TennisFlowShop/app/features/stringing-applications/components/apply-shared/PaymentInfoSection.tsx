@@ -38,7 +38,9 @@ export default function PaymentInfoSection({
           <CreditCard className="h-8 w-8 text-foreground" />
         </div>
         <h2 className="text-2xl font-bold mb-2">결제 정보</h2>
-        <p className="text-muted-foreground">패키지와 입금 정보를 확인해주세요</p>
+        <p className="text-muted-foreground">
+          패키지와 입금 정보를 확인해주세요
+        </p>
       </div>
 
       {/* 패키지 자동 적용 안내/옵트아웃 */}
@@ -202,8 +204,7 @@ export default function PaymentInfoSection({
                 패키지가 없거나 잔여 횟수가 없습니다.
               </div>
               <p className="text-sm text-muted-foreground mt-1">
-                패키지를 보유하면 교체비가 무료입니다. (배송/추가옵션비
-                제외)
+                패키지를 보유하면 교체비가 무료입니다. (배송/추가옵션비 제외)
               </p>
             </div>
           </div>

@@ -304,8 +304,13 @@ type OrderTrackingResponse =
       message: string;
     };
 
-const getTrackingFailureMessage = (tracking: Extract<OrderTrackingResponse, { success: false }>) => {
-  if (tracking.errorCode === "UNAUTHENTICATED" || tracking.errorCode === "FORBIDDEN") {
+const getTrackingFailureMessage = (
+  tracking: Extract<OrderTrackingResponse, { success: false }>,
+) => {
+  if (
+    tracking.errorCode === "UNAUTHENTICATED" ||
+    tracking.errorCode === "FORBIDDEN"
+  ) {
     return "배송조회 서비스 설정을 확인해주세요.";
   }
   if (tracking.errorCode === "BAD_REQUEST") {
@@ -322,7 +327,8 @@ const getTrackingErrorMessage = (
     return trackingData.message;
   }
 
-  const message = (trackingError as TrackingSWRFetcherError | undefined)?.message;
+  const message = (trackingError as TrackingSWRFetcherError | undefined)
+    ?.message;
   return message || "배송조회 정보를 불러오지 못했습니다.";
 };
 
@@ -371,15 +377,18 @@ export default function OrderDetailClient({ orderId }: Props) {
   const canTrackDelivery =
     !isVisitPickupOrder(orderDetail?.shippingInfo) &&
     Boolean(orderDetail?.shippingInfo?.invoice?.trackingNumber);
-  const { data: trackingData, error: trackingError, isLoading: isTrackingLoading } =
-    useSWR<OrderTrackingResponse>(
-      canTrackDelivery ? `/api/orders/${orderId}/tracking` : null,
-      trackingSWRFetcher,
-      {
-        revalidateOnFocus: false,
-        revalidateOnReconnect: false,
-      },
-    );
+  const {
+    data: trackingData,
+    error: trackingError,
+    isLoading: isTrackingLoading,
+  } = useSWR<OrderTrackingResponse>(
+    canTrackDelivery ? `/api/orders/${orderId}/tracking` : null,
+    trackingSWRFetcher,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+    },
+  );
 
   // local 상태를 두어 "옵티미스틱 업데이트"가 가능하게 적용
   // 서버에서 받아온 orderDetail.status가 바뀌면 자동 동기화
@@ -414,7 +423,9 @@ export default function OrderDetailClient({ orderId }: Props) {
       await mutateOrder();
       showSuccessToast("NicePay 상태 재동기화를 완료했습니다.");
     } catch (error: any) {
-      showErrorToast(error?.message || "PG 상태 재동기화 중 오류가 발생했습니다.");
+      showErrorToast(
+        error?.message || "PG 상태 재동기화 중 오류가 발생했습니다.",
+      );
     } finally {
       setIsSyncingNice(false);
     }
@@ -493,7 +504,9 @@ export default function OrderDetailClient({ orderId }: Props) {
     badgeSizeSm,
     "inline-flex w-fit self-start shrink-0 whitespace-nowrap",
   );
-  const shortOrderId = orderDetail._id ? orderDetail._id.slice(-6).toUpperCase() : "-";
+  const shortOrderId = orderDetail._id
+    ? orderDetail._id.slice(-6).toUpperCase()
+    : "-";
 
   // 대표 stage 카드/연결 가이드용 기준 신청서: 서버에서 선별한 latestActiveLinkedApplication 우선 사용
   const latestLinkedApplication =
@@ -546,10 +559,10 @@ export default function OrderDetailClient({ orderId }: Props) {
     isTrackingLoading && !trackingData && !trackingError;
   const shouldShowTrackingStatusNotice = Boolean(
     trackingData &&
-      trackingData.success &&
-      trackingData.supported &&
-      trackingData.displayStatus &&
-      trackingData.displayStatus.trim() !== displayOrderStatusLabel,
+    trackingData.success &&
+    trackingData.supported &&
+    trackingData.displayStatus &&
+    trackingData.displayStatus.trim() !== displayOrderStatusLabel,
   );
 
   // 페이지네이션 없이 가져온 모든 이력 합치기
@@ -710,8 +723,16 @@ export default function OrderDetailClient({ orderId }: Props) {
     !isShippingManagedByApplication &&
     !isVisitPickup &&
     !hasAnyRegisteredFulfillmentField(orderDetail.shippingInfo);
-  const isDoneLikeStatus = ["완료", "구매확정", "취소", "cancel", "confirmed"].some(
-    (token) => String(localStatus ?? "").toLowerCase().includes(token.toLowerCase()),
+  const isDoneLikeStatus = [
+    "완료",
+    "구매확정",
+    "취소",
+    "cancel",
+    "confirmed",
+  ].some((token) =>
+    String(localStatus ?? "")
+      .toLowerCase()
+      .includes(token.toLowerCase()),
   );
   const nextActionGuide: AdminNextActionGuide = isCancelRequested
     ? {
@@ -723,7 +744,8 @@ export default function OrderDetailClient({ orderId }: Props) {
       ? {
           tone: "warning",
           title: "결제 상태 확인 필요",
-          description: "입금/결제 반영 여부를 확인한 뒤 다음 처리 단계를 진행하세요.",
+          description:
+            "입금/결제 반영 여부를 확인한 뒤 다음 처리 단계를 진행하세요.",
         }
       : needsShippingInfo
         ? {
@@ -916,7 +938,10 @@ export default function OrderDetailClient({ orderId }: Props) {
                   <h1 className="break-keep text-xl font-semibold leading-tight tracking-normal text-foreground sm:text-2xl lg:text-3xl">
                     주문 관리
                   </h1>
-                  <p className="mt-1 truncate text-sm text-foreground/75" title={orderDetail._id}>
+                  <p
+                    className="mt-1 truncate text-sm text-foreground/75"
+                    title={orderDetail._id}
+                  >
                     주문 ID: #{shortOrderId}
                   </p>
                 </div>
@@ -930,7 +955,10 @@ export default function OrderDetailClient({ orderId }: Props) {
                 >
                   <Link href="/admin/orders">
                     <ArrowLeft className="mr-2 h-4 w-4" />
-                    <span className="sm:hidden">목록</span><span className="hidden sm:inline">주문 목록으로 돌아가기</span>
+                    <span className="sm:hidden">목록</span>
+                    <span className="hidden sm:inline">
+                      주문 목록으로 돌아가기
+                    </span>
                   </Link>
                 </Button>
                 <Button
@@ -938,9 +966,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                   size="sm"
                   onClick={() => setIsEditMode(!isEditMode)}
                   className={
-                    isEditMode
-                      ? ""
-                      : "border-border bg-card hover:bg-muted"
+                    isEditMode ? "" : "border-border bg-card hover:bg-muted"
                   }
                 >
                   <Pencil className="mr-1 h-4 w-4" />
@@ -1055,36 +1081,38 @@ export default function OrderDetailClient({ orderId }: Props) {
             {cancelInfo && (
               <div id="admin-order-cancel">
                 <AdminCancelRequestCard
-                badgeLabel={cancelInfo.badgeLabel}
-                description={cancelInfo.description}
-                reasonSummary={cancelInfo.reasonSummary}
-                tone={cancelInfo.tone}
-                rightSlot={
-                  <div className="rounded-md border border-border/60 bg-background/60 px-3 py-2">
-                    <p className="text-xs font-medium text-muted-foreground">
-                      환불 계좌 정보
-                    </p>
-                    <dl className="mt-2 space-y-1 text-xs text-foreground/90">
-                      <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
-                        <dt className="text-muted-foreground">환불 은행</dt>
-                        <dd>
-                          {cancelInfo.refundAccount?.bankLabel || "미입력"}
-                        </dd>
-                      </div>
-                      <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
-                        <dt className="text-muted-foreground">계좌번호</dt>
-                        <dd className="font-mono">
-                          {cancelInfo.refundAccount?.account || "미입력"}
-                        </dd>
-                      </div>
-                      <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
-                        <dt className="text-muted-foreground">예금주</dt>
-                        <dd>{cancelInfo.refundAccount?.holder || "미입력"}</dd>
-                      </div>
-                    </dl>
-                  </div>
-                }
-              />
+                  badgeLabel={cancelInfo.badgeLabel}
+                  description={cancelInfo.description}
+                  reasonSummary={cancelInfo.reasonSummary}
+                  tone={cancelInfo.tone}
+                  rightSlot={
+                    <div className="rounded-md border border-border/60 bg-background/60 px-3 py-2">
+                      <p className="text-xs font-medium text-muted-foreground">
+                        환불 계좌 정보
+                      </p>
+                      <dl className="mt-2 space-y-1 text-xs text-foreground/90">
+                        <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
+                          <dt className="text-muted-foreground">환불 은행</dt>
+                          <dd>
+                            {cancelInfo.refundAccount?.bankLabel || "미입력"}
+                          </dd>
+                        </div>
+                        <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
+                          <dt className="text-muted-foreground">계좌번호</dt>
+                          <dd className="font-mono">
+                            {cancelInfo.refundAccount?.account || "미입력"}
+                          </dd>
+                        </div>
+                        <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
+                          <dt className="text-muted-foreground">예금주</dt>
+                          <dd>
+                            {cancelInfo.refundAccount?.holder || "미입력"}
+                          </dd>
+                        </div>
+                      </dl>
+                    </div>
+                  }
+                />
               </div>
             )}
           </div>
@@ -1104,7 +1132,9 @@ export default function OrderDetailClient({ orderId }: Props) {
                   </p>
                   <p className="text-sm text-foreground md:text-right">
                     다음 할 일:{" "}
-                    <span className="font-semibold">{orderGuide.nextAction}</span>
+                    <span className="font-semibold">
+                      {orderGuide.nextAction}
+                    </span>
                   </p>
                 </div>
               </CardContent>
@@ -1128,179 +1158,189 @@ export default function OrderDetailClient({ orderId }: Props) {
             />
           )}
 
-            {/* 연결 문서 + 최신 접수 요약 통합 */}
-            {linkedDocs.length > 0 && (
-              <div className="mb-6">
-                <Card className={adminSurface.card}>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base">연결 문맥 요약</CardTitle>
-                    <CardDescription>
-                      연결된 신청 문서와 최신 접수 핵심 정보를 한 번에 확인합니다.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid gap-4 lg:grid-cols-2">
-                      <div className="rounded-lg border border-border/60 bg-background/40 p-3">
-                        <p className="mb-2 text-sm font-semibold text-foreground">
-                          연결된 문서
-                        </p>
-                        <div className="space-y-2">
-                          {linkedDocs.map((doc) => (
-                            <div
-                              key={`${doc.kind}:${doc.id}`}
-                              className="flex flex-col gap-2 rounded-md border border-border/60 bg-card/70 p-2 sm:flex-row sm:items-center sm:justify-between"
-                            >
-                              <p className="text-sm text-foreground/80">
-                                신청번호:{" "}
-                                <span className="font-mono text-foreground">
-                                  {doc.id}
-                                </span>
-                              </p>
-                              <div className="flex items-center gap-2">
+          {/* 연결 문서 + 최신 접수 요약 통합 */}
+          {linkedDocs.length > 0 && (
+            <div className="mb-6">
+              <Card className={adminSurface.card}>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base">연결 문맥 요약</CardTitle>
+                  <CardDescription>
+                    연결된 신청 문서와 최신 접수 핵심 정보를 한 번에 확인합니다.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-4 lg:grid-cols-2">
+                    <div className="rounded-lg border border-border/60 bg-background/40 p-3">
+                      <p className="mb-2 text-sm font-semibold text-foreground">
+                        연결된 문서
+                      </p>
+                      <div className="space-y-2">
+                        {linkedDocs.map((doc) => (
+                          <div
+                            key={`${doc.kind}:${doc.id}`}
+                            className="flex flex-col gap-2 rounded-md border border-border/60 bg-card/70 p-2 sm:flex-row sm:items-center sm:justify-between"
+                          >
+                            <p className="text-sm text-foreground/80">
+                              신청번호:{" "}
+                              <span className="font-mono text-foreground">
+                                {doc.id}
+                              </span>
+                            </p>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  void navigator.clipboard
+                                    .writeText(String(doc.id))
+                                    .then(() => {
+                                      showSuccessToast("ID가 복사되었습니다.");
+                                    })
+                                    .catch(() => {});
+                                }}
+                              >
+                                복사
+                              </Button>
+                              <Link href={doc.href}>
                                 <Button
                                   type="button"
                                   variant="outline"
                                   size="sm"
-                                  onClick={() => {
-                                    void navigator.clipboard
-                                      .writeText(String(doc.id))
-                                      .then(() => {
-                                        showSuccessToast("ID가 복사되었습니다.");
-                                      })
-                                      .catch(() => {});
-                                  }}
                                 >
-                                  복사
+                                  상세 보기
                                 </Button>
-                                <Link href={doc.href}>
-                                  <Button type="button" variant="outline" size="sm">
-                                    상세 보기
-                                  </Button>
-                                </Link>
-                              </div>
+                              </Link>
                             </div>
-                          ))}
-                        </div>
-                        <p className="mt-3 text-xs text-foreground/75">
-                          {latestPackageSummary}
-                        </p>
+                          </div>
+                        ))}
                       </div>
+                      <p className="mt-3 text-xs text-foreground/75">
+                        {latestPackageSummary}
+                      </p>
+                    </div>
 
-                      <div className="rounded-lg border border-border/60 bg-background/40 p-3">
-                        <p className="mb-2 text-sm font-semibold text-foreground">
-                          최신 신청 접수 요약
-                        </p>
-                        <div className="grid gap-2 text-sm sm:grid-cols-2">
-                          {latestLinkedApplication?.status && (
-                            <p>
-                              <span className="text-muted-foreground">
-                                신청 상태:
-                              </span>{" "}
-                              <span className="font-medium text-foreground">
-                                {latestLinkedApplication.status}
-                              </span>
-                            </p>
-                          )}
-                          {latestLinkedApplication?.receptionLabel && (
-                            <p>
-                              <span className="text-muted-foreground">
-                                접수 방식:
-                              </span>{" "}
-                              <span className="font-medium text-foreground">
-                                {latestLinkedApplication.receptionLabel}
-                              </span>
-                            </p>
-                          )}
-                          {latestRacketCount !== null && (
-                            <p>
-                              <span className="text-muted-foreground">
-                                라인 수:
-                              </span>{" "}
-                              <span className="font-medium text-foreground">
-                                {latestRacketCount}개
-                              </span>
-                            </p>
-                          )}
-                          {latestStringSummary && (
-                            <p>
-                              <span className="text-muted-foreground">
-                                스트링:
-                              </span>{" "}
-                              <span className="font-medium text-foreground">
-                                {latestStringSummary}
-                              </span>
-                            </p>
-                          )}
-                          {latestLinkedApplication?.tensionSummary && (
-                            <p>
-                              <span className="text-muted-foreground">텐션:</span>{" "}
-                              <span className="font-medium text-foreground">
-                                {latestLinkedApplication.tensionSummary}
-                              </span>
-                            </p>
-                          )}
-                          {latestLinkedApplication?.reservationLabel && (
-                            <p>
-                              <span className="text-muted-foreground">예약:</span>{" "}
-                              <span className="font-medium text-foreground">
-                                {latestLinkedApplication.reservationLabel}
-                              </span>
-                            </p>
-                          )}
-                          {typeof latestLinkedApplication?.totalPrice ===
-                            "number" && (
-                            <p>
-                              <span className="text-muted-foreground">금액:</span>{" "}
-                              <span className="font-semibold text-foreground">
-                                {formatCurrency(latestLinkedApplication.totalPrice)}
-                              </span>
-                            </p>
-                          )}
+                    <div className="rounded-lg border border-border/60 bg-background/40 p-3">
+                      <p className="mb-2 text-sm font-semibold text-foreground">
+                        최신 신청 접수 요약
+                      </p>
+                      <div className="grid gap-2 text-sm sm:grid-cols-2">
+                        {latestLinkedApplication?.status && (
                           <p>
                             <span className="text-muted-foreground">
-                              패키지 적용:
+                              신청 상태:
                             </span>{" "}
                             <span className="font-medium text-foreground">
-                              {latestPackageApplied ? "적용" : "미적용"}
+                              {latestLinkedApplication.status}
                             </span>
                           </p>
-                          {latestPackageTitle && (
-                            <p>
+                        )}
+                        {latestLinkedApplication?.receptionLabel && (
+                          <p>
+                            <span className="text-muted-foreground">
+                              접수 방식:
+                            </span>{" "}
+                            <span className="font-medium text-foreground">
+                              {latestLinkedApplication.receptionLabel}
+                            </span>
+                          </p>
+                        )}
+                        {latestRacketCount !== null && (
+                          <p>
+                            <span className="text-muted-foreground">
+                              라인 수:
+                            </span>{" "}
+                            <span className="font-medium text-foreground">
+                              {latestRacketCount}개
+                            </span>
+                          </p>
+                        )}
+                        {latestStringSummary && (
+                          <p>
+                            <span className="text-muted-foreground">
+                              스트링:
+                            </span>{" "}
+                            <span className="font-medium text-foreground">
+                              {latestStringSummary}
+                            </span>
+                          </p>
+                        )}
+                        {latestLinkedApplication?.tensionSummary && (
+                          <p>
+                            <span className="text-muted-foreground">텐션:</span>{" "}
+                            <span className="font-medium text-foreground">
+                              {latestLinkedApplication.tensionSummary}
+                            </span>
+                          </p>
+                        )}
+                        {latestLinkedApplication?.reservationLabel && (
+                          <p>
+                            <span className="text-muted-foreground">예약:</span>{" "}
+                            <span className="font-medium text-foreground">
+                              {latestLinkedApplication.reservationLabel}
+                            </span>
+                          </p>
+                        )}
+                        {typeof latestLinkedApplication?.totalPrice ===
+                          "number" && (
+                          <p>
+                            <span className="text-muted-foreground">금액:</span>{" "}
+                            <span className="font-semibold text-foreground">
+                              {formatCurrency(
+                                latestLinkedApplication.totalPrice,
+                              )}
+                            </span>
+                          </p>
+                        )}
+                        <p>
+                          <span className="text-muted-foreground">
+                            패키지 적용:
+                          </span>{" "}
+                          <span className="font-medium text-foreground">
+                            {latestPackageApplied ? "적용" : "미적용"}
+                          </span>
+                        </p>
+                        {latestPackageTitle && (
+                          <p>
+                            <span className="text-muted-foreground">
+                              패키지 상품:
+                            </span>{" "}
+                            <span className="font-medium text-foreground">
+                              {latestPackageTitle}
+                            </span>
+                          </p>
+                        )}
+                        {latestPackageSize !== null &&
+                          latestPackageUsedCount !== null &&
+                          latestPackageRemainingCount !== null && (
+                            <p className="sm:col-span-2">
                               <span className="text-muted-foreground">
-                                패키지 상품:
+                                패키지 사용 현황:
                               </span>{" "}
                               <span className="font-medium text-foreground">
-                                {latestPackageTitle}
+                                총 {latestPackageSize}회 / 사용{" "}
+                                {latestPackageUsedCount}회 / 남은{" "}
+                                {latestPackageRemainingCount}회
                               </span>
                             </p>
                           )}
-                          {latestPackageSize !== null &&
-                            latestPackageUsedCount !== null &&
-                            latestPackageRemainingCount !== null && (
-                              <p className="sm:col-span-2">
-                                <span className="text-muted-foreground">
-                                  패키지 사용 현황:
-                                </span>{" "}
-                                <span className="font-medium text-foreground">
-                                  총 {latestPackageSize}회 / 사용{" "}
-                                  {latestPackageUsedCount}회 / 남은{" "}
-                                  {latestPackageRemainingCount}회
-                                </span>
-                              </p>
-                            )}
-                        </div>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              </div>
-            )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
 
-          <Card className={cn("mb-6", getNextActionCardClass(nextActionGuide.tone))}>
+          <Card
+            className={cn("mb-6", getNextActionCardClass(nextActionGuide.tone))}
+          >
             <CardHeader className="pb-3">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <CardTitle className="text-base font-semibold">지금 처리할 일</CardTitle>
+                  <CardTitle className="text-base font-semibold">
+                    지금 처리할 일
+                  </CardTitle>
                   <CardDescription className="mt-1 text-sm text-foreground/75">
                     {nextActionGuide.title}
                   </CardDescription>
@@ -1321,7 +1361,9 @@ export default function OrderDetailClient({ orderId }: Props) {
                 {nextActionGuide.description}
               </p>
               <div className="rounded-lg border border-border/60 bg-background/70 p-3">
-                <p className="text-sm font-semibold text-foreground">권장 작업</p>
+                <p className="text-sm font-semibold text-foreground">
+                  권장 작업
+                </p>
                 <p className="mt-1 text-xs text-muted-foreground">
                   현재 상태에서 관리자가 먼저 확인하면 좋은 작업입니다.
                 </p>
@@ -1347,22 +1389,30 @@ export default function OrderDetailClient({ orderId }: Props) {
                 </div>
               </div>
               <div className="rounded-lg border border-border/60 bg-background/70 p-3">
-                <p className="text-sm font-semibold text-foreground">처리 정보</p>
+                <p className="text-sm font-semibold text-foreground">
+                  처리 정보
+                </p>
                 <div className="mt-2 grid gap-1.5 text-xs leading-relaxed text-muted-foreground sm:grid-cols-2">
                   <p>
                     <span className="font-medium text-foreground">담당자:</span>{" "}
                     미지정
                   </p>
                   <p>
-                    <span className="font-medium text-foreground">마지막 처리자:</span>{" "}
+                    <span className="font-medium text-foreground">
+                      마지막 처리자:
+                    </span>{" "}
                     이력에 처리자 정보 없음
                   </p>
                   <p>
-                    <span className="font-medium text-foreground">마지막 처리:</span>{" "}
+                    <span className="font-medium text-foreground">
+                      마지막 처리:
+                    </span>{" "}
                     {latestProcessingHistory?.status ?? "기록 없음"}
                   </p>
                   <p>
-                    <span className="font-medium text-foreground">처리 시각:</span>{" "}
+                    <span className="font-medium text-foreground">
+                      처리 시각:
+                    </span>{" "}
                     {latestProcessingDate}
                   </p>
                   {latestProcessingHistory?.description ? (
@@ -1374,11 +1424,17 @@ export default function OrderDetailClient({ orderId }: Props) {
                 </div>
               </div>
               <div className="rounded-lg border border-border/60 bg-background/70 p-3">
-                <p className="text-sm font-semibold text-foreground">재고 운영 정보</p>
+                <p className="text-sm font-semibold text-foreground">
+                  재고 운영 정보
+                </p>
                 <div className="mt-2 space-y-1.5 text-xs leading-relaxed text-muted-foreground">
                   <p>
-                    <span className="font-medium text-foreground">재고 차감 방식:</span>{" "}
-                    {isVariantStockMode ? "색상×게이지 조합 재고" : "기존 재고 방식"}
+                    <span className="font-medium text-foreground">
+                      재고 차감 방식:
+                    </span>{" "}
+                    {isVariantStockMode
+                      ? "색상×게이지 조합 재고"
+                      : "기존 재고 방식"}
                   </p>
                   <p>
                     {isVariantStockMode
@@ -1389,34 +1445,45 @@ export default function OrderDetailClient({ orderId }: Props) {
                     <div className="space-y-1">
                       {variantStockDeductionItems.map((item, index) => (
                         <p key={`${item.name}-${index}`}>
-                          {item.name}: 색상 {stringColorLabel(item.stockDeduction?.colorValue) || "-"} / 게이지{" "}
-                          {formatGaugeLabel(item.stockDeduction?.gaugeValue) || "-"}
+                          {item.name}: 색상{" "}
+                          {stringColorLabel(item.stockDeduction?.colorValue) ||
+                            "-"}{" "}
+                          / 게이지{" "}
+                          {formatGaugeLabel(item.stockDeduction?.gaugeValue) ||
+                            "-"}
                         </p>
                       ))}
                     </div>
                   ) : null}
                   <p>
-                    <span className="font-medium text-foreground">조합 재고 복구:</span>{" "}
+                    <span className="font-medium text-foreground">
+                      조합 재고 복구:
+                    </span>{" "}
                     {orderDetail.stockRestore?.variantStockRestoredAt
                       ? "복구 완료"
                       : "복구 정보 없음"}
                   </p>
                   {orderDetail.stockRestore?.variantStockRestoredAt ? (
                     <p>
-                      {formatDateTime(orderDetail.stockRestore.variantStockRestoredAt)}
+                      {formatDateTime(
+                        orderDetail.stockRestore.variantStockRestoredAt,
+                      )}
                       {orderDetail.stockRestore.variantStockRestoreReason
                         ? ` · ${orderDetail.stockRestore.variantStockRestoreReason}`
                         : ""}
                     </p>
                   ) : isVariantStockMode && isCanceledState ? (
                     <p className="text-muted-foreground/80">
-                      취소 처리 데이터에서 조합 재고 복구 시각이 확인되지 않았습니다.
+                      취소 처리 데이터에서 조합 재고 복구 시각이 확인되지
+                      않았습니다.
                     </p>
                   ) : null}
                 </div>
               </div>
               <div className="rounded-lg border border-border/60 bg-background/70 p-3">
-                <p className="text-sm font-semibold text-foreground">주문 처리 체크리스트</p>
+                <p className="text-sm font-semibold text-foreground">
+                  주문 처리 체크리스트
+                </p>
                 <ul className="mt-2 grid gap-1.5 text-xs leading-relaxed text-muted-foreground sm:grid-cols-2">
                   <li>□ 결제 상태 확인</li>
                   <li>□ 배송지/수령 방식 확인</li>
@@ -1500,7 +1567,9 @@ export default function OrderDetailClient({ orderId }: Props) {
                         운영 액션
                       </p>
                       <p className="mt-1 text-xs text-foreground/75">
-                        고객 요청 기반 취소 승인/거절 또는 관리자 직접 취소를 진행합니다. 처리 전 환불 계좌·결제 상태를 먼저 확인해주세요.
+                        고객 요청 기반 취소 승인/거절 또는 관리자 직접 취소를
+                        진행합니다. 처리 전 환불 계좌·결제 상태를 먼저
+                        확인해주세요.
                       </p>
                     </div>
 
@@ -1570,12 +1639,14 @@ export default function OrderDetailClient({ orderId }: Props) {
                 >
                   <AlertDialogContent>
                     <AlertDialogHeader>
-                      <AlertDialogTitle>취소 요청을 거절할까요?</AlertDialogTitle>
+                      <AlertDialogTitle>
+                        취소 요청을 거절할까요?
+                      </AlertDialogTitle>
                       <AlertDialogDescription className="whitespace-pre-line">
                         고객의 주문 취소 요청을 거절합니다.
                         {"\n"}
-                        주문은 기존 처리 흐름을 유지하며, 필요한 경우 거절 사유를
-                        남겨 처리 이력으로 관리할 수 있습니다.
+                        주문은 기존 처리 흐름을 유지하며, 필요한 경우 거절
+                        사유를 남겨 처리 이력으로 관리할 수 있습니다.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <div className="space-y-2">
@@ -1613,12 +1684,16 @@ export default function OrderDetailClient({ orderId }: Props) {
                 </AlertDialog>
               </div>
             </CardContent>
-
           </Card>
 
           <div className="grid gap-4 xl:grid-cols-12">
             {/* 고객 정보 */}
-            <Card className={cn("overflow-hidden xl:col-span-6", adminSurface.tableCard)}>
+            <Card
+              className={cn(
+                "overflow-hidden xl:col-span-6",
+                adminSurface.tableCard,
+              )}
+            >
               <CardHeader className="bg-muted/30 border-b pb-3">
                 <CardTitle className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
@@ -1669,9 +1744,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                       <div className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border">
                         <Mail className="h-4 w-4 text-muted-foreground" />
                         <div>
-                          <p className="text-sm text-foreground/80">
-                            이메일
-                          </p>
+                          <p className="text-sm text-foreground/80">이메일</p>
                           <p className="font-semibold text-foreground">
                             {orderDetail.customer.email ?? "이메일 없음"}
                           </p>
@@ -1681,9 +1754,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                       <div className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border">
                         <Phone className="h-4 w-4 text-muted-foreground" />
                         <div>
-                          <p className="text-sm text-foreground/80">
-                            전화번호
-                          </p>
+                          <p className="text-sm text-foreground/80">전화번호</p>
                           <p className="font-semibold text-foreground">
                             {orderDetail.customer.phone ?? "전화번호 없음"}
                           </p>
@@ -1728,7 +1799,10 @@ export default function OrderDetailClient({ orderId }: Props) {
             </Card>
 
             {/* 배송 정보 */}
-            <Card id="admin-order-shipping" className="overflow-hidden border-0 bg-muted/30 shadow-xl ring-ring xl:col-span-6">
+            <Card
+              id="admin-order-shipping"
+              className="overflow-hidden border-0 bg-muted/30 shadow-xl ring-ring xl:col-span-6"
+            >
               <CardHeader className="bg-muted/30 border-b pb-3">
                 <CardTitle className="flex items-center">
                   <Truck className="mr-2 h-5 w-5 text-primary" />
@@ -1887,81 +1961,97 @@ export default function OrderDetailClient({ orderId }: Props) {
                               <Skeleton className="h-8 w-24" />
                             </div>
                           )}
-                          {!isTrackingLoading && !trackingError && trackingData && (
-                            <div className="space-y-2 rounded-lg border border-border bg-muted/60 p-3 text-sm dark:bg-card/60">
-                              {trackingData.success && trackingData.supported ? (
-                                <>
-                                  <p className="text-foreground">
-                                    <span className="text-muted-foreground">
-                                      실시간 배송 상태:
-                                    </span>{" "}
-                                    {trackingData.displayStatus}
+                          {!isTrackingLoading &&
+                            !trackingError &&
+                            trackingData && (
+                              <div className="space-y-2 rounded-lg border border-border bg-muted/60 p-3 text-sm dark:bg-card/60">
+                                {trackingData.success &&
+                                trackingData.supported ? (
+                                  <>
+                                    <p className="text-foreground">
+                                      <span className="text-muted-foreground">
+                                        실시간 배송 상태:
+                                      </span>{" "}
+                                      {trackingData.displayStatus}
+                                    </p>
+                                    {trackingData.lastEvent?.locationName && (
+                                      <p className="text-foreground">
+                                        <span className="text-muted-foreground">
+                                          최근 위치:
+                                        </span>{" "}
+                                        {trackingData.lastEvent.locationName}
+                                      </p>
+                                    )}
+                                    {trackingData.lastEvent?.time && (
+                                      <p className="text-foreground">
+                                        <span className="text-muted-foreground">
+                                          최근 갱신:
+                                        </span>{" "}
+                                        {formatDateTime(
+                                          trackingData.lastEvent.time,
+                                        )}
+                                      </p>
+                                    )}
+                                    {shouldShowTrackingStatusNotice && (
+                                      <div className="space-y-0.5 rounded-md bg-background/70 px-2.5 py-1.5 text-xs leading-relaxed text-muted-foreground">
+                                        <p>
+                                          실시간 배송 상태는 택배사 기준이며,
+                                        </p>
+                                        <p>주문 상태와 다를 수 있습니다.</p>
+                                      </div>
+                                    )}
+                                    {trackingData.progresses.length > 0 && (
+                                      <ul className="list-disc space-y-1 pl-5 text-muted-foreground">
+                                        {trackingData.progresses.map(
+                                          (progress, idx) => (
+                                            <li
+                                              key={`${progress.time ?? "na"}-${idx}`}
+                                            >
+                                              {(progress.statusText ??
+                                                "상태 업데이트") +
+                                                (progress.locationName
+                                                  ? ` · ${progress.locationName}`
+                                                  : "") +
+                                                (progress.time
+                                                  ? ` · ${formatDateTime(progress.time)}`
+                                                  : "")}
+                                            </li>
+                                          ),
+                                        )}
+                                      </ul>
+                                    )}
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() =>
+                                        window.open(
+                                          trackingData.linkUrl,
+                                          "_blank",
+                                          "noopener,noreferrer",
+                                        )
+                                      }
+                                    >
+                                      배송조회
+                                    </Button>
+                                  </>
+                                ) : trackingData.success &&
+                                  !trackingData.supported ? (
+                                  <p className="text-muted-foreground">
+                                    {trackingData.message}
                                   </p>
-                                  {trackingData.lastEvent?.locationName && (
-                                    <p className="text-foreground">
-                                      <span className="text-muted-foreground">
-                                        최근 위치:
-                                      </span>{" "}
-                                      {trackingData.lastEvent.locationName}
-                                    </p>
-                                  )}
-                                  {trackingData.lastEvent?.time && (
-                                    <p className="text-foreground">
-                                      <span className="text-muted-foreground">
-                                        최근 갱신:
-                                      </span>{" "}
-                                      {formatDateTime(trackingData.lastEvent.time)}
-                                    </p>
-                                  )}
-                                  {shouldShowTrackingStatusNotice && (
-                                    <div className="space-y-0.5 rounded-md bg-background/70 px-2.5 py-1.5 text-xs leading-relaxed text-muted-foreground">
-                                      <p>실시간 배송 상태는 택배사 기준이며,</p>
-                                      <p>주문 상태와 다를 수 있습니다.</p>
-                                    </div>
-                                  )}
-                                  {trackingData.progresses.length > 0 && (
-                                    <ul className="list-disc space-y-1 pl-5 text-muted-foreground">
-                                      {trackingData.progresses.map((progress, idx) => (
-                                        <li key={`${progress.time ?? "na"}-${idx}`}>
-                                          {(progress.statusText ?? "상태 업데이트") +
-                                            (progress.locationName
-                                              ? ` · ${progress.locationName}`
-                                              : "") +
-                                            (progress.time
-                                              ? ` · ${formatDateTime(progress.time)}`
-                                              : "")}
-                                        </li>
-                                      ))}
-                                    </ul>
-                                  )}
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() =>
-                                      window.open(
-                                        trackingData.linkUrl,
-                                        "_blank",
-                                        "noopener,noreferrer",
-                                      )
-                                    }
-                                  >
-                                    배송조회
-                                  </Button>
-                                </>
-                              ) : trackingData.success && !trackingData.supported ? (
-                                <p className="text-muted-foreground">
-                                  {trackingData.message}
-                                </p>
-                              ) : (
-                                <p className="text-destructive">
-                                  {getTrackingFailureMessage(trackingData)}
-                                </p>
-                              )}
-                            </div>
-                          )}
+                                ) : (
+                                  <p className="text-destructive">
+                                    {getTrackingFailureMessage(trackingData)}
+                                  </p>
+                                )}
+                              </div>
+                            )}
                           {trackingError && (
                             <p className="text-sm text-destructive">
-                              {getTrackingErrorMessage(trackingData, trackingError)}
+                              {getTrackingErrorMessage(
+                                trackingData,
+                                trackingError,
+                              )}
                             </p>
                           )}
                         </>
@@ -1972,7 +2062,10 @@ export default function OrderDetailClient({ orderId }: Props) {
             </Card>
 
             {/* 결제 정보 */}
-            <Card id="admin-order-payment" className="overflow-hidden border-0 bg-muted/30 shadow-xl ring-ring xl:col-span-6">
+            <Card
+              id="admin-order-payment"
+              className="overflow-hidden border-0 bg-muted/30 shadow-xl ring-ring xl:col-span-6"
+            >
               <CardHeader className="bg-muted/30 border-b pb-3">
                 <CardTitle className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
@@ -2032,15 +2125,26 @@ export default function OrderDetailClient({ orderId }: Props) {
                           easyPayProvider={orderDetail.paymentEasyPayProvider}
                           paymentStatus={orderDetail.paymentStatus}
                           paymentTid={orderDetail.paymentTid}
-                          paymentCardDisplayName={orderDetail.paymentCardDisplayName}
+                          paymentCardDisplayName={
+                            orderDetail.paymentCardDisplayName
+                          }
                           paymentCardCompany={orderDetail.paymentCardCompany}
                           paymentCardLabel={orderDetail.paymentCardLabel}
                           paymentNiceSync={orderDetail.paymentNiceSync}
                         />
-                        {String(orderDetail.paymentProvider ?? "").trim().toLowerCase() === "nicepay" && (
+                        {String(orderDetail.paymentProvider ?? "")
+                          .trim()
+                          .toLowerCase() === "nicepay" && (
                           <div className="mt-3">
-                            <Button variant="outline" size="sm" onClick={handleNiceSync} disabled={isSyncingNice}>
-                              {isSyncingNice ? "PG 상태 동기화 중..." : "PG 상태 다시 확인"}
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={handleNiceSync}
+                              disabled={isSyncingNice}
+                            >
+                              {isSyncingNice
+                                ? "PG 상태 동기화 중..."
+                                : "PG 상태 다시 확인"}
                             </Button>
                           </div>
                         )}
@@ -2096,18 +2200,26 @@ export default function OrderDetailClient({ orderId }: Props) {
                         <p className="text-sm text-foreground/80">
                           수량: {item.quantity}개
                         </p>
-                        {item.selectedGauge && <p className="text-xs text-foreground/70">게이지: {formatGaugeLabel(item.selectedGauge)}</p>}
+                        {item.selectedGauge && (
+                          <p className="text-xs text-foreground/70">
+                            게이지: {formatGaugeLabel(item.selectedGauge)}
+                          </p>
+                        )}
                         {(item.selectedColorLabel || item.selectedColor) && (
                           <p className="flex items-center gap-2 text-xs text-foreground/70">
                             <span>색상:</span>
                             {item.selectedColorHex && (
                               <span
                                 className="h-3 w-3 rounded-full border border-border"
-                                style={{ backgroundColor: item.selectedColorHex }}
+                                style={{
+                                  backgroundColor: item.selectedColorHex,
+                                }}
                                 aria-hidden="true"
                               />
                             )}
-                            <span>{item.selectedColorLabel || item.selectedColor}</span>
+                            <span>
+                              {item.selectedColorLabel || item.selectedColor}
+                            </span>
                           </p>
                         )}
                       </div>
@@ -2192,7 +2304,13 @@ export default function OrderDetailClient({ orderId }: Props) {
           />
 
           {/* 처리 이력 */}
-          <Card id="admin-order-history" className={cn("overflow-hidden xl:col-span-6", adminSurface.tableCard)}>
+          <Card
+            id="admin-order-history"
+            className={cn(
+              "overflow-hidden xl:col-span-6",
+              adminSurface.tableCard,
+            )}
+          >
             <CardHeader className="border-b bg-muted/30">
               <CardTitle className="flex items-center space-x-2">
                 <Calendar className="h-5 w-5 text-primary" />

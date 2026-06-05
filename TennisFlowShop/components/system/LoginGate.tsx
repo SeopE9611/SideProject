@@ -7,7 +7,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 
-export type LoginGateVariant = "packages" | "checkout" | "orderLookup" | "default";
+export type LoginGateVariant =
+  | "packages"
+  | "checkout"
+  | "orderLookup"
+  | "default";
 
 type Perk = {
   icon: React.ReactNode;
@@ -69,9 +73,11 @@ function variantCopy(variant: LoginGateVariant) {
       minHeight: "min-h-[60vh]",
       description: (
         <>
-          현재 <span className="font-medium">비회원 주문 조회</span>는 중단되었습니다.
+          현재 <span className="font-medium">비회원 주문 조회</span>는
+          중단되었습니다.
           <br />
-          로그인 후 <span className="font-medium">마이페이지</span>에서 주문내역을 확인해주세요.
+          로그인 후 <span className="font-medium">마이페이지</span>에서
+          주문내역을 확인해주세요.
         </>
       ),
       perks: [
@@ -113,7 +119,13 @@ function variantCopy(variant: LoginGateVariant) {
   };
 }
 
-export default function LoginGate({ next, variant = "default" }: { next: string; variant?: LoginGateVariant }) {
+export default function LoginGate({
+  next,
+  variant = "default",
+}: {
+  next: string;
+  variant?: LoginGateVariant;
+}) {
   const v = variantCopy(variant);
   const loginHref = `/login?next=${encodeURIComponent(next)}`;
 
@@ -135,7 +147,9 @@ export default function LoginGate({ next, variant = "default" }: { next: string;
               <p className="text-muted-foreground">{v.description}</p>
 
               <div className="mt-4">
-                <Badge variant="highlight">로그인 후 원래 페이지로 자동 복귀</Badge>
+                <Badge variant="highlight">
+                  로그인 후 원래 페이지로 자동 복귀
+                </Badge>
               </div>
             </CardContent>
 

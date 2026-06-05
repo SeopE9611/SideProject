@@ -42,12 +42,16 @@ export default function Wishlist() {
 
   function handleAddToCart(it: (typeof resolvedItems)[number]) {
     if (it.requiresOption && !it.hasSelectedOption) {
-      showErrorToast("색상/게이지 선택이 필요합니다. 상세페이지에서 옵션을 선택해주세요.");
+      showErrorToast(
+        "색상/게이지 선택이 필요합니다. 상세페이지에서 옵션을 선택해주세요.",
+      );
       router.push(`/products/${it.id}`);
       return;
     }
     if (it.requiresOption && !it.optionAvailable) {
-      showErrorToast("찜한 옵션이 현재 품절되었습니다. 다른 옵션을 선택해주세요.");
+      showErrorToast(
+        "찜한 옵션이 현재 품절되었습니다. 다른 옵션을 선택해주세요.",
+      );
       return;
     }
 
@@ -117,10 +121,7 @@ export default function Wishlist() {
           <p className="mb-6 text-muted-foreground">
             마음에 드는 상품을 위시리스트에 추가해보세요!
           </p>
-          <Button
-            asChild
-            variant="default" className="shadow-sm"
-          >
+          <Button asChild variant="default" className="shadow-sm">
             <Link href="/products">상품 둘러보기</Link>
           </Button>
         </CardContent>
@@ -134,7 +135,8 @@ export default function Wishlist() {
         {visibleItems.map((it) => (
           <Card
             key={it.id}
-            variant="interactive" className="overflow-hidden border-border bg-card"
+            variant="interactive"
+            className="overflow-hidden border-border bg-card"
           >
             <CardContent className="p-4">
               <Link href={`/products/${it.id}`} className="block">
@@ -157,13 +159,21 @@ export default function Wishlist() {
                   <div className="mt-2 space-y-0.5 text-xs text-muted-foreground">
                     {it.hasSelectedOption ? (
                       <>
-                        {it.selectedColorLabel && <div>색상: {it.selectedColorLabel}</div>}
-                        {it.selectedGauge && <div>게이지: {it.selectedGauge}</div>}
-                        {typeof it.optionStock === "number" && <div>현재 재고: {it.optionStock}개</div>}
+                        {it.selectedColorLabel && (
+                          <div>색상: {it.selectedColorLabel}</div>
+                        )}
+                        {it.selectedGauge && (
+                          <div>게이지: {it.selectedGauge}</div>
+                        )}
+                        {typeof it.optionStock === "number" && (
+                          <div>현재 재고: {it.optionStock}개</div>
+                        )}
                       </>
                     ) : it.requiresOption ? (
                       <>
-                        <div className="font-medium text-warning">옵션 미선택</div>
+                        <div className="font-medium text-warning">
+                          옵션 미선택
+                        </div>
                         <div>상세페이지에서 색상/게이지를 선택해주세요.</div>
                       </>
                     ) : null}
@@ -177,11 +187,19 @@ export default function Wishlist() {
               <div className="mt-3 flex gap-2">
                 <Button
                   size="sm"
-                  variant="default" className="shadow-sm"
+                  variant="default"
+                  className="shadow-sm"
                   onClick={() => handleAddToCart(it)}
-                  disabled={it.requiresOption && it.hasSelectedOption && !it.optionAvailable}
+                  disabled={
+                    it.requiresOption &&
+                    it.hasSelectedOption &&
+                    !it.optionAvailable
+                  }
                 >
-                  <ShoppingCart className="h-4 w-4 mr-2" /> {it.requiresOption && !it.hasSelectedOption ? "옵션 선택" : "담기"}
+                  <ShoppingCart className="h-4 w-4 mr-2" />{" "}
+                  {it.requiresOption && !it.hasSelectedOption
+                    ? "옵션 선택"
+                    : "담기"}
                 </Button>
                 <Button
                   size="sm"

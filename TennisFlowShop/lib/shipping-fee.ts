@@ -48,7 +48,8 @@ export function calcOrderShippingFeeWithBundlePolicy(args: {
   if (items.length === 0) return 0;
 
   const hasRacket = items.some((item) => item?.kind === "racket");
-  const shouldExcludeMountableString = Boolean(args.withStringService) && hasRacket;
+  const shouldExcludeMountableString =
+    Boolean(args.withStringService) && hasRacket;
 
   const candidates = shouldExcludeMountableString
     ? items.filter((item) => {

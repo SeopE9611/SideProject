@@ -294,23 +294,21 @@ export async function GET(
   const db = await getDb();
   const _id = new ObjectId(id);
 
-  const review = await db
-    .collection("reviews")
-    .findOne(
-      { _id, isDeleted: { $ne: true } },
-      {
-        projection: {
-          userId: 1,
-          productId: 1,
-          rating: 1,
-          status: 1,
-          content: 1,
-          createdAt: 1,
-          helpfulCount: 1,
-          photos: 1,
-        },
+  const review = await db.collection("reviews").findOne(
+    { _id, isDeleted: { $ne: true } },
+    {
+      projection: {
+        userId: 1,
+        productId: 1,
+        rating: 1,
+        status: 1,
+        content: 1,
+        createdAt: 1,
+        helpfulCount: 1,
+        photos: 1,
       },
-    );
+    },
+  );
   if (!review)
     return NextResponse.json({ message: "not found" }, { status: 404 });
 

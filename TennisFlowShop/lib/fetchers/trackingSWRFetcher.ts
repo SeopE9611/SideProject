@@ -41,10 +41,15 @@ async function safeReadErrorBody(res: Response): Promise<unknown> {
   }
 }
 
-function buildTrackingError(res: Response, body: unknown): TrackingSWRFetcherError {
+function buildTrackingError(
+  res: Response,
+  body: unknown,
+): TrackingSWRFetcherError {
   const trackingBody = body as TrackingErrorBody | null;
   const message =
-    trackingBody && typeof trackingBody.message === "string" && trackingBody.message.trim()
+    trackingBody &&
+    typeof trackingBody.message === "string" &&
+    trackingBody.message.trim()
       ? trackingBody.message
       : `HTTP_${res.status}`;
 

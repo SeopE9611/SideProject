@@ -2,7 +2,13 @@
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Save, Loader2, ArrowLeft } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Save,
+  Loader2,
+  ArrowLeft,
+} from "lucide-react";
 import Link from "next/link";
 
 interface StepNavigationProps {
@@ -47,11 +53,7 @@ export function StepNavigation({
           asChild
           className="bg-muted/40 hover:bg-muted border-border"
         >
-          <Link
-            href={backHref}
-            data-no-unsaved-guard
-            onClick={onBackClick}
-          >
+          <Link href={backHref} data-no-unsaved-guard onClick={onBackClick}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             목록
           </Link>
@@ -120,9 +122,18 @@ interface StepIndicatorProps {
   className?: string;
 }
 
-export function StepIndicator({ current, total, className }: StepIndicatorProps) {
+export function StepIndicator({
+  current,
+  total,
+  className,
+}: StepIndicatorProps) {
   return (
-    <div className={cn("flex items-center gap-1 text-sm text-muted-foreground", className)}>
+    <div
+      className={cn(
+        "flex items-center gap-1 text-sm text-muted-foreground",
+        className,
+      )}
+    >
       <span className="font-semibold text-primary">{current}</span>
       <span>/</span>
       <span>{total}</span>

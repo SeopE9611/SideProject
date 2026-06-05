@@ -4,7 +4,16 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, type FormEvent, type KeyboardEvent } from "react";
 import useSWR from "swr";
-import { BookOpen, Eye, EyeOff, MoreHorizontal, Pencil, Plus, Search, Trash2 } from "lucide-react";
+import {
+  BookOpen,
+  Eye,
+  EyeOff,
+  MoreHorizontal,
+  Pencil,
+  Plus,
+  Search,
+  Trash2,
+} from "lucide-react";
 
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { adminSurface } from "@/components/admin/admin-typography";
@@ -43,7 +52,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { adminFetcher, adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
+import {
+  adminFetcher,
+  adminMutator,
+  getAdminErrorMessage,
+} from "@/lib/admin/adminFetcher";
 import { badgeToneVariant, type BadgeSemanticTone } from "@/lib/badge-style";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import {
@@ -82,7 +95,10 @@ function getStatusTone(status: AcademyClassStatus): BadgeSemanticTone {
 
 function AcademyClassStatusBadge({ status }: { status: AcademyClassStatus }) {
   return (
-    <Badge variant={badgeToneVariant(getStatusTone(status))} className="shrink-0 whitespace-nowrap">
+    <Badge
+      variant={badgeToneVariant(getStatusTone(status))}
+      className="shrink-0 whitespace-nowrap"
+    >
       {getAcademyClassStatusLabel(status)}
     </Badge>
   );
@@ -133,18 +149,34 @@ function ApplicationStatsCell({ item }: { item: AcademyClass }) {
         신청 {total.toLocaleString("ko-KR")}건
       </div>
       <div className="text-xs text-muted-foreground">
-        등록 확정 {confirmed.toLocaleString("ko-KR")}명 / {formatCapacityLabel(item.capacity)}
+        등록 확정 {confirmed.toLocaleString("ko-KR")}명 /{" "}
+        {formatCapacityLabel(item.capacity)}
       </div>
     </div>
   );
 }
 
-function SummaryCard({ label, value, active }: { label: string; value: number; active?: boolean }) {
+function SummaryCard({
+  label,
+  value,
+  active,
+}: {
+  label: string;
+  value: number;
+  active?: boolean;
+}) {
   return (
-    <Card className={cn(adminSurface.kpiCard, active ? "border-primary/50 bg-primary/5" : "")}>
+    <Card
+      className={cn(
+        adminSurface.kpiCard,
+        active ? "border-primary/50 bg-primary/5" : "",
+      )}
+    >
       <CardContent className="p-4">
         <div className="text-xs font-medium text-muted-foreground">{label}</div>
-        <div className="mt-2 whitespace-nowrap text-2xl font-semibold tabular-nums text-foreground">{value.toLocaleString("ko-KR")}</div>
+        <div className="mt-2 whitespace-nowrap text-2xl font-semibold tabular-nums text-foreground">
+          {value.toLocaleString("ko-KR")}
+        </div>
       </CardContent>
     </Card>
   );
@@ -158,9 +190,10 @@ export default function AcademyClassesClient() {
   const [keyword, setKeyword] = useState("");
   const [hidingId, setHidingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [pendingAction, setPendingAction] = useState<
-    { type: "hide" | "delete"; item: AcademyClass } | null
-  >(null);
+  const [pendingAction, setPendingAction] = useState<{
+    type: "hide" | "delete";
+    item: AcademyClass;
+  } | null>(null);
 
   const query = useMemo(() => {
     const params = new URLSearchParams({
@@ -200,7 +233,10 @@ export default function AcademyClassesClient() {
     router.push(`/admin/academy/classes/${id}/edit`);
   }
 
-  function handleRowKeyDown(event: KeyboardEvent<HTMLTableRowElement>, id: string) {
+  function handleRowKeyDown(
+    event: KeyboardEvent<HTMLTableRowElement>,
+    id: string,
+  ) {
     if (event.key !== "Enter" && event.key !== " ") return;
     event.preventDefault();
     goToDetail(id);
@@ -271,15 +307,18 @@ export default function AcademyClassesClient() {
         actions={
           <Button asChild>
             <Link href="/admin/academy/classes/new">
-              <Plus className="mr-2 h-4 w-4" />
-              새 클래스 등록
+              <Plus className="mr-2 h-4 w-4" />새 클래스 등록
             </Link>
           </Button>
         }
       />
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-        <SummaryCard label="전체" value={counts.all} active={status === "all"} />
+        <SummaryCard
+          label="전체"
+          value={counts.all}
+          active={status === "all"}
+        />
         {ACADEMY_CLASS_STATUSES.map((item) => (
           <SummaryCard
             key={item}
@@ -316,7 +355,10 @@ export default function AcademyClassesClient() {
               </SelectContent>
             </Select>
 
-            <form className="flex w-full gap-2 lg:max-w-md" onSubmit={submitSearch}>
+            <form
+              className="flex w-full gap-2 lg:max-w-md"
+              onSubmit={submitSearch}
+            >
               <Input
                 value={keywordInput}
                 onChange={(event) => setKeywordInput(event.target.value)}
@@ -339,26 +381,46 @@ export default function AcademyClassesClient() {
             <Table className="min-w-[1040px] table-fixed">
               <TableHeader className={adminSurface.tableHeader}>
                 <TableRow>
-                  <TableHead className="whitespace-nowrap px-3">등록일</TableHead>
-                  <TableHead className="w-[280px] whitespace-nowrap px-3">클래스</TableHead>
-                  <TableHead className="whitespace-nowrap px-3">수업 정보</TableHead>
-                  <TableHead className="w-[240px] whitespace-nowrap px-3">운영 정보</TableHead>
-                  <TableHead className="whitespace-nowrap px-3">신청 현황</TableHead>
-                  <TableHead className="whitespace-nowrap px-3">가격/상태</TableHead>
-                  <TableHead className="whitespace-nowrap px-3 text-right">관리</TableHead>
+                  <TableHead className="whitespace-nowrap px-3">
+                    등록일
+                  </TableHead>
+                  <TableHead className="w-[280px] whitespace-nowrap px-3">
+                    클래스
+                  </TableHead>
+                  <TableHead className="whitespace-nowrap px-3">
+                    수업 정보
+                  </TableHead>
+                  <TableHead className="w-[240px] whitespace-nowrap px-3">
+                    운영 정보
+                  </TableHead>
+                  <TableHead className="whitespace-nowrap px-3">
+                    신청 현황
+                  </TableHead>
+                  <TableHead className="whitespace-nowrap px-3">
+                    가격/상태
+                  </TableHead>
+                  <TableHead className="whitespace-nowrap px-3 text-right">
+                    관리
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="h-28 text-center text-sm text-muted-foreground">
+                    <TableCell
+                      colSpan={7}
+                      className="h-28 text-center text-sm text-muted-foreground"
+                    >
                       클래스 목록을 불러오는 중입니다.
                     </TableCell>
                   </TableRow>
                 ) : null}
                 {!isLoading && data?.items.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="h-28 text-center text-sm text-muted-foreground">
+                    <TableCell
+                      colSpan={7}
+                      className="h-28 text-center text-sm text-muted-foreground"
+                    >
                       등록된 아카데미 클래스가 없습니다.
                     </TableCell>
                   </TableRow>
@@ -368,9 +430,11 @@ export default function AcademyClassesClient() {
                   if (!classId) return null;
 
                   const createdAt = formatAdminDateTimeParts(item.createdAt);
-                  const isHideDisabled = item.status === "hidden" || hidingId === classId;
+                  const isHideDisabled =
+                    item.status === "hidden" || hidingId === classId;
                   const applicationTotal = item.applicationStats?.total ?? 0;
-                  const isDeleteDisabled = applicationTotal > 0 || deletingId === classId;
+                  const isDeleteDisabled =
+                    applicationTotal > 0 || deletingId === classId;
 
                   return (
                     <TableRow
@@ -382,30 +446,53 @@ export default function AcademyClassesClient() {
                       onKeyDown={(event) => handleRowKeyDown(event, classId)}
                     >
                       <TableCell className="whitespace-nowrap px-3 py-3 text-xs">
-                        <div className="font-medium text-foreground">{createdAt.date}</div>
-                        <div className="text-muted-foreground">{createdAt.time}</div>
+                        <div className="font-medium text-foreground">
+                          {createdAt.date}
+                        </div>
+                        <div className="text-muted-foreground">
+                          {createdAt.time}
+                        </div>
                       </TableCell>
                       <TableCell className="min-w-0 px-3 py-3">
-                        <div className="line-clamp-2 max-w-[260px] break-words font-medium text-foreground" title={item.name || "-"}>
+                        <div
+                          className="line-clamp-2 max-w-[260px] break-words font-medium text-foreground"
+                          title={item.name || "-"}
+                        >
                           {item.name || "-"}
                         </div>
-                        <div className="line-clamp-2 max-w-[260px] break-words text-xs leading-relaxed text-muted-foreground" title={item.description || "설명 미입력"}>
+                        <div
+                          className="line-clamp-2 max-w-[260px] break-words text-xs leading-relaxed text-muted-foreground"
+                          title={item.description || "설명 미입력"}
+                        >
                           {item.description || "설명 미입력"}
                         </div>
                       </TableCell>
                       <TableCell className="whitespace-nowrap px-3 py-3 text-sm">
-                        <div>{getAcademyClassLessonTypeLabel(item.lessonType)}</div>
+                        <div>
+                          {getAcademyClassLessonTypeLabel(item.lessonType)}
+                        </div>
                         <div className="text-xs text-muted-foreground">
                           {getAcademyClassLevelLabel(item.level)}
                         </div>
                       </TableCell>
                       <TableCell className="min-w-0 px-3 py-3 text-sm">
-                        <div className="max-w-[220px] truncate" title={item.instructorName || "강사 미입력"}>{item.instructorName || "강사 미입력"}</div>
-                        <div className="line-clamp-2 max-w-[220px] break-words text-xs leading-relaxed text-muted-foreground" title={item.scheduleText || "일정 미입력"}>
+                        <div
+                          className="max-w-[220px] truncate"
+                          title={item.instructorName || "강사 미입력"}
+                        >
+                          {item.instructorName || "강사 미입력"}
+                        </div>
+                        <div
+                          className="line-clamp-2 max-w-[220px] break-words text-xs leading-relaxed text-muted-foreground"
+                          title={item.scheduleText || "일정 미입력"}
+                        >
                           {item.scheduleText || "일정 미입력"}
                         </div>
                         {item.location ? (
-                          <div className="max-w-[220px] truncate text-xs text-muted-foreground" title={item.location}>
+                          <div
+                            className="max-w-[220px] truncate text-xs text-muted-foreground"
+                            title={item.location}
+                          >
                             {item.location}
                           </div>
                         ) : null}
@@ -436,7 +523,10 @@ export default function AcademyClassesClient() {
                               <MoreHorizontal className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="min-w-max">
+                          <DropdownMenuContent
+                            align="end"
+                            className="min-w-max"
+                          >
                             <DropdownMenuItem
                               className="whitespace-nowrap"
                               onSelect={(event) => {
@@ -508,7 +598,9 @@ export default function AcademyClassesClient() {
 
           <div className="flex flex-col gap-2 text-sm leading-relaxed text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
             <div>
-              총 {data?.pagination.total.toLocaleString("ko-KR") ?? 0}건 · {data?.pagination.page ?? page} / {data?.pagination.totalPages ?? 1}페이지
+              총 {data?.pagination.total.toLocaleString("ko-KR") ?? 0}건 ·{" "}
+              {data?.pagination.page ?? page} /{" "}
+              {data?.pagination.totalPages ?? 1}페이지
             </div>
             <div className="flex gap-2">
               <Button
@@ -556,7 +648,11 @@ export default function AcademyClassesClient() {
             <AlertDialogCancel>취소</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleConfirmPendingAction}
-              className={pendingAction?.type === "delete" ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : undefined}
+              className={
+                pendingAction?.type === "delete"
+                  ? "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  : undefined
+              }
             >
               {pendingAction?.type === "delete" ? "영구 삭제" : "숨김 처리"}
             </AlertDialogAction>

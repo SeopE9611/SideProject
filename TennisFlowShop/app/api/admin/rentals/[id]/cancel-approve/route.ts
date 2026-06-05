@@ -17,15 +17,18 @@ async function restoreRentalVariantStockIfNeeded(params: {
   if (String(stockDeduction?.mode ?? "") !== "variant") return;
 
   const selectedColor =
-    typeof stockDeduction?.colorValue === "string" && stockDeduction.colorValue.trim()
+    typeof stockDeduction?.colorValue === "string" &&
+    stockDeduction.colorValue.trim()
       ? stockDeduction.colorValue.trim()
       : null;
   const selectedGauge =
-    typeof stockDeduction?.gaugeValue === "string" && stockDeduction.gaugeValue.trim()
+    typeof stockDeduction?.gaugeValue === "string" &&
+    stockDeduction.gaugeValue.trim()
       ? stockDeduction.gaugeValue.trim()
       : null;
   const stringProductId =
-    existing?.stringing?.stringId && ObjectId.isValid(String(existing.stringing.stringId))
+    existing?.stringing?.stringId &&
+    ObjectId.isValid(String(existing.stringing.stringId))
       ? new ObjectId(String(existing.stringing.stringId))
       : null;
   if (!stringProductId || !selectedColor || !selectedGauge) {
@@ -54,7 +57,10 @@ async function restoreRentalVariantStockIfNeeded(params: {
     },
     {
       arrayFilters: [
-        { "variant.colorValue": selectedColor, "variant.gaugeValue": selectedGauge },
+        {
+          "variant.colorValue": selectedColor,
+          "variant.gaugeValue": selectedGauge,
+        },
         { "color.value": selectedColor },
         { "gauge.value": selectedGauge },
       ],
@@ -66,7 +72,10 @@ async function restoreRentalVariantStockIfNeeded(params: {
   }
 
   await db.collection("rental_orders").updateOne(
-    { _id: existing._id, "stockRestore.variantStockRestoredAt": { $exists: false } },
+    {
+      _id: existing._id,
+      "stockRestore.variantStockRestoredAt": { $exists: false },
+    },
     {
       $set: {
         "stockRestore.variantStockRestoredAt": now,
@@ -142,18 +151,25 @@ export async function POST(
       existing.stringing.selectedColor.trim()
         ? existing.stringing.selectedColor.trim()
         : null;
-    const colorStockRestoredAt = existing?.stringing?.colorStockRestoredAt ? new Date(existing.stringing.colorStockRestoredAt) : null;
+    const colorStockRestoredAt = existing?.stringing?.colorStockRestoredAt
+      ? new Date(existing.stringing.colorStockRestoredAt)
+      : null;
     const isVariantDeductionMode =
       String(existing?.stringing?.stockDeduction?.mode ?? "") === "variant";
 
     const stringProductId =
-      existing?.stringing?.stringId && ObjectId.isValid(String(existing.stringing.stringId))
+      existing?.stringing?.stringId &&
+      ObjectId.isValid(String(existing.stringing.stringId))
         ? new ObjectId(String(existing.stringing.stringId))
         : null;
 
     if (!alreadyCanceledApproved) {
       try {
-        await restoreRentalVariantStockIfNeeded({ db: guard.db, existing, now });
+        await restoreRentalVariantStockIfNeeded({
+          db: guard.db,
+          existing,
+          now,
+        });
       } catch (e: any) {
         if (e?.message === "VARIANT_STOCK_RESTORE_FAILED") {
           return NextResponse.json(
@@ -169,23 +185,33 @@ export async function POST(
       }
     }
 
-    if (!alreadyCanceledApproved && !isVariantDeductionMode && selectedGauge && stringProductId) {
-      const gaugeRestoreResult = await guard.db.collection("products").updateOne(
-        {
-          _id: stringProductId,
-          sold: { $gte: 1 },
-          "gaugeInventories.value": selectedGauge,
-        },
-        {
-          $inc: {
-            "gaugeInventories.$.stock": 1,
-            "inventory.stock": 1,
-            sold: -1,
+    if (
+      !alreadyCanceledApproved &&
+      !isVariantDeductionMode &&
+      selectedGauge &&
+      stringProductId
+    ) {
+      const gaugeRestoreResult = await guard.db
+        .collection("products")
+        .updateOne(
+          {
+            _id: stringProductId,
+            sold: { $gte: 1 },
+            "gaugeInventories.value": selectedGauge,
           },
-        },
-      );
+          {
+            $inc: {
+              "gaugeInventories.$.stock": 1,
+              "inventory.stock": 1,
+              sold: -1,
+            },
+          },
+        );
 
-      if (gaugeRestoreResult.matchedCount < 1 || gaugeRestoreResult.modifiedCount < 1) {
+      if (
+        gaugeRestoreResult.matchedCount < 1 ||
+        gaugeRestoreResult.modifiedCount < 1
+      ) {
         return NextResponse.json(
           { ok: false, message: "스트링 게이지 재고 복구에 실패했습니다." },
           { status: 409 },
@@ -193,26 +219,58 @@ export async function POST(
       }
     }
 
-
-    if (!alreadyCanceledApproved && !isVariantDeductionMode && selectedColor && stringProductId && !colorStockRestoredAt) {
-      const hasManagedColorInventories = await guard.db.collection("products").countDocuments(
-        { _id: stringProductId, colorInventories: { $exists: true, $ne: [] } },
-        { limit: 1 },
-      );
-
-      if (hasManagedColorInventories > 0) {
-        const colorRestoreResult = await guard.db.collection("products").updateOne(
-          selectedGauge
-            ? { _id: stringProductId, "colorInventories.value": selectedColor }
-            : { _id: stringProductId, sold: { $gte: 1 }, "colorInventories.value": selectedColor },
-          selectedGauge
-            ? { $inc: { "colorInventories.$.stock": 1 } }
-            : { $inc: { "colorInventories.$.stock": 1, "inventory.stock": 1, sold: -1 } },
+    if (
+      !alreadyCanceledApproved &&
+      !isVariantDeductionMode &&
+      selectedColor &&
+      stringProductId &&
+      !colorStockRestoredAt
+    ) {
+      const hasManagedColorInventories = await guard.db
+        .collection("products")
+        .countDocuments(
+          {
+            _id: stringProductId,
+            colorInventories: { $exists: true, $ne: [] },
+          },
+          { limit: 1 },
         );
 
-        if (colorRestoreResult.matchedCount < 1 || colorRestoreResult.modifiedCount < 1) {
+      if (hasManagedColorInventories > 0) {
+        const colorRestoreResult = await guard.db
+          .collection("products")
+          .updateOne(
+            selectedGauge
+              ? {
+                  _id: stringProductId,
+                  "colorInventories.value": selectedColor,
+                }
+              : {
+                  _id: stringProductId,
+                  sold: { $gte: 1 },
+                  "colorInventories.value": selectedColor,
+                },
+            selectedGauge
+              ? { $inc: { "colorInventories.$.stock": 1 } }
+              : {
+                  $inc: {
+                    "colorInventories.$.stock": 1,
+                    "inventory.stock": 1,
+                    sold: -1,
+                  },
+                },
+          );
+
+        if (
+          colorRestoreResult.matchedCount < 1 ||
+          colorRestoreResult.modifiedCount < 1
+        ) {
           return NextResponse.json(
-            { ok: false, code: "COLOR_STOCK_RESTORE_FAILED", message: "대여 취소 중 색상 재고 복구에 실패했습니다." },
+            {
+              ok: false,
+              code: "COLOR_STOCK_RESTORE_FAILED",
+              message: "대여 취소 중 색상 재고 복구에 실패했습니다.",
+            },
             { status: 409 },
           );
         }

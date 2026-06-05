@@ -1,6 +1,13 @@
 "use client";
 
-import { Check, FileText, Palette, Activity, Package, ImageIcon } from "lucide-react";
+import {
+  Check,
+  FileText,
+  Palette,
+  Activity,
+  Package,
+  ImageIcon,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface Step {
@@ -49,7 +56,7 @@ export function StepProgress({
                   <div
                     className={cn(
                       "absolute left-0 right-1/2 top-4 -translate-y-1/2 h-0.5 transition-colors duration-300",
-                      isPast || isCompleted ? "bg-primary" : "bg-border"
+                      isPast || isCompleted ? "bg-primary" : "bg-border",
                     )}
                     style={{ left: "-50%" }}
                   />
@@ -58,7 +65,7 @@ export function StepProgress({
                   <div
                     className={cn(
                       "absolute left-1/2 right-0 top-4 -translate-y-1/2 h-0.5 transition-colors duration-300",
-                      isPast && !isCurrent ? "bg-primary" : "bg-border"
+                      isPast && !isCurrent ? "bg-primary" : "bg-border",
                     )}
                     style={{ right: "-50%" }}
                   />
@@ -71,11 +78,18 @@ export function StepProgress({
                   disabled={!isClickable}
                   className={cn(
                     "relative z-10 flex h-8 w-8 items-center justify-center rounded-full border-2 transition-all duration-300",
-                    isCurrent && "border-primary bg-primary text-primary-foreground scale-110 shadow-lg shadow-primary/25",
-                    isCompleted && !isCurrent && "border-primary bg-primary text-primary-foreground",
-                    !isCurrent && !isCompleted && "border-border bg-background text-muted-foreground",
-                    isClickable && !isCurrent && "cursor-pointer hover:border-primary/70 hover:bg-muted",
-                    !isClickable && "cursor-not-allowed opacity-50"
+                    isCurrent &&
+                      "border-primary bg-primary text-primary-foreground scale-110 shadow-lg shadow-primary/25",
+                    isCompleted &&
+                      !isCurrent &&
+                      "border-primary bg-primary text-primary-foreground",
+                    !isCurrent &&
+                      !isCompleted &&
+                      "border-border bg-background text-muted-foreground",
+                    isClickable &&
+                      !isCurrent &&
+                      "cursor-pointer hover:border-primary/70 hover:bg-muted",
+                    !isClickable && "cursor-not-allowed opacity-50",
                   )}
                   aria-current={isCurrent ? "step" : undefined}
                 >
@@ -92,7 +106,7 @@ export function StepProgress({
                     "text-xs font-medium transition-colors duration-300 text-center whitespace-nowrap",
                     isCurrent && "text-primary font-semibold",
                     isCompleted && !isCurrent && "text-primary",
-                    !isCurrent && !isCompleted && "text-muted-foreground"
+                    !isCurrent && !isCompleted && "text-muted-foreground",
                   )}
                 >
                   {step.label}

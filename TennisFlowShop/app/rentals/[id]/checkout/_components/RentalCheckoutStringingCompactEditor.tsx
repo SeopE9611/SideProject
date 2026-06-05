@@ -25,7 +25,9 @@ type Props = {
   adapter: RentalCheckoutStringingServiceAdapter;
 };
 
-export default function RentalCheckoutStringingCompactEditor({ adapter }: Props) {
+export default function RentalCheckoutStringingCompactEditor({
+  adapter,
+}: Props) {
   const {
     formData,
     setFormData,
@@ -44,11 +46,11 @@ export default function RentalCheckoutStringingCompactEditor({ adapter }: Props)
   } = adapter;
 
   const isVisit = formData.collectionMethod === "visit";
-  const [bulkTensionMain, setBulkTensionMain] = useState<string>(
-    () => String(formData?.defaultMainTension ?? ""),
+  const [bulkTensionMain, setBulkTensionMain] = useState<string>(() =>
+    String(formData?.defaultMainTension ?? ""),
   );
-  const [bulkTensionCross, setBulkTensionCross] = useState<string>(
-    () => String(formData?.defaultCrossTension ?? ""),
+  const [bulkTensionCross, setBulkTensionCross] = useState<string>(() =>
+    String(formData?.defaultCrossTension ?? ""),
   );
   const [bulkLineNote, setBulkLineNote] = useState<string>("");
 
@@ -81,7 +83,13 @@ export default function RentalCheckoutStringingCompactEditor({ adapter }: Props)
         };
       });
     },
-    [bulkLineNote, bulkTensionCross, bulkTensionMain, linesForSubmit, setFormData],
+    [
+      bulkLineNote,
+      bulkTensionCross,
+      bulkTensionMain,
+      linesForSubmit,
+      setFormData,
+    ],
   );
 
   const applyFirstLineTensionToAll = useCallback(() => {
@@ -94,7 +102,9 @@ export default function RentalCheckoutStringingCompactEditor({ adapter }: Props)
     if (cross) setBulkTensionCross(cross);
     applyBulkToAllLines({ main, cross });
   }, [applyBulkToAllLines, linesForSubmit]);
-  const lineConfiguredDone = completion.lineConfiguredCount === completion.totalLineCount && completion.totalLineCount > 0;
+  const lineConfiguredDone =
+    completion.lineConfiguredCount === completion.totalLineCount &&
+    completion.totalLineCount > 0;
   const defaultOpenValue = lineConfiguredDone ? "" : "detail";
 
   return (
@@ -112,7 +122,15 @@ export default function RentalCheckoutStringingCompactEditor({ adapter }: Props)
             <Settings2 className="h-4 w-4 text-primary/80" />
             라켓별 교체서비스 상세 설정하기
           </span>
-          <span className={lineConfiguredDone ? "text-xs text-primary" : "text-xs text-warning"}>{lineConfiguredDone ? "설정 완료" : "설정 필요"}</span>
+          <span
+            className={
+              lineConfiguredDone
+                ? "text-xs text-primary"
+                : "text-xs text-warning"
+            }
+          >
+            {lineConfiguredDone ? "설정 완료" : "설정 필요"}
+          </span>
         </AccordionTrigger>
         <AccordionContent value="detail" className="space-y-7 pb-5">
           <section className="space-y-4 rounded-lg border border-border/70 bg-muted/10 p-4">
@@ -120,21 +138,36 @@ export default function RentalCheckoutStringingCompactEditor({ adapter }: Props)
             {isVisit ? (
               <div className="grid grid-cols-1 gap-4 bp-sm:grid-cols-2">
                 <div className="space-y-2.5">
-                  <Label htmlFor="rental-preferred-date" className="text-xs text-foreground/75">희망 날짜</Label>
+                  <Label
+                    htmlFor="rental-preferred-date"
+                    className="text-xs text-foreground/75"
+                  >
+                    희망 날짜
+                  </Label>
                   <Input
                     id="rental-preferred-date"
                     type="date"
                     min={new Date().toISOString().slice(0, 10)}
                     value={formData.preferredDate}
                     onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, preferredDate: e.target.value }))
+                      setFormData((prev) => ({
+                        ...prev,
+                        preferredDate: e.target.value,
+                      }))
                     }
                   />
                 </div>
                 <div className="space-y-2.5 rounded-lg border border-border/70 bg-background/90 p-3.5">
                   <div className="space-y-1">
-                    <Label htmlFor="rental-preferred-time" className="text-xs font-medium text-foreground">희망 시간</Label>
-                    <p className="text-xs text-foreground/75">가능한 시간대 중 한 슬롯을 선택해주세요.</p>
+                    <Label
+                      htmlFor="rental-preferred-time"
+                      className="text-xs font-medium text-foreground"
+                    >
+                      희망 시간
+                    </Label>
+                    <p className="text-xs text-foreground/75">
+                      가능한 시간대 중 한 슬롯을 선택해주세요.
+                    </p>
                   </div>
                   <TimeSlotSelector
                     selected={formData.preferredTime}
@@ -142,7 +175,8 @@ export default function RentalCheckoutStringingCompactEditor({ adapter }: Props)
                     onSelect={(value) =>
                       setFormData((prev) => ({
                         ...prev,
-                        preferredTime: prev.preferredTime === value ? "" : value,
+                        preferredTime:
+                          prev.preferredTime === value ? "" : value,
                       }))
                     }
                     times={timeSlots}
@@ -171,7 +205,9 @@ export default function RentalCheckoutStringingCompactEditor({ adapter }: Props)
                 </div>
               </div>
             ) : (
-              <p className="text-xs text-foreground/75">현재 접수 방식은 방문 예약이 필요하지 않습니다.</p>
+              <p className="text-xs text-foreground/75">
+                현재 접수 방식은 방문 예약이 필요하지 않습니다.
+              </p>
             )}
           </section>
 
@@ -186,7 +222,8 @@ export default function RentalCheckoutStringingCompactEditor({ adapter }: Props)
                       빠른 설정
                     </p>
                     <p className="mt-0.5 text-xs text-foreground/75">
-                      여러{'\u00A0'}자루에 동일한 텐션/메모를 한{'\u00A0'}번에 적용합니다.
+                      여러{"\u00A0"}자루에 동일한 텐션/메모를 한{"\u00A0"}번에
+                      적용합니다.
                     </p>
                   </div>
                   <div className="flex gap-2">
@@ -213,13 +250,17 @@ export default function RentalCheckoutStringingCompactEditor({ adapter }: Props)
                   <Input
                     className="h-10 px-3"
                     value={bulkTensionMain}
-                    onChange={(e) => setBulkTensionMain(toNumberText(e.target.value))}
+                    onChange={(e) =>
+                      setBulkTensionMain(toNumberText(e.target.value))
+                    }
                     placeholder="공통 메인 텐션"
                   />
                   <Input
                     className="h-10 px-3"
                     value={bulkTensionCross}
-                    onChange={(e) => setBulkTensionCross(toNumberText(e.target.value))}
+                    onChange={(e) =>
+                      setBulkTensionCross(toNumberText(e.target.value))
+                    }
                     placeholder="공통 크로스 텐션"
                   />
                   <div className="bp-sm:col-span-2">
@@ -236,23 +277,40 @@ export default function RentalCheckoutStringingCompactEditor({ adapter }: Props)
 
             <div className="space-y-4.5">
               {linesForSubmit.map((line, index) => (
-                <div key={line.id} className="space-y-3.5 rounded-lg border border-border/80 bg-background p-4">
+                <div
+                  key={line.id}
+                  className="space-y-3.5 rounded-lg border border-border/80 bg-background p-4"
+                >
                   <div className="space-y-1">
-                    <p className="text-xs font-semibold text-foreground">라켓 {index + 1}</p>
-                    <p className="text-xs text-foreground/75">{line.stringName}</p>
+                    <p className="text-xs font-semibold text-foreground">
+                      라켓 {index + 1}
+                    </p>
+                    <p className="text-xs text-foreground/75">
+                      {line.stringName}
+                    </p>
                   </div>
                   <div className="grid grid-cols-1 gap-2.5 bp-sm:grid-cols-3">
                     <Input
                       className="h-10 px-3"
                       value={line.racketType ?? ""}
-                      onChange={(e) => handleLineFieldChange(index, "racketType", e.target.value)}
+                      onChange={(e) =>
+                        handleLineFieldChange(
+                          index,
+                          "racketType",
+                          e.target.value,
+                        )
+                      }
                       placeholder="라켓명"
                     />
                     <Input
                       className="h-10 px-3"
                       value={line.tensionMain ?? ""}
                       onChange={(e) =>
-                        handleLineFieldChange(index, "tensionMain", toNumberText(e.target.value))
+                        handleLineFieldChange(
+                          index,
+                          "tensionMain",
+                          toNumberText(e.target.value),
+                        )
                       }
                       placeholder="메인 텐션"
                     />
@@ -260,14 +318,20 @@ export default function RentalCheckoutStringingCompactEditor({ adapter }: Props)
                       className="h-10 px-3"
                       value={line.tensionCross ?? ""}
                       onChange={(e) =>
-                        handleLineFieldChange(index, "tensionCross", toNumberText(e.target.value))
+                        handleLineFieldChange(
+                          index,
+                          "tensionCross",
+                          toNumberText(e.target.value),
+                        )
                       }
                       placeholder="크로스 텐션"
                     />
                   </div>
                   <Textarea
                     value={line.note ?? ""}
-                    onChange={(e) => handleLineFieldChange(index, "note", e.target.value)}
+                    onChange={(e) =>
+                      handleLineFieldChange(index, "note", e.target.value)
+                    }
                     placeholder="라켓별 메모 (선택)"
                     className="min-h-[84px] px-3 py-2.5"
                   />
@@ -282,12 +346,17 @@ export default function RentalCheckoutStringingCompactEditor({ adapter }: Props)
               id="rental-stringing-requirements"
               value={formData.requirements ?? ""}
               onChange={(e) =>
-                setFormData((prev) => ({ ...prev, requirements: e.target.value }))
+                setFormData((prev) => ({
+                  ...prev,
+                  requirements: e.target.value,
+                }))
               }
               placeholder="예: 선호 텐션 느낌, 작업 시 확인할 사항"
               className="min-h-[98px] px-3 py-2.5"
             />
-            <p className="text-xs text-foreground/75">필요한 경우에만 간단히 남겨주세요.</p>
+            <p className="text-xs text-foreground/75">
+              필요한 경우에만 간단히 남겨주세요.
+            </p>
           </section>
         </AccordionContent>
       </AccordionItem>

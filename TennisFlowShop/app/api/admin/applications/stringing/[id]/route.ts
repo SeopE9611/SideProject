@@ -30,12 +30,7 @@ export async function GET(
   return NextResponse.json({
     ...payload,
     stockDeduction:
-      payload?.stockDeduction ??
-      (doc as any)?.stockDeduction ??
-      null,
-    stockRestore:
-      payload?.stockRestore ??
-      (doc as any)?.stockRestore ??
-      null,
+      payload?.stockDeduction ?? (doc as any)?.stockDeduction ?? null,
+    stockRestore: payload?.stockRestore ?? (doc as any)?.stockRestore ?? null,
   });
 }

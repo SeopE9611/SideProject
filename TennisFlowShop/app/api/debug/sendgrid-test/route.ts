@@ -7,11 +7,16 @@ export async function GET(req: Request) {
    * - Vercel: VERCEL_ENV=production 이면 무조건 차단
    * - 그 외 환경: NODE_ENV=production 이면 차단
    */
-  const isProd = process.env.VERCEL_ENV ? process.env.VERCEL_ENV === "production" : process.env.NODE_ENV === "production";
+  const isProd = process.env.VERCEL_ENV
+    ? process.env.VERCEL_ENV === "production"
+    : process.env.NODE_ENV === "production";
 
   if (isProd) {
     // 404로 숨겨서 스캐너/봇에 덜 노출되게 처리
-    return NextResponse.json({ ok: false, error: "Not found" }, { status: 404 });
+    return NextResponse.json(
+      { ok: false, error: "Not found" },
+      { status: 404 },
+    );
   }
 
   // 개발/프리뷰 환경에서도 “시크릿 헤더” 없으면 실행 불가
@@ -19,11 +24,17 @@ export async function GET(req: Request) {
   const providedSecret = req.headers.get("x-debug-secret");
 
   if (!expectedSecret) {
-    return NextResponse.json({ ok: false, error: "DEBUG_ENDPOINT_SECRET is not set" }, { status: 500 });
+    return NextResponse.json(
+      { ok: false, error: "DEBUG_ENDPOINT_SECRET is not set" },
+      { status: 500 },
+    );
   }
 
   if (providedSecret !== expectedSecret) {
-    return NextResponse.json({ ok: false, error: "Forbidden" }, { status: 403 });
+    return NextResponse.json(
+      { ok: false, error: "Forbidden" },
+      { status: 403 },
+    );
   }
 
   try {
@@ -34,7 +45,10 @@ export async function GET(req: Request) {
         .filter(Boolean) ?? [];
 
     if (allowlist.length === 0) {
-      return NextResponse.json({ ok: false, error: "SAFE_RCPT_ALLOWLIST is empty" }, { status: 400 });
+      return NextResponse.json(
+        { ok: false, error: "SAFE_RCPT_ALLOWLIST is empty" },
+        { status: 400 },
+      );
     }
 
     const to = allowlist[0];

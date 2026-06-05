@@ -1,7 +1,13 @@
 import type { RecommendedStringProduct } from "@/app/products/recommend/_types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { stringBrandLabel, stringMaterialLabel } from "@/lib/constants";
 import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import Image from "next/image";
@@ -12,7 +18,10 @@ type StringRecommendResultCardProps = {
   rank: number;
 };
 
-export default function StringRecommendResultCard({ result, rank }: StringRecommendResultCardProps) {
+export default function StringRecommendResultCard({
+  result,
+  rank,
+}: StringRecommendResultCardProps) {
   const { product } = result;
   const productHref = `/products/${product.id}?from=apply`;
 
@@ -21,14 +30,30 @@ export default function StringRecommendResultCard({ result, rank }: StringRecomm
       <CardHeader className="space-y-3">
         <Badge className="w-fit">TOP {rank}</Badge>
         <div className="relative aspect-[5/4] w-full overflow-hidden rounded-xl bg-muted">
-          {product.image ? <Image src={product.image} alt={product.name} fill className="object-cover" /> : <div className="flex h-full items-center justify-center text-sm text-muted-foreground">이미지 없음</div>}
+          {product.image ? (
+            <Image
+              src={product.image}
+              alt={product.name}
+              fill
+              className="object-cover"
+            />
+          ) : (
+            <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+              이미지 없음
+            </div>
+          )}
         </div>
         <div>
-          <p className="text-xs text-muted-foreground">{stringBrandLabel(product.brand) || "브랜드 정보 없음"}</p>
-          <CardTitle className="mt-1 text-base">{product.name}</CardTitle>
-          <p className="mt-2 text-sm font-semibold">{product.price.toLocaleString()}원</p>
           <p className="text-xs text-muted-foreground">
-            소재 {stringMaterialLabel(product.material) || "-"} · 게이지 {formatGaugeLabel(product.gauge) || "-"}
+            {stringBrandLabel(product.brand) || "브랜드 정보 없음"}
+          </p>
+          <CardTitle className="mt-1 text-base">{product.name}</CardTitle>
+          <p className="mt-2 text-sm font-semibold">
+            {product.price.toLocaleString()}원
+          </p>
+          <p className="text-xs text-muted-foreground">
+            소재 {stringMaterialLabel(product.material) || "-"} · 게이지{" "}
+            {formatGaugeLabel(product.gauge) || "-"}
           </p>
         </div>
       </CardHeader>
@@ -47,9 +72,12 @@ export default function StringRecommendResultCard({ result, rank }: StringRecomm
         </ul>
         <div className="rounded-lg border bg-muted/40 p-3 text-sm">
           <p className="font-medium">
-            {result.tensionRange.label}: {result.tensionRange.min}~{result.tensionRange.max} lbs
+            {result.tensionRange.label}: {result.tensionRange.min}~
+            {result.tensionRange.max} lbs
           </p>
-          <p className="mt-1 text-muted-foreground">{result.tensionRange.note}</p>
+          <p className="mt-1 text-muted-foreground">
+            {result.tensionRange.note}
+          </p>
         </div>
       </CardContent>
       <CardFooter className="flex-col items-start gap-2">
@@ -61,7 +89,10 @@ export default function StringRecommendResultCard({ result, rank }: StringRecomm
             <Link href={productHref}>상세 보기</Link>
           </Button>
         </div>
-        <p className="text-xs text-muted-foreground">상세 페이지에서 스트링 정보를 확인한 뒤 교체서비스 신청을 이어서 진행할 수 있어요.</p>
+        <p className="text-xs text-muted-foreground">
+          상세 페이지에서 스트링 정보를 확인한 뒤 교체서비스 신청을 이어서
+          진행할 수 있어요.
+        </p>
       </CardFooter>
     </Card>
   );

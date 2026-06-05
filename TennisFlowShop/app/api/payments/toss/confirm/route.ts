@@ -13,7 +13,14 @@ export async function POST(req: Request) {
     const amount = Number(body?.amount ?? 0);
 
     if (!paymentKey || !orderId || !Number.isFinite(amount) || amount < 0) {
-      return NextResponse.json({ success: false, code: "INVALID_QUERY", error: "요청 데이터가 올바르지 않습니다." }, { status: 400 });
+      return NextResponse.json(
+        {
+          success: false,
+          code: "INVALID_QUERY",
+          error: "요청 데이터가 올바르지 않습니다.",
+        },
+        { status: 400 },
+      );
     }
 
     const client = await clientPromise;
@@ -22,18 +29,43 @@ export async function POST(req: Request) {
 
     const session = await col.findOne({ tossOrderId: orderId });
     if (!session) {
-      return NextResponse.json({ success: false, code: "SESSION_NOT_FOUND", error: "결제 세션을 찾을 수 없습니다." }, { status: 404 });
+      return NextResponse.json(
+        {
+          success: false,
+          code: "SESSION_NOT_FOUND",
+          error: "결제 세션을 찾을 수 없습니다.",
+        },
+        { status: 404 },
+      );
     }
     if (session.provider && session.provider !== "toss") {
-      return NextResponse.json({ success: false, code: "PAYMENT_PROVIDER_MISMATCH", error: "토스 결제 세션이 아닙니다." }, { status: 400 });
+      return NextResponse.json(
+        {
+          success: false,
+          code: "PAYMENT_PROVIDER_MISMATCH",
+          error: "토스 결제 세션이 아닙니다.",
+        },
+        { status: 400 },
+      );
     }
 
     if (session.flowType && session.flowType !== "checkout_order") {
-      return NextResponse.json({ success: false, code: "FLOW_TYPE_MISMATCH", error: "일반 체크아웃 결제 세션이 아닙니다." }, { status: 400 });
+      return NextResponse.json(
+        {
+          success: false,
+          code: "FLOW_TYPE_MISMATCH",
+          error: "일반 체크아웃 결제 세션이 아닙니다.",
+        },
+        { status: 400 },
+      );
     }
 
     if (session.status === "approved" && session.mongoOrderId) {
-      return NextResponse.json({ success: true, mongoOrderId: session.mongoOrderId, paymentKey: session.paymentKey ?? paymentKey });
+      return NextResponse.json({
+        success: true,
+        mongoOrderId: session.mongoOrderId,
+        paymentKey: session.paymentKey ?? paymentKey,
+      });
     }
 
     if (session.status === "confirm_succeeded_order_failed") {
@@ -63,15 +95,37 @@ export async function POST(req: Request) {
           },
         },
       );
-      return NextResponse.json({ success: false, code: "SESSION_EXPIRED", error: "결제 세션 유효시간이 만료되었습니다. 다시 결제를 시도해주세요." }, { status: 410 });
+      return NextResponse.json(
+        {
+          success: false,
+          code: "SESSION_EXPIRED",
+          error:
+            "결제 세션 유효시간이 만료되었습니다. 다시 결제를 시도해주세요.",
+        },
+        { status: 410 },
+      );
     }
 
     if (session.amount !== amount) {
-      return NextResponse.json({ success: false, code: "AMOUNT_MISMATCH", error: "결제 금액 검증에 실패했습니다." }, { status: 400 });
+      return NextResponse.json(
+        {
+          success: false,
+          code: "AMOUNT_MISMATCH",
+          error: "결제 금액 검증에 실패했습니다.",
+        },
+        { status: 400 },
+      );
     }
 
     if (!process.env.TOSS_WIDGET_SECRET_KEY) {
-      return NextResponse.json({ success: false, code: "TOSS_SECRET_MISSING", error: "결제 설정이 올바르지 않습니다. 관리자에게 문의해주세요." }, { status: 500 });
+      return NextResponse.json(
+        {
+          success: false,
+          code: "TOSS_SECRET_MISSING",
+          error: "결제 설정이 올바르지 않습니다. 관리자에게 문의해주세요.",
+        },
+        { status: 500 },
+      );
     }
 
     let confirmed: Awaited<ReturnType<typeof confirmTossPayment>>;
@@ -91,7 +145,14 @@ export async function POST(req: Request) {
           },
         },
       );
-      return NextResponse.json({ success: false, code: "CONFIRM_FAILED", error: error?.message || "토스 결제 승인에 실패했습니다." }, { status: 502 });
+      return NextResponse.json(
+        {
+          success: false,
+          code: "CONFIRM_FAILED",
+          error: error?.message || "토스 결제 승인에 실패했습니다.",
+        },
+        { status: 502 },
+      );
     }
 
     const confirmedPaymentSummary = {
@@ -99,9 +160,21 @@ export async function POST(req: Request) {
       method: confirmed.method,
       type: confirmed.type,
       totalAmount: Number(confirmed.totalAmount ?? amount),
-      approvedAt: confirmed.approvedAt ? new Date(confirmed.approvedAt) : undefined,
-      card: confirmed.card ? { issuerCode: confirmed.card.issuerCode, acquirerCode: confirmed.card.acquirerCode } : undefined,
-      easyPay: confirmed.easyPay ? { provider: confirmed.easyPay.provider, amount: confirmed.easyPay.amount } : undefined,
+      approvedAt: confirmed.approvedAt
+        ? new Date(confirmed.approvedAt)
+        : undefined,
+      card: confirmed.card
+        ? {
+            issuerCode: confirmed.card.issuerCode,
+            acquirerCode: confirmed.card.acquirerCode,
+          }
+        : undefined,
+      easyPay: confirmed.easyPay
+        ? {
+            provider: confirmed.easyPay.provider,
+            amount: confirmed.easyPay.amount,
+          }
+        : undefined,
     };
 
     const idemKey = `toss:${orderId}`;
@@ -136,7 +209,8 @@ export async function POST(req: Request) {
         {
           success: false,
           code: "ORDER_CREATION_FAILED_AFTER_PAYMENT_CONFIRM",
-          error: "결제 승인 후 주문 처리에 실패했습니다. 중복 결제를 방지하기 위해 주문/결제 상태를 확인해주세요.",
+          error:
+            "결제 승인 후 주문 처리에 실패했습니다. 중복 결제를 방지하기 위해 주문/결제 상태를 확인해주세요.",
         },
         { status: 500 },
       );
@@ -155,12 +229,24 @@ export async function POST(req: Request) {
             status: "paid",
             paymentKey: confirmed.paymentKey,
             total: amount,
-            approvedAt: confirmed.approvedAt ? new Date(confirmed.approvedAt) : new Date(),
+            approvedAt: confirmed.approvedAt
+              ? new Date(confirmed.approvedAt)
+              : new Date(),
             rawSummary: {
               orderId: confirmed.orderId,
               totalAmount: confirmed.totalAmount ?? amount,
-              card: confirmed.card ? { issuerCode: confirmed.card.issuerCode, acquirerCode: confirmed.card.acquirerCode } : undefined,
-              easyPay: confirmed.easyPay ? { provider: confirmed.easyPay.provider, amount: confirmed.easyPay.amount } : undefined,
+              card: confirmed.card
+                ? {
+                    issuerCode: confirmed.card.issuerCode,
+                    acquirerCode: confirmed.card.acquirerCode,
+                  }
+                : undefined,
+              easyPay: confirmed.easyPay
+                ? {
+                    provider: confirmed.easyPay.provider,
+                    amount: confirmed.easyPay.amount,
+                  }
+                : undefined,
             },
           },
           updatedAt: new Date(),
@@ -188,6 +274,13 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true, mongoOrderId, paymentKey });
   } catch (error) {
-    return NextResponse.json({ success: false, code: "CONFIRM_ROUTE_ERROR", error: "토스 승인 처리 중 오류가 발생했습니다." }, { status: 500 });
+    return NextResponse.json(
+      {
+        success: false,
+        code: "CONFIRM_ROUTE_ERROR",
+        error: "토스 승인 처리 중 오류가 발생했습니다.",
+      },
+      { status: 500 },
+    );
   }
 }

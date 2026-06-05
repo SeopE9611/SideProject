@@ -1,6 +1,7 @@
 import { Buffer } from "node:buffer";
 
-export const NICE_DEFAULT_APPROVE_API_BASE = "https://api.nicepay.co.kr/v1/payments";
+export const NICE_DEFAULT_APPROVE_API_BASE =
+  "https://api.nicepay.co.kr/v1/payments";
 
 function toPositiveAmount(amount: unknown): number {
   const normalized = Math.floor(Number(amount) || 0);
@@ -22,7 +23,11 @@ function pick(raw: Record<string, string>, ...keys: string[]) {
   return "";
 }
 
-function flattenObjectToRecord(value: unknown, prefix: string, acc: Record<string, string>) {
+function flattenObjectToRecord(
+  value: unknown,
+  prefix: string,
+  acc: Record<string, string>,
+) {
   if (value === null || value === undefined) {
     if (prefix) acc[prefix] = "";
     return;
@@ -35,7 +40,11 @@ function flattenObjectToRecord(value: unknown, prefix: string, acc: Record<strin
   if (Array.isArray(value)) {
     if (prefix) acc[prefix] = "[array]";
     value.forEach((item, index) => {
-      flattenObjectToRecord(item, prefix ? `${prefix}.${index}` : String(index), acc);
+      flattenObjectToRecord(
+        item,
+        prefix ? `${prefix}.${index}` : String(index),
+        acc,
+      );
     });
     return;
   }
@@ -64,10 +73,20 @@ const NICE_CARD_FIELD_CANDIDATES = {
   cardCode: ["cardCode", "CardCode", "card.cardCode", "card.code"] as const,
 } as const;
 
-const NICE_EASY_PAY_PROVIDER_CANDIDATES = ["easyPayProvider", "EasyPayProvider", "easyPay.provider", "easyPayProviderName"] as const;
+const NICE_EASY_PAY_PROVIDER_CANDIDATES = [
+  "easyPayProvider",
+  "EasyPayProvider",
+  "easyPay.provider",
+  "easyPayProviderName",
+] as const;
 
-function collectPresentKeys(raw: Record<string, string>, keys: readonly string[]) {
-  return keys.filter((key) => typeof raw[key] === "string" && raw[key].trim() !== "");
+function collectPresentKeys(
+  raw: Record<string, string>,
+  keys: readonly string[],
+) {
+  return keys.filter(
+    (key) => typeof raw[key] === "string" && raw[key].trim() !== "",
+  );
 }
 
 export function summarizeNiceCardRaw(raw: Record<string, string>) {
@@ -95,7 +114,13 @@ export function extractNiceCardInfo(raw: Record<string, string>) {
   const cardCode = pick(raw, ...NICE_CARD_FIELD_CANDIDATES.cardCode);
 
   const displayName = cardName || issuerName || "";
-  if (!displayName && !issuerCode && !acquirerName && !acquirerCode && !cardCode) {
+  if (
+    !displayName &&
+    !issuerCode &&
+    !acquirerName &&
+    !acquirerCode &&
+    !cardCode
+  ) {
     return null;
   }
 
@@ -118,13 +143,18 @@ export function createNiceOrderId(): string {
   return `nicepay_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
 }
 
-export function buildNiceOrderName(items: Array<{ name?: string; quantity?: number }>) {
+export function buildNiceOrderName(
+  items: Array<{ name?: string; quantity?: number }>,
+) {
   const first = (items[0]?.name || "주문 상품").trim();
   const extraCount = Math.max(0, items.length - 1);
   return extraCount > 0 ? `${first} 외 ${extraCount}건` : first;
 }
 
-export function createNiceBasicAuthorization(clientKey: string, secretKey: string): string {
+export function createNiceBasicAuthorization(
+  clientKey: string,
+  secretKey: string,
+): string {
   const credentials = `${clientKey}:${secretKey}`;
   return `Basic ${Buffer.from(credentials, "utf8").toString("base64")}`;
 }
@@ -204,7 +234,13 @@ async function requestNicePayment(params: {
   const tid = String(params.tid ?? "").trim();
   if (!tid) throw new Error("NICE_TID_REQUIRED");
 
-  const endpointBase = (params.apiBaseUrl || process.env.NICEPAY_APPROVE_API_BASE || NICE_DEFAULT_APPROVE_API_BASE).trim().replace(/\/+$/, "");
+  const endpointBase = (
+    params.apiBaseUrl ||
+    process.env.NICEPAY_APPROVE_API_BASE ||
+    NICE_DEFAULT_APPROVE_API_BASE
+  )
+    .trim()
+    .replace(/\/+$/, "");
   const actionSuffix = params.action ? `/${params.action}` : "";
   const url = `${endpointBase}/${encodeURIComponent(tid)}${actionSuffix}`;
 
@@ -212,9 +248,13 @@ async function requestNicePayment(params: {
     method: params.method,
     headers: {
       "Content-Type": "application/json",
-      Authorization: createNiceBasicAuthorization(params.clientKey, params.secretKey),
+      Authorization: createNiceBasicAuthorization(
+        params.clientKey,
+        params.secretKey,
+      ),
     },
-    body: params.method === "POST" ? JSON.stringify(params.body ?? {}) : undefined,
+    body:
+      params.method === "POST" ? JSON.stringify(params.body ?? {}) : undefined,
     cache: "no-store",
   });
 
@@ -228,8 +268,13 @@ async function requestNicePayment(params: {
 
   const raw = toRecordString(parsed);
   if (!response.ok) {
-    const message = raw.resultMsg || raw.message || `NICE_APPROVE_HTTP_${response.status}`;
-    const error = new Error(message) as Error & { httpStatus?: number; resultCode?: string; resultMsg?: string };
+    const message =
+      raw.resultMsg || raw.message || `NICE_APPROVE_HTTP_${response.status}`;
+    const error = new Error(message) as Error & {
+      httpStatus?: number;
+      resultCode?: string;
+      resultMsg?: string;
+    };
     error.httpStatus = response.status;
     error.resultCode = raw.resultCode || raw.ResultCode || "";
     error.resultMsg = raw.resultMsg || raw.ResultMsg || raw.message || "";

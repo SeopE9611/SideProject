@@ -16,7 +16,6 @@ import {
 
 // 내 위시리스트 목록 + 상품 요약
 
-
 const WISHLIST_OPTION_FIELDS = [
   "selectedGauge",
   "selectedColor",
@@ -62,7 +61,10 @@ function getWishlistOptionState(row: any) {
   }
 
   if (hasVariants) {
-    const variant = selectedColor && selectedGauge ? getVariantBySelection(product, selectedColor, selectedGauge) : undefined;
+    const variant =
+      selectedColor && selectedGauge
+        ? getVariantBySelection(product, selectedColor, selectedGauge)
+        : undefined;
     const optionStock = Math.max(0, Number(variant?.stock ?? 0));
     const optionAvailable = !!variant && isSellableVariant(variant);
     return {
@@ -77,7 +79,8 @@ function getWishlistOptionState(row: any) {
   if (requiresGauge && selectedGauge) {
     const gauge = gaugeRows.find((row) => row.value === selectedGauge);
     const optionStock = Math.max(0, Number(gauge?.stock ?? 0));
-    const optionAvailable = !!gauge && gauge.isSoldOut !== true && optionStock > 0;
+    const optionAvailable =
+      !!gauge && gauge.isSoldOut !== true && optionStock > 0;
     return {
       requiresOption,
       hasSelectedOption,
@@ -167,7 +170,20 @@ export async function GET() {
             as: "product",
             pipeline: [
               { $match: { isDeleted: { $ne: true } } },
-              { $project: { name: 1, price: 1, images: 1, inventory: 1, gaugeOptions: 1, gaugeInventories: 1, color: 1, colorOptions: 1, colorInventories: 1, variantInventories: 1 } },
+              {
+                $project: {
+                  name: 1,
+                  price: 1,
+                  images: 1,
+                  inventory: 1,
+                  gaugeOptions: 1,
+                  gaugeInventories: 1,
+                  color: 1,
+                  colorOptions: 1,
+                  colorInventories: 1,
+                  variantInventories: 1,
+                },
+              },
             ],
           },
         },
@@ -196,7 +212,8 @@ export async function GET() {
           id: r.productId.toString(),
           name: r.product.name,
           price: r.product.price,
-          image: r.selectedColorImage || r.product.images?.[0] || "/placeholder.svg",
+          image:
+            r.selectedColorImage || r.product.images?.[0] || "/placeholder.svg",
           stock: optionState.optionStock ?? r.product?.inventory?.stock ?? 0,
           createdAt: r.createdAt,
           selectedGauge: r.selectedGauge,

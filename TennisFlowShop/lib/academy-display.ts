@@ -1,13 +1,16 @@
 const ACADEMY_SCHEDULE_FALLBACK = "상담 후 조율";
 
-const ACADEMY_TIME_PATTERN = /(?:오전|오후)?\s*\d{1,2}:\d{2}(?:\s*(?:~|-|–|—|부터|to)\s*(?:오전|오후)?\s*\d{1,2}:\d{2})?/i;
+const ACADEMY_TIME_PATTERN =
+  /(?:오전|오후)?\s*\d{1,2}:\d{2}(?:\s*(?:~|-|–|—|부터|to)\s*(?:오전|오후)?\s*\d{1,2}:\d{2})?/i;
 
 export type AcademyScheduleDisplay = {
   daysText: string;
   timeText: string | null;
 };
 
-export function getAcademyScheduleDisplay(scheduleText: string | null | undefined): AcademyScheduleDisplay {
+export function getAcademyScheduleDisplay(
+  scheduleText: string | null | undefined,
+): AcademyScheduleDisplay {
   const normalizedSchedule = scheduleText?.trim() || ACADEMY_SCHEDULE_FALLBACK;
   const timeMatch = normalizedSchedule.match(ACADEMY_TIME_PATTERN);
 

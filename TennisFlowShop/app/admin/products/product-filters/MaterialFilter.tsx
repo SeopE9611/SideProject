@@ -17,7 +17,6 @@ interface Props {
   options: string[]; // ex) ["polyester", "multifilament", ...]
 }
 
-
 export default function MaterialFilter({ value, onChange, options }: Props) {
   return (
     <Select value={value} onValueChange={onChange}>

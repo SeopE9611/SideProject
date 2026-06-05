@@ -55,7 +55,8 @@ export default function ReviewEditDialog({
               aria-label="평점 선택"
               className="flex items-center gap-1"
               onKeyDown={(e) => {
-                const curr = typeof editForm.rating === "number" ? editForm.rating : 0;
+                const curr =
+                  typeof editForm.rating === "number" ? editForm.rating : 0;
                 if (e.key === "ArrowRight") {
                   const next = Math.min(5, curr + 1 || 1);
                   onChangeForm((s) => ({ ...s, rating: next }));
@@ -69,7 +70,8 @@ export default function ReviewEditDialog({
               }}
             >
               {[1, 2, 3, 4, 5].map((i) => {
-                const current = typeof editForm.rating === "number" ? editForm.rating : 0;
+                const current =
+                  typeof editForm.rating === "number" ? editForm.rating : 0;
                 const filled = (hoverRating ?? current) >= i;
                 return (
                   <button
@@ -101,7 +103,9 @@ export default function ReviewEditDialog({
               id="content"
               rows={6}
               value={editForm.content}
-              onChange={(e) => onChangeForm((s) => ({ ...s, content: e.target.value }))}
+              onChange={(e) =>
+                onChangeForm((s) => ({ ...s, content: e.target.value }))
+              }
               placeholder="리뷰 내용을 입력하세요."
             />
             <div className="mt-3">

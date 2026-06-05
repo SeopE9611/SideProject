@@ -85,9 +85,7 @@ test("관리자 상세 페이지/상세 API는 목록과 동일한 community_pos
   );
 
   assert.ok(
-    detailN.includes(
-      "collection<EditableCommunityPost>('community_posts')",
-    ),
+    detailN.includes("collection<EditableCommunityPost>('community_posts')"),
     "관리자 상세 API 데이터소스는 community_posts 컬렉션이어야 합니다.",
   );
 

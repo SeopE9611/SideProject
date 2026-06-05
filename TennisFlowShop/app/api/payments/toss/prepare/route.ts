@@ -4,8 +4,14 @@ import clientPromise from "@/lib/mongodb";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { calculateCheckoutPayableAmount } from "@/lib/payments/toss/checkout-quote";
 import { isTossPaymentsEnabled } from "@/lib/payments/provider-flags";
-import { buildTossOrderName, createTossOrderId } from "@/lib/payments/toss/server";
-import { ensureTossPaymentSessionIndexes, tossPaymentSessions } from "@/lib/payments/toss/session";
+import {
+  buildTossOrderName,
+  createTossOrderId,
+} from "@/lib/payments/toss/server";
+import {
+  ensureTossPaymentSessionIndexes,
+  tossPaymentSessions,
+} from "@/lib/payments/toss/session";
 
 export async function POST(req: Request) {
   try {
@@ -25,7 +31,10 @@ export async function POST(req: Request) {
     const shippingInfo = body?.shippingInfo;
 
     if (!Array.isArray(items) || items.length === 0 || !shippingInfo) {
-      return NextResponse.json({ success: false, error: "요청 데이터가 올바르지 않습니다." }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: "요청 데이터가 올바르지 않습니다." },
+        { status: 400 },
+      );
     }
 
     const cookieStore = await cookies();
@@ -46,7 +55,12 @@ export async function POST(req: Request) {
     });
 
     const tossOrderId = createTossOrderId();
-    const orderName = buildTossOrderName(quote.itemsWithSnapshot.map((it) => ({ name: it.name, quantity: it.quantity })));
+    const orderName = buildTossOrderName(
+      quote.itemsWithSnapshot.map((it) => ({
+        name: it.name,
+        quantity: it.quantity,
+      })),
+    );
 
     await ensureTossPaymentSessionIndexes(db);
     const col = tossPaymentSessions(db);
@@ -81,6 +95,9 @@ export async function POST(req: Request) {
       failUrl: `${appUrl}/checkout/toss/fail`,
     });
   } catch (error) {
-    return NextResponse.json({ success: false, error: "토스 결제 준비 중 오류가 발생했습니다." }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: "토스 결제 준비 중 오류가 발생했습니다." },
+      { status: 500 },
+    );
   }
 }

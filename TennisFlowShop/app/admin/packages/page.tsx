@@ -928,7 +928,8 @@ export default function PackageOrdersClient() {
                     패키지 결제/활성화 대기
                   </Badge>
                   <span className="text-xs text-muted-foreground">
-                    온라인 패키지 주문 중 결제 확인 또는 활성화 처리가 필요한 건만 표시합니다.
+                    온라인 패키지 주문 중 결제 확인 또는 활성화 처리가 필요한
+                    건만 표시합니다.
                   </span>
                 </div>
               )}
@@ -1199,7 +1200,10 @@ export default function PackageOrdersClient() {
                                 const isGuest = cName.includes("(비회원)");
                                 return (
                                   <div className="flex min-w-0 flex-col items-center overflow-hidden text-center">
-                                    <span className="line-clamp-2 max-w-[200px] break-words font-medium" title={baseName}>
+                                    <span
+                                      className="line-clamp-2 max-w-[200px] break-words font-medium"
+                                      title={baseName}
+                                    >
                                       {baseName}
                                       {isGuest && (
                                         <span className="ml-1 shrink-0 whitespace-nowrap text-xs text-muted-foreground">
@@ -1207,7 +1211,10 @@ export default function PackageOrdersClient() {
                                         </span>
                                       )}
                                     </span>
-                                    <span className="block max-w-[200px] truncate text-xs text-muted-foreground" title={cEmail}>
+                                    <span
+                                      className="block max-w-[200px] truncate text-xs text-muted-foreground"
+                                      title={cEmail}
+                                    >
                                       {cEmail}
                                     </span>
                                   </div>
@@ -1289,7 +1296,9 @@ export default function PackageOrdersClient() {
                               return (
                                 <TableCell className={cn(tdClasses, col.buy)}>
                                   <div className="flex flex-col items-center leading-tight">
-                                    <span className="whitespace-nowrap text-sm tabular-nums">{date}</span>
+                                    <span className="whitespace-nowrap text-sm tabular-nums">
+                                      {date}
+                                    </span>
                                     <span className="whitespace-nowrap text-xs tabular-nums text-muted-foreground">
                                       {time}
                                     </span>
@@ -1307,7 +1316,9 @@ export default function PackageOrdersClient() {
                                   className={cn(tdClasses, col.expire)}
                                 >
                                   <div className="flex flex-col items-center leading-tight">
-                                    <span className="whitespace-nowrap text-sm tabular-nums">{date}</span>
+                                    <span className="whitespace-nowrap text-sm tabular-nums">
+                                      {date}
+                                    </span>
                                     <span className="whitespace-nowrap text-xs tabular-nums text-muted-foreground">
                                       {time}
                                     </span>
@@ -1374,7 +1385,10 @@ export default function PackageOrdersClient() {
                                 return (
                                   <Badge
                                     variant={pay.variant}
-                                    className={cn("shrink-0 whitespace-nowrap font-medium", badgeSizeCls)}
+                                    className={cn(
+                                      "shrink-0 whitespace-nowrap font-medium",
+                                      badgeSizeCls,
+                                    )}
                                     aria-label={`결제상태 ${String(pkg.paymentStatus)}`}
                                   >
                                     {pkg.paymentStatus}

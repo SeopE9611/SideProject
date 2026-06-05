@@ -1,4 +1,7 @@
-import { createRentalOrderCore, type RentalCreatePayload } from "@/app/features/rentals/api/create-rental-order-core";
+import {
+  createRentalOrderCore,
+  type RentalCreatePayload,
+} from "@/app/features/rentals/api/create-rental-order-core";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
@@ -66,7 +69,9 @@ const RentalsCreateBodySchema = z
     const pickup = data.servicePickupMethod;
     const shippingMethod = data.shipping?.shippingMethod;
     const isPickup =
-      pickup === "SHOP_VISIT" || pickup === "pickup" || shippingMethod === "pickup";
+      pickup === "SHOP_VISIT" ||
+      pickup === "pickup" ||
+      shippingMethod === "pickup";
 
     if (isPickup) return;
 
@@ -91,57 +96,78 @@ const RentalsCreateBodySchema = z
 
 export async function POST(req: Request) {
   const idemKeyRaw = req.headers.get("Idempotency-Key");
-  const idemKey = idemKeyRaw && idemKeyRaw.trim() ? idemKeyRaw.trim() : undefined;
+  const idemKey =
+    idemKeyRaw && idemKeyRaw.trim() ? idemKeyRaw.trim() : undefined;
 
   const raw = await req.text();
   if (!raw) {
-    return NextResponse.json({ ok: false, message: "EMPTY_BODY" }, { status: 400 });
+    return NextResponse.json(
+      { ok: false, message: "EMPTY_BODY" },
+      { status: 400 },
+    );
   }
 
   let body: unknown;
   try {
     body = JSON.parse(raw);
   } catch {
-    return NextResponse.json({ ok: false, message: "INVALID_JSON" }, { status: 400 });
+    return NextResponse.json(
+      { ok: false, message: "INVALID_JSON" },
+      { status: 400 },
+    );
   }
 
   const parsed = RentalsCreateBodySchema.safeParse(body);
   if (!parsed.success) {
     const issues = parsed.error.issues ?? [];
     if (issues.some((i) => i.message === "BAD_RACKET_ID")) {
-      return NextResponse.json({ ok: false, message: "BAD_RACKET_ID" }, { status: 400 });
+      return NextResponse.json(
+        { ok: false, message: "BAD_RACKET_ID" },
+        { status: 400 },
+      );
     }
     if (issues.some((i) => i.path?.[0] === "days")) {
-      return NextResponse.json({ message: "허용되지 않는 대여 기간" }, { status: 400 });
+      return NextResponse.json(
+        { message: "허용되지 않는 대여 기간" },
+        { status: 400 },
+      );
     }
-    return NextResponse.json({ ok: false, message: "요청 값이 올바르지 않습니다." }, { status: 400 });
+    return NextResponse.json(
+      { ok: false, message: "요청 값이 올바르지 않습니다." },
+      { status: 400 },
+    );
   }
 
   const normalizedBody = parsed.data;
   const selectedGauge =
-    typeof (body as any)?.selectedGauge === "string" && (body as any).selectedGauge.trim()
+    typeof (body as any)?.selectedGauge === "string" &&
+    (body as any).selectedGauge.trim()
       ? (body as any).selectedGauge.trim()
       : typeof (body as any)?.stringing?.selectedGauge === "string" &&
           (body as any).stringing.selectedGauge.trim()
         ? (body as any).stringing.selectedGauge.trim()
         : undefined;
   const selectedColor =
-    typeof (body as any)?.selectedColor === "string" && (body as any).selectedColor.trim()
+    typeof (body as any)?.selectedColor === "string" &&
+    (body as any).selectedColor.trim()
       ? (body as any).selectedColor.trim()
       : typeof (body as any)?.stringing?.selectedColor === "string" &&
           (body as any).stringing.selectedColor.trim()
         ? (body as any).stringing.selectedColor.trim()
         : undefined;
   const selectedColorLabel =
-    typeof (body as any)?.stringing?.selectedColorLabel === "string" && (body as any).stringing.selectedColorLabel.trim()
+    typeof (body as any)?.stringing?.selectedColorLabel === "string" &&
+    (body as any).stringing.selectedColorLabel.trim()
       ? (body as any).stringing.selectedColorLabel.trim()
       : undefined;
   const selectedColorHex =
-    typeof (body as any)?.stringing?.selectedColorHex === "string" && (body as any).stringing.selectedColorHex.trim()
+    typeof (body as any)?.stringing?.selectedColorHex === "string" &&
+    (body as any).stringing.selectedColorHex.trim()
       ? (body as any).stringing.selectedColorHex.trim()
       : undefined;
   const selectedColorImage =
-    typeof (body as any)?.stringing?.selectedColorImage === "string" && (body as any).stringing.selectedColorImage.trim()
+    typeof (body as any)?.stringing?.selectedColorImage === "string" &&
+    (body as any).stringing.selectedColorImage.trim()
       ? (body as any).stringing.selectedColorImage.trim()
       : undefined;
 
@@ -169,7 +195,10 @@ export async function POST(req: Request) {
     } catch {
       payload = null;
     }
-    const sub = typeof payload?.sub === "string" && ObjectId.isValid(payload.sub) ? payload.sub : null;
+    const sub =
+      typeof payload?.sub === "string" && ObjectId.isValid(payload.sub)
+        ? payload.sub
+        : null;
     const userObjectId = sub ? new ObjectId(sub) : null;
 
     const guestOrderMode = (

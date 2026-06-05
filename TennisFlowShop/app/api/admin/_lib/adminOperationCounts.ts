@@ -1,7 +1,10 @@
 import type { Db, Document, Filter } from "mongodb";
 
 import { createPackagePaymentCheckFilter } from "@/app/api/admin/_lib/packagePaymentCheckFilter";
-import { EXCLUDE_OFFLINE_PACKAGE_ORDERS_FILTER, OFFLINE_PACKAGE_ORDER_FILTER } from "@/app/api/admin/offline/_lib/packageOrderOffline";
+import {
+  EXCLUDE_OFFLINE_PACKAGE_ORDERS_FILTER,
+  OFFLINE_PACKAGE_ORDER_FILTER,
+} from "@/app/api/admin/offline/_lib/packageOrderOffline";
 import type { SidebarBadgeKey } from "@/components/admin/sidebar-navigation";
 import type { OperationTaskCounts } from "@/types/admin/operations";
 
@@ -236,7 +239,6 @@ const paymentCheckFilter: Filter<Document> = {
   ],
 };
 
-
 const packagePaymentCheckFilter = createPackagePaymentCheckFilter();
 
 const missingTrackingFilter: Filter<Document> = {
@@ -429,24 +431,54 @@ async function safeCount(
   label?: string,
 ) {
   try {
-    return await db.collection(collectionName).countDocuments(filter, { maxTimeMS: 2500 });
+    return await db
+      .collection(collectionName)
+      .countDocuments(filter, { maxTimeMS: 2500 });
   } catch (error) {
-    console.error(`[admin/operation-counts] failed to count ${label ?? collectionName}`, error);
+    console.error(
+      `[admin/operation-counts] failed to count ${label ?? collectionName}`,
+      error,
+    );
     return 0;
   }
 }
 
 export async function countAdminOfflineNeedsAction(db: Db): Promise<number> {
-  const [offlineUnpaidRecords, offlinePackageIssueReconcile, offlinePackageUsageReconcile] = await Promise.all([
-    safeCount(db, "offline_service_records", offlineUnpaidFilter, "offline unpaid records"),
-    safeCount(db, "packageOrders", offlinePackageIssueReconcileFilter, "offline package issue reconciliation"),
-    safeCount(db, "offline_service_records", offlinePackageUsageReconcileFilter, "offline package usage reconciliation"),
+  const [
+    offlineUnpaidRecords,
+    offlinePackageIssueReconcile,
+    offlinePackageUsageReconcile,
+  ] = await Promise.all([
+    safeCount(
+      db,
+      "offline_service_records",
+      offlineUnpaidFilter,
+      "offline unpaid records",
+    ),
+    safeCount(
+      db,
+      "packageOrders",
+      offlinePackageIssueReconcileFilter,
+      "offline package issue reconciliation",
+    ),
+    safeCount(
+      db,
+      "offline_service_records",
+      offlinePackageUsageReconcileFilter,
+      "offline package usage reconciliation",
+    ),
   ]);
 
-  return offlineUnpaidRecords + offlinePackageIssueReconcile + offlinePackageUsageReconcile;
+  return (
+    offlineUnpaidRecords +
+    offlinePackageIssueReconcile +
+    offlinePackageUsageReconcile
+  );
 }
 
-export async function countAdminOperationTaskCounts(db: Db): Promise<OperationTaskCounts> {
+export async function countAdminOperationTaskCounts(
+  db: Db,
+): Promise<OperationTaskCounts> {
   const nowPlus48Hours = new Date(Date.now() + 48 * 60 * 60 * 1000);
 
   const [
@@ -467,27 +499,85 @@ export async function countAdminOperationTaskCounts(db: Db): Promise<OperationTa
     academyApplications,
   ] = await Promise.all([
     safeCount(db, "orders", cancelRequestFilter, "order cancel requests"),
-    safeCount(db, "stringing_applications", cancelRequestFilter, "stringing cancel requests"),
-    safeCount(db, "rental_orders", cancelRequestFilter, "rental cancel requests"),
+    safeCount(
+      db,
+      "stringing_applications",
+      cancelRequestFilter,
+      "stringing cancel requests",
+    ),
+    safeCount(
+      db,
+      "rental_orders",
+      cancelRequestFilter,
+      "rental cancel requests",
+    ),
     safeCount(db, "orders", paymentCheckFilter, "order payment check"),
-    safeCount(db, "stringing_applications", paymentCheckFilter, "stringing payment check"),
+    safeCount(
+      db,
+      "stringing_applications",
+      paymentCheckFilter,
+      "stringing payment check",
+    ),
     safeCount(db, "rental_orders", paymentCheckFilter, "rental payment check"),
-    safeCount(db, "packageOrders", packagePaymentCheckFilter, "package payment check"),
-    safeCount(db, "orders", orderShippingMissingFilter, "order shipping missing"),
-    safeCount(db, "stringing_applications", stringingShippingMissingFilter, "stringing shipping missing"),
-    safeCount(db, "rental_orders", rentalShippingMissingFilter, "rental shipping missing"),
-    safeCount(db, "stringing_applications", stringingNeedsActionFilter, "stringing work"),
-    safeCount(db, "rental_orders", rentalDueFilter(nowPlus48Hours), "rental due"),
-    safeCount(db, "stringing_applications", linkedReviewFilter, "linked review"),
+    safeCount(
+      db,
+      "packageOrders",
+      packagePaymentCheckFilter,
+      "package payment check",
+    ),
+    safeCount(
+      db,
+      "orders",
+      orderShippingMissingFilter,
+      "order shipping missing",
+    ),
+    safeCount(
+      db,
+      "stringing_applications",
+      stringingShippingMissingFilter,
+      "stringing shipping missing",
+    ),
+    safeCount(
+      db,
+      "rental_orders",
+      rentalShippingMissingFilter,
+      "rental shipping missing",
+    ),
+    safeCount(
+      db,
+      "stringing_applications",
+      stringingNeedsActionFilter,
+      "stringing work",
+    ),
+    safeCount(
+      db,
+      "rental_orders",
+      rentalDueFilter(nowPlus48Hours),
+      "rental due",
+    ),
+    safeCount(
+      db,
+      "stringing_applications",
+      linkedReviewFilter,
+      "linked review",
+    ),
     countAdminOfflineNeedsAction(db),
-    safeCount(db, "academy_lesson_applications", academyNeedsActionFilter, "academy applications"),
+    safeCount(
+      db,
+      "academy_lesson_applications",
+      academyNeedsActionFilter,
+      "academy applications",
+    ),
   ]);
 
   return {
-    cancelRequests: orderCancelRequests + stringingCancelRequests + rentalCancelRequests,
-    paymentCheck: orderPaymentCheck + stringingPaymentCheck + rentalPaymentCheck,
+    cancelRequests:
+      orderCancelRequests + stringingCancelRequests + rentalCancelRequests,
+    paymentCheck:
+      orderPaymentCheck + stringingPaymentCheck + rentalPaymentCheck,
     packagePaymentCheck,
-    shippingMissing: orderShippingMissing + stringingShippingMissing + rentalShippingMissing,
+    shippingMissing:
+      orderShippingMissing + stringingShippingMissing + rentalShippingMissing,
     stringingWork,
     rentalDue,
     linkedReview,
@@ -511,10 +601,30 @@ export async function countAdminNavigationSummary(db: Db): Promise<{
     operationTaskCounts,
   ] = await Promise.all([
     safeCount(db, "orders", orderNeedsActionFilter, "orders needs action"),
-    safeCount(db, "stringing_applications", stringingNeedsActionFilter, "stringing needs action"),
-    safeCount(db, "rental_orders", rentalNeedsActionFilter, "rentals needs action"),
-    safeCount(db, "academy_lesson_applications", academyNeedsActionFilter, "academy applications"),
-    safeCount(db, "notifications_outbox", notificationNeedsActionFilter, "notifications"),
+    safeCount(
+      db,
+      "stringing_applications",
+      stringingNeedsActionFilter,
+      "stringing needs action",
+    ),
+    safeCount(
+      db,
+      "rental_orders",
+      rentalNeedsActionFilter,
+      "rentals needs action",
+    ),
+    safeCount(
+      db,
+      "academy_lesson_applications",
+      academyNeedsActionFilter,
+      "academy applications",
+    ),
+    safeCount(
+      db,
+      "notifications_outbox",
+      notificationNeedsActionFilter,
+      "notifications",
+    ),
     safeCount(db, "reviews", reviewNeedsActionFilter, "reviews"),
     safeCount(db, "community_posts", boardNeedsActionFilter, "boards"),
     countAdminOperationTaskCounts(db),

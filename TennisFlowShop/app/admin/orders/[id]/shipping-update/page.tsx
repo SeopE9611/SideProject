@@ -165,7 +165,9 @@ export default async function ShippingUpdatePage({
           <h1 className="mb-2 text-2xl font-bold text-foreground bp-md:text-3xl">
             {pageTitle}
           </h1>
-          <p className="text-sm leading-relaxed text-muted-foreground bp-md:text-base">{pageDesc}</p>
+          <p className="text-sm leading-relaxed text-muted-foreground bp-md:text-base">
+            {pageDesc}
+          </p>
         </div>
 
         <ShippingFormClient

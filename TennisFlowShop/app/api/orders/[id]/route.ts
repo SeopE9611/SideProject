@@ -84,7 +84,6 @@ function getApplicationLines(stringDetails: any): any[] {
   return [];
 }
 
-
 function nullableTrim(value: unknown): string | null {
   const trimmed = String(value ?? "").trim();
   return trimmed.length > 0 ? trimmed : null;
@@ -178,11 +177,12 @@ export async function GET(
     if (!isOwner && !isAdmin && !guestOwnsOrder) {
       return new NextResponse("권한이 없습니다.", { status: 403 });
     }
-    const orderItems = (order.items as {
-      productId: any;
-      quantity: number;
-      kind?: "product" | "racket";
-    }[]) ?? [];
+    const orderItems =
+      (order.items as {
+        productId: any;
+        quantity: number;
+        kind?: "product" | "racket";
+      }[]) ?? [];
 
     console.info("[orders][detail][start]", {
       orderId: String(order._id),
@@ -222,7 +222,9 @@ export async function GET(
         ? db
             .collection("products")
             .find(
-              { _id: { $in: uniqueProductIds.map((pid) => new ObjectId(pid)) } },
+              {
+                _id: { $in: uniqueProductIds.map((pid) => new ObjectId(pid)) },
+              },
               { projection: { _id: 1, name: 1, price: 1, mountingFee: 1 } },
             )
             .toArray()
@@ -259,7 +261,8 @@ export async function GET(
     const enrichedItems = orderItems.map((item) => {
       const kind = item.kind ?? "product";
       const raw = item.productId;
-      const idStr = raw instanceof ObjectId ? raw.toString() : String(raw ?? "");
+      const idStr =
+        raw instanceof ObjectId ? raw.toString() : String(raw ?? "");
       const normalizedId = ObjectId.isValid(idStr) ? idStr : null;
 
       if (!normalizedId) {
@@ -480,7 +483,9 @@ export async function GET(
       ).trim();
       const selfShip = app?.shippingInfo?.selfShip ?? null;
       const collectionMethod = normalizeCollection(
-        app?.collectionMethod ?? app?.shippingInfo?.collectionMethod ?? "self_ship",
+        app?.collectionMethod ??
+          app?.shippingInfo?.collectionMethod ??
+          "self_ship",
       );
       const normalizedLines = lines.map((line: any, index: number) => ({
         id: nullableTrim(line?.id) ?? String(index),
@@ -502,7 +507,9 @@ export async function GET(
           : true;
       const needsInboundTracking =
         inboundRequired && collectionMethod === "self_ship";
-      const packagePassId = app?.packagePassId ? String(app.packagePassId) : null;
+      const packagePassId = app?.packagePassId
+        ? String(app.packagePassId)
+        : null;
       const passDoc = packagePassId ? passDocById.get(packagePassId) : null;
       const packageInfo = {
         applied: !!app?.packageApplied,
@@ -544,8 +551,7 @@ export async function GET(
         receptionLabel: getReceptionLabel(collectionMethod),
         tensionSummary: getTensionSummary(lines),
         stringNames,
-        totalPrice:
-          typeof app?.totalPrice === "number" ? app.totalPrice : null,
+        totalPrice: typeof app?.totalPrice === "number" ? app.totalPrice : null,
         packageInfo,
         reservationLabel:
           preferredDate && preferredTime

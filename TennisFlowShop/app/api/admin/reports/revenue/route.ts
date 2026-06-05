@@ -13,13 +13,18 @@ export async function GET(req: Request) {
     return NextResponse.json({ message: "invalid groupBy" }, { status: 400 });
   }
 
-  const groupBy: RevenueReportGroupBy = groupByParam === "month" ? "month" : "day";
+  const groupBy: RevenueReportGroupBy =
+    groupByParam === "month" ? "month" : "day";
   const response = await buildRevenueReport(guard.db, {
     from: url.searchParams.get("from"),
     to: url.searchParams.get("to"),
     groupBy,
   });
 
-  if (!response) return NextResponse.json({ message: "invalid date filter" }, { status: 400 });
+  if (!response)
+    return NextResponse.json(
+      { message: "invalid date filter" },
+      { status: 400 },
+    );
   return NextResponse.json(response);
 }

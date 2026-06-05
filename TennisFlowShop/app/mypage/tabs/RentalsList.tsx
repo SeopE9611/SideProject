@@ -232,17 +232,32 @@ export default function RentalsList() {
                     {getStatusLabel(r.status)}
                   </Badge>
                   {r.cancelStatus === "requested" ? (
-                    <Badge variant="warning" className="shrink-0 whitespace-nowrap">취소 요청됨</Badge>
+                    <Badge
+                      variant="warning"
+                      className="shrink-0 whitespace-nowrap"
+                    >
+                      취소 요청됨
+                    </Badge>
                   ) : null}
                 </div>
               </div>
 
               <div className="flex flex-nowrap items-center gap-2 overflow-x-auto text-xs">
                 {r.stringingApplicationId ? (
-                  <Badge variant="outline" className="shrink-0 whitespace-nowrap">교체서비스 신청서 연결됨</Badge>
+                  <Badge
+                    variant="outline"
+                    className="shrink-0 whitespace-nowrap"
+                  >
+                    교체서비스 신청서 연결됨
+                  </Badge>
                 ) : null}
                 {!r.stringingApplicationId && r.withStringService ? (
-                  <Badge variant="outline" className="shrink-0 whitespace-nowrap">교체서비스 포함</Badge>
+                  <Badge
+                    variant="outline"
+                    className="shrink-0 whitespace-nowrap"
+                  >
+                    교체서비스 포함
+                  </Badge>
                 ) : null}
                 <Badge variant="outline" className="shrink-0 whitespace-nowrap">
                   {r.hasReturnShipping
@@ -351,7 +366,8 @@ export default function RentalsList() {
                 ) : r.withStringService ? (
                   <Button
                     size="sm"
-                    variant="default" className="shadow-sm"
+                    variant="default"
+                    className="shadow-sm"
                     asChild
                   >
                     <Link

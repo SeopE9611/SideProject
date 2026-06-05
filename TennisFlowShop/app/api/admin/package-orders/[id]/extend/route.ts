@@ -165,7 +165,9 @@ export async function POST(
     if (shouldActivate && passDoc.status !== PASS_STATUS.cancelled) {
       await passes.updateOne(
         { _id: passDoc._id },
-        { $set: { status: "active", updatedAt: now, remainingValidityMs: null } },
+        {
+          $set: { status: "active", updatedAt: now, remainingValidityMs: null },
+        },
       );
     }
 
@@ -206,7 +208,8 @@ export async function POST(
           after: {
             expiresAt: nextExpiry.toISOString(),
             status: shouldActivate ? "active" : (passDoc.status ?? null),
-            remainingCount: freshPass?.remainingCount ?? passDoc.remainingCount ?? null,
+            remainingCount:
+              freshPass?.remainingCount ?? passDoc.remainingCount ?? null,
           },
           metadata: {
             servicePassId: passDoc._id.toString(),

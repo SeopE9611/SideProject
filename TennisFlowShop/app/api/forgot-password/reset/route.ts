@@ -63,7 +63,8 @@ export async function POST(req: Request) {
       );
     }
 
-    const tokenPolicy = AUTH_RATE_LIMIT_POLICIES.forgot_password_reset.identifier;
+    const tokenPolicy =
+      AUTH_RATE_LIMIT_POLICIES.forgot_password_reset.identifier;
     if (!tokenPolicy) {
       console.error("[forgot-password/reset] token rate limit policy missing");
       return NextResponse.json(
@@ -82,7 +83,9 @@ export async function POST(req: Request) {
     if (tokenRateLimited) return tokenRateLimited;
 
     if (!isRecoveryTokenSecretConfigured()) {
-      console.error("[forgot-password/reset] RECOVERY_TOKEN_SECRET is not configured");
+      console.error(
+        "[forgot-password/reset] RECOVERY_TOKEN_SECRET is not configured",
+      );
       return NextResponse.json(
         { message: "비밀번호 재설정 중 오류가 발생했습니다." },
         { status: 500 },

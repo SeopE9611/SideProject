@@ -109,18 +109,17 @@ export async function POST(
     let next = prev + delta;
     if (clampZero && next < 0) next = 0;
 
-    const nextStatus =
-      isCountEnded(next)
-        ? "expired"
-        : shouldRestoreActive({
-              paymentStatus: pkgOrder.paymentStatus,
-              passStatus: passDoc.status,
-              remainingCount: next,
-              expiresAt: passDoc.expiresAt,
-              now,
-            })
-          ? "active"
-          : passDoc.status;
+    const nextStatus = isCountEnded(next)
+      ? "expired"
+      : shouldRestoreActive({
+            paymentStatus: pkgOrder.paymentStatus,
+            passStatus: passDoc.status,
+            remainingCount: next,
+            expiresAt: passDoc.expiresAt,
+            now,
+          })
+        ? "active"
+        : passDoc.status;
 
     await passes.updateOne({ _id: passDoc._id }, {
       $set: { remainingCount: next, updatedAt: now },
@@ -202,7 +201,9 @@ export async function POST(
               (freshPass as any)?.usedCount ?? (passDoc as any).usedCount ?? 0,
             ),
             totalCount: Number(
-              (freshPass as any)?.totalCount ?? (passDoc as any).totalCount ?? 0,
+              (freshPass as any)?.totalCount ??
+                (passDoc as any).totalCount ??
+                0,
             ),
             status: String(freshPass?.status ?? nextStatus ?? passDoc.status),
           },

@@ -14,7 +14,8 @@ export type RecentViewedItem = {
 const STORAGE_KEY = "tennisflow.recent-viewed.v1";
 const MAX_ITEMS = 12;
 
-const isRecentViewedType = (value: unknown): value is RecentViewedType => value === "product" || value === "racket";
+const isRecentViewedType = (value: unknown): value is RecentViewedType =>
+  value === "product" || value === "racket";
 
 const normalizeRecentViewedItem = (value: unknown): RecentViewedItem | null => {
   if (!value || typeof value !== "object") return null;
@@ -25,7 +26,14 @@ const normalizeRecentViewedItem = (value: unknown): RecentViewedItem | null => {
   const href = typeof raw.href === "string" ? raw.href.trim() : "";
   const viewedAt = Number(raw.viewedAt);
 
-  if (!isRecentViewedType(type) || !id || !name || !href || !Number.isFinite(viewedAt)) return null;
+  if (
+    !isRecentViewedType(type) ||
+    !id ||
+    !name ||
+    !href ||
+    !Number.isFinite(viewedAt)
+  )
+    return null;
 
   return {
     type,
@@ -34,7 +42,12 @@ const normalizeRecentViewedItem = (value: unknown): RecentViewedItem | null => {
     subtitle: typeof raw.subtitle === "string" ? raw.subtitle : undefined,
     image: typeof raw.image === "string" ? raw.image : undefined,
     href,
-    price: raw.price == null ? null : Number.isFinite(Number(raw.price)) ? Number(raw.price) : null,
+    price:
+      raw.price == null
+        ? null
+        : Number.isFinite(Number(raw.price))
+          ? Number(raw.price)
+          : null,
     viewedAt,
   };
 };
@@ -59,9 +72,12 @@ export function getRecentViewedItems(): RecentViewedItem[] {
   }
 }
 
-export function addRecentViewedItem(item: Omit<RecentViewedItem, "viewedAt">): void {
+export function addRecentViewedItem(
+  item: Omit<RecentViewedItem, "viewedAt">,
+): void {
   if (typeof window === "undefined") return;
-  if (!item || !item.id?.trim() || !item.name?.trim() || !item.href?.trim()) return;
+  if (!item || !item.id?.trim() || !item.name?.trim() || !item.href?.trim())
+    return;
 
   const nextItem: RecentViewedItem = {
     ...item,
@@ -72,8 +88,12 @@ export function addRecentViewedItem(item: Omit<RecentViewedItem, "viewedAt">): v
   };
 
   const current = getRecentViewedItems();
-  const deduped = current.filter((it) => !(it.type === nextItem.type && it.id === nextItem.id));
-  const next = [nextItem, ...deduped].sort((a, b) => b.viewedAt - a.viewedAt).slice(0, MAX_ITEMS);
+  const deduped = current.filter(
+    (it) => !(it.type === nextItem.type && it.id === nextItem.id),
+  );
+  const next = [nextItem, ...deduped]
+    .sort((a, b) => b.viewedAt - a.viewedAt)
+    .slice(0, MAX_ITEMS);
 
   try {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));

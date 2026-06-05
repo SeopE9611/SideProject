@@ -145,15 +145,21 @@ export async function PATCH(
           after: {
             status: afterDoc?.status ?? statusStr ?? null,
             paymentStatus:
-              afterDoc?.paymentStatus ?? (willSetPayment ? paymentToSet : prevPayment),
+              afterDoc?.paymentStatus ??
+              (willSetPayment ? paymentToSet : prevPayment),
             expiresAt: null,
             usedCount: null,
             remainingCount: null,
             totalCount:
-              afterDoc?.packageInfo?.sessions ?? pkgOrder.packageInfo?.sessions ?? null,
+              afterDoc?.packageInfo?.sessions ??
+              pkgOrder.packageInfo?.sessions ??
+              null,
           },
           metadata: {
-            changedKeys: ["status", ...(willSetPayment ? ["paymentStatus"] : [])],
+            changedKeys: [
+              "status",
+              ...(willSetPayment ? ["paymentStatus"] : []),
+            ],
             reason: reason || null,
             actor: {
               id: String(guard.admin._id),
@@ -501,7 +507,12 @@ export async function GET(
                         case: {
                           $and: [
                             { $ne: ["$passDoc", null] },
-                            { $lte: [{ $ifNull: ["$passDoc.remainingCount", 0] }, 0] },
+                            {
+                              $lte: [
+                                { $ifNull: ["$passDoc.remainingCount", 0] },
+                                0,
+                              ],
+                            },
                           ],
                         },
                         then: "종료",

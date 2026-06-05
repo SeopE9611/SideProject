@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin.guard";
-import { buildOfflineRevenueSummary, parseOfflineSummaryDateBoundary } from "@/app/api/admin/offline/_lib/revenueSummary";
+import {
+  buildOfflineRevenueSummary,
+  parseOfflineSummaryDateBoundary,
+} from "@/app/api/admin/offline/_lib/revenueSummary";
 
 export async function GET(req: Request) {
   const guard = await requireAdmin(req);
@@ -10,15 +13,22 @@ export async function GET(req: Request) {
   const fromParam = url.searchParams.get("from");
   const toParam = url.searchParams.get("to");
   const groupByParam = url.searchParams.get("groupBy");
-  const includePackageSales = url.searchParams.get("includePackageSales") !== "false";
+  const includePackageSales =
+    url.searchParams.get("includePackageSales") !== "false";
 
   const from = parseOfflineSummaryDateBoundary(fromParam, "from");
   const to = parseOfflineSummaryDateBoundary(toParam, "to");
   if ((fromParam && !from) || (toParam && !to)) {
-    return NextResponse.json({ message: "invalid date filter" }, { status: 400 });
+    return NextResponse.json(
+      { message: "invalid date filter" },
+      { status: 400 },
+    );
   }
   if (from && to && from > to) {
-    return NextResponse.json({ message: "invalid date range" }, { status: 400 });
+    return NextResponse.json(
+      { message: "invalid date range" },
+      { status: 400 },
+    );
   }
   if (groupByParam && groupByParam !== "day" && groupByParam !== "month") {
     return NextResponse.json({ message: "invalid groupBy" }, { status: 400 });
@@ -27,7 +37,8 @@ export async function GET(req: Request) {
   const summary = await buildOfflineRevenueSummary(guard.db, {
     from,
     to,
-    groupBy: groupByParam === "day" || groupByParam === "month" ? groupByParam : null,
+    groupBy:
+      groupByParam === "day" || groupByParam === "month" ? groupByParam : null,
     includePackageSales,
   });
 

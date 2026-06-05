@@ -2,13 +2,14 @@ import { appendAudit } from "@/lib/audit";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { RefundAccountSchema } from "@/lib/cancel-request/refund-account";
 import clientPromise from "@/lib/mongodb";
-import { buildCancelRefundSubject, recordCancelRefundSignal } from "@/lib/risk/recordCancelRefundSignal";
+import {
+  buildCancelRefundSubject,
+  recordCancelRefundSignal,
+} from "@/lib/risk/recordCancelRefundSignal";
 import jwt from "jsonwebtoken";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-
-
 
 function toReasonPreview(value: unknown, max = 200): string | null {
   if (typeof value !== "string") return null;
@@ -21,8 +22,7 @@ function maskRefundAccount(account: any) {
   if (!account || typeof account !== "object") return null;
   const digits = String(account.accountNumber ?? "").replace(/\D/g, "");
   return {
-    bankLabel:
-      typeof account.bankLabel === "string" ? account.bankLabel : null,
+    bankLabel: typeof account.bankLabel === "string" ? account.bankLabel : null,
     holder: typeof account.holder === "string" ? account.holder : null,
     accountLast4: digits ? digits.slice(-4) : null,
   };
@@ -164,7 +164,11 @@ export async function POST(
     const parsedRefundAccount = needsRefundAccount
       ? RefundAccountSchema.safeParse(body.refundAccount ?? null)
       : null;
-    if (needsRefundAccount && parsedRefundAccount && !parsedRefundAccount.success) {
+    if (
+      needsRefundAccount &&
+      parsedRefundAccount &&
+      !parsedRefundAccount.success
+    ) {
       return NextResponse.json(
         {
           ok: false,

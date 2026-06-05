@@ -4,7 +4,11 @@ import NiceCheckoutButton from "@/app/checkout/NiceCheckoutButton";
 import CheckoutStringingRuntimeBridge from "@/app/checkout/_components/CheckoutStringingRuntimeBridge";
 import type { StringingApplicationInput } from "@/app/features/stringing-applications/api/submit-core";
 import type useCheckoutStringingServiceAdapter from "@/app/features/stringing-applications/hooks/useCheckoutStringingServiceAdapter";
-import { applyPackageToServiceFee, resolvePackageUsage, type PackageUsageResult } from "@/app/features/stringing-applications/lib/package-pricing";
+import {
+  applyPackageToServiceFee,
+  resolvePackageUsage,
+  type PackageUsageResult,
+} from "@/app/features/stringing-applications/lib/package-pricing";
 import { useAuthStore, type User } from "@/app/store/authStore";
 import { useBuyNowStore } from "@/app/store/buyNowStore";
 import { CartItem, useCartStore } from "@/app/store/cartStore";
@@ -13,12 +17,23 @@ import SiteContainer from "@/components/layout/SiteContainer";
 import LoginGate from "@/components/system/LoginGate";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardTitle,
+} from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
@@ -26,13 +41,35 @@ import { getMyInfo } from "@/lib/auth.client";
 import { bankLabelMap } from "@/lib/constants";
 import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import { useBackNavigationGuard } from "@/lib/hooks/useBackNavigationGuard";
-import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
+import {
+  UNSAVED_CHANGES_MESSAGE,
+  useUnsavedChangesGuard,
+} from "@/lib/hooks/useUnsavedChangesGuard";
 import { isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
 import { ENABLE_STRING_STANDALONE_ORDER } from "@/lib/orders/string-standalone-policy";
 import { isNicePaymentsEnabled } from "@/lib/payments/provider-flags";
-import { calcOrderShippingFeeWithBundlePolicy, normalizeItemShippingFee } from "@/lib/shipping-fee";
+import {
+  calcOrderShippingFeeWithBundlePolicy,
+  normalizeItemShippingFee,
+} from "@/lib/shipping-fee";
 import { cn } from "@/lib/utils";
-import { Building2, Check, CheckCircle, CreditCard, Home, Info, Loader2, Mail, MapPin, MessageSquare, Package, Phone, Shield, Truck, UserIcon } from "lucide-react";
+import {
+  Building2,
+  Check,
+  CheckCircle,
+  CreditCard,
+  Home,
+  Info,
+  Loader2,
+  Mail,
+  MapPin,
+  MessageSquare,
+  Package,
+  Phone,
+  Shield,
+  Truck,
+  UserIcon,
+} from "lucide-react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
@@ -57,8 +94,14 @@ const CheckoutStringingAddonFallback = () => (
   </div>
 );
 
-const CheckoutStringingServiceSections = dynamic(() => import("@/app/checkout/_components/CheckoutStringingServiceSections"), { loading: () => <CheckoutStringingSectionFallback /> });
-const CheckoutStringingPaymentAddon = dynamic(() => import("@/app/checkout/_components/CheckoutStringingPaymentAddon"), { loading: () => <CheckoutStringingAddonFallback /> });
+const CheckoutStringingServiceSections = dynamic(
+  () => import("@/app/checkout/_components/CheckoutStringingServiceSections"),
+  { loading: () => <CheckoutStringingSectionFallback /> },
+);
+const CheckoutStringingPaymentAddon = dynamic(
+  () => import("@/app/checkout/_components/CheckoutStringingPaymentAddon"),
+  { loading: () => <CheckoutStringingAddonFallback /> },
+);
 
 declare global {
   interface Window {
@@ -66,9 +109,25 @@ declare global {
   }
 }
 
-type CheckoutField = "name" | "phone" | "email" | "postalCode" | "address" | "addressDetail" | "depositor" | "bundle" | "items" | "composition";
+type CheckoutField =
+  | "name"
+  | "phone"
+  | "email"
+  | "postalCode"
+  | "address"
+  | "addressDetail"
+  | "depositor"
+  | "bundle"
+  | "items"
+  | "composition";
 type CheckoutFieldErrors = Partial<Record<CheckoutField, string>>;
-type CheckoutTouchedField = "name" | "phone" | "email" | "postalCode" | "addressDetail" | "depositor";
+type CheckoutTouchedField =
+  | "name"
+  | "phone"
+  | "email"
+  | "postalCode"
+  | "addressDetail"
+  | "depositor";
 type CheckoutTouchedFields = Partial<Record<CheckoutTouchedField, boolean>>;
 type CheckoutPrefillUser = User & {
   phone?: string | null;
@@ -76,9 +135,14 @@ type CheckoutPrefillUser = User & {
   address?: string | null;
   addressDetail?: string | null;
 };
-type CheckoutStringingServiceAdapter = ReturnType<typeof useCheckoutStringingServiceAdapter>;
+type CheckoutStringingServiceAdapter = ReturnType<
+  typeof useCheckoutStringingServiceAdapter
+>;
 
-const resolveCheckoutPackageUsage = (withStringService: boolean, checkoutStringingAdapter?: CheckoutStringingServiceAdapter): PackageUsageResult | null => {
+const resolveCheckoutPackageUsage = (
+  withStringService: boolean,
+  checkoutStringingAdapter?: CheckoutStringingServiceAdapter,
+): PackageUsageResult | null => {
   if (!withStringService || !checkoutStringingAdapter) return null;
   return resolvePackageUsage({
     hasPackage: !!checkoutStringingAdapter.packagePreview?.has,
@@ -111,10 +175,18 @@ function CheckoutPointsAutoAdjust({
     if (!user) return;
 
     const desired = useAllPoints ? maxPointsToUse : pointsToUse;
-    const normalized = Math.floor((Number(desired) || 0) / POINT_UNIT) * POINT_UNIT;
+    const normalized =
+      Math.floor((Number(desired) || 0) / POINT_UNIT) * POINT_UNIT;
     const clamped = Math.max(0, Math.min(normalized, maxPointsToUse));
     if (clamped !== pointsToUse) onChangePointsToUse(clamped);
-  }, [user, useAllPoints, maxPointsToUse, pointsToUse, isEditingPoints, onChangePointsToUse]);
+  }, [
+    user,
+    useAllPoints,
+    maxPointsToUse,
+    pointsToUse,
+    isEditingPoints,
+    onChangePointsToUse,
+  ]);
 
   return null;
 }
@@ -160,19 +232,29 @@ function FinalPaymentConfirmCard({
             <Shield className="h-5 w-5" />
           </div>
           <div>
-            <CardTitle className="break-keep text-lg font-bold leading-tight bp-sm:text-xl">최종 결제 확인</CardTitle>
-            <p className="text-xs bp-sm:text-sm text-foreground/80 mt-0.5">주문 내역을 확인 후 결제를 진행해주세요</p>
+            <CardTitle className="break-keep text-lg font-bold leading-tight bp-sm:text-xl">
+              최종 결제 확인
+            </CardTitle>
+            <p className="text-xs bp-sm:text-sm text-foreground/80 mt-0.5">
+              주문 내역을 확인 후 결제를 진행해주세요
+            </p>
           </div>
         </div>
       </div>
       <CardContent className="space-y-5 p-5 bp-sm:p-6">
         <div className="space-y-3 text-sm">
           <div className="flex items-center justify-between gap-3 py-1">
-            <span className="min-w-0 break-words text-foreground/80">주문 상품 ({orderItemsCount}개)</span>
-            <span className="shrink-0 whitespace-nowrap text-right font-semibold tabular-nums">{subtotal.toLocaleString()}원</span>
+            <span className="min-w-0 break-words text-foreground/80">
+              주문 상품 ({orderItemsCount}개)
+            </span>
+            <span className="shrink-0 whitespace-nowrap text-right font-semibold tabular-nums">
+              {subtotal.toLocaleString()}원
+            </span>
           </div>
           <div className="flex items-center justify-between gap-3 py-1">
-            <span className="min-w-0 break-words text-foreground/80">배송비</span>
+            <span className="min-w-0 break-words text-foreground/80">
+              배송비
+            </span>
             {!isShippingFeeReady ? (
               <Skeleton className="h-5 w-16 rounded" />
             ) : (
@@ -180,7 +262,10 @@ function FinalPaymentConfirmCard({
                 {shippingFee > 0 ? (
                   `${shippingFee.toLocaleString()}원`
                 ) : (
-                  <Badge variant="outline" className="text-xs border-primary/30 text-primary">
+                  <Badge
+                    variant="outline"
+                    className="text-xs border-primary/30 text-primary"
+                  >
                     무료
                   </Badge>
                 )}
@@ -189,13 +274,20 @@ function FinalPaymentConfirmCard({
           </div>
           {withStringService && (
             <div className="flex items-center justify-between gap-3 py-1">
-              <span className="min-w-0 break-words text-foreground/80">교체서비스 비용</span>
+              <span className="min-w-0 break-words text-foreground/80">
+                교체서비스 비용
+              </span>
               {!isMountingFeeReady ? (
                 <Skeleton className="h-5 w-20 rounded" />
               ) : serviceFee > 0 ? (
-                <span className="shrink-0 whitespace-nowrap text-right font-semibold tabular-nums">{serviceFee.toLocaleString()}원</span>
+                <span className="shrink-0 whitespace-nowrap text-right font-semibold tabular-nums">
+                  {serviceFee.toLocaleString()}원
+                </span>
               ) : (
-                <Badge variant="outline" className="text-xs border-primary/30 text-primary">
+                <Badge
+                  variant="outline"
+                  className="text-xs border-primary/30 text-primary"
+                >
                   패키지
                 </Badge>
               )}
@@ -203,20 +295,34 @@ function FinalPaymentConfirmCard({
           )}
           {withStringService && packageUsage?.canApplyPackage && (
             <div className="flex items-center justify-between gap-3 py-1">
-              <span className="min-w-0 break-words text-foreground/80">패키지 적용</span>
-              <span className="shrink-0 whitespace-nowrap text-right font-semibold">{packageUsage.usingPackage ? "적용됨" : "미사용"}</span>
+              <span className="min-w-0 break-words text-foreground/80">
+                패키지 적용
+              </span>
+              <span className="shrink-0 whitespace-nowrap text-right font-semibold">
+                {packageUsage.usingPackage ? "적용됨" : "미사용"}
+              </span>
             </div>
           )}
-          {withStringService && packageUsage?.usingPackage && baseServiceFee > 0 && (
-            <div className="flex items-center justify-between gap-3 py-1">
-              <span className="min-w-0 break-words text-foreground/80">패키지 차감 서비스비</span>
-              <span className="shrink-0 whitespace-nowrap text-right font-semibold tabular-nums text-destructive">-{baseServiceFee.toLocaleString()}원</span>
-            </div>
-          )}
+          {withStringService &&
+            packageUsage?.usingPackage &&
+            baseServiceFee > 0 && (
+              <div className="flex items-center justify-between gap-3 py-1">
+                <span className="min-w-0 break-words text-foreground/80">
+                  패키지 차감 서비스비
+                </span>
+                <span className="shrink-0 whitespace-nowrap text-right font-semibold tabular-nums text-destructive">
+                  -{baseServiceFee.toLocaleString()}원
+                </span>
+              </div>
+            )}
           {appliedPoints > 0 && (
             <div className="flex items-center justify-between gap-3 py-1">
-              <span className="min-w-0 break-words text-foreground/80">포인트 사용</span>
-              <span className="shrink-0 whitespace-nowrap text-right font-semibold tabular-nums text-destructive">-{appliedPoints.toLocaleString()}원</span>
+              <span className="min-w-0 break-words text-foreground/80">
+                포인트 사용
+              </span>
+              <span className="shrink-0 whitespace-nowrap text-right font-semibold tabular-nums text-destructive">
+                -{appliedPoints.toLocaleString()}원
+              </span>
             </div>
           )}
         </div>
@@ -226,10 +332,18 @@ function FinalPaymentConfirmCard({
         <div className="space-y-3">
           <div className="flex items-center justify-between gap-3 text-sm">
             <span className="min-w-0 break-words text-foreground/90">합계</span>
-            {!isShippingFeeReady ? <Skeleton className="h-5 w-24 rounded" /> : <span className="shrink-0 whitespace-nowrap text-right font-semibold tabular-nums">{totalPrice.toLocaleString()}원</span>}
+            {!isShippingFeeReady ? (
+              <Skeleton className="h-5 w-24 rounded" />
+            ) : (
+              <span className="shrink-0 whitespace-nowrap text-right font-semibold tabular-nums">
+                {totalPrice.toLocaleString()}원
+              </span>
+            )}
           </div>
           <div className="-mx-1 flex items-center justify-between gap-3 rounded-xl bg-primary/10 p-4">
-            <span className="min-w-0 break-words text-base font-bold bp-sm:text-lg">결제 예정 금액</span>
+            <span className="min-w-0 break-words text-base font-bold bp-sm:text-lg">
+              결제 예정 금액
+            </span>
             {!isShippingFeeReady ? (
               <Skeleton className="h-9 w-32 rounded" />
             ) : (
@@ -240,12 +354,20 @@ function FinalPaymentConfirmCard({
             )}
           </div>
         </div>
-        {withStringService && <p className="rounded-lg border border-border/70 bg-secondary/20 px-3 py-2 text-xs text-foreground/85">결제 완료 후 교체서비스 신청 정보가 함께 접수됩니다.</p>}
+        {withStringService && (
+          <p className="rounded-lg border border-border/70 bg-secondary/20 px-3 py-2 text-xs text-foreground/85">
+            결제 완료 후 교체서비스 신청 정보가 함께 접수됩니다.
+          </p>
+        )}
         <div className="space-y-2 rounded-xl border border-border/70 bg-secondary/20 p-3 text-xs text-foreground">
           {paymentMethod === "bank-transfer" && (
             <p className="text-muted-foreground">
-              입금 계좌: {bankLabelMap[selectedBank as keyof typeof bankLabelMap]?.account ?? selectedBank}
-              <span className="block mt-1">입금자명: {depositor.trim() || "미입력"}</span>
+              입금 계좌:{" "}
+              {bankLabelMap[selectedBank as keyof typeof bankLabelMap]
+                ?.account ?? selectedBank}
+              <span className="block mt-1">
+                입금자명: {depositor.trim() || "미입력"}
+              </span>
             </p>
           )}
         </div>
@@ -258,7 +380,8 @@ function FinalPaymentConfirmCard({
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const POSTAL_RE = /^\d{5}$/;
 const onlyDigits = (v: string) => String(v ?? "").replace(/\D/g, "");
-const DAUM_POSTCODE_SCRIPT_URL = "https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js";
+const DAUM_POSTCODE_SCRIPT_URL =
+  "https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js";
 let daumPostcodeScriptPromise: Promise<void> | null = null;
 // 연락처는 010으로 시작하는 휴대폰 번호만 허용 (010 0000 0000)
 const formatKoreanPhone010 = (v: string) => {
@@ -290,23 +413,33 @@ export default function CheckoutPage() {
    * - 따라서 최초 진입(withService=1) 여부를 state로 보관해,
    *   사용자가 '상품만 결제'로 전환했을 때 잠금을 확실히 해제할 수 있게 한다.
    */
-  const [entryServiceLock, setEntryServiceLock] = useState(withServiceParam === "1");
+  const [entryServiceLock, setEntryServiceLock] = useState(
+    withServiceParam === "1",
+  );
 
   // PDP에서 넘어온 장착비(1자루 기준 공임)
   // const mountingFeeParam = sp.get('mountingFee');
   // const pdpMountingFee = mountingFeeParam && mountingFeeParam.trim() !== '' ? Number(mountingFeeParam) : NaN;
 
   // 상품ID 목록을 기준으로 mountingFee를 mini API로 가져오는 상태
-  const [mountingFeeByProductId, setMountingFeeByProductId] = useState<Record<string, number>>({});
-  const [mountableStringByProductId, setMountableStringByProductId] = useState<Record<string, boolean>>({});
-  const [shippingFeeByProductId, setShippingFeeByProductId] = useState<Record<string, number>>({});
+  const [mountingFeeByProductId, setMountingFeeByProductId] = useState<
+    Record<string, number>
+  >({});
+  const [mountableStringByProductId, setMountableStringByProductId] = useState<
+    Record<string, boolean>
+  >({});
+  const [shippingFeeByProductId, setShippingFeeByProductId] = useState<
+    Record<string, number>
+  >({});
   const [mountingFeeLoading, setMountingFeeLoading] = useState(false);
 
   // 2) 기존 상태
   const [withStringService, setWithStringService] = useState(false);
   const [isCheckoutSubmitting, setIsCheckoutSubmitting] = useState(false);
-  const [isIntentionalSuccessNavigation, setIsIntentionalSuccessNavigation] = useState(false);
-  const [showStringingValidationErrors, setShowStringingValidationErrors] = useState(false);
+  const [isIntentionalSuccessNavigation, setIsIntentionalSuccessNavigation] =
+    useState(false);
+  const [showStringingValidationErrors, setShowStringingValidationErrors] =
+    useState(false);
 
   // 이탈 경고/초기값 스냅샷을 위한 초기화 플래그
   const initFlagsRef = useRef({
@@ -325,8 +458,20 @@ export default function CheckoutPage() {
   const { items: pdpBundleItems } = usePdpBundleStore();
 
   // 장바구니 결제 vs 즉시 구매 모드 분기
-  const orderItems: CartItem[] = mode === "buynow" ? (pdpBundleItems.length > 0 ? pdpBundleItems : buyNowItem ? [buyNowItem] : []) : cartItems;
-  const orderItemsKey = orderItems.map((it) => `${it.kind}:${it.id}:${it.quantity}:${it.selectedGauge ?? ""}:${it.selectedColor ?? ""}`).join("|");
+  const orderItems: CartItem[] =
+    mode === "buynow"
+      ? pdpBundleItems.length > 0
+        ? pdpBundleItems
+        : buyNowItem
+          ? [buyNowItem]
+          : []
+      : cartItems;
+  const orderItemsKey = orderItems
+    .map(
+      (it) =>
+        `${it.kind}:${it.id}:${it.quantity}:${it.selectedGauge ?? ""}:${it.selectedColor ?? ""}`,
+    )
+    .join("|");
 
   // 장착비(공임)를 붙일 아이템 kind 정의
   // - products 컬렉션에서 mountingFee를 조회하므로, 여기 포함된 kind는 "products 기반"이어야 함
@@ -350,15 +495,19 @@ export default function CheckoutPage() {
       orderItems.every((it) => {
         if ((it.kind ?? "product") !== "product") return false;
         const id = String(it.id);
-        if (Object.prototype.hasOwnProperty.call(mountableStringByProductId, id)) {
+        if (
+          Object.prototype.hasOwnProperty.call(mountableStringByProductId, id)
+        ) {
           return mountableStringByProductId[id] === true;
         }
         return isMountableStringByFee((it as any).mountingFee);
       }),
     [orderItemsKey, mountingFeeByProductId, mountableStringByProductId],
   );
-  const isStringOnlyServiceFlow = !ENABLE_STRING_STANDALONE_ORDER && isMountableStringOrderOnly;
-  const stringStandalonePausedNotice = "현재 스트링 단품 구매는 운영하지 않으며, 선택한 스트링은 교체서비스 신청용으로 사용됩니다.";
+  const isStringOnlyServiceFlow =
+    !ENABLE_STRING_STANDALONE_ORDER && isMountableStringOrderOnly;
+  const stringStandalonePausedNotice =
+    "현재 스트링 단품 구매는 운영하지 않으며, 선택한 스트링은 교체서비스 신청용으로 사용됩니다.";
 
   // next(로그인 리디렉션)에도 URL을 그대로 유지:
   // - withService=1은 "장착 서비스 포함 결제" 의도 플래그이며,
@@ -398,8 +547,13 @@ export default function CheckoutPage() {
 
   // 번들(라켓+스트링) 모드: 수량은 1곳(스트링 선택 페이지)에서만 제어한다
   // - 체크아웃에서는 안내만 하고, 서버에서 최종 검증을 수행한다
-  const isBundleCheckout = mode === "buynow" && withServiceParam === "1" && orderItems.length >= 2;
-  const bundleQty = isBundleCheckout ? (orderItems.find((it) => it.kind === "racket")?.quantity ?? orderItems[0]?.quantity ?? 1) : null;
+  const isBundleCheckout =
+    mode === "buynow" && withServiceParam === "1" && orderItems.length >= 2;
+  const bundleQty = isBundleCheckout
+    ? (orderItems.find((it) => it.kind === "racket")?.quantity ??
+      orderItems[0]?.quantity ??
+      1)
+    : null;
 
   /**
    * "교체 서비스 포함 결제" 진입 모드 잠금
@@ -429,8 +583,12 @@ export default function CheckoutPage() {
     let cancelled = false;
 
     async function loadMountingFees() {
-      const allItemIds = Array.from(new Set(orderItems.map((it) => String(it.id))));
-      const serviceTargetIds = new Set(orderItems.filter(isServiceFeeTarget).map((it) => String(it.id)));
+      const allItemIds = Array.from(
+        new Set(orderItems.map((it) => String(it.id))),
+      );
+      const serviceTargetIds = new Set(
+        orderItems.filter(isServiceFeeTarget).map((it) => String(it.id)),
+      );
 
       if (allItemIds.length === 0) {
         setMountingFeeLoading(false);
@@ -449,19 +607,46 @@ export default function CheckoutPage() {
             const res = await fetch(`/api/products/${id}/mini`);
             const json = await res.json();
             const rawMounting = json?.ok ? Number(json.mountingFee ?? 0) : 0;
-            const mf = Number.isFinite(rawMounting) && rawMounting > 0 ? rawMounting : 0;
+            const mf =
+              Number.isFinite(rawMounting) && rawMounting > 0 ? rawMounting : 0;
             const sf = normalizeItemShippingFee(json?.shippingFee);
-            return [id, { mountingFee: mf, shippingFee: sf, isMountableString: json?.isMountableString === true }] as const;
+            return [
+              id,
+              {
+                mountingFee: mf,
+                shippingFee: sf,
+                isMountableString: json?.isMountableString === true,
+              },
+            ] as const;
           } catch {
-            return [id, { mountingFee: 0, shippingFee: 3000, isMountableString: false }] as const;
+            return [
+              id,
+              { mountingFee: 0, shippingFee: 3000, isMountableString: false },
+            ] as const;
           }
         }),
       );
 
       if (cancelled) return;
-      setMountingFeeByProductId(Object.fromEntries(entries.map(([id, fee]) => [id, serviceTargetIds.has(id) ? fee.mountingFee : 0])));
-      setMountableStringByProductId(Object.fromEntries(entries.map(([id, fee]) => [id, serviceTargetIds.has(id) && fee.isMountableString === true])));
-      setShippingFeeByProductId(Object.fromEntries(entries.map(([id, fee]) => [id, fee.shippingFee])));
+      setMountingFeeByProductId(
+        Object.fromEntries(
+          entries.map(([id, fee]) => [
+            id,
+            serviceTargetIds.has(id) ? fee.mountingFee : 0,
+          ]),
+        ),
+      );
+      setMountableStringByProductId(
+        Object.fromEntries(
+          entries.map(([id, fee]) => [
+            id,
+            serviceTargetIds.has(id) && fee.isMountableString === true,
+          ]),
+        ),
+      );
+      setShippingFeeByProductId(
+        Object.fromEntries(entries.map(([id, fee]) => [id, fee.shippingFee])),
+      );
       setMountingFeeLoading(false);
     }
 
@@ -472,9 +657,14 @@ export default function CheckoutPage() {
   }, [orderItemsKey, withStringService]);
 
   // 상품 금액 합계
-  const subtotal = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const subtotal = orderItems.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0,
+  );
 
-  const [deliveryMethod, setDeliveryMethod] = useState<"택배수령" | "방문수령">("택배수령");
+  const [deliveryMethod, setDeliveryMethod] = useState<"택배수령" | "방문수령">(
+    "택배수령",
+  );
 
   // 교체 서비스 공임(serviceFee) 계산
   // let serviceFee = 0;
@@ -492,22 +682,36 @@ export default function CheckoutPage() {
   // - 이 플래그가 false인 동안에는 "구성 에러"를 띄우지 않고, 주문 버튼도 잠깐 막아 깜박임/오판/빠른 클릭 리스크를 제거한다.
   const mountingFeeIdsToResolve = useMemo(() => {
     if (!withStringService) return [];
-    return Array.from(new Set(orderItems.filter(isServiceFeeTarget).map((it) => String(it.id))));
+    return Array.from(
+      new Set(orderItems.filter(isServiceFeeTarget).map((it) => String(it.id))),
+    );
   }, [orderItemsKey, withStringService]);
 
-  const shippingFeeIdsToResolve = useMemo(() => Array.from(new Set(orderItems.map((it) => String(it.id)))), [orderItemsKey]);
+  const shippingFeeIdsToResolve = useMemo(
+    () => Array.from(new Set(orderItems.map((it) => String(it.id)))),
+    [orderItemsKey],
+  );
 
   const isShippingFeeReady = useMemo(() => {
     if (shippingFeeIdsToResolve.length === 0) return true;
-    return shippingFeeIdsToResolve.every((id) => Object.prototype.hasOwnProperty.call(shippingFeeByProductId, id));
+    return shippingFeeIdsToResolve.every((id) =>
+      Object.prototype.hasOwnProperty.call(shippingFeeByProductId, id),
+    );
   }, [shippingFeeIdsToResolve, shippingFeeByProductId]);
 
   const isMountingFeeReady = useMemo(() => {
     if (!withStringService) return true;
     if (mountingFeeLoading) return false;
     // mini 호출이 끝나면 각 id에 대해 0이든 양수든 값이 "세팅"되므로 hasOwnProperty로 판단한다.
-    return mountingFeeIdsToResolve.every((id) => Object.prototype.hasOwnProperty.call(mountingFeeByProductId, id));
-  }, [withStringService, mountingFeeLoading, mountingFeeIdsToResolve, mountingFeeByProductId]);
+    return mountingFeeIdsToResolve.every((id) =>
+      Object.prototype.hasOwnProperty.call(mountingFeeByProductId, id),
+    );
+  }, [
+    withStringService,
+    mountingFeeLoading,
+    mountingFeeIdsToResolve,
+    mountingFeeByProductId,
+  ]);
 
   // 배송비
   const shippingFee = useMemo(() => {
@@ -522,7 +726,15 @@ export default function CheckoutPage() {
       isVisitPickup: deliveryMethod === "방문수령",
       withStringService,
     });
-  }, [orderItems, shippingFeeByProductId, mountingFeeByProductId, mountableStringByProductId, deliveryMethod, isShippingFeeReady, withStringService]);
+  }, [
+    orderItems,
+    shippingFeeByProductId,
+    mountingFeeByProductId,
+    mountableStringByProductId,
+    deliveryMethod,
+    isShippingFeeReady,
+    withStringService,
+  ]);
 
   // serviceFee 계산을 “URL”이 아니라 “mountingFeeByProductId” 기반으로
   const baseServiceFee = withStringService
@@ -554,9 +766,13 @@ export default function CheckoutPage() {
   }, [orderItemsKey, withStringService, mountableStringByProductId]);
 
   const bundleQtyGuard = useMemo(() => {
-    if (!withStringService) return { mismatch: false, racketQty: 0, serviceQty: 0 };
+    if (!withStringService)
+      return { mismatch: false, racketQty: 0, serviceQty: 0 };
 
-    const racketQty = orderItems.reduce((sum, it) => (it.kind === "racket" ? sum + (it.quantity ?? 0) : sum), 0);
+    const racketQty = orderItems.reduce(
+      (sum, it) => (it.kind === "racket" ? sum + (it.quantity ?? 0) : sum),
+      0,
+    );
     const serviceSet = new Set(serviceTargetIds);
 
     const serviceQty = orderItems.reduce((sum, it) => {
@@ -579,10 +795,15 @@ export default function CheckoutPage() {
   // (서버도 동일하게 "라켓이 있을 때만" 라켓-스트링 번들 규칙을 강제함)
   const bundleCompositionGuard = useMemo(() => {
     // 교체/장착 서비스를 선택하지 않았다면 구성 검증은 스킵
-    if (!withStringService) return { invalid: false, racketKinds: 0, mountableStringKinds: 0 };
+    if (!withStringService)
+      return { invalid: false, racketKinds: 0, mountableStringKinds: 0 };
 
     // 라켓은 "종(라인)" 기준으로 1개만 허용 (서로 다른 라켓 2종이면 매칭 불가)
-    const racketKinds = new Set(orderItems.filter((it) => it.kind === "racket").map((it) => String(it.id))).size;
+    const racketKinds = new Set(
+      orderItems
+        .filter((it) => it.kind === "racket")
+        .map((it) => String(it.id)),
+    ).size;
 
     // 장착 대상 스트링도 "종(라인)" 기준으로 1개만 허용
     // (serviceTargetIds는 mountingFee>0 인 “장착 가능 스트링” id 목록)
@@ -595,18 +816,22 @@ export default function CheckoutPage() {
      * - 1이면 "라켓 포함 번들" → 허용
      * - 2 이상이면 매핑 불가 → 차단
      */
-    const invalid = mountableStringKinds !== 1 || (racketKinds > 0 && racketKinds !== 1);
+    const invalid =
+      mountableStringKinds !== 1 || (racketKinds > 0 && racketKinds !== 1);
     return { invalid, racketKinds, mountableStringKinds };
   }, [orderItemsKey, withStringService, serviceTargetIds]);
 
   const [selectedBank, setSelectedBank] = useState("kakao");
-  const [paymentMethod, setPaymentMethod] = useState<"bank-transfer" | "nicepay">("bank-transfer");
+  const [paymentMethod, setPaymentMethod] = useState<
+    "bank-transfer" | "nicepay"
+  >("bank-transfer");
   const nicePaymentsEnabled = isNicePaymentsEnabled();
 
   // 장착 서비스 수거방식(신청서 Step1과 1:1 매핑)
   // (UI에서는 COURIER_VISIT 선택지를 숨김)
   type ServicePickup = "SELF_SEND" | "COURIER_VISIT" | "SHOP_VISIT";
-  const [servicePickupMethod, setServicePickupMethod] = useState<ServicePickup>("SELF_SEND");
+  const [servicePickupMethod, setServicePickupMethod] =
+    useState<ServicePickup>("SELF_SEND");
 
   // 동기화: 방문수령이면 SHOP_VISIT 고정, 택배면 기본 SELF_SEND
   useEffect(() => {
@@ -630,7 +855,9 @@ export default function CheckoutPage() {
   const [touchedFields, setTouchedFields] = useState<CheckoutTouchedFields>({});
 
   const touchField = (field: CheckoutTouchedField) => {
-    setTouchedFields((prev) => (prev[field] ? prev : { ...prev, [field]: true }));
+    setTouchedFields((prev) =>
+      prev[field] ? prev : { ...prev, [field]: true },
+    );
   };
 
   const loadDaumPostcodeScript = () => {
@@ -639,7 +866,9 @@ export default function CheckoutPage() {
     if (daumPostcodeScriptPromise) return daumPostcodeScriptPromise;
 
     daumPostcodeScriptPromise = new Promise<void>((resolve, reject) => {
-      const existingScript = document.querySelector<HTMLScriptElement>(`script[src="${DAUM_POSTCODE_SCRIPT_URL}"]`);
+      const existingScript = document.querySelector<HTMLScriptElement>(
+        `script[src="${DAUM_POSTCODE_SCRIPT_URL}"]`,
+      );
       const script = existingScript ?? document.createElement("script");
 
       const handleLoad = () => resolve();
@@ -763,7 +992,26 @@ export default function CheckoutPage() {
       agreePrivacy,
       agreeRefund,
     };
-  }, [loading, user, withStringService, selectedBank, deliveryMethod, servicePickupMethod, name, phone, email, postalCode, address, addressDetail, deliveryRequest, depositor, pointsToUse, agreeTerms, agreePrivacy, agreeRefund]);
+  }, [
+    loading,
+    user,
+    withStringService,
+    selectedBank,
+    deliveryMethod,
+    servicePickupMethod,
+    name,
+    phone,
+    email,
+    postalCode,
+    address,
+    addressDetail,
+    deliveryRequest,
+    depositor,
+    pointsToUse,
+    agreeTerms,
+    agreePrivacy,
+    agreeRefund,
+  ]);
 
   const isDirty = useMemo(() => {
     const b = baselineRef.current;
@@ -787,7 +1035,24 @@ export default function CheckoutPage() {
       b.agreePrivacy !== agreePrivacy ||
       b.agreeRefund !== agreeRefund
     );
-  }, [withStringService, selectedBank, deliveryMethod, servicePickupMethod, name, phone, email, postalCode, address, addressDetail, deliveryRequest, depositor, pointsToUse, agreeTerms, agreePrivacy, agreeRefund]);
+  }, [
+    withStringService,
+    selectedBank,
+    deliveryMethod,
+    servicePickupMethod,
+    name,
+    phone,
+    email,
+    postalCode,
+    address,
+    addressDetail,
+    deliveryRequest,
+    depositor,
+    pointsToUse,
+    agreeTerms,
+    agreePrivacy,
+    agreeRefund,
+  ]);
 
   const guardEnabled = isDirty && !isIntentionalSuccessNavigation;
 
@@ -816,25 +1081,31 @@ export default function CheckoutPage() {
 
     const nameTrim = name.trim();
     if (!nameTrim) errors.name = "수령인 이름은 필수입니다.";
-    else if (nameTrim.length < 2) errors.name = "수령인 이름은 2자 이상 입력해주세요.";
+    else if (nameTrim.length < 2)
+      errors.name = "수령인 이름은 2자 이상 입력해주세요.";
 
     if (!phone.trim()) errors.phone = "연락처는 필수입니다.";
-    else if (!isValidKoreanPhone010(phone)) errors.phone = "올바른 연락처 형식(01012345678)으로 입력해주세요.";
+    else if (!isValidKoreanPhone010(phone))
+      errors.phone = "올바른 연락처 형식(01012345678)으로 입력해주세요.";
 
     const emailTrim = email.trim();
     // 게스트 주문은 이메일 필수, 로그인 주문은 선택(하지만 입력 시 형식 체크)
     if (!emailTrim) {
-      if (!loading && !isLoggedIn) errors.email = "비회원 주문은 이메일이 필요합니다.";
+      if (!loading && !isLoggedIn)
+        errors.email = "비회원 주문은 이메일이 필요합니다.";
     } else if (!EMAIL_RE.test(emailTrim)) {
       errors.email = "이메일 형식을 확인해주세요.";
     }
 
     // 택배수령일 때만 주소 필수
     if (needsShippingAddress) {
-      if (!postalCode.trim() || !address.trim()) errors.postalCode = "우편번호 찾기를 통해 주소를 등록해주세요.";
-      else if (!POSTAL_RE.test(postalCode.trim())) errors.postalCode = "우편번호 형식을 확인해주세요. (5자리)";
+      if (!postalCode.trim() || !address.trim())
+        errors.postalCode = "우편번호 찾기를 통해 주소를 등록해주세요.";
+      else if (!POSTAL_RE.test(postalCode.trim()))
+        errors.postalCode = "우편번호 형식을 확인해주세요. (5자리)";
 
-      if (!addressDetail.trim()) errors.addressDetail = "상세 주소는 필수입니다.";
+      if (!addressDetail.trim())
+        errors.addressDetail = "상세 주소는 필수입니다.";
     }
 
     if (paymentMethod === "bank-transfer") {
@@ -847,7 +1118,8 @@ export default function CheckoutPage() {
         errors.depositor = "입금자명은 2자 이상 입력해주세요.";
       }
     }
-    if (!orderItems || orderItems.length === 0) errors.items = "주문 상품이 비어있습니다.";
+    if (!orderItems || orderItems.length === 0)
+      errors.items = "주문 상품이 비어있습니다.";
 
     if (bundleQtyGuard.mismatch) {
       errors.bundle = `라켓(${bundleQtyGuard.racketQty}개)과 스트링(${bundleQtyGuard.serviceQty}개) 수량이 일치하지 않습니다. 수량은 스트링 선택 화면에서 수정해주세요.`;
@@ -863,21 +1135,49 @@ export default function CheckoutPage() {
       errors.composition =
         (isRacketBundle
           ? `교체/장착 서비스는 “라켓 1종 + 장착 스트링 1종”만 지원합니다. (현재: 라켓 ${bundleCompositionGuard.racketKinds}종, 장착 스트링 ${bundleCompositionGuard.mountableStringKinds}종)`
-          : `보유 라켓 교체 서비스는 “장착 스트링 1종”만 지원합니다. (현재: 장착 스트링 ${bundleCompositionGuard.mountableStringKinds}종)`) + (needCartHint ? "\n장바구니에서 구성 정리 후 다시 시도해 주세요." : "");
+          : `보유 라켓 교체 서비스는 “장착 스트링 1종”만 지원합니다. (현재: 장착 스트링 ${bundleCompositionGuard.mountableStringKinds}종)`) +
+        (needCartHint ? "\n장바구니에서 구성 정리 후 다시 시도해 주세요." : "");
     }
 
     return errors;
-  }, [name, phone, email, postalCode, address, addressDetail, depositor, deliveryMethod, orderItems, bundleQtyGuard, bundleCompositionGuard, isLoggedIn, needsShippingAddress, mode, isMountingFeeReady, paymentMethod]);
+  }, [
+    name,
+    phone,
+    email,
+    postalCode,
+    address,
+    addressDetail,
+    depositor,
+    deliveryMethod,
+    orderItems,
+    bundleQtyGuard,
+    bundleCompositionGuard,
+    isLoggedIn,
+    needsShippingAddress,
+    mode,
+    isMountingFeeReady,
+    paymentMethod,
+  ]);
 
   const showNameError = !!touchedFields.name && !!fieldErrors.name;
   const showEmailError = !!touchedFields.email && !!fieldErrors.email;
   const showPhoneError = !!touchedFields.phone && !!fieldErrors.phone;
-  const showPostalCodeError = !!touchedFields.postalCode && !!fieldErrors.postalCode;
-  const showAddressDetailError = !!touchedFields.addressDetail && !!fieldErrors.addressDetail;
-  const showDepositorError = !!touchedFields.depositor && !!fieldErrors.depositor;
+  const showPostalCodeError =
+    !!touchedFields.postalCode && !!fieldErrors.postalCode;
+  const showAddressDetailError =
+    !!touchedFields.addressDetail && !!fieldErrors.addressDetail;
+  const showDepositorError =
+    !!touchedFields.depositor && !!fieldErrors.depositor;
 
   const hasFieldErrors = Object.keys(fieldErrors).length > 0;
-  const canSubmit = !loading && agreeTerms && agreePrivacy && agreeRefund && !hasFieldErrors && (!withStringService || isMountingFeeReady) && isShippingFeeReady;
+  const canSubmit =
+    !loading &&
+    agreeTerms &&
+    agreePrivacy &&
+    agreeRefund &&
+    !hasFieldErrors &&
+    (!withStringService || isMountingFeeReady) &&
+    isShippingFeeReady;
 
   // 비회원 체크아웃 허용: quiet 조회 사용 (401이어도 전역 만료 금지)
   useEffect(() => {
@@ -949,12 +1249,18 @@ export default function CheckoutPage() {
         const debtRaw = data?.ok ? Number(data.debt ?? 0) : 0;
         const availRaw = data?.ok ? Number(data.available ?? 0) : NaN;
 
-        const bal = Number.isFinite(balRaw) ? Math.max(0, Math.trunc(balRaw)) : 0;
-        const debt = Number.isFinite(debtRaw) ? Math.max(0, Math.trunc(debtRaw)) : 0;
+        const bal = Number.isFinite(balRaw)
+          ? Math.max(0, Math.trunc(balRaw))
+          : 0;
+        const debt = Number.isFinite(debtRaw)
+          ? Math.max(0, Math.trunc(debtRaw))
+          : 0;
 
         // available이 내려오면 그걸 최우선 사용
         // (혹시 아직 API가 안 바뀐 상태면 fallback으로 balance - debt 계산)
-        const available = Number.isFinite(availRaw) ? Math.max(0, Math.trunc(availRaw)) : Math.max(0, bal - debt);
+        const available = Number.isFinite(availRaw)
+          ? Math.max(0, Math.trunc(availRaw))
+          : Math.max(0, bal - debt);
 
         setPointsBalance(bal);
         setPointsDebt(debt);
@@ -982,10 +1288,18 @@ export default function CheckoutPage() {
   const previewPointCapBase = Math.max(0, previewTotalPrice - shippingFee);
   const previewMaxPointsByPolicy = user ? previewPointCapBase : 0;
   const previewResolvedPointsAvailable = pointsAvailable ?? 0;
-  const previewMaxPointsToUseRaw = Math.min(previewResolvedPointsAvailable, previewMaxPointsByPolicy);
-  const previewMaxPointsToUse = Math.floor(previewMaxPointsToUseRaw / POINT_UNIT) * POINT_UNIT;
-  const previewNormalizedPointsToUse = Math.floor((Number(pointsToUse) || 0) / POINT_UNIT) * POINT_UNIT;
-  const previewAppliedPoints = Math.min(previewNormalizedPointsToUse, previewMaxPointsToUse);
+  const previewMaxPointsToUseRaw = Math.min(
+    previewResolvedPointsAvailable,
+    previewMaxPointsByPolicy,
+  );
+  const previewMaxPointsToUse =
+    Math.floor(previewMaxPointsToUseRaw / POINT_UNIT) * POINT_UNIT;
+  const previewNormalizedPointsToUse =
+    Math.floor((Number(pointsToUse) || 0) / POINT_UNIT) * POINT_UNIT;
+  const previewAppliedPoints = Math.min(
+    previewNormalizedPointsToUse,
+    previewMaxPointsToUse,
+  );
   const isZeroPayableAmount = previewTotalPrice - previewAppliedPoints <= 0;
 
   useEffect(() => {
@@ -1003,88 +1317,127 @@ export default function CheckoutPage() {
     return <LoginGate next={checkoutHref} variant="checkout" />;
   }
 
-  const renderCheckout = (checkoutStringingAdapter?: CheckoutStringingServiceAdapter) => {
-    const checkoutPackageUsage = resolveCheckoutPackageUsage(withStringService, checkoutStringingAdapter);
-    const hasStringingLineErrors = !!(withStringService && checkoutStringingAdapter?.hasLineValidationErrors);
+  const renderCheckout = (
+    checkoutStringingAdapter?: CheckoutStringingServiceAdapter,
+  ) => {
+    const checkoutPackageUsage = resolveCheckoutPackageUsage(
+      withStringService,
+      checkoutStringingAdapter,
+    );
+    const hasStringingLineErrors = !!(
+      withStringService && checkoutStringingAdapter?.hasLineValidationErrors
+    );
     const resolvedCanSubmit = canSubmit && !hasStringingLineErrors;
     const requestStringingValidationMessages = () => {
       if (!hasStringingLineErrors) return;
       setShowStringingValidationErrors(true);
     };
-    const finalServiceFee = withStringService ? applyPackageToServiceFee(baseServiceFee, checkoutPackageUsage ?? { usingPackage: false }) : 0;
+    const finalServiceFee = withStringService
+      ? applyPackageToServiceFee(
+          baseServiceFee,
+          checkoutPackageUsage ?? { usingPackage: false },
+        )
+      : 0;
     const totalPrice = subtotal + shippingFee + finalServiceFee;
     const pointCapBase = Math.max(0, totalPrice - shippingFee);
     const maxPointsByPolicy = user ? pointCapBase : 0;
     const resolvedPointsAvailable = pointsAvailable ?? 0;
     const resolvedPointsDebt = pointsDebt ?? 0;
-    const maxPointsToUseRaw = Math.min(resolvedPointsAvailable, maxPointsByPolicy);
-    const maxPointsToUse = Math.floor(maxPointsToUseRaw / POINT_UNIT) * POINT_UNIT;
-    const normalizedPointsToUse = Math.floor((Number(pointsToUse) || 0) / POINT_UNIT) * POINT_UNIT;
+    const maxPointsToUseRaw = Math.min(
+      resolvedPointsAvailable,
+      maxPointsByPolicy,
+    );
+    const maxPointsToUse =
+      Math.floor(maxPointsToUseRaw / POINT_UNIT) * POINT_UNIT;
+    const normalizedPointsToUse =
+      Math.floor((Number(pointsToUse) || 0) / POINT_UNIT) * POINT_UNIT;
     const appliedPoints = Math.min(normalizedPointsToUse, maxPointsToUse);
     const payableTotalPrice = totalPrice - appliedPoints;
-    const stringingApplicationInput: StringingApplicationInput | undefined = (() => {
-      if (!withStringService || !checkoutStringingAdapter) return undefined;
+    const stringingApplicationInput: StringingApplicationInput | undefined =
+      (() => {
+        if (!withStringService || !checkoutStringingAdapter) return undefined;
 
-      const form = checkoutStringingAdapter.formData;
-      const lines = (checkoutStringingAdapter.linesForSubmit ?? []).filter((line) => line?.stringProductId);
-      const stringTypes = (form.stringTypes ?? []).filter(Boolean);
+        const form = checkoutStringingAdapter.formData;
+        const lines = (checkoutStringingAdapter.linesForSubmit ?? []).filter(
+          (line) => line?.stringProductId,
+        );
+        const stringTypes = (form.stringTypes ?? []).filter(Boolean);
 
-      if (!name.trim() || !phone.trim() || stringTypes.length === 0 || lines.length === 0) {
-        return undefined;
-      }
+        if (
+          !name.trim() ||
+          !phone.trim() ||
+          stringTypes.length === 0 ||
+          lines.length === 0
+        ) {
+          return undefined;
+        }
 
-      return {
-        name: name.trim(),
-        phone: phone.trim(),
-        email: email.trim(),
-        shippingInfo: {
+        return {
           name: name.trim(),
           phone: phone.trim(),
           email: email.trim(),
-          address: address.trim(),
-          addressDetail: addressDetail.trim(),
-          postalCode: postalCode.trim(),
-          depositor: depositor.trim(),
-          bank: selectedBank,
-          deliveryRequest: deliveryRequest.trim(),
-          collectionMethod: form.collectionMethod,
-        },
-        stringTypes,
-        customStringName: form.customStringType?.trim() || undefined,
-        preferredDate: form.preferredDate,
-        preferredTime: form.preferredTime,
-        requirements: form.requirements,
-        packageOptOut: !!form.packageOptOut,
-        lines: lines.map((line) => ({
-          racketType: line.racketType,
-          stringProductId: line.stringProductId,
-          stringName: line.stringName,
-          tensionMain: line.tensionMain,
-          tensionCross: line.tensionCross,
-          note: line.note,
-          mountingFee: line.mountingFee,
-        })),
-      };
-    })();
+          shippingInfo: {
+            name: name.trim(),
+            phone: phone.trim(),
+            email: email.trim(),
+            address: address.trim(),
+            addressDetail: addressDetail.trim(),
+            postalCode: postalCode.trim(),
+            depositor: depositor.trim(),
+            bank: selectedBank,
+            deliveryRequest: deliveryRequest.trim(),
+            collectionMethod: form.collectionMethod,
+          },
+          stringTypes,
+          customStringName: form.customStringType?.trim() || undefined,
+          preferredDate: form.preferredDate,
+          preferredTime: form.preferredTime,
+          requirements: form.requirements,
+          packageOptOut: !!form.packageOptOut,
+          lines: lines.map((line) => ({
+            racketType: line.racketType,
+            stringProductId: line.stringProductId,
+            stringName: line.stringName,
+            tensionMain: line.tensionMain,
+            tensionCross: line.tensionCross,
+            note: line.note,
+            mountingFee: line.mountingFee,
+          })),
+        };
+      })();
 
     return (
       <div className="min-h-full bg-background">
-        <CheckoutPointsAutoAdjust user={user} isEditingPoints={isEditingPoints} useAllPoints={useAllPoints} maxPointsToUse={maxPointsToUse} pointsToUse={pointsToUse} onChangePointsToUse={setPointsToUse} />
+        <CheckoutPointsAutoAdjust
+          user={user}
+          isEditingPoints={isEditingPoints}
+          useAllPoints={useAllPoints}
+          maxPointsToUse={maxPointsToUse}
+          pointsToUse={pointsToUse}
+          onChangePointsToUse={setPointsToUse}
+        />
         {/* Hero Section */}
         <div className="relative overflow-hidden bg-secondary/40 text-foreground border-b border-border">
           {/* 배경 패턴 */}
           <div className="absolute inset-0 bg-cross-line-pattern opacity-30" />
           <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/3 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
 
-          <SiteContainer variant="wide" className="relative py-5 bp-sm:py-6 bp-md:py-8">
+          <SiteContainer
+            variant="wide"
+            className="relative py-5 bp-sm:py-6 bp-md:py-8"
+          >
             <div className="flex flex-col bp-sm:flex-row bp-sm:items-center bp-sm:justify-between gap-4">
               <div className="flex items-center gap-4">
                 <div className="flex h-12 w-12 bp-sm:h-14 bp-sm:w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/20">
                   <CreditCard className="h-6 w-6 bp-sm:h-7 bp-sm:w-7" />
                 </div>
                 <div>
-                  <h1 className="text-balance text-2xl font-bold leading-tight tracking-normal bp-sm:text-3xl bp-md:text-4xl">주문/결제</h1>
-                  <p className="mt-1 break-keep text-sm text-muted-foreground bp-sm:text-base">배송/수령/결제정보를 확인하고 주문을 완료하세요</p>
+                  <h1 className="text-balance text-2xl font-bold leading-tight tracking-normal bp-sm:text-3xl bp-md:text-4xl">
+                    주문/결제
+                  </h1>
+                  <p className="mt-1 break-keep text-sm text-muted-foreground bp-sm:text-base">
+                    배송/수령/결제정보를 확인하고 주문을 완료하세요
+                  </p>
                 </div>
               </div>
             </div>
@@ -1107,7 +1460,9 @@ export default function CheckoutPage() {
                     </span>
                     <span className="whitespace-nowrap text-xs font-semibold text-foreground bp-sm:text-sm">
                       <span className="bp-sm:hidden">스트링</span>
-                      <span className="hidden bp-sm:inline">{stepperStep1Label}</span>
+                      <span className="hidden bp-sm:inline">
+                        {stepperStep1Label}
+                      </span>
                     </span>
                   </div>
 
@@ -1115,10 +1470,14 @@ export default function CheckoutPage() {
 
                   {/* 2) 결제/장착 정보: 현재 페이지(현재 단계) */}
                   <div className="flex shrink-0 items-center gap-1.5 bp-sm:gap-2.5">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold shadow-sm ring-2 ring-primary/20 bp-sm:h-8 bp-sm:w-8 bp-sm:text-sm bp-sm:ring-4">2</span>
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold shadow-sm ring-2 ring-primary/20 bp-sm:h-8 bp-sm:w-8 bp-sm:text-sm bp-sm:ring-4">
+                      2
+                    </span>
                     <span className="whitespace-nowrap text-xs font-semibold text-foreground bp-sm:text-sm">
                       <span className="bp-sm:hidden">정보 입력</span>
-                      <span className="hidden bp-sm:inline">결제·장착 정보</span>
+                      <span className="hidden bp-sm:inline">
+                        결제·장착 정보
+                      </span>
                     </span>
                   </div>
 
@@ -1126,7 +1485,9 @@ export default function CheckoutPage() {
 
                   {/* 3) 접수 완료: 결제와 함께 서비스 신청이 함께 접수됨 */}
                   <div className="flex shrink-0 items-center gap-1.5 bp-sm:gap-2.5">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-border bg-secondary text-muted-foreground text-xs font-bold bp-sm:h-8 bp-sm:w-8 bp-sm:text-sm">3</span>
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-border bg-secondary text-muted-foreground text-xs font-bold bp-sm:h-8 bp-sm:w-8 bp-sm:text-sm">
+                      3
+                    </span>
                     <span className="whitespace-nowrap text-xs font-medium text-foreground/80 bp-sm:text-sm">
                       <span className="bp-sm:hidden">완료</span>
                       <span className="hidden bp-sm:inline">접수 완료</span>
@@ -1163,14 +1524,28 @@ export default function CheckoutPage() {
                 <Skeleton className="h-96 w-full rounded-2xl" />
               </div>
             ) : (
-              <div className={cn("space-y-6 pb-28 bp-md:pb-0", isCheckoutSubmitting && "pointer-events-none")} aria-busy={isCheckoutSubmitting}>
-                <nav aria-label="주문서 작성 순서" className="rounded-2xl border border-border bg-card p-3 shadow-sm bp-sm:p-4">
-                  <p className="text-sm font-semibold text-foreground">주문서 작성 순서</p>
+              <div
+                className={cn(
+                  "space-y-6 pb-28 bp-md:pb-0",
+                  isCheckoutSubmitting && "pointer-events-none",
+                )}
+                aria-busy={isCheckoutSubmitting}
+              >
+                <nav
+                  aria-label="주문서 작성 순서"
+                  className="rounded-2xl border border-border bg-card p-3 shadow-sm bp-sm:p-4"
+                >
+                  <p className="text-sm font-semibold text-foreground">
+                    주문서 작성 순서
+                  </p>
                   <div className="mt-2.5 flex flex-nowrap gap-2 overflow-x-auto whitespace-nowrap pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                     {[
                       { href: "#checkout-order-items", label: "주문 상품" },
                       { href: "#checkout-delivery-method", label: "수령·배송" },
-                      { href: "#checkout-recipient-info", label: "배송·연락 정보" },
+                      {
+                        href: "#checkout-recipient-info",
+                        label: "배송·연락 정보",
+                      },
                       { href: "#checkout-payment-info", label: "결제·혜택" },
                       { href: "#checkout-agreements", label: "약관 동의" },
                       { href: "#checkout-final-confirm", label: "최종 확인" },
@@ -1187,29 +1562,71 @@ export default function CheckoutPage() {
                 </nav>
 
                 {/* 현재 주문 성격 및 작성 안내 */}
-                <section aria-label="현재 주문 성격 및 작성 안내" className={cn("rounded-2xl border border-border bg-card px-4 py-3 shadow-sm bp-sm:px-5", withStringService ? "ring-1 ring-primary/20" : "bg-muted/30")}>
+                <section
+                  aria-label="현재 주문 성격 및 작성 안내"
+                  className={cn(
+                    "rounded-2xl border border-border bg-card px-4 py-3 shadow-sm bp-sm:px-5",
+                    withStringService
+                      ? "ring-1 ring-primary/20"
+                      : "bg-muted/30",
+                  )}
+                >
                   <div className="flex items-start gap-3">
-                    <div className={cn("flex h-8 w-8 shrink-0 items-center justify-center rounded-full ring-1", withStringService ? "bg-primary/10 text-primary ring-primary/20" : "bg-muted/60 text-muted-foreground ring-border/60")}>
-                      {withStringService ? <CheckCircle className="mt-0.5 h-4 w-4 shrink-0" /> : <Info className="h-4 w-4" />}
+                    <div
+                      className={cn(
+                        "flex h-8 w-8 shrink-0 items-center justify-center rounded-full ring-1",
+                        withStringService
+                          ? "bg-primary/10 text-primary ring-primary/20"
+                          : "bg-muted/60 text-muted-foreground ring-border/60",
+                      )}
+                    >
+                      {withStringService ? (
+                        <CheckCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                      ) : (
+                        <Info className="h-4 w-4" />
+                      )}
                     </div>
                     <div className="min-w-0 space-y-1">
-                      <h2 className={cn("break-keep text-base font-semibold text-foreground", !withStringService && "text-sm")}>{withStringService ? "교체서비스 포함 주문입니다" : "일반 상품 주문입니다"}</h2>
+                      <h2
+                        className={cn(
+                          "break-keep text-base font-semibold text-foreground",
+                          !withStringService && "text-sm",
+                        )}
+                      >
+                        {withStringService
+                          ? "교체서비스 포함 주문입니다"
+                          : "일반 상품 주문입니다"}
+                      </h2>
                       {withStringService ? (
                         <div className="space-y-1 text-sm leading-relaxed text-muted-foreground">
-                          <p className="break-keep">작업 정보와 수령/배송 방식만 확인하면 접수됩니다.</p>
-                          {isStringOnlyServiceFlow && <p className="break-keep">{stringStandalonePausedNotice}</p>}
+                          <p className="break-keep">
+                            작업 정보와 수령/배송 방식만 확인하면 접수됩니다.
+                          </p>
+                          {isStringOnlyServiceFlow && (
+                            <p className="break-keep">
+                              {stringStandalonePausedNotice}
+                            </p>
+                          )}
                         </div>
                       ) : (
                         <div className="space-y-1 text-sm leading-relaxed text-muted-foreground">
-                          <p className="break-keep">현재 주문에는 교체서비스 신청이 포함되어 있지 않습니다.</p>
-                          <p className="break-keep text-xs text-muted-foreground/90">결제 전 새로고침이나 페이지 이동은 피해주세요.</p>
+                          <p className="break-keep">
+                            현재 주문에는 교체서비스 신청이 포함되어 있지
+                            않습니다.
+                          </p>
+                          <p className="break-keep text-xs text-muted-foreground/90">
+                            결제 전 새로고침이나 페이지 이동은 피해주세요.
+                          </p>
                         </div>
                       )}
                     </div>
                   </div>
                 </section>
                 {/* 주문 상품 */}
-                <Card id="checkout-order-items" className="group scroll-mt-24 border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl">
+                <Card
+                  id="checkout-order-items"
+                  className="group scroll-mt-24 border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl"
+                >
                   <div className="border-b border-border bg-secondary/50 p-5 bp-sm:p-6">
                     <div className="flex items-center justify-between gap-3">
                       <div className="flex min-w-0 items-center gap-3">
@@ -1217,10 +1634,15 @@ export default function CheckoutPage() {
                           <Package className="h-5 w-5 text-primary" />
                         </div>
                         <div className="min-w-0">
-                          <CardTitle className="break-keep text-lg font-bold leading-tight bp-sm:text-xl">주문 상품</CardTitle>
+                          <CardTitle className="break-keep text-lg font-bold leading-tight bp-sm:text-xl">
+                            주문 상품
+                          </CardTitle>
                         </div>
                       </div>
-                      <Badge variant="secondary" className="shrink-0 whitespace-nowrap px-3 py-1 text-xs font-semibold">
+                      <Badge
+                        variant="secondary"
+                        className="shrink-0 whitespace-nowrap px-3 py-1 text-xs font-semibold"
+                      >
                         {orderItems.length}개 상품
                       </Badge>
                     </div>
@@ -1228,15 +1650,28 @@ export default function CheckoutPage() {
                   <CardContent className="p-5 bp-sm:p-6">
                     {isBundleCheckout && bundleQty !== null && (
                       <div className="mb-4 rounded-xl border border-border bg-background px-4 py-3 text-sm text-foreground dark:border-border dark:bg-card/60 dark:text-foreground">
-                        <p className="font-semibold">번들 수량: {bundleQty}개</p>
+                        <p className="font-semibold">
+                          번들 수량: {bundleQty}개
+                        </p>
                         <p className="mt-1 text-sm text-foreground/80">
-                          라켓/스트링 수량은 동일하게 묶여 있으며, 수량 변경은 <span className="font-medium">스트링 선택 단계</span>
+                          라켓/스트링 수량은 동일하게 묶여 있으며, 수량 변경은{" "}
+                          <span className="font-medium">스트링 선택 단계</span>
                           에서만 가능합니다.
                         </p>
                         {bundleRacketId && (
                           <div className="mt-3">
-                            <Button type="button" variant="outline" size="sm" className="h-8" asChild>
-                              <Link href={`/rackets/${bundleRacketId}/select-string`} data-no-unsaved-guard onClick={onLeaveCartClick}>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="h-8"
+                              asChild
+                            >
+                              <Link
+                                href={`/rackets/${bundleRacketId}/select-string`}
+                                data-no-unsaved-guard
+                                onClick={onLeaveCartClick}
+                              >
                                 수량/스트링 변경
                               </Link>
                             </Button>
@@ -1246,32 +1681,73 @@ export default function CheckoutPage() {
                     )}
                     <div className="space-y-3">
                       {orderItems.map((item, idx) => (
-                        <div key={item.id} className="flex flex-col gap-4 rounded-xl border border-border/40 bg-secondary/35 p-4 bp-sm:flex-row bp-sm:items-center bp-sm:gap-5 bp-sm:p-5" style={{ animationDelay: `${idx * 50}ms` }}>
+                        <div
+                          key={item.id}
+                          className="flex flex-col gap-4 rounded-xl border border-border/40 bg-secondary/35 p-4 bp-sm:flex-row bp-sm:items-center bp-sm:gap-5 bp-sm:p-5"
+                          style={{ animationDelay: `${idx * 50}ms` }}
+                        >
                           <div className="flex items-center gap-4 min-w-0 flex-1">
                             <div className="relative shrink-0">
                               <div className="overflow-hidden rounded-xl ring-2 ring-border/50">
-                                <Image src={item.image || "/placeholder.svg?height=80&width=80&query=tennis+product"} alt={item.name} width={80} height={80} loading="lazy" className="h-16 w-16 bp-sm:h-20 bp-sm:w-20 object-cover" />
+                                <Image
+                                  src={
+                                    item.image ||
+                                    "/placeholder.svg?height=80&width=80&query=tennis+product"
+                                  }
+                                  alt={item.name}
+                                  width={80}
+                                  height={80}
+                                  loading="lazy"
+                                  className="h-16 w-16 bp-sm:h-20 bp-sm:w-20 object-cover"
+                                />
                               </div>
-                              <div className="absolute -top-1.5 -right-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold shadow-lg ring-2 ring-card">{item.quantity}</div>
+                              <div className="absolute -top-1.5 -right-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold shadow-lg ring-2 ring-card">
+                                {item.quantity}
+                              </div>
                             </div>
 
                             <div className="min-w-0 flex-1 space-y-1.5">
-                              <h3 className="line-clamp-2 break-words text-sm font-semibold text-foreground bp-sm:text-base">{item.name}</h3>
+                              <h3 className="line-clamp-2 break-words text-sm font-semibold text-foreground bp-sm:text-base">
+                                {item.name}
+                              </h3>
                               <div className="flex flex-wrap items-center gap-2">
-                                <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full bg-muted/50 px-2 py-0.5 text-sm text-foreground/80">수량 {item.quantity}개</span>
-                                {item.selectedGauge && <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full bg-muted/40 px-2 py-0.5 text-xs text-foreground/80">게이지 {formatGaugeLabel(item.selectedGauge)}</span>}
-                                {(item.selectedColorLabel || item.selectedColor) && (
+                                <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full bg-muted/50 px-2 py-0.5 text-sm text-foreground/80">
+                                  수량 {item.quantity}개
+                                </span>
+                                {item.selectedGauge && (
                                   <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full bg-muted/40 px-2 py-0.5 text-xs text-foreground/80">
-                                    색상
-                                    {item.selectedColorHex && <span className="h-2.5 w-2.5 rounded-full border border-border/60" style={{ backgroundColor: item.selectedColorHex }} />}
-                                    {item.selectedColorLabel || item.selectedColor}
+                                    게이지{" "}
+                                    {formatGaugeLabel(item.selectedGauge)}
                                   </span>
                                 )}
-                                {withStringService && serviceTargetIds.includes(String(item.id)) && (
-                                  <Badge variant="outline" className="shrink-0 whitespace-nowrap border-primary/30 text-xs text-primary">
-                                    교체서비스
-                                  </Badge>
+                                {(item.selectedColorLabel ||
+                                  item.selectedColor) && (
+                                  <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full bg-muted/40 px-2 py-0.5 text-xs text-foreground/80">
+                                    색상
+                                    {item.selectedColorHex && (
+                                      <span
+                                        className="h-2.5 w-2.5 rounded-full border border-border/60"
+                                        style={{
+                                          backgroundColor:
+                                            item.selectedColorHex,
+                                        }}
+                                      />
+                                    )}
+                                    {item.selectedColorLabel ||
+                                      item.selectedColor}
+                                  </span>
                                 )}
+                                {withStringService &&
+                                  serviceTargetIds.includes(
+                                    String(item.id),
+                                  ) && (
+                                    <Badge
+                                      variant="outline"
+                                      className="shrink-0 whitespace-nowrap border-primary/30 text-xs text-primary"
+                                    >
+                                      교체서비스
+                                    </Badge>
+                                  )}
                               </div>
                             </div>
                           </div>
@@ -1279,7 +1755,9 @@ export default function CheckoutPage() {
                           <div className="flex items-center justify-between bp-sm:flex-col bp-sm:items-end bp-sm:justify-center bp-sm:text-right bp-sm:min-w-[120px]">
                             <div className="whitespace-nowrap text-lg font-bold tabular-nums text-foreground bp-sm:text-xl">
                               {(item.price * item.quantity).toLocaleString()}
-                              <span className="text-sm font-medium text-muted-foreground">원</span>
+                              <span className="text-sm font-medium text-muted-foreground">
+                                원
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -1288,84 +1766,161 @@ export default function CheckoutPage() {
 
                     {/* 상품 금액 소계 */}
                     <div className="mt-5 flex items-center justify-between gap-3 border-t border-dashed border-border/60 pt-5">
-                      <span className="text-sm text-foreground/80">상품 금액 합계</span>
+                      <span className="text-sm text-foreground/80">
+                        상품 금액 합계
+                      </span>
                       <span className="whitespace-nowrap text-xl font-bold tabular-nums text-foreground">
                         {subtotal.toLocaleString()}
-                        <span className="text-sm font-medium text-muted-foreground ml-0.5">원</span>
+                        <span className="text-sm font-medium text-muted-foreground ml-0.5">
+                          원
+                        </span>
                       </span>
                     </div>
                   </CardContent>
                 </Card>
 
                 {/* 수령 방식 및 장착 서비스 카드 */}
-                <Card id="checkout-delivery-method" className="group scroll-mt-24 border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl">
+                <Card
+                  id="checkout-delivery-method"
+                  className="group scroll-mt-24 border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl"
+                >
                   <div className="border-b border-border bg-secondary/50 p-5 bp-sm:p-6">
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20">
                         <Truck className="h-5 w-5 text-primary" />
                       </div>
                       <div>
-                        <CardTitle className="text-lg bp-sm:text-xl font-bold">수령/배송 방법</CardTitle>
-                        <CardDescription className="mt-0.5 text-xs bp-sm:text-sm">상품을 받을 방법을 선택해주세요</CardDescription>
+                        <CardTitle className="text-lg bp-sm:text-xl font-bold">
+                          수령/배송 방법
+                        </CardTitle>
+                        <CardDescription className="mt-0.5 text-xs bp-sm:text-sm">
+                          상품을 받을 방법을 선택해주세요
+                        </CardDescription>
                       </div>
                     </div>
                   </div>
                   <CardContent className="p-5 bp-sm:p-6 space-y-5">
-                    <RadioGroup value={deliveryMethod} onValueChange={(value) => setDeliveryMethod(value as "택배수령" | "방문수령")} className="grid gap-3">
+                    <RadioGroup
+                      value={deliveryMethod}
+                      onValueChange={(value) =>
+                        setDeliveryMethod(value as "택배수령" | "방문수령")
+                      }
+                      className="grid gap-3"
+                    >
                       <label
                         htmlFor="택배수령"
                         className={cn(
                           "flex items-center gap-4 p-4 bp-sm:p-5 rounded-xl border-2 cursor-pointer transition-[background-color,border-color,box-shadow,color,opacity] duration-200",
-                          deliveryMethod === "택배수령" ? "border-primary bg-primary/5 shadow-sm" : "border-border/50 hover:border-border hover:bg-secondary/30",
+                          deliveryMethod === "택배수령"
+                            ? "border-primary bg-primary/5 shadow-sm"
+                            : "border-border/50 hover:border-border hover:bg-secondary/30",
                         )}
                       >
-                        <RadioGroupItem value="택배수령" id="택배수령" className="sr-only" />
-                        <div className={cn("flex h-12 w-12 items-center justify-center rounded-xl transition-colors", deliveryMethod === "택배수령" ? "bg-primary/15" : "bg-secondary")}>
-                          <Truck className={cn("h-6 w-6", deliveryMethod === "택배수령" ? "text-primary" : "text-muted-foreground")} />
+                        <RadioGroupItem
+                          value="택배수령"
+                          id="택배수령"
+                          className="sr-only"
+                        />
+                        <div
+                          className={cn(
+                            "flex h-12 w-12 items-center justify-center rounded-xl transition-colors",
+                            deliveryMethod === "택배수령"
+                              ? "bg-primary/15"
+                              : "bg-secondary",
+                          )}
+                        >
+                          <Truck
+                            className={cn(
+                              "h-6 w-6",
+                              deliveryMethod === "택배수령"
+                                ? "text-primary"
+                                : "text-muted-foreground",
+                            )}
+                          />
                         </div>
                         <div className="flex-1">
-                          <div className="font-semibold text-sm bp-sm:text-base">택배 발송/수령</div>
-                          <div className="text-xs bp-sm:text-sm text-foreground/80 mt-0.5">자택 또는 지정 장소로 배송</div>
+                          <div className="font-semibold text-sm bp-sm:text-base">
+                            택배 발송/수령
+                          </div>
+                          <div className="text-xs bp-sm:text-sm text-foreground/80 mt-0.5">
+                            자택 또는 지정 장소로 배송
+                          </div>
                         </div>
                         <div
                           className={cn(
                             "h-5 w-5 rounded-full border-2 flex items-center justify-center transition-[background-color,border-color,box-shadow,color,opacity]",
-                            deliveryMethod === "택배수령" ? "border-primary bg-primary text-primary-foreground" : "border-border bg-transparent",
+                            deliveryMethod === "택배수령"
+                              ? "border-primary bg-primary text-primary-foreground"
+                              : "border-border bg-transparent",
                           )}
                         >
-                          {deliveryMethod === "택배수령" && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
+                          {deliveryMethod === "택배수령" && (
+                            <Check className="h-3.5 w-3.5" strokeWidth={3} />
+                          )}
                         </div>
                       </label>
                       <label
                         htmlFor="방문수령"
                         className={cn(
                           "flex items-center gap-4 p-4 bp-sm:p-5 rounded-xl border-2 cursor-pointer transition-[background-color,border-color,box-shadow,color,opacity] duration-200",
-                          deliveryMethod === "방문수령" ? "border-primary bg-primary/5 shadow-sm" : "border-border/50 hover:border-border hover:bg-secondary/30",
+                          deliveryMethod === "방문수령"
+                            ? "border-primary bg-primary/5 shadow-sm"
+                            : "border-border/50 hover:border-border hover:bg-secondary/30",
                         )}
                       >
-                        <RadioGroupItem value="방문수령" id="방문수령" className="sr-only" />
-                        <div className={cn("flex h-12 w-12 items-center justify-center rounded-xl transition-colors", deliveryMethod === "방문수령" ? "bg-primary/15" : "bg-secondary")}>
-                          <Building2 className={cn("h-6 w-6", deliveryMethod === "방문수령" ? "text-primary" : "text-muted-foreground")} />
+                        <RadioGroupItem
+                          value="방문수령"
+                          id="방문수령"
+                          className="sr-only"
+                        />
+                        <div
+                          className={cn(
+                            "flex h-12 w-12 items-center justify-center rounded-xl transition-colors",
+                            deliveryMethod === "방문수령"
+                              ? "bg-primary/15"
+                              : "bg-secondary",
+                          )}
+                        >
+                          <Building2
+                            className={cn(
+                              "h-6 w-6",
+                              deliveryMethod === "방문수령"
+                                ? "text-primary"
+                                : "text-muted-foreground",
+                            )}
+                          />
                         </div>
                         <div className="flex-1">
-                          <div className="font-semibold text-sm bp-sm:text-base">오프라인 매장 방문</div>
-                          <div className="text-xs bp-sm:text-sm text-foreground/80 mt-0.5">도깨비테니스 샵에서 직접 수령</div>
+                          <div className="font-semibold text-sm bp-sm:text-base">
+                            오프라인 매장 방문
+                          </div>
+                          <div className="text-xs bp-sm:text-sm text-foreground/80 mt-0.5">
+                            도깨비테니스 샵에서 직접 수령
+                          </div>
                         </div>
                         <div
                           className={cn(
                             "h-5 w-5 rounded-full border-2 flex items-center justify-center transition-[background-color,border-color,box-shadow,color,opacity]",
-                            deliveryMethod === "방문수령" ? "border-primary bg-primary text-primary-foreground" : "border-border bg-transparent",
+                            deliveryMethod === "방문수령"
+                              ? "border-primary bg-primary text-primary-foreground"
+                              : "border-border bg-transparent",
                           )}
                         >
-                          {deliveryMethod === "방문수령" && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
+                          {deliveryMethod === "방문수령" && (
+                            <Check className="h-3.5 w-3.5" strokeWidth={3} />
+                          )}
                         </div>
                       </label>
                     </RadioGroup>
                     {withStringService && (
                       <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm text-muted-foreground">
-                        <p className="font-semibold text-foreground">선택 후 다음 행동</p>
+                        <p className="font-semibold text-foreground">
+                          선택 후 다음 행동
+                        </p>
                         <p className="mt-1 break-keep">
-                          {deliveryMethod === "택배수령" ? "결제 후 라켓을 포장해 발송하고, 마이페이지에서 운송장 정보를 등록하면 진행이 빨라집니다." : "예약/방문 안내에 따라 매장에 방문해주세요. 방문 전 신청 상태를 마이페이지에서 확인할 수 있어요."}
+                          {deliveryMethod === "택배수령"
+                            ? "결제 후 라켓을 포장해 발송하고, 마이페이지에서 운송장 정보를 등록하면 진행이 빨라집니다."
+                            : "예약/방문 안내에 따라 매장에 방문해주세요. 방문 전 신청 상태를 마이페이지에서 확인할 수 있어요."}
                         </p>
                       </div>
                     )}
@@ -1373,15 +1928,26 @@ export default function CheckoutPage() {
                 </Card>
 
                 {/* 배송 정보/수령 정보 */}
-                <Card id="checkout-recipient-info" className="group scroll-mt-24 border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl">
+                <Card
+                  id="checkout-recipient-info"
+                  className="group scroll-mt-24 border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl"
+                >
                   <div className="border-b border-border bg-secondary/50 p-4 bp-sm:p-5">
                     <div className="flex items-center gap-3">
                       <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20 bp-sm:h-10 bp-sm:w-10">
                         <MapPin className="h-5 w-5 text-primary" />
                       </div>
                       <div>
-                        <CardTitle className="text-lg bp-sm:text-xl font-bold">{needsShippingAddress ? "배송 정보" : "수령/연락 정보"}</CardTitle>
-                        <CardDescription className="mt-0.5 text-xs bp-sm:text-sm">{needsShippingAddress ? "상품을 받으실 배송지 정보를 입력해주세요" : "매장 방문 수령을 위해 연락 가능한 정보를 입력해주세요"}</CardDescription>
+                        <CardTitle className="text-lg bp-sm:text-xl font-bold">
+                          {needsShippingAddress
+                            ? "배송 정보"
+                            : "수령/연락 정보"}
+                        </CardTitle>
+                        <CardDescription className="mt-0.5 text-xs bp-sm:text-sm">
+                          {needsShippingAddress
+                            ? "상품을 받으실 배송지 정보를 입력해주세요"
+                            : "매장 방문 수령을 위해 연락 가능한 정보를 입력해주세요"}
+                        </CardDescription>
                       </div>
                     </div>
                   </div>
@@ -1389,7 +1955,10 @@ export default function CheckoutPage() {
                     <div className="space-y-4">
                       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                         <div className="space-y-2">
-                          <Label htmlFor="recipient-name" className="flex items-center gap-2 text-sm font-medium">
+                          <Label
+                            htmlFor="recipient-name"
+                            className="flex items-center gap-2 text-sm font-medium"
+                          >
                             <UserIcon className="h-4 w-4 text-muted-foreground" />
                             수령인 이름
                           </Label>
@@ -1401,13 +1970,23 @@ export default function CheckoutPage() {
                             placeholder="수령인 이름을 입력하세요"
                             className={cn(
                               "h-11 rounded-xl border-border/50 bg-secondary/30 focus:bg-card focus:border-primary focus:ring-2 focus:ring-primary/10 transition-[background-color,border-color,box-shadow,color,opacity] duration-200",
-                              showNameError && "border-destructive/50 focus:border-destructive focus:ring-destructive/10",
+                              showNameError &&
+                                "border-destructive/50 focus:border-destructive focus:ring-destructive/10",
                             )}
                           />
-                          <div className="min-h-[18px]">{showNameError && <p className="text-xs text-destructive animate-in fade-in slide-in-from-top-1">{fieldErrors.name}</p>}</div>
+                          <div className="min-h-[18px]">
+                            {showNameError && (
+                              <p className="text-xs text-destructive animate-in fade-in slide-in-from-top-1">
+                                {fieldErrors.name}
+                              </p>
+                            )}
+                          </div>
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="recipient-email" className="flex items-center gap-2 text-sm font-medium">
+                          <Label
+                            htmlFor="recipient-email"
+                            className="flex items-center gap-2 text-sm font-medium"
+                          >
                             <Mail className="h-4 w-4 text-muted-foreground" />
                             이메일
                           </Label>
@@ -1420,42 +1999,74 @@ export default function CheckoutPage() {
                             placeholder="example@naver.com"
                             className={cn(
                               "h-11 rounded-xl border-border/50 bg-secondary/30 focus:bg-card focus:border-primary focus:ring-2 focus:ring-primary/10 transition-[background-color,border-color,box-shadow,color,opacity] duration-200",
-                              showEmailError && "border-destructive/50 focus:border-destructive focus:ring-destructive/10",
+                              showEmailError &&
+                                "border-destructive/50 focus:border-destructive focus:ring-destructive/10",
                             )}
                           />
-                          <div className="min-h-[18px]">{showEmailError && <p className="text-xs text-destructive animate-in fade-in slide-in-from-top-1">{fieldErrors.email}</p>}</div>
+                          <div className="min-h-[18px]">
+                            {showEmailError && (
+                              <p className="text-xs text-destructive animate-in fade-in slide-in-from-top-1">
+                                {fieldErrors.email}
+                              </p>
+                            )}
+                          </div>
                         </div>
                         <div className="space-y-2 sm:col-span-2">
-                          <Label htmlFor="recipient-phone" className="flex items-center gap-2 text-sm font-medium">
+                          <Label
+                            htmlFor="recipient-phone"
+                            className="flex items-center gap-2 text-sm font-medium"
+                          >
                             <Phone className="h-4 w-4 text-muted-foreground" />
                             연락처
                           </Label>
                           <Input
                             id="recipient-phone"
                             value={phone}
-                            onChange={(e) => setPhone(formatKoreanPhone010(e.target.value))}
+                            onChange={(e) =>
+                              setPhone(formatKoreanPhone010(e.target.value))
+                            }
                             onBlur={() => touchField("phone")}
                             placeholder="연락처를 입력하세요 ('-' 제외)"
                             inputMode="numeric"
                             className={cn(
                               "h-11 rounded-xl border-border/50 bg-secondary/30 focus:bg-card focus:border-primary focus:ring-2 focus:ring-primary/10 transition-[background-color,border-color,box-shadow,color,opacity] duration-200",
-                              showPhoneError && "border-destructive/50 focus:border-destructive focus:ring-destructive/10",
+                              showPhoneError &&
+                                "border-destructive/50 focus:border-destructive focus:ring-destructive/10",
                             )}
                           />
-                          <div className="min-h-[18px]">{showPhoneError && <p className="text-xs text-destructive animate-in fade-in slide-in-from-top-1">{fieldErrors.phone}</p>}</div>
+                          <div className="min-h-[18px]">
+                            {showPhoneError && (
+                              <p className="text-xs text-destructive animate-in fade-in slide-in-from-top-1">
+                                {fieldErrors.phone}
+                              </p>
+                            )}
+                          </div>
                         </div>
                       </div>
 
                       {needsShippingAddress && (
                         <>
                           <div className="space-y-2">
-                            <Label htmlFor="address-postal" className="flex items-center gap-2 text-sm">
+                            <Label
+                              htmlFor="address-postal"
+                              className="flex items-center gap-2 text-sm"
+                            >
                               <Home className="h-4 w-4 text-foreground" />
                               우편번호
                             </Label>
 
                             <div className="flex gap-2 max-w-[400px]">
-                              <Input id="address-postal" readOnly value={postalCode} placeholder="우편번호" className={cn("h-10 flex-1 cursor-not-allowed border-2 bg-muted", showPostalCodeError && "border-destructive/30")} />
+                              <Input
+                                id="address-postal"
+                                readOnly
+                                value={postalCode}
+                                placeholder="우편번호"
+                                className={cn(
+                                  "h-10 flex-1 cursor-not-allowed border-2 bg-muted",
+                                  showPostalCodeError &&
+                                    "border-destructive/30",
+                                )}
+                              />
                               <Button
                                 type="button"
                                 variant="outline"
@@ -1471,12 +2082,27 @@ export default function CheckoutPage() {
                             </div>
 
                             {/* 에러 메시지 영역 */}
-                            <div className="min-h-[16px]">{showPostalCodeError && <p className="text-xs text-destructive">{fieldErrors.postalCode}</p>}</div>
+                            <div className="min-h-[16px]">
+                              {showPostalCodeError && (
+                                <p className="text-xs text-destructive">
+                                  {fieldErrors.postalCode}
+                                </p>
+                              )}
+                            </div>
                           </div>
 
                           <div className="space-y-2">
                             <Label htmlFor="address-main">기본 주소</Label>
-                            <Input id="address-main" readOnly value={address} placeholder="기본 주소" className={cn("h-10 cursor-not-allowed border-2 bg-muted", showPostalCodeError && "border-destructive/30")} />
+                            <Input
+                              id="address-main"
+                              readOnly
+                              value={address}
+                              placeholder="기본 주소"
+                              className={cn(
+                                "h-10 cursor-not-allowed border-2 bg-muted",
+                                showPostalCodeError && "border-destructive/30",
+                              )}
+                            />
                           </div>
 
                           <div className="space-y-2">
@@ -1487,20 +2113,35 @@ export default function CheckoutPage() {
                               onChange={(e) => setAddressDetail(e.target.value)}
                               onBlur={() => touchField("addressDetail")}
                               placeholder="상세 주소를 입력하세요"
-                              className={cn("h-10 border-2 transition-colors focus:border-border", showAddressDetailError && "border-destructive/30 focus:border-destructive/30")}
+                              className={cn(
+                                "h-10 border-2 transition-colors focus:border-border",
+                                showAddressDetailError &&
+                                  "border-destructive/30 focus:border-destructive/30",
+                              )}
                             />
-                            <div className="min-h-[16px]">{showAddressDetailError && <p className="text-xs text-destructive">{fieldErrors.addressDetail}</p>}</div>
+                            <div className="min-h-[16px]">
+                              {showAddressDetailError && (
+                                <p className="text-xs text-destructive">
+                                  {fieldErrors.addressDetail}
+                                </p>
+                              )}
+                            </div>
                           </div>
 
                           <div className="space-y-2">
-                            <Label htmlFor="delivery-request" className="flex items-center gap-2 text-sm">
+                            <Label
+                              htmlFor="delivery-request"
+                              className="flex items-center gap-2 text-sm"
+                            >
                               <MessageSquare className="h-4 w-4 text-foreground" />
                               배송 요청사항
                             </Label>
                             <Textarea
                               id="delivery-request"
                               value={deliveryRequest}
-                              onChange={(e) => setDeliveryRequest(e.target.value)}
+                              onChange={(e) =>
+                                setDeliveryRequest(e.target.value)
+                              }
                               placeholder="배송 요청사항만 입력하세요"
                               className="min-h-[76px] border-2 transition-colors focus:border-border"
                             />
@@ -1508,12 +2149,26 @@ export default function CheckoutPage() {
 
                           <div className="rounded-lg border border-border bg-muted p-3">
                             <div className="flex items-center space-x-2">
-                              <Checkbox id="save-address" checked={saveAddress} onCheckedChange={(checked) => setSaveAddress(!!checked)} disabled={!user} />
-                              <label htmlFor="save-address" className={`text-sm font-medium ${!user ? "text-muted-foreground" : "text-foreground"}`}>
+                              <Checkbox
+                                id="save-address"
+                                checked={saveAddress}
+                                onCheckedChange={(checked) =>
+                                  setSaveAddress(!!checked)
+                                }
+                                disabled={!user}
+                              />
+                              <label
+                                htmlFor="save-address"
+                                className={`text-sm font-medium ${!user ? "text-muted-foreground" : "text-foreground"}`}
+                              >
                                 이 배송지 정보를 저장
                               </label>
                             </div>
-                            {!user && <p className="text-sm text-foreground/80 ml-6 mt-1">로그인 후 배송지 정보를 저장할 수 있습니다.</p>}
+                            {!user && (
+                              <p className="text-sm text-foreground/80 ml-6 mt-1">
+                                로그인 후 배송지 정보를 저장할 수 있습니다.
+                              </p>
+                            )}
                           </div>
                         </>
                       )}
@@ -1521,18 +2176,31 @@ export default function CheckoutPage() {
                   </CardContent>
                 </Card>
 
-                {withStringService && checkoutStringingAdapter && <CheckoutStringingServiceSections withStringService={withStringService} adapter={checkoutStringingAdapter} showValidationErrors={showStringingValidationErrors} />}
+                {withStringService && checkoutStringingAdapter && (
+                  <CheckoutStringingServiceSections
+                    withStringService={withStringService}
+                    adapter={checkoutStringingAdapter}
+                    showValidationErrors={showStringingValidationErrors}
+                  />
+                )}
 
                 {/* 결제 정보 */}
-                <Card id="checkout-payment-info" className="group scroll-mt-24 border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl">
+                <Card
+                  id="checkout-payment-info"
+                  className="group scroll-mt-24 border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl"
+                >
                   <div className="border-b border-border bg-secondary/50 p-5 bp-sm:p-6">
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20">
                         <CreditCard className="h-5 w-5 text-primary" />
                       </div>
                       <div>
-                        <CardTitle className="text-lg bp-sm:text-xl font-bold">결제 정보</CardTitle>
-                        <CardDescription className="mt-0.5 text-xs bp-sm:text-sm">혜택 적용 내역을 확인하고 결제 방법을 선택해주세요</CardDescription>
+                        <CardTitle className="text-lg bp-sm:text-xl font-bold">
+                          결제 정보
+                        </CardTitle>
+                        <CardDescription className="mt-0.5 text-xs bp-sm:text-sm">
+                          혜택 적용 내역을 확인하고 결제 방법을 선택해주세요
+                        </CardDescription>
                       </div>
                     </div>
                   </div>
@@ -1545,20 +2213,54 @@ export default function CheckoutPage() {
                         </Label>
                         <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-3">
                           <div className="flex justify-between items-center text-sm">
-                            <span className="text-muted-foreground">사용 가능 포인트</span>
-                            <span className="font-semibold">{user ? (pointsFetchError ? "-" : pointsAvailable === null ? "-" : `${pointsAvailable.toLocaleString()}P`) : "로그인 필요"}</span>
+                            <span className="text-muted-foreground">
+                              사용 가능 포인트
+                            </span>
+                            <span className="font-semibold">
+                              {user
+                                ? pointsFetchError
+                                  ? "-"
+                                  : pointsAvailable === null
+                                    ? "-"
+                                    : `${pointsAvailable.toLocaleString()}P`
+                                : "로그인 필요"}
+                            </span>
                           </div>
-                          {user && pointsFetchError && <p className="text-xs text-destructive">포인트 정보를 불러오지 못했습니다.</p>}
-                          {user && !pointsFetchError && resolvedPointsDebt > 0 && <p className="text-xs text-destructive">회수 예정 포인트(채무): {resolvedPointsDebt.toLocaleString()}P → 적립금이 먼저 상계됩니다.</p>}
+                          {user && pointsFetchError && (
+                            <p className="text-xs text-destructive">
+                              포인트 정보를 불러오지 못했습니다.
+                            </p>
+                          )}
+                          {user &&
+                            !pointsFetchError &&
+                            resolvedPointsDebt > 0 && (
+                              <p className="text-xs text-destructive">
+                                회수 예정 포인트(채무):{" "}
+                                {resolvedPointsDebt.toLocaleString()}P →
+                                적립금이 먼저 상계됩니다.
+                              </p>
+                            )}
                           <div className="flex items-center justify-between gap-3">
                             <div className="flex items-center gap-2 text-sm">
                               <Checkbox
                                 id="useAllPoints"
                                 checked={useAllPoints}
-                                onCheckedChange={(checked) => setUseAllPoints(Boolean(checked))}
-                                disabled={!isShippingFeeReady || !user || !!pointsFetchError || pointsAvailable === null || resolvedPointsAvailable <= 0 || maxPointsToUse <= 0}
+                                onCheckedChange={(checked) =>
+                                  setUseAllPoints(Boolean(checked))
+                                }
+                                disabled={
+                                  !isShippingFeeReady ||
+                                  !user ||
+                                  !!pointsFetchError ||
+                                  pointsAvailable === null ||
+                                  resolvedPointsAvailable <= 0 ||
+                                  maxPointsToUse <= 0
+                                }
                               />
-                              <Label htmlFor="useAllPoints" className="text-sm font-medium cursor-pointer">
+                              <Label
+                                htmlFor="useAllPoints"
+                                className="text-sm font-medium cursor-pointer"
+                              >
                                 전액 사용
                               </Label>
                             </div>
@@ -1572,50 +2274,90 @@ export default function CheckoutPage() {
                                 max={maxPointsToUse}
                                 className="w-24 text-right h-9"
                                 value={pointsInput}
-                                disabled={!isShippingFeeReady || !user || !!pointsFetchError || pointsAvailable === null || resolvedPointsAvailable <= 0 || maxPointsToUse <= 0 || useAllPoints}
+                                disabled={
+                                  !isShippingFeeReady ||
+                                  !user ||
+                                  !!pointsFetchError ||
+                                  pointsAvailable === null ||
+                                  resolvedPointsAvailable <= 0 ||
+                                  maxPointsToUse <= 0 ||
+                                  useAllPoints
+                                }
                                 onFocus={(e) => {
                                   setIsEditingPoints(true);
                                   const el = e.currentTarget;
                                   if (pointsInput === "0") setPointsInput("");
                                   setTimeout(() => {
-                                    if (el && typeof el.select === "function") el.select();
+                                    if (el && typeof el.select === "function")
+                                      el.select();
                                   }, 0);
                                 }}
                                 onChange={(e) => {
-                                  const onlyDigits = e.target.value.replace(/[^\d]/g, "");
+                                  const onlyDigits = e.target.value.replace(
+                                    /[^\d]/g,
+                                    "",
+                                  );
                                   setPointsInput(onlyDigits);
                                   setUseAllPoints(false);
                                   const n = Number(onlyDigits);
-                                  setPointsToUse(Number.isFinite(n) ? Math.floor(n) : 0);
+                                  setPointsToUse(
+                                    Number.isFinite(n) ? Math.floor(n) : 0,
+                                  );
                                 }}
                                 onBlur={(e) => {
                                   setIsEditingPoints(false);
                                   const rawText = e.currentTarget.value ?? "";
-                                  const onlyDigits = String(rawText).replace(/[^\d]/g, "");
+                                  const onlyDigits = String(rawText).replace(
+                                    /[^\d]/g,
+                                    "",
+                                  );
                                   const raw = Number(onlyDigits || "0");
-                                  const safe = Number.isFinite(raw) ? Math.floor(raw) : 0;
-                                  const normalized = Math.floor(safe / POINT_UNIT) * POINT_UNIT;
-                                  const clamped = Math.max(0, Math.min(normalized, maxPointsToUse));
+                                  const safe = Number.isFinite(raw)
+                                    ? Math.floor(raw)
+                                    : 0;
+                                  const normalized =
+                                    Math.floor(safe / POINT_UNIT) * POINT_UNIT;
+                                  const clamped = Math.max(
+                                    0,
+                                    Math.min(normalized, maxPointsToUse),
+                                  );
                                   setPointsInput(String(clamped));
                                   setPointsToUse(clamped);
                                 }}
                               />
-                              <span className="text-sm text-foreground/80">P</span>
+                              <span className="text-sm text-foreground/80">
+                                P
+                              </span>
                             </div>
                           </div>
-                          <p className="text-sm text-foreground/80">배송비에는 적용되지 않습니다. 최대 {maxPointsToUse.toLocaleString()}P 사용 가능</p>
+                          <p className="text-sm text-foreground/80">
+                            배송비에는 적용되지 않습니다. 최대{" "}
+                            {maxPointsToUse.toLocaleString()}P 사용 가능
+                          </p>
                         </div>
                       </div>
 
                       {withStringService && checkoutStringingAdapter && (
                         <CheckoutStringingPaymentAddon
-                          packagePreview={checkoutStringingAdapter.packagePreview}
-                          packageRemaining={checkoutStringingAdapter.packageRemaining}
-                          requiredPassCount={checkoutStringingAdapter.requiredPassCount}
-                          canApplyPackage={checkoutStringingAdapter.canApplyPackage}
+                          packagePreview={
+                            checkoutStringingAdapter.packagePreview
+                          }
+                          packageRemaining={
+                            checkoutStringingAdapter.packageRemaining
+                          }
+                          requiredPassCount={
+                            checkoutStringingAdapter.requiredPassCount
+                          }
+                          canApplyPackage={
+                            checkoutStringingAdapter.canApplyPackage
+                          }
                           usingPackage={checkoutStringingAdapter.usingPackage}
-                          packageInsufficient={checkoutStringingAdapter.packageInsufficient}
-                          packageOptOut={!!checkoutStringingAdapter.formData.packageOptOut}
+                          packageInsufficient={
+                            checkoutStringingAdapter.packageInsufficient
+                          }
+                          packageOptOut={
+                            !!checkoutStringingAdapter.formData.packageOptOut
+                          }
                           onPackageOptOutChange={(next) => {
                             checkoutStringingAdapter.setFormData((prev) => ({
                               ...prev,
@@ -1637,36 +2379,70 @@ export default function CheckoutPage() {
                           className="space-y-3"
                         >
                           <div className="flex items-center space-x-3 p-4 bg-background rounded-lg border-2 border-border">
-                            <RadioGroupItem value="bank-transfer" id="bank-transfer" />
-                            <Label htmlFor="bank-transfer" className="flex-1 cursor-pointer font-medium">
+                            <RadioGroupItem
+                              value="bank-transfer"
+                              id="bank-transfer"
+                            />
+                            <Label
+                              htmlFor="bank-transfer"
+                              className="flex-1 cursor-pointer font-medium"
+                            >
                               무통장입금
                             </Label>
                             <Building2 className="h-5 w-5 text-foreground" />
                           </div>
                           {nicePaymentsEnabled && (
-                            <div className={cn("flex items-center space-x-3 p-4 bg-background rounded-lg border-2 border-border", isZeroPayableAmount && "opacity-60")}>
-                              <RadioGroupItem value="nicepay" id="nicepay" disabled={isZeroPayableAmount} />
-                              <Label htmlFor="nicepay" className={cn("flex-1 cursor-pointer font-medium", isZeroPayableAmount && "cursor-not-allowed text-muted-foreground")}>
+                            <div
+                              className={cn(
+                                "flex items-center space-x-3 p-4 bg-background rounded-lg border-2 border-border",
+                                isZeroPayableAmount && "opacity-60",
+                              )}
+                            >
+                              <RadioGroupItem
+                                value="nicepay"
+                                id="nicepay"
+                                disabled={isZeroPayableAmount}
+                              />
+                              <Label
+                                htmlFor="nicepay"
+                                className={cn(
+                                  "flex-1 cursor-pointer font-medium",
+                                  isZeroPayableAmount &&
+                                    "cursor-not-allowed text-muted-foreground",
+                                )}
+                              >
                                 카드/간편결제
                               </Label>
                               <CreditCard className="h-5 w-5 text-foreground" />
                             </div>
                           )}
                         </RadioGroup>
-                        {nicePaymentsEnabled && isZeroPayableAmount && <p className="text-sm text-foreground/80">최종 결제금액이 0원인 경우 카드/간편결제를 사용할 수 없습니다.</p>}
+                        {nicePaymentsEnabled && isZeroPayableAmount && (
+                          <p className="text-sm text-foreground/80">
+                            최종 결제금액이 0원인 경우 카드/간편결제를 사용할 수
+                            없습니다.
+                          </p>
+                        )}
                       </div>
 
                       {paymentMethod === "bank-transfer" && (
                         <>
                           <div className="space-y-3">
                             <Label htmlFor="bank-account">입금 계좌 선택</Label>
-                            <Select value={selectedBank} onValueChange={setSelectedBank}>
+                            <Select
+                              value={selectedBank}
+                              onValueChange={setSelectedBank}
+                            >
                               <SelectTrigger className="border-2 focus:border-border">
                                 <SelectValue placeholder="입금 계좌를 선택하세요" />
                               </SelectTrigger>
                               <SelectContent className="w-[var(--radix-select-trigger-width)]">
-                                <SelectItem value="kakao" className="whitespace-normal break-words leading-snug">
-                                  카카오뱅크 {bankLabelMap.kakao.account} (예금주: {bankLabelMap.kakao.holder})
+                                <SelectItem
+                                  value="kakao"
+                                  className="whitespace-normal break-words leading-snug"
+                                >
+                                  카카오뱅크 {bankLabelMap.kakao.account}{" "}
+                                  (예금주: {bankLabelMap.kakao.holder})
                                 </SelectItem>
                               </SelectContent>
                             </Select>
@@ -1680,28 +2456,44 @@ export default function CheckoutPage() {
                               onChange={(e) => setDepositor(e.target.value)}
                               onBlur={() => touchField("depositor")}
                               placeholder="입금자명을 입력하세요"
-                              className={cn("border-2 focus:border-border transition-colors", showDepositorError && "border-destructive/30 focus:border-destructive/30")}
+                              className={cn(
+                                "border-2 focus:border-border transition-colors",
+                                showDepositorError &&
+                                  "border-destructive/30 focus:border-destructive/30",
+                              )}
                             />
-                            <div className="min-h-[16px]">{showDepositorError && <p className="text-xs text-destructive">{fieldErrors.depositor}</p>}</div>
+                            <div className="min-h-[16px]">
+                              {showDepositorError && (
+                                <p className="text-xs text-destructive">
+                                  {fieldErrors.depositor}
+                                </p>
+                              )}
+                            </div>
                           </div>
 
                           <div className="rounded-lg border border-border bg-muted p-3">
                             <div className="flex items-center gap-2 mb-3">
                               <Shield className="h-5 w-5 text-primary" />
-                              <p className="font-semibold text-foreground">무통장입금 안내</p>
+                              <p className="font-semibold text-foreground">
+                                무통장입금 안내
+                              </p>
                             </div>
                             <ul className="space-y-2 text-sm text-foreground">
                               <li className="flex items-start gap-2 text-sm leading-relaxed bp-sm:text-base">
                                 <CheckCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                                주문 후 24시간 이내에 입금해 주셔야 주문이 정상 처리됩니다.
+                                주문 후 24시간 이내에 입금해 주셔야 주문이 정상
+                                처리됩니다.
                               </li>
                               <li className="flex items-start gap-2 text-sm leading-relaxed bp-sm:text-base">
                                 <CheckCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                                입금자명이 주문자명과 다를 경우, 고객센터로 연락 부탁드립니다.
+                                입금자명이 주문자명과 다를 경우, 고객센터로 연락
+                                부탁드립니다.
                               </li>
                               <li className="flex items-start gap-2 text-sm leading-relaxed bp-sm:text-base">
                                 <CheckCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                                {needsShippingAddress ? "입금 확인 후 배송이 시작됩니다." : "입금 확인 후 매장 수령 준비가 시작됩니다."}
+                                {needsShippingAddress
+                                  ? "입금 확인 후 배송이 시작됩니다."
+                                  : "입금 확인 후 매장 수령 준비가 시작됩니다."}
                               </li>
                             </ul>
                           </div>
@@ -1712,15 +2504,22 @@ export default function CheckoutPage() {
                 </Card>
 
                 {/* 주문자 동의 */}
-                <Card id="checkout-agreements" className="group scroll-mt-24 border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl">
+                <Card
+                  id="checkout-agreements"
+                  className="group scroll-mt-24 border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 overflow-hidden rounded-2xl"
+                >
                   <div className="border-b border-border bg-secondary/50 p-5 bp-sm:p-6">
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20">
                         <CheckCircle className="h-5 w-5 text-primary" />
                       </div>
                       <div>
-                        <CardTitle className="text-lg bp-sm:text-xl font-bold">주문자 동의</CardTitle>
-                        <CardDescription className="mt-0.5 text-xs bp-sm:text-sm">최종 결제를 진행하기 위해 아래 약관에 동의해주세요</CardDescription>
+                        <CardTitle className="text-lg bp-sm:text-xl font-bold">
+                          주문자 동의
+                        </CardTitle>
+                        <CardDescription className="mt-0.5 text-xs bp-sm:text-sm">
+                          최종 결제를 진행하기 위해 아래 약관에 동의해주세요
+                        </CardDescription>
                       </div>
                     </div>
                   </div>
@@ -1730,7 +2529,9 @@ export default function CheckoutPage() {
                         htmlFor="agree-all"
                         className={cn(
                           "flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-[background-color,border-color,box-shadow,color,opacity] duration-200",
-                          agreeAll ? "border-primary bg-primary/5" : "border-border/50 hover:border-border hover:bg-secondary/30",
+                          agreeAll
+                            ? "border-primary bg-primary/5"
+                            : "border-border/50 hover:border-border hover:bg-secondary/30",
                         )}
                       >
                         <Checkbox
@@ -1745,7 +2546,9 @@ export default function CheckoutPage() {
                           }}
                           className="h-5 w-5"
                         />
-                        <span className="font-bold text-base bp-sm:text-lg text-foreground">전체 동의</span>
+                        <span className="font-bold text-base bp-sm:text-lg text-foreground">
+                          전체 동의
+                        </span>
                       </label>
                       <Separator />
                       <div className="space-y-2">
@@ -1776,10 +2579,15 @@ export default function CheckoutPage() {
                             key={item.id}
                             className={cn(
                               "flex items-center justify-between rounded-xl border p-3 bp-sm:p-4 transition-[background-color,border-color,box-shadow,color,opacity] duration-200",
-                              item.state ? "border-primary/30 bg-primary/5" : "border-border/40 bg-secondary/20 hover:bg-secondary/40",
+                              item.state
+                                ? "border-primary/30 bg-primary/5"
+                                : "border-border/40 bg-secondary/20 hover:bg-secondary/40",
                             )}
                           >
-                            <label htmlFor={item.id} className="flex items-center gap-3 cursor-pointer flex-1">
+                            <label
+                              htmlFor={item.id}
+                              className="flex items-center gap-3 cursor-pointer flex-1"
+                            >
                               <Checkbox
                                 id={item.id}
                                 checked={item.state}
@@ -1787,13 +2595,29 @@ export default function CheckoutPage() {
                                   const value = !!checked;
                                   item.setState(value);
                                   if (!value) setAgreeAll(false);
-                                  else if (agreeTerms && agreePrivacy && agreeRefund) setAgreeAll(true);
+                                  else if (
+                                    agreeTerms &&
+                                    agreePrivacy &&
+                                    agreeRefund
+                                  )
+                                    setAgreeAll(true);
                                 }}
                               />
-                              <span className="text-sm font-medium text-foreground">{item.label}</span>
+                              <span className="text-sm font-medium text-foreground">
+                                {item.label}
+                              </span>
                             </label>
-                            <Button variant="ghost" size="sm" className="h-8 px-3 text-sm text-foreground/80 hover:text-foreground" asChild>
-                              <Link href={item.href} target="_blank" rel="noopener noreferrer">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 px-3 text-sm text-foreground/80 hover:text-foreground"
+                              asChild
+                            >
+                              <Link
+                                href={item.href}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
                                 보기
                               </Link>
                             </Button>
@@ -1827,8 +2651,12 @@ export default function CheckoutPage() {
                 <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 px-4 py-3 shadow-lg backdrop-blur bp-md:hidden pb-[calc(env(safe-area-inset-bottom)+0.75rem)]">
                   <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="text-xs text-muted-foreground">결제 예정 금액</p>
-                      <p className="whitespace-nowrap text-lg font-bold tabular-nums text-foreground">{payableTotalPrice.toLocaleString()}원</p>
+                      <p className="text-xs text-muted-foreground">
+                        결제 예정 금액
+                      </p>
+                      <p className="whitespace-nowrap text-lg font-bold tabular-nums text-foreground">
+                        {payableTotalPrice.toLocaleString()}원
+                      </p>
                     </div>
                     <Button
                       type="button"
@@ -1836,7 +2664,12 @@ export default function CheckoutPage() {
                       className="shrink-0 whitespace-nowrap px-3 text-xs bp-sm:text-sm"
                       onClick={() => {
                         requestStringingValidationMessages();
-                        document.getElementById("checkout-payment-action")?.scrollIntoView({ behavior: "smooth", block: "start" });
+                        document
+                          .getElementById("checkout-payment-action")
+                          ?.scrollIntoView({
+                            behavior: "smooth",
+                            block: "start",
+                          });
                       }}
                     >
                       결제 버튼으로 이동
@@ -1844,19 +2677,34 @@ export default function CheckoutPage() {
                   </div>
                 </div>
 
-                <Card id="checkout-payment-action" className="relative border border-border bg-card shadow-sm overflow-hidden">
+                <Card
+                  id="checkout-payment-action"
+                  className="relative border border-border bg-card shadow-sm overflow-hidden"
+                >
                   <CardContent className="flex flex-col gap-4 p-4 bp-sm:p-6 shrink-0">
-                    {(fieldErrors.items || fieldErrors.bundle || (isMountingFeeReady && fieldErrors.composition) || hasStringingLineErrors) && (
+                    {(fieldErrors.items ||
+                      fieldErrors.bundle ||
+                      (isMountingFeeReady && fieldErrors.composition) ||
+                      hasStringingLineErrors) && (
                       <div className="w-full rounded-lg border border-destructive/30 bg-destructive/15 p-3 text-sm text-destructive dark:bg-destructive/20">
                         <p className="font-semibold mb-1">확인 필요</p>
                         {fieldErrors.items && <p>• {fieldErrors.items}</p>}
                         {fieldErrors.bundle && <p>• {fieldErrors.bundle}</p>}
-                        {hasStringingLineErrors && <p>• 교체서비스 라켓명과 텐션을 모두 입력해 주세요.</p>}
+                        {hasStringingLineErrors && (
+                          <p>
+                            • 교체서비스 라켓명과 텐션을 모두 입력해 주세요.
+                          </p>
+                        )}
                         {fieldErrors.composition && (
                           <p>
                             • {fieldErrors.composition}{" "}
                             {mode !== "buynow" && (
-                              <Link href="/cart" data-no-unsaved-guard onClick={onLeaveCartClick} className="underline underline-offset-2">
+                              <Link
+                                href="/cart"
+                                data-no-unsaved-guard
+                                onClick={onLeaveCartClick}
+                                className="underline underline-offset-2"
+                              >
                                 (장바구니에서 정리)
                               </Link>
                             )}
@@ -1864,16 +2712,29 @@ export default function CheckoutPage() {
                         )}
                         {fieldErrors.composition && mode !== "buynow" && (
                           <div className="mt-3 flex flex-wrap gap-2">
-                            <Link href="/cart" data-no-unsaved-guard onClick={onLeaveCartClick} className="inline-flex items-center justify-center rounded-md bg-muted/50 dark:bg-card/60 px-3 py-2 text-sm font-medium text-foreground hover:bg-muted">
+                            <Link
+                              href="/cart"
+                              data-no-unsaved-guard
+                              onClick={onLeaveCartClick}
+                              className="inline-flex items-center justify-center rounded-md bg-muted/50 dark:bg-card/60 px-3 py-2 text-sm font-medium text-foreground hover:bg-muted"
+                            >
                               장바구니로 가서 정리하기
                             </Link>
-                            <span className="text-sm text-foreground/80">정리 후 다시 이 페이지로 돌아와 주문을 진행해주세요.</span>
+                            <span className="text-sm text-foreground/80">
+                              정리 후 다시 이 페이지로 돌아와 주문을
+                              진행해주세요.
+                            </span>
                           </div>
                         )}
                       </div>
                     )}
                     {paymentMethod === "bank-transfer" ? (
-                      <div onPointerDownCapture={requestStringingValidationMessages} className="w-full">
+                      <div
+                        onPointerDownCapture={
+                          requestStringingValidationMessages
+                        }
+                        className="w-full"
+                      >
                         <CheckoutButton
                           disabled={!resolvedCanSubmit}
                           name={name}
@@ -1898,16 +2759,29 @@ export default function CheckoutPage() {
                           pointsToUse={appliedPoints}
                           stringingApplicationInput={stringingApplicationInput}
                           onSubmittingChange={setIsCheckoutSubmitting}
-                          onBeforeSuccessNavigation={() => setIsIntentionalSuccessNavigation(true)}
-                          onSuccessNavigationAbort={() => setIsIntentionalSuccessNavigation(false)}
+                          onBeforeSuccessNavigation={() =>
+                            setIsIntentionalSuccessNavigation(true)
+                          }
+                          onSuccessNavigationAbort={() =>
+                            setIsIntentionalSuccessNavigation(false)
+                          }
                         />
                       </div>
                     ) : nicePaymentsEnabled && !isZeroPayableAmount ? (
-                      <div onPointerDownCapture={requestStringingValidationMessages} className="w-full">
+                      <div
+                        onPointerDownCapture={
+                          requestStringingValidationMessages
+                        }
+                        className="w-full"
+                      >
                         <NiceCheckoutButton
                           disabled={!resolvedCanSubmit}
-                          onBeforeSuccessNavigation={() => setIsIntentionalSuccessNavigation(true)}
-                          onSuccessNavigationAbort={() => setIsIntentionalSuccessNavigation(false)}
+                          onBeforeSuccessNavigation={() =>
+                            setIsIntentionalSuccessNavigation(true)
+                          }
+                          onSuccessNavigationAbort={() =>
+                            setIsIntentionalSuccessNavigation(false)
+                          }
                           payableAmount={payableTotalPrice}
                           payload={{
                             items: orderItems.map((item) => ({
@@ -1936,10 +2810,19 @@ export default function CheckoutPage() {
                             shippingFee,
                             serviceFee: finalServiceFee,
                             pointsToUse: appliedPoints,
-                            guestInfo: !user ? { name: name.trim(), phone: phone.replace(/\D/g, ""), email: email.trim().toLowerCase() } : undefined,
+                            guestInfo: !user
+                              ? {
+                                  name: name.trim(),
+                                  phone: phone.replace(/\D/g, ""),
+                                  email: email.trim().toLowerCase(),
+                                }
+                              : undefined,
                             isStringServiceApplied: withStringService,
                             servicePickupMethod,
-                            stringingApplicationInput: withStringService && stringingApplicationInput ? stringingApplicationInput : undefined,
+                            stringingApplicationInput:
+                              withStringService && stringingApplicationInput
+                                ? stringingApplicationInput
+                                : undefined,
                           }}
                         />
                       </div>
@@ -1955,7 +2838,9 @@ export default function CheckoutPage() {
                       <div className="absolute inset-0 grid place-items-center">
                         <div className="flex items-center gap-3 rounded-xl bg-card/90 px-4 py-3 shadow">
                           <Loader2 className="h-5 w-5 animate-spin" />
-                          <span className="text-sm">주문을 처리하고 있어요…</span>
+                          <span className="text-sm">
+                            주문을 처리하고 있어요…
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -1988,7 +2873,9 @@ export default function CheckoutPage() {
       servicePickupMethod={servicePickupMethod}
       isMember={!!user}
     >
-      {(checkoutStringingAdapter: CheckoutStringingServiceAdapter) => renderCheckout(checkoutStringingAdapter)}
+      {(checkoutStringingAdapter: CheckoutStringingServiceAdapter) =>
+        renderCheckout(checkoutStringingAdapter)
+      }
     </CheckoutStringingRuntimeBridge>
   );
 }

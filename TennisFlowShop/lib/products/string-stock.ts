@@ -37,7 +37,10 @@ const normalizeStock = (value: unknown) => {
 };
 
 export function normalizeGaugeRows(product: any): GaugeInventoryRow[] {
-  if (Array.isArray(product?.gaugeInventories) && product.gaugeInventories.length > 0) {
+  if (
+    Array.isArray(product?.gaugeInventories) &&
+    product.gaugeInventories.length > 0
+  ) {
     return product.gaugeInventories
       .map((row: any) => ({
         value: String(row?.value ?? "").trim(),
@@ -69,12 +72,16 @@ export function getGaugeLabel(row: GaugeInventoryRow) {
 }
 
 export function normalizeColorRows(product: any): ColorInventoryRow[] {
-  if (Array.isArray(product?.colorInventories) && product.colorInventories.length > 0) {
+  if (
+    Array.isArray(product?.colorInventories) &&
+    product.colorInventories.length > 0
+  ) {
     return product.colorInventories
       .map((row: any) => ({
         value: String(row?.value ?? "").trim(),
         label: typeof row?.label === "string" ? row.label.trim() : undefined,
-        colorHex: typeof row?.colorHex === "string" ? row.colorHex.trim() : undefined,
+        colorHex:
+          typeof row?.colorHex === "string" ? row.colorHex.trim() : undefined,
         image: typeof row?.image === "string" ? row.image.trim() : undefined,
         stock: normalizeStock(row?.stock),
         isSoldOut: row?.isSoldOut === true,
@@ -124,16 +131,23 @@ export function normalizeVariantRows(product: any): VariantInventoryRow[] {
   return product.variantInventories
     .map((row: any) => ({
       colorValue: String(row?.colorValue ?? "").trim(),
-      colorLabel: typeof row?.colorLabel === "string" ? row.colorLabel.trim() : undefined,
-      colorHex: typeof row?.colorHex === "string" ? row.colorHex.trim() : undefined,
-      colorImage: typeof row?.colorImage === "string" ? row.colorImage.trim() : undefined,
+      colorLabel:
+        typeof row?.colorLabel === "string" ? row.colorLabel.trim() : undefined,
+      colorHex:
+        typeof row?.colorHex === "string" ? row.colorHex.trim() : undefined,
+      colorImage:
+        typeof row?.colorImage === "string" ? row.colorImage.trim() : undefined,
       gaugeValue: String(row?.gaugeValue ?? "").trim(),
-      gaugeLabel: typeof row?.gaugeLabel === "string" ? row.gaugeLabel.trim() : undefined,
+      gaugeLabel:
+        typeof row?.gaugeLabel === "string" ? row.gaugeLabel.trim() : undefined,
       stock: normalizeStock(row?.stock),
       isSoldOut: row?.isSoldOut === true,
       showWhenSoldOut: row?.showWhenSoldOut === false ? false : true,
     }))
-    .filter((row: VariantInventoryRow) => row.colorValue.length > 0 && row.gaugeValue.length > 0);
+    .filter(
+      (row: VariantInventoryRow) =>
+        row.colorValue.length > 0 && row.gaugeValue.length > 0,
+    );
 }
 
 export function isSellableVariant(row: VariantInventoryRow) {
@@ -149,7 +163,9 @@ export function isVisibleVariant(row: VariantInventoryRow) {
 }
 
 export function getVariantsByColor(product: any, colorValue: string) {
-  return normalizeVariantRows(product).filter((row) => row.colorValue === colorValue && isVisibleVariant(row));
+  return normalizeVariantRows(product).filter(
+    (row) => row.colorValue === colorValue && isVisibleVariant(row),
+  );
 }
 
 export function getVisibleColorRows(product: any): ColorInventoryRow[] {
@@ -157,8 +173,12 @@ export function getVisibleColorRows(product: any): ColorInventoryRow[] {
   const variantRows = normalizeVariantRows(product);
   if (variantRows.length === 0) return colorRows;
   const visibleVariantRows = variantRows.filter(isVisibleVariant);
-  const visibleColorValues = Array.from(new Set(visibleVariantRows.map((row) => row.colorValue).filter(Boolean)));
-  const visibleColorRows = colorRows.filter((row) => visibleColorValues.includes(row.value));
+  const visibleColorValues = Array.from(
+    new Set(visibleVariantRows.map((row) => row.colorValue).filter(Boolean)),
+  );
+  const visibleColorRows = colorRows.filter((row) =>
+    visibleColorValues.includes(row.value),
+  );
   const existingValues = new Set(visibleColorRows.map((row) => row.value));
   const fallbackRows: ColorInventoryRow[] = [];
   visibleVariantRows.forEach((row) => {
@@ -177,7 +197,11 @@ export function getVisibleColorRows(product: any): ColorInventoryRow[] {
   return [...visibleColorRows, ...fallbackRows];
 }
 
-export function getVariantBySelection(product: any, colorValue: string, gaugeValue: string) {
+export function getVariantBySelection(
+  product: any,
+  colorValue: string,
+  gaugeValue: string,
+) {
   return normalizeVariantRows(product).find(
     (row) => row.colorValue === colorValue && row.gaugeValue === gaugeValue,
   );

@@ -1,6 +1,9 @@
 "use client";
 
-import { getPackagePricingMeta, type PackageCardData } from "@/app/services/packages/_lib/packageCard";
+import {
+  getPackagePricingMeta,
+  type PackageCardData,
+} from "@/app/services/packages/_lib/packageCard";
 import {
   PACKAGE_VARIANT_BUTTON_CLASS,
   PACKAGE_VARIANT_DOT_CLASS,
@@ -103,8 +106,14 @@ export default function UnifiedPackageCard({
               {pkg.originalPrice.toLocaleString()}원
             </div>
           )}
-          <div className="text-sm text-muted-foreground">회당 약 {pricingMeta.perSession.toLocaleString()}원</div>
-          {pricingMeta.originalPerSession > 0 ? <div className="text-xs text-muted-foreground">정가 기준 회당 {pricingMeta.originalPerSession.toLocaleString()}원</div> : null}
+          <div className="text-sm text-muted-foreground">
+            회당 약 {pricingMeta.perSession.toLocaleString()}원
+          </div>
+          {pricingMeta.originalPerSession > 0 ? (
+            <div className="text-xs text-muted-foreground">
+              정가 기준 회당 {pricingMeta.originalPerSession.toLocaleString()}원
+            </div>
+          ) : null}
         </div>
       </CardHeader>
 

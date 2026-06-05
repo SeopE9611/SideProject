@@ -11,9 +11,18 @@ import { Briefcase, Eye, ShoppingCart } from "lucide-react";
 import useSWR from "swr";
 import { racketBrandLabel } from "@/lib/constants";
 import StatusBadge from "@/components/badges/StatusBadge";
-import { badgeToneClass, badgeToneVariant, merchandisingImageBadgeClass, merchandisingImageBadgeVariant, usedBadgeMeta } from "@/lib/badge-style";
+import {
+  badgeToneClass,
+  badgeToneVariant,
+  merchandisingImageBadgeClass,
+  merchandisingImageBadgeVariant,
+  usedBadgeMeta,
+} from "@/lib/badge-style";
 import { cn } from "@/lib/utils";
-import { getEffectiveRacketPrice, getRacketDiscountRate } from "@/lib/racket-pricing";
+import {
+  getEffectiveRacketPrice,
+  getRacketDiscountRate,
+} from "@/lib/racket-pricing";
 
 const RentDialog = dynamic(
   () => import("@/app/rackets/[id]/_components/RentDialog"),
@@ -199,38 +208,74 @@ const RacketCard = React.memo(
     const marketingBadges = (
       <div className="absolute left-3 top-3 z-10 flex flex-wrap gap-1.5">
         {racket.marketing?.isFeatured && (
-          <Badge variant={merchandisingImageBadgeVariant("추천")} shape="pill" className={cn(merchandisingImageBadgeClass)}>추천</Badge>
+          <Badge
+            variant={merchandisingImageBadgeVariant("추천")}
+            shape="pill"
+            className={cn(merchandisingImageBadgeClass)}
+          >
+            추천
+          </Badge>
         )}
         {racket.marketing?.isNew && (
-          <Badge variant={merchandisingImageBadgeVariant("NEW")} shape="pill" className={cn(merchandisingImageBadgeClass)}>NEW</Badge>
+          <Badge
+            variant={merchandisingImageBadgeVariant("NEW")}
+            shape="pill"
+            className={cn(merchandisingImageBadgeClass)}
+          >
+            NEW
+          </Badge>
         )}
       </div>
     );
 
     const priceBlock = (align: "left" | "right" = "right") => (
       <div
-        className={cn("flex flex-col gap-1 tabular-nums", align === "right" ? "items-end text-right" : "items-start text-left")}
+        className={cn(
+          "flex flex-col gap-1 tabular-nums",
+          align === "right" ? "items-end text-right" : "items-start text-left",
+        )}
       >
         {hasSalePrice ? (
           <>
-            <div className={cn("flex items-baseline gap-1.5", align === "right" && "justify-end")}>
+            <div
+              className={cn(
+                "flex items-baseline gap-1.5",
+                align === "right" && "justify-end",
+              )}
+            >
               <span className="text-[11px] text-muted-foreground">할인가</span>
               <span className="whitespace-nowrap text-lg font-bold text-foreground bp-sm:text-xl">
                 {salePrice.toLocaleString()}원
               </span>
             </div>
-            <div className={cn("flex flex-wrap items-center gap-1.5", align === "right" && "justify-end")}>
+            <div
+              className={cn(
+                "flex flex-wrap items-center gap-1.5",
+                align === "right" && "justify-end",
+              )}
+            >
               <span className="text-[11px] text-muted-foreground">정가</span>
               <span className="whitespace-nowrap text-xs text-muted-foreground line-through">
                 {racket.price.toLocaleString()}원
               </span>
-              <Badge variant="outline" className={cn("shrink-0 whitespace-nowrap text-xs", benefitBadgeClass.off)}>
+              <Badge
+                variant="outline"
+                className={cn(
+                  "shrink-0 whitespace-nowrap text-xs",
+                  benefitBadgeClass.off,
+                )}
+              >
                 {discountRate}% OFF
               </Badge>
             </div>
           </>
         ) : (
-          <div className={cn("flex items-baseline gap-1.5", align === "right" && "justify-end")}>
+          <div
+            className={cn(
+              "flex items-baseline gap-1.5",
+              align === "right" && "justify-end",
+            )}
+          >
             <span className="text-[11px] text-muted-foreground">판매가</span>
             <span className="whitespace-nowrap text-lg font-bold text-foreground bp-sm:text-xl">
               {racket.price.toLocaleString()}원
@@ -340,7 +385,8 @@ const RacketCard = React.memo(
               className="relative block w-full aspect-[4/3] overflow-hidden bg-muted/30 bp-md:w-[240px] bp-md:aspect-square bp-xl:w-[280px]"
               aria-label={`${displayBrandLabel} ${racket.model} 상세 보기`}
             >
-              {(racket.marketing?.isFeatured || racket.marketing?.isNew) && marketingBadges}
+              {(racket.marketing?.isFeatured || racket.marketing?.isNew) &&
+                marketingBadges}
               <Image
                 src={
                   racket.images?.[0] ||
@@ -376,14 +422,11 @@ const RacketCard = React.memo(
                     <StatusBadge kind="rental" state="unavailable" />
                   )}
                 </div>
-
               </div>
             </div>
 
             <div className="flex shrink-0 flex-col justify-between border-t border-border/60 p-4 bp-md:w-[280px] bp-lg:w-[300px] bp-md:border-l bp-md:border-t-0 bp-md:p-5">
-              <div>
-                {priceBlock("right")}
-              </div>
+              <div>{priceBlock("right")}</div>
               <div className="mt-4 space-y-2">
                 {actionButtons({ compact: true, stackOnNarrow: true })}
                 <Button
@@ -417,7 +460,8 @@ const RacketCard = React.memo(
           className="relative block w-full aspect-[4/3] overflow-hidden bg-muted/30"
           aria-label={`${displayBrandLabel} ${racket.model} 상세 보기`}
         >
-          {(racket.marketing?.isFeatured || racket.marketing?.isNew) && marketingBadges}
+          {(racket.marketing?.isFeatured || racket.marketing?.isNew) &&
+            marketingBadges}
           <Image
             src={
               racket.images?.[0] ||
@@ -452,14 +496,11 @@ const RacketCard = React.memo(
               <StatusBadge kind="rental" state="unavailable" />
             )}
           </div>
-
         </CardContent>
 
         <CardFooter className="mt-auto p-3 pt-0 bp-sm:p-6 bp-sm:pt-0">
           <div className="w-full">
-            <div>
-              {priceBlock()}
-            </div>
+            <div>{priceBlock()}</div>
 
             <div className="mt-3">
               {actionButtons({ compact: true, stackOnNarrow: false })}

@@ -328,9 +328,9 @@ export default function ReviewWritePage() {
   const [reviewedMap, setReviewedMap] = useState<Record<string, true>>({});
   // 서비스 모드에서 서버 eligibility가 추천한 신청서 ID를 저장해
   // 중복 네트워크 호출 없이 기본 선택값 계산에 재사용합니다.
-  const [serviceSuggestedAppId, setServiceSuggestedAppId] = useState<string | null>(
-    null,
-  );
+  const [serviceSuggestedAppId, setServiceSuggestedAppId] = useState<
+    string | null
+  >(null);
 
   // 주문 아이템/현재 상품 메타
   const [orderItems, setOrderItems] = useState<OrderReviewItem[] | null>(null);
@@ -514,7 +514,9 @@ export default function ReviewWritePage() {
       // 1차(초기 필수) 목록: 교체완료 상태만 반영
       // - 첫 진입에서는 "선택 가능한 최소 목록"이 우선 필요
       // - 이미 리뷰한 신청서 제외는 아래 mine 응답이 오면 후순위로 정밀 반영
-      const eligibleByStatus = formattedAll.filter((x) => x.status === "교체완료");
+      const eligibleByStatus = formattedAll.filter(
+        (x) => x.status === "교체완료",
+      );
       setApps(eligibleByStatus);
 
       // URL로 applicationId가 넘어오면 그걸 최우선으로 선택(단, eligible 목록 안에 있어야 함)
@@ -567,7 +569,8 @@ export default function ReviewWritePage() {
 
           // 초기 선택값이 후순위 정교화 결과에서 제외됐다면 안전하게 대체 선택
           setSelectedAppId((prev) => {
-            if (!prev || refinedEligibleApps.some((x) => x._id === prev)) return prev;
+            if (!prev || refinedEligibleApps.some((x) => x._id === prev))
+              return prev;
             // mine 정교화 이후에는 "실제로 아직 리뷰 가능한 신청서(refinedEligibleApps)"만 선택해야 안전합니다.
             // URL의 applicationId(urlPreferred)를 무조건 우선하면, 이미 리뷰 완료되어 제외된 ID가 다시 선택될 수 있습니다.
             const refinedUrlPreferred =
@@ -1322,7 +1325,8 @@ export default function ReviewWritePage() {
                     <div className="text-sm text-primary">
                       {state === "notPurchased" && (
                         <div>
-                          아직 후기를 작성할 수 없어요. 상품 수령 후 구매확정이 완료되면 후기를 남길 수 있어요.
+                          아직 후기를 작성할 수 없어요. 상품 수령 후 구매확정이
+                          완료되면 후기를 남길 수 있어요.
                           <button
                             type="button"
                             onClick={() =>
@@ -1338,7 +1342,8 @@ export default function ReviewWritePage() {
                       )}
                       {state === "already" && (
                         <div>
-                          이미 후기를 남긴 항목입니다. 해당 주문 또는 서비스에 대한 후기가 이미 등록되어 있어요.
+                          이미 후기를 남긴 항목입니다. 해당 주문 또는 서비스에
+                          대한 후기가 이미 등록되어 있어요.
                         </div>
                       )}
                     </div>

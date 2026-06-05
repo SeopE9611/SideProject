@@ -73,7 +73,13 @@ export interface PackageOrder {
     rawSummary?: {
       orderId?: string;
       totalAmount?: number;
-      card?: { issuerCode?: string; acquirerCode?: string; issuerName?: string; acquirerName?: string; cardName?: string };
+      card?: {
+        issuerCode?: string;
+        acquirerCode?: string;
+        issuerName?: string;
+        acquirerName?: string;
+        cardName?: string;
+      };
       easyPay?: { provider?: string; amount?: number };
     };
   };

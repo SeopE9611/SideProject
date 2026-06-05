@@ -8,12 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import {
-  LogOut,
-  LayoutDashboard,
-  Settings,
-  UserIcon,
-} from "lucide-react";
+import { LogOut, LayoutDashboard, Settings, UserIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import { useAuthStore } from "@/app/store/authStore";

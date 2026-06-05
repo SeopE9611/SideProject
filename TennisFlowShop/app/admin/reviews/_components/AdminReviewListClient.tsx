@@ -309,7 +309,9 @@ export default function AdminReviewListClient() {
         return;
       }
 
-      showErrorToast("일부 리뷰 삭제에 실패했습니다. 목록을 다시 불러왔습니다.");
+      showErrorToast(
+        "일부 리뷰 삭제에 실패했습니다. 목록을 다시 불러왔습니다.",
+      );
     } catch {
       await mutate(() => snapshot, false);
       showErrorToast("일부 항목 삭제에 실패했습니다.");
@@ -680,17 +682,26 @@ export default function AdminReviewListClient() {
 
                   {/* 작성자 */}
                   <div className={`min-w-0 ${dim}`}>
-                    <div className="truncate font-medium text-foreground" title={r.userName || r.userEmail || "-"}>
+                    <div
+                      className="truncate font-medium text-foreground"
+                      title={r.userName || r.userEmail || "-"}
+                    >
                       {r.userName || r.userEmail || "-"}
                     </div>
                     {r.userEmail && r.userName && (
-                      <div className="max-w-[180px] truncate text-[12px] text-muted-foreground" title={r.userEmail}>
+                      <div
+                        className="max-w-[180px] truncate text-[12px] text-muted-foreground"
+                        title={r.userEmail}
+                      >
                         {r.userEmail}
                       </div>
                     )}
                     {r.isDeleted && (
                       <div className="mt-0.5">
-                        <Badge variant="secondary" className="h-5 shrink-0 whitespace-nowrap">
+                        <Badge
+                          variant="secondary"
+                          className="h-5 shrink-0 whitespace-nowrap"
+                        >
                           삭제됨
                         </Badge>
                       </div>

@@ -194,7 +194,9 @@ export default function StringingApplicationHistory({
       <CardHeader className="pb-3 border-b border-border/60 bg-muted/30 dark:bg-card rounded-t-xl">
         <div className="flex items-center gap-2">
           <Calendar className="h-5 w-5 text-foreground" />
-          <CardTitle className="text-lg font-semibold bp-sm:text-xl">처리 이력</CardTitle>
+          <CardTitle className="text-lg font-semibold bp-sm:text-xl">
+            처리 이력
+          </CardTitle>
         </div>
 
         <p className="mt-1 text-sm leading-relaxed text-muted-foreground break-words">
@@ -224,7 +226,11 @@ export default function StringingApplicationHistory({
             }}
           />
         ) : shouldShowEmptyState ? (
-          <AsyncState kind="empty" variant="card" resourceName="신청 처리 이력" />
+          <AsyncState
+            kind="empty"
+            variant="card"
+            resourceName="신청 처리 이력"
+          />
         ) : shouldShowRows ? (
           historyItems.map((log, idx) => {
             const { Icon, wrapperClasses, iconClasses } = getIconProps(
@@ -238,11 +244,15 @@ export default function StringingApplicationHistory({
                 <div
                   className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border bp-sm:h-10 bp-sm:w-10 ${wrapperClasses}`}
                 >
-                  <Icon className={`h-5 w-5 bp-sm:h-6 bp-sm:w-6 ${iconClasses}`} />
+                  <Icon
+                    className={`h-5 w-5 bp-sm:h-6 bp-sm:w-6 ${iconClasses}`}
+                  />
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-col gap-1 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between bp-sm:gap-3">
-                    <span className="break-keep font-semibold leading-snug">{log.status}</span>
+                    <span className="break-keep font-semibold leading-snug">
+                      {log.status}
+                    </span>
                     <span className="text-xs text-muted-foreground bp-sm:shrink-0 bp-sm:text-sm">
                       {new Intl.DateTimeFormat("ko-KR", {
                         year: "numeric",

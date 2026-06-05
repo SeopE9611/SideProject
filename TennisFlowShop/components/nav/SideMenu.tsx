@@ -1,6 +1,11 @@
 "use client";
 
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
@@ -16,7 +21,10 @@ export default function SideMenu() {
 
     // 라켓 브랜드 필터 활성화
     if (url.pathname === "/rackets" && url.searchParams.has("brand")) {
-      return pathname === "/rackets" && search?.get("brand") === url.searchParams.get("brand");
+      return (
+        pathname === "/rackets" &&
+        search?.get("brand") === url.searchParams.get("brand")
+      );
     }
 
     if (url.pathname === "/rackets") {
@@ -25,16 +33,26 @@ export default function SideMenu() {
 
     // 스트링 브랜드 필터 활성화
     if (url.pathname === "/products" && url.searchParams.has("brand")) {
-      return pathname === "/products" && search?.get("brand") === url.searchParams.get("brand");
+      return (
+        pathname === "/products" &&
+        search?.get("brand") === url.searchParams.get("brand")
+      );
     }
 
     // 스트링 재질 필터 활성화
     if (url.pathname === "/products" && url.searchParams.has("material")) {
-      return pathname === "/products" && search?.get("material") === url.searchParams.get("material");
+      return (
+        pathname === "/products" &&
+        search?.get("material") === url.searchParams.get("material")
+      );
     }
 
     if (url.pathname === "/products") {
-      return pathname === "/products" && !search?.get("brand") && !search?.get("material");
+      return (
+        pathname === "/products" &&
+        !search?.get("brand") &&
+        !search?.get("material")
+      );
     }
 
     // 일반 경로 활성화
@@ -48,7 +66,9 @@ export default function SideMenu() {
       "hover:bg-primary/10 dark:hover:bg-primary/20",
       "hover:shadow-sm hover:z-10",
       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-      isActive ? "bg-primary/10 text-foreground border border-primary/20 shadow-sm dark:bg-primary/20" : "text-foreground/75 hover:text-foreground",
+      isActive
+        ? "bg-primary/10 text-foreground border border-primary/20 shadow-sm dark:bg-primary/20"
+        : "text-foreground/75 hover:text-foreground",
     );
   };
 
@@ -59,15 +79,19 @@ export default function SideMenu() {
       "hover:bg-muted",
       "hover:shadow-sm hover:z-10",
       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-      isActive ? "bg-muted text-foreground font-semibold shadow-sm" : "text-foreground/75 hover:text-foreground",
+      isActive
+        ? "bg-muted text-foreground font-semibold shadow-sm"
+        : "text-foreground/75 hover:text-foreground",
     );
   };
 
-  const subMenuContentClass = "ml-2 border-l border-border/70 pb-2 pl-3 pt-1 space-y-0.5";
+  const subMenuContentClass =
+    "ml-2 border-l border-border/70 pb-2 pl-3 pt-1 space-y-0.5";
 
   const nestedGroupClass = "mt-1.5 pl-1.5";
 
-  const nestedTriggerClass = "px-3 py-2 text-sm leading-5 font-semibold whitespace-nowrap text-foreground/70 hover:text-foreground rounded-lg hover:bg-muted";
+  const nestedTriggerClass =
+    "px-3 py-2 text-sm leading-5 font-semibold whitespace-nowrap text-foreground/70 hover:text-foreground rounded-lg hover:bg-muted";
 
   const topLevelLinkClass = (href: string) => {
     const isActive = isActiveHref(href);
@@ -76,7 +100,9 @@ export default function SideMenu() {
       "hover:bg-primary/10 dark:hover:bg-primary/20",
       "hover:shadow-sm hover:z-10",
       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-      isActive ? "bg-primary/10 text-foreground border border-primary/20 shadow-sm dark:bg-primary/20" : "text-foreground hover:text-foreground",
+      isActive
+        ? "bg-primary/10 text-foreground border border-primary/20 shadow-sm dark:bg-primary/20"
+        : "text-foreground hover:text-foreground",
     );
   };
 
@@ -87,11 +113,16 @@ export default function SideMenu() {
       aria-label="사이드 내비게이션"
     >
       <div className="h-full overflow-y-auto scrollbar-hide px-5 py-4 space-y-1.5">
-
-        <Accordion type="multiple" defaultValue={["strings", "rackets", "support", "boards"]}>
+        <Accordion
+          type="multiple"
+          defaultValue={["strings", "rackets", "support", "boards"]}
+        >
           {/* 스트링 */}
           <AccordionItem value="strings" className="border-none">
-            <AccordionTrigger value="strings" className="py-3 px-3 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group">
+            <AccordionTrigger
+              value="strings"
+              className="py-3 px-3 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group"
+            >
               <span className="inline-flex min-w-0 items-center gap-2.5 whitespace-nowrap text-[17px] font-bold leading-6">
                 {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
                   <Grid2X2 className="h-4 w-4" />
@@ -100,7 +131,10 @@ export default function SideMenu() {
               </span>
             </AccordionTrigger>
             <AccordionContent value="strings" className={subMenuContentClass}>
-              <Link href={NAV_LINKS.strings.root} className={linkClass(NAV_LINKS.strings.root)}>
+              <Link
+                href={NAV_LINKS.strings.root}
+                className={linkClass(NAV_LINKS.strings.root)}
+              >
                 <span className="flex items-center justify-between">
                   전체 보기
                   <ChevronRight className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-[background-color,color,border-color,box-shadow,opacity] duration-200" />
@@ -110,18 +144,37 @@ export default function SideMenu() {
               {/* 접어두는 하위 그룹(브랜드) */}
               <div className={nestedGroupClass}>
                 <Accordion type="single" className="space-y-1">
-                  {NAV_FLAGS.SHOW_BRAND_MENU && NAV_LINKS.strings.brands?.length ? (
-                    <AccordionItem value="strings-brand" className="border-none">
-                      <AccordionTrigger value="strings-brand" className={nestedTriggerClass}>
+                  {NAV_FLAGS.SHOW_BRAND_MENU &&
+                  NAV_LINKS.strings.brands?.length ? (
+                    <AccordionItem
+                      value="strings-brand"
+                      className="border-none"
+                    >
+                      <AccordionTrigger
+                        value="strings-brand"
+                        className={nestedTriggerClass}
+                      >
                         브랜드
                       </AccordionTrigger>
-                      <AccordionContent value="strings-brand" className="pb-0 pt-1">
+                      <AccordionContent
+                        value="strings-brand"
+                        className="pb-0 pt-1"
+                      >
                         <div className="grid grid-cols-2 gap-1">
                           {NAV_LINKS.strings.brands.map((b) => {
                             return (
-                              <Link key={b.href} href={b.href} className={cn(brandLinkClass(b.href), "min-w-0 px-2 py-2 text-[13px]")}>
+                              <Link
+                                key={b.href}
+                                href={b.href}
+                                className={cn(
+                                  brandLinkClass(b.href),
+                                  "min-w-0 px-2 py-2 text-[13px]",
+                                )}
+                              >
                                 <span className="flex min-w-0 items-center justify-between">
-                                  <span className="block min-w-0 truncate whitespace-nowrap">{b.name}</span>
+                                  <span className="block min-w-0 truncate whitespace-nowrap">
+                                    {b.name}
+                                  </span>
                                   <ChevronRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-[background-color,color,border-color,box-shadow,opacity] duration-200" />
                                 </span>
                               </Link>
@@ -136,14 +189,27 @@ export default function SideMenu() {
 
               <div className={nestedGroupClass}>
                 <Accordion type="single" className="space-y-1">
-                  <AccordionItem value="strings-service" className="border-none">
-                    <AccordionTrigger value="strings-service" className={nestedTriggerClass}>
+                  <AccordionItem
+                    value="strings-service"
+                    className="border-none"
+                  >
+                    <AccordionTrigger
+                      value="strings-service"
+                      className={nestedTriggerClass}
+                    >
                       장착 서비스 안내
                     </AccordionTrigger>
-                    <AccordionContent value="strings-service" className="pb-0 pt-1">
+                    <AccordionContent
+                      value="strings-service"
+                      className="pb-0 pt-1"
+                    >
                       <div className="space-y-0.5">
                         {NAV_LINKS.services.map((it) => (
-                          <Link key={it.name} href={it.href} className={brandLinkClass(it.href)}>
+                          <Link
+                            key={it.name}
+                            href={it.href}
+                            className={brandLinkClass(it.href)}
+                          >
                             <span className="flex items-center justify-between">
                               {it.name}
                               <ChevronRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-[background-color,color,border-color,box-shadow,opacity] duration-200" />
@@ -156,7 +222,10 @@ export default function SideMenu() {
                 </Accordion>
               </div>
 
-              <Link href="/services/packages" className={linkClass("/services/packages")}>
+              <Link
+                href="/services/packages"
+                className={linkClass("/services/packages")}
+              >
                 <span className="flex items-center justify-between">
                   스트링 교체 할인 패키지
                   <ChevronRight className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-[background-color,color,border-color,box-shadow,opacity] duration-200" />
@@ -177,16 +246,24 @@ export default function SideMenu() {
 
           {/* 중고 라켓 */}
           <AccordionItem value="rackets" className="border-none">
-            <AccordionTrigger value="rackets" className="py-3 px-3 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group">
+            <AccordionTrigger
+              value="rackets"
+              className="py-3 px-3 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group"
+            >
               <span className="inline-flex min-w-0 items-center gap-2.5 whitespace-nowrap text-[17px] font-bold leading-6">
                 {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
                   <MdSportsTennis className="h-4 w-4" />
                 </div> */}
-                <span className="min-w-0 truncate text-foreground">도깨비 인증 중고 라켓</span>
+                <span className="min-w-0 truncate text-foreground">
+                  도깨비 인증 중고 라켓
+                </span>
               </span>
             </AccordionTrigger>
             <AccordionContent value="rackets" className={subMenuContentClass}>
-              <Link href={NAV_LINKS.rackets.root} className={linkClass(NAV_LINKS.rackets.root)}>
+              <Link
+                href={NAV_LINKS.rackets.root}
+                className={linkClass(NAV_LINKS.rackets.root)}
+              >
                 <span className="flex items-center justify-between">
                   전체 보기
                   <ChevronRight className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-[background-color,color,border-color,box-shadow,opacity] duration-200" />
@@ -197,17 +274,35 @@ export default function SideMenu() {
               {NAV_FLAGS.SHOW_BRAND_MENU && NAV_LINKS.rackets.brands?.length ? (
                 <div className={nestedGroupClass}>
                   <Accordion type="single" className="space-y-1">
-                    <AccordionItem value="rackets-brand" className="border-none">
-                      <AccordionTrigger value="rackets-brand" className={nestedTriggerClass}>
+                    <AccordionItem
+                      value="rackets-brand"
+                      className="border-none"
+                    >
+                      <AccordionTrigger
+                        value="rackets-brand"
+                        className={nestedTriggerClass}
+                      >
                         브랜드
                       </AccordionTrigger>
-                      <AccordionContent value="rackets-brand" className="pb-0 pt-1">
+                      <AccordionContent
+                        value="rackets-brand"
+                        className="pb-0 pt-1"
+                      >
                         <div className="grid grid-cols-2 gap-1">
                           {NAV_LINKS.rackets.brands.map((b) => {
                             return (
-                              <Link key={b.href} href={b.href} className={cn(brandLinkClass(b.href), "min-w-0 px-2 py-2 text-[13px]")}>
+                              <Link
+                                key={b.href}
+                                href={b.href}
+                                className={cn(
+                                  brandLinkClass(b.href),
+                                  "min-w-0 px-2 py-2 text-[13px]",
+                                )}
+                              >
                                 <span className="flex min-w-0 items-center justify-between">
-                                  <span className="block min-w-0 truncate whitespace-nowrap">{b.name}</span>
+                                  <span className="block min-w-0 truncate whitespace-nowrap">
+                                    {b.name}
+                                  </span>
                                   <ChevronRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-[background-color,color,border-color,box-shadow,opacity] duration-200" />
                                 </span>
                               </Link>
@@ -224,7 +319,10 @@ export default function SideMenu() {
 
           {/* 게시판 */}
           <AccordionItem value="boards" className="border-none">
-            <AccordionTrigger value="boards" className="py-3 px-3 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group">
+            <AccordionTrigger
+              value="boards"
+              className="py-3 px-3 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group"
+            >
               <span className="inline-flex min-w-0 items-center gap-2.5 whitespace-nowrap text-[17px] font-bold leading-6">
                 {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
                   <MessageSquareText className="h-4 w-4" />
@@ -234,7 +332,11 @@ export default function SideMenu() {
             </AccordionTrigger>
             <AccordionContent value="boards" className={subMenuContentClass}>
               {NAV_LINKS.boards.map((it) => (
-                <Link key={it.name} href={it.href} className={linkClass(it.href)}>
+                <Link
+                  key={it.name}
+                  href={it.href}
+                  className={linkClass(it.href)}
+                >
                   <span className="flex items-center justify-between">
                     {it.name}
                     <ChevronRight className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-[background-color,color,border-color,box-shadow,opacity] duration-200" />
@@ -246,7 +348,10 @@ export default function SideMenu() {
 
           {/* 고객센터 */}
           <AccordionItem value="support" className="border-none">
-            <AccordionTrigger value="support" className="py-3 px-3 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group">
+            <AccordionTrigger
+              value="support"
+              className="py-3 px-3 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group"
+            >
               <span className="inline-flex min-w-0 items-center gap-2.5 whitespace-nowrap text-[17px] font-bold leading-6">
                 {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
                   <MessageSquare className="h-4 w-4" />
@@ -256,7 +361,11 @@ export default function SideMenu() {
             </AccordionTrigger>
             <AccordionContent value="support" className={subMenuContentClass}>
               {NAV_LINKS.support?.map((it) => (
-                <Link key={it.name} href={it.href} className={linkClass(it.href)}>
+                <Link
+                  key={it.name}
+                  href={it.href}
+                  className={linkClass(it.href)}
+                >
                   <span className="flex items-center justify-between">
                     {it.name}
                     <ChevronRight className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-[background-color,color,border-color,box-shadow,opacity] duration-200" />

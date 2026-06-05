@@ -153,16 +153,14 @@ export async function POST(req: Request) {
     // 구매 이력 검증: orderId가 넘어오면 해당 주문에 그 상품이 포함되어야 함
     let bought: any;
     if (orderIdObj) {
-      bought = await db
-        .collection("orders")
-        .findOne(
-          {
-            _id: orderIdObj,
-            userId,
-            "items.productId": { $in: [productIdStr, productIdObj] },
-          },
-          { projection: { _id: 1 } },
-        );
+      bought = await db.collection("orders").findOne(
+        {
+          _id: orderIdObj,
+          userId,
+          "items.productId": { $in: [productIdStr, productIdObj] },
+        },
+        { projection: { _id: 1 } },
+      );
     } else {
       // orderId가 없으면 기존 로직(해당 상품을 구매한 주문이 하나라도 있으면 OK)
       bought = await db
@@ -294,16 +292,14 @@ export async function POST(req: Request) {
     // - 결제완료 주문이 연결된 신청서만 적립
     const appOrderId = (app as any)?.orderId;
     if (appOrderId && ObjectId.isValid(String(appOrderId))) {
-      const paidOrder = await db
-        .collection("orders")
-        .findOne(
-          {
-            _id: new ObjectId(String(appOrderId)),
-            userId,
-            paymentStatus: "결제완료",
-          },
-          { projection: { _id: 1 } },
-        );
+      const paidOrder = await db.collection("orders").findOne(
+        {
+          _id: new ObjectId(String(appOrderId)),
+          userId,
+          paymentStatus: "결제완료",
+        },
+        { projection: { _id: 1 } },
+      );
       if (paidOrder) {
         try {
           await grantPoints(db, {

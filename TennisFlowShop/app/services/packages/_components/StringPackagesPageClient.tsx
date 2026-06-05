@@ -7,7 +7,15 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { packagesBadgeVariant } from "@/lib/badge-style";
-import { ArrowRight, Clock, Gift, MessageSquare, Phone, Shield, Users } from "lucide-react";
+import {
+  ArrowRight,
+  Clock,
+  Gift,
+  MessageSquare,
+  Phone,
+  Shield,
+  Users,
+} from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -17,7 +25,10 @@ interface StringPackagesPageClientProps {
   initialOwnershipBlockedMessage: string | null;
 }
 
-export default function StringPackagesPageClient({ initialPackages, initialOwnershipBlockedMessage }: StringPackagesPageClientProps) {
+export default function StringPackagesPageClient({
+  initialPackages,
+  initialOwnershipBlockedMessage,
+}: StringPackagesPageClientProps) {
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
   const searchParams = useSearchParams();
   const packagesSectionRef = useRef<HTMLElement | null>(null);
@@ -25,9 +36,15 @@ export default function StringPackagesPageClient({ initialPackages, initialOwner
   // 서버에서 선조회한 데이터를 초기값으로 사용한다.
   // 이렇게 하면 첫 렌더 직후 추가 네트워크 요청 없이 즉시 카드 UI를 그릴 수 있다.
   const [packages] = useState<PackageCardData[]>(initialPackages);
-  const [ownershipBlockedMessage] = useState<string | null>(initialOwnershipBlockedMessage);
-  const isPendingOrderBlocked = ownershipBlockedMessage?.includes("결제대기") || ownershipBlockedMessage?.includes("주문 상태");
-  const cardBlockedHelperText = isPendingOrderBlocked ? "기존 주문 상태를 먼저 확인해주세요." : "기존 패키지 이용 종료 후 다시 구매할 수 있습니다.";
+  const [ownershipBlockedMessage] = useState<string | null>(
+    initialOwnershipBlockedMessage,
+  );
+  const isPendingOrderBlocked =
+    ownershipBlockedMessage?.includes("결제대기") ||
+    ownershipBlockedMessage?.includes("주문 상태");
+  const cardBlockedHelperText = isPendingOrderBlocked
+    ? "기존 주문 상태를 먼저 확인해주세요."
+    : "기존 패키지 이용 종료 후 다시 구매할 수 있습니다.";
 
   const additionalBenefits: Array<{
     icon: React.ReactNode;
@@ -85,11 +102,16 @@ export default function StringPackagesPageClient({ initialPackages, initialOwner
       {/* Hero Section */}
       <section className="relative overflow-hidden py-12 bp-md:py-16 bp-lg:py-20">
         <div className="absolute inset-0 bg-muted/40" />
-        <SiteContainer variant="wide" className="relative z-10 text-center text-foreground">
+        <SiteContainer
+          variant="wide"
+          className="relative z-10 text-center text-foreground"
+        >
           <div className="mx-auto max-w-4xl">
             <Card className="border border-border bg-card/95 shadow-md backdrop-blur-[1px]">
               <CardContent className="p-6 text-center bp-md:p-8">
-                <h1 className="font-bold text-3xl sm:text-4xl mb-4 text-foreground">스트링 교체 패키지</h1>
+                <h1 className="font-bold text-3xl sm:text-4xl mb-4 text-foreground">
+                  스트링 교체 패키지
+                </h1>
                 <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
                   플레이 빈도와 필요에 맞는 패키지를 선택하세요.
                   <br />
@@ -98,25 +120,32 @@ export default function StringPackagesPageClient({ initialPackages, initialOwner
                 <div className="mt-5 rounded-lg border border-border bg-muted/40 p-4 text-sm leading-relaxed text-muted-foreground sm:text-base">
                   현역 테니스 코치가 직접 매는 스트링은 다릅니다.
                   <br />
-                  단순 기계 작업이 아닌, 코트 위 실전 데이터를 기반으로 전담 코치가 직접 스트링을 교체합니다.
+                  단순 기계 작업이 아닌, 코트 위 실전 데이터를 기반으로 전담
+                  코치가 직접 스트링을 교체합니다.
                   <br />
-                  전문가의 디테일한 상담과 완벽한 품질 보장까지, 회원님의 스윙에 딱 맞는 스트링 패키지를 만나보세요.
+                  전문가의 디테일한 상담과 완벽한 품질 보장까지, 회원님의 스윙에
+                  딱 맞는 스트링 패키지를 만나보세요.
                 </div>
                 <div className="mt-6 flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" variant="default" className="shadow-sm hover:shadow-md transition-[box-shadow,border-color,background-color] duration-200" asChild>
-                <Link href="#packages">
-                  <ArrowRight className="w-5 h-5 mr-2" />
-                  패키지 선택하기
-                </Link>
-              </Button>
+                  <Button
+                    size="lg"
+                    variant="default"
+                    className="shadow-sm hover:shadow-md transition-[box-shadow,border-color,background-color] duration-200"
+                    asChild
+                  >
+                    <Link href="#packages">
+                      <ArrowRight className="w-5 h-5 mr-2" />
+                      패키지 선택하기
+                    </Link>
+                  </Button>
 
-              <Button size="lg" variant="outline" asChild>
-                <Link href="/services">
-                  <Phone className="w-5 h-5 mr-2" />
-                  상담 받기
-                </Link>
-              </Button>
-            </div>
+                  <Button size="lg" variant="outline" asChild>
+                    <Link href="/services">
+                      <Phone className="w-5 h-5 mr-2" />
+                      상담 받기
+                    </Link>
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -124,19 +153,29 @@ export default function StringPackagesPageClient({ initialPackages, initialOwner
       </section>
 
       {/* Package Cards Section */}
-      <section id="packages" ref={packagesSectionRef} className="py-12 md:py-20 bg-background scroll-mt-24">
+      <section
+        id="packages"
+        ref={packagesSectionRef}
+        className="py-12 md:py-20 bg-background scroll-mt-24"
+      >
         <SiteContainer variant="wide">
           <div className="text-center mb-10 md:mb-16">
             <Badge variant={packagesBadgeVariant("selection")} className="mb-4">
               맞춤형 패키지 선택
             </Badge>
-            <h2 className="font-bold text-3xl sm:text-4xl md:text-4xl mb-6 text-foreground">스트링 교체 패키지</h2>
+            <h2 className="font-bold text-3xl sm:text-4xl md:text-4xl mb-6 text-foreground">
+              스트링 교체 패키지
+            </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
               플레이 빈도와 필요에 맞는 패키지를 선택하세요.
               <br />
               모든 패키지는 전문가 상담과 품질 보장이 포함됩니다.
             </p>
-            {ownershipBlockedMessage && <p className="mt-6 rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">{ownershipBlockedMessage}</p>}
+            {ownershipBlockedMessage && (
+              <p className="mt-6 rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
+                {ownershipBlockedMessage}
+              </p>
+            )}
           </div>
 
           <div className="grid items-stretch gap-5 md:grid-cols-2 xl:grid-cols-4">
@@ -147,9 +186,13 @@ export default function StringPackagesPageClient({ initialPackages, initialOwner
                 selected={selectedPackage === pkg.id}
                 onSelect={() => setSelectedPackage(pkg.id)}
                 ctaHref={`/services/packages/checkout?package=${pkg.id}`}
-                ctaLabel={ownershipBlockedMessage ? "추가 구매 불가" : "패키지 선택"}
+                ctaLabel={
+                  ownershipBlockedMessage ? "추가 구매 불가" : "패키지 선택"
+                }
                 ctaDisabled={!!ownershipBlockedMessage}
-                ctaHelperText={ownershipBlockedMessage ? cardBlockedHelperText : undefined}
+                ctaHelperText={
+                  ownershipBlockedMessage ? cardBlockedHelperText : undefined
+                }
               />
             ))}
           </div>
@@ -163,7 +206,9 @@ export default function StringPackagesPageClient({ initialPackages, initialOwner
             <Badge variant={packagesBadgeVariant("faq")} className="mb-4">
               자주 묻는 질문
             </Badge>
-            <h2 className="font-bold text-3xl sm:text-4xl md:text-4xl mb-6 text-foreground">패키지 이용 안내</h2>
+            <h2 className="font-bold text-3xl sm:text-4xl md:text-4xl mb-6 text-foreground">
+              패키지 이용 안내
+            </h2>
           </div>
 
           <div className="max-w-4xl mx-auto">
@@ -171,7 +216,8 @@ export default function StringPackagesPageClient({ initialPackages, initialOwner
               {[
                 {
                   question: "패키지 유효기간이 지나면 어떻게 되나요?",
-                  answer: "유효기간 만료 전 미사용 횟수는 30일 연장 가능하며, 추가 비용 없이 1회 연장해드립니다.",
+                  answer:
+                    "유효기간 만료 전 미사용 횟수는 30일 연장 가능하며, 추가 비용 없이 1회 연장해드립니다.",
                 },
                 {
                   question: "다른 사람과 패키지를 공유할 수 있나요?",
@@ -179,17 +225,26 @@ export default function StringPackagesPageClient({ initialPackages, initialOwner
                 },
                 {
                   question: "패키지 환불이 가능한가요?",
-                  answer: "미사용 횟수에 대해서는 구매일로부터 7일 이내 100% 환불 가능합니다.",
+                  answer:
+                    "미사용 횟수에 대해서는 구매일로부터 7일 이내 100% 환불 가능합니다.",
                 },
                 {
                   question: "패키지 사용은 어떻게 하나요?",
-                  answer: "패키지 구매 후 교체 신청서에서 사용 가능합니다. 자세한 문의는 매장으로 연락 주세요.",
+                  answer:
+                    "패키지 구매 후 교체 신청서에서 사용 가능합니다. 자세한 문의는 매장으로 연락 주세요.",
                 },
               ].map((faq, index) => (
-                <Card key={index} className="border border-border shadow-sm hover:shadow-md transition-shadow duration-300">
+                <Card
+                  key={index}
+                  className="border border-border shadow-sm hover:shadow-md transition-shadow duration-300"
+                >
                   <CardContent className="p-4 md:p-6">
-                    <h3 className="font-bold text-lg mb-3 text-foreground">Q. {faq.question}</h3>
-                    <p className="text-muted-foreground leading-relaxed">A. {faq.answer}</p>
+                    <h3 className="font-bold text-lg mb-3 text-foreground">
+                      Q. {faq.question}
+                    </h3>
+                    <p className="text-muted-foreground leading-relaxed">
+                      A. {faq.answer}
+                    </p>
                   </CardContent>
                 </Card>
               ))}
@@ -197,9 +252,15 @@ export default function StringPackagesPageClient({ initialPackages, initialOwner
           </div>
 
           <div className="text-center mt-8 md:mt-12">
-            <Button size="lg" variant="default" className="shadow-sm hover:shadow-md transition-all duration-300" asChild>
+            <Button
+              size="lg"
+              variant="default"
+              className="shadow-sm hover:shadow-md transition-all duration-300"
+              asChild
+            >
               <Link href="/board/qna">
-                <MessageSquare className="w-5 h-5 mr-2" />더 궁금한 점이 있으신가요?
+                <MessageSquare className="w-5 h-5 mr-2" />더 궁금한 점이
+                있으신가요?
               </Link>
             </Button>
           </div>

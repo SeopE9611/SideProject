@@ -113,8 +113,12 @@ export default function SelectStringLayout({
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [stockFilter, setStockFilter] = useState<"all" | "available">("all");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [selectedGaugeByStringId, setSelectedGaugeByStringId] = useState<Record<string, string>>({});
-  const [selectedColorByStringId, setSelectedColorByStringId] = useState<Record<string, string>>({});
+  const [selectedGaugeByStringId, setSelectedGaugeByStringId] = useState<
+    Record<string, string>
+  >({});
+  const [selectedColorByStringId, setSelectedColorByStringId] = useState<
+    Record<string, string>
+  >({});
 
   // Fetch strings
   const { products, isLoadingInitial, isFetchingMore, hasMore, loadMore } =
@@ -147,7 +151,10 @@ export default function SelectStringLayout({
         .map((value) => String(value ?? "").toLowerCase())
         .join(" ");
       const matchesQuery = !query || haystack.includes(query);
-      return matchesQuery && (stockFilter === "all" || hasSelectableStringStock(product));
+      return (
+        matchesQuery &&
+        (stockFilter === "all" || hasSelectableStringStock(product))
+      );
     });
   }, [debouncedSearchQuery, products, stockFilter]);
 
@@ -162,7 +169,9 @@ export default function SelectStringLayout({
         if (!id || next[id]) return;
         const colorRows = getVisibleColorRows(product);
         if (!colorRows.length) return;
-        const firstAvailable = colorRows.find((row) => row.stock > 0 && !row.isSoldOut) ?? colorRows[0];
+        const firstAvailable =
+          colorRows.find((row) => row.stock > 0 && !row.isSoldOut) ??
+          colorRows[0];
         if (firstAvailable?.value) {
           next[id] = firstAvailable.value;
           changed = true;
@@ -182,15 +191,23 @@ export default function SelectStringLayout({
         const id = String(product?._id ?? "");
         if (!id) return;
         const hasVariantInventories =
-          Array.isArray(product?.variantInventories) && product.variantInventories.length > 0;
+          Array.isArray(product?.variantInventories) &&
+          product.variantInventories.length > 0;
         const selectedColor = selectedColorByStringId[id] ?? "";
 
         if (hasVariantInventories) {
           const variantsForColor = getVariantsByColor(product, selectedColor);
-          const currentIsValid = variantsForColor.some((v) => v.gaugeValue === next[id] && isSellableVariant(v));
+          const currentIsValid = variantsForColor.some(
+            (v) => v.gaugeValue === next[id] && isSellableVariant(v),
+          );
           if (!currentIsValid) {
-            const firstSellable = variantsForColor.find((v) => isSellableVariant(v));
-            const nextGauge = firstSellable?.gaugeValue ?? variantsForColor[0]?.gaugeValue ?? "";
+            const firstSellable = variantsForColor.find((v) =>
+              isSellableVariant(v),
+            );
+            const nextGauge =
+              firstSellable?.gaugeValue ??
+              variantsForColor[0]?.gaugeValue ??
+              "";
             if ((next[id] ?? "") !== nextGauge) {
               next[id] = nextGauge;
               changed = true;
@@ -199,7 +216,9 @@ export default function SelectStringLayout({
         } else {
           const gaugeRows = normalizeGaugeRows(product);
           if (gaugeRows.length > 0 && !next[id]) {
-            const firstAvailable = gaugeRows.find((row) => !row.isSoldOut && row.stock > 0) ?? gaugeRows[0];
+            const firstAvailable =
+              gaugeRows.find((row) => !row.isSoldOut && row.stock > 0) ??
+              gaugeRows[0];
             if (firstAvailable?.value) {
               next[id] = firstAvailable.value;
               changed = true;
@@ -214,22 +233,40 @@ export default function SelectStringLayout({
   // Initialize from cart edit mode
   useEffect(() => {
     if (!isCartEditMode || !currentStringId || !products?.length) return;
-    const target = products.find((item: any) => String(item?._id) === currentStringId);
+    const target = products.find(
+      (item: any) => String(item?._id) === currentStringId,
+    );
     if (!target) return;
 
     if (initialSelectedGauge) {
-      const hasGauge = normalizeGaugeRows(target).some((row) => row.value === initialSelectedGauge);
+      const hasGauge = normalizeGaugeRows(target).some(
+        (row) => row.value === initialSelectedGauge,
+      );
       if (hasGauge) {
-        setSelectedGaugeByStringId((prev) => ({ ...prev, [currentStringId]: initialSelectedGauge }));
+        setSelectedGaugeByStringId((prev) => ({
+          ...prev,
+          [currentStringId]: initialSelectedGauge,
+        }));
       }
     }
     if (initialSelectedColor) {
-      const hasColor = normalizeColorRows(target).some((row) => row.value === initialSelectedColor);
+      const hasColor = normalizeColorRows(target).some(
+        (row) => row.value === initialSelectedColor,
+      );
       if (hasColor) {
-        setSelectedColorByStringId((prev) => ({ ...prev, [currentStringId]: initialSelectedColor }));
+        setSelectedColorByStringId((prev) => ({
+          ...prev,
+          [currentStringId]: initialSelectedColor,
+        }));
       }
     }
-  }, [isCartEditMode, currentStringId, initialSelectedGauge, initialSelectedColor, products]);
+  }, [
+    isCartEditMode,
+    currentStringId,
+    initialSelectedGauge,
+    initialSelectedColor,
+    products,
+  ]);
 
   // Handle string selection
   const handleSelectString = (product: any) => {
@@ -245,8 +282,18 @@ export default function SelectStringLayout({
   };
 
   // Determine CTA labels
-  const finalCtaLabel = ctaLabel ?? (flowType === "rental" ? "대여 계속하기" : isCartEditMode ? "이 스트링으로 변경" : "구매 계속하기");
-  const finalCtaSubLabel = ctaSubLabel ?? (flowType === "rental" ? "선택 후 장착 정보 입력 단계로 이동합니다" : "선택한 스트링은 라켓과 함께 결제됩니다");
+  const finalCtaLabel =
+    ctaLabel ??
+    (flowType === "rental"
+      ? "대여 계속하기"
+      : isCartEditMode
+        ? "이 스트링으로 변경"
+        : "구매 계속하기");
+  const finalCtaSubLabel =
+    ctaSubLabel ??
+    (flowType === "rental"
+      ? "선택 후 장착 정보 입력 단계로 이동합니다"
+      : "선택한 스트링은 라켓과 함께 결제됩니다");
 
   const renderSelectedRacketSummary = () => (
     <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
@@ -286,7 +333,10 @@ export default function SelectStringLayout({
             </h3>
             {flowType === "rental" && rentalPeriod && (
               <p className="mt-1 text-xs text-muted-foreground">
-                대여 기간: <span className="font-medium text-foreground">{rentalPeriod}일</span>
+                대여 기간:{" "}
+                <span className="font-medium text-foreground">
+                  {rentalPeriod}일
+                </span>
               </p>
             )}
             {flowType === "purchase" && racket.price != null && (
@@ -313,7 +363,9 @@ export default function SelectStringLayout({
         {showQuantityControls && (
           <div className="mt-5 rounded-xl border border-border bg-secondary/30 p-4">
             <div className="mb-3 flex items-center justify-between">
-              <span className="text-sm font-medium text-foreground">번들 수량</span>
+              <span className="text-sm font-medium text-foreground">
+                번들 수량
+              </span>
               <span className="text-xs text-muted-foreground">
                 최대 {maxQty}개
               </span>
@@ -328,7 +380,9 @@ export default function SelectStringLayout({
                   variant="outline"
                   size="icon"
                   className="h-8 w-8"
-                  onClick={() => setWorkCount((prev) => clampWorkCount(prev - 1))}
+                  onClick={() =>
+                    setWorkCount((prev) => clampWorkCount(prev - 1))
+                  }
                   disabled={workCount <= 1}
                 >
                   <Minus className="h-3.5 w-3.5" />
@@ -339,7 +393,9 @@ export default function SelectStringLayout({
                   min={1}
                   max={maxQty}
                   value={workCount}
-                  onChange={(e) => setWorkCount(clampWorkCount(Number(e.target.value)))}
+                  onChange={(e) =>
+                    setWorkCount(clampWorkCount(Number(e.target.value)))
+                  }
                   className="h-8 w-14 text-center text-sm"
                 />
                 <Button
@@ -347,7 +403,9 @@ export default function SelectStringLayout({
                   variant="outline"
                   size="icon"
                   className="h-8 w-8"
-                  onClick={() => setWorkCount((prev) => clampWorkCount(prev + 1))}
+                  onClick={() =>
+                    setWorkCount((prev) => clampWorkCount(prev + 1))
+                  }
                   disabled={workCount >= maxQty}
                 >
                   <Plus className="h-3.5 w-3.5" />
@@ -430,7 +488,12 @@ export default function SelectStringLayout({
               </div>
 
               <div className="flex w-full items-center gap-2 bp-sm:w-auto">
-                <Select value={stockFilter} onValueChange={(v) => setStockFilter(v as "all" | "available")}>
+                <Select
+                  value={stockFilter}
+                  onValueChange={(v) =>
+                    setStockFilter(v as "all" | "available")
+                  }
+                >
                   <SelectTrigger className="h-10 w-full bp-sm:w-[180px]">
                     <Filter className="mr-2 h-4 w-4" />
                     <SelectValue />
@@ -447,7 +510,9 @@ export default function SelectStringLayout({
                     onClick={() => setViewMode("grid")}
                     className={cn(
                       "rounded-md p-1.5 transition-colors",
-                      viewMode === "grid" ? "bg-secondary text-foreground" : "text-muted-foreground hover:text-foreground"
+                      viewMode === "grid"
+                        ? "bg-secondary text-foreground"
+                        : "text-muted-foreground hover:text-foreground",
                     )}
                     aria-label="그리드 뷰"
                   >
@@ -458,7 +523,9 @@ export default function SelectStringLayout({
                     onClick={() => setViewMode("list")}
                     className={cn(
                       "rounded-md p-1.5 transition-colors",
-                      viewMode === "list" ? "bg-secondary text-foreground" : "text-muted-foreground hover:text-foreground"
+                      viewMode === "list"
+                        ? "bg-secondary text-foreground"
+                        : "text-muted-foreground hover:text-foreground",
                     )}
                     aria-label="리스트 뷰"
                   >
@@ -468,9 +535,7 @@ export default function SelectStringLayout({
               </div>
             </div>
 
-            <div className="bp-lg:hidden">
-              {renderSelectedRacketSummary()}
-            </div>
+            <div className="bp-lg:hidden">{renderSelectedRacketSummary()}</div>
 
             {/* Product Count */}
             <div className="text-sm text-muted-foreground">
@@ -478,21 +543,30 @@ export default function SelectStringLayout({
                 <Skeleton className="inline-block h-4 w-24" />
               ) : (
                 <>
-                  총 <span className="font-semibold text-foreground">{filteredProducts.length}</span>개의 스트링
+                  총{" "}
+                  <span className="font-semibold text-foreground">
+                    {filteredProducts.length}
+                  </span>
+                  개의 스트링
                 </>
               )}
             </div>
 
             {/* Product Grid/List */}
             {isLoadingInitial ? (
-              <div className={cn(
-                "grid gap-4",
-                viewMode === "grid"
-                  ? "grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-3 bp-xl:grid-cols-4"
-                  : "grid-cols-1"
-              )}>
+              <div
+                className={cn(
+                  "grid gap-4",
+                  viewMode === "grid"
+                    ? "grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-3 bp-xl:grid-cols-4"
+                    : "grid-cols-1",
+                )}
+              >
                 {Array.from({ length: 8 }).map((_, idx) => (
-                  <div key={idx} className="rounded-2xl border border-border bg-card p-4">
+                  <div
+                    key={idx}
+                    className="rounded-2xl border border-border bg-card p-4"
+                  >
                     <Skeleton className="aspect-square w-full rounded-xl" />
                     <Skeleton className="mt-4 h-4 w-3/4" />
                     <Skeleton className="mt-2 h-4 w-1/2" />
@@ -504,7 +578,9 @@ export default function SelectStringLayout({
               <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card/50 py-16 text-center">
                 <ShoppingBag className="mb-4 h-12 w-12 text-muted-foreground/40" />
                 <p className="text-lg font-semibold text-foreground">
-                  {products?.length === 0 ? "사용 가능한 스트링이 없습니다" : "조건에 맞는 스트링이 없습니다"}
+                  {products?.length === 0
+                    ? "사용 가능한 스트링이 없습니다"
+                    : "조건에 맞는 스트링이 없습니다"}
                 </p>
                 <p className="mt-2 text-sm text-muted-foreground">
                   {products?.length === 0
@@ -526,12 +602,14 @@ export default function SelectStringLayout({
               </div>
             ) : (
               <>
-                <div className={cn(
-                  "grid gap-4",
-                  viewMode === "grid"
-                    ? "grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-3 bp-xl:grid-cols-4"
-                    : "grid-cols-1 bp-md:grid-cols-2"
-                )}>
+                <div
+                  className={cn(
+                    "grid gap-4",
+                    viewMode === "grid"
+                      ? "grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-3 bp-xl:grid-cols-4"
+                      : "grid-cols-1 bp-md:grid-cols-2",
+                  )}
+                >
                   {filteredProducts.map((product: any) => {
                     const stringId = String(product._id);
                     return (
@@ -541,10 +619,16 @@ export default function SelectStringLayout({
                         selectedGauge={selectedGaugeByStringId[stringId] ?? ""}
                         selectedColor={selectedColorByStringId[stringId] ?? ""}
                         onGaugeChange={(value) =>
-                          setSelectedGaugeByStringId((prev) => ({ ...prev, [stringId]: value }))
+                          setSelectedGaugeByStringId((prev) => ({
+                            ...prev,
+                            [stringId]: value,
+                          }))
                         }
                         onColorChange={(value) =>
-                          setSelectedColorByStringId((prev) => ({ ...prev, [stringId]: value }))
+                          setSelectedColorByStringId((prev) => ({
+                            ...prev,
+                            [stringId]: value,
+                          }))
                         }
                         onSelect={() => handleSelectString(product)}
                         isSelected={currentStringId === stringId}

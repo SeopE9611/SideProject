@@ -89,7 +89,8 @@ export async function POST(req: Request) {
         {
           success: false,
           code: "SESSION_EXPIRED",
-          error: "결제 세션 유효시간이 만료되었습니다. 다시 결제를 시도해주세요.",
+          error:
+            "결제 세션 유효시간이 만료되었습니다. 다시 결제를 시도해주세요.",
         },
         { status: 410 },
       );

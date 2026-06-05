@@ -184,10 +184,12 @@ export async function POST(req: Request) {
     return toErrorResponse("로그인 정보를 확인해 주세요.", 401);
   }
 
-  const user = await db.collection("users").findOne(
-    { _id: new ObjectId(userId) },
-    { projection: { name: 1, phone: 1, email: 1 } },
-  );
+  const user = await db
+    .collection("users")
+    .findOne(
+      { _id: new ObjectId(userId) },
+      { projection: { name: 1, phone: 1, email: 1 } },
+    );
 
   const applicantName = trimString(user?.name, 50);
   const phone = trimString(user?.phone, 30);
@@ -272,21 +274,19 @@ export async function POST(req: Request) {
           (day): day is string => typeof day === "string",
         )
       : [];
-    const overlapDays = existingDays.filter((day) => preferredDays.includes(day));
-
-    return toErrorResponse(
-      "이미 신청한 클래스와 희망 요일이 겹칩니다.",
-      409,
-      {
-        code: "ACADEMY_DAY_CONFLICT",
-        conflict: {
-          applicationId: serializeObjectId(dayConflict._id),
-          className: getClassName(dayConflict),
-          existingDays,
-          overlapDays,
-        },
-      },
+    const overlapDays = existingDays.filter((day) =>
+      preferredDays.includes(day),
     );
+
+    return toErrorResponse("이미 신청한 클래스와 희망 요일이 겹칩니다.", 409, {
+      code: "ACADEMY_DAY_CONFLICT",
+      conflict: {
+        applicationId: serializeObjectId(dayConflict._id),
+        className: getClassName(dayConflict),
+        existingDays,
+        overlapDays,
+      },
+    });
   }
 
   const now = new Date().toISOString();

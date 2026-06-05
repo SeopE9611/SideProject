@@ -1,7 +1,11 @@
 const ENABLED_VALUES = new Set(["1", "true", "yes", "on"]);
 
 function parseBooleanFlag(value: string | undefined): boolean {
-  return ENABLED_VALUES.has(String(value ?? "").trim().toLowerCase());
+  return ENABLED_VALUES.has(
+    String(value ?? "")
+      .trim()
+      .toLowerCase(),
+  );
 }
 
 export const ENABLE_STRING_STANDALONE_ORDER = parseBooleanFlag(

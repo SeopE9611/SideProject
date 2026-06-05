@@ -29,7 +29,12 @@ export function getEffectiveRacketPrice(racket: RacketLike) {
 export function getRacketDiscountRate(racket: RacketLike) {
   const regularPrice = Number(racket?.price ?? 0);
   const effectivePrice = getEffectiveRacketPrice(racket);
-  if (!Number.isFinite(regularPrice) || regularPrice <= 0 || effectivePrice >= regularPrice) return 0;
+  if (
+    !Number.isFinite(regularPrice) ||
+    regularPrice <= 0 ||
+    effectivePrice >= regularPrice
+  )
+    return 0;
   return Math.round(((regularPrice - effectivePrice) / regularPrice) * 100);
 }
 

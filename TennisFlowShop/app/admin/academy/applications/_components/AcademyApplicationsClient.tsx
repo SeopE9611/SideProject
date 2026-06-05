@@ -81,7 +81,9 @@ type ApplicationsResponse = {
   counts: Record<AcademyLessonApplicationStatus | "all", number>;
 };
 
-function getStatusTone(status: AcademyLessonApplicationStatus): BadgeSemanticTone {
+function getStatusTone(
+  status: AcademyLessonApplicationStatus,
+): BadgeSemanticTone {
   if (status === "submitted") return "warning";
   if (status === "reviewing") return "info";
   if (status === "contacted") return "brand";
@@ -90,9 +92,16 @@ function getStatusTone(status: AcademyLessonApplicationStatus): BadgeSemanticTon
   return "neutral";
 }
 
-function AcademyStatusBadge({ status }: { status: AcademyLessonApplicationStatus }) {
+function AcademyStatusBadge({
+  status,
+}: {
+  status: AcademyLessonApplicationStatus;
+}) {
   return (
-    <Badge variant={badgeToneVariant(getStatusTone(status))} className="shrink-0 whitespace-nowrap">
+    <Badge
+      variant={badgeToneVariant(getStatusTone(status))}
+      className="shrink-0 whitespace-nowrap"
+    >
       {getAcademyApplicationStatusLabel(status)}
     </Badge>
   );
@@ -107,7 +116,9 @@ function SelectedClassCell({
     return (
       <div className="min-w-0 max-w-[220px]">
         <div className="font-medium text-muted-foreground">클래스 미선택</div>
-        <div className="truncate text-xs text-muted-foreground">일반 레슨 신청</div>
+        <div className="truncate text-xs text-muted-foreground">
+          일반 레슨 신청
+        </div>
       </div>
     );
   }
@@ -120,7 +131,12 @@ function SelectedClassCell({
 
   return (
     <div className="min-w-0 max-w-[240px]">
-      <div className="line-clamp-2 break-keep font-medium text-foreground" title={classSnapshot.name}>{classSnapshot.name}</div>
+      <div
+        className="line-clamp-2 break-keep font-medium text-foreground"
+        title={classSnapshot.name}
+      >
+        {classSnapshot.name}
+      </div>
       <div className="truncate text-xs text-muted-foreground">
         {details.length ? details.join(" · ") : "클래스 상세 정보 미입력"}
       </div>
@@ -254,7 +270,11 @@ export default function AcademyApplicationsClient() {
       </Card>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
-        <SummaryCard label="전체" value={counts.all} active={status === "all"} />
+        <SummaryCard
+          label="전체"
+          value={counts.all}
+          active={status === "all"}
+        />
         {ACADEMY_APPLICATION_STATUSES.map((item) => (
           <SummaryCard
             key={item}
@@ -291,13 +311,20 @@ export default function AcademyApplicationsClient() {
               </SelectContent>
             </Select>
 
-            <form className="flex w-full flex-col gap-2 sm:flex-row lg:max-w-md" onSubmit={submitSearch}>
+            <form
+              className="flex w-full flex-col gap-2 sm:flex-row lg:max-w-md"
+              onSubmit={submitSearch}
+            >
               <Input
                 value={keywordInput}
                 onChange={(event) => setKeywordInput(event.target.value)}
                 placeholder="이름, 연락처, 이메일, 목표, 클래스명 검색"
               />
-              <Button type="submit" variant="outline" className="w-full sm:w-auto">
+              <Button
+                type="submit"
+                variant="outline"
+                className="w-full sm:w-auto"
+              >
                 <Search className="mr-2 h-4 w-4" />
                 검색
               </Button>
@@ -314,26 +341,44 @@ export default function AcademyApplicationsClient() {
             <Table className="min-w-[940px]">
               <TableHeader className={adminSurface.tableHeader}>
                 <TableRow>
-                  <TableHead className="whitespace-nowrap px-3">접수일</TableHead>
-                  <TableHead className="whitespace-nowrap px-3">신청자</TableHead>
-                  <TableHead className="whitespace-nowrap px-3">선택 클래스</TableHead>
-                  <TableHead className="whitespace-nowrap px-3">희망 정보</TableHead>
-                  <TableHead className="whitespace-nowrap px-3">선호 일정</TableHead>
+                  <TableHead className="whitespace-nowrap px-3">
+                    접수일
+                  </TableHead>
+                  <TableHead className="whitespace-nowrap px-3">
+                    신청자
+                  </TableHead>
+                  <TableHead className="whitespace-nowrap px-3">
+                    선택 클래스
+                  </TableHead>
+                  <TableHead className="whitespace-nowrap px-3">
+                    희망 정보
+                  </TableHead>
+                  <TableHead className="whitespace-nowrap px-3">
+                    선호 일정
+                  </TableHead>
                   <TableHead className="whitespace-nowrap px-3">상태</TableHead>
-                  <TableHead className="whitespace-nowrap px-3 text-right">관리</TableHead>
+                  <TableHead className="whitespace-nowrap px-3 text-right">
+                    관리
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="h-28 text-center text-sm text-muted-foreground">
+                    <TableCell
+                      colSpan={7}
+                      className="h-28 text-center text-sm text-muted-foreground"
+                    >
                       신청 목록을 불러오는 중입니다.
                     </TableCell>
                   </TableRow>
                 ) : null}
                 {!isLoading && data?.items.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="h-28 text-center text-sm text-muted-foreground">
+                    <TableCell
+                      colSpan={7}
+                      className="h-28 text-center text-sm text-muted-foreground"
+                    >
                       아직 접수된 레슨 신청이 없습니다.
                     </TableCell>
                   </TableRow>
@@ -351,14 +396,24 @@ export default function AcademyApplicationsClient() {
                       onKeyDown={(event) => handleRowKeyDown(event, item._id)}
                     >
                       <TableCell className="whitespace-nowrap px-3 py-3 text-xs">
-                        <div className="font-medium text-foreground">{createdAt.date}</div>
-                        <div className="text-muted-foreground">{createdAt.time}</div>
+                        <div className="font-medium text-foreground">
+                          {createdAt.date}
+                        </div>
+                        <div className="text-muted-foreground">
+                          {createdAt.time}
+                        </div>
                       </TableCell>
                       <TableCell className="min-w-0 px-3 py-3">
-                        <div className="line-clamp-2 max-w-[180px] break-keep font-medium text-foreground" title={item.applicantName || "-"}>
+                        <div
+                          className="line-clamp-2 max-w-[180px] break-keep font-medium text-foreground"
+                          title={item.applicantName || "-"}
+                        >
                           {item.applicantName || "-"}
                         </div>
-                        <div className="max-w-[180px] truncate text-xs text-muted-foreground" title={item.email || "이메일 미입력"}>
+                        <div
+                          className="max-w-[180px] truncate text-xs text-muted-foreground"
+                          title={item.email || "이메일 미입력"}
+                        >
                           {item.email || "이메일 미입력"}
                         </div>
                         <div className="whitespace-nowrap text-xs text-muted-foreground">
@@ -369,16 +424,30 @@ export default function AcademyApplicationsClient() {
                         <SelectedClassCell classSnapshot={item.classSnapshot} />
                       </TableCell>
                       <TableCell className="whitespace-nowrap px-3 py-3 text-sm">
-                        <div>{getAcademyLessonTypeLabel(item.desiredLessonType)}</div>
+                        <div>
+                          {getAcademyLessonTypeLabel(item.desiredLessonType)}
+                        </div>
                         <div className="text-xs text-muted-foreground">
                           {getAcademyCurrentLevelLabel(item.currentLevel)}
                         </div>
                       </TableCell>
                       <TableCell className="whitespace-nowrap px-3 py-3 text-sm">
-                        <div className="max-w-[160px] truncate" title={item.preferredDays.length ? item.preferredDays.join(", ") : "-"}>
-                          {item.preferredDays.length ? item.preferredDays.join(", ") : "-"}
+                        <div
+                          className="max-w-[160px] truncate"
+                          title={
+                            item.preferredDays.length
+                              ? item.preferredDays.join(", ")
+                              : "-"
+                          }
+                        >
+                          {item.preferredDays.length
+                            ? item.preferredDays.join(", ")
+                            : "-"}
                         </div>
-                        <div className="max-w-[160px] truncate text-xs text-muted-foreground" title={item.preferredTimeText || "희망 시간 미입력"}>
+                        <div
+                          className="max-w-[160px] truncate text-xs text-muted-foreground"
+                          title={item.preferredTimeText || "희망 시간 미입력"}
+                        >
                           {item.preferredTimeText || "희망 시간 미입력"}
                         </div>
                       </TableCell>
@@ -400,7 +469,10 @@ export default function AcademyApplicationsClient() {
                               <MoreHorizontal className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="min-w-max">
+                          <DropdownMenuContent
+                            align="end"
+                            className="min-w-max"
+                          >
                             <DropdownMenuItem
                               className="whitespace-nowrap"
                               onSelect={(event) => {
@@ -422,7 +494,9 @@ export default function AcademyApplicationsClient() {
 
           <div className="flex flex-col gap-2 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
             <span>
-              {data?.pagination.page ?? page} / {data?.pagination.totalPages ?? 1} 페이지 · 총 {data?.pagination.total ?? 0}건
+              {data?.pagination.page ?? page} /{" "}
+              {data?.pagination.totalPages ?? 1} 페이지 · 총{" "}
+              {data?.pagination.total ?? 0}건
             </span>
             <div className="flex gap-2">
               <Button

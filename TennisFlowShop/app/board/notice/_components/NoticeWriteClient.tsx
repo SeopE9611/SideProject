@@ -73,16 +73,32 @@ const hasScriptLike = (s: string) =>
 
 type NoticeWriteClientProps = { mode?: "notice" | "event" };
 
-export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClientProps) {
+export default function NoticeWriteClient({
+  mode = "notice",
+}: NoticeWriteClientProps) {
   const sp = useSearchParams();
   const router = useRouter();
   const editId = sp.get("id"); // 있으면 수정 모드
   const isEventMode = mode === "event";
   const listHref = isEventMode ? "/board/event" : "/board/notice";
   const detailBaseHref = isEventMode ? "/board/event" : "/board/notice";
-  const pageHeading = isEventMode ? (editId ? "이벤트 수정" : "이벤트 작성") : (editId ? "공지사항 수정" : "공지사항 작성");
-  const pageDescription = isEventMode ? "할인, 프로모션, 행사 소식을 회원들에게 전달하세요" : "중요한 소식을 회원들에게 전달하세요";
-  const cardTitle = isEventMode ? (editId ? "이벤트 수정" : "새 이벤트 작성") : (editId ? "공지사항 수정" : "새 공지사항 작성");
+  const pageHeading = isEventMode
+    ? editId
+      ? "이벤트 수정"
+      : "이벤트 작성"
+    : editId
+      ? "공지사항 수정"
+      : "공지사항 작성";
+  const pageDescription = isEventMode
+    ? "할인, 프로모션, 행사 소식을 회원들에게 전달하세요"
+    : "중요한 소식을 회원들에게 전달하세요";
+  const cardTitle = isEventMode
+    ? editId
+      ? "이벤트 수정"
+      : "새 이벤트 작성"
+    : editId
+      ? "공지사항 수정"
+      : "새 공지사항 작성";
   const fixedCategoryCode = isEventMode ? "event" : null;
 
   // 프리필은 한번만 실행
@@ -147,7 +163,9 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
     setViewerIndex((i) => (i - 1 + viewerImages.length) % viewerImages.length);
 
   const [isPinned, setIsPinned] = useState(false);
-  const [category, setCategory] = useState<string>(fixedCategoryCode ?? "general");
+  const [category, setCategory] = useState<string>(
+    fixedCategoryCode ?? "general",
+  );
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -526,7 +544,9 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
         title: t,
         content: c,
         isPinned,
-        category: isEventMode ? "이벤트" : NOTICE_LABEL_BY_CODE[category] ?? "일반", // 코드 -> 라벨 변환
+        category: isEventMode
+          ? "이벤트"
+          : (NOTICE_LABEL_BY_CODE[category] ?? "일반"), // 코드 -> 라벨 변환
         attachments,
         ...(removedPaths.length > 0 ? { removedPaths } : {}), // 새 업로드 파일을 올리고 -> 응답을 attachments로 병합해서 서버로 보냄
         ...(editId && clientSeenDate ? { clientSeenDate } : {}),
@@ -604,7 +624,13 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
             key.startsWith("/api/boards?type=notice"),
         );
         showSuccessToast(
-          editId ? (isEventMode ? "이벤트가 수정되었습니다." : "공지사항이 수정되었습니다.") : (isEventMode ? "이벤트가 등록되었습니다." : "공지사항이 등록되었습니다."),
+          editId
+            ? isEventMode
+              ? "이벤트가 수정되었습니다."
+              : "공지사항이 수정되었습니다."
+            : isEventMode
+              ? "이벤트가 등록되었습니다."
+              : "공지사항이 등록되었습니다.",
         );
 
         router.replace(`${detailBaseHref}/${goId}`);
@@ -617,7 +643,13 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
           typeof key === "string" && key.startsWith("/api/boards?type=notice"),
       );
       showSuccessToast(
-        editId ? (isEventMode ? "이벤트가 수정되었습니다." : "공지사항이 수정되었습니다.") : (isEventMode ? "이벤트가 등록되었습니다." : "공지사항이 등록되었습니다."),
+        editId
+          ? isEventMode
+            ? "이벤트가 수정되었습니다."
+            : "공지사항이 수정되었습니다."
+          : isEventMode
+            ? "이벤트가 등록되었습니다."
+            : "공지사항이 등록되었습니다.",
       );
       router.push(listHref);
       router.refresh();
@@ -655,7 +687,9 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
           </div>
           {editId && detailError && (
             <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive dark:border-destructive/40 dark:bg-destructive/15">
-              {isEventMode ? "이벤트 내용을 불러오지 못했습니다. (권한/네트워크를 확인해주세요)" : "공지 내용을 불러오지 못했습니다. (권한/네트워크를 확인해주세요)"}
+              {isEventMode
+                ? "이벤트 내용을 불러오지 못했습니다. (권한/네트워크를 확인해주세요)"
+                : "공지 내용을 불러오지 못했습니다. (권한/네트워크를 확인해주세요)"}
             </div>
           )}
           {editId && conflictError && (
@@ -693,41 +727,45 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
                 </Label>
                 {isEventMode ? (
                   <div className="flex h-12 items-center rounded-md border border-border bg-muted/40 px-3 text-sm">
-                    <Badge variant="success" className="mr-2">이벤트</Badge>
-                    <span className="text-muted-foreground">이벤트 게시판 글은 카테고리가 이벤트로 고정됩니다.</span>
+                    <Badge variant="success" className="mr-2">
+                      이벤트
+                    </Badge>
+                    <span className="text-muted-foreground">
+                      이벤트 게시판 글은 카테고리가 이벤트로 고정됩니다.
+                    </span>
                   </div>
                 ) : (
-                <Select value={category} onValueChange={setCategory}>
-                  <SelectTrigger id="category" className="h-12 bg-card">
-                    <SelectValue placeholder="공지사항 카테고리를 선택해주세요" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="general">
-                      <div className="flex items-center space-x-2">
-                        <Badge variant="info">일반</Badge>
-                        <span>일반적인 공지사항</span>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="academy">
-                      <div className="flex items-center space-x-2">
-                        <Badge variant="neutral">아카데미</Badge>
-                        <span>레슨, 프로그램 관련</span>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="maintenance">
-                      <div className="flex items-center space-x-2">
-                        <Badge variant="warning">점검</Badge>
-                        <span>시스템 점검, 휴무 안내</span>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="urgent">
-                      <div className="flex items-center space-x-2">
-                        <Badge variant="danger">긴급</Badge>
-                        <span>긴급 공지사항</span>
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+                  <Select value={category} onValueChange={setCategory}>
+                    <SelectTrigger id="category" className="h-12 bg-card">
+                      <SelectValue placeholder="공지사항 카테고리를 선택해주세요" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="general">
+                        <div className="flex items-center space-x-2">
+                          <Badge variant="info">일반</Badge>
+                          <span>일반적인 공지사항</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="academy">
+                        <div className="flex items-center space-x-2">
+                          <Badge variant="neutral">아카데미</Badge>
+                          <span>레슨, 프로그램 관련</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="maintenance">
+                        <div className="flex items-center space-x-2">
+                          <Badge variant="warning">점검</Badge>
+                          <span>시스템 점검, 휴무 안내</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="urgent">
+                        <div className="flex items-center space-x-2">
+                          <Badge variant="danger">긴급</Badge>
+                          <span>긴급 공지사항</span>
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
                 )}
               </div>
 
@@ -739,7 +777,11 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
                   id="title"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder={isEventMode ? "이벤트 제목을 입력해주세요" : "공지사항 제목을 입력해주세요"}
+                  placeholder={
+                    isEventMode
+                      ? "이벤트 제목을 입력해주세요"
+                      : "공지사항 제목을 입력해주세요"
+                  }
                   className="h-12 bg-card text-base"
                 />
               </div>
@@ -752,7 +794,11 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
                   id="content"
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  placeholder={isEventMode ? "이벤트 내용을 작성해주세요" : "공지사항 내용을 작성해주세요"}
+                  placeholder={
+                    isEventMode
+                      ? "이벤트 내용을 작성해주세요"
+                      : "공지사항 내용을 작성해주세요"
+                  }
                   className="min-h-[300px] bg-card text-base resize-none"
                 />
               </div>
@@ -990,7 +1036,9 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
                     상단 고정
                   </label>
                   <p className="text-xs text-muted-foreground">
-                    {isEventMode ? "중요한 이벤트를 게시판 상단에 고정하여 표시합니다." : "중요한 공지사항을 게시판 상단에 고정하여 표시합니다."}
+                    {isEventMode
+                      ? "중요한 이벤트를 게시판 상단에 고정하여 표시합니다."
+                      : "중요한 공지사항을 게시판 상단에 고정하여 표시합니다."}
                   </p>
                 </div>
               </div>

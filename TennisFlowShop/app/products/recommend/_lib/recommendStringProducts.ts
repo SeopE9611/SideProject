@@ -28,7 +28,10 @@ function isSoldOut(product: RecommendableProduct): boolean {
   return manageStock && stock <= 0 && !allowBackorder;
 }
 
-function scoreProduct(product: RecommendableProduct, answers: CompletedStringRecommendAnswers): number {
+function scoreProduct(
+  product: RecommendableProduct,
+  answers: CompletedStringRecommendAnswers,
+): number {
   const feature = product.features ?? {};
   const goalKey = answers.goal;
   const goalScore = normalizeFeatureScore(feature[goalKey]);
@@ -62,9 +65,12 @@ function scoreProduct(product: RecommendableProduct, answers: CompletedStringRec
   }
 
   const price = Number(product.price ?? 0);
-  if (answers.budget === "value") score += price <= 15000 ? 10 : price <= 30000 ? 4 : 0;
-  if (answers.budget === "mid") score += price > 15000 && price <= 30000 ? 10 : price <= 40000 ? 5 : 1;
-  if (answers.budget === "premium") score += price > 30000 ? 10 : price > 20000 ? 4 : 1;
+  if (answers.budget === "value")
+    score += price <= 15000 ? 10 : price <= 30000 ? 4 : 0;
+  if (answers.budget === "mid")
+    score += price > 15000 && price <= 30000 ? 10 : price <= 40000 ? 5 : 1;
+  if (answers.budget === "premium")
+    score += price > 30000 ? 10 : price > 20000 ? 4 : 1;
 
   if (hasPaidMountingFee(product.mountingFee)) score += 3;
   if (!isSoldOut(product)) score += 2;
@@ -72,34 +78,55 @@ function scoreProduct(product: RecommendableProduct, answers: CompletedStringRec
   return Math.round(score * 10) / 10;
 }
 
-function buildReasons(product: RecommendableProduct, answers: CompletedStringRecommendAnswers): string[] {
+function buildReasons(
+  product: RecommendableProduct,
+  answers: CompletedStringRecommendAnswers,
+): string[] {
   const reasons: string[] = [];
-  const goalReasonMap: Record<CompletedStringRecommendAnswers["goal"], string> = {
-    power: "파워 성향 점수가 높아 공을 더 쉽게 밀어내는 느낌을 원하는 사용자에게 잘 맞습니다.",
-    spin: "스핀 성향이 강해 회전량과 안정적인 궤적을 원하는 사용자에게 적합합니다.",
-    control: "컨트롤 성향이 높아 원하는 코스로 보내는 안정감을 중시할 때 선택하기 좋습니다.",
-    comfort: "편안한 타구감을 우선한 선택으로 부드러운 느낌을 선호하는 사용자에게 잘 맞습니다.",
-    durability: "내구성 성향이 높아 자주 플레이하는 사용자에게 고려하기 좋은 선택입니다.",
-  };
+  const goalReasonMap: Record<CompletedStringRecommendAnswers["goal"], string> =
+    {
+      power:
+        "파워 성향 점수가 높아 공을 더 쉽게 밀어내는 느낌을 원하는 사용자에게 잘 맞습니다.",
+      spin: "스핀 성향이 강해 회전량과 안정적인 궤적을 원하는 사용자에게 적합합니다.",
+      control:
+        "컨트롤 성향이 높아 원하는 코스로 보내는 안정감을 중시할 때 선택하기 좋습니다.",
+      comfort:
+        "편안한 타구감을 우선한 선택으로 부드러운 느낌을 선호하는 사용자에게 잘 맞습니다.",
+      durability:
+        "내구성 성향이 높아 자주 플레이하는 사용자에게 고려하기 좋은 선택입니다.",
+    };
   reasons.push(goalReasonMap[answers.goal]);
 
   if (answers.arm === "high") {
-    reasons.push("팔이나 손목 부담이 신경 쓰이는 경우를 고려해 편안한 타구감 요소를 함께 반영했습니다.");
+    reasons.push(
+      "팔이나 손목 부담이 신경 쓰이는 경우를 고려해 편안한 타구감 요소를 함께 반영했습니다.",
+    );
   } else if (answers.freq === "heavy" || answers.freq === "biweekly_plus") {
     reasons.push("플레이 빈도를 고려해 내구성 요소를 함께 반영했습니다.");
   }
 
-  if (answers.budget === "value") reasons.push("가성비를 고려해 가격 부담이 비교적 낮은 선택지를 우선 반영했습니다.");
-  else if (answers.budget === "premium") reasons.push("프리미엄 예산 성향을 반영해 성능 중심 선택지를 함께 고려했습니다.");
+  if (answers.budget === "value")
+    reasons.push(
+      "가성비를 고려해 가격 부담이 비교적 낮은 선택지를 우선 반영했습니다.",
+    );
+  else if (answers.budget === "premium")
+    reasons.push(
+      "프리미엄 예산 성향을 반영해 성능 중심 선택지를 함께 고려했습니다.",
+    );
 
   if (reasons.length < 2) {
-    reasons.push("실력 수준과 플레이 빈도를 함께 반영해 균형 잡힌 선택지를 추천합니다.");
+    reasons.push(
+      "실력 수준과 플레이 빈도를 함께 반영해 균형 잡힌 선택지를 추천합니다.",
+    );
   }
 
   return reasons.slice(0, 3);
 }
 
-export function recommendStringProducts(products: RecommendableProduct[], answers: CompletedStringRecommendAnswers): RecommendedStringProduct[] {
+export function recommendStringProducts(
+  products: RecommendableProduct[],
+  answers: CompletedStringRecommendAnswers,
+): RecommendedStringProduct[] {
   const scored = products
     .filter((p) => !!p.id && !!p.name)
     .map((product) => ({
@@ -107,7 +134,12 @@ export function recommendStringProducts(products: RecommendableProduct[], answer
       score: scoreProduct(product, answers),
       reasons: buildReasons(product, answers),
       tensionRange: getRecommendedTensionRange(answers, product),
-      badges: [stringMaterialLabel(product.material), formatGaugeLabel(product.gauge), product.tags?.beginner ? "입문 추천" : null, product.tags?.advanced ? "상급 추천" : null]
+      badges: [
+        stringMaterialLabel(product.material),
+        formatGaugeLabel(product.gauge),
+        product.tags?.beginner ? "입문 추천" : null,
+        product.tags?.advanced ? "상급 추천" : null,
+      ]
         .filter((v): v is string => Boolean(v))
         .slice(0, 3),
     }));

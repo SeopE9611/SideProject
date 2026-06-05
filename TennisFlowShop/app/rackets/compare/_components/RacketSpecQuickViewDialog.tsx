@@ -271,9 +271,7 @@ export default function RacketSpecQuickViewDialog({ racket, trigger }: Props) {
         )}
       >
         <div className="relative">
-          <div
-            className={cn("absolute inset-x-0 top-0 h-1", "bg-secondary")}
-          />
+          <div className={cn("absolute inset-x-0 top-0 h-1", "bg-secondary")} />
           <DialogHeader className="px-4 pt-5 pb-3 bp-sm:px-6 bp-sm:pt-6 bp-sm:pb-4">
             <DialogTitle className="flex flex-wrap items-center gap-2 bp-sm:gap-3">
               <span className="text-base font-bold text-foreground bp-sm:text-lg">

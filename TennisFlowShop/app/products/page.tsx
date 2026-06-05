@@ -13,11 +13,16 @@ export const metadata: Metadata = {
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
-export default async function ProductsPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
+export default async function ProductsPage({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>;
+}) {
   const sp = await searchParams;
 
   // 유틸: string | string[] | undefined → string | null 로 정리
-  const pickFirst = (v: string | string[] | undefined): string | null => (typeof v === "string" ? v : Array.isArray(v) ? (v[0] ?? null) : null);
+  const pickFirst = (v: string | string[] | undefined): string | null =>
+    typeof v === "string" ? v : Array.isArray(v) ? (v[0] ?? null) : null;
 
   const initialBrand = pickFirst(sp.brand);
   const initialMaterial = pickFirst(sp.material);
@@ -30,11 +35,14 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
         <div className="absolute inset-0 bg-overlay/10 dark:bg-overlay/30" />
         <HeroCourtBackdrop className="hidden bp-md:block h-full w-full text-primary opacity-[0.10] dark:opacity-[0.12]" />
 
-
         <SiteContainer variant="wide" className="relative">
           <div className="text-center text-foreground">
-            <h1 className="font-bold text-3xl bp-sm:text-4xl bp-md:text-4xl bp-lg:text-5xl mb-3 bp-sm:mb-4 bp-md:mb-6 text-foreground leading-tight">테니스 스트링</h1>
-            <p className="text-base bp-sm:text-lg bp-md:text-2xl mb-5 bp-sm:mb-6 bp-md:mb-8 text-muted-foreground max-w-3xl mx-auto leading-relaxed px-4">도깨비테니스 스트링으로 플레이를 한 단계 업그레이드하세요</p>
+            <h1 className="font-bold text-3xl bp-sm:text-4xl bp-md:text-4xl bp-lg:text-5xl mb-3 bp-sm:mb-4 bp-md:mb-6 text-foreground leading-tight">
+              테니스 스트링
+            </h1>
+            <p className="text-base bp-sm:text-lg bp-md:text-2xl mb-5 bp-sm:mb-6 bp-md:mb-8 text-muted-foreground max-w-3xl mx-auto leading-relaxed px-4">
+              도깨비테니스 스트링으로 플레이를 한 단계 업그레이드하세요
+            </p>
           </div>
         </SiteContainer>
       </div>
@@ -50,10 +58,14 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
                 어떤 스트링이 맞을지 모르겠나요?
               </p>
               <p className="break-words text-sm leading-relaxed text-muted-foreground">
-                간단한 질문에 답하면 플레이 성향에 맞는 스트링 선택 방향을 확인할 수 있어요.
+                간단한 질문에 답하면 플레이 성향에 맞는 스트링 선택 방향을
+                확인할 수 있어요.
               </p>
             </div>
-            <Button asChild className="w-full shrink-0 whitespace-nowrap md:w-auto">
+            <Button
+              asChild
+              className="w-full shrink-0 whitespace-nowrap md:w-auto"
+            >
               <Link href="/products/recommend">스트링 추천받기</Link>
             </Button>
           </CardContent>
@@ -63,18 +75,36 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
           <div className="mb-4 bp-sm:mb-6 rounded-xl border border-border bg-card p-4 bp-sm:p-5 shadow-sm">
             <div className="flex items-start justify-between gap-3 flex-wrap">
               <div className="min-w-0">
-                <p className="text-sm bp-sm:text-base font-semibold text-foreground">1단계: 장착할 스트링을 선택해주세요</p>
-                <p className="mt-1 text-xs bp-sm:text-sm text-muted-foreground leading-relaxed">선택 후 결제 화면에서 수령 방식과 장착 요청사항을 입력합니다. 결제와 함께 교체서비스 신청이 접수됩니다.</p>
+                <p className="text-sm bp-sm:text-base font-semibold text-foreground">
+                  1단계: 장착할 스트링을 선택해주세요
+                </p>
+                <p className="mt-1 text-xs bp-sm:text-sm text-muted-foreground leading-relaxed">
+                  선택 후 결제 화면에서 수령 방식과 장착 요청사항을 입력합니다.
+                  결제와 함께 교체서비스 신청이 접수됩니다.
+                </p>
                 <div className="mt-3 grid gap-2 text-xs text-muted-foreground bp-sm:grid-cols-3">
-                  <span className="rounded-lg border border-border bg-background px-3 py-2">1. 스트링 선택</span>
-                  <span className="rounded-lg border border-border bg-background px-3 py-2">2. 결제/수령 방식 입력</span>
-                  <span className="rounded-lg border border-border bg-background px-3 py-2">3. 장착 접수 완료</span>
+                  <span className="rounded-lg border border-border bg-background px-3 py-2">
+                    1. 스트링 선택
+                  </span>
+                  <span className="rounded-lg border border-border bg-background px-3 py-2">
+                    2. 결제/수령 방식 입력
+                  </span>
+                  <span className="rounded-lg border border-border bg-background px-3 py-2">
+                    3. 장착 접수 완료
+                  </span>
                 </div>
-                <p className="mt-2 text-xs bp-sm:text-sm text-muted-foreground">현재 스트링 단품 구매는 운영하지 않으며, 스트링 교체 신청과 함께 이용할 수 있습니다.</p>
+                <p className="mt-2 text-xs bp-sm:text-sm text-muted-foreground">
+                  현재 스트링 단품 구매는 운영하지 않으며, 스트링 교체 신청과
+                  함께 이용할 수 있습니다.
+                </p>
               </div>
 
               <div className="flex w-full bp-sm:w-auto gap-2">
-                <Button asChild variant="outline" className="flex-1 bp-sm:flex-none">
+                <Button
+                  asChild
+                  variant="outline"
+                  className="flex-1 bp-sm:flex-none"
+                >
                   <Link href="/services/apply">신청 방식 다시 선택</Link>
                 </Button>
                 <Button asChild className="flex-1 bp-sm:flex-none">
@@ -84,7 +114,10 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
             </div>
           </div>
         )}
-        <FilterableProductList initialBrand={initialBrand} initialMaterial={initialMaterial} />
+        <FilterableProductList
+          initialBrand={initialBrand}
+          initialMaterial={initialMaterial}
+        />
       </SiteContainer>
     </div>
   );

@@ -41,9 +41,12 @@ const ReviewPhotoDialog = dynamic(
   () => import("@/app/reviews/_components/ReviewPhotoDialog"),
   { loading: () => null },
 );
-const PhotosUploader = dynamic(() => import("@/components/reviews/PhotosUploader"), {
-  loading: () => null,
-});
+const PhotosUploader = dynamic(
+  () => import("@/components/reviews/PhotosUploader"),
+  {
+    loading: () => null,
+  },
+);
 const PhotosReorderGrid = dynamic(
   () => import("@/components/reviews/PhotosReorderGrid"),
   { loading: () => null },
@@ -231,7 +234,10 @@ export default function ReviewCard({
   };
 
   return (
-    <Card variant="interactive" className="group overflow-hidden border-border bg-card">
+    <Card
+      variant="interactive"
+      className="group overflow-hidden border-border bg-card"
+    >
       {/* Tennis court line accent */}
       <div className="h-1 bg-secondary" />
 

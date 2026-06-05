@@ -194,7 +194,10 @@ function normalizeActorId(value: unknown): string | null {
     if (typeof record.$oid === "string") return record.$oid;
     if (typeof record.toString === "function") {
       const stringified = record.toString();
-      if (typeof stringified === "string" && stringified !== "[object Object]") {
+      if (
+        typeof stringified === "string" &&
+        stringified !== "[object Object]"
+      ) {
         return stringified;
       }
     }
@@ -202,18 +205,21 @@ function normalizeActorId(value: unknown): string | null {
   return null;
 }
 
-function getAuditActorDisplay(log: AuditLog): { label: string; title?: string } {
+function getAuditActorDisplay(log: AuditLog): {
+  label: string;
+  title?: string;
+} {
   const actor = log?.diff?.metadata?.actor;
   const name = actor?.name ?? log?.diff?.actorName ?? log?.actorName ?? null;
-  const email = actor?.email ?? log?.diff?.actorEmail ?? log?.actorEmail ?? null;
+  const email =
+    actor?.email ?? log?.diff?.actorEmail ?? log?.actorEmail ?? null;
   const role = actor?.role ?? log?.diff?.actorRole ?? log?.actorRole ?? null;
-  const actorId = normalizeActorId(actor?.id) ?? normalizeActorId(log?.actorId) ?? normalizeActorId(log?.by);
+  const actorId =
+    normalizeActorId(actor?.id) ??
+    normalizeActorId(log?.actorId) ??
+    normalizeActorId(log?.by);
 
-  const principal = name
-    ? email
-      ? `${name} <${email}>`
-      : name
-    : email;
+  const principal = name ? (email ? `${name} <${email}>` : name) : email;
 
   if (principal) {
     return {
@@ -222,7 +228,10 @@ function getAuditActorDisplay(log: AuditLog): { label: string; title?: string } 
   }
 
   if (actorId) {
-    const shortId = actorId.length > 12 ? `${actorId.slice(0, 4)}...${actorId.slice(-4)}` : actorId;
+    const shortId =
+      actorId.length > 12
+        ? `${actorId.slice(0, 4)}...${actorId.slice(-4)}`
+        : actorId;
     return { label: `actorId: ${shortId}`, title: actorId };
   }
 
@@ -738,12 +747,7 @@ export default function UserDetailClient({ id }: { id: string }) {
         </div>
 
         {/* 히어로 헤더 */}
-        <div
-          className={cn(
-            "mb-6 overflow-hidden",
-            adminSurface.card,
-          )}
-        >
+        <div className={cn("mb-6 overflow-hidden", adminSurface.card)}>
           <div className="flex items-start justify-between gap-4 px-5 py-4">
             <div className="flex items-center gap-4">
               <div className="relative">
@@ -1060,7 +1064,12 @@ export default function UserDetailClient({ id }: { id: string }) {
                   render={(log: AuditLog) => (
                     <Row
                       title={log.action}
-                      subtitle={[getAuditActorDisplay(log).label, humanizeAuditDetail(log.action, log.detail)].filter(Boolean).join(" · ")}
+                      subtitle={[
+                        getAuditActorDisplay(log).label,
+                        humanizeAuditDetail(log.action, log.detail),
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")}
                       right={new Date(log.at).toLocaleString("ko-KR", {
                         dateStyle: "short",
                         timeStyle: "short",

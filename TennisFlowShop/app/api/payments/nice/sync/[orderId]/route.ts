@@ -3,7 +3,11 @@ import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 import clientPromise from "@/lib/mongodb";
 import { verifyAccessToken } from "@/lib/auth.utils";
-import { extractNiceCardInfo, getNicePaymentByTid, summarizeNiceCardRaw } from "@/lib/payments/nice/server";
+import {
+  extractNiceCardInfo,
+  getNicePaymentByTid,
+  summarizeNiceCardRaw,
+} from "@/lib/payments/nice/server";
 
 function pick(raw: Record<string, string>, ...keys: string[]) {
   for (const key of keys) {
@@ -14,16 +18,23 @@ function pick(raw: Record<string, string>, ...keys: string[]) {
 }
 
 function getNiceCredentials() {
-  const clientKey = String(process.env.NICEPAY_CLIENT_KEY ?? process.env.NICEPAY_CLIENT_ID ?? "").trim();
+  const clientKey = String(
+    process.env.NICEPAY_CLIENT_KEY ?? process.env.NICEPAY_CLIENT_ID ?? "",
+  ).trim();
   const secretKey = String(process.env.NICEPAY_SECRET_KEY ?? "").trim();
-  const apiBaseUrl = String(process.env.NICEPAY_APPROVE_API_BASE || "https://api.nicepay.co.kr/v1/payments")
+  const apiBaseUrl = String(
+    process.env.NICEPAY_APPROVE_API_BASE ||
+      "https://api.nicepay.co.kr/v1/payments",
+  )
     .trim()
     .replace(/\/+$/, "");
   return { clientKey, secretKey, apiBaseUrl };
 }
 
 function normalizeNicePgStatus(rawStatus: string): string {
-  const normalized = String(rawStatus ?? "").trim().toLowerCase();
+  const normalized = String(rawStatus ?? "")
+    .trim()
+    .toLowerCase();
   if (!normalized) return "";
   if (normalized === "cancelled") return "canceled";
   if (normalized === "partialcancelled") return "partialcanceled";
@@ -36,23 +47,47 @@ function mapNicePgStatusToInternalPaymentStatus(params: {
   previousPaymentInfoStatus: string;
 }) {
   const normalizedPgStatus = normalizeNicePgStatus(params.pgStatusRaw);
-  const previousPaymentStatus = String(params.previousPaymentStatus ?? "").trim();
-  const previousPaymentInfoStatus = String(params.previousPaymentInfoStatus ?? "").trim();
+  const previousPaymentStatus = String(
+    params.previousPaymentStatus ?? "",
+  ).trim();
+  const previousPaymentInfoStatus = String(
+    params.previousPaymentInfoStatus ?? "",
+  ).trim();
 
   if (normalizedPgStatus === "paid") {
-    return { normalizedPgStatus, nextPaymentStatus: "결제완료", nextPaymentInfoStatus: "paid" };
+    return {
+      normalizedPgStatus,
+      nextPaymentStatus: "결제완료",
+      nextPaymentInfoStatus: "paid",
+    };
   }
   if (normalizedPgStatus === "ready") {
-    return { normalizedPgStatus, nextPaymentStatus: "결제대기", nextPaymentInfoStatus: "ready" };
+    return {
+      normalizedPgStatus,
+      nextPaymentStatus: "결제대기",
+      nextPaymentInfoStatus: "ready",
+    };
   }
   if (normalizedPgStatus === "canceled") {
-    return { normalizedPgStatus, nextPaymentStatus: "결제취소", nextPaymentInfoStatus: "canceled" };
+    return {
+      normalizedPgStatus,
+      nextPaymentStatus: "결제취소",
+      nextPaymentInfoStatus: "canceled",
+    };
   }
   if (normalizedPgStatus === "partialcanceled") {
-    return { normalizedPgStatus, nextPaymentStatus: "부분취소", nextPaymentInfoStatus: "partialCanceled" };
+    return {
+      normalizedPgStatus,
+      nextPaymentStatus: "부분취소",
+      nextPaymentInfoStatus: "partialCanceled",
+    };
   }
   if (normalizedPgStatus === "failed") {
-    return { normalizedPgStatus, nextPaymentStatus: "결제실패", nextPaymentInfoStatus: "failed" };
+    return {
+      normalizedPgStatus,
+      nextPaymentStatus: "결제실패",
+      nextPaymentInfoStatus: "failed",
+    };
   }
 
   return {
@@ -62,11 +97,21 @@ function mapNicePgStatusToInternalPaymentStatus(params: {
   };
 }
 
-export async function POST(_req: Request, { params }: { params: Promise<{ orderId: string }> }) {
+export async function POST(
+  _req: Request,
+  { params }: { params: Promise<{ orderId: string }> },
+) {
   try {
     const { orderId } = await params;
     if (!ObjectId.isValid(orderId)) {
-      return NextResponse.json({ success: false, code: "INVALID_ORDER_ID", error: "유효하지 않은 주문 ID입니다." }, { status: 400 });
+      return NextResponse.json(
+        {
+          success: false,
+          code: "INVALID_ORDER_ID",
+          error: "유효하지 않은 주문 ID입니다.",
+        },
+        { status: 400 },
+      );
     }
 
     const cookieStore = await cookies();
@@ -78,28 +123,65 @@ export async function POST(_req: Request, { params }: { params: Promise<{ orderI
       payload = null;
     }
     if (!payload?.sub || payload?.role !== "admin") {
-      return NextResponse.json({ success: false, code: "FORBIDDEN", error: "관리자 권한이 필요합니다." }, { status: 403 });
+      return NextResponse.json(
+        {
+          success: false,
+          code: "FORBIDDEN",
+          error: "관리자 권한이 필요합니다.",
+        },
+        { status: 403 },
+      );
     }
 
     const { clientKey, secretKey, apiBaseUrl } = getNiceCredentials();
     if (!clientKey || !secretKey) {
-      return NextResponse.json({ success: false, code: "NICE_CONFIG_MISSING", error: "NicePay 설정이 누락되었습니다." }, { status: 500 });
+      return NextResponse.json(
+        {
+          success: false,
+          code: "NICE_CONFIG_MISSING",
+          error: "NicePay 설정이 누락되었습니다.",
+        },
+        { status: 500 },
+      );
     }
 
     const client = await clientPromise;
     const db = client.db();
-    const order = await db.collection("orders").findOne({ _id: new ObjectId(orderId) });
+    const order = await db
+      .collection("orders")
+      .findOne({ _id: new ObjectId(orderId) });
     if (!order) {
-      return NextResponse.json({ success: false, code: "ORDER_NOT_FOUND", error: "주문을 찾을 수 없습니다." }, { status: 404 });
+      return NextResponse.json(
+        {
+          success: false,
+          code: "ORDER_NOT_FOUND",
+          error: "주문을 찾을 수 없습니다.",
+        },
+        { status: 404 },
+      );
     }
     const tid = String((order as any)?.paymentInfo?.tid ?? "").trim();
-    const provider = String((order as any)?.paymentInfo?.provider ?? "").trim().toLowerCase();
+    const provider = String((order as any)?.paymentInfo?.provider ?? "")
+      .trim()
+      .toLowerCase();
     if (!tid || provider !== "nicepay") {
-      return NextResponse.json({ success: false, code: "NICE_PAYMENT_INFO_MISSING", error: "NicePay 결제 정보(tid/provider)가 없습니다." }, { status: 400 });
+      return NextResponse.json(
+        {
+          success: false,
+          code: "NICE_PAYMENT_INFO_MISSING",
+          error: "NicePay 결제 정보(tid/provider)가 없습니다.",
+        },
+        { status: 400 },
+      );
     }
 
     console.info("[nicepay][sync]", { stage: "before_sync", orderId, tid });
-    const pgRaw = await getNicePaymentByTid({ tid, clientKey, secretKey, apiBaseUrl });
+    const pgRaw = await getNicePaymentByTid({
+      tid,
+      clientKey,
+      secretKey,
+      apiBaseUrl,
+    });
     const syncRawSummary = summarizeNiceCardRaw(pgRaw);
     console.info("[nicepay][card][sync_raw_keys]", {
       orderId,
@@ -110,18 +192,41 @@ export async function POST(_req: Request, { params }: { params: Promise<{ orderI
     const resultCode = pick(pgRaw, "resultCode", "ResultCode");
     const resultMsg = pick(pgRaw, "resultMsg", "ResultMsg");
     if (resultCode && resultCode !== "0000") {
-      console.error("[nicepay][sync]", { stage: "sync_failed", orderId, tid, resultCode, resultMsg });
+      console.error("[nicepay][sync]", {
+        stage: "sync_failed",
+        orderId,
+        tid,
+        resultCode,
+        resultMsg,
+      });
       return NextResponse.json(
-        { success: false, code: "NICE_SYNC_FAILED", error: resultMsg || "NicePay 상태 조회에 실패했습니다.", resultCode },
+        {
+          success: false,
+          code: "NICE_SYNC_FAILED",
+          error: resultMsg || "NicePay 상태 조회에 실패했습니다.",
+          resultCode,
+        },
         { status: 502 },
       );
     }
 
     const pgStatus = pick(pgRaw, "status", "Status");
-    const previousPaymentStatus = String((order as any)?.paymentStatus ?? "").trim();
-    const previousPaymentInfoStatus = String((order as any)?.paymentInfo?.status ?? "").trim();
-    const cancelAmount = Math.floor(Number(pick(pgRaw, "cancAmt", "cancelAmount", "cancelAmt")) || 0);
-    const canceledAt = pick(pgRaw, "canceledAt", "cancelledAt", "cancelDate", "cancelDt");
+    const previousPaymentStatus = String(
+      (order as any)?.paymentStatus ?? "",
+    ).trim();
+    const previousPaymentInfoStatus = String(
+      (order as any)?.paymentInfo?.status ?? "",
+    ).trim();
+    const cancelAmount = Math.floor(
+      Number(pick(pgRaw, "cancAmt", "cancelAmount", "cancelAmt")) || 0,
+    );
+    const canceledAt = pick(
+      pgRaw,
+      "canceledAt",
+      "cancelledAt",
+      "cancelDate",
+      "cancelDt",
+    );
     const mapped = mapNicePgStatusToInternalPaymentStatus({
       pgStatusRaw: pgStatus,
       previousPaymentStatus,
@@ -136,13 +241,21 @@ export async function POST(_req: Request, { params }: { params: Promise<{ orderI
       cardCompany: Boolean(syncCardInfo?.issuerName),
       cardLabel: Boolean(syncCardInfo?.cardName),
     });
-    const currentCardDisplayName = String((order as any)?.paymentInfo?.cardDisplayName ?? "").trim();
-    const currentCardCompany = String((order as any)?.paymentInfo?.cardCompany ?? "").trim();
-    const currentCardLabel = String((order as any)?.paymentInfo?.cardLabel ?? "").trim();
+    const currentCardDisplayName = String(
+      (order as any)?.paymentInfo?.cardDisplayName ?? "",
+    ).trim();
+    const currentCardCompany = String(
+      (order as any)?.paymentInfo?.cardCompany ?? "",
+    ).trim();
+    const currentCardLabel = String(
+      (order as any)?.paymentInfo?.cardLabel ?? "",
+    ).trim();
     const currentNiceCard = (order as any)?.paymentInfo?.niceCard ?? null;
 
-    const nextCardDisplayName = currentCardDisplayName || syncCardInfo?.displayName || "";
-    const nextCardCompany = currentCardCompany || syncCardInfo?.issuerName || "";
+    const nextCardDisplayName =
+      currentCardDisplayName || syncCardInfo?.displayName || "";
+    const nextCardCompany =
+      currentCardCompany || syncCardInfo?.issuerName || "";
     const nextCardLabel = currentCardLabel || syncCardInfo?.cardName || "";
     const nextNiceCard = currentNiceCard || syncCardInfo || null;
     console.info("[nicepay][card][persist_summary]", {
@@ -182,8 +295,12 @@ export async function POST(_req: Request, { params }: { params: Promise<{ orderI
         $set: {
           paymentStatus: mapped.nextPaymentStatus,
           "paymentInfo.status": mapped.nextPaymentInfoStatus,
-          ...(nextCardDisplayName ? { "paymentInfo.cardDisplayName": nextCardDisplayName } : {}),
-          ...(nextCardCompany ? { "paymentInfo.cardCompany": nextCardCompany } : {}),
+          ...(nextCardDisplayName
+            ? { "paymentInfo.cardDisplayName": nextCardDisplayName }
+            : {}),
+          ...(nextCardCompany
+            ? { "paymentInfo.cardCompany": nextCardCompany }
+            : {}),
           ...(nextCardLabel ? { "paymentInfo.cardLabel": nextCardLabel } : {}),
           ...(nextNiceCard ? { "paymentInfo.niceCard": nextNiceCard } : {}),
           ...(nextNiceCard

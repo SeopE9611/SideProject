@@ -613,9 +613,9 @@ try {
       )
     : 60 * 30;
 
-  await db.collection("community_post_view_dedupe").updateMany(
-    { expireAt: { $exists: false } },
-    [
+  await db
+    .collection("community_post_view_dedupe")
+    .updateMany({ expireAt: { $exists: false } }, [
       {
         $set: {
           expireAt: {
@@ -627,8 +627,7 @@ try {
           },
         },
       },
-    ],
-  );
+    ]);
 
   console.log(
     "[ensure-runtime-indexes] getDb() 런타임 범위와 동일한 인덱스 선반영이 완료되었습니다.",

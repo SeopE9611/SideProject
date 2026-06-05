@@ -3,10 +3,7 @@ import { cookies } from "next/headers";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
-import {
-  isCountEnded,
-  isTimeExpired,
-} from "@/lib/pass-status";
+import { isCountEnded, isTimeExpired } from "@/lib/pass-status";
 
 function safeVerifyAccessToken(token?: string | null) {
   if (!token) return null;
@@ -101,28 +98,29 @@ export async function GET() {
               : p.status;
 
       return {
-      id: p._id.toString(),
-      packageSize: p.packageSize,
-      usedCount: p.usedCount,
-      remainingCount: p.remainingCount,
-      status: computedStatus,
-      rawStatus: p.status,
-      purchasedAt: p.purchasedAt,
-      expiresAt: p.expiresAt,
-      planId: p.meta?.planId ?? null,
-      planTitle: p.meta?.planTitle ?? null,
-      isExpiringSoon:
-        computedStatus === "active" &&
-        new Date(p.expiresAt).getTime() - now.getTime() <= 7 * 86400000,
-      endedByCount,
-      expiredByTime,
-      recentUsages: (p.redemptions ?? []).map((r: any) => ({
-        applicationId: r.applicationId?.toString?.() ?? null,
-        usedAt: r.usedAt,
-        reverted: !!r.reverted,
-      })),
-      source: "pass",
-    }});
+        id: p._id.toString(),
+        packageSize: p.packageSize,
+        usedCount: p.usedCount,
+        remainingCount: p.remainingCount,
+        status: computedStatus,
+        rawStatus: p.status,
+        purchasedAt: p.purchasedAt,
+        expiresAt: p.expiresAt,
+        planId: p.meta?.planId ?? null,
+        planTitle: p.meta?.planTitle ?? null,
+        isExpiringSoon:
+          computedStatus === "active" &&
+          new Date(p.expiresAt).getTime() - now.getTime() <= 7 * 86400000,
+        endedByCount,
+        expiredByTime,
+        recentUsages: (p.redemptions ?? []).map((r: any) => ({
+          applicationId: r.applicationId?.toString?.() ?? null,
+          usedAt: r.usedAt,
+          reverted: !!r.reverted,
+        })),
+        source: "pass",
+      };
+    });
 
     const pendingOrHistoryItems = packageOrders
       .filter((order: any) => !issuedOrderIdSet.has(String(order._id)))

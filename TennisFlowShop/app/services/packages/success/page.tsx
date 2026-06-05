@@ -6,13 +6,32 @@ import DevMarkPaidButton from "@/app/services/packages/success/DevMarkPaidButton
 import HeroCourtBackdrop from "@/components/system/HeroCourtBackdrop";
 import LoginGate from "@/components/system/LoginGate";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { bankLabelMap } from "@/lib/constants";
 import clientPromise from "@/lib/mongodb";
 import jwt from "jsonwebtoken";
-import { ArrowRight, Calendar, CheckCircle, Clock, CreditCard, Gift, MapPin, Package, Phone, Shield, Star } from "lucide-react";
+import {
+  ArrowRight,
+  Calendar,
+  CheckCircle,
+  Clock,
+  CreditCard,
+  Gift,
+  MapPin,
+  Package,
+  Phone,
+  Shield,
+  Star,
+} from "lucide-react";
 import { ObjectId } from "mongodb";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
@@ -33,15 +52,25 @@ function safeVerifyAccessToken(token?: string) {
   }
 }
 
-export default async function PackageSuccessPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+export default async function PackageSuccessPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const sp = await searchParams;
-  const packageOrderId = Array.isArray(sp.packageOrderId) ? sp.packageOrderId[0] : (sp.packageOrderId ?? "");
+  const packageOrderId = Array.isArray(sp.packageOrderId)
+    ? sp.packageOrderId[0]
+    : (sp.packageOrderId ?? "");
 
   if (!packageOrderId || !ObjectId.isValid(packageOrderId)) return notFound();
 
   // 비회원 주문/신청 차단 모드면, 패키지 success 페이지도 로그인 필수로 막는다.
   // (packageOrderId만으로 주문 정보가 렌더링되는 것을 DB 조회 전에 차단)
-  const guestOrderMode = (process.env.GUEST_ORDER_MODE ?? process.env.NEXT_PUBLIC_GUEST_ORDER_MODE ?? "legacy").trim();
+  const guestOrderMode = (
+    process.env.GUEST_ORDER_MODE ??
+    process.env.NEXT_PUBLIC_GUEST_ORDER_MODE ??
+    "legacy"
+  ).trim();
   const allowGuestCheckout = guestOrderMode === "on";
   if (!allowGuestCheckout) {
     const gateCookieStore = await cookies();
@@ -57,7 +86,9 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
 
   const client = await clientPromise;
   const db = client.db();
-  const packageOrder = await db.collection("packageOrders").findOne({ _id: new ObjectId(packageOrderId) });
+  const packageOrder = await db
+    .collection("packageOrders")
+    .findOne({ _id: new ObjectId(packageOrderId) });
 
   if (!packageOrder) return notFound();
 
@@ -87,14 +118,19 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
   }
 
   // 토큰 페이로드 기반
-  const tokenIsAdmin = authPayload?.role === "admin" || authPayload?.roles?.includes?.("admin") || authPayload?.isAdmin === true;
+  const tokenIsAdmin =
+    authPayload?.role === "admin" ||
+    authPayload?.roles?.includes?.("admin") ||
+    authPayload?.isAdmin === true;
 
   // 이메일 화이트리스트(옵션)
   const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "")
     .split(",")
     .map((s) => s.trim().toLowerCase())
     .filter(Boolean);
-  const emailIsAdmin = ADMIN_EMAILS.includes((authPayload?.email ?? "").toLowerCase());
+  const emailIsAdmin = ADMIN_EMAILS.includes(
+    (authPayload?.email ?? "").toLowerCase(),
+  );
 
   const isAdmin = tokenIsAdmin || emailIsAdmin;
 
@@ -104,17 +140,27 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
   // 안전한 가격 표시 함수
   const formatPrice = (price: any): string => {
     const numPrice = Number(price);
-    return isNaN(numPrice) || numPrice === null || numPrice === undefined ? "0" : numPrice.toLocaleString();
+    return isNaN(numPrice) || numPrice === null || numPrice === undefined
+      ? "0"
+      : numPrice.toLocaleString();
   };
 
   const packageInfo = packageOrder.packageInfo;
   const serviceInfo = packageOrder.serviceInfo;
   const paymentInfo = packageOrder.paymentInfo;
-  const paymentProvider = String(paymentInfo?.provider ?? "manual_bank_transfer");
+  const paymentProvider = String(
+    paymentInfo?.provider ?? "manual_bank_transfer",
+  );
   const isTossPayment = paymentProvider === "tosspayments";
   const isNicePayment = paymentProvider === "nicepay";
-  const niceEasyPayProvider = String(paymentInfo?.rawSummary?.easyPay?.provider ?? "").trim();
-  const paymentMethodLabel = isTossPayment ? `토스페이먼츠 (${String(paymentInfo?.method || "CARD")})` : isNicePayment ? `NicePay${niceEasyPayProvider ? ` (${niceEasyPayProvider})` : ""} (${String(paymentInfo?.method || "card")})` : "무통장입금";
+  const niceEasyPayProvider = String(
+    paymentInfo?.rawSummary?.easyPay?.provider ?? "",
+  ).trim();
+  const paymentMethodLabel = isTossPayment
+    ? `토스페이먼츠 (${String(paymentInfo?.method || "CARD")})`
+    : isNicePayment
+      ? `NicePay${niceEasyPayProvider ? ` (${niceEasyPayProvider})` : ""} (${String(paymentInfo?.method || "card")})`
+      : "무통장입금";
   const isPaid = String(packageOrder.paymentStatus ?? "") === "결제완료";
 
   const packageCard = normalizePackageCardData({
@@ -125,8 +171,12 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
     variant: toPackageVariant(packageInfo.variant),
     description: "구매하신 스트링 교체 패키지입니다.",
     validityPeriod: packageInfo.validityPeriod,
-    features: Array.isArray(packageInfo.features) ? packageInfo.features : undefined,
-    benefits: Array.isArray(packageInfo.benefits) ? packageInfo.benefits : undefined,
+    features: Array.isArray(packageInfo.features)
+      ? packageInfo.features
+      : undefined,
+    benefits: Array.isArray(packageInfo.benefits)
+      ? packageInfo.benefits
+      : undefined,
     popular: Number(packageInfo.sessions) === 30,
   });
 
@@ -143,8 +193,13 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
               <div className="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-2xl bg-secondary border border-border">
                 <CheckCircle className="h-12 w-12 text-foreground" />
               </div>
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">패키지 구매가 완료되었습니다!</h1>
-              <p className="mb-6 text-xl text-muted-foreground">스트링 교체 패키지를 구매해주셔서 감사합니다. 아래 정보를 확인해주세요.</p>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">
+                패키지 구매가 완료되었습니다!
+              </h1>
+              <p className="mb-6 text-xl text-muted-foreground">
+                스트링 교체 패키지를 구매해주셔서 감사합니다. 아래 정보를
+                확인해주세요.
+              </p>
 
               <div className="flex flex-wrap justify-center gap-6 text-sm">
                 <div className="flex items-center gap-2">
@@ -153,7 +208,9 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
                 </div>
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-primary" />
-                  <span>{isPaid ? "패키지 활성화 완료" : "패키지 활성화 대기"}</span>
+                  <span>
+                    {isPaid ? "패키지 활성화 완료" : "패키지 활성화 대기"}
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Star className="h-4 w-4 text-primary" />
@@ -169,17 +226,31 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
                   <div className="p-2 bg-secondary rounded-lg">
                     <Package className="h-6 w-6 text-primary" />
                   </div>
-                  <h3 className="text-xl font-bold text-foreground">패키지 활성화 안내</h3>
+                  <h3 className="text-xl font-bold text-foreground">
+                    패키지 활성화 안내
+                  </h3>
                 </div>
                 <p className="text-muted-foreground mb-4">
-                  {isTossPayment || isNicePayment ? "결제가 완료되어 패키지가 활성화되었습니다. 바로 교체서비스 신청에 사용할 수 있어요." : "입금 확인 후 패키지가 활성화되며, 교체서비스 신청 시 이용 횟수가 차감됩니다."}
+                  {isTossPayment || isNicePayment
+                    ? "결제가 완료되어 패키지가 활성화되었습니다. 바로 교체서비스 신청에 사용할 수 있어요."
+                    : "입금 확인 후 패키지가 활성화되며, 교체서비스 신청 시 이용 횟수가 차감됩니다."}
                 </p>
                 <div className="mb-4 rounded-lg border border-border bg-card p-3 text-left text-sm text-muted-foreground">
                   <p className="font-semibold text-foreground">다음 단계</p>
-                  <p className="mt-1">패키지 활성화 상태는 마이페이지에서 확인하고, 교체서비스 신청 시 패키지 적용 여부를 확인해주세요.</p>
+                  <p className="mt-1">
+                    패키지 활성화 상태는 마이페이지에서 확인하고, 교체서비스
+                    신청 시 패키지 적용 여부를 확인해주세요.
+                  </p>
                 </div>
-                <Button variant="default" className="font-semibold shadow-sm" asChild>
-                  <Link href="/services/apply" className="flex items-center gap-2">
+                <Button
+                  variant="default"
+                  className="font-semibold shadow-sm"
+                  asChild
+                >
+                  <Link
+                    href="/services/apply"
+                    className="flex items-center gap-2"
+                  >
                     교체서비스 신청하기
                     <ArrowRight className="h-4 w-4" />
                   </Link>
@@ -199,13 +270,20 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
                   패키지 주문 정보
                 </CardTitle>
                 <CardDescription className="mt-2 text-lg">
-                  주문 번호: <span className="font-mono font-semibold text-primary">{packageOrder._id.toString()}</span>
+                  주문 번호:{" "}
+                  <span className="font-mono font-semibold text-primary">
+                    {packageOrder._id.toString()}
+                  </span>
                 </CardDescription>
               </div>
               <CardContent className="p-4 md:p-6">
                 {/* 패키지 정보 */}
                 <div className="mb-6 md:mb-8">
-                  <UnifiedPackageCard pkg={packageCard} showTotalPrice className="shadow-none" />
+                  <UnifiedPackageCard
+                    pkg={packageCard}
+                    showTotalPrice
+                    className="shadow-none"
+                  />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-6">
@@ -213,22 +291,31 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
                     <div className="flex items-center gap-3 p-4 bg-muted rounded-lg">
                       <Clock className="h-5 w-5 text-primary" />
                       <div>
-                        <p className="text-sm text-muted-foreground">주문일자</p>
+                        <p className="text-sm text-muted-foreground">
+                          주문일자
+                        </p>
                         <p className="font-semibold text-foreground">
-                          {new Date(packageOrder.createdAt).toLocaleDateString("ko-KR", {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                            weekday: "short",
-                          })}
+                          {new Date(packageOrder.createdAt).toLocaleDateString(
+                            "ko-KR",
+                            {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                              weekday: "short",
+                            },
+                          )}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3 p-4 bg-muted rounded-lg">
                       <CreditCard className="h-5 w-5 text-primary" />
                       <div>
-                        <p className="text-sm text-muted-foreground">결제 방법</p>
-                        <p className="font-semibold text-foreground">{paymentMethodLabel}</p>
+                        <p className="text-sm text-muted-foreground">
+                          결제 방법
+                        </p>
+                        <p className="font-semibold text-foreground">
+                          {paymentMethodLabel}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -237,26 +324,53 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
                     <div className="bg-muted p-4 md:p-6 rounded-xl border border-border">
                       <div className="flex items-center gap-2 mb-4">
                         <CreditCard className="h-5 w-5 text-primary" />
-                        <h3 className="font-bold text-primary">입금 계좌 정보</h3>
+                        <h3 className="font-bold text-primary">
+                          입금 계좌 정보
+                        </h3>
                       </div>
                       {paymentInfo?.bank && bankLabelMap[paymentInfo.bank] ? (
                         <div className="bg-card p-4 rounded-lg border-2 border-border space-y-2">
-                          <div className="font-semibold text-foreground">{bankLabelMap[paymentInfo.bank].label}</div>
-                          <div className="font-mono text-lg font-bold text-primary">{bankLabelMap[paymentInfo.bank].account}</div>
-                          <div className="text-sm text-muted-foreground">예금주: {bankLabelMap[paymentInfo.bank].holder}</div>
+                          <div className="font-semibold text-foreground">
+                            {bankLabelMap[paymentInfo.bank].label}
+                          </div>
+                          <div className="font-mono text-lg font-bold text-primary">
+                            {bankLabelMap[paymentInfo.bank].account}
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            예금주: {bankLabelMap[paymentInfo.bank].holder}
+                          </div>
                         </div>
                       ) : (
-                        <p className="text-muted-foreground">선택된 은행 없음</p>
+                        <p className="text-muted-foreground">
+                          선택된 은행 없음
+                        </p>
                       )}
                       <div className="mt-4 p-3 bg-destructive/10 rounded-lg border border-destructive/30 dark:bg-destructive/15">
-                        <p className="text-destructive font-semibold text-sm">⏰ 입금 기한: {new Date(packageOrder.createdAt).toLocaleDateString("ko-KR")} 23:59까지</p>
+                        <p className="text-destructive font-semibold text-sm">
+                          ⏰ 입금 기한:{" "}
+                          {new Date(packageOrder.createdAt).toLocaleDateString(
+                            "ko-KR",
+                          )}{" "}
+                          23:59까지
+                        </p>
                       </div>
                     </div>
                   ) : (
                     <div className="bg-muted p-4 md:p-6 rounded-xl border border-border">
-                      <h3 className="font-bold text-primary mb-3">{isNicePayment ? "Nice 결제 정보" : "토스 결제 정보"}</h3>
-                      <p className="text-sm text-muted-foreground">결제 상태: 결제완료</p>
-                      <p className="text-sm text-muted-foreground mt-1">승인 시각: {paymentInfo?.approvedAt ? new Date(paymentInfo.approvedAt).toLocaleString("ko-KR") : "-"}</p>
+                      <h3 className="font-bold text-primary mb-3">
+                        {isNicePayment ? "Nice 결제 정보" : "토스 결제 정보"}
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        결제 상태: 결제완료
+                      </p>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        승인 시각:{" "}
+                        {paymentInfo?.approvedAt
+                          ? new Date(paymentInfo.approvedAt).toLocaleString(
+                              "ko-KR",
+                            )
+                          : "-"}
+                      </p>
                     </div>
                   )}
                 </div>
@@ -272,23 +386,39 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
                   <div className="bg-muted p-4 rounded-lg border border-border space-y-2">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <span className="text-sm text-muted-foreground">신청자:</span>
-                        <span className="ml-2 font-semibold text-foreground">{serviceInfo?.name || "정보 없음"}</span>
+                        <span className="text-sm text-muted-foreground">
+                          신청자:
+                        </span>
+                        <span className="ml-2 font-semibold text-foreground">
+                          {serviceInfo?.name || "정보 없음"}
+                        </span>
                       </div>
                       <div>
-                        <span className="text-sm text-muted-foreground">연락처:</span>
-                        <span className="ml-2 font-semibold text-foreground">{serviceInfo?.phone || "정보 없음"}</span>
+                        <span className="text-sm text-muted-foreground">
+                          연락처:
+                        </span>
+                        <span className="ml-2 font-semibold text-foreground">
+                          {serviceInfo?.phone || "정보 없음"}
+                        </span>
                       </div>
                     </div>
                     <div>
-                      <span className="text-sm text-muted-foreground">이메일:</span>
-                      <span className="ml-2 font-semibold text-foreground">{serviceInfo?.email || "정보 없음"}</span>
+                      <span className="text-sm text-muted-foreground">
+                        이메일:
+                      </span>
+                      <span className="ml-2 font-semibold text-foreground">
+                        {serviceInfo?.email || "정보 없음"}
+                      </span>
                     </div>
 
                     {serviceInfo?.serviceRequest && (
                       <div>
-                        <span className="text-sm text-muted-foreground">서비스 요청사항:</span>
-                        <span className="ml-2 font-semibold text-foreground">{serviceInfo.serviceRequest}</span>
+                        <span className="text-sm text-muted-foreground">
+                          서비스 요청사항:
+                        </span>
+                        <span className="ml-2 font-semibold text-foreground">
+                          {serviceInfo.serviceRequest}
+                        </span>
                       </div>
                     )}
                   </div>
@@ -300,23 +430,47 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
                 <div className="bg-muted p-4 md:p-6 rounded-xl border border-border">
                   <div className="flex justify-between items-center text-2xl font-bold">
                     <span className="text-foreground">총 결제 금액</span>
-                    <span className="text-primary">{formatPrice(packageOrder.totalPrice)}원</span>
+                    <span className="text-primary">
+                      {formatPrice(packageOrder.totalPrice)}원
+                    </span>
                   </div>
-                  <p className="text-sm text-muted-foreground mt-2">{isTossPayment || isNicePayment ? "패키지 이용료 (결제 완료, 즉시 활성화)" : "패키지 이용료 (입금 확인 후 활성화)"}</p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    {isTossPayment || isNicePayment
+                      ? "패키지 이용료 (결제 완료, 즉시 활성화)"
+                      : "패키지 이용료 (입금 확인 후 활성화)"}
+                  </p>
                 </div>
               </CardContent>
 
               <CardFooter className="bg-muted/40 p-4 md:p-6">
                 <div className="flex flex-col sm:flex-row gap-3 md:gap-4 w-full">
-                  <Button variant="default" className="flex-1 h-12 shadow-sm hover:shadow-md transition-all duration-300" asChild>
-                    <Link href={isLoggedIn ? "/mypage?tab=passes" : `/package-lookup/details/${packageOrder._id}`} className="flex items-center gap-2">
+                  <Button
+                    variant="default"
+                    className="flex-1 h-12 shadow-sm hover:shadow-md transition-all duration-300"
+                    asChild
+                  >
+                    <Link
+                      href={
+                        isLoggedIn
+                          ? "/mypage?tab=passes"
+                          : `/package-lookup/details/${packageOrder._id}`
+                      }
+                      className="flex items-center gap-2"
+                    >
                       <Package className="h-5 w-5" />
                       패키지 내역 확인
                       <ArrowRight className="h-4 w-4" />
                     </Link>
                   </Button>
-                  <Button variant="outline" className="flex-1 h-12 border-2" asChild>
-                    <Link href="/services/packages" className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    className="flex-1 h-12 border-2"
+                    asChild
+                  >
+                    <Link
+                      href="/services/packages"
+                      className="flex items-center gap-2"
+                    >
                       <Gift className="h-5 w-5" />
                       다른 패키지 보기
                     </Link>
@@ -324,7 +478,10 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
                 </div>
               </CardFooter>
               <div className="px-4 md:px-6">
-                <DevMarkPaidButton orderId={packageOrder._id.toString()} show={showDevBtn && !isPaid} />
+                <DevMarkPaidButton
+                  orderId={packageOrder._id.toString()}
+                  show={showDevBtn && !isPaid}
+                />
               </div>
             </Card>
 
@@ -342,17 +499,28 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
                     <div className="flex items-start gap-3 p-4 bg-muted rounded-lg">
                       <CreditCard className="h-5 w-5 text-primary mt-0.5" />
                       <div>
-                        <h4 className="font-semibold text-primary mb-1">{isTossPayment || isNicePayment ? "결제 안내" : "입금 안내"}</h4>
+                        <h4 className="font-semibold text-primary mb-1">
+                          {isTossPayment || isNicePayment
+                            ? "결제 안내"
+                            : "입금 안내"}
+                        </h4>
                         <p className="text-sm text-muted-foreground">
-                          {isTossPayment || isNicePayment ? `${isNicePayment ? "Nice" : "토스"} 결제가 완료되어 패키지가 즉시 활성화되었습니다.` : "패키지 금액을 위 계좌로 입금해주세요. 입금 확인 후 패키지가 활성화돼요."}
+                          {isTossPayment || isNicePayment
+                            ? `${isNicePayment ? "Nice" : "토스"} 결제가 완료되어 패키지가 즉시 활성화되었습니다.`
+                            : "패키지 금액을 위 계좌로 입금해주세요. 입금 확인 후 패키지가 활성화돼요."}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3 p-4 bg-muted rounded-lg">
                       <Calendar className="h-5 w-5 text-primary mt-0.5" />
                       <div>
-                        <h4 className="font-semibold text-primary mb-1">사용 안내</h4>
-                        <p className="text-sm text-muted-foreground">활성화 완료 후부터 패키지를 사용할 수 있고 교체서비스 신청이 완료되면 이용 횟수가 1회 차감돼요.</p>
+                        <h4 className="font-semibold text-primary mb-1">
+                          사용 안내
+                        </h4>
+                        <p className="text-sm text-muted-foreground">
+                          활성화 완료 후부터 패키지를 사용할 수 있고 교체서비스
+                          신청이 완료되면 이용 횟수가 1회 차감돼요.
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -360,15 +528,25 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
                     <div className="flex items-start gap-3 p-4 bg-muted rounded-lg">
                       <Star className="h-5 w-5 text-primary mt-0.5" />
                       <div>
-                        <h4 className="font-semibold text-foreground mb-1">유효기간</h4>
-                        <p className="text-sm text-muted-foreground">패키지는 {packageCard.validityPeriod} 동안 유효하며, 기간 내 모든 횟수를 이용해주세요.</p>
+                        <h4 className="font-semibold text-foreground mb-1">
+                          유효기간
+                        </h4>
+                        <p className="text-sm text-muted-foreground">
+                          패키지는 {packageCard.validityPeriod} 동안 유효하며,
+                          기간 내 모든 횟수를 이용해주세요.
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3 p-4 bg-muted rounded-lg">
                       <Phone className="h-5 w-5 text-primary mt-0.5" />
                       <div>
-                        <h4 className="font-semibold text-primary mb-1">고객 지원</h4>
-                        <p className="text-sm text-muted-foreground">패키지 관련 문의사항은 고객센터(010-5218-5248)로 연락주세요.</p>
+                        <h4 className="font-semibold text-primary mb-1">
+                          고객 지원
+                        </h4>
+                        <p className="text-sm text-muted-foreground">
+                          패키지 관련 문의사항은 고객센터(010-5218-5248)로
+                          연락주세요.
+                        </p>
                       </div>
                     </div>
                   </div>

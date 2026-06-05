@@ -4,21 +4,48 @@ import ProductFeatureRadarChart from "@/app/products/components/ProductFeatureRa
 import type { User } from "@/app/store/authStore";
 import { useBuyNowStore } from "@/app/store/buyNowStore";
 import { type CartItem, useCartStore } from "@/app/store/cartStore";
-import HorizontalProducts, { type HItem } from "@/components/HorizontalProducts";
+import HorizontalProducts, {
+  type HItem,
+} from "@/components/HorizontalProducts";
 import SiteContainer from "@/components/layout/SiteContainer";
 import RecentViewedItems from "@/components/recent-viewed/RecentViewedItems";
 import MaskedBlock from "@/components/reviews/MaskedBlock";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { badgeBaseOutlined, badgeSizeSm, getAnswerStatusBadgeSpec, getQnaCategoryBadgeSpec, merchandisingImageBadgeClass, merchandisingImageBadgeVariant } from "@/lib/badge-style";
-import { stringBrandLabel, stringColorLabel, stringMaterialLabel } from "@/lib/constants";
+import {
+  badgeBaseOutlined,
+  badgeSizeSm,
+  getAnswerStatusBadgeSpec,
+  getQnaCategoryBadgeSpec,
+  merchandisingImageBadgeClass,
+  merchandisingImageBadgeVariant,
+} from "@/lib/badge-style";
+import {
+  stringBrandLabel,
+  stringColorLabel,
+  stringMaterialLabel,
+} from "@/lib/constants";
 import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
-import { hasPaidMountingFee, isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
+import {
+  hasPaidMountingFee,
+  isMountableStringByFee,
+} from "@/lib/orders/string-mounting-policy";
 import { ENABLE_STRING_STANDALONE_ORDER } from "@/lib/orders/string-standalone-policy";
 import { normalizeFeatureScoresTo100 } from "@/lib/product-feature-score";
 import { addRecentViewedItem } from "@/lib/recent-viewed";
@@ -68,16 +95,22 @@ function getGuestOrderModeClient(): GuestOrderMode {
   return raw === "off" || raw === "legacy" || raw === "on" ? raw : "legacy";
 }
 
-const ReviewPhotoViewerDialog = dynamic(() => import("./ReviewPhotoViewerDialog"), { loading: () => null });
+const ReviewPhotoViewerDialog = dynamic(
+  () => import("./ReviewPhotoViewerDialog"),
+  { loading: () => null },
+);
 const ReviewEditDialog = dynamic(() => import("./ReviewEditDialog"), {
   loading: () => null,
 });
 
-const detailSurfaceSubtleInnerClass = "rounded-xl border border-border/60 bg-secondary/50";
-const detailSurfaceInfoItemClass = "flex min-w-0 items-center gap-3 rounded-xl border border-border/60 bg-secondary/40 p-3";
+const detailSurfaceSubtleInnerClass =
+  "rounded-xl border border-border/60 bg-secondary/50";
+const detailSurfaceInfoItemClass =
+  "flex min-w-0 items-center gap-3 rounded-xl border border-border/60 bg-secondary/40 p-3";
 type ProductBadge = "NEW" | "추천";
 
-const isTruthyBadgeField = (value: unknown) => value === true || value === "true" || value === 1;
+const isTruthyBadgeField = (value: unknown) =>
+  value === true || value === "true" || value === 1;
 
 function getProductDetailBadges(product: any): ProductBadge[] {
   const inventory = product?.inventory;
@@ -119,7 +152,10 @@ type VariantInventoryRow = {
 };
 
 function normalizeColorRows(product: any): ColorInventoryRow[] {
-  if (Array.isArray(product?.colorInventories) && product.colorInventories.length > 0) {
+  if (
+    Array.isArray(product?.colorInventories) &&
+    product.colorInventories.length > 0
+  ) {
     return product.colorInventories
       .map((row: any) => {
         const stockNumber = Number(row?.stock ?? 0);
@@ -127,9 +163,11 @@ function normalizeColorRows(product: any): ColorInventoryRow[] {
         return {
           value: String(row?.value ?? "").trim(),
           label: typeof row?.label === "string" ? row.label.trim() : undefined,
-          colorHex: typeof row?.colorHex === "string" ? row.colorHex.trim() : undefined,
+          colorHex:
+            typeof row?.colorHex === "string" ? row.colorHex.trim() : undefined,
           image: typeof row?.image === "string" ? row.image.trim() : undefined,
-          stock: Number.isFinite(stockNumber) && stockNumber > 0 ? stockNumber : 0,
+          stock:
+            Number.isFinite(stockNumber) && stockNumber > 0 ? stockNumber : 0,
           isSoldOut: row?.isSoldOut === true,
           showWhenSoldOut: row?.showWhenSoldOut === false ? false : true,
         };
@@ -183,7 +221,10 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const reviews: any[] = Array.isArray(product?.reviews) ? product.reviews : [];
   const reviewsLen = reviews.length;
   const productShippingFee = normalizeItemShippingFee(product?.shippingFee);
-  const productShippingLabel = productShippingFee > 0 ? `${productShippingFee.toLocaleString()}원 배송비` : "무료배송";
+  const productShippingLabel =
+    productShippingFee > 0
+      ? `${productShippingFee.toLocaleString()}원 배송비`
+      : "무료배송";
 
   const displayBrandLabel = (value?: string) => stringBrandLabel(value);
   // ====== 사양/브랜드/색상/게이지 매핑 ======
@@ -201,24 +242,49 @@ export default function ProductDetailClient({ product }: { product: any }) {
     powerHitter: "파워 히터", // 과거 호환
   };
 
-  const normalizedFeatureScores = normalizeFeatureScoresTo100(product?.features);
+  const normalizedFeatureScores = normalizeFeatureScoresTo100(
+    product?.features,
+  );
   const regularPrice = Number(product?.price ?? 0);
   const salePrice = Number(product?.inventory?.salePrice ?? 0);
-  const isSale = isTruthyBadgeField(product?.inventory?.isSale) && salePrice > 0 && salePrice < regularPrice;
+  const isSale =
+    isTruthyBadgeField(product?.inventory?.isSale) &&
+    salePrice > 0 &&
+    salePrice < regularPrice;
   const displayPrice = isSale ? salePrice : regularPrice;
-  const saleRate = isSale && regularPrice > 0 ? Math.round(((regularPrice - salePrice) / regularPrice) * 100) : 0;
+  const saleRate =
+    isSale && regularPrice > 0
+      ? Math.round(((regularPrice - salePrice) / regularPrice) * 100)
+      : 0;
 
   // ====== 스펙 표 렌더링용 변환 ======
   const toDisplaySpec = () => {
     const spec = product?.specifications || {};
-    const origin = spec.origin ?? spec.madeIn ?? spec.제조국 ?? product?.origin ?? product?.madeIn;
+    const origin =
+      spec.origin ??
+      spec.madeIn ??
+      spec.제조국 ??
+      product?.origin ??
+      product?.madeIn;
     const brand = displayBrandLabel(product?.brand || spec.brand);
-    const material = stringMaterialLabel(product?.material) || stringMaterialLabel(spec.material) || spec.소재;
+    const material =
+      stringMaterialLabel(product?.material) ||
+      stringMaterialLabel(spec.material) ||
+      spec.소재;
     const gaugeRaw = product?.gauge ?? spec.gauge ?? spec.게이지;
-    const gauge = gaugeOptions.length > 1 ? gaugeOptions.map((v: string) => formatGaugeLabel(v)).join(" / ") : formatGaugeLabel(gaugeRaw);
-    const color = stringColorLabel(product?.color) || stringColorLabel(spec.color) || spec.색상;
+    const gauge =
+      gaugeOptions.length > 1
+        ? gaugeOptions.map((v: string) => formatGaugeLabel(v)).join(" / ")
+        : formatGaugeLabel(gaugeRaw);
+    const color =
+      stringColorLabel(product?.color) ||
+      stringColorLabel(spec.color) ||
+      spec.색상;
     const lengthRaw = product?.length ?? spec.length ?? spec.길이;
-    const length = typeof lengthRaw === "string" && /^\d+(\.\d+)?$/.test(lengthRaw) ? `${lengthRaw}m` : lengthRaw;
+    const length =
+      typeof lengthRaw === "string" && /^\d+(\.\d+)?$/.test(lengthRaw)
+        ? `${lengthRaw}m`
+        : lengthRaw;
 
     const display: Record<string, any> = {
       브랜드: brand,
@@ -230,7 +296,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
     if (origin) display["제조국"] = origin;
 
     if (hasPaidMountingFee(product?.mountingFee)) {
-      display["장착 서비스 비용"] = `${Number(product.mountingFee).toLocaleString()}원`;
+      display["장착 서비스 비용"] =
+        `${Number(product.mountingFee).toLocaleString()}원`;
     }
 
     return display;
@@ -263,32 +330,60 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const [quantity, setQuantity] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const variantRows = useMemo<VariantInventoryRow[]>(() => {
-    if (!Array.isArray(product?.variantInventories) || product.variantInventories.length === 0) return [];
+    if (
+      !Array.isArray(product?.variantInventories) ||
+      product.variantInventories.length === 0
+    )
+      return [];
     return product.variantInventories
       .map((row: any) => ({
         colorValue: String(row?.colorValue ?? "").trim(),
         gaugeValue: String(row?.gaugeValue ?? "").trim(),
-        gaugeLabel: typeof row?.gaugeLabel === "string" ? row.gaugeLabel.trim() : undefined,
-        colorImage: typeof row?.colorImage === "string" ? row.colorImage.trim() : undefined,
+        gaugeLabel:
+          typeof row?.gaugeLabel === "string"
+            ? row.gaugeLabel.trim()
+            : undefined,
+        colorImage:
+          typeof row?.colorImage === "string"
+            ? row.colorImage.trim()
+            : undefined,
         stock: Math.max(0, Number(row?.stock ?? 0)),
         isSoldOut: row?.isSoldOut === true,
         showWhenSoldOut: row?.showWhenSoldOut === false ? false : true,
       }))
-      .filter((row: VariantInventoryRow) => row.colorValue.length > 0 && row.gaugeValue.length > 0);
+      .filter(
+        (row: VariantInventoryRow) =>
+          row.colorValue.length > 0 && row.gaugeValue.length > 0,
+      );
   }, [product]);
   const hasVariantInventories = variantRows.length > 0;
-  const isSellableVariant = (row?: VariantInventoryRow) => !!row && row.isSoldOut !== true && Number(row.stock) > 0;
-  const isSoldOutVariant = (row: VariantInventoryRow) => row.isSoldOut === true || Number(row.stock ?? 0) <= 0;
-  const isVisibleVariant = (row: VariantInventoryRow) => !(isSoldOutVariant(row) && row.showWhenSoldOut === false);
-  const visibleVariantRows = useMemo(() => variantRows.filter((row) => isVisibleVariant(row)), [variantRows]);
-  const getVariantsByColor = (colorValue: string) => visibleVariantRows.filter((v) => v.colorValue === colorValue);
-  const getVariantBySelection = (colorValue: string, gaugeValue: string) => variantRows.find((v) => v.colorValue === colorValue && v.gaugeValue === gaugeValue);
-  const getAvailableGaugesForColor = (colorValue: string) => getVariantsByColor(colorValue);
+  const isSellableVariant = (row?: VariantInventoryRow) =>
+    !!row && row.isSoldOut !== true && Number(row.stock) > 0;
+  const isSoldOutVariant = (row: VariantInventoryRow) =>
+    row.isSoldOut === true || Number(row.stock ?? 0) <= 0;
+  const isVisibleVariant = (row: VariantInventoryRow) =>
+    !(isSoldOutVariant(row) && row.showWhenSoldOut === false);
+  const visibleVariantRows = useMemo(
+    () => variantRows.filter((row) => isVisibleVariant(row)),
+    [variantRows],
+  );
+  const getVariantsByColor = (colorValue: string) =>
+    visibleVariantRows.filter((v) => v.colorValue === colorValue);
+  const getVariantBySelection = (colorValue: string, gaugeValue: string) =>
+    variantRows.find(
+      (v) => v.colorValue === colorValue && v.gaugeValue === gaugeValue,
+    );
+  const getAvailableGaugesForColor = (colorValue: string) =>
+    getVariantsByColor(colorValue);
   const colorRows = useMemo(() => normalizeColorRows(product), [product]);
   const visibleColorRows = useMemo(() => {
     if (!hasVariantInventories) return colorRows;
-    const visibleColorValues = new Set(visibleVariantRows.map((row) => row.colorValue).filter(Boolean));
-    const baseRows = colorRows.filter((row) => visibleColorValues.has(row.value));
+    const visibleColorValues = new Set(
+      visibleVariantRows.map((row) => row.colorValue).filter(Boolean),
+    );
+    const baseRows = colorRows.filter((row) =>
+      visibleColorValues.has(row.value),
+    );
     const known = new Set(baseRows.map((row) => row.value));
     visibleVariantRows.forEach((row) => {
       if (!row.colorValue || known.has(row.colorValue)) return;
@@ -304,17 +399,34 @@ export default function ProductDetailClient({ product }: { product: any }) {
     });
     return baseRows;
   }, [colorRows, hasVariantInventories, visibleVariantRows]);
-  const firstAvailableColor = useMemo(() => visibleColorRows.find((row) => (hasVariantInventories ? getVariantsByColor(row.value).length > 0 : !isColorSoldOut(row))) ?? visibleColorRows[0], [visibleColorRows, hasVariantInventories]);
+  const firstAvailableColor = useMemo(
+    () =>
+      visibleColorRows.find((row) =>
+        hasVariantInventories
+          ? getVariantsByColor(row.value).length > 0
+          : !isColorSoldOut(row),
+      ) ?? visibleColorRows[0],
+    [visibleColorRows, hasVariantInventories],
+  );
   const [selectedColor, setSelectedColor] = useState<string>("");
   useEffect(() => {
     if (!selectedColor && firstAvailableColor?.value) {
       setSelectedColor(firstAvailableColor.value);
     }
   }, [firstAvailableColor?.value, selectedColor]);
-  const selectedColorRow = visibleColorRows.find((row) => row.value === selectedColor);
-  const selectedColorLabel = selectedColorRow ? getColorLabel(selectedColorRow) : "";
-  const selectedColorVariants = useMemo(() => (selectedColor ? getAvailableGaugesForColor(selectedColor) : []), [selectedColor, variantRows]);
-  const colorImageFromVariant = selectedColorVariants.find((v) => v.colorImage)?.colorImage?.trim();
+  const selectedColorRow = visibleColorRows.find(
+    (row) => row.value === selectedColor,
+  );
+  const selectedColorLabel = selectedColorRow
+    ? getColorLabel(selectedColorRow)
+    : "";
+  const selectedColorVariants = useMemo(
+    () => (selectedColor ? getAvailableGaugesForColor(selectedColor) : []),
+    [selectedColor, variantRows],
+  );
+  const colorImageFromVariant = selectedColorVariants
+    .find((v) => v.colorImage)
+    ?.colorImage?.trim();
   const colorImage = selectedColorRow?.image?.trim() || colorImageFromVariant;
   const hideGaugeStock = product?.inventory?.hideGaugeStock === true;
   const gaugeRows = useMemo<GaugeInventoryRow[]>(() => {
@@ -326,7 +438,10 @@ export default function ProductDetailClient({ product }: { product: any }) {
         isSoldOut: row.isSoldOut === true,
       }));
     }
-    if (Array.isArray(product?.gaugeInventories) && product.gaugeInventories.length > 0) {
+    if (
+      Array.isArray(product?.gaugeInventories) &&
+      product.gaugeInventories.length > 0
+    ) {
       return product.gaugeInventories
         .map((row: any) => ({
           value: String(row?.value ?? "").trim(),
@@ -337,7 +452,10 @@ export default function ProductDetailClient({ product }: { product: any }) {
         }))
         .filter((row: GaugeInventoryRow) => row.value.length > 0);
     }
-    if (Array.isArray(product?.gaugeOptions) && product.gaugeOptions.length > 0) {
+    if (
+      Array.isArray(product?.gaugeOptions) &&
+      product.gaugeOptions.length > 0
+    ) {
       return product.gaugeOptions
         .map((value: unknown) => String(value ?? "").trim())
         .filter(Boolean)
@@ -349,10 +467,21 @@ export default function ProductDetailClient({ product }: { product: any }) {
     }
     return [];
   }, [hasVariantInventories, product, selectedColorVariants]);
-  const gaugeOptions = useMemo(() => gaugeRows.map((row) => row.value), [gaugeRows]);
-  const gaugeRowMap = useMemo(() => new Map(gaugeRows.map((row) => [row.value, row])), [gaugeRows]);
+  const gaugeOptions = useMemo(
+    () => gaugeRows.map((row) => row.value),
+    [gaugeRows],
+  );
+  const gaugeRowMap = useMemo(
+    () => new Map(gaugeRows.map((row) => [row.value, row])),
+    [gaugeRows],
+  );
   const isMountableStringProduct = isMountableStringByFee(product?.mountingFee);
-  const isStringProduct = product?.category === "string" || product?.category === "strings" || product?.kind === "string" || product?.kind === "strings" || isMountableStringProduct;
+  const isStringProduct =
+    product?.category === "string" ||
+    product?.category === "strings" ||
+    product?.kind === "string" ||
+    product?.kind === "strings" ||
+    isMountableStringProduct;
   const [selectedGauge, setSelectedGauge] = useState<string>("");
   useEffect(() => {
     if (!isStringProduct || gaugeOptions.length !== 1) return;
@@ -362,30 +491,53 @@ export default function ProductDetailClient({ product }: { product: any }) {
   useEffect(() => {
     if (!isStringProduct || gaugeOptions.length === 0) return;
     const current = selectedGauge ? gaugeRowMap.get(selectedGauge) : undefined;
-    const isCurrentSoldOut = !!current && (current.isSoldOut || current.stock <= 0);
+    const isCurrentSoldOut =
+      !!current && (current.isSoldOut || current.stock <= 0);
     const isCurrentInvalid = !!selectedGauge && !current;
     if (!selectedGauge || isCurrentInvalid || isCurrentSoldOut) {
-      const firstAvailable = gaugeRows.find((row) => !row.isSoldOut && row.stock > 0);
+      const firstAvailable = gaugeRows.find(
+        (row) => !row.isSoldOut && row.stock > 0,
+      );
       setSelectedGauge(firstAvailable?.value ?? "");
       setQuantity(1);
     }
   }, [gaugeOptions, gaugeRowMap, gaugeRows, isStringProduct, selectedGauge]);
   useEffect(() => {
     if (!hasVariantInventories || !isStringProduct || !selectedColor) return;
-    const current = selectedGauge ? getVariantBySelection(selectedColor, selectedGauge) : undefined;
+    const current = selectedGauge
+      ? getVariantBySelection(selectedColor, selectedGauge)
+      : undefined;
     if (isSellableVariant(current)) return;
-    const firstSellable = getAvailableGaugesForColor(selectedColor).find((v) => isSellableVariant(v));
+    const firstSellable = getAvailableGaugesForColor(selectedColor).find((v) =>
+      isSellableVariant(v),
+    );
     setSelectedGauge(firstSellable?.gaugeValue ?? "");
     setQuantity(1);
-  }, [hasVariantInventories, isStringProduct, selectedColor, selectedGauge, visibleVariantRows]);
+  }, [
+    hasVariantInventories,
+    isStringProduct,
+    selectedColor,
+    selectedGauge,
+    visibleVariantRows,
+  ]);
   // const [isWishlisted, setIsWishlisted] = useState(false);
   const { addItem } = useCartStore();
   const { setItem: setBuyNowItem } = useBuyNowStore();
   const stock = product.inventory?.stock ?? 0;
-  const selectedGaugeRow = selectedGauge ? gaugeRowMap.get(selectedGauge) : undefined;
-  const selectedVariant = hasVariantInventories && selectedColor && selectedGauge ? getVariantBySelection(selectedColor, selectedGauge) : undefined;
+  const selectedGaugeRow = selectedGauge
+    ? gaugeRowMap.get(selectedGauge)
+    : undefined;
+  const selectedVariant =
+    hasVariantInventories && selectedColor && selectedGauge
+      ? getVariantBySelection(selectedColor, selectedGauge)
+      : undefined;
   const selectedVariantSoldOut = !isSellableVariant(selectedVariant);
-  const variantHasNoSellableGauge = hasVariantInventories && !!selectedColor && getAvailableGaugesForColor(selectedColor).every((v) => !isSellableVariant(v));
+  const variantHasNoSellableGauge =
+    hasVariantInventories &&
+    !!selectedColor &&
+    getAvailableGaugesForColor(selectedColor).every(
+      (v) => !isSellableVariant(v),
+    );
   const effectiveStock = hasVariantInventories
     ? isSellableVariant(selectedVariant)
       ? Math.max(0, Number(selectedVariant?.stock ?? 0))
@@ -394,9 +546,17 @@ export default function ProductDetailClient({ product }: { product: any }) {
       ? Math.max(0, Number(selectedGaugeRow.stock ?? 0))
       : stock;
   useEffect(() => {
-    if (quantity > effectiveStock && effectiveStock > 0) setQuantity(effectiveStock);
+    if (quantity > effectiveStock && effectiveStock > 0)
+      setQuantity(effectiveStock);
   }, [effectiveStock, quantity]);
-  const variantPurchaseBlocked = hasVariantInventories && (!selectedColor || !selectedGauge || !selectedVariant || selectedVariantSoldOut || quantity > effectiveStock || variantHasNoSellableGauge);
+  const variantPurchaseBlocked =
+    hasVariantInventories &&
+    (!selectedColor ||
+      !selectedGauge ||
+      !selectedVariant ||
+      selectedVariantSoldOut ||
+      quantity > effectiveStock ||
+      variantHasNoSellableGauge);
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -409,7 +569,10 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const allowGuestCheckout = guestOrderMode === "on";
   const [loading, setLoading] = useState(false);
   const [hasResolvedReviewUser, setHasResolvedReviewUser] = useState(false);
-  const fetcher = (url: string) => fetch(url, { credentials: "include" }).then(async (r) => (r.status === 200 ? r.json() : null));
+  const fetcher = (url: string) =>
+    fetch(url, { credentials: "include" }).then(async (r) =>
+      r.status === 200 ? r.json() : null,
+    );
   const relatedSectionRef = useRef<HTMLDivElement | null>(null);
   const [shouldLoadRelated, setShouldLoadRelated] = useState(false);
 
@@ -433,41 +596,76 @@ export default function ProductDetailClient({ product }: { product: any }) {
   }, [shouldLoadRelated]);
 
   // 1) 브랜드 기준 1차
-  const { data: byBrand } = useSWR(shouldLoadRelated ? `/api/products?brand=${encodeURIComponent(product.brand ?? "")}&limit=16&exclude=${product._id}` : null, fetcher, { revalidateOnFocus: false });
+  const { data: byBrand } = useSWR(
+    shouldLoadRelated
+      ? `/api/products?brand=${encodeURIComponent(product.brand ?? "")}&limit=16&exclude=${product._id}`
+      : null,
+    fetcher,
+    { revalidateOnFocus: false },
+  );
 
   // 2) 재질 기준 2차 (1차가 빈 경우에만)
-  const { data: byMaterial } = useSWR(shouldLoadRelated && !byBrand?.products?.length && product.material ? `/api/products?material=${encodeURIComponent(product.material)}&limit=16&exclude=${product._id}` : null, fetcher, {
-    revalidateOnFocus: false,
-  });
+  const { data: byMaterial } = useSWR(
+    shouldLoadRelated && !byBrand?.products?.length && product.material
+      ? `/api/products?material=${encodeURIComponent(product.material)}&limit=16&exclude=${product._id}`
+      : null,
+    fetcher,
+    {
+      revalidateOnFocus: false,
+    },
+  );
 
   // 3) 전체 백업 3차 (1·2차 둘 다 빈 경우에만)
-  const { data: anyPool } = useSWR(shouldLoadRelated && !byBrand?.products?.length && !byMaterial?.products?.length ? `/api/products?limit=16&exclude=${product._id}` : null, fetcher, { revalidateOnFocus: false });
+  const { data: anyPool } = useSWR(
+    shouldLoadRelated &&
+      !byBrand?.products?.length &&
+      !byMaterial?.products?.length
+      ? `/api/products?limit=16&exclude=${product._id}`
+      : null,
+    fetcher,
+    { revalidateOnFocus: false },
+  );
 
   // 최종 풀 구성
-  const pool = (byBrand?.products?.length ? byBrand.products : byMaterial?.products?.length ? byMaterial.products : anyPool?.products) ?? [];
+  const pool =
+    (byBrand?.products?.length
+      ? byBrand.products
+      : byMaterial?.products?.length
+        ? byMaterial.products
+        : anyPool?.products) ?? [];
 
   const relatedFiltered = useMemo(() => {
     const base = pool.filter((p: any) => String(p._id) !== String(product._id));
-    const same = base.filter((p: any) => p.brand === product.brand || p.material === product.material);
+    const same = base.filter(
+      (p: any) => p.brand === product.brand || p.material === product.material,
+    );
     return (same.length ? same : base).slice(0, 4);
   }, [pool, product]);
 
   // 로딩 상태(세 요청 모두 아직 없음)
-  const loadingRelated = !shouldLoadRelated || (!byBrand && !byMaterial && !anyPool);
+  const loadingRelated =
+    !shouldLoadRelated || (!byBrand && !byMaterial && !anyPool);
 
   // 상품별 QnA 목록
   const {
     data: qnaData,
     error: qnaError,
     isLoading: qnaLoading,
-  } = useSWR(activeTab === "qna" ? `/api/products/${product._id}/qna?page=1&limit=10` : null, fetcher, {
-    revalidateOnFocus: false,
-  });
+  } = useSWR(
+    activeTab === "qna"
+      ? `/api/products/${product._id}/qna?page=1&limit=10`
+      : null,
+    fetcher,
+    {
+      revalidateOnFocus: false,
+    },
+  );
 
   const qnas = qnaData?.items ?? [];
   const qnaTotal = qnaData?.total ?? 0;
 
-  const fmtDate = (v?: string | Date) => (v ? new Date(v).toLocaleDateString() : "");
+  const fmtDate = (v?: string | Date) =>
+    v ? new Date(v).toLocaleDateString() : "";
 
   // 합계 계산
   const unitPrice = Number(product?.price ?? 0);
@@ -475,11 +673,16 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const serviceTotal = qtyTotal + Number(product?.mountingFee ?? 0);
   const canCheckoutWithService = isMountableStringByFee(product?.mountingFee);
   const isApplyFlow = searchParams.get("from") === "apply";
-  const serviceCtaLabel = isApplyFlow ? "이 스트링 선택하기" : "교체서비스 신청하기";
-  const shouldEmphasizeServiceCta = isApplyFlow || !ENABLE_STRING_STANDALONE_ORDER;
-  const isStandalonePausedMountableString = canCheckoutWithService && !ENABLE_STRING_STANDALONE_ORDER;
+  const serviceCtaLabel = isApplyFlow
+    ? "이 스트링 선택하기"
+    : "교체서비스 신청하기";
+  const shouldEmphasizeServiceCta =
+    isApplyFlow || !ENABLE_STRING_STANDALONE_ORDER;
+  const isStandalonePausedMountableString =
+    canCheckoutWithService && !ENABLE_STRING_STANDALONE_ORDER;
   const cartCtaLabel = "장바구니 담기";
-  const standalonePausedNotice = "현재 스트링 단품 구매는 운영하지 않으며, 교체서비스 신청과 함께 이용할 수 있어요.";
+  const standalonePausedNotice =
+    "현재 스트링 단품 구매는 운영하지 않으며, 교체서비스 신청과 함께 이용할 수 있어요.";
 
   // 브라우저 뒤/앞으로 가기 시에도 URL 변화에 맞춰 동기화
   useEffect(() => {
@@ -496,12 +699,24 @@ export default function ProductDetailClient({ product }: { product: any }) {
   };
 
   // 로그인 정보 로드가 끝난 후 계산
-  const isAdmin = !!user && ((user as any).role === "admin" || (user as any).role === "ADMIN" || (user as any).isAdmin === true || (Array.isArray((user as any).roles) && (user as any).roles.includes("admin")));
+  const isAdmin =
+    !!user &&
+    ((user as any).role === "admin" ||
+      (user as any).role === "ADMIN" ||
+      (user as any).isAdmin === true ||
+      (Array.isArray((user as any).roles) &&
+        (user as any).roles.includes("admin")));
 
   // 화면에 보이는 개수만큼만 가져와 병합(과한 트래픽 방지)
   const reviewsCount = reviewsLen || 10;
 
-  const { data: adminReviews, mutate: mutateAdminReviews } = useSWR(activeTab === "reviews" && isAdmin ? `/api/reviews/admin?productId=${product._id}&limit=${reviewsCount}` : null, fetcher, { revalidateOnFocus: false });
+  const { data: adminReviews, mutate: mutateAdminReviews } = useSWR(
+    activeTab === "reviews" && isAdmin
+      ? `/api/reviews/admin?productId=${product._id}&limit=${reviewsCount}`
+      : null,
+    fetcher,
+    { revalidateOnFocus: false },
+  );
 
   const { has, findItem, updateOptions, toggle } = useWishlist();
 
@@ -541,10 +756,18 @@ export default function ProductDetailClient({ product }: { product: any }) {
   }, [activeTab, hasResolvedReviewUser]);
 
   // 로그인한 경우에만 내 리뷰 원문을 추가 조회 (비공개라도 원문 반환)
-  const { data: myReview, mutate: mutateMyReview } = useSWR(activeTab === "reviews" && user ? `/api/reviews/self?productId=${product._id}` : null, fetcher, { revalidateOnFocus: false });
+  const { data: myReview, mutate: mutateMyReview } = useSWR(
+    activeTab === "reviews" && user
+      ? `/api/reviews/self?productId=${product._id}`
+      : null,
+    fetcher,
+    { revalidateOnFocus: false },
+  );
 
   // 내 리뷰 여부 판별(merged에서 ownedByMe 세팅 + id 비교)
-  const isMine = (rv: any) => !!rv?.ownedByMe || (myReview && rv && String(myReview._id) === String(rv._id));
+  const isMine = (rv: any) =>
+    !!rv?.ownedByMe ||
+    (myReview && rv && String(myReview._id) === String(rv._id));
 
   // 서버가 내려준 product.reviews는 숨김 리뷰를 마스킹
   // myReview가 있으면 동일 _id 항목을 원문으로 덮어쓰기 + 마스킹 해제
@@ -555,7 +778,9 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
     // 내 리뷰 덮어쓰기 (있을 때만)
     if (myReview && myReview._id) {
-      const i = next.findIndex((r: any) => String(r._id) === String(myReview._id));
+      const i = next.findIndex(
+        (r: any) => String(r._id) === String(myReview._id),
+      );
       if (i !== -1) {
         next = [...next];
         next[i] = {
@@ -621,7 +846,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
   };
   const closeViewer = () => setViewerOpen(false);
   const nextViewer = () => setViewerIndex((i) => (i + 1) % viewerImages.length);
-  const prevViewer = () => setViewerIndex((i) => (i - 1 + viewerImages.length) % viewerImages.length);
+  const prevViewer = () =>
+    setViewerIndex((i) => (i - 1 + viewerImages.length) % viewerImages.length);
 
   const openEdit = (review: any) => {
     setEditing(review);
@@ -712,7 +938,11 @@ export default function ProductDetailClient({ product }: { product: any }) {
       showErrorToast("색상을 선택해주세요.");
       return false;
     }
-    const colorSoldOut = hasVariantInventories ? !getVariantsByColor(selectedColorRow.value).some((v) => isSellableVariant(v)) : isColorSoldOut(selectedColorRow);
+    const colorSoldOut = hasVariantInventories
+      ? !getVariantsByColor(selectedColorRow.value).some((v) =>
+          isSellableVariant(v),
+        )
+      : isColorSoldOut(selectedColorRow);
     if (colorSoldOut) {
       showErrorToast("선택한 색상은 현재 품절입니다.");
       return false;
@@ -726,7 +956,12 @@ export default function ProductDetailClient({ product }: { product: any }) {
           selectedColor,
           selectedColorLabel: getColorLabel(selectedColorRow),
           selectedColorHex: selectedColorRow.colorHex,
-          selectedColorImage: selectedVariant?.colorImage?.trim() || selectedColorRow.image || colorImage || product.images?.[0] || "/placeholder.svg",
+          selectedColorImage:
+            selectedVariant?.colorImage?.trim() ||
+            selectedColorRow.image ||
+            colorImage ||
+            product.images?.[0] ||
+            "/placeholder.svg",
         }
       : {};
   const wishlistOptionPayload = {
@@ -734,10 +969,20 @@ export default function ProductDetailClient({ product }: { product: any }) {
     ...selectedColorPayload,
   };
   const currentWishlistItem = findItem(wishlistProductId);
-  const hasCurrentWishlistOption = Boolean(wishlistOptionPayload.selectedGauge || wishlistOptionPayload.selectedColor);
-  const isDifferentWishlistOption = currentWishlistItem?.selectedGauge !== wishlistOptionPayload.selectedGauge || currentWishlistItem?.selectedColor !== wishlistOptionPayload.selectedColor;
-  const shouldUpdateWishlistOption = isWishlisted && hasCurrentWishlistOption && (!currentWishlistItem?.hasSelectedOption || isDifferentWishlistOption);
-  const wishlistButtonLabel = shouldUpdateWishlistOption ? "선택 옵션으로 업데이트" : "위시리스트";
+  const hasCurrentWishlistOption = Boolean(
+    wishlistOptionPayload.selectedGauge || wishlistOptionPayload.selectedColor,
+  );
+  const isDifferentWishlistOption =
+    currentWishlistItem?.selectedGauge !==
+      wishlistOptionPayload.selectedGauge ||
+    currentWishlistItem?.selectedColor !== wishlistOptionPayload.selectedColor;
+  const shouldUpdateWishlistOption =
+    isWishlisted &&
+    hasCurrentWishlistOption &&
+    (!currentWishlistItem?.hasSelectedOption || isDifferentWishlistOption);
+  const wishlistButtonLabel = shouldUpdateWishlistOption
+    ? "선택 옵션으로 업데이트"
+    : "위시리스트";
 
   const requireGaugeSelection = () => {
     if (!isStringProduct || gaugeRows.length === 0) return true;
@@ -753,7 +998,11 @@ export default function ProductDetailClient({ product }: { product: any }) {
     // 재고 검증 (기존 장바구니에 담긴 수량 + 지금 선택 수량이 stock 초과인지)
     const wouldBe = quantity;
     if (wouldBe > effectiveStock) {
-      showErrorToast(hideGaugeStock ? "선택한 게이지의 구매 가능 수량을 초과했습니다." : `재고가 부족합니다. 현재 재고: ${effectiveStock}개`);
+      showErrorToast(
+        hideGaugeStock
+          ? "선택한 게이지의 구매 가능 수량을 초과했습니다."
+          : `재고가 부족합니다. 현재 재고: ${effectiveStock}개`,
+      );
       return;
     }
     const result = addItem({
@@ -761,7 +1010,10 @@ export default function ProductDetailClient({ product }: { product: any }) {
       name: product.name,
       price: displayPrice,
       quantity,
-      image: selectedColorRow?.image?.trim() || product.images?.[0] || "/placeholder.svg",
+      image:
+        selectedColorRow?.image?.trim() ||
+        product.images?.[0] ||
+        "/placeholder.svg",
       stock: effectiveStock,
       selectedGauge: selectedGauge || undefined,
       ...selectedColorPayload,
@@ -779,7 +1031,10 @@ export default function ProductDetailClient({ product }: { product: any }) {
           ? {
               action: {
                 label: "로그인하기",
-                onClick: () => router.push(`/login?next=${encodeURIComponent(`/products/${product._id}`)}`),
+                onClick: () =>
+                  router.push(
+                    `/login?next=${encodeURIComponent(`/products/${product._id}`)}`,
+                  ),
               },
             }
           : {}),
@@ -806,7 +1061,10 @@ export default function ProductDetailClient({ product }: { product: any }) {
         action: {
           label: "로그인하기",
           // onClick: () => router.push('/login?from=cart'),
-          onClick: () => router.push(`/login?next=${encodeURIComponent(`/products/${product._id}`)}`),
+          onClick: () =>
+            router.push(
+              `/login?next=${encodeURIComponent(`/products/${product._id}`)}`,
+            ),
         },
       });
     } else {
@@ -821,7 +1079,11 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
     // 재고 검증 (지금 선택 수량이 stock 초과인지)
     if (quantity > effectiveStock) {
-      showErrorToast(hideGaugeStock ? "선택한 게이지의 구매 가능 수량을 초과했습니다." : `재고가 부족합니다. 현재 재고: ${effectiveStock}개`);
+      showErrorToast(
+        hideGaugeStock
+          ? "선택한 게이지의 구매 가능 수량을 초과했습니다."
+          : `재고가 부족합니다. 현재 재고: ${effectiveStock}개`,
+      );
       return;
     }
 
@@ -831,7 +1093,10 @@ export default function ProductDetailClient({ product }: { product: any }) {
       name: product.name,
       price: displayPrice,
       quantity,
-      image: selectedColorRow?.image?.trim() || product.images?.[0] || "/placeholder.svg",
+      image:
+        selectedColorRow?.image?.trim() ||
+        product.images?.[0] ||
+        "/placeholder.svg",
       stock: effectiveStock,
       selectedGauge: selectedGauge || undefined,
       ...selectedColorPayload,
@@ -858,7 +1123,11 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
     // 재고 검증
     if (quantity > effectiveStock) {
-      showErrorToast(hideGaugeStock ? "선택한 게이지의 구매 가능 수량을 초과했습니다." : `재고가 부족합니다. 현재 재고: ${effectiveStock}개`);
+      showErrorToast(
+        hideGaugeStock
+          ? "선택한 게이지의 구매 가능 수량을 초과했습니다."
+          : `재고가 부족합니다. 현재 재고: ${effectiveStock}개`,
+      );
       return;
     }
 
@@ -868,7 +1137,10 @@ export default function ProductDetailClient({ product }: { product: any }) {
       name: product.name,
       price: displayPrice, // 여기서는 "자재 가격"만
       quantity,
-      image: selectedColorRow?.image?.trim() || product.images?.[0] || "/placeholder.svg",
+      image:
+        selectedColorRow?.image?.trim() ||
+        product.images?.[0] ||
+        "/placeholder.svg",
       stock: effectiveStock,
       selectedGauge: selectedGauge || undefined,
       ...selectedColorPayload,
@@ -877,7 +1149,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
     setBuyNowItem(buyNowItem);
 
     // 장착비(서비스비) – 없으면 0
-    const mountingFee = typeof product.mountingFee === "number" ? product.mountingFee : 0;
+    const mountingFee =
+      typeof product.mountingFee === "number" ? product.mountingFee : 0;
 
     const search = new URLSearchParams({
       mode: "buynow",
@@ -906,11 +1179,18 @@ export default function ProductDetailClient({ product }: { product: any }) {
       }
 
       await toggle(wishlistProductId, wishlistOptionPayload);
-      showSuccessToast(isWishlisted ? "위시리스트에서 제거했습니다." : "위시리스트에 추가했습니다.");
+      showSuccessToast(
+        isWishlisted
+          ? "위시리스트에서 제거했습니다."
+          : "위시리스트에 추가했습니다.",
+      );
     } catch (e: any) {
       if (e?.message === "unauthorized") {
         showErrorToast("로그인이 필요합니다.");
-        const nextPath = typeof window !== "undefined" ? window.location.pathname + window.location.search : `/products/${product._id}`;
+        const nextPath =
+          typeof window !== "undefined"
+            ? window.location.pathname + window.location.search
+            : `/products/${product._id}`;
         router.push(`/login?next=${encodeURIComponent(nextPath)}`);
       } else {
         showErrorToast("처리 중 오류가 발생했습니다.");
@@ -926,11 +1206,21 @@ export default function ProductDetailClient({ product }: { product: any }) {
       disabled={busy || isWishlistUnknown}
       onClick={handleWishlist}
       size="lg"
-      className={cn("h-auto min-h-12 w-full text-sm sm:text-base", isWishlisted ? "border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/15" : "bg-background", isWishlistUnknown && "cursor-not-allowed opacity-70")}
+      className={cn(
+        "h-auto min-h-12 w-full text-sm sm:text-base",
+        isWishlisted
+          ? "border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/15"
+          : "bg-background",
+        isWishlistUnknown && "cursor-not-allowed opacity-70",
+      )}
       aria-disabled={busy || isWishlistUnknown}
-      aria-label={isWishlistUnknown ? "위시리스트 상태 확인 중" : wishlistButtonLabel}
+      aria-label={
+        isWishlistUnknown ? "위시리스트 상태 확인 중" : wishlistButtonLabel
+      }
     >
-      <Heart className={`mr-2 h-4 w-4 sm:h-5 sm:w-5 ${isWishlisted ? "text-destructive fill-current" : isWishlistUnknown ? "text-muted-foreground/70" : ""}`} />
+      <Heart
+        className={`mr-2 h-4 w-4 sm:h-5 sm:w-5 ${isWishlisted ? "text-destructive fill-current" : isWishlistUnknown ? "text-muted-foreground/70" : ""}`}
+      />
       {wishlistButtonLabel}
     </Button>
   );
@@ -957,11 +1247,19 @@ export default function ProductDetailClient({ product }: { product: any }) {
       subtitle: productBrandLabel || "스트링",
       image: images?.[0],
       href: `/products/${productId}`,
-      price: Number.isFinite(Number(product?.price)) ? Number(product.price) : null,
+      price: Number.isFinite(Number(product?.price))
+        ? Number(product.price)
+        : null,
     });
   }, [images, product?.name, product?.price, productBrandLabel, productId]);
 
-  const averageRating = reviewsLen > 0 ? reviews.reduce((sum: number, review: any) => sum + (Number(review?.rating) || 0), 0) / reviewsLen : 0;
+  const averageRating =
+    reviewsLen > 0
+      ? reviews.reduce(
+          (sum: number, review: any) => sum + (Number(review?.rating) || 0),
+          0,
+        ) / reviewsLen
+      : 0;
   const merchandisingBadges = getProductDetailBadges(product);
 
   // 수량 버튼 상태
@@ -975,15 +1273,23 @@ export default function ProductDetailClient({ product }: { product: any }) {
         <SiteContainer variant="wide" className="relative">
           <div className="flex min-w-0 items-center justify-between gap-3">
             <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden text-sm sm:gap-2.5 sm:text-base">
-              <Link href="/" className="text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap">
+              <Link
+                href="/"
+                className="text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
+              >
                 홈
               </Link>
               <span className="text-muted-foreground/50">/</span>
-              <Link href="/products" className="text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap">
+              <Link
+                href="/products"
+                className="text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
+              >
                 상품
               </Link>
               <span className="text-muted-foreground/50">/</span>
-              <span className="min-w-0 flex-1 truncate font-medium text-foreground">{product.name}</span>
+              <span className="min-w-0 flex-1 truncate font-medium text-foreground">
+                {product.name}
+              </span>
             </div>
             <div className="flex shrink-0 items-center justify-end gap-1.5 sm:gap-2">
               <Button
@@ -996,7 +1302,11 @@ export default function ProductDetailClient({ product }: { product: any }) {
               </Button>
               {isAdmin && (
                 <Link href={`/admin/products/${productId}/edit`}>
-                  <Button variant="outline" size="sm" className="h-9 whitespace-nowrap rounded-xl px-2.5 sm:px-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-9 whitespace-nowrap rounded-xl px-2.5 sm:px-3"
+                  >
                     상품 수정
                   </Button>
                 </Link>
@@ -1011,7 +1321,16 @@ export default function ProductDetailClient({ product }: { product: any }) {
           <div className="bp-lg:col-span-3 space-y-4 sm:space-y-5">
             <Card className="overflow-hidden border border-border/60 shadow-lg bg-card rounded-3xl">
               <div className="relative aspect-square bg-muted/20">
-                <Image src={colorImage || images[selectedImageIndex] || "/placeholder.svg"} alt={product.name} fill className="object-contain p-4 transition-transform duration-500 hover:scale-105" />
+                <Image
+                  src={
+                    colorImage ||
+                    images[selectedImageIndex] ||
+                    "/placeholder.svg"
+                  }
+                  alt={product.name}
+                  fill
+                  className="object-contain p-4 transition-transform duration-500 hover:scale-105"
+                />
                 {images.length > 1 && (
                   <>
                     <Button
@@ -1035,7 +1354,12 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 {merchandisingBadges.length > 0 && (
                   <div className="absolute top-4 sm:top-5 left-4 sm:left-5 flex flex-wrap gap-2 sm:gap-2.5">
                     {merchandisingBadges.map((badge) => (
-                      <Badge key={`${product?._id ?? product?.name}-${badge}`} variant={merchandisingImageBadgeVariant(badge)} shape="pill" className={cn(merchandisingImageBadgeClass)}>
+                      <Badge
+                        key={`${product?._id ?? product?.name}-${badge}`}
+                        variant={merchandisingImageBadgeVariant(badge)}
+                        shape="pill"
+                        className={cn(merchandisingImageBadgeClass)}
+                      >
                         {badge}
                       </Badge>
                     ))}
@@ -1053,7 +1377,15 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     onClick={() => setSelectedImageIndex(index)}
                   >
                     <div className="aspect-square relative bg-muted/20">
-                      <Image src={image || "/placeholder.svg?height=100&width=100&query=tennis string thumbnail"} alt={`${product.name} ${index + 1}`} fill className="object-contain p-2" />
+                      <Image
+                        src={
+                          image ||
+                          "/placeholder.svg?height=100&width=100&query=tennis string thumbnail"
+                        }
+                        alt={`${product.name} ${index + 1}`}
+                        fill
+                        className="object-contain p-2"
+                      />
                     </div>
                   </Card>
                 ))}
@@ -1067,12 +1399,19 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 <div className="space-y-5 sm:space-y-6">
                   {/* 브랜드와 제품명 */}
                   <div>
-                    <span className="inline-block max-w-full truncate text-sm sm:text-base text-muted-foreground font-medium mb-2">{productBrandLabel}</span>
-                    <h1 className="text-balance break-words text-xl font-bold leading-tight tracking-normal text-foreground sm:text-2xl bp-lg:text-3xl">{product.name}</h1>
+                    <span className="inline-block max-w-full truncate text-sm sm:text-base text-muted-foreground font-medium mb-2">
+                      {productBrandLabel}
+                    </span>
+                    <h1 className="text-balance break-words text-xl font-bold leading-tight tracking-normal text-foreground sm:text-2xl bp-lg:text-3xl">
+                      {product.name}
+                    </h1>
                     <div className="mt-3 flex flex-wrap items-center gap-3">
                       <div className="flex items-center gap-0.5">
                         {[...Array(5)].map((_, i) => (
-                          <Star key={i} className={`h-4 w-4 sm:h-5 sm:w-5 ${i < Math.floor(averageRating) ? "text-foreground fill-current" : "text-muted-foreground/30 fill-current"}`} />
+                          <Star
+                            key={i}
+                            className={`h-4 w-4 sm:h-5 sm:w-5 ${i < Math.floor(averageRating) ? "text-foreground fill-current" : "text-muted-foreground/30 fill-current"}`}
+                          />
                         ))}
                       </div>
                       <span className="whitespace-nowrap text-sm text-muted-foreground sm:text-base">
@@ -1085,12 +1424,18 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     <div className="flex items-baseline gap-3 flex-wrap">
                       <span className="whitespace-nowrap tabular-nums text-3xl sm:text-4xl font-bold text-foreground tracking-normal">
                         {displayPrice.toLocaleString()}
-                        <span className="text-xl sm:text-2xl font-medium ml-0.5">원</span>
+                        <span className="text-xl sm:text-2xl font-medium ml-0.5">
+                          원
+                        </span>
                       </span>
                       {isSale && (
                         <>
-                          <span className="whitespace-nowrap tabular-nums text-lg sm:text-xl text-muted-foreground/60 line-through">{regularPrice.toLocaleString()}원</span>
-                          <span className="shrink-0 whitespace-nowrap text-sm font-semibold text-destructive bg-destructive/10 px-2.5 py-1 rounded-lg">{saleRate}% OFF</span>
+                          <span className="whitespace-nowrap tabular-nums text-lg sm:text-xl text-muted-foreground/60 line-through">
+                            {regularPrice.toLocaleString()}원
+                          </span>
+                          <span className="shrink-0 whitespace-nowrap text-sm font-semibold text-destructive bg-destructive/10 px-2.5 py-1 rounded-lg">
+                            {saleRate}% OFF
+                          </span>
                         </>
                       )}
                     </div>
@@ -1098,7 +1443,10 @@ export default function ProductDetailClient({ product }: { product: any }) {
                       <div className="text-sm sm:text-base text-muted-foreground">
                         <span className="inline-flex max-w-full items-center gap-1.5 rounded-xl bg-muted/50 border border-border/60 px-3 py-1.5 text-sm font-medium whitespace-nowrap tabular-nums">
                           <Wrench className="h-3.5 w-3.5" />
-                          장착 서비스: {product.mountingFee > 0 ? `+${product.mountingFee.toLocaleString()}원` : "무료"}
+                          장착 서비스:{" "}
+                          {product.mountingFee > 0
+                            ? `+${product.mountingFee.toLocaleString()}원`
+                            : "무료"}
                         </span>
                       </div>
                     )}
@@ -1108,9 +1456,14 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     {visibleColorRows.length > 0 && (
                       <div className="space-y-2 rounded-xl border border-border/60 bg-muted/30 p-3">
                         <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:gap-3 min-w-0">
-                          <span className="text-sm font-semibold text-foreground">색상 선택</span>
+                          <span className="text-sm font-semibold text-foreground">
+                            색상 선택
+                          </span>
                           {selectedColorLabel && (
-                            <span className="min-w-0 break-words text-xs text-muted-foreground" title={selectedColorLabel}>
+                            <span
+                              className="min-w-0 break-words text-xs text-muted-foreground"
+                              title={selectedColorLabel}
+                            >
                               현재 색상: {selectedColorLabel}
                             </span>
                           )}
@@ -1118,7 +1471,11 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         <div className="flex gap-2 overflow-x-auto pb-1">
                           {visibleColorRows.map((row) => {
                             const label = getColorLabel(row);
-                            const soldOut = hasVariantInventories ? !getVariantsByColor(row.value).some((v) => isSellableVariant(v)) : isColorSoldOut(row);
+                            const soldOut = hasVariantInventories
+                              ? !getVariantsByColor(row.value).some((v) =>
+                                  isSellableVariant(v),
+                                )
+                              : isColorSoldOut(row);
                             const isSelected = selectedColor === row.value;
                             const swatchImage =
                               row.image?.trim() ||
@@ -1126,7 +1483,9 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                 .find((v) => v.colorImage?.trim())
                                 ?.colorImage?.trim();
                             const hasImage = !!swatchImage;
-                            const hasSwatch = typeof row.colorHex === "string" && row.colorHex.trim().length > 0;
+                            const hasSwatch =
+                              typeof row.colorHex === "string" &&
+                              row.colorHex.trim().length > 0;
 
                             return (
                               <button
@@ -1138,18 +1497,36 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                 onClick={() => setSelectedColor(row.value)}
                                 className={cn(
                                   "relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-lg border bg-background text-xs text-foreground transition",
-                                  isSelected ? "border-foreground" : "border-border/60",
+                                  isSelected
+                                    ? "border-foreground"
+                                    : "border-border/60",
                                   soldOut && "cursor-not-allowed opacity-45",
                                 )}
                               >
                                 {hasImage ? (
-                                  <Image src={swatchImage} alt={label} fill className="object-cover" />
+                                  <Image
+                                    src={swatchImage}
+                                    alt={label}
+                                    fill
+                                    className="object-cover"
+                                  />
                                 ) : hasSwatch ? (
-                                  <span className="h-7 w-7 rounded-full border border-border/60" style={{ backgroundColor: row.colorHex?.trim() }} />
+                                  <span
+                                    className="h-7 w-7 rounded-full border border-border/60"
+                                    style={{
+                                      backgroundColor: row.colorHex?.trim(),
+                                    }}
+                                  />
                                 ) : (
-                                  <span className="line-clamp-2 px-1 text-center leading-tight break-keep">{label}</span>
+                                  <span className="line-clamp-2 px-1 text-center leading-tight break-keep">
+                                    {label}
+                                  </span>
                                 )}
-                                {soldOut && <span className="absolute bottom-0 left-0 right-0 bg-background/85 text-[10px] font-medium">품절</span>}
+                                {soldOut && (
+                                  <span className="absolute bottom-0 left-0 right-0 bg-background/85 text-[10px] font-medium">
+                                    품절
+                                  </span>
+                                )}
                               </button>
                             );
                           })}
@@ -1157,14 +1534,30 @@ export default function ProductDetailClient({ product }: { product: any }) {
                       </div>
                     )}
                     <div className="flex items-center justify-between gap-3 rounded-xl border border-border/60 bg-muted/30 p-3">
-                      <span className="whitespace-nowrap text-sm font-semibold text-foreground">수량 선택</span>
+                      <span className="whitespace-nowrap text-sm font-semibold text-foreground">
+                        수량 선택
+                      </span>
 
-                      <div className={cn("flex w-auto shrink-0 items-center p-1", detailSurfaceSubtleInnerClass)}>
-                        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg sm:h-10 sm:w-10" aria-label="수량 감소" disabled={!canDec} onClick={() => setQuantity((q) => Math.max(1, q - 1))}>
+                      <div
+                        className={cn(
+                          "flex w-auto shrink-0 items-center p-1",
+                          detailSurfaceSubtleInnerClass,
+                        )}
+                      >
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-9 w-9 rounded-lg sm:h-10 sm:w-10"
+                          aria-label="수량 감소"
+                          disabled={!canDec}
+                          onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                        >
                           <Minus className="h-4 w-4" />
                         </Button>
 
-                        <span className="tabular-nums w-10 sm:w-12 select-none text-center font-bold text-lg sm:text-xl">{quantity}</span>
+                        <span className="tabular-nums w-10 sm:w-12 select-none text-center font-bold text-lg sm:text-xl">
+                          {quantity}
+                        </span>
 
                         <Button
                           variant="ghost"
@@ -1174,7 +1567,11 @@ export default function ProductDetailClient({ product }: { product: any }) {
                           disabled={!canInc}
                           onClick={() => {
                             if (!canInc) {
-                              showErrorToast(hideGaugeStock ? "선택한 게이지의 구매 가능 수량을 초과했습니다." : `더 이상 담을 수 없습니다. 재고: ${effectiveStock}개`);
+                              showErrorToast(
+                                hideGaugeStock
+                                  ? "선택한 게이지의 구매 가능 수량을 초과했습니다."
+                                  : `더 이상 담을 수 없습니다. 재고: ${effectiveStock}개`,
+                              );
                               return;
                             }
                             setQuantity((q) => q + 1);
@@ -1184,49 +1581,95 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         </Button>
                       </div>
                     </div>
-                    {!hasVariantInventories && product.inventory?.manageStock && product.inventory.stock <= 5 && product.inventory.stock > 0 && (
-                      <div className={cn("flex items-center gap-2.5 p-3 sm:p-3.5", detailSurfaceSubtleInnerClass)}>
-                        <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
-                        <span className="text-sm sm:text-base text-muted-foreground">
-                          현재 남은 수량이 <span className="font-semibold text-foreground">{product.inventory.stock}개</span>입니다.
-                        </span>
-                      </div>
-                    )}
+                    {!hasVariantInventories &&
+                      product.inventory?.manageStock &&
+                      product.inventory.stock <= 5 &&
+                      product.inventory.stock > 0 && (
+                        <div
+                          className={cn(
+                            "flex items-center gap-2.5 p-3 sm:p-3.5",
+                            detailSurfaceSubtleInnerClass,
+                          )}
+                        >
+                          <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
+                          <span className="text-sm sm:text-base text-muted-foreground">
+                            현재 남은 수량이{" "}
+                            <span className="font-semibold text-foreground">
+                              {product.inventory.stock}개
+                            </span>
+                            입니다.
+                          </span>
+                        </div>
+                      )}
 
                     {isStringProduct && gaugeRows.length > 0 && (
                       <div className="space-y-2 rounded-xl border border-border/60 bg-muted/30 p-3">
                         <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:gap-3 min-w-0">
-                          <span className="text-sm font-semibold text-foreground">게이지 선택</span>
-                          {gaugeOptions.length === 1 && <span className="text-xs text-muted-foreground">자동 선택</span>}
+                          <span className="text-sm font-semibold text-foreground">
+                            게이지 선택
+                          </span>
+                          {gaugeOptions.length === 1 && (
+                            <span className="text-xs text-muted-foreground">
+                              자동 선택
+                            </span>
+                          )}
                         </div>
-                        <Select value={selectedGauge} onValueChange={setSelectedGauge}>
+                        <Select
+                          value={selectedGauge}
+                          onValueChange={setSelectedGauge}
+                        >
                           <SelectTrigger className="w-full min-w-0 bg-background">
                             <SelectValue placeholder="게이지를 선택하세요" />
                           </SelectTrigger>
                           <SelectContent>
                             {gaugeRows.map((row) => {
                               const soldOut = row.isSoldOut || row.stock <= 0;
-                              const displayLabel = normalizeGaugeDisplayLabel(row);
-                              const stockLabel = !hideGaugeStock && !soldOut ? ` · 재고 ${Math.max(0, Number(row.stock ?? 0))}개` : "";
+                              const displayLabel =
+                                normalizeGaugeDisplayLabel(row);
+                              const stockLabel =
+                                !hideGaugeStock && !soldOut
+                                  ? ` · 재고 ${Math.max(0, Number(row.stock ?? 0))}개`
+                                  : "";
                               const soldOutLabel = soldOut ? " · 품절" : "";
                               return (
-                                <SelectItem key={row.value} value={row.value} disabled={soldOut}>
+                                <SelectItem
+                                  key={row.value}
+                                  value={row.value}
+                                  disabled={soldOut}
+                                >
                                   {`${displayLabel}${stockLabel}${soldOutLabel}`}
                                 </SelectItem>
                               );
                             })}
                           </SelectContent>
                         </Select>
-                        {hasVariantInventories && variantHasNoSellableGauge && <p className="text-xs text-destructive">선택 가능한 게이지가 없습니다.</p>}
+                        {hasVariantInventories && variantHasNoSellableGauge && (
+                          <p className="text-xs text-destructive">
+                            선택 가능한 게이지가 없습니다.
+                          </p>
+                        )}
                       </div>
                     )}
 
                     <div className="flex flex-col gap-3 sm:gap-3.5">
-                      {(hasVariantInventories ? selectedVariantSoldOut : product.inventory?.manageStock && product.inventory.stock <= 0) ? (
+                      {(
+                        hasVariantInventories
+                          ? selectedVariantSoldOut
+                          : product.inventory?.manageStock &&
+                            product.inventory.stock <= 0
+                      ) ? (
                         <div className="space-y-3">
-                          <Button disabled variant="secondary" size="tall" wrap="normal" className="min-h-12 w-full sm:min-h-14">
+                          <Button
+                            disabled
+                            variant="secondary"
+                            size="tall"
+                            wrap="normal"
+                            className="min-h-12 w-full sm:min-h-14"
+                          >
                             <X className="mr-2 h-5 w-5" />
-                            {hasVariantInventories ? "선택한 색상/게이지 조합이 품절되었습니다" : "재고가 소진되었습니다"}
+                            {hasVariantInventories
+                              ? "선택한 색상/게이지 조합이 품절되었습니다"
+                              : "재고가 소진되었습니다"}
                           </Button>
                           {renderWishlistButton()}
                         </div>
@@ -1238,7 +1681,15 @@ export default function ProductDetailClient({ product }: { product: any }) {
                               size="tall"
                               className="h-12 w-full sm:h-14"
                               onClick={handleBuyNow}
-                              disabled={loading || effectiveStock <= 0 || quantity > effectiveStock || (isStringProduct && gaugeRows.length > 0 && !selectedGauge) || variantPurchaseBlocked}
+                              disabled={
+                                loading ||
+                                effectiveStock <= 0 ||
+                                quantity > effectiveStock ||
+                                (isStringProduct &&
+                                  gaugeRows.length > 0 &&
+                                  !selectedGauge) ||
+                                variantPurchaseBlocked
+                              }
                             >
                               <CreditCard className="mr-2 h-5 w-5" />
                               스트링만 구매하기
@@ -1247,10 +1698,21 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
                           {canCheckoutWithService && (
                             <Button
-                              variant={shouldEmphasizeServiceCta ? "default" : "secondary"}
+                              variant={
+                                shouldEmphasizeServiceCta
+                                  ? "default"
+                                  : "secondary"
+                              }
                               size="tall"
                               className="min-h-12 w-full gap-2 whitespace-nowrap sm:min-h-14"
-                              disabled={loading || quantity > effectiveStock || (isStringProduct && gaugeRows.length > 0 && !selectedGauge) || variantPurchaseBlocked}
+                              disabled={
+                                loading ||
+                                quantity > effectiveStock ||
+                                (isStringProduct &&
+                                  gaugeRows.length > 0 &&
+                                  !selectedGauge) ||
+                                variantPurchaseBlocked
+                              }
                               onClick={handleBuyNowWithService}
                             >
                               <Wrench className="mr-2 h-5 w-5" />
@@ -1264,7 +1726,14 @@ export default function ProductDetailClient({ product }: { product: any }) {
                               size="lg"
                               className="h-auto min-h-12 w-full whitespace-nowrap text-sm sm:text-base"
                               onClick={handleAddToCart}
-                              disabled={loading || quantity > effectiveStock || (isStringProduct && gaugeRows.length > 0 && !selectedGauge) || variantPurchaseBlocked}
+                              disabled={
+                                loading ||
+                                quantity > effectiveStock ||
+                                (isStringProduct &&
+                                  gaugeRows.length > 0 &&
+                                  !selectedGauge) ||
+                                variantPurchaseBlocked
+                              }
                             >
                               <ShoppingCart className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                               {cartCtaLabel}
@@ -1291,35 +1760,51 @@ export default function ProductDetailClient({ product }: { product: any }) {
             </CardHeader>
             <CardContent className="space-y-5 sm:space-y-6 p-5 sm:p-6 pt-0">
               <div>
-                <h4 className="mb-3 break-keep text-sm font-semibold text-foreground sm:mb-4 sm:text-base">추천 대상</h4>
+                <h4 className="mb-3 break-keep text-sm font-semibold text-foreground sm:mb-4 sm:text-base">
+                  추천 대상
+                </h4>
                 <div className="space-y-2 sm:space-y-2.5">
                   {selectedPlayerTypes.length > 0 && (
                     <div className="flex flex-col items-start gap-2 rounded-xl border border-border/60 bg-secondary/40 p-3 text-sm sm:flex-row sm:items-start sm:gap-3 sm:text-base">
                       <div className="flex shrink-0 items-center gap-3">
                         <div className="h-2.5 w-2.5 shrink-0 rounded-full bg-muted-foreground/70"></div>
-                        <span className="shrink-0 whitespace-nowrap break-keep text-muted-foreground">플레이어:</span>
+                        <span className="shrink-0 whitespace-nowrap break-keep text-muted-foreground">
+                          플레이어:
+                        </span>
                       </div>
-                      <span className="min-w-0 whitespace-normal break-keep break-words font-medium leading-relaxed text-foreground">{selectedPlayerTypes.join(", ")}</span>
+                      <span className="min-w-0 whitespace-normal break-keep break-words font-medium leading-relaxed text-foreground">
+                        {selectedPlayerTypes.join(", ")}
+                      </span>
                     </div>
                   )}
                   {selectedPlayStyles.length > 0 && (
                     <div className="flex flex-col items-start gap-2 rounded-xl border border-border/60 bg-secondary/40 p-3 text-sm sm:flex-row sm:items-start sm:gap-3 sm:text-base">
                       <div className="flex shrink-0 items-center gap-3">
                         <div className="h-2.5 w-2.5 shrink-0 rounded-full bg-muted-foreground/70"></div>
-                        <span className="shrink-0 whitespace-nowrap break-keep text-muted-foreground">스타일:</span>
+                        <span className="shrink-0 whitespace-nowrap break-keep text-muted-foreground">
+                          스타일:
+                        </span>
                       </div>
-                      <span className="min-w-0 whitespace-normal break-keep break-words font-medium leading-relaxed text-foreground">{selectedPlayStyles.join(", ")}</span>
+                      <span className="min-w-0 whitespace-normal break-keep break-words font-medium leading-relaxed text-foreground">
+                        {selectedPlayStyles.join(", ")}
+                      </span>
                     </div>
                   )}
                 </div>
               </div>
 
               <div>
-                <h4 className="mb-3 break-keep text-sm font-semibold text-foreground sm:mb-4 sm:text-base">추가 특성</h4>
+                <h4 className="mb-3 break-keep text-sm font-semibold text-foreground sm:mb-4 sm:text-base">
+                  추가 특성
+                </h4>
                 {additionalFeaturesText ? (
-                  <p className="whitespace-pre-line break-keep break-words rounded-xl border border-border/60 bg-secondary/40 p-3 text-sm leading-relaxed text-muted-foreground sm:text-base">{additionalFeaturesText}</p>
+                  <p className="whitespace-pre-line break-keep break-words rounded-xl border border-border/60 bg-secondary/40 p-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
+                    {additionalFeaturesText}
+                  </p>
                 ) : (
-                  <p className="rounded-xl border border-border/60 bg-secondary/40 p-3 text-sm italic text-muted-foreground sm:text-base">추가 특성 정보가 없습니다.</p>
+                  <p className="rounded-xl border border-border/60 bg-secondary/40 p-3 text-sm italic text-muted-foreground sm:text-base">
+                    추가 특성 정보가 없습니다.
+                  </p>
                 )}
               </div>
             </CardContent>
@@ -1340,7 +1825,11 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
         <Card className="mt-10 sm:mt-12 border border-border/60 shadow-lg bg-card rounded-3xl overflow-hidden">
           <CardContent className="p-0">
-            <Tabs value={activeTab} onValueChange={(v) => updateTabInUrl(v as any)} className="w-full">
+            <Tabs
+              value={activeTab}
+              onValueChange={(v) => updateTabInUrl(v as any)}
+              className="w-full"
+            >
               <TabsList className="w-full grid grid-cols-2 md:grid-cols-4 h-auto gap-1 sm:gap-1.5 bg-muted/30 rounded-none p-1 sm:p-1.5 border-b border-border/60">
                 <TabsTrigger
                   value="description"
@@ -1365,7 +1854,9 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   <Star className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
                   <span className="hidden sm:inline">리뷰</span>
                   <span className="sm:hidden">리뷰</span>
-                  <span className="ml-1 sm:ml-1.5 text-muted-foreground">({reviewsLen})</span>
+                  <span className="ml-1 sm:ml-1.5 text-muted-foreground">
+                    ({reviewsLen})
+                  </span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="qna"
@@ -1374,7 +1865,9 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
                   <span className="hidden sm:inline">문의</span>
                   <span className="sm:hidden">문의</span>
-                  <span className="ml-1 sm:ml-1.5 text-muted-foreground">({qnaTotal})</span>
+                  <span className="ml-1 sm:ml-1.5 text-muted-foreground">
+                    ({qnaTotal})
+                  </span>
                 </TabsTrigger>
               </TabsList>
 
@@ -1384,11 +1877,14 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     <div className="w-10 sm:w-12 h-10 sm:h-12 border border-border/60 bg-secondary text-foreground rounded-lg flex items-center justify-center">
                       <FileText className="h-4 w-4 sm:h-6 sm:w-6" />
                     </div>
-                    <h3 className="break-keep text-xl font-bold leading-tight text-foreground sm:text-2xl">상품 설명</h3>
+                    <h3 className="break-keep text-xl font-bold leading-tight text-foreground sm:text-2xl">
+                      상품 설명
+                    </h3>
                   </div>
                   <div className="bg-muted/30 p-4 sm:p-6 rounded-lg">
                     <p className="text-muted-foreground leading-relaxed text-base sm:text-lg whitespace-pre-line break-words">
-                      {product.description || "이 제품은 최고급 소재로 제작된 프리미엄 테니스 스트링입니다. 뛰어난 반발력과 내구성을 자랑하며, 모든 레벨의 플레이어에게 적합합니다. 전문적인 장착 서비스와 함께 최상의 테니스 경험을 제공합니다."}
+                      {product.description ||
+                        "이 제품은 최고급 소재로 제작된 프리미엄 테니스 스트링입니다. 뛰어난 반발력과 내구성을 자랑하며, 모든 레벨의 플레이어에게 적합합니다. 전문적인 장착 서비스와 함께 최상의 테니스 경험을 제공합니다."}
                     </p>
                   </div>
                 </div>
@@ -1400,19 +1896,31 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     <div className="w-10 sm:w-12 h-10 sm:h-12 border border-border/60 bg-secondary text-foreground rounded-lg flex items-center justify-center">
                       <Settings className="h-4 w-4 sm:h-6 sm:w-6" />
                     </div>
-                    <h3 className="break-keep text-xl font-bold leading-tight text-foreground sm:text-2xl">상세 스펙</h3>
+                    <h3 className="break-keep text-xl font-bold leading-tight text-foreground sm:text-2xl">
+                      상세 스펙
+                    </h3>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                     {Object.entries(toDisplaySpec())
                       .filter(([, value]) => value)
                       .map(([key, value]) => {
-                        const displayValue = key === "색상" && selectedColorLabel ? selectedColorLabel : value;
+                        const displayValue =
+                          key === "색상" && selectedColorLabel
+                            ? selectedColorLabel
+                            : value;
                         return (
-                          <div key={key} className="bg-muted/30 p-3 sm:p-4 rounded-lg border border-border">
+                          <div
+                            key={key}
+                            className="bg-muted/30 p-3 sm:p-4 rounded-lg border border-border"
+                          >
                             <div className="flex min-w-0 items-center justify-between gap-3">
-                              <span className="font-semibold text-foreground text-sm sm:text-base">{key}</span>
-                              <span className="min-w-0 break-words text-left text-muted-foreground font-medium text-sm sm:text-right sm:text-base">{String(displayValue)}</span>
+                              <span className="font-semibold text-foreground text-sm sm:text-base">
+                                {key}
+                              </span>
+                              <span className="min-w-0 break-words text-left text-muted-foreground font-medium text-sm sm:text-right sm:text-base">
+                                {String(displayValue)}
+                              </span>
                             </div>
                           </div>
                         );
@@ -1427,13 +1935,17 @@ export default function ProductDetailClient({ product }: { product: any }) {
                             <div className="w-9 sm:w-10 h-9 sm:h-10 border border-border/60 bg-secondary text-foreground rounded-lg flex items-center justify-center">
                               <Settings className="h-4 w-4 sm:h-5 sm:w-5" />
                             </div>
-                            <h4 className="text-lg sm:text-xl font-bold text-foreground">하이브리드 구성</h4>
+                            <h4 className="text-lg sm:text-xl font-bold text-foreground">
+                              하이브리드 구성
+                            </h4>
                           </div>
 
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                             {/* 메인 */}
                             <div className="bg-muted/30 p-3 sm:p-4 rounded-lg border border-border">
-                              <div className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">메인(Mains)</div>
+                              <div className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">
+                                메인(Mains)
+                              </div>
                               <div className="font-medium text-sm sm:text-base">
                                 {hMainBrand ?? ""} {hMain?.name ?? ""}
                               </div>
@@ -1445,7 +1957,9 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
                             {/* 크로스 */}
                             <div className="bg-muted/30 p-3 sm:p-4 rounded-lg border border-border">
-                              <div className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">크로스(Crosses)</div>
+                              <div className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">
+                                크로스(Crosses)
+                              </div>
                               <div className="font-medium text-sm sm:text-base">
                                 {hCrossBrand ?? ""} {hCross?.name ?? ""}
                               </div>
@@ -1469,9 +1983,15 @@ export default function ProductDetailClient({ product }: { product: any }) {
                       <div className="w-10 sm:w-12 h-10 sm:h-12 bg-muted/30 rounded-lg flex items-center justify-center">
                         <Star className="h-4 w-4 sm:h-6 sm:w-6 text-primary" />
                       </div>
-                      <h3 className="break-keep text-xl font-bold leading-tight text-foreground sm:text-2xl">고객 리뷰</h3>
+                      <h3 className="break-keep text-xl font-bold leading-tight text-foreground sm:text-2xl">
+                        고객 리뷰
+                      </h3>
                     </div>
-                    <Button asChild variant="secondary" className="text-xs sm:text-sm h-9 sm:h-10">
+                    <Button
+                      asChild
+                      variant="secondary"
+                      className="text-xs sm:text-sm h-9 sm:h-10"
+                    >
                       <Link href={`/reviews/write?productId=${product._id}`}>
                         <Pencil className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
                         리뷰 작성하기
@@ -1482,7 +2002,10 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   <div className="space-y-4 sm:space-y-6">
                     {mergedReviews.length > 0 ? (
                       mergedReviews.map((review: any, index: number) => (
-                        <Card key={index} className="border-0 shadow-lg bg-muted/30">
+                        <Card
+                          key={index}
+                          className="border-0 shadow-lg bg-muted/30"
+                        >
                           <CardContent className="p-4 sm:p-6 relative">
                             {busyReviewId === String(review._id) && (
                               <div className="absolute inset-0 bg-card/70 dark:bg-background/40 backdrop-blur-sm flex items-center justify-center z-10 rounded-lg">
@@ -1493,18 +2016,31 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
                             <div className="flex items-start justify-between mb-3 sm:mb-4">
                               <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-secondary border border-border/60 rounded-full flex items-center justify-center text-foreground font-bold text-lg shadow-sm">{review.user?.charAt(0) || "U"}</div>
+                                <div className="w-10 h-10 bg-secondary border border-border/60 rounded-full flex items-center justify-center text-foreground font-bold text-lg shadow-sm">
+                                  {review.user?.charAt(0) || "U"}
+                                </div>
                                 <div>
                                   <div className="font-bold text-foreground text-sm sm:text-base">
-                                    {review.status === "hidden" ? (review.ownedByMe ? `${review.user ?? "내 리뷰"} (비공개)` : review.adminView ? `${review.user ?? "사용자"} (비공개)` : "비공개 리뷰") : (review.user ?? "익명")}
+                                    {review.status === "hidden"
+                                      ? review.ownedByMe
+                                        ? `${review.user ?? "내 리뷰"} (비공개)`
+                                        : review.adminView
+                                          ? `${review.user ?? "사용자"} (비공개)`
+                                          : "비공개 리뷰"
+                                      : (review.user ?? "익명")}
                                   </div>
                                   <div className="flex items-center gap-2 mt-1">
                                     <div className="flex items-center gap-1">
                                       {[...Array(5)].map((_, i) => (
-                                        <Star key={i} className={`h-3 w-3 sm:h-4 sm:w-4 ${i < (review.rating || 5) ? "text-warning fill-current" : "fill-muted text-muted"}`} />
+                                        <Star
+                                          key={i}
+                                          className={`h-3 w-3 sm:h-4 sm:w-4 ${i < (review.rating || 5) ? "text-warning fill-current" : "fill-muted text-muted"}`}
+                                        />
                                       ))}
                                     </div>
-                                    <span className="text-xs sm:text-sm text-muted-foreground">{review.date || "2099-01-01"}</span>
+                                    <span className="text-xs sm:text-sm text-muted-foreground">
+                                      {review.date || "2099-01-01"}
+                                    </span>
                                   </div>
                                 </div>
                               </div>
@@ -1512,23 +2048,40 @@ export default function ProductDetailClient({ product }: { product: any }) {
                               {(review.ownedByMe || isAdmin) && (
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
-                                    <button type="button" className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-muted/50 hover:text-foreground transition-colors" aria-label="내 리뷰 관리">
+                                    <button
+                                      type="button"
+                                      className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-muted/50 hover:text-foreground transition-colors"
+                                      aria-label="내 리뷰 관리"
+                                    >
                                       <MoreHorizontal className="h-4 w-4" />
                                     </button>
                                   </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end" className="w-44">
+                                  <DropdownMenuContent
+                                    align="end"
+                                    className="w-44"
+                                  >
                                     {/* 공개/비공개 토글 */}
                                     <DropdownMenuItem
-                                      disabled={busyReviewId === String(review._id)}
+                                      disabled={
+                                        busyReviewId === String(review._id)
+                                      }
                                       onClick={async (e) => {
                                         e.stopPropagation();
                                         setBusyReviewId(String(review._id));
-                                        const next = review.status === "visible" ? "hidden" : "visible";
+                                        const next =
+                                          review.status === "visible"
+                                            ? "hidden"
+                                            : "visible";
 
                                         // 낙관적 업데이트
                                         if (isMine(review)) {
                                           mutateMyReview((prev: any) => {
-                                            if (!prev?._id || String(prev._id) !== String(review._id)) return prev;
+                                            if (
+                                              !prev?._id ||
+                                              String(prev._id) !==
+                                                String(review._id)
+                                            )
+                                              return prev;
                                             return {
                                               ...prev,
                                               status: next,
@@ -1537,50 +2090,75 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                             };
                                           }, false);
                                         } else if (isAdmin) {
-                                          mutateAdminReviews((prev: any[] | undefined) => {
-                                            if (!Array.isArray(prev)) return prev;
-                                            return prev.map((r) =>
-                                              String(r._id) === String(review._id)
-                                                ? {
-                                                    ...r,
-                                                    status: next,
-                                                    masked: false,
-                                                  }
-                                                : r,
-                                            );
-                                          }, false);
+                                          mutateAdminReviews(
+                                            (prev: any[] | undefined) => {
+                                              if (!Array.isArray(prev))
+                                                return prev;
+                                              return prev.map((r) =>
+                                                String(r._id) ===
+                                                String(review._id)
+                                                  ? {
+                                                      ...r,
+                                                      status: next,
+                                                      masked: false,
+                                                    }
+                                                  : r,
+                                              );
+                                            },
+                                            false,
+                                          );
                                         }
 
                                         // 서버 반영
                                         try {
-                                          const res = await fetch(`/api/reviews/${review._id}`, {
-                                            method: "PATCH",
-                                            credentials: "include",
-                                            headers: {
-                                              "Content-Type": "application/json",
+                                          const res = await fetch(
+                                            `/api/reviews/${review._id}`,
+                                            {
+                                              method: "PATCH",
+                                              credentials: "include",
+                                              headers: {
+                                                "Content-Type":
+                                                  "application/json",
+                                              },
+                                              body: JSON.stringify({
+                                                status: next,
+                                              }),
                                             },
-                                            body: JSON.stringify({
-                                              status: next,
-                                            }),
-                                          });
-                                          if (!res.ok) throw new Error("상태 변경 실패");
+                                          );
+                                          if (!res.ok)
+                                            throw new Error("상태 변경 실패");
 
                                           // 재검증
-                                          if (isMine(review)) await mutateMyReview();
-                                          else if (isAdmin) await mutateAdminReviews();
+                                          if (isMine(review))
+                                            await mutateMyReview();
+                                          else if (isAdmin)
+                                            await mutateAdminReviews();
 
                                           // 탭 유지 + 서버컴포넌트 리프레시
-                                          const params = new URLSearchParams(searchParams.toString());
+                                          const params = new URLSearchParams(
+                                            searchParams.toString(),
+                                          );
                                           params.set("tab", "reviews");
-                                          router.replace(`?${params.toString()}`, { scroll: false });
+                                          router.replace(
+                                            `?${params.toString()}`,
+                                            { scroll: false },
+                                          );
                                           router.refresh();
 
-                                          showSuccessToast(next === "hidden" ? "비공개로 전환했습니다." : "공개로 전환했습니다.");
+                                          showSuccessToast(
+                                            next === "hidden"
+                                              ? "비공개로 전환했습니다."
+                                              : "공개로 전환했습니다.",
+                                          );
                                         } catch (err: any) {
                                           // 실패 시 되돌리기(재검증)
-                                          if (isMine(review)) await mutateMyReview();
-                                          else if (isAdmin) await mutateAdminReviews();
-                                          showErrorToast(err?.message || "상태 변경 중 오류");
+                                          if (isMine(review))
+                                            await mutateMyReview();
+                                          else if (isAdmin)
+                                            await mutateAdminReviews();
+                                          showErrorToast(
+                                            err?.message || "상태 변경 중 오류",
+                                          );
                                         } finally {
                                           setBusyReviewId(null);
                                         }
@@ -1602,7 +2180,9 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
                                     {/* 수정 */}
                                     <DropdownMenuItem
-                                      disabled={busyReviewId === String(review._id)}
+                                      disabled={
+                                        busyReviewId === String(review._id)
+                                      }
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         openEdit(review);
@@ -1615,35 +2195,57 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
                                     {/* 삭제 */}
                                     <DropdownMenuItem
-                                      disabled={busyReviewId === String(review._id)}
+                                      disabled={
+                                        busyReviewId === String(review._id)
+                                      }
                                       onClick={async (e) => {
                                         e.stopPropagation();
-                                        if (!confirm("이 리뷰를 삭제하시겠습니까?")) return;
+                                        if (
+                                          !confirm(
+                                            "이 리뷰를 삭제하시겠습니까?",
+                                          )
+                                        )
+                                          return;
 
                                         setBusyReviewId(String(review._id));
                                         try {
-                                          const res = await fetch(`/api/reviews/${review._id}`, {
-                                            method: "DELETE",
-                                            credentials: "include",
-                                          });
-                                          if (!res.ok) throw new Error("삭제 실패");
+                                          const res = await fetch(
+                                            `/api/reviews/${review._id}`,
+                                            {
+                                              method: "DELETE",
+                                              credentials: "include",
+                                            },
+                                          );
+                                          if (!res.ok)
+                                            throw new Error("삭제 실패");
 
                                           // 재검증
-                                          if (isMine(review)) await mutateMyReview();
-                                          else if (isAdmin) await mutateAdminReviews();
+                                          if (isMine(review))
+                                            await mutateMyReview();
+                                          else if (isAdmin)
+                                            await mutateAdminReviews();
 
                                           // 탭 유지 + 서버컴포넌트 리프레시
-                                          const params = new URLSearchParams(searchParams.toString());
+                                          const params = new URLSearchParams(
+                                            searchParams.toString(),
+                                          );
                                           params.set("tab", "reviews");
-                                          router.replace(`?${params.toString()}`, { scroll: false });
+                                          router.replace(
+                                            `?${params.toString()}`,
+                                            { scroll: false },
+                                          );
                                           router.refresh();
 
                                           showSuccessToast("삭제했습니다.");
                                         } catch (err: any) {
                                           // 실패 시 복구(재검증으로 복원)
-                                          if (isMine(review)) await mutateMyReview();
-                                          else if (isAdmin) await mutateAdminReviews();
-                                          showErrorToast(err?.message || "삭제 중 오류");
+                                          if (isMine(review))
+                                            await mutateMyReview();
+                                          else if (isAdmin)
+                                            await mutateAdminReviews();
+                                          showErrorToast(
+                                            err?.message || "삭제 중 오류",
+                                          );
                                         } finally {
                                           setBusyReviewId(null);
                                         }
@@ -1659,33 +2261,52 @@ export default function ProductDetailClient({ product }: { product: any }) {
                             </div>
 
                             {(() => {
-                              const isMasked = review.masked ?? (review.status === "hidden" && !review.ownedByMe && !review.adminView);
+                              const isMasked =
+                                review.masked ??
+                                (review.status === "hidden" &&
+                                  !review.ownedByMe &&
+                                  !review.adminView);
                               if (isMasked) return <MaskedBlock />;
 
                               return (
                                 <div className="space-y-3 sm:space-y-4">
                                   <div className="bg-card dark:bg-muted/50 p-3 sm:p-4 rounded-lg border border-border">
-                                    <p className="text-muted-foreground leading-relaxed text-sm sm:text-base">{review.content}</p>
+                                    <p className="text-muted-foreground leading-relaxed text-sm sm:text-base">
+                                      {review.content}
+                                    </p>
                                   </div>
 
-                                  {Array.isArray(review.photos) && review.photos.length > 0 && (
-                                    <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
-                                      {review.photos.slice(0, 4).map((src: string, i: number) => (
-                                        <button
-                                          key={i}
-                                          type="button"
-                                          onClick={() => openViewer(review.photos, i)}
-                                          className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border-2 border-border hover:border-border dark:hover:border-border transition-colors shadow-md shrink-0"
-                                          aria-label={`리뷰 사진 ${i + 1} 크게 보기`}
-                                        >
-                                          <Image src={src || "/placeholder.svg"} alt={`리뷰 사진 ${i + 1}`} fill className="object-cover" />
-                                          {i === 3 && review.photos.length > 4 && (
-                                            <div className="absolute inset-0 bg-background/80 text-foreground border border-border text-xs font-bold flex items-center justify-center">+{review.photos.length - 3}</div>
-                                          )}
-                                        </button>
-                                      ))}
-                                    </div>
-                                  )}
+                                  {Array.isArray(review.photos) &&
+                                    review.photos.length > 0 && (
+                                      <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+                                        {review.photos
+                                          .slice(0, 4)
+                                          .map((src: string, i: number) => (
+                                            <button
+                                              key={i}
+                                              type="button"
+                                              onClick={() =>
+                                                openViewer(review.photos, i)
+                                              }
+                                              className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border-2 border-border hover:border-border dark:hover:border-border transition-colors shadow-md shrink-0"
+                                              aria-label={`리뷰 사진 ${i + 1} 크게 보기`}
+                                            >
+                                              <Image
+                                                src={src || "/placeholder.svg"}
+                                                alt={`리뷰 사진 ${i + 1}`}
+                                                fill
+                                                className="object-cover"
+                                              />
+                                              {i === 3 &&
+                                                review.photos.length > 4 && (
+                                                  <div className="absolute inset-0 bg-background/80 text-foreground border border-border text-xs font-bold flex items-center justify-center">
+                                                    +{review.photos.length - 3}
+                                                  </div>
+                                                )}
+                                            </button>
+                                          ))}
+                                      </div>
+                                    )}
                                 </div>
                               );
                             })()}
@@ -1697,9 +2318,16 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         <div className="w-16 sm:w-20 h-16 sm:h-20 bg-muted/30 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-lg">
                           <Star className="h-8 w-8 sm:h-10 sm:w-10 text-foreground" />
                         </div>
-                        <h3 className="text-lg sm:text-xl font-bold text-foreground mb-2">아직 리뷰가 없습니다</h3>
-                        <p className="text-muted-foreground mb-6 text-base sm:text-lg">첫 번째 리뷰를 작성해보세요!</p>
-                        <Button variant="secondary" className="px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base">
+                        <h3 className="text-lg sm:text-xl font-bold text-foreground mb-2">
+                          아직 리뷰가 없습니다
+                        </h3>
+                        <p className="text-muted-foreground mb-6 text-base sm:text-lg">
+                          첫 번째 리뷰를 작성해보세요!
+                        </p>
+                        <Button
+                          variant="secondary"
+                          className="px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base"
+                        >
                           <Pencil className="h-4 w-4 mr-2" />
                           리뷰 작성하기
                         </Button>
@@ -1715,10 +2343,20 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     <div className="w-10 sm:w-12 h-10 sm:h-12 bg-muted/30 text-foreground rounded-lg flex items-center justify-center">
                       <MessageSquare className="h-4 w-4 sm:h-6 sm:w-6" />
                     </div>
-                    <h3 className="break-keep text-xl font-bold leading-tight text-foreground sm:text-2xl">상품 문의</h3>
+                    <h3 className="break-keep text-xl font-bold leading-tight text-foreground sm:text-2xl">
+                      상품 문의
+                    </h3>
                   </div>
-                  <Button asChild variant="secondary" className="text-xs sm:text-sm h-9 sm:h-10">
-                    <Link href={`/board/qna/write?productId=${product._id}&productName=${encodeURIComponent(product.name)}`}>문의하기</Link>
+                  <Button
+                    asChild
+                    variant="secondary"
+                    className="text-xs sm:text-sm h-9 sm:h-10"
+                  >
+                    <Link
+                      href={`/board/qna/write?productId=${product._id}&productName=${encodeURIComponent(product.name)}`}
+                    >
+                      문의하기
+                    </Link>
                   </Button>
                 </div>
 
@@ -1727,7 +2365,11 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     <Skeleton className="h-4 w-20" />
                   </div>
                 )}
-                {qnaError && <div className="text-sm text-destructive">문의 목록을 불러오지 못했습니다.</div>}
+                {qnaError && (
+                  <div className="text-sm text-destructive">
+                    문의 목록을 불러오지 못했습니다.
+                  </div>
+                )}
 
                 {!qnaLoading && !qnaError && (
                   <>
@@ -1736,10 +2378,22 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         <div className="w-16 sm:w-20 h-16 sm:h-20 bg-muted/30 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-lg">
                           <MessageSquare className="h-8 w-8 sm:h-10 sm:w-10 text-foreground" />
                         </div>
-                        <h4 className="text-lg sm:text-xl font-bold text-foreground mb-2">아직 문의가 없습니다</h4>
-                        <p className="text-muted-foreground mb-6 text-base sm:text-lg">첫 번째 문의를 남겨보세요!</p>
-                        <Button asChild variant="secondary" className="px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base">
-                          <Link href={`/board/qna/write?productId=${product._id}&productName=${encodeURIComponent(product.name)}`}>문의하기</Link>
+                        <h4 className="text-lg sm:text-xl font-bold text-foreground mb-2">
+                          아직 문의가 없습니다
+                        </h4>
+                        <p className="text-muted-foreground mb-6 text-base sm:text-lg">
+                          첫 번째 문의를 남겨보세요!
+                        </p>
+                        <Button
+                          asChild
+                          variant="secondary"
+                          className="px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base"
+                        >
+                          <Link
+                            href={`/board/qna/write?productId=${product._id}&productName=${encodeURIComponent(product.name)}`}
+                          >
+                            문의하기
+                          </Link>
                         </Button>
                       </div>
                     ) : (
@@ -1752,20 +2406,37 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                   <div className="flex-1 min-w-0">
                                     <div className="space-y-1 min-w-0">
                                       <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-                                        <Badge variant={getQnaCategoryBadgeSpec(q.category).variant} className={`${badgeBaseOutlined} ${badgeSizeSm}`}>
+                                        <Badge
+                                          variant={
+                                            getQnaCategoryBadgeSpec(q.category)
+                                              .variant
+                                          }
+                                          className={`${badgeBaseOutlined} ${badgeSizeSm}`}
+                                        >
                                           {q.category ?? "상품문의"}
                                         </Badge>
                                         {q.isSecret && (
-                                          <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} bg-muted/50 text-muted-foreground border-border/40 dark:border-border shrink-0`}>
+                                          <Badge
+                                            variant="outline"
+                                            className={`${badgeBaseOutlined} ${badgeSizeSm} bg-muted/50 text-muted-foreground border-border/40 dark:border-border shrink-0`}
+                                          >
                                             <Lock className="h-3 w-3 mr-1" />
                                             비밀글
                                           </Badge>
                                         )}
-                                        <Badge variant={getAnswerStatusBadgeSpec(!!q.answer).variant} className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`}>
+                                        <Badge
+                                          variant={
+                                            getAnswerStatusBadgeSpec(!!q.answer)
+                                              .variant
+                                          }
+                                          className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`}
+                                        >
                                           {q.answer ? "답변 완료" : "답변 대기"}
                                         </Badge>
                                       </div>
-                                      <div className="line-clamp-2 break-keep font-semibold text-foreground hover:text-foreground text-sm sm:text-base">{q.title}</div>
+                                      <div className="line-clamp-2 break-keep font-semibold text-foreground hover:text-foreground text-sm sm:text-base">
+                                        {q.title}
+                                      </div>
                                       <div className="flex items-center gap-3 sm:gap-4 text-sm text-foreground/75">
                                         <span>{q.authorName ?? "익명"}</span>
                                         <span>{fmtDate(q.createdAt)}</span>
@@ -1787,7 +2458,17 @@ export default function ProductDetailClient({ product }: { product: any }) {
         </Card>
 
         {/* 리뷰 전용 모달 UI는 필요 시점에만 로드 */}
-        {viewerOpen && <ReviewPhotoViewerDialog open={viewerOpen} images={viewerImages} index={viewerIndex} onClose={closeViewer} onPrev={prevViewer} onNext={nextViewer} onChangeIndex={setViewerIndex} />}
+        {viewerOpen && (
+          <ReviewPhotoViewerDialog
+            open={viewerOpen}
+            images={viewerImages}
+            index={viewerIndex}
+            onClose={closeViewer}
+            onPrev={prevViewer}
+            onNext={nextViewer}
+            onChangeIndex={setViewerIndex}
+          />
+        )}
 
         <div ref={relatedSectionRef} className="mt-8 sm:mt-12">
           <Card className="rounded-3xl border border-border/60 bg-card shadow-sm">
@@ -1822,7 +2503,17 @@ export default function ProductDetailClient({ product }: { product: any }) {
           <RecentViewedItems currentType="product" currentId={productId} />
 
           {/* 리뷰 수정 다이얼로그도 열릴 때만 로드 */}
-          {editOpen && editing && <ReviewEditDialog open={editOpen} editForm={editForm} hoverRating={hoverRating} onClose={closeEdit} onSubmit={submitEdit} onChangeForm={setEditForm} onChangeHoverRating={setHoverRating} />}
+          {editOpen && editing && (
+            <ReviewEditDialog
+              open={editOpen}
+              editForm={editForm}
+              hoverRating={hoverRating}
+              onClose={closeEdit}
+              onSubmit={submitEdit}
+              onChangeForm={setEditForm}
+              onChangeHoverRating={setHoverRating}
+            />
+          )}
         </div>
       </SiteContainer>
     </div>

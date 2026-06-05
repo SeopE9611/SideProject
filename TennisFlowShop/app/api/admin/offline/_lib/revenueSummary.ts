@@ -1,9 +1,26 @@
 import type { Db, Document } from "mongodb";
-import { OFFLINE_PACKAGE_ORDER_FILTER, isOfflinePackageOrder } from "./packageOrderOffline";
-import { isPaidPaymentStatus, orderPaidAmount, toNumber } from "@/app/api/settlements/_lib/settlementPolicy";
-import type { OfflinePaymentMethod, OfflineRevenueSummary, OfflineRevenueBucket, OfflineRevenueKindBucket } from "@/types/admin/offline";
+import {
+  OFFLINE_PACKAGE_ORDER_FILTER,
+  isOfflinePackageOrder,
+} from "./packageOrderOffline";
+import {
+  isPaidPaymentStatus,
+  orderPaidAmount,
+  toNumber,
+} from "@/app/api/settlements/_lib/settlementPolicy";
+import type {
+  OfflinePaymentMethod,
+  OfflineRevenueSummary,
+  OfflineRevenueBucket,
+  OfflineRevenueKindBucket,
+} from "@/types/admin/offline";
 
-const PAYMENT_METHODS: OfflinePaymentMethod[] = ["cash", "card", "bank_transfer", "etc"];
+const PAYMENT_METHODS: OfflinePaymentMethod[] = [
+  "cash",
+  "card",
+  "bank_transfer",
+  "etc",
+];
 const KIND_KEYS = ["stringing", "package_sale", "etc"] as const;
 
 type DateRange = { from: Date | null; to: Date | null };
@@ -37,18 +54,27 @@ function emptyBucket(): OfflineRevenueBucket {
 
 function normalizePaymentMethod(value: unknown): OfflinePaymentMethod {
   const raw = String(value ?? "").trim();
-  if (PAYMENT_METHODS.includes(raw as OfflinePaymentMethod)) return raw as OfflinePaymentMethod;
+  if (PAYMENT_METHODS.includes(raw as OfflinePaymentMethod))
+    return raw as OfflinePaymentMethod;
   if (raw.includes("현금") || raw.toLowerCase() === "cash") return "cash";
   if (raw.includes("카드") || raw.toLowerCase() === "card") return "card";
-  if (raw.includes("계좌") || raw.includes("이체") || raw.toLowerCase().includes("bank")) return "bank_transfer";
+  if (
+    raw.includes("계좌") ||
+    raw.includes("이체") ||
+    raw.toLowerCase().includes("bank")
+  )
+    return "bank_transfer";
   return "etc";
 }
 
-function normalizePaymentStatus(value: unknown): "paid" | "refunded" | "pending" {
+function normalizePaymentStatus(
+  value: unknown,
+): "paid" | "refunded" | "pending" {
   const raw = String(value ?? "").trim();
   const lower = raw.toLowerCase();
   if (isPaidPaymentStatus(raw)) return "paid";
-  if (lower === "refunded" || lower.includes("refund") || raw.includes("환불")) return "refunded";
+  if (lower === "refunded" || lower.includes("refund") || raw.includes("환불"))
+    return "refunded";
   return "pending";
 }
 
@@ -78,7 +104,12 @@ function groupKey(date: Date, groupBy: "day" | "month"): string {
   return groupBy === "month" ? iso.slice(0, 7) : iso.slice(0, 10);
 }
 
-function addStatusAmount(bucket: OfflineRevenueBucket, status: "paid" | "refunded" | "pending", amount: number, method: OfflinePaymentMethod) {
+function addStatusAmount(
+  bucket: OfflineRevenueBucket,
+  status: "paid" | "refunded" | "pending",
+  amount: number,
+  method: OfflinePaymentMethod,
+) {
   bucket.totalCount += 1;
   if (status === "paid") {
     bucket.paidAmount += amount;
@@ -94,19 +125,25 @@ function addStatusAmount(bucket: OfflineRevenueBucket, status: "paid" | "refunde
   bucket.netAmount = bucket.paidAmount - bucket.refundedAmount;
 }
 
-
 function getPackageOrderStatus(doc: Document): "paid" | "refunded" | "pending" {
   const paymentInfo = doc.paymentInfo as Record<string, unknown> | undefined;
-  return normalizePaymentStatus(doc.paymentStatus ?? paymentInfo?.status ?? doc.status);
+  return normalizePaymentStatus(
+    doc.paymentStatus ?? paymentInfo?.status ?? doc.status,
+  );
 }
 
-function getPackageOrderAmount(doc: Document, status?: "paid" | "refunded" | "pending"): number {
+function getPackageOrderAmount(
+  doc: Document,
+  status?: "paid" | "refunded" | "pending",
+): number {
   const packageInfo = doc.packageInfo as Record<string, unknown> | undefined;
   const meta = doc.meta as Record<string, unknown> | undefined;
   if (status === "refunded") {
     const offlineRefundAmount = toNumber(meta?.offlineRefundAmount);
     if (offlineRefundAmount > 0) return offlineRefundAmount;
-    const refundAmount = toNumber((doc as Record<string, unknown>).refundAmount);
+    const refundAmount = toNumber(
+      (doc as Record<string, unknown>).refundAmount,
+    );
     if (refundAmount > 0) return refundAmount;
   }
   const paidOrTotal = orderPaidAmount(doc);
@@ -117,51 +154,104 @@ function getPackageOrderAmount(doc: Document, status?: "paid" | "refunded" | "pe
 function getPackageOrderMethod(doc: Document): OfflinePaymentMethod {
   const meta = doc.meta as Record<string, unknown> | undefined;
   const paymentInfo = doc.paymentInfo as Record<string, unknown> | undefined;
-  return normalizePaymentMethod(meta?.paymentMethod ?? paymentInfo?.method ?? paymentInfo?.provider);
+  return normalizePaymentMethod(
+    meta?.paymentMethod ?? paymentInfo?.method ?? paymentInfo?.provider,
+  );
 }
 
-export function parseOfflineSummaryDateBoundary(value: string | null, boundary: "from" | "to"): Date | null {
+export function parseOfflineSummaryDateBoundary(
+  value: string | null,
+  boundary: "from" | "to",
+): Date | null {
   if (!value) return null;
   const trimmed = value.trim();
   if (!trimmed) return null;
   const dateOnly = /^\d{4}-\d{2}-\d{2}$/.test(trimmed);
   const date = dateOnly
-    ? new Date(boundary === "from" ? `${trimmed}T00:00:00.000Z` : `${trimmed}T23:59:59.999Z`)
+    ? new Date(
+        boundary === "from"
+          ? `${trimmed}T00:00:00.000Z`
+          : `${trimmed}T23:59:59.999Z`,
+      )
     : new Date(trimmed);
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
-export async function buildOfflineRevenueSummary(db: Db, options: SummaryOptions): Promise<OfflineRevenueSummary> {
+export async function buildOfflineRevenueSummary(
+  db: Db,
+  options: SummaryOptions,
+): Promise<OfflineRevenueSummary> {
   const includePackageSales = options.includePackageSales !== false;
   const range = { from: options.from, to: options.to };
-  const records = emptyBucket() as OfflineRevenueBucket & { byKind: OfflineRevenueKindBucket };
+  const records = emptyBucket() as OfflineRevenueBucket & {
+    byKind: OfflineRevenueKindBucket;
+  };
   records.byKind = emptyKindMap();
-  const packageSales = emptyBucket() as OfflineRevenueBucket & { issueFailedCount: number; issueFailedAmount: number };
+  const packageSales = emptyBucket() as OfflineRevenueBucket & {
+    issueFailedCount: number;
+    issueFailedAmount: number;
+  };
   packageSales.issueFailedCount = 0;
   packageSales.issueFailedAmount = 0;
 
-  const dailyMap = new Map<string, { date: string; recordsPaidAmount: number; packageSalesPaidAmount: number; totalPaidAmount: number }>();
+  const dailyMap = new Map<
+    string,
+    {
+      date: string;
+      recordsPaidAmount: number;
+      packageSalesPaidAmount: number;
+      totalPaidAmount: number;
+    }
+  >();
   const ensureDaily = (date: Date) => {
     const key = groupKey(date, options.groupBy === "month" ? "month" : "day");
     let entry = dailyMap.get(key);
     if (!entry) {
-      entry = { date: key, recordsPaidAmount: 0, packageSalesPaidAmount: 0, totalPaidAmount: 0 };
+      entry = {
+        date: key,
+        recordsPaidAmount: 0,
+        packageSalesPaidAmount: 0,
+        totalPaidAmount: 0,
+      };
       dailyMap.set(key, entry);
     }
     return entry;
   };
 
-  const recordFilter = range.from || range.to
-    ? {
-        $or: [
-          { occurredAt: { ...(range.from ? { $gte: range.from } : {}), ...(range.to ? { $lte: range.to } : {}) } },
-          { occurredAt: { $exists: false }, createdAt: { ...(range.from ? { $gte: range.from } : {}), ...(range.to ? { $lte: range.to } : {}) } },
-          { occurredAt: null, createdAt: { ...(range.from ? { $gte: range.from } : {}), ...(range.to ? { $lte: range.to } : {}) } },
-        ],
-      }
-    : {};
+  const recordFilter =
+    range.from || range.to
+      ? {
+          $or: [
+            {
+              occurredAt: {
+                ...(range.from ? { $gte: range.from } : {}),
+                ...(range.to ? { $lte: range.to } : {}),
+              },
+            },
+            {
+              occurredAt: { $exists: false },
+              createdAt: {
+                ...(range.from ? { $gte: range.from } : {}),
+                ...(range.to ? { $lte: range.to } : {}),
+              },
+            },
+            {
+              occurredAt: null,
+              createdAt: {
+                ...(range.from ? { $gte: range.from } : {}),
+                ...(range.to ? { $lte: range.to } : {}),
+              },
+            },
+          ],
+        }
+      : {};
 
-  const recordDocs = await db.collection("offline_service_records").find(recordFilter, { projection: { occurredAt: 1, createdAt: 1, kind: 1, payment: 1 } }).toArray();
+  const recordDocs = await db
+    .collection("offline_service_records")
+    .find(recordFilter, {
+      projection: { occurredAt: 1, createdAt: 1, kind: 1, payment: 1 },
+    })
+    .toArray();
   for (const doc of recordDocs) {
     const date = effectiveRecordDate(doc);
     if (!inRange(date, range)) continue;
@@ -169,7 +259,9 @@ export async function buildOfflineRevenueSummary(db: Db, options: SummaryOptions
     const status = normalizePaymentStatus(payment?.status);
     const amount = Math.max(0, toNumber(payment?.amount));
     const method = normalizePaymentMethod(payment?.method);
-    const kind = KIND_KEYS.includes(doc.kind as typeof KIND_KEYS[number]) ? doc.kind as keyof OfflineRevenueKindBucket : "etc";
+    const kind = KIND_KEYS.includes(doc.kind as (typeof KIND_KEYS)[number])
+      ? (doc.kind as keyof OfflineRevenueKindBucket)
+      : "etc";
     addStatusAmount(records, status, amount, method);
     if (status === "paid") {
       records.byKind[kind] += amount;
@@ -182,11 +274,21 @@ export async function buildOfflineRevenueSummary(db: Db, options: SummaryOptions
   }
 
   if (includePackageSales) {
-    const packageDocs = await db.collection("packageOrders")
-      .find(
-        OFFLINE_PACKAGE_ORDER_FILTER,
-        { projection: { createdAt: 1, status: 1, paymentStatus: 1, paymentInfo: 1, paidAmount: 1, totalPrice: 1, refundAmount: 1, packageInfo: 1, meta: 1 } },
-      )
+    const packageDocs = await db
+      .collection("packageOrders")
+      .find(OFFLINE_PACKAGE_ORDER_FILTER, {
+        projection: {
+          createdAt: 1,
+          status: 1,
+          paymentStatus: 1,
+          paymentInfo: 1,
+          paidAmount: 1,
+          totalPrice: 1,
+          refundAmount: 1,
+          packageInfo: 1,
+          meta: 1,
+        },
+      })
       .toArray();
     for (const doc of packageDocs) {
       if (!isOfflinePackageOrder(doc)) continue;
@@ -219,7 +321,9 @@ export async function buildOfflineRevenueSummary(db: Db, options: SummaryOptions
   total.pendingCount = records.pendingCount + packageSales.pendingCount;
   total.totalCount = records.totalCount + packageSales.totalCount;
   total.byMethod = emptyMethodMap();
-  for (const method of PAYMENT_METHODS) total.byMethod[method] = records.byMethod[method] + packageSales.byMethod[method];
+  for (const method of PAYMENT_METHODS)
+    total.byMethod[method] =
+      records.byMethod[method] + packageSales.byMethod[method];
 
   return {
     range: {
@@ -229,6 +333,12 @@ export async function buildOfflineRevenueSummary(db: Db, options: SummaryOptions
     records,
     packageSales,
     total,
-    ...(options.groupBy ? { daily: Array.from(dailyMap.values()).sort((a, b) => a.date.localeCompare(b.date)) } : {}),
+    ...(options.groupBy
+      ? {
+          daily: Array.from(dailyMap.values()).sort((a, b) =>
+            a.date.localeCompare(b.date),
+          ),
+        }
+      : {}),
   };
 }

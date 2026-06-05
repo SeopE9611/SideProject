@@ -49,7 +49,12 @@ export default async function RacketPurchasePage({
     const token = (await cookies()).get("accessToken")?.value;
     const payload = safeVerifyAccessToken(token);
     if (!payload?.sub) {
-      return <LoginGate next={`/rackets/${id}/purchase?recovery=1`} variant="checkout" />;
+      return (
+        <LoginGate
+          next={`/rackets/${id}/purchase?recovery=1`}
+          variant="checkout"
+        />
+      );
     }
   }
 

@@ -18,7 +18,12 @@ const PAYMENT_METHOD_LABELS = {
 
 const sellSchema = z.object({
   packageTypeId: z.string().trim().min(1).max(100).optional(),
-  packageName: z.string().trim().min(1, "invalid package name").max(100).optional(),
+  packageName: z
+    .string()
+    .trim()
+    .min(1, "invalid package name")
+    .max(100)
+    .optional(),
   sessions: z.number().int().min(1, "invalid sessions").optional(),
   validityDays: z.number().int().min(1, "invalid validity days").optional(),
   price: z.number().finite().min(0, "invalid price").optional(),
@@ -45,7 +50,9 @@ function issueMessage(parsed: ReturnType<typeof sellSchema.safeParse>) {
 }
 
 function getErrorMessage(error: unknown) {
-  return error instanceof Error ? error.message : String(error ?? "unknown error");
+  return error instanceof Error
+    ? error.message
+    : String(error ?? "unknown error");
 }
 
 async function markOfflineIssueFailed(params: {
@@ -81,7 +88,10 @@ async function markOfflineIssueFailed(params: {
       },
     );
   } catch (updateError) {
-    console.error("[offline package sell] issue failure reconcile marker failed", updateError);
+    console.error(
+      "[offline package sell] issue failure reconcile marker failed",
+      updateError,
+    );
   }
 
   try {
@@ -105,7 +115,10 @@ async function markOfflineIssueFailed(params: {
       params.req,
     );
   } catch (auditError) {
-    console.error("[offline package sell] issue failure audit failed", auditError);
+    console.error(
+      "[offline package sell] issue failure audit failed",
+      auditError,
+    );
   }
 }
 
@@ -118,37 +131,65 @@ function serializePass(doc: Record<string, any>) {
     usedCount: Number(doc.usedCount ?? 0),
     remainingCount: Number(doc.remainingCount ?? 0),
     status: doc.status ?? null,
-    expiresAt: doc.expiresAt instanceof Date ? doc.expiresAt.toISOString() : doc.expiresAt ?? null,
+    expiresAt:
+      doc.expiresAt instanceof Date
+        ? doc.expiresAt.toISOString()
+        : (doc.expiresAt ?? null),
   };
 }
 
-export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
+export async function POST(
+  req: Request,
+  ctx: { params: Promise<{ id: string }> },
+) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
   const csrf = verifyAdminCsrf(req);
   if (!csrf.ok) return csrf.res;
 
   const customerId = toObjectId((await ctx.params).id);
-  if (!customerId) return NextResponse.json({ message: "invalid customer id" }, { status: 400 });
+  if (!customerId)
+    return NextResponse.json(
+      { message: "invalid customer id" },
+      { status: 400 },
+    );
 
   const body = await req.json().catch(() => null);
   const parsed = sellSchema.safeParse(body);
-  if (!parsed.success) return NextResponse.json({ message: issueMessage(parsed) }, { status: 400 });
+  if (!parsed.success)
+    return NextResponse.json(
+      { message: issueMessage(parsed) },
+      { status: 400 },
+    );
 
-  const customer = await guard.db.collection("offline_customers").findOne(
-    { _id: customerId },
-    { projection: { name: 1, phone: 1, email: 1, linkedUserId: 1 } },
-  );
-  if (!customer) return NextResponse.json({ message: "customer not found" }, { status: 404 });
+  const customer = await guard.db
+    .collection("offline_customers")
+    .findOne(
+      { _id: customerId },
+      { projection: { name: 1, phone: 1, email: 1, linkedUserId: 1 } },
+    );
+  if (!customer)
+    return NextResponse.json(
+      { message: "customer not found" },
+      { status: 404 },
+    );
 
-  const linkedUserId = customer.linkedUserId instanceof ObjectId ? customer.linkedUserId : null;
-  if (!linkedUserId) return NextResponse.json({ message: "linked user required" }, { status: 400 });
+  const linkedUserId =
+    customer.linkedUserId instanceof ObjectId ? customer.linkedUserId : null;
+  if (!linkedUserId)
+    return NextResponse.json(
+      { message: "linked user required" },
+      { status: 400 },
+    );
 
-  const linkedUser = await guard.db.collection("users").findOne(
-    { _id: linkedUserId },
-    { projection: { name: 1, email: 1, phone: 1 } },
-  );
-  if (!linkedUser) return NextResponse.json({ message: "user not found" }, { status: 404 });
+  const linkedUser = await guard.db
+    .collection("users")
+    .findOne(
+      { _id: linkedUserId },
+      { projection: { name: 1, email: 1, phone: 1 } },
+    );
+  if (!linkedUser)
+    return NextResponse.json({ message: "user not found" }, { status: 404 });
 
   const input = parsed.data;
   let packageTypeId: string;
@@ -161,10 +202,16 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     const { packageConfigs } = await loadPackageSettings();
     const config = packageConfigs.find((pkg) => pkg.id === input.packageTypeId);
     if (!config) {
-      return NextResponse.json({ message: "package option not found" }, { status: 400 });
+      return NextResponse.json(
+        { message: "package option not found" },
+        { status: 400 },
+      );
     }
     if (!config.isActive) {
-      return NextResponse.json({ message: "invalid package option" }, { status: 400 });
+      return NextResponse.json(
+        { message: "invalid package option" },
+        { status: 400 },
+      );
     }
     packageTypeId = config.id;
     packageName = config.name;
@@ -172,9 +219,18 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     validityDays = config.validityDays;
     price = config.price;
   } else {
-    if (!input.packageName) return NextResponse.json({ message: "invalid package name" }, { status: 400 });
-    if (!input.sessions) return NextResponse.json({ message: "invalid sessions" }, { status: 400 });
-    if (input.price === undefined) return NextResponse.json({ message: "invalid price" }, { status: 400 });
+    if (!input.packageName)
+      return NextResponse.json(
+        { message: "invalid package name" },
+        { status: 400 },
+      );
+    if (!input.sessions)
+      return NextResponse.json(
+        { message: "invalid sessions" },
+        { status: 400 },
+      );
+    if (input.price === undefined)
+      return NextResponse.json({ message: "invalid price" }, { status: 400 });
     packageTypeId = `offline-${input.sessions}-sessions`;
     packageName = input.packageName;
     sessions = input.sessions;
@@ -240,7 +296,9 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
         id: String(linkedUserId),
         name: linkedUser.name ?? null,
         email: linkedUser.email ?? null,
-        phoneMasked: linkedUser.phone ? maskPhone(String(linkedUser.phone)) : null,
+        phoneMasked: linkedUser.phone
+          ? maskPhone(String(linkedUser.phone))
+          : null,
       },
     },
   };
@@ -249,7 +307,10 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     await guard.db.collection("packageOrders").insertOne(packageOrder as any);
   } catch (error) {
     console.error("[offline package sell] package order insert failed", error);
-    return NextResponse.json({ message: "package order creation failed" }, { status: 500 });
+    return NextResponse.json(
+      { message: "package order creation failed" },
+      { status: 500 },
+    );
   }
 
   try {
@@ -274,10 +335,15 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
       linkedUserId,
       error,
     });
-    return NextResponse.json({ message: "package order created but pass issuance failed" }, { status: 500 });
+    return NextResponse.json(
+      { message: "package order created but pass issuance failed" },
+      { status: 500 },
+    );
   }
 
-  const pass = await guard.db.collection("service_passes").findOne({ orderId: packageOrderId });
+  const pass = await guard.db
+    .collection("service_passes")
+    .findOne({ orderId: packageOrderId });
   if (!pass) {
     await markOfflineIssueFailed({
       db: guard.db,
@@ -288,7 +354,10 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
       linkedUserId,
       error: new Error("package pass issuance failed"),
     });
-    return NextResponse.json({ message: "package order created but pass issuance failed" }, { status: 500 });
+    return NextResponse.json(
+      { message: "package order created but pass issuance failed" },
+      { status: 500 },
+    );
   }
 
   await appendAudit(
@@ -314,16 +383,19 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
   );
 
   const serializedPass = serializePass(pass as any);
-  return NextResponse.json({
-    item: {
-      packageOrderId: String(packageOrderId),
-      servicePassId: String(pass._id),
-      packageName,
-      sessions,
-      price,
-      paymentMethod: input.paymentMethod,
-      paidAt: paidAt.toISOString(),
+  return NextResponse.json(
+    {
+      item: {
+        packageOrderId: String(packageOrderId),
+        servicePassId: String(pass._id),
+        packageName,
+        sessions,
+        price,
+        paymentMethod: input.paymentMethod,
+        paidAt: paidAt.toISOString(),
+      },
+      pass: serializedPass,
     },
-    pass: serializedPass,
-  }, { status: 201 });
+    { status: 201 },
+  );
 }

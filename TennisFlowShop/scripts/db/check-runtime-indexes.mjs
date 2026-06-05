@@ -523,15 +523,24 @@ try {
 
       // check와 ensure의 비교 기준은 반드시 동일해야 한다.
       // 그래야 "생성/보정 도구는 불일치"인데 "검사 도구는 정상" 같은 운영 오판을 막을 수 있다.
-      const keyMatched = stableStringify(indexDoc.key) === stableStringify(spec.keys);
-      const uniqueMatched = checkOption(indexDoc, "unique", spec.options.unique);
+      const keyMatched =
+        stableStringify(indexDoc.key) === stableStringify(spec.keys);
+      const uniqueMatched = checkOption(
+        indexDoc,
+        "unique",
+        spec.options.unique,
+      );
       const ttlMatched = checkOption(
         indexDoc,
         "expireAfterSeconds",
         spec.options.expireAfterSeconds,
       );
       // sparse는 "인덱싱 대상 문서 집합" 자체를 바꾸므로 동일 키라도 다른 인덱스로 봐야 한다.
-      const sparseMatched = checkOption(indexDoc, "sparse", spec.options.sparse);
+      const sparseMatched = checkOption(
+        indexDoc,
+        "sparse",
+        spec.options.sparse,
+      );
       // partialFilterExpression은 인덱스가 적용되는 조건식을 바꾼다.
       // 이 값이 다르면 실행계획/유니크 제약 적용 범위가 달라질 수 있다.
       const partialMatched = checkOption(
@@ -540,7 +549,13 @@ try {
         spec.options.partialFilterExpression,
       );
 
-      if (!keyMatched || !uniqueMatched || !ttlMatched || !sparseMatched || !partialMatched) {
+      if (
+        !keyMatched ||
+        !uniqueMatched ||
+        !ttlMatched ||
+        !sparseMatched ||
+        !partialMatched
+      ) {
         hasFailure = true;
         console.error(`❌ [MISMATCH] ${collectionName}.${spec.name}`);
         console.error("   - actual keys:", JSON.stringify(indexDoc.key));

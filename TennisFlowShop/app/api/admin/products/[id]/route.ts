@@ -19,7 +19,9 @@ function asRecord(value: unknown): Record<string, unknown> | null {
     return null;
   return value as Record<string, unknown>;
 }
-function normalizeVariantInventories(value: unknown): ProductVariantInventory[] {
+function normalizeVariantInventories(
+  value: unknown,
+): ProductVariantInventory[] {
   if (!Array.isArray(value)) return [];
   return value
     .map<ProductVariantInventory | null>((item) => {
@@ -44,7 +46,8 @@ function normalizeVariantInventories(value: unknown): ProductVariantInventory[] 
         ...(typeof row.gaugeLabel === "string" && row.gaugeLabel.trim()
           ? { gaugeLabel: row.gaugeLabel.trim() }
           : {}),
-        stock: Number.isFinite(stockNumber) && stockNumber >= 0 ? stockNumber : 0,
+        stock:
+          Number.isFinite(stockNumber) && stockNumber >= 0 ? stockNumber : 0,
         isSoldOut: asBoolean(row.isSoldOut),
         showWhenSoldOut: row.showWhenSoldOut === false ? false : true,
       };
@@ -85,9 +88,7 @@ function normalizeGaugeInventories(value: unknown): ProductGaugeInventory[] {
           ? { label: row.label.trim() }
           : {}),
         stock:
-          Number.isFinite(stockNumber) && stockNumber > 0
-            ? stockNumber
-            : 0,
+          Number.isFinite(stockNumber) && stockNumber > 0 ? stockNumber : 0,
         isSoldOut: asBoolean(row.isSoldOut),
       };
 
@@ -121,7 +122,8 @@ function normalizeColorInventories(value: unknown): ProductColorInventory[] {
         ...(typeof row.image === "string" && row.image.trim()
           ? { image: row.image.trim() }
           : {}),
-        stock: Number.isFinite(stockNumber) && stockNumber > 0 ? stockNumber : 0,
+        stock:
+          Number.isFinite(stockNumber) && stockNumber > 0 ? stockNumber : 0,
         isSoldOut: asBoolean(row.isSoldOut),
       };
       return normalizedRow;
@@ -145,7 +147,9 @@ function toProductAuditSnapshot(doc: Record<string, unknown> | null) {
     stock: typeof inventory?.stock === "number" ? inventory.stock : null,
     status: asString(safe.status) || undefined,
     isActive:
-      typeof safe.isActive === "boolean" ? (safe.isActive as boolean) : undefined,
+      typeof safe.isActive === "boolean"
+        ? (safe.isActive as boolean)
+        : undefined,
     isPublished:
       typeof safe.isPublished === "boolean"
         ? (safe.isPublished as boolean)
@@ -167,7 +171,9 @@ function parseUpdateRequest(raw: unknown): AdminProductUpdateRequestDto | null {
       : legacyGaugeOptions;
   const normalizedGauge = gaugeOptions[0] ?? asString(body.gauge);
   const colorInventories = normalizeColorInventories(body.colorInventories);
-  const variantInventories = normalizeVariantInventories(body.variantInventories);
+  const variantInventories = normalizeVariantInventories(
+    body.variantInventories,
+  );
   const legacyColorOptions = asStringArray(body.colorOptions)
     .map((c) => c.trim())
     .filter((c) => c.length > 0);
@@ -186,10 +192,12 @@ function parseUpdateRequest(raw: unknown): AdminProductUpdateRequestDto | null {
     material: asString(body.material),
     gauge: normalizedGauge,
     gaugeOptions,
-    gaugeInventories: gaugeInventories.length > 0 ? gaugeInventories : undefined,
+    gaugeInventories:
+      gaugeInventories.length > 0 ? gaugeInventories : undefined,
     color: normalizedColor,
     colorOptions,
-    colorInventories: colorInventories.length > 0 ? colorInventories : undefined,
+    colorInventories:
+      colorInventories.length > 0 ? colorInventories : undefined,
     variantInventories:
       variantInventories.length > 0 ? variantInventories : undefined,
     length: asString(body.length),
@@ -246,7 +254,9 @@ export async function GET(
     return NextResponse.json({
       product: {
         ...prod,
-        shippingFee: normalizeItemShippingFee((prod as Record<string, unknown>).shippingFee),
+        shippingFee: normalizeItemShippingFee(
+          (prod as Record<string, unknown>).shippingFee,
+        ),
         _id: prod._id.toString(),
       },
     });

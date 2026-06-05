@@ -112,20 +112,18 @@ export async function POST(
 
     // 관련 패키지 주문 히스토리에도 로그 남기기 — 감사추적용
     if (pass.orderId) {
-      await db
-        .collection("packageOrders")
-        .updateOne(
-          { _id: pass.orderId },
-          {
-            $push: {
-              history: {
-                status: "만료연장",
-                date: new Date(),
-                description: `만료일 ${pass.expiresAt ?? "-"} → ${nextExpiry.toISOString()} (${reason})`,
-              },
-            } as any,
-          },
-        );
+      await db.collection("packageOrders").updateOne(
+        { _id: pass.orderId },
+        {
+          $push: {
+            history: {
+              status: "만료연장",
+              date: new Date(),
+              description: `만료일 ${pass.expiresAt ?? "-"} → ${nextExpiry.toISOString()} (${reason})`,
+            },
+          } as any,
+        },
+      );
     }
 
     // 최신 스냅샷 반환

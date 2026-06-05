@@ -272,9 +272,7 @@ export default function RacketFilterPanel({
 
           {/* 혜택 */}
           <div className="mb-5 space-y-2">
-            <Label className="text-sm font-medium text-foreground">
-              혜택
-            </Label>
+            <Label className="text-sm font-medium text-foreground">혜택</Label>
             <div className="grid grid-cols-2 gap-2 bp-sm:grid-cols-4">
               <Button
                 type="button"
@@ -296,7 +294,9 @@ export default function RacketFilterPanel({
                     onClick={() =>
                       onExposureChange(
                         isActive
-                          ? exposureFilter.filter((value) => value !== option.value)
+                          ? exposureFilter.filter(
+                              (value) => value !== option.value,
+                            )
                           : [...exposureFilter, option.value],
                       )
                     }
@@ -316,37 +316,37 @@ export default function RacketFilterPanel({
               가격대
             </Label>
             <div className="grid grid-cols-2 gap-2 bp-sm:grid-cols-3">
-                {RACKET_PRICE_PRESETS.map((preset) => {
-                  const effectiveMin = priceMin ?? 0;
-                  const effectiveMax = priceMax ?? 10000000;
-                  const isActive =
-                    effectiveMin === preset.range[0] &&
-                    effectiveMax === preset.range[1];
+              {RACKET_PRICE_PRESETS.map((preset) => {
+                const effectiveMin = priceMin ?? 0;
+                const effectiveMax = priceMax ?? 10000000;
+                const isActive =
+                  effectiveMin === preset.range[0] &&
+                  effectiveMax === preset.range[1];
 
-                  return (
-                    <button
-                      key={preset.label}
-                      type="button"
-                      onClick={() => {
-                        if (preset.label === "전체") {
-                          onChangePriceMin(null);
-                          onChangePriceMax(null);
-                          return;
-                        }
-                        onChangePriceMin(preset.range[0]);
-                        onChangePriceMax(preset.range[1]);
-                      }}
-                      className={cn(
-                        "min-w-0 w-full overflow-hidden text-ellipsis whitespace-nowrap rounded-md border px-2 py-1.5 text-[11px] transition-colors bp-sm:text-xs",
-                        isActive
-                          ? "border-primary bg-primary/15 text-primary dark:bg-primary/30 dark:text-primary-foreground"
-                          : "border-border bg-background text-muted-foreground hover:bg-muted",
-                      )}
-                    >
-                      {preset.label}
-                    </button>
-                  );
-                })}
+                return (
+                  <button
+                    key={preset.label}
+                    type="button"
+                    onClick={() => {
+                      if (preset.label === "전체") {
+                        onChangePriceMin(null);
+                        onChangePriceMax(null);
+                        return;
+                      }
+                      onChangePriceMin(preset.range[0]);
+                      onChangePriceMax(preset.range[1]);
+                    }}
+                    className={cn(
+                      "min-w-0 w-full overflow-hidden text-ellipsis whitespace-nowrap rounded-md border px-2 py-1.5 text-[11px] transition-colors bp-sm:text-xs",
+                      isActive
+                        ? "border-primary bg-primary/15 text-primary dark:bg-primary/30 dark:text-primary-foreground"
+                        : "border-border bg-background text-muted-foreground hover:bg-muted",
+                    )}
+                  >
+                    {preset.label}
+                  </button>
+                );
+              })}
             </div>
           </div>
           {onClose && (

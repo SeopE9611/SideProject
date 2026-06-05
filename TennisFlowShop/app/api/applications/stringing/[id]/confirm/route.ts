@@ -145,18 +145,16 @@ export async function POST(
         (order as any).userConfirmedAt ||
         (order as any).status === "구매확정"
       ) {
-        await db
-          .collection("stringing_applications")
-          .updateOne(
-            {
-              _id,
-              $or: [
-                { userConfirmedAt: { $exists: false } },
-                { userConfirmedAt: null },
-              ],
-            },
-            { $set: { userConfirmedAt: new Date() } },
-          );
+        await db.collection("stringing_applications").updateOne(
+          {
+            _id,
+            $or: [
+              { userConfirmedAt: { $exists: false } },
+              { userConfirmedAt: null },
+            ],
+          },
+          { $set: { userConfirmedAt: new Date() } },
+        );
         return NextResponse.json({
           ok: true,
           already: true,
@@ -257,19 +255,17 @@ export async function POST(
       }
 
       // 연결된 교체 서비스도 함께 확정(멱등)
-      const svcRes = await db
-        .collection("stringing_applications")
-        .updateMany(
-          {
-            orderId: orderObjectId,
-            status: "교체완료",
-            $or: [
-              { userConfirmedAt: { $exists: false } },
-              { userConfirmedAt: null },
-            ],
-          },
-          { $set: { userConfirmedAt: now } },
-        );
+      const svcRes = await db.collection("stringing_applications").updateMany(
+        {
+          orderId: orderObjectId,
+          status: "교체완료",
+          $or: [
+            { userConfirmedAt: { $exists: false } },
+            { userConfirmedAt: null },
+          ],
+        },
+        { $set: { userConfirmedAt: now } },
+      );
 
       return NextResponse.json({
         ok: true,
@@ -315,18 +311,16 @@ export async function POST(
 
     // 포인트가 0원이어도, '확정' 자체는 기록한다(단, now로 한 번만 찍는다).
     if (earnedPoints <= 0) {
-      await db
-        .collection("stringing_applications")
-        .updateOne(
-          {
-            _id,
-            $or: [
-              { userConfirmedAt: { $exists: false } },
-              { userConfirmedAt: null },
-            ],
-          },
-          { $set: { userConfirmedAt: now } },
-        );
+      await db.collection("stringing_applications").updateOne(
+        {
+          _id,
+          $or: [
+            { userConfirmedAt: { $exists: false } },
+            { userConfirmedAt: null },
+          ],
+        },
+        { $set: { userConfirmedAt: now } },
+      );
       return NextResponse.json({
         ok: true,
         message: "서비스 확정 완료",
@@ -346,18 +340,16 @@ export async function POST(
       reason: "서비스 확정 적립",
     });
 
-    await db
-      .collection("stringing_applications")
-      .updateOne(
-        {
-          _id,
-          $or: [
-            { userConfirmedAt: { $exists: false } },
-            { userConfirmedAt: null },
-          ],
-        },
-        { $set: { userConfirmedAt: now } },
-      );
+    await db.collection("stringing_applications").updateOne(
+      {
+        _id,
+        $or: [
+          { userConfirmedAt: { $exists: false } },
+          { userConfirmedAt: null },
+        ],
+      },
+      { $set: { userConfirmedAt: now } },
+    );
 
     return NextResponse.json({
       ok: true,

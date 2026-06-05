@@ -27,7 +27,9 @@ export async function GET(req: Request) {
 
   const url = new URL(req.url);
   const yyyymm = url.searchParams.get("yyyymm")?.trim() ?? "";
-  const collection = guard.db.collection<RevenueReportSnapshotDoc>(REVENUE_REPORT_SNAPSHOTS_COLLECTION);
+  const collection = guard.db.collection<RevenueReportSnapshotDoc>(
+    REVENUE_REPORT_SNAPSHOTS_COLLECTION,
+  );
 
   if (yyyymm) {
     if (!REVENUE_REPORT_YYYY_MM_RE.test(yyyymm)) {
@@ -41,7 +43,12 @@ export async function GET(req: Request) {
   const limit = parsePositiveInt(url.searchParams.get("limit"), 20, 100);
   const skip = (page - 1) * limit;
   const [items, total] = await Promise.all([
-    collection.find({}).sort({ updatedAt: -1, yyyymm: -1 }).skip(skip).limit(limit).toArray(),
+    collection
+      .find({})
+      .sort({ updatedAt: -1, yyyymm: -1 })
+      .skip(skip)
+      .limit(limit)
+      .toArray(),
     collection.countDocuments({}),
   ]);
 
@@ -63,7 +70,10 @@ export async function POST(req: Request) {
   const body = await req.json().catch(() => null);
   const parsed = saveSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ message: "invalid snapshot input" }, { status: 400 });
+    return NextResponse.json(
+      { message: "invalid snapshot input" },
+      { status: 400 },
+    );
   }
 
   const actorId = guard.admin._id.toHexString();
@@ -74,13 +84,14 @@ export async function POST(req: Request) {
     source: "manual",
     meta: { source: "manual_save" },
   });
-  if (!snapshotInput) return NextResponse.json({ message: "failed to build revenue report" }, { status: 500 });
+  if (!snapshotInput)
+    return NextResponse.json(
+      { message: "failed to build revenue report" },
+      { status: 500 },
+    );
 
-  const { snapshot, previousUpdatedAt, duplicateKeyReturnedExisting } = await saveRevenueReportSnapshot(
-    guard.db,
-    snapshotInput,
-    { actorId },
-  );
+  const { snapshot, previousUpdatedAt, duplicateKeyReturnedExisting } =
+    await saveRevenueReportSnapshot(guard.db, snapshotInput, { actorId });
 
   if (!snapshot) {
     return NextResponse.json(

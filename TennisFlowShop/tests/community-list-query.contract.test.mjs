@@ -52,11 +52,7 @@ test("boards/community API는 동일한 공통 쿼리 파서/필터를 사용한
       "const COMMUNITY_KIND_VALUES = ['free', 'market', 'gear', 'brand'] as const;",
     ),
   );
-  assert.ok(
-    boardsRoute.includes(
-      "function parseCommunityKindParam(",
-    ),
-  );
+  assert.ok(boardsRoute.includes("function parseCommunityKindParam("));
   assert.ok(
     boardsRoute.includes("return isCommunityKindParam(value) ? value : null;"),
   );

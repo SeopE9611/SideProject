@@ -60,12 +60,14 @@ export default function RacketSelectStringClient({
   // Clamp work count
   const clampWorkCount = (v: number, stringStock?: number) => {
     if (!Number.isFinite(v)) return 1;
-    const racketMax = Number.isFinite(racket.maxQty) && (racket.maxQty as number) > 0
-      ? (racket.maxQty as number)
-      : 99;
-    const stockMax = Number.isFinite(stringStock) && (stringStock as number) > 0
-      ? (stringStock as number)
-      : Infinity;
+    const racketMax =
+      Number.isFinite(racket.maxQty) && (racket.maxQty as number) > 0
+        ? (racket.maxQty as number)
+        : 99;
+    const stockMax =
+      Number.isFinite(stringStock) && (stringStock as number) > 0
+        ? (stringStock as number)
+        : Infinity;
     const max = Math.min(racketMax, stockMax);
     return Math.max(1, Math.min(max, Math.trunc(v)));
   };
@@ -82,7 +84,11 @@ export default function RacketSelectStringClient({
 
   // Calculate display price
   const displayPrice = useMemo(() => {
-    if (racket.salePrice && racket.salePrice > 0 && racket.salePrice < (racket.regularPrice ?? racket.price)) {
+    if (
+      racket.salePrice &&
+      racket.salePrice > 0 &&
+      racket.salePrice < (racket.regularPrice ?? racket.price)
+    ) {
       return racket.salePrice;
     }
     return racket.price;
@@ -93,23 +99,33 @@ export default function RacketSelectStringClient({
     selectedString: any,
     qty: number,
     selectedGauge?: string,
-    selectedColor?: string
+    selectedColor?: string,
   ) => {
     const newStringId = String(selectedString?._id);
     const hasVariantInventories =
       Array.isArray(selectedString?.variantInventories) &&
       selectedString.variantInventories.length > 0;
     const selectedVariant = hasVariantInventories
-      ? getVariantBySelection(selectedString, selectedColor ?? "", selectedGauge ?? "")
+      ? getVariantBySelection(
+          selectedString,
+          selectedColor ?? "",
+          selectedGauge ?? "",
+        )
       : undefined;
     const colorRows = normalizeColorRows(selectedString);
-    const selectedColorRow = colorRows.find((row) => row.value === selectedColor);
+    const selectedColorRow = colorRows.find(
+      (row) => row.value === selectedColor,
+    );
     const selectedColorPayload = selectedColor
       ? {
           selectedColor,
           selectedColorLabel:
-            selectedVariant?.colorLabel || (selectedColorRow ? getColorLabel(selectedColorRow) : selectedColor),
-          selectedColorHex: selectedVariant?.colorHex || selectedColorRow?.colorHex,
+            selectedVariant?.colorLabel ||
+            (selectedColorRow
+              ? getColorLabel(selectedColorRow)
+              : selectedColor),
+          selectedColorHex:
+            selectedVariant?.colorHex || selectedColorRow?.colorHex,
           selectedColorImage:
             selectedVariant?.colorImage ||
             selectedColorRow?.image ||
@@ -125,7 +141,7 @@ export default function RacketSelectStringClient({
 
     // Update racket in cart
     const hasRacket = cartItems.some(
-      (it) => it.id === racket.id && (it.kind ?? "product") === "racket"
+      (it) => it.id === racket.id && (it.kind ?? "product") === "racket",
     );
     if (!hasRacket) {
       addItem({
@@ -160,7 +176,7 @@ export default function RacketSelectStringClient({
       removeItem(
         initialStringId,
         initialSelectedGauge || undefined,
-        initialSelectedColor || undefined
+        initialSelectedColor || undefined,
       );
     }
 
@@ -170,17 +186,25 @@ export default function RacketSelectStringClient({
         it.id === newStringId &&
         (it.kind ?? "product") === "product" &&
         (it.selectedGauge ?? "") === (selectedGauge ?? "") &&
-        (it.selectedColor ?? "") === (selectedColor ?? "")
+        (it.selectedColor ?? "") === (selectedColor ?? ""),
     );
 
     if (hasNewString) {
-      updateQuantity(newStringId, qty, selectedGauge || undefined, selectedColor || undefined);
+      updateQuantity(
+        newStringId,
+        qty,
+        selectedGauge || undefined,
+        selectedColor || undefined,
+      );
     } else {
       const gaugeRows = normalizeGaugeRows(selectedString);
-      const selectedGaugeRow = gaugeRows.find((row) => row.value === selectedGauge);
+      const selectedGaugeRow = gaugeRows.find(
+        (row) => row.value === selectedGauge,
+      );
       const stringManageStock = Boolean(selectedString?.inventory?.manageStock);
       const baseStock =
-        stringManageStock && typeof selectedString?.inventory?.stock === "number"
+        stringManageStock &&
+        typeof selectedString?.inventory?.stock === "number"
           ? selectedString.inventory.stock
           : undefined;
       const effectiveStringStock = hasVariantInventories
@@ -222,7 +246,9 @@ export default function RacketSelectStringClient({
       : undefined;
     const gaugeRows = normalizeGaugeRows(p);
     const hasGaugeRows = gaugeRows.length > 0;
-    const selectedGaugeRow = gaugeRows.find((row) => row.value === selectedGauge);
+    const selectedGaugeRow = gaugeRows.find(
+      (row) => row.value === selectedGauge,
+    );
     const hideGaugeStock = p?.inventory?.hideGaugeStock === true;
 
     // Validation
@@ -234,24 +260,41 @@ export default function RacketSelectStringClient({
       showErrorToast?.("선택한 게이지 정보를 찾을 수 없습니다.");
       return;
     }
-    if (!hasVariantInventories && selectedGaugeRow && (selectedGaugeRow.isSoldOut || selectedGaugeRow.stock <= 0)) {
+    if (
+      !hasVariantInventories &&
+      selectedGaugeRow &&
+      (selectedGaugeRow.isSoldOut || selectedGaugeRow.stock <= 0)
+    ) {
       showErrorToast?.("선택한 게이지는 품절입니다.");
       return;
     }
-    if (!hasVariantInventories && selectedGaugeRow && selectedGaugeRow.stock < qty) {
+    if (
+      !hasVariantInventories &&
+      selectedGaugeRow &&
+      selectedGaugeRow.stock < qty
+    ) {
       showErrorToast?.("선택한 게이지의 구매 가능 수량을 초과했습니다.");
       return;
     }
 
-    const colorRows = hasVariantInventories ? getVisibleColorRows(p) : normalizeColorRows(p);
+    const colorRows = hasVariantInventories
+      ? getVisibleColorRows(p)
+      : normalizeColorRows(p);
     const hasColorRows = colorRows.length > 0;
-    const selectedColorRow = colorRows.find((row) => row.value === selectedColor);
+    const selectedColorRow = colorRows.find(
+      (row) => row.value === selectedColor,
+    );
 
     if (hasColorRows && !selectedColor) {
       showErrorToast?.("색상을 선택해주세요.");
       return;
     }
-    if (!hasVariantInventories && hasColorRows && selectedColor && !selectedColorRow) {
+    if (
+      !hasVariantInventories &&
+      hasColorRows &&
+      selectedColor &&
+      !selectedColorRow
+    ) {
       showErrorToast?.("선택한 색상 정보를 찾을 수 없습니다.");
       return;
     }
@@ -267,12 +310,15 @@ export default function RacketSelectStringClient({
     if (hasVariantInventories) {
       if (!selectedColor) return showErrorToast?.("색상을 선택해주세요.");
       if (!selectedGauge) return showErrorToast?.("게이지를 선택해주세요.");
-      if (!selectedVariant) return showErrorToast?.("선택한 색상/게이지 조합을 찾을 수 없습니다.");
+      if (!selectedVariant)
+        return showErrorToast?.("선택한 색상/게이지 조합을 찾을 수 없습니다.");
       if (!isSellableVariant(selectedVariant)) {
         return showErrorToast?.("선택한 색상/게이지 조합은 품절되었습니다.");
       }
       if (selectedVariant.stock < qty) {
-        return showErrorToast?.("선택한 게이지의 구매 가능 수량을 초과했습니다.");
+        return showErrorToast?.(
+          "선택한 게이지의 구매 가능 수량을 초과했습니다.",
+        );
       }
     }
 
@@ -281,8 +327,12 @@ export default function RacketSelectStringClient({
       ? {
           selectedColor,
           selectedColorLabel:
-            selectedVariant?.colorLabel || (selectedColorRow ? getColorLabel(selectedColorRow) : selectedColor),
-          selectedColorHex: selectedVariant?.colorHex || selectedColorRow?.colorHex,
+            selectedVariant?.colorLabel ||
+            (selectedColorRow
+              ? getColorLabel(selectedColorRow)
+              : selectedColor),
+          selectedColorHex:
+            selectedVariant?.colorHex || selectedColorRow?.colorHex,
           selectedColorImage:
             selectedVariant?.colorImage ||
             selectedColorRow?.image ||
@@ -297,7 +347,8 @@ export default function RacketSelectStringClient({
       p?.imageUrl;
 
     const manageStock = Boolean(p?.inventory?.manageStock);
-    const baseStock = typeof p?.inventory?.stock === "number" ? p.inventory.stock : undefined;
+    const baseStock =
+      typeof p?.inventory?.stock === "number" ? p.inventory.stock : undefined;
     const stock = hasVariantInventories
       ? selectedVariant?.stock
       : selectedGaugeRow
@@ -312,7 +363,7 @@ export default function RacketSelectStringClient({
       showErrorToast?.(
         hideGaugeStock
           ? "선택한 게이지의 구매 가능 수량을 초과했습니다."
-          : "선택한 스트링의 구매 가능 수량을 초과했습니다."
+          : "선택한 스트링의 구매 가능 수량을 초과했습니다.",
       );
       return;
     }
@@ -323,10 +374,14 @@ export default function RacketSelectStringClient({
     if (isFromCart) {
       try {
         upsertCartBundle(p, finalQty, selectedGauge, selectedColor);
-        showSuccessToast?.("장바구니 번들(라켓+스트링) 수량/스트링을 수정했어요.");
+        showSuccessToast?.(
+          "장바구니 번들(라켓+스트링) 수량/스트링을 수정했어요.",
+        );
         router.push(returnTo);
       } catch (e) {
-        showErrorToast?.("장바구니 수정 중 오류가 발생했어요. 다시 시도해주세요.");
+        showErrorToast?.(
+          "장바구니 수정 중 오류가 발생했어요. 다시 시도해주세요.",
+        );
       }
       return;
     }
@@ -378,7 +433,11 @@ export default function RacketSelectStringClient({
       initialSelectedColor={initialSelectedColor}
       isCartEditMode={isFromCart}
       ctaLabel={isFromCart ? "이 스트링으로 변경" : "구매 계속하기"}
-      ctaSubLabel={isFromCart ? "장바구니로 돌아갑니다" : "선택한 스트링은 라켓과 함께 결제됩니다"}
+      ctaSubLabel={
+        isFromCart
+          ? "장바구니로 돌아갑니다"
+          : "선택한 스트링은 라켓과 함께 결제됩니다"
+      }
     />
   );
 }

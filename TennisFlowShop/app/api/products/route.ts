@@ -20,7 +20,12 @@ type ProductDoc = {
     durability?: number;
     comfort?: number;
   };
-  inventory?: { isFeatured?: boolean; isNew?: boolean; isSale?: boolean; salePrice?: number };
+  inventory?: {
+    isFeatured?: boolean;
+    isNew?: boolean;
+    isSale?: boolean;
+    salePrice?: number;
+  };
   ratingCount?: number;
   ratingAvg?: number;
   ratingAverage?: number;
@@ -103,21 +108,20 @@ export async function GET(req: NextRequest) {
 
     const filter: Filter<ProductDoc> = { isDeleted: { $ne: true } }; // Soft-Delete된 상품은 기본적으로 제외
     if (brand) filter.brand = brand;
-    
-    
-    
-    
-    
+
     const powerScore = normalizeFeatureFilterParam(power);
     if (powerScore !== null) filter["features.power"] = { $gte: powerScore };
     const controlScore = normalizeFeatureFilterParam(control);
-    if (controlScore !== null) filter["features.control"] = { $gte: controlScore };
+    if (controlScore !== null)
+      filter["features.control"] = { $gte: controlScore };
     const spinScore = normalizeFeatureFilterParam(spin);
     if (spinScore !== null) filter["features.spin"] = { $gte: spinScore };
     const durabilityScore = normalizeFeatureFilterParam(durability);
-    if (durabilityScore !== null) filter["features.durability"] = { $gte: durabilityScore };
+    if (durabilityScore !== null)
+      filter["features.durability"] = { $gte: durabilityScore };
     const comfortScore = normalizeFeatureFilterParam(comfort);
-    if (comfortScore !== null) filter["features.comfort"] = { $gte: comfortScore };
+    if (comfortScore !== null)
+      filter["features.comfort"] = { $gte: comfortScore };
     if (q) filter.name = { $regex: q, $options: "i" };
     if (material) filter.material = material;
     if (isFeatured === "true") filter["inventory.isFeatured"] = true;
@@ -128,7 +132,10 @@ export async function GET(req: NextRequest) {
         if (item === "new") return { "inventory.isNew": true };
         return { "inventory.isSale": true };
       });
-      (filter as any).$and = [...(((filter as any).$and as any[]) ?? []), { $or: exposureOr }];
+      (filter as any).$and = [
+        ...(((filter as any).$and as any[]) ?? []),
+        { $or: exposureOr },
+      ];
     }
 
     // 가격 범위 필터(기존 훅(useInfiniteProducts)에서 이미 사용중인 파라미터를 서버에서 반영)
@@ -158,7 +165,8 @@ export async function GET(req: NextRequest) {
 
     if (sort === "price-low") sortObj = { price: 1 };
     else if (sort === "price-high") sortObj = { price: -1 };
-    else if (sort === "reviews-desc") sortObj = { ratingCount: -1, ratingAvg: -1, _id: -1 };
+    else if (sort === "reviews-desc")
+      sortObj = { ratingCount: -1, ratingAvg: -1, _id: -1 };
 
     const idFilter =
       exclude && ObjectId.isValid(exclude)

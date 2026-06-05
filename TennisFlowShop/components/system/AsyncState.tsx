@@ -23,8 +23,10 @@ type Props = {
 const VARIANT_CLASS: Record<AsyncStateVariant, string> = {
   card: "rounded-xl border px-4 py-5 sm:px-5 sm:py-6",
   inline: "rounded-md border px-3 py-2",
-  "page-center": "mx-auto flex min-h-[220px] w-full max-w-xl items-center justify-center rounded-xl border px-5 py-10",
-  "grid-item": "flex h-full min-h-[220px] w-full items-center justify-center rounded-xl border px-4 py-8",
+  "page-center":
+    "mx-auto flex min-h-[220px] w-full max-w-xl items-center justify-center rounded-xl border px-5 py-10",
+  "grid-item":
+    "flex h-full min-h-[220px] w-full items-center justify-center rounded-xl border px-4 py-8",
 };
 
 export default function AsyncState({
@@ -57,7 +59,12 @@ export default function AsyncState({
       : "아직 표시할 내용이 없습니다.");
 
   const resolvedIcon =
-    icon ?? (isError ? <AlertTriangle className="h-4 w-4" /> : <Inbox className="h-4 w-4" />);
+    icon ??
+    (isError ? (
+      <AlertTriangle className="h-4 w-4" />
+    ) : (
+      <Inbox className="h-4 w-4" />
+    ));
 
   return (
     <div
@@ -72,11 +79,38 @@ export default function AsyncState({
       role={isError ? "alert" : "status"}
     >
       <div className="mx-auto flex max-w-lg flex-col items-center gap-2">
-        <div className={cn("inline-flex h-8 w-8 items-center justify-center rounded-full", isError ? "bg-destructive/15" : "bg-muted")}>{resolvedIcon}</div>
-        <p className={cn("font-semibold", variant === "inline" ? "text-sm" : "text-sm sm:text-base")}>{resolvedTitle}</p>
-        <p className={cn("text-muted-foreground", variant === "inline" ? "text-xs" : "text-xs sm:text-sm")}>{resolvedDescription}</p>
+        <div
+          className={cn(
+            "inline-flex h-8 w-8 items-center justify-center rounded-full",
+            isError ? "bg-destructive/15" : "bg-muted",
+          )}
+        >
+          {resolvedIcon}
+        </div>
+        <p
+          className={cn(
+            "font-semibold",
+            variant === "inline" ? "text-sm" : "text-sm sm:text-base",
+          )}
+        >
+          {resolvedTitle}
+        </p>
+        <p
+          className={cn(
+            "text-muted-foreground",
+            variant === "inline" ? "text-xs" : "text-xs sm:text-sm",
+          )}
+        >
+          {resolvedDescription}
+        </p>
         {isError && onAction && (
-          <Button type="button" onClick={onAction} size="sm" variant="outline" className="mt-1">
+          <Button
+            type="button"
+            onClick={onAction}
+            size="sm"
+            variant="outline"
+            className="mt-1"
+          >
             <RefreshCcw className="mr-1 h-3.5 w-3.5" />
             {actionLabel}
           </Button>

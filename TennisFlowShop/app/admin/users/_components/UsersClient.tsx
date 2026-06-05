@@ -1040,7 +1040,9 @@ export default function UsersClient() {
                   <col style={{ width: "64px" }} />
                   <col style={{ width: "44px" }} />
                 </colgroup>
-                <TableHeader className={cn("sticky top-0 z-10", adminSurface.tableHeader)}>
+                <TableHeader
+                  className={cn("sticky top-0 z-10", adminSurface.tableHeader)}
+                >
                   <TableRow>
                     <TableHead className={cn(th, "w-[40px] px-0")}>
                       <Checkbox
@@ -1158,11 +1160,19 @@ export default function UsersClient() {
                           {/* 회원: 이름/이메일 두 줄 + 복사 */}
                           <TableCell className={cn(td, "w-[240px]")}>
                             <div className="mx-auto flex max-w-[220px] min-w-0 flex-col items-center overflow-hidden text-center">
-                              <span className="line-clamp-2 max-w-full break-words font-medium" title={u.name || "(이름없음)"}>
+                              <span
+                                className="line-clamp-2 max-w-full break-words font-medium"
+                                title={u.name || "(이름없음)"}
+                              >
                                 {u.name || "(이름없음)"}
                               </span>
                               <div className="flex max-w-full min-w-0 items-center gap-1 overflow-hidden text-xs text-foreground/75">
-                                <span className="block max-w-[190px] truncate" title={u.email}>{u.email}</span>
+                                <span
+                                  className="block max-w-[190px] truncate"
+                                  title={u.email}
+                                >
+                                  {u.email}
+                                </span>
                                 <button
                                   className="shrink-0 inline-flex h-4 w-4 items-center justify-center rounded hover:bg-background"
                                   onClick={() => copy(u.email)}
@@ -1201,7 +1211,13 @@ export default function UsersClient() {
                           <TableCell
                             className={cn(td, "w-[72px] whitespace-nowrap")}
                           >
-                            <Badge className={cn(badgeSm, roleColors[u.role], "shrink-0 whitespace-nowrap")}>
+                            <Badge
+                              className={cn(
+                                badgeSm,
+                                roleColors[u.role],
+                                "shrink-0 whitespace-nowrap",
+                              )}
+                            >
                               {u.role === "admin" ? "관리자" : "일반"}
                             </Badge>
                           </TableCell>
@@ -1284,7 +1300,13 @@ export default function UsersClient() {
                             )}
                           >
                             <div className="flex justify-center">
-                              <Badge className={cn(badgeSm, STATUS[statusKey], "shrink-0 whitespace-nowrap")}>
+                              <Badge
+                                className={cn(
+                                  badgeSm,
+                                  STATUS[statusKey],
+                                  "shrink-0 whitespace-nowrap",
+                                )}
+                              >
                                 {statusKey === "active"
                                   ? "활성"
                                   : statusKey === "suspended"
@@ -1306,8 +1328,14 @@ export default function UsersClient() {
                                   <MoreHorizontal className="h-4 w-4" />
                                 </Button>
                               </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="min-w-max">
-                                <DropdownMenuItem asChild className="whitespace-nowrap">
+                              <DropdownMenuContent
+                                align="end"
+                                className="min-w-max"
+                              >
+                                <DropdownMenuItem
+                                  asChild
+                                  className="whitespace-nowrap"
+                                >
                                   <Link href={`/admin/users/${u.id}`}>
                                     상세 보기
                                   </Link>

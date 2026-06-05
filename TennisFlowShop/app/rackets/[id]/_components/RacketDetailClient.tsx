@@ -18,14 +18,21 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { merchandisingImageBadgeClass, merchandisingImageBadgeVariant, usedBadgeMeta } from "@/lib/badge-style";
+import {
+  merchandisingImageBadgeClass,
+  merchandisingImageBadgeVariant,
+  usedBadgeMeta,
+} from "@/lib/badge-style";
 import {
   gripSizeLabel,
   racketBrandLabel,
   stringPatternLabel,
 } from "@/lib/constants";
 import { normalizeItemShippingFee } from "@/lib/shipping-fee";
-import { getEffectiveRacketPrice, getRacketDiscountRate } from "@/lib/racket-pricing";
+import {
+  getEffectiveRacketPrice,
+  getRacketDiscountRate,
+} from "@/lib/racket-pricing";
 import { addRecentViewedItem } from "@/lib/recent-viewed";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
@@ -73,7 +80,6 @@ const ReviewImageViewerDialog = dynamic(
 const ReviewEditDialog = dynamic(() => import("./ReviewEditDialog"), {
   loading: () => null,
 });
-
 
 export default function RacketDetailClient({
   racket,
@@ -246,7 +252,10 @@ export default function RacketDetailClient({
   const reviewCount = mergedReviews.length;
   const averageRating =
     reviewCount > 0
-      ? mergedReviews.reduce((sum: number, review: any) => sum + (Number(review?.rating) || 0), 0) / reviewCount
+      ? mergedReviews.reduce(
+          (sum: number, review: any) => sum + (Number(review?.rating) || 0),
+          0,
+        ) / reviewCount
       : 0;
 
   // 인라인 수정 다이얼로그 상태/핸들러
@@ -542,13 +551,26 @@ export default function RacketDetailClient({
                     </Button>
                   </>
                 )}
-                {(racket?.marketing?.isFeatured || racket?.marketing?.isNew) && (
+                {(racket?.marketing?.isFeatured ||
+                  racket?.marketing?.isNew) && (
                   <div className="absolute left-4 top-4 flex flex-wrap gap-2">
                     {racket?.marketing?.isFeatured && (
-                      <Badge variant={merchandisingImageBadgeVariant("추천")} shape="pill" className={cn(merchandisingImageBadgeClass)}>추천</Badge>
+                      <Badge
+                        variant={merchandisingImageBadgeVariant("추천")}
+                        shape="pill"
+                        className={cn(merchandisingImageBadgeClass)}
+                      >
+                        추천
+                      </Badge>
                     )}
                     {racket?.marketing?.isNew && (
-                      <Badge variant={merchandisingImageBadgeVariant("NEW")} shape="pill" className={cn(merchandisingImageBadgeClass)}>NEW</Badge>
+                      <Badge
+                        variant={merchandisingImageBadgeVariant("NEW")}
+                        shape="pill"
+                        className={cn(merchandisingImageBadgeClass)}
+                      >
+                        NEW
+                      </Badge>
                     )}
                   </div>
                 )}
@@ -593,7 +615,10 @@ export default function RacketDetailClient({
                     <div className="mt-3 flex flex-wrap items-center gap-3">
                       <div className="flex items-center gap-0.5">
                         {[...Array(5)].map((_, i) => (
-                          <Star key={i} className={`h-4 w-4 sm:h-5 sm:w-5 ${i < Math.floor(averageRating) ? "fill-current text-foreground" : "fill-current text-muted-foreground/30"}`} />
+                          <Star
+                            key={i}
+                            className={`h-4 w-4 sm:h-5 sm:w-5 ${i < Math.floor(averageRating) ? "fill-current text-foreground" : "fill-current text-muted-foreground/30"}`}
+                          />
                         ))}
                       </div>
                       <span className="whitespace-nowrap text-sm text-muted-foreground sm:text-base">
@@ -609,7 +634,9 @@ export default function RacketDetailClient({
                         <>
                           <span className="whitespace-nowrap tabular-nums text-3xl sm:text-4xl font-bold text-foreground tracking-normal">
                             {salePrice.toLocaleString()}
-                            <span className="text-xl sm:text-2xl font-medium ml-0.5">원</span>
+                            <span className="text-xl sm:text-2xl font-medium ml-0.5">
+                              원
+                            </span>
                           </span>
                           <span className="whitespace-nowrap tabular-nums text-lg sm:text-xl text-muted-foreground/60 line-through">
                             {racket.price?.toLocaleString()}원
@@ -621,7 +648,9 @@ export default function RacketDetailClient({
                       ) : (
                         <span className="whitespace-nowrap tabular-nums text-3xl sm:text-4xl font-bold text-foreground tracking-normal">
                           {racket.price?.toLocaleString()}
-                          <span className="text-xl sm:text-2xl font-medium ml-0.5">원</span>
+                          <span className="text-xl sm:text-2xl font-medium ml-0.5">
+                            원
+                          </span>
                         </span>
                       )}
                     </div>
@@ -794,8 +823,9 @@ export default function RacketDetailClient({
                   <div className="rounded-lg bg-muted p-4 md:p-6">
                     <p className="text-foreground leading-relaxed text-lg">
                       {racketBrandLabel(racket.brand)} {racket.model} 중고
-                      라켓입니다. 상태 등급은 {usedBadgeMeta("condition", racket.condition).label}이며, 전문가의
-                      검수를 거쳐 안전하게 사용하실 수 있습니다.
+                      라켓입니다. 상태 등급은{" "}
+                      {usedBadgeMeta("condition", racket.condition).label}이며,
+                      전문가의 검수를 거쳐 안전하게 사용하실 수 있습니다.
                       {racket?.rental?.enabled &&
                         " 대여 서비스도 이용 가능합니다."}
                     </p>
@@ -881,7 +911,8 @@ export default function RacketDetailClient({
                       <div className="flex items-center justify-between">
                         <span className="font-semibold text-primary">상태</span>
                         <span className="text-foreground font-medium">
-                          상태: {usedBadgeMeta("condition", racket.condition).label}
+                          상태:{" "}
+                          {usedBadgeMeta("condition", racket.condition).label}
                         </span>
                       </div>
                     </div>
@@ -1248,7 +1279,6 @@ export default function RacketDetailClient({
           onSubmit={submitEdit}
         />
       ) : null}
-
     </div>
   );
 }

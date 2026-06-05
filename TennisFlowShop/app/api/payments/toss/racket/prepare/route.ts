@@ -44,7 +44,11 @@ export async function POST(req: Request) {
     const postalCode = onlyDigits(shippingInfo?.postalCode ?? "").trim();
     const deliveryRequest = String(shippingInfo?.deliveryRequest ?? "").trim();
 
-    if (!ObjectId.isValid(racketId) || name.length < 2 || !/^010\d{8}$/.test(phone)) {
+    if (
+      !ObjectId.isValid(racketId) ||
+      name.length < 2 ||
+      !/^010\d{8}$/.test(phone)
+    ) {
       return NextResponse.json(
         { success: false, error: "요청 데이터가 올바르지 않습니다." },
         { status: 400 },
@@ -96,7 +100,9 @@ export async function POST(req: Request) {
     const shippingFee =
       shippingMethod === "visit"
         ? 0
-        : normalizeItemShippingFee((racket as { shippingFee?: unknown }).shippingFee);
+        : normalizeItemShippingFee(
+            (racket as { shippingFee?: unknown }).shippingFee,
+          );
     const totalPrice = racketPrice + shippingFee;
 
     const tossOrderId = createTossOrderId();

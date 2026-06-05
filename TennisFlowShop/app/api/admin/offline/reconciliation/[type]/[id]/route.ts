@@ -5,21 +5,35 @@ import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 import { appendAudit } from "@/lib/audit";
 
-const paramsSchema = z.object({ type: z.enum(["package_issue", "package_usage"]), id: z.string().refine((value) => ObjectId.isValid(value), "invalid id") });
-const bodySchema = z.object({ status: z.enum(["open", "resolved", "ignored"]), note: z.string().max(2000).optional().nullable() });
+const paramsSchema = z.object({
+  type: z.enum(["package_issue", "package_usage"]),
+  id: z.string().refine((value) => ObjectId.isValid(value), "invalid id"),
+});
+const bodySchema = z.object({
+  status: z.enum(["open", "resolved", "ignored"]),
+  note: z.string().max(2000).optional().nullable(),
+});
 
-export async function PATCH(req: Request, ctx: { params: Promise<{ type: string; id: string }> }) {
+export async function PATCH(
+  req: Request,
+  ctx: { params: Promise<{ type: string; id: string }> },
+) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
   const csrf = verifyAdminCsrf(req);
   if (!csrf.ok) return csrf.res;
 
   const parsedParams = paramsSchema.safeParse(await ctx.params);
-  if (!parsedParams.success) return NextResponse.json({ message: "invalid reconciliation target" }, { status: 400 });
+  if (!parsedParams.success)
+    return NextResponse.json(
+      { message: "invalid reconciliation target" },
+      { status: 400 },
+    );
 
   const body = await req.json().catch(() => null);
   const parsedBody = bodySchema.safeParse(body);
-  if (!parsedBody.success) return NextResponse.json({ message: "invalid body" }, { status: 400 });
+  if (!parsedBody.success)
+    return NextResponse.json({ message: "invalid body" }, { status: 400 });
 
   const { type, id } = parsedParams.data;
   const { status } = parsedBody.data;
@@ -42,22 +56,32 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ type: string;
         },
       },
     );
-    if (result.matchedCount === 0) return NextResponse.json({ message: "package order not found" }, { status: 404 });
+    if (result.matchedCount === 0)
+      return NextResponse.json(
+        { message: "package order not found" },
+        { status: 404 },
+      );
   } else {
-    const result = await guard.db.collection("offline_service_records").updateOne(
-      { _id },
-      {
-        $set: {
-          "packageUsage.reconcileStatus": status,
-          "packageUsage.reconcileNote": note,
-          "packageUsage.reconciledAt": reconciledAt,
-          "packageUsage.reconciledBy": reconciledBy,
-          updatedAt: now,
-          updatedBy: guard.admin._id,
+    const result = await guard.db
+      .collection("offline_service_records")
+      .updateOne(
+        { _id },
+        {
+          $set: {
+            "packageUsage.reconcileStatus": status,
+            "packageUsage.reconcileNote": note,
+            "packageUsage.reconciledAt": reconciledAt,
+            "packageUsage.reconciledBy": reconciledBy,
+            updatedAt: now,
+            updatedBy: guard.admin._id,
+          },
         },
-      },
-    );
-    if (result.matchedCount === 0) return NextResponse.json({ message: "offline record not found" }, { status: 404 });
+      );
+    if (result.matchedCount === 0)
+      return NextResponse.json(
+        { message: "offline record not found" },
+        { status: 404 },
+      );
   }
 
   await appendAudit(
@@ -72,5 +96,15 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ type: string;
     req,
   );
 
-  return NextResponse.json({ ok: true, item: { id, type, status, note, reconciledAt: reconciledAt ? reconciledAt.toISOString() : null, reconciledBy: reconciledBy ? String(reconciledBy) : null } });
+  return NextResponse.json({
+    ok: true,
+    item: {
+      id,
+      type,
+      status,
+      note,
+      reconciledAt: reconciledAt ? reconciledAt.toISOString() : null,
+      reconciledBy: reconciledBy ? String(reconciledBy) : null,
+    },
+  });
 }

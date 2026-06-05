@@ -66,7 +66,9 @@ export default function ReviewEditDialog({
                     className="p-1"
                     onMouseEnter={() => setHoverRating(score)}
                     onMouseLeave={() => setHoverRating(null)}
-                    onClick={() => setEditForm((p) => ({ ...p, rating: score }))}
+                    onClick={() =>
+                      setEditForm((p) => ({ ...p, rating: score }))
+                    }
                     aria-label={`별점 ${score}점`}
                   >
                     <Star

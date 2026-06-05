@@ -25,7 +25,11 @@ function canBypassAdminGuard(requestHeaders: Headers): boolean {
       msg: "admin_guard_bypass_denied",
       path: "/admin",
       extra: {
-        reason: !isTestRuntime ? "non_test_runtime" : isProductionEnvironment ? "production_environment" : "feature_disabled",
+        reason: !isTestRuntime
+          ? "non_test_runtime"
+          : isProductionEnvironment
+            ? "production_environment"
+            : "feature_disabled",
         nodeEnv: process.env.NODE_ENV ?? null,
         vercelEnv: process.env.VERCEL_ENV ?? null,
       },
@@ -48,7 +52,9 @@ function canBypassAdminGuard(requestHeaders: Headers): boolean {
   const bypassAccepted = providedToken === expectedToken;
 
   logInfo({
-    msg: bypassAccepted ? "admin_guard_bypass_approved" : "admin_guard_bypass_denied",
+    msg: bypassAccepted
+      ? "admin_guard_bypass_approved"
+      : "admin_guard_bypass_denied",
     path: "/admin",
     extra: {
       reason: bypassAccepted ? "token_matched" : "token_mismatch",
@@ -59,7 +65,11 @@ function canBypassAdminGuard(requestHeaders: Headers): boolean {
 }
 
 /** 관리자 UI 권한 검사의 단일 진입점. (app/admin/**) */
-export default async function AdminLayout({ children }: { children: ReactNode }) {
+export default async function AdminLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
   const requestHeaders = await headers();
   const e2eBypass = canBypassAdminGuard(requestHeaders);
 
@@ -75,9 +85,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
       <div className="mx-auto flex w-full max-w-[1800px] flex-1 flex-col gap-4 px-3 pb-10 pt-5 bp-md:px-4 lg:px-5 xl:flex-row xl:gap-6 xl:px-6">
         <AdminNavigationShell />
 
-        <main className="min-w-0 flex-1">
-          {children}
-        </main>
+        <main className="min-w-0 flex-1">{children}</main>
       </div>
     </div>
   );

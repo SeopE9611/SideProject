@@ -485,245 +485,249 @@ export default function FreeBoardEditClient({ id }: Props) {
               </div>
             ) : (
               <form className="space-y-6" onSubmit={handleSubmit}>
-              {/* 분류 선택 */}
-              <div className="space-y-2">
-                <Label>분류</Label>
-                <div className="flex flex-wrap gap-2 text-xs">
-                  {CATEGORY_OPTIONS.map((opt) => (
-                    <button
-                      key={opt.value}
-                      type="button"
-                      onClick={() => setCategory(opt.value)}
-                      className={cn(
-                        "rounded-full border px-2 py-0.5 text-[11px]",
-                        category === opt.value
-                          ? "border-border bg-secondary text-foreground dark:border-border dark:bg-secondary dark:text-foreground"
-                          : "border-border text-muted-foreground dark:border-border dark:text-muted-foreground",
-                      )}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
+                {/* 분류 선택 */}
+                <div className="space-y-2">
+                  <Label>분류</Label>
+                  <div className="flex flex-wrap gap-2 text-xs">
+                    {CATEGORY_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => setCategory(opt.value)}
+                        className={cn(
+                          "rounded-full border px-2 py-0.5 text-[11px]",
+                          category === opt.value
+                            ? "border-border bg-secondary text-foreground dark:border-border dark:bg-secondary dark:text-foreground"
+                            : "border-border text-muted-foreground dark:border-border dark:text-muted-foreground",
+                        )}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
 
-              {/* 제목 */}
-              <div className="space-y-2">
-                <Label htmlFor="title">제목</Label>
-                <Input
-                  id="title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  disabled={isSubmitting}
-                />
-              </div>
+                {/* 제목 */}
+                <div className="space-y-2">
+                  <Label htmlFor="title">제목</Label>
+                  <Input
+                    id="title"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    disabled={isSubmitting}
+                  />
+                </div>
 
-              {/* 내용 */}
-              <div className="space-y-2">
-                <Label htmlFor="content">내용</Label>
-                <Textarea
-                  id="content"
-                  className="min-h-[200px]"
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  disabled={isSubmitting}
-                />
-                <p className="mt-1 text-xs text-muted-foreground">
-                  신청/주문 문의 등 개인 정보가 필요한 내용은 고객센터 Q&amp;A
-                  게시판을 활용해 주세요.
-                </p>
-              </div>
+                {/* 내용 */}
+                <div className="space-y-2">
+                  <Label htmlFor="content">내용</Label>
+                  <Textarea
+                    id="content"
+                    className="min-h-[200px]"
+                    value={content}
+                    onChange={(e) => setContent(e.target.value)}
+                    disabled={isSubmitting}
+                  />
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    신청/주문 문의 등 개인 정보가 필요한 내용은 고객센터 Q&amp;A
+                    게시판을 활용해 주세요.
+                  </p>
+                </div>
 
-              {/* 첨부 영역: 이미지 / 파일 탭 (작성 페이지와 동일 패턴) */}
-              <div className="space-y-3">
-                <Label>첨부 (선택)</Label>
+                {/* 첨부 영역: 이미지 / 파일 탭 (작성 페이지와 동일 패턴) */}
+                <div className="space-y-3">
+                  <Label>첨부 (선택)</Label>
 
-                <Tabs defaultValue="image" className="w-full">
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="image">이미지 업로드</TabsTrigger>
-                    <TabsTrigger value="file">파일 업로드</TabsTrigger>
-                  </TabsList>
+                  <Tabs defaultValue="image" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2">
+                      <TabsTrigger value="image">이미지 업로드</TabsTrigger>
+                      <TabsTrigger value="file">파일 업로드</TabsTrigger>
+                    </TabsList>
 
-                  {/* 이미지 업로드 탭 */}
-                  <TabsContent value="image" className="pt-4 space-y-2">
-                    <p className="text-xs text-muted-foreground">
-                      최대 5장까지 업로드할 수 있으며, 첫 번째 이미지가 대표로
-                      사용됩니다.
-                    </p>
-                    <ImageUploader
-                      value={images}
-                      onChange={setImages}
-                      max={5}
-                      folder="community/posts"
-                      onUploadingChange={setIsUploadingImages}
-                    />
-                  </TabsContent>
+                    {/* 이미지 업로드 탭 */}
+                    <TabsContent value="image" className="pt-4 space-y-2">
+                      <p className="text-xs text-muted-foreground">
+                        최대 5장까지 업로드할 수 있으며, 첫 번째 이미지가 대표로
+                        사용됩니다.
+                      </p>
+                      <ImageUploader
+                        value={images}
+                        onChange={setImages}
+                        max={5}
+                        folder="community/posts"
+                        onUploadingChange={setIsUploadingImages}
+                      />
+                    </TabsContent>
 
-                  {/* 파일 업로드 탭 */}
-                  <TabsContent value="file" className="pt-4 space-y-4">
-                    {/* 드롭존 */}
-                    <div
-                      className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-border dark:hover:border-border transition-colors cursor-pointer bg-card"
-                      role="button"
-                      tabIndex={0}
-                      onClick={(e) => {
-                        if (e.target !== e.currentTarget) return;
-                        fileInputRef.current?.click();
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
+                    {/* 파일 업로드 탭 */}
+                    <TabsContent value="file" className="pt-4 space-y-4">
+                      {/* 드롭존 */}
+                      <div
+                        className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-border dark:hover:border-border transition-colors cursor-pointer bg-card"
+                        role="button"
+                        tabIndex={0}
+                        onClick={(e) => {
+                          if (e.target !== e.currentTarget) return;
                           fileInputRef.current?.click();
-                        }
-                      }}
-                      onDragOver={(e) => e.preventDefault()}
-                      onDrop={(e) => {
-                        e.preventDefault();
-                        addFiles(Array.from(e.dataTransfer.files || []));
-                      }}
-                    >
-                      <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                      <p className="text-sm text-muted-foreground">
-                        클릭하여 파일을 선택하거나, 이 영역으로 드래그하여
-                        업로드할 수 있어요.
-                      </p>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        이미지 파일은 이미지 탭에서 업로드해 주세요. (파일당
-                        최대 {MAX_SIZE_MB}MB, 최대 {MAX_FILES}개, 현재{" "}
-                        {totalAttachmentCount}/{MAX_FILES}개)
-                      </p>
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            fileInputRef.current?.click();
+                          }
+                        }}
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          addFiles(Array.from(e.dataTransfer.files || []));
+                        }}
+                      >
+                        <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                        <p className="text-sm text-muted-foreground">
+                          클릭하여 파일을 선택하거나, 이 영역으로 드래그하여
+                          업로드할 수 있어요.
+                        </p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          이미지 파일은 이미지 탭에서 업로드해 주세요. (파일당
+                          최대 {MAX_SIZE_MB}MB, 최대 {MAX_FILES}개, 현재{" "}
+                          {totalAttachmentCount}/{MAX_FILES}개)
+                        </p>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="mt-3"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            fileInputRef.current?.click();
+                          }}
+                        >
+                          <Upload className="h-4 w-4 mr-2" />
+                          파일 선택
+                        </Button>
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          multiple
+                          accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.hwp,.hwpx,.txt"
+                          className="sr-only"
+                          onChange={handleFileInputChange}
+                        />
+                      </div>
+
+                      {/* 새로 선택한 파일 카드 목록 */}
+                      {selectedFiles.length > 0 && (
+                        <div className="space-y-2">
+                          <p className="text-xs text-muted-foreground">
+                            새로 첨부할 파일 ({selectedFiles.length}개)
+                          </p>
+                          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                            {selectedFiles.map((file, index) => (
+                              <div
+                                key={`${file.name}-${index}`}
+                                className="group relative flex flex-col justify-between rounded-lg bg-card px-3 py-2 shadow-sm hover:shadow-md ring-1 ring-ring hover:ring-2 hover:ring-ring transition"
+                              >
+                                <div className="flex-1 flex flex-col gap-1 text-xs">
+                                  <span
+                                    className="font-medium truncate"
+                                    title={file.name}
+                                  >
+                                    {file.name}
+                                  </span>
+                                  <span className="text-muted-foreground">
+                                    {(file.size / 1024 / 1024).toFixed(2)} MB
+                                  </span>
+                                </div>
+
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveFile(index)}
+                                  className="absolute top-1.5 right-1.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-card border border-border text-muted-foreground hover:text-destructive"
+                                >
+                                  <X className="h-3 w-3" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </TabsContent>
+                  </Tabs>
+                </div>
+
+                {/* 에러 메시지 */}
+                {errorMsg && (
+                  <div className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive dark:border-destructive/40 dark:bg-destructive/15 dark:text-destructive">
+                    {errorMsg}
+                  </div>
+                )}
+
+                {conflictOpen && (
+                  <div className="rounded-md border border-border bg-muted px-3 py-3 text-sm text-muted-foreground dark:border-border dark:bg-muted dark:text-muted-foreground">
+                    <p className="font-semibold">
+                      동시 수정 충돌이 감지되었습니다.
+                    </p>
+                    <p className="mt-1">
+                      최신 글을 다시 조회한 뒤, 현재 작성 중인 내용과 비교해서
+                      필요한 부분만 반영해 주세요.
+                    </p>
+                    <div className="mt-3 flex flex-wrap gap-2">
                       <Button
                         type="button"
                         variant="outline"
                         size="sm"
-                        className="mt-3"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          fileInputRef.current?.click();
+                        onClick={async () => {
+                          await mutate();
+                          setConflictOpen(false);
+                          setErrorMsg(null);
                         }}
                       >
-                        <Upload className="h-4 w-4 mr-2" />
-                        파일 선택
+                        최신 글 다시 불러오기
                       </Button>
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        multiple
-                        accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.hwp,.hwpx,.txt"
-                        className="sr-only"
-                        onChange={handleFileInputChange}
-                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setConflictOpen(false)}
+                      >
+                        병합 안내만 닫기
+                      </Button>
                     </div>
-
-                    {/* 새로 선택한 파일 카드 목록 */}
-                    {selectedFiles.length > 0 && (
-                      <div className="space-y-2">
-                        <p className="text-xs text-muted-foreground">
-                          새로 첨부할 파일 ({selectedFiles.length}개)
-                        </p>
-                        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                          {selectedFiles.map((file, index) => (
-                            <div
-                              key={`${file.name}-${index}`}
-                              className="group relative flex flex-col justify-between rounded-lg bg-card px-3 py-2 shadow-sm hover:shadow-md ring-1 ring-ring hover:ring-2 hover:ring-ring transition"
-                            >
-                              <div className="flex-1 flex flex-col gap-1 text-xs">
-                                <span
-                                  className="font-medium truncate"
-                                  title={file.name}
-                                >
-                                  {file.name}
-                                </span>
-                                <span className="text-muted-foreground">
-                                  {(file.size / 1024 / 1024).toFixed(2)} MB
-                                </span>
-                              </div>
-
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveFile(index)}
-                                className="absolute top-1.5 right-1.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-card border border-border text-muted-foreground hover:text-destructive"
-                              >
-                                <X className="h-3 w-3" />
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </TabsContent>
-                </Tabs>
-              </div>
-
-              {/* 에러 메시지 */}
-              {errorMsg && (
-                <div className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive dark:border-destructive/40 dark:bg-destructive/15 dark:text-destructive">
-                  {errorMsg}
-                </div>
-              )}
-
-              {conflictOpen && (
-                <div className="rounded-md border border-border bg-muted px-3 py-3 text-sm text-muted-foreground dark:border-border dark:bg-muted dark:text-muted-foreground">
-                  <p className="font-semibold">
-                    동시 수정 충돌이 감지되었습니다.
-                  </p>
-                  <p className="mt-1">
-                    최신 글을 다시 조회한 뒤, 현재 작성 중인 내용과 비교해서
-                    필요한 부분만 반영해 주세요.
-                  </p>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={async () => {
-                        await mutate();
-                        setConflictOpen(false);
-                        setErrorMsg(null);
-                      }}
-                    >
-                      최신 글 다시 불러오기
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setConflictOpen(false)}
-                    >
-                      병합 안내만 닫기
-                    </Button>
                   </div>
-                </div>
-              )}
+                )}
 
-              {/* 하단 버튼 */}
-              <div className="flex justify-end gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className={cn("gap-2")}
-                  disabled={
-                    isSubmitting || isUploadingImages || isUploadingFiles
-                  }
-                  onClick={() =>
-                    confirmLeaveIfDirty(() => router.push(`/board/free/${id}`))
-                  }
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                  <span>취소</span>
-                </Button>
-                <Button
-                  type="submit"
-                  size="sm"
-                  className={cn("gap-2")}
-                  disabled={
-                    isSubmitting || isUploadingImages || isUploadingFiles
-                  }
-                >
-                  {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
-                  <span>수정하기</span>
-                </Button>
-              </div>
+                {/* 하단 버튼 */}
+                <div className="flex justify-end gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className={cn("gap-2")}
+                    disabled={
+                      isSubmitting || isUploadingImages || isUploadingFiles
+                    }
+                    onClick={() =>
+                      confirmLeaveIfDirty(() =>
+                        router.push(`/board/free/${id}`),
+                      )
+                    }
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                    <span>취소</span>
+                  </Button>
+                  <Button
+                    type="submit"
+                    size="sm"
+                    className={cn("gap-2")}
+                    disabled={
+                      isSubmitting || isUploadingImages || isUploadingFiles
+                    }
+                  >
+                    {isSubmitting && (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    )}
+                    <span>수정하기</span>
+                  </Button>
+                </div>
               </form>
             )}
           </CardContent>

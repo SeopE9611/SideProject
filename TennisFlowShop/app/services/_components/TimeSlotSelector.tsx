@@ -72,8 +72,13 @@ export default function TimeSlotSelector({
 
   //  여기부터는 "정상"일 때만 시간대 격자를 보여준다.
   return (
-    <div className="space-y-3.5 rounded-lg border border-border/70 bg-muted/10 p-3.5" aria-busy={isLoading ? true : undefined}>
-      <p className="text-[11px] font-medium tracking-wide text-muted-foreground">예약 가능 시간</p>
+    <div
+      className="space-y-3.5 rounded-lg border border-border/70 bg-muted/10 p-3.5"
+      aria-busy={isLoading ? true : undefined}
+    >
+      <p className="text-[11px] font-medium tracking-wide text-muted-foreground">
+        예약 가능 시간
+      </p>
       <div className="relative">
         <div
           className={[

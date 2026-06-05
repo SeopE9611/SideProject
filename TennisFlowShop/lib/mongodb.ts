@@ -244,15 +244,15 @@ export async function getDb() {
 
   // admin operations 검색 인덱스 보장(1회)
   if (!global._adminOperationsIndexesReady) {
-    global._adminOperationsIndexesReady = ensureAdminOperationsIndexes(db).catch(
-      (e) => {
-        console.error(
-          "[admin-operations] ensureAdminOperationsIndexes failed",
-          e,
-        );
-        global._adminOperationsIndexesReady = null;
-      },
-    );
+    global._adminOperationsIndexesReady = ensureAdminOperationsIndexes(
+      db,
+    ).catch((e) => {
+      console.error(
+        "[admin-operations] ensureAdminOperationsIndexes failed",
+        e,
+      );
+      global._adminOperationsIndexesReady = null;
+    });
   }
 
   // admin_notes 인덱스 보장(1회)
@@ -270,8 +270,6 @@ export async function getDb() {
       global._usersIndexesReady = null; // 실패 시 다음 요청에서 재시도
     });
   }
-
-
 
   // cancel_refund_risk_signals 인덱스 보장(1회)
   if (!global._riskIndexesReady) {

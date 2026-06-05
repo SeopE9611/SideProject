@@ -1,5 +1,5 @@
-import type { Db, IndexDirection } from 'mongodb';
-import { hasMatchingIndex } from '@/lib/indexes.utils';
+import type { Db, IndexDirection } from "mongodb";
+import { hasMatchingIndex } from "@/lib/indexes.utils";
 
 type Keys = Record<string, IndexDirection>;
 
@@ -11,22 +11,22 @@ type IndexSpec = {
 
 const RISK_INDEX_SPECS: readonly IndexSpec[] = [
   {
-    name: 'cancel_refund_risk_subject_event_unique',
+    name: "cancel_refund_risk_subject_event_unique",
     keys: { category: 1, subjectKey: 1, eventType: 1 },
     options: { unique: true },
   },
   {
-    name: 'cancel_refund_risk_lastAt_desc',
+    name: "cancel_refund_risk_lastAt_desc",
     keys: { lastAt: -1 },
   },
   {
-    name: 'cancel_refund_risk_target_lastAt_desc',
+    name: "cancel_refund_risk_target_lastAt_desc",
     keys: { targetType: 1, targetId: 1, lastAt: -1 },
   },
 ];
 
 export async function ensureRiskIndexes(db: Db) {
-  const col = db.collection('cancel_refund_risk_signals');
+  const col = db.collection("cancel_refund_risk_signals");
   const existing = await col
     .listIndexes()
     .toArray()

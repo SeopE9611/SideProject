@@ -14,10 +14,7 @@ function buildClassApplicationFilter(classId: string): Filter<Document> {
   }
 
   return {
-    $or: [
-      { classId: { $in: matchers } },
-      { "classSnapshot.classId": classId },
-    ],
+    $or: [{ classId: { $in: matchers } }, { "classSnapshot.classId": classId }],
   };
 }
 

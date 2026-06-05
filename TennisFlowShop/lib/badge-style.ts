@@ -28,8 +28,7 @@ export function badgeToneClass(tone: BadgeSemanticTone) {
   return SEMANTIC_BADGE[tone];
 }
 
-const IMAGE_BADGE_SURFACE =
-  "border-transparent shadow-md ring-1 ring-white/25";
+const IMAGE_BADGE_SURFACE = "border-transparent shadow-md ring-1 ring-white/25";
 
 const IMAGE_BADGE = {
   neutral: `${IMAGE_BADGE_SURFACE} bg-foreground text-background`,

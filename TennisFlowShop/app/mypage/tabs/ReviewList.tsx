@@ -639,7 +639,9 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
               <Star className="h-10 w-10 text-warning" />
             </div>
             <h3 className="mb-2 text-xl font-semibold text-foreground">
-              {swrItems.length > 0 ? "조건에 맞는 리뷰가 없습니다" : "작성한 리뷰가 없습니다"}
+              {swrItems.length > 0
+                ? "조건에 맞는 리뷰가 없습니다"
+                : "작성한 리뷰가 없습니다"}
             </h3>
             <p className="mb-4 md:mb-6 text-muted-foreground">
               {swrItems.length > 0

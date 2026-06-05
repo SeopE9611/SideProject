@@ -6,7 +6,8 @@ import type { Db } from "mongodb";
 import { getDb } from "@/lib/mongodb";
 
 const AUTH_RATE_LIMIT_COLLECTION = "auth_rate_limit_windows";
-const TOO_MANY_REQUESTS_MESSAGE = "요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.";
+const TOO_MANY_REQUESTS_MESSAGE =
+  "요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.";
 
 export type PublicAuthRouteId =
   | "login"
@@ -25,28 +26,29 @@ type RoutePolicy = {
   identifier?: PublicAuthRateLimitPolicy;
 };
 
-export const AUTH_RATE_LIMIT_POLICIES: Record<PublicAuthRouteId, RoutePolicy> = {
-  login: {
-    ip: { limit: 10, windowSec: 60 * 10 },
-    identifier: { limit: 5, windowSec: 60 * 10 },
-  },
-  register: {
-    ip: { limit: 5, windowSec: 60 * 30 },
-    identifier: { limit: 3, windowSec: 60 * 30 },
-  },
-  oauth_complete: {
-    ip: { limit: 10, windowSec: 60 * 10 },
-    identifier: { limit: 5, windowSec: 60 * 10 },
-  },
-  forgot_password_request: {
-    ip: { limit: 5, windowSec: 60 * 30 },
-    identifier: { limit: 3, windowSec: 60 * 30 },
-  },
-  forgot_password_reset: {
-    ip: { limit: 10, windowSec: 60 * 30 },
-    identifier: { limit: 5, windowSec: 60 * 30 },
-  },
-};
+export const AUTH_RATE_LIMIT_POLICIES: Record<PublicAuthRouteId, RoutePolicy> =
+  {
+    login: {
+      ip: { limit: 10, windowSec: 60 * 10 },
+      identifier: { limit: 5, windowSec: 60 * 10 },
+    },
+    register: {
+      ip: { limit: 5, windowSec: 60 * 30 },
+      identifier: { limit: 3, windowSec: 60 * 30 },
+    },
+    oauth_complete: {
+      ip: { limit: 10, windowSec: 60 * 10 },
+      identifier: { limit: 5, windowSec: 60 * 10 },
+    },
+    forgot_password_request: {
+      ip: { limit: 5, windowSec: 60 * 30 },
+      identifier: { limit: 3, windowSec: 60 * 30 },
+    },
+    forgot_password_reset: {
+      ip: { limit: 10, windowSec: 60 * 30 },
+      identifier: { limit: 5, windowSec: 60 * 30 },
+    },
+  };
 
 type RateLimitScope = "ip" | "email" | "token";
 
@@ -96,7 +98,10 @@ export function getClientIp(req: Request) {
   return "unknown-ip";
 }
 
-export function normalizeRateLimitIdentifier(scope: Extract<RateLimitScope, "email" | "token">, value: string) {
+export function normalizeRateLimitIdentifier(
+  scope: Extract<RateLimitScope, "email" | "token">,
+  value: string,
+) {
   const trimmed = value.trim();
   if (scope === "email") return trimmed.toLowerCase();
   return trimmed;

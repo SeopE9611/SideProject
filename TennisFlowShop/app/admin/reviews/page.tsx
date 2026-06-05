@@ -11,7 +11,8 @@ export const metadata: Metadata = {
 const reviewGuideItems = [
   {
     title: "리뷰 목록 관리",
-    description: "공개 상태, 상품 연결, 작성 내용을 목록에서 빠르게 확인합니다.",
+    description:
+      "공개 상태, 상품 연결, 작성 내용을 목록에서 빠르게 확인합니다.",
   },
   {
     title: "유지보수 작업",

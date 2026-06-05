@@ -14,9 +14,15 @@ import {
 } from "../../_lib/revenueReportSnapshots";
 
 const autoGenerateSchema = z.object({
-  yyyymm: z.string().regex(REVENUE_REPORT_YYYY_MM_RE, "invalid yyyymm").optional(),
+  yyyymm: z
+    .string()
+    .regex(REVENUE_REPORT_YYYY_MM_RE, "invalid yyyymm")
+    .optional(),
   target: z.literal("previous-month").optional(),
-  status: z.enum(REVENUE_REPORT_SNAPSHOT_STATUSES).optional().default("finalized"),
+  status: z
+    .enum(REVENUE_REPORT_SNAPSHOT_STATUSES)
+    .optional()
+    .default("finalized"),
   memo: z.string().trim().max(1000).optional().nullable(),
 });
 
@@ -29,22 +35,32 @@ export async function POST(req: Request) {
   const body = await req.json().catch(() => null);
   const parsed = autoGenerateSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ message: "invalid auto-generate input" }, { status: 400 });
+    return NextResponse.json(
+      { message: "invalid auto-generate input" },
+      { status: 400 },
+    );
   }
   if (Boolean(parsed.data.yyyymm) === Boolean(parsed.data.target)) {
-    return NextResponse.json({ message: "yyyymm or target is required" }, { status: 400 });
+    return NextResponse.json(
+      { message: "yyyymm or target is required" },
+      { status: 400 },
+    );
   }
 
-  const yyyymm = parsed.data.target === "previous-month"
-    ? getKstPreviousMonthYyyymm()
-    : parsed.data.yyyymm;
+  const yyyymm =
+    parsed.data.target === "previous-month"
+      ? getKstPreviousMonthYyyymm()
+      : parsed.data.yyyymm;
   if (!yyyymm || !REVENUE_REPORT_YYYY_MM_RE.test(yyyymm)) {
     return NextResponse.json({ message: "invalid yyyymm" }, { status: 400 });
   }
 
   const now = new Date();
   const actorId = guard.admin._id.toHexString();
-  const trigger = parsed.data.target === "previous-month" ? "previous_month" : "admin_manual_auto_generate";
+  const trigger =
+    parsed.data.target === "previous-month"
+      ? "previous_month"
+      : "admin_manual_auto_generate";
   const snapshotInput = await buildMonthlyRevenueReportSnapshot(guard.db, {
     yyyymm,
     status: parsed.data.status,
@@ -57,13 +73,14 @@ export async function POST(req: Request) {
       trigger,
     },
   });
-  if (!snapshotInput) return NextResponse.json({ message: "failed to build revenue report" }, { status: 500 });
+  if (!snapshotInput)
+    return NextResponse.json(
+      { message: "failed to build revenue report" },
+      { status: 500 },
+    );
 
-  const { snapshot, previousUpdatedAt, duplicateKeyReturnedExisting } = await saveRevenueReportSnapshot(
-    guard.db,
-    snapshotInput,
-    { actorId },
-  );
+  const { snapshot, previousUpdatedAt, duplicateKeyReturnedExisting } =
+    await saveRevenueReportSnapshot(guard.db, snapshotInput, { actorId });
 
   if (!snapshot) {
     return NextResponse.json(

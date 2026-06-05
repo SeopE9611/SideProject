@@ -1,15 +1,25 @@
-import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
-import { verifyAccessToken } from '@/lib/auth.utils';
-import { isApplicationTodoActionable, isOrderTodoActionable, isRentalTodoActionable, normalizeMypageTodoStatus } from '@/lib/mypage/activity-todo';
-import clientPromise from '@/lib/mongodb';
-import { ObjectId } from 'mongodb';
-import { cookies } from 'next/headers';
-import { NextResponse } from 'next/server';
+import { normalizeCollection } from "@/app/features/stringing-applications/lib/collection";
+import { verifyAccessToken } from "@/lib/auth.utils";
+import {
+  isApplicationTodoActionable,
+  isOrderTodoActionable,
+  isRentalTodoActionable,
+  normalizeMypageTodoStatus,
+} from "@/lib/mypage/activity-todo";
+import clientPromise from "@/lib/mongodb";
+import { ObjectId } from "mongodb";
+import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 function getTrackingNoFromShippingInfo(shippingInfo: any): string | null {
-  const v = shippingInfo?.selfShip?.trackingNo ?? shippingInfo?.invoice?.trackingNumber ?? shippingInfo?.trackingNumber ?? shippingInfo?.trackingNo ?? null;
+  const v =
+    shippingInfo?.selfShip?.trackingNo ??
+    shippingInfo?.invoice?.trackingNumber ??
+    shippingInfo?.trackingNumber ??
+    shippingInfo?.trackingNo ??
+    null;
 
   if (v == null) return null;
   const s = String(v).trim();
@@ -18,32 +28,37 @@ function getTrackingNoFromShippingInfo(shippingInfo: any): string | null {
 
 function isOrderHasRacketItem(order: any): boolean {
   const items = Array.isArray(order?.items) ? order.items : [];
-  return items.some((it: any) => it?.kind === 'racket' || it?.kind === 'used_racket');
+  return items.some(
+    (it: any) => it?.kind === "racket" || it?.kind === "used_racket",
+  );
 }
 
 function getOrderReviewTargetProductIds(order: any): string[] {
   const items = Array.isArray(order?.items) ? order.items : [];
   const ids = items
     .map((it: any) => (it?.productId ? String(it.productId) : null))
-    .filter((id: string | null): id is string => id !== null && ObjectId.isValid(id));
+    .filter(
+      (id: string | null): id is string => id !== null && ObjectId.isValid(id),
+    );
   return [...new Set<string>(ids)];
 }
 
 export async function GET() {
   const jar = await cookies();
-  const at = jar.get('accessToken')?.value;
-  if (!at) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+  const at = jar.get("accessToken")?.value;
+  if (!at)
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
   let payload: any;
   try {
     payload = verifyAccessToken(at);
   } catch {
-    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
-  const subStr = String(payload?.sub ?? '');
+  const subStr = String(payload?.sub ?? "");
   if (!ObjectId.isValid(subStr)) {
-    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
   const userId = new ObjectId(subStr);
@@ -51,7 +66,7 @@ export async function GET() {
 
   const [orders, rentals, standaloneApps] = await Promise.all([
     db
-      .collection('orders')
+      .collection("orders")
       .find(
         { userId },
         {
@@ -65,7 +80,7 @@ export async function GET() {
       )
       .toArray(),
     db
-      .collection('rental_orders')
+      .collection("rental_orders")
       .find(
         { userId },
         {
@@ -78,12 +93,15 @@ export async function GET() {
       )
       .toArray(),
     db
-      .collection('stringing_applications')
+      .collection("stringing_applications")
       .find(
         {
           userId,
-          status: { $ne: 'draft' },
-          $and: [{ $or: [{ orderId: { $exists: false } }, { orderId: null }] }, { $or: [{ rentalId: { $exists: false } }, { rentalId: null }] }],
+          status: { $ne: "draft" },
+          $and: [
+            { $or: [{ orderId: { $exists: false } }, { orderId: null }] },
+            { $or: [{ rentalId: { $exists: false } }, { rentalId: null }] },
+          ],
         },
         {
           projection: {
@@ -111,22 +129,27 @@ export async function GET() {
     orderReviewProductIdsById.set(orderId, reviewTargetProductIds);
 
     const status = normalizeMypageTodoStatus(order?.status);
-    const isConfirmed = Boolean(order?.userConfirmedAt) || status === '구매확정';
+    const isConfirmed =
+      Boolean(order?.userConfirmedAt) || status === "구매확정";
     if (isConfirmed && reviewTargetProductIds.length > 0) {
       confirmedOrderIds.push(new ObjectId(orderId));
-      reviewTargetProductIds.forEach((productId) => reviewProductIdsPool.add(productId));
+      reviewTargetProductIds.forEach((productId) =>
+        reviewProductIdsPool.add(productId),
+      );
     }
   }
 
   const reviewedProductIdsByOrderId = new Map<string, Set<string>>();
   if (confirmedOrderIds.length > 0 && reviewProductIdsPool.size > 0) {
     const reviewedDocs = await db
-      .collection('reviews')
+      .collection("reviews")
       .find(
         {
           userId,
           orderId: { $in: confirmedOrderIds },
-          productId: { $in: Array.from(reviewProductIdsPool).map((id) => new ObjectId(id)) },
+          productId: {
+            $in: Array.from(reviewProductIdsPool).map((id) => new ObjectId(id)),
+          },
           isDeleted: { $ne: true },
         },
         { projection: { orderId: 1, productId: 1 } },
@@ -136,22 +159,29 @@ export async function GET() {
     for (const reviewed of reviewedDocs as any[]) {
       const orderId = String(reviewed.orderId);
       const productId = String(reviewed.productId);
-      const bucket = reviewedProductIdsByOrderId.get(orderId) ?? new Set<string>();
+      const bucket =
+        reviewedProductIdsByOrderId.get(orderId) ?? new Set<string>();
       bucket.add(productId);
       reviewedProductIdsByOrderId.set(orderId, bucket);
     }
   }
 
   const orderIdsAny = (orders as any[]).flatMap((o) => [o._id, String(o._id)]);
-  const rentalIdsAny = (rentals as any[]).flatMap((r) => [r._id, String(r._id)]);
+  const rentalIdsAny = (rentals as any[]).flatMap((r) => [
+    r._id,
+    String(r._id),
+  ]);
 
   const linkedApps = await db
-    .collection('stringing_applications')
+    .collection("stringing_applications")
     .find(
       {
         userId,
-        status: { $ne: 'draft' },
-        $or: [{ orderId: { $in: orderIdsAny } }, { rentalId: { $in: rentalIdsAny } }],
+        status: { $ne: "draft" },
+        $or: [
+          { orderId: { $in: orderIdsAny } },
+          { rentalId: { $in: rentalIdsAny } },
+        ],
       },
       {
         projection: {
@@ -173,10 +203,19 @@ export async function GET() {
   for (const doc of linkedApps as any[]) {
     const shipping = doc.shippingInfo ?? {};
     const hasTracking = Boolean(getTrackingNoFromShippingInfo(shipping));
-    const collectionMethod = normalizeCollection((shipping as any)?.collectionMethod ?? (doc as any)?.collectionMethod ?? 'self_ship');
+    const collectionMethod = normalizeCollection(
+      (shipping as any)?.collectionMethod ??
+        (doc as any)?.collectionMethod ??
+        "self_ship",
+    );
     const orderIdStr = doc.orderId ? String(doc.orderId) : null;
-    const inboundRequired = doc.rentalId ? false : orderIdStr && orderHasRacketById.get(orderIdStr) ? false : true;
-    const needsInboundTracking = inboundRequired && collectionMethod === 'self_ship';
+    const inboundRequired = doc.rentalId
+      ? false
+      : orderIdStr && orderHasRacketById.get(orderIdStr)
+        ? false
+        : true;
+    const needsInboundTracking =
+      inboundRequired && collectionMethod === "self_ship";
 
     const isActionable = isApplicationTodoActionable({
       status: doc.status,
@@ -185,7 +224,7 @@ export async function GET() {
       userConfirmedAt:
         doc.userConfirmedAt instanceof Date
           ? doc.userConfirmedAt.toISOString()
-          : typeof doc.userConfirmedAt === 'string'
+          : typeof doc.userConfirmedAt === "string"
             ? doc.userConfirmedAt
             : null,
     });
@@ -194,11 +233,17 @@ export async function GET() {
 
     if (doc.orderId) {
       const key = String(doc.orderId);
-      actionableLinkedAppCountByOrderId.set(key, (actionableLinkedAppCountByOrderId.get(key) ?? 0) + 1);
+      actionableLinkedAppCountByOrderId.set(
+        key,
+        (actionableLinkedAppCountByOrderId.get(key) ?? 0) + 1,
+      );
     }
     if (doc.rentalId) {
       const key = String(doc.rentalId);
-      actionableLinkedAppCountByRentalId.set(key, (actionableLinkedAppCountByRentalId.get(key) ?? 0) + 1);
+      actionableLinkedAppCountByRentalId.set(
+        key,
+        (actionableLinkedAppCountByRentalId.get(key) ?? 0) + 1,
+      );
     }
   }
 
@@ -206,21 +251,31 @@ export async function GET() {
   for (const order of orders as any[]) {
     const orderId = String(order._id);
     const reviewTargetProductIds = orderReviewProductIdsById.get(orderId) ?? [];
-    const reviewedProductIds = reviewedProductIdsByOrderId.get(orderId) ?? new Set<string>();
-    const reviewPendingCount = reviewTargetProductIds.filter((productId) => !reviewedProductIds.has(productId)).length;
+    const reviewedProductIds =
+      reviewedProductIdsByOrderId.get(orderId) ?? new Set<string>();
+    const reviewPendingCount = reviewTargetProductIds.filter(
+      (productId) => !reviewedProductIds.has(productId),
+    ).length;
 
     const needsAction = isOrderTodoActionable({
       status: order?.status,
       userConfirmedAt:
         order?.userConfirmedAt instanceof Date
           ? order.userConfirmedAt.toISOString()
-          : typeof order?.userConfirmedAt === 'string'
+          : typeof order?.userConfirmedAt === "string"
             ? order.userConfirmedAt
             : null,
       reviewPendingCount,
       linkedApplications:
         (actionableLinkedAppCountByOrderId.get(orderId) ?? 0) > 0
-          ? [{ status: '교체완료', hasTracking: false, needsInboundTracking: true, userConfirmedAt: null }]
+          ? [
+              {
+                status: "교체완료",
+                hasTracking: false,
+                needsInboundTracking: true,
+                userConfirmedAt: null,
+              },
+            ]
           : [],
     });
 
@@ -230,14 +285,25 @@ export async function GET() {
   let todoRentalCount = 0;
   for (const rental of rentals as any[]) {
     const rentalId = String(rental._id);
-    const withStringService = Boolean(rental?.stringing?.requested) || Boolean(rental?.stringingApplicationId);
+    const withStringService =
+      Boolean(rental?.stringing?.requested) ||
+      Boolean(rental?.stringingApplicationId);
 
     const needsAction = isRentalTodoActionable({
       linkedApplications:
         (actionableLinkedAppCountByRentalId.get(rentalId) ?? 0) > 0
-          ? [{ status: '교체완료', hasTracking: false, needsInboundTracking: true, userConfirmedAt: null }]
+          ? [
+              {
+                status: "교체완료",
+                hasTracking: false,
+                needsInboundTracking: true,
+                userConfirmedAt: null,
+              },
+            ]
           : [],
-      stringingApplicationId: rental?.stringingApplicationId ? String(rental.stringingApplicationId) : null,
+      stringingApplicationId: rental?.stringingApplicationId
+        ? String(rental.stringingApplicationId)
+        : null,
       withStringService,
     });
 
@@ -248,8 +314,12 @@ export async function GET() {
   for (const app of standaloneApps as any[]) {
     const shipping = app.shippingInfo ?? {};
     const hasTracking = Boolean(getTrackingNoFromShippingInfo(shipping));
-    const collectionMethod = normalizeCollection((shipping as any)?.collectionMethod ?? app?.collectionMethod ?? 'self_ship');
-    const needsInboundTracking = collectionMethod === 'self_ship';
+    const collectionMethod = normalizeCollection(
+      (shipping as any)?.collectionMethod ??
+        app?.collectionMethod ??
+        "self_ship",
+    );
+    const needsInboundTracking = collectionMethod === "self_ship";
 
     const needsAction = isApplicationTodoActionable({
       status: app?.status,
@@ -258,7 +328,7 @@ export async function GET() {
       userConfirmedAt:
         app?.userConfirmedAt instanceof Date
           ? app.userConfirmedAt.toISOString()
-          : typeof app?.userConfirmedAt === 'string'
+          : typeof app?.userConfirmedAt === "string"
             ? app.userConfirmedAt
             : null,
     });

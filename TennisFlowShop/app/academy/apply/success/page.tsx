@@ -1,4 +1,11 @@
-import { ArrowRight, CheckCircle2, Clock, FileText, MessageCircle, Sparkles } from "lucide-react";
+import {
+  ArrowRight,
+  CheckCircle2,
+  Clock,
+  FileText,
+  MessageCircle,
+  Sparkles,
+} from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -21,7 +28,9 @@ function getReceiptLabel(applicationId?: string) {
 
 export default async function AcademyApplySuccessPage({ searchParams }: Props) {
   const params = await searchParams;
-  const rawApplicationId = Array.isArray(params.applicationId) ? params.applicationId[0] : params.applicationId;
+  const rawApplicationId = Array.isArray(params.applicationId)
+    ? params.applicationId[0]
+    : params.applicationId;
   const receiptLabel = getReceiptLabel(rawApplicationId);
 
   return (
@@ -34,7 +43,10 @@ export default async function AcademyApplySuccessPage({ searchParams }: Props) {
           <div className="flex flex-col items-center text-center">
             {/* Success Icon */}
             <div className="relative mb-8">
-              <div className="absolute inset-0 animate-ping rounded-full bg-primary/20" style={{ animationDuration: "2s" }} />
+              <div
+                className="absolute inset-0 animate-ping rounded-full bg-primary/20"
+                style={{ animationDuration: "2s" }}
+              />
               <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 ring-4 ring-primary/20">
                 <CheckCircle2 className="h-10 w-10 text-primary" />
               </div>
@@ -47,9 +59,14 @@ export default async function AcademyApplySuccessPage({ searchParams }: Props) {
             </div>
 
             {/* Title */}
-            <h1 className="mb-4 text-balance text-3xl font-bold tracking-tight text-foreground md:text-4xl lg:text-5xl">레슨 신청이 접수되었습니다</h1>
+            <h1 className="mb-4 text-balance text-3xl font-bold tracking-tight text-foreground md:text-4xl lg:text-5xl">
+              레슨 신청이 접수되었습니다
+            </h1>
 
-            <p className="mb-8 max-w-xl text-pretty text-base leading-relaxed text-muted-foreground md:text-lg">신청 내용이 접수되었습니다. 담당자가 일정과 수강 방식을 확인한 뒤 상담을 도와드립니다.</p>
+            <p className="mb-8 max-w-xl text-pretty text-base leading-relaxed text-muted-foreground md:text-lg">
+              신청 내용이 접수되었습니다. 담당자가 일정과 수강 방식을 확인한 뒤
+              상담을 도와드립니다.
+            </p>
 
             {/* Receipt Number */}
             {receiptLabel && (
@@ -57,7 +74,9 @@ export default async function AcademyApplySuccessPage({ searchParams }: Props) {
                 <FileText className="h-5 w-5 text-muted-foreground" />
                 <div className="text-left">
                   <p className="text-xs text-muted-foreground">접수번호</p>
-                  <p className="font-mono text-sm font-semibold text-foreground">{receiptLabel}</p>
+                  <p className="font-mono text-sm font-semibold text-foreground">
+                    {receiptLabel}
+                  </p>
                 </div>
               </div>
             )}
@@ -70,7 +89,12 @@ export default async function AcademyApplySuccessPage({ searchParams }: Props) {
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="lg" className="h-12 gap-2 px-6">
+              <Button
+                asChild
+                variant="outline"
+                size="lg"
+                className="h-12 gap-2 px-6"
+              >
                 <Link href="/board/qna/write?category=academy">
                   <MessageCircle className="h-4 w-4" />
                   문의글 작성하기
@@ -97,24 +121,34 @@ export default async function AcademyApplySuccessPage({ searchParams }: Props) {
                 {
                   step: 1,
                   title: "신청 내용 확인",
-                  description: "관리자가 신청 내용을 확인한 뒤 등록 확정 여부를 안내합니다.",
+                  description:
+                    "관리자가 신청 내용을 확인한 뒤 등록 확정 여부를 안내합니다.",
                 },
                 {
                   step: 2,
                   title: "상태 확인",
-                  description: "진행 상태는 마이페이지의 아카데미 신청 내역에서 확인할 수 있습니다.",
+                  description:
+                    "진행 상태는 마이페이지의 아카데미 신청 내역에서 확인할 수 있습니다.",
                 },
                 {
                   step: 3,
                   title: "결제 안내",
-                  description: "신청 단계에서는 결제가 진행되지 않으며, 등록 확정 후 현장에서 결제를 안내해드립니다.",
+                  description:
+                    "신청 단계에서는 결제가 진행되지 않으며, 등록 확정 후 현장에서 결제를 안내해드립니다.",
                 },
               ].map((item) => (
-                <div key={item.step} className="group flex gap-4 rounded-xl border border-border/40 bg-muted/30 p-4 transition-all duration-200 hover:border-primary/20 hover:bg-muted/50">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary transition-colors group-hover:bg-primary/15">{item.step}</div>
+                <div
+                  key={item.step}
+                  className="group flex gap-4 rounded-xl border border-border/40 bg-muted/30 p-4 transition-all duration-200 hover:border-primary/20 hover:bg-muted/50"
+                >
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary transition-colors group-hover:bg-primary/15">
+                    {item.step}
+                  </div>
                   <div className="min-w-0">
                     <p className="font-medium text-foreground">{item.title}</p>
-                    <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{item.description}</p>
+                    <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                      {item.description}
+                    </p>
                   </div>
                 </div>
               ))}

@@ -55,24 +55,36 @@ export default function LocationsPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <HeroCourtBackdrop opacity="soft" className="h-full w-full text-primary" />
+      <HeroCourtBackdrop
+        opacity="soft"
+        className="h-full w-full text-primary"
+      />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 py-12">
         {/* Header */}
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 bg-secondary px-4 py-2 rounded-full mb-6">
             <MapPin className="h-5 w-5 text-primary" />
-            <span className="text-sm font-semibold text-primary">오프라인 매장 찾기</span>
+            <span className="text-sm font-semibold text-primary">
+              오프라인 매장 찾기
+            </span>
           </div>
-          <h1 className="font-bold text-3xl sm:text-4xl md:text-4xl text-foreground mb-4">매장 위치 안내</h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">가까운 매장을 찾아 편리하게 서비스를 이용하세요</p>
+          <h1 className="font-bold text-3xl sm:text-4xl md:text-4xl text-foreground mb-4">
+            매장 위치 안내
+          </h1>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            가까운 매장을 찾아 편리하게 서비스를 이용하세요
+          </p>
         </div>
 
         {/* Locations */}
         <div className="mb-16">
           <div className="max-w-2xl mx-auto">
             {locations.map((location, index) => (
-              <Card key={index} className="hover:shadow-lg transition-all duration-300 ring-2 ring-ring">
+              <Card
+                key={index}
+                className="hover:shadow-lg transition-all duration-300 ring-2 ring-ring"
+              >
                 <CardHeader>
                   <CardTitle className="flex items-start justify-between">
                     <div>
@@ -116,7 +128,9 @@ export default function LocationsPage() {
                   </div>
 
                   <div className="bg-secondary p-3 rounded-lg border border-border">
-                    <p className="text-sm font-medium text-primary">{location.specialNote}</p>
+                    <p className="text-sm font-medium text-primary">
+                      {location.specialNote}
+                    </p>
                   </div>
 
                   <div className="flex flex-wrap gap-1">
@@ -128,7 +142,11 @@ export default function LocationsPage() {
                   </div>
 
                   <Button className="w-full" asChild>
-                    <Link href="https://map.naver.com/p/entry/place/1907032343?c=15.00,0,0,0,dh&placePath=/home?from=map&fromPanelNum=1&additionalHeight=76&timestamp=202601042339&locale=ko&svcName=map_pcv5" target="_blank" rel="noreferrer">
+                    <Link
+                      href="https://map.naver.com/p/entry/place/1907032343?c=15.00,0,0,0,dh&placePath=/home?from=map&fromPanelNum=1&additionalHeight=76&timestamp=202601042339&locale=ko&svcName=map_pcv5"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
                       네이버 지도 검색
                     </Link>
                   </Button>

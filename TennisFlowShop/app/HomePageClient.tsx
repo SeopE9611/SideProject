@@ -2,21 +2,45 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import HeroSlider from "@/components/HeroSlider";
-import HorizontalProducts, { type HItem } from "@/components/HorizontalProducts";
+import HorizontalProducts, {
+  type HItem,
+} from "@/components/HorizontalProducts";
 import SiteContainer from "@/components/layout/SiteContainer";
 import SignupBonusPromoPopup from "@/components/system/SignupBonusPromoPopup";
 import { Button } from "@/components/ui/button";
-import { RACKET_BRANDS, racketBrandLabel, STRING_BRANDS, stringBrandLabel } from "@/lib/constants";
-import { isSignupBonusActive, SIGNUP_BONUS_CAMPAIGN_ID, SIGNUP_BONUS_END_DATE, SIGNUP_BONUS_POINTS, SIGNUP_BONUS_START_DATE } from "@/lib/points.policy";
+import {
+  RACKET_BRANDS,
+  racketBrandLabel,
+  STRING_BRANDS,
+  stringBrandLabel,
+} from "@/lib/constants";
+import {
+  isSignupBonusActive,
+  SIGNUP_BONUS_CAMPAIGN_ID,
+  SIGNUP_BONUS_END_DATE,
+  SIGNUP_BONUS_POINTS,
+  SIGNUP_BONUS_START_DATE,
+} from "@/lib/points.policy";
 import { cn } from "@/lib/utils";
-import { BadgeCheck, BookOpen, Package, Search, Tags, Wrench } from "lucide-react";
+import {
+  BadgeCheck,
+  BookOpen,
+  Package,
+  Search,
+  Tags,
+  Wrench,
+} from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { MdSportsTennis } from "react-icons/md";
 
-const HomeNoticePreview = dynamic(() => import("@/components/HomeNoticePreview"));
-const HomeMarketPreview = dynamic(() => import("@/components/HomeMarketPreview"));
+const HomeNoticePreview = dynamic(
+  () => import("@/components/HomeNoticePreview"),
+);
+const HomeMarketPreview = dynamic(
+  () => import("@/components/HomeMarketPreview"),
+);
 
 // 타입 정의: API에서 내려오는 제품 구조 (현재 프로젝트의 응답 필드에 맞춰 정의)
 type ApiProduct = {
@@ -40,14 +64,16 @@ type ApiProduct = {
   };
 };
 
-const isTruthyBadgeField = (value: unknown) => value === true || value === "true" || value === 1;
+const isTruthyBadgeField = (value: unknown) =>
+  value === true || value === "true" || value === 1;
 
 type MerchandisingBadge = NonNullable<HItem["merchandisingBadges"]>[number];
 
 const getMerchandisingBadges = (product: ApiProduct): MerchandisingBadge[] => {
   const inventory = product.inventory;
 
-  const isNew = isTruthyBadgeField(inventory?.isNew) || isTruthyBadgeField(product.isNew);
+  const isNew =
+    isTruthyBadgeField(inventory?.isNew) || isTruthyBadgeField(product.isNew);
   const isFeatured = isTruthyBadgeField(inventory?.isFeatured);
 
   const badges: MerchandisingBadge[] = [];
@@ -58,11 +84,17 @@ const getMerchandisingBadges = (product: ApiProduct): MerchandisingBadge[] => {
   return badges.slice(0, 2);
 };
 //  'all' + constants 기반 브랜드 키
-const BRAND_KEYS = ["all", ...RACKET_BRANDS.map((b) => b.value as string)] as const;
+const BRAND_KEYS = [
+  "all",
+  ...RACKET_BRANDS.map((b) => b.value as string),
+] as const;
 type BrandKey = (typeof BRAND_KEYS)[number];
 
 // 브랜드 탭 키(전체 + 상수)
-const STRING_BRAND_KEYS = ["all", ...STRING_BRANDS.map((b) => b.value)] as const;
+const STRING_BRAND_KEYS = [
+  "all",
+  ...STRING_BRANDS.map((b) => b.value),
+] as const;
 type StringBrandKey = (typeof STRING_BRAND_KEYS)[number];
 
 // 상단 배너 슬라이드 데이터
@@ -134,13 +166,21 @@ const PROMO_BANNERS: PromoBanner[] = (() => {
         if (!v || typeof v !== "object") return null;
         const obj = v as Record<string, unknown>;
 
-        const key = typeof obj.key === "string" && obj.key.trim() ? obj.key : `promo-${idx}`;
+        const key =
+          typeof obj.key === "string" && obj.key.trim()
+            ? obj.key
+            : `promo-${idx}`;
         const label = typeof obj.label === "string" ? obj.label : "";
         if (!label.trim()) return null;
 
-        const img = typeof obj.img === "string" && obj.img.trim() ? obj.img : undefined;
-        const alt = typeof obj.alt === "string" && obj.alt.trim() ? obj.alt : undefined;
-        const href = typeof obj.href === "string" && obj.href.trim() ? obj.href : undefined;
+        const img =
+          typeof obj.img === "string" && obj.img.trim() ? obj.img : undefined;
+        const alt =
+          typeof obj.alt === "string" && obj.alt.trim() ? obj.alt : undefined;
+        const href =
+          typeof obj.href === "string" && obj.href.trim()
+            ? obj.href
+            : undefined;
 
         return { key, label, img, alt, href };
       })
@@ -151,22 +191,29 @@ const PROMO_BANNERS: PromoBanner[] = (() => {
   }
 })();
 
-const surfaceCardInteractiveClass = "rounded-2xl border border-border bg-card shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 hover:shadow-lg";
-const surfaceIconWrapClass = "flex items-center justify-center rounded-2xl border border-border/60 bg-secondary text-foreground shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 group-hover:shadow-md";
+const surfaceCardInteractiveClass =
+  "rounded-2xl border border-border bg-card shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 hover:shadow-lg";
+const surfaceIconWrapClass =
+  "flex items-center justify-center rounded-2xl border border-border/60 bg-secondary text-foreground shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 group-hover:shadow-md";
 const surfacePanelClass = "rounded-3xl border border-border bg-card shadow-sm";
-const processStepSurfaceClass = "group flex flex-col items-center rounded-2xl border border-border/60 bg-background p-4 text-center shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 hover:shadow-md";
+const processStepSurfaceClass =
+  "group flex flex-col items-center rounded-2xl border border-border/60 bg-background p-4 text-center shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 hover:shadow-md";
 const brandRailClass =
   "relative flex max-w-full flex-nowrap items-center gap-2 overflow-x-auto overscroll-x-contain pb-3 [scrollbar-color:hsl(var(--muted-foreground)/0.15)_transparent] [scrollbar-width:thin] bp-sm:gap-2.5 [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-muted-foreground/10 hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/30";
 
 export default function Home() {
   const [activeBrand, setActiveBrand] = useState<BrandKey>("all");
-  const [activeStringBrand, setActiveStringBrand] = useState<StringBrandKey>("all");
+  const [activeStringBrand, setActiveStringBrand] =
+    useState<StringBrandKey>("all");
   const router = useRouter();
   const stringBrandRailRef = useRef<HTMLDivElement>(null);
   const racketBrandRailRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const rails = [stringBrandRailRef.current, racketBrandRailRef.current].filter((rail): rail is HTMLDivElement => Boolean(rail));
+    const rails = [
+      stringBrandRailRef.current,
+      racketBrandRailRef.current,
+    ].filter((rail): rail is HTMLDivElement => Boolean(rail));
 
     const handleWheel = (event: WheelEvent) => {
       if (event.ctrlKey) return;
@@ -242,11 +289,19 @@ export default function Home() {
   const [shouldLoadStrings, setShouldLoadStrings] = useState(false);
   const [shouldLoadRackets, setShouldLoadRackets] = useState(false);
   const stringsFetchedRef = useRef(false);
-  const [stringByBrand, setStringByBrand] = useState<Record<string, ApiProduct[]>>({});
+  const [stringByBrand, setStringByBrand] = useState<
+    Record<string, ApiProduct[]>
+  >({});
   const [allProductsTotal, setAllProductsTotal] = useState(0);
-  const [stringTotalsByBrand, setStringTotalsByBrand] = useState<Record<string, number>>({});
-  const [stringsLoadingByBrand, setStringsLoadingByBrand] = useState<Record<string, boolean>>({});
-  const [stringsErrorByBrand, setStringsErrorByBrand] = useState<Record<string, boolean>>({});
+  const [stringTotalsByBrand, setStringTotalsByBrand] = useState<
+    Record<string, number>
+  >({});
+  const [stringsLoadingByBrand, setStringsLoadingByBrand] = useState<
+    Record<string, boolean>
+  >({});
+  const [stringsErrorByBrand, setStringsErrorByBrand] = useState<
+    Record<string, boolean>
+  >({});
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -296,7 +351,11 @@ export default function Home() {
       { root: null, rootMargin: "900px 0px", threshold: 0.01 },
     );
 
-    const targets = [communitySectionRef.current, stringsSectionRef.current, racketsSectionRef.current].filter((v): v is HTMLElement => Boolean(v));
+    const targets = [
+      communitySectionRef.current,
+      stringsSectionRef.current,
+      racketsSectionRef.current,
+    ].filter((v): v is HTMLElement => Boolean(v));
     targets.forEach((target) => observer.observe(target));
 
     return () => observer.disconnect();
@@ -310,7 +369,9 @@ export default function Home() {
       setShouldLoadRackets(true);
     };
     if ("requestIdleCallback" in window) {
-      const id = window.requestIdleCallback(() => triggerPreload(), { timeout: 900 });
+      const id = window.requestIdleCallback(() => triggerPreload(), {
+        timeout: 900,
+      });
       return () => window.cancelIdleCallback(id);
     }
     const rafId = requestAnimationFrame(() => triggerPreload());
@@ -343,16 +404,25 @@ export default function Home() {
     };
   };
   const [rackByBrand, setRackByBrand] = useState<Record<string, RItem[]>>({});
-  const [racketTotalsByBrand, setRacketTotalsByBrand] = useState<Record<string, number>>({});
-  const [racketsLoadingByBrand, setRacketsLoadingByBrand] = useState<Record<string, boolean>>({});
-  const [racketsErrorByBrand, setRacketsErrorByBrand] = useState<Record<string, boolean>>({});
+  const [racketTotalsByBrand, setRacketTotalsByBrand] = useState<
+    Record<string, number>
+  >({});
+  const [racketsLoadingByBrand, setRacketsLoadingByBrand] = useState<
+    Record<string, boolean>
+  >({});
+  const [racketsErrorByBrand, setRacketsErrorByBrand] = useState<
+    Record<string, boolean>
+  >({});
 
   const loadUsedRackets = useCallback(async (brand: BrandKey) => {
     setRacketsLoadingByBrand((prev) => ({ ...prev, [brand]: true }));
     setRacketsErrorByBrand((prev) => ({ ...prev, [brand]: false }));
 
     try {
-      const qs = brand === "all" ? "?sort=createdAt_desc&limit=10&withTotal=1" : `?brand=${brand}&sort=createdAt_desc&limit=10&withTotal=1`;
+      const qs =
+        brand === "all"
+          ? "?sort=createdAt_desc&limit=10&withTotal=1"
+          : `?brand=${brand}&sort=createdAt_desc&limit=10&withTotal=1`;
 
       const res = await fetch(`/api/rackets${qs}`, { credentials: "include" });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -388,7 +458,10 @@ export default function Home() {
 
       const json = await res.json();
       const items: ApiProduct[] = json.products ?? json.items ?? [];
-      const total = typeof json?.pagination?.total === "number" ? json.pagination.total : items.length;
+      const total =
+        typeof json?.pagination?.total === "number"
+          ? json.pagination.total
+          : items.length;
       setAllProducts(items);
       setAllProductsTotal(total);
     } catch {
@@ -405,11 +478,17 @@ export default function Home() {
     setStringsLoadingByBrand((prev) => ({ ...prev, [brand]: true }));
     setStringsErrorByBrand((prev) => ({ ...prev, [brand]: false }));
     try {
-      const res = await fetch(`/api/products?brand=${brand}&sort=createdAt_desc&limit=10`, { credentials: "include" });
+      const res = await fetch(
+        `/api/products?brand=${brand}&sort=createdAt_desc&limit=10`,
+        { credentials: "include" },
+      );
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
       const items: ApiProduct[] = json.products ?? json.items ?? [];
-      const total = typeof json?.pagination?.total === "number" ? json.pagination.total : items.length;
+      const total =
+        typeof json?.pagination?.total === "number"
+          ? json.pagination.total
+          : items.length;
       setStringByBrand((prev) => ({ ...prev, [brand]: items }));
       setStringTotalsByBrand((prev) => ({ ...prev, [brand]: total }));
     } catch {
@@ -496,16 +575,23 @@ export default function Home() {
       brand: racketBrandLabel?.(r.brand) ?? r.brand ?? "",
       href: `/rackets/${r.id}`,
       marketing: r.marketing,
-      merchandisingBadges: [...(r.marketing?.isFeatured ? (["추천"] as const) : []), ...(r.marketing?.isNew ? (["NEW"] as const) : [])],
+      merchandisingBadges: [
+        ...(r.marketing?.isFeatured ? (["추천"] as const) : []),
+        ...(r.marketing?.isNew ? (["NEW"] as const) : []),
+      ],
     }));
   }, [rackByBrand, activeBrand]);
 
-  const stringTotal = activeStringBrand === "all" ? allProductsTotal : (stringTotalsByBrand[activeStringBrand] ?? premiumItems.length);
+  const stringTotal =
+    activeStringBrand === "all"
+      ? allProductsTotal
+      : (stringTotalsByBrand[activeStringBrand] ?? premiumItems.length);
   const hasMoreStringProducts = stringTotal > premiumItems.length;
 
   const usedRacketsLoading = Boolean(racketsLoadingByBrand[activeBrand]);
   const usedRacketsError = Boolean(racketsErrorByBrand[activeBrand]);
-  const racketTotal = racketTotalsByBrand[activeBrand] ?? usedRacketsItems.length;
+  const racketTotal =
+    racketTotalsByBrand[activeBrand] ?? usedRacketsItems.length;
   const hasMoreRacketProducts = racketTotal > usedRacketsItems.length;
 
   // throw new Error('[TEST] app/error.tsx 동작 확인용(홈 페이지)');
@@ -536,7 +622,13 @@ export default function Home() {
                     <>
                       {b.img ? (
                         <>
-                          <img src={b.img} alt={b.alt ?? title} className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" decoding="async" />
+                          <img
+                            src={b.img}
+                            alt={b.alt ?? title}
+                            className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                            loading="lazy"
+                            decoding="async"
+                          />
                           <div className="absolute inset-0 bg-background/50" />
                         </>
                       ) : (
@@ -545,7 +637,9 @@ export default function Home() {
 
                       <div className="relative z-10 flex h-full items-center justify-center p-4 text-center">
                         <div className="text-foreground">
-                          <div className="text-lg bp-sm:text-xl bp-md:text-2xl font-bold leading-tight tracking-normal">{title}</div>
+                          <div className="text-lg bp-sm:text-xl bp-md:text-2xl font-bold leading-tight tracking-normal">
+                            {title}
+                          </div>
                         </div>
                       </div>
                     </>
@@ -553,7 +647,12 @@ export default function Home() {
 
                   if (b.href?.startsWith("/")) {
                     return (
-                      <Link key={b.key} href={b.href} className={baseClass} aria-label={title}>
+                      <Link
+                        key={b.key}
+                        href={b.href}
+                        className={baseClass}
+                        aria-label={title}
+                      >
                         {inner}
                       </Link>
                     );
@@ -561,7 +660,12 @@ export default function Home() {
 
                   if (b.href) {
                     return (
-                      <a key={b.key} href={b.href} className={baseClass} aria-label={title}>
+                      <a
+                        key={b.key}
+                        href={b.href}
+                        className={baseClass}
+                        aria-label={title}
+                      >
                         {inner}
                       </a>
                     );
@@ -583,73 +687,175 @@ export default function Home() {
       <section className="py-10 bp-sm:py-12 bp-md:py-16">
         <SiteContainer>
           <div className="mb-8 bp-sm:mb-10 text-center">
-            <p className="mb-2 text-sm font-semibold text-primary">처음 오셨다면 여기서 시작하세요</p>
-            <h2 className="font-brand-bold text-2xl font-bold text-foreground tracking-normal bp-md:text-3xl">무엇을 도와드릴까요?</h2>
-            <p className="mt-2 bp-sm:mt-3 text-sm bp-sm:text-base text-muted-foreground">원하는 목적을 고르면 바로 이동할 수 있어요.</p>
+            <p className="mb-2 text-sm font-semibold text-primary">
+              처음 오셨다면 여기서 시작하세요
+            </p>
+            <h2 className="font-brand-bold text-2xl font-bold text-foreground tracking-normal bp-md:text-3xl">
+              무엇을 도와드릴까요?
+            </h2>
+            <p className="mt-2 bp-sm:mt-3 text-sm bp-sm:text-base text-muted-foreground">
+              원하는 목적을 고르면 바로 이동할 수 있어요.
+            </p>
           </div>
           <div className="grid gap-4 bp-sm:gap-5 bp-md:gap-6 grid-cols-1 bp-md:grid-cols-2 bp-xl:grid-cols-3">
-            <Link href="/services/apply" className={cn("group relative flex h-full flex-col gap-4 p-5 bp-sm:p-6 bp-md:p-7 border-primary/40 bg-primary/5", surfaceCardInteractiveClass)}>
+            <Link
+              href="/services/apply"
+              className={cn(
+                "group relative flex h-full flex-col gap-4 p-5 bp-sm:p-6 bp-md:p-7 border-primary/40 bg-primary/5",
+                surfaceCardInteractiveClass,
+              )}
+            >
               <BadgeCheck className="absolute right-5 top-5 h-5 w-5 text-primary" />
-              <div className={cn("h-12 w-12 bp-sm:h-14 bp-sm:w-14", surfaceIconWrapClass)}>
+              <div
+                className={cn(
+                  "h-12 w-12 bp-sm:h-14 bp-sm:w-14",
+                  surfaceIconWrapClass,
+                )}
+              >
                 <Wrench className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
               </div>
               <div>
-                <p className="mb-1 text-xs font-semibold text-primary">가장 많이 찾는 시작</p>
-                <h3 className="text-base bp-sm:text-lg font-semibold break-keep text-foreground">스트링 교체 신청</h3>
-                <p className="mt-2 text-sm leading-relaxed text-foreground/80">보유 라켓이 있거나 새{'\u00A0'}스트링을 구매해서 장착까지 맡기고 싶을 때 선택하세요.</p>
+                <p className="mb-1 text-xs font-semibold text-primary">
+                  가장 많이 찾는 시작
+                </p>
+                <h3 className="text-base bp-sm:text-lg font-semibold break-keep text-foreground">
+                  스트링 교체 신청
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-foreground/80">
+                  보유 라켓이 있거나 새{"\u00A0"}스트링을 구매해서 장착까지
+                  맡기고 싶을 때 선택하세요.
+                </p>
               </div>
             </Link>
 
-            <Link href="/products?from=apply" className={cn("group flex h-full flex-col gap-4 p-5 bp-sm:p-6 bp-md:p-7", surfaceCardInteractiveClass)}>
-              <div className={cn("h-12 w-12 bp-sm:h-14 bp-sm:w-14", surfaceIconWrapClass)}>
+            <Link
+              href="/products?from=apply"
+              className={cn(
+                "group flex h-full flex-col gap-4 p-5 bp-sm:p-6 bp-md:p-7",
+                surfaceCardInteractiveClass,
+              )}
+            >
+              <div
+                className={cn(
+                  "h-12 w-12 bp-sm:h-14 bp-sm:w-14",
+                  surfaceIconWrapClass,
+                )}
+              >
                 <Package className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
               </div>
               <div>
-                <h3 className="text-base bp-sm:text-lg font-semibold break-keep text-foreground">새{'\u00A0'}스트링 선택 후 교체 신청</h3>
-                <p className="mt-2 text-sm leading-relaxed text-foreground/80">스트링을 새로 선택하고 교체서비스까지 한{'\u00A0'}번에 진행합니다.</p>
+                <h3 className="text-base bp-sm:text-lg font-semibold break-keep text-foreground">
+                  새{"\u00A0"}스트링 선택 후 교체 신청
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-foreground/80">
+                  스트링을 새로 선택하고 교체서비스까지 한{"\u00A0"}번에
+                  진행합니다.
+                </p>
               </div>
             </Link>
 
-            <Link href="/rackets?from=apply" className={cn("group flex h-full flex-col gap-4 p-5 bp-sm:p-6 bp-md:p-7", surfaceCardInteractiveClass)}>
-              <div className={cn("h-12 w-12 bp-sm:h-14 bp-sm:w-14", surfaceIconWrapClass)}>
+            <Link
+              href="/rackets?from=apply"
+              className={cn(
+                "group flex h-full flex-col gap-4 p-5 bp-sm:p-6 bp-md:p-7",
+                surfaceCardInteractiveClass,
+              )}
+            >
+              <div
+                className={cn(
+                  "h-12 w-12 bp-sm:h-14 bp-sm:w-14",
+                  surfaceIconWrapClass,
+                )}
+              >
                 <Tags className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
               </div>
               <div>
-                <h3 className="text-base bp-sm:text-lg font-semibold break-keep text-foreground">라켓{'\u00A0'}구매/대여 후 교체 신청</h3>
-                <p className="mt-2 text-sm leading-relaxed text-foreground/80">라켓을 구매하거나 대여하면서 스트링 장착까지 함께 진행합니다.</p>
+                <h3 className="text-base bp-sm:text-lg font-semibold break-keep text-foreground">
+                  라켓{"\u00A0"}구매/대여 후 교체 신청
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-foreground/80">
+                  라켓을 구매하거나 대여하면서 스트링 장착까지 함께 진행합니다.
+                </p>
               </div>
             </Link>
 
-            <Link href="/academy" className={cn("group flex h-full flex-col gap-4 p-5 bp-sm:p-6 bp-md:p-7", surfaceCardInteractiveClass)}>
-              <div className={cn("h-12 w-12 bp-sm:h-14 bp-sm:w-14", surfaceIconWrapClass)}>
+            <Link
+              href="/academy"
+              className={cn(
+                "group flex h-full flex-col gap-4 p-5 bp-sm:p-6 bp-md:p-7",
+                surfaceCardInteractiveClass,
+              )}
+            >
+              <div
+                className={cn(
+                  "h-12 w-12 bp-sm:h-14 bp-sm:w-14",
+                  surfaceIconWrapClass,
+                )}
+              >
                 <BookOpen className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
               </div>
               <div>
-                <h3 className="text-base bp-sm:text-lg font-semibold break-keep text-foreground">아카데미 / 레슨 신청</h3>
-                <p className="mt-2 text-sm leading-relaxed text-foreground/80 break-keep">아카데미 클래스와 레슨 안내를 확인하세요.</p>
+                <h3 className="text-base bp-sm:text-lg font-semibold break-keep text-foreground">
+                  아카데미 / 레슨 신청
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-foreground/80 break-keep">
+                  아카데미 클래스와 레슨 안내를 확인하세요.
+                </p>
               </div>
             </Link>
 
-            <Link href="/academy" className={cn("group flex h-full flex-col gap-4 p-5 bp-sm:p-6 bp-md:p-7", surfaceCardInteractiveClass)}>
-              <div className={cn("h-12 w-12 bp-sm:h-14 bp-sm:w-14", surfaceIconWrapClass)}>
+            <Link
+              href="/academy"
+              className={cn(
+                "group flex h-full flex-col gap-4 p-5 bp-sm:p-6 bp-md:p-7",
+                surfaceCardInteractiveClass,
+              )}
+            >
+              <div
+                className={cn(
+                  "h-12 w-12 bp-sm:h-14 bp-sm:w-14",
+                  surfaceIconWrapClass,
+                )}
+              >
                 <Search className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
               </div>
               <div className="flex flex-1 flex-col gap-4">
                 <div>
-                  <h3 className="text-base bp-sm:text-lg font-semibold break-keep text-foreground"><span className="whitespace-nowrap">주문/신청 상태 확인</span></h3>
-                  <p className="mt-2 text-sm leading-relaxed text-foreground/80">마이페이지에서 진행 상태를 확인할 수 있어요.</p>
+                  <h3 className="text-base bp-sm:text-lg font-semibold break-keep text-foreground">
+                    <span className="whitespace-nowrap">
+                      주문/신청 상태 확인
+                    </span>
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-foreground/80">
+                    마이페이지에서 진행 상태를 확인할 수 있어요.
+                  </p>
                 </div>
               </div>
             </Link>
 
-            <Link href="/rackets/finder" className={cn("group flex h-full flex-col gap-4 p-5 bp-sm:p-6 bp-md:p-7", surfaceCardInteractiveClass)}>
-              <div className={cn("h-12 w-12 bp-sm:h-14 bp-sm:w-14", surfaceIconWrapClass)}>
+            <Link
+              href="/rackets/finder"
+              className={cn(
+                "group flex h-full flex-col gap-4 p-5 bp-sm:p-6 bp-md:p-7",
+                surfaceCardInteractiveClass,
+              )}
+            >
+              <div
+                className={cn(
+                  "h-12 w-12 bp-sm:h-14 bp-sm:w-14",
+                  surfaceIconWrapClass,
+                )}
+              >
                 <MdSportsTennis className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
               </div>
               <div className="flex flex-1 flex-col gap-4">
                 <div>
-                  <h3 className="text-base bp-sm:text-lg font-semibold break-keep text-foreground">라켓 검색</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-foreground/80 break-keep">원하는 조건으로 중고 라켓을 정교하게 찾아보세요.</p>
+                  <h3 className="text-base bp-sm:text-lg font-semibold break-keep text-foreground">
+                    라켓 검색
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-foreground/80 break-keep">
+                    원하는 조건으로 중고 라켓을 정교하게 찾아보세요.
+                  </p>
                 </div>
               </div>
             </Link>
@@ -662,55 +868,108 @@ export default function Home() {
         <SiteContainer>
           <div className={cn("p-6 bp-sm:p-8 bp-md:p-10", surfacePanelClass)}>
             <div className="mb-8 bp-sm:mb-10 text-center">
-              <h2 className="font-brand-bold text-2xl font-bold text-foreground tracking-normal bp-md:text-3xl">스트링 교체 프로세스</h2>
-              <p className="mt-2 bp-sm:mt-3 text-sm bp-sm:text-base text-muted-foreground">처음 방문해도 쉽게 이해할 수 있어요</p>
+              <h2 className="font-brand-bold text-2xl font-bold text-foreground tracking-normal bp-md:text-3xl">
+                스트링 교체 프로세스
+              </h2>
+              <p className="mt-2 bp-sm:mt-3 text-sm bp-sm:text-base text-muted-foreground">
+                처음 방문해도 쉽게 이해할 수 있어요
+              </p>
             </div>
             <div className="mb-8 bp-sm:mb-10 grid gap-6 bp-sm:gap-8 grid-cols-2 bp-lg:grid-cols-4">
               <div className={processStepSurfaceClass}>
                 <div className="relative mb-3 bp-sm:mb-4">
-                  <div className={cn("h-14 w-14 bp-sm:h-16 bp-sm:w-16", surfaceIconWrapClass)}>
+                  <div
+                    className={cn(
+                      "h-14 w-14 bp-sm:h-16 bp-sm:w-16",
+                      surfaceIconWrapClass,
+                    )}
+                  >
                     <BookOpen className="h-6 w-6 bp-sm:h-7 bp-sm:w-7" />
                   </div>
-                  <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">1</div>
+                  <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
+                    1
+                  </div>
                 </div>
-                <h3 className="mb-1 bp-sm:mb-1.5 text-xs bp-sm:text-sm font-semibold text-foreground">신청 방식 선택</h3>
-                <p className="text-xs bp-sm:text-sm leading-relaxed text-foreground/80">스트링 구매·라켓{'\u00A0'}구매/대여·보유 장비 중 선택</p>
+                <h3 className="mb-1 bp-sm:mb-1.5 text-xs bp-sm:text-sm font-semibold text-foreground">
+                  신청 방식 선택
+                </h3>
+                <p className="text-xs bp-sm:text-sm leading-relaxed text-foreground/80">
+                  스트링 구매·라켓{"\u00A0"}구매/대여·보유 장비 중 선택
+                </p>
               </div>
               <div className={processStepSurfaceClass}>
                 <div className="relative mb-3 bp-sm:mb-4">
-                  <div className={cn("h-14 w-14 bp-sm:h-16 bp-sm:w-16", surfaceIconWrapClass)}>
+                  <div
+                    className={cn(
+                      "h-14 w-14 bp-sm:h-16 bp-sm:w-16",
+                      surfaceIconWrapClass,
+                    )}
+                  >
                     <Package className="h-6 w-6 bp-sm:h-7 bp-sm:w-7" />
                   </div>
-                  <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">2</div>
+                  <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
+                    2
+                  </div>
                 </div>
-                <h3 className="mb-1 bp-sm:mb-1.5 text-xs bp-sm:text-sm font-semibold text-foreground">방문/택배</h3>
-                <p className="text-xs bp-sm:text-sm leading-relaxed text-foreground/80">방문 예약 또는 택배 발송</p>
+                <h3 className="mb-1 bp-sm:mb-1.5 text-xs bp-sm:text-sm font-semibold text-foreground">
+                  방문/택배
+                </h3>
+                <p className="text-xs bp-sm:text-sm leading-relaxed text-foreground/80">
+                  방문 예약 또는 택배 발송
+                </p>
               </div>
 
               <div className={processStepSurfaceClass}>
                 <div className="relative mb-3 bp-sm:mb-4">
-                  <div className={cn("h-14 w-14 bp-sm:h-16 bp-sm:w-16", surfaceIconWrapClass)}>
+                  <div
+                    className={cn(
+                      "h-14 w-14 bp-sm:h-16 bp-sm:w-16",
+                      surfaceIconWrapClass,
+                    )}
+                  >
                     <Wrench className="h-6 w-6 bp-sm:h-7 bp-sm:w-7" />
                   </div>
-                  <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">3</div>
+                  <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
+                    3
+                  </div>
                 </div>
-                <h3 className="mb-1 bp-sm:mb-1.5 text-xs bp-sm:text-sm font-semibold text-foreground">작업 진행</h3>
-                <p className="text-xs bp-sm:text-sm leading-relaxed text-foreground/80">장착/텐션 세팅 후 검수</p>
+                <h3 className="mb-1 bp-sm:mb-1.5 text-xs bp-sm:text-sm font-semibold text-foreground">
+                  작업 진행
+                </h3>
+                <p className="text-xs bp-sm:text-sm leading-relaxed text-foreground/80">
+                  장착/텐션 세팅 후 검수
+                </p>
               </div>
 
               <div className={processStepSurfaceClass}>
                 <div className="relative mb-3 bp-sm:mb-4">
-                  <div className={cn("h-14 w-14 bp-sm:h-16 bp-sm:w-16", surfaceIconWrapClass)}>
+                  <div
+                    className={cn(
+                      "h-14 w-14 bp-sm:h-16 bp-sm:w-16",
+                      surfaceIconWrapClass,
+                    )}
+                  >
                     <BadgeCheck className="h-6 w-6 bp-sm:h-7 bp-sm:w-7" />
                   </div>
-                  <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">4</div>
+                  <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
+                    4
+                  </div>
                 </div>
-                <h3 className="mb-1 bp-sm:mb-1.5 text-xs bp-sm:text-sm font-semibold text-foreground">수령</h3>
-                <p className="text-xs bp-sm:text-sm leading-relaxed text-foreground/80">방문 수령 또는 배송</p>
+                <h3 className="mb-1 bp-sm:mb-1.5 text-xs bp-sm:text-sm font-semibold text-foreground">
+                  수령
+                </h3>
+                <p className="text-xs bp-sm:text-sm leading-relaxed text-foreground/80">
+                  방문 수령 또는 배송
+                </p>
               </div>
             </div>
             <div className="text-center">
-              <Button asChild variant="default" size="tall" className="px-6 bp-sm:px-8 text-sm bp-sm:text-base">
+              <Button
+                asChild
+                variant="default"
+                size="tall"
+                className="px-6 bp-sm:px-8 text-sm bp-sm:text-base"
+              >
                 <Link href="/services/apply">
                   <Wrench className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                   스트링 교체 신청
@@ -722,11 +981,18 @@ export default function Home() {
       </section>
 
       {/* 공지사항/중고거래 섹션 */}
-      <section ref={communitySectionRef} className="py-10 bp-sm:py-12 bp-md:py-16">
+      <section
+        ref={communitySectionRef}
+        className="py-10 bp-sm:py-12 bp-md:py-16"
+      >
         <SiteContainer>
           <div className="mb-8 bp-sm:mb-10 text-center">
-            <h2 className="font-brand-bold text-2xl font-bold text-foreground tracking-normal bp-md:text-3xl">소식 & 커뮤니티</h2>
-            <p className="mt-2 bp-sm:mt-3 text-sm bp-sm:text-base text-muted-foreground">공지사항과 중고 거래 최신 소식을 확인하세요</p>
+            <h2 className="font-brand-bold text-2xl font-bold text-foreground tracking-normal bp-md:text-3xl">
+              소식 & 커뮤니티
+            </h2>
+            <p className="mt-2 bp-sm:mt-3 text-sm bp-sm:text-base text-muted-foreground">
+              공지사항과 중고 거래 최신 소식을 확인하세요
+            </p>
           </div>
           <div className="grid gap-5 bp-sm:gap-6 bp-xl:grid-cols-2">
             {shouldLoadCommunity ? (
@@ -745,11 +1011,18 @@ export default function Home() {
       </section>
 
       {/* 스트링 섹션 */}
-      <section ref={stringsSectionRef} className="py-12 bp-sm:py-14 bp-md:py-20">
+      <section
+        ref={stringsSectionRef}
+        className="py-12 bp-sm:py-14 bp-md:py-20"
+      >
         <SiteContainer>
           <div className="mb-8 bp-sm:mb-10 text-center">
-            <h2 className="font-brand-bold text-2xl font-bold text-foreground tracking-normal bp-sm:text-3xl bp-md:text-4xl">스트링</h2>
-            <p className="mt-2 bp-sm:mt-3 text-sm bp-sm:text-base text-muted-foreground">프로가 선택하는 테니스 스트링</p>
+            <h2 className="font-brand-bold text-2xl font-bold text-foreground tracking-normal bp-sm:text-3xl bp-md:text-4xl">
+              스트링
+            </h2>
+            <p className="mt-2 bp-sm:mt-3 text-sm bp-sm:text-base text-muted-foreground">
+              프로가 선택하는 테니스 스트링
+            </p>
           </div>
           <div className="mb-8 bp-sm:mb-10">
             <div className="flex justify-center">
@@ -763,7 +1036,9 @@ export default function Home() {
                 {STRING_BRANDS.map((b) => (
                   <button
                     key={b.value}
-                    onClick={() => setActiveStringBrand(b.value as StringBrandKey)}
+                    onClick={() =>
+                      setActiveStringBrand(b.value as StringBrandKey)
+                    }
                     className={`shrink-0 px-5 bp-sm:px-6 bp-md:px-7 py-2.5 bp-sm:py-3 rounded-xl text-sm bp-sm:text-base font-semibold transition-[background-color,color,border-color,box-shadow,opacity] duration-300 whitespace-nowrap ${activeStringBrand === b.value ? "border border-primary/40 bg-primary/10 text-primary shadow-sm dark:border-primary/40 dark:bg-primary/15 dark:text-primary" : "bg-card border border-border/60 text-foreground hover:border-border hover:shadow-md"}`}
                   >
                     {b.label}
@@ -771,18 +1046,32 @@ export default function Home() {
                 ))}
               </div>
             </div>
-            <p className="mt-2 text-center text-xs bp-sm:text-sm text-muted-foreground">좌우 스와이프하거나 마우스 휠로 더 많은 브랜드를 볼 수 있어요.</p>
+            <p className="mt-2 text-center text-xs bp-sm:text-sm text-muted-foreground">
+              좌우 스와이프하거나 마우스 휠로 더 많은 브랜드를 볼 수 있어요.
+            </p>
           </div>
 
           <HorizontalProducts
             title="스트링"
-            subtitle={activeStringBrand === "all" ? "브랜드로 골라보기" : `${stringBrandLabel(activeStringBrand)} 추천`}
+            subtitle={
+              activeStringBrand === "all"
+                ? "브랜드로 골라보기"
+                : `${stringBrandLabel(activeStringBrand)} 추천`
+            }
             items={premiumItems.slice(0, 10)}
             showMoreCard={hasMoreStringProducts}
-            moreHref={activeStringBrand === "all" ? "/products" : `/products?brand=${activeStringBrand}`}
+            moreHref={
+              activeStringBrand === "all"
+                ? "/products"
+                : `/products?brand=${activeStringBrand}`
+            }
             firstPageSlots={4}
             moveMoreToSecondWhen5Plus={true}
-            error={activeStringBrand === "all" ? productsError : Boolean(stringsErrorByBrand[activeStringBrand])}
+            error={
+              activeStringBrand === "all"
+                ? productsError
+                : Boolean(stringsErrorByBrand[activeStringBrand])
+            }
             onRetry={() => {
               if (activeStringBrand === "all") {
                 void fetchHomeProducts();
@@ -790,22 +1079,42 @@ export default function Home() {
               }
               void loadStringBrand(activeStringBrand);
             }}
-            emptyTitle={activeStringBrand === "all" ? "등록된 스트링이 없습니다" : "해당 브랜드 스트링이 없습니다"}
-            emptyDescription={activeStringBrand === "all" ? "곧 상품이 업데이트됩니다." : "다른 브랜드를 선택해 보세요."}
+            emptyTitle={
+              activeStringBrand === "all"
+                ? "등록된 스트링이 없습니다"
+                : "해당 브랜드 스트링이 없습니다"
+            }
+            emptyDescription={
+              activeStringBrand === "all"
+                ? "곧 상품이 업데이트됩니다."
+                : "다른 브랜드를 선택해 보세요."
+            }
             errorTitle="스트링을 불러오지 못했어요"
             errorDescription="네트워크/서버 상태를 확인 후 다시 시도해 주세요."
             showHeader={false}
-            loading={!shouldLoadStrings || (activeStringBrand === "all" ? loading : Boolean(stringsLoadingByBrand[activeStringBrand]))}
+            loading={
+              !shouldLoadStrings ||
+              (activeStringBrand === "all"
+                ? loading
+                : Boolean(stringsLoadingByBrand[activeStringBrand]))
+            }
           />
         </SiteContainer>
       </section>
 
       {/* 중고 라켓 섹션 */}
-      <section ref={racketsSectionRef} className="py-12 bp-sm:py-14 bp-md:py-20">
+      <section
+        ref={racketsSectionRef}
+        className="py-12 bp-sm:py-14 bp-md:py-20"
+      >
         <SiteContainer>
           <div className="mb-8 bp-sm:mb-10 text-center">
-            <h2 className="font-brand-bold text-2xl font-bold text-foreground tracking-normal bp-sm:text-3xl bp-md:text-4xl">중고 라켓</h2>
-            <p className="mt-2 bp-sm:mt-3 text-sm bp-sm:text-base text-muted-foreground">도깨비테니스에서 관리하는 라켓을 활용해보세요</p>
+            <h2 className="font-brand-bold text-2xl font-bold text-foreground tracking-normal bp-sm:text-3xl bp-md:text-4xl">
+              중고 라켓
+            </h2>
+            <p className="mt-2 bp-sm:mt-3 text-sm bp-sm:text-base text-muted-foreground">
+              도깨비테니스에서 관리하는 라켓을 활용해보세요
+            </p>
           </div>
           <div className="mb-8 bp-sm:mb-10">
             <div className="flex justify-center">
@@ -827,21 +1136,39 @@ export default function Home() {
                 ))}
               </div>
             </div>
-            <p className="mt-2 text-center text-xs bp-sm:text-sm text-muted-foreground">좌우 스와이프하거나 마우스 휠로 더 많은 브랜드를 볼 수 있어요.</p>
+            <p className="mt-2 text-center text-xs bp-sm:text-sm text-muted-foreground">
+              좌우 스와이프하거나 마우스 휠로 더 많은 브랜드를 볼 수 있어요.
+            </p>
           </div>
           <HorizontalProducts
             title="중고 라켓"
-            subtitle={activeBrand === "all" ? "도깨비테니스 중고" : `${racketBrandLabel(activeBrand)} 중고`}
+            subtitle={
+              activeBrand === "all"
+                ? "도깨비테니스 중고"
+                : `${racketBrandLabel(activeBrand)} 중고`
+            }
             items={usedRacketsItems.slice(0, 10)}
             showMoreCard={hasMoreRacketProducts}
-            moreHref={activeBrand === "all" ? "/rackets" : `/rackets?brand=${activeBrand}`}
+            moreHref={
+              activeBrand === "all"
+                ? "/rackets"
+                : `/rackets?brand=${activeBrand}`
+            }
             firstPageSlots={4}
             moveMoreToSecondWhen5Plus={true}
             loading={!shouldLoadRackets || usedRacketsLoading}
             error={usedRacketsError}
             onRetry={() => loadUsedRackets(activeBrand)}
-            emptyTitle={activeBrand === "all" ? "등록된 중고 라켓이 없습니다" : "해당 브랜드 중고 라켓이 없습니다"}
-            emptyDescription={activeBrand === "all" ? "곧 상품이 업데이트됩니다." : "다른 브랜드를 선택해 보세요."}
+            emptyTitle={
+              activeBrand === "all"
+                ? "등록된 중고 라켓이 없습니다"
+                : "해당 브랜드 중고 라켓이 없습니다"
+            }
+            emptyDescription={
+              activeBrand === "all"
+                ? "곧 상품이 업데이트됩니다."
+                : "다른 브랜드를 선택해 보세요."
+            }
             errorTitle="중고 라켓을 불러오지 못했어요"
             errorDescription="네트워크/서버 상태를 확인 후 다시 시도해 주세요."
             showHeader={false}

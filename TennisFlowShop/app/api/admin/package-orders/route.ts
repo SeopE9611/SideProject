@@ -189,7 +189,12 @@ export async function GET(req: Request) {
                       case: {
                         $and: [
                           { $ne: ["$passDoc", null] },
-                          { $lte: [{ $ifNull: ["$passDoc.remainingCount", 0] }, 0] },
+                          {
+                            $lte: [
+                              { $ifNull: ["$passDoc.remainingCount", 0] },
+                              0,
+                            ],
+                          },
                         ],
                       },
                       then: "종료",

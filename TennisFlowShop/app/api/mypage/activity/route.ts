@@ -1,68 +1,94 @@
-import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
-import { verifyAccessToken } from '@/lib/auth.utils';
-import { isApplicationTodoActionable, isOrderTodoActionable, isRentalTodoActionable, normalizeMypageTodoStatus } from '@/lib/mypage/activity-todo';
-import clientPromise from '@/lib/mongodb';
-import { ObjectId } from 'mongodb';
-import { cookies } from 'next/headers';
-import { NextResponse } from 'next/server';
-import jwt from 'jsonwebtoken';
+import { normalizeCollection } from "@/app/features/stringing-applications/lib/collection";
+import { verifyAccessToken } from "@/lib/auth.utils";
+import {
+  isApplicationTodoActionable,
+  isOrderTodoActionable,
+  isRentalTodoActionable,
+  normalizeMypageTodoStatus,
+} from "@/lib/mypage/activity-todo";
+import clientPromise from "@/lib/mongodb";
+import { ObjectId } from "mongodb";
+import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
+import jwt from "jsonwebtoken";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 // 숫자 쿼리 파라미터 안전 파싱 (NaN/Infinity/음수 방지 + 범위 보정)
-function parseIntParam(v: string | null, opts: { defaultValue: number; min: number; max: number }) {
+function parseIntParam(
+  v: string | null,
+  opts: { defaultValue: number; min: number; max: number },
+) {
   const n = Number(v);
   const base = Number.isFinite(n) ? n : opts.defaultValue;
   return Math.min(opts.max, Math.max(opts.min, Math.trunc(base)));
 }
 
-type ActivityKind = 'order' | 'rental' | 'application';
-type ActivityScope = 'all' | 'todo' | 'order' | 'application' | 'rental';
+type ActivityKind = "order" | "rental" | "application";
+type ActivityScope = "all" | "todo" | "order" | "application" | "rental";
 
 function parseScopeParam(v: string | null): ActivityScope {
-  if (v === 'todo' || v === 'order' || v === 'application' || v === 'rental') return v;
-  return 'all';
+  if (v === "todo" || v === "order" || v === "application" || v === "rental")
+    return v;
+  return "all";
 }
 
 function resolveOrderPaymentStatus(o: any): string {
-  const topLevel = String(o?.paymentStatus ?? '').trim();
+  const topLevel = String(o?.paymentStatus ?? "").trim();
   if (topLevel) return topLevel;
 
-  const paymentInfoStatus = String(o?.paymentInfo?.status ?? '')
+  const paymentInfoStatus = String(o?.paymentInfo?.status ?? "")
     .trim()
     .toLowerCase();
-  if (paymentInfoStatus === 'pending') return '결제대기';
-  if (paymentInfoStatus === 'paid') return '결제완료';
-  if (paymentInfoStatus === 'failed') return '결제실패';
-  if (paymentInfoStatus === 'canceled' || paymentInfoStatus === 'cancelled') return '결제취소';
-  if (paymentInfoStatus === 'refunded') return '환불완료';
+  if (paymentInfoStatus === "pending") return "결제대기";
+  if (paymentInfoStatus === "paid") return "결제완료";
+  if (paymentInfoStatus === "failed") return "결제실패";
+  if (paymentInfoStatus === "canceled" || paymentInfoStatus === "cancelled")
+    return "결제취소";
+  if (paymentInfoStatus === "refunded") return "환불완료";
 
-  return '결제대기';
+  return "결제대기";
 }
 
 function resolvePaymentProvider(doc: any): string | null {
-  const provider = String(doc?.paymentInfo?.provider ?? doc?.paymentProvider ?? doc?.paymentMethod ?? '').trim();
+  const provider = String(
+    doc?.paymentInfo?.provider ??
+      doc?.paymentProvider ??
+      doc?.paymentMethod ??
+      "",
+  ).trim();
   return provider || null;
 }
 
 function resolveStringingPaymentContext(
   appDoc: any,
-  linkedPayment?: { paymentStatus?: string | null; paymentProvider?: string | null } | null,
+  linkedPayment?: {
+    paymentStatus?: string | null;
+    paymentProvider?: string | null;
+  } | null,
 ) {
-  const packageApplied = Boolean(appDoc?.packageApplied || appDoc?.packageInfo?.applied);
+  const packageApplied = Boolean(
+    appDoc?.packageApplied || appDoc?.packageInfo?.applied,
+  );
   if (packageApplied) {
-    return { packageApplied, paymentStatus: '패키지 적용 완료', paymentProvider: null as string | null };
+    return {
+      packageApplied,
+      paymentStatus: "패키지 적용 완료",
+      paymentProvider: null as string | null,
+    };
   }
 
   return {
     packageApplied,
     paymentStatus:
       linkedPayment?.paymentStatus ??
-      (appDoc?.paymentStatus || appDoc?.paymentInfo?.status ? resolveOrderPaymentStatus(appDoc) : null),
-    paymentProvider: linkedPayment?.paymentProvider ?? resolvePaymentProvider(appDoc),
+      (appDoc?.paymentStatus || appDoc?.paymentInfo?.status
+        ? resolveOrderPaymentStatus(appDoc)
+        : null),
+    paymentProvider:
+      linkedPayment?.paymentProvider ?? resolvePaymentProvider(appDoc),
   };
 }
-
 
 type ActivityOrderSummary = {
   id: string;
@@ -115,10 +141,15 @@ type ActivityRentalSummary = {
   linkedApplicationCount: number;
 };
 
-type FlowType = 'order_only' | 'order_plus_stringing' | 'rental_only' | 'rental_plus_stringing' | 'application_only';
+type FlowType =
+  | "order_only"
+  | "order_plus_stringing"
+  | "rental_only"
+  | "rental_plus_stringing"
+  | "application_only";
 
 type DetailTarget = {
-  type: 'order' | 'application' | 'rental';
+  type: "order" | "application" | "rental";
   id: string;
 };
 
@@ -154,21 +185,31 @@ export type ActivityGroup = {
   detailTarget: DetailTarget;
 };
 
-function getOrderFlowLabel(opts: { hasRacketItem: boolean; hasStringItem: boolean; hasProductItem: boolean; linkedApplicationCount: number }): string {
-  const { hasRacketItem, hasStringItem, hasProductItem, linkedApplicationCount } = opts;
+function getOrderFlowLabel(opts: {
+  hasRacketItem: boolean;
+  hasStringItem: boolean;
+  hasProductItem: boolean;
+  linkedApplicationCount: number;
+}): string {
+  const {
+    hasRacketItem,
+    hasStringItem,
+    hasProductItem,
+    linkedApplicationCount,
+  } = opts;
   const hasLinked = linkedApplicationCount > 0;
 
   if (!hasLinked) {
-    if (hasRacketItem && hasStringItem) return '라켓 + 스트링 주문';
-    if (hasRacketItem) return hasProductItem ? '라켓 포함 주문' : '라켓 주문';
-    if (hasStringItem) return '스트링 단품 주문';
-    return '일반 상품 주문';
+    if (hasRacketItem && hasStringItem) return "라켓 + 스트링 주문";
+    if (hasRacketItem) return hasProductItem ? "라켓 포함 주문" : "라켓 주문";
+    if (hasStringItem) return "스트링 단품 주문";
+    return "일반 상품 주문";
   }
 
-  if (hasRacketItem && hasStringItem) return '라켓 구매 + 스트링 + 교체서비스';
-  if (hasStringItem) return '스트링 구매 + 교체서비스';
-  if (hasRacketItem) return '라켓 구매 + 교체서비스';
-  return '주문 + 교체서비스';
+  if (hasRacketItem && hasStringItem) return "라켓 구매 + 스트링 + 교체서비스";
+  if (hasStringItem) return "스트링 구매 + 교체서비스";
+  if (hasRacketItem) return "라켓 구매 + 교체서비스";
+  return "주문 + 교체서비스";
 }
 
 function toISO(v: any): string {
@@ -180,14 +221,27 @@ function toISO(v: any): string {
 
 function isoMax(...values: Array<string | null | undefined>): string {
   const base = new Date(0).toISOString();
-  return values.filter((v): v is string => Boolean(v)).reduce((acc, cur) => (cur > acc ? cur : acc), base);
+  return values
+    .filter((v): v is string => Boolean(v))
+    .reduce((acc, cur) => (cur > acc ? cur : acc), base);
 }
 
-function compareByUpdatedThenCreatedDesc(a: Pick<ActivityApplicationSummary, 'updatedAt' | 'createdAt'>, b: Pick<ActivityApplicationSummary, 'updatedAt' | 'createdAt'>) {
-  return b.updatedAt.localeCompare(a.updatedAt) || b.createdAt.localeCompare(a.createdAt);
+function compareByUpdatedThenCreatedDesc(
+  a: Pick<ActivityApplicationSummary, "updatedAt" | "createdAt">,
+  b: Pick<ActivityApplicationSummary, "updatedAt" | "createdAt">,
+) {
+  return (
+    b.updatedAt.localeCompare(a.updatedAt) ||
+    b.createdAt.localeCompare(a.createdAt)
+  );
 }
 
-function isActionableInboundTracking(app?: Pick<ActivityApplicationSummary, 'needsInboundTracking' | 'hasTracking'> | null) {
+function isActionableInboundTracking(
+  app?: Pick<
+    ActivityApplicationSummary,
+    "needsInboundTracking" | "hasTracking"
+  > | null,
+) {
   return Boolean(app?.needsInboundTracking && !app?.hasTracking);
 }
 
@@ -200,20 +254,21 @@ function pickPrimaryLinkedApplication(apps: ActivityApplicationSummary[]) {
 
 function calcOrderTotal(o: any): number {
   // 기존 /api/users/me/orders 로직의 축약판(총액이 있으면 우선, 없으면 items 합산)
-  const explicit = o.totalPrice ?? o.total ?? o.finalAmount ?? o.totalAmount ?? null;
-  if (typeof explicit === 'number') return explicit;
+  const explicit =
+    o.totalPrice ?? o.total ?? o.finalAmount ?? o.totalAmount ?? null;
+  if (typeof explicit === "number") return explicit;
 
   const items: any[] = Array.isArray(o.items) ? o.items : [];
   return items.reduce((sum, it) => {
     const unit = it.price ?? it.unitPrice ?? 0;
     const qty = it.quantity ?? it.qty ?? it.count ?? 1;
     const line = it.total ?? unit * qty;
-    return sum + (typeof line === 'number' ? line : 0);
+    return sum + (typeof line === "number" ? line : 0);
   }, 0);
 }
 
 function resolveOrderShippingMethod(shippingInfo: any): string {
-  if (!shippingInfo || typeof shippingInfo !== 'object') return '';
+  if (!shippingInfo || typeof shippingInfo !== "object") return "";
 
   // 서버 저장 기준은 deliveryMethod(택배수령/방문수령)가 우선이다.
   // 레거시/혼합 저장 형태를 위해 shippingMethod/method/type 도 순차 fallback 한다.
@@ -225,26 +280,35 @@ function resolveOrderShippingMethod(shippingInfo: any): string {
   ];
 
   for (const value of candidates) {
-    const normalized = String(value ?? '').trim();
+    const normalized = String(value ?? "").trim();
     if (normalized) return normalized;
   }
 
-  return '';
+  return "";
 }
 
 function summarizeRacketType(details: any): string {
   // 신청서 목록(route.ts)처럼 “완벽”하게 만들기보다, 통합 피드용 최소 요약만
-  if (details?.racketType && typeof details.racketType === 'string' && details.racketType.trim()) {
+  if (
+    details?.racketType &&
+    typeof details.racketType === "string" &&
+    details.racketType.trim()
+  ) {
     return details.racketType.trim();
   }
   const lines = Array.isArray(details?.racketLines) ? details.racketLines : [];
   if (lines.length > 0) return `라켓 ${lines.length}자루`;
-  return '-';
+  return "-";
 }
 
 // 신청서 배송정보
 function getTrackingNoFromShippingInfo(shippingInfo: any): string | null {
-  const v = shippingInfo?.selfShip?.trackingNo ?? shippingInfo?.invoice?.trackingNumber ?? shippingInfo?.trackingNumber ?? shippingInfo?.trackingNo ?? null;
+  const v =
+    shippingInfo?.selfShip?.trackingNo ??
+    shippingInfo?.invoice?.trackingNumber ??
+    shippingInfo?.trackingNumber ??
+    shippingInfo?.trackingNo ??
+    null;
 
   if (v == null) return null;
   const s = String(v).trim();
@@ -263,42 +327,48 @@ export async function GET(req: Request) {
   // - accessToken 만료/누락 시에도 refreshToken으로 "1회 회복 기회"를 준다.
   //   (즉시 401을 반환하면 로그인 상태 사용자도 타이밍 이슈로 간헐 Unauthorized를 겪을 수 있음)
   const jar = await cookies();
-  const at = jar.get('accessToken')?.value;
-  const rt = jar.get('refreshToken')?.value;
+  const at = jar.get("accessToken")?.value;
+  const rt = jar.get("refreshToken")?.value;
 
-  let payload: jwt.JwtPayload | null = at ? (verifyAccessToken(at) as jwt.JwtPayload | null) : null;
+  let payload: jwt.JwtPayload | null = at
+    ? (verifyAccessToken(at) as jwt.JwtPayload | null)
+    : null;
   let recoveredByRefresh = false;
 
   if (!payload?.sub && rt) {
     try {
-      payload = jwt.verify(rt, process.env.REFRESH_TOKEN_SECRET!) as jwt.JwtPayload;
+      payload = jwt.verify(
+        rt,
+        process.env.REFRESH_TOKEN_SECRET!,
+      ) as jwt.JwtPayload;
       recoveredByRefresh = Boolean(payload?.sub);
     } catch {
       payload = null;
     }
   }
 
-  if (!payload?.sub) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+  if (!payload?.sub)
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
   const subStr = String(payload.sub);
   if (!ObjectId.isValid(subStr)) {
-    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
   const userId = new ObjectId(subStr);
 
   // 2) 페이지네이션 파라미터
   const url = new URL(req.url);
-  const page = parseIntParam(url.searchParams.get('page'), {
+  const page = parseIntParam(url.searchParams.get("page"), {
     defaultValue: 1,
     min: 1,
     max: 10_000,
   });
-  const pageSize = parseIntParam(url.searchParams.get('pageSize'), {
+  const pageSize = parseIntParam(url.searchParams.get("pageSize"), {
     defaultValue: 10,
     min: 1,
     max: 50,
   });
-  const scope = parseScopeParam(url.searchParams.get('scope'));
+  const scope = parseScopeParam(url.searchParams.get("scope"));
   const skip = (page - 1) * pageSize;
 
   // 병합형 페이지네이션의 현실적인 구현:
@@ -311,29 +381,32 @@ export async function GET(req: Request) {
     // refresh 기반 회복으로 진입했을 때만 사용자 상태를 1회 검증한다.
     // 이렇게 해야 "만료 직후 즉시 401" 문제를 줄이면서도 탈퇴/정지 계정을 우회하지 않는다.
     const authUser = await db
-      .collection('users')
+      .collection("users")
       .findOne(
         { _id: userId },
         { projection: { _id: 1, isDeleted: 1, isSuspended: 1 } },
       );
     if (!authUser || authUser.isDeleted) {
-      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
     if (authUser.isSuspended) {
-      return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
+      return NextResponse.json({ message: "Forbidden" }, { status: 403 });
     }
   }
 
   const standaloneAppsFilter = {
     userId,
-    status: { $ne: 'draft' },
-    $and: [{ $or: [{ orderId: { $exists: false } }, { orderId: null }] }, { $or: [{ rentalId: { $exists: false } }, { rentalId: null }] }],
+    status: { $ne: "draft" },
+    $and: [
+      { $or: [{ orderId: { $exists: false } }, { orderId: null }] },
+      { $or: [{ rentalId: { $exists: false } }, { rentalId: null }] },
+    ],
   };
 
   // 4) 후보 데이터 로드
   const [orders, rentals, standaloneApps] = await Promise.all([
     db
-      .collection('orders')
+      .collection("orders")
       .find(
         { userId },
         {
@@ -358,7 +431,7 @@ export async function GET(req: Request) {
       .toArray(),
 
     db
-      .collection('rental_orders')
+      .collection("rental_orders")
       .find(
         { userId },
         {
@@ -387,7 +460,7 @@ export async function GET(req: Request) {
       .toArray(),
 
     db
-      .collection('stringing_applications')
+      .collection("stringing_applications")
       .find(standaloneAppsFilter, {
         projection: {
           _id: 1,
@@ -427,17 +500,20 @@ export async function GET(req: Request) {
   for (const o of orders as any[]) {
     const orderId = String(o._id);
     const items = Array.isArray(o.items) ? o.items : [];
-    const hasRacket = items.some((it: any) => it?.kind === 'racket' || it?.kind === 'used_racket');
+    const hasRacket = items.some(
+      (it: any) => it?.kind === "racket" || it?.kind === "used_racket",
+    );
     orderHasRacketById.set(orderId, hasRacket);
 
     const rawReviewTargetProductIds: (string | null)[] = items.map(
       (it: any): string | null => (it?.productId ? String(it.productId) : null),
     );
 
-    const filteredReviewTargetProductIds: string[] = rawReviewTargetProductIds.filter(
-      (productId: string | null): productId is string =>
-        productId !== null && ObjectId.isValid(productId),
-    );
+    const filteredReviewTargetProductIds: string[] =
+      rawReviewTargetProductIds.filter(
+        (productId: string | null): productId is string =>
+          productId !== null && ObjectId.isValid(productId),
+      );
 
     const reviewTargetProductIds: string[] = [
       ...new Set<string>(filteredReviewTargetProductIds),
@@ -445,17 +521,19 @@ export async function GET(req: Request) {
     orderReviewProductIdsById.set(orderId, reviewTargetProductIds);
 
     const status = normalizeMypageTodoStatus(o?.status);
-    const isConfirmed = Boolean(o?.userConfirmedAt) || status === '구매확정';
+    const isConfirmed = Boolean(o?.userConfirmedAt) || status === "구매확정";
     if (isConfirmed && reviewTargetProductIds.length > 0) {
       confirmedOrderIds.push(new ObjectId(orderId));
-      reviewTargetProductIds.forEach((productId) => reviewProductIdsPool.add(productId));
+      reviewTargetProductIds.forEach((productId) =>
+        reviewProductIdsPool.add(productId),
+      );
     }
   }
 
   const reviewedProductIdsByOrderId = new Map<string, Set<string>>();
   if (confirmedOrderIds.length > 0 && reviewProductIdsPool.size > 0) {
     const reviewedDocs = await db
-      .collection('reviews')
+      .collection("reviews")
       .find(
         {
           userId,
@@ -472,7 +550,8 @@ export async function GET(req: Request) {
     for (const reviewed of reviewedDocs as any[]) {
       const orderId = String(reviewed.orderId);
       const productId = String(reviewed.productId);
-      const bucket = reviewedProductIdsByOrderId.get(orderId) ?? new Set<string>();
+      const bucket =
+        reviewedProductIdsByOrderId.get(orderId) ?? new Set<string>();
       bucket.add(productId);
       reviewedProductIdsByOrderId.set(orderId, bucket);
     }
@@ -483,12 +562,15 @@ export async function GET(req: Request) {
   const rentalIdsAny = rentals.flatMap((r: any) => [r._id, String(r._id)]);
 
   const linkedApps = await db
-    .collection('stringing_applications')
+    .collection("stringing_applications")
     .find(
       {
         userId,
-        status: { $ne: 'draft' },
-        $or: [{ orderId: { $in: orderIdsAny } }, { rentalId: { $in: rentalIdsAny } }],
+        status: { $ne: "draft" },
+        $or: [
+          { orderId: { $in: orderIdsAny } },
+          { rentalId: { $in: rentalIdsAny } },
+        ],
       },
       {
         projection: {
@@ -520,13 +602,19 @@ export async function GET(req: Request) {
   const orderPaymentContextById = new Map(
     (orders as any[]).map((order) => [
       String(order._id),
-      { paymentStatus: resolveOrderPaymentStatus(order), paymentProvider: resolvePaymentProvider(order) },
+      {
+        paymentStatus: resolveOrderPaymentStatus(order),
+        paymentProvider: resolvePaymentProvider(order),
+      },
     ]),
   );
   const rentalPaymentContextById = new Map(
     (rentals as any[]).map((rental) => [
       String(rental._id),
-      { paymentStatus: resolveOrderPaymentStatus(rental), paymentProvider: resolvePaymentProvider(rental) },
+      {
+        paymentStatus: resolveOrderPaymentStatus(rental),
+        paymentProvider: resolvePaymentProvider(rental),
+      },
     ]),
   );
 
@@ -536,21 +624,31 @@ export async function GET(req: Request) {
     const hasTracking = Boolean(getTrackingNoFromShippingInfo(shipping));
 
     // 수거 방식(visit/self_ship) 정규화
-    const collectionMethod = normalizeCollection((shipping as any)?.collectionMethod ?? (doc as any)?.collectionMethod ?? 'self_ship');
+    const collectionMethod = normalizeCollection(
+      (shipping as any)?.collectionMethod ??
+        (doc as any)?.collectionMethod ??
+        "self_ship",
+    );
 
     // 입고 필요 여부 판단
     // - rentalId 연결: 매장 라켓 기반 → 고객 입고 불필요
     // - orderId 연결 + 해당 주문에 racket 포함: 매장 라켓(구매) 기반 → 고객 입고 불필요
     // - 그 외(주문에 라켓 없음 / 스트링만 구매+서비스 등): 고객 라켓 기반 → 입고 필요
     const orderIdStr = doc.orderId ? String(doc.orderId) : null;
-    const inboundRequired = doc.rentalId ? false : orderIdStr && orderHasRacketById.get(orderIdStr) ? false : true;
-    const needsInboundTracking = inboundRequired && collectionMethod === 'self_ship';
+    const inboundRequired = doc.rentalId
+      ? false
+      : orderIdStr && orderHasRacketById.get(orderIdStr)
+        ? false
+        : true;
+    const needsInboundTracking =
+      inboundRequired && collectionMethod === "self_ship";
 
     const rawCancelStatus = doc?.cancelRequest?.status ?? null;
     let cancelReasonSummary: string | null = null;
     const reasonCode = doc?.cancelRequest?.reasonCode;
     const reasonText = doc?.cancelRequest?.reasonText;
-    if (reasonCode) cancelReasonSummary = reasonCode + (reasonText ? ` (${reasonText})` : '');
+    if (reasonCode)
+      cancelReasonSummary = reasonCode + (reasonText ? ` (${reasonText})` : "");
     else if (reasonText) cancelReasonSummary = reasonText;
 
     const createdAt = toISO(doc.appliedAt ?? doc.createdAt);
@@ -560,18 +658,26 @@ export async function GET(req: Request) {
       : doc.rentalId
         ? rentalPaymentContextById.get(String(doc.rentalId))
         : undefined;
-    const paymentContext = resolveStringingPaymentContext(doc, linkedPaymentContext);
+    const paymentContext = resolveStringingPaymentContext(
+      doc,
+      linkedPaymentContext,
+    );
 
     const app: ActivityApplicationSummary = {
       id: String(doc._id),
       createdAt,
       updatedAt,
-      status: doc.status ?? '접수',
+      status: doc.status ?? "접수",
       racketType: summarizeRacketType(details),
       orderId: doc.orderId ? String(doc.orderId) : null,
       rentalId: doc.rentalId ? String(doc.rentalId) : null,
       hasTracking,
-      userConfirmedAt: doc.userConfirmedAt instanceof Date ? doc.userConfirmedAt.toISOString() : typeof doc.userConfirmedAt === 'string' ? doc.userConfirmedAt : null,
+      userConfirmedAt:
+        doc.userConfirmedAt instanceof Date
+          ? doc.userConfirmedAt.toISOString()
+          : typeof doc.userConfirmedAt === "string"
+            ? doc.userConfirmedAt
+            : null,
       cancelStatus: rawCancelStatus,
       cancelReasonSummary,
       inboundRequired,
@@ -611,38 +717,59 @@ export async function GET(req: Request) {
     const items = Array.isArray(o.items) ? o.items : [];
     const first = items[0] ?? null;
     const status = normalizeMypageTodoStatus(o?.status);
-    const isConfirmed = Boolean(o?.userConfirmedAt) || status === '구매확정';
+    const isConfirmed = Boolean(o?.userConfirmedAt) || status === "구매확정";
     const reviewTargetProductIds = orderReviewProductIdsById.get(orderId) ?? [];
-    const reviewedProductIds = reviewedProductIdsByOrderId.get(orderId) ?? new Set<string>();
-    const reviewPendingProductIds = reviewTargetProductIds.filter((productId) => !reviewedProductIds.has(productId));
+    const reviewedProductIds =
+      reviewedProductIdsByOrderId.get(orderId) ?? new Set<string>();
+    const reviewPendingProductIds = reviewTargetProductIds.filter(
+      (productId) => !reviewedProductIds.has(productId),
+    );
     const reviewPendingCount = isConfirmed ? reviewPendingProductIds.length : 0;
     const hasPendingReview = reviewPendingCount > 0;
-    const reviewAllDone = isConfirmed && reviewTargetProductIds.length > 0 && reviewPendingCount === 0;
-    const reviewNextTargetProductId = hasPendingReview ? (reviewPendingProductIds[0] ?? null) : null;
+    const reviewAllDone =
+      isConfirmed &&
+      reviewTargetProductIds.length > 0 &&
+      reviewPendingCount === 0;
+    const reviewNextTargetProductId = hasPendingReview
+      ? (reviewPendingProductIds[0] ?? null)
+      : null;
 
     const linkedApps = appByOrderId.get(orderId) ?? [];
     const linked = pickPrimaryLinkedApplication(linkedApps);
-    const hasRacketItem = items.some((item: any) => item?.kind === 'racket' || item?.kind === 'used_racket');
-    const hasStringItem = items.some((item: any) => item?.kind === 'string');
-    const hasProductItem = items.some((item: any) => !['racket', 'used_racket', 'string'].includes(String(item?.kind ?? '')));
+    const hasRacketItem = items.some(
+      (item: any) => item?.kind === "racket" || item?.kind === "used_racket",
+    );
+    const hasStringItem = items.some((item: any) => item?.kind === "string");
+    const hasProductItem = items.some(
+      (item: any) =>
+        !["racket", "used_racket", "string"].includes(String(item?.kind ?? "")),
+    );
 
     const rawCancelStatus = o?.cancelRequest?.status ?? null;
     let cancelReasonSummary: string | null = null;
     const reasonCode = o?.cancelRequest?.reasonCode;
     const reasonText = o?.cancelRequest?.reasonText;
-    if (reasonCode) cancelReasonSummary = reasonCode + (reasonText ? ` (${reasonText})` : '');
+    if (reasonCode)
+      cancelReasonSummary = reasonCode + (reasonText ? ` (${reasonText})` : "");
     else if (reasonText) cancelReasonSummary = reasonText;
 
     const withStringService = Boolean(o?.shippingInfo?.withStringService);
     const createdAt = toISO(o.createdAt ?? new ObjectId(o._id).getTimestamp());
-    const updatedAt = toISO(o.updatedAt ?? o.createdAt ?? new ObjectId(o._id).getTimestamp());
-    const sortAt = isoMax(updatedAt, createdAt, linked?.updatedAt, linked?.createdAt);
+    const updatedAt = toISO(
+      o.updatedAt ?? o.createdAt ?? new ObjectId(o._id).getTimestamp(),
+    );
+    const sortAt = isoMax(
+      updatedAt,
+      createdAt,
+      linked?.updatedAt,
+      linked?.createdAt,
+    );
 
     groups.push({
       key: `order:${orderId}`,
-      kind: 'order',
+      kind: "order",
       sortAt,
-      flowType: linkedApps.length > 0 ? 'order_plus_stringing' : 'order_only',
+      flowType: linkedApps.length > 0 ? "order_plus_stringing" : "order_only",
       flowLabel: getOrderFlowLabel({
         hasRacketItem,
         hasStringItem,
@@ -650,27 +777,32 @@ export async function GET(req: Request) {
         linkedApplicationCount: linkedApps.length,
       }),
       detailTarget: {
-        type: 'order',
+        type: "order",
         id: orderId,
       },
       order: {
         id: orderId,
         createdAt,
         updatedAt,
-        status: o.status ?? '',
-        userConfirmedAt: o.userConfirmedAt instanceof Date ? o.userConfirmedAt.toISOString() : typeof o.userConfirmedAt === 'string' ? o.userConfirmedAt : null,
+        status: o.status ?? "",
+        userConfirmedAt:
+          o.userConfirmedAt instanceof Date
+            ? o.userConfirmedAt.toISOString()
+            : typeof o.userConfirmedAt === "string"
+              ? o.userConfirmedAt
+              : null,
         paymentStatus: resolveOrderPaymentStatus(o),
         paymentProvider:
-          typeof o?.paymentInfo?.provider === 'string'
+          typeof o?.paymentInfo?.provider === "string"
             ? o.paymentInfo.provider
             : null,
         paymentMethod:
-          typeof o?.paymentInfo?.method === 'string'
+          typeof o?.paymentInfo?.method === "string"
             ? o.paymentInfo.method
             : null,
         shippingMethod: resolveOrderShippingMethod(o?.shippingInfo),
         totalPrice: calcOrderTotal(o),
-        firstItemName: first?.name ?? '(상품명 없음)',
+        firstItemName: first?.name ?? "(상품명 없음)",
         itemsCount: items.length,
         withStringService,
         stringingApplicationIds: linkedApps.map((app) => app.id),
@@ -697,28 +829,39 @@ export async function GET(req: Request) {
     const linked = pickPrimaryLinkedApplication(linkedApps);
 
     const createdAt = toISO(r.createdAt ?? new ObjectId(r._id).getTimestamp());
-    const updatedAt = toISO(r.updatedAt ?? r.createdAt ?? new ObjectId(r._id).getTimestamp());
-    const sortAt = isoMax(updatedAt, createdAt, linked?.updatedAt, linked?.createdAt);
+    const updatedAt = toISO(
+      r.updatedAt ?? r.createdAt ?? new ObjectId(r._id).getTimestamp(),
+    );
+    const sortAt = isoMax(
+      updatedAt,
+      createdAt,
+      linked?.updatedAt,
+      linked?.createdAt,
+    );
 
-    const withStringService = Boolean(r?.stringing?.requested) || Boolean(r?.stringingApplicationId);
-    const outboundTracking = typeof r?.shipping?.outbound?.trackingNumber === 'string' ? r.shipping.outbound.trackingNumber.trim() : '';
+    const withStringService =
+      Boolean(r?.stringing?.requested) || Boolean(r?.stringingApplicationId);
+    const outboundTracking =
+      typeof r?.shipping?.outbound?.trackingNumber === "string"
+        ? r.shipping.outbound.trackingNumber.trim()
+        : "";
 
     groups.push({
       key: `rental:${rentalId}`,
-      kind: 'rental',
+      kind: "rental",
       sortAt,
-      flowType: linkedApps.length > 0 ? 'rental_plus_stringing' : 'rental_only',
-      flowLabel: linkedApps.length > 0 ? '라켓 대여 + 교체서비스' : '라켓 대여',
+      flowType: linkedApps.length > 0 ? "rental_plus_stringing" : "rental_only",
+      flowLabel: linkedApps.length > 0 ? "라켓 대여 + 교체서비스" : "라켓 대여",
       detailTarget: {
-        type: 'rental',
+        type: "rental",
         id: rentalId,
       },
       rental: {
         id: rentalId,
         createdAt,
         updatedAt,
-        status: r.status ?? '',
-        shippingMethod: String(r?.shipping?.shippingMethod ?? ''),
+        status: r.status ?? "",
+        shippingMethod: String(r?.shipping?.shippingMethod ?? ""),
         brand: r.brand,
         model: r.model,
         days: r.days,
@@ -742,45 +885,65 @@ export async function GET(req: Request) {
   for (const doc of standaloneApps as any[]) {
     const details = doc.stringDetails ?? {};
     const shipping = doc.shippingInfo ?? {};
-    const trackingNo = String((shipping as any)?.trackingNo ?? shipping?.trackingNumber ?? '').trim();
+    const trackingNo = String(
+      (shipping as any)?.trackingNo ?? shipping?.trackingNumber ?? "",
+    ).trim();
     const hasTracking = Boolean(getTrackingNoFromShippingInfo(shipping));
 
     // 단독 신청서는 기본적으로 "고객 라켓 입고"가 필요
-    const collectionMethod = normalizeCollection((shipping as any)?.collectionMethod ?? (doc as any)?.collectionMethod ?? 'self_ship');
+    const collectionMethod = normalizeCollection(
+      (shipping as any)?.collectionMethod ??
+        (doc as any)?.collectionMethod ??
+        "self_ship",
+    );
     const inboundRequired = true;
-    const needsInboundTracking = inboundRequired && collectionMethod === 'self_ship';
+    const needsInboundTracking =
+      inboundRequired && collectionMethod === "self_ship";
 
     const rawCancelStatus = doc?.cancelRequest?.status ?? null;
     let cancelReasonSummary: string | null = null;
     const reasonCode = doc?.cancelRequest?.reasonCode;
     const reasonText = doc?.cancelRequest?.reasonText;
-    if (reasonCode) cancelReasonSummary = reasonCode + (reasonText ? ` (${reasonText})` : '');
+    if (reasonCode)
+      cancelReasonSummary = reasonCode + (reasonText ? ` (${reasonText})` : "");
     else if (reasonText) cancelReasonSummary = reasonText;
 
-    const createdAt = toISO(doc.appliedAt ?? doc.createdAt ?? new ObjectId(doc._id).getTimestamp());
-    const updatedAt = toISO(doc.updatedAt ?? doc.appliedAt ?? doc.createdAt ?? new ObjectId(doc._id).getTimestamp());
+    const createdAt = toISO(
+      doc.appliedAt ?? doc.createdAt ?? new ObjectId(doc._id).getTimestamp(),
+    );
+    const updatedAt = toISO(
+      doc.updatedAt ??
+        doc.appliedAt ??
+        doc.createdAt ??
+        new ObjectId(doc._id).getTimestamp(),
+    );
     const sortAt = isoMax(updatedAt, createdAt);
     const paymentContext = resolveStringingPaymentContext(doc);
     groups.push({
       key: `application:${String(doc._id)}`,
-      kind: 'application',
+      kind: "application",
       sortAt,
-      flowType: 'application_only',
-      flowLabel: '교체서비스 단독 신청',
+      flowType: "application_only",
+      flowLabel: "교체서비스 단독 신청",
       detailTarget: {
-        type: 'application',
+        type: "application",
         id: String(doc._id),
       },
       application: {
         id: String(doc._id),
         createdAt,
         updatedAt,
-        status: doc.status ?? '접수',
+        status: doc.status ?? "접수",
         racketType: summarizeRacketType(details),
         orderId: doc.orderId ? String(doc.orderId) : null,
         rentalId: doc.rentalId ? String(doc.rentalId) : null,
         hasTracking,
-        userConfirmedAt: doc.userConfirmedAt instanceof Date ? doc.userConfirmedAt.toISOString() : typeof doc.userConfirmedAt === 'string' ? doc.userConfirmedAt : null,
+        userConfirmedAt:
+          doc.userConfirmedAt instanceof Date
+            ? doc.userConfirmedAt.toISOString()
+            : typeof doc.userConfirmedAt === "string"
+              ? doc.userConfirmedAt
+              : null,
         cancelStatus: rawCancelStatus,
         cancelReasonSummary,
         inboundRequired,
@@ -795,15 +958,18 @@ export async function GET(req: Request) {
 
   // 7) scope 필터 + 정렬 + 페이지 슬라이스
   const scopedGroups = groups.filter((group) => {
-    if (scope === 'all') return true;
-    if (scope === 'order') return group.kind === 'order';
-    if (scope === 'rental') return group.kind === 'rental';
-    if (scope === 'application') return group.kind === 'application' || Boolean(group.application);
+    if (scope === "all") return true;
+    if (scope === "order") return group.kind === "order";
+    if (scope === "rental") return group.kind === "rental";
+    if (scope === "application")
+      return group.kind === "application" || Boolean(group.application);
 
-    if (scope === 'todo') {
-      const applicationNeedsAction = group.kind === 'application' && isApplicationTodoActionable(group.application);
+    if (scope === "todo") {
+      const applicationNeedsAction =
+        group.kind === "application" &&
+        isApplicationTodoActionable(group.application);
       const orderNeedsAction =
-        group.kind === 'order' &&
+        group.kind === "order" &&
         isOrderTodoActionable({
           status: group.order?.status,
           userConfirmedAt: group.order?.userConfirmedAt,
@@ -812,7 +978,7 @@ export async function GET(req: Request) {
           primaryApplication: group.application,
         });
       const rentalNeedsAction =
-        group.kind === 'rental' &&
+        group.kind === "rental" &&
         isRentalTodoActionable({
           linkedApplications: group.rental?.applicationSummaries,
           primaryApplication: group.application,
@@ -826,7 +992,9 @@ export async function GET(req: Request) {
     return true;
   });
 
-  scopedGroups.sort((a, b) => new Date(b.sortAt).getTime() - new Date(a.sortAt).getTime());
+  scopedGroups.sort(
+    (a, b) => new Date(b.sortAt).getTime() - new Date(a.sortAt).getTime(),
+  );
   const paged = scopedGroups.slice(skip, skip + pageSize);
 
   return NextResponse.json({

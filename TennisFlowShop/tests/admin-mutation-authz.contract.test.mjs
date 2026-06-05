@@ -81,7 +81,7 @@ test("관리자 변경성 API는 비로그인/일반유저/admin 권한 계약(4
       !hasExplicitAdminRoleGuard
     ) {
       assert.ok(
-          route.src.includes("verifyAdminCsrf(") ||
+        route.src.includes("verifyAdminCsrf(") ||
           route.src.includes("proxyToLegacyAdminRoute(") ||
           route.src.includes("req.headers.get('origin')") ||
           route.src.includes('req.headers.get("origin")'),
@@ -89,7 +89,8 @@ test("관리자 변경성 API는 비로그인/일반유저/admin 권한 계약(4
       );
     }
 
-    const returnsDelegatedHandlerResponse = /return\s+handle[A-Za-z0-9_]*\(/.test(route.src);
+    const returnsDelegatedHandlerResponse =
+      /return\s+handle[A-Za-z0-9_]*\(/.test(route.src);
 
     if (!isDelegatingRoute) {
       assert.ok(

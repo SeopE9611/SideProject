@@ -101,7 +101,9 @@ const rentalHistoryActionLabels: Record<string, string> = {
   "cancel-withdrawn": "취소 철회",
 };
 
-function getRentalHistoryActorLabel(actor?: { role?: string; id?: string } | null) {
+function getRentalHistoryActorLabel(
+  actor?: { role?: string; id?: string } | null,
+) {
   if (!actor?.role) return "이력에 처리자 정보 없음";
   if (actor.role === "admin") return "관리자";
   if (actor.role === "user") return "고객";
@@ -159,9 +161,8 @@ export default function AdminRentalDetailClient() {
   const [busyAction, setBusyAction] = useState<RentalPendingAction | null>(
     null,
   );
-  const [pendingAction, setPendingAction] = useState<RentalPendingAction | null>(
-    null,
-  );
+  const [pendingAction, setPendingAction] =
+    useState<RentalPendingAction | null>(null);
 
   const isBusy = busyAction !== null;
   // 무통장 결제완료 처리: created → paid 전이
@@ -350,42 +351,44 @@ export default function AdminRentalDetailClient() {
               eventMeta: { rentalId: id, currentStatus: data?.status },
             }
           : pendingAction === "out"
-      ? {
-          title: isVisitPickup
-            ? "방문 수령 처리할까요?"
-            : "대여 시작 처리할까요?",
-          description: isVisitPickup
-            ? "방문 수령 확인 후 상태가 대여중(out)으로 변경됩니다."
-            : "대여 상태가 대여중(out)으로 변경됩니다.",
-          confirmText: isVisitPickup ? "방문 수령 처리" : "대여 시작",
-          eventKey: "admin-rental-detail-out-confirm",
-          eventMeta: { rentalId: id, currentStatus: data?.status },
-        }
-      : pendingAction === "return"
-        ? {
-            title: "반납 처리할까요?",
-            description: "대여 상태가 반납완료(returned)로 변경됩니다.",
-            confirmText: "반납 처리",
-            eventKey: "admin-rental-detail-return-confirm",
-            eventMeta: { rentalId: id, currentStatus: data?.status },
-          }
-        : pendingAction === "refundMark"
-          ? {
-              title: "보증금 환불 처리할까요?",
-              description: "반납 상태와 라켓 상태를 확인한 뒤 보증금 환불 처리를 진행합니다. 처리 후 운영 이력에 남으므로 환불 계좌/결제 수단과 실제 환불 여부를 함께 확인해주세요.",
-              confirmText: "환불 처리",
-              eventKey: "admin-rental-detail-refund-mark-confirm",
-              eventMeta: { rentalId: id, currentStatus: data?.status },
-            }
-          : pendingAction === "refundClear"
             ? {
-                title: "보증금 환불 처리를 해제할까요?",
-                description: "환불 완료 기록을 해제합니다. 이미 실제 환불이 진행되지 않았는지와 환불 이력 정합성을 먼저 확인해주세요.",
-                confirmText: "환불 해제",
-                eventKey: "admin-rental-detail-refund-clear-confirm",
+                title: isVisitPickup
+                  ? "방문 수령 처리할까요?"
+                  : "대여 시작 처리할까요?",
+                description: isVisitPickup
+                  ? "방문 수령 확인 후 상태가 대여중(out)으로 변경됩니다."
+                  : "대여 상태가 대여중(out)으로 변경됩니다.",
+                confirmText: isVisitPickup ? "방문 수령 처리" : "대여 시작",
+                eventKey: "admin-rental-detail-out-confirm",
                 eventMeta: { rentalId: id, currentStatus: data?.status },
               }
-            : null;
+            : pendingAction === "return"
+              ? {
+                  title: "반납 처리할까요?",
+                  description: "대여 상태가 반납완료(returned)로 변경됩니다.",
+                  confirmText: "반납 처리",
+                  eventKey: "admin-rental-detail-return-confirm",
+                  eventMeta: { rentalId: id, currentStatus: data?.status },
+                }
+              : pendingAction === "refundMark"
+                ? {
+                    title: "보증금 환불 처리할까요?",
+                    description:
+                      "반납 상태와 라켓 상태를 확인한 뒤 보증금 환불 처리를 진행합니다. 처리 후 운영 이력에 남으므로 환불 계좌/결제 수단과 실제 환불 여부를 함께 확인해주세요.",
+                    confirmText: "환불 처리",
+                    eventKey: "admin-rental-detail-refund-mark-confirm",
+                    eventMeta: { rentalId: id, currentStatus: data?.status },
+                  }
+                : pendingAction === "refundClear"
+                  ? {
+                      title: "보증금 환불 처리를 해제할까요?",
+                      description:
+                        "환불 완료 기록을 해제합니다. 이미 실제 환불이 진행되지 않았는지와 환불 이력 정합성을 먼저 확인해주세요.",
+                      confirmText: "환불 해제",
+                      eventKey: "admin-rental-detail-refund-clear-confirm",
+                      eventMeta: { rentalId: id, currentStatus: data?.status },
+                    }
+                  : null;
 
   const getPendingActionSeverity = (
     action: RentalPendingAction | null,
@@ -493,7 +496,6 @@ export default function AdminRentalDetailClient() {
         </div>
       );
     }
-
   }
 
   const Outbound = data?.shipping?.outbound;
@@ -531,7 +533,9 @@ export default function AdminRentalDetailClient() {
     (derivePaymentStatus(data) === "paid" ? "결제완료" : "결제대기");
   const paymentSource = data?.paymentStatusSource ?? "derived";
   const isNicePayment =
-    String(data?.paymentProvider ?? "").trim().toLowerCase() === "nicepay";
+    String(data?.paymentProvider ?? "")
+      .trim()
+      .toLowerCase() === "nicepay";
   const stringingName = data?.stringing?.name
     ? String(data.stringing.name)
     : null;
@@ -574,7 +578,8 @@ export default function AdminRentalDetailClient() {
   const isBeforeOut = lowerStatus === "pending" || lowerStatus === "paid";
   const needsReturnCheck =
     lowerStatus === "out" &&
-    (Boolean(data?.rentalEndDate) || Boolean(data?.shipping?.inbound?.trackingNumber));
+    (Boolean(data?.rentalEndDate) ||
+      Boolean(data?.shipping?.inbound?.trackingNumber));
   const needsDepositRefund =
     lowerStatus === "returned" && data?.depositRefunded !== true;
   const nextActionGuide: AdminNextActionGuide = hasCancelRequested
@@ -587,42 +592,54 @@ export default function AdminRentalDetailClient() {
       ? {
           tone: "warning",
           title: "결제 상태 확인 필요",
-          description: "입금/결제 반영 여부를 확인한 뒤 출고 여부를 판단하세요.",
+          description:
+            "입금/결제 반영 여부를 확인한 뒤 출고 여부를 판단하세요.",
         }
       : isBeforeOut
         ? {
             tone: "warning",
             title: "출고 처리 필요",
-            description: "결제 상태와 배송 정보를 확인한 뒤 출고 처리를 진행하세요.",
+            description:
+              "결제 상태와 배송 정보를 확인한 뒤 출고 처리를 진행하세요.",
             actionLabel: "출고 운송장 등록/수정",
-            actionHref: isVisitPickup ? undefined : `/admin/rentals/${id}/shipping-update`,
+            actionHref: isVisitPickup
+              ? undefined
+              : `/admin/rentals/${id}/shipping-update`,
           }
         : needsReturnCheck
           ? {
               tone: "info",
               title: "반납 확인 필요",
-              description: "반납 운송장과 라켓 상태를 확인한 뒤 반납 처리를 진행하세요.",
+              description:
+                "반납 운송장과 라켓 상태를 확인한 뒤 반납 처리를 진행하세요.",
             }
           : needsDepositRefund
             ? {
                 tone: "warning",
-              title: "보증금 환불 확인",
-              description: "반납 상태·라켓 상태·환불 계좌를 확인한 뒤 보증금 환불 처리 여부를 판단하세요.",
+                title: "보증금 환불 확인",
+                description:
+                  "반납 상태·라켓 상태·환불 계좌를 확인한 뒤 보증금 환불 처리 여부를 판단하세요.",
               }
             : linkedDocs.length > 0
               ? {
                   tone: "info",
                   title: "연결 신청서 확인",
-                  description: "연결 신청서 상태를 확인한 뒤 후속 처리를 진행하세요.",
+                  description:
+                    "연결 신청서 상태를 확인한 뒤 후속 처리를 진행하세요.",
                 }
               : {
                   tone: "success",
                   title: "추가 조치 필요 없음",
-                  description: "현재 기준으로 즉시 필요한 추가 조치는 없습니다.",
+                  description:
+                    "현재 기준으로 즉시 필요한 추가 조치는 없습니다.",
                 };
   const recommendedActions = [
     { label: "결제 정보 확인", href: "#admin-rental-payment", show: true },
-    { label: "출고/반납 운송장 확인", href: "#admin-rental-shipping", show: true },
+    {
+      label: "출고/반납 운송장 확인",
+      href: "#admin-rental-shipping",
+      show: true,
+    },
     { label: "반납 처리 확인", href: "#admin-rental-return", show: true },
     { label: "보증금 환불 확인", href: "#admin-rental-deposit", show: true },
     {
@@ -636,10 +653,13 @@ export default function AdminRentalDetailClient() {
   const latestProcessingHistory = data?.latestHistory ?? null;
 
   const latestProcessingAction = latestProcessingHistory?.action
-    ? rentalHistoryActionLabels[String(latestProcessingHistory.action)] ?? String(latestProcessingHistory.action)
+    ? (rentalHistoryActionLabels[String(latestProcessingHistory.action)] ??
+      String(latestProcessingHistory.action))
     : "기록 없음";
 
-  const latestProcessingActor = getRentalHistoryActorLabel(latestProcessingHistory?.actor);
+  const latestProcessingActor = getRentalHistoryActorLabel(
+    latestProcessingHistory?.actor,
+  );
 
   const latestProcessingDate = fmt(latestProcessingHistory?.at);
   const effectiveStockDeduction =
@@ -659,7 +679,9 @@ export default function AdminRentalDetailClient() {
           </div>
         ) : null}
         <div className="mx-auto w-full max-w-[1500px] space-y-6 lg:space-y-8">
-          <div className={cn("mb-6 p-5 lg:mb-8 lg:p-6", adminSurface.cardMuted)}>
+          <div
+            className={cn("mb-6 p-5 lg:mb-8 lg:p-6", adminSurface.cardMuted)}
+          >
             <div className="mb-5 flex flex-col gap-3 lg:mb-6 lg:gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center space-x-4">
                 <div className="bg-card rounded-full p-3 shadow-md">
@@ -771,45 +793,45 @@ export default function AdminRentalDetailClient() {
             {cancelInfo && (
               <div id="admin-rental-cancel">
                 <AdminCancelRequestCard
-                badgeLabel={cancelInfo.badgeLabel}
-                description={cancelInfo.description}
-                reasonSummary={cancelInfo.reasonSummary}
-                tone={cancelInfo.tone}
-              >
-                {/* 요청 상태일 때만 승인/거절 버튼 노출 */}
-                {cancelInfo.status === "requested" && (
-                  <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
-                    <Button
-                      size="sm"
-                      className="bg-primary hover:bg-primary/90 text-primary-foreground"
-                      disabled={isBusy}
-                      onClick={() => {
-                        if (isBusy) return;
-                        setPendingAction("approveCancel");
-                      }}
-                    >
-                      {busyAction === "approveCancel"
-                        ? "승인 처리중…"
-                        : "요청 승인"}
-                    </Button>
+                  badgeLabel={cancelInfo.badgeLabel}
+                  description={cancelInfo.description}
+                  reasonSummary={cancelInfo.reasonSummary}
+                  tone={cancelInfo.tone}
+                >
+                  {/* 요청 상태일 때만 승인/거절 버튼 노출 */}
+                  {cancelInfo.status === "requested" && (
+                    <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
+                      <Button
+                        size="sm"
+                        className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                        disabled={isBusy}
+                        onClick={() => {
+                          if (isBusy) return;
+                          setPendingAction("approveCancel");
+                        }}
+                      >
+                        {busyAction === "approveCancel"
+                          ? "승인 처리중…"
+                          : "요청 승인"}
+                      </Button>
 
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="border-border text-primary hover:bg-muted"
-                      disabled={isBusy}
-                      onClick={() => {
-                        if (isBusy) return;
-                        setPendingAction("rejectCancel");
-                      }}
-                    >
-                      {busyAction === "rejectCancel"
-                        ? "거절 처리중…"
-                        : "요청 거절"}
-                    </Button>
-                  </div>
-                )}
-              </AdminCancelRequestCard>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-border text-primary hover:bg-muted"
+                        disabled={isBusy}
+                        onClick={() => {
+                          if (isBusy) return;
+                          setPendingAction("rejectCancel");
+                        }}
+                      >
+                        {busyAction === "rejectCancel"
+                          ? "거절 처리중…"
+                          : "요청 거절"}
+                      </Button>
+                    </div>
+                  )}
+                </AdminCancelRequestCard>
               </div>
             )}
           </div>
@@ -840,11 +862,15 @@ export default function AdminRentalDetailClient() {
               </Card>
             </>
           )}
-          <Card className={cn("mb-6", getNextActionCardClass(nextActionGuide.tone))}>
+          <Card
+            className={cn("mb-6", getNextActionCardClass(nextActionGuide.tone))}
+          >
             <CardHeader className="pb-3">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <CardTitle className="text-base font-semibold">지금 처리할 일</CardTitle>
+                  <CardTitle className="text-base font-semibold">
+                    지금 처리할 일
+                  </CardTitle>
                   <CardDescription className="mt-1 text-sm text-foreground/75">
                     {nextActionGuide.title}
                   </CardDescription>
@@ -865,7 +891,9 @@ export default function AdminRentalDetailClient() {
                 {nextActionGuide.description}
               </p>
               <div className="rounded-lg border border-border/60 bg-background/70 p-3">
-                <p className="text-sm font-semibold text-foreground">권장 작업</p>
+                <p className="text-sm font-semibold text-foreground">
+                  권장 작업
+                </p>
                 <p className="mt-1 text-xs text-muted-foreground">
                   현재 상태에서 관리자가 먼저 확인하면 좋은 작업입니다.
                 </p>
@@ -891,38 +919,56 @@ export default function AdminRentalDetailClient() {
                 </div>
               </div>
               <div className="rounded-lg border border-border/60 bg-background/70 p-3">
-                <p className="text-sm font-semibold text-foreground">처리 정보</p>
+                <p className="text-sm font-semibold text-foreground">
+                  처리 정보
+                </p>
                 <div className="mt-2 grid gap-1.5 text-xs leading-relaxed text-muted-foreground sm:grid-cols-2">
                   <p>
                     <span className="font-medium text-foreground">담당자:</span>{" "}
                     미지정
                   </p>
                   <p>
-                    <span className="font-medium text-foreground">마지막 처리자:</span>{" "}
+                    <span className="font-medium text-foreground">
+                      마지막 처리자:
+                    </span>{" "}
                     {latestProcessingActor}
                   </p>
                   <p>
-                    <span className="font-medium text-foreground">마지막 처리:</span>{" "}
+                    <span className="font-medium text-foreground">
+                      마지막 처리:
+                    </span>{" "}
                     {latestProcessingAction}
                   </p>
                   <p>
-                    <span className="font-medium text-foreground">처리 시각:</span>{" "}
+                    <span className="font-medium text-foreground">
+                      처리 시각:
+                    </span>{" "}
                     {latestProcessingDate}
                   </p>
-                  {latestProcessingHistory?.from || latestProcessingHistory?.to ? (
+                  {latestProcessingHistory?.from ||
+                  latestProcessingHistory?.to ? (
                     <p className="sm:col-span-2">
-                      <span className="font-medium text-foreground">상태 변화:</span>{" "}
-                      {latestProcessingHistory?.from ?? "-"} → {latestProcessingHistory?.to ?? "-"}
+                      <span className="font-medium text-foreground">
+                        상태 변화:
+                      </span>{" "}
+                      {latestProcessingHistory?.from ?? "-"} →{" "}
+                      {latestProcessingHistory?.to ?? "-"}
                     </p>
                   ) : null}
                 </div>
               </div>
               <div className="rounded-lg border border-border/60 bg-background/70 p-3">
-                <p className="text-sm font-semibold text-foreground">재고 운영 정보</p>
+                <p className="text-sm font-semibold text-foreground">
+                  재고 운영 정보
+                </p>
                 <div className="mt-2 space-y-1.5 text-xs leading-relaxed text-muted-foreground">
                   <p>
-                    <span className="font-medium text-foreground">재고 차감 방식:</span>{" "}
-                    {isVariantStockMode ? "색상×게이지 조합 재고" : "기존 재고 방식"}
+                    <span className="font-medium text-foreground">
+                      재고 차감 방식:
+                    </span>{" "}
+                    {isVariantStockMode
+                      ? "색상×게이지 조합 재고"
+                      : "기존 재고 방식"}
                   </p>
                   <p>
                     {isVariantStockMode
@@ -930,7 +976,9 @@ export default function AdminRentalDetailClient() {
                       : "기존 색상/게이지 재고 기준으로 처리된 대여입니다."}
                   </p>
                   <p>
-                    <span className="font-medium text-foreground">조합 재고 복구:</span>{" "}
+                    <span className="font-medium text-foreground">
+                      조합 재고 복구:
+                    </span>{" "}
                     {effectiveStockRestore?.variantStockRestoredAt
                       ? "복구 완료"
                       : "복구 정보 없음"}
@@ -944,13 +992,16 @@ export default function AdminRentalDetailClient() {
                     </p>
                   ) : isVariantStockMode && isCanceledState ? (
                     <p className="text-muted-foreground/80">
-                      취소 처리 데이터에서 조합 재고 복구 시각이 확인되지 않았습니다.
+                      취소 처리 데이터에서 조합 재고 복구 시각이 확인되지
+                      않았습니다.
                     </p>
                   ) : null}
                 </div>
               </div>
               <div className="rounded-lg border border-border/60 bg-background/70 p-3">
-                <p className="text-sm font-semibold text-foreground">라켓 대여 처리 체크리스트</p>
+                <p className="text-sm font-semibold text-foreground">
+                  라켓 대여 처리 체크리스트
+                </p>
                 <ul className="mt-2 grid gap-1.5 text-xs leading-relaxed text-muted-foreground sm:grid-cols-2">
                   <li>□ 결제 상태 확인</li>
                   <li>□ 출고 운송장 또는 방문 수령 정보 확인</li>
@@ -1062,11 +1113,15 @@ export default function AdminRentalDetailClient() {
             </Card>
           )}
 
-          <Card id="admin-rental-return" className="border-0 shadow-xl ring-1 ring-ring bg-muted/30 overflow-hidden mb-8">
+          <Card
+            id="admin-rental-return"
+            className="border-0 shadow-xl ring-1 ring-ring bg-muted/30 overflow-hidden mb-8"
+          >
             <CardHeader className="bg-muted/30 border-b pb-3">
               <CardTitle>대여 상태 관리</CardTitle>
               <CardDescription>
-                대여 상태 변경 및 보증금 환불은 처리 후 이력에 남습니다. 반납/라켓 상태와 환불 정보를 확인한 뒤 진행하세요.
+                대여 상태 변경 및 보증금 환불은 처리 후 이력에 남습니다.
+                반납/라켓 상태와 환불 정보를 확인한 뒤 진행하세요.
               </CardDescription>
             </CardHeader>
             <CardFooter className="pt-4">
@@ -1242,7 +1297,10 @@ export default function AdminRentalDetailClient() {
               </CardContent>
             </Card>
 
-            <Card id="admin-rental-payment" className="border-0 shadow-xl ring-1 ring-ring bg-muted/30 overflow-hidden">
+            <Card
+              id="admin-rental-payment"
+              className="border-0 shadow-xl ring-1 ring-ring bg-muted/30 overflow-hidden"
+            >
               <CardHeader className="bg-muted/30 border-b pb-3">
                 <CardTitle className="flex items-center space-x-2">
                   <CreditCard className="h-5 w-5 text-primary" />
@@ -1288,9 +1346,7 @@ export default function AdminRentalDetailClient() {
                 <div className="space-y-4">
                   <div className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border/60">
                     <div>
-                      <p className="text-sm text-foreground/80">
-                        대여 수수료
-                      </p>
+                      <p className="text-sm text-foreground/80">대여 수수료</p>
                       <p className="font-semibold text-foreground">
                         {won(data.amount?.fee)}
                       </p>
@@ -1335,9 +1391,7 @@ export default function AdminRentalDetailClient() {
                   )}
                   <div className="flex items-center space-x-3 p-3 bg-muted/30 rounded-lg border border-border/50">
                     <div>
-                      <p className="text-sm text-foreground/80">
-                        총 결제 금액
-                      </p>
+                      <p className="text-sm text-foreground/80">총 결제 금액</p>
                       <p className="text-xl font-bold text-primary dark:text-foreground">
                         {won(data.amount?.total)}
                       </p>
@@ -1491,7 +1545,10 @@ export default function AdminRentalDetailClient() {
             </Card>
           </div>
 
-          <Card id="admin-rental-shipping" className="border-0 shadow-xl ring-1 ring-ring bg-muted/30 overflow-hidden">
+          <Card
+            id="admin-rental-shipping"
+            className="border-0 shadow-xl ring-1 ring-ring bg-muted/30 overflow-hidden"
+          >
             <CardHeader className="bg-muted/30 border-b pb-3">
               <CardTitle className="flex items-center gap-2">
                 <Truck className="h-5 w-5" />
@@ -1622,7 +1679,10 @@ export default function AdminRentalDetailClient() {
             </CardContent>
           </Card>
 
-          <Card id="admin-rental-deposit" className="border-0 shadow-xl ring-1 ring-ring bg-muted/30 overflow-hidden">
+          <Card
+            id="admin-rental-deposit"
+            className="border-0 shadow-xl ring-1 ring-ring bg-muted/30 overflow-hidden"
+          >
             <CardHeader className="bg-muted/30 border-b pb-3">
               <CardTitle className="flex items-center space-x-2">
                 <Calendar className="h-5 w-5 text-primary" />

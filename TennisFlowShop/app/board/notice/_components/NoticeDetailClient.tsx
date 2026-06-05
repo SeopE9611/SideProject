@@ -40,17 +40,23 @@ import useSWR from "swr";
 
 type NoticeDetailClientProps = { mode?: "notice" | "event" };
 
-export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClientProps) {
+export default function NoticeDetailClient({
+  mode = "notice",
+}: NoticeDetailClientProps) {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const searchParams = useSearchParams();
   const isEventMode = mode === "event";
   const listBasePath = isEventMode ? "/board/event" : "/board/notice";
   const otherDetailBasePath = isEventMode ? "/board/notice" : "/board/event";
-  const writeBasePath = isEventMode ? "/board/event/write" : "/board/notice/write";
+  const writeBasePath = isEventMode
+    ? "/board/event/write"
+    : "/board/notice/write";
   const sectionLabel = isEventMode ? "이벤트" : "공지사항";
   const pageTitle = isEventMode ? "고객센터 · 이벤트" : "고객센터 · 공지사항";
-  const pageDescription = isEventMode ? "할인, 프로모션, 행사 소식을 확인하세요." : "도깨비테니스 고객센터의 주요 안내와 공지사항을 확인하세요.";
+  const pageDescription = isEventMode
+    ? "할인, 프로모션, 행사 소식을 확인하세요."
+    : "도깨비테니스 고객센터의 주요 안내와 공지사항을 확인하세요.";
   type FetchError = Error & { status?: number; info?: unknown };
 
   function isRecord(v: unknown): v is Record<string, unknown> {
@@ -186,7 +192,14 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
 
   const onDelete = async () => {
     if (!notice?._id) return;
-    if (!confirm(isEventMode ? "정말 이 이벤트를 삭제하시겠습니까?" : "정말 이 공지를 삭제하시겠습니까?")) return;
+    if (
+      !confirm(
+        isEventMode
+          ? "정말 이 이벤트를 삭제하시겠습니까?"
+          : "정말 이 공지를 삭제하시겠습니까?",
+      )
+    )
+      return;
 
     const res = await communityFetch(`/api/boards/${notice._id}`, {
       method: "DELETE",
@@ -430,11 +443,19 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
                   {/* 오른쪽: 관리자 액션 */}
                   {isAdmin && (
                     <div className="grid w-full grid-cols-2 gap-2 sm:w-auto sm:grid-cols-1 sm:shrink-0">
-                      <Button variant="outline" onClick={onEdit} className="w-full">
+                      <Button
+                        variant="outline"
+                        onClick={onEdit}
+                        className="w-full"
+                      >
                         <Pencil className="h-4 w-4 mr-1" />
                         수정
                       </Button>
-                      <Button variant="destructive" onClick={onDelete} className="w-full">
+                      <Button
+                        variant="destructive"
+                        onClick={onDelete}
+                        className="w-full"
+                      >
                         <Trash2 className="h-4 w-4 mr-1" />
                         삭제
                       </Button>

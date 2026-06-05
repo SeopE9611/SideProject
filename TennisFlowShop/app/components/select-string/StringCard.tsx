@@ -73,9 +73,14 @@ export function StringCard({
   const stringId = String(product._id);
   const stringImage = product?.images?.[0] ?? product?.imageUrl;
   const hasVariantInventories =
-    Array.isArray(product?.variantInventories) && product.variantInventories.length > 0;
-  const variantRows = hasVariantInventories ? normalizeVariantRows(product) : [];
-  const colorRows = hasVariantInventories ? getVisibleColorRows(product) : normalizeColorRows(product);
+    Array.isArray(product?.variantInventories) &&
+    product.variantInventories.length > 0;
+  const variantRows = hasVariantInventories
+    ? normalizeVariantRows(product)
+    : [];
+  const colorRows = hasVariantInventories
+    ? getVisibleColorRows(product)
+    : normalizeColorRows(product);
   const hasColorRows = colorRows.length > 0;
 
   const variantsForSelectedColor = hasVariantInventories
@@ -99,29 +104,46 @@ export function StringCard({
     : undefined;
   const hideGaugeStock = product?.inventory?.hideGaugeStock === true;
   const manageStock = Boolean(product?.inventory?.manageStock);
-  const stock = typeof product?.inventory?.stock === "number" ? product.inventory.stock : undefined;
+  const stock =
+    typeof product?.inventory?.stock === "number"
+      ? product.inventory.stock
+      : undefined;
   const effectiveStock = hasVariantInventories
     ? selectedVariant?.stock
     : selectedGaugeRow
       ? selectedGaugeRow.stock
       : stock;
-  const lowStock = typeof product?.inventory?.lowStock === "number" ? product.inventory.lowStock : 5;
+  const lowStock =
+    typeof product?.inventory?.lowStock === "number"
+      ? product.inventory.lowStock
+      : 5;
 
-  const isGaugeSoldOut = selectedGaugeRow != null && (selectedGaugeRow.isSoldOut || selectedGaugeRow.stock <= 0);
-  const isGaugeShort = selectedGaugeRow != null && selectedGaugeRow.stock < workCount;
+  const isGaugeSoldOut =
+    selectedGaugeRow != null &&
+    (selectedGaugeRow.isSoldOut || selectedGaugeRow.stock <= 0);
+  const isGaugeShort =
+    selectedGaugeRow != null && selectedGaugeRow.stock < workCount;
   const isProductSoldOut = !hasSelectableStringStock(product);
-  const isSoldOut = isProductSoldOut || (hasGaugeRows
-    ? isGaugeSoldOut
-    : manageStock && typeof stock === "number" && stock <= 0);
+  const isSoldOut =
+    isProductSoldOut ||
+    (hasGaugeRows
+      ? isGaugeSoldOut
+      : manageStock && typeof stock === "number" && stock <= 0);
   const isShort = hasGaugeRows
     ? selectedGaugeRow != null && (effectiveStock ?? 0) < workCount
     : manageStock && typeof stock === "number" && stock < workCount;
-  const disabledByGauge = (hasVariantInventories || hasGaugeRows) && (!selectedGauge || isGaugeSoldOut || isGaugeShort);
+  const disabledByGauge =
+    (hasVariantInventories || hasGaugeRows) &&
+    (!selectedGauge || isGaugeSoldOut || isGaugeShort);
   const isColorSoldOutState = hasVariantInventories
-    ? !variantRows.some((row) => row.colorValue === selectedColor && isSellableVariant(row))
+    ? !variantRows.some(
+        (row) => row.colorValue === selectedColor && isSellableVariant(row),
+      )
     : selectedColorRow != null && isColorSoldOut(selectedColorRow);
-  const isColorShort = selectedColorRow != null && selectedColorRow.stock < workCount;
-  const disabledByColor = hasColorRows && (!selectedColor || isColorSoldOutState || isColorShort);
+  const isColorShort =
+    selectedColorRow != null && selectedColorRow.stock < workCount;
+  const disabledByColor =
+    hasColorRows && (!selectedColor || isColorSoldOutState || isColorShort);
   const canShowStockHint =
     manageStock &&
     typeof effectiveStock === "number" &&
@@ -129,7 +151,8 @@ export function StringCard({
     effectiveStock <= lowStock &&
     (!hasGaugeRows || (selectedGaugeRow != null && !hideGaugeStock));
 
-  const isDisabled = disabled || disabledByGauge || disabledByColor || isSoldOut || isShort;
+  const isDisabled =
+    disabled || disabledByGauge || disabledByColor || isSoldOut || isShort;
 
   return (
     <div
@@ -138,7 +161,7 @@ export function StringCard({
         isSelected
           ? "border-primary ring-2 ring-primary/20 shadow-lg"
           : "border-border hover:border-primary/40 hover:shadow-md",
-        isSoldOut && "opacity-60"
+        isSoldOut && "opacity-60",
       )}
     >
       {/* Selected indicator */}
@@ -207,14 +230,21 @@ export function StringCard({
                 const label = getColorLabel(row);
                 const soldOut = hasVariantInventories
                   ? !variantRows.some(
-                      (variant) => variant.colorValue === row.value && isSellableVariant(variant)
+                      (variant) =>
+                        variant.colorValue === row.value &&
+                        isSellableVariant(variant),
                     )
                   : isColorSoldOut(row);
                 const isColorSelected = selectedColor === row.value;
                 const colorImage =
                   row.image?.trim() ||
                   (hasVariantInventories
-                    ? variantRows.find((v) => v.colorValue === row.value && v.colorImage?.trim())?.colorImage?.trim()
+                    ? variantRows
+                        .find(
+                          (v) =>
+                            v.colorValue === row.value && v.colorImage?.trim(),
+                        )
+                        ?.colorImage?.trim()
                     : undefined);
 
                 return (
@@ -228,8 +258,13 @@ export function StringCard({
                       onColorChange(row.value);
                       // Auto-select first available gauge for new color
                       if (hasVariantInventories) {
-                        const nextVariants = getVariantsByColor(product, row.value);
-                        const firstSellable = nextVariants.find((v) => isSellableVariant(v));
+                        const nextVariants = getVariantsByColor(
+                          product,
+                          row.value,
+                        );
+                        const firstSellable = nextVariants.find((v) =>
+                          isSellableVariant(v),
+                        );
                         if (firstSellable) {
                           onGaugeChange(firstSellable.gaugeValue);
                         }
@@ -240,7 +275,7 @@ export function StringCard({
                       isColorSelected
                         ? "border-primary ring-2 ring-primary/30"
                         : "border-border hover:border-primary/50",
-                      soldOut && "cursor-not-allowed opacity-40"
+                      soldOut && "cursor-not-allowed opacity-40",
                     )}
                   >
                     {colorImage ? (
@@ -296,7 +331,11 @@ export function StringCard({
                       ? ""
                       : ` · 재고 ${row.stock}개`;
                   return (
-                    <SelectItem key={`${stringId}-gauge-${row.value}`} value={row.value} disabled={soldOut}>
+                    <SelectItem
+                      key={`${stringId}-gauge-${row.value}`}
+                      value={row.value}
+                      disabled={soldOut}
+                    >
                       {`${gaugeLabel}${stockSuffix}`}
                     </SelectItem>
                   );
@@ -314,9 +353,7 @@ export function StringCard({
             </p>
           )}
           {isShort && !isSoldOut && (
-            <p className="text-xs text-destructive">
-              구매 가능 수량 초과
-            </p>
+            <p className="text-xs text-destructive">구매 가능 수량 초과</p>
           )}
         </div>
 
@@ -329,7 +366,11 @@ export function StringCard({
           <span>{ctaLabel}</span>
           <ChevronRight className="h-4 w-4 shrink-0" />
         </Button>
-        <Button asChild variant="outline" className="mt-2 w-full justify-center gap-2">
+        <Button
+          asChild
+          variant="outline"
+          className="mt-2 w-full justify-center gap-2"
+        >
           <Link
             href={`/products/${product._id}`}
             target="_blank"

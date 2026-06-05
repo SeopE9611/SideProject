@@ -36,7 +36,11 @@ export default function NotFound() {
               홈으로 돌아가기
             </Link>
           </Button>
-          <Button variant="outline" className="flex-1 whitespace-nowrap" asChild>
+          <Button
+            variant="outline"
+            className="flex-1 whitespace-nowrap"
+            asChild
+          >
             <Link href="/board/qna/write">
               문의하기
               <ArrowRight className="ml-2 h-4 w-4" />

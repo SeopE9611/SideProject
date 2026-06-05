@@ -66,16 +66,14 @@ export async function PATCH(req: Request) {
       : (prevValue.smtpPassword ?? ""),
   };
 
-  await db
-    .collection<any>(SETTINGS_COLLECTION)
-    .updateOne(
-      { _id: DOC_ID },
-      {
-        $set: { value: toSave, updatedAt: new Date() },
-        $setOnInsert: { _id: DOC_ID },
-      },
-      { upsert: true },
-    );
+  await db.collection<any>(SETTINGS_COLLECTION).updateOne(
+    { _id: DOC_ID },
+    {
+      $set: { value: toSave, updatedAt: new Date() },
+      $setOnInsert: { _id: DOC_ID },
+    },
+    { upsert: true },
+  );
 
   await appendAdminAudit(
     db,

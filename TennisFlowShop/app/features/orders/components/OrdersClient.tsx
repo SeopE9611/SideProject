@@ -90,13 +90,17 @@ export default function OrdersClient() {
     selectedColorLabel?: string | null;
     selectedColor?: string | null;
   }) {
-    return String(value?.selectedColorLabel ?? value?.selectedColor ?? "").trim();
+    return String(
+      value?.selectedColorLabel ?? value?.selectedColor ?? "",
+    ).trim();
   }
 
-  function getMetaSelectedColorLabel(meta?: {
-    selectedColorLabel?: string | null;
-    selectedColor?: string | null;
-  } | null) {
+  function getMetaSelectedColorLabel(
+    meta?: {
+      selectedColorLabel?: string | null;
+      selectedColor?: string | null;
+    } | null,
+  ) {
     return String(meta?.selectedColorLabel ?? meta?.selectedColor ?? "").trim();
   }
 
@@ -593,7 +597,8 @@ export default function OrdersClient() {
             <div className="space-y-1">
               <CardTitle className="text-base">업무 가이드</CardTitle>
               <CardDescription className="text-sm leading-relaxed break-keep">
-                주문 목록을 보기 전에 우선순위를 빠르게 확인하고, 상세 처리는 각 주문 상세 화면에서 진행하세요.
+                주문 목록을 보기 전에 우선순위를 빠르게 확인하고, 상세 처리는 각
+                주문 상세 화면에서 진행하세요.
               </CardDescription>
             </div>
             <Link
@@ -621,13 +626,15 @@ export default function OrdersClient() {
             <div className="rounded-md border border-border/70 bg-card px-3 py-2.5">
               <p className="text-sm font-medium">취소/환불 요청</p>
               <p className="mt-1 text-sm leading-relaxed text-muted-foreground break-keep">
-                요청 상태와 환불 계좌 확인 여부를 함께 보고 승인 대기 건을 처리하세요.
+                요청 상태와 환불 계좌 확인 여부를 함께 보고 승인 대기 건을
+                처리하세요.
               </p>
             </div>
             <div className="rounded-md border border-border/70 bg-card px-3 py-2.5">
               <p className="text-sm font-medium">교체서비스 포함 주문 확인</p>
               <p className="mt-1 text-sm leading-relaxed text-muted-foreground break-keep">
-                주문·신청서 통합 흐름을 함께 확인해 누락 없는 작업 순서를 맞추세요.
+                주문·신청서 통합 흐름을 함께 확인해 누락 없는 작업 순서를
+                맞추세요.
               </p>
             </div>
           </div>
@@ -696,7 +703,6 @@ export default function OrdersClient() {
                 필터 초기화
               </Button>
             </div>
-
           </div>
         </CardContent>
       </Card>
@@ -760,32 +766,47 @@ export default function OrdersClient() {
                 <div className="mt-2 rounded-lg border border-border/60 bg-muted/20 p-3 text-xs leading-5 text-muted-foreground">
                   <ul className="space-y-1">
                     <li>
-                      <strong className="font-medium text-foreground">주문:</strong>{" "}
+                      <strong className="font-medium text-foreground">
+                        주문:
+                      </strong>{" "}
                       상품 구매, 스트링 구매, 라켓 구매 등 결제 주문입니다.
                     </li>
                     <li>
-                      <strong className="font-medium text-foreground">신청서:</strong>{" "}
+                      <strong className="font-medium text-foreground">
+                        신청서:
+                      </strong>{" "}
                       교체서비스 작업 정보를 관리하는 신청 문서입니다.
                     </li>
                     <li>
-                      <strong className="font-medium text-foreground">통합:</strong>{" "}
+                      <strong className="font-medium text-foreground">
+                        통합:
+                      </strong>{" "}
                       주문과 교체서비스 신청이 연결된 고객 흐름입니다.
                     </li>
                     <li>
-                      <strong className="font-medium text-foreground">단독:</strong>{" "}
+                      <strong className="font-medium text-foreground">
+                        단독:
+                      </strong>{" "}
                       주문 또는 신청서가 단독으로 접수된 항목입니다.
                     </li>
                     <li>
-                      <strong className="font-medium text-foreground">같은 색 테두리:</strong>{" "}
+                      <strong className="font-medium text-foreground">
+                        같은 색 테두리:
+                      </strong>{" "}
                       같은 고객 흐름으로 연결된 주문·신청입니다.
                     </li>
                     <li>
-                      <strong className="font-medium text-foreground">신청서에서 관리:</strong>{" "}
+                      <strong className="font-medium text-foreground">
+                        신청서에서 관리:
+                      </strong>{" "}
                       배송/운송장 정보가 신청서 상세에서 관리되는 항목입니다.
                     </li>
                     <li>
-                      <strong className="font-medium text-foreground">대여 주문:</strong>{" "}
-                      라켓 대여 관련 업무는 “라켓 대여 처리” 화면에서 관리합니다.
+                      <strong className="font-medium text-foreground">
+                        대여 주문:
+                      </strong>{" "}
+                      라켓 대여 관련 업무는 “라켓 대여 처리” 화면에서
+                      관리합니다.
                     </li>
                   </ul>
                 </div>
@@ -795,12 +816,16 @@ export default function OrdersClient() {
         </CardHeader>
         <CardContent className="relative min-h-[420px] overflow-x-auto scrollbar-hidden pr-2">
           <Table className="min-w-[1040px] table-fixed border-separate text-xs [border-spacing-block:0.4rem] [border-spacing-inline:0]">
-            <TableHeader className={cn("sticky top-0", adminSurface.tableHeader)}>
+            <TableHeader
+              className={cn("sticky top-0", adminSurface.tableHeader)}
+            >
               <TableRow>
                 <TableHead className={cn(thClasses, "w-[150px]")}>
                   주문 ID
                 </TableHead>
-                <TableHead className={cn(thClasses, "w-[190px] text-center")}>고객</TableHead>
+                <TableHead className={cn(thClasses, "w-[190px] text-center")}>
+                  고객
+                </TableHead>
                 <TableHead className={cn(thClasses, "w-36")}>
                   <div className="flex items-center justify-center gap-2">
                     <span
@@ -987,7 +1012,10 @@ export default function OrdersClient() {
                           <TooltipProvider delayDuration={10}>
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <div className="flex w-full max-w-[150px] cursor-pointer flex-col items-start gap-1" title={order.id}>
+                                <div
+                                  className="flex w-full max-w-[150px] cursor-pointer flex-col items-start gap-1"
+                                  title={order.id}
+                                >
                                   <div className="flex items-center gap-1 w-full min-w-0 justify-start">
                                     {/* 취소요청 상태일 때만 아이콘 노출 */}
                                     {order.cancelStatus === "requested" && (
@@ -1129,9 +1157,8 @@ export default function OrdersClient() {
                                       const gauge = String(
                                         meta?.selectedGauge ?? "",
                                       ).trim();
-                                      const color = getMetaSelectedColorLabel(
-                                        meta,
-                                      );
+                                      const color =
+                                        getMetaSelectedColorLabel(meta);
                                       if (!gauge && !color) return null;
                                       return (
                                         <p className="mt-1 text-sm text-foreground/75">
@@ -1177,8 +1204,8 @@ export default function OrdersClient() {
                                         )}
                                         {(() => {
                                           const gauge = String(
-                                            (linkedApplication as any)
-                                              ?.meta?.selectedGauge ?? "",
+                                            (linkedApplication as any)?.meta
+                                              ?.selectedGauge ?? "",
                                           ).trim();
                                           const color =
                                             getMetaSelectedColorLabel(
@@ -1255,7 +1282,10 @@ export default function OrdersClient() {
                                 </span>
                               )}
                             </span>
-                            <span className="block max-w-full truncate text-sm text-foreground/75" title={order.customer.email}>
+                            <span
+                              className="block max-w-full truncate text-sm text-foreground/75"
+                              title={order.customer.email}
+                            >
                               {order.customer.email}
                             </span>
                           </div>
@@ -1416,7 +1446,12 @@ export default function OrdersClient() {
                           </Badge>
                         </TableCell>
                         {/* 금액 셀 */}
-                        <TableCell className={cn(tdClasses, "whitespace-nowrap text-right tabular-nums")}>
+                        <TableCell
+                          className={cn(
+                            tdClasses,
+                            "whitespace-nowrap text-right tabular-nums",
+                          )}
+                        >
                           {formatCurrency(order.total)}
                         </TableCell>
                         {/* 작업 메뉴 셀 */}
@@ -1431,9 +1466,15 @@ export default function OrdersClient() {
                                 <MoreHorizontal className="h-3.5 w-3.5" />
                               </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="min-w-max">
+                            <DropdownMenuContent
+                              align="end"
+                              className="min-w-max"
+                            >
                               <DropdownMenuLabel>작업</DropdownMenuLabel>
-                              <DropdownMenuItem asChild className="whitespace-nowrap">
+                              <DropdownMenuItem
+                                asChild
+                                className="whitespace-nowrap"
+                              >
                                 <Link
                                   href={
                                     order.__type === "stringing_application"

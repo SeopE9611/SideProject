@@ -20,9 +20,8 @@ export function UserNavMobile({ setOpen, unreadCount }: UserNavMobileProps) {
   // 헤더(상단 공통)에서 이미 가져온 값과 중복 호출이 됩니다.
   // 따라서 상위에서 unreadCount를 내려준 경우에는 재호출을 완전히 건너뜁니다.
   const shouldPollUnread = unreadCount == null;
-  const { count: polledUnreadCount, status: unreadStatus } = useUnreadMessageCount(
-    shouldPollUnread && !loading && !!user,
-  );
+  const { count: polledUnreadCount, status: unreadStatus } =
+    useUnreadMessageCount(shouldPollUnread && !loading && !!user);
   // 상위 unreadCount가 있으면 그 값을 단일 소스로 사용하고,
   // 없을 때만(호환 목적) 기존 훅 결과를 사용합니다.
   // 이렇게 하면 데스크톱/모바일이 같은 unread 데이터 소스를 공유할 수 있습니다.

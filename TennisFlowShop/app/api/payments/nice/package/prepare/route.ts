@@ -4,19 +4,29 @@ import clientPromise from "@/lib/mongodb";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { getPackagePricingInfo } from "@/app/features/packages/api/db";
 import { isNicePaymentsEnabled } from "@/lib/payments/provider-flags";
-import { buildNiceOrderName, createNiceOrderId } from "@/lib/payments/nice/server";
-import { ensureTossPaymentSessionIndexes, tossPaymentSessions } from "@/lib/payments/toss/session";
+import {
+  buildNiceOrderName,
+  createNiceOrderId,
+} from "@/lib/payments/nice/server";
+import {
+  ensureTossPaymentSessionIndexes,
+  tossPaymentSessions,
+} from "@/lib/payments/toss/session";
 import { findBlockingPackageOrderByUserId } from "@/lib/package-order-ownership";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const onlyDigits = (v: string) => String(v ?? "").replace(/\D/g, "");
 
 function resolveClientId() {
-  return String(process.env.NICEPAY_CLIENT_KEY ?? process.env.NICEPAY_CLIENT_ID ?? "").trim();
+  return String(
+    process.env.NICEPAY_CLIENT_KEY ?? process.env.NICEPAY_CLIENT_ID ?? "",
+  ).trim();
 }
 
 function resolveAppUrl() {
-  return String(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000").trim().replace(/\/+$/, "");
+  return String(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000")
+    .trim()
+    .replace(/\/+$/, "");
 }
 
 export const runtime = "nodejs";
@@ -52,7 +62,10 @@ export async function POST(req: Request) {
     const payload = token ? verifyAccessToken(token) : null;
     const userId = payload?.sub ?? null;
     if (!userId) {
-      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json(
+        { success: false, error: "Unauthorized" },
+        { status: 401 },
+      );
     }
 
     const body = await req.json().catch(() => ({}));
@@ -65,17 +78,26 @@ export async function POST(req: Request) {
     const serviceRequest = String(serviceInfo?.serviceRequest ?? "").trim();
 
     if (!packageId || !name || !email || !phone) {
-      return NextResponse.json({ success: false, error: "필수 요청 데이터가 누락되었습니다." }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: "필수 요청 데이터가 누락되었습니다." },
+        { status: 400 },
+      );
     }
 
     if (name.length < 2 || !EMAIL_RE.test(email) || !/^010\d{8}$/.test(phone)) {
-      return NextResponse.json({ success: false, error: "입력 정보 형식을 확인해주세요." }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: "입력 정보 형식을 확인해주세요." },
+        { status: 400 },
+      );
     }
 
     const { configById } = await getPackagePricingInfo();
     const config = configById[packageId];
     if (!config || !config.isActive || Number(config.price) <= 0) {
-      return NextResponse.json({ success: false, error: "구매 가능한 패키지가 아닙니다." }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: "구매 가능한 패키지가 아닙니다." },
+        { status: 400 },
+      );
     }
 
     const blocking = await findBlockingPackageOrderByUserId(String(userId));
@@ -148,7 +170,11 @@ export async function POST(req: Request) {
     });
   } catch (error: any) {
     return NextResponse.json(
-      { success: false, error: error?.message || "패키지 Nice 결제 준비 중 오류가 발생했습니다." },
+      {
+        success: false,
+        error:
+          error?.message || "패키지 Nice 결제 준비 중 오류가 발생했습니다.",
+      },
       { status: 500 },
     );
   }

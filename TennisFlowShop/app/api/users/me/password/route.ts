@@ -48,19 +48,17 @@ export async function PATCH(req: Request) {
   const client = await clientPromise; // MongoDB 클라이언트 연결
   const db = client.db(); // DB 선택
 
-  const user = await db
-    .collection("users")
-    .findOne(
-      { email: session.user.email },
-      {
-        projection: {
-          _id: 1,
-          email: 1,
-          hashedPassword: 1,
-          passwordMustChange: 1,
-        },
+  const user = await db.collection("users").findOne(
+    { email: session.user.email },
+    {
+      projection: {
+        _id: 1,
+        email: 1,
+        hashedPassword: 1,
+        passwordMustChange: 1,
       },
-    );
+    },
+  );
   if (!user) {
     return Response.json(
       { message: "사용자 정보를 찾을 수 없습니다." },

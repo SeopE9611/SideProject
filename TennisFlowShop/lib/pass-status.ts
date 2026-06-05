@@ -16,7 +16,10 @@ export function isCountEnded(remainingCount?: number | null) {
   return Number(remainingCount ?? 0) <= 0;
 }
 
-export function isTimeExpired(expiresAt?: Date | string | null, now = new Date()) {
+export function isTimeExpired(
+  expiresAt?: Date | string | null,
+  now = new Date(),
+) {
   if (!expiresAt) return false;
   const expiry = expiresAt instanceof Date ? expiresAt : new Date(expiresAt);
   if (Number.isNaN(expiry.getTime())) return false;

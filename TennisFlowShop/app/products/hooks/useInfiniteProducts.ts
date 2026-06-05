@@ -134,7 +134,8 @@ export function useInfiniteProducts(filters: Filters) {
   // 실제 데이터를 가져오는 함수
   const fetchPage = useCallback(
     async (targetPage: number, replace = false) => {
-      const requestId = targetPage === 1 || replace ? ++requestSeq.current : requestSeq.current;
+      const requestId =
+        targetPage === 1 || replace ? ++requestSeq.current : requestSeq.current;
       try {
         if (targetPage === 1) setIsLoadingInitial(true);
         else setIsFetchingMore(true);

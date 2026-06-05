@@ -11,7 +11,10 @@ const routeSource = fs.readFileSync(routePath, "utf8");
 const routeSourceNormalized = routeSource.replace(/"/g, "'");
 
 test("community PATCH는 If-Unmodified-Since / clientSeenDate 조건을 해석한다", () => {
-  assert.match(routeSourceNormalized, /req\.headers\.get\('if-unmodified-since'\)/);
+  assert.match(
+    routeSourceNormalized,
+    /req\.headers\.get\('if-unmodified-since'\)/,
+  );
   assert.match(routeSource, /clientSeenDateBody/);
   assert.match(routeSource, /ifUnmodifiedSinceBody/);
 });

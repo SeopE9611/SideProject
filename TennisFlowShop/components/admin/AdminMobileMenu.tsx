@@ -24,7 +24,11 @@ import type { SidebarBadgeKey } from "@/components/admin/sidebar-navigation";
 
 type BadgeCounts = Partial<Record<SidebarBadgeKey, number>>;
 
-export default function AdminMobileMenu({ badgeCounts = {} }: { badgeCounts?: BadgeCounts }) {
+export default function AdminMobileMenu({
+  badgeCounts = {},
+}: {
+  badgeCounts?: BadgeCounts;
+}) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -79,7 +83,10 @@ export default function AdminMobileMenu({ badgeCounts = {} }: { badgeCounts?: Ba
                         <Icon className="h-4 w-4 shrink-0" />
                         <span className="truncate">{item.title}</span>
                         {!!count && (
-                          <Badge variant="secondary" className="ml-auto px-1.5 py-0 text-[10px]">
+                          <Badge
+                            variant="secondary"
+                            className="ml-auto px-1.5 py-0 text-[10px]"
+                          >
                             {count > 99 ? "99+" : count}
                           </Badge>
                         )}
@@ -117,7 +124,10 @@ export default function AdminMobileMenu({ badgeCounts = {} }: { badgeCounts?: Ba
                           <Icon className="h-4 w-4 shrink-0" />
                           <span>{item.title}</span>
                           {!!count && (
-                            <Badge variant="secondary" className="ml-auto px-1.5 py-0 text-[10px]">
+                            <Badge
+                              variant="secondary"
+                              className="ml-auto px-1.5 py-0 text-[10px]"
+                            >
                               {count > 99 ? "99+" : count}
                             </Badge>
                           )}

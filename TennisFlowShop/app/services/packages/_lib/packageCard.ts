@@ -30,9 +30,15 @@ const DEFAULT_VARIANTS: Record<number, PackageVariant> = {
   100: "primary",
 };
 
-const FEATURE_FALLBACK: Record<number, string[]> = Object.fromEntries(DEFAULT_PACKAGE_CONFIGS.map((config) => [config.sessions, config.features]));
+const FEATURE_FALLBACK: Record<number, string[]> = Object.fromEntries(
+  DEFAULT_PACKAGE_CONFIGS.map((config) => [config.sessions, config.features]),
+);
 
-export function getPackagePricingMeta(pkg: { sessions: number; price: number; originalPrice?: number }) {
+export function getPackagePricingMeta(pkg: {
+  sessions: number;
+  price: number;
+  originalPrice?: number;
+}) {
   const toSafeNumber = (value: unknown) => {
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : 0;
@@ -41,9 +47,16 @@ export function getPackagePricingMeta(pkg: { sessions: number; price: number; or
   const price = toSafeNumber(pkg.price);
   const originalPrice = toSafeNumber(pkg.originalPrice);
   const perSession = sessions > 0 ? Math.round(price / sessions) : 0;
-  const originalPerSession = sessions > 0 && originalPrice > 0 ? Math.round(originalPrice / sessions) : 0;
-  const rawDiscountRate = originalPrice > price && originalPrice > 0 ? (1 - price / originalPrice) * 100 : 0;
-  const discountRate = rawDiscountRate > 0 ? Number(rawDiscountRate.toFixed(1)) : 0;
+  const originalPerSession =
+    sessions > 0 && originalPrice > 0
+      ? Math.round(originalPrice / sessions)
+      : 0;
+  const rawDiscountRate =
+    originalPrice > price && originalPrice > 0
+      ? (1 - price / originalPrice) * 100
+      : 0;
+  const discountRate =
+    rawDiscountRate > 0 ? Number(rawDiscountRate.toFixed(1)) : 0;
   const savingAmount = originalPrice > price ? originalPrice - price : 0;
 
   return { perSession, originalPerSession, discountRate, savingAmount };
@@ -68,8 +81,17 @@ export const formatValidityPeriod = (value: unknown): string => {
   return `${months}개월 ${daysRemainder}일`;
 };
 
-const calculateDiscount = (price: number, originalPrice?: number): number | undefined => {
-  if (!originalPrice || originalPrice <= 0 || price <= 0 || price >= originalPrice) return undefined;
+const calculateDiscount = (
+  price: number,
+  originalPrice?: number,
+): number | undefined => {
+  if (
+    !originalPrice ||
+    originalPrice <= 0 ||
+    price <= 0 ||
+    price >= originalPrice
+  )
+    return undefined;
   return Number(((1 - price / originalPrice) * 100).toFixed(1));
 };
 
@@ -89,11 +111,25 @@ export const normalizePackageCardData = (input: {
 }): PackageCardData => {
   const validityPeriod = formatValidityPeriod(input.validityPeriod);
   const { discountRate } = getPackagePricingMeta(input);
-  const discount = input.discount ?? discountRate ?? calculateDiscount(input.price, input.originalPrice);
+  const discount =
+    input.discount ??
+    discountRate ??
+    calculateDiscount(input.price, input.originalPrice);
 
-  const normalizedBenefits = [validityPeriod !== "유효기간 설정 없음" ? `유효기간 ${validityPeriod}` : null, ...(input.benefits ?? [])].filter((item, index, arr): item is string => !!item && arr.indexOf(item) === index);
+  const normalizedBenefits = [
+    validityPeriod !== "유효기간 설정 없음"
+      ? `유효기간 ${validityPeriod}`
+      : null,
+    ...(input.benefits ?? []),
+  ].filter(
+    (item, index, arr): item is string => !!item && arr.indexOf(item) === index,
+  );
 
-  const features = (input.features && input.features.length > 0 ? input.features : (FEATURE_FALLBACK[input.sessions] ?? [])).slice(0, 5);
+  const features = (
+    input.features && input.features.length > 0
+      ? input.features
+      : (FEATURE_FALLBACK[input.sessions] ?? [])
+  ).slice(0, 5);
 
   return {
     id: input.id,
@@ -106,7 +142,10 @@ export const normalizePackageCardData = (input: {
     features,
     benefits: normalizedBenefits,
     variant: input.variant ?? DEFAULT_VARIANTS[input.sessions] ?? "primary",
-    description: input.description || DEFAULT_DESCRIPTIONS[input.sessions] || `${input.sessions}회 스트링 교체 패키지`,
+    description:
+      input.description ||
+      DEFAULT_DESCRIPTIONS[input.sessions] ||
+      `${input.sessions}회 스트링 교체 패키지`,
     validityPeriod,
   };
 };

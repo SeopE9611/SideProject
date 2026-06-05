@@ -70,15 +70,13 @@ export async function GET(
     }
 
     if (!rental && guestRentalId) {
-      rental = await db
-        .collection("rental_orders")
-        .findOne(
-          {
-            _id: rentalObjectId,
-            $or: [{ userId: { $exists: false } }, { userId: null }],
-          },
-          { projection: { _id: 1, userId: 1 } },
-        );
+      rental = await db.collection("rental_orders").findOne(
+        {
+          _id: rentalObjectId,
+          $or: [{ userId: { $exists: false } }, { userId: null }],
+        },
+        { projection: { _id: 1, userId: 1 } },
+      );
     }
 
     if (!rental) {

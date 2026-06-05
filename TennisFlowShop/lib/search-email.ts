@@ -6,7 +6,9 @@ export function normalizeEmailForSearch(value: unknown): string | null {
 }
 
 export function isLikelyEmailQuery(value: string): boolean {
-  const q = String(value ?? "").trim().toLowerCase();
+  const q = String(value ?? "")
+    .trim()
+    .toLowerCase();
   if (!q) return false;
   if (q.includes(" ") || q.includes("\t") || q.includes("\n")) return false;
 

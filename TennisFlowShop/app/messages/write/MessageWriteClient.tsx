@@ -79,7 +79,10 @@ export default function MessageWriteClient({
 
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-6">
-      <Card className="border-border bg-card shadow-sm" data-cy="message-write-card">
+      <Card
+        className="border-border bg-card shadow-sm"
+        data-cy="message-write-card"
+      >
         <CardHeader className="flex flex-row items-center justify-between border-b border-border/60 bg-secondary/70">
           <CardTitle className="text-lg">쪽지 보내기</CardTitle>
           <Button

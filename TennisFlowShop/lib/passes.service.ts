@@ -10,10 +10,7 @@
 import type { ClientSession, Db, ObjectId } from "mongodb";
 import { ObjectId as OID } from "mongodb";
 import type { ServicePass, ServicePassConsumption } from "@/lib/types/pass";
-import {
-  isCountEnded,
-  shouldRestoreActive,
-} from "@/lib/pass-status";
+import { isCountEnded, shouldRestoreActive } from "@/lib/pass-status";
 
 // 일수 더하기 유틸
 function addDays(date: Date, days: number) {
@@ -129,7 +126,9 @@ export async function consumePass(
   );
   const packageOrders = db.collection("packageOrders"); // ← 주문 컬렉션
   const now = new Date();
-  const sessionOptions = options.session ? { session: options.session } : undefined;
+  const sessionOptions = options.session
+    ? { session: options.session }
+    : undefined;
 
   // 1) 먼저 패스를 읽어서 연결된 orderId 확인
   const passDoc = await passes.findOne(
@@ -158,14 +157,17 @@ export async function consumePass(
   }
 
   // 3) 멱등 소비 로그 먼저 기록(유니크 인덱스 권장: {passId, applicationId})
-  await consumptions.insertOne({
-    _id: new OID(),
-    passId,
-    applicationId,
-    usedAt: now,
-    count,
-    createdAt: now,
-  }, sessionOptions);
+  await consumptions.insertOne(
+    {
+      _id: new OID(),
+      passId,
+      applicationId,
+      usedAt: now,
+      count,
+      createdAt: now,
+    },
+    sessionOptions,
+  );
 
   // 4) 차감 기록(redemptions) 원소 타입 맞춰 준비
   const redemption: ServicePass["redemptions"][number] = {
@@ -222,7 +224,9 @@ export async function revertConsumption(
   const consumptions = db.collection<ServicePassConsumption>(
     "service_pass_consumptions",
   );
-  const sessionOptions = options.session ? { session: options.session } : undefined;
+  const sessionOptions = options.session
+    ? { session: options.session }
+    : undefined;
 
   // 아직 되돌리지 않은 소비 로그 조회
   const log = await consumptions.findOne(
@@ -272,7 +276,15 @@ export async function revertConsumption(
   const now = new Date();
   const updatedPass = await passes.findOne(
     { _id: passId },
-    { projection: { remainingCount: 1, status: 1, expiresAt: 1, orderId: 1 } as any, ...sessionOptions },
+    {
+      projection: {
+        remainingCount: 1,
+        status: 1,
+        expiresAt: 1,
+        orderId: 1,
+      } as any,
+      ...sessionOptions,
+    },
   );
   if (!updatedPass) return;
 

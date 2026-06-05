@@ -546,7 +546,6 @@ export default function RacketFinderClient() {
     return list;
   }, [applied, hasSearched, applyNow]);
 
-
   const renderFilterControls = () => (
     <div className="space-y-6">
       {/* 검색어 */}
@@ -784,11 +783,16 @@ export default function RacketFinderClient() {
           />
           <div className="flex-1">
             <div
-              className={cn("text-sm font-medium", draft.strict && "text-primary")}
+              className={cn(
+                "text-sm font-medium",
+                draft.strict && "text-primary",
+              )}
             >
               정확도 모드
             </div>
-            <div className="text-xs text-muted-foreground">스펙 누락 상품 제외</div>
+            <div className="text-xs text-muted-foreground">
+              스펙 누락 상품 제외
+            </div>
           </div>
           {draft.strict && <Sparkles className="h-4 w-4 text-primary" />}
         </label>
@@ -845,12 +849,19 @@ export default function RacketFinderClient() {
             <div className="grid grid-cols-2 gap-2 bp-sm:grid-cols-[auto_auto_1fr] bp-sm:items-center">
               <Sheet open={filterSheetOpen} onOpenChange={setFilterSheetOpen}>
                 <SheetTrigger asChild>
-                  <Button type="button" variant="outline" className="h-10 justify-center whitespace-nowrap">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-10 justify-center whitespace-nowrap"
+                  >
                     <Filter className="mr-2 h-4 w-4" />
                     필터
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="bottom" className="flex max-h-[88dvh] flex-col gap-0 overflow-hidden rounded-t-3xl p-0">
+                <SheetContent
+                  side="bottom"
+                  className="flex max-h-[88dvh] flex-col gap-0 overflow-hidden rounded-t-3xl p-0"
+                >
                   <SheetHeader className="border-b border-border px-4 pb-3 pt-4 text-left">
                     <SheetTitle className="flex items-center gap-2 text-base">
                       <Filter className="h-4 w-4 text-primary" />
@@ -879,7 +890,9 @@ export default function RacketFinderClient() {
                 <Select
                   value={applied.sort}
                   onValueChange={(v) => {
-                    const ok = SORT_OPTIONS.some((o) => o.value === (v as SortKey));
+                    const ok = SORT_OPTIONS.some(
+                      (o) => o.value === (v as SortKey),
+                    );
                     if (!ok) return;
                     applyNow({ ...applied, sort: v as SortKey });
                   }}
@@ -913,7 +926,8 @@ export default function RacketFinderClient() {
                           : `${(total ?? 0).toLocaleString()}개`}
                     </Badge>
                     <span className="whitespace-nowrap">
-                      페이지 {isLoading || hasDataError ? "-" : page} / {hasResolvedTotalPages ? totalPages : "-"}
+                      페이지 {isLoading || hasDataError ? "-" : page} /{" "}
+                      {hasResolvedTotalPages ? totalPages : "-"}
                     </span>
                   </>
                 ) : (

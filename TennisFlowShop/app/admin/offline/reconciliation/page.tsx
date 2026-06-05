@@ -17,11 +17,14 @@ export default function OfflineReconciliationPage() {
           icon={AlertTriangle}
           scope="범위: 조회/확인 상태/메모 관리"
           helperText="확인 완료 처리는 실제 데이터 복구를 의미하지 않습니다."
-          actions={(
+          actions={
             <Button asChild variant="outline">
-              <Link href="/admin/offline"><ArrowLeft className="h-4 w-4" />오프라인 관리로 돌아가기</Link>
+              <Link href="/admin/offline">
+                <ArrowLeft className="h-4 w-4" />
+                오프라인 관리로 돌아가기
+              </Link>
             </Button>
-          )}
+          }
         />
         <OfflineReconciliationClient />
       </div>

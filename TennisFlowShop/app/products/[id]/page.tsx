@@ -77,10 +77,16 @@ function ProductDetailLoadError({ id }: { id: string }) {
           잠시 후 다시 시도해 주세요. 문제가 계속되면 관리자에게 문의해 주세요.
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
-          <Link href={`/products/${id}`} className="inline-flex items-center rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground">
+          <Link
+            href={`/products/${id}`}
+            className="inline-flex items-center rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground"
+          >
             다시 시도
           </Link>
-          <Link href="/products" className="inline-flex items-center rounded-md border border-border px-3 py-2 text-sm font-medium">
+          <Link
+            href="/products"
+            className="inline-flex items-center rounded-md border border-border px-3 py-2 text-sm font-medium"
+          >
             스트링 목록으로 돌아가기
           </Link>
         </div>
@@ -105,22 +111,19 @@ export default async function ProductDetailPage({
   const productObjectId = new ObjectId(id);
   let db;
   try {
-    db = await withRetry(
-      async () => getDb(),
-      {
-        retries: 2,
-        delayMs: 150,
-        onError: (retryError, attempt, elapsedMs) => {
-          console.error("[products/[id]] product detail load failed", {
-            productId: id,
-            stage: "connect-db",
-            attempt,
-            elapsedMs,
-            error: normalizeErrorForLog(retryError),
-          });
-        },
+    db = await withRetry(async () => getDb(), {
+      retries: 2,
+      delayMs: 150,
+      onError: (retryError, attempt, elapsedMs) => {
+        console.error("[products/[id]] product detail load failed", {
+          productId: id,
+          stage: "connect-db",
+          attempt,
+          elapsedMs,
+          error: normalizeErrorForLog(retryError),
+        });
       },
-    );
+    });
   } catch (error) {
     console.error("[products/[id]] failed to connect database", {
       productId: id,
@@ -182,58 +185,58 @@ export default async function ProductDetailPage({
     reviews = await db
       .collection("reviews")
       .aggregate([
-      {
-        $match: {
-          productId: new ObjectId(id),
-          status: { $in: ["visible", "hidden"] },
-          isDeleted: { $ne: true },
+        {
+          $match: {
+            productId: new ObjectId(id),
+            status: { $in: ["visible", "hidden"] },
+            isDeleted: { $ne: true },
+          },
         },
-      },
-      { $sort: { createdAt: -1, _id: -1 } },
-      { $limit: 10 },
-      {
-        $project: {
-          _id: 1,
-          rating: 1,
-          createdAt: 1,
-          status: 1,
-          helpfulCount: 1,
-          userId: 1, // ownedByMe 계산용 (다음 스테이지에서 제거)
-          // 숨김이면 보안상 원본 차단(마스킹)
-          userName: {
-            $cond: [{ $eq: ["$status", "hidden"] }, null, "$userName"],
+        { $sort: { createdAt: -1, _id: -1 } },
+        { $limit: 10 },
+        {
+          $project: {
+            _id: 1,
+            rating: 1,
+            createdAt: 1,
+            status: 1,
+            helpfulCount: 1,
+            userId: 1, // ownedByMe 계산용 (다음 스테이지에서 제거)
+            // 숨김이면 보안상 원본 차단(마스킹)
+            userName: {
+              $cond: [{ $eq: ["$status", "hidden"] }, null, "$userName"],
+            },
+            content: {
+              $cond: [{ $eq: ["$status", "hidden"] }, null, "$content"],
+            },
+            photos: {
+              $cond: [
+                { $eq: ["$status", "hidden"] },
+                [],
+                { $ifNull: ["$photos", []] },
+              ],
+            },
+            masked: { $eq: ["$status", "hidden"] },
           },
-          content: {
-            $cond: [{ $eq: ["$status", "hidden"] }, null, "$content"],
-          },
-          photos: {
-            $cond: [
-              { $eq: ["$status", "hidden"] },
-              [],
-              { $ifNull: ["$photos", []] },
-            ],
-          },
-          masked: { $eq: ["$status", "hidden"] },
         },
-      },
-      ...(currentUserId
-        ? [{ $addFields: { ownedByMe: { $eq: ["$userId", currentUserId] } } }]
-        : [{ $addFields: { ownedByMe: false } }]),
-      { $project: { userId: 0 } }, // 노출 불가
+        ...(currentUserId
+          ? [{ $addFields: { ownedByMe: { $eq: ["$userId", currentUserId] } } }]
+          : [{ $addFields: { ownedByMe: false } }]),
+        { $project: { userId: 0 } }, // 노출 불가
       ])
       .toArray();
 
     agg = await db
       .collection("reviews")
       .aggregate([
-      {
-        $match: {
-          productId: new ObjectId(id),
-          status: "visible",
-          isDeleted: { $ne: true },
+        {
+          $match: {
+            productId: new ObjectId(id),
+            status: "visible",
+            isDeleted: { $ne: true },
+          },
         },
-      },
-      { $group: { _id: null, avg: { $avg: "$rating" }, count: { $sum: 1 } } },
+        { $group: { _id: null, avg: { $avg: "$rating" }, count: { $sum: 1 } } },
       ])
       .toArray();
   } catch (error) {

@@ -44,7 +44,9 @@ function buildCaseSensitivePrefixRegex(value) {
 }
 
 function isLikelyEmailQuery(value) {
-  const q = String(value ?? "").trim().toLowerCase();
+  const q = String(value ?? "")
+    .trim()
+    .toLowerCase();
   if (!q) return false;
   if (q.includes(" ") || q.includes("\t") || q.includes("\n")) return false;
   if (q.includes("@")) return /^[^\s@]+@[^\s@]*$/.test(q);
@@ -248,7 +250,9 @@ async function run() {
               ? [{ userId: { $in: rentalUserIdCandidates } }]
               : []),
             { "guest.email": q },
-            ...(qEmailPrefixRegex ? [{ "guest.email": qEmailPrefixRegex }] : []),
+            ...(qEmailPrefixRegex
+              ? [{ "guest.email": qEmailPrefixRegex }]
+              : []),
           ],
         }
       : {
@@ -299,13 +303,18 @@ async function run() {
       printSection(check.label);
       printQuery(`${check.collection}.find`, check.query);
 
-      let cursor = db.collection(check.collection).find(check.query).limit(fetchLimit);
+      let cursor = db
+        .collection(check.collection)
+        .find(check.query)
+        .limit(fetchLimit);
       if (check.sort) cursor = cursor.sort(check.sort);
 
       const explain = await cursor.explain("executionStats");
       const summary = summarizeExplain(explain);
 
-      console.log(`- winningStages: ${summary.winningStages.join(" -> ") || "(none)"}`);
+      console.log(
+        `- winningStages: ${summary.winningStages.join(" -> ") || "(none)"}`,
+      );
       console.log(`- indexUsed: ${summary.indexUsed ? "YES" : "NO"}`);
       if (summary.indexHints.length > 0) {
         for (const hint of summary.indexHints) {

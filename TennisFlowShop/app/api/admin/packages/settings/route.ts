@@ -122,13 +122,17 @@ export async function PUT(req: Request) {
     const beforeSettings = await loadPackageSettings();
     await savePackageSettings({ packageConfigs, generalSettings });
 
-    const beforeSummary = summarizePackageSettings(beforeSettings.packageConfigs);
+    const beforeSummary = summarizePackageSettings(
+      beforeSettings.packageConfigs,
+    );
     const afterSummary = summarizePackageSettings(packageConfigs);
     const beforeById = new Map(
       beforeSettings.packageConfigs.map((pkg) => [pkg.id, pkg]),
     );
     const afterById = new Map(packageConfigs.map((pkg) => [pkg.id, pkg]));
-    const addedCount = packageConfigs.filter((pkg) => !beforeById.has(pkg.id)).length;
+    const addedCount = packageConfigs.filter(
+      (pkg) => !beforeById.has(pkg.id),
+    ).length;
     const removedCount = beforeSettings.packageConfigs.filter(
       (pkg) => !afterById.has(pkg.id),
     ).length;

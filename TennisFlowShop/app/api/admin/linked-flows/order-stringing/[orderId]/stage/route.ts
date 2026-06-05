@@ -295,7 +295,8 @@ export async function PATCH(
       return NextResponse.json(
         {
           success: false,
-          message: "주문이 종료 상태이므로 연결 진행 단계를 변경할 수 없습니다.",
+          message:
+            "주문이 종료 상태이므로 연결 진행 단계를 변경할 수 없습니다.",
           orderStatus,
           blockedStatuses: LINKED_FLOW_AUTOMATION_BLOCKED_ORDER_STATUSES,
         },

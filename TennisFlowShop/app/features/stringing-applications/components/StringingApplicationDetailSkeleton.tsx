@@ -15,7 +15,8 @@ export default function StringingApplicationDetailSkeleton() {
           </div>
           <div className="flex gap-2">
             <Skeleton className="h-8 w-20 rounded-md" /> {/* 편집 모드 버튼 */}
-            <Skeleton className="h-8 w-20 rounded-md" /> {/* 목록으로 돌아가기 */}
+            <Skeleton className="h-8 w-20 rounded-md" />{" "}
+            {/* 목록으로 돌아가기 */}
           </div>
         </div>
 
@@ -27,14 +28,16 @@ export default function StringingApplicationDetailSkeleton() {
               <Skeleton className="h-4 w-1/6 rounded-md" /> {/* 날짜 */}
             </CardHeader>
             <CardContent className="pt-4">
-              <Skeleton className="h-8 w-full rounded-md" /> {/* Select + cancel */}
+              <Skeleton className="h-8 w-full rounded-md" />{" "}
+              {/* Select + cancel */}
             </CardContent>
           </Card>
 
           {/* 고객 정보 */}
           <Card className="md:col-span-2">
             <CardHeader className="pb-3">
-              <Skeleton className="h-6 w-32 rounded-md" /> {/* 고객 정보 타이틀 */}
+              <Skeleton className="h-6 w-32 rounded-md" />{" "}
+              {/* 고객 정보 타이틀 */}
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
               <Skeleton className="h-4 w-1/2 rounded-md" />
@@ -48,7 +51,8 @@ export default function StringingApplicationDetailSkeleton() {
           {/* 결제 정보 */}
           <Card>
             <CardHeader className="pb-3">
-              <Skeleton className="h-6 w-32 rounded-md" /> {/* 결제 정보 타이틀 */}
+              <Skeleton className="h-6 w-32 rounded-md" />{" "}
+              {/* 결제 정보 타이틀 */}
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
               <Skeleton className="h-4 w-1/2 rounded-md" />
@@ -60,7 +64,8 @@ export default function StringingApplicationDetailSkeleton() {
           {/* 신청 스트링 정보 */}
           <Card className="md:col-span-2 xl:col-span-3">
             <CardHeader className="pb-3">
-              <Skeleton className="h-6 w-40 rounded-md" /> {/* 스트링 정보 타이틀 */}
+              <Skeleton className="h-6 w-40 rounded-md" />{" "}
+              {/* 스트링 정보 타이틀 */}
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
               <Skeleton className="h-4 w-1/3 rounded-md" /> {/* 희망 일시 */}
@@ -72,10 +77,12 @@ export default function StringingApplicationDetailSkeleton() {
           {/* 요청사항 */}
           <Card className="md:col-span-2 xl:col-span-3">
             <CardHeader className="pb-3">
-              <Skeleton className="h-6 w-32 rounded-md" /> {/* 요청사항 타이틀 */}
+              <Skeleton className="h-6 w-32 rounded-md" />{" "}
+              {/* 요청사항 타이틀 */}
             </CardHeader>
             <CardContent>
-              <Skeleton className="h-4 w-full rounded-md" /> {/* 요청사항 내용 */}
+              <Skeleton className="h-4 w-full rounded-md" />{" "}
+              {/* 요청사항 내용 */}
             </CardContent>
           </Card>
 

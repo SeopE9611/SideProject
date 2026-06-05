@@ -62,21 +62,19 @@ async function getInitialForRacket(
         image: string | null;
       } = undefined;
   if (stringId && ObjectId.isValid(stringId)) {
-    const p = await db
-      .collection("products")
-      .findOne(
-        { _id: new ObjectId(stringId) },
-        {
-          projection: {
-            name: 1,
-            price: 1,
-            inventory: 1,
-            mountingFee: 1,
-            images: 1,
-            thumbnail: 1,
-          },
+    const p = await db.collection("products").findOne(
+      { _id: new ObjectId(stringId) },
+      {
+        projection: {
+          name: 1,
+          price: 1,
+          inventory: 1,
+          mountingFee: 1,
+          images: 1,
+          thumbnail: 1,
         },
-      );
+      },
+    );
     if (p) {
       const img =
         (typeof (p as any).thumbnail === "string" && (p as any).thumbnail) ||
@@ -119,7 +117,14 @@ export default async function Page({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ period?: string; stringId?: string; selectedGauge?: string; gauge?: string; selectedColor?: string; color?: string }>;
+  searchParams: Promise<{
+    period?: string;
+    stringId?: string;
+    selectedGauge?: string;
+    gauge?: string;
+    selectedColor?: string;
+    color?: string;
+  }>;
 }) {
   const [{ id }, s] = await Promise.all([params, searchParams]);
   const rawPeriod = Number((s?.period as string | undefined) ?? NaN);
@@ -159,5 +164,11 @@ export default async function Page({
   const data = await getInitialForRacket(id, period, stringId);
   if (!data) notFound();
 
-  return <RentalsCheckoutClient initial={data} selectedGauge={selectedGauge} selectedColor={selectedColor} />;
+  return (
+    <RentalsCheckoutClient
+      initial={data}
+      selectedGauge={selectedGauge}
+      selectedColor={selectedColor}
+    />
+  );
 }

@@ -9,8 +9,7 @@ const badgeVariants = cva(
     variants: {
       variant: {
         neutral: "border-border bg-card text-foreground dark:bg-card",
-        info:
-          "border-info/45 bg-info/10 text-info dark:border-info/55 dark:bg-info/18 dark:text-info",
+        info: "border-info/45 bg-info/10 text-info dark:border-info/55 dark:bg-info/18 dark:text-info",
         success:
           "border-success/45 bg-success/10 text-success dark:border-success/55 dark:bg-success/18 dark:text-success",
         warning:
@@ -19,8 +18,7 @@ const badgeVariants = cva(
           "border-destructive/45 bg-destructive/10 text-destructive dark:border-destructive/55 dark:bg-destructive/18 dark:text-destructive",
         brand:
           "border-primary/40 bg-primary/10 text-primary dark:border-primary/55 dark:bg-primary/18 dark:text-primary",
-        info_solid:
-          "border-transparent bg-info text-info-foreground shadow-sm",
+        info_solid: "border-transparent bg-info text-info-foreground shadow-sm",
         success_solid:
           "border-transparent bg-success text-success-foreground shadow-sm",
         warning_solid:

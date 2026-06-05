@@ -120,7 +120,9 @@ export default function ShippingFormClient({
                 <Skeleton className="h-10 w-full" />
               </div>
               <div className="space-y-2">
-                <p className="text-sm font-medium text-foreground">예상 수령일</p>
+                <p className="text-sm font-medium text-foreground">
+                  예상 수령일
+                </p>
                 <Skeleton className="h-10 w-full" />
               </div>
               <div className="space-y-2">
@@ -128,7 +130,9 @@ export default function ShippingFormClient({
                 <Skeleton className="h-10 w-full" />
               </div>
               <div className="space-y-2">
-                <p className="text-sm font-medium text-foreground">운송장 번호</p>
+                <p className="text-sm font-medium text-foreground">
+                  운송장 번호
+                </p>
                 <Skeleton className="h-10 w-full" />
               </div>
               <div className="pt-2">

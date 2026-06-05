@@ -33,8 +33,17 @@ export type CartItem = {
 interface CartState {
   items: CartItem[]; // 장바구니에 담긴 상품 목록
   addItem: (item: CartItem) => { success: boolean; message?: string };
-  removeItem: (id: string, selectedGauge?: string, selectedColor?: string) => void; // 장바구니에서 상품 제거
-  updateQuantity: (id: string, quantity: number, selectedGauge?: string, selectedColor?: string) => void; // 장바구니 상품 수량 수정
+  removeItem: (
+    id: string,
+    selectedGauge?: string,
+    selectedColor?: string,
+  ) => void; // 장바구니에서 상품 제거
+  updateQuantity: (
+    id: string,
+    quantity: number,
+    selectedGauge?: string,
+    selectedColor?: string,
+  ) => void; // 장바구니 상품 수량 수정
   clearCart: () => void; // 장바구니 전체 삭제
 }
 
@@ -51,8 +60,10 @@ const clampQuantity = (qty: number, maxStock: number) => {
   return Math.min(Math.max(1, next), maxStock);
 };
 
-
-const isSameCartLine = (a: Pick<CartItem, "id" | "kind" | "selectedGauge" | "selectedColor">, b: Pick<CartItem, "id" | "kind" | "selectedGauge" | "selectedColor">) =>
+const isSameCartLine = (
+  a: Pick<CartItem, "id" | "kind" | "selectedGauge" | "selectedColor">,
+  b: Pick<CartItem, "id" | "kind" | "selectedGauge" | "selectedColor">,
+) =>
   a.id === b.id &&
   (a.kind ?? "product") === (b.kind ?? "product") &&
   (a.selectedGauge ?? "") === (b.selectedGauge ?? "") &&
@@ -70,15 +81,16 @@ export const useCartStore = create<CartState>()(
         const exists = get().items.find((i) => isSameCartLine(i, item));
         if (exists) {
           const maxStock = getMaxStock(exists.stock);
-          const nextQty = clampQuantity(exists.quantity + item.quantity, maxStock);
+          const nextQty = clampQuantity(
+            exists.quantity + item.quantity,
+            maxStock,
+          );
           if (nextQty === exists.quantity) {
             return { success: false, message: "재고 한도까지 담겨 있습니다." };
           }
           set((state) => ({
             items: state.items.map((i) =>
-              isSameCartLine(i, item)
-                ? { ...i, quantity: nextQty }
-                : i,
+              isSameCartLine(i, item) ? { ...i, quantity: nextQty } : i,
             ),
           }));
           return { success: true };
@@ -105,22 +117,44 @@ export const useCartStore = create<CartState>()(
 
       // 특정 상품을 장바구니에서 제거
       // id가 일치하지 않는 상품만 남기고 나머지는 제거 (즉 해당 상품 삭제)
-      removeItem: (id: string, selectedGauge?: string, selectedColor?: string) =>
+      removeItem: (
+        id: string,
+        selectedGauge?: string,
+        selectedColor?: string,
+      ) =>
         set((state) => ({
           items: state.items.filter(
             (i) =>
-              !isSameCartLine(i, { id, kind: i.kind, selectedGauge, selectedColor }),
+              !isSameCartLine(i, {
+                id,
+                kind: i.kind,
+                selectedGauge,
+                selectedColor,
+              }),
           ),
         })),
 
       // 수량 변경 (ex: +/- 버튼 클릭시)
       // 해당 상품의 수량을 새 값으로 바꿔줌
-      updateQuantity: (id: string, quantity: number, selectedGauge?: string, selectedColor?: string) =>
+      updateQuantity: (
+        id: string,
+        quantity: number,
+        selectedGauge?: string,
+        selectedColor?: string,
+      ) =>
         set((state) => ({
           // 상태를 업데이트
           items: state.items
             .map((i) => {
-              if (!isSameCartLine(i, { id, kind: i.kind, selectedGauge, selectedColor })) return i;
+              if (
+                !isSameCartLine(i, {
+                  id,
+                  kind: i.kind,
+                  selectedGauge,
+                  selectedColor,
+                })
+              )
+                return i;
 
               const maxStock = getMaxStock(i.stock);
               const nextQty = clampQuantity(quantity, maxStock);

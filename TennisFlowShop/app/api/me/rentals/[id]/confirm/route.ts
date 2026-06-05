@@ -101,18 +101,16 @@ export async function POST(
       });
     }
 
-    await db
-      .collection("rental_orders")
-      .updateOne(
-        {
-          _id,
-          $or: [
-            { userConfirmedAt: { $exists: false } },
-            { userConfirmedAt: null },
-          ],
-        },
-        { $set: { userConfirmedAt: new Date() } },
-      );
+    await db.collection("rental_orders").updateOne(
+      {
+        _id,
+        $or: [
+          { userConfirmedAt: { $exists: false } },
+          { userConfirmedAt: null },
+        ],
+      },
+      { $set: { userConfirmedAt: new Date() } },
+    );
 
     const fee = Number(rental?.amount?.fee ?? 0);
     const earnedPoints = calcOrderEarnPoints(fee);

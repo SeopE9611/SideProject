@@ -13,11 +13,7 @@ export type RecommendLevel =
 
 export type ArmLoad = "high" | "medium" | "low";
 
-export type PlayFrequency =
-  | "monthly"
-  | "weekly"
-  | "biweekly_plus"
-  | "heavy";
+export type PlayFrequency = "monthly" | "weekly" | "biweekly_plus" | "heavy";
 
 export type BudgetPreference = "value" | "mid" | "premium";
 
@@ -69,7 +65,18 @@ export type RecommendableProduct = {
     durability?: number;
     comfort?: number;
   };
-  tags?: Partial<Record<"beginner" | "intermediate" | "advanced" | "baseline" | "serveVolley" | "allCourt" | "power", boolean>>;
+  tags?: Partial<
+    Record<
+      | "beginner"
+      | "intermediate"
+      | "advanced"
+      | "baseline"
+      | "serveVolley"
+      | "allCourt"
+      | "power",
+      boolean
+    >
+  >;
   inventory?: {
     stock?: number;
     status?: string;

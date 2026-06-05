@@ -145,9 +145,12 @@ export function useAdminSettings() {
     onSuccess((await res.json()) as SettingsApiResponse<T>);
   };
 
-  const readNicepayMeta = (meta: Record<string, unknown> | undefined): NicepayMeta => {
+  const readNicepayMeta = (
+    meta: Record<string, unknown> | undefined,
+  ): NicepayMeta => {
     const candidate = meta?.nicepay;
-    if (!candidate || typeof candidate !== "object") return DEFAULT_NICEPAY_META;
+    if (!candidate || typeof candidate !== "object")
+      return DEFAULT_NICEPAY_META;
     const raw = candidate as Record<string, unknown>;
     const mode = raw.mode;
     const safeMode: NicepayMode =

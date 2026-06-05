@@ -53,11 +53,16 @@ export async function GET(
 
     const { id } = await params;
     if (!ObjectId.isValid(id)) {
-      return NextResponse.json({ success: false, message: "BAD_ID" }, { status: 400 });
+      return NextResponse.json(
+        { success: false, message: "BAD_ID" },
+        { status: 400 },
+      );
     }
 
     const db = (await clientPromise).db();
-    const order = await db.collection("orders").findOne({ _id: new ObjectId(id) });
+    const order = await db
+      .collection("orders")
+      .findOne({ _id: new ObjectId(id) });
 
     if (!order) {
       return NextResponse.json(
@@ -79,8 +84,12 @@ export async function GET(
       }
     }
 
-    const courier = String(order?.shippingInfo?.invoice?.courier ?? "").trim().toLowerCase();
-    const trackingNumber = String(order?.shippingInfo?.invoice?.trackingNumber ?? "").trim();
+    const courier = String(order?.shippingInfo?.invoice?.courier ?? "")
+      .trim()
+      .toLowerCase();
+    const trackingNumber = String(
+      order?.shippingInfo?.invoice?.trackingNumber ?? "",
+    ).trim();
 
     if (!trackingNumber) {
       return NextResponse.json(
@@ -104,7 +113,10 @@ export async function GET(
     const clientSecret = process.env.DELIVERY_TRACKER_CLIENT_SECRET?.trim();
     if (!clientId || !clientSecret) {
       return NextResponse.json(
-        { success: false, message: "배송조회 서비스 설정이 완료되지 않았습니다." },
+        {
+          success: false,
+          message: "배송조회 서비스 설정이 완료되지 않았습니다.",
+        },
         { status: 503 },
       );
     }
@@ -139,7 +151,8 @@ export async function GET(
     return NextResponse.json(
       {
         success: false,
-        message: "배송조회 서비스 응답을 가져오지 못했습니다. 잠시 후 다시 시도해주세요.",
+        message:
+          "배송조회 서비스 응답을 가져오지 못했습니다. 잠시 후 다시 시도해주세요.",
       },
       { status: 503 },
     );

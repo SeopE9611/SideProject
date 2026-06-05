@@ -36,8 +36,12 @@ export async function GET() {
             id: blocking.pendingOrder._id.toString(),
             status: String(blocking.pendingOrder.status ?? ""),
             paymentStatus: String(blocking.pendingOrder.paymentStatus ?? ""),
-            packageTitle: String((blocking.pendingOrder.packageInfo as any)?.title ?? ""),
-            sessions: Number((blocking.pendingOrder.packageInfo as any)?.sessions ?? 0),
+            packageTitle: String(
+              (blocking.pendingOrder.packageInfo as any)?.title ?? "",
+            ),
+            sessions: Number(
+              (blocking.pendingOrder.packageInfo as any)?.sessions ?? 0,
+            ),
           },
         },
         { status: 200 },

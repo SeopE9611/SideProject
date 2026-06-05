@@ -18,10 +18,14 @@ export const metadata: Metadata = {
   title: "패키지 결제",
 };
 
-function resolveCheckoutAuthPayload(accessToken?: string, refreshToken?: string) {
+function resolveCheckoutAuthPayload(
+  accessToken?: string,
+  refreshToken?: string,
+) {
   // 1) 우선 accessToken을 사용한다.
   const accessPayload = accessToken ? verifyAccessToken(accessToken) : null;
-  if (accessPayload?.sub) return { payload: accessPayload, recoveredByRefresh: false };
+  if (accessPayload?.sub)
+    return { payload: accessPayload, recoveredByRefresh: false };
 
   // 2) accessToken이 만료/누락된 "타이밍 엇갈림" 구간에서는 refreshToken으로 1회 회복 기회를 준다.
   //    여기서 바로 LoginGate로 보내면 로그인 직후/만료 직후에 체감 흔들림이 커지기 때문이다.
@@ -64,7 +68,8 @@ export default async function Page({
   const subStr = String(payload.sub);
   if (!ObjectId.isValid(subStr)) {
     const next =
-      "/services/packages/checkout" + (sp?.package ? `?package=${sp.package}` : "");
+      "/services/packages/checkout" +
+      (sp?.package ? `?package=${sp.package}` : "");
     return <LoginGate next={next} />;
   }
   const db = await getDb();
@@ -83,7 +88,8 @@ export default async function Page({
   );
   if (!authUser || authUser.isDeleted || authUser.isSuspended) {
     const next =
-      "/services/packages/checkout" + (sp?.package ? `?package=${sp.package}` : "");
+      "/services/packages/checkout" +
+      (sp?.package ? `?package=${sp.package}` : "");
     return <LoginGate next={next} />;
   }
 
@@ -105,14 +111,16 @@ export default async function Page({
             <div className="text-sm text-muted-foreground rounded-lg bg-muted/40 p-3">
               {blocking.kind === "pending_order" ? (
                 <>
-                  현재 상태: {String(blocking.pendingOrder.paymentStatus ?? "-")} /{" "}
+                  현재 상태:{" "}
+                  {String(blocking.pendingOrder.paymentStatus ?? "-")} /{" "}
                   {String(blocking.pendingOrder.status ?? "-")}
-                  <br />기존 주문 상태를 확인한 뒤 다시 진행해주세요.
+                  <br />
+                  기존 주문 상태를 확인한 뒤 다시 진행해주세요.
                 </>
               ) : (
                 <>
-                  패키지 상태: {String(blocking.activePass.status ?? "-")} / 남은 횟수{" "}
-                  {Number(blocking.activePass.remainingCount ?? 0)}
+                  패키지 상태: {String(blocking.activePass.status ?? "-")} /
+                  남은 횟수 {Number(blocking.activePass.remainingCount ?? 0)}
                   <br />내 패키지 상태를 확인한 뒤 다시 진행해주세요.
                 </>
               )}

@@ -45,7 +45,9 @@ const PRIMARY_MATERIAL_KEYS: MaterialKey[] = [
 ];
 
 function normalizeMaterialValue(material: string | undefined): string {
-  return String(material ?? "").trim().toLowerCase();
+  return String(material ?? "")
+    .trim()
+    .toLowerCase();
 }
 
 function toPositiveNumber(value: unknown): number | null {
@@ -126,7 +128,11 @@ function toMaterialKey(material: string | undefined): MaterialKey {
     return "naturalGut";
   if (
     (value.includes("gut") || value.includes("거트")) &&
-    !(value.includes("synthetic") || value.includes("인조") || value.includes("합성"))
+    !(
+      value.includes("synthetic") ||
+      value.includes("인조") ||
+      value.includes("합성")
+    )
   )
     return "naturalGut";
   if (

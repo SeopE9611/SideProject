@@ -12,9 +12,10 @@ import {
   isAdminCancelableOrderStatus,
 } from "@/lib/orders/cancel-refund-policy";
 import { cancelNicePaymentByTid } from "@/lib/payments/nice/server";
-import { buildCancelRefundSubject, recordCancelRefundSignal } from "@/lib/risk/recordCancelRefundSignal";
-
-
+import {
+  buildCancelRefundSubject,
+  recordCancelRefundSignal,
+} from "@/lib/risk/recordCancelRefundSignal";
 
 function toReasonPreview(value: unknown, max = 200): string | null {
   if (typeof value !== "string") return null;
@@ -27,8 +28,7 @@ function maskRefundAccount(account: any) {
   if (!account || typeof account !== "object") return null;
   const digits = String(account.accountNumber ?? "").replace(/\D/g, "");
   return {
-    bankLabel:
-      typeof account.bankLabel === "string" ? account.bankLabel : null,
+    bankLabel: typeof account.bankLabel === "string" ? account.bankLabel : null,
     holder: typeof account.holder === "string" ? account.holder : null,
     accountLast4: digits ? digits.slice(-4) : null,
   };
@@ -43,7 +43,9 @@ function safeVerifyAccessToken(token?: string | null) {
   }
 }
 
-function pickStringProductObjectIdFromApplicationDoc(appDoc: any): ObjectId | null {
+function pickStringProductObjectIdFromApplicationDoc(
+  appDoc: any,
+): ObjectId | null {
   const toObjectIdIfValid = (value: unknown): ObjectId | null => {
     if (value == null) return null;
     const str = String(value).trim();
@@ -91,33 +93,54 @@ function pickStringProductObjectIdFromApplicationDoc(appDoc: any): ObjectId | nu
   return toObjectIdIfValid(appDoc?.meta?.stringProductId);
 }
 
-
-async function restoreOrderVariantStockIfNeeded(db: any, existing: any, now: Date) {
-  const alreadyRestored = Boolean(existing?.stockRestore?.variantStockRestoredAt);
+async function restoreOrderVariantStockIfNeeded(
+  db: any,
+  existing: any,
+  now: Date,
+) {
+  const alreadyRestored = Boolean(
+    existing?.stockRestore?.variantStockRestoredAt,
+  );
   if (alreadyRestored) {
     return { setFields: {} as Record<string, unknown> };
   }
 
-  const restoreMap = new Map<string, { productObjectId: ObjectId; selectedColor: string; selectedGauge: string; quantity: number }>();
+  const restoreMap = new Map<
+    string,
+    {
+      productObjectId: ObjectId;
+      selectedColor: string;
+      selectedGauge: string;
+      quantity: number;
+    }
+  >();
   const items = Array.isArray(existing?.items) ? existing.items : [];
   for (const item of items) {
     const kind = typeof item?.kind === "string" ? item.kind.trim() : "";
     if (kind && kind !== "product") continue;
     const stockDeductionMode =
-      typeof item?.stockDeductionMode === "string" ? item.stockDeductionMode.trim() : "";
+      typeof item?.stockDeductionMode === "string"
+        ? item.stockDeductionMode.trim()
+        : "";
     const stockDeductionModeFromObject =
-      typeof item?.stockDeduction?.mode === "string" ? item.stockDeduction.mode.trim() : "";
-    const isVariantDeduction = stockDeductionMode === "variant" || stockDeductionModeFromObject === "variant";
+      typeof item?.stockDeduction?.mode === "string"
+        ? item.stockDeduction.mode.trim()
+        : "";
+    const isVariantDeduction =
+      stockDeductionMode === "variant" ||
+      stockDeductionModeFromObject === "variant";
     if (!isVariantDeduction) continue;
 
     const selectedColor =
-      typeof item?.stockDeduction?.colorValue === "string" && item.stockDeduction.colorValue.trim()
+      typeof item?.stockDeduction?.colorValue === "string" &&
+      item.stockDeduction.colorValue.trim()
         ? item.stockDeduction.colorValue.trim()
         : typeof item?.selectedColor === "string" && item.selectedColor.trim()
           ? item.selectedColor.trim()
           : "";
     const selectedGauge =
-      typeof item?.stockDeduction?.gaugeValue === "string" && item.stockDeduction.gaugeValue.trim()
+      typeof item?.stockDeduction?.gaugeValue === "string" &&
+      item.stockDeduction.gaugeValue.trim()
         ? item.stockDeduction.gaugeValue.trim()
         : typeof item?.selectedGauge === "string" && item.selectedGauge.trim()
           ? item.selectedGauge.trim()
@@ -170,7 +193,10 @@ async function restoreOrderVariantStockIfNeeded(db: any, existing: any, now: Dat
       },
       {
         arrayFilters: [
-          { "variant.colorValue": restoreItem.selectedColor, "variant.gaugeValue": restoreItem.selectedGauge },
+          {
+            "variant.colorValue": restoreItem.selectedColor,
+            "variant.gaugeValue": restoreItem.selectedGauge,
+          },
           { "color.value": restoreItem.selectedColor },
           { "gauge.value": restoreItem.selectedGauge },
         ],
@@ -200,20 +226,37 @@ async function restoreOrderVariantStockIfNeeded(db: any, existing: any, now: Dat
   };
 }
 
-async function restoreOrderGaugeStockIfNeeded(db: any, existing: any, now: Date) {
+async function restoreOrderGaugeStockIfNeeded(
+  db: any,
+  existing: any,
+  now: Date,
+) {
   const alreadyRestored = Boolean(existing?.stockRestore?.gaugeStockRestoredAt);
   if (alreadyRestored) {
     return { setFields: {} as Record<string, unknown> };
   }
 
-  const restoreMap = new Map<string, { productObjectId: ObjectId; selectedGauge: string; quantity: number }>();
+  const restoreMap = new Map<
+    string,
+    { productObjectId: ObjectId; selectedGauge: string; quantity: number }
+  >();
   const items = Array.isArray(existing?.items) ? existing.items : [];
   for (const item of items) {
     const kind = typeof item?.kind === "string" ? item.kind.trim() : "";
     if (kind && kind !== "product") continue;
-    const stockDeductionMode = typeof item?.stockDeductionMode === "string" ? item.stockDeductionMode.trim() : "";
-    const stockDeductionModeFromObject = typeof item?.stockDeduction?.mode === "string" ? item.stockDeduction.mode.trim() : "";
-    if (stockDeductionMode === "variant" || stockDeductionModeFromObject === "variant") continue;
+    const stockDeductionMode =
+      typeof item?.stockDeductionMode === "string"
+        ? item.stockDeductionMode.trim()
+        : "";
+    const stockDeductionModeFromObject =
+      typeof item?.stockDeduction?.mode === "string"
+        ? item.stockDeduction.mode.trim()
+        : "";
+    if (
+      stockDeductionMode === "variant" ||
+      stockDeductionModeFromObject === "variant"
+    )
+      continue;
     const selectedGauge =
       typeof item?.selectedGauge === "string" && item.selectedGauge.trim()
         ? item.selectedGauge.trim()
@@ -279,27 +322,54 @@ async function restoreOrderGaugeStockIfNeeded(db: any, existing: any, now: Date)
   };
 }
 
-async function restoreOrderColorStockIfNeeded(db: any, existing: any, now: Date) {
+async function restoreOrderColorStockIfNeeded(
+  db: any,
+  existing: any,
+  now: Date,
+) {
   const alreadyRestored = Boolean(existing?.stockRestore?.colorStockRestoredAt);
   if (alreadyRestored) {
     return { setFields: {} as Record<string, unknown> };
   }
 
-  const restoreMap = new Map<string, { productObjectId: ObjectId; selectedColor: string; quantity: number; hasSelectedGauge: boolean }>();
+  const restoreMap = new Map<
+    string,
+    {
+      productObjectId: ObjectId;
+      selectedColor: string;
+      quantity: number;
+      hasSelectedGauge: boolean;
+    }
+  >();
   const items = Array.isArray(existing?.items) ? existing.items : [];
   for (const item of items) {
     const kind = typeof item?.kind === "string" ? item.kind.trim() : "";
     if (kind && kind !== "product") continue;
-    const stockDeductionMode = typeof item?.stockDeductionMode === "string" ? item.stockDeductionMode.trim() : "";
-    const stockDeductionModeFromObject = typeof item?.stockDeduction?.mode === "string" ? item.stockDeduction.mode.trim() : "";
-    if (stockDeductionMode === "variant" || stockDeductionModeFromObject === "variant") continue;
-    const selectedColor = typeof item?.selectedColor === "string" && item.selectedColor.trim() ? item.selectedColor.trim() : undefined;
+    const stockDeductionMode =
+      typeof item?.stockDeductionMode === "string"
+        ? item.stockDeductionMode.trim()
+        : "";
+    const stockDeductionModeFromObject =
+      typeof item?.stockDeduction?.mode === "string"
+        ? item.stockDeduction.mode.trim()
+        : "";
+    if (
+      stockDeductionMode === "variant" ||
+      stockDeductionModeFromObject === "variant"
+    )
+      continue;
+    const selectedColor =
+      typeof item?.selectedColor === "string" && item.selectedColor.trim()
+        ? item.selectedColor.trim()
+        : undefined;
     if (!selectedColor) continue;
     const productId = String(item?.productId ?? "").trim();
     if (!ObjectId.isValid(productId)) continue;
     const quantity = Math.max(0, Math.trunc(Number(item?.quantity ?? 0)));
     if (quantity <= 0) continue;
-    const hasSelectedGauge = Boolean(typeof item?.selectedGauge === "string" && item.selectedGauge.trim());
+    const hasSelectedGauge = Boolean(
+      typeof item?.selectedGauge === "string" && item.selectedGauge.trim(),
+    );
     const key = `${productId}:${selectedColor}:${hasSelectedGauge ? "gauge" : "plain"}`;
     const existingAgg = restoreMap.get(key);
     if (existingAgg) {
@@ -327,7 +397,9 @@ async function restoreOrderColorStockIfNeeded(db: any, existing: any, now: Date)
         projection: { colorInventories: 1 },
       },
     );
-    const hasManagedColorInventory = Array.isArray((product as any)?.colorInventories) && (product as any).colorInventories.length > 0;
+    const hasManagedColorInventory =
+      Array.isArray((product as any)?.colorInventories) &&
+      (product as any).colorInventories.length > 0;
     if (!hasManagedColorInventory) {
       continue;
     }
@@ -551,7 +623,8 @@ export async function POST(
               cancelRaw.CancelDate ??
               "",
           ).trim() || now.toISOString();
-        const pgStatus = String(cancelRaw.status ?? "canceled").trim() || "canceled";
+        const pgStatus =
+          String(cancelRaw.status ?? "canceled").trim() || "canceled";
 
         nextPaymentInfo = {
           ...(existing.paymentInfo ?? {}),
@@ -604,13 +677,25 @@ export async function POST(
       cancelRequest: updatedCancelRequest,
       ...(nextPaymentInfo ? { paymentInfo: nextPaymentInfo } : {}),
     };
-    const variantRestore = await restoreOrderVariantStockIfNeeded(db, existing, now);
+    const variantRestore = await restoreOrderVariantStockIfNeeded(
+      db,
+      existing,
+      now,
+    );
     if (variantRestore.errorResponse) return variantRestore.errorResponse;
     Object.assign(updateFields, variantRestore.setFields);
-    const gaugeRestore = await restoreOrderGaugeStockIfNeeded(db, existing, now);
+    const gaugeRestore = await restoreOrderGaugeStockIfNeeded(
+      db,
+      existing,
+      now,
+    );
     if (gaugeRestore.errorResponse) return gaugeRestore.errorResponse;
     Object.assign(updateFields, gaugeRestore.setFields);
-    const colorRestore = await restoreOrderColorStockIfNeeded(db, existing, now);
+    const colorRestore = await restoreOrderColorStockIfNeeded(
+      db,
+      existing,
+      now,
+    );
     if (colorRestore.errorResponse) return colorRestore.errorResponse;
     Object.assign(updateFields, colorRestore.setFields);
 
@@ -767,10 +852,18 @@ export async function POST(
           appDoc.meta.selectedGauge.trim()
             ? appDoc.meta.selectedGauge.trim()
             : undefined;
-        const hasDeductedGaugeStock = Boolean(appDoc?.meta?.gaugeStockDeductedAt);
-        const alreadyRestoredGaugeStock = Boolean(appDoc?.meta?.gaugeStockRestoredAt);
+        const hasDeductedGaugeStock = Boolean(
+          appDoc?.meta?.gaugeStockDeductedAt,
+        );
+        const alreadyRestoredGaugeStock = Boolean(
+          appDoc?.meta?.gaugeStockRestoredAt,
+        );
 
-        if (hasDeductedGaugeStock && selectedGauge && !alreadyRestoredGaugeStock) {
+        if (
+          hasDeductedGaugeStock &&
+          selectedGauge &&
+          !alreadyRestoredGaugeStock
+        ) {
           const stringProductObjectId =
             pickStringProductObjectIdFromApplicationDoc(appDoc);
           if (!stringProductObjectId) {
@@ -782,20 +875,22 @@ export async function POST(
               },
             );
           } else {
-            const linkedRestoreResult = await db.collection("products").updateOne(
-              {
-                _id: stringProductObjectId,
-                sold: { $gte: 1 },
-                "gaugeInventories.value": selectedGauge,
-              },
-              {
-                $inc: {
-                  "gaugeInventories.$.stock": 1,
-                  "inventory.stock": 1,
-                  sold: -1,
+            const linkedRestoreResult = await db
+              .collection("products")
+              .updateOne(
+                {
+                  _id: stringProductObjectId,
+                  sold: { $gte: 1 },
+                  "gaugeInventories.value": selectedGauge,
                 },
-              },
-            );
+                {
+                  $inc: {
+                    "gaugeInventories.$.stock": 1,
+                    "inventory.stock": 1,
+                    sold: -1,
+                  },
+                },
+              );
             if (
               !linkedRestoreResult.matchedCount ||
               !linkedRestoreResult.modifiedCount
@@ -804,7 +899,8 @@ export async function POST(
                 {
                   ok: false,
                   code: "GAUGE_STOCK_RESTORE_FAILED",
-                  message: "주문 취소 중 스트링 게이지 재고 복구에 실패했습니다.",
+                  message:
+                    "주문 취소 중 스트링 게이지 재고 복구에 실패했습니다.",
                 },
                 { status: 409 },
               );
@@ -854,7 +950,8 @@ export async function POST(
           prevCancelStatus: existingReq.status ?? null,
           nextCancelStatus: updatedCancelRequest.status,
           orderStatus: updateFields.status ?? existing.status ?? null,
-          paymentStatus: updateFields.paymentStatus ?? existing.paymentStatus ?? null,
+          paymentStatus:
+            updateFields.paymentStatus ?? existing.paymentStatus ?? null,
           linkedApplicationCount,
         },
       },

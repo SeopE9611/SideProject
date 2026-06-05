@@ -3,7 +3,10 @@ import { getDb } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 import { NextResponse } from "next/server";
 import { normalizeItemShippingFee } from "@/lib/shipping-fee";
-import { hasPaidMountingFee, isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
+import {
+  hasPaidMountingFee,
+  isMountableStringByFee,
+} from "@/lib/orders/string-mounting-policy";
 import { getEffectiveProductPrice } from "@/lib/product-pricing";
 
 export async function GET(
@@ -45,9 +48,16 @@ export async function GET(
     const rawMountingFee = (prod as any).mountingFee;
     const rawShippingFee = (prod as any).shippingFee;
 
-    const safeMountingFee = hasPaidMountingFee(rawMountingFee) ? rawMountingFee : 0;
+    const safeMountingFee = hasPaidMountingFee(rawMountingFee)
+      ? rawMountingFee
+      : 0;
     const isMountableString = isMountableStringByFee(rawMountingFee);
-    const safePrice = getEffectiveProductPrice(prod as { price?: unknown; inventory?: { isSale?: unknown; salePrice?: unknown } | null; });
+    const safePrice = getEffectiveProductPrice(
+      prod as {
+        price?: unknown;
+        inventory?: { isSale?: unknown; salePrice?: unknown } | null;
+      },
+    );
 
     return NextResponse.json(
       {

@@ -13,16 +13,21 @@ function toBoolean(value: unknown): boolean | undefined {
 }
 
 function toOptionalFiniteNumber(value: unknown): number | undefined {
-  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+  return typeof value === "number" && Number.isFinite(value)
+    ? value
+    : undefined;
 }
 
 function pickImage(raw: Record<string, unknown>): string | undefined {
   if (typeof raw.image === "string" && raw.image) return raw.image;
-  if (Array.isArray(raw.images) && typeof raw.images[0] === "string") return raw.images[0];
+  if (Array.isArray(raw.images) && typeof raw.images[0] === "string")
+    return raw.images[0];
   return undefined;
 }
 
-export function normalizeRecommendableProduct(raw: Record<string, unknown>): RecommendableProduct | null {
+export function normalizeRecommendableProduct(
+  raw: Record<string, unknown>,
+): RecommendableProduct | null {
   const id = String(raw._id ?? raw.id ?? "").trim();
   const name = String(raw.name ?? "").trim();
   if (!id || !name) return null;
@@ -32,12 +37,18 @@ export function normalizeRecommendableProduct(raw: Record<string, unknown>): Rec
     typeof brandRaw === "string"
       ? brandRaw
       : brandRaw && typeof brandRaw === "object"
-        ? String((brandRaw as Record<string, unknown>).name ?? (brandRaw as Record<string, unknown>).label ?? "").trim() || undefined
+        ? String(
+            (brandRaw as Record<string, unknown>).name ??
+              (brandRaw as Record<string, unknown>).label ??
+              "",
+          ).trim() || undefined
         : undefined;
 
-  const featuresRaw = (raw.features as Record<string, unknown> | undefined) ?? {};
+  const featuresRaw =
+    (raw.features as Record<string, unknown> | undefined) ?? {};
   const tagsRaw = (raw.tags as Record<string, unknown> | undefined) ?? {};
-  const inventoryRaw = (raw.inventory as Record<string, unknown> | undefined) ?? {};
+  const inventoryRaw =
+    (raw.inventory as Record<string, unknown> | undefined) ?? {};
 
   return {
     id,
@@ -67,7 +78,10 @@ export function normalizeRecommendableProduct(raw: Record<string, unknown>): Rec
     },
     inventory: {
       stock: toNumber(inventoryRaw.stock, 0),
-      status: typeof inventoryRaw.status === "string" ? inventoryRaw.status : undefined,
+      status:
+        typeof inventoryRaw.status === "string"
+          ? inventoryRaw.status
+          : undefined,
       manageStock: toBoolean(inventoryRaw.manageStock),
       allowBackorder: toBoolean(inventoryRaw.allowBackorder),
     },

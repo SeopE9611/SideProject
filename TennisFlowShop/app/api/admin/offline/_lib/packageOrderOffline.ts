@@ -12,6 +12,8 @@ export const EXCLUDE_OFFLINE_PACKAGE_ORDERS_FILTER: Filter<Document> = {
 };
 
 export function isOfflinePackageOrder(order: unknown): boolean {
-  const meta = (order as { meta?: Record<string, unknown> | null } | null | undefined)?.meta;
+  const meta = (
+    order as { meta?: Record<string, unknown> | null } | null | undefined
+  )?.meta;
   return meta?.source === "offline_admin" || meta?.channel === "offline";
 }

@@ -5,11 +5,16 @@ import { requireAdmin } from "@/lib/admin.guard";
 
 function encodeCursor(item: { usedAt: Date; _id: ObjectId }) {
   return Buffer.from(
-    JSON.stringify({ usedAt: item.usedAt.toISOString(), id: item._id.toHexString() }),
+    JSON.stringify({
+      usedAt: item.usedAt.toISOString(),
+      id: item._id.toHexString(),
+    }),
   ).toString("base64");
 }
 
-function decodeCursor(cursor?: string | null): { usedAt: Date; id: ObjectId } | null {
+function decodeCursor(
+  cursor?: string | null,
+): { usedAt: Date; id: ObjectId } | null {
   if (!cursor) return null;
   try {
     const parsed = JSON.parse(Buffer.from(cursor, "base64").toString("utf8"));
@@ -34,7 +39,10 @@ export async function GET(
     }
 
     const url = new URL(request.url);
-    const limit = Math.min(50, Math.max(1, Number(url.searchParams.get("limit") || "10")));
+    const limit = Math.min(
+      50,
+      Math.max(1, Number(url.searchParams.get("limit") || "10")),
+    );
     const cursor = decodeCursor(url.searchParams.get("cursor"));
 
     const db = (await clientPromise).db();
@@ -43,7 +51,12 @@ export async function GET(
       .collection("service_passes")
       .findOne({ orderId }, { projection: { _id: 1 } as any });
     if (!pass) {
-      return NextResponse.json({ items: [], total: 0, hasMore: false, nextCursor: null });
+      return NextResponse.json({
+        items: [],
+        total: 0,
+        hasMore: false,
+        nextCursor: null,
+      });
     }
 
     const match: any = { passId: pass._id };
@@ -67,7 +80,14 @@ export async function GET(
               let: { appId: "$applicationId" },
               pipeline: [
                 { $match: { $expr: { $eq: ["$_id", "$$appId"] } } },
-                { $project: { _id: 1, status: 1, preferredDate: 1, racketType: 1 } },
+                {
+                  $project: {
+                    _id: 1,
+                    status: 1,
+                    preferredDate: 1,
+                    racketType: 1,
+                  },
+                },
               ],
               as: "appDoc",
             },
@@ -100,7 +120,12 @@ export async function GET(
                   { $substrBytes: [{ $toString: "$applicationId" }, 18, 6] },
                   {
                     $cond: [
-                      { $gt: [{ $strLenCP: { $ifNull: ["$app.status", ""] } }, 0] },
+                      {
+                        $gt: [
+                          { $strLenCP: { $ifNull: ["$app.status", ""] } },
+                          0,
+                        ],
+                      },
                       { $concat: [" · ", "$app.status"] },
                       "",
                     ],
@@ -114,7 +139,9 @@ export async function GET(
           },
         ])
         .toArray(),
-      db.collection("service_pass_consumptions").countDocuments({ passId: pass._id }),
+      db
+        .collection("service_pass_consumptions")
+        .countDocuments({ passId: pass._id }),
     ]);
 
     const hasMore = rows.length > limit;
@@ -127,11 +154,17 @@ export async function GET(
       hasMore,
       nextCursor:
         hasMore && last?.date && last?.id
-          ? encodeCursor({ usedAt: new Date(last.date), _id: new ObjectId(last.id) })
+          ? encodeCursor({
+              usedAt: new Date(last.date),
+              _id: new ObjectId(last.id),
+            })
           : null,
     });
   } catch (e) {
-    console.error("[GET /api/admin/package-orders/[id]/usage-history] error", e);
+    console.error(
+      "[GET /api/admin/package-orders/[id]/usage-history] error",
+      e,
+    );
     return NextResponse.json({ error: "서버 오류" }, { status: 500 });
   }
 }

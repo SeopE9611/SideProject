@@ -7,7 +7,9 @@ export const BENEFIT_LABELS: Record<BenefitFilterValue, string> = {
   sale: "할인",
 };
 
-export function parseBenefitFilters(value?: string | null): BenefitFilterValue[] {
+export function parseBenefitFilters(
+  value?: string | null,
+): BenefitFilterValue[] {
   if (!value || value === "all") return [];
   const seen = new Set<BenefitFilterValue>();
   value.split(",").forEach((part) => {
@@ -19,11 +21,15 @@ export function parseBenefitFilters(value?: string | null): BenefitFilterValue[]
   return BENEFIT_FILTER_VALUES.filter((item) => seen.has(item));
 }
 
-export function serializeBenefitFilters(values: readonly string[]): string | null {
+export function serializeBenefitFilters(
+  values: readonly string[],
+): string | null {
   const parsed = parseBenefitFilters(values.join(","));
   return parsed.length > 0 ? parsed.join(",") : null;
 }
 
 export function formatBenefitFilterLabel(values: readonly string[]) {
-  return parseBenefitFilters(values.join(",")).map((value) => BENEFIT_LABELS[value]).join("·");
+  return parseBenefitFilters(values.join(","))
+    .map((value) => BENEFIT_LABELS[value])
+    .join("·");
 }

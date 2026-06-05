@@ -11,7 +11,11 @@ export type TossPaymentSessionStatus =
   | "approve_succeeded_auto_cancel_succeeded"
   | "approve_succeeded_auto_cancel_failed";
 
-export type TossPaymentFlowType = "checkout_order" | "package_order" | "racket_order" | "rental_order";
+export type TossPaymentFlowType =
+  | "checkout_order"
+  | "package_order"
+  | "racket_order"
+  | "rental_order";
 
 export type TossPaymentFailureStage =
   | "session_expired_before_confirm"
@@ -110,7 +114,13 @@ export type TossPaymentSession = {
     type?: string;
     totalAmount: number;
     approvedAt?: Date;
-    card?: { issuerCode?: string; acquirerCode?: string; issuerName?: string; acquirerName?: string; cardName?: string };
+    card?: {
+      issuerCode?: string;
+      acquirerCode?: string;
+      issuerName?: string;
+      acquirerName?: string;
+      cardName?: string;
+    };
     easyPay?: { provider?: string; amount?: number };
   };
   nicePrepared?: {
@@ -136,9 +146,15 @@ export type TossPaymentSession = {
 };
 
 export async function ensureTossPaymentSessionIndexes(db: Db) {
-  await db.collection<TossPaymentSession>("toss_payment_sessions").createIndex({ tossOrderId: 1 }, { unique: true, sparse: true });
-  await db.collection<TossPaymentSession>("toss_payment_sessions").createIndex({ niceOrderId: 1 }, { unique: true, sparse: true });
-  await db.collection<TossPaymentSession>("toss_payment_sessions").createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+  await db
+    .collection<TossPaymentSession>("toss_payment_sessions")
+    .createIndex({ tossOrderId: 1 }, { unique: true, sparse: true });
+  await db
+    .collection<TossPaymentSession>("toss_payment_sessions")
+    .createIndex({ niceOrderId: 1 }, { unique: true, sparse: true });
+  await db
+    .collection<TossPaymentSession>("toss_payment_sessions")
+    .createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 }
 
 export function tossPaymentSessions(db: Db) {

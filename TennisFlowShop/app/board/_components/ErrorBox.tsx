@@ -23,7 +23,11 @@ export default function ErrorBox({
         kind="error"
         variant="inline"
         title={primary}
-        description={guide && guide !== primary ? `안내: ${guide}` : "네트워크/서버 상태를 확인한 뒤 다시 시도해 주세요."}
+        description={
+          guide && guide !== primary
+            ? `안내: ${guide}`
+            : "네트워크/서버 상태를 확인한 뒤 다시 시도해 주세요."
+        }
         onAction={onRetry}
       />
     </div>

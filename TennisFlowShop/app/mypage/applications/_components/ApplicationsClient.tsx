@@ -110,15 +110,25 @@ type CancelStringingParams = {
 
 const shouldRequestCancelRefundAccount = (app?: Application | null) => {
   if (!app) return true;
-  const normalizedProvider = String(app.paymentProvider ?? '').trim().toLowerCase();
-  return !app.packageApplied && app.paymentStatus === '결제완료' && normalizedProvider !== 'nicepay';
+  const normalizedProvider = String(app.paymentProvider ?? "")
+    .trim()
+    .toLowerCase();
+  return (
+    !app.packageApplied &&
+    app.paymentStatus === "결제완료" &&
+    normalizedProvider !== "nicepay"
+  );
 };
 
 const getNoRefundAccountMessage = (app?: Application | null) => {
-  const normalizedProvider = String(app?.paymentProvider ?? '').trim().toLowerCase();
-  if (app?.packageApplied) return '패키지 사용 신청은 환불계좌 입력 없이 취소 요청할 수 있습니다. 승인 시 사용 회차 복원 기준으로 처리됩니다.';
-  if (normalizedProvider === 'nicepay') return '카드 결제 취소는 환불계좌 없이 요청할 수 있습니다. 관리자 승인 후 결제사 취소 또는 주문 취소 흐름에 따라 처리됩니다.';
-  return '이 신청은 환불계좌 입력 없이 취소 요청할 수 있습니다.';
+  const normalizedProvider = String(app?.paymentProvider ?? "")
+    .trim()
+    .toLowerCase();
+  if (app?.packageApplied)
+    return "패키지 사용 신청은 환불계좌 입력 없이 취소 요청할 수 있습니다. 승인 시 사용 회차 복원 기준으로 처리됩니다.";
+  if (normalizedProvider === "nicepay")
+    return "카드 결제 취소는 환불계좌 없이 요청할 수 있습니다. 관리자 승인 후 결제사 취소 또는 주문 취소 흐름에 따라 처리됩니다.";
+  return "이 신청은 환불계좌 입력 없이 취소 요청할 수 있습니다.";
 };
 
 const ApplicationsListSkeleton = ({ count = 3 }: { count?: number }) => (
@@ -312,7 +322,9 @@ export default function ApplicationsClient() {
           body: JSON.stringify({
             reasonCode: params.reasonCode,
             reasonText: params.reasonText,
-            ...(params.refundAccount ? { refundAccount: params.refundAccount } : {}),
+            ...(params.refundAccount
+              ? { refundAccount: params.refundAccount }
+              : {}),
           }),
         },
       );
@@ -442,7 +454,7 @@ export default function ApplicationsClient() {
     [data],
   );
   const cancelTargetApplication = targetId
-    ? applications.find((app) => app.id === targetId) ?? null
+    ? (applications.find((app) => app.id === targetId) ?? null)
     : null;
 
   // 더 보기 여부
@@ -583,9 +595,10 @@ export default function ApplicationsClient() {
               : hasRentalLink
                 ? rentalId
                 : null;
-            const detailHref = hasOrderLink && orderId
-              ? `/mypage?tab=orders&flowType=order&flowId=${orderId}&from=orders&focus=stringing`
-              : `/mypage?tab=orders&flowType=application&flowId=${app.id}&from=orders`;
+            const detailHref =
+              hasOrderLink && orderId
+                ? `/mypage?tab=orders&flowType=order&flowId=${orderId}&from=orders&focus=stringing`
+                : `/mypage?tab=orders&flowType=application&flowId=${app.id}&from=orders`;
 
             return (
               <Card
@@ -643,15 +656,26 @@ export default function ApplicationsClient() {
                   </div>
 
                   <div className="flex flex-nowrap items-center gap-2 overflow-x-auto text-xs">
-                    <Badge variant="outline" className="shrink-0 whitespace-nowrap">
+                    <Badge
+                      variant="outline"
+                      className="shrink-0 whitespace-nowrap"
+                    >
                       {metaLinkLabel}
                       {metaLinkId ? ` · ${String(metaLinkId).slice(-6)}` : ""}
                     </Badge>
                     {isAcademyLesson ? (
-                      <Badge variant="outline" className="shrink-0 whitespace-nowrap">도깨비테니스 아카데미</Badge>
+                      <Badge
+                        variant="outline"
+                        className="shrink-0 whitespace-nowrap"
+                      >
+                        도깨비테니스 아카데미
+                      </Badge>
                     ) : null}
                     {collectionLabel ? (
-                      <Badge variant="outline" className="shrink-0 whitespace-nowrap">
+                      <Badge
+                        variant="outline"
+                        className="shrink-0 whitespace-nowrap"
+                      >
                         {collectionLabel.replace("접수 방식: ", "")}
                       </Badge>
                     ) : null}
@@ -851,9 +875,7 @@ export default function ApplicationsClient() {
                         data-cy="mypage-application-detail-cta"
                         variant="outline"
                         size="sm"
-                        onClick={() =>
-                          router.push(detailHref)
-                        }
+                        onClick={() => router.push(detailHref)}
                         className="bg-transparent"
                       >
                         이용 상세 보기
@@ -1058,8 +1080,12 @@ export default function ApplicationsClient() {
           }}
           onConfirm={handleConfirmCancel}
           isSubmitting={isCancelSubmitting}
-          needsRefundAccount={shouldRequestCancelRefundAccount(cancelTargetApplication)}
-          noRefundAccountMessage={getNoRefundAccountMessage(cancelTargetApplication)}
+          needsRefundAccount={shouldRequestCancelRefundAccount(
+            cancelTargetApplication,
+          )}
+          noRefundAccountMessage={getNoRefundAccountMessage(
+            cancelTargetApplication,
+          )}
         />
       ) : null}
     </div>

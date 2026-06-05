@@ -21,7 +21,10 @@ const normalizeRawStatus = (status?: string | null): string => {
     .replace(/-/g, "_");
 };
 
-const normalizeOrderStatusLabel = (status?: string | null, displayStatus?: string | null) => {
+const normalizeOrderStatusLabel = (
+  status?: string | null,
+  displayStatus?: string | null,
+) => {
   const raw = normalizeStatus(status);
   const display = normalizeStatus(displayStatus);
 
@@ -34,8 +37,13 @@ const normalizeOrderStatusLabel = (status?: string | null, displayStatus?: strin
   return display || raw;
 };
 
-export function getGuestOrderNextActionText(input: GuestOrderNextActionInput): string | null {
-  const normalized = normalizeOrderStatusLabel(input.status, input.displayStatus);
+export function getGuestOrderNextActionText(
+  input: GuestOrderNextActionInput,
+): string | null {
+  const normalized = normalizeOrderStatusLabel(
+    input.status,
+    input.displayStatus,
+  );
   const normalizedRawStatus = normalizeRawStatus(input.status);
 
   if (

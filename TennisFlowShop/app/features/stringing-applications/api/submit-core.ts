@@ -100,7 +100,15 @@ async function applyStringingVariantInventoryDeduction(params: {
   quantity: number;
   session?: ClientSession;
 }) {
-  const { db, productId, product, selectedColor, selectedGauge, quantity, session } = params;
+  const {
+    db,
+    productId,
+    product,
+    selectedColor,
+    selectedGauge,
+    quantity,
+    session,
+  } = params;
   const variantInventories = Array.isArray(product?.variantInventories)
     ? product.variantInventories
     : [];
@@ -121,10 +129,13 @@ async function applyStringingVariantInventoryDeduction(params: {
       String(row?.gaugeValue ?? "").trim() === selectedGauge,
   );
   if (!variantRow) {
-    throw Object.assign(new Error("선택한 옵션 조합 정보를 찾을 수 없습니다."), {
-      status: 400,
-      code: "VARIANT_NOT_FOUND",
-    });
+    throw Object.assign(
+      new Error("선택한 옵션 조합 정보를 찾을 수 없습니다."),
+      {
+        status: 400,
+        code: "VARIANT_NOT_FOUND",
+      },
+    );
   }
   if (variantRow?.isSoldOut === true) {
     throw Object.assign(new Error("선택한 옵션 조합은 현재 품절입니다."), {
@@ -163,7 +174,10 @@ async function applyStringingVariantInventoryDeduction(params: {
     },
     {
       arrayFilters: [
-        { "variant.colorValue": selectedColor, "variant.gaugeValue": selectedGauge },
+        {
+          "variant.colorValue": selectedColor,
+          "variant.gaugeValue": selectedGauge,
+        },
         { "color.value": selectedColor },
         { "gauge.value": selectedGauge },
       ],
@@ -435,7 +449,9 @@ export async function submitStringingApplicationCore({
     });
 
     if (pass && packageUsage.usingPackage) {
-      await consumePass(db, pass._id, applicationId, packageUseCount, { session });
+      await consumePass(db, pass._id, applicationId, packageUseCount, {
+        session,
+      });
       packageApplied = true;
       packagePassId = pass._id;
       packageRedeemedAt = new Date();
@@ -521,21 +537,29 @@ export async function submitStringingApplicationCore({
 
   const existingApplication = await db
     .collection("stringing_applications")
-    .findOne(
-      { _id: targetId },
-      { projection: { _id: 1, meta: 1 }, session },
-    );
+    .findOne({ _id: targetId }, { projection: { _id: 1, meta: 1 }, session });
 
-  const alreadyDeductedGaugeStock = Boolean((existingApplication as any)?.meta?.gaugeStockDeductedAt);
-  const alreadyDeductedColorStock = Boolean((existingApplication as any)?.meta?.colorStockDeductedAt);
+  const alreadyDeductedGaugeStock = Boolean(
+    (existingApplication as any)?.meta?.gaugeStockDeductedAt,
+  );
+  const alreadyDeductedColorStock = Boolean(
+    (existingApplication as any)?.meta?.colorStockDeductedAt,
+  );
 
   const selectedProductIdCandidate =
-    (Array.isArray(stringTypes) ? stringTypes.find((id) => id && id !== "custom") : undefined) ??
-    normalizedStringItems.find((item) => item.productId && item.productId !== "custom")?.productId ??
-    normalizedLines.find((line) => line.stringProductId && line.stringProductId !== "custom")?.stringProductId;
+    (Array.isArray(stringTypes)
+      ? stringTypes.find((id) => id && id !== "custom")
+      : undefined) ??
+    normalizedStringItems.find(
+      (item) => item.productId && item.productId !== "custom",
+    )?.productId ??
+    normalizedLines.find(
+      (line) => line.stringProductId && line.stringProductId !== "custom",
+    )?.stringProductId;
 
   const normalizedStringProductId =
-    typeof selectedProductIdCandidate === "string" && selectedProductIdCandidate.trim()
+    typeof selectedProductIdCandidate === "string" &&
+    selectedProductIdCandidate.trim()
       ? selectedProductIdCandidate.trim()
       : "";
 
@@ -555,7 +579,9 @@ export async function submitStringingApplicationCore({
       ? (orderForGauge as any).items.find((item: any) => {
           const kind = item?.kind ?? "product";
           const productId = String(item?.productId ?? "");
-          return kind === "product" && productId === String(stringProductObjectId);
+          return (
+            kind === "product" && productId === String(stringProductObjectId)
+          );
         })
       : null;
 
@@ -570,8 +596,10 @@ export async function submitStringingApplicationCore({
         ? purchasedStringItem.selectedColor.trim()
         : undefined;
 
-    const effectiveSelectedGauge = normalizedSelectedGauge ?? selectedGaugeFromOrderItem;
-    const effectiveSelectedColor = normalizedSelectedColor ?? selectedColorFromOrderItem;
+    const effectiveSelectedGauge =
+      normalizedSelectedGauge ?? selectedGaugeFromOrderItem;
+    const effectiveSelectedColor =
+      normalizedSelectedColor ?? selectedColorFromOrderItem;
 
     const isStockAlreadyDeductedByOrderItem =
       Boolean(selectedGaugeFromOrderItem) &&
@@ -586,7 +614,15 @@ export async function submitStringingApplicationCore({
     const stringProduct = await db.collection("products").findOne(
       { _id: stringProductObjectId },
       {
-        projection: { _id: 1, gaugeInventories: 1, gaugeOptions: 1, color: 1, colorOptions: 1, colorInventories: 1, variantInventories: 1 },
+        projection: {
+          _id: 1,
+          gaugeInventories: 1,
+          gaugeOptions: 1,
+          color: 1,
+          colorOptions: 1,
+          colorInventories: 1,
+          variantInventories: 1,
+        },
         session,
       },
     );
@@ -622,7 +658,8 @@ export async function submitStringingApplicationCore({
       updateDoc["meta.selectedColorImage"] = selectedColorImage.trim();
     }
 
-    const existingSelectedGauge = (existingApplication as any)?.meta?.selectedGauge;
+    const existingSelectedGauge = (existingApplication as any)?.meta
+      ?.selectedGauge;
     if (
       isGaugeSelectableProduct &&
       alreadyDeductedGaugeStock &&
@@ -639,7 +676,8 @@ export async function submitStringingApplicationCore({
       );
     }
 
-    const existingSelectedColor = (existingApplication as any)?.meta?.selectedColor;
+    const existingSelectedColor = (existingApplication as any)?.meta
+      ?.selectedColor;
     if (
       alreadyDeductedColorStock &&
       effectiveSelectedColor &&
@@ -661,7 +699,11 @@ export async function submitStringingApplicationCore({
 
     let didVariantDeduct = false;
 
-    if (hasVariantInventories && !alreadyDeductedGaugeStock && !isVariantStockAlreadyDeductedByOrderItem) {
+    if (
+      hasVariantInventories &&
+      !alreadyDeductedGaugeStock &&
+      !isVariantStockAlreadyDeductedByOrderItem
+    ) {
       const variantDeduction = await applyStringingVariantInventoryDeduction({
         db,
         productId: stringProductObjectId,
@@ -689,7 +731,8 @@ export async function submitStringingApplicationCore({
       hasManagedColorInventories
     ) {
       const colorRow = (stringProduct as any).colorInventories.find(
-        (row: any) => String(row?.value ?? "").trim() === effectiveSelectedColor,
+        (row: any) =>
+          String(row?.value ?? "").trim() === effectiveSelectedColor,
       );
       if (!colorRow) {
         throw Object.assign(new Error("선택한 색상 정보를 찾을 수 없습니다."), {
@@ -704,17 +747,22 @@ export async function submitStringingApplicationCore({
         });
       }
       if (Number(colorRow?.stock ?? 0) < 1) {
-        throw Object.assign(new Error("선택한 색상의 구매 가능 수량을 초과했습니다."), {
-          status: 409,
-          code: "COLOR_INSUFFICIENT_STOCK",
-        });
+        throw Object.assign(
+          new Error("선택한 색상의 구매 가능 수량을 초과했습니다."),
+          {
+            status: 409,
+            code: "COLOR_INSUFFICIENT_STOCK",
+          },
+        );
       }
 
       const shouldAdjustGlobalInventory = !effectiveSelectedGauge;
       const colorDeductResult = await db.collection("products").updateOne(
         {
           _id: stringProductObjectId,
-          ...(shouldAdjustGlobalInventory ? { "inventory.stock": { $gte: 1 } } : {}),
+          ...(shouldAdjustGlobalInventory
+            ? { "inventory.stock": { $gte: 1 } }
+            : {}),
           colorInventories: {
             $elemMatch: {
               value: effectiveSelectedColor,
@@ -732,10 +780,13 @@ export async function submitStringingApplicationCore({
       );
 
       if (!colorDeductResult.matchedCount || !colorDeductResult.modifiedCount) {
-        throw Object.assign(new Error("선택한 색상의 구매 가능 수량을 초과했습니다."), {
-          status: 409,
-          code: "COLOR_INSUFFICIENT_STOCK",
-        });
+        throw Object.assign(
+          new Error("선택한 색상의 구매 가능 수량을 초과했습니다."),
+          {
+            status: 409,
+            code: "COLOR_INSUFFICIENT_STOCK",
+          },
+        );
       }
       updateDoc["meta.colorStockDeductedAt"] = new Date();
     }
@@ -749,10 +800,14 @@ export async function submitStringingApplicationCore({
     ) {
       const stringQuantity = 1;
 
-      const gaugeRow = (Array.isArray((stringProduct as any)?.gaugeInventories)
-        ? (stringProduct as any).gaugeInventories
-        : []
-      ).find((row: any) => String(row?.value ?? "").trim() === effectiveSelectedGauge);
+      const gaugeRow = (
+        Array.isArray((stringProduct as any)?.gaugeInventories)
+          ? (stringProduct as any).gaugeInventories
+          : []
+      ).find(
+        (row: any) =>
+          String(row?.value ?? "").trim() === effectiveSelectedGauge,
+      );
 
       if (!gaugeRow) {
         throw Object.assign(new Error("선택한 게이지를 찾을 수 없습니다."), {
@@ -823,34 +878,30 @@ export async function submitStringingApplicationCore({
   }
 
   if (orderObjectId) {
-    await db
-      .collection("orders")
-      .updateOne(
-        { _id: orderObjectId },
-        {
-          $set: {
-            isStringServiceApplied: true,
-            stringingApplicationId: String(targetId),
-          },
+    await db.collection("orders").updateOne(
+      { _id: orderObjectId },
+      {
+        $set: {
+          isStringServiceApplied: true,
+          stringingApplicationId: String(targetId),
         },
-        { session },
-      );
+      },
+      { session },
+    );
   }
 
   if (rentalObjectId) {
-    await db
-      .collection("rental_orders")
-      .updateOne(
-        { _id: rentalObjectId },
-        {
-          $set: {
-            isStringServiceApplied: true,
-            stringingApplicationId: String(targetId),
-            updatedAt: new Date(),
-          },
+    await db.collection("rental_orders").updateOne(
+      { _id: rentalObjectId },
+      {
+        $set: {
+          isStringServiceApplied: true,
+          stringingApplicationId: String(targetId),
+          updatedAt: new Date(),
         },
-        { session },
-      );
+      },
+      { session },
+    );
   }
 
   return {

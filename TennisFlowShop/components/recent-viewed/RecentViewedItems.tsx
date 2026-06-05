@@ -1,9 +1,15 @@
 "use client";
 
-import HorizontalProducts, { type HItem } from "@/components/HorizontalProducts";
+import HorizontalProducts, {
+  type HItem,
+} from "@/components/HorizontalProducts";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { clearRecentViewedItems, getRecentViewedItems, type RecentViewedType } from "@/lib/recent-viewed";
+import {
+  clearRecentViewedItems,
+  getRecentViewedItems,
+  type RecentViewedType,
+} from "@/lib/recent-viewed";
 import { useEffect, useMemo, useState } from "react";
 
 type RecentViewedItemsProps = {
@@ -25,7 +31,9 @@ export default function RecentViewedItems({
   limit = 6,
 }: RecentViewedItemsProps) {
   const [mounted, setMounted] = useState(false);
-  const [items, setItems] = useState<ReturnType<typeof getRecentViewedItems>>([]);
+  const [items, setItems] = useState<ReturnType<typeof getRecentViewedItems>>(
+    [],
+  );
 
   useEffect(() => {
     setMounted(true);
@@ -35,7 +43,10 @@ export default function RecentViewedItems({
   const filteredItems = useMemo(() => {
     const id = (currentId ?? "").trim();
     return items
-      .filter((item) => !(currentType && id && item.type === currentType && item.id === id))
+      .filter(
+        (item) =>
+          !(currentType && id && item.type === currentType && item.id === id),
+      )
       .slice(0, Math.max(1, limit));
   }, [items, currentId, currentType, limit]);
 
@@ -47,7 +58,9 @@ export default function RecentViewedItems({
         <CardHeader className="flex flex-row items-start justify-between gap-3">
           <div>
             <CardTitle className="text-lg sm:text-xl">{title}</CardTitle>
-            <p className="mt-1 text-sm text-muted-foreground">최근 확인한 스트링과 라켓을 다시 확인해보세요.</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              최근 확인한 스트링과 라켓을 다시 확인해보세요.
+            </p>
           </div>
           <Button
             type="button"
@@ -65,14 +78,19 @@ export default function RecentViewedItems({
         <CardContent>
           <HorizontalProducts
             title={title}
-            items={filteredItems.map((item): HItem => ({
-              _id: `${item.type}-${item.id}`,
-              name: item.name,
-              price: item.price ?? 0,
-              images: item.image ? [item.image] : [],
-              brand: item.type === "racket" ? typeLabelMap[item.type] : item.subtitle || typeLabelMap[item.type],
-              href: item.href,
-            }))}
+            items={filteredItems.map(
+              (item): HItem => ({
+                _id: `${item.type}-${item.id}`,
+                name: item.name,
+                price: item.price ?? 0,
+                images: item.image ? [item.image] : [],
+                brand:
+                  item.type === "racket"
+                    ? typeLabelMap[item.type]
+                    : item.subtitle || typeLabelMap[item.type],
+                href: item.href,
+              }),
+            )}
             moreHref="/products"
             showHeader={false}
             showMoreCard={false}

@@ -139,13 +139,23 @@ function CommunityLatestCard({
             </span>
           </div>
           <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
-            <Button asChild variant="ghost" size="sm" className="min-h-10 whitespace-nowrap">
+            <Button
+              asChild
+              variant="ghost"
+              size="sm"
+              className="min-h-10 whitespace-nowrap"
+            >
               <Link href={writeHref}>
                 <Plus className="h-4 w-4 mr-1" />
                 글쓰기
               </Link>
             </Button>
-            <Button asChild variant="ghost" size="sm" className="min-h-10 whitespace-nowrap">
+            <Button
+              asChild
+              variant="ghost"
+              size="sm"
+              className="min-h-10 whitespace-nowrap"
+            >
               <Link href={listHref}>
                 전체보기 <ArrowRight className="ml-1 h-4 w-4" />
               </Link>
@@ -249,7 +259,12 @@ function ErrorBox({
   onRetry?: () => void;
 }) {
   return (
-    <AsyncState kind="error" variant="inline" title={message} onAction={onRetry} />
+    <AsyncState
+      kind="error"
+      variant="inline"
+      title={message}
+      onAction={onRetry}
+    />
   );
 }
 
@@ -357,8 +372,7 @@ function NoticeCard({
             {isAdmin && (
               <Button asChild variant="ghost" size="sm">
                 <Link href="/board/notice/write">
-                  <Plus className="h-4 w-4 mr-1" />
-                  글 쓰기
+                  <Plus className="h-4 w-4 mr-1" />글 쓰기
                 </Link>
               </Button>
             )}
@@ -373,7 +387,10 @@ function NoticeCard({
       <CardContent className="p-4 md:p-6">
         <div className="space-y-4">
           {error ? (
-            <ErrorBox message="공지 불러오기에 실패했습니다." onRetry={onRetry} />
+            <ErrorBox
+              message="공지 불러오기에 실패했습니다."
+              onRetry={onRetry}
+            />
           ) : isLoading ? (
             <FiveLineSkeleton />
           ) : items.length === 0 ? (
@@ -539,7 +556,10 @@ function QnaCard({
       <CardContent className="p-4 md:p-6">
         <div className="space-y-4">
           {error ? (
-            <ErrorBox message="Q&A 불러오기에 실패했습니다." onRetry={onRetry} />
+            <ErrorBox
+              message="Q&A 불러오기에 실패했습니다."
+              onRetry={onRetry}
+            />
           ) : isLoading ? (
             <FiveLineSkeleton />
           ) : items.length === 0 ? (
@@ -653,7 +673,10 @@ function ReviewCard({
       <CardContent className="p-4 md:p-6">
         <div className="space-y-4">
           {error ? (
-            <ErrorBox message="리뷰 불러오기에 실패했습니다." onRetry={onRetry} />
+            <ErrorBox
+              message="리뷰 불러오기에 실패했습니다."
+              onRetry={onRetry}
+            />
           ) : isLoading ? (
             <FiveLineSkeleton />
           ) : items.length === 0 ? (
@@ -721,8 +744,8 @@ function CommunityIntroCard() {
 
       <CardContent className="p-4 md:p-6 space-y-4 text-sm text-muted-foreground">
         <p>
-          자유게시판, 중고거래, 장비 사용기, 구매·서비스 후기를 한 곳에서
-          둘러볼 수 있어요.
+          자유게시판, 중고거래, 장비 사용기, 구매·서비스 후기를 한 곳에서 둘러볼
+          수 있어요.
         </p>
 
         <div className="grid gap-2 sm:grid-cols-4">
@@ -859,7 +882,9 @@ export default function BoardPage() {
             </h1>
           </div>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            커뮤니티는 자유게시판, 중고거래, 장비 사용기, 리뷰처럼 이용자끼리 정보를 나누는 공간입니다. 주문/서비스 문의는 고객센터를 이용해주세요.
+            커뮤니티는 자유게시판, 중고거래, 장비 사용기, 리뷰처럼 이용자끼리
+            정보를 나누는 공간입니다. 주문/서비스 문의는 고객센터를
+            이용해주세요.
           </p>
         </div>
 

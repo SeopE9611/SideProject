@@ -11,13 +11,9 @@ import {
 import { getReservedDisplayNameErrorMessage } from "@/lib/reserved-display-name";
 
 const userIdParamsSchema = z.object({
-  id: z
-    .string()
-    .trim()
-    .min(1)
-    .refine(ObjectId.isValid, {
-      message: "유효한 사용자 ID(ObjectId)가 아닙니다.",
-    }),
+  id: z.string().trim().min(1).refine(ObjectId.isValid, {
+    message: "유효한 사용자 ID(ObjectId)가 아닙니다.",
+  }),
 });
 
 const userPatchSchema = z

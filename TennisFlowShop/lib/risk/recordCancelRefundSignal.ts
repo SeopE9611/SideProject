@@ -1,17 +1,17 @@
-import type { Db, ObjectId } from 'mongodb';
+import type { Db, ObjectId } from "mongodb";
 
 export type CancelRefundEventType =
-  | 'order_cancel_request_created'
-  | 'order_cancel_request_withdrawn'
-  | 'order_cancel_request_rejected'
-  | 'order_cancel_request_approved'
-  | 'stringing_cancel_request_created'
-  | 'stringing_cancel_request_rejected'
-  | 'stringing_cancel_request_approved';
+  | "order_cancel_request_created"
+  | "order_cancel_request_withdrawn"
+  | "order_cancel_request_rejected"
+  | "order_cancel_request_approved"
+  | "stringing_cancel_request_created"
+  | "stringing_cancel_request_rejected"
+  | "stringing_cancel_request_approved";
 
-type SubjectType = 'user' | 'guest_order' | 'guest_application';
-type TargetType = 'order' | 'stringing_application';
-type ActorRole = 'user' | 'admin';
+type SubjectType = "user" | "guest_order" | "guest_application";
+type TargetType = "order" | "stringing_application";
+type ActorRole = "user" | "admin";
 
 export type CancelRefundRiskSignalInput = {
   eventType: CancelRefundEventType;
@@ -32,20 +32,20 @@ export function buildCancelRefundSubject(params: {
   if (params.userId) {
     return {
       subjectKey: `user:${String(params.userId)}`,
-      subjectType: 'user',
+      subjectType: "user",
     };
   }
 
   if (params.applicationId) {
     return {
       subjectKey: `guest_application:${String(params.applicationId)}`,
-      subjectType: 'guest_application',
+      subjectType: "guest_application",
     };
   }
 
   return {
-    subjectKey: `guest_order:${String(params.orderId ?? '')}`,
-    subjectType: 'guest_order',
+    subjectKey: `guest_order:${String(params.orderId ?? "")}`,
+    subjectType: "guest_order",
   };
 }
 
@@ -60,15 +60,15 @@ export async function recordCancelRefundSignal(
   try {
     const now = new Date();
 
-    await db.collection('cancel_refund_risk_signals').updateOne(
+    await db.collection("cancel_refund_risk_signals").updateOne(
       {
-        category: 'cancel_refund',
+        category: "cancel_refund",
         subjectKey: input.subjectKey,
         eventType: input.eventType,
       },
       {
         $setOnInsert: {
-          category: 'cancel_refund',
+          category: "cancel_refund",
           eventType: input.eventType,
           subjectKey: input.subjectKey,
           subjectType: input.subjectType,
@@ -93,6 +93,6 @@ export async function recordCancelRefundSignal(
       { upsert: true },
     );
   } catch (error) {
-    console.error('[recordCancelRefundSignal] failed', error);
+    console.error("[recordCancelRefundSignal] failed", error);
   }
 }

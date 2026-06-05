@@ -47,7 +47,10 @@ async function getAuthenticatedUserId() {
   const cookieStore = await cookies();
   const token = cookieStore.get("accessToken")?.value;
   const user = safeVerifyAccessToken(token);
-  if (!user) return { response: NextResponse.json({ message: "Unauthorized" }, { status: 401 }) };
+  if (!user)
+    return {
+      response: NextResponse.json({ message: "Unauthorized" }, { status: 401 }),
+    };
 
   const userId = String((user as any).sub ?? "");
   if (!ObjectId.isValid(userId)) {
@@ -96,10 +99,12 @@ export async function PATCH(
       );
     }
 
-    const result = await db.collection("wishlists").updateOne(
-      { userId: new ObjectId(auth.userId), productId: productObjectId },
-      buildWishlistOptionUpdate(body),
-    );
+    const result = await db
+      .collection("wishlists")
+      .updateOne(
+        { userId: new ObjectId(auth.userId), productId: productObjectId },
+        buildWishlistOptionUpdate(body),
+      );
 
     if (result.matchedCount === 0) {
       return NextResponse.json(

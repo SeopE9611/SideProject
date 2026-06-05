@@ -364,8 +364,8 @@ export async function PATCH(
             targetType: report.targetType ?? null,
             targetId:
               report.targetType === "post"
-                ? report.postId?.toString() ?? null
-                : report.commentId?.toString() ?? null,
+                ? (report.postId?.toString() ?? null)
+                : (report.commentId?.toString() ?? null),
             actor: {
               id: String(admin._id),
               email: admin.email ?? null,

@@ -1,7 +1,13 @@
 // BrandFilter.tsx
 "use client";
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { stringBrandLabel } from "@/lib/constants";
 import { Filter } from "lucide-react";
 

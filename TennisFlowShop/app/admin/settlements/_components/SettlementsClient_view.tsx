@@ -619,11 +619,13 @@ export default function SettlementsClient() {
           icon={ChartBar}
           scope="범위: 주문·신청·대여·패키지 정산"
           helperText="스냅샷은 운영 마감 기준으로 사용되며 필요 시 재생성할 수 있습니다."
-          actions={(
+          actions={
             <Button asChild variant="outline" size="sm">
-              <Link href="/admin/reports/revenue">온라인/오프라인 매출 리포트</Link>
+              <Link href="/admin/reports/revenue">
+                온라인/오프라인 매출 리포트
+              </Link>
             </Button>
-          )}
+          }
         />
 
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6 mb-8">

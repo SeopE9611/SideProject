@@ -42,7 +42,11 @@ export type SaveRevenueReportSnapshotResult = {
   duplicateKeyReturnedExisting: boolean;
 };
 
-export function parsePositiveInt(value: string | null, fallback: number, max: number) {
+export function parsePositiveInt(
+  value: string | null,
+  fallback: number,
+  max: number,
+) {
   const parsed = Number(value);
   if (!Number.isFinite(parsed)) return fallback;
   return Math.min(max, Math.max(1, Math.floor(parsed)));
@@ -67,7 +71,9 @@ export function serializeDate(value: unknown): string | null {
   return null;
 }
 
-export function serializeSnapshot(doc: WithId<RevenueReportSnapshotDoc> | null): RevenueReportSnapshot | null {
+export function serializeSnapshot(
+  doc: WithId<RevenueReportSnapshotDoc> | null,
+): RevenueReportSnapshot | null {
   if (!doc) return null;
   return {
     id: String(doc._id),
@@ -156,7 +162,9 @@ export async function saveRevenueReportSnapshot(
   { actorId }: { actorId: string },
 ): Promise<SaveRevenueReportSnapshotResult> {
   const now = new Date();
-  const collection = db.collection<RevenueReportSnapshotDoc>(REVENUE_REPORT_SNAPSHOTS_COLLECTION);
+  const collection = db.collection<RevenueReportSnapshotDoc>(
+    REVENUE_REPORT_SNAPSHOTS_COLLECTION,
+  );
   const existing = await collection.findOne(
     { yyyymm: snapshotInput.yyyymm },
     { projection: { updatedAt: 1 } },
@@ -191,7 +199,9 @@ export async function saveRevenueReportSnapshot(
   } catch (error) {
     if (!isDuplicateKeyError(error)) throw error;
 
-    const duplicate = await collection.findOne({ yyyymm: snapshotInput.yyyymm });
+    const duplicate = await collection.findOne({
+      yyyymm: snapshotInput.yyyymm,
+    });
     return {
       snapshot: duplicate,
       previousUpdatedAt,

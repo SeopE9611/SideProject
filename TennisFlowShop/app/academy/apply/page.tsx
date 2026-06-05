@@ -1,4 +1,14 @@
-import { AlertCircle, ArrowLeft, Calendar, CheckCircle2, Clock, Info, MapPin, Users, Wallet } from "lucide-react";
+import {
+  AlertCircle,
+  ArrowLeft,
+  Calendar,
+  CheckCircle2,
+  Clock,
+  Info,
+  MapPin,
+  Users,
+  Wallet,
+} from "lucide-react";
 import { ObjectId, type Document } from "mongodb";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -66,11 +76,14 @@ function serializePublicClass(doc: Document): PublicAcademyClass {
     levelLabel: getAcademyClassLevelLabel(level),
     lessonType,
     lessonTypeLabel: getAcademyClassLessonTypeLabel(lessonType),
-    instructorName: typeof doc.instructorName === "string" ? doc.instructorName : null,
+    instructorName:
+      typeof doc.instructorName === "string" ? doc.instructorName : null,
     location: typeof doc.location === "string" ? doc.location : null,
-    scheduleText: typeof doc.scheduleText === "string" ? doc.scheduleText : null,
+    scheduleText:
+      typeof doc.scheduleText === "string" ? doc.scheduleText : null,
     capacity: typeof doc.capacity === "number" ? doc.capacity : null,
-    enrolledCount: typeof doc.enrolledCount === "number" ? doc.enrolledCount : 0,
+    enrolledCount:
+      typeof doc.enrolledCount === "number" ? doc.enrolledCount : 0,
     price: typeof doc.price === "number" ? doc.price : null,
     status,
     statusLabel: getAcademyClassStatusLabel(status),
@@ -79,7 +92,9 @@ function serializePublicClass(doc: Document): PublicAcademyClass {
   };
 }
 
-async function getPublicAcademyClassById(classId: string | null): Promise<PublicAcademyClass | null> {
+async function getPublicAcademyClassById(
+  classId: string | null,
+): Promise<PublicAcademyClass | null> {
   if (!classId || !ObjectId.isValid(classId)) return null;
 
   try {
@@ -116,28 +131,59 @@ async function getPublicAcademyClassById(classId: string | null): Promise<Public
   }
 }
 
-const ACTIVE_APPLICATION_STATUSES = ["submitted", "reviewing", "contacted", "confirmed"] as const;
+const ACTIVE_APPLICATION_STATUSES = [
+  "submitted",
+  "reviewing",
+  "contacted",
+  "confirmed",
+] as const;
 
-function serializeActiveApplication(doc: Document): AcademyActiveApplicationSummary {
-  const classSnapshot = doc.classSnapshot && typeof doc.classSnapshot === "object" ? (doc.classSnapshot as { name?: unknown }) : null;
+function serializeActiveApplication(
+  doc: Document,
+): AcademyActiveApplicationSummary {
+  const classSnapshot =
+    doc.classSnapshot && typeof doc.classSnapshot === "object"
+      ? (doc.classSnapshot as { name?: unknown })
+      : null;
 
   return {
     id: serializeValue(doc._id) ?? "",
     classId: typeof doc.classId === "string" ? doc.classId : null,
-    className: typeof classSnapshot?.name === "string" ? classSnapshot.name : typeof doc.className === "string" ? doc.className : null,
-    preferredDays: Array.isArray(doc.preferredDays) ? doc.preferredDays.filter((day): day is string => typeof day === "string") : [],
-    status: doc.status === "reviewing" || doc.status === "contacted" || doc.status === "confirmed" ? doc.status : "submitted",
+    className:
+      typeof classSnapshot?.name === "string"
+        ? classSnapshot.name
+        : typeof doc.className === "string"
+          ? doc.className
+          : null,
+    preferredDays: Array.isArray(doc.preferredDays)
+      ? doc.preferredDays.filter(
+          (day): day is string => typeof day === "string",
+        )
+      : [],
+    status:
+      doc.status === "reviewing" ||
+      doc.status === "contacted" ||
+      doc.status === "confirmed"
+        ? doc.status
+        : "submitted",
   };
 }
 
-async function getApplicantProfile(userId: string): Promise<AcademyApplicantProfile> {
+async function getApplicantProfile(
+  userId: string,
+): Promise<AcademyApplicantProfile> {
   if (!ObjectId.isValid(userId)) {
     return { name: "", phone: "", email: "" };
   }
 
   try {
     const db = await getDb();
-    const user = await db.collection("users").findOne({ _id: new ObjectId(userId) }, { projection: { name: 1, phone: 1, email: 1 } });
+    const user = await db
+      .collection("users")
+      .findOne(
+        { _id: new ObjectId(userId) },
+        { projection: { name: 1, phone: 1, email: 1 } },
+      );
 
     return {
       name: typeof user?.name === "string" ? user.name : "",
@@ -150,7 +196,9 @@ async function getApplicantProfile(userId: string): Promise<AcademyApplicantProf
   }
 }
 
-async function getActiveApplications(userId: string): Promise<AcademyActiveApplicationSummary[]> {
+async function getActiveApplications(
+  userId: string,
+): Promise<AcademyActiveApplicationSummary[]> {
   try {
     const db = await getDb();
     const docs = await db
@@ -176,7 +224,11 @@ async function getActiveApplications(userId: string): Promise<AcademyActiveAppli
   }
 }
 
-const notices = ["신청 접수 후 상담을 통해 등록 가능 여부와 결제 방법을 안내드립니다.", "수업 일정과 수강료는 상담 후 최종 확인됩니다.", "결제는 신청 단계에서 진행되지 않으며, 등록 확정 후 현장에서 안내됩니다."];
+const notices = [
+  "신청 접수 후 상담을 통해 등록 가능 여부와 결제 방법을 안내드립니다.",
+  "수업 일정과 수강료는 상담 후 최종 확인됩니다.",
+  "결제는 신청 단계에서 진행되지 않으며, 등록 확정 후 현장에서 안내됩니다.",
+];
 
 function formatClassPrice(price: number | null) {
   if (typeof price === "number" && price > 0) {
@@ -192,7 +244,11 @@ function formatClassCapacity(capacity: number | null) {
   return "상담 후 안내";
 }
 
-export default async function AcademyApplyPage({ searchParams }: { searchParams?: Promise<{ classId?: string | string[] }> }) {
+export default async function AcademyApplyPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ classId?: string | string[] }>;
+}) {
   const resolvedSearchParams = await searchParams;
   const rawClassId = resolvedSearchParams?.classId;
   const classId = Array.isArray(rawClassId) ? rawClassId[0] : rawClassId;
@@ -203,9 +259,20 @@ export default async function AcademyApplyPage({ searchParams }: { searchParams?
     redirect(`/login?next=${encodeURIComponent(currentPath)}`);
   }
 
-  const [selectedClass, initialApplicantInfo, activeApplications] = await Promise.all([getPublicAcademyClassById(classId ?? null), getApplicantProfile(userId), getActiveApplications(userId)]);
-  const duplicateApplication = selectedClass ? activeApplications.find((application) => application.classId === selectedClass._id) : null;
-  const selectedClassSchedule = selectedClass ? getAcademyScheduleDisplay(selectedClass.scheduleText) : null;
+  const [selectedClass, initialApplicantInfo, activeApplications] =
+    await Promise.all([
+      getPublicAcademyClassById(classId ?? null),
+      getApplicantProfile(userId),
+      getActiveApplications(userId),
+    ]);
+  const duplicateApplication = selectedClass
+    ? activeApplications.find(
+        (application) => application.classId === selectedClass._id,
+      )
+    : null;
+  const selectedClassSchedule = selectedClass
+    ? getAcademyScheduleDisplay(selectedClass.scheduleText)
+    : null;
 
   return (
     <main className="min-h-screen bg-background">
@@ -217,7 +284,12 @@ export default async function AcademyApplyPage({ searchParams }: { searchParams?
         <div className="relative mx-auto max-w-5xl px-6 py-12 md:py-16">
           {/* Breadcrumb */}
           <nav className="mb-6">
-            <Button asChild variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-foreground">
+            <Button
+              asChild
+              variant="ghost"
+              size="sm"
+              className="gap-2 text-muted-foreground hover:text-foreground"
+            >
               <Link href="/academy">
                 <ArrowLeft className="h-4 w-4" />
                 아카데미로 돌아가기
@@ -231,9 +303,14 @@ export default async function AcademyApplyPage({ searchParams }: { searchParams?
               도깨비테니스 아카데미
             </div>
 
-            <h1 className="text-balance font-brand text-2xl font-bold tracking-tight text-foreground md:text-3xl lg:text-4xl">레슨 신청하기</h1>
+            <h1 className="text-balance font-brand text-2xl font-bold tracking-tight text-foreground md:text-3xl lg:text-4xl">
+              레슨 신청하기
+            </h1>
 
-            <p className="max-w-2xl text-pretty text-base leading-relaxed text-muted-foreground">신청서를 남겨주시면 도깨비테니스에서 일정과 수강 방식을 확인한 뒤 상담을 도와드립니다.</p>
+            <p className="max-w-2xl text-pretty text-base leading-relaxed text-muted-foreground">
+              신청서를 남겨주시면 도깨비테니스에서 일정과 수강 방식을 확인한 뒤
+              상담을 도와드립니다.
+            </p>
           </div>
         </div>
       </section>
@@ -248,10 +325,15 @@ export default async function AcademyApplyPage({ searchParams }: { searchParams?
                 <Info className="h-5 w-5 text-info" />
               </div>
               <div className="space-y-3">
-                <h2 className="text-base font-semibold text-foreground">신청 전 안내사항</h2>
+                <h2 className="text-base font-semibold text-foreground">
+                  신청 전 안내사항
+                </h2>
                 <ul className="space-y-2">
                   {notices.map((notice, index) => (
-                    <li key={index} className="flex items-start gap-2 text-sm leading-relaxed text-muted-foreground">
+                    <li
+                      key={index}
+                      className="flex items-start gap-2 text-sm leading-relaxed text-muted-foreground"
+                    >
                       <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-muted-foreground/50" />
                       <span>{notice}</span>
                     </li>
@@ -270,12 +352,21 @@ export default async function AcademyApplyPage({ searchParams }: { searchParams?
                 </div>
                 <div className="flex-1 space-y-3">
                   <div>
-                    <h2 className="text-lg font-semibold text-foreground">이미 신청한 클래스입니다</h2>
-                    <p className="mt-1 text-sm leading-relaxed text-muted-foreground">기존 신청 내역에서 진행 상태를 확인해 주세요. 같은 클래스는 진행 중인 신청이 있을 때 중복 신청할 수 없습니다.</p>
+                    <h2 className="text-lg font-semibold text-foreground">
+                      이미 신청한 클래스입니다
+                    </h2>
+                    <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                      기존 신청 내역에서 진행 상태를 확인해 주세요. 같은
+                      클래스는 진행 중인 신청이 있을 때 중복 신청할 수 없습니다.
+                    </p>
                   </div>
                   <div className="flex flex-col gap-2 sm:flex-row">
                     <Button asChild>
-                      <a href={`/mypage/academy-applications/${duplicateApplication.id}`}>신청 내역 보기</a>
+                      <a
+                        href={`/mypage/academy-applications/${duplicateApplication.id}`}
+                      >
+                        신청 내역 보기
+                      </a>
                     </Button>
                     <Button asChild variant="outline">
                       <a href="/academy">아카데미로 돌아가기</a>
@@ -288,25 +379,45 @@ export default async function AcademyApplyPage({ searchParams }: { searchParams?
             <>
               {/* Selected Class Info */}
               {selectedClass && (
-                <div className={`rounded-2xl border ${selectedClass.status === "closed" ? "border-muted bg-muted/30" : "border-border/60 bg-card"} overflow-hidden`}>
+                <div
+                  className={`rounded-2xl border ${selectedClass.status === "closed" ? "border-muted bg-muted/30" : "border-border/60 bg-card"} overflow-hidden`}
+                >
                   {/* Class Header */}
                   <div className="border-b border-border/40 bg-muted/30 px-5 py-4 md:px-6">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${selectedClass.status === "closed" ? "bg-muted text-muted-foreground" : "bg-success/10 text-success"}`}>
-                        {selectedClass.status === "closed" ? <Clock className="h-3 w-3" /> : <CheckCircle2 className="h-3 w-3" />}
+                      <span
+                        className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${selectedClass.status === "closed" ? "bg-muted text-muted-foreground" : "bg-success/10 text-success"}`}
+                      >
+                        {selectedClass.status === "closed" ? (
+                          <Clock className="h-3 w-3" />
+                        ) : (
+                          <CheckCircle2 className="h-3 w-3" />
+                        )}
                         {selectedClass.statusLabel}
                       </span>
-                      <span className="inline-flex items-center rounded-full border border-border bg-background px-3 py-1 text-xs font-medium text-muted-foreground">{selectedClass.lessonTypeLabel}</span>
-                      <span className="inline-flex items-center rounded-full border border-border bg-background px-3 py-1 text-xs font-medium text-muted-foreground">{selectedClass.levelLabel}</span>
+                      <span className="inline-flex items-center rounded-full border border-border bg-background px-3 py-1 text-xs font-medium text-muted-foreground">
+                        {selectedClass.lessonTypeLabel}
+                      </span>
+                      <span className="inline-flex items-center rounded-full border border-border bg-background px-3 py-1 text-xs font-medium text-muted-foreground">
+                        {selectedClass.levelLabel}
+                      </span>
                     </div>
                   </div>
 
                   {/* Class Content */}
                   <div className="p-5 md:p-6">
                     <div className="mb-4">
-                      <p className="mb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">선택한 클래스</p>
-                      <h3 className="text-xl font-semibold text-foreground">{selectedClass.name}</h3>
-                      {selectedClass.description && <p className="mt-2 whitespace-pre-line break-keep break-words text-sm leading-relaxed text-muted-foreground">{selectedClass.description}</p>}
+                      <p className="mb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                        선택한 클래스
+                      </p>
+                      <h3 className="text-xl font-semibold text-foreground">
+                        {selectedClass.name}
+                      </h3>
+                      {selectedClass.description && (
+                        <p className="mt-2 whitespace-pre-line break-keep break-words text-sm leading-relaxed text-muted-foreground">
+                          {selectedClass.description}
+                        </p>
+                      )}
                     </div>
 
                     {/* Class Details Grid */}
@@ -314,30 +425,50 @@ export default async function AcademyApplyPage({ searchParams }: { searchParams?
                       <div className="flex items-center gap-3 rounded-xl bg-muted/50 p-3">
                         <Users className="h-4 w-4 shrink-0 text-muted-foreground" />
                         <div className="min-w-0">
-                          <p className="shrink-0 whitespace-nowrap break-keep text-xs text-muted-foreground">정원</p>
-                          <p className="min-w-0 whitespace-nowrap break-keep text-sm font-medium text-foreground tabular-nums">{formatClassCapacity(selectedClass.capacity)}</p>
+                          <p className="shrink-0 whitespace-nowrap break-keep text-xs text-muted-foreground">
+                            정원
+                          </p>
+                          <p className="min-w-0 whitespace-nowrap break-keep text-sm font-medium text-foreground tabular-nums">
+                            {formatClassCapacity(selectedClass.capacity)}
+                          </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3 rounded-xl bg-muted/50 p-3">
                         <MapPin className="h-4 w-4 shrink-0 text-muted-foreground" />
                         <div className="min-w-0">
-                          <p className="shrink-0 whitespace-nowrap break-keep text-xs text-muted-foreground">장소</p>
-                          <p className="min-w-0 whitespace-normal break-keep break-words text-sm font-medium text-foreground">{selectedClass.location || "상담 후 안내"}</p>
+                          <p className="shrink-0 whitespace-nowrap break-keep text-xs text-muted-foreground">
+                            장소
+                          </p>
+                          <p className="min-w-0 whitespace-normal break-keep break-words text-sm font-medium text-foreground">
+                            {selectedClass.location || "상담 후 안내"}
+                          </p>
                         </div>
                       </div>
                       <div className="flex items-start gap-3 rounded-xl bg-muted/50 p-3">
                         <Calendar className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                         <div className="min-w-0 space-y-0.5 whitespace-normal break-keep break-words">
-                          <p className="shrink-0 whitespace-nowrap break-keep text-xs text-muted-foreground">일정</p>
-                          <p className="text-sm font-semibold text-foreground">{selectedClassSchedule?.daysText}</p>
-                          {selectedClassSchedule?.timeText && <p className="text-sm font-medium text-muted-foreground">{selectedClassSchedule.timeText}</p>}
+                          <p className="shrink-0 whitespace-nowrap break-keep text-xs text-muted-foreground">
+                            일정
+                          </p>
+                          <p className="text-sm font-semibold text-foreground">
+                            {selectedClassSchedule?.daysText}
+                          </p>
+                          {selectedClassSchedule?.timeText && (
+                            <p className="text-sm font-medium text-muted-foreground">
+                              {selectedClassSchedule.timeText}
+                            </p>
+                          )}
                         </div>
                       </div>
                       <div className="flex items-center gap-3 rounded-xl bg-muted/50 p-3">
                         <Wallet className="h-4 w-4 shrink-0 text-muted-foreground" />
                         <div className="min-w-0">
-                          <p className="shrink-0 whitespace-nowrap break-keep text-xs text-muted-foreground">수강료</p>
-                          <p className="min-w-0 whitespace-nowrap break-keep text-sm font-medium text-foreground tabular-nums">{formatClassPrice(selectedClass.price)}</p>
+                          <p className="shrink-0 whitespace-nowrap break-keep text-xs text-muted-foreground">
+                            수강료
+                          </p>
+                          <p className="min-w-0 whitespace-nowrap break-keep text-sm font-medium text-foreground tabular-nums">
+                            {formatClassPrice(selectedClass.price)}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -345,9 +476,14 @@ export default async function AcademyApplyPage({ searchParams }: { searchParams?
                     {/* Closed Class Notice */}
                     {selectedClass.status === "closed" && (
                       <div className="mt-4 rounded-xl border border-border bg-background p-4">
-                        <p className="mb-3 text-sm leading-relaxed text-muted-foreground">이 클래스는 현재 모집이 마감되었습니다. 문의하기를 통해 다음 모집 일정을 확인해 주세요.</p>
+                        <p className="mb-3 text-sm leading-relaxed text-muted-foreground">
+                          이 클래스는 현재 모집이 마감되었습니다. 문의하기를
+                          통해 다음 모집 일정을 확인해 주세요.
+                        </p>
                         <Button asChild size="sm">
-                          <Link href="/board/qna/write?category=academy">문의하기</Link>
+                          <Link href="/board/qna/write?category=academy">
+                            문의하기
+                          </Link>
                         </Button>
                       </div>
                     )}
@@ -364,8 +500,14 @@ export default async function AcademyApplyPage({ searchParams }: { searchParams?
                     </div>
                     <div className="space-y-3">
                       <div>
-                        <h3 className="font-semibold text-foreground">클래스 정보를 찾을 수 없습니다</h3>
-                        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">선택한 클래스 정보를 찾을 수 없어 일반 레슨 신청으로 접수됩니다. 특정 클래스를 신청하려면 아카데미 페이지에서 모집 중인 클래스를 다시 선택해 주세요.</p>
+                        <h3 className="font-semibold text-foreground">
+                          클래스 정보를 찾을 수 없습니다
+                        </h3>
+                        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                          선택한 클래스 정보를 찾을 수 없어 일반 레슨 신청으로
+                          접수됩니다. 특정 클래스를 신청하려면 아카데미
+                          페이지에서 모집 중인 클래스를 다시 선택해 주세요.
+                        </p>
                       </div>
                       <Button asChild variant="outline" size="sm">
                         <Link href="/academy">클래스 다시 선택하기</Link>
@@ -376,7 +518,12 @@ export default async function AcademyApplyPage({ searchParams }: { searchParams?
               )}
 
               {/* Application Form */}
-              <AcademyApplyClient requestedClassId={classId ?? null} selectedClass={selectedClass} initialApplicantInfo={initialApplicantInfo} activeApplications={activeApplications} />
+              <AcademyApplyClient
+                requestedClassId={classId ?? null}
+                selectedClass={selectedClass}
+                initialApplicantInfo={initialApplicantInfo}
+                activeApplications={activeApplications}
+              />
             </>
           )}
         </div>

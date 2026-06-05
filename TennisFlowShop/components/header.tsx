@@ -5,20 +5,47 @@ import SearchPreview from "@/components/SearchPreview";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { UserNav } from "@/components/nav/UserNav";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { getSocialProviderBadgeSpec } from "@/lib/badge-style";
 import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import { useUnreadMessageCount } from "@/lib/hooks/useUnreadMessageCount";
 import { cn } from "@/lib/utils";
-import { ChevronDown, ChevronRight, Gift, Headset, Loader2, Mail, Menu, MoreHorizontal, ShoppingCart, UserIcon } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronRight,
+  Gift,
+  Headset,
+  Loader2,
+  Mail,
+  Menu,
+  MoreHorizontal,
+  ShoppingCart,
+  UserIcon,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 
 /** 재질 카테고리(스트링 타입) 노출 온/오프 */
 const SHOW_MATERIAL_MENU = false;
@@ -38,7 +65,13 @@ let headerPointsCache: {
 } | null = null;
 
 /** 모바일 브랜드 그리드 */
-function MobileBrandGrid({ brands, onPick }: { brands: { name: string; href: string }[]; onPick: (href: string) => void }) {
+function MobileBrandGrid({
+  brands,
+  onPick,
+}: {
+  brands: { name: string; href: string }[];
+  onPick: (href: string) => void;
+}) {
   const [expanded, setExpanded] = useState(false);
   const VISIBLE = 6;
   const list = expanded ? brands : brands.slice(0, VISIBLE);
@@ -56,13 +89,20 @@ function MobileBrandGrid({ brands, onPick }: { brands: { name: string; href: str
               )}
               onClick={() => onPick(b.href)}
             >
-              <span className="block min-w-0 truncate whitespace-nowrap">{b.name}</span>
+              <span className="block min-w-0 truncate whitespace-nowrap">
+                {b.name}
+              </span>
             </Button>
           );
         })}
       </div>
       {brands.length > VISIBLE && (
-        <Button variant="ghost" size="sm" className="w-full justify-center rounded-lg text-muted-foreground hover:text-foreground transition-colors" onClick={() => setExpanded((v) => !v)}>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="w-full justify-center rounded-lg text-muted-foreground hover:text-foreground transition-colors"
+          onClick={() => setExpanded((v) => !v)}
+        >
           {expanded ? "접기" : "더보기"}
         </Button>
       )}
@@ -73,9 +113,11 @@ function MobileBrandGrid({ brands, onPick }: { brands: { name: string; href: str
 const mobileMenuItemClass =
   "group w-full min-w-0 justify-between rounded-lg px-3 py-2 text-sm font-semibold text-foreground/85 hover:text-foreground hover:bg-secondary transition-[background-color,color,border-color,box-shadow,opacity] relative z-0 hover:shadow-sm hover:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background";
 const mobileNestedGroupClass = "mt-1 pl-1";
-const mobileNestedTriggerClass = "min-w-0 px-3 py-1.5 text-sm font-semibold text-foreground/75 hover:text-foreground rounded-lg hover:bg-secondary";
+const mobileNestedTriggerClass =
+  "min-w-0 px-3 py-1.5 text-sm font-semibold text-foreground/75 hover:text-foreground rounded-lg hover:bg-secondary";
 const mobileMenuGroupClass = "mt-1.5 pt-0";
-const mobileGroupTitleClass = "min-w-0 break-keep whitespace-normal text-foreground";
+const mobileGroupTitleClass =
+  "min-w-0 break-keep whitespace-normal text-foreground";
 
 const Header = () => {
   const router = useRouter();
@@ -83,7 +125,9 @@ const Header = () => {
   const pathname = usePathname();
 
   // 장바구니 아이템 총 수량 (Zustand selector로 필요한 값만 구독)
-  const cartCount = useCartStore((s) => s.items.reduce((sum, it) => sum + (it.quantity || 0), 0));
+  const cartCount = useCartStore((s) =>
+    s.items.reduce((sum, it) => sum + (it.quantity || 0), 0),
+  );
   const cartBadge = cartCount > 99 ? "99+" : String(cartCount);
 
   const [open, setOpen] = useState(false);
@@ -113,7 +157,9 @@ const Header = () => {
     const style = window.getComputedStyle(wrap);
     const gap = Number.parseFloat(style.columnGap || style.gap || "0") || 0;
 
-    const itemEls = Array.from(root.querySelectorAll<HTMLElement>("[data-measure-item]"));
+    const itemEls = Array.from(
+      root.querySelectorAll<HTMLElement>("[data-measure-item]"),
+    );
     const itemWidths = itemEls.map((el) => el.offsetWidth);
 
     const dotsEl = root.querySelector<HTMLElement>("[data-measure-dots]");
@@ -130,7 +176,10 @@ const Header = () => {
     const navStyle = window.getComputedStyle(navEl);
     const paddingLeft = Number.parseFloat(navStyle.paddingLeft || "0") || 0;
     const paddingRight = Number.parseFloat(navStyle.paddingRight || "0") || 0;
-    const available = Math.max(0, navEl.clientWidth - paddingLeft - paddingRight);
+    const available = Math.max(
+      0,
+      navEl.clientWidth - paddingLeft - paddingRight,
+    );
 
     const prefixWidth = (count: number) => {
       if (count <= 0) return 0;
@@ -147,7 +196,8 @@ const Header = () => {
     for (let visible = n; visible >= 0; visible--) {
       const overflow = n - visible;
       const base = prefixWidth(visible);
-      const total = overflow === 0 ? base : base + (visible > 0 ? gap : 0) + dotsW;
+      const total =
+        overflow === 0 ? base : base + (visible > 0 ? gap : 0) + dotsW;
 
       if (total <= available) {
         nextOverflow = overflow;
@@ -213,8 +263,11 @@ const Header = () => {
   const { user, loading } = useCurrentUser();
   const displayName = user?.name?.trim() || "회원";
   const isAdmin = user?.role === "admin";
-  const { count: unreadCount, status: unreadStatus } = useUnreadMessageCount(!loading && !!user);
-  const resolvedUnreadCount = unreadStatus === "ready" ? (unreadCount ?? 0) : null;
+  const { count: unreadCount, status: unreadStatus } = useUnreadMessageCount(
+    !loading && !!user,
+  );
+  const resolvedUnreadCount =
+    unreadStatus === "ready" ? (unreadCount ?? 0) : null;
 
   // 소셜 로그인 제공자 배지
   const socialProviders = user?.socialProviders ?? [];
@@ -224,7 +277,9 @@ const Header = () => {
   // 헤더 포인트 표시(로그인 유저만)
   const [pointsBalance, setPointsBalance] = useState<number | null>(null);
   // 로딩/실패/실제 값(0 포함)을 분리해 잘못된 0 선노출을 막는다.
-  const [pointsStatus, setPointsStatus] = useState<"loading" | "ready" | "error">("loading");
+  const [pointsStatus, setPointsStatus] = useState<
+    "loading" | "ready" | "error"
+  >("loading");
 
   useEffect(() => {
     if (!user) {
@@ -246,7 +301,10 @@ const Header = () => {
     // - 직접 headerPointsCache.balance에 접근하면
     //   정적 점검에서 "possibly null" 경고가 다시 발생할 수 있습니다.
     const cachedPoints = headerPointsCache;
-    const canUseCache = !!cachedPoints && cachedPoints.userId === currentUserId && Date.now() - cachedPoints.fetchedAt < HEADER_POINTS_CACHE_TTL_MS;
+    const canUseCache =
+      !!cachedPoints &&
+      cachedPoints.userId === currentUserId &&
+      Date.now() - cachedPoints.fetchedAt < HEADER_POINTS_CACHE_TTL_MS;
 
     if (canUseCache) {
       // UX 목적:
@@ -432,14 +490,21 @@ const Header = () => {
   const isActiveMenu = (item: (typeof menuItems)[number]) => {
     const p = pathname ?? "";
     if (item.isServiceMenu) return p === item.href;
-    if (item.isRacketMenu) return p === item.href || (p.startsWith("/rackets/") && !p.startsWith("/rackets/finder"));
+    if (item.isRacketMenu)
+      return (
+        p === item.href ||
+        (p.startsWith("/rackets/") && !p.startsWith("/rackets/finder"))
+      );
     return p.startsWith(item.href);
   };
 
   return (
     <>
       {/* 스킵 링크 */}
-      <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md focus:shadow-lg">
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md focus:shadow-lg"
+      >
         메인 콘텐츠로 건너뛰기
       </a>
       <Sheet open={open} onOpenChange={setOpen}>
@@ -447,20 +512,46 @@ const Header = () => {
           side="left"
           className="w-[min(88vw,340px)] max-w-[340px] h-[100dvh] max-h-[100dvh] overflow-hidden bg-card p-0 flex flex-col border-r border-border"
           onOpenAutoFocus={(e) => {
-            if (typeof window !== "undefined" && window.innerWidth < 768) e.preventDefault();
+            if (typeof window !== "undefined" && window.innerWidth < 768)
+              e.preventDefault();
           }}
         >
           {/* 상단 로고/검색 */}
           <div className="shrink-0 border-b border-border bg-muted/30 px-4 pt-5 pb-3 bp-sm:px-5 bp-sm:pt-6 bp-sm:pb-4">
-            <Link href="/" className="inline-flex min-w-0 items-center gap-2 group" aria-label="도깨비테니스 홈" onClick={() => setOpen(false)}>
+            <Link
+              href="/"
+              className="inline-flex min-w-0 items-center gap-2 group"
+              aria-label="도깨비테니스 홈"
+              onClick={() => setOpen(false)}
+            >
               <div className="relative h-7 w-7 shrink-0 overflow-hidden">
-                <Image src="/brand/symbol-light.png" alt="" aria-hidden="true" fill className="object-contain dark:hidden" priority />
-                <Image src="/brand/symbol-dark.png" alt="" aria-hidden="true" fill className="hidden object-contain dark:block" priority />
+                <Image
+                  src="/brand/symbol-light.png"
+                  alt=""
+                  aria-hidden="true"
+                  fill
+                  className="object-contain dark:hidden"
+                  priority
+                />
+                <Image
+                  src="/brand/symbol-dark.png"
+                  alt=""
+                  aria-hidden="true"
+                  fill
+                  className="hidden object-contain dark:block"
+                  priority
+                />
               </div>
-              <div className="min-w-0 truncate whitespace-nowrap font-brand-bold text-lg font-bold text-foreground">도깨비테니스</div>
+              <div className="min-w-0 truncate whitespace-nowrap font-brand-bold text-lg font-bold text-foreground">
+                도깨비테니스
+              </div>
             </Link>
             <div className="mt-4">
-              <SearchPreview placeholder="스트링 / 라켓 검색." className="w-full rounded-lg border-border focus-within:border-border focus-within:ring-2 focus-within:ring-ring transition-colors" onSelect={() => setOpen(false)} />
+              <SearchPreview
+                placeholder="스트링 / 라켓 검색."
+                className="w-full rounded-lg border-border focus-within:border-border focus-within:ring-2 focus-within:ring-ring transition-colors"
+                onSelect={() => setOpen(false)}
+              />
             </div>
             <div className="mt-3">
               {user && (
@@ -468,19 +559,34 @@ const Header = () => {
                   <div className="flex min-w-0 items-start justify-between gap-2">
                     <div className="min-w-0 flex-1">
                       <div className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5">
-                        <div className="min-w-0 max-w-[150px] truncate text-sm font-bold leading-5 text-foreground bp-sm:max-w-[180px]">{displayName} 님</div>
+                        <div className="min-w-0 max-w-[150px] truncate text-sm font-bold leading-5 text-foreground bp-sm:max-w-[180px]">
+                          {displayName} 님
+                        </div>
                         {hasKakao && (
-                          <Badge variant={getSocialProviderBadgeSpec("kakao").variant} className="h-4 shrink-0 whitespace-nowrap border border-border/60 px-1.5 text-[10px] leading-none">
+                          <Badge
+                            variant={
+                              getSocialProviderBadgeSpec("kakao").variant
+                            }
+                            className="h-4 shrink-0 whitespace-nowrap border border-border/60 px-1.5 text-[10px] leading-none"
+                          >
                             카카오
                           </Badge>
                         )}
                         {hasNaver && (
-                          <Badge variant={getSocialProviderBadgeSpec("naver").variant} className="h-4 shrink-0 whitespace-nowrap border border-border/60 px-1.5 text-[10px] leading-none">
+                          <Badge
+                            variant={
+                              getSocialProviderBadgeSpec("naver").variant
+                            }
+                            className="h-4 shrink-0 whitespace-nowrap border border-border/60 px-1.5 text-[10px] leading-none"
+                          >
                             네이버
                           </Badge>
                         )}
                         {isAdmin && (
-                          <Badge variant="success" className="h-4 shrink-0 whitespace-nowrap border border-border/60 px-1.5 py-0 text-[10px] leading-none">
+                          <Badge
+                            variant="success"
+                            className="h-4 shrink-0 whitespace-nowrap border border-border/60 px-1.5 py-0 text-[10px] leading-none"
+                          >
                             관리자
                           </Badge>
                         )}
@@ -494,7 +600,10 @@ const Header = () => {
                         <span className="text-[10px] font-bold">P</span>
                         {pointsStatus === "loading" ? (
                           <>
-                            <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
+                            <Loader2
+                              className="h-3 w-3 animate-spin"
+                              aria-hidden="true"
+                            />
                             <span className="sr-only">포인트 불러오는 중</span>
                           </>
                         ) : pointsStatus === "error" ? (
@@ -507,11 +616,24 @@ const Header = () => {
 
                     <DropdownMenu modal={false}>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="-mr-1 -mt-1 h-8 w-8 shrink-0 rounded-full text-muted-foreground hover:bg-secondary hover:text-foreground" aria-label="사용자 메뉴 더보기">
-                          <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="-mr-1 -mt-1 h-8 w-8 shrink-0 rounded-full text-muted-foreground hover:bg-secondary hover:text-foreground"
+                          aria-label="사용자 메뉴 더보기"
+                        >
+                          <MoreHorizontal
+                            className="h-4 w-4"
+                            aria-hidden="true"
+                          />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" sideOffset={8} collisionPadding={12} className="z-[60] w-44">
+                      <DropdownMenuContent
+                        align="end"
+                        sideOffset={8}
+                        collisionPadding={12}
+                        className="z-[60] w-44"
+                      >
                         <DropdownMenuItem
                           className="h-9"
                           onSelect={() => {
@@ -570,9 +692,19 @@ const Header = () => {
                         router.push("/messages");
                       }}
                     >
-                      <Mail className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                      <Mail
+                        className="h-3.5 w-3.5 shrink-0"
+                        aria-hidden="true"
+                      />
                       <span>쪽지</span>
-                      {resolvedUnreadCount !== null && resolvedUnreadCount > 0 && <span className="tabular-nums text-destructive">{resolvedUnreadCount > 99 ? "99+" : resolvedUnreadCount}</span>}
+                      {resolvedUnreadCount !== null &&
+                        resolvedUnreadCount > 0 && (
+                          <span className="tabular-nums text-destructive">
+                            {resolvedUnreadCount > 99
+                              ? "99+"
+                              : resolvedUnreadCount}
+                          </span>
+                        )}
                     </button>
                     <button
                       type="button"
@@ -583,9 +715,16 @@ const Header = () => {
                         router.push("/cart");
                       }}
                     >
-                      <ShoppingCart className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                      <ShoppingCart
+                        className="h-3.5 w-3.5 shrink-0"
+                        aria-hidden="true"
+                      />
                       <span>장바구니</span>
-                      {cartCount > 0 && <span className="tabular-nums text-primary">{cartBadge}</span>}
+                      {cartCount > 0 && (
+                        <span className="tabular-nums text-primary">
+                          {cartBadge}
+                        </span>
+                      )}
                     </button>
                   </div>
                 </div>
@@ -597,7 +736,10 @@ const Header = () => {
             <Accordion type="single" className="space-y-1">
               {/* 스트링 */}
               <AccordionItem value="strings" className="border-none">
-                <AccordionTrigger value="strings" className="py-2.5 px-3 rounded-lg hover:bg-secondary hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group">
+                <AccordionTrigger
+                  value="strings"
+                  className="py-2.5 px-3 rounded-lg hover:bg-secondary hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group"
+                >
                   <span className="inline-flex items-center gap-2.5 text-base font-bold">
                     {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
                       <Grid2X2 className="h-4 w-4" />
@@ -605,7 +747,10 @@ const Header = () => {
                     <span className={mobileGroupTitleClass}>스트링</span>
                   </span>
                 </AccordionTrigger>
-                <AccordionContent value="strings" className="pb-2 pt-1 space-y-0.5">
+                <AccordionContent
+                  value="strings"
+                  className="pb-2 pt-1 space-y-0.5"
+                >
                   <Button
                     variant="ghost"
                     className={mobileMenuItemClass}
@@ -621,11 +766,20 @@ const Header = () => {
                   {/* 접어두는 하위 그룹(안내/브랜드) */}
                   <div className={mobileNestedGroupClass}>
                     <Accordion type="single" className="space-y-1">
-                      <AccordionItem value="strings-brand" className="border-none">
-                        <AccordionTrigger value="strings-brand" className={mobileNestedTriggerClass}>
+                      <AccordionItem
+                        value="strings-brand"
+                        className="border-none"
+                      >
+                        <AccordionTrigger
+                          value="strings-brand"
+                          className={mobileNestedTriggerClass}
+                        >
                           브랜드
                         </AccordionTrigger>
-                        <AccordionContent value="strings-brand" className="pb-0 pt-1">
+                        <AccordionContent
+                          value="strings-brand"
+                          className="pb-0 pt-1"
+                        >
                           <div className="px-1 pt-2">
                             <MobileBrandGrid
                               brands={NAV_LINKS.strings.brands}
@@ -648,17 +802,28 @@ const Header = () => {
                       router.push("/services/apply");
                     }}
                   >
-                    <span className="min-w-0 truncate font-semibold text-primary">교체서비스 시작하기</span>
+                    <span className="min-w-0 truncate font-semibold text-primary">
+                      교체서비스 시작하기
+                    </span>
                     <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200" />
                   </Button>
 
                   <div className={mobileNestedGroupClass}>
                     <Accordion type="single" className="space-y-1">
-                      <AccordionItem value="strings-service" className="border-none">
-                        <AccordionTrigger value="strings-service" className={mobileNestedTriggerClass}>
+                      <AccordionItem
+                        value="strings-service"
+                        className="border-none"
+                      >
+                        <AccordionTrigger
+                          value="strings-service"
+                          className={mobileNestedTriggerClass}
+                        >
                           장착 서비스 안내
                         </AccordionTrigger>
-                        <AccordionContent value="strings-service" className="pb-0 pt-1">
+                        <AccordionContent
+                          value="strings-service"
+                          className="pb-0 pt-1"
+                        >
                           <div className="space-y-0.5">
                             {NAV_LINKS.services.map((it) => (
                               <Button
@@ -703,22 +868,35 @@ const Header = () => {
                     router.push(NAV_LINKS.academy.href);
                   }}
                 >
-                  <span className="min-w-0 break-keep whitespace-normal text-left">{NAV_LINKS.academy.name}</span>
+                  <span className="min-w-0 break-keep whitespace-normal text-left">
+                    {NAV_LINKS.academy.name}
+                  </span>
                   <ChevronRight className="h-3.5 w-3.5 shrink-0 transition-transform duration-200" />
                 </Button>
               </div>
 
               {/* 중고 라켓 */}
-              <AccordionItem value="rackets" className={cn("border-none", mobileMenuGroupClass)}>
-                <AccordionTrigger value="rackets" className="py-2.5 px-3 rounded-lg hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group">
+              <AccordionItem
+                value="rackets"
+                className={cn("border-none", mobileMenuGroupClass)}
+              >
+                <AccordionTrigger
+                  value="rackets"
+                  className="py-2.5 px-3 rounded-lg hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group"
+                >
                   <span className="inline-flex items-center gap-2.5 text-base font-bold">
                     {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
                       <MdSportsTennis className="h-4 w-4" />
                     </div> */}
-                    <span className={mobileGroupTitleClass}>도깨비 인증 중고 라켓</span>
+                    <span className={mobileGroupTitleClass}>
+                      도깨비 인증 중고 라켓
+                    </span>
                   </span>
                 </AccordionTrigger>
-                <AccordionContent value="rackets" className="pb-2 pt-1 space-y-0.5">
+                <AccordionContent
+                  value="rackets"
+                  className="pb-2 pt-1 space-y-0.5"
+                >
                   <Button
                     variant="ghost"
                     className={mobileMenuItemClass}
@@ -734,11 +912,20 @@ const Header = () => {
                   {/* 브랜드 서브메뉴 */}
                   <div className={mobileNestedGroupClass}>
                     <Accordion type="single" className="space-y-1">
-                      <AccordionItem value="rackets-brand" className="border-none">
-                        <AccordionTrigger value="rackets-brand" className={mobileNestedTriggerClass}>
+                      <AccordionItem
+                        value="rackets-brand"
+                        className="border-none"
+                      >
+                        <AccordionTrigger
+                          value="rackets-brand"
+                          className={mobileNestedTriggerClass}
+                        >
                           브랜드
                         </AccordionTrigger>
-                        <AccordionContent value="rackets-brand" className="pb-0 pt-1">
+                        <AccordionContent
+                          value="rackets-brand"
+                          className="pb-0 pt-1"
+                        >
                           <div className="px-1 pt-2">
                             <MobileBrandGrid
                               brands={NAV_LINKS.rackets.brands}
@@ -756,8 +943,14 @@ const Header = () => {
               </AccordionItem>
 
               {/* 게시판 */}
-              <AccordionItem value="boards" className={cn("border-none", mobileMenuGroupClass)}>
-                <AccordionTrigger value="boards" className="py-2.5 px-3 rounded-lg hover:bg-secondary hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group">
+              <AccordionItem
+                value="boards"
+                className={cn("border-none", mobileMenuGroupClass)}
+              >
+                <AccordionTrigger
+                  value="boards"
+                  className="py-2.5 px-3 rounded-lg hover:bg-secondary hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group"
+                >
                   <span className="inline-flex items-center gap-2.5 text-base font-bold">
                     {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
                       <MessageSquareText className="h-4 w-4" />
@@ -765,7 +958,10 @@ const Header = () => {
                     <span className={mobileGroupTitleClass}>커뮤니티</span>
                   </span>
                 </AccordionTrigger>
-                <AccordionContent value="boards" className="pb-2 pt-1 space-y-0.5">
+                <AccordionContent
+                  value="boards"
+                  className="pb-2 pt-1 space-y-0.5"
+                >
                   {NAV_LINKS.boards.map((it) => (
                     <Button
                       key={it.name}
@@ -784,8 +980,14 @@ const Header = () => {
               </AccordionItem>
 
               {/* 고객센터 */}
-              <AccordionItem value="support" className={cn("border-none", mobileMenuGroupClass)}>
-                <AccordionTrigger value="support" className="py-2.5 px-3 rounded-lg hover:bg-secondary hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group">
+              <AccordionItem
+                value="support"
+                className={cn("border-none", mobileMenuGroupClass)}
+              >
+                <AccordionTrigger
+                  value="support"
+                  className="py-2.5 px-3 rounded-lg hover:bg-secondary hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group"
+                >
                   <span className="inline-flex items-center gap-2.5 text-base font-bold">
                     {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
                       <MessageSquare className="h-4 w-4" />
@@ -793,7 +995,10 @@ const Header = () => {
                     <span className={mobileGroupTitleClass}>고객센터</span>
                   </span>
                 </AccordionTrigger>
-                <AccordionContent value="support" className="pb-2 pt-1 space-y-0.5">
+                <AccordionContent
+                  value="support"
+                  className="pb-2 pt-1 space-y-0.5"
+                >
                   {NAV_LINKS.support.map((it) => (
                     <Button
                       key={it.name}
@@ -817,14 +1022,20 @@ const Header = () => {
               {!user && (
                 <div className="space-y-3 rounded-2xl border border-border bg-muted/30 p-4">
                   <p className="break-keep text-sm leading-5 text-muted-foreground">
-                    로그인하면 주문 조회와 교체서비스 신청 내역을 확인할 수 있어요.
+                    로그인하면 주문 조회와 교체서비스 신청 내역을 확인할 수
+                    있어요.
                   </p>
                   <Button
                     className="h-10 w-full justify-center rounded-xl bg-primary text-primary-foreground shadow-md transition-[background-color,color,border-color,box-shadow,opacity] duration-200 hover:bg-primary/90"
                     onClick={() => {
                       setOpen(false);
-                      const redirectTo = typeof window !== "undefined" ? window.location.pathname + window.location.search : "/";
-                      router.push(`/login?next=${encodeURIComponent(redirectTo)}`);
+                      const redirectTo =
+                        typeof window !== "undefined"
+                          ? window.location.pathname + window.location.search
+                          : "/";
+                      router.push(
+                        `/login?next=${encodeURIComponent(redirectTo)}`,
+                      );
                     }}
                   >
                     로그인
@@ -839,8 +1050,15 @@ const Header = () => {
             </div>
           </div>
         </SheetContent>
-        <header ref={headerRef as any} data-scrolled={isScrolled} className={`app-header fixed top-0 inset-x-0 z-[40] w-full isolate transition-[height] duration-300 ${isScrolled ? "h-[64px]" : "h-[80px]"}`}>
-          <div aria-hidden="true" className={`absolute left-0 right-0 top-0 z-0 pointer-events-none transition-[height,background] duration-300 ${isScrolled ? "h-[64px]" : "h-[80px]"} bg-background/95 border-b border-border`} />
+        <header
+          ref={headerRef as any}
+          data-scrolled={isScrolled}
+          className={`app-header fixed top-0 inset-x-0 z-[40] w-full isolate transition-[height] duration-300 ${isScrolled ? "h-[64px]" : "h-[80px]"}`}
+        >
+          <div
+            aria-hidden="true"
+            className={`absolute left-0 right-0 top-0 z-0 pointer-events-none transition-[height,background] duration-300 ${isScrolled ? "h-[64px]" : "h-[80px]"} bg-background/95 border-b border-border`}
+          />
           <SiteContainer
             className="bp-lg:mx-0 bp-lg:max-w-none bp-lg:px-6 xl:px-8 2xl:px-10 h-full flex items-center justify-between overflow-visible transition-transform duration-300"
             style={{
@@ -852,18 +1070,44 @@ const Header = () => {
             <div className="grid w-full grid-cols-[88px_minmax(0,1fr)_88px] items-center bp-lg:hidden">
               <div className="justify-self-start">
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="rounded-full hover:bg-secondary p-2 focus-visible:ring-2 ring-ring" aria-label="메뉴 열기">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="rounded-full hover:bg-secondary p-2 focus-visible:ring-2 ring-ring"
+                    aria-label="메뉴 열기"
+                  >
                     <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
               </div>
 
-              <Link href="/" className="inline-flex min-w-0 items-center justify-center gap-1.5 justify-self-center group" aria-label="도깨비테니스 홈" onClick={() => setOpen(false)}>
+              <Link
+                href="/"
+                className="inline-flex min-w-0 items-center justify-center gap-1.5 justify-self-center group"
+                aria-label="도깨비테니스 홈"
+                onClick={() => setOpen(false)}
+              >
                 <div className="relative h-7 w-7 shrink-0 overflow-hidden">
-                  <Image src="/brand/symbol-light.png" alt="" aria-hidden="true" fill className="object-contain dark:hidden" priority />
-                  <Image src="/brand/symbol-dark.png" alt="" aria-hidden="true" fill className="hidden object-contain dark:block" priority />
+                  <Image
+                    src="/brand/symbol-light.png"
+                    alt=""
+                    aria-hidden="true"
+                    fill
+                    className="object-contain dark:hidden"
+                    priority
+                  />
+                  <Image
+                    src="/brand/symbol-dark.png"
+                    alt=""
+                    aria-hidden="true"
+                    fill
+                    className="hidden object-contain dark:block"
+                    priority
+                  />
                 </div>
-                <div className="font-brand-bold font-bold text-[15px] tracking-normal text-foreground group-hover:text-foreground transition-colors whitespace-nowrap">도깨비테니스</div>
+                <div className="font-brand-bold font-bold text-[15px] tracking-normal text-foreground group-hover:text-foreground transition-colors whitespace-nowrap">
+                  도깨비테니스
+                </div>
               </Link>
 
               <div className="flex items-center gap-0.5 justify-self-end">
@@ -877,29 +1121,61 @@ const Header = () => {
                       router.push("/mypage");
                       return;
                     }
-                    const nextPath = typeof window !== "undefined" ? `${window.location.pathname}${window.location.search}` : pathname || "/";
+                    const nextPath =
+                      typeof window !== "undefined"
+                        ? `${window.location.pathname}${window.location.search}`
+                        : pathname || "/";
                     router.push(`/login?next=${encodeURIComponent(nextPath)}`);
                   }}
                 >
                   <UserIcon className="h-5 w-5" />
                 </Button>
                 <Link href="/cart">
-                  <Button variant="ghost" size="icon" className="relative rounded-full hover:bg-secondary p-2 focus-visible:ring-2 ring-ring" aria-label="장바구니">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="relative rounded-full hover:bg-secondary p-2 focus-visible:ring-2 ring-ring"
+                    aria-label="장바구니"
+                  >
                     <ShoppingCart className="h-5 w-5" />
-                    {cartCount > 0 && <span className="absolute -top-1 -right-1 text-[10px] h-4 min-w-4 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold">{cartBadge}</span>}
+                    {cartCount > 0 && (
+                      <span className="absolute -top-1 -right-1 text-[10px] h-4 min-w-4 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold">
+                        {cartBadge}
+                      </span>
+                    )}
                   </Button>
                 </Link>
               </div>
             </div>
             <div className="hidden bp-lg:grid w-full min-w-0 grid-cols-[auto_minmax(280px,1fr)_auto] xl:grid-cols-[auto_minmax(360px,640px)_auto] items-center gap-3 xl:gap-6">
               <div className="justify-self-start flex items-center min-w-fit shrink-0 gap-8">
-                <Link href="/" className="flex items-center gap-2 shrink-0 group" aria-label="도깨비테니스 홈">
+                <Link
+                  href="/"
+                  className="flex items-center gap-2 shrink-0 group"
+                  aria-label="도깨비테니스 홈"
+                >
                   <div className="relative h-12 w-12 xl:h-14 xl:w-14 2xl:h-[60px] 2xl:w-[60px] shrink-0 overflow-hidden">
-                    <Image src="/brand/symbol-light.png" alt="" aria-hidden="true" fill className="object-contain dark:hidden" priority />
-                    <Image src="/brand/symbol-dark.png" alt="" aria-hidden="true" fill className="hidden object-contain dark:block" priority />
+                    <Image
+                      src="/brand/symbol-light.png"
+                      alt=""
+                      aria-hidden="true"
+                      fill
+                      className="object-contain dark:hidden"
+                      priority
+                    />
+                    <Image
+                      src="/brand/symbol-dark.png"
+                      alt=""
+                      aria-hidden="true"
+                      fill
+                      className="hidden object-contain dark:block"
+                      priority
+                    />
                   </div>
 
-                  <div className="font-brand-bold font-bold text-2xl xl:text-[28px] tracking-normal text-foreground group-hover:text-foreground transition-colors whitespace-nowrap">도깨비테니스</div>
+                  <div className="font-brand-bold font-bold text-2xl xl:text-[28px] tracking-normal text-foreground group-hover:text-foreground transition-colors whitespace-nowrap">
+                    도깨비테니스
+                  </div>
                 </Link>
                 <Link
                   href="/services/apply"
@@ -909,12 +1185,17 @@ const Header = () => {
                 </Link>
 
                 {SHOW_DESKTOP_HEADER_NAV ? (
-                  <nav ref={navRef} className="hidden bp-lg:flex items-center ml-1 whitespace-nowrap flex-1 min-w-0 overflow-hidden">
+                  <nav
+                    ref={navRef}
+                    className="hidden bp-lg:flex items-center ml-1 whitespace-nowrap flex-1 min-w-0 overflow-hidden"
+                  >
                     <div
                       className={`flex w-full min-w-0 items-center gap-1.5 xl:gap-2 whitespace-nowrap ${
                         // 메뉴가 전부 보일 때는 bounded width를 조금 더 줄여
                         // 간격이 과하게 벌어지지 않게 정리합니다.
-                        hasOverflow ? "justify-start" : "mx-auto max-w-[780px] 2xl:max-w-[860px] justify-between"
+                        hasOverflow
+                          ? "justify-start"
+                          : "mx-auto max-w-[780px] 2xl:max-w-[860px] justify-between"
                       }`}
                     >
                       {primaryMenuItems.map((item) => {
@@ -934,7 +1215,11 @@ const Header = () => {
 
                       {/* bp-lg(1200+)~1580px 미만 구간: 우측 메뉴가 검색 영역에 가려질 수 있어 '더보기'로 이동 */}
                       {overflowMenuItems.length > 0 && (
-                        <DropdownMenu modal={false} open={overflowMenuOpen} onOpenChange={setOverflowMenuOpen}>
+                        <DropdownMenu
+                          modal={false}
+                          open={overflowMenuOpen}
+                          onOpenChange={setOverflowMenuOpen}
+                        >
                           <DropdownMenuTrigger asChild>
                             <button
                               type="button"
@@ -942,7 +1227,10 @@ const Header = () => {
                               aria-label="더보기 메뉴"
                             >
                               ⋯
-                              <ChevronDown className="h-4 w-4" aria-hidden="true" />
+                              <ChevronDown
+                                className="h-4 w-4"
+                                aria-hidden="true"
+                              />
                             </button>
                           </DropdownMenuTrigger>
 
@@ -952,7 +1240,11 @@ const Header = () => {
                               return (
                                 <DropdownMenuItem
                                   key={item.name}
-                                  className={active ? "bg-secondary text-foreground font-semibold" : undefined}
+                                  className={
+                                    active
+                                      ? "bg-secondary text-foreground font-semibold"
+                                      : undefined
+                                  }
                                   onSelect={(e) => {
                                     e.preventDefault();
                                     setOverflowMenuOpen(false);
@@ -983,15 +1275,28 @@ const Header = () => {
 
               {/* 숨은 측정 DOM: 실제 렌더 폭(텍스트/패딩/아이콘/갭)을 그대로 재기 */}
               {SHOW_DESKTOP_HEADER_NAV ? (
-                <div ref={measureRef} className="absolute -left-[9999px] top-0 opacity-0 pointer-events-none">
-                  <div data-measure-wrap className="flex items-center gap-1.5 xl:gap-2 ml-2 whitespace-nowrap">
+                <div
+                  ref={measureRef}
+                  className="absolute -left-[9999px] top-0 opacity-0 pointer-events-none"
+                >
+                  <div
+                    data-measure-wrap
+                    className="flex items-center gap-1.5 xl:gap-2 ml-2 whitespace-nowrap"
+                  >
                     {menuItems.map((it) => (
-                      <span key={`measure-${it.name}`} data-measure-item className="inline-flex shrink-0 items-center h-10 px-3 rounded-lg text-[15px] leading-none whitespace-nowrap font-semibold">
+                      <span
+                        key={`measure-${it.name}`}
+                        data-measure-item
+                        className="inline-flex shrink-0 items-center h-10 px-3 rounded-lg text-[15px] leading-none whitespace-nowrap font-semibold"
+                      >
                         {it.name}
                       </span>
                     ))}
 
-                    <span data-measure-dots className="inline-flex shrink-0 items-center h-10 gap-1 px-3 rounded-lg text-[15px] leading-none whitespace-nowrap font-semibold">
+                    <span
+                      data-measure-dots
+                      className="inline-flex shrink-0 items-center h-10 gap-1 px-3 rounded-lg text-[15px] leading-none whitespace-nowrap font-semibold"
+                    >
                       ⋯ <ChevronDown className="h-4 w-4" aria-hidden="true" />
                     </span>
                   </div>
@@ -1001,7 +1306,12 @@ const Header = () => {
               {/* 아이콘/유저 */}
               <div className="justify-self-end flex min-w-0 items-center gap-1.5 xl:gap-2 2xl:gap-3 min-w-fit shrink-0 pl-2">
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="bp-lg:hidden rounded-full hover:bg-secondary p-2 transition-[background-color,color,border-color,box-shadow,opacity] duration-300 focus-visible:ring-2 ring-ring" aria-label="메뉴 열기">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="bp-lg:hidden rounded-full hover:bg-secondary p-2 transition-[background-color,color,border-color,box-shadow,opacity] duration-300 focus-visible:ring-2 ring-ring"
+                    aria-label="메뉴 열기"
+                  >
                     <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
@@ -1032,15 +1342,22 @@ const Header = () => {
                     variant="ghost"
                     size="icon"
                     className="relative h-10 w-10 rounded-full hover:bg-secondary p-0 transition-[background-color,color,border-color,box-shadow,opacity] duration-300 focus-visible:ring-2 ring-ring shrink-0"
-                    aria-label={resolvedUnreadCount !== null && resolvedUnreadCount > 0 ? `읽지 않은 쪽지 ${resolvedUnreadCount}개` : "쪽지함"}
+                    aria-label={
+                      resolvedUnreadCount !== null && resolvedUnreadCount > 0
+                        ? `읽지 않은 쪽지 ${resolvedUnreadCount}개`
+                        : "쪽지함"
+                    }
                     title="쪽지함"
                   >
                     <Mail className="!h-5 !w-5" />
-                    {resolvedUnreadCount !== null && resolvedUnreadCount > 0 && (
-                      <span className="absolute -top-1 -right-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground">
-                        {resolvedUnreadCount > 99 ? "99+" : resolvedUnreadCount}
-                      </span>
-                    )}
+                    {resolvedUnreadCount !== null &&
+                      resolvedUnreadCount > 0 && (
+                        <span className="absolute -top-1 -right-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground">
+                          {resolvedUnreadCount > 99
+                            ? "99+"
+                            : resolvedUnreadCount}
+                        </span>
+                      )}
                   </Button>
                 </Link>
                 <Link href="/cart">
@@ -1052,18 +1369,34 @@ const Header = () => {
                     title="장바구니"
                   >
                     <ShoppingCart className="!h-5 !w-5" />
-                    {cartCount > 0 && <span className="absolute -top-1 -right-1 text-[10px] min-w-[18px] h-[18px] px-[5px] rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold">{cartBadge}</span>}
+                    {cartCount > 0 && (
+                      <span className="absolute -top-1 -right-1 text-[10px] min-w-[18px] h-[18px] px-[5px] rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold">
+                        {cartBadge}
+                      </span>
+                    )}
                   </Button>
                 </Link>
 
                 {user && (
-                  <Button variant="ghost" className="h-9 px-2.5 2xl:px-3 rounded-full shrink-0" asChild>
-                    <Link href="/mypage?tab=points" className="flex items-center gap-2">
-                      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-muted text-xs font-bold text-muted-foreground">P</span>
+                  <Button
+                    variant="ghost"
+                    className="h-9 px-2.5 2xl:px-3 rounded-full shrink-0"
+                    asChild
+                  >
+                    <Link
+                      href="/mypage?tab=points"
+                      className="flex items-center gap-2"
+                    >
+                      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-muted text-xs font-bold text-muted-foreground">
+                        P
+                      </span>
                       <span className="hidden 2xl:inline-flex min-w-0 items-center gap-1 whitespace-nowrap text-sm font-semibold tabular-nums">
                         {pointsStatus === "loading" ? (
                           <>
-                            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" aria-hidden="true" />
+                            <Loader2
+                              className="h-4 w-4 animate-spin text-muted-foreground"
+                              aria-hidden="true"
+                            />
                             <span className="sr-only">포인트 불러오는 중</span>
                           </>
                         ) : pointsStatus === "error" ? (

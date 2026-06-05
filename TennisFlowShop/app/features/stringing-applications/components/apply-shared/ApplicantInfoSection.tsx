@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { CheckCircle2, User , Store, Shield, MapPin, Box } from "lucide-react";
+import { CheckCircle2, User, Store, Shield, MapPin, Box } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -163,7 +163,9 @@ export default function ApplicantInfoSection({
           <User className="h-5 w-5 text-foreground" />
         </div>
         <div>
-          <h2 className="text-xl font-bold text-foreground">신청자/수령 정보</h2>
+          <h2 className="text-xl font-bold text-foreground">
+            신청자/수령 정보
+          </h2>
           <p className="mt-1 text-sm text-muted-foreground">
             먼저 라켓을 전달할 방식을 선택하고 필요한 연락처를 확인해주세요.
           </p>
@@ -173,74 +175,76 @@ export default function ApplicantInfoSection({
       <div className="rounded-2xl border border-border bg-background/60 p-4">
         <div className="mb-3">
           <h3 className="text-base font-semibold text-foreground">고객 정보</h3>
-          <p className="mt-1 text-sm text-muted-foreground">접수와 안내에 사용할 기본 정보입니다.</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            접수와 안내에 사용할 기본 정보입니다.
+          </p>
         </div>
         {/* 기본 정보: 2열 */}
         <div className="grid gap-x-6 gap-y-3 md:grid-cols-2">
-        <div className="space-y-1">
-          <Label htmlFor="name" className="text-sm font-medium">
-            신청인 이름 <span className="text-destructive">*</span>
-          </Label>
-          <Input
-            id="name"
-            name="name"
-            value={formData.name}
-            onChange={handleInputChange}
-            onBlur={() => markTouched("name")}
-            readOnly={!!(orderId || isMember)}
-            className={`transition-all duration-200 ${orderId || isMember ? "bg-muted text-muted-foreground cursor-not-allowed" : "focus:ring-2 focus:ring-ring"}`}
-            placeholder="이름을 입력해주세요"
-          />
-          {errorText("name") ? (
-            <p className={errCls}>{errorText("name")}</p>
-          ) : null}
-        </div>
+          <div className="space-y-1">
+            <Label htmlFor="name" className="text-sm font-medium">
+              신청인 이름 <span className="text-destructive">*</span>
+            </Label>
+            <Input
+              id="name"
+              name="name"
+              value={formData.name}
+              onChange={handleInputChange}
+              onBlur={() => markTouched("name")}
+              readOnly={!!(orderId || isMember)}
+              className={`transition-all duration-200 ${orderId || isMember ? "bg-muted text-muted-foreground cursor-not-allowed" : "focus:ring-2 focus:ring-ring"}`}
+              placeholder="이름을 입력해주세요"
+            />
+            {errorText("name") ? (
+              <p className={errCls}>{errorText("name")}</p>
+            ) : null}
+          </div>
 
-        <div className="space-y-1">
-          <Label htmlFor="email" className="text-sm font-medium">
-            이메일 <span className="text-destructive">*</span>
-          </Label>
-          <Input
-            id="email"
-            name="email"
-            type="email"
-            value={formData.email}
-            onChange={handleInputChange}
-            onBlur={() => markTouched("email")}
-            readOnly={!!(orderId || isMember)}
-            className={`transition-all duration-200 ${orderId || isMember ? "bg-muted text-muted-foreground cursor-not-allowed" : "focus:ring-2 focus:ring-ring"}`}
-            placeholder="이메일을 입력해주세요"
-          />
-          {errorText("email") ? (
-            <p className={errCls}>{errorText("email")}</p>
-          ) : null}
-        </div>
+          <div className="space-y-1">
+            <Label htmlFor="email" className="text-sm font-medium">
+              이메일 <span className="text-destructive">*</span>
+            </Label>
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              onBlur={() => markTouched("email")}
+              readOnly={!!(orderId || isMember)}
+              className={`transition-all duration-200 ${orderId || isMember ? "bg-muted text-muted-foreground cursor-not-allowed" : "focus:ring-2 focus:ring-ring"}`}
+              placeholder="이메일을 입력해주세요"
+            />
+            {errorText("email") ? (
+              <p className={errCls}>{errorText("email")}</p>
+            ) : null}
+          </div>
 
-        <div className="md:col-span-2 space-y-1">
-          <Label htmlFor="phone" className="text-sm font-medium">
-            연락처 <span className="text-destructive">*</span>
-          </Label>
-          <Input
-            id="phone"
-            name="phone"
-            value={formData.phone}
-            onChange={(e) => {
-              const v = format010Phone(e.target.value);
-              setFormData((prev: any) => ({
-                ...prev,
-                phone: v,
-                shippingPhone: v,
-              }));
-            }}
-            onBlur={() => markTouched("phone")}
-            readOnly={!!(orderId || isMember)}
-            className={`transition-all duration-200 ${orderId || isMember ? "bg-muted text-muted-foreground cursor-not-allowed" : "focus:ring-2 focus:ring-ring"}`}
-            placeholder="01012345678"
-          />
-          {errorText("phone") ? (
-            <p className={errCls}>{errorText("phone")}</p>
-          ) : null}
-        </div>
+          <div className="md:col-span-2 space-y-1">
+            <Label htmlFor="phone" className="text-sm font-medium">
+              연락처 <span className="text-destructive">*</span>
+            </Label>
+            <Input
+              id="phone"
+              name="phone"
+              value={formData.phone}
+              onChange={(e) => {
+                const v = format010Phone(e.target.value);
+                setFormData((prev: any) => ({
+                  ...prev,
+                  phone: v,
+                  shippingPhone: v,
+                }));
+              }}
+              onBlur={() => markTouched("phone")}
+              readOnly={!!(orderId || isMember)}
+              className={`transition-all duration-200 ${orderId || isMember ? "bg-muted text-muted-foreground cursor-not-allowed" : "focus:ring-2 focus:ring-ring"}`}
+              placeholder="01012345678"
+            />
+            {errorText("phone") ? (
+              <p className={errCls}>{errorText("phone")}</p>
+            ) : null}
+          </div>
         </div>
       </div>
 
@@ -250,7 +254,9 @@ export default function ApplicantInfoSection({
             <Label className="text-base font-semibold text-foreground">
               수령/전달 방식 <span className="text-destructive">*</span>
             </Label>
-            <p className="mt-1 text-sm text-muted-foreground">택배로 보내거나 매장 방문으로 접수할 수 있습니다.</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              택배로 보내거나 매장 방문으로 접수할 수 있습니다.
+            </p>
           </div>
         </div>
 
@@ -386,7 +392,6 @@ export default function ApplicantInfoSection({
               </p>
             </Label>
           </div>
-
         </RadioGroup>
         {lockCollection && (
           <p className="mt-2 rounded-lg bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
@@ -398,88 +403,98 @@ export default function ApplicantInfoSection({
       <div className="rounded-2xl border border-border bg-background/60 p-4">
         <div className="mb-3 flex items-start justify-between gap-3">
           <div>
-            <h3 className="text-base font-semibold text-foreground">배송/방문 정보</h3>
-            <p className="mt-1 text-sm text-muted-foreground">선택한 방식에 따라 필요한 입력만 표시됩니다.</p>
+            <h3 className="text-base font-semibold text-foreground">
+              배송/방문 정보
+            </h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              선택한 방식에 따라 필요한 입력만 표시됩니다.
+            </p>
           </div>
           <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
             {isVisitSelected ? "방문" : "택배 발송"}
           </span>
         </div>
         <div className="space-y-3">
-        {isVisitSelected ? (
-          <div className="rounded-lg border border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
-            {collectionVisitNotice}
-          </div>
-        ) : (
-          <>
-            <div className="space-y-1">
-              <Label htmlFor="shippingPostcode" className="text-sm font-medium">
-                우편번호 <span className="text-destructive">*</span>
-              </Label>
-              <div className="flex flex-col gap-2 md:flex-row md:items-center">
+          {isVisitSelected ? (
+            <div className="rounded-lg border border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+              {collectionVisitNotice}
+            </div>
+          ) : (
+            <>
+              <div className="space-y-1">
+                <Label
+                  htmlFor="shippingPostcode"
+                  className="text-sm font-medium"
+                >
+                  우편번호 <span className="text-destructive">*</span>
+                </Label>
+                <div className="flex flex-col gap-2 md:flex-row md:items-center">
+                  <Input
+                    id="shippingPostcode"
+                    name="shippingPostcode"
+                    value={formData.shippingPostcode}
+                    onBlur={() => markTouched("shippingPostcode")}
+                    readOnly={postcodeAddressReadOnly}
+                    className={`w-full md:w-[180px] transition-all duration-200 ${postcodeAddressReadOnly ? "bg-muted text-muted-foreground cursor-not-allowed" : "focus:ring-2 focus:ring-ring"}`}
+                    placeholder=""
+                  />
+                  {canOpenPostcodeSearch && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleOpenPostcode}
+                      className="h-10 whitespace-nowrap transition-colors duration-200"
+                    >
+                      <MapPin className="h-4 w-4 mr-2" />
+                      우편번호 검색
+                    </Button>
+                  )}
+                </div>
+                {errorText("shippingPostcode") ? (
+                  <p className={errCls}>{errorText("shippingPostcode")}</p>
+                ) : null}
+              </div>
+
+              <div className="space-y-1">
+                <Label
+                  htmlFor="shippingAddress"
+                  className="text-sm font-medium"
+                >
+                  주소 <span className="text-destructive">*</span>
+                </Label>
                 <Input
-                  id="shippingPostcode"
-                  name="shippingPostcode"
-                  value={formData.shippingPostcode}
-                  onBlur={() => markTouched("shippingPostcode")}
+                  id="shippingAddress"
+                  name="shippingAddress"
+                  value={formData.shippingAddress}
+                  onBlur={() => markTouched("shippingAddress")}
                   readOnly={postcodeAddressReadOnly}
-                  className={`w-full md:w-[180px] transition-all duration-200 ${postcodeAddressReadOnly ? "bg-muted text-muted-foreground cursor-not-allowed" : "focus:ring-2 focus:ring-ring"}`}
+                  className={`transition-all duration-200 ${postcodeAddressReadOnly ? "bg-muted text-muted-foreground cursor-not-allowed" : "focus:ring-2 focus:ring-ring"}`}
                   placeholder=""
                 />
-                {canOpenPostcodeSearch && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleOpenPostcode}
-                    className="h-10 whitespace-nowrap transition-colors duration-200"
-                  >
-                    <MapPin className="h-4 w-4 mr-2" />
-                    우편번호 검색
-                  </Button>
-                )}
+                {errorText("shippingAddress") ? (
+                  <p className={errCls}>{errorText("shippingAddress")}</p>
+                ) : null}
               </div>
-              {errorText("shippingPostcode") ? (
-                <p className={errCls}>{errorText("shippingPostcode")}</p>
-              ) : null}
-            </div>
 
-            <div className="space-y-1">
-              <Label htmlFor="shippingAddress" className="text-sm font-medium">
-                주소 <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="shippingAddress"
-                name="shippingAddress"
-                value={formData.shippingAddress}
-                onBlur={() => markTouched("shippingAddress")}
-                readOnly={postcodeAddressReadOnly}
-                className={`transition-all duration-200 ${postcodeAddressReadOnly ? "bg-muted text-muted-foreground cursor-not-allowed" : "focus:ring-2 focus:ring-ring"}`}
-                placeholder=""
-              />
-              {errorText("shippingAddress") ? (
-                <p className={errCls}>{errorText("shippingAddress")}</p>
-              ) : null}
-            </div>
-
-            <div className="space-y-1">
-              <Label
-                htmlFor="shippingAddressDetail"
-                className="text-sm font-medium"
-              >
-                상세 주소
-              </Label>
-              <Input
-                id="shippingAddressDetail"
-                name="shippingAddressDetail"
-                value={formData.shippingAddressDetail}
-                onChange={handleInputChange}
-                readOnly={lockAddressFields}
-                className={`transition-all duration-200 ${lockAddressFields ? "bg-muted text-muted-foreground cursor-not-allowed" : "focus:ring-2 focus:ring-ring"}`}
-                placeholder="상세 주소를 입력해주세요"
-              />
-            </div>
-          </>
-        )}
+              <div className="space-y-1">
+                <Label
+                  htmlFor="shippingAddressDetail"
+                  className="text-sm font-medium"
+                >
+                  상세 주소
+                </Label>
+                <Input
+                  id="shippingAddressDetail"
+                  name="shippingAddressDetail"
+                  value={formData.shippingAddressDetail}
+                  onChange={handleInputChange}
+                  readOnly={lockAddressFields}
+                  className={`transition-all duration-200 ${lockAddressFields ? "bg-muted text-muted-foreground cursor-not-allowed" : "focus:ring-2 focus:ring-ring"}`}
+                  placeholder="상세 주소를 입력해주세요"
+                />
+              </div>
+            </>
+          )}
         </div>
       </div>
 

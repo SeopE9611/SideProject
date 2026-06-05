@@ -151,11 +151,11 @@ export default function ShippingFormClient({
 
   // 자가발송 여부
   const rawMethod =
-    data.shippingInfo?.collectionMethod ??
-    data.collectionMethod ??
-    null;
+    data.shippingInfo?.collectionMethod ?? data.collectionMethod ?? null;
   const normalizedMethod =
-    typeof rawMethod === "string" ? normalizeCollection(rawMethod) : "self_ship";
+    typeof rawMethod === "string"
+      ? normalizeCollection(rawMethod)
+      : "self_ship";
   const fallbackOrderHasRacket =
     typeof data.orderHasRacket === "boolean" ? data.orderHasRacket : false;
   const inboundRequired =
@@ -165,7 +165,7 @@ export default function ShippingFormClient({
         ? false
         : data.orderId
           ? !fallbackOrderHasRacket
-        : true;
+          : true;
   const needsInboundTracking =
     typeof data.needsInboundTracking === "boolean"
       ? data.needsInboundTracking
@@ -188,8 +188,8 @@ export default function ShippingFormClient({
                   운송장 입력이 필요하지 않은 신청입니다
                 </h3>
                 <p className="text-muted-foreground leading-relaxed max-w-md">
-                  현재 신청은 고객 라켓 입고가 필요하지 않은 유형입니다.
-                  운송장 입력 없이 진행됩니다.
+                  현재 신청은 고객 라켓 입고가 필요하지 않은 유형입니다. 운송장
+                  입력 없이 진행됩니다.
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-3 mt-4">
@@ -330,7 +330,8 @@ function SelfShipForm({
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (submittingRef.current || submitting || isLoading || !application) return;
+    if (submittingRef.current || submitting || isLoading || !application)
+      return;
 
     const parsed = FormSchema.safeParse(form);
     if (!parsed.success) {
@@ -421,7 +422,11 @@ function SelfShipForm({
             <div className="w-12 h-px bg-muted/30"></div>
           </div>
           <h1 className="text-3xl lg:text-4xl font-bold text-foreground mb-3">
-            {isLoading ? "라켓 발송 정보" : isEdit ? "라켓 발송 정보 수정" : "라켓 발송 정보 등록"}
+            {isLoading
+              ? "라켓 발송 정보"
+              : isEdit
+                ? "라켓 발송 정보 수정"
+                : "라켓 발송 정보 등록"}
           </h1>
           <p className="text-muted-foreground leading-relaxed">
             {isLoading
@@ -451,8 +456,8 @@ function SelfShipForm({
                         아직 발송 전이신가요?
                       </h3>
                       <p className="text-sm text-muted-foreground leading-relaxed">
-                        라켓 발송 후 이 페이지에서 발송 정보(택배사/운송장 번호)를
-                        등록하셔도 됩니다.
+                        라켓 발송 후 이 페이지에서 발송 정보(택배사/운송장
+                        번호)를 등록하셔도 됩니다.
                         <br />
                         발송일은 선택 항목이며, 나중에 추가하실 수 있습니다.
                       </p>

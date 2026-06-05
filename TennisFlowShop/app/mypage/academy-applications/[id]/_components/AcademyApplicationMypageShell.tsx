@@ -126,8 +126,14 @@ export default function AcademyApplicationMypageShell({
       />
 
       <div className="relative overflow-hidden border-b border-border bg-card">
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-muted/40" />
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0 bp-xs:hidden">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 bg-muted/40"
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 bp-xs:hidden"
+        >
           <div className="absolute top-10 left-10 w-20 h-20 bg-card/10 rounded-full animate-pulse" />
           <div className="absolute top-32 right-20 w-16 h-16 bg-card/5 rounded-full" />
           <div className="absolute bottom-20 left-1/4 w-12 h-12 bg-card/10 rounded-full animate-pulse" />

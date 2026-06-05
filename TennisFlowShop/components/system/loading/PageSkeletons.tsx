@@ -81,7 +81,9 @@ export function TablePageSkeleton({
             <div className="hidden overflow-hidden rounded-xl border border-border/50 md:block">
               <div
                 className="grid gap-4 border-b border-border/50 bg-muted/40 px-4 py-3"
-                style={{ gridTemplateColumns: `repeat(${columnCount}, minmax(0, 1fr))` }}
+                style={{
+                  gridTemplateColumns: `repeat(${columnCount}, minmax(0, 1fr))`,
+                }}
               >
                 {Array.from({ length: columnCount }).map((_, index) => (
                   <Skeleton key={index} className="h-4 w-20" />
@@ -92,10 +94,15 @@ export function TablePageSkeleton({
                   <div
                     key={index}
                     className="grid gap-4 rounded-xl border border-border/40 bg-background/60 px-3 py-3"
-                    style={{ gridTemplateColumns: `repeat(${columnCount}, minmax(0, 1fr))` }}
+                    style={{
+                      gridTemplateColumns: `repeat(${columnCount}, minmax(0, 1fr))`,
+                    }}
                   >
                     {Array.from({ length: columnCount }).map((__, cell) => (
-                      <Skeleton key={cell} className="h-4 w-full max-w-[120px]" />
+                      <Skeleton
+                        key={cell}
+                        className="h-4 w-full max-w-[120px]"
+                      />
                     ))}
                   </div>
                 ))}
@@ -164,7 +171,10 @@ export function DetailPageSkeleton({
               {Array.from({ length: actionButtonCount }).map((_, index) => (
                 <Skeleton
                   key={index}
-                  className={cn("h-10", index === actionButtonCount - 1 ? "w-32" : "w-28")}
+                  className={cn(
+                    "h-10",
+                    index === actionButtonCount - 1 ? "w-32" : "w-28",
+                  )}
                 />
               ))}
             </div>
@@ -198,17 +208,25 @@ export function DetailPageSkeleton({
         <div
           className={cn(
             "grid gap-6",
-            resolvedAsideVariant !== "none" && "xl:grid-cols-[minmax(0,1fr)_320px]",
+            resolvedAsideVariant !== "none" &&
+              "xl:grid-cols-[minmax(0,1fr)_320px]",
           )}
         >
           <div className={cn(isDense ? "space-y-3" : "space-y-4")}>
             {Array.from({ length: sectionCount }).map((_, index) => (
-              <Card key={index} className="rounded-2xl border-border/50 bg-card shadow-sm">
-                <CardHeader className={cn("space-y-2", isDense ? "pb-2" : "pb-3")}>
+              <Card
+                key={index}
+                className="rounded-2xl border-border/50 bg-card shadow-sm"
+              >
+                <CardHeader
+                  className={cn("space-y-2", isDense ? "pb-2" : "pb-3")}
+                >
                   <Skeleton className="h-5 w-36" />
                   <Skeleton className="h-4 w-56 max-w-full" />
                 </CardHeader>
-                <CardContent className={cn(isDense ? "space-y-2 pb-4" : "space-y-3 pb-5")}>
+                <CardContent
+                  className={cn(isDense ? "space-y-2 pb-4" : "space-y-3 pb-5")}
+                >
                   <Skeleton className="h-4 w-full" />
                   <Skeleton className="h-4 w-[85%]" />
                   <Skeleton className="h-4 w-[70%]" />
@@ -273,7 +291,10 @@ type FormPageSkeletonProps = {
   className?: string;
 };
 
-export function FormPageSkeleton({ fields = 6, className }: FormPageSkeletonProps) {
+export function FormPageSkeleton({
+  fields = 6,
+  className,
+}: FormPageSkeletonProps) {
   return (
     <div className={cn("container py-8", className)}>
       <div className="mx-auto max-w-3xl space-y-6">
@@ -441,15 +462,17 @@ export function StackedCardListSkeleton({
                     className={cn("h-7 rounded-full", badgeWidthClassName)}
                   />
                 ) : null}
-                {Array.from({ length: headerActionCount }).map((__, actionIndex) => (
-                  <Skeleton
-                    key={`${index}-header-action-${actionIndex}`}
-                    className={cn(
-                      "h-9",
-                      resolvedHeaderActionWidths[actionIndex] ?? "w-16",
-                    )}
-                  />
-                ))}
+                {Array.from({ length: headerActionCount }).map(
+                  (__, actionIndex) => (
+                    <Skeleton
+                      key={`${index}-header-action-${actionIndex}`}
+                      className={cn(
+                        "h-9",
+                        resolvedHeaderActionWidths[actionIndex] ?? "w-16",
+                      )}
+                    />
+                  ),
+                )}
               </div>
             </div>
 
@@ -485,7 +508,10 @@ export function StackedCardListSkeleton({
               {Array.from({ length: actionCount }).map((__, actionIndex) => (
                 <Skeleton
                   key={`${index}-action-${actionIndex}`}
-                  className={cn("h-9", resolvedActionWidths[actionIndex] ?? "w-24")}
+                  className={cn(
+                    "h-9",
+                    resolvedActionWidths[actionIndex] ?? "w-24",
+                  )}
                 />
               ))}
             </div>
@@ -567,14 +593,19 @@ export function UsageCardListSkeleton({
               ))}
             </div>
 
-            {showRecentUsage ? <Skeleton className="h-4 w-52 max-w-full" /> : null}
+            {showRecentUsage ? (
+              <Skeleton className="h-4 w-52 max-w-full" />
+            ) : null}
 
             {actionCount > 0 ? (
               <div className="flex justify-end gap-2">
                 {Array.from({ length: actionCount }).map((__, actionIndex) => (
                   <Skeleton
                     key={`${index}-action-${actionIndex}`}
-                    className={cn("h-9", resolvedActionWidths[actionIndex] ?? "w-24")}
+                    className={cn(
+                      "h-9",
+                      resolvedActionWidths[actionIndex] ?? "w-24",
+                    )}
                   />
                 ))}
               </div>
@@ -640,7 +671,10 @@ export function SelectStringPageSkeleton() {
 
             <div className="grid grid-cols-1 gap-4 bp-sm:grid-cols-2 bp-lg:grid-cols-3 bp-xl:grid-cols-4">
               {Array.from({ length: 8 }).map((_, index) => (
-                <Card key={index} className="overflow-hidden rounded-2xl border-border bg-card">
+                <Card
+                  key={index}
+                  className="overflow-hidden rounded-2xl border-border bg-card"
+                >
                   <Skeleton className="aspect-square w-full" />
                   <CardContent className="flex flex-col p-4">
                     <div className="mb-3 space-y-2">
@@ -652,7 +686,10 @@ export function SelectStringPageSkeleton() {
                       <Skeleton className="h-3 w-14 rounded-lg" />
                       <div className="flex gap-1.5">
                         {Array.from({ length: 4 }).map((__, colorIndex) => (
-                          <Skeleton key={colorIndex} className="h-8 w-8 rounded-md" />
+                          <Skeleton
+                            key={colorIndex}
+                            className="h-8 w-8 rounded-md"
+                          />
                         ))}
                       </div>
                     </div>
@@ -781,9 +818,17 @@ type TabPanelSkeletonProps = {
   className?: string;
 };
 
-export function TabPanelSkeleton({ rowCount = 4, className }: TabPanelSkeletonProps) {
+export function TabPanelSkeleton({
+  rowCount = 4,
+  className,
+}: TabPanelSkeletonProps) {
   return (
-    <Card className={cn("rounded-2xl border-border/50 bg-card shadow-sm", className)}>
+    <Card
+      className={cn(
+        "rounded-2xl border-border/50 bg-card shadow-sm",
+        className,
+      )}
+    >
       <CardHeader className="space-y-2 bg-muted/40 pb-4">
         <Skeleton className="h-6 w-36" />
         <Skeleton className="h-4 w-56 max-w-full" />

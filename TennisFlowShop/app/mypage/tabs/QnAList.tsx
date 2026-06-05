@@ -60,15 +60,12 @@ export default function QnAList() {
     return `/api/qna/me?${params.toString()}`;
   };
 
-  const { data, size, setSize, isValidating, error, mutate } = useSWRInfinite<QnaPage>(
-    getKey,
-    fetcher,
-    {
+  const { data, size, setSize, isValidating, error, mutate } =
+    useSWRInfinite<QnaPage>(getKey, fetcher, {
       revalidateFirstPage: true,
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
-    },
-  );
+    });
 
   // 누적 리스트
   const qnas = useMemo(
@@ -111,10 +108,7 @@ export default function QnAList() {
           <p className="mb-4 text-foreground md:mb-6">
             궁금한 점이 있으시면 언제든지 문의해주세요!
           </p>
-          <Button
-            asChild
-            variant="default" className="shadow-sm"
-          >
+          <Button asChild variant="default" className="shadow-sm">
             <Link
               href="/board/qna/write"
               className="inline-flex items-center gap-2"

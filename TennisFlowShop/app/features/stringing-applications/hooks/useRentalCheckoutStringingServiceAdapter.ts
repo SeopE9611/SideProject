@@ -180,7 +180,9 @@ export default function useRentalCheckoutStringingServiceAdapter({
   }, [visitDurationMinutesUi, shared.setVisitDurationMinutesUi]);
 
   const summary = useMemo(() => {
-    const collectionLabel = collectionMethodLabel(shared.formData.collectionMethod);
+    const collectionLabel = collectionMethodLabel(
+      shared.formData.collectionMethod,
+    );
     const lineCount = shared.linesForSubmit.length;
     const stringNames = Array.from(
       new Set(
@@ -242,12 +244,11 @@ export default function useRentalCheckoutStringingServiceAdapter({
     const needsVisitReservation = shared.formData.collectionMethod === "visit";
     const hasReservation =
       !!shared.formData.preferredDate && !!shared.formData.preferredTime;
-    const lineDone = totalLineCount > 0 && lineConfiguredCount === totalLineCount;
+    const lineDone =
+      totalLineCount > 0 && lineConfiguredCount === totalLineCount;
 
     const isReadyToSubmit =
-      basicConfigured &&
-      lineDone &&
-      (!needsVisitReservation || hasReservation);
+      basicConfigured && lineDone && (!needsVisitReservation || hasReservation);
 
     const statusLabel = isReadyToSubmit
       ? "접수 준비 완료"
@@ -265,7 +266,6 @@ export default function useRentalCheckoutStringingServiceAdapter({
       isReadyToSubmit,
     };
   }, [shared.formData, shared.linesForSubmit]);
-
 
   return {
     ...shared,

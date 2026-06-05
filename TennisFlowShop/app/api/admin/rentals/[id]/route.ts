@@ -84,10 +84,9 @@ export async function GET(
     .findOne({ _id: new ObjectId(id) });
   if (!doc) return NextResponse.json({ message: "Not Found" }, { status: 404 });
 
-  const latestHistory = await db.collection("rental_history").findOne(
-    { rentalId: doc._id },
-    { sort: { at: -1 } },
-  );
+  const latestHistory = await db
+    .collection("rental_history")
+    .findOne({ rentalId: doc._id }, { sort: { at: -1 } });
 
   // 고객 정보 조인
   let user: { name?: string; email?: string; phone?: string } | null = null;
@@ -211,9 +210,7 @@ export async function GET(
       (doc as any).stringing?.stockDeduction ??
       null,
     stockRestore:
-      (doc as any).stockRestore ??
-      (doc as any).stringing?.stockRestore ??
-      null,
+      (doc as any).stockRestore ?? (doc as any).stringing?.stockRestore ?? null,
     latestHistory: latestHistory
       ? {
           action: latestHistory.action ?? null,

@@ -2,7 +2,10 @@ import { getDb } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 import { NextResponse } from "next/server";
 import { normalizeItemShippingFee } from "@/lib/shipping-fee";
-import { hasPaidMountingFee, isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
+import {
+  hasPaidMountingFee,
+  isMountableStringByFee,
+} from "@/lib/orders/string-mounting-policy";
 
 type MiniBatchRow = {
   id: string;
@@ -20,7 +23,10 @@ export async function POST(req: Request) {
       ? body.ids.map((v: unknown) => String(v)).filter(Boolean)
       : [];
   } catch {
-    return NextResponse.json({ ok: false, error: "invalidBody" }, { status: 400 });
+    return NextResponse.json(
+      { ok: false, error: "invalidBody" },
+      { status: 400 },
+    );
   }
 
   if (ids.length === 0) {
@@ -31,7 +37,9 @@ export async function POST(req: Request) {
   }
 
   const uniqueIds = Array.from(new Set(ids));
-  const validObjectIds = uniqueIds.filter((id) => ObjectId.isValid(id)).map((id) => new ObjectId(id));
+  const validObjectIds = uniqueIds
+    .filter((id) => ObjectId.isValid(id))
+    .map((id) => new ObjectId(id));
 
   const db = await getDb();
   const products =
@@ -45,12 +53,17 @@ export async function POST(req: Request) {
           .toArray()
       : [];
 
-  const feeById = new Map<string, { mountingFee: number; shippingFee: number; isMountableString: boolean }>();
+  const feeById = new Map<
+    string,
+    { mountingFee: number; shippingFee: number; isMountableString: boolean }
+  >();
   products.forEach((product) => {
     const rawMounting = (product as { mountingFee?: unknown }).mountingFee;
     feeById.set(String(product._id), {
       mountingFee: hasPaidMountingFee(rawMounting) ? rawMounting : 0,
-      shippingFee: normalizeItemShippingFee((product as { shippingFee?: unknown }).shippingFee),
+      shippingFee: normalizeItemShippingFee(
+        (product as { shippingFee?: unknown }).shippingFee,
+      ),
       isMountableString: isMountableStringByFee(rawMounting),
     });
   });

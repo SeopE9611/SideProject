@@ -33,17 +33,15 @@ async function updateProductRatingSummary(db: DbAny, productId: ObjectId) {
     ])
     .next();
   if (agg)
-    await db
-      .collection("products")
-      .updateOne(
-        { _id: productId },
-        {
-          $set: {
-            ratingAvg: Math.round(agg.avg * 10) / 10,
-            ratingCount: agg.cnt,
-          },
+    await db.collection("products").updateOne(
+      { _id: productId },
+      {
+        $set: {
+          ratingAvg: Math.round(agg.avg * 10) / 10,
+          ratingCount: agg.cnt,
         },
-      );
+      },
+    );
   else
     await db
       .collection("products")
@@ -66,23 +64,21 @@ export async function GET(
 
   const db = await getDb();
   const _id = new ObjectId(id);
-  const review = await db
-    .collection("reviews")
-    .findOne(
-      { _id, isDeleted: { $ne: true } },
-      {
-        projection: {
-          userId: 1,
-          productId: 1,
-          rating: 1,
-          status: 1,
-          content: 1,
-          createdAt: 1,
-          helpfulCount: 1,
-          photos: 1,
-        },
+  const review = await db.collection("reviews").findOne(
+    { _id, isDeleted: { $ne: true } },
+    {
+      projection: {
+        userId: 1,
+        productId: 1,
+        rating: 1,
+        status: 1,
+        content: 1,
+        createdAt: 1,
+        helpfulCount: 1,
+        photos: 1,
       },
-    );
+    },
+  );
   if (!review)
     return NextResponse.json({ message: "not found" }, { status: 404 });
 
@@ -228,17 +224,15 @@ export async function DELETE(
 
   try {
     const earnRefKey = `review:${id}`;
-    const earned: any = await db
-      .collection("points_transactions")
-      .findOne(
-        {
-          userId: doc.userId,
-          status: "confirmed",
-          type: { $in: ["review_reward_product", "review_reward_service"] },
-          $or: [{ refKey: earnRefKey }, { "ref.reviewId": _id }],
-        },
-        { projection: { amount: 1, type: 1 } },
-      );
+    const earned: any = await db.collection("points_transactions").findOne(
+      {
+        userId: doc.userId,
+        status: "confirmed",
+        type: { $in: ["review_reward_product", "review_reward_service"] },
+        $or: [{ refKey: earnRefKey }, { "ref.reviewId": _id }],
+      },
+      { projection: { amount: 1, type: 1 } },
+    );
     if (earned?.amount > 0) {
       await deductPoints(db, {
         userId: doc.userId,

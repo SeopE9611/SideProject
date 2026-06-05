@@ -1,22 +1,30 @@
 import { Db, ObjectId } from "mongodb";
-import { maskPhone, normalizeEmail, normalizePhone } from "@/lib/offline/normalizers";
+import {
+  maskPhone,
+  normalizeEmail,
+  normalizePhone,
+} from "@/lib/offline/normalizers";
 
 export async function ensureOfflineIndexes(db: Db) {
   await Promise.all([
-    db.collection("offline_customers").createIndexes([
-      { key: { phoneNormalized: 1 } },
-      { key: { emailLower: 1 } },
-      { key: { linkedUserId: 1 } },
-      { key: { createdAt: -1 } },
-    ]),
-    db.collection("offline_service_records").createIndexes([
-      { key: { offlineCustomerId: 1 } },
-      { key: { userId: 1 } },
-      { key: { occurredAt: -1 } },
-      { key: { status: 1 } },
-      { key: { "payment.status": 1 } },
-      { key: { kind: 1 } },
-    ]),
+    db
+      .collection("offline_customers")
+      .createIndexes([
+        { key: { phoneNormalized: 1 } },
+        { key: { emailLower: 1 } },
+        { key: { linkedUserId: 1 } },
+        { key: { createdAt: -1 } },
+      ]),
+    db
+      .collection("offline_service_records")
+      .createIndexes([
+        { key: { offlineCustomerId: 1 } },
+        { key: { userId: 1 } },
+        { key: { occurredAt: -1 } },
+        { key: { status: 1 } },
+        { key: { "payment.status": 1 } },
+        { key: { kind: 1 } },
+      ]),
   ]);
 }
 
@@ -36,8 +44,10 @@ export function sanitizeCustomer(doc: Record<string, any>, masked = false) {
     tags: Array.isArray(doc.tags) ? doc.tags : [],
     source: "offline_admin" as const,
     stats: doc.stats,
-    createdAt: doc.createdAt instanceof Date ? doc.createdAt.toISOString() : null,
-    updatedAt: doc.updatedAt instanceof Date ? doc.updatedAt.toISOString() : null,
+    createdAt:
+      doc.createdAt instanceof Date ? doc.createdAt.toISOString() : null,
+    updatedAt:
+      doc.updatedAt instanceof Date ? doc.updatedAt.toISOString() : null,
   };
 }
 
@@ -45,7 +55,9 @@ export function buildCustomerSearchFilter(q: string) {
   const trimmed = q.trim();
   const phoneNormalized = normalizePhone(trimmed);
   const emailLower = normalizeEmail(trimmed);
-  const regex = trimmed ? new RegExp(trimmed.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i") : null;
+  const regex = trimmed
+    ? new RegExp(trimmed.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i")
+    : null;
   const or: Record<string, any>[] = [];
   if (regex) or.push({ name: regex }, { phone: regex }, { email: regex });
   if (phoneNormalized) or.push({ phoneNormalized });

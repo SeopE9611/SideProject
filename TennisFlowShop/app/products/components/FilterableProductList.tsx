@@ -15,7 +15,11 @@ import {
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { stringMaterialLabel } from "@/lib/constants";
-import { formatBenefitFilterLabel, parseBenefitFilters, serializeBenefitFilters } from "@/lib/benefit-labels";
+import {
+  formatBenefitFilterLabel,
+  parseBenefitFilters,
+  serializeBenefitFilters,
+} from "@/lib/benefit-labels";
 import { cn } from "@/lib/utils";
 import { Filter, Grid3X3, List, Search } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -184,7 +188,9 @@ export default function FilterableProductList({
       setSortOption(searchParams.get("sort") || "latest");
 
       const view = searchParams.get("view");
-      setViewMode(isMobileViewport ? "grid" : view === "list" ? "list" : "grid");
+      setViewMode(
+        isMobileViewport ? "grid" : view === "list" ? "list" : "grid",
+      );
 
       const q = searchParams.get("q") || "";
       setSearchQuery(q);
@@ -234,13 +240,18 @@ export default function FilterableProductList({
     if (pr[0] !== priceRange[0] || pr[1] !== priceRange[1]) setPriceRange(pr);
 
     const nextExposure = parseBenefitFilters(searchParams.get("exposure"));
-    if (nextExposure.join(",") !== exposureFilter.join(",")) setExposureFilter(nextExposure);
+    if (nextExposure.join(",") !== exposureFilter.join(","))
+      setExposureFilter(nextExposure);
 
     const sort = searchParams.get("sort") || "latest";
     if (sort !== sortOption) setSortOption(sort);
 
     const view = searchParams.get("view");
-    const desiredView = isMobileViewport ? "grid" : view === "list" ? "list" : "grid";
+    const desiredView = isMobileViewport
+      ? "grid"
+      : view === "list"
+        ? "list"
+        : "grid";
     if (desiredView !== viewMode) setViewMode(desiredView as "grid" | "list");
   }, [searchParams, isMobileViewport]);
 
@@ -351,7 +362,8 @@ export default function FilterableProductList({
   const loadedCount = (productsList ?? []).length;
   const showInlineLoadingSkeleton = isLoadingInitial && loadedCount === 0;
   const hasInitialFetchSettled = total !== null || error !== null;
-  const canShowEmptyState = hasInitialFetchSettled && loadedCount === 0 && !isLoadingInitial;
+  const canShowEmptyState =
+    hasInitialFetchSettled && loadedCount === 0 && !isLoadingInitial;
   const isCountLoading = total === null && loadedCount === 0;
   const isBackgroundRefreshing = isUiTransitioning && loadedCount > 0;
 
@@ -589,7 +601,10 @@ export default function FilterableProductList({
       "sort",
       sortOption && sortOption !== "latest" ? sortOption : null,
     );
-    setOrDelete("view", !isMobileViewport && viewMode !== "grid" ? viewMode : null);
+    setOrDelete(
+      "view",
+      !isMobileViewport && viewMode !== "grid" ? viewMode : null,
+    );
     setOrDelete(
       "minPrice",
       priceRange[0] > DEFAULT_MIN_PRICE ? String(priceRange[0]) : null,
@@ -630,7 +645,12 @@ export default function FilterableProductList({
       if (isFetchingMore || isLoadingInitial || !hasMore) return;
       if (observerRef.current) observerRef.current.disconnect();
       observerRef.current = new IntersectionObserver((entries) => {
-        if (entries[0]?.isIntersecting && hasMore && !isFetchingMore && !isLoadingInitial) {
+        if (
+          entries[0]?.isIntersecting &&
+          hasMore &&
+          !isFetchingMore &&
+          !isLoadingInitial
+        ) {
           loadMore();
         }
       });
@@ -722,12 +742,7 @@ export default function FilterableProductList({
 
       <div className="grid grid-cols-1 gap-6 bp-xl:gap-8 bp-lg:grid-cols-[300px_minmax(0,1fr)] bp-xl:grid-cols-[320px_minmax(0,1fr)]">
         {/* 필터 사이드바 */}
-        <div
-          className={cn(
-            "hidden bp-lg:block",
-            "space-y-4 md:space-y-6",
-          )}
-        >
+        <div className={cn("hidden bp-lg:block", "space-y-4 md:space-y-6")}>
           <div className="sticky top-20 self-start">
             <FilterPanel {...desktopFilterPanelProps} />
           </div>
@@ -756,7 +771,9 @@ export default function FilterableProductList({
                   </span>
                 )}
                 {isBackgroundRefreshing ? (
-                  <span className="ml-2 text-xs font-medium text-muted-foreground">조회 중...</span>
+                  <span className="ml-2 text-xs font-medium text-muted-foreground">
+                    조회 중...
+                  </span>
                 ) : null}
               </div>
               <Button
@@ -933,30 +950,32 @@ export default function FilterableProductList({
 
             <div className="flex items-center justify-end gap-3">
               {/* 뷰 모드 토글 */}
-              {!isMobileViewport && <div className="flex shrink-0 items-center border border-border rounded-lg p-1 bg-card">
-                <Button
-                  type="button"
-                  variant={viewMode === "grid" ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => setViewMode("grid")}
-                  className="h-8 w-9 p-0"
-                  aria-label="그리드 보기"
-                  aria-pressed={viewMode === "grid"}
-                >
-                  <Grid3X3 className="w-4 h-4" />
-                </Button>
-                <Button
-                  type="button"
-                  variant={viewMode === "list" ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => setViewMode("list")}
-                  className="h-8 w-9 p-0"
-                  aria-label="리스트 보기"
-                  aria-pressed={viewMode === "list"}
-                >
-                  <List className="w-4 h-4" />
-                </Button>
-              </div>}
+              {!isMobileViewport && (
+                <div className="flex shrink-0 items-center border border-border rounded-lg p-1 bg-card">
+                  <Button
+                    type="button"
+                    variant={viewMode === "grid" ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => setViewMode("grid")}
+                    className="h-8 w-9 p-0"
+                    aria-label="그리드 보기"
+                    aria-pressed={viewMode === "grid"}
+                  >
+                    <Grid3X3 className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={viewMode === "list" ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => setViewMode("list")}
+                    className="h-8 w-9 p-0"
+                    aria-label="리스트 보기"
+                    aria-pressed={viewMode === "list"}
+                  >
+                    <List className="w-4 h-4" />
+                  </Button>
+                </div>
+              )}
 
               {/* 정렬 */}
               <Select value={sortOption} onValueChange={setSortOption}>

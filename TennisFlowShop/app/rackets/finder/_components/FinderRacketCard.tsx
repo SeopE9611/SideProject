@@ -273,7 +273,11 @@ export default function FinderRacketCard({ racket }: { racket: FinderRacket }) {
                 {selected ? "비교 선택됨" : "비교하기"}
               </Button>
 
-              <Button asChild size="sm" className="h-10 w-full min-w-0 whitespace-nowrap rounded-lg px-2 text-xs bp-sm:text-sm bp-lg:h-9 bp-lg:min-w-[7.5rem] bp-lg:w-auto bp-lg:flex-none">
+              <Button
+                asChild
+                size="sm"
+                className="h-10 w-full min-w-0 whitespace-nowrap rounded-lg px-2 text-xs bp-sm:text-sm bp-lg:h-9 bp-lg:min-w-[7.5rem] bp-lg:w-auto bp-lg:flex-none"
+              >
                 <Link href={`/rackets/${racket.id}/select-string`}>
                   <ShoppingCart className="mr-1.5 h-3.5 w-3.5" />
                   구매하기

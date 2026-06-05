@@ -356,7 +356,9 @@ export default function CheckoutButton({
 
       const expectedPayableAmount = normalizeWonAmount(payableAmount);
       if (!Number.isFinite(expectedPayableAmount)) {
-        showErrorToast("결제 금액을 확인할 수 없습니다. 주문 정보를 다시 확인해주세요.");
+        showErrorToast(
+          "결제 금액을 확인할 수 없습니다. 주문 정보를 다시 확인해주세요.",
+        );
         return;
       }
 
@@ -437,7 +439,10 @@ export default function CheckoutButton({
         return;
       }
 
-      if (data?.error === "PAYMENT_AMOUNT_MISMATCH" || data?.code === "PAYMENT_AMOUNT_MISMATCH") {
+      if (
+        data?.error === "PAYMENT_AMOUNT_MISMATCH" ||
+        data?.code === "PAYMENT_AMOUNT_MISMATCH"
+      ) {
         console.warn("[checkout] payment amount mismatch", {
           clientAmount: data?.clientAmount,
           serverAmount: data?.serverAmount,

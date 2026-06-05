@@ -37,14 +37,18 @@ export default function PackageTossCheckoutButton({
   const [loading, setLoading] = useState(false);
   const [inlineError, setInlineError] = useState<string | null>(null);
 
-  const blockedByZeroAmount = !Number.isFinite(payableAmount) || payableAmount <= 0;
+  const blockedByZeroAmount =
+    !Number.isFinite(payableAmount) || payableAmount <= 0;
   const blockedByWidget = !widgetReady || !!widgetLoadError;
-  const isDisabled = disabled || loading || blockedByZeroAmount || blockedByWidget;
+  const isDisabled =
+    disabled || loading || blockedByZeroAmount || blockedByWidget;
 
   const handleClick = async () => {
     if (isDisabled) return;
     if (blockedByZeroAmount) {
-      setInlineError("최종 결제금액이 0원인 경우 토스 결제를 사용할 수 없습니다.");
+      setInlineError(
+        "최종 결제금액이 0원인 경우 토스 결제를 사용할 수 없습니다.",
+      );
       return;
     }
     if (widgetLoadError) {
@@ -52,7 +56,9 @@ export default function PackageTossCheckoutButton({
       return;
     }
     if (!widgetReady) {
-      setInlineError("결제위젯 준비가 아직 완료되지 않았습니다. 잠시 후 다시 시도해주세요.");
+      setInlineError(
+        "결제위젯 준비가 아직 완료되지 않았습니다. 잠시 후 다시 시도해주세요.",
+      );
       return;
     }
 
@@ -119,7 +125,11 @@ export default function PackageTossCheckoutButton({
 
   return (
     <div className="space-y-2 w-full">
-      <Button onClick={handleClick} className="w-full h-14 text-lg" disabled={isDisabled}>
+      <Button
+        onClick={handleClick}
+        className="w-full h-14 text-lg"
+        disabled={isDisabled}
+      >
         {loading ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -129,9 +139,19 @@ export default function PackageTossCheckoutButton({
           "토스로 결제하기"
         )}
       </Button>
-      {blockedByZeroAmount && <p className="text-xs text-muted-foreground">최종 결제금액이 0원이라 토스 결제를 사용할 수 없습니다.</p>}
-      {widgetLoadError && <p className="text-xs text-destructive">{widgetLoadError}</p>}
-      {!widgetLoadError && !widgetReady && <p className="text-xs text-muted-foreground">결제위젯 준비 중입니다. 잠시 후 다시 시도해주세요.</p>}
+      {blockedByZeroAmount && (
+        <p className="text-xs text-muted-foreground">
+          최종 결제금액이 0원이라 토스 결제를 사용할 수 없습니다.
+        </p>
+      )}
+      {widgetLoadError && (
+        <p className="text-xs text-destructive">{widgetLoadError}</p>
+      )}
+      {!widgetLoadError && !widgetReady && (
+        <p className="text-xs text-muted-foreground">
+          결제위젯 준비 중입니다. 잠시 후 다시 시도해주세요.
+        </p>
+      )}
       {inlineError && <p className="text-xs text-destructive">{inlineError}</p>}
     </div>
   );

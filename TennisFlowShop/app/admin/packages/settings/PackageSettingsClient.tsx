@@ -389,10 +389,7 @@ export default function PackageSettingsClient() {
                   {packageConfigs
                     .sort((a, b) => a.sortOrder - b.sortOrder)
                     .map((pkg) => (
-                      <Card
-                        key={pkg.id}
-                        className={adminSurface.card}
-                      >
+                      <Card key={pkg.id} className={adminSurface.card}>
                         <CardHeader className="bg-muted/30 border-b">
                           <div className="flex items-center justify-between">
                             <div className="min-w-0">
@@ -406,7 +403,8 @@ export default function PackageSettingsClient() {
                                 {pkg.isPopular && (
                                   <Badge
                                     variant={
-                                      getMerchandisingBadgeSpec("popular").variant
+                                      getMerchandisingBadgeSpec("popular")
+                                        .variant
                                     }
                                   >
                                     추천
@@ -478,7 +476,9 @@ export default function PackageSettingsClient() {
                                 </div>
                               </div>
                               <p className="text-xs text-muted-foreground">
-                                할인율과 절감액은 정가와 판매 가격을 기준으로 자동 계산되며, 할인율은 소수점 첫째 자리까지 표시됩니다.
+                                할인율과 절감액은 정가와 판매 가격을 기준으로
+                                자동 계산되며, 할인율은 소수점 첫째 자리까지
+                                표시됩니다.
                               </p>
 
                               <div className="grid grid-cols-2 gap-4">
@@ -634,20 +634,38 @@ export default function PackageSettingsClient() {
                                   <>
                                     <div className="grid grid-cols-3 gap-2 rounded-lg border border-border bg-muted/30 p-3 text-center text-sm">
                                       <div>
-                                        <p className="text-muted-foreground">회당 금액</p>
-                                        <p className="font-semibold text-foreground">{formatCurrency(meta.perSession)}</p>
+                                        <p className="text-muted-foreground">
+                                          회당 금액
+                                        </p>
+                                        <p className="font-semibold text-foreground">
+                                          {formatCurrency(meta.perSession)}
+                                        </p>
                                       </div>
                                       <div>
-                                        <p className="text-muted-foreground">할인율</p>
-                                        <p className="font-semibold text-foreground">{meta.discountRate > 0 ? `${meta.discountRate.toFixed(1)}%` : "-"}</p>
+                                        <p className="text-muted-foreground">
+                                          할인율
+                                        </p>
+                                        <p className="font-semibold text-foreground">
+                                          {meta.discountRate > 0
+                                            ? `${meta.discountRate.toFixed(1)}%`
+                                            : "-"}
+                                        </p>
                                       </div>
                                       <div>
-                                        <p className="text-muted-foreground">절감액</p>
-                                        <p className="font-semibold text-foreground">{meta.savingAmount > 0 ? formatCurrency(meta.savingAmount) : "-"}</p>
+                                        <p className="text-muted-foreground">
+                                          절감액
+                                        </p>
+                                        <p className="font-semibold text-foreground">
+                                          {meta.savingAmount > 0
+                                            ? formatCurrency(meta.savingAmount)
+                                            : "-"}
+                                        </p>
                                       </div>
                                     </div>
                                     <p className="text-xs text-muted-foreground">
-                                      회당 금액은 판매 가격 ÷ 이용 횟수, 할인율은 정가 대비 판매 가격 기준으로 소수점 첫째 자리까지 자동 계산됩니다.
+                                      회당 금액은 판매 가격 ÷ 이용 횟수,
+                                      할인율은 정가 대비 판매 가격 기준으로
+                                      소수점 첫째 자리까지 자동 계산됩니다.
                                     </p>
                                   </>
                                 );

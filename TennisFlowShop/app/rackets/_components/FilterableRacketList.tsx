@@ -27,7 +27,11 @@ import RacketFilterPanel from "./RacketFilterPanel";
 import { SkeletonProductCard } from "@/app/products/components/SkeletonProductCard";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { RACKET_BRANDS, racketBrandLabel } from "@/lib/constants";
-import { formatBenefitFilterLabel, parseBenefitFilters, serializeBenefitFilters } from "@/lib/benefit-labels";
+import {
+  formatBenefitFilterLabel,
+  parseBenefitFilters,
+  serializeBenefitFilters,
+} from "@/lib/benefit-labels";
 
 const fetcher = async (url: string) => {
   const res = await fetch(url, { credentials: "include" });
@@ -186,7 +190,8 @@ export default function FilterableRacketList({
     if (nextMax !== priceMax) setPriceMax(nextMax);
 
     const nextExposure = parseBenefitFilters(searchParams.get("exposure"));
-    if (nextExposure.join(",") !== exposureFilter.join(",")) setExposureFilter(nextExposure);
+    if (nextExposure.join(",") !== exposureFilter.join(","))
+      setExposureFilter(nextExposure);
     const sort = searchParams.get("sort") || "latest";
     if (sort !== sortOption) setSortOption(sort);
 
@@ -652,7 +657,9 @@ export default function FilterableRacketList({
                     </span>
                   )}
                   {isBackgroundRefreshing ? (
-                    <span className="ml-2 text-xs font-medium text-muted-foreground">조회 중...</span>
+                    <span className="ml-2 text-xs font-medium text-muted-foreground">
+                      조회 중...
+                    </span>
                   ) : null}
                 </div>
                 <Button

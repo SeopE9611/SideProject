@@ -37,18 +37,16 @@ export async function POST(
     );
   }
 
-  const updated = await guard.db
-    .collection("rental_orders")
-    .updateOne(
-      { _id, status: "out" },
-      {
-        $set: {
-          status: "returned",
-          returnedAt: new Date(),
-          updatedAt: new Date(),
-        },
+  const updated = await guard.db.collection("rental_orders").updateOne(
+    { _id, status: "out" },
+    {
+      $set: {
+        status: "returned",
+        returnedAt: new Date(),
+        updatedAt: new Date(),
       },
-    );
+    },
+  );
   if (updated.matchedCount === 0)
     return NextResponse.json(
       { ok: false, code: "INVALID_STATE" },

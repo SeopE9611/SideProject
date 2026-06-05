@@ -1,6 +1,15 @@
 "use client";
 
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,7 +19,18 @@ import { useMessageDetail } from "@/lib/hooks/useMessageDetail";
 import { useMessageList } from "@/lib/hooks/useMessageList";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
-import { Bell, ChevronLeft, ChevronRight, Clock, Mail, MailOpen, Reply, Send, Trash2, User } from "lucide-react";
+import {
+  Bell,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  Mail,
+  MailOpen,
+  Reply,
+  Send,
+  Trash2,
+  User,
+} from "lucide-react";
 import dynamic from "next/dynamic";
 import { useMemo, useState } from "react";
 import { mutate as globalMutate } from "swr";
@@ -23,8 +43,14 @@ type SafeUser = {
 };
 
 const LIMIT = 20;
-const MessageComposeDialog = dynamic(() => import("@/app/messages/_components/MessageComposeDialog"), { loading: () => null });
-const AdminBroadcastDialog = dynamic(() => import("@/app/messages/_components/AdminBroadcastDialog"), { loading: () => null });
+const MessageComposeDialog = dynamic(
+  () => import("@/app/messages/_components/MessageComposeDialog"),
+  { loading: () => null },
+);
+const AdminBroadcastDialog = dynamic(
+  () => import("@/app/messages/_components/AdminBroadcastDialog"),
+  { loading: () => null },
+);
 
 function formatKST(iso: string) {
   try {
@@ -41,10 +67,21 @@ function buildReplyTitle(title: string) {
   return `RE: ${t}`;
 }
 
-function buildQuotedBody(opts: { createdAt: string; fromName: string; toName: string; body: string }) {
+function buildQuotedBody(opts: {
+  createdAt: string;
+  fromName: string;
+  toName: string;
+  body: string;
+}) {
   const { createdAt, fromName, toName, body } = opts;
 
-  return ["", "", "---", `[원문] ${formatKST(createdAt)} · ${fromName} → ${toName}`, body ?? ""].join("\n");
+  return [
+    "",
+    "",
+    "---",
+    `[원문] ${formatKST(createdAt)} · ${fromName} → ${toName}`,
+    body ?? "",
+  ].join("\n");
 }
 
 export default function MessagesClient({ user }: { user: SafeUser }) {
@@ -63,8 +100,20 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const { items, total, isLoading, mutate, key, hasResolvedData, hasDataError, errorMessage } = useMessageList(tab, page, LIMIT, true);
-  const { item: detail, isLoading: detailLoading } = useMessageDetail(selectedId, true);
+  const {
+    items,
+    total,
+    isLoading,
+    mutate,
+    key,
+    hasResolvedData,
+    hasDataError,
+    errorMessage,
+  } = useMessageList(tab, page, LIMIT, true);
+  const { item: detail, isLoading: detailLoading } = useMessageDetail(
+    selectedId,
+    true,
+  );
 
   const totalPages = useMemo(() => {
     if (typeof total !== "number") return 1;
@@ -72,7 +121,12 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
   }, [total]);
 
   // empty 오판 방지를 위해 로딩/에러/실데이터 상태를 분리한다.
-  const shouldShowEmptyState = !isLoading && !hasDataError && hasResolvedData && Array.isArray(items) && items.length === 0;
+  const shouldShowEmptyState =
+    !isLoading &&
+    !hasDataError &&
+    hasResolvedData &&
+    Array.isArray(items) &&
+    items.length === 0;
   const showListSkeleton = isLoading && !hasDataError;
 
   async function afterOpenDetail() {
@@ -92,7 +146,9 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
       const data = (await res.json().catch(() => null)) as any;
 
       if (!res.ok || !data?.ok) {
-        throw new Error(typeof data?.error === "string" ? data.error : "삭제에 실패했습니다.");
+        throw new Error(
+          typeof data?.error === "string" ? data.error : "삭제에 실패했습니다.",
+        );
       }
 
       showSuccessToast("쪽지를 삭제했습니다.");
@@ -101,7 +157,9 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
 
       if (key) await mutate();
       await globalMutate("/api/messages/unread-count");
-      await globalMutate((k) => typeof k === "string" && k.startsWith("/api/messages/send"));
+      await globalMutate(
+        (k) => typeof k === "string" && k.startsWith("/api/messages/send"),
+      );
     } catch (e: any) {
       showErrorToast(e?.message || "삭제에 실패했습니다.");
     } finally {
@@ -143,12 +201,18 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
               </div>
               <div>
                 <CardTitle className="text-xl font-semibold">쪽지함</CardTitle>
-                <p className="text-sm text-muted-foreground mt-0.5">메시지를 확인하고 관리하세요</p>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  메시지를 확인하고 관리하세요
+                </p>
               </div>
             </div>
 
             {user.role === "admin" && (
-              <Button variant="default" onClick={() => setBroadcastOpen(true)} className="gap-2">
+              <Button
+                variant="default"
+                onClick={() => setBroadcastOpen(true)}
+                className="gap-2"
+              >
                 <Bell className="h-4 w-4" />
                 전체 공지 보내기
               </Button>
@@ -190,7 +254,11 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                 <div className="lg:col-span-5">
                   <div className="flex items-center justify-between mb-4 pb-3 border-b border-border/40">
                     <div className="text-sm font-medium text-muted-foreground">
-                      총 <span className="text-foreground font-semibold">{typeof total === "number" ? total : "-"}</span>개
+                      총{" "}
+                      <span className="text-foreground font-semibold">
+                        {typeof total === "number" ? total : "-"}
+                      </span>
+                      개
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-muted-foreground hidden sm:inline">
@@ -229,7 +297,10 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                     {showListSkeleton && (
                       <div className="space-y-2 rounded-lg border border-border/30 bg-card p-3">
                         {Array.from({ length: 6 }).map((_, idx) => (
-                          <div key={`messages-list-skeleton-${idx}`} className="rounded-md border border-border/40 p-3">
+                          <div
+                            key={`messages-list-skeleton-${idx}`}
+                            className="rounded-md border border-border/40 p-3"
+                          >
                             <Skeleton className="h-4 w-1/2" />
                             <Skeleton className="mt-2 h-3 w-2/3" />
                           </div>
@@ -240,14 +311,18 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                     {hasDataError && (
                       <div className="flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive">
                         <Clock className="h-3.5 w-3.5" />
-                        <span>{errorMessage || "쪽지 목록을 불러오지 못했습니다."}</span>
+                        <span>
+                          {errorMessage || "쪽지 목록을 불러오지 못했습니다."}
+                        </span>
                       </div>
                     )}
 
                     {shouldShowEmptyState && (
                       <div className="flex flex-col items-center justify-center py-8 md:py-12 text-center border border-border/30 rounded-lg bg-muted/20">
                         <Mail className="h-12 w-12 text-muted-foreground/40 mb-3" />
-                        <p className="text-sm text-muted-foreground">아직 쪽지가 없습니다.</p>
+                        <p className="text-sm text-muted-foreground">
+                          아직 쪽지가 없습니다.
+                        </p>
                       </div>
                     )}
 
@@ -256,7 +331,8 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                       Array.isArray(items) &&
                       items.map((m) => {
                         const active = selectedId === m.id;
-                        const counterpart = tab === "send" ? m.toName : m.fromName;
+                        const counterpart =
+                          tab === "send" ? m.toName : m.fromName;
                         const isUnread = tab !== "send" && !m.isRead;
 
                         return (
@@ -265,7 +341,8 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                             className={cn(
                               "w-full rounded-lg border border-border/60 bg-card p-4 text-left transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-sm",
                               active && "border-border bg-secondary shadow-sm",
-                              !active && "hover:bg-secondary/60 hover:text-foreground",
+                              !active &&
+                                "hover:bg-secondary/60 hover:text-foreground",
                             )}
                             onClick={async () => {
                               setSelectedId(m.id);
@@ -274,29 +351,59 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                           >
                             <div className="flex items-start justify-between gap-3 mb-2">
                               <div className="flex items-start gap-3 min-w-0 flex-1">
-                                <div className={cn("mt-0.5 shrink-0", isUnread && "text-primary", !isUnread && "text-muted-foreground")}>{isUnread ? <Mail className="h-5 w-5" /> : <MailOpen className="h-5 w-5" />}</div>
+                                <div
+                                  className={cn(
+                                    "mt-0.5 shrink-0",
+                                    isUnread && "text-primary",
+                                    !isUnread && "text-muted-foreground",
+                                  )}
+                                >
+                                  {isUnread ? (
+                                    <Mail className="h-5 w-5" />
+                                  ) : (
+                                    <MailOpen className="h-5 w-5" />
+                                  )}
+                                </div>
 
                                 <div className="min-w-0 flex-1">
-                                  <div className={cn("text-sm truncate leading-tight", isUnread ? "font-semibold text-foreground" : "font-medium text-foreground/90")}>{m.title || "(제목 없음)"}</div>
+                                  <div
+                                    className={cn(
+                                      "text-sm truncate leading-tight",
+                                      isUnread
+                                        ? "font-semibold text-foreground"
+                                        : "font-medium text-foreground/90",
+                                    )}
+                                  >
+                                    {m.title || "(제목 없음)"}
+                                  </div>
 
                                   <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
                                     <div className="flex items-center gap-1">
                                       <User className="h-3 w-3" />
-                                      <span className="truncate max-w-[100px]">{counterpart}</span>
+                                      <span className="truncate max-w-[100px]">
+                                        {counterpart}
+                                      </span>
                                     </div>
                                     <span>·</span>
                                     <div className="flex items-center gap-1">
                                       <Clock className="h-3 w-3" />
-                                      <span className="whitespace-nowrap">{formatKST(m.createdAt)}</span>
+                                      <span className="whitespace-nowrap">
+                                        {formatKST(m.createdAt)}
+                                      </span>
                                     </div>
                                   </div>
 
-                                  <p className="mt-2 text-xs text-muted-foreground line-clamp-2 leading-relaxed">{m.snippet}</p>
+                                  <p className="mt-2 text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                                    {m.snippet}
+                                  </p>
                                 </div>
                               </div>
 
                               {isUnread && (
-                                <Badge variant="brand" className="shrink-0 px-2 py-1 text-xs font-semibold leading-none">
+                                <Badge
+                                  variant="brand"
+                                  className="shrink-0 px-2 py-1 text-xs font-semibold leading-none"
+                                >
                                   NEW
                                 </Badge>
                               )}
@@ -334,20 +441,28 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
 
                     {selectedId && !detailLoading && !detail && (
                       <div className="flex items-center justify-center h-[400px] text-center p-6 md:p-8">
-                        <p className="text-sm text-muted-foreground">쪽지를 불러오지 못했습니다.</p>
+                        <p className="text-sm text-muted-foreground">
+                          쪽지를 불러오지 못했습니다.
+                        </p>
                       </div>
                     )}
 
                     {detail && (
                       <div className="p-4 md:p-6">
                         <div className="pb-4 border-b border-border/40">
-                          <h2 className="text-xl font-semibold text-foreground leading-tight mb-3">{detail.title || "(제목 없음)"}</h2>
+                          <h2 className="text-xl font-semibold text-foreground leading-tight mb-3">
+                            {detail.title || "(제목 없음)"}
+                          </h2>
 
                           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                             <div className="flex flex-col gap-1.5 text-sm text-muted-foreground">
                               <div className="flex items-center gap-2">
                                 <User className="h-4 w-4" />
-                                <span>{tab === "send" ? `받는 사람: ${detail.toName}` : `보낸 사람: ${detail.fromName}`}</span>
+                                <span>
+                                  {tab === "send"
+                                    ? `받는 사람: ${detail.toName}`
+                                    : `보낸 사람: ${detail.fromName}`}
+                                </span>
                               </div>
 
                               <div className="flex items-center gap-2">
@@ -356,7 +471,15 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                                 {tab !== "send" && (
                                   <>
                                     <span>·</span>
-                                    <span className={cn(detail.readAt ? "text-muted-foreground" : "text-primary font-medium")}>{detail.readAt ? "읽음" : "미열람"}</span>
+                                    <span
+                                      className={cn(
+                                        detail.readAt
+                                          ? "text-muted-foreground"
+                                          : "text-primary font-medium",
+                                      )}
+                                    >
+                                      {detail.readAt ? "읽음" : "미열람"}
+                                    </span>
                                   </>
                                 )}
                               </div>
@@ -364,13 +487,23 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
 
                             <div className="flex items-center gap-2">
                               {tab !== "send" && (
-                                <Button variant="outline" size="sm" onClick={openReply} className="gap-2 bg-transparent">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={openReply}
+                                  className="gap-2 bg-transparent"
+                                >
                                   <Reply className="h-4 w-4" />
                                   답장
                                 </Button>
                               )}
 
-                              <Button variant="outline" size="sm" onClick={() => setDeleteOpen(true)} className="gap-2 hover:bg-destructive/10 dark:hover:bg-destructive/15 hover:text-destructive hover:border-destructive/50">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setDeleteOpen(true)}
+                                className="gap-2 hover:bg-destructive/10 dark:hover:bg-destructive/15 hover:text-destructive hover:border-destructive/50"
+                              >
                                 <Trash2 className="h-4 w-4" />
                                 삭제
                               </Button>
@@ -380,7 +513,9 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
 
                         <div className="pt-4 md:pt-6">
                           <div className="prose prose-sm max-w-none">
-                            <div className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">{detail.body}</div>
+                            <div className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">
+                              {detail.body}
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -403,13 +538,21 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
           defaultTitle={replyDefaultTitle}
           defaultBody={replyDefaultBody}
           onSent={async () => {
-            await globalMutate((k) => typeof k === "string" && k.startsWith("/api/messages/send"));
+            await globalMutate(
+              (k) =>
+                typeof k === "string" && k.startsWith("/api/messages/send"),
+            );
           }}
         />
       )}
 
       {/* 관리자 전체 공지 다이얼로그도 필요 시점에만 로드 */}
-      {user.role === "admin" && broadcastOpen && <AdminBroadcastDialog open={broadcastOpen} onOpenChange={setBroadcastOpen} />}
+      {user.role === "admin" && broadcastOpen && (
+        <AdminBroadcastDialog
+          open={broadcastOpen}
+          onOpenChange={setBroadcastOpen}
+        />
+      )}
 
       <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <AlertDialogContent>

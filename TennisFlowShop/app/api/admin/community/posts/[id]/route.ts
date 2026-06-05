@@ -31,7 +31,10 @@ function summarizeCommunityPost(doc: EditableCommunityPost | null) {
     type: typeof safe.type === "string" ? safe.type : undefined,
     category: typeof safe.category === "string" ? safe.category : undefined,
     status: typeof safe.status === "string" ? safe.status : undefined,
-    isPinned: typeof (safe as any).isPinned === "boolean" ? (safe as any).isPinned : undefined,
+    isPinned:
+      typeof (safe as any).isPinned === "boolean"
+        ? (safe as any).isPinned
+        : undefined,
     authorId: safe.userId ? String(safe.userId) : undefined,
     attachmentCount: Array.isArray((safe as any).attachments)
       ? (safe as any).attachments.length
@@ -251,7 +254,9 @@ export async function DELETE(
   const commentsCol = db.collection("community_comments");
   const likesCol = db.collection("community_likes");
   const reportsCol = db.collection("community_reports");
-  const beforeDoc = (await col.findOne({ _id: new ObjectId(id) })) as EditableCommunityPost | null;
+  const beforeDoc = (await col.findOne({
+    _id: new ObjectId(id),
+  })) as EditableCommunityPost | null;
   if (!beforeDoc) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }

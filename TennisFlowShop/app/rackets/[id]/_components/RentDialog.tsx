@@ -130,7 +130,9 @@ export default function RentDialog({
                 </span>
               </div>
               <div className="flex items-center justify-between gap-3">
-                <span className="min-w-0 break-words text-sm text-muted-foreground">보증금</span>
+                <span className="min-w-0 break-words text-sm text-muted-foreground">
+                  보증금
+                </span>
                 <span className="shrink-0 whitespace-nowrap text-right font-bold text-foreground tabular-nums">
                   {(rental.deposit ?? 0).toLocaleString()}원
                 </span>
@@ -151,11 +153,7 @@ export default function RentDialog({
             >
               취소
             </Button>
-            <Button
-              className=""
-              onClick={onSubmit}
-              disabled={loading}
-            >
+            <Button className="" onClick={onSubmit} disabled={loading}>
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

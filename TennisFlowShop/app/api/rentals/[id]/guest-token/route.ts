@@ -36,9 +36,15 @@ export async function POST(
     const db = await getDb();
     const rental = await db
       .collection("rental_orders")
-      .findOne({ _id: new ObjectId(id) }, { projection: { _id: 1, userId: 1 } });
+      .findOne(
+        { _id: new ObjectId(id) },
+        { projection: { _id: 1, userId: 1 } },
+      );
     if (!rental) {
-      return NextResponse.json({ message: "rental not found" }, { status: 404 });
+      return NextResponse.json(
+        { message: "rental not found" },
+        { status: 404 },
+      );
     }
 
     const isGuestRental = !rental.userId;

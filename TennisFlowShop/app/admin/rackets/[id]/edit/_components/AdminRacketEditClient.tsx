@@ -25,10 +25,7 @@ import {
 import { racketBrandLabel } from "@/lib/constants";
 import { UNSAVED_CHANGES_MESSAGE } from "@/lib/hooks/useUnsavedChangesGuard";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
-import {
-  adminMutator,
-  getAdminErrorMessage,
-} from "@/lib/admin/adminFetcher";
+import { adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
 import { showErrorToast } from "@/lib/toast";
 
 type AdminRacketDetail = RacketForm & {
@@ -164,7 +161,9 @@ export default function AdminRacketEditClient({ id }: { id: string }) {
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h2 className="text-3xl font-bold tracking-normal">라켓 수정</h2>
+                    <h2 className="text-3xl font-bold tracking-normal">
+                      라켓 수정
+                    </h2>
                     <StockChip id={data.id} total={data.quantity ?? 1} />
                   </div>
                   <p className="text-muted-foreground">
@@ -197,7 +196,9 @@ export default function AdminRacketEditClient({ id }: { id: string }) {
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
-                      <AlertDialogTitle>라켓을 삭제하시겠습니까?</AlertDialogTitle>
+                      <AlertDialogTitle>
+                        라켓을 삭제하시겠습니까?
+                      </AlertDialogTitle>
                       <AlertDialogDescription>
                         이 작업은 되돌릴 수 없습니다. 라켓 정보가 영구적으로
                         삭제됩니다.
@@ -220,7 +221,11 @@ export default function AdminRacketEditClient({ id }: { id: string }) {
 
           <Separator className="bg-border" />
 
-          <AdminRacketForm initial={data} submitLabel="저장" onSubmit={onSubmit} />
+          <AdminRacketForm
+            initial={data}
+            submitLabel="저장"
+            onSubmit={onSubmit}
+          />
         </div>
       </div>
     </div>

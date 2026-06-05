@@ -152,14 +152,26 @@ async function getData(db: any, id: string, r: any) {
     paymentInfo: r.paymentInfo
       ? {
           status: r.paymentInfo.status ? String(r.paymentInfo.status) : null,
-          provider: r.paymentInfo.provider ? String(r.paymentInfo.provider) : null,
+          provider: r.paymentInfo.provider
+            ? String(r.paymentInfo.provider)
+            : null,
           method: r.paymentInfo.method ? String(r.paymentInfo.method) : null,
           tid: r.paymentInfo.tid ? String(r.paymentInfo.tid) : null,
-          approvedAt: r.paymentInfo.approvedAt ? String(r.paymentInfo.approvedAt) : null,
-          easyPayProvider: r.paymentInfo.easyPayProvider ? String(r.paymentInfo.easyPayProvider) : null,
-          cardDisplayName: r.paymentInfo.cardDisplayName ? String(r.paymentInfo.cardDisplayName) : null,
-          cardCompany: r.paymentInfo.cardCompany ? String(r.paymentInfo.cardCompany) : null,
-          cardLabel: r.paymentInfo.cardLabel ? String(r.paymentInfo.cardLabel) : null,
+          approvedAt: r.paymentInfo.approvedAt
+            ? String(r.paymentInfo.approvedAt)
+            : null,
+          easyPayProvider: r.paymentInfo.easyPayProvider
+            ? String(r.paymentInfo.easyPayProvider)
+            : null,
+          cardDisplayName: r.paymentInfo.cardDisplayName
+            ? String(r.paymentInfo.cardDisplayName)
+            : null,
+          cardCompany: r.paymentInfo.cardCompany
+            ? String(r.paymentInfo.cardCompany)
+            : null,
+          cardLabel: r.paymentInfo.cardLabel
+            ? String(r.paymentInfo.cardLabel)
+            : null,
         }
       : null,
     shipping: r.shipping

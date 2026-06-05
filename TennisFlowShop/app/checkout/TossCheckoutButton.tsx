@@ -28,14 +28,18 @@ export default function TossCheckoutButton({
 }) {
   const [loading, setLoading] = useState(false);
   const [inlineError, setInlineError] = useState<string | null>(null);
-  const blockedByZeroAmount = !Number.isFinite(payableAmount) || payableAmount <= 0;
+  const blockedByZeroAmount =
+    !Number.isFinite(payableAmount) || payableAmount <= 0;
   const blockedByWidget = !widgetReady || !!widgetLoadError;
-  const isDisabled = disabled || loading || blockedByZeroAmount || blockedByWidget;
+  const isDisabled =
+    disabled || loading || blockedByZeroAmount || blockedByWidget;
 
   const handleClick = async () => {
     if (isDisabled) return;
     if (blockedByZeroAmount) {
-      setInlineError("최종 결제금액이 0원인 경우 카드/간편결제를 사용할 수 없습니다.");
+      setInlineError(
+        "최종 결제금액이 0원인 경우 카드/간편결제를 사용할 수 없습니다.",
+      );
       return;
     }
     if (widgetLoadError) {
@@ -43,7 +47,9 @@ export default function TossCheckoutButton({
       return;
     }
     if (!widgetReady) {
-      setInlineError("결제위젯 준비가 아직 완료되지 않았습니다. 잠시 후 다시 시도해주세요.");
+      setInlineError(
+        "결제위젯 준비가 아직 완료되지 않았습니다. 잠시 후 다시 시도해주세요.",
+      );
       return;
     }
     setInlineError(null);
@@ -55,14 +61,20 @@ export default function TossCheckoutButton({
         body: JSON.stringify(payload),
       });
       const prepJson = await prepRes.json();
-      if (!prepRes.ok || !prepJson?.success) throw new Error(prepJson?.error || "결제 준비에 실패했습니다.");
+      if (!prepRes.ok || !prepJson?.success)
+        throw new Error(prepJson?.error || "결제 준비에 실패했습니다.");
       const prepareAmount = Number(prepJson?.amount ?? NaN);
       if (!Number.isFinite(prepareAmount) || prepareAmount <= 0) {
-        throw new Error("최종 결제금액이 0원이거나 올바르지 않아 카드/간편결제를 진행할 수 없습니다.");
+        throw new Error(
+          "최종 결제금액이 0원이거나 올바르지 않아 카드/간편결제를 진행할 수 없습니다.",
+        );
       }
 
       const expectedAmount = Math.floor(Number(payableAmount ?? NaN));
-      if (!Number.isFinite(expectedAmount) || prepareAmount !== expectedAmount) {
+      if (
+        !Number.isFinite(expectedAmount) ||
+        prepareAmount !== expectedAmount
+      ) {
         console.warn("[toss] payment amount mismatch", {
           clientAmount: Number.isFinite(expectedAmount) ? expectedAmount : null,
           serverAmount: Number.isFinite(prepareAmount) ? prepareAmount : null,
@@ -72,7 +84,8 @@ export default function TossCheckoutButton({
 
       const widget = (window as any).__tossPaymentWidget;
       const paymentMethodWidget = (window as any).__tossPaymentMethodWidget;
-      if (!widget || !paymentMethodWidget) throw new Error("결제위젯이 아직 준비되지 않았습니다.");
+      if (!widget || !paymentMethodWidget)
+        throw new Error("결제위젯이 아직 준비되지 않았습니다.");
 
       const updateResult = paymentMethodWidget.updateAmount(prepareAmount);
       if (updateResult && typeof updateResult.then === "function") {
@@ -103,7 +116,11 @@ export default function TossCheckoutButton({
 
   return (
     <div className="space-y-2 w-full">
-      <Button onClick={handleClick} className="w-full h-14 text-lg" disabled={isDisabled}>
+      <Button
+        onClick={handleClick}
+        className="w-full h-14 text-lg"
+        disabled={isDisabled}
+      >
         {loading ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -113,9 +130,19 @@ export default function TossCheckoutButton({
           "토스로 결제하기"
         )}
       </Button>
-      {blockedByZeroAmount && <p className="text-xs text-muted-foreground">최종 결제금액이 0원이라 토스 카드/간편결제를 사용할 수 없습니다.</p>}
-      {widgetLoadError && <p className="text-xs text-destructive">{widgetLoadError}</p>}
-      {!widgetLoadError && !widgetReady && <p className="text-xs text-muted-foreground">결제위젯 준비 중입니다. 잠시 후 다시 시도해주세요.</p>}
+      {blockedByZeroAmount && (
+        <p className="text-xs text-muted-foreground">
+          최종 결제금액이 0원이라 토스 카드/간편결제를 사용할 수 없습니다.
+        </p>
+      )}
+      {widgetLoadError && (
+        <p className="text-xs text-destructive">{widgetLoadError}</p>
+      )}
+      {!widgetLoadError && !widgetReady && (
+        <p className="text-xs text-muted-foreground">
+          결제위젯 준비 중입니다. 잠시 후 다시 시도해주세요.
+        </p>
+      )}
       {inlineError && <p className="text-xs text-destructive">{inlineError}</p>}
     </div>
   );

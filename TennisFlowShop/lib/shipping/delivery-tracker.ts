@@ -1,4 +1,5 @@
-const DELIVERY_TRACKER_GRAPHQL_ENDPOINT = "https://apis.tracker.delivery/graphql";
+const DELIVERY_TRACKER_GRAPHQL_ENDPOINT =
+  "https://apis.tracker.delivery/graphql";
 
 type DeliveryStatus = "배송준비중" | "배송중" | "배송완료" | "조회불가";
 
@@ -124,7 +125,8 @@ function getDeliveryTrackerErrorInfo(payload: any): DeliveryTrackerErrorInfo {
       return {
         errorCode: "INTERNAL",
         statusCode: 502,
-        message: "배송조회 서비스 내부 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
+        message:
+          "배송조회 서비스 내부 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
       };
     default:
       return {
@@ -179,8 +181,13 @@ export async function fetchDeliveryTrackerSummary(params: {
   clientSecret: string;
   carrierDisplayName?: string | null;
 }): Promise<DeliveryTrackerSummarySuccess | DeliveryTrackerSummaryFailure> {
-  const { carrierId, trackingNumber, clientId, clientSecret, carrierDisplayName } =
-    params;
+  const {
+    carrierId,
+    trackingNumber,
+    clientId,
+    clientSecret,
+    carrierDisplayName,
+  } = params;
   const auth = `TRACKQL-API-KEY ${clientId}:${clientSecret}`;
 
   try {
@@ -203,7 +210,8 @@ export async function fetchDeliveryTrackerSummary(params: {
         success: false,
         errorCode: response.status === 401 ? "UNAUTHENTICATED" : "UNKNOWN",
         statusCode: response.status,
-        message: "배송조회 서비스 응답을 가져오지 못했습니다. 잠시 후 다시 시도해주세요.",
+        message:
+          "배송조회 서비스 응답을 가져오지 못했습니다. 잠시 후 다시 시도해주세요.",
       };
     }
 
@@ -213,7 +221,8 @@ export async function fetchDeliveryTrackerSummary(params: {
         success: false,
         errorCode: "UNKNOWN",
         statusCode: 502,
-        message: "배송조회 서비스 응답을 가져오지 못했습니다. 잠시 후 다시 시도해주세요.",
+        message:
+          "배송조회 서비스 응답을 가져오지 못했습니다. 잠시 후 다시 시도해주세요.",
       };
     }
     if (Array.isArray(payload?.errors) && payload.errors.length > 0) {
@@ -246,7 +255,9 @@ export async function fetchDeliveryTrackerSummary(params: {
           .reverse()
       : [];
 
-    const lastEvent = track?.lastEvent ? normalizeProgress(track.lastEvent) : null;
+    const lastEvent = track?.lastEvent
+      ? normalizeProgress(track.lastEvent)
+      : null;
 
     return {
       success: true,
@@ -258,7 +269,11 @@ export async function fetchDeliveryTrackerSummary(params: {
         ? String(track.lastEvent.status.name)
         : null,
       displayStatus: normalizeDisplayStatus(stateId),
-      linkUrl: buildDeliveryTrackerLink({ clientId, carrierId, trackingNumber }),
+      linkUrl: buildDeliveryTrackerLink({
+        clientId,
+        carrierId,
+        trackingNumber,
+      }),
       lastEvent,
       progresses,
     };
@@ -267,7 +282,8 @@ export async function fetchDeliveryTrackerSummary(params: {
       success: false,
       errorCode: "UNKNOWN",
       statusCode: 503,
-      message: "배송조회 서비스 응답을 가져오지 못했습니다. 잠시 후 다시 시도해주세요.",
+      message:
+        "배송조회 서비스 응답을 가져오지 못했습니다. 잠시 후 다시 시도해주세요.",
     };
   }
 }

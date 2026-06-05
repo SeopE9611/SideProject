@@ -34,7 +34,10 @@ import {
   isVisitPickupOrder,
 } from "@/lib/order-shipping";
 import { getRefundBankLabel } from "@/lib/cancel-request/refund-account";
-import { isLikelyEmailQuery, normalizeEmailForSearch } from "@/lib/search-email";
+import {
+  isLikelyEmailQuery,
+  normalizeEmailForSearch,
+} from "@/lib/search-email";
 /** Responsibility: admin operations 목록 조회의 query/transform/response 조합. */
 
 const DEFAULT_PAGE_SIZE = 50;
@@ -389,7 +392,8 @@ function buildItemSignals(item: OpItem): OperationSignal[] {
       sourceId: item.id,
       title: "미처리 업무",
       description: reason,
-      nextAction: item.nextAction ?? "상세 문서로 이동해 미처리 상태를 해소하세요.",
+      nextAction:
+        item.nextAction ?? "상세 문서로 이동해 미처리 상태를 해소하세요.",
     });
   }
   if ((item.cancel?.status ?? "none") === "requested") {
@@ -460,7 +464,9 @@ function summarizeDistinctLabelsByKind(
   return map;
 }
 
-function computeGroupReviewLevel(group: AdminOperationsGroup): AdminOperationReviewLevel {
+function computeGroupReviewLevel(
+  group: AdminOperationsGroup,
+): AdminOperationReviewLevel {
   let level: AdminOperationReviewLevel = "none";
   for (const item of group.items ?? []) {
     const itemLevel: AdminOperationReviewLevel =
@@ -470,7 +476,8 @@ function computeGroupReviewLevel(group: AdminOperationsGroup): AdminOperationRev
         : (item.reviewReasons?.length ?? 0) > 0
           ? "info"
           : "none");
-    if (reviewLevelPriority(itemLevel) > reviewLevelPriority(level)) level = itemLevel;
+    if (reviewLevelPriority(itemLevel) > reviewLevelPriority(level))
+      level = itemLevel;
   }
 
   if (!group.items || group.items.length <= 1) return level;
@@ -482,11 +489,19 @@ function computeGroupReviewLevel(group: AdminOperationsGroup): AdminOperationRev
   if (!anchor) return level;
 
   const anchorKey = `${anchor.kind}:${anchor.id}`;
-  const children = group.items.filter((item) => `${item.kind}:${item.id}` !== anchorKey);
+  const children = group.items.filter(
+    (item) => `${item.kind}:${item.id}` !== anchorKey,
+  );
   if (children.length === 0) return level;
 
-  const childStatusMap = summarizeDistinctLabelsByKind(children, (item) => item.statusLabel);
-  const childPaymentMap = summarizeDistinctLabelsByKind(children, (item) => item.paymentLabel);
+  const childStatusMap = summarizeDistinctLabelsByKind(
+    children,
+    (item) => item.statusLabel,
+  );
+  const childPaymentMap = summarizeDistinctLabelsByKind(
+    children,
+    (item) => item.paymentLabel,
+  );
   const hasMixed =
     Array.from(childStatusMap.values()).some((labels) => labels.size > 1) ||
     Array.from(childPaymentMap.values()).some((labels) => labels.size > 1);
@@ -617,7 +632,17 @@ function parseOperationsListRequest(url: URL): AdminOperationsListRequestDto {
       ? "warn"
       : warnFilterRaw;
   const warnSort = parseWarnSort(url.searchParams.get("warnSort"));
-  return { page, pageSize, kind, q, warn, flow, integrated, warnFilter, warnSort };
+  return {
+    page,
+    pageSize,
+    kind,
+    q,
+    warn,
+    flow,
+    integrated,
+    warnFilter,
+    warnSort,
+  };
 }
 
 function isMatchedByDbCandidate(
@@ -662,8 +687,17 @@ export async function handleAdminOperationsGet(req: Request) {
 
   const url = new URL(req.url);
   const requestDto = parseOperationsListRequest(url);
-  const { page, pageSize, kind, q, warn, flow, integrated, warnFilter, warnSort } =
-    requestDto;
+  const {
+    page,
+    pageSize,
+    kind,
+    q,
+    warn,
+    flow,
+    integrated,
+    warnFilter,
+    warnSort,
+  } = requestDto;
   const fetchLimit = q ? SEARCH_FETCH_EACH : MAX_FETCH_EACH;
   const qRegex = q ? buildSearchRegex(q) : null;
   const qPrefixRegex = q ? buildPrefixRegex(q) : null;
@@ -1857,11 +1891,15 @@ export async function handleAdminOperationsGet(req: Request) {
   const groupsWithQueue = groups.map((group) => {
     const groupReviewLevel = computeGroupReviewLevel(group);
     const groupNeedsReview = groupReviewLevel === "action";
-    const queueBucket: AdminOperationsGroup["groupQueueBucket"] = isGroupWarn(group)
+    const queueBucket: AdminOperationsGroup["groupQueueBucket"] = isGroupWarn(
+      group,
+    )
       ? "urgent"
       : groupNeedsReview || hasCancelRequested(group) || hasPaymentRisk(group)
         ? "caution"
-        : isGroupPending(group) || hasPaymentPending(group) || hasRoutineNextAction(group)
+        : isGroupPending(group) ||
+            hasPaymentPending(group) ||
+            hasRoutineNextAction(group)
           ? "pending"
           : "clean";
     return {
@@ -1894,14 +1932,18 @@ export async function handleAdminOperationsGet(req: Request) {
 
   groups = allGroups;
 
-  if (warnFilter === "warn") groups = groups.filter((group) => isGroupWarn(group));
+  if (warnFilter === "warn")
+    groups = groups.filter((group) => isGroupWarn(group));
   if (warnFilter === "caution")
     groups = groups.filter((group) => isCautionQueueGroup(group));
   if (warnFilter === "review")
-    groups = groups.filter((group) => !isGroupWarn(group) && isGroupReview(group));
+    groups = groups.filter(
+      (group) => !isGroupWarn(group) && isGroupReview(group),
+    );
   if (warnFilter === "pending")
     groups = groups.filter((group) => isPendingQueueGroup(group));
-  if (warnFilter === "clean") groups = groups.filter((group) => isCleanGroup(group));
+  if (warnFilter === "clean")
+    groups = groups.filter((group) => isCleanGroup(group));
 
   if (warnSort !== "default") {
     groups = [...groups].sort((a, b) => {

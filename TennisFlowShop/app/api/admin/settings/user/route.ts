@@ -49,16 +49,14 @@ export async function PATCH(req: Request) {
   }
 
   const db = await getDb();
-  await db
-    .collection<any>(SETTINGS_COLLECTION)
-    .updateOne(
-      { _id: DOC_ID },
-      {
-        $set: { value: parsed.data, updatedAt: new Date() },
-        $setOnInsert: { _id: DOC_ID },
-      },
-      { upsert: true },
-    );
+  await db.collection<any>(SETTINGS_COLLECTION).updateOne(
+    { _id: DOC_ID },
+    {
+      $set: { value: parsed.data, updatedAt: new Date() },
+      $setOnInsert: { _id: DOC_ID },
+    },
+    { upsert: true },
+  );
 
   await appendAdminAudit(
     db,

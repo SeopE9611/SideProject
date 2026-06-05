@@ -664,11 +664,17 @@ export default function TensionGuidePage() {
                         {selectedRange.min}LB ~ {selectedRange.max}LB
                       </p>
                       <div className="mt-3 flex flex-wrap gap-2">
-                        <Badge variant="secondary" className="max-w-[10rem] shrink-0 whitespace-normal break-keep text-left text-xs leading-snug">
+                        <Badge
+                          variant="secondary"
+                          className="max-w-[10rem] shrink-0 whitespace-normal break-keep text-left text-xs leading-snug"
+                        >
                           {gender === "female" ? "여자" : "남자"}{" "}
                           {selectedRange.min}~{selectedRange.max}LB
                         </Badge>
-                        <Badge variant="outline" className="max-w-[10rem] shrink-0 whitespace-normal break-keep text-left text-xs leading-snug">
+                        <Badge
+                          variant="outline"
+                          className="max-w-[10rem] shrink-0 whitespace-normal break-keep text-left text-xs leading-snug"
+                        >
                           {oppositeGender === "female" ? "여자" : "남자"}{" "}
                           {oppositeRange.min}~{oppositeRange.max}LB
                         </Badge>
@@ -938,11 +944,17 @@ export default function TensionGuidePage() {
                     </p>
 
                     <div className="flex max-w-full flex-nowrap gap-2 overflow-x-auto pb-1">
-                      <Badge variant="secondary" className="max-w-[10rem] shrink-0 whitespace-normal break-keep text-left text-xs leading-snug">
+                      <Badge
+                        variant="secondary"
+                        className="max-w-[10rem] shrink-0 whitespace-normal break-keep text-left text-xs leading-snug"
+                      >
                         여자 {string.ranges.female.min}~
                         {string.ranges.female.max}LB
                       </Badge>
-                      <Badge variant="outline" className="max-w-[10rem] shrink-0 whitespace-normal break-keep text-left text-xs leading-snug">
+                      <Badge
+                        variant="outline"
+                        className="max-w-[10rem] shrink-0 whitespace-normal break-keep text-left text-xs leading-snug"
+                      >
                         남자 {string.ranges.male.min}~{string.ranges.male.max}LB
                       </Badge>
                     </div>
@@ -961,7 +973,10 @@ export default function TensionGuidePage() {
                         </h4>
                         <ul className="space-y-2">
                           {string.pros.map((pro: StringPro, i: number) => (
-                            <li key={i} className="text-xs text-foreground/80 flex items-start gap-2">
+                            <li
+                              key={i}
+                              className="text-xs text-foreground/80 flex items-start gap-2"
+                            >
                               <div className="w-1 h-1 bg-foreground/50 rounded-full flex-shrink-0 mt-1.5" />
                               {typeof pro === "string" ? (
                                 <span>{pro}</span>

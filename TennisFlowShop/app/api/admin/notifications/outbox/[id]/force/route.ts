@@ -12,7 +12,8 @@ function maskRecipient(value: unknown): string | null {
   if (!raw) return null;
   if (raw.includes("@")) {
     const [local, domain] = raw.split("@");
-    const localMasked = local.length <= 2 ? `${local[0] ?? "*"}*` : `${local.slice(0, 2)}***`;
+    const localMasked =
+      local.length <= 2 ? `${local[0] ?? "*"}*` : `${local.slice(0, 2)}***`;
     return `${localMasked}@${domain ?? ""}`;
   }
   const digits = raw.replace(/\D/g, "");
@@ -136,7 +137,8 @@ export async function POST(
             error: (afterDoc as any)?.error ?? dispatchErrorMessage ?? null,
           },
           channel: Array.isArray(doc.channels) ? doc.channels : [],
-          templateKey: (doc as any)?.templateKey ?? (doc as any)?.template?.key ?? null,
+          templateKey:
+            (doc as any)?.templateKey ?? (doc as any)?.template?.key ?? null,
           recipient: pickRecipient((doc as any).rendered),
           result: auditResult,
         },

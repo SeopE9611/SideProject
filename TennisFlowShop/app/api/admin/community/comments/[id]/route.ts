@@ -14,7 +14,10 @@ export async function DELETE(
 
   const { id } = await ctx.params;
   if (!ObjectId.isValid(id)) {
-    return NextResponse.json({ ok: false, error: "invalid_id" }, { status: 400 });
+    return NextResponse.json(
+      { ok: false, error: "invalid_id" },
+      { status: 400 },
+    );
   }
 
   const { db } = guard;
@@ -25,11 +28,17 @@ export async function DELETE(
 
   const existing = await commentsCol.findOne({ _id: commentObjectId });
   if (!existing) {
-    return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
+    return NextResponse.json(
+      { ok: false, error: "not_found" },
+      { status: 404 },
+    );
   }
 
   const targetIds = [commentObjectId];
-  const replies = await commentsCol.find({ parentId: commentObjectId }).project({ _id: 1 }).toArray();
+  const replies = await commentsCol
+    .find({ parentId: commentObjectId })
+    .project({ _id: 1 })
+    .toArray();
   targetIds.push(...replies.map((reply: any) => reply._id as ObjectId));
 
   await commentsCol.deleteMany({ _id: { $in: targetIds } });
@@ -37,24 +46,21 @@ export async function DELETE(
 
   const deletedCount = targetIds.length;
   if (existing.postId instanceof ObjectId) {
-    await postsCol.updateOne(
-      { _id: existing.postId },
-      [
-        {
-          $set: {
-            commentsCount: {
-              $max: [
-                0,
-                {
-                  $subtract: [{ $ifNull: ["$commentsCount", 0] }, deletedCount],
-                },
-              ],
-            },
-            updatedAt: new Date(),
+    await postsCol.updateOne({ _id: existing.postId }, [
+      {
+        $set: {
+          commentsCount: {
+            $max: [
+              0,
+              {
+                $subtract: [{ $ifNull: ["$commentsCount", 0] }, deletedCount],
+              },
+            ],
           },
+          updatedAt: new Date(),
         },
-      ],
-    );
+      },
+    ]);
   }
 
   return NextResponse.json({ success: true, deletedCount });

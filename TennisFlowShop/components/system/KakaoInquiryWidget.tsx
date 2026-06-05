@@ -66,7 +66,8 @@ export default function KakaoInquiryWidget() {
   const canShowGuide = true;
 
   // 목적 선택은 Kakao env와 무관하게 노출한다.
-  const shouldHide = hideAll || (!canShowGuide && !canShowInquiry && !canShowBug);
+  const shouldHide =
+    hideAll || (!canShowGuide && !canShowInquiry && !canShowBug);
   const hideOnFinderTouch = pathname === "/rackets/finder";
 
   useEffect(() => {
@@ -259,7 +260,6 @@ export default function KakaoInquiryWidget() {
       style={liftPx ? { transform: `translateY(-${liftPx}px)` } : undefined}
     >
       <div className="flex flex-col items-end gap-2 bp-sm:gap-3">
-
         {/* ---------------- 목적 선택 ---------------- */}
         <div className="relative">
           <div
@@ -294,7 +294,11 @@ export default function KakaoInquiryWidget() {
                   <div className="grid gap-2">
                     {[
                       ["스트링 교체 신청하기", "/services/apply", ""],
-                      ["새 스트링 고르고 장착 신청", "/products?from=apply", ""],
+                      [
+                        "새 스트링 고르고 장착 신청",
+                        "/products?from=apply",
+                        "",
+                      ],
                       ["라켓 구매/대여 + 장착", "/rackets?from=apply", ""],
                       ["아카데미 신청", "/academy", ""],
                       ["주문/신청 상태 확인", "/mypage"],
@@ -305,7 +309,9 @@ export default function KakaoInquiryWidget() {
                         className="rounded-lg border border-border bg-card px-3 py-2 text-sm font-semibold transition-colors hover:bg-muted bp-sm:py-2.5"
                         onClick={() => setPanel(null)}
                       >
-                        <span className="block whitespace-nowrap text-foreground">{label}</span>
+                        <span className="block whitespace-nowrap text-foreground">
+                          {label}
+                        </span>
                         {description ? (
                           <span className="mt-0.5 block text-xs font-normal text-muted-foreground">
                             {description}
@@ -331,7 +337,9 @@ export default function KakaoInquiryWidget() {
             type="button"
             ref={guideTriggerRef}
             aria-label="목적 선택"
-            onClick={() => setPanel((cur) => (cur === "guide" ? null : "guide"))}
+            onClick={() =>
+              setPanel((cur) => (cur === "guide" ? null : "guide"))
+            }
             className={[
               "h-12 w-12 rounded-full shadow-xl bp-sm:h-14 bp-sm:w-14",
               "bg-primary text-primary-foreground",

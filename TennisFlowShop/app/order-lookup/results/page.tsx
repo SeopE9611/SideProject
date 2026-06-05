@@ -312,7 +312,9 @@ export default function OrderLookupResultsPage() {
                                 key={`${field}-${i}`}
                                 className="text-sm text-destructive"
                               >
-                                <span className="font-medium">{FIELD_LABELS[field] ?? field}:</span>{" "}
+                                <span className="font-medium">
+                                  {FIELD_LABELS[field] ?? field}:
+                                </span>{" "}
                                 {msg}
                               </li>
                             )),
@@ -353,7 +355,10 @@ export default function OrderLookupResultsPage() {
             <p className="text-xl text-muted-foreground">
               {displayName}님의 주문 내역 {orders?.length || 0}건
             </p>
-            <p className="mx-auto mt-3 max-w-2xl text-sm text-muted-foreground">각 주문 카드에서 현재 상태와 다음 해야 할 일을 확인하고, 회원가입하면 다음부터 마이페이지에서 더 쉽게 관리할 수 있어요.</p>
+            <p className="mx-auto mt-3 max-w-2xl text-sm text-muted-foreground">
+              각 주문 카드에서 현재 상태와 다음 해야 할 일을 확인하고,
+              회원가입하면 다음부터 마이페이지에서 더 쉽게 관리할 수 있어요.
+            </p>
           </div>
         </div>
       </div>
@@ -580,18 +585,24 @@ export default function OrderLookupResultsPage() {
                     조회된 주문이 없습니다
                   </h3>
                   <p className="text-muted-foreground text-center mb-3 max-w-xl">
-                    입력하신 정보와 일치하는 비회원 주문을 찾지 못했습니다.
-                    주문 시 입력한 정보가 정확한지 확인한 뒤 다시 조회해주세요.
+                    입력하신 정보와 일치하는 비회원 주문을 찾지 못했습니다. 주문
+                    시 입력한 정보가 정확한지 확인한 뒤 다시 조회해주세요.
                   </p>
                   <ul className="mb-4 space-y-1.5 text-sm text-muted-foreground text-left max-w-xl">
-                    <li>• 주문자 이름에 띄어쓰기나 오타가 없는지 확인해주세요.</li>
+                    <li>
+                      • 주문자 이름에 띄어쓰기나 오타가 없는지 확인해주세요.
+                    </li>
                     <li>• 주문 당시 사용한 이메일 주소인지 확인해주세요.</li>
-                    <li>• 전화번호를 입력했다면 주문 당시 번호와 같은지 확인해주세요.</li>
+                    <li>
+                      • 전화번호를 입력했다면 주문 당시 번호와 같은지
+                      확인해주세요.
+                    </li>
                     <li>• 최근 6개월 이내 주문인지 확인해주세요.</li>
                   </ul>
                   <p className="text-sm text-muted-foreground text-center mb-6 md:mb-8 max-w-xl">
-                    주문 완료 후 시간이 오래 지나지 않았다면 잠시 후 다시 시도해볼 수 있어요.
-                    계속 조회되지 않는다면 고객센터 Q&A로 문의해주세요.
+                    주문 완료 후 시간이 오래 지나지 않았다면 잠시 후 다시
+                    시도해볼 수 있어요. 계속 조회되지 않는다면 고객센터 Q&A로
+                    문의해주세요.
                   </p>
                   <div className="flex w-full max-w-md flex-col gap-3 sm:flex-row sm:justify-center">
                     <Button

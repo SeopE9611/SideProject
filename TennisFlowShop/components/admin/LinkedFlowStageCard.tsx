@@ -120,7 +120,9 @@ export default function LinkedFlowStageCard({
         );
 
         if (!result?.success) {
-          throw new Error(result?.message || "연결 진행 단계 변경에 실패했습니다.");
+          throw new Error(
+            result?.message || "연결 진행 단계 변경에 실패했습니다.",
+          );
         }
 
         if (result.noop) {
@@ -135,7 +137,9 @@ export default function LinkedFlowStageCard({
         await onSaved?.(result);
       } catch (error: any) {
         const message = String(error?.message ?? "").trim();
-          showErrorToast(message || "연결 진행 단계 변경 중 오류가 발생했습니다.");
+        showErrorToast(
+          message || "연결 진행 단계 변경 중 오류가 발생했습니다.",
+        );
       }
     });
   };
@@ -145,7 +149,8 @@ export default function LinkedFlowStageCard({
       <CardHeader className="pb-3">
         <CardTitle className="text-base">연결 진행 단계</CardTitle>
         <CardDescription>
-          연결된 주문/신청서의 일반 흐름을 함께 변경하는 단축 조작입니다. 개별 상태 조정은 아래 주문 상태/신청 상태 영역에서 따로 처리하세요.
+          연결된 주문/신청서의 일반 흐름을 함께 변경하는 단축 조작입니다. 개별
+          상태 조정은 아래 주문 상태/신청 상태 영역에서 따로 처리하세요.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">

@@ -1,7 +1,17 @@
 import { createOrder } from "@/app/features/orders/api/handlers";
 import clientPromise from "@/lib/mongodb";
-import { approveNicePaymentByTid, cancelNicePaymentByTid, extractNiceCardInfo, extractNiceEasyPayProvider, summarizeNiceCardRaw } from "@/lib/payments/nice/server";
-import { ensureTossPaymentSessionIndexes, tossPaymentSessions, type TossPaymentFailureStage } from "@/lib/payments/toss/session";
+import {
+  approveNicePaymentByTid,
+  cancelNicePaymentByTid,
+  extractNiceCardInfo,
+  extractNiceEasyPayProvider,
+  summarizeNiceCardRaw,
+} from "@/lib/payments/nice/server";
+import {
+  ensureTossPaymentSessionIndexes,
+  tossPaymentSessions,
+  type TossPaymentFailureStage,
+} from "@/lib/payments/toss/session";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
@@ -28,21 +38,38 @@ function toAmount(value: string) {
   return Number.isFinite(amount) ? amount : 0;
 }
 
-async function parseRequestPayload(req: Request): Promise<Record<string, string>> {
+async function parseRequestPayload(
+  req: Request,
+): Promise<Record<string, string>> {
   const contentType = req.headers.get("content-type") || "";
-  if (contentType.includes("application/x-www-form-urlencoded") || contentType.includes("multipart/form-data")) {
+  if (
+    contentType.includes("application/x-www-form-urlencoded") ||
+    contentType.includes("multipart/form-data")
+  ) {
     const formData = await req.formData();
     const obj: Record<string, string> = {};
-    for (const [k, v] of formData.entries()) obj[k] = typeof v === "string" ? v : "";
+    for (const [k, v] of formData.entries())
+      obj[k] = typeof v === "string" ? v : "";
     return obj;
   }
 
   if (contentType.includes("application/json")) {
-    const json = (await req.json().catch(() => ({}))) as Record<string, unknown>;
-    return Object.entries(json).reduce<Record<string, string>>((acc, [k, v]) => {
-      acc[k] = typeof v === "string" ? v : v === undefined || v === null ? "" : String(v);
-      return acc;
-    }, {});
+    const json = (await req.json().catch(() => ({}))) as Record<
+      string,
+      unknown
+    >;
+    return Object.entries(json).reduce<Record<string, string>>(
+      (acc, [k, v]) => {
+        acc[k] =
+          typeof v === "string"
+            ? v
+            : v === undefined || v === null
+              ? ""
+              : String(v);
+        return acc;
+      },
+      {},
+    );
   }
 
   if (req.method.toUpperCase() === "POST") {
@@ -61,13 +88,18 @@ async function parseRequestPayload(req: Request): Promise<Record<string, string>
 }
 
 function getApproveCredentials() {
-  const clientKey = String(process.env.NICEPAY_CLIENT_KEY ?? process.env.NICEPAY_CLIENT_ID ?? "").trim();
+  const clientKey = String(
+    process.env.NICEPAY_CLIENT_KEY ?? process.env.NICEPAY_CLIENT_ID ?? "",
+  ).trim();
   const secretKey = String(process.env.NICEPAY_SECRET_KEY ?? "").trim();
   return { clientKey, secretKey };
 }
 
 function getApproveApiBase() {
-  return String(process.env.NICEPAY_APPROVE_API_BASE || "https://api.nicepay.co.kr/v1/payments")
+  return String(
+    process.env.NICEPAY_APPROVE_API_BASE ||
+      "https://api.nicepay.co.kr/v1/payments",
+  )
     .trim()
     .replace(/\/+$/, "");
 }
@@ -86,7 +118,12 @@ async function handleNiceReturn(req: Request) {
     const signature = pick(raw, "signature", "Signature");
 
     if (!orderId) {
-      return NextResponse.redirect(new URL(toFailUrl("SESSION_NOT_FOUND", "orderId 값이 누락되었습니다."), req.url));
+      return NextResponse.redirect(
+        new URL(
+          toFailUrl("SESSION_NOT_FOUND", "orderId 값이 누락되었습니다."),
+          req.url,
+        ),
+      );
     }
 
     const client = await clientPromise;
@@ -96,18 +133,44 @@ async function handleNiceReturn(req: Request) {
     const session = await col.findOne({ niceOrderId: orderId });
 
     if (!session || (session.provider && session.provider !== "nicepay")) {
-      return NextResponse.redirect(new URL(toFailUrl("SESSION_NOT_FOUND", "결제 세션을 찾을 수 없습니다."), req.url));
+      return NextResponse.redirect(
+        new URL(
+          toFailUrl("SESSION_NOT_FOUND", "결제 세션을 찾을 수 없습니다."),
+          req.url,
+        ),
+      );
     }
 
     if (session.status === "approved" && session.mongoOrderId) {
-      return NextResponse.redirect(new URL(`/checkout/success?orderId=${encodeURIComponent(session.mongoOrderId)}`, req.url));
+      return NextResponse.redirect(
+        new URL(
+          `/checkout/success?orderId=${encodeURIComponent(session.mongoOrderId)}`,
+          req.url,
+        ),
+      );
     }
 
     if (session.status === "approve_succeeded_order_failed") {
-      return NextResponse.redirect(new URL(toFailUrl("ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE", session.failureMessage || "승인 이후 주문 처리 실패 상태입니다."), req.url));
+      return NextResponse.redirect(
+        new URL(
+          toFailUrl(
+            "ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE",
+            session.failureMessage || "승인 이후 주문 처리 실패 상태입니다.",
+          ),
+          req.url,
+        ),
+      );
     }
     if (session.status === "approve_succeeded_auto_cancel_succeeded") {
-      return NextResponse.redirect(new URL(toFailUrl("ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE", "승인 후 주문 생성 실패로 자동 취소가 완료되었습니다."), req.url));
+      return NextResponse.redirect(
+        new URL(
+          toFailUrl(
+            "ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE",
+            "승인 후 주문 생성 실패로 자동 취소가 완료되었습니다.",
+          ),
+          req.url,
+        ),
+      );
     }
 
     const now = new Date();
@@ -124,7 +187,12 @@ async function handleNiceReturn(req: Request) {
           },
         },
       );
-      return NextResponse.redirect(new URL(toFailUrl("SESSION_EXPIRED", "결제 세션 유효시간이 만료되었습니다."), req.url));
+      return NextResponse.redirect(
+        new URL(
+          toFailUrl("SESSION_EXPIRED", "결제 세션 유효시간이 만료되었습니다."),
+          req.url,
+        ),
+      );
     }
 
     if (authResultCode !== "0000") {
@@ -141,11 +209,26 @@ async function handleNiceReturn(req: Request) {
           },
         },
       );
-      return NextResponse.redirect(new URL(toFailUrl("AUTH_FAILED", authResultMsg || "인증 결제에 실패했습니다."), req.url));
+      return NextResponse.redirect(
+        new URL(
+          toFailUrl(
+            "AUTH_FAILED",
+            authResultMsg || "인증 결제에 실패했습니다.",
+          ),
+          req.url,
+        ),
+      );
     }
 
     const prepared = session.nicePrepared || { clientId: "", orderId: "" };
-    if (!tid || !authToken || !signature || !clientId || !prepared.clientId || clientId !== prepared.clientId) {
+    if (
+      !tid ||
+      !authToken ||
+      !signature ||
+      !clientId ||
+      !prepared.clientId ||
+      clientId !== prepared.clientId
+    ) {
       await col.updateOne(
         { _id: session._id },
         {
@@ -159,10 +242,20 @@ async function handleNiceReturn(req: Request) {
           },
         },
       );
-      return NextResponse.redirect(new URL(toFailUrl("AUTH_FAILED", "인증 응답 필수값 검증에 실패했습니다."), req.url));
+      return NextResponse.redirect(
+        new URL(
+          toFailUrl("AUTH_FAILED", "인증 응답 필수값 검증에 실패했습니다."),
+          req.url,
+        ),
+      );
     }
 
-    if (!Number.isFinite(amount) || amount <= 0 || session.amount !== amount || prepared.orderId !== orderId) {
+    if (
+      !Number.isFinite(amount) ||
+      amount <= 0 ||
+      session.amount !== amount ||
+      prepared.orderId !== orderId
+    ) {
       await col.updateOne(
         { _id: session._id },
         {
@@ -176,19 +269,34 @@ async function handleNiceReturn(req: Request) {
           },
         },
       );
-      return NextResponse.redirect(new URL(toFailUrl("AMOUNT_MISMATCH", "결제 금액 검증에 실패했습니다."), req.url));
+      return NextResponse.redirect(
+        new URL(
+          toFailUrl("AMOUNT_MISMATCH", "결제 금액 검증에 실패했습니다."),
+          req.url,
+        ),
+      );
     }
 
     const { clientKey, secretKey } = getApproveCredentials();
     const approveApiBase = getApproveApiBase();
     if (!clientKey || !secretKey) {
-      return NextResponse.redirect(new URL(toFailUrl("APPROVE_FAILED", "결제 승인 설정이 올바르지 않습니다."), req.url));
+      return NextResponse.redirect(
+        new URL(
+          toFailUrl("APPROVE_FAILED", "결제 승인 설정이 올바르지 않습니다."),
+          req.url,
+        ),
+      );
     }
 
     let approvedRaw = session.niceApprovedRaw;
     if (!approvedRaw || Object.keys(approvedRaw).length === 0) {
       try {
-        console.info("[nicepay][approve][request]", { tid, amount, approveApiBase, orderId });
+        console.info("[nicepay][approve][request]", {
+          tid,
+          amount,
+          approveApiBase,
+          orderId,
+        });
         approvedRaw = await approveNicePaymentByTid({
           tid,
           amount,
@@ -222,13 +330,23 @@ async function handleNiceReturn(req: Request) {
             },
           },
         );
-        return NextResponse.redirect(new URL(toFailUrl("APPROVE_FAILED", error?.message || "승인 처리에 실패했습니다."), req.url));
+        return NextResponse.redirect(
+          new URL(
+            toFailUrl(
+              "APPROVE_FAILED",
+              error?.message || "승인 처리에 실패했습니다.",
+            ),
+            req.url,
+          ),
+        );
       }
     }
 
     const resultCode = pick(approvedRaw, "resultCode", "ResultCode");
     if (resultCode !== "0000") {
-      const resultMsg = pick(approvedRaw, "resultMsg", "ResultMsg") || "승인 처리에 실패했습니다.";
+      const resultMsg =
+        pick(approvedRaw, "resultMsg", "ResultMsg") ||
+        "승인 처리에 실패했습니다.";
       console.error("[nicepay][approve][failed]", {
         failureStage: "approve_payment",
         httpStatus: null,
@@ -249,9 +367,17 @@ async function handleNiceReturn(req: Request) {
           },
         },
       );
-      return NextResponse.redirect(new URL(toFailUrl("APPROVE_FAILED", resultMsg), req.url));
+      return NextResponse.redirect(
+        new URL(toFailUrl("APPROVE_FAILED", resultMsg), req.url),
+      );
     }
-    console.info("[nicepay][flow]", { stage: "approve_success", tid, orderId, amount, approveStatus: resultCode });
+    console.info("[nicepay][flow]", {
+      stage: "approve_success",
+      tid,
+      orderId,
+      amount,
+      approveStatus: resultCode,
+    });
     const approveRawSummary = summarizeNiceCardRaw(approvedRaw);
     console.info("[nicepay][card][approve_raw_keys]", {
       orderId,
@@ -270,8 +396,13 @@ async function handleNiceReturn(req: Request) {
       body: JSON.stringify(session.checkoutPayload ?? {}),
     });
 
-    const tryAutoCancelAfterApprove = async (failureMessage: string, failureStage: TossPaymentFailureStage) => {
-      const shouldSkipAutoCancel = session.status === "approve_succeeded_auto_cancel_succeeded" || session.niceAutoCancel?.status === "succeeded";
+    const tryAutoCancelAfterApprove = async (
+      failureMessage: string,
+      failureStage: TossPaymentFailureStage,
+    ) => {
+      const shouldSkipAutoCancel =
+        session.status === "approve_succeeded_auto_cancel_succeeded" ||
+        session.niceAutoCancel?.status === "succeeded";
       if (shouldSkipAutoCancel) {
         await col.updateOne(
           { _id: session._id },
@@ -291,7 +422,11 @@ async function handleNiceReturn(req: Request) {
             },
           },
         );
-        return { status: "skipped" as const, resultCode: "SKIPPED_ALREADY_CANCELED", resultMsg: "already canceled" };
+        return {
+          status: "skipped" as const,
+          resultCode: "SKIPPED_ALREADY_CANCELED",
+          resultMsg: "already canceled",
+        };
       }
       try {
         const canceled = await cancelNicePaymentByTid({
@@ -309,7 +444,9 @@ async function handleNiceReturn(req: Request) {
           { _id: session._id },
           {
             $set: {
-              status: canceledOk ? "approve_succeeded_auto_cancel_succeeded" : "approve_succeeded_auto_cancel_failed",
+              status: canceledOk
+                ? "approve_succeeded_auto_cancel_succeeded"
+                : "approve_succeeded_auto_cancel_failed",
               failureStage,
               failureCode: "ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE",
               failureMessage,
@@ -326,15 +463,22 @@ async function handleNiceReturn(req: Request) {
           },
         );
         console.info("[nicepay][flow]", {
-          stage: canceledOk ? "approve_succeeded_auto_cancel_succeeded" : "approve_succeeded_auto_cancel_failed",
+          stage: canceledOk
+            ? "approve_succeeded_auto_cancel_succeeded"
+            : "approve_succeeded_auto_cancel_failed",
           tid,
           orderId,
           amount,
           cancelStatus: cancelCode || "UNKNOWN",
         });
-        return { status: canceledOk ? ("succeeded" as const) : ("failed" as const), resultCode: cancelCode, resultMsg: cancelMsg };
+        return {
+          status: canceledOk ? ("succeeded" as const) : ("failed" as const),
+          resultCode: cancelCode,
+          resultMsg: cancelMsg,
+        };
       } catch (cancelError: any) {
-        const cancelMsg = cancelError?.message || "자동 취소 중 오류가 발생했습니다.";
+        const cancelMsg =
+          cancelError?.message || "자동 취소 중 오류가 발생했습니다.";
         await col.updateOne(
           { _id: session._id },
           {
@@ -348,7 +492,11 @@ async function handleNiceReturn(req: Request) {
               updatedAt: new Date(),
               niceAutoCancel: {
                 attemptedAt: new Date(),
-                resultCode: String(cancelError?.resultCode || cancelError?.code || "AUTO_CANCEL_REQUEST_ERROR"),
+                resultCode: String(
+                  cancelError?.resultCode ||
+                    cancelError?.code ||
+                    "AUTO_CANCEL_REQUEST_ERROR",
+                ),
                 resultMsg: cancelMsg,
                 status: "failed",
               },
@@ -360,18 +508,36 @@ async function handleNiceReturn(req: Request) {
           tid,
           orderId,
           amount,
-          cancelStatus: cancelError?.resultCode ?? cancelError?.code ?? "AUTO_CANCEL_REQUEST_ERROR",
+          cancelStatus:
+            cancelError?.resultCode ??
+            cancelError?.code ??
+            "AUTO_CANCEL_REQUEST_ERROR",
           message: cancelMsg,
         });
-        return { status: "failed" as const, resultCode: String(cancelError?.resultCode || cancelError?.code || "AUTO_CANCEL_REQUEST_ERROR"), resultMsg: cancelMsg };
+        return {
+          status: "failed" as const,
+          resultCode: String(
+            cancelError?.resultCode ||
+              cancelError?.code ||
+              "AUTO_CANCEL_REQUEST_ERROR",
+          ),
+          resultMsg: cancelMsg,
+        };
       }
     };
 
     try {
       const cookieStore = await cookies();
-      const hasAccessTokenCookie = Boolean(cookieStore.get("accessToken")?.value);
+      const hasAccessTokenCookie = Boolean(
+        cookieStore.get("accessToken")?.value,
+      );
       const guestModeRaw = String(process.env.GUEST_ORDER_MODE ?? "on").trim();
-      const guestMode = guestModeRaw === "off" || guestModeRaw === "legacy" || guestModeRaw === "on" ? guestModeRaw : "on";
+      const guestMode =
+        guestModeRaw === "off" ||
+        guestModeRaw === "legacy" ||
+        guestModeRaw === "on"
+          ? guestModeRaw
+          : "on";
       console.info("[nicepay][flow]", {
         stage: "before_create_order",
         source: "nicepay_return",
@@ -395,7 +561,9 @@ async function handleNiceReturn(req: Request) {
         orderId,
         amount,
         orderResponseStatus: orderRes.status,
-        orderResponseSummary: orderJson?.orderId ? "order_created" : orderJson?.code || orderJson?.error || "empty_response",
+        orderResponseSummary: orderJson?.orderId
+          ? "order_created"
+          : orderJson?.code || orderJson?.error || "empty_response",
       });
       if (!orderRes.ok && orderJson?.code === "GUEST_ORDER_DISABLED") {
         console.error("[nicepay][flow]", {
@@ -415,7 +583,10 @@ async function handleNiceReturn(req: Request) {
           tid,
           orderId,
           amount,
-          failureReason: orderJson?.code || orderJson?.error || "unknown_create_order_failure",
+          failureReason:
+            orderJson?.code ||
+            orderJson?.error ||
+            "unknown_create_order_failure",
         });
         await col.updateOne(
           { _id: session._id },
@@ -437,8 +608,19 @@ async function handleNiceReturn(req: Request) {
             },
           },
         );
-        await tryAutoCancelAfterApprove(failureMessage, "create_order_after_approve");
-        return NextResponse.redirect(new URL(toFailUrl("ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE", "승인 후 주문 생성에 실패했습니다. 주문 내역을 확인해주세요."), req.url));
+        await tryAutoCancelAfterApprove(
+          failureMessage,
+          "create_order_after_approve",
+        );
+        return NextResponse.redirect(
+          new URL(
+            toFailUrl(
+              "ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE",
+              "승인 후 주문 생성에 실패했습니다. 주문 내역을 확인해주세요.",
+            ),
+            req.url,
+          ),
+        );
       }
 
       const mongoOrderId = String(orderJson.orderId);
@@ -464,9 +646,19 @@ async function handleNiceReturn(req: Request) {
         rawSummaryCard: Boolean(niceCard),
         rawSummaryEasyPay: Boolean(easyPayProvider),
       });
-      console.info("[nicepay][flow]", { stage: "before_order_update", tid, orderId, mongoOrderId });
-      const existingOrder = await db.collection("orders").findOne({ _id: new ObjectId(mongoOrderId) });
-      const prevPaymentInfo = (existingOrder?.paymentInfo ?? {}) as Record<string, unknown>;
+      console.info("[nicepay][flow]", {
+        stage: "before_order_update",
+        tid,
+        orderId,
+        mongoOrderId,
+      });
+      const existingOrder = await db
+        .collection("orders")
+        .findOne({ _id: new ObjectId(mongoOrderId) });
+      const prevPaymentInfo = (existingOrder?.paymentInfo ?? {}) as Record<
+        string,
+        unknown
+      >;
       const mergedPaymentInfo = {
         ...prevPaymentInfo,
         provider: "nicepay",
@@ -499,11 +691,25 @@ async function handleNiceReturn(req: Request) {
           lastSyncedAt: new Date().toISOString(),
           source: "approve_return",
         },
-        total: Number(prevPaymentInfo.total ?? existingOrder?.totalPrice ?? amount ?? 0),
-        originalTotal: Number(prevPaymentInfo.originalTotal ?? existingOrder?.originalTotal ?? existingOrder?.totalPrice ?? amount ?? 0),
-        pointsUsed: Number(prevPaymentInfo.pointsUsed ?? existingOrder?.pointsUsed ?? 0),
-        shippingFee: Number(prevPaymentInfo.shippingFee ?? existingOrder?.shippingFee ?? 0),
-        serviceFee: Number(prevPaymentInfo.serviceFee ?? existingOrder?.serviceFee ?? 0),
+        total: Number(
+          prevPaymentInfo.total ?? existingOrder?.totalPrice ?? amount ?? 0,
+        ),
+        originalTotal: Number(
+          prevPaymentInfo.originalTotal ??
+            existingOrder?.originalTotal ??
+            existingOrder?.totalPrice ??
+            amount ??
+            0,
+        ),
+        pointsUsed: Number(
+          prevPaymentInfo.pointsUsed ?? existingOrder?.pointsUsed ?? 0,
+        ),
+        shippingFee: Number(
+          prevPaymentInfo.shippingFee ?? existingOrder?.shippingFee ?? 0,
+        ),
+        serviceFee: Number(
+          prevPaymentInfo.serviceFee ?? existingOrder?.serviceFee ?? 0,
+        ),
       };
       const orderUpdateResult = await db.collection("orders").updateOne(
         { _id: new ObjectId(mongoOrderId) },
@@ -528,7 +734,12 @@ async function handleNiceReturn(req: Request) {
         throw new Error("ORDER_UPDATE_TARGET_NOT_FOUND");
       }
 
-      console.info("[nicepay][flow]", { stage: "before_session_update", tid, orderId, mongoOrderId });
+      console.info("[nicepay][flow]", {
+        stage: "before_session_update",
+        tid,
+        orderId,
+        mongoOrderId,
+      });
       const sessionUpdateResult = await col.updateOne(
         { _id: session._id },
         {
@@ -564,10 +775,22 @@ async function handleNiceReturn(req: Request) {
       if (sessionUpdateResult.matchedCount === 0) {
         throw new Error("SESSION_UPDATE_TARGET_NOT_FOUND");
       }
-      console.info("[nicepay][flow]", { stage: "before_success_redirect", tid, orderId, mongoOrderId });
-      return NextResponse.redirect(new URL(`/checkout/success?orderId=${encodeURIComponent(mongoOrderId)}`, req.url));
+      console.info("[nicepay][flow]", {
+        stage: "before_success_redirect",
+        tid,
+        orderId,
+        mongoOrderId,
+      });
+      return NextResponse.redirect(
+        new URL(
+          `/checkout/success?orderId=${encodeURIComponent(mongoOrderId)}`,
+          req.url,
+        ),
+      );
     } catch (downstreamError: any) {
-      const failureMessage = downstreamError?.message || "승인 이후 내부 주문 후처리에 실패했습니다.";
+      const failureMessage =
+        downstreamError?.message ||
+        "승인 이후 내부 주문 후처리에 실패했습니다.";
       console.error("[nicepay][flow]", {
         stage: "downstream_failed_after_approve",
         tid,
@@ -575,11 +798,30 @@ async function handleNiceReturn(req: Request) {
         amount,
         message: failureMessage,
       });
-      await tryAutoCancelAfterApprove(failureMessage, "create_order_after_approve");
-      return NextResponse.redirect(new URL(toFailUrl("ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE", "승인 후 내부 주문 처리에 실패했습니다. 결제 상태를 확인해주세요."), req.url));
+      await tryAutoCancelAfterApprove(
+        failureMessage,
+        "create_order_after_approve",
+      );
+      return NextResponse.redirect(
+        new URL(
+          toFailUrl(
+            "ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE",
+            "승인 후 내부 주문 처리에 실패했습니다. 결제 상태를 확인해주세요.",
+          ),
+          req.url,
+        ),
+      );
     }
   } catch (error: any) {
-    return NextResponse.redirect(new URL(toFailUrl("APPROVE_FAILED", error?.message || "결제 승인 처리 중 오류가 발생했습니다."), req.url));
+    return NextResponse.redirect(
+      new URL(
+        toFailUrl(
+          "APPROVE_FAILED",
+          error?.message || "결제 승인 처리 중 오류가 발생했습니다.",
+        ),
+        req.url,
+      ),
+    );
   }
 }
 

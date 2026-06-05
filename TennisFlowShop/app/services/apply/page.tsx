@@ -31,9 +31,7 @@ import {
 import { isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
-import {
-  CUSTOM_STRING_MOUNTING_FEE,
-} from "@/lib/stringing-pricing-policy";
+import { CUSTOM_STRING_MOUNTING_FEE } from "@/lib/stringing-pricing-policy";
 import { loadDaumPostcode } from "@/lib/loadDaumPostcode";
 import type { Order } from "@/lib/types/order";
 import { File, Grid2X2 } from "lucide-react";
@@ -194,7 +192,8 @@ export default function StringServiceApplyPage() {
   const queryStringProductIdRaw =
     searchParams.get("productId") ?? searchParams.get("stringId");
   const selectedStringProductIdFromQuery =
-    typeof queryStringProductIdRaw === "string" && queryStringProductIdRaw.trim()
+    typeof queryStringProductIdRaw === "string" &&
+    queryStringProductIdRaw.trim()
       ? queryStringProductIdRaw.trim()
       : null;
   const selectedGaugeParam =
@@ -460,24 +459,26 @@ export default function StringServiceApplyPage() {
 
     setFormData((prev) => {
       // 이미 같은 상품이 선택되어 있으면 스킵
-      if (prev.stringTypes.includes(autoSelectedProductId)) return {
-        ...prev,
-        selectedGauge:
-          isOrderBased && selectedStringProductIdFromQuery
-            ? normalizedSelectedGauge || prev.selectedGauge || ""
-            : prev.selectedGauge,
-        selectedColor:
-          isOrderBased && selectedStringProductIdFromQuery
-            ? normalizedSelectedColor || prev.selectedColor || ""
-            : prev.selectedColor,
-      };
+      if (prev.stringTypes.includes(autoSelectedProductId))
+        return {
+          ...prev,
+          selectedGauge:
+            isOrderBased && selectedStringProductIdFromQuery
+              ? normalizedSelectedGauge || prev.selectedGauge || ""
+              : prev.selectedGauge,
+          selectedColor:
+            isOrderBased && selectedStringProductIdFromQuery
+              ? normalizedSelectedColor || prev.selectedColor || ""
+              : prev.selectedColor,
+        };
 
       return {
         ...prev,
         stringTypes: [autoSelectedProductId], // 무조건 선택
         stringUseCounts: {
           ...(prev.stringUseCounts ?? {}),
-          [autoSelectedProductId]: prev.stringUseCounts?.[autoSelectedProductId] ?? 1,
+          [autoSelectedProductId]:
+            prev.stringUseCounts?.[autoSelectedProductId] ?? 1,
         },
         pdpMountingFee: Number.isFinite(pdpMountingFee)
           ? pdpMountingFee
@@ -543,8 +544,7 @@ export default function StringServiceApplyPage() {
         } else {
           const data = await resp.json().catch(() => null);
           const bootstrappedApplicationId =
-            typeof data?.applicationId === "string" &&
-            data.applicationId.trim()
+            typeof data?.applicationId === "string" && data.applicationId.trim()
               ? data.applicationId.trim()
               : null;
 
@@ -941,8 +941,7 @@ export default function StringServiceApplyPage() {
           );
           items.sort(
             (a: any, b: any) =>
-              new Date(a.expiresAt).getTime() -
-              new Date(b.expiresAt).getTime(),
+              new Date(a.expiresAt).getTime() - new Date(b.expiresAt).getTime(),
           );
           if (items.length > 0) {
             const p = items[0];
@@ -1160,7 +1159,9 @@ export default function StringServiceApplyPage() {
       stringTypes: formData.stringTypes,
       selectedGauge: formData.selectedGauge || undefined,
       selectedColor:
-        formData.stringTypes.length > 0 ? formData.selectedColor || undefined : undefined,
+        formData.stringTypes.length > 0
+          ? formData.selectedColor || undefined
+          : undefined,
       linesCount: linesForSubmit.length,
       fromPDP,
     });
@@ -1202,9 +1203,7 @@ export default function StringServiceApplyPage() {
     if (!Array.isArray(items)) return 0;
 
     return items
-      .filter(
-        (it: any) => isMountableStringByFee(it?.mountingFee),
-      )
+      .filter((it: any) => isMountableStringByFee(it?.mountingFee))
       .reduce((sum: number, it: any) => {
         const unit = Number(it?.price ?? 0);
         const qty = Number(it?.quantity ?? 1);
@@ -1233,7 +1232,8 @@ export default function StringServiceApplyPage() {
       (it: any) => it?.kind === "racket" || it?.kind === "used_racket",
     );
     const hasMountableString = items.some(
-      (it: any) => it?.kind === "product" && isMountableStringByFee(it?.mountingFee),
+      (it: any) =>
+        it?.kind === "product" && isMountableStringByFee(it?.mountingFee),
     );
     return hasRacket && hasMountableString;
   }, [orderId, order]);
@@ -1525,7 +1525,9 @@ export default function StringServiceApplyPage() {
       stringTypes: formData.stringTypes,
       selectedGauge: formData.selectedGauge || undefined,
       selectedColor:
-        formData.stringTypes.length > 0 ? formData.selectedColor || undefined : undefined,
+        formData.stringTypes.length > 0
+          ? formData.selectedColor || undefined
+          : undefined,
       customStringName: formData.stringTypes.includes("custom")
         ? formData.customStringType
         : null,
@@ -1782,17 +1784,54 @@ export default function StringServiceApplyPage() {
               1단계. 신청 방식을 선택해 주세요
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground break-keep bp-sm:text-base">
-              필요한 방식을 선택하면 다음 단계로 이동합니다. 지금은 신청 경로만 확정하는 단계입니다.
+              필요한 방식을 선택하면 다음 단계로 이동합니다. 지금은 신청 경로만
+              확정하는 단계입니다.
             </p>
           </div>
 
           {/* Option Cards */}
           <div className="grid grid-cols-1 gap-3 bp-md:grid-cols-2 bp-xl:grid-cols-4 bp-sm:gap-4 max-w-6xl mx-auto">
             {[
-              { badge: "추천", stepLabel: "선택 01", icon: <Grid2X2 className="h-7 w-7" />, title: "새 스트링 선택", target: "스트링을 고른 뒤 장착 신청까지 이어갑니다.", steps: "스트링 선택 → 결제/장착 정보 입력", cta: "이 방식으로 진행", href: "/products?from=apply" },
-              { badge: "구매 연계", stepLabel: "선택 02", icon: <MdSportsTennis className="h-8 w-8" />, title: "라켓 구매와 함께", target: "라켓 구매 과정에서 원하는 세팅을 선택합니다.", steps: "라켓 선택 → 스트링 선택 → 결제", cta: "이 방식으로 진행", href: "/rackets?from=apply" },
-              { badge: "대여 연계", stepLabel: "선택 03", icon: <MdSportsTennis className="h-8 w-8" />, title: "라켓 대여와 함께", target: "대여 라켓에 필요한 스트링 세팅을 추가합니다.", steps: "라켓 대여 → 스트링 선택 → 대여 결제", cta: "이 방식으로 진행", href: "/rackets?from=apply&rentOnly=1" },
-              { badge: "보유 장비", stepLabel: "선택 04", icon: <File className="h-8 w-8" />, title: "보유 장비로 신청", target: "가지고 있는 라켓이나 스트링으로 작업만 신청합니다.", steps: "신청서 작성 → 접수", cta: "이 방식으로 진행", href: "/services/apply?mode=single" },
+              {
+                badge: "추천",
+                stepLabel: "선택 01",
+                icon: <Grid2X2 className="h-7 w-7" />,
+                title: "새 스트링 선택",
+                target: "스트링을 고른 뒤 장착 신청까지 이어갑니다.",
+                steps: "스트링 선택 → 결제/장착 정보 입력",
+                cta: "이 방식으로 진행",
+                href: "/products?from=apply",
+              },
+              {
+                badge: "구매 연계",
+                stepLabel: "선택 02",
+                icon: <MdSportsTennis className="h-8 w-8" />,
+                title: "라켓 구매와 함께",
+                target: "라켓 구매 과정에서 원하는 세팅을 선택합니다.",
+                steps: "라켓 선택 → 스트링 선택 → 결제",
+                cta: "이 방식으로 진행",
+                href: "/rackets?from=apply",
+              },
+              {
+                badge: "대여 연계",
+                stepLabel: "선택 03",
+                icon: <MdSportsTennis className="h-8 w-8" />,
+                title: "라켓 대여와 함께",
+                target: "대여 라켓에 필요한 스트링 세팅을 추가합니다.",
+                steps: "라켓 대여 → 스트링 선택 → 대여 결제",
+                cta: "이 방식으로 진행",
+                href: "/rackets?from=apply&rentOnly=1",
+              },
+              {
+                badge: "보유 장비",
+                stepLabel: "선택 04",
+                icon: <File className="h-8 w-8" />,
+                title: "보유 장비로 신청",
+                target: "가지고 있는 라켓이나 스트링으로 작업만 신청합니다.",
+                steps: "신청서 작성 → 접수",
+                cta: "이 방식으로 진행",
+                href: "/services/apply?mode=single",
+              },
             ].map((item, index) => (
               <button
                 key={item.title}
@@ -1801,8 +1840,15 @@ export default function StringServiceApplyPage() {
                 className={`group flex h-full flex-col rounded-2xl border bg-card p-4 text-left shadow-sm transition-[border-color,background-color,box-shadow] duration-200 hover:border-primary/30 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${index === 0 ? "border-primary/40 bg-primary/5" : "border-border"}`}
               >
                 <div className="mb-3 flex items-center justify-between gap-3">
-                  <span className="text-xs font-semibold text-muted-foreground">{item.stepLabel}</span>
-                  <Badge variant={index === 0 ? "brand" : "secondary"} className="shrink-0 whitespace-nowrap">{item.badge}</Badge>
+                  <span className="text-xs font-semibold text-muted-foreground">
+                    {item.stepLabel}
+                  </span>
+                  <Badge
+                    variant={index === 0 ? "brand" : "secondary"}
+                    className="shrink-0 whitespace-nowrap"
+                  >
+                    {item.badge}
+                  </Badge>
                 </div>
                 <div className="mb-4 flex items-start gap-3">
                   <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-background text-foreground transition-colors group-hover:bg-muted">
@@ -1812,18 +1858,34 @@ export default function StringServiceApplyPage() {
                     <h3 className="text-base font-semibold leading-snug text-foreground break-keep">
                       {item.title}
                     </h3>
-                    <p className="mt-1 text-sm leading-relaxed text-muted-foreground break-keep">{item.target}</p>
+                    <p className="mt-1 text-sm leading-relaxed text-muted-foreground break-keep">
+                      {item.target}
+                    </p>
                   </div>
                 </div>
                 <div className="rounded-xl border border-border bg-muted/30 p-3">
-                  <p className="text-xs font-semibold text-primary">다음 진행</p>
-                  <p className="mt-1 text-sm leading-relaxed text-muted-foreground break-keep">{item.steps}</p>
+                  <p className="text-xs font-semibold text-primary">
+                    다음 진행
+                  </p>
+                  <p className="mt-1 text-sm leading-relaxed text-muted-foreground break-keep">
+                    {item.steps}
+                  </p>
                 </div>
                 <div className="mt-auto pt-4">
                   <span className="inline-flex w-full items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-border bg-card px-3 py-2 text-sm font-semibold text-foreground transition-colors group-hover:bg-secondary">
                     <span>{item.cta}</span>
-                    <svg className="h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                    <svg
+                      className="h-4 w-4 transition-transform group-hover:translate-x-1"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
+                      />
                     </svg>
                   </span>
                 </div>
@@ -1833,16 +1895,46 @@ export default function StringServiceApplyPage() {
 
           <div className="mx-auto mt-4 max-w-5xl rounded-xl border border-border bg-muted/30 p-3 bp-sm:p-4">
             <div className="mb-3 text-center bp-sm:text-left">
-              <p className="text-sm font-semibold text-foreground break-keep">신청 보조 도구</p>
+              <p className="text-sm font-semibold text-foreground break-keep">
+                신청 보조 도구
+              </p>
               <p className="mt-1 text-xs leading-relaxed text-muted-foreground break-keep">
                 신청 방식 선택 전에 필요한 정보만 가볍게 확인하세요.
               </p>
             </div>
             <div className="flex flex-wrap justify-center gap-2 text-sm bp-sm:justify-start">
-              <Button type="button" variant="outline" className="whitespace-nowrap" onClick={() => safePush("/products/recommend")}>스트링 추천받기</Button>
-              <Button type="button" variant="outline" className="whitespace-nowrap" onClick={() => safePush("/services/pricing")}>가격 먼저 보기</Button>
-              <Button type="button" variant="outline" className="whitespace-nowrap" onClick={() => safePush("/services/locations")}>매장 위치/방문 안내</Button>
-              <Button type="button" variant="outline" className="whitespace-nowrap" onClick={() => safePush("/board/qna")}>고객센터 문의</Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="whitespace-nowrap"
+                onClick={() => safePush("/products/recommend")}
+              >
+                스트링 추천받기
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="whitespace-nowrap"
+                onClick={() => safePush("/services/pricing")}
+              >
+                가격 먼저 보기
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="whitespace-nowrap"
+                onClick={() => safePush("/services/locations")}
+              >
+                매장 위치/방문 안내
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="whitespace-nowrap"
+                onClick={() => safePush("/board/qna")}
+              >
+                고객센터 문의
+              </Button>
             </div>
           </div>
 
@@ -1854,7 +1946,8 @@ export default function StringServiceApplyPage() {
                     이미 구매하거나 대여한 내역이 있나요?
                   </p>
                   <p className="text-sm text-muted-foreground leading-relaxed break-keep">
-                    마이페이지 주문/대여 내역에서 신청 가능한 항목을 선택해 교체서비스를 이어서 신청할 수 있습니다.
+                    마이페이지 주문/대여 내역에서 신청 가능한 항목을 선택해
+                    교체서비스를 이어서 신청할 수 있습니다.
                   </p>
                 </div>
                 <div className="mt-auto flex flex-col gap-2 bp-sm:flex-row">
@@ -1885,7 +1978,8 @@ export default function StringServiceApplyPage() {
                     어떤 스트링을 골라야 할지 고민된다면
                   </p>
                   <p className="text-sm text-muted-foreground leading-relaxed break-keep">
-                    스트링 선택이 어렵다면 플레이 성향에 맞는 추천을 먼저 확인해보세요.
+                    스트링 선택이 어렵다면 플레이 성향에 맞는 추천을 먼저
+                    확인해보세요.
                   </p>
                 </div>
                 <Button asChild className="shrink-0">
@@ -1949,7 +2043,9 @@ export default function StringServiceApplyPage() {
                   {formData.selectedGauge && formData.stringTypes.length > 0 ? (
                     <div className="mt-3 mb-4 rounded-md border border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
                       게이지: {formatGaugeLabel(formData.selectedGauge)}
-                      {formData.selectedColor ? ` · 색상: ${formData.selectedColor}` : ""}
+                      {formData.selectedColor
+                        ? ` · 색상: ${formData.selectedColor}`
+                        : ""}
                     </div>
                   ) : null}
 

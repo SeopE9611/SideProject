@@ -109,7 +109,6 @@ function toStringArray(value: unknown): string[] {
   return value.filter((item): item is string => typeof item === "string");
 }
 
-
 function normalizeLinkedPaymentStatus(raw: unknown): string | null {
   const value = String(raw ?? "").trim();
   if (!value) return null;
@@ -331,35 +330,61 @@ export async function GET(req: Request) {
   }
 
   const orderHasRacketById = new Map<string, boolean>();
-  const orderPaymentContextById = new Map<string, { paymentStatus: string | null; paymentProvider: string | null }>();
+  const orderPaymentContextById = new Map<
+    string,
+    { paymentStatus: string | null; paymentProvider: string | null }
+  >();
   if (orderObjectIds.length > 0) {
     const orders = await db
       .collection("orders")
       .find(
         { _id: { $in: orderObjectIds } },
-        { projection: { items: 1, paymentStatus: 1, paymentInfo: 1, paymentProvider: 1, paymentMethod: 1 } },
+        {
+          projection: {
+            items: 1,
+            paymentStatus: 1,
+            paymentInfo: 1,
+            paymentProvider: 1,
+            paymentMethod: 1,
+          },
+        },
       )
       .toArray();
     for (const o of orders as any[]) {
       const hasRacket =
         Array.isArray(o.items) &&
-        o.items.some((it: any) => it?.kind === "racket" || it?.kind === "used_racket");
+        o.items.some(
+          (it: any) => it?.kind === "racket" || it?.kind === "used_racket",
+        );
       orderHasRacketById.set(String(o._id), hasRacket);
       orderPaymentContextById.set(String(o._id), buildPaymentContext(o));
     }
   }
 
-  const rentalPaymentContextById = new Map<string, { paymentStatus: string | null; paymentProvider: string | null }>();
+  const rentalPaymentContextById = new Map<
+    string,
+    { paymentStatus: string | null; paymentProvider: string | null }
+  >();
   if (rentalObjectIds.length > 0) {
     const rentals = await db
       .collection("rental_orders")
       .find(
         { _id: { $in: rentalObjectIds } },
-        { projection: { paymentStatus: 1, paymentInfo: 1, paymentProvider: 1, paymentMethod: 1 } },
+        {
+          projection: {
+            paymentStatus: 1,
+            paymentInfo: 1,
+            paymentProvider: 1,
+            paymentMethod: 1,
+          },
+        },
       )
       .toArray();
     for (const rental of rentals as any[]) {
-      rentalPaymentContextById.set(String(rental._id), buildPaymentContext(rental));
+      rentalPaymentContextById.set(
+        String(rental._id),
+        buildPaymentContext(rental),
+      );
     }
   }
 
@@ -451,7 +476,9 @@ export async function GET(req: Request) {
           cancelReasonSummary = cancel.reasonText;
         }
       }
-      const packageApplied = Boolean((doc as any).packageApplied || (doc as any).packageInfo?.applied);
+      const packageApplied = Boolean(
+        (doc as any).packageApplied || (doc as any).packageInfo?.applied,
+      );
       const linkedPaymentContext = orderIdStr
         ? orderPaymentContextById.get(orderIdStr)
         : (doc as any).rentalId
@@ -460,10 +487,12 @@ export async function GET(req: Request) {
       const fallbackPaymentContext = buildPaymentContext(doc as Document);
       const paymentStatus = packageApplied
         ? "패키지 적용 완료"
-        : (linkedPaymentContext?.paymentStatus ?? fallbackPaymentContext.paymentStatus);
+        : (linkedPaymentContext?.paymentStatus ??
+          fallbackPaymentContext.paymentStatus);
       const paymentProvider = packageApplied
         ? null
-        : (linkedPaymentContext?.paymentProvider ?? fallbackPaymentContext.paymentProvider);
+        : (linkedPaymentContext?.paymentProvider ??
+          fallbackPaymentContext.paymentProvider);
 
       return {
         id: doc._id.toString(),

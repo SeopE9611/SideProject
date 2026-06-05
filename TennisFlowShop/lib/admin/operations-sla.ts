@@ -104,7 +104,9 @@ export function formatElapsedText(hours: number | null) {
   return `${days}일 ${restHours}시간 경과`;
 }
 
-function resolveThreshold(input: ResolveOperationsSlaLevelInput): OperationsSlaThreshold {
+function resolveThreshold(
+  input: ResolveOperationsSlaLevelInput,
+): OperationsSlaThreshold {
   if (input.hasCancel) {
     return ADMIN_OPERATION_SLA_HOURS.cancelRequest;
   }
@@ -116,8 +118,12 @@ function resolveThreshold(input: ResolveOperationsSlaLevelInput): OperationsSlaT
   return ADMIN_OPERATION_SLA_HOURS.default;
 }
 
-export function resolveOperationsSlaLevel(input: ResolveOperationsSlaLevelInput): OperationsSlaLevel {
-  const hasBucketWatch = input.groupQueueBucket === "caution" || input.groupQueueBucket === "pending";
+export function resolveOperationsSlaLevel(
+  input: ResolveOperationsSlaLevelInput,
+): OperationsSlaLevel {
+  const hasBucketWatch =
+    input.groupQueueBucket === "caution" ||
+    input.groupQueueBucket === "pending";
 
   if (input.groupQueueBucket === "urgent") {
     return "urgent";
@@ -142,7 +148,10 @@ export function resolveOperationsSlaLevel(input: ResolveOperationsSlaLevelInput)
   return "normal";
 }
 
-export function getSlaBadgeMeta(level: OperationsSlaLevel, elapsedText: string | null) {
+export function getSlaBadgeMeta(
+  level: OperationsSlaLevel,
+  elapsedText: string | null,
+) {
   if (!elapsedText) return null;
 
   if (level === "urgent") {

@@ -56,7 +56,8 @@ function serializeClassSnapshot(value: unknown) {
 function serializeApplication(doc: Document) {
   return {
     _id: String(serializeValue(doc._id)),
-    applicantName: typeof doc.applicantName === "string" ? doc.applicantName : "",
+    applicantName:
+      typeof doc.applicantName === "string" ? doc.applicantName : "",
     phone: typeof doc.phone === "string" ? doc.phone : "",
     email: typeof doc.email === "string" ? doc.email : null,
     desiredLessonType:
@@ -116,7 +117,10 @@ export async function GET(req: Request) {
     ];
   }
 
-  const sortSpec = sort === "oldest" ? ({ createdAt: 1 } as const) : ({ createdAt: -1 } as const);
+  const sortSpec =
+    sort === "oldest"
+      ? ({ createdAt: 1 } as const)
+      : ({ createdAt: -1 } as const);
   const collection = guard.db.collection(COLLECTION_NAME);
 
   const [itemsRaw, total, countRows] = await Promise.all([
@@ -145,9 +149,10 @@ export async function GET(req: Request) {
       .toArray(),
     collection.countDocuments(filter),
     collection
-      .aggregate<{ _id: AcademyLessonApplicationStatus; count: number }>([
-        { $group: { _id: "$status", count: { $sum: 1 } } },
-      ])
+      .aggregate<{
+        _id: AcademyLessonApplicationStatus;
+        count: number;
+      }>([{ $group: { _id: "$status", count: { $sum: 1 } } }])
       .toArray(),
   ]);
 

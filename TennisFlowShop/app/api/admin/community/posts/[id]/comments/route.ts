@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 
 import { requireAdmin } from "@/lib/admin.guard";
-import { getValidCommunityUserObjectIds, resolveCommunityDisplayName } from "@/lib/community-display-name";
+import {
+  getValidCommunityUserObjectIds,
+  resolveCommunityDisplayName,
+} from "@/lib/community-display-name";
 import type { CommunityComment } from "@/lib/types/community";
 
 function parseListQuery(req: NextRequest) {
@@ -10,8 +13,10 @@ function parseListQuery(req: NextRequest) {
 
   const pageRaw = Number(searchParams.get("page") ?? "1");
   const limitRaw = Number(searchParams.get("limit") ?? "20");
-  const pageInt = Number.isFinite(pageRaw) && pageRaw > 0 ? Math.trunc(pageRaw) : 1;
-  const limitInt = Number.isFinite(limitRaw) && limitRaw > 0 ? Math.trunc(limitRaw) : 20;
+  const pageInt =
+    Number.isFinite(pageRaw) && pageRaw > 0 ? Math.trunc(pageRaw) : 1;
+  const limitInt =
+    Number.isFinite(limitRaw) && limitRaw > 0 ? Math.trunc(limitRaw) : 20;
 
   return {
     page: Math.min(10_000, Math.max(1, pageInt)),
@@ -34,7 +39,10 @@ export async function GET(
 
   const { id } = await ctx.params;
   if (!ObjectId.isValid(id)) {
-    return NextResponse.json({ ok: false, error: "invalid_id" }, { status: 400 });
+    return NextResponse.json(
+      { ok: false, error: "invalid_id" },
+      { status: 400 },
+    );
   }
 
   const { page, limit } = parseListQuery(req);
@@ -65,18 +73,25 @@ export async function GET(
   const replyDocs =
     rootIds.length > 0
       ? await commentsCol
-          .find({ postId: postObjectId, parentId: { $in: rootIds }, status: { $in: ["public", "deleted"] as const } })
+          .find({
+            postId: postObjectId,
+            parentId: { $in: rootIds },
+            status: { $in: ["public", "deleted"] as const },
+          })
           .sort({ createdAt: 1, _id: 1 })
           .toArray()
       : [];
 
-  const replyDocsByParentId = replyDocs.reduce<Map<string, any[]>>((acc, doc: any) => {
-    const parentId = doc.parentId ? String(doc.parentId) : "";
-    if (!parentId) return acc;
-    if (!acc.has(parentId)) acc.set(parentId, []);
-    acc.get(parentId)!.push(doc);
-    return acc;
-  }, new Map());
+  const replyDocsByParentId = replyDocs.reduce<Map<string, any[]>>(
+    (acc, doc: any) => {
+      const parentId = doc.parentId ? String(doc.parentId) : "";
+      if (!parentId) return acc;
+      if (!acc.has(parentId)) acc.set(parentId, []);
+      acc.get(parentId)!.push(doc);
+      return acc;
+    },
+    new Map(),
+  );
 
   for (const [, replies] of replyDocsByParentId) {
     replies.sort((a, b) => {
@@ -86,14 +101,29 @@ export async function GET(
     });
   }
 
-  const sortedReplyDocs = rootIds.flatMap((rootId) => replyDocsByParentId.get(String(rootId)) ?? []);
+  const sortedReplyDocs = rootIds.flatMap(
+    (rootId) => replyDocsByParentId.get(String(rootId)) ?? [],
+  );
   const docs = [...rootDocs, ...sortedReplyDocs];
 
-  const userObjectIds = getValidCommunityUserObjectIds(docs.map((doc: any) => doc.userId ?? null));
+  const userObjectIds = getValidCommunityUserObjectIds(
+    docs.map((doc: any) => doc.userId ?? null),
+  );
   const users = userObjectIds.length
-    ? await db.collection("users").find({ _id: { $in: userObjectIds } }, { projection: { name: 1, nickname: 1 } }).toArray()
+    ? await db
+        .collection("users")
+        .find(
+          { _id: { $in: userObjectIds } },
+          { projection: { name: 1, nickname: 1 } },
+        )
+        .toArray()
     : [];
-  const userMap = new Map(users.map((user) => [String(user._id), user as { _id: ObjectId; name?: string; nickname?: string }]));
+  const userMap = new Map(
+    users.map((user) => [
+      String(user._id),
+      user as { _id: ObjectId; name?: string; nickname?: string },
+    ]),
+  );
 
   const items: CommunityComment[] = docs.map((d: any) => {
     const userId = d.userId ? String(d.userId) : null;
@@ -108,16 +138,30 @@ export async function GET(
 
     return {
       id: String(d._id),
-      postId: d.postId instanceof ObjectId ? d.postId.toString() : String(d.postId),
-      parentId: d.parentId instanceof ObjectId ? d.parentId.toString() : d.parentId ? String(d.parentId) : null,
+      postId:
+        d.postId instanceof ObjectId ? d.postId.toString() : String(d.postId),
+      parentId:
+        d.parentId instanceof ObjectId
+          ? d.parentId.toString()
+          : d.parentId
+            ? String(d.parentId)
+            : null,
       userId,
       nickname: displayName,
       authorName: d.authorName,
       authorEmail: d.authorEmail,
       content: d.content ?? "",
       status: d.status ?? "public",
-      createdAt: d.createdAt instanceof Date ? d.createdAt.toISOString() : String(d.createdAt),
-      updatedAt: d.updatedAt instanceof Date ? d.updatedAt.toISOString() : d.updatedAt ? String(d.updatedAt) : undefined,
+      createdAt:
+        d.createdAt instanceof Date
+          ? d.createdAt.toISOString()
+          : String(d.createdAt),
+      updatedAt:
+        d.updatedAt instanceof Date
+          ? d.updatedAt.toISOString()
+          : d.updatedAt
+            ? String(d.updatedAt)
+            : undefined,
     };
   });
 

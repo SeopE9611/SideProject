@@ -21,9 +21,15 @@ export const metadata: Metadata = {
 
 export const revalidate = 30;
 
-const clamp = (n: number, min: number, max: number) => Math.min(max, Math.max(min, n));
+const clamp = (n: number, min: number, max: number) =>
+  Math.min(max, Math.max(min, n));
 
-async function fetchEvents(opts: { page: number; limit: number; q: string; field: "all" | "title" | "content" | "title_content" }) {
+async function fetchEvents(opts: {
+  page: number;
+  limit: number;
+  q: string;
+  field: "all" | "title" | "content" | "title_content";
+}) {
   const { page, limit, q, field } = opts;
 
   try {
@@ -53,20 +59,46 @@ async function fetchEvents(opts: { page: number; limit: number; q: string; field
   }
 }
 
-export default async function Page({ searchParams }: { searchParams?: Promise<Record<string, string | string[] | undefined>> }) {
-  const pick = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
+export default async function Page({
+  searchParams,
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const pick = (v: string | string[] | undefined) =>
+    Array.isArray(v) ? v[0] : v;
   const resolvedSearchParams = await searchParams;
 
   const rawPage = pick(resolvedSearchParams?.page);
   const rawQ = pick(resolvedSearchParams?.q) ?? "";
   const rawField = pick(resolvedSearchParams?.field) ?? "all";
 
-  const page = clamp(Number.parseInt(String(rawPage ?? "1"), 10) || 1, 1, 10_000);
+  const page = clamp(
+    Number.parseInt(String(rawPage ?? "1"), 10) || 1,
+    1,
+    10_000,
+  );
   const limit = 20;
-  const field: "all" | "title" | "content" | "title_content" = rawField === "title" || rawField === "content" || rawField === "title_content" ? rawField : "all";
+  const field: "all" | "title" | "content" | "title_content" =
+    rawField === "title" ||
+    rawField === "content" ||
+    rawField === "title_content"
+      ? rawField
+      : "all";
   const q = rawQ;
 
-  const { items, total, initialLoadError, initialErrorMessage } = await fetchEvents({ page, limit, q, field });
+  const { items, total, initialLoadError, initialErrorMessage } =
+    await fetchEvents({ page, limit, q, field });
 
-  return <NoticeListClient mode="event" initialItems={items} initialTotal={total} initialLoadError={initialLoadError} initialErrorMessage={initialErrorMessage ?? undefined} initialPage={page} initialKeyword={q} initialField={field} />;
+  return (
+    <NoticeListClient
+      mode="event"
+      initialItems={items}
+      initialTotal={total}
+      initialLoadError={initialLoadError}
+      initialErrorMessage={initialErrorMessage ?? undefined}
+      initialPage={page}
+      initialKeyword={q}
+      initialField={field}
+    />
+  );
 }

@@ -20,11 +20,7 @@ export default function SocialAuthButtons({
 
   return (
     <div className="space-y-3">
-      <Button
-        type="button"
-        onClick={onKakaoClick}
-        className={baseButtonClass}
-      >
+      <Button type="button" onClick={onKakaoClick} className={baseButtonClass}>
         <span className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-border bg-secondary text-foreground">
           <svg
             width="16"

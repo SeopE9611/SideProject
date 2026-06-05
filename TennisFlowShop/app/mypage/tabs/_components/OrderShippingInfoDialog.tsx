@@ -1,21 +1,44 @@
-'use client';
+"use client";
 
-import { Copy, Store, Truck } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
-import useSWR from 'swr';
+import { Copy, Store, Truck } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import useSWR from "swr";
 
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import AsyncState from '@/components/system/AsyncState';
-import { getMypageUserStatusLabel } from '@/app/mypage/_lib/status-label';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Separator } from '@/components/ui/separator';
-import { Skeleton } from '@/components/ui/skeleton';
-import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
-import { trackingSWRFetcher, type TrackingSWRFetcherError } from '@/lib/fetchers/trackingSWRFetcher';
-import { getOrderDeliveryInfoTitle, getOrderStatusLabelForDisplay, isVisitPickupOrder } from '@/lib/order-shipping';
-import { showErrorToast, showSuccessToast } from '@/lib/toast';
-type CourierCode = 'cj' | 'hanjin' | 'logen' | 'lotte' | 'post' | 'daesin' | 'ilogen' | 'kr' | 'etc' | string;
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import AsyncState from "@/components/system/AsyncState";
+import { getMypageUserStatusLabel } from "@/app/mypage/_lib/status-label";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
+import {
+  trackingSWRFetcher,
+  type TrackingSWRFetcherError,
+} from "@/lib/fetchers/trackingSWRFetcher";
+import {
+  getOrderDeliveryInfoTitle,
+  getOrderStatusLabelForDisplay,
+  isVisitPickupOrder,
+} from "@/lib/order-shipping";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
+type CourierCode =
+  | "cj"
+  | "hanjin"
+  | "logen"
+  | "lotte"
+  | "post"
+  | "daesin"
+  | "ilogen"
+  | "kr"
+  | "etc"
+  | string;
 
 type OrderDetail = {
   status?: string;
@@ -53,57 +76,63 @@ type OrderTrackingResponse =
   | {
       success: true;
       supported: false;
-      reason: 'unsupported_courier';
+      reason: "unsupported_courier";
       message: string;
     }
   | {
       success: false;
-      errorCode?: 'NOT_FOUND' | 'BAD_REQUEST' | 'UNAUTHENTICATED' | 'FORBIDDEN' | 'INTERNAL' | 'UNKNOWN';
+      errorCode?:
+        | "NOT_FOUND"
+        | "BAD_REQUEST"
+        | "UNAUTHENTICATED"
+        | "FORBIDDEN"
+        | "INTERNAL"
+        | "UNKNOWN";
       message: string;
     };
 
 function courierLabel(code?: CourierCode) {
   switch (code) {
-    case 'cj':
-      return 'CJ대한통운';
-    case 'hanjin':
-      return '한진택배';
-    case 'logen':
-      return '로젠택배';
-    case 'lotte':
-      return '롯데택배';
-    case 'post':
-      return '우체국택배';
-    case 'daesin':
-      return '대신택배';
-    case 'ilogen':
-      return '일로젠';
-    case 'kr':
-      return '대한통운(구)';
-    case 'etc':
-      return '기타';
+    case "cj":
+      return "CJ대한통운";
+    case "hanjin":
+      return "한진택배";
+    case "logen":
+      return "로젠택배";
+    case "lotte":
+      return "롯데택배";
+    case "post":
+      return "우체국택배";
+    case "daesin":
+      return "대신택배";
+    case "ilogen":
+      return "일로젠";
+    case "kr":
+      return "대한통운(구)";
+    case "etc":
+      return "기타";
     default:
-      return code || '-';
+      return code || "-";
   }
 }
 
 async function copyToClipboard(text: string) {
   try {
     await navigator.clipboard.writeText(text);
-    showSuccessToast('복사했습니다.');
+    showSuccessToast("복사했습니다.");
   } catch {
-    showErrorToast('복사에 실패했습니다.');
+    showErrorToast("복사에 실패했습니다.");
   }
 }
 
 const formatDate = (value?: string | null) => {
-  if (!value) return '미정';
+  if (!value) return "미정";
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '미정';
-  return date.toLocaleDateString('ko-KR', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
+  if (Number.isNaN(date.getTime())) return "미정";
+  return date.toLocaleDateString("ko-KR", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
   });
 };
 
@@ -111,31 +140,40 @@ const formatDateTime = (value?: string | null) => {
   if (!value) return null;
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return null;
-  return date.toLocaleString('ko-KR', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
+  return date.toLocaleString("ko-KR", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 };
 
-const getTrackingFailureMessage = (tracking: Extract<OrderTrackingResponse, { success: false }>) => {
-  if (tracking.errorCode === 'UNAUTHENTICATED' || tracking.errorCode === 'FORBIDDEN') {
-    return '배송조회 서비스 설정을 확인해주세요.';
+const getTrackingFailureMessage = (
+  tracking: Extract<OrderTrackingResponse, { success: false }>,
+) => {
+  if (
+    tracking.errorCode === "UNAUTHENTICATED" ||
+    tracking.errorCode === "FORBIDDEN"
+  ) {
+    return "배송조회 서비스 설정을 확인해주세요.";
   }
-  if (tracking.errorCode === 'BAD_REQUEST') {
-    return '운송장 번호 형식이 올바르지 않습니다.';
+  if (tracking.errorCode === "BAD_REQUEST") {
+    return "운송장 번호 형식이 올바르지 않습니다.";
   }
-  return tracking.message || '배송조회 정보를 불러오지 못했습니다.';
+  return tracking.message || "배송조회 정보를 불러오지 못했습니다.";
 };
 
-const getTrackingErrorMessage = (trackingData: OrderTrackingResponse | undefined, trackingError: unknown) => {
+const getTrackingErrorMessage = (
+  trackingData: OrderTrackingResponse | undefined,
+  trackingError: unknown,
+) => {
   if (trackingData && !trackingData.success && trackingData.message) {
     return trackingData.message;
   }
-  const message = (trackingError as TrackingSWRFetcherError | undefined)?.message;
-  return message || '배송조회 정보를 불러오지 못했습니다.';
+  const message = (trackingError as TrackingSWRFetcherError | undefined)
+    ?.message;
+  return message || "배송조회 정보를 불러오지 못했습니다.";
 };
 
 /**
@@ -160,15 +198,19 @@ export default function OrderShippingInfoDialog({
   hideTrigger?: boolean;
 }) {
   const [internalOpen, setInternalOpen] = useState(false);
-  const dialogOpen = typeof open === 'boolean' ? open : internalOpen;
+  const dialogOpen = typeof open === "boolean" ? open : internalOpen;
   const [cachedData, setCachedData] = useState<OrderDetail | null>(null);
-  const { data, isLoading, error, mutate } = useSWR<OrderDetail>(dialogOpen ? `/api/orders/${orderId}` : null, authenticatedSWRFetcher, {
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
-  });
+  const { data, isLoading, error, mutate } = useSWR<OrderDetail>(
+    dialogOpen ? `/api/orders/${orderId}` : null,
+    authenticatedSWRFetcher,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+    },
+  );
 
   const handleOpenChange = (nextOpen: boolean) => {
-    if (typeof open !== 'boolean') {
+    if (typeof open !== "boolean") {
       setInternalOpen(nextOpen);
     }
     onOpenChange?.(nextOpen);
@@ -199,18 +241,31 @@ export default function OrderShippingInfoDialog({
   const displayData = data ?? cachedData;
 
   const invoice = displayData?.shippingInfo?.invoice;
-  const isVisitPickup = isVisitPickupOrder(displayData?.shippingInfo ?? { shippingMethod });
-  const infoTitle = getOrderDeliveryInfoTitle(displayData?.shippingInfo ?? { shippingMethod });
-  const resolvedTriggerLabel = triggerLabel ?? (isVisitPickup ? '방문 수령 정보 확인' : '배송정보 확인');
+  const isVisitPickup = isVisitPickupOrder(
+    displayData?.shippingInfo ?? { shippingMethod },
+  );
+  const infoTitle = getOrderDeliveryInfoTitle(
+    displayData?.shippingInfo ?? { shippingMethod },
+  );
+  const resolvedTriggerLabel =
+    triggerLabel ?? (isVisitPickup ? "방문 수령 정보 확인" : "배송정보 확인");
   const TriggerIcon = isVisitPickup ? Store : Truck;
-  const asyncResourceName = isVisitPickup ? '방문 수령 정보' : '배송 정보';
+  const asyncResourceName = isVisitPickup ? "방문 수령 정보" : "배송 정보";
   const courier = invoice?.courier;
   const trackingNumber = invoice?.trackingNumber;
   const hasInvoice = Boolean(courier || trackingNumber);
   const rawStatusLabel = getMypageUserStatusLabel(displayData?.status);
-  const displayStatusLabel = getOrderStatusLabelForDisplay(rawStatusLabel, displayData?.shippingInfo);
-  const canTrackDelivery = dialogOpen && !isVisitPickup && Boolean(trackingNumber);
-  const { data: trackingData, isLoading: isTrackingLoading, error: trackingError } = useSWR<OrderTrackingResponse>(
+  const displayStatusLabel = getOrderStatusLabelForDisplay(
+    rawStatusLabel,
+    displayData?.shippingInfo,
+  );
+  const canTrackDelivery =
+    dialogOpen && !isVisitPickup && Boolean(trackingNumber);
+  const {
+    data: trackingData,
+    isLoading: isTrackingLoading,
+    error: trackingError,
+  } = useSWR<OrderTrackingResponse>(
     canTrackDelivery ? `/api/orders/${orderId}/tracking` : null,
     trackingSWRFetcher,
     {
@@ -218,27 +273,33 @@ export default function OrderShippingInfoDialog({
       revalidateOnReconnect: false,
     },
   );
-  const shouldShowTrackingSummarySkeleton = isTrackingLoading && !trackingData && !trackingError;
+  const shouldShowTrackingSummarySkeleton =
+    isTrackingLoading && !trackingData && !trackingError;
   const shouldShowTrackingStatusNotice = Boolean(
     trackingData &&
-      trackingData.success &&
-      trackingData.supported &&
-      trackingData.displayStatus &&
-      trackingData.displayStatus.trim() !== (displayStatusLabel || '').trim(),
+    trackingData.success &&
+    trackingData.supported &&
+    trackingData.displayStatus &&
+    trackingData.displayStatus.trim() !== (displayStatusLabel || "").trim(),
   );
 
   const addressText = useMemo(() => {
     const s = displayData?.shippingInfo;
-    const line1 = [s?.address, s?.addressDetail].filter(Boolean).join(' ');
-    const line2 = s?.postalCode ? `(${s.postalCode})` : '';
-    return [line1, line2].filter(Boolean).join(' ');
+    const line1 = [s?.address, s?.addressDetail].filter(Boolean).join(" ");
+    const line2 = s?.postalCode ? `(${s.postalCode})` : "";
+    return [line1, line2].filter(Boolean).join(" ");
   }, [displayData]);
 
   return (
     <Dialog open={dialogOpen} onOpenChange={handleOpenChange}>
       {!hideTrigger ? (
         <DialogTrigger asChild>
-          <Button type="button" size="sm" variant="outline" className={className}>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className={className}
+          >
             <TriggerIcon className="mr-2 h-4 w-4" />
             {resolvedTriggerLabel}
           </Button>
@@ -290,30 +351,49 @@ export default function OrderShippingInfoDialog({
 
             <div className="space-y-1 text-sm">
               <div className="font-medium">예상 수령일</div>
-              <div className="text-muted-foreground">{formatDate(displayData?.shippingInfo?.estimatedDate)}</div>
+              <div className="text-muted-foreground">
+                {formatDate(displayData?.shippingInfo?.estimatedDate)}
+              </div>
             </div>
 
             <div className="space-y-1 text-sm">
               <div className="font-medium">현재 상태</div>
-              <div className="text-muted-foreground">{displayStatusLabel || '상태 미정'}</div>
+              <div className="text-muted-foreground">
+                {displayStatusLabel || "상태 미정"}
+              </div>
             </div>
 
             <Separator />
 
-            <p className="text-sm text-muted-foreground">방문 수령 주문입니다. 준비 완료 후 매장에서 수령해주세요.</p>
+            <p className="text-sm text-muted-foreground">
+              방문 수령 주문입니다. 준비 완료 후 매장에서 수령해주세요.
+            </p>
           </div>
         ) : !hasInvoice ? (
           <div className="space-y-2 text-sm">
-            <p className="text-muted-foreground">아직 운송장(택배사/운송장번호) 정보가 등록되지 않았습니다.</p>
-            <p className="text-muted-foreground">관리자가 운송장 입력 후 배송 상태를 변경하면 이곳에서 확인할 수 있습니다.</p>
+            <p className="text-muted-foreground">
+              아직 운송장(택배사/운송장번호) 정보가 등록되지 않았습니다.
+            </p>
+            <p className="text-muted-foreground">
+              관리자가 운송장 입력 후 배송 상태를 변경하면 이곳에서 확인할 수
+              있습니다.
+            </p>
           </div>
         ) : (
           <div className="space-y-4">
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="secondary">{courierLabel(courier)}</Badge>
-              {trackingNumber ? <Badge variant="outline">{trackingNumber}</Badge> : null}
               {trackingNumber ? (
-                <Button type="button" size="sm" variant="ghost" className="h-8 px-2" onClick={() => copyToClipboard(trackingNumber)}>
+                <Badge variant="outline">{trackingNumber}</Badge>
+              ) : null}
+              {trackingNumber ? (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  className="h-8 px-2"
+                  onClick={() => copyToClipboard(trackingNumber)}
+                >
                   <Copy className="h-4 w-4" />
                   <span className="sr-only">운송장 번호 복사</span>
                 </Button>
@@ -324,18 +404,27 @@ export default function OrderShippingInfoDialog({
 
             <div className="space-y-1 text-sm">
               <div className="font-medium">수령인</div>
-              <div className="text-muted-foreground">{[displayData?.shippingInfo?.name, displayData?.shippingInfo?.phone].filter(Boolean).join(' / ') || '-'}</div>
+              <div className="text-muted-foreground">
+                {[
+                  displayData?.shippingInfo?.name,
+                  displayData?.shippingInfo?.phone,
+                ]
+                  .filter(Boolean)
+                  .join(" / ") || "-"}
+              </div>
             </div>
 
             <div className="space-y-1 text-sm">
               <div className="font-medium">주소</div>
-              <div className="text-muted-foreground">{addressText || '-'}</div>
+              <div className="text-muted-foreground">{addressText || "-"}</div>
             </div>
 
             {displayData?.shippingInfo?.deliveryRequest ? (
               <div className="space-y-1 text-sm">
                 <div className="font-medium">배송 요청사항</div>
-                <div className="text-muted-foreground">{displayData.shippingInfo.deliveryRequest}</div>
+                <div className="text-muted-foreground">
+                  {displayData.shippingInfo.deliveryRequest}
+                </div>
               </div>
             ) : null}
 
@@ -353,16 +442,25 @@ export default function OrderShippingInfoDialog({
                 {trackingData.success && trackingData.supported ? (
                   <>
                     <p className="text-foreground">
-                      <span className="text-muted-foreground">실시간 배송 상태:</span> {trackingData.displayStatus}
+                      <span className="text-muted-foreground">
+                        실시간 배송 상태:
+                      </span>{" "}
+                      {trackingData.displayStatus}
                     </p>
                     {trackingData.lastEvent?.locationName ? (
                       <p className="text-foreground">
-                        <span className="text-muted-foreground">최근 위치:</span> {trackingData.lastEvent.locationName}
+                        <span className="text-muted-foreground">
+                          최근 위치:
+                        </span>{" "}
+                        {trackingData.lastEvent.locationName}
                       </p>
                     ) : null}
                     {trackingData.lastEvent?.time ? (
                       <p className="text-foreground">
-                        <span className="text-muted-foreground">최근 갱신:</span> {formatDateTime(trackingData.lastEvent.time)}
+                        <span className="text-muted-foreground">
+                          최근 갱신:
+                        </span>{" "}
+                        {formatDateTime(trackingData.lastEvent.time)}
                       </p>
                     ) : null}
                     {shouldShowTrackingStatusNotice ? (
@@ -375,22 +473,40 @@ export default function OrderShippingInfoDialog({
                       type="button"
                       size="sm"
                       variant="outline"
-                      onClick={() => window.open(trackingData.linkUrl, '_blank', 'noopener,noreferrer')}
+                      onClick={() =>
+                        window.open(
+                          trackingData.linkUrl,
+                          "_blank",
+                          "noopener,noreferrer",
+                        )
+                      }
                     >
                       배송조회
                     </Button>
                   </>
                 ) : trackingData.success && !trackingData.supported ? (
-                  <p className="text-muted-foreground">{trackingData.message}</p>
+                  <p className="text-muted-foreground">
+                    {trackingData.message}
+                  </p>
                 ) : (
-                  <p className="text-destructive">{getTrackingFailureMessage(trackingData)}</p>
+                  <p className="text-destructive">
+                    {getTrackingFailureMessage(trackingData)}
+                  </p>
                 )}
               </div>
             ) : null}
 
-            {trackingError ? <p className="text-sm text-destructive">{getTrackingErrorMessage(trackingData, trackingError)}</p> : null}
+            {trackingError ? (
+              <p className="text-sm text-destructive">
+                {getTrackingErrorMessage(trackingData, trackingError)}
+              </p>
+            ) : null}
 
-            {invoice?.updatedAt ? <div className="text-xs text-muted-foreground">운송장 업데이트: {new Date(invoice.updatedAt).toLocaleString()}</div> : null}
+            {invoice?.updatedAt ? (
+              <div className="text-xs text-muted-foreground">
+                운송장 업데이트: {new Date(invoice.updatedAt).toLocaleString()}
+              </div>
+            ) : null}
           </div>
         )}
       </DialogContent>

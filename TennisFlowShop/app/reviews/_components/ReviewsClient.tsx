@@ -154,7 +154,8 @@ export default function ReviewsClient() {
             <h1 className="text-3xl font-bold text-foreground">고객 리뷰</h1>
           </div>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            장비 사용 후기와 교체서비스 경험을 확인하세요. 문의가 필요하다면 고객센터 Q&A를 이용해주세요.
+            장비 사용 후기와 교체서비스 경험을 확인하세요. 문의가 필요하다면
+            고객센터 Q&A를 이용해주세요.
           </p>
         </div>
 
