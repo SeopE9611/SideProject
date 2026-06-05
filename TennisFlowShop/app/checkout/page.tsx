@@ -1465,7 +1465,8 @@ export default function CheckoutPage() {
                                 }}
                                 className="h-10 shrink-0"
                               >
-                                우편번호 찾기
+                                <MapPin className="h-4 w-4 mr-2" />
+                                우편번호 검색
                               </Button>
                             </div>
 

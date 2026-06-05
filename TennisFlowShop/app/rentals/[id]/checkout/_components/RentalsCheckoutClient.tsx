@@ -5,6 +5,7 @@ import type useRentalCheckoutStringingServiceAdapter from "@/app/features/string
 import { collectionMethodLabel } from "@/app/features/stringing-applications/lib/fulfillment-labels";
 import RentalCheckoutStringingRuntimeBridge from "@/app/rentals/[id]/checkout/_components/RentalCheckoutStringingRuntimeBridge";
 import RentalCheckoutStringingSections from "@/app/rentals/[id]/checkout/_components/RentalCheckoutStringingSections";
+import RentalNiceCheckoutButton from "@/app/rentals/[id]/checkout/_components/RentalNiceCheckoutButton";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,14 +20,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { getMyInfo } from "@/lib/auth.client";
 import { badgeToneVariant } from "@/lib/badge-style";
 import { bankLabelMap, racketBrandLabel } from "@/lib/constants";
+import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import { useBackNavigationGuard } from "@/lib/hooks/useBackNavigationGuard";
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
-import RentalNiceCheckoutButton from "@/app/rentals/[id]/checkout/_components/RentalNiceCheckoutButton";
 import { loadDaumPostcode } from "@/lib/loadDaumPostcode";
 import { isNicePaymentsEnabled } from "@/lib/payments/provider-flags";
 import { showErrorToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
-import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import { Building2, CheckCircle, CreditCard, Home, Loader2, Mail, MapPin, MessageSquare, Package, Phone, Shield, Truck, Undo2, UserIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -380,7 +380,6 @@ export default function RentalsCheckoutClient({ initial, selectedGauge, selected
       setPointsInput(String(v));
     }
   }, [maxPointsToUse]);
-
 
   useEffect(() => {
     if (!nicePaymentsEnabled && paymentMethod === "nicepay") {
@@ -832,7 +831,8 @@ export default function RentalsCheckoutClient({ initial, selectedGauge, selected
                             우편번호
                           </Label>
                           <Button variant="outline" size="sm" onClick={openPostcode} className="bg-background text-foreground border border-border hover:bg-secondary">
-                            우편번호 찾기
+                            <MapPin className="h-4 w-4 mr-2" />
+                            우편번호 검색
                           </Button>
                         </div>
                         <Input id="postal" readOnly value={postalCode} placeholder="우편번호" className="bg-muted cursor-not-allowed max-w-[200px] border-2" />
