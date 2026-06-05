@@ -7,15 +7,29 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useNotificationList } from "@/lib/hooks/useNotificationList";
+import { showErrorToast } from "@/lib/toast";
 
 export function NotificationPanel({ enabled, onClose }: { enabled: boolean; onClose: () => void }) {
   const router = useRouter();
-  const { items, unreadCount, hasMore, status, markAsRead, markAllAsRead } = useNotificationList({ enabled, limit: 10 });
+  const { items, unreadCount, status, markAsRead, markAllAsRead } = useNotificationList({ enabled, limit: 10 });
 
   const handleItemClick = async (id: string, href: string | null) => {
-    await markAsRead(id);
+    try {
+      await markAsRead(id);
+    } catch {
+      showErrorToast("알림 처리에 실패했습니다.");
+      return;
+    }
     onClose();
     if (href) router.push(href);
+  };
+
+  const handleMarkAllAsRead = async () => {
+    try {
+      await markAllAsRead();
+    } catch {
+      showErrorToast("알림 처리에 실패했습니다.");
+    }
   };
 
   return (
@@ -25,7 +39,7 @@ export function NotificationPanel({ enabled, onClose }: { enabled: boolean; onCl
           <h2 className="text-base font-bold">알림</h2>
           <p className="text-xs text-muted-foreground">읽지 않은 알림 {unreadCount.toLocaleString()}개</p>
         </div>
-        <Button variant="ghost" size="sm" disabled={unreadCount <= 0} onClick={markAllAsRead}>
+        <Button variant="ghost" size="sm" disabled={unreadCount <= 0} onClick={handleMarkAllAsRead}>
           모두 읽음
         </Button>
       </div>
@@ -49,11 +63,11 @@ export function NotificationPanel({ enabled, onClose }: { enabled: boolean; onCl
           ))
         )}
       </div>
-      {hasMore && (
+      {items.length > 0 && (
         <>
           <Separator />
           <div className="p-3">
-            <Button variant="outline" className="w-full" onClick={() => { onClose(); router.push("/mypage?tab=notifications"); }}>
+            <Button variant="outline" className="w-full" onClick={() => { onClose(); router.push("/notifications"); }}>
               전체 알림 보기
             </Button>
           </div>
