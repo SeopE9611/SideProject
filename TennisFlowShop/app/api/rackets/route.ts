@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
 import type { Sort } from "mongodb";
 import { parseBenefitFilters } from "@/lib/benefit-labels";
+import { createApiPerfLogger } from "@/lib/api/perf";
 
 export const dynamic = "force-dynamic";
 function normalizeRacketMarketing(value: any) {
@@ -16,7 +17,9 @@ function normalizeRacketMarketing(value: any) {
 // - 관리자/사용자 공용 목록(최소형): status !== 'inactive' 만 노출
 // - 쿼리 파라미터(brand/condition/min/max/minPrice/maxPrice/sort) 지원
 export async function GET(req: Request) {
-  const db = (await clientPromise).db();
+  const perf = createApiPerfLogger("GET /api/rackets");
+  const client = await perf.measure("dbConnect", clientPromise);
+  const db = client.db();
   const { searchParams } = new URL(req.url);
   const brand = searchParams.get("brand")?.trim();
   const cond = searchParams.get("cond")?.trim(); // 'A' | 'B' | 'C'
@@ -146,10 +149,12 @@ export async function GET(req: Request) {
 
   // withTotal=1이면 total까지 같이 내려주기 위해 countDocuments를 병렬로 수행
   // - cursor에는 limit이 걸릴 수 있지만, total은 "필터 조건(q)" 기준 전체 개수여야 하므로 countDocuments(q)를 별도로 사용
-  const [docs, total] = await Promise.all([
-    cursor.toArray(),
-    withTotal ? col.countDocuments(q) : Promise.resolve(0),
-  ]);
+  const [docs, total] = await perf.measure("query", () =>
+    Promise.all([
+      cursor.toArray(),
+      withTotal ? col.countDocuments(q) : Promise.resolve(0),
+    ]),
+  );
 
   // _id는 제거하고 id만 내려주기(깔끔)
   const items = docs.map((r: any) => {
@@ -162,8 +167,14 @@ export async function GET(req: Request) {
   });
 
   // 기본(기존 호환): 배열 그대로 반환
-  if (!withTotal) return NextResponse.json(items);
+  if (!withTotal) {
+    const response = NextResponse.json(items);
+    perf.log({ resultCount: items.length });
+    return response;
+  }
 
   // 확장 응답: total 포함
-  return NextResponse.json({ items, total });
+  const response = NextResponse.json({ items, total });
+  perf.log({ resultCount: items.length, total });
+  return response;
 }

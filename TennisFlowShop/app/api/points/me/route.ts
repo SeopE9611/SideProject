@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { getDb } from "@/lib/mongodb";
-import { getCurrentUser } from "@/lib/hooks/get-current-user";
+import { getCurrentUserId } from "@/lib/hooks/get-current-user";
 import type { PointTransactionListItem } from "@/lib/types/points";
 
 function mapTx(d: any): PointTransactionListItem {
@@ -27,22 +27,10 @@ function mapTx(d: any): PointTransactionListItem {
 
 // 마이페이지에서 "현재 보유 포인트" 및 "최근 적립/사용 내역"을 빠르게 표시하기 위한 엔드포인트
 export async function GET(request: Request) {
-  // getCurrentUser 내부에서 토큰 검증(verifyAccessToken 등)이 throw 되어도
-  // 라우터가 500으로 터지지 않도록 방어(= 401로 정리)
-  let me: any = null;
-  try {
-    me = await getCurrentUser();
-  } catch {
-    me = null;
-  }
-  if (!me)
-    return NextResponse.json(
-      { ok: false, error: "Unauthorized" },
-      { status: 401 },
-    );
-
-  // 토큰 payload가 오염되어 id가 ObjectId가 아니면 new ObjectId에서 500이 나므로 사전 차단
-  const uidStr = String(me?.id ?? "");
+  // 잔액/원장 조회에는 사용자 문서 전체가 필요 없으므로 토큰 sub만 사용한다.
+  // 기존 getCurrentUser()는 users.findOne 후 아래에서 다시 users.findOne을 수행해
+  // /api/points/me?summary=1 헤더 호출마다 중복 DB 조회가 발생했다.
+  const uidStr = String((await getCurrentUserId()) ?? "");
   if (!uidStr || !ObjectId.isValid(uidStr)) {
     return NextResponse.json(
       { ok: false, error: "Unauthorized" },

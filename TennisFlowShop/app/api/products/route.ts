@@ -4,6 +4,7 @@ import { parseBenefitFilters } from "@/lib/benefit-labels";
 import { getHangulInitials } from "@/lib/hangul-utils";
 import { ObjectId } from "mongodb";
 import type { Filter } from "mongodb";
+import { createApiPerfLogger } from "@/lib/api/perf";
 
 type ProductDoc = {
   _id: ObjectId;
@@ -43,6 +44,7 @@ function normalizeFeatureFilterParam(value: string | null): number | null {
 }
 
 export async function GET(req: NextRequest) {
+  const perf = createApiPerfLogger("GET /api/products");
   try {
     const url = new URL(req.url);
     const params = url.searchParams;
@@ -50,13 +52,15 @@ export async function GET(req: NextRequest) {
     // preview=1일 경우: 실시간 미리보기용 검색 (초성 포함)
     if (params.get("preview") === "1") {
       const query = params.get("query")?.trim() || "";
-      const client = await clientPromise;
+      const client = await perf.measure("dbConnect", clientPromise);
       const db = client.db();
       // isDeleted 플래그가 true인 문서는 제외
-      const products = await db
-        .collection<ProductDoc>("products")
-        .find({ isDeleted: { $ne: true } })
-        .toArray();
+      const products = await perf.measure("previewQuery", () =>
+        db
+          .collection<ProductDoc>("products")
+          .find({ isDeleted: { $ne: true } })
+          .toArray(),
+      );
 
       const initialsQuery = getHangulInitials(query);
       const isChosungOnly = /^[ㄱ-ㅎ]+$/.test(query); // 초성만 입력된 경우
@@ -73,7 +77,7 @@ export async function GET(req: NextRequest) {
           return name.includes(query);
         }
       });
-      return NextResponse.json(
+      const response = NextResponse.json(
         filtered.slice(0, 10).map((product) => ({
           _id: product._id.toString(),
           name: product.name,
@@ -81,6 +85,8 @@ export async function GET(req: NextRequest) {
           image: product.images?.[0] ?? null,
         })),
       );
+      perf.log({ preview: true, resultCount: filtered.length });
+      return response;
     }
 
     // 필터/페이징 상품 리스트 반환
@@ -157,7 +163,7 @@ export async function GET(req: NextRequest) {
     if (purpose === "stringing") {
       filter.mountingFee = { $type: "number" as any, $gte: 0 };
     }
-    const client = await clientPromise;
+    const client = await perf.measure("dbConnect", clientPromise);
     const db = client.db();
     const collection = db.collection<ProductDoc>("products");
 
@@ -174,10 +180,17 @@ export async function GET(req: NextRequest) {
         : {};
     const composed = { ...filter, ...idFilter };
 
-    const [total, itemsRaw] = await Promise.all([
-      collection.countDocuments(composed),
-      collection.find(composed).sort(sortObj).skip(skip).limit(limit).toArray(),
-    ]);
+    const [total, itemsRaw] = await perf.measure("query", () =>
+      Promise.all([
+        collection.countDocuments(composed),
+        collection
+          .find(composed)
+          .sort(sortObj)
+          .skip(skip)
+          .limit(limit)
+          .toArray(),
+      ]),
+    );
 
     const items = itemsRaw.map((product) => ({
       ...product,
@@ -186,10 +199,12 @@ export async function GET(req: NextRequest) {
 
     const hasMore = skip + items.length < total;
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       products: items,
       pagination: { page, limit, total, hasMore },
     });
+    perf.log({ page, limit, total, resultCount: items.length });
+    return response;
   } catch (err) {
     console.error("[상품 리스트 조회 오류]", err);
     return NextResponse.json({ message: "서버 오류" }, { status: 500 });

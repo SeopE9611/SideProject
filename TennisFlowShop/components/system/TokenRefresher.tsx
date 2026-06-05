@@ -27,8 +27,9 @@ export default function TokenRefresher() {
       }
     };
 
-    // 최초 실행 + 10분 주기
-    doRefresh();
+    // 최초 진입 직후에는 GlobalTokenGuard/bootstrap이 이미 토큰 상태를 확인하므로
+    // 즉시 refresh를 한 번 더 호출하지 않고 다음 주기부터 갱신한다.
+    last.current = Date.now();
     timer.current = setInterval(doRefresh, 10 * 60 * 1000);
 
     // 탭 복귀 시 최근 갱신이 오래됐다면 한 번 더
