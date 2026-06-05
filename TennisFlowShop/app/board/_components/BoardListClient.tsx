@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { badgeSizeSm, getBoardCategoryTone } from "@/lib/badge-style";
 import { boardFetcher, parseApiError } from "@/lib/fetchers/boardFetcher";
@@ -400,6 +401,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
   const categoryParam = rawCategoryParam && config.categoryMap[rawCategoryParam] ? rawCategoryParam : null;
 
   // UI에서 사용할 카테고리 상태 (전체 포함)
+  const categoryOptions = useMemo(() => [{ value: "all", label: "전체" }, ...config.categories], [config.categories]);
   const [category, setCategory] = useState<string>(categoryParam ?? "all");
 
   // URL의 category가 바뀌면 상태도 동기화
@@ -771,21 +773,45 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                 </div>
 
                 {/* 카테고리 필터 */}
-                <div className="flex flex-wrap items-center gap-2 text-xs">
-                  <span className="text-foreground">분류:</span>
-                  {[{ value: "all", label: "전체" }, ...config.categories].map((cat) => {
-                    const active = category === cat.value;
-                    return (
-                      <button
-                        key={cat.value}
-                        type="button"
-                        onClick={() => handleCategoryChange(cat.value as any)}
-                        className={["rounded-full border px-3 py-1", "transition-colors", active ? "border-border bg-secondary text-foreground" : "border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground"].join(" ")}
-                      >
-                        {cat.label}
-                      </button>
-                    );
-                  })}
+                <div className="sm:hidden space-y-1.5">
+                  <label className="text-xs font-medium text-foreground" htmlFor="board-category-mobile">
+                    분류
+                  </label>
+                  <Select value={category} onValueChange={handleCategoryChange}>
+                    <SelectTrigger id="board-category-mobile" className="h-10 w-full min-w-0 rounded-lg text-sm [&>span]:break-keep [&>span]:whitespace-nowrap">
+                      <SelectValue placeholder="전체" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categoryOptions.map((cat) => (
+                        <SelectItem key={cat.value} value={cat.value} className="break-keep whitespace-nowrap">
+                          {cat.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="hidden sm:block rounded-xl border border-border bg-card/80 px-3 py-2">
+                  <div className="flex items-center gap-1 overflow-x-auto whitespace-nowrap scrollbar-hide">
+                    {categoryOptions.map((cat, index) => {
+                      const active = category === cat.value;
+                      return (
+                        <div key={cat.value} className="flex shrink-0 items-center gap-1">
+                          {index > 0 && <span className="h-4 w-px bg-border/80" aria-hidden="true" />}
+                          <button
+                            type="button"
+                            onClick={() => handleCategoryChange(cat.value)}
+                            className={[
+                              "shrink-0 rounded-lg px-3 py-1.5 text-xs font-medium break-keep whitespace-nowrap",
+                              "transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                              active ? "bg-foreground text-background shadow-sm" : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                            ].join(" ")}
+                          >
+                            {cat.label}
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
                 {config.brandOptionsByCategory?.[category] && (
                   <div className="flex flex-wrap items-center gap-2 text-xs">

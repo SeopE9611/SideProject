@@ -74,6 +74,8 @@ const mobileMenuItemClass =
   "group w-full min-w-0 justify-between rounded-lg px-3 py-2.5 text-sm font-semibold text-foreground/85 hover:text-foreground hover:bg-secondary transition-[background-color,color,border-color,box-shadow,opacity] relative z-0 hover:shadow-sm hover:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background";
 const mobileNestedGroupClass = "mt-1.5 pl-1";
 const mobileNestedTriggerClass = "min-w-0 px-3 py-2 text-sm font-semibold text-foreground/75 hover:text-foreground rounded-lg hover:bg-secondary";
+const mobileMenuGroupClass = "mt-5 border-t border-border/80 pt-5";
+const mobileGroupTitleClass = "min-w-0 break-keep whitespace-normal text-foreground";
 
 const Header = () => {
   const router = useRouter();
@@ -462,8 +464,8 @@ const Header = () => {
             </div>
           </div>
 
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain scrollbar-hide bg-card px-3 py-3 bp-sm:px-4">
-            <Accordion type="single">
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain scrollbar-hide bg-card px-3 py-3 pb-[calc(env(safe-area-inset-bottom)+24px)] bp-sm:px-4">
+            <Accordion type="single" className="space-y-1">
               {/* 스트링 */}
               <AccordionItem value="strings" className="border-none">
                 <AccordionTrigger value="strings" className="py-3 px-3 rounded-lg hover:bg-secondary hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group">
@@ -471,7 +473,7 @@ const Header = () => {
                     {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
                       <Grid2X2 className="h-4 w-4" />
                     </div> */}
-                    <span className="text-foreground">스트링</span>
+                    <span className={mobileGroupTitleClass}>스트링</span>
                   </span>
                 </AccordionTrigger>
                 <AccordionContent value="strings" className="pb-2 pt-1 space-y-0.5">
@@ -563,26 +565,28 @@ const Header = () => {
                 </AccordionContent>
               </AccordionItem>
 
-              <Button
-                variant="ghost"
-                className="group w-full min-w-0 justify-between rounded-lg px-3 py-3 text-base font-bold text-foreground hover:bg-secondary transition-[background-color,color,border-color,box-shadow,opacity] relative z-0 hover:shadow-sm hover:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                onClick={() => {
-                  setOpen(false);
-                  router.push(NAV_LINKS.academy.href);
-                }}
-              >
-                {NAV_LINKS.academy.name}
-                <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200" />
-              </Button>
+              <div className={mobileMenuGroupClass}>
+                <Button
+                  variant="ghost"
+                  className="group w-full min-w-0 justify-between rounded-lg px-3 py-3 text-base font-bold text-foreground hover:bg-secondary transition-[background-color,color,border-color,box-shadow,opacity] relative z-0 hover:shadow-sm hover:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                  onClick={() => {
+                    setOpen(false);
+                    router.push(NAV_LINKS.academy.href);
+                  }}
+                >
+                  <span className="min-w-0 break-keep whitespace-normal text-left">{NAV_LINKS.academy.name}</span>
+                  <ChevronRight className="h-3.5 w-3.5 shrink-0 transition-transform duration-200" />
+                </Button>
+              </div>
 
               {/* 중고 라켓 */}
-              <AccordionItem value="rackets" className="border-none">
+              <AccordionItem value="rackets" className={cn("border-none", mobileMenuGroupClass)}>
                 <AccordionTrigger value="rackets" className="py-3 px-3 rounded-lg hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group">
                   <span className="inline-flex items-center gap-2.5 text-base font-bold">
                     {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
                       <MdSportsTennis className="h-4 w-4" />
                     </div> */}
-                    <span className="text-foreground">도깨비 인증 중고 라켓</span>
+                    <span className={mobileGroupTitleClass}>도깨비 인증 중고 라켓</span>
                   </span>
                 </AccordionTrigger>
                 <AccordionContent value="rackets" className="pb-2 pt-1 space-y-0.5">
@@ -623,13 +627,13 @@ const Header = () => {
               </AccordionItem>
 
               {/* 게시판 */}
-              <AccordionItem value="boards" className="border-none">
+              <AccordionItem value="boards" className={cn("border-none", mobileMenuGroupClass)}>
                 <AccordionTrigger value="boards" className="py-3 px-3 rounded-lg hover:bg-secondary hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group">
                   <span className="inline-flex items-center gap-2.5 text-base font-bold">
                     {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
                       <MessageSquareText className="h-4 w-4" />
                     </div> */}
-                    <span className="text-foreground">커뮤니티</span>
+                    <span className={mobileGroupTitleClass}>커뮤니티</span>
                   </span>
                 </AccordionTrigger>
                 <AccordionContent value="boards" className="pb-2 pt-1 space-y-0.5">
@@ -651,13 +655,13 @@ const Header = () => {
               </AccordionItem>
 
               {/* 고객센터 */}
-              <AccordionItem value="support" className="border-none">
+              <AccordionItem value="support" className={cn("border-none", mobileMenuGroupClass)}>
                 <AccordionTrigger value="support" className="py-3 px-3 rounded-lg hover:bg-secondary hover:no-underline transition-[background-color,color,border-color,box-shadow,opacity] group">
                   <span className="inline-flex items-center gap-2.5 text-base font-bold">
                     {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
                       <MessageSquare className="h-4 w-4" />
                     </div> */}
-                    <span className="text-foreground">고객센터</span>
+                    <span className={mobileGroupTitleClass}>고객센터</span>
                   </span>
                 </AccordionTrigger>
                 <AccordionContent value="support" className="pb-2 pt-1 space-y-0.5">
@@ -678,42 +682,18 @@ const Header = () => {
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
-          </div>
 
-          {/* 하단 고정 영역(모바일) */}
-          <div className="shrink-0 border-t border-border bg-card px-3 pt-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] bp-sm:px-4 bp-sm:pt-4 space-y-2">
-            {user ? (
-              <>
-                {/* 사용자 정보 카드 */}
-                <div className="rounded-xl border border-border bg-card p-2.5">
-                  <div className="flex items-start justify-between">
-                    {/* <Avatar className="h-10 w-10 border-2 border-border shadow-sm">
-                          <AvatarImage src={user.image || '/placeholder.svg'} />
-                          <AvatarFallback
-                            className="bg-card text-primary font-semibold"
-                          >
-                            {user.name?.charAt(0) ?? 'U'}
-                          </AvatarFallback>
-                        </Avatar> */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-foreground truncate">{displayName} 님</span>
-                        <Link href="/mypage?tab=points" onClick={() => setOpen(false)} className="shrink-0 inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-[11px] font-semibold tabular-nums" aria-label="포인트 보기">
-                          <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-muted text-[10px] font-bold text-muted-foreground">P</span>
-                          <span className="inline-flex items-center gap-1">
-                            {pointsStatus === "loading" ? (
-                              <>
-                                <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" aria-hidden="true" />
-                                <span className="sr-only">포인트 불러오는 중</span>
-                              </>
-                            ) : pointsStatus === "error" ? (
-                              <>-</>
-                            ) : (
-                              <>{(pointsBalance ?? 0).toLocaleString()}P</>
-                            )}
-                          </span>
-                        </Link>
-
+            {/* 하단 사용자 영역(모바일) */}
+            <div className="mt-6 border-t border-border bg-card pt-4 space-y-3">
+              {user ? (
+                <>
+                  {/* 사용자 정보 카드 */}
+                  <div className="rounded-2xl border border-border bg-muted/30 p-4">
+                    <div className="min-w-0 space-y-2">
+                      <div className="flex min-w-0 flex-wrap items-center gap-2">
+                        <span className="min-w-0 break-keep text-sm font-bold text-foreground">
+                          <span className="break-words">{displayName}</span> 님
+                        </span>
                         {isAdmin && (
                           <Badge variant="success" className="h-5 whitespace-nowrap border border-border/60 px-2 py-0 text-[10px]">
                             관리자
@@ -721,138 +701,147 @@ const Header = () => {
                         )}
                       </div>
 
-                      {(hasKakao || hasNaver) && (
-                        <div className="mt-2 flex flex-wrap gap-1.5">
-                          {hasKakao && (
-                            <Badge variant={getSocialProviderBadgeSpec("kakao").variant} className="h-5 whitespace-nowrap border border-border/60 px-2 text-[10px]">
-                              카카오
-                            </Badge>
-                          )}
-                          {hasNaver && (
-                            <Badge variant={getSocialProviderBadgeSpec("naver").variant} className="h-5 whitespace-nowrap border border-border/60 px-2 text-[10px]">
-                              네이버
-                            </Badge>
-                          )}
-                        </div>
-                      )}
+                      <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                        {hasKakao && (
+                          <Badge variant={getSocialProviderBadgeSpec("kakao").variant} className="h-5 whitespace-nowrap border border-border/60 px-2 text-[10px]">
+                            카카오
+                          </Badge>
+                        )}
+                        {hasNaver && (
+                          <Badge variant={getSocialProviderBadgeSpec("naver").variant} className="h-5 whitespace-nowrap border border-border/60 px-2 text-[10px]">
+                            네이버
+                          </Badge>
+                        )}
+                        {isAdmin && <span className="whitespace-nowrap">관리자</span>}
+                      </div>
+
+                      <Link href="/mypage?tab=points" onClick={() => setOpen(false)} className="inline-flex min-w-0 items-center gap-1.5 text-xs font-semibold tabular-nums text-foreground/80 hover:text-foreground" aria-label="포인트 보기">
+                        <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-background text-[10px] font-bold text-muted-foreground">P</span>
+                        {pointsStatus === "loading" ? (
+                          <>
+                            <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" aria-hidden="true" />
+                            <span className="sr-only">포인트 불러오는 중</span>
+                          </>
+                        ) : pointsStatus === "error" ? (
+                          <span>-</span>
+                        ) : (
+                          <span>{(pointsBalance ?? 0).toLocaleString()}P</span>
+                        )}
+                      </Link>
                     </div>
                   </div>
-                </div>
 
-                {/* 주요 액션(아이콘 전용) - 모바일 Sheet 하단 높이/복잡도 축소 */}
-                <div className="grid grid-cols-4 gap-1.5">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="relative h-9 w-full rounded-lg border-border bg-background hover:bg-secondary"
-                    onClick={() => {
-                      setOpen(false);
-                      router.push("/mypage");
-                    }}
-                    aria-label="마이페이지"
-                  >
-                    <UserIcon className="h-5 w-5" />
-                    <span className="sr-only">마이페이지</span>
-                  </Button>
-
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="relative h-9 w-full rounded-lg border-border bg-background hover:bg-secondary"
-                    onClick={() => {
-                      setOpen(false);
-                      router.push("/messages");
-                    }}
-                    aria-label="쪽지함"
-                  >
-                    <Mail className="h-5 w-5" />
-                    {resolvedUnreadCount !== null && resolvedUnreadCount > 0 && (
-                      <span className="absolute -top-1 -right-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground">
-                        {resolvedUnreadCount > 99 ? "99+" : resolvedUnreadCount}
-                      </span>
-                    )}
-                    <span className="sr-only">쪽지함</span>
-                  </Button>
-
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="relative h-9 w-full rounded-lg border-border bg-background hover:bg-secondary"
-                    onClick={() => {
-                      setOpen(false);
-                      router.push("/board/event");
-                    }}
-                    aria-label="이벤트"
-                  >
-                    <Gift className="h-5 w-5" />
-                    <span className="sr-only">이벤트</span>
-                  </Button>
-
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="relative h-9 w-full rounded-lg border-border bg-background hover:bg-secondary"
-                    onClick={() => {
-                      setOpen(false);
-                      router.push("/cart");
-                    }}
-                    aria-label="장바구니"
-                  >
-                    <ShoppingCart className="h-5 w-5" />
-                    {cartCount > 0 && <span className="absolute -top-1 -right-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">{cartBadge}</span>}
-                    <span className="sr-only">장바구니</span>
-                  </Button>
-                </div>
-
-                {/* 보조 액션 버튼 */}
-                <div className="space-y-2">
-                  {isAdmin && (
+                  {/* 빠른 액션 */}
+                  <div className="grid grid-cols-2 gap-2">
                     <Button
-                      variant="secondary"
+                      variant="outline"
+                      className="relative h-9 w-full justify-center gap-2 rounded-lg border-border bg-background hover:bg-secondary"
+                      onClick={() => {
+                        setOpen(false);
+                        router.push("/messages");
+                      }}
+                    >
+                      <Mail className="h-4 w-4" />
+                      <span className="text-sm">쪽지</span>
+                      {resolvedUnreadCount !== null && resolvedUnreadCount > 0 && (
+                        <span className="absolute -top-1 -right-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground">
+                          {resolvedUnreadCount > 99 ? "99+" : resolvedUnreadCount}
+                        </span>
+                      )}
+                    </Button>
+
+                    <Button
+                      variant="outline"
+                      className="relative h-9 w-full justify-center gap-2 rounded-lg border-border bg-background hover:bg-secondary"
+                      onClick={() => {
+                        setOpen(false);
+                        router.push("/cart");
+                      }}
+                    >
+                      <ShoppingCart className="h-4 w-4" />
+                      <span className="text-sm">장바구니</span>
+                      {cartCount > 0 && <span className="absolute -top-1 -right-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">{cartBadge}</span>}
+                    </Button>
+                  </div>
+
+                  {/* 주요 이동 */}
+                  <div className="space-y-2">
+                    <Button
+                      variant="outline"
                       className="h-10 w-full justify-center rounded-xl transition-[background-color,color,border-color,box-shadow,opacity] duration-200"
                       onClick={() => {
                         setOpen(false);
-                        router.push("/admin/dashboard");
+                        router.push("/mypage");
                       }}
                     >
-                      관리자 페이지
+                      마이페이지
                     </Button>
-                  )}
 
+                    <Button
+                      variant="outline"
+                      className="h-9 w-full justify-center gap-2 rounded-xl transition-[background-color,color,border-color,box-shadow,opacity] duration-200"
+                      onClick={() => {
+                        setOpen(false);
+                        router.push("/board/event");
+                      }}
+                    >
+                      <Gift className="h-4 w-4" />
+                      이벤트
+                    </Button>
+
+                    {isAdmin && (
+                      <Button
+                        variant="secondary"
+                        className="h-10 w-full justify-center rounded-xl transition-[background-color,color,border-color,box-shadow,opacity] duration-200"
+                        onClick={() => {
+                          setOpen(false);
+                          router.push("/admin/dashboard");
+                        }}
+                      >
+                        관리자 페이지
+                      </Button>
+                    )}
+
+                    <Button
+                      variant="destructive"
+                      className="h-10 w-full justify-center rounded-xl transition-[background-color,color,border-color,box-shadow,opacity] duration-200"
+                      onClick={async () => {
+                        // 로그아웃 직전 캐시를 선제적으로 비워
+                        // 계정 전환 시 stale 포인트가 보이는 플래시를 예방합니다.
+                        headerPointsCache = null;
+                        await fetch("/api/logout", {
+                          method: "POST",
+                          credentials: "include",
+                        });
+                        window.location.href = "/";
+                      }}
+                    >
+                      로그아웃
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <div className="space-y-3 rounded-2xl border border-border bg-muted/30 p-4">
+                  <p className="break-keep text-sm leading-5 text-muted-foreground">
+                    로그인하면 주문 조회와 교체서비스 신청 내역을 확인할 수 있어요.
+                  </p>
                   <Button
-                    variant="destructive"
-                    className="h-10 w-full justify-center rounded-xl transition-[background-color,color,border-color,box-shadow,opacity] duration-200"
-                    onClick={async () => {
-                      // 로그아웃 직전 캐시를 선제적으로 비워
-                      // 계정 전환 시 stale 포인트가 보이는 플래시를 예방합니다.
-                      headerPointsCache = null;
-                      await fetch("/api/logout", {
-                        method: "POST",
-                        credentials: "include",
-                      });
-                      window.location.href = "/";
+                    className="h-10 w-full justify-center rounded-xl bg-primary text-primary-foreground shadow-md transition-[background-color,color,border-color,box-shadow,opacity] duration-200 hover:bg-primary/90"
+                    onClick={() => {
+                      setOpen(false);
+                      const redirectTo = typeof window !== "undefined" ? window.location.pathname + window.location.search : "/";
+                      router.push(`/login?next=${encodeURIComponent(redirectTo)}`);
                     }}
                   >
-                    로그아웃
+                    로그인
                   </Button>
                 </div>
-              </>
-            ) : (
-              <Button
-                className="h-10 w-full justify-center rounded-xl bg-primary text-primary-foreground shadow-md transition-[background-color,color,border-color,box-shadow,opacity] duration-200 hover:bg-primary/90"
-                onClick={() => {
-                  setOpen(false);
-                  const redirectTo = typeof window !== "undefined" ? window.location.pathname + window.location.search : "/";
-                  router.push(`/login?next=${encodeURIComponent(redirectTo)}`);
-                }}
-              >
-                로그인
-              </Button>
-            )}
+              )}
 
-            {/* 테마 토글 */}
-            <div className="pt-2 flex justify-center">
-              <ThemeToggle />
+              {/* 테마 토글 */}
+              <div className="pt-1 flex justify-center">
+                <ThemeToggle />
+              </div>
             </div>
           </div>
         </SheetContent>
