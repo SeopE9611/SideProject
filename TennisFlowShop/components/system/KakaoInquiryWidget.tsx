@@ -305,7 +305,7 @@ export default function KakaoInquiryWidget() {
                         className="rounded-lg border border-border bg-card px-3 py-2 text-sm font-semibold transition-colors hover:bg-muted bp-sm:py-2.5"
                         onClick={() => setPanel(null)}
                       >
-                        <span className="block text-foreground">{label}</span>
+                        <span className="block whitespace-nowrap text-foreground">{label}</span>
                         {description ? (
                           <span className="mt-0.5 block text-xs font-normal text-muted-foreground">
                             {description}

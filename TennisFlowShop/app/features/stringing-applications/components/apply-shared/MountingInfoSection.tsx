@@ -393,7 +393,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                               표시됩니다.
                             </p>
                             <p>
-                              • 여러 자루를 신청하려면, 주문에서 스트링을 필요한
+                              • 여러{'\u00A0'}자루를 신청하려면, 주문에서 스트링을 필요한
                               수량만큼 구매해 주세요.{" "}
                               <span className="font-semibold">
                                 (스트링 1개 = 교체 1회 = 라켓 1자루)
@@ -556,7 +556,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
           {orderId && (
             <p className="mb-2 text-xs text-muted-foreground">
               이번 신청서는 <span className="font-semibold">보유 라켓</span>도
-              포함해 <span className="font-semibold">여러 자루</span>를 한 번에
+              포함해 <span className="font-semibold">여러{'\u00A0'}자루</span>를 한{'\u00A0'}번에
               접수할 수 있습니다. 아래에서 사용할 스트링을 선택해 주세요.
               <span className="font-semibold">
                 (스트링 1개 = 교체 1회 = 라켓 1자루)
@@ -1047,7 +1047,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                       일괄 입력
                     </p>
                     <p className="mt-0.5 text-xs text-muted-foreground">
-                      같은 텐션/요청사항이면 한 번에 적용할 수 있어요.
+                      같은 텐션/요청사항이면 한{'\u00A0'}번에 적용할 수 있어요.
                     </p>
                   </div>
 

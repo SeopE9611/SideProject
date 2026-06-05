@@ -186,7 +186,7 @@ export default function RentalCheckoutStringingCompactEditor({ adapter }: Props)
                       빠른 설정
                     </p>
                     <p className="mt-0.5 text-xs text-foreground/75">
-                      여러 자루에 동일한 텐션/메모를 한 번에 적용합니다.
+                      여러{'\u00A0'}자루에 동일한 텐션/메모를 한{'\u00A0'}번에 적용합니다.
                     </p>
                   </div>
                   <div className="flex gap-2">

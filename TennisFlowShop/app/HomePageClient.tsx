@@ -596,7 +596,7 @@ export default function Home() {
               <div>
                 <p className="mb-1 text-xs font-semibold text-primary">가장 많이 찾는 시작</p>
                 <h3 className="text-base bp-sm:text-lg font-semibold break-keep text-foreground">스트링 교체 신청</h3>
-                <p className="mt-2 text-sm leading-relaxed text-foreground/80">보유 라켓이 있거나 새 스트링을 구매해서 장착까지 맡기고 싶을 때 선택하세요.</p>
+                <p className="mt-2 text-sm leading-relaxed text-foreground/80">보유 라켓이 있거나 새{'\u00A0'}스트링을 구매해서 장착까지 맡기고 싶을 때 선택하세요.</p>
               </div>
             </Link>
 
@@ -605,8 +605,8 @@ export default function Home() {
                 <Package className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
               </div>
               <div>
-                <h3 className="text-base bp-sm:text-lg font-semibold break-keep text-foreground">새 스트링 선택 후 교체 신청</h3>
-                <p className="mt-2 text-sm leading-relaxed text-foreground/80">스트링을 새로 선택하고 교체서비스까지 한 번에 진행합니다.</p>
+                <h3 className="text-base bp-sm:text-lg font-semibold break-keep text-foreground">새{'\u00A0'}스트링 선택 후 교체 신청</h3>
+                <p className="mt-2 text-sm leading-relaxed text-foreground/80">스트링을 새로 선택하고 교체서비스까지 한{'\u00A0'}번에 진행합니다.</p>
               </div>
             </Link>
 
@@ -615,7 +615,7 @@ export default function Home() {
                 <Tags className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
               </div>
               <div>
-                <h3 className="text-base bp-sm:text-lg font-semibold break-keep text-foreground">라켓 구매/대여 후 교체 신청</h3>
+                <h3 className="text-base bp-sm:text-lg font-semibold break-keep text-foreground">라켓{'\u00A0'}구매/대여 후 교체 신청</h3>
                 <p className="mt-2 text-sm leading-relaxed text-foreground/80">라켓을 구매하거나 대여하면서 스트링 장착까지 함께 진행합니다.</p>
               </div>
             </Link>
@@ -636,7 +636,7 @@ export default function Home() {
               </div>
               <div className="flex flex-1 flex-col gap-4">
                 <div>
-                  <h3 className="text-base bp-sm:text-lg font-semibold break-keep text-foreground">주문/신청 상태 확인</h3>
+                  <h3 className="text-base bp-sm:text-lg font-semibold break-keep text-foreground"><span className="whitespace-nowrap">주문/신청 상태 확인</span></h3>
                   <p className="mt-2 text-sm leading-relaxed text-foreground/80">마이페이지에서 진행 상태를 확인할 수 있어요.</p>
                 </div>
               </div>
@@ -674,7 +674,7 @@ export default function Home() {
                   <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">1</div>
                 </div>
                 <h3 className="mb-1 bp-sm:mb-1.5 text-xs bp-sm:text-sm font-semibold text-foreground">신청 방식 선택</h3>
-                <p className="text-xs bp-sm:text-sm leading-relaxed text-foreground/80">스트링 구매·라켓 구매/대여·보유 장비 중 선택</p>
+                <p className="text-xs bp-sm:text-sm leading-relaxed text-foreground/80">스트링 구매·라켓{'\u00A0'}구매/대여·보유 장비 중 선택</p>
               </div>
               <div className={processStepSurfaceClass}>
                 <div className="relative mb-3 bp-sm:mb-4">

@@ -1203,7 +1203,7 @@ export default function CartPageClient() {
                             )}
                             {racketLineCount !== 1 && (
                               <p>
-                                교체서비스 신청은 한 번에 라켓 1종 기준으로 진행됩니다.
+                                교체서비스 신청은 한{'\u00A0'}번에 라켓 1종 기준으로 진행됩니다.
                               </p>
                             )}
                           </div>
@@ -1384,7 +1384,7 @@ export default function CartPageClient() {
                         <p>라켓에 장착할 스트링을 먼저 선택해주세요.</p>
                       )}
                       {racketLineCount !== 1 && (
-                        <p>교체서비스 신청은 한 번에 라켓 1종 기준으로 진행됩니다.</p>
+                        <p>교체서비스 신청은 한{'\u00A0'}번에 라켓 1종 기준으로 진행됩니다.</p>
                       )}
                     </div>
                   )}
