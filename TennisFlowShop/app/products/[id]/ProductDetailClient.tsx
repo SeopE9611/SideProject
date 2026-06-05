@@ -1079,44 +1079,43 @@ export default function ProductDetailClient({ product }: { product: any }) {
                             </span>
                           )}
                         </div>
-                        {visibleColorRows.length > 1 ? (
-                          <div className="flex gap-2 overflow-x-auto pb-1">
-                            {visibleColorRows.map((row) => {
-                              const label = getColorLabel(row);
-                              const soldOut = hasVariantInventories ? !getVariantsByColor(row.value).some((v) => isSellableVariant(v)) : isColorSoldOut(row);
-                              const isSelected = selectedColor === row.value;
-                              const hasImage = typeof row.image === "string" && row.image.trim().length > 0;
-                              const hasSwatch = typeof row.colorHex === "string" && row.colorHex.trim().length > 0;
+                        <div className="flex gap-2 overflow-x-auto pb-1">
+                          {visibleColorRows.map((row) => {
+                            const label = getColorLabel(row);
+                            const soldOut = hasVariantInventories ? !getVariantsByColor(row.value).some((v) => isSellableVariant(v)) : isColorSoldOut(row);
+                            const isSelected = selectedColor === row.value;
+                            const swatchImage =
+                              row.image?.trim() ||
+                              getVariantsByColor(row.value).find((v) => v.colorImage?.trim())?.colorImage?.trim();
+                            const hasImage = !!swatchImage;
+                            const hasSwatch = typeof row.colorHex === "string" && row.colorHex.trim().length > 0;
 
-                              return (
-                                <button
-                                  key={row.value}
-                                  type="button"
-                                  aria-pressed={isSelected}
-                                  aria-label={`${label} 색상 선택`}
-                                  disabled={soldOut}
-                                  onClick={() => setSelectedColor(row.value)}
-                                  className={cn(
-                                    "relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-lg border bg-background text-xs text-foreground transition",
-                                    isSelected ? "border-foreground" : "border-border/60",
-                                    soldOut && "cursor-not-allowed opacity-45",
-                                  )}
-                                >
-                                  {hasImage ? (
-                                    <Image src={row.image!.trim()} alt={label} fill className="object-cover" />
-                                  ) : hasSwatch ? (
-                                    <span className="h-7 w-7 rounded-full border border-border/60" style={{ backgroundColor: row.colorHex?.trim() }} />
-                                  ) : (
-                                    <span className="line-clamp-2 px-1 text-center leading-tight break-keep">{label}</span>
-                                  )}
-                                  {soldOut && <span className="absolute bottom-0 left-0 right-0 bg-background/85 text-[10px] font-medium">품절</span>}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        ) : (
-                          <p className="break-words text-sm text-muted-foreground">색상: {selectedColorLabel || getColorLabel(visibleColorRows[0])}</p>
-                        )}
+                            return (
+                              <button
+                                key={row.value}
+                                type="button"
+                                aria-pressed={isSelected}
+                                aria-label={`${label} 색상 선택`}
+                                disabled={soldOut}
+                                onClick={() => setSelectedColor(row.value)}
+                                className={cn(
+                                  "relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-lg border bg-background text-xs text-foreground transition",
+                                  isSelected ? "border-foreground" : "border-border/60",
+                                  soldOut && "cursor-not-allowed opacity-45",
+                                )}
+                              >
+                                {hasImage ? (
+                                  <Image src={swatchImage} alt={label} fill className="object-cover" />
+                                ) : hasSwatch ? (
+                                  <span className="h-7 w-7 rounded-full border border-border/60" style={{ backgroundColor: row.colorHex?.trim() }} />
+                                ) : (
+                                  <span className="line-clamp-2 px-1 text-center leading-tight break-keep">{label}</span>
+                                )}
+                                {soldOut && <span className="absolute bottom-0 left-0 right-0 bg-background/85 text-[10px] font-medium">품절</span>}
+                              </button>
+                            );
+                          })}
+                        </div>
                       </div>
                     )}
                     <div className="flex items-center justify-between gap-3 rounded-xl border border-border/60 bg-muted/30 p-3">

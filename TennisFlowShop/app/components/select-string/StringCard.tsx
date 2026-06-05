@@ -192,7 +192,7 @@ export function StringCard({
         </div>
 
         {/* Color Selector */}
-        {hasColorRows && colorRows.length > 1 && (
+        {hasColorRows && (
           <div className="mb-3 space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-xs font-medium text-foreground">색상</span>
@@ -212,11 +212,10 @@ export function StringCard({
                   : isColorSoldOut(row);
                 const isColorSelected = selectedColor === row.value;
                 const colorImage =
-                  row.image ||
+                  row.image?.trim() ||
                   (hasVariantInventories
-                    ? variantRows.find((v) => v.colorValue === row.value && v.colorImage)?.colorImage
-                    : undefined) ||
-                  stringImage;
+                    ? variantRows.find((v) => v.colorValue === row.value && v.colorImage?.trim())?.colorImage?.trim()
+                    : undefined);
 
                 return (
                   <button
@@ -237,7 +236,7 @@ export function StringCard({
                       }
                     }}
                     className={cn(
-                      "relative h-8 w-8 overflow-hidden rounded-md border-2 transition-all",
+                      "relative h-10 w-10 overflow-hidden rounded-md border-2 transition-all bp-md:h-11 bp-md:w-11",
                       isColorSelected
                         ? "border-primary ring-2 ring-primary/30"
                         : "border-border hover:border-primary/50",
@@ -249,7 +248,7 @@ export function StringCard({
                         src={colorImage}
                         alt={label}
                         fill
-                        sizes="32px"
+                        sizes="44px"
                         className="object-cover"
                       />
                     ) : row.colorHex ? (
@@ -271,7 +270,7 @@ export function StringCard({
                 );
               })}
               {colorRows.length > 6 && (
-                <span className="flex h-8 items-center px-1 text-xs text-muted-foreground">
+                <span className="flex h-10 items-center px-1 text-xs text-muted-foreground bp-md:h-11">
                   +{colorRows.length - 6}
                 </span>
               )}
