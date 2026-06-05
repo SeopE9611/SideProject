@@ -118,17 +118,42 @@ async function loadProducts() {
   const db = await getDb();
   const filter: Filter<ProductDoc> = { isDeleted: { $ne: true } };
   const collection = db.collection<ProductDoc>("products");
+  const projection = {
+    name: 1,
+    price: 1,
+    images: 1,
+    brand: 1,
+    isNew: 1,
+    material: 1,
+    "inventory.isFeatured": 1,
+    "inventory.isNew": 1,
+    "inventory.isSale": 1,
+    "inventory.salePrice": 1,
+    "inventory.status": 1,
+    "inventory.stock": 1,
+    "inventory.lowStock": 1,
+    "inventory.manageStock": 1,
+    "inventory.allowBackorder": 1,
+  };
   const [total, docs] = await Promise.all([
     collection.countDocuments(filter),
-    collection.find(filter).sort({ _id: -1 }).limit(10).toArray(),
+    collection
+      .find(filter, { projection })
+      .sort({ _id: -1 })
+      .limit(10)
+      .toArray(),
   ]);
 
   return {
     items: docs.map((product) => ({
-      ...product,
       _id: product._id.toString(),
       name: product.name ?? "",
       price: product.price ?? 0,
+      images: product.images,
+      brand: product.brand,
+      isNew: product.isNew,
+      material: product.material,
+      inventory: product.inventory,
     })),
     total,
   };
