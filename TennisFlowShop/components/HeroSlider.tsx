@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect } from "react";
@@ -10,6 +11,9 @@ type Slide = {
   href?: string; // 배너 클릭 이동이 필요하면 사용
   caption?: string; // 화면 하단 간단 문구
 };
+
+const normalizeImageSrc = (src: string) =>
+  src.startsWith("http") || src.startsWith("/") ? src : `/${src}`;
 
 export default function HeroSlider({ slides }: { slides: Slide[] }) {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: "start" });
@@ -30,18 +34,20 @@ export default function HeroSlider({ slides }: { slides: Slide[] }) {
       >
         <div className="flex">
           {slides.map((s, i) => {
+            const imageSrc = normalizeImageSrc(s.img);
             const body = (
               <div className="relative h-[200px] /* ≤575 */ bp-sm:h-[240px] /* 576~767 */ bp-md-only:h-[340px] /* 768~1199 */ bp-lg:h-[520px] /* ≥1200 */ w-full flex-[0_0_100%] select-none">
                 {/* 원본 비율 유지 + 잘림 방지(cover → contain)
                     - grid place-items-center: 중앙 정렬
                     - max-w/max-h: 작은 이미지를 억지로 확대하지 않음(원본 크기 느낌 유지) */}
                 <div className="absolute inset-0 grid place-items-center bg-background">
-                  <img
-                    src={s.img}
+                  <Image
+                    src={imageSrc}
                     alt={s.alt ?? `slide-${i + 1}`}
-                    className="max-w-full max-h-full object-contain"
-                    loading="eager"
-                    decoding="async"
+                    fill
+                    className="object-contain"
+                    priority={i === 0}
+                    sizes="(max-width: 575px) calc(100vw - 24px), (max-width: 767px) calc(100vw - 32px), (max-width: 1199px) calc(100vw - 48px), 1200px"
                   />
                 </div>
                 {/* 상단 그라데이션/얇은 라인으로 품질감 */}
