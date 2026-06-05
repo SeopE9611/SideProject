@@ -1,21 +1,31 @@
 "use client";
 import AsyncState from "@/components/system/AsyncState";
+import type { HomePreviewMarketPost } from "@/lib/home/home-preview";
 import { ChevronRight, Tags } from "lucide-react";
 import Link from "next/link";
 import useSWR from "swr";
 
-type Post = { id: string; title: string; createdAt: string };
+type Post = HomePreviewMarketPost;
 const fetcher = async (u: string) => {
   const res = await fetch(u, { credentials: "include" });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.json();
 };
 
-export default function HomeMarketPreview() {
+type HomeMarketPreviewProps = {
+  initialItems?: Post[];
+};
+
+export default function HomeMarketPreview({
+  initialItems,
+}: HomeMarketPreviewProps) {
   const { data, error, isLoading, mutate } = useSWR<{
     ok: boolean;
     items: Post[];
-  }>("/api/community/posts?type=market&sort=latest&limit=5", fetcher);
+  }>("/api/community/posts?type=market&sort=latest&limit=5", fetcher, {
+    fallbackData: initialItems ? { ok: true, items: initialItems } : undefined,
+    revalidateOnMount: initialItems ? false : undefined,
+  });
   const items = data?.ok ? data.items : [];
   const hasError = Boolean(error) || (data && !data.ok);
 
