@@ -84,6 +84,8 @@ export function normalizeRecommendableProduct(
           : undefined,
       manageStock: toBoolean(inventoryRaw.manageStock),
       allowBackorder: toBoolean(inventoryRaw.allowBackorder),
+      isSale: toBoolean(inventoryRaw.isSale),
+      salePrice: toNumber(inventoryRaw.salePrice, 0),
     },
   };
 }
