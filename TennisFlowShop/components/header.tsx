@@ -548,7 +548,7 @@ const Header = () => {
             </Link>
             <div className="mt-4">
               <SearchPreview
-                placeholder="스트링 / 라켓 검색."
+                placeholder="스트링 / 라켓 검색"
                 className="w-full rounded-lg border-border focus-within:border-border focus-within:ring-2 focus-within:ring-ring transition-colors"
                 onSelect={() => setOpen(false)}
               />
@@ -1267,7 +1267,7 @@ const Header = () => {
               <div className="hidden min-w-0 justify-self-center px-2 bp-lg:block bp-lg:w-full xl:px-3 2xl:px-4">
                 <div className="w-full max-w-[420px] xl:max-w-[520px] 2xl:max-w-[640px] mx-auto">
                   <SearchPreview
-                    placeholder="스트링 / 라켓 검색..."
+                    placeholder="스트링 / 라켓 검색"
                     className="w-full rounded-full bg-background/80 border border-border focus-within:ring-2 focus-within:ring-ring transition-[background-color,color,border-color,box-shadow,opacity] duration-200"
                   />
                 </div>

@@ -206,7 +206,7 @@ export default async function ServicesPage() {
       step: 3,
       title: "정확한 장력 설정",
       description:
-        "디지털 전자식 스트링머신으로 정확한 장력을 설정하고 장착합니다.",
+        "전자식 스트링 머신으로 장력을 설정하고 장착합니다.",
       icon: <Award className="h-8 w-8" />,
     },
     {
