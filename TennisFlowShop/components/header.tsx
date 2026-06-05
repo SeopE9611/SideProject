@@ -14,7 +14,7 @@ import { getSocialProviderBadgeSpec } from "@/lib/badge-style";
 import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import { useUnreadMessageCount } from "@/lib/hooks/useUnreadMessageCount";
 import { cn } from "@/lib/utils";
-import { ChevronDown, ChevronRight, Gift, Headset, Loader2, Mail, Menu, ShoppingCart, UserIcon } from "lucide-react";
+import { ChevronDown, ChevronRight, Gift, Headset, Loader2, Mail, Menu, MoreHorizontal, ShoppingCart, UserIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -688,129 +688,133 @@ const Header = () => {
               {user ? (
                 <>
                   {/* 사용자 정보 카드 */}
-                  <div className="rounded-2xl border border-border bg-muted/30 p-4">
-                    <div className="min-w-0">
-                      <div className="flex min-w-0 flex-wrap items-center gap-1.5">
-                        <span className="min-w-0 max-w-[150px] truncate text-sm font-bold text-foreground">{displayName} 님</span>
-                        {hasKakao && (
-                          <Badge variant={getSocialProviderBadgeSpec("kakao").variant} className="h-5 shrink-0 whitespace-nowrap border border-border/60 px-2 text-[10px]">
-                            카카오
-                          </Badge>
-                        )}
-                        {hasNaver && (
-                          <Badge variant={getSocialProviderBadgeSpec("naver").variant} className="h-5 shrink-0 whitespace-nowrap border border-border/60 px-2 text-[10px]">
-                            네이버
-                          </Badge>
-                        )}
-                        {isAdmin && (
-                          <Badge variant="success" className="h-5 shrink-0 whitespace-nowrap border border-border/60 px-2 py-0 text-[10px]">
-                            관리자
-                          </Badge>
-                        )}
+                  <div className="rounded-2xl border border-border bg-muted/30 p-3">
+                    <div className="flex min-w-0 flex-col gap-3">
+                      <div className="min-w-0">
+                        <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                          <span className="min-w-0 max-w-[140px] truncate text-sm font-bold text-foreground">{displayName} 님</span>
+                          {hasKakao && (
+                            <Badge variant={getSocialProviderBadgeSpec("kakao").variant} className="h-5 shrink-0 whitespace-nowrap border border-border/60 px-2 text-[10px]">
+                              카카오
+                            </Badge>
+                          )}
+                          {hasNaver && (
+                            <Badge variant={getSocialProviderBadgeSpec("naver").variant} className="h-5 shrink-0 whitespace-nowrap border border-border/60 px-2 text-[10px]">
+                              네이버
+                            </Badge>
+                          )}
+                          {isAdmin && (
+                            <Badge variant="success" className="h-5 shrink-0 whitespace-nowrap border border-border/60 px-2 py-0 text-[10px]">
+                              관리자
+                            </Badge>
+                          )}
+                        </div>
+
+                        <Link href="/mypage?tab=points" onClick={() => setOpen(false)} className="mt-1 inline-flex min-w-0 items-center gap-1.5 text-xs font-semibold tabular-nums text-muted-foreground hover:text-foreground" aria-label="포인트 보기">
+                          <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-background text-[10px] font-bold text-muted-foreground">P</span>
+                          {pointsStatus === "loading" ? (
+                            <>
+                              <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" aria-hidden="true" />
+                              <span className="sr-only">포인트 불러오는 중</span>
+                            </>
+                          ) : pointsStatus === "error" ? (
+                            <span>-</span>
+                          ) : (
+                            <span>{(pointsBalance ?? 0).toLocaleString()}P</span>
+                          )}
+                        </Link>
                       </div>
 
-                      <Link href="/mypage?tab=points" onClick={() => setOpen(false)} className="mt-1 inline-flex min-w-0 items-center gap-1.5 text-xs font-semibold tabular-nums text-muted-foreground hover:text-foreground" aria-label="포인트 보기">
-                        <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-background text-[10px] font-bold text-muted-foreground">P</span>
-                        {pointsStatus === "loading" ? (
-                          <>
-                            <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" aria-hidden="true" />
-                            <span className="sr-only">포인트 불러오는 중</span>
-                          </>
-                        ) : pointsStatus === "error" ? (
-                          <span>-</span>
-                        ) : (
-                          <span>{(pointsBalance ?? 0).toLocaleString()}P</span>
-                        )}
-                      </Link>
+                      {/* 빠른 액션 */}
+                      <div className="grid grid-cols-3 gap-2">
+                        <Button
+                          variant="outline"
+                          className="relative h-10 w-full min-w-0 justify-center gap-1.5 rounded-xl border-border bg-background px-2 hover:bg-secondary"
+                          aria-label="쪽지함으로 이동"
+                          onClick={() => {
+                            setOpen(false);
+                            router.push("/messages");
+                          }}
+                        >
+                          <Mail className="h-4 w-4 shrink-0" aria-hidden="true" />
+                          <span className="min-w-0 truncate text-sm">쪽지</span>
+                          {resolvedUnreadCount !== null && resolvedUnreadCount > 0 && (
+                            <span className="absolute -top-1 -right-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground">
+                              {resolvedUnreadCount > 99 ? "99+" : resolvedUnreadCount}
+                            </span>
+                          )}
+                        </Button>
+
+                        <Button
+                          variant="outline"
+                          className="relative h-10 w-full min-w-0 justify-center gap-1.5 rounded-xl border-border bg-background px-2 hover:bg-secondary"
+                          aria-label="장바구니로 이동"
+                          onClick={() => {
+                            setOpen(false);
+                            router.push("/cart");
+                          }}
+                        >
+                          <ShoppingCart className="h-4 w-4 shrink-0" aria-hidden="true" />
+                          <span className="min-w-0 truncate text-sm">장바구니</span>
+                          {cartCount > 0 && <span className="absolute -top-1 -right-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">{cartBadge}</span>}
+                        </Button>
+
+                        <DropdownMenu modal={false}>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="outline" className="h-10 w-full min-w-0 justify-center gap-1.5 rounded-xl border-border bg-background px-2 hover:bg-secondary" aria-label="사용자 메뉴 더보기">
+                              <MoreHorizontal className="h-4 w-4 shrink-0" aria-hidden="true" />
+                              <span className="min-w-0 truncate text-sm">더보기</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" side="top" sideOffset={8} collisionPadding={12} className="z-[60] w-44">
+                            <DropdownMenuItem
+                              className="h-9"
+                              onSelect={() => {
+                                setOpen(false);
+                                router.push("/mypage");
+                              }}
+                            >
+                              마이페이지
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              className="h-9"
+                              onSelect={() => {
+                                setOpen(false);
+                                router.push("/board/event");
+                              }}
+                            >
+                              이벤트
+                            </DropdownMenuItem>
+                            {isAdmin && (
+                              <DropdownMenuItem
+                                className="h-9"
+                                onSelect={() => {
+                                  setOpen(false);
+                                  router.push("/admin/dashboard");
+                                }}
+                              >
+                                관리자 페이지
+                              </DropdownMenuItem>
+                            )}
+                            <DropdownMenuItem
+                              className="h-9 text-destructive focus:text-destructive"
+                              onSelect={async () => {
+                                // 로그아웃 직전 캐시를 선제적으로 비워
+                                // 계정 전환 시 stale 포인트가 보이는 플래시를 예방합니다.
+                                headerPointsCache = null;
+                                await fetch("/api/logout", {
+                                  method: "POST",
+                                  credentials: "include",
+                                });
+                                window.location.href = "/";
+                              }}
+                            >
+                              로그아웃
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </div>
-                  </div>
-
-                  {/* 빠른 액션 */}
-                  <div className="grid grid-cols-2 gap-2">
-                    <Button
-                      variant="outline"
-                      className="relative h-10 w-full justify-center gap-2 rounded-xl border-border bg-background hover:bg-secondary"
-                      onClick={() => {
-                        setOpen(false);
-                        router.push("/messages");
-                      }}
-                    >
-                      <Mail className="h-4 w-4" />
-                      <span className="text-sm">쪽지</span>
-                      {resolvedUnreadCount !== null && resolvedUnreadCount > 0 && (
-                        <span className="absolute -top-1 -right-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground">
-                          {resolvedUnreadCount > 99 ? "99+" : resolvedUnreadCount}
-                        </span>
-                      )}
-                    </Button>
-
-                    <Button
-                      variant="outline"
-                      className="relative h-10 w-full justify-center gap-2 rounded-xl border-border bg-background hover:bg-secondary"
-                      onClick={() => {
-                        setOpen(false);
-                        router.push("/cart");
-                      }}
-                    >
-                      <ShoppingCart className="h-4 w-4" />
-                      <span className="text-sm">장바구니</span>
-                      {cartCount > 0 && <span className="absolute -top-1 -right-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">{cartBadge}</span>}
-                    </Button>
-                  </div>
-
-                  {/* 주요 이동 */}
-                  <div className="space-y-2">
-                    <Button
-                      variant="outline"
-                      className="h-10 w-full justify-center rounded-xl transition-[background-color,color,border-color,box-shadow,opacity] duration-200"
-                      onClick={() => {
-                        setOpen(false);
-                        router.push("/mypage");
-                      }}
-                    >
-                      마이페이지
-                    </Button>
-
-                    <Button
-                      variant="outline"
-                      className="h-10 w-full justify-center rounded-xl transition-[background-color,color,border-color,box-shadow,opacity] duration-200"
-                      onClick={() => {
-                        setOpen(false);
-                        router.push("/board/event");
-                      }}
-                    >
-                      이벤트
-                    </Button>
-
-                    {isAdmin && (
-                      <Button
-                        variant="secondary"
-                        className="h-10 w-full justify-center rounded-xl transition-[background-color,color,border-color,box-shadow,opacity] duration-200"
-                        onClick={() => {
-                          setOpen(false);
-                          router.push("/admin/dashboard");
-                        }}
-                      >
-                        관리자 페이지
-                      </Button>
-                    )}
-
-                    <Button
-                      variant="destructive"
-                      className="h-10 w-full justify-center rounded-xl transition-[background-color,color,border-color,box-shadow,opacity] duration-200"
-                      onClick={async () => {
-                        // 로그아웃 직전 캐시를 선제적으로 비워
-                        // 계정 전환 시 stale 포인트가 보이는 플래시를 예방합니다.
-                        headerPointsCache = null;
-                        await fetch("/api/logout", {
-                          method: "POST",
-                          credentials: "include",
-                        });
-                        window.location.href = "/";
-                      }}
-                    >
-                      로그아웃
-                    </Button>
                   </div>
                 </>
               ) : (
