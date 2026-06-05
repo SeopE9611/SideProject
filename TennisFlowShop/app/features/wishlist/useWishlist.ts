@@ -47,6 +47,7 @@ export function useWishlist() {
   const items = data?.items ?? null;
   const total = data?.total ?? null;
   const ids = new Set((items ?? []).map((i) => i.id));
+  const findItem = (productId: string) => (items ?? []).find((item) => item.id === productId) ?? null;
   // 위시리스트가 아직 미확정/null이면 false로 단정하지 않고 unknown(null)로 유지한다.
   const has = (productId: string): boolean | null => {
     if (!Array.isArray(items)) return null;
@@ -72,6 +73,18 @@ export function useWishlist() {
     });
     if (res.status === 401) throw new Error("unauthorized");
     if (!res.ok) throw new Error("remove failed");
+    await mutate();
+  }
+
+  async function updateOptions(productId: string, options: WishlistOptionPayload) {
+    const res = await fetch(`/api/wishlist/${productId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(options),
+    });
+    if (res.status === 401) throw new Error("unauthorized");
+    if (!res.ok) throw new Error("update failed");
     await mutate();
   }
 
@@ -101,8 +114,10 @@ export function useWishlist() {
     hasResolvedData,
     hasDataError,
     has,
+    findItem,
     add,
     remove,
+    updateOptions,
     toggle,
     isLoading,
     isValidating,
