@@ -884,7 +884,10 @@ export default function ProductDetailClient({ product }: { product: any }) {
     if (busy || isWishlistUnknown) return;
     setBusy(true);
     try {
-      await toggle(product._id); // 항상 서버에 요청
+      await toggle(product._id.toString(), {
+        selectedGauge: selectedGauge || undefined,
+        ...selectedColorPayload,
+      }); // 항상 서버에 요청
       showSuccessToast(isWishlisted ? "위시리스트에서 제거했습니다." : "위시리스트에 추가했습니다.");
     } catch (e: any) {
       if (e?.message === "unauthorized") {

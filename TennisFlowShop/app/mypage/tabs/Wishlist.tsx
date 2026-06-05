@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Heart, ShoppingCart, Trash2 } from "lucide-react";
@@ -16,6 +17,7 @@ const LIMIT = 12;
 export default function Wishlist() {
   const { items, remove, isLoading, hasDataError, hasResolvedData } =
     useWishlist();
+  const router = useRouter();
   const addItem = useCartStore((s) => s.addItem);
 
   // '더 보기' 노출 개수
@@ -37,6 +39,38 @@ export default function Wishlist() {
     !isLoading &&
     !hasDataError &&
     resolvedItems.length === 0;
+
+  function handleAddToCart(it: (typeof resolvedItems)[number]) {
+    if (it.requiresOption && !it.hasSelectedOption) {
+      showErrorToast("색상/게이지 선택이 필요합니다. 상세페이지에서 옵션을 선택해주세요.");
+      router.push(`/products/${it.id}`);
+      return;
+    }
+    if (it.requiresOption && !it.optionAvailable) {
+      showErrorToast("찜한 옵션이 현재 품절되었습니다. 다른 옵션을 선택해주세요.");
+      return;
+    }
+
+    const result = addItem({
+      id: it.id,
+      name: it.name,
+      price: it.price,
+      quantity: 1,
+      image: it.selectedColorImage || it.image,
+      stock: it.requiresOption ? it.optionStock : it.stock,
+      selectedGauge: it.selectedGauge,
+      selectedColor: it.selectedColor,
+      selectedColorLabel: it.selectedColorLabel,
+      selectedColorHex: it.selectedColorHex,
+      selectedColorImage: it.selectedColorImage,
+    });
+
+    if (!result.success) {
+      showErrorToast(result.message ?? "장바구니에 담을 수 없습니다.");
+      return;
+    }
+    showSuccessToast("장바구니에 담았습니다.");
+  }
 
   if (isLoading && !hasResolvedData) {
     return (
@@ -120,6 +154,23 @@ export default function Wishlist() {
                   <div className="text-sm text-muted-foreground">
                     {it.price.toLocaleString()}원
                   </div>
+                  <div className="mt-2 space-y-0.5 text-xs text-muted-foreground">
+                    {it.hasSelectedOption ? (
+                      <>
+                        {it.selectedColorLabel && <div>색상: {it.selectedColorLabel}</div>}
+                        {it.selectedGauge && <div>게이지: {it.selectedGauge}</div>}
+                        {typeof it.optionStock === "number" && <div>현재 재고: {it.optionStock}개</div>}
+                      </>
+                    ) : it.requiresOption ? (
+                      <>
+                        <div className="font-medium text-warning">옵션 미선택</div>
+                        <div>상세페이지에서 색상/게이지를 선택해주세요.</div>
+                      </>
+                    ) : null}
+                    {it.hasSelectedOption && it.optionAvailable === false && (
+                      <div className="font-medium text-destructive">품절</div>
+                    )}
+                  </div>
                 </div>
               </Link>
 
@@ -127,19 +178,10 @@ export default function Wishlist() {
                 <Button
                   size="sm"
                   variant="default" className="shadow-sm"
-                  onClick={() => {
-                    addItem({
-                      id: it.id,
-                      name: it.name,
-                      price: it.price,
-                      quantity: 1,
-                      image: it.image,
-                      stock: it.stock,
-                    });
-                    showSuccessToast("장바구니에 담았습니다.");
-                  }}
+                  onClick={() => handleAddToCart(it)}
+                  disabled={it.requiresOption && it.hasSelectedOption && !it.optionAvailable}
                 >
-                  <ShoppingCart className="h-4 w-4 mr-2" /> 담기
+                  <ShoppingCart className="h-4 w-4 mr-2" /> {it.requiresOption && !it.hasSelectedOption ? "옵션 선택" : "담기"}
                 </Button>
                 <Button
                   size="sm"

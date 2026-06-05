@@ -1,13 +1,30 @@
 "use client";
 import useSWR, { mutate as globalMutate } from "swr";
 
-export type WishlistItem = {
+export type WishlistOptionPayload = {
+  selectedGauge?: string;
+  selectedColor?: string;
+  selectedColorLabel?: string;
+  selectedColorHex?: string;
+  selectedColorImage?: string;
+};
+
+export type WishlistItem = WishlistOptionPayload & {
   id: string;
   name: string;
   price: number;
   image: string;
   stock: number;
   createdAt: string;
+  inventory?: unknown;
+  variantInventories?: unknown[];
+  colorInventories?: unknown[];
+  gaugeInventories?: unknown[];
+  requiresOption?: boolean;
+  hasSelectedOption?: boolean;
+  optionAvailable?: boolean;
+  optionStock?: number;
+  optionStatusMessage?: string;
 };
 
 const KEY = "/api/wishlist";
@@ -36,12 +53,12 @@ export function useWishlist() {
     return ids.has(productId);
   };
 
-  async function add(productId: string) {
+  async function add(productId: string, options?: WishlistOptionPayload) {
     const res = await fetch("/api/wishlist", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify({ productId }),
+      body: JSON.stringify({ productId, ...(options ?? {}) }),
     });
     if (res.status === 401) throw new Error("unauthorized");
     if (!res.ok && res.status !== 409) throw new Error("add failed");
@@ -58,11 +75,11 @@ export function useWishlist() {
     await mutate();
   }
 
-  async function toggle(productId: string) {
+  async function toggle(productId: string, options?: WishlistOptionPayload) {
     const state = has(productId);
     // unknown(null) 상태에서 잘못 remove로 가지 않도록 add 경로로 보수 처리한다.
     if (state === true) await remove(productId);
-    else await add(productId);
+    else await add(productId, options);
   }
 
   async function clear() {
