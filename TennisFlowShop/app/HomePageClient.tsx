@@ -13,6 +13,7 @@ import { BadgeCheck, BookOpen, Package, Search, Tags, Wrench } from "lucide-reac
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { MdSportsTennis } from "react-icons/md";
 
 const HomeNoticePreview = dynamic(() => import("@/components/HomeNoticePreview"));
 const HomeMarketPreview = dynamic(() => import("@/components/HomeMarketPreview"));
@@ -495,10 +496,7 @@ export default function Home() {
       brand: racketBrandLabel?.(r.brand) ?? r.brand ?? "",
       href: `/rackets/${r.id}`,
       marketing: r.marketing,
-      merchandisingBadges: [
-        ...(r.marketing?.isFeatured ? (["추천"] as const) : []),
-        ...(r.marketing?.isNew ? (["NEW"] as const) : []),
-      ],
+      merchandisingBadges: [...(r.marketing?.isFeatured ? (["추천"] as const) : []), ...(r.marketing?.isNew ? (["NEW"] as const) : [])],
     }));
   }, [rackByBrand, activeBrand]);
 
@@ -632,7 +630,7 @@ export default function Home() {
               </div>
             </Link>
 
-            <div className={cn("group flex h-full flex-col gap-4 p-5 bp-sm:p-6 bp-md:p-7", surfaceCardInteractiveClass)}>
+            <Link href="/academy" className={cn("group flex h-full flex-col gap-4 p-5 bp-sm:p-6 bp-md:p-7", surfaceCardInteractiveClass)}>
               <div className={cn("h-12 w-12 bp-sm:h-14 bp-sm:w-14", surfaceIconWrapClass)}>
                 <Search className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
               </div>
@@ -642,7 +640,19 @@ export default function Home() {
                   <p className="mt-2 text-sm leading-relaxed text-foreground/80">마이페이지에서 진행 상태를 확인할 수 있어요.</p>
                 </div>
               </div>
-            </div>
+            </Link>
+
+            <Link href="/rackets/finder" className={cn("group flex h-full flex-col gap-4 p-5 bp-sm:p-6 bp-md:p-7", surfaceCardInteractiveClass)}>
+              <div className={cn("h-12 w-12 bp-sm:h-14 bp-sm:w-14", surfaceIconWrapClass)}>
+                <MdSportsTennis className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
+              </div>
+              <div className="flex flex-1 flex-col gap-4">
+                <div>
+                  <h3 className="text-base bp-sm:text-lg font-semibold break-keep text-foreground">라켓 검색</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-foreground/80">원하는 조건의 중고 라켓을 정교하게 좁혀보세요</p>
+                </div>
+              </div>
+            </Link>
           </div>
         </SiteContainer>
       </section>
@@ -840,7 +850,7 @@ export default function Home() {
       </section>
 
       {/* 라켓 검색 바로가기 (Hero 아래 CTA 블록) */}
-      <section className="py-6 bp-sm:py-8">
+      {/* <section className="py-6 bp-sm:py-8">
         <SiteContainer>
           <Link href="/rackets/finder" className="group block">
             <div className={cn("flex flex-col gap-5 p-6 bp-sm:p-7 bp-md:flex-row bp-md:items-center bp-md:justify-between bp-md:p-8", surfaceCardInteractiveClass)}>
@@ -863,7 +873,7 @@ export default function Home() {
             </div>
           </Link>
         </SiteContainer>
-      </section>
+      </section> */}
     </div>
   );
 }

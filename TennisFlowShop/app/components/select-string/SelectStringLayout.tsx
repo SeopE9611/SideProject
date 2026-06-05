@@ -184,7 +184,7 @@ export default function SelectStringLayout({
         const hasVariantInventories =
           Array.isArray(product?.variantInventories) && product.variantInventories.length > 0;
         const selectedColor = selectedColorByStringId[id] ?? "";
-        
+
         if (hasVariantInventories) {
           const variantsForColor = getVariantsByColor(product, selectedColor);
           const currentIsValid = variantsForColor.some((v) => v.gaugeValue === next[id] && isSellableVariant(v));
@@ -216,7 +216,7 @@ export default function SelectStringLayout({
     if (!isCartEditMode || !currentStringId || !products?.length) return;
     const target = products.find((item: any) => String(item?._id) === currentStringId);
     if (!target) return;
-    
+
     if (initialSelectedGauge) {
       const hasGauge = normalizeGaugeRows(target).some((row) => row.value === initialSelectedGauge);
       if (hasGauge) {
@@ -390,7 +390,7 @@ export default function SelectStringLayout({
               <span>뒤로 가기</span>
             </Link>
           )}
-          
+
           <div className="text-center">
             <h1 className="text-2xl font-bold tracking-tight text-foreground bp-md:text-3xl bp-lg:text-4xl">
               스트링 선택
@@ -428,7 +428,7 @@ export default function SelectStringLayout({
                   </button>
                 )}
               </div>
-              
+
               <div className="flex w-full items-center gap-2 bp-sm:w-auto">
                 <Select value={stockFilter} onValueChange={(v) => setStockFilter(v as "all" | "available")}>
                   <SelectTrigger className="h-10 w-full bp-sm:w-[180px]">
@@ -473,7 +473,7 @@ export default function SelectStringLayout({
             </div>
 
             {/* Product Count */}
-            <p className="text-sm text-muted-foreground">
+            <div className="text-sm text-muted-foreground">
               {isLoadingInitial ? (
                 <Skeleton className="inline-block h-4 w-24" />
               ) : (
@@ -481,7 +481,7 @@ export default function SelectStringLayout({
                   총 <span className="font-semibold text-foreground">{filteredProducts.length}</span>개의 스트링
                 </>
               )}
-            </p>
+            </div>
 
             {/* Product Grid/List */}
             {isLoadingInitial ? (

@@ -15,7 +15,7 @@ import {
   type AcademyClassLevel,
   type PublicAcademyClass,
 } from "@/lib/types/academy";
-import { Calendar, CheckCircle2, Clock, GraduationCap, MapPin, MessageCircle, Phone, Sparkles, User, Users, Wallet } from "lucide-react";
+import { Calendar, CheckCircle2, Clock, GraduationCap, MapPin, MessageCircle, Phone, User, Users, Wallet } from "lucide-react";
 import type { Document } from "mongodb";
 import type { Metadata } from "next";
 import Image from "next/image";
@@ -237,10 +237,6 @@ export default async function AcademyPage() {
           <div className="grid gap-10 lg:grid-cols-[1fr_400px] lg:items-center lg:gap-16">
             <div className="space-y-8">
               <div className="space-y-4">
-                <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm font-medium text-primary">
-                  <Sparkles className="h-4 w-4" />
-                  도깨비테니스 레슨 안내
-                </div>
                 <h1 className="text-balance text-3xl font-bold tracking-tight text-foreground md:text-5xl lg:text-6xl">도깨비테니스 아카데미</h1>
                 <p className="max-w-xl text-pretty text-sm leading-relaxed text-muted-foreground bp-sm:text-base md:text-lg">
                   아카데미는 스트링/라켓 장비 서비스와 별도의 레슨 신청 흐름입니다. 입문자부터 실전 플레이어까지, 목표와 레벨에 맞춘 수업 방향을 상담하며 함께 찾아보세요.

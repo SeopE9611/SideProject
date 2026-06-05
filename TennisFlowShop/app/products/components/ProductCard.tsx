@@ -170,9 +170,11 @@ const ProductCard = React.memo(
 
     const soldOutOverlay = isSoldOut ? (
       <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-background/45 backdrop-blur-sm">
-        <Badge variant="secondary" className="rounded-full border border-border/70 bg-card/95 px-4 py-1.5 text-sm font-bold text-foreground shadow-sm">
-          품절
-        </Badge>
+        <div className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-sm">
+            <Badge variant="secondary" className="text-sm font-semibold">
+              품절
+            </Badge>
+          </div>
       </div>
     ) : null;
 
