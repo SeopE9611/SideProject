@@ -171,10 +171,10 @@ const ProductCard = React.memo(
     const soldOutOverlay = isSoldOut ? (
       <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-background/45 backdrop-blur-sm">
         <div className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-sm">
-            <Badge variant="secondary" className="text-sm font-semibold">
-              품절
-            </Badge>
-          </div>
+          <Badge variant="secondary" className="text-sm font-semibold">
+            품절
+          </Badge>
+        </div>
       </div>
     ) : null;
 
@@ -405,9 +405,7 @@ const ProductCard = React.memo(
               </div>
             )}
 
-            <div className="mt-auto flex justify-end pt-4">
-              {priceBlock("right")}
-            </div>
+            <div className="mt-auto flex justify-end pt-4">{priceBlock("right")}</div>
           </Link>
         </CardContent>
 
