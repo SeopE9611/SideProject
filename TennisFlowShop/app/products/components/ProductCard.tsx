@@ -6,7 +6,7 @@ import { usePdpBundleStore } from "@/app/store/pdpBundleStore";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardTitle } from "@/components/ui/card";
-import { badgeToneClass, merchandisingImageBadgeClass } from "@/lib/badge-style";
+import { badgeToneClass, merchandisingImageBadgeClass, merchandisingImageBadgeVariant } from "@/lib/badge-style";
 import { isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
 import { ENABLE_STRING_STANDALONE_ORDER } from "@/lib/orders/string-standalone-policy";
 import { normalizeFeatureScoreTo100 } from "@/lib/product-feature-score";
@@ -264,7 +264,7 @@ const ProductCard = React.memo(
               {merchandisingBadges.length > 0 && (
                 <div className="absolute left-3 top-3 z-20 flex flex-wrap gap-1.5">
                   {merchandisingBadges.map((badge) => (
-                    <Badge key={`${product._id}-${badge}`} className={cn(merchandisingImageBadgeClass(badge))}>
+                    <Badge key={`${product._id}-${badge}`} variant={merchandisingImageBadgeVariant(badge)} shape="pill" className={cn(merchandisingImageBadgeClass)}>
                       {badge}
                     </Badge>
                   ))}
@@ -367,7 +367,7 @@ const ProductCard = React.memo(
           {merchandisingBadges.length > 0 && (
             <div className="absolute left-3 top-3 z-20 flex flex-wrap gap-1.5">
               {merchandisingBadges.map((badge) => (
-                <Badge key={`${product._id}-${badge}`} className={cn(merchandisingImageBadgeClass(badge))}>
+                <Badge key={`${product._id}-${badge}`} variant={merchandisingImageBadgeVariant(badge)} shape="pill" className={cn(merchandisingImageBadgeClass)}>
                   {badge}
                 </Badge>
               ))}

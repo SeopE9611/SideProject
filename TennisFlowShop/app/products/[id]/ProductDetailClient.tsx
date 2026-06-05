@@ -15,7 +15,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { badgeBaseOutlined, badgeSizeSm, getAnswerStatusBadgeSpec, getQnaCategoryBadgeSpec, merchandisingImageBadgeClass } from "@/lib/badge-style";
+import { badgeBaseOutlined, badgeSizeSm, getAnswerStatusBadgeSpec, getQnaCategoryBadgeSpec, merchandisingImageBadgeClass, merchandisingImageBadgeVariant } from "@/lib/badge-style";
 import { stringBrandLabel, stringColorLabel, stringMaterialLabel } from "@/lib/constants";
 import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import { hasPaidMountingFee, isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
@@ -1035,7 +1035,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 {merchandisingBadges.length > 0 && (
                   <div className="absolute top-4 sm:top-5 left-4 sm:left-5 flex flex-wrap gap-2 sm:gap-2.5">
                     {merchandisingBadges.map((badge) => (
-                      <Badge key={`${product?._id ?? product?.name}-${badge}`} className={cn(merchandisingImageBadgeClass(badge))}>
+                      <Badge key={`${product?._id ?? product?.name}-${badge}`} variant={merchandisingImageBadgeVariant(badge)} shape="pill" className={cn(merchandisingImageBadgeClass)}>
                         {badge}
                       </Badge>
                     ))}

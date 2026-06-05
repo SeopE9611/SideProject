@@ -18,7 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { merchandisingImageBadgeClass, usedBadgeMeta } from "@/lib/badge-style";
+import { merchandisingImageBadgeClass, merchandisingImageBadgeVariant, usedBadgeMeta } from "@/lib/badge-style";
 import {
   gripSizeLabel,
   racketBrandLabel,
@@ -545,10 +545,10 @@ export default function RacketDetailClient({
                 {(racket?.marketing?.isFeatured || racket?.marketing?.isNew) && (
                   <div className="absolute left-4 top-4 flex flex-wrap gap-2">
                     {racket?.marketing?.isFeatured && (
-                      <Badge className={cn(merchandisingImageBadgeClass("추천"))}>추천</Badge>
+                      <Badge variant={merchandisingImageBadgeVariant("추천")} shape="pill" className={cn(merchandisingImageBadgeClass)}>추천</Badge>
                     )}
                     {racket?.marketing?.isNew && (
-                      <Badge className={cn(merchandisingImageBadgeClass("NEW"))}>NEW</Badge>
+                      <Badge variant={merchandisingImageBadgeVariant("NEW")} shape="pill" className={cn(merchandisingImageBadgeClass)}>NEW</Badge>
                     )}
                   </div>
                 )}
