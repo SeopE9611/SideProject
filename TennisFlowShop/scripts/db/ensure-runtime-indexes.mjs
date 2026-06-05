@@ -125,6 +125,26 @@ async function ensureIndexes(db, collectionName, specs) {
  *   첫 요청이 인덱스 미보장 상태로 들어와 성능/정합성 리스크가 생길 수 있다.
  */
 const INDEX_SPECS = {
+  user_notifications: [
+    {
+      name: "idx_user_notifications_user_read_created",
+      keys: { userId: 1, readAt: 1, createdAt: -1 },
+      options: {},
+    },
+    {
+      name: "idx_user_notifications_user_created",
+      keys: { userId: 1, createdAt: -1 },
+      options: {},
+    },
+    {
+      name: "uniq_user_notifications_dedupe_key",
+      keys: { dedupeKey: 1 },
+      options: {
+        unique: true,
+        partialFilterExpression: { dedupeKey: { $type: "string" } },
+      },
+    },
+  ],
   service_passes: [
     {
       name: "idx_pass_user_status_type",

@@ -8,6 +8,7 @@ import {
   grantPoints,
 } from "@/lib/points.service";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
+import { createUserNotification } from "@/lib/notifications/user-notification.service";
 
 type AdminRef = {
   adminId: ObjectId;
@@ -62,8 +63,9 @@ export async function POST(req: Request) {
 
   try {
     // 2) 지급/차감 분기 (원장 + users.pointsBalance 캐시 동시 갱신)
+    let transactionId: string | null = null;
     if (amount > 0) {
-      await grantPoints(db, {
+      const pointResult = await grantPoints(db, {
         userId: targetUserId,
         amount,
         type: "admin_adjust",
@@ -71,8 +73,9 @@ export async function POST(req: Request) {
         ...(reason ? { reason } : {}),
         ref: adminRef,
       });
+      transactionId = pointResult.transactionId;
     } else {
-      await deductPoints(db, {
+      const pointResult = await deductPoints(db, {
         userId: targetUserId,
         amount: Math.abs(amount),
         type: "admin_adjust",
@@ -82,6 +85,28 @@ export async function POST(req: Request) {
         // 기본 정책: 마이너스 잔액 금지 (필요하면 true로 열어도 됨)
         allowNegativeBalance: false,
       });
+      transactionId = pointResult.transactionId;
+    }
+
+    try {
+      await createUserNotification(db, {
+        userId: targetUserId,
+        type: amount > 0 ? "point_granted" : "point_deducted",
+        title: amount > 0 ? "포인트가 지급되었습니다." : "포인트가 차감되었습니다.",
+        body:
+          amount > 0
+            ? `${amount.toLocaleString()}P가 지급되었습니다.`
+            : `${Math.abs(amount).toLocaleString()}P가 차감되었습니다.`,
+        href: "/mypage?tab=points",
+        source: {
+          collection: "points_transactions",
+          id: transactionId ?? undefined,
+          kind: "admin_adjust",
+        },
+        ...(transactionId ? { dedupeKey: `point:${transactionId}` } : {}),
+      });
+    } catch (error) {
+      console.error("[admin points adjust] create user notification failed", error);
     }
 
     // 3) 조정 후 잔액 반환

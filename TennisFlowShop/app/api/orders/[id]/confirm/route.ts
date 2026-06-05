@@ -5,6 +5,7 @@ import clientPromise from "@/lib/mongodb";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { calcOrderEarnPoints } from "@/lib/points.policy";
 import { grantPoints } from "@/lib/points.service";
+import { createUserNotification } from "@/lib/notifications/user-notification.service";
 import { bankLabelMap } from "@/lib/constants";
 import {
   canConfirmOrderByStatus,
@@ -219,12 +220,13 @@ export async function POST(
 
   // 0원이면 지급 자체 생략
   let pointsGranted = earnedPoints <= 0;
+  let orderRewardNotificationNeeded = false;
   if (earnedPoints > 0) {
     const methodLabel = paymentMethodLabel((order as any).paymentInfo);
     const refKey = `order_reward:${String(orderObjectId)}`;
 
     try {
-      await grantPoints(db, {
+      const grantResult = await grantPoints(db, {
         userId,
         amount: earnedPoints,
         type: "order_reward",
@@ -233,10 +235,27 @@ export async function POST(
         reason: `구매 확정 적립 (${methodLabel})`,
       });
       pointsGranted = true;
+      orderRewardNotificationNeeded = !grantResult.duplicated;
     } catch {
       // refKey 유니크로 중복 적립은 방지됨.
       // 다만 일시 오류로 적립이 실패했을 수도 있으므로, 이 API를 재호출하면 여기서 다시 시도(멱등) 가능.
       pointsGranted = false;
+    }
+  }
+
+  if (orderRewardNotificationNeeded) {
+    try {
+      await createUserNotification(db, {
+        userId,
+        type: "point_granted",
+        title: "구매확정 포인트가 적립되었습니다.",
+        body: `${earnedPoints.toLocaleString()}P가 적립되었습니다.`,
+        href: "/mypage?tab=points",
+        source: { collection: "orders", id: orderObjectId, kind: "order_reward" },
+        dedupeKey: `notification:order_reward:${orderObjectId.toString()}`,
+      });
+    } catch (error) {
+      console.error("[orders/confirm] create point notification failed", error);
     }
   }
 
