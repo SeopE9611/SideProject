@@ -21,6 +21,7 @@ import {
   Inbox,
   RefreshCcw,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
@@ -31,6 +32,12 @@ const placeholderSurfaceClass =
 const moreCardSurfaceClass =
   "group flex h-full items-center justify-center rounded-2xl border border-border bg-card p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7 shadow-sm transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md";
 const subtlePanelClass = "rounded-xl border border-border/60 bg-secondary/40";
+const normalizeImageSrc = (src?: string) => {
+  const imageSrc = src || "/placeholder.svg";
+  return imageSrc.startsWith("http") || imageSrc.startsWith("/")
+    ? imageSrc
+    : `/${imageSrc}`;
+};
 
 export type HItem = {
   _id: string;
@@ -268,11 +275,12 @@ export default function HorizontalProducts({
         >
           <div className="relative mb-4 aspect-square overflow-hidden rounded-xl border border-border/50 bg-secondary/40 bp-sm:mb-5 bp-md:mb-6">
             {p.images?.[0] ? (
-              <img
-                src={p.images[0] || "/placeholder.svg"}
+              <Image
+                src={normalizeImageSrc(p.images[0])}
                 alt={p.name}
-                className="h-full w-full object-contain p-3 transition-transform duration-500 group-hover:scale-105 bp-sm:p-4 bp-md:p-5"
-                loading="lazy"
+                fill
+                className="object-contain p-3 transition-transform duration-500 group-hover:scale-105 bp-sm:p-4 bp-md:p-5"
+                sizes="(max-width: 767px) calc((100vw - 36px) / 2), (max-width: 1199px) calc((100vw - 88px) / 3), 282px"
               />
             ) : (
               <div className="flex items-center justify-center h-full text-3xl bp-sm:text-4xl bp-md:text-5xl font-bold text-muted-foreground/50">
