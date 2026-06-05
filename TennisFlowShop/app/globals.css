@@ -213,6 +213,8 @@ body {
     "Apple SD Gothic Neo",
     "Malgun Gothic",
     sans-serif;
+  word-break: keep-all; /* CSS의 word-break: keep-all을 적용 */
+  overflow-wrap: break-word; /* (URL 등 긴 단어 넘침 방지) */
   @apply bg-background text-foreground transition-colors duration-300;
 }
 

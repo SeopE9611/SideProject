@@ -626,7 +626,7 @@ export default function Home() {
               </div>
               <div>
                 <h3 className="text-base bp-sm:text-lg font-semibold break-keep text-foreground">아카데미 / 레슨 신청</h3>
-                <p className="mt-2 text-sm leading-relaxed text-foreground/80">아카데미 클래스와 레슨 신청 안내를 확인합니다.</p>
+                <p className="mt-2 text-sm leading-relaxed text-foreground/80 break-keep">아카데미 클래스와 레슨 안내를 확인하세요.</p>
               </div>
             </Link>
 
@@ -649,7 +649,7 @@ export default function Home() {
               <div className="flex flex-1 flex-col gap-4">
                 <div>
                   <h3 className="text-base bp-sm:text-lg font-semibold break-keep text-foreground">라켓 검색</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-foreground/80">원하는 조건의 중고 라켓을 정교하게 좁혀보세요</p>
+                  <p className="mt-2 text-sm leading-relaxed text-foreground/80 break-keep">원하는 조건으로 중고 라켓을 정교하게 찾아보세요.</p>
                 </div>
               </div>
             </Link>
