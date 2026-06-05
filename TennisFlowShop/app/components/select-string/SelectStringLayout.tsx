@@ -248,6 +248,134 @@ export default function SelectStringLayout({
   const finalCtaLabel = ctaLabel ?? (flowType === "rental" ? "대여 계속하기" : isCartEditMode ? "이 스트링으로 변경" : "구매 계속하기");
   const finalCtaSubLabel = ctaSubLabel ?? (flowType === "rental" ? "선택 후 장착 정보 입력 단계로 이동합니다" : "선택한 스트링은 라켓과 함께 결제됩니다");
 
+  const renderSelectedRacketSummary = () => (
+    <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+      {/* Header */}
+      <div className="border-b border-border bg-secondary/30 px-5 py-4">
+        <div className="flex items-center gap-2">
+          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10">
+            <Check className="h-3.5 w-3.5 text-primary" />
+          </div>
+          <span className="text-sm font-semibold text-foreground">
+            {flowType === "rental" ? "선택된 라켓 (대여)" : "선택된 라켓"}
+          </span>
+        </div>
+      </div>
+
+      {/* Racket Info */}
+      <div className="p-5">
+        <div className="flex gap-4">
+          <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl bg-secondary/50">
+            {racket.image ? (
+              <Image
+                src={racket.image}
+                alt={racket.name}
+                fill
+                sizes="80px"
+                className="object-cover"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center">
+                <ShoppingBag className="h-8 w-8 text-muted-foreground/40" />
+              </div>
+            )}
+          </div>
+          <div className="min-w-0 flex-1">
+            <h3 className="line-clamp-2 text-sm font-semibold leading-tight text-foreground">
+              {racket.name}
+            </h3>
+            {flowType === "rental" && rentalPeriod && (
+              <p className="mt-1 text-xs text-muted-foreground">
+                대여 기간: <span className="font-medium text-foreground">{rentalPeriod}일</span>
+              </p>
+            )}
+            {flowType === "purchase" && racket.price != null && (
+              <div className="mt-1.5 flex items-baseline gap-2">
+                <span className="tabular-nums text-base font-bold text-foreground">
+                  {racket.price.toLocaleString()}원
+                </span>
+                {racket.regularPrice && racket.regularPrice > racket.price && (
+                  <span className="text-xs text-muted-foreground line-through">
+                    {racket.regularPrice.toLocaleString()}원
+                  </span>
+                )}
+                {racket.discountRate && racket.discountRate > 0 && (
+                  <Badge variant="destructive" className="text-[10px]">
+                    {racket.discountRate}% OFF
+                  </Badge>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Quantity Controls */}
+        {showQuantityControls && (
+          <div className="mt-5 rounded-xl border border-border bg-secondary/30 p-4">
+            <div className="mb-3 flex items-center justify-between">
+              <span className="text-sm font-medium text-foreground">번들 수량</span>
+              <span className="text-xs text-muted-foreground">
+                최대 {maxQty}개
+              </span>
+            </div>
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                라켓과 스트링이 동일 수량으로 결제됩니다
+              </p>
+              <div className="flex items-center gap-1">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setWorkCount((prev) => clampWorkCount(prev - 1))}
+                  disabled={workCount <= 1}
+                >
+                  <Minus className="h-3.5 w-3.5" />
+                </Button>
+                <Input
+                  type="number"
+                  inputMode="numeric"
+                  min={1}
+                  max={maxQty}
+                  value={workCount}
+                  onChange={(e) => setWorkCount(clampWorkCount(Number(e.target.value)))}
+                  className="h-8 w-14 text-center text-sm"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setWorkCount((prev) => clampWorkCount(prev + 1))}
+                  disabled={workCount >= maxQty}
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Skip Button */}
+        {onSkipString && (
+          <Button
+            variant="outline"
+            className="mt-4 w-full"
+            onClick={onSkipString}
+          >
+            스트링 없이 {flowType === "rental" ? "대여" : "구매"}하기
+          </Button>
+        )}
+
+        {/* Info Text */}
+        <p className="mt-4 text-center text-[11px] leading-relaxed text-muted-foreground">
+          스트링별 재고 현황은 실시간으로 변동될 수 있습니다
+        </p>
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-background">
       <SiteContainer variant="wide" className="py-6 bp-md:py-10">
@@ -340,6 +468,10 @@ export default function SelectStringLayout({
               </div>
             </div>
 
+            <div className="bp-lg:hidden">
+              {renderSelectedRacketSummary()}
+            </div>
+
             {/* Product Count */}
             <p className="text-sm text-muted-foreground">
               {isLoadingInitial ? (
@@ -356,7 +488,7 @@ export default function SelectStringLayout({
               <div className={cn(
                 "grid gap-4",
                 viewMode === "grid"
-                  ? "grid-cols-2 bp-md:grid-cols-3 bp-xl:grid-cols-4"
+                  ? "grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-3 bp-xl:grid-cols-4"
                   : "grid-cols-1"
               )}>
                 {Array.from({ length: 8 }).map((_, idx) => (
@@ -397,7 +529,7 @@ export default function SelectStringLayout({
                 <div className={cn(
                   "grid gap-4",
                   viewMode === "grid"
-                    ? "grid-cols-2 bp-md:grid-cols-3 bp-xl:grid-cols-4"
+                    ? "grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-3 bp-xl:grid-cols-4"
                     : "grid-cols-1 bp-md:grid-cols-2"
                 )}>
                   {filteredProducts.map((product: any) => {
@@ -452,132 +584,8 @@ export default function SelectStringLayout({
           </div>
 
           {/* Sidebar - Selected Racket Summary */}
-          <div className="bp-lg:sticky bp-lg:top-24 bp-lg:h-fit">
-            <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-              {/* Header */}
-              <div className="border-b border-border bg-secondary/30 px-5 py-4">
-                <div className="flex items-center gap-2">
-                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10">
-                    <Check className="h-3.5 w-3.5 text-primary" />
-                  </div>
-                  <span className="text-sm font-semibold text-foreground">
-                    {flowType === "rental" ? "선택된 라켓 (대여)" : "선택된 라켓"}
-                  </span>
-                </div>
-              </div>
-
-              {/* Racket Info */}
-              <div className="p-5">
-                <div className="flex gap-4">
-                  <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl bg-secondary/50">
-                    {racket.image ? (
-                      <Image
-                        src={racket.image}
-                        alt={racket.name}
-                        fill
-                        sizes="80px"
-                        className="object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center">
-                        <ShoppingBag className="h-8 w-8 text-muted-foreground/40" />
-                      </div>
-                    )}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <h3 className="line-clamp-2 text-sm font-semibold leading-tight text-foreground">
-                      {racket.name}
-                    </h3>
-                    {flowType === "rental" && rentalPeriod && (
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        대여 기간: <span className="font-medium text-foreground">{rentalPeriod}일</span>
-                      </p>
-                    )}
-                    {flowType === "purchase" && racket.price != null && (
-                      <div className="mt-1.5 flex items-baseline gap-2">
-                        <span className="tabular-nums text-base font-bold text-foreground">
-                          {racket.price.toLocaleString()}원
-                        </span>
-                        {racket.regularPrice && racket.regularPrice > racket.price && (
-                          <span className="text-xs text-muted-foreground line-through">
-                            {racket.regularPrice.toLocaleString()}원
-                          </span>
-                        )}
-                        {racket.discountRate && racket.discountRate > 0 && (
-                          <Badge variant="destructive" className="text-[10px]">
-                            {racket.discountRate}% OFF
-                          </Badge>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Quantity Controls */}
-                {showQuantityControls && (
-                  <div className="mt-5 rounded-xl border border-border bg-secondary/30 p-4">
-                    <div className="mb-3 flex items-center justify-between">
-                      <span className="text-sm font-medium text-foreground">번들 수량</span>
-                      <span className="text-xs text-muted-foreground">
-                        최대 {maxQty}개
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="text-xs text-muted-foreground leading-relaxed">
-                        라켓과 스트링이 동일 수량으로 결제됩니다
-                      </p>
-                      <div className="flex items-center gap-1">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => setWorkCount((prev) => clampWorkCount(prev - 1))}
-                          disabled={workCount <= 1}
-                        >
-                          <Minus className="h-3.5 w-3.5" />
-                        </Button>
-                        <Input
-                          type="number"
-                          inputMode="numeric"
-                          min={1}
-                          max={maxQty}
-                          value={workCount}
-                          onChange={(e) => setWorkCount(clampWorkCount(Number(e.target.value)))}
-                          className="h-8 w-14 text-center text-sm"
-                        />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => setWorkCount((prev) => clampWorkCount(prev + 1))}
-                          disabled={workCount >= maxQty}
-                        >
-                          <Plus className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Skip Button */}
-                {onSkipString && (
-                  <Button
-                    variant="outline"
-                    className="mt-4 w-full"
-                    onClick={onSkipString}
-                  >
-                    스트링 없이 {flowType === "rental" ? "대여" : "구매"}하기
-                  </Button>
-                )}
-
-                {/* Info Text */}
-                <p className="mt-4 text-center text-[11px] leading-relaxed text-muted-foreground">
-                  스트링별 재고 현황은 실시간으로 변동될 수 있습니다
-                </p>
-              </div>
-            </div>
+          <div className="hidden bp-lg:block bp-lg:sticky bp-lg:top-24 bp-lg:h-fit">
+            {renderSelectedRacketSummary()}
           </div>
         </div>
       </SiteContainer>

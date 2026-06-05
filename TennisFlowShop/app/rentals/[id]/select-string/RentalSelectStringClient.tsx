@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useMemo } from "react";
 import SelectStringLayout from "@/app/components/select-string/SelectStringLayout";
 import { racketBrandLabel } from "@/lib/constants";
+import { racketConditionLabel } from "@/lib/racket-condition";
 
 type RacketMini = {
   id: string;
@@ -25,8 +26,9 @@ export default function RentalSelectStringClient({
   // Format racket name for display
   const racketName = useMemo(() => {
     const brand = racketBrandLabel(racket.brand) ?? racket.brand;
-    const condition = racket.condition ? `상태 ${racket.condition}` : "";
-    return `${brand} ${racket.model}${condition ? ` · ${condition}` : ""}`;
+    const conditionLabel = racketConditionLabel(racket.condition);
+    const conditionText = conditionLabel ? `상태: ${conditionLabel}` : "";
+    return `${brand} ${racket.model}${conditionText ? ` · ${conditionText}` : ""}`;
   }, [racket.brand, racket.model, racket.condition]);
 
   // Navigate to checkout when string is selected

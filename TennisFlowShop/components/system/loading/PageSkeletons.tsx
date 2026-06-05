@@ -587,6 +587,32 @@ export function UsageCardListSkeleton({
 }
 
 export function SelectStringPageSkeleton() {
+  const selectedRacketSummary = (
+    <Card className="overflow-hidden rounded-2xl border-border bg-card shadow-sm">
+      <div className="border-b border-border bg-secondary/30 px-5 py-4">
+        <Skeleton className="h-5 w-32 rounded-lg" />
+      </div>
+      <CardContent className="space-y-5 p-5">
+        <div className="flex gap-4">
+          <Skeleton className="h-20 w-20 flex-shrink-0 rounded-xl" />
+          <div className="min-w-0 flex-1 space-y-2">
+            <Skeleton className="h-4 w-full rounded-lg" />
+            <Skeleton className="h-4 w-2/3 rounded-lg" />
+            <Skeleton className="h-5 w-28 rounded-lg" />
+          </div>
+        </div>
+        <div className="rounded-xl border border-border bg-secondary/30 p-4">
+          <div className="mb-3 flex items-center justify-between">
+            <Skeleton className="h-4 w-20 rounded-lg" />
+            <Skeleton className="h-4 w-12 rounded-lg" />
+          </div>
+          <Skeleton className="h-10 w-full rounded-lg" />
+        </div>
+        <Skeleton className="h-10 w-full rounded-lg" />
+      </CardContent>
+    </Card>
+  );
+
   return (
     <div className="min-h-screen bg-background">
       <SiteContainer variant="wide" className="py-6 bp-md:py-10">
@@ -608,9 +634,11 @@ export function SelectStringPageSkeleton() {
               </div>
             </div>
 
+            <div className="bp-lg:hidden">{selectedRacketSummary}</div>
+
             <Skeleton className="h-5 w-36 rounded-lg" />
 
-            <div className="grid grid-cols-2 gap-4 bp-md:grid-cols-3 bp-xl:grid-cols-4">
+            <div className="grid grid-cols-1 gap-4 bp-sm:grid-cols-2 bp-lg:grid-cols-3 bp-xl:grid-cols-4">
               {Array.from({ length: 8 }).map((_, index) => (
                 <Card key={index} className="overflow-hidden rounded-2xl border-border bg-card">
                   <Skeleton className="aspect-square w-full" />
@@ -643,30 +671,8 @@ export function SelectStringPageSkeleton() {
             </div>
           </div>
 
-          <div className="space-y-4 bp-lg:sticky bp-lg:top-24 bp-lg:h-fit">
-            <Card className="overflow-hidden rounded-2xl border-border bg-card shadow-sm">
-              <div className="border-b border-border bg-secondary/30 px-5 py-4">
-                <Skeleton className="h-5 w-32 rounded-lg" />
-              </div>
-              <CardContent className="space-y-5 p-5">
-                <div className="flex gap-4">
-                  <Skeleton className="h-20 w-20 flex-shrink-0 rounded-xl" />
-                  <div className="min-w-0 flex-1 space-y-2">
-                    <Skeleton className="h-4 w-full rounded-lg" />
-                    <Skeleton className="h-4 w-2/3 rounded-lg" />
-                    <Skeleton className="h-5 w-28 rounded-lg" />
-                  </div>
-                </div>
-                <div className="rounded-xl border border-border bg-secondary/30 p-4">
-                  <div className="mb-3 flex items-center justify-between">
-                    <Skeleton className="h-4 w-20 rounded-lg" />
-                    <Skeleton className="h-4 w-12 rounded-lg" />
-                  </div>
-                  <Skeleton className="h-10 w-full rounded-lg" />
-                </div>
-                <Skeleton className="h-10 w-full rounded-lg" />
-              </CardContent>
-            </Card>
+          <div className="hidden bp-lg:block bp-lg:sticky bp-lg:top-24 bp-lg:h-fit">
+            {selectedRacketSummary}
           </div>
         </div>
       </SiteContainer>
