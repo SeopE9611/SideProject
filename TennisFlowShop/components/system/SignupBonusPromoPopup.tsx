@@ -126,7 +126,6 @@ export default function SignupBonusPromoPopup({
                 : "지금 가입하면 자동으로 지급됩니다."}
             </div>
           </div>
-          {/* <img src="/funny.png" alt="프로모션" className="absolute right-2 top-1/2 -translate-y-1/2 h-40 w-auto opacity-95" /> */}
         </div>
 
         <div className="p-6 space-y-4">
