@@ -33,6 +33,34 @@ type ProductDoc = {
   isDeleted?: boolean;
 };
 
+const productListProjection = {
+  name: 1,
+  brand: 1,
+  price: 1,
+  images: 1,
+  image: 1,
+  imageUrl: 1,
+  thumbnail: 1,
+  shortDescription: 1,
+  material: 1,
+  gauge: 1,
+  gaugeOptions: 1,
+  gaugeInventories: 1,
+  color: 1,
+  colorOptions: 1,
+  colorInventories: 1,
+  variantInventories: 1,
+  mountingFee: 1,
+  shippingFee: 1,
+  features: 1,
+  tags: 1,
+  inventory: 1,
+  isNew: 1,
+  ratingCount: 1,
+  ratingAvg: 1,
+  ratingAverage: 1,
+};
+
 export { POST } from "@/app/api/admin/products/route";
 
 function escapeRegExp(value: string) {
@@ -207,6 +235,7 @@ export async function GET(req: NextRequest) {
         collection.countDocuments(composed),
         collection
           .find(composed)
+          .project(productListProjection)
           .sort(sortObj)
           .skip(skip)
           .limit(limit)
