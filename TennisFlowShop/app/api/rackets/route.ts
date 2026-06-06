@@ -5,6 +5,11 @@ import { parseBenefitFilters } from "@/lib/benefit-labels";
 import { createApiPerfLogger } from "@/lib/api/perf";
 
 export const dynamic = "force-dynamic";
+
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 function normalizeRacketMarketing(value: any) {
   return {
     isFeatured: value?.isFeatured === true,
@@ -52,7 +57,7 @@ export async function GET(req: Request) {
   };
 
   // 브랜드(대소문자 무시) — 예: ?brand=yonex
-  if (brand) q.brand = { $regex: brand, $options: "i" };
+  if (brand) q.brand = { $regex: escapeRegExp(brand), $options: "i" };
 
   // 상태등급 필터 — 예: ?cond=A
   if (cond === "A" || cond === "B" || cond === "C") q.condition = cond;
@@ -72,12 +77,13 @@ export async function GET(req: Request) {
 
   // 키워드 검색: model(기본) + brand(보조)
   if (keyword) {
+    const escapedKeyword = escapeRegExp(keyword);
     q.$and = [
       ...(q.$and ?? []),
       {
         $or: [
-          { model: { $regex: keyword, $options: "i" } },
-          { brand: { $regex: keyword, $options: "i" } },
+          { model: { $regex: escapedKeyword, $options: "i" } },
+          { brand: { $regex: escapedKeyword, $options: "i" } },
         ],
       },
     ];
