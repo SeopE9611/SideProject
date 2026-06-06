@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import useSWR from "swr";
+import useSWRInfinite from "swr/infinite";
 import RacketCard from "./RacketCard";
 import RacketFilterPanel from "./RacketFilterPanel";
 import { SkeletonProductCard } from "@/app/products/components/SkeletonProductCard";
@@ -66,10 +66,10 @@ type RacketItem = {
   };
 };
 
-// /api/rackets 응답: 기존(배열) 또는 withTotal=1 ({ items, total })
-type RacketsApiResponse =
-  | RacketItem[]
-  | { items: RacketItem[]; total: number; page?: number; pageSize?: number };
+// withTotal=1 응답은 페이지별 목록과 필터 조건 기준 전체 개수를 포함한다.
+type RacketsApiResponse = { items: RacketItem[]; total: number };
+
+const RACKETS_PAGE_SIZE = 12;
 
 const brands = RACKET_BRANDS.map(({ value, label }) => ({ value, label }));
 
@@ -217,10 +217,19 @@ export default function FilterableRacketList({
     if (serializedExposure) query.set("exposure", serializedExposure);
   }
   query.set("sort", sortOption || "latest");
-  const key = `/api/rackets${query.toString() ? `?${query.toString()}` : ""}`;
-  const { data, isLoading, isValidating, error, mutate } =
-    useSWR<RacketsApiResponse>(key, fetcher, {
-      keepPreviousData: true,
+  const getKey = (
+    pageIndex: number,
+    previousPageData: RacketsApiResponse | null,
+  ) => {
+    if (previousPageData && previousPageData.items.length === 0) return null;
+
+    const pageQuery = new URLSearchParams(query);
+    pageQuery.set("page", String(pageIndex + 1));
+    pageQuery.set("limit", String(RACKETS_PAGE_SIZE));
+    return `/api/rackets?${pageQuery.toString()}`;
+  };
+  const { data, size, setSize, isLoading, isValidating, error, mutate } =
+    useSWRInfinite<RacketsApiResponse>(getKey, fetcher, {
       revalidateOnFocus: false, // 탭/창 복귀 시 재요청 방지
       revalidateOnReconnect: false, // (원하면 true 유지 가능)
     });
@@ -232,7 +241,7 @@ export default function FilterableRacketList({
    * 중요:
    * filterKey에는 "네트워크 재요청(SWR key 변경)"을 유발하는 값을 넣는다.
    * brand/cond/q/rentOnly에 더해 priceMin/priceMax/sortOption도 서버 필터/정렬로
-   * 처리하므로 변경 시 전환 스켈레톤과 visibleCount 리셋을 동일하게 적용한다.
+   * 처리하므로 변경 시 전환 스켈레톤을 동일하게 적용한다.
    */
   const filterKey = useMemo(() => {
     return [
@@ -288,35 +297,19 @@ export default function FilterableRacketList({
   const isInitialLikeLoading = showInlineLoadingSkeleton;
   const isBackgroundRefreshing = !!data && (isValidating || isUiTransitioning);
 
-  // 배열/객체 응답을 rackets/total로 통일
-  const { rackets, total } = useMemo(() => {
-    if (!data)
-      return { rackets: undefined as RacketItem[] | undefined, total: 0 };
-    if (Array.isArray(data)) return { rackets: data, total: data.length };
-    return { rackets: data.items ?? [], total: Number(data.total ?? 0) };
-  }, [data]);
-
-  // 서버에서 필터/정렬이 반영된 전체 결과를 받고, 클라이언트에서는 표시 개수만 제어한다.
   const products = useMemo(
-    () => (Array.isArray(rackets) ? rackets : []),
-    [rackets],
+    () => data?.flatMap((page) => page.items ?? []) ?? [],
+    [data],
   );
-  const [visibleCount, setVisibleCount] = useState(12);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const hasMore = products.length > visibleCount;
-  const visibleProducts = useMemo(
-    () => products.slice(0, visibleCount),
-    [products, visibleCount],
-  );
+  const total = Number(data?.[0]?.total ?? 0);
+  const visibleProducts = products;
+  const hasMore = products.length < total;
+  const isLoadingMore = isValidating && !!data && size > data.length;
 
   const loadMore = useCallback(() => {
     if (isLoadingMore || !hasMore) return;
-    setIsLoadingMore(true);
-    window.setTimeout(() => {
-      setVisibleCount((prev) => Math.min(prev + 12, products.length));
-      setIsLoadingMore(false);
-    }, 120);
-  }, [isLoadingMore, hasMore, products.length]);
+    void setSize((currentSize) => currentSize + 1);
+  }, [isLoadingMore, hasMore, setSize]);
 
   // 검색 제출
   const handleSearchSubmit = useCallback(() => {
@@ -353,11 +346,6 @@ export default function FilterableRacketList({
   const handleClearInput = useCallback(() => {
     setSearchQuery("");
   }, []);
-
-  useEffect(() => {
-    setVisibleCount(12);
-    setIsLoadingMore(false);
-  }, [filterKey]);
 
   useEffect(() => {
     const mql = window.matchMedia("(min-width: 1200px)");
