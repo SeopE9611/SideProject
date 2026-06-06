@@ -290,10 +290,53 @@ const INDEX_SPECS = {
       options: {},
     },
   ],
+  products: [
+    {
+      name: "idx_products_public_count",
+      keys: { isDeleted: 1 },
+      options: {},
+    },
+    {
+      name: "idx_products_public_price",
+      keys: { price: 1 },
+      options: {},
+    },
+    {
+      name: "idx_products_public_reviews",
+      keys: { ratingCount: -1, ratingAvg: -1, _id: -1 },
+      options: {},
+    },
+  ],
   used_rackets: [
     {
       name: "status_1_createdAt_-1",
       keys: { status: 1, createdAt: -1 },
+      options: {},
+    },
+    {
+      name: "idx_used_rackets_public_latest",
+      keys: { createdAt: -1, _id: -1 },
+      options: {},
+    },
+    {
+      name: "idx_used_rackets_public_price",
+      keys: { price: 1, _id: -1 },
+      options: {},
+    },
+    {
+      name: "idx_used_rackets_public_reviews",
+      keys: { reviewCount: -1, ratingCount: -1, createdAt: -1, _id: -1 },
+      options: {},
+    },
+    {
+      name: "idx_used_rackets_public_sales",
+      keys: {
+        purchaseCount: -1,
+        salesCount: -1,
+        orderCount: -1,
+        createdAt: -1,
+        _id: -1,
+      },
       options: {},
     },
     {

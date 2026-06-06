@@ -116,13 +116,11 @@ async function ensureIndexes(db, collectionName, specs) {
 }
 
 /**
- * getDb() 런타임 보장 범위와 동일하게 유지해야 하는 인덱스 집합.
+ * getDb() 런타임 보장 범위와 배포 전 보장할 공개 목록 인덱스 집합.
  *
  * 중요:
  * - production에서는 getDb()가 요청 경로에서 인덱스 완료를 기다리지 않는다.
- * - 그래서 이 스크립트가 "배포 전 선반영" 책임을 실질적으로 맡는다.
- * - 아래 범위가 getDb()의 ensure*Indexes 범위와 어긋나면,
- *   첫 요청이 인덱스 미보장 상태로 들어와 성능/정합성 리스크가 생길 수 있다.
+ * - 그래서 이 스크립트가 런타임 인덱스와 공개 목록 성능 인덱스의 "배포 전 선반영" 책임을 맡는다.
  */
 const INDEX_SPECS = {
   user_notifications: [
@@ -416,10 +414,53 @@ const INDEX_SPECS = {
       options: {},
     },
   ],
+  products: [
+    {
+      name: "idx_products_public_count",
+      keys: { isDeleted: 1 },
+      options: {},
+    },
+    {
+      name: "idx_products_public_price",
+      keys: { price: 1 },
+      options: {},
+    },
+    {
+      name: "idx_products_public_reviews",
+      keys: { ratingCount: -1, ratingAvg: -1, _id: -1 },
+      options: {},
+    },
+  ],
   used_rackets: [
     {
       name: "status_1_createdAt_-1",
       keys: { status: 1, createdAt: -1 },
+      options: {},
+    },
+    {
+      name: "idx_used_rackets_public_latest",
+      keys: { createdAt: -1, _id: -1 },
+      options: {},
+    },
+    {
+      name: "idx_used_rackets_public_price",
+      keys: { price: 1, _id: -1 },
+      options: {},
+    },
+    {
+      name: "idx_used_rackets_public_reviews",
+      keys: { reviewCount: -1, ratingCount: -1, createdAt: -1, _id: -1 },
+      options: {},
+    },
+    {
+      name: "idx_used_rackets_public_sales",
+      keys: {
+        purchaseCount: -1,
+        salesCount: -1,
+        orderCount: -1,
+        createdAt: -1,
+        _id: -1,
+      },
       options: {},
     },
     {
@@ -650,7 +691,7 @@ try {
     ]);
 
   console.log(
-    "[ensure-runtime-indexes] getDb() 런타임 범위와 동일한 인덱스 선반영이 완료되었습니다.",
+    "[ensure-runtime-indexes] 런타임 및 공개 목록 인덱스 선반영이 완료되었습니다.",
   );
 } finally {
   await client.close();
