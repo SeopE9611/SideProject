@@ -97,8 +97,9 @@ export async function GET(req: Request) {
     }
   }
 
-  // 정렬 & 개수 제한
+  // 정렬 & 페이지/개수 제한
   const sortParam = searchParams.get("sort") ?? "latest";
+  const pageParam = Number(searchParams.get("page") ?? 0);
   const limitParam = Number(searchParams.get("limit") ?? 0);
 
   let sort: Sort;
@@ -121,6 +122,10 @@ export async function GET(req: Request) {
     sort = { createdAt: -1, _id: -1 };
   }
 
+  const page =
+    Number.isFinite(pageParam) && pageParam >= 1
+      ? Math.floor(pageParam)
+      : undefined;
   const limit =
     Number.isFinite(limitParam) && limitParam > 0
       ? Math.min(limitParam, 50)
@@ -145,6 +150,8 @@ export async function GET(req: Request) {
   });
 
   cursor = cursor.sort(sort);
+  // 기존 limit-only 요청은 그대로 유지하고, page/limit이 모두 명시된 경우에만 skip 적용
+  if (page && limit) cursor = cursor.skip((page - 1) * limit);
   if (limit) cursor = cursor.limit(limit);
 
   // withTotal=1이면 total까지 같이 내려주기 위해 countDocuments를 병렬로 수행
