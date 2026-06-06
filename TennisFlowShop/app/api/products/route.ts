@@ -35,6 +35,10 @@ type ProductDoc = {
 
 export { POST } from "@/app/api/admin/products/route";
 
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 function normalizeFeatureFilterParam(value: string | null): number | null {
   if (!value) return null;
   const n = Number(value);
@@ -54,38 +58,56 @@ export async function GET(req: NextRequest) {
       const query = params.get("query")?.trim() || "";
       const client = await perf.measure("dbConnect", clientPromise);
       const db = client.db();
-      // isDeleted 플래그가 true인 문서는 제외
-      const products = await perf.measure("previewQuery", () =>
-        db
-          .collection<ProductDoc>("products")
-          .find({ isDeleted: { $ne: true } })
-          .toArray(),
-      );
-
-      const initialsQuery = getHangulInitials(query);
+      const collection = db.collection<ProductDoc>("products");
+      const previewProjection = { name: 1, price: 1, images: 1 };
       const isChosungOnly = /^[ㄱ-ㅎ]+$/.test(query); // 초성만 입력된 경우
 
-      const filtered = products.filter((product) => {
-        const name = product.name ?? "";
-        const nameInitials = getHangulInitials(name);
-
-        if (isChosungOnly) {
-          // 초성 검색일 경우
-          return nameInitials.includes(initialsQuery);
-        } else {
-          // 일반 문자열 검색일 경우
-          return name.includes(query);
+      const products = await perf.measure("previewQuery", async () => {
+        // isDeleted 플래그가 true인 문서는 제외
+        if (!query) {
+          return collection
+            .find({ isDeleted: { $ne: true } })
+            .project(previewProjection)
+            .sort({ _id: -1 })
+            .limit(10)
+            .toArray();
         }
+
+        if (!isChosungOnly) {
+          return collection
+            .find({
+              isDeleted: { $ne: true },
+              name: { $regex: escapeRegExp(query), $options: "i" },
+            })
+            .project(previewProjection)
+            .limit(10)
+            .toArray();
+        }
+
+        const initialsQuery = getHangulInitials(query);
+        const candidates = await collection
+          .find({ isDeleted: { $ne: true } })
+          .project(previewProjection)
+          .sort({ _id: -1 })
+          .limit(500)
+          .toArray();
+
+        return candidates
+          .filter((product) =>
+            getHangulInitials(product.name ?? "").includes(initialsQuery),
+          )
+          .slice(0, 10);
       });
+
       const response = NextResponse.json(
-        filtered.slice(0, 10).map((product) => ({
+        products.map((product) => ({
           _id: product._id.toString(),
           name: product.name,
           price: product.price,
           image: product.images?.[0] ?? null,
         })),
       );
-      perf.log({ preview: true, resultCount: filtered.length });
+      perf.log({ preview: true, resultCount: products.length });
       return response;
     }
 
