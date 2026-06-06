@@ -355,7 +355,7 @@ export default async function AcademyPage() {
             <div className="relative hidden lg:block">
               <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-muted/20 shadow-xl">
                 <Image
-                  src="/brand/academy-hero-tennis-court.png"
+                  src="/brand/academy-hero-tennis-court.webp"
                   alt="도깨비테니스 아카데미 레슨 장면"
                   width={1122}
                   height={1402}
