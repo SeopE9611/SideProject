@@ -164,8 +164,10 @@ export async function GET(req: Request) {
   // - cursor에는 limit이 걸릴 수 있지만, total은 "필터 조건(q)" 기준 전체 개수여야 하므로 countDocuments(q)를 별도로 사용
   const [docs, total] = await perf.measure("query", () =>
     Promise.all([
-      cursor.toArray(),
-      withTotal ? col.countDocuments(q) : Promise.resolve(0),
+      perf.measure("rackets.find", () => cursor.toArray()),
+      withTotal
+        ? perf.measure("rackets.count", () => col.countDocuments(q))
+        : Promise.resolve(0),
     ]),
   );
 

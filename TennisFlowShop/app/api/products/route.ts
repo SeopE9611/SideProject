@@ -232,14 +232,18 @@ export async function GET(req: NextRequest) {
 
     const [total, itemsRaw] = await perf.measure("query", () =>
       Promise.all([
-        collection.countDocuments(composed),
-        collection
-          .find(composed)
-          .project(productListProjection)
-          .sort(sortObj)
-          .skip(skip)
-          .limit(limit)
-          .toArray(),
+        perf.measure("products.count", () =>
+          collection.countDocuments(composed),
+        ),
+        perf.measure("products.find", () =>
+          collection
+            .find(composed)
+            .project(productListProjection)
+            .sort(sortObj)
+            .skip(skip)
+            .limit(limit)
+            .toArray(),
+        ),
       ]),
     );
 
