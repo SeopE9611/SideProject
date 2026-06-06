@@ -178,7 +178,7 @@ export async function GET(req: NextRequest) {
     const comfortScore = normalizeFeatureFilterParam(comfort);
     if (comfortScore !== null)
       filter["features.comfort"] = { $gte: comfortScore };
-    if (q) filter.name = { $regex: q, $options: "i" };
+    if (q) filter.name = { $regex: escapeRegExp(q), $options: "i" };
     if (material) filter.material = material;
     if (isFeatured === "true") filter["inventory.isFeatured"] = true;
     const exposureFilters = parseBenefitFilters(exposure);
