@@ -11,6 +11,7 @@ import StringInfoEditForm from "@/app/features/stringing-applications/components
 import StringingApplicationHistory from "@/app/features/stringing-applications/components/StringingApplicationHistory";
 import { normalizeCollection } from "@/app/features/stringing-applications/lib/collection";
 import {
+  collectionMethodLabel,
   getStringingAddressReadLabels,
   orderShippingMethodLabel,
 } from "@/app/features/stringing-applications/lib/fulfillment-labels";
@@ -74,6 +75,7 @@ import {
   CheckCircle2,
   Clock,
   CreditCard,
+  Copy,
   Edit3,
   Mail,
   MapPin,
@@ -1002,10 +1004,10 @@ export default function StringingApplicationDetailClient({
     linkedDocs.length === 0
       ? undefined
       : linkedDocs.length === 2
-        ? "이 신청은 주문 및 대여와 연결되어 있습니다. 연결 문서에서 상태/취소/운영 흐름을 함께 확인하세요."
+        ? "이 신청은 주문 및 대여와 연결되어 있습니다. 연결 문서의 결제·배송·취소 흐름을 함께 확인하세요."
         : data.orderId
-          ? "이 신청은 주문에서 생성된 신청입니다. 최종 취소/운영 처리는 주문 상세와 함께 확인하세요."
-          : "이 신청은 대여에서 생성된 신청입니다. 대여 상세와 함께 전체 흐름을 확인하세요.";
+          ? "이 신청은 주문에서 생성되었습니다. 주문 상세에서 결제·배송·최종 취소 흐름을 함께 확인하세요."
+          : "이 신청은 대여에서 생성되었습니다. 대여 상세에서 결제·배송·취소 흐름을 함께 확인하세요.";
 
   const paymentMethodRaw = packageApplied
     ? linkedPayment?.method
@@ -1149,23 +1151,21 @@ export default function StringingApplicationDetailClient({
                     "현재 기준으로 즉시 필요한 추가 조치는 없습니다.",
                 };
   const recommendedActions = [
+    { label: "결제 정보 확인", href: "#admin-stringing-payment", show: true },
     {
-      label: "상태 변경 위치로 이동",
-      href: "#admin-stringing-cancel",
-      show: true,
-    },
-    { label: "요청사항 확인", href: "#admin-stringing-request", show: true },
-    { label: "스트링/장력 확인", href: "#admin-stringing-spec", show: true },
-    {
-      label: "배송/방문/자가발송 정보 확인",
+      label: "배송/입고 정보 확인",
       href: "#admin-stringing-shipping",
       show: true,
     },
-    { label: "결제 정보 확인", href: "#admin-stringing-payment", show: true },
     {
       label: "취소 요청 확인",
-      href: "#admin-stringing-cancel",
+      href: "#admin-stringing-cancel-request",
       show: hasCancelRequest,
+    },
+    {
+      label: "연결 문서 확인",
+      href: "#admin-stringing-linked-docs",
+      show: hasLinkedDocs,
     },
     { label: "처리 이력 보기", href: "#admin-stringing-history", show: true },
   ].filter((action) => action.show);
@@ -1221,7 +1221,7 @@ export default function StringingApplicationDetailClient({
         : null;
 
   const summaryCardClass =
-    "flex min-h-[112px] flex-col items-start justify-start gap-1 rounded-xl border border-border/60 bg-card/70 p-3.5 backdrop-blur-sm";
+    "flex min-h-[108px] flex-col items-start justify-between gap-2 rounded-xl border border-border/70 bg-background/80 p-4 shadow-sm";
   const summaryBadgeClass = cn(
     badgeBase,
     badgeSizeSm,
@@ -1231,10 +1231,10 @@ export default function StringingApplicationDetailClient({
     ? "grid gap-4 xl:grid-cols-12"
     : "grid gap-4 bp-md:grid-cols-2 bp-sm:gap-6";
   const detailCardClass = isAdmin
-    ? "overflow-hidden border-0 bg-muted/30 shadow-xl ring-ring"
+    ? "overflow-hidden border border-border/70 bg-card/80 shadow-sm"
     : "border border-border shadow-xl bg-card overflow-hidden";
   const detailCardHeaderClass = isAdmin
-    ? "bg-muted/30 border-b pb-3"
+    ? "border-b border-border/70 bg-muted/30 pb-3"
     : "bg-muted/50 border-b border-border pb-3";
   return (
     <main
@@ -1297,20 +1297,58 @@ export default function StringingApplicationDetailClient({
                           : "text-xl font-bold sm:text-2xl bp-sm:text-3xl",
                       )}
                     >
-                      {isAdmin ? "스트링 신청 관리" : "교체서비스 신청 상세"}
-                    </h1>
-                    <p
-                      className="mt-1 truncate text-sm text-foreground/75"
-                      title={data.id}
-                    >
                       {isAdmin
-                        ? `신청 번호: #${toShortApplicationId(data.id)}`
-                        : `신청번호: #${toShortApplicationId(data.id)}`}
-                    </p>
+                        ? "교체서비스 신청 상세 관리"
+                        : "교체서비스 신청 상세"}
+                    </h1>
+                    {isAdmin ? (
+                      <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-sm text-foreground/75">
+                        <span className="font-medium text-foreground/90">
+                          신청 ID: #{toShortApplicationId(data.id)}
+                        </span>
+                        <span
+                          className="max-w-full truncate font-mono text-xs"
+                          title={data.id}
+                        >
+                          {data.id}
+                        </span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 gap-1 px-2 text-xs"
+                          aria-label="전체 신청 ID 복사"
+                          onClick={() => {
+                            void navigator.clipboard
+                              .writeText(data.id)
+                              .then(() =>
+                                showSuccessToast("신청 ID가 복사되었습니다."),
+                              )
+                              .catch(() => {});
+                          }}
+                        >
+                          <Copy className="h-3.5 w-3.5" />
+                          복사
+                        </Button>
+                      </div>
+                    ) : (
+                      <p
+                        className="mt-1 truncate text-sm text-foreground/75"
+                        title={data.id}
+                      >
+                        신청번호: #{toShortApplicationId(data.id)}
+                      </p>
+                    )}
                   </div>
                 </div>
                 <TooltipProvider>
-                  <div className="grid w-full grid-cols-1 gap-2 bp-sm:grid-cols-2 bp-lg:flex bp-lg:w-auto bp-lg:flex-wrap bp-lg:items-center bp-lg:justify-end">
+                  <div
+                    className={cn(
+                      "grid w-full grid-cols-1 gap-2 bp-sm:grid-cols-2 bp-lg:flex bp-lg:w-auto bp-lg:flex-wrap bp-lg:items-center bp-lg:justify-end",
+                      isAdmin &&
+                        "bp-sm:[&>*:first-child]:col-span-2 bp-lg:[&>*:first-child]:col-span-1",
+                    )}
+                  >
                     <Button
                       asChild
                       variant="outline"
@@ -1456,7 +1494,7 @@ export default function StringingApplicationDetailClient({
                 className={cn(
                   "grid grid-cols-1 gap-3 bp-sm:grid-cols-2",
                   isAdmin
-                    ? "md:grid-cols-2 xl:grid-cols-5"
+                    ? "md:grid-cols-3 xl:grid-cols-6"
                     : "bp-lg:grid-cols-4 bp-sm:gap-4 bp-lg:gap-6",
                 )}
               >
@@ -1583,6 +1621,33 @@ export default function StringingApplicationDetailClient({
                     </p>
                   </div>
                 )}
+                {isAdmin && (
+                  <div className={summaryCardClass}>
+                    <div className="flex items-center space-x-2">
+                      <Truck className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm font-medium text-muted-foreground">
+                        입고 / 반환
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      <Badge variant="neutral" className={summaryBadgeClass}>
+                        {inboundRequired
+                          ? collectionMethodLabel(collectionMethodRaw)
+                          : "별도 입고 불필요"}
+                      </Badge>
+                      {shouldShowReturnMethod && (
+                        <Badge
+                          className={cn(
+                            summaryBadgeClass,
+                            shippingMethodBadge.color,
+                          )}
+                        >
+                          반환 {shippingMethodBadge.label}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div
@@ -1679,85 +1744,64 @@ export default function StringingApplicationDetailClient({
               )}
               {/* 취소 요청 상태 안내 (관리자용) */}
               {isAdmin && cancelInfo && (
-                <AdminCancelRequestCard
-                  badgeLabel={cancelInfo.badgeLabel}
-                  description={cancelInfo.description}
-                  reasonSummary={cancelInfo.reasonSummary}
-                  tone={cancelInfo.tone}
-                  rightSlot={
-                    <div className="rounded-md border border-border/60 bg-background/70 px-3 py-2">
-                      <p className="text-xs font-medium text-muted-foreground">
-                        환불 계좌 정보
-                      </p>
-                      {needsCancelRefundAccount || cancelInfo.refundAccount ? (
-                        <dl className="mt-2 space-y-1 text-xs text-foreground">
-                          <div className="grid gap-1 sm:grid-cols-[72px_minmax(0,1fr)] sm:gap-2">
-                            <dt className="break-keep text-muted-foreground">
-                              환불 은행
-                            </dt>
-                            <dd>
-                              {cancelInfo.refundAccount?.bankLabel || "미입력"}
-                            </dd>
-                          </div>
-                          <div className="grid gap-1 sm:grid-cols-[72px_minmax(0,1fr)] sm:gap-2">
-                            <dt className="break-keep text-muted-foreground">
-                              계좌번호
-                            </dt>
-                            <dd className="break-words font-mono">
-                              {cancelInfo.refundAccount?.account || "미입력"}
-                            </dd>
-                          </div>
-                          <div className="grid gap-1 sm:grid-cols-[72px_minmax(0,1fr)] sm:gap-2">
-                            <dt className="break-keep text-muted-foreground">
-                              예금주
-                            </dt>
-                            <dd>
-                              {cancelInfo.refundAccount?.holder || "미입력"}
-                            </dd>
-                          </div>
-                        </dl>
-                      ) : (
-                        <p className="mt-2 text-xs text-muted-foreground">
-                          이 취소 요청은 환불계좌 입력 대상이 아닙니다. 카드
-                          결제/패키지/결제대기 건은 별도 계좌 정보 없이
-                          처리됩니다.
+                <div
+                  id="admin-stringing-cancel-request"
+                  className="scroll-mt-6"
+                >
+                  <AdminCancelRequestCard
+                    badgeLabel={cancelInfo.badgeLabel}
+                    description={cancelInfo.description}
+                    reasonSummary={cancelInfo.reasonSummary}
+                    tone={cancelInfo.tone}
+                    className="border-solid border-border/80 bg-background/90 shadow-sm"
+                    rightSlot={
+                      <div className="rounded-md border border-border/60 bg-background/70 px-3 py-2">
+                        <p className="text-xs font-medium text-muted-foreground">
+                          환불 계좌 정보
                         </p>
-                      )}
-                    </div>
-                  }
-                />
+                        {needsCancelRefundAccount ||
+                        cancelInfo.refundAccount ? (
+                          <dl className="mt-2 space-y-1 text-xs text-foreground">
+                            <div className="grid gap-1 sm:grid-cols-[72px_minmax(0,1fr)] sm:gap-2">
+                              <dt className="break-keep text-muted-foreground">
+                                환불 은행
+                              </dt>
+                              <dd>
+                                {cancelInfo.refundAccount?.bankLabel ||
+                                  "미입력"}
+                              </dd>
+                            </div>
+                            <div className="grid gap-1 sm:grid-cols-[72px_minmax(0,1fr)] sm:gap-2">
+                              <dt className="break-keep text-muted-foreground">
+                                계좌번호
+                              </dt>
+                              <dd className="break-words font-mono">
+                                {cancelInfo.refundAccount?.account || "미입력"}
+                              </dd>
+                            </div>
+                            <div className="grid gap-1 sm:grid-cols-[72px_minmax(0,1fr)] sm:gap-2">
+                              <dt className="break-keep text-muted-foreground">
+                                예금주
+                              </dt>
+                              <dd>
+                                {cancelInfo.refundAccount?.holder || "미입력"}
+                              </dd>
+                            </div>
+                          </dl>
+                        ) : (
+                          <p className="mt-2 text-xs text-muted-foreground">
+                            이 취소 요청은 환불계좌 입력 대상이 아닙니다. 카드
+                            결제/패키지/결제대기 건은 별도 계좌 정보 없이
+                            처리됩니다.
+                          </p>
+                        )}
+                      </div>
+                    }
+                  />
+                </div>
               )}
             </div>
 
-            {isAdmin && linkedDocs.length > 0 && (
-              <LinkedDocsCard
-                docs={linkedDocs}
-                description={linkedDocsDescription}
-                className="mb-4"
-              />
-            )}
-
-            {isAdmin && (data.orderId || data.rentalId) && (
-              <Card className="mb-8 border border-primary/20 bg-primary/5">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-base">
-                    연결 업무 기준 관리자 할 일
-                  </CardTitle>
-                  <CardDescription>
-                    {linkedContextLabel} 문맥에서 현재 단계와 다음 액션을
-                    안내합니다.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-1 text-sm">
-                  <p className="text-muted-foreground">
-                    현재 단계: {appGuide.stage}
-                  </p>
-                  <p className="font-medium">
-                    다음 할 일: {appGuide.nextAction}
-                  </p>
-                </CardContent>
-              </Card>
-            )}
             {isAdmin && (
               <Card
                 className={cn(
@@ -1769,7 +1813,7 @@ export default function StringingApplicationDetailClient({
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div>
                       <CardTitle className="text-base font-semibold">
-                        지금 처리할 일
+                        우선 처리 안내
                       </CardTitle>
                       <CardDescription className="mt-1 text-sm text-foreground/75">
                         {nextActionGuide.title}
@@ -1821,21 +1865,9 @@ export default function StringingApplicationDetailClient({
                   </div>
                   <div className="rounded-lg border border-border/60 bg-background/70 p-3">
                     <p className="text-sm font-semibold text-foreground">
-                      처리 정보
+                      최근 처리 이력
                     </p>
                     <div className="mt-2 grid gap-1.5 text-xs leading-relaxed text-muted-foreground sm:grid-cols-2">
-                      <p>
-                        <span className="font-medium text-foreground">
-                          담당자:
-                        </span>{" "}
-                        미지정
-                      </p>
-                      <p>
-                        <span className="font-medium text-foreground">
-                          마지막 처리자:
-                        </span>{" "}
-                        이력에 처리자 정보 없음
-                      </p>
                       <p>
                         <span className="font-medium text-foreground">
                           마지막 처리:
@@ -1875,6 +1907,39 @@ export default function StringingApplicationDetailClient({
               </Card>
             )}
 
+            {isAdmin && linkedDocs.length > 0 && (
+              <div id="admin-stringing-linked-docs" className="scroll-mt-6">
+                <LinkedDocsCard
+                  title="연결 문서 확인"
+                  docs={linkedDocs}
+                  description={linkedDocsDescription}
+                  className="mb-4"
+                />
+              </div>
+            )}
+
+            {isAdmin && (data.orderId || data.rentalId) && (
+              <Card className="mb-8 border border-primary/20 bg-primary/5">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base">
+                    연결 업무 기준 관리자 할 일
+                  </CardTitle>
+                  <CardDescription>
+                    {linkedContextLabel} 문맥에서 현재 단계와 다음 액션을
+                    안내합니다.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-1 text-sm">
+                  <p className="text-muted-foreground">
+                    현재 단계: {appGuide.stage}
+                  </p>
+                  <p className="font-medium">
+                    다음 할 일: {appGuide.nextAction}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+
             {/* 상태 카드 */}
             <Card
               id="admin-stringing-cancel"
@@ -1889,10 +1954,8 @@ export default function StringingApplicationDetailClient({
                 </div>
                 {isAdmin && (
                   <CardDescription>
-                    {new Date(data.requestedAt).toLocaleDateString()}에 접수된
-                    신청입니다. 연결 진행 단계는 주문 상세 화면에서 관리하며, 이
-                    화면에서는 현재 신청서의 개별 상태와 취소 요청만 직접
-                    조정합니다.
+                    연결된 주문·대여의 진행 단계는 해당 상세에서 관리합니다. 이
+                    화면에서는 신청서 상태와 취소 요청만 직접 조정하세요.
                   </CardDescription>
                 )}
               </CardHeader>
