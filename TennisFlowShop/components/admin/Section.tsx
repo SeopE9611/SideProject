@@ -1,19 +1,24 @@
-// 카드 섹션 래퍼: 헤더/내용/액션을 한결같은 스타일로 (v0 톤)
-// - ring-border/* 제거
-// - 은은한 배경 + 얇은 테두리 + 작은 그림자
-"use client";
-import { cn } from "@/lib/utils";
+import type { ReactNode } from "react";
+
 import { adminTypography } from "@/components/admin/admin-typography";
+import { cn } from "@/lib/utils";
+
+type SectionProps = {
+  children: ReactNode;
+  className?: string;
+  variant?: "card" | "plain";
+};
 
 export function Section({
   children,
   className,
-}: React.PropsWithChildren<{ className?: string }>) {
+  variant = "card",
+}: SectionProps) {
   return (
     <section
       className={cn(
-        "rounded-2xl border bg-card/70 dark:bg-card/70 shadow-sm",
-        "border-border/70 dark:border-border/70",
+        variant === "card" &&
+          "rounded-2xl border border-border/70 bg-card/70 shadow-sm dark:bg-card/70",
         className,
       )}
     >
@@ -24,20 +29,32 @@ export function Section({
 
 export function SectionHeader({
   title,
+  description,
   aside,
+  className,
 }: {
-  title: React.ReactNode;
-  aside?: React.ReactNode;
+  title: ReactNode;
+  description?: ReactNode;
+  aside?: ReactNode;
+  className?: string;
 }) {
   return (
     <div
       className={cn(
-        "flex items-center justify-between px-4 sm:px-5 py-3",
-        "rounded-t-2xl border-b border-border/70 dark:border-border/70",
-        "bg-background/70",
+        "flex items-center justify-between rounded-t-2xl border-b border-border/70 bg-background/70 px-4 py-3 sm:px-5",
+        description &&
+          "flex-col items-stretch gap-2 sm:flex-row sm:items-start sm:gap-4",
+        className,
       )}
     >
-      <h3 className={adminTypography.panelTitle}>{title}</h3>
+      <div className="min-w-0">
+        <h3 className={adminTypography.panelTitle}>{title}</h3>
+        {description ? (
+          <p className="mt-1 text-sm leading-relaxed text-foreground/75">
+            {description}
+          </p>
+        ) : null}
+      </div>
       {aside}
     </div>
   );
@@ -46,6 +63,9 @@ export function SectionHeader({
 export function SectionBody({
   children,
   className,
-}: React.PropsWithChildren<{ className?: string }>) {
-  return <div className={cn("px-4 sm:px-6 py-4", className)}>{children}</div>;
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return <div className={cn("px-4 py-4 sm:px-6", className)}>{children}</div>;
 }
