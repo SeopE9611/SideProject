@@ -592,8 +592,6 @@ function normalizePartialFilterExpression(value) {
 }
 
 function checkOption(indexDoc, optionName, expectedValue) {
-  if (typeof expectedValue === "undefined") return true;
-
   if (optionName === "unique" || optionName === "sparse") {
     return (
       normalizeBooleanOption(indexDoc?.[optionName]) ===
@@ -608,7 +606,25 @@ function checkOption(indexDoc, optionName, expectedValue) {
     );
   }
 
-  return indexDoc?.[optionName] === expectedValue;
+  return (indexDoc?.[optionName] ?? null) === (expectedValue ?? null);
+}
+
+function indexMatchesSpec(indexDoc, spec) {
+  return (
+    stableStringify(indexDoc.key) === stableStringify(spec.keys) &&
+    checkOption(indexDoc, "unique", spec.options.unique) &&
+    checkOption(
+      indexDoc,
+      "expireAfterSeconds",
+      spec.options.expireAfterSeconds,
+    ) &&
+    checkOption(indexDoc, "sparse", spec.options.sparse) &&
+    checkOption(
+      indexDoc,
+      "partialFilterExpression",
+      spec.options.partialFilterExpression,
+    )
+  );
 }
 
 const client = new MongoClient(uri);
@@ -618,58 +634,39 @@ try {
   const db = client.db(dbName);
 
   let hasFailure = false;
+  const summary = { OK: 0, MISSING: 0, MISMATCH: 0, NAME_MISMATCH: 0 };
 
   for (const [collectionName, specs] of Object.entries(INDEX_SPECS)) {
+    const indexes = await db
+      .collection(collectionName)
+      .listIndexes()
+      .toArray()
+      .catch(() => []);
+
     for (const spec of specs) {
-      const indexes = await db
-        .collection(collectionName)
-        .listIndexes()
-        .toArray()
-        .catch(() => []);
       const indexDoc = indexes.find((idx) => idx.name === spec.name);
 
       if (!indexDoc) {
+        const aliasIndex = indexes.find((idx) => indexMatchesSpec(idx, spec));
+        if (aliasIndex) {
+          summary.NAME_MISMATCH += 1;
+          console.warn(
+            `⚠️ [NAME_MISMATCH] ${collectionName}.${spec.name} existsAs=${aliasIndex.name}`,
+          );
+          continue;
+        }
+
         hasFailure = true;
+        summary.MISSING += 1;
         console.error(`❌ [MISSING] ${collectionName}.${spec.name}`);
         continue;
       }
 
       // check와 생성/보정 경로의 비교 기준은 반드시 동일해야 한다.
       // 그래야 "생성/보정 도구는 불일치"인데 "검사 도구는 정상" 같은 운영 오판을 막을 수 있다.
-      const keyMatched =
-        stableStringify(indexDoc.key) === stableStringify(spec.keys);
-      const uniqueMatched = checkOption(
-        indexDoc,
-        "unique",
-        spec.options.unique,
-      );
-      const ttlMatched = checkOption(
-        indexDoc,
-        "expireAfterSeconds",
-        spec.options.expireAfterSeconds,
-      );
-      // sparse는 "인덱싱 대상 문서 집합" 자체를 바꾸므로 동일 키라도 다른 인덱스로 봐야 한다.
-      const sparseMatched = checkOption(
-        indexDoc,
-        "sparse",
-        spec.options.sparse,
-      );
-      // partialFilterExpression은 인덱스가 적용되는 조건식을 바꾼다.
-      // 이 값이 다르면 실행계획/유니크 제약 적용 범위가 달라질 수 있다.
-      const partialMatched = checkOption(
-        indexDoc,
-        "partialFilterExpression",
-        spec.options.partialFilterExpression,
-      );
-
-      if (
-        !keyMatched ||
-        !uniqueMatched ||
-        !ttlMatched ||
-        !sparseMatched ||
-        !partialMatched
-      ) {
+      if (!indexMatchesSpec(indexDoc, spec)) {
         hasFailure = true;
+        summary.MISMATCH += 1;
         console.error(`❌ [MISMATCH] ${collectionName}.${spec.name}`);
         console.error("   - actual keys:", JSON.stringify(indexDoc.key));
         console.error("   - expected keys:", JSON.stringify(spec.keys));
@@ -696,14 +693,28 @@ try {
         continue;
       }
 
+      summary.OK += 1;
       console.log(`✅ [OK] ${collectionName}.${spec.name}`);
     }
   }
 
-  if (hasFailure) process.exit(2);
   console.log(
-    "[check-runtime-indexes] 모든 런타임 인덱스 상태가 기대값과 일치합니다.",
+    `[check-runtime-indexes] summary OK=${summary.OK} MISSING=${summary.MISSING} MISMATCH=${summary.MISMATCH} NAME_MISMATCH=${summary.NAME_MISMATCH}`,
   );
+  if (hasFailure) {
+    process.exitCode = 2;
+    console.error(
+      "[check-runtime-indexes] MISSING 또는 MISMATCH가 있어 종료 코드 2를 반환합니다.",
+    );
+  } else if (summary.NAME_MISMATCH > 0) {
+    console.warn(
+      "[check-runtime-indexes] 동일 key/options 인덱스가 다른 이름으로 존재합니다. NAME_MISMATCH 자체는 warning이며 종료 코드에 영향을 주지 않습니다.",
+    );
+  } else {
+    console.log(
+      "[check-runtime-indexes] 모든 런타임 인덱스 상태가 기대값과 일치합니다.",
+    );
+  }
 } finally {
   await client.close();
 }
