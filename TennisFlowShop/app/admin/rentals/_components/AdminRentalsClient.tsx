@@ -137,6 +137,20 @@ const rentalStatusLabels: Record<string, string> = {
   canceled: "취소됨",
 };
 
+const paymentFilterLabels: Record<AdminRentalPaymentFilter, string> = {
+  all: "결제 전체",
+  unpaid: "결제대기",
+  paid: "결제완료",
+};
+
+const shippingFilterLabels: Record<AdminRentalShippingFilter, string> = {
+  all: "운송장 전체",
+  none: "운송장 없음 / 방문 수령",
+  "outbound-set": "출고 운송장 등록",
+  "return-set": "반납 운송장 등록",
+  "both-set": "왕복 운송장 등록",
+};
+
 const AdminConfirmDialog = dynamic(
   () => import("@/components/admin/AdminConfirmDialog"),
   { loading: () => null },
@@ -438,6 +452,47 @@ export default function AdminRentalsClient() {
     Boolean(from) ||
     Boolean(to);
 
+  const activeFilterLabels = [
+    status ? rentalStatusLabels[status] : null,
+    payFilter !== "all" ? paymentFilterLabels[payFilter] : null,
+    shipFilter !== "all" ? shippingFilterLabels[shipFilter] : null,
+  ].filter((label): label is string => Boolean(label));
+
+  const hasTextOrDateFilters = Boolean(searchTerm.trim() || from || to);
+  const currentViewLabel = !hasActiveFilters
+    ? "전체 대여"
+    : !hasTextOrDateFilters &&
+        !status &&
+        payFilter === "unpaid" &&
+        shipFilter === "all"
+      ? "결제대기"
+      : !hasTextOrDateFilters &&
+          !status &&
+          payFilter === "all" &&
+          shipFilter === "none"
+        ? "출고 필요"
+        : !hasTextOrDateFilters &&
+            status === "out" &&
+            payFilter === "all" &&
+            shipFilter === "all"
+          ? "반납 필요"
+          : !hasTextOrDateFilters &&
+              status === "returned" &&
+              payFilter === "all" &&
+              shipFilter === "all"
+            ? "보증금 환불 확인"
+            : "사용자 지정 조건";
+
+  function applyQuickView(view: "unpaid" | "shipping" | "out" | "returned") {
+    setSearchTerm("");
+    setStatus(view === "out" ? "out" : view === "returned" ? "returned" : "");
+    setFrom("");
+    setTo("");
+    setPayFilter(view === "unpaid" ? "unpaid" : "all");
+    setShipFilter(view === "shipping" ? "none" : "all");
+    setPage(1);
+  }
+
   const shouldShowActualEmpty =
     hasResolvedData &&
     !hasDataError &&
@@ -590,25 +645,108 @@ export default function AdminRentalsClient() {
       <div className="mx-auto max-w-7xl">
         <AdminPageHeader
           title="대여 관리"
-          description="라켓 대여 주문의 결제, 출고, 반납, 보증금, 연결 신청서를 관리합니다."
+          description="라켓 대여의 결제 확인, 출고, 반납, 보증금 환불, 연결 신청서를 한곳에서 관리합니다."
           icon={Truck}
           scope="범위: 라켓 대여 주문"
-          helperText="교체서비스가 포함된 대여는 신청서 연결 상태로 확인합니다."
+          helperText="교체서비스가 포함된 대여는 신청서 연결 상태를 함께 확인하세요."
         />
+
+        <details
+          className={cn(
+            "mb-5 rounded-lg border px-4 py-3",
+            adminSurface.cardMuted,
+          )}
+        >
+          <summary className="cursor-pointer text-sm font-semibold text-foreground">
+            대여 업무 가이드
+          </summary>
+          <div className="mt-3 grid gap-2 text-sm text-muted-foreground sm:grid-cols-2 lg:grid-cols-3">
+            <p>
+              <strong className="text-foreground">결제대기</strong> · 결제 확인
+              후 출고 처리
+            </p>
+            <p>
+              <strong className="text-foreground">출고 운송장 없음</strong> ·
+              택배 발송 전 운송장 등록
+            </p>
+            <p>
+              <strong className="text-foreground">반납 필요</strong> · 대여 종료
+              후 반납 확인
+            </p>
+            <p>
+              <strong className="text-foreground">보증금 환불</strong> · 반납
+              완료 후 환불 여부 확인
+            </p>
+            <p>
+              <strong className="text-foreground">취소 요청</strong> · 환불 계좌
+              준비 여부 확인
+            </p>
+            <p>
+              <strong className="text-foreground">교체서비스 포함</strong> ·
+              연결 신청서 상세와 함께 확인
+            </p>
+          </div>
+        </details>
         {/* 유지보수: created 청소 버튼 */}
         {/* <CleanupCreatedButton hours={2} /> */}
       </div>
 
       <Card className={cn("mb-5 px-6 py-5", adminSurface.filterCard)}>
         <CardHeader className="pb-3">
-          <CardTitle>필터 및 검색</CardTitle>
+          <CardTitle>대여 찾기</CardTitle>
           <CardDescription className="text-sm leading-relaxed break-keep">
-            대여 상태와 날짜로 필터링하거나 대여 ID, 고객명, 이메일, 브랜드,
-            모델로 검색하세요.
+            빠른 보기로 주요 업무를 좁히거나 상태, 결제, 운송장, 날짜 조건과
+            검색어를 조합하세요.
           </CardDescription>
         </CardHeader>
 
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-4">
+          <div
+            className="flex flex-wrap items-center gap-2"
+            aria-label="빠른 보기"
+          >
+            <span className="mr-1 text-xs font-semibold text-muted-foreground">
+              빠른 보기
+            </span>
+            <Button
+              size="sm"
+              variant={!hasActiveFilters ? "default" : "outline"}
+              onClick={resetAllFiltersAndURL}
+            >
+              전체
+            </Button>
+            <Button
+              size="sm"
+              variant={currentViewLabel === "결제대기" ? "default" : "outline"}
+              onClick={() => applyQuickView("unpaid")}
+            >
+              결제대기
+            </Button>
+            <Button
+              size="sm"
+              variant={currentViewLabel === "출고 필요" ? "default" : "outline"}
+              onClick={() => applyQuickView("shipping")}
+            >
+              출고 필요
+            </Button>
+            <Button
+              size="sm"
+              variant={currentViewLabel === "반납 필요" ? "default" : "outline"}
+              onClick={() => applyQuickView("out")}
+            >
+              반납 필요
+            </Button>
+            <Button
+              size="sm"
+              variant={
+                currentViewLabel === "보증금 환불 확인" ? "default" : "outline"
+              }
+              onClick={() => applyQuickView("returned")}
+            >
+              보증금 환불 확인
+            </Button>
+          </div>
+
           <div className="flex items-center gap-2">
             <div className="relative flex-1">
               <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -746,6 +884,43 @@ export default function AdminRentalsClient() {
         </CardContent>
       </Card>
 
+      <div
+        className={cn(
+          "mb-3 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border px-4 py-3 text-sm",
+          adminSurface.cardMuted,
+        )}
+      >
+        <p className="font-semibold text-foreground">
+          현재 보기: {currentViewLabel}
+        </p>
+        {searchTerm.trim() && (
+          <p className="text-muted-foreground">검색어: {searchTerm.trim()}</p>
+        )}
+        {activeFilterLabels.length > 0 && (
+          <p className="text-muted-foreground">
+            필터: {activeFilterLabels.join(" / ")}
+          </p>
+        )}
+        {(from || to) && (
+          <p className="text-muted-foreground">
+            기간: {from || "시작일 없음"} ~ {to || "종료일 없음"}
+          </p>
+        )}
+        {hasResolvedData && !hasDataError && data && (
+          <p className="text-muted-foreground">총 {data.total}건</p>
+        )}
+        {hasActiveFilters && (
+          <Button
+            size="sm"
+            variant="ghost"
+            className="ml-auto"
+            onClick={resetAllFiltersAndURL}
+          >
+            필터 초기화
+          </Button>
+        )}
+      </div>
+
       <Card className={cn("px-4 py-5", adminSurface.tableCard)}>
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
@@ -766,81 +941,88 @@ export default function AdminRentalsClient() {
             )}
           </div>
           {/* “이 화면에서 무엇이 다른지”를 즉시 이해시키는 장치 */}
-          <div className="px-6 -mt-2 mb-2 flex flex-wrap items-center gap-2 text-sm text-foreground/75">
-            <Badge
-              variant={getKindBadge().variant}
-              className={cn(
-                badgeBase,
-                badgeSizeSm,
-                "whitespace-nowrap shrink-0",
-              )}
-            >
-              {getKindBadge().label}
-            </Badge>
-            <Badge
-              variant="outline"
-              className={cn(
-                badgeBase,
-                badgeSizeSm,
-                "whitespace-nowrap shrink-0",
-              )}
-            >
-              단독
-            </Badge>
-            <Badge
-              variant="brand"
-              className={cn(
-                badgeBase,
-                badgeSizeSm,
-                "whitespace-nowrap shrink-0",
-              )}
-            >
-              교체서비스 포함
-            </Badge>
-            <Badge
-              variant="info"
-              className={cn(
-                badgeBase,
-                badgeSizeSm,
-                "whitespace-nowrap shrink-0",
-              )}
-            >
-              신청서 연결
-            </Badge>
-            <Badge
-              variant={FLOW_BADGE_VARIANT[6]}
-              className={cn(
-                badgeBase,
-                badgeSizeSm,
-                "whitespace-nowrap shrink-0",
-              )}
-            >
-              {FLOW_SHORT[6]}
-            </Badge>
-            <Badge
-              variant={FLOW_BADGE_VARIANT[7]}
-              className={cn(
-                badgeBase,
-                badgeSizeSm,
-                "whitespace-nowrap shrink-0",
-              )}
-            >
-              {FLOW_SHORT[7]}
-            </Badge>
-            <Badge
-              variant={getSettlementBadge().variant}
-              className={cn(
-                badgeBase,
-                badgeSizeSm,
-                "whitespace-nowrap shrink-0",
-              )}
-            >
-              {getSettlementBadge().label}
-            </Badge>
-            <span className="ml-1">
-              • 신청서 연결이 있으면 신청서 상세로 바로 이동할 수 있습니다
-            </span>
-          </div>
+          <details className="px-6 -mt-2 mb-2 text-sm text-foreground/75">
+            <summary className="cursor-pointer font-medium text-foreground">
+              목록 뱃지 안내
+            </summary>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <Badge
+                variant={getKindBadge().variant}
+                className={cn(
+                  badgeBase,
+                  badgeSizeSm,
+                  "whitespace-nowrap shrink-0",
+                )}
+              >
+                {getKindBadge().label}
+              </Badge>
+              <Badge
+                variant="outline"
+                className={cn(
+                  badgeBase,
+                  badgeSizeSm,
+                  "whitespace-nowrap shrink-0",
+                )}
+              >
+                단독
+              </Badge>
+              <Badge
+                variant="brand"
+                className={cn(
+                  badgeBase,
+                  badgeSizeSm,
+                  "whitespace-nowrap shrink-0",
+                )}
+              >
+                교체서비스 포함
+              </Badge>
+              <Badge
+                variant="info"
+                className={cn(
+                  badgeBase,
+                  badgeSizeSm,
+                  "whitespace-nowrap shrink-0",
+                )}
+              >
+                신청서 연결
+              </Badge>
+              <Badge
+                variant={FLOW_BADGE_VARIANT[6]}
+                className={cn(
+                  badgeBase,
+                  badgeSizeSm,
+                  "whitespace-nowrap shrink-0",
+                )}
+              >
+                {FLOW_SHORT[6]}
+              </Badge>
+              <Badge
+                variant={FLOW_BADGE_VARIANT[7]}
+                className={cn(
+                  badgeBase,
+                  badgeSizeSm,
+                  "whitespace-nowrap shrink-0",
+                )}
+              >
+                {FLOW_SHORT[7]}
+              </Badge>
+              <Badge
+                variant={getSettlementBadge().variant}
+                className={cn(
+                  badgeBase,
+                  badgeSizeSm,
+                  "whitespace-nowrap shrink-0",
+                )}
+              >
+                {getSettlementBadge().label}
+              </Badge>
+              <span className="ml-1 leading-relaxed">
+                대여는 라켓 대여 주문, 교체서비스 포함은 스트링 작업 연결 흐름,
+                신청서 연결은 작업·배송 확인 링크, 정산: 대여는 결제·보증금 기준
+                문서를 뜻합니다.
+              </span>
+            </div>
+          </details>
         </CardHeader>
         <CardContent className="relative overflow-x-auto scrollbar-hidden pr-2">
           <Table className="min-w-[1040px] table-auto border-separate [border-spacing-block:0.5rem] [border-spacing-inline:0] text-xs">
@@ -930,7 +1112,8 @@ export default function AdminRentalsClient() {
                     <div className="flex flex-col items-center gap-2">
                       <Search className="h-8 w-8 text-muted-foreground/50" />
                       <p className="text-sm text-muted-foreground">
-                        불러올 대여 주문이 없습니다.
+                        아직 등록된 대여가 없습니다. 새 대여가 접수되면 이곳에
+                        표시됩니다.
                       </p>
                     </div>
                   </TableCell>
@@ -938,7 +1121,8 @@ export default function AdminRentalsClient() {
               ) : shouldShowSearchEmpty ? (
                 <TableRow>
                   <TableCell colSpan={9} className={tdClasses}>
-                    검색 결과가 없습니다.
+                    적용한 검색어와 필터에 맞는 대여가 없습니다. 조건을
+                    조정하거나 필터를 초기화해 주세요.
                   </TableCell>
                 </TableRow>
               ) : (
