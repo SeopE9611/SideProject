@@ -41,6 +41,7 @@ import { buildAdminCancelRequestView } from "@/lib/cancel-request/admin-cancel-r
 import { getRefundBankLabel } from "@/lib/cancel-request/refund-account";
 import { racketBrandLabel, stringColorLabel } from "@/lib/constants";
 import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
+import { shortenId } from "@/lib/shorten";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import {
@@ -643,6 +644,11 @@ export default function AdminRentalDetailClient() {
     { label: "반납 처리 확인", href: "#admin-rental-return", show: true },
     { label: "보증금 환불 확인", href: "#admin-rental-deposit", show: true },
     {
+      label: "연결 신청서 확인",
+      href: "#admin-rental-linked-docs",
+      show: linkedDocs.length > 0,
+    },
+    {
       label: "취소 요청 확인",
       href: "#admin-rental-cancel",
       show: hasCancelRequested,
@@ -689,11 +695,29 @@ export default function AdminRentalDetailClient() {
                 </div>
                 <div>
                   <h1 className="text-2xl font-semibold tracking-normal text-foreground lg:text-3xl">
-                    대여 관리
+                    대여 상세 관리
                   </h1>
-                  <p className="mt-1 text-sm text-foreground/75">
-                    대여 ID: {data.id}
-                  </p>
+                  <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-foreground/75">
+                    <span>대여 ID: {shortenId(String(data.id))}</span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 gap-1 px-2 text-xs"
+                      aria-label="전체 대여 ID 복사"
+                      onClick={async () => {
+                        try {
+                          await navigator.clipboard.writeText(String(data.id));
+                          showSuccessToast("대여 ID가 복사되었습니다");
+                        } catch {
+                          showErrorToast("대여 ID 복사에 실패했습니다");
+                        }
+                      }}
+                    >
+                      <Copy className="h-3.5 w-3.5" />
+                      전체 ID 복사
+                    </Button>
+                  </div>
                 </div>
               </div>
               <div className="sm:ml-auto flex flex-wrap items-center justify-end gap-2.5">
@@ -727,33 +751,36 @@ export default function AdminRentalDetailClient() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4 lg:gap-4">
-              <div className="rounded-xl border border-border/60 bg-card/70 p-4 backdrop-blur-sm">
-                <div className="flex items-center space-x-2 mb-2">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 lg:gap-4">
+              <div className="min-h-28 rounded-xl border border-border/70 bg-card p-4 shadow-sm">
+                <div className="mb-2 flex items-center space-x-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium text-foreground">
-                    {isVisitPickup ? "방문 수령 처리(out)" : "대여 시작"}
+                    {isVisitPickup ? "방문 수령 처리 일시" : "대여 시작 일시"}
                   </span>
                 </div>
-                <p className="text-lg font-semibold text-foreground">
-                  {data.outAt ? formatDate(data.outAt) : "-"}
+                <p className="text-base font-semibold text-foreground">
+                  {data.outAt ? formatDate(data.outAt) : "미처리"}
                 </p>
               </div>
 
-              <div className="rounded-xl border border-border/60 bg-card/70 p-4 backdrop-blur-sm">
-                <div className="flex items-center space-x-2 mb-2">
-                  <CreditCard className="h-4 w-4 text-muted-foreground" />
+              <div className="min-h-28 rounded-xl border border-border/70 bg-card p-4 shadow-sm">
+                <div className="mb-2 flex items-center space-x-2">
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium text-foreground">
-                    총 결제금액
+                    반납 일시
                   </span>
                 </div>
-                <p className="text-lg font-semibold text-foreground">
-                  {won(data.amount?.total)}
+                <p className="text-base font-semibold text-foreground">
+                  {data.returnedAt ? formatDate(data.returnedAt) : "미처리"}
+                </p>
+                <p className="mt-1 text-xs text-foreground/75">
+                  반납 예정: {data.dueAt ? formatDate(data.dueAt) : "-"}
                 </p>
               </div>
 
-              <div className="rounded-xl border border-border/60 bg-card/70 p-4 backdrop-blur-sm">
-                <div className="flex items-center space-x-2 mb-2">
+              <div className="min-h-28 rounded-xl border border-border/70 bg-card p-4 shadow-sm">
+                <div className="mb-2 flex items-center space-x-2">
                   <Package className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium text-foreground">
                     대여 상태
@@ -774,102 +801,74 @@ export default function AdminRentalDetailClient() {
                 })()}
               </div>
 
-              <div className="rounded-xl border border-border/60 bg-card/70 p-4 backdrop-blur-sm">
-                <div className="flex items-center space-x-2 mb-2">
-                  <Truck className="h-4 w-4 text-muted-foreground" />
+              <div className="min-h-28 rounded-xl border border-border/70 bg-card p-4 shadow-sm">
+                <div className="mb-2 flex items-center space-x-2">
+                  <CreditCard className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium text-foreground">
-                    대여 기간
+                    결제 상태
                   </span>
                 </div>
-                <p className="text-lg font-semibold text-foreground">
-                  {data.days}일
+                {(() => {
+                  const pay = getPaymentStatusBadgeSpec(paymentLabel);
+                  return (
+                    <Badge
+                      variant={pay.variant}
+                      className={cn(badgeBase, badgeSizeSm)}
+                    >
+                      {paymentLabel}
+                    </Badge>
+                  );
+                })()}
+                <p className="mt-2 text-xs text-foreground/75">
+                  총 결제금액 {won(data.amount?.total)}
                 </p>
-                <p className="mt-1 text-xs text-foreground/75">
-                  수령 방법: {pickupMethodLabel}
+              </div>
+
+              <div className="min-h-28 rounded-xl border border-border/70 bg-card p-4 shadow-sm">
+                <div className="mb-2 flex items-center space-x-2">
+                  <CreditCard className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium text-foreground">
+                    보증금 환불
+                  </span>
+                </div>
+                <Badge
+                  variant={data.depositRefunded ? "success" : "outline"}
+                  className={cn(badgeBase, badgeSizeSm)}
+                >
+                  {data.depositRefunded ? "환불 처리 완료" : "미처리"}
+                </Badge>
+                <p className="mt-2 text-xs text-foreground/75">
+                  {data.depositRefundedAt
+                    ? formatDate(data.depositRefundedAt)
+                    : `보증금 ${won(data.amount?.deposit)}`}
+                </p>
+              </div>
+
+              <div className="min-h-28 rounded-xl border border-border/70 bg-card p-4 shadow-sm">
+                <div className="mb-2 flex items-center space-x-2">
+                  <Truck className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium text-foreground">
+                    {isVisitPickup ? "수령 방법" : "운송장 상태"}
+                  </span>
+                </div>
+                <p className="text-sm font-semibold text-foreground">
+                  {isVisitPickup
+                    ? pickupMethodLabel
+                    : `출고 ${Outbound?.trackingNumber ? "등록" : "미등록"} · 반납 ${ReturnShip?.trackingNumber ? "등록" : "미등록"}`}
+                </p>
+                <p className="mt-2 text-xs text-foreground/75">
+                  대여 기간 {data.days}일 · {pickupMethodLabel}
                 </p>
               </div>
             </div>
-            {/* 취소 요청 상태 안내 (관리자용) */}
-            {cancelInfo && (
-              <div id="admin-rental-cancel">
-                <AdminCancelRequestCard
-                  badgeLabel={cancelInfo.badgeLabel}
-                  description={cancelInfo.description}
-                  reasonSummary={cancelInfo.reasonSummary}
-                  tone={cancelInfo.tone}
-                >
-                  {/* 요청 상태일 때만 승인/거절 버튼 노출 */}
-                  {cancelInfo.status === "requested" && (
-                    <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
-                      <Button
-                        size="sm"
-                        className="bg-primary hover:bg-primary/90 text-primary-foreground"
-                        disabled={isBusy}
-                        onClick={() => {
-                          if (isBusy) return;
-                          setPendingAction("approveCancel");
-                        }}
-                      >
-                        {busyAction === "approveCancel"
-                          ? "승인 처리중…"
-                          : "요청 승인"}
-                      </Button>
-
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="border-border text-primary hover:bg-muted"
-                        disabled={isBusy}
-                        onClick={() => {
-                          if (isBusy) return;
-                          setPendingAction("rejectCancel");
-                        }}
-                      >
-                        {busyAction === "rejectCancel"
-                          ? "거절 처리중…"
-                          : "요청 거절"}
-                      </Button>
-                    </div>
-                  )}
-                </AdminCancelRequestCard>
-              </div>
-            )}
           </div>
 
-          {/* 연결 문서(공용 카드) */}
-          {linkedDocs.length > 0 && (
-            <>
-              <LinkedDocsCard
-                docs={linkedDocs}
-                description="이 대여는 교체서비스 신청서와 연결되어 있습니다. 교체서비스 진행/상태는 신청서에서 확인하세요."
-                className={adminSurface.card}
-              />
-              <Card className={cn(adminSurface.card, "bg-primary/5")}>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">연결 업무 가이드</CardTitle>
-                  <CardDescription>
-                    현재 업무 단계와 다음 해야 할 작업을 요약합니다.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-1 text-sm">
-                  <p className="text-muted-foreground">
-                    현재 단계: {rentalGuide.stage}
-                  </p>
-                  <p className="font-medium">
-                    다음 할 일: {rentalGuide.nextAction}
-                  </p>
-                </CardContent>
-              </Card>
-            </>
-          )}
-          <Card
-            className={cn("mb-6", getNextActionCardClass(nextActionGuide.tone))}
-          >
+          <Card className={getNextActionCardClass(nextActionGuide.tone)}>
             <CardHeader className="pb-3">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <CardTitle className="text-base font-semibold">
-                    지금 처리할 일
+                    우선 처리 안내
                   </CardTitle>
                   <CardDescription className="mt-1 text-sm text-foreground/75">
                     {nextActionGuide.title}
@@ -923,10 +922,6 @@ export default function AdminRentalDetailClient() {
                   처리 정보
                 </p>
                 <div className="mt-2 grid gap-1.5 text-xs leading-relaxed text-muted-foreground sm:grid-cols-2">
-                  <p>
-                    <span className="font-medium text-foreground">담당자:</span>{" "}
-                    미지정
-                  </p>
                   <p>
                     <span className="font-medium text-foreground">
                       마지막 처리자:
@@ -1013,6 +1008,68 @@ export default function AdminRentalDetailClient() {
               </div>
             </CardContent>
           </Card>
+
+          {/* 취소 요청 상태 안내 (관리자용) */}
+          {cancelInfo && (
+            <div id="admin-rental-cancel">
+              <AdminCancelRequestCard
+                className={cn(
+                  "mt-0",
+                  hasCancelRequested && "border-warning/50 bg-warning/5",
+                )}
+                badgeLabel={cancelInfo.badgeLabel}
+                description={cancelInfo.description}
+                reasonSummary={cancelInfo.reasonSummary}
+                tone={cancelInfo.tone}
+              >
+                {/* 요청 상태일 때만 승인/거절 버튼 노출 */}
+                {cancelInfo.status === "requested" && (
+                  <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
+                    <Button
+                      size="sm"
+                      className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                      disabled={isBusy}
+                      onClick={() => {
+                        if (isBusy) return;
+                        setPendingAction("approveCancel");
+                      }}
+                    >
+                      {busyAction === "approveCancel"
+                        ? "승인 처리중…"
+                        : "요청 승인"}
+                    </Button>
+
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="border-border text-primary hover:bg-muted"
+                      disabled={isBusy}
+                      onClick={() => {
+                        if (isBusy) return;
+                        setPendingAction("rejectCancel");
+                      }}
+                    >
+                      {busyAction === "rejectCancel"
+                        ? "거절 처리중…"
+                        : "요청 거절"}
+                    </Button>
+                  </div>
+                )}
+              </AdminCancelRequestCard>
+            </div>
+          )}
+
+          {/* 연결 문서(공용 카드) */}
+          {linkedDocs.length > 0 && (
+            <div id="admin-rental-linked-docs">
+              <LinkedDocsCard
+                title="연결 신청서"
+                docs={linkedDocs}
+                description={`교체서비스 신청서가 연결되어 있습니다. 현재 단계: ${rentalGuide.stage} · 다음 할 일: ${rentalGuide.nextAction}`}
+                className={adminSurface.card}
+              />
+            </div>
+          )}
 
           {hasStringingSummary && (
             <Card className="border-0 shadow-xl ring-1 ring-ring bg-muted/30">
@@ -1115,13 +1172,13 @@ export default function AdminRentalDetailClient() {
 
           <Card
             id="admin-rental-return"
-            className="border-0 shadow-xl ring-1 ring-ring bg-muted/30 overflow-hidden mb-8"
+            className={cn(adminSurface.card, "overflow-hidden")}
           >
             <CardHeader className="bg-muted/30 border-b pb-3">
               <CardTitle>대여 상태 관리</CardTitle>
               <CardDescription>
-                대여 상태 변경 및 보증금 환불은 처리 후 이력에 남습니다.
-                반납/라켓 상태와 환불 정보를 확인한 뒤 진행하세요.
+                처리 전 결제 상태, 라켓 반납 상태, 보증금 환불 정보를
+                확인하세요. 모든 상태 변경은 처리 이력에 남습니다.
               </CardDescription>
             </CardHeader>
             <CardFooter className="pt-4">
