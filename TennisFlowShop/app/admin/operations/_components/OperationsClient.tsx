@@ -19,6 +19,14 @@ import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
 
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import AdminPageShell from "@/components/admin/AdminPageShell";
+import AdminSummaryCard from "@/components/admin/AdminSummaryCard";
+import AdminTaskCard from "@/components/admin/AdminTaskCard";
+import {
+  Section,
+  SectionBody,
+  SectionHeader,
+} from "@/components/admin/Section";
 import { adminSurface } from "@/components/admin/admin-typography";
 import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
@@ -1213,7 +1221,7 @@ export default function OperationsClient() {
           "고객이 취소를 요청했습니다. 환불 계좌/결제수단을 확인한 뒤 승인 또는 거절하세요.",
         action: "바로 처리",
         onClick: () => applyQuickView("cancelRequests"),
-        tone: "urgent" as const,
+        tone: "danger" as const,
       },
       {
         title: "결제 확인",
@@ -1241,7 +1249,7 @@ export default function OperationsClient() {
           "배송지와 수령 방식을 확인하고 운송장 또는 방문 수령 정보를 정리하세요.",
         action: "바로 처리",
         onClick: () => applyQuickView("shippingMissing"),
-        tone: "default" as const,
+        tone: "neutral" as const,
       },
       {
         title: "교체서비스 작업",
@@ -1253,7 +1261,7 @@ export default function OperationsClient() {
           setKind("stringing_application");
           setPage(1);
         },
-        tone: "default" as const,
+        tone: "neutral" as const,
       },
       {
         title: "대여 반납",
@@ -1308,7 +1316,7 @@ export default function OperationsClient() {
       : "불러오는 중...";
 
   return (
-    <div className="mx-auto w-full max-w-[1560px] px-3 py-4 bp-sm:px-4 bp-md:px-3 lg:px-5 lg:py-5">
+    <AdminPageShell variant="wide">
       {shouldShowGlobalError && (
         <AsyncState
           kind="error"
@@ -1360,185 +1368,97 @@ export default function OperationsClient() {
           </div>
         )}
 
-        <section className="mt-4 space-y-3 rounded-xl border border-border bg-card p-3 shadow-sm bp-sm:p-4">
-          <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-            <div className="min-w-0">
-              <h2 className="text-base font-semibold text-foreground">
-                오늘 바로 처리할 업무
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                건수가 있는 항목부터 열어 처리하면 됩니다.
+        <Section className="mt-4">
+          <SectionHeader
+            title="오늘 바로 처리할 업무"
+            description="건수가 있는 항목부터 열어 처리하면 됩니다."
+            aside={
+              <p className="max-w-full break-words text-sm leading-relaxed text-muted-foreground sm:max-w-[360px] sm:text-right">
+                전체 처리 필요 기준입니다. 검색과 필터는 아래 목록에만
+                적용됩니다.
               </p>
+            }
+          />
+          <SectionBody>
+            <div className="grid gap-3.5 bp-sm:grid-cols-2 bp-lg:grid-cols-4 bp-lg:gap-4">
+              {practicalTaskCards.map((task) => (
+                <AdminTaskCard
+                  key={task.title}
+                  title={task.title}
+                  count={task.count}
+                  description={task.description}
+                  tone={task.tone}
+                  actionLabel={task.action}
+                  onAction={task.onClick}
+                />
+              ))}
+              <AdminTaskCard
+                title="오프라인 미결제/보정"
+                count={taskCounts?.offline ?? 0}
+                description="오프라인 미결제, 패키지 발급 실패, 보정 필요 항목을 확인하세요."
+                actionLabel="바로 처리"
+                href="/admin/offline/reconciliation"
+              />
+              <AdminTaskCard
+                title="아카데미 상담"
+                count={taskCounts?.academyApplications ?? 0}
+                description="신규 신청, 검토 중, 상담 대기, 등록 확정 대기 건을 확인하세요."
+                tone="info"
+                actionLabel="바로 처리"
+                href="/admin/academy/applications"
+              />
             </div>
-            <p className="max-w-full break-words text-sm leading-relaxed text-muted-foreground sm:max-w-[360px] sm:text-right">
-              전체 처리 필요 기준입니다. 검색과 필터는 아래 목록에만 적용됩니다.
-            </p>
-          </div>
-          <div className="grid gap-3.5 bp-sm:grid-cols-2 bp-lg:grid-cols-4 bp-lg:gap-4">
-            {practicalTaskCards.map((task) => (
-              <Card
-                key={task.title}
-                className={cn(
-                  "border-border bg-card shadow-sm",
-                  task.tone === "urgent" && "border-warning/40 bg-warning/5",
-                  task.tone === "warning" && "border-info/40 bg-info/5",
-                )}
-              >
-                <CardHeader className="p-3 pb-2.5">
-                  <CardTitle className="flex min-w-0 items-baseline justify-between gap-2 text-sm font-semibold">
-                    <span className="min-w-0 break-words">{task.title}</span>
-                    <span className="shrink-0 whitespace-nowrap text-lg font-bold tabular-nums text-foreground">
-                      {task.count}건
-                    </span>
-                  </CardTitle>
-                  <CardDescription className="min-h-[44px] break-words text-sm leading-relaxed text-foreground/80">
-                    {task.description}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="p-3 pt-0">
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    wrap="responsive"
-                    className="min-h-8 w-full bg-background/70 py-1 text-sm"
-                    onClick={task.onClick}
-                  >
-                    {task.action}
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-            <Card className="border-border bg-card shadow-sm">
-              <CardHeader className="p-3 pb-2">
-                <CardTitle className="flex min-w-0 items-baseline justify-between gap-2 text-sm font-semibold">
-                  <span className="min-w-0 break-words">
-                    오프라인 미결제/보정
-                  </span>
-                  <span className="shrink-0 whitespace-nowrap text-lg font-bold tabular-nums text-foreground">
-                    {taskCounts?.offline ?? 0}건
-                  </span>
-                </CardTitle>
-                <CardDescription className="min-h-[44px] break-words text-sm leading-relaxed text-foreground/80">
-                  오프라인 미결제, 패키지 발급 실패, 보정 필요 항목을
-                  확인하세요.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-3 pt-0">
-                <Button
-                  asChild
-                  size="sm"
-                  variant="outline"
-                  wrap="responsive"
-                  className="min-h-8 w-full bg-background/70 py-1 text-sm"
-                >
-                  <Link href="/admin/offline/reconciliation">바로 처리</Link>
-                </Button>
-              </CardContent>
-            </Card>
-            <Card className="border-border bg-card shadow-sm">
-              <CardHeader className="p-3 pb-2">
-                <CardTitle className="flex min-w-0 items-baseline justify-between gap-2 text-sm font-semibold">
-                  <span className="min-w-0 break-words">아카데미 상담</span>
-                  <span className="shrink-0 whitespace-nowrap text-lg font-bold tabular-nums text-foreground">
-                    {taskCounts?.academyApplications ?? 0}건
-                  </span>
-                </CardTitle>
-                <CardDescription className="min-h-[44px] break-words text-sm leading-relaxed text-foreground/80">
-                  신규 신청, 검토 중, 상담 대기, 등록 확정 대기 건을 확인하세요.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-3 pt-0">
-                <Button
-                  asChild
-                  size="sm"
-                  variant="outline"
-                  wrap="responsive"
-                  className="min-h-8 w-full bg-background/70 py-1 text-sm"
-                >
-                  <Link href="/admin/academy/applications">바로 처리</Link>
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </section>
+          </SectionBody>
+        </Section>
 
-        <section className="mt-4 space-y-3">
-          <div>
-            <h2 className="text-base font-semibold text-foreground">
-              업무 상태 요약
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              긴급도와 미처리 상태를 빠르게 좁혀봅니다.
-            </p>
-          </div>
+        <Section variant="plain" className="mt-5 space-y-3">
+          <SectionHeader
+            title="업무 상태 요약"
+            description="긴급도와 미처리 상태를 빠르게 좁혀봅니다."
+            className="border-0 bg-transparent px-0 py-0"
+          />
           <div className="grid grid-cols-1 gap-2 bp-sm:grid-cols-3">
-            <Card
-              className={cn(
-                "cursor-pointer border-warning/30 bg-warning/5 shadow-none transition",
-                activeKpi === "urgent" && "ring-2 ring-warning/60",
-              )}
-              onClick={() => {
+            <AdminSummaryCard
+              title={PAGE_COPY.dailyTodoLabels.urgent}
+              value={todayTodoCount ? `${todayTodoCount.urgent}건` : "-"}
+              description="오류 또는 긴급 확인이 필요한 항목"
+              icon={Siren}
+              tone="danger"
+              active={activeKpi === "urgent"}
+              onAction={() => {
                 setWarnFilter("warn");
                 setOnlyWarn(false);
                 setPage(1);
               }}
-            >
-              <CardHeader className="p-3">
-                <CardTitle className="flex items-center gap-1.5 text-sm font-semibold">
-                  <Siren className="h-4 w-4 text-warning" />
-                  {PAGE_COPY.dailyTodoLabels.urgent}
-                </CardTitle>
-                <CardDescription className="text-xl font-bold text-foreground">
-                  {todayTodoCount ? `${todayTodoCount.urgent}건` : "-"}
-                </CardDescription>
-              </CardHeader>
-            </Card>
-            <Card
-              className={cn(
-                "cursor-pointer border-info/40 bg-info/5 shadow-none transition",
-                activeKpi === "caution" && "ring-2 ring-info/60",
-              )}
-              onClick={() => {
+            />
+            <AdminSummaryCard
+              title={PAGE_COPY.dailyTodoLabels.caution}
+              value={todayTodoCount ? `${todayTodoCount.caution}건` : "-"}
+              description="운영자 확인이 필요한 항목"
+              icon={BellRing}
+              tone="warning"
+              active={activeKpi === "caution"}
+              onAction={() => {
                 setOnlyWarn(false);
                 setWarnFilter("caution");
                 setPage(1);
               }}
-            >
-              <CardHeader className="p-3">
-                <CardTitle className="flex items-center gap-1.5 text-sm font-semibold">
-                  <BellRing className="h-4 w-4 text-info" />
-                  {PAGE_COPY.dailyTodoLabels.caution}
-                </CardTitle>
-                <CardDescription className="text-xl font-bold text-foreground">
-                  {todayTodoCount ? `${todayTodoCount.caution}건` : "-"}
-                </CardDescription>
-                <p className="text-xs text-foreground/75">확인이 필요한 항목</p>
-              </CardHeader>
-            </Card>
-            <Card
-              className={cn(
-                "cursor-pointer border-primary/30 bg-primary/5 shadow-none transition",
-                activeKpi === "pending" && "ring-2 ring-primary/60",
-              )}
-              onClick={() => {
+            />
+            <AdminSummaryCard
+              title={PAGE_COPY.dailyTodoLabels.pending}
+              value={todayTodoCount ? `${todayTodoCount.pending}건` : "-"}
+              description="아직 처리가 시작되지 않은 항목"
+              icon={ClipboardCheck}
+              tone="info"
+              active={activeKpi === "pending"}
+              onAction={() => {
                 setOnlyWarn(false);
                 setWarnFilter("pending");
                 setPage(1);
               }}
-            >
-              <CardHeader className="p-3">
-                <CardTitle className="flex items-center gap-1.5 text-sm font-semibold">
-                  <ClipboardCheck className="h-4 w-4 text-primary" />
-                  {PAGE_COPY.dailyTodoLabels.pending}
-                </CardTitle>
-                <CardDescription className="text-xl font-bold text-foreground">
-                  {todayTodoCount ? `${todayTodoCount.pending}건` : "-"}
-                </CardDescription>
-              </CardHeader>
-            </Card>
+            />
           </div>
-        </section>
+        </Section>
 
         <details className="mt-3 rounded-lg border border-border/70 bg-muted/20 px-3 py-2 text-sm">
           <summary className="cursor-pointer font-semibold text-foreground">
@@ -3255,6 +3175,6 @@ export default function OperationsClient() {
           )}
         </CardContent>
       </Card>
-    </div>
+    </AdminPageShell>
   );
 }
