@@ -183,6 +183,23 @@
 
 offline 인덱스 10개는 runtime `createIndexes()`가 이름을 지정하지 않으므로 MongoDB의 기본 이름 생성 규칙(`<필드>_<방향>`)에 따른 이름을 기대한다. runtime 정의가 복합 키나 별도 옵션으로 바뀌면 check 기대 이름도 함께 검토해야 한다.
 
+### 동일 사양·다른 이름 인덱스 진단
+
+MISSING 전용 생성 스크립트가 아래 8개를 모두 `ALREADY_EXISTS`로 판정한 뒤에도 기존 check는 같은 8개를 `MISSING`으로 보고했다. 생성 스크립트는 key/옵션을 기준으로 기존 인덱스를 찾지만, 기존 check는 기대 이름만 기준으로 찾았기 때문에 실제 DB에 동일 사양 인덱스가 다른 이름으로 존재할 가능성이 높다.
+
+- `oauth_pending_signups.ttl_oauth_pending_expiresAt`
+- `user_sessions.user_sessions_user_at_desc`
+- `board_posts.boards_list_compound`
+- `community_likes.community_likes_post_user_unique`
+- `wishlists.wishlist_user_product_unique`
+- `admin_locks.admin_locks_key_unique`
+- `users.users_email_unique`
+- `reviews.user_createdAt`
+
+check는 기대 이름을 먼저 찾고, 없으면 `listIndexes()` 결과에서 동일 key/`unique`/`expireAfterSeconds`/`sparse`/`partialFilterExpression` 사양을 가진 인덱스를 추가로 찾는다. 동일 사양이 다른 이름으로 존재하면 `[NAME_MISMATCH] <collection>.<expectedName> existsAs=<actualName>`으로 출력하고 summary의 `NAME_MISMATCH`에 집계한다. 실제 성능 및 제약 사양은 존재하므로 `NAME_MISMATCH`만 있을 때는 warning과 종료 코드 0을 사용한다. 진짜 `MISSING` 또는 기대 이름 인덱스의 `MISMATCH`가 하나라도 있으면 기존대로 종료 코드 2를 사용한다.
+
+인덱스 이름까지 맞추려면 기존 인덱스 drop/recreate가 필요할 수 있다. 현재 단계에서는 운영 DB의 인덱스 생성·삭제·수정과 이름 정렬을 금지하고, 읽기 전용 진단 결과만 후속 운영 검토에 사용한다.
+
 ## 특수 인덱스
 
 ### Unique
