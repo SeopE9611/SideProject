@@ -1654,13 +1654,6 @@ export default function OperationsClient() {
                 {view.label}
               </Button>
             ))}
-            actions={
-              activeQuickView !== "all" || activeFilterCount > 0 ? (
-                <Button type="button" size="sm" variant="ghost" onClick={reset}>
-                  전체 필터 초기화
-                </Button>
-              ) : null
-            }
           >
             <div>
               <div className="flex flex-wrap items-center gap-2">
