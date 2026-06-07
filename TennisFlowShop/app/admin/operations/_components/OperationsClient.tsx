@@ -18,6 +18,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
 
+import AdminFilterBar from "@/components/admin/AdminFilterBar";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
 import AdminSummaryCard from "@/components/admin/AdminSummaryCard";
@@ -124,9 +125,9 @@ function amountMeaningText(item: OpItem) {
 }
 
 const PAGE_COPY = {
-  title: "오늘 처리할 일",
+  title: "오늘 처리함",
   description:
-    "관리자가 오늘 확인해야 할 주문·신청·대여·오프라인·아카데미 업무를 우선순위로 모아봅니다.",
+    "결제 확인, 취소 요청, 배송 누락, 교체서비스 작업 등 오늘 처리해야 할 운영 업무를 한곳에서 확인합니다.",
   dailyTodoTitle: "오늘 해야 할 일",
   dailyTodoLabels: {
     urgent: "긴급",
@@ -1243,13 +1244,13 @@ export default function OperationsClient() {
         tone: "warning" as const,
       },
       {
-        title: "배송/출고 처리",
+        title: "배송/출고 누락",
         count: taskCounts?.shippingMissing ?? 0,
         description:
           "배송지와 수령 방식을 확인하고 운송장 또는 방문 수령 정보를 정리하세요.",
         action: "바로 처리",
         onClick: () => applyQuickView("shippingMissing"),
-        tone: "neutral" as const,
+        tone: "warning" as const,
       },
       {
         title: "교체서비스 작업",
@@ -1261,7 +1262,7 @@ export default function OperationsClient() {
           setKind("stringing_application");
           setPage(1);
         },
-        tone: "neutral" as const,
+        tone: "info" as const,
       },
       {
         title: "대여 반납",
@@ -1336,7 +1337,7 @@ export default function OperationsClient() {
           description={PAGE_COPY.description}
           icon={Inbox}
           scope="운영 통합 센터"
-          helperText="연결 상태와 다음 액션을 한 화면에서 확인합니다."
+          helperText="긴급 업무부터 확인하고 바로 처리할 수 있습니다."
           actions={
             <Button
               type="button"
@@ -1368,56 +1369,13 @@ export default function OperationsClient() {
           </div>
         )}
 
-        <Section className="mt-4">
+        <Section variant="plain" className="mt-4 space-y-3">
           <SectionHeader
-            title="오늘 바로 처리할 업무"
-            description="건수가 있는 항목부터 열어 처리하면 됩니다."
-            aside={
-              <p className="max-w-full break-words text-sm leading-relaxed text-muted-foreground sm:max-w-[360px] sm:text-right">
-                전체 처리 필요 기준입니다. 검색과 필터는 아래 목록에만
-                적용됩니다.
-              </p>
-            }
-          />
-          <SectionBody>
-            <div className="grid gap-3.5 bp-sm:grid-cols-2 bp-lg:grid-cols-4 bp-lg:gap-4">
-              {practicalTaskCards.map((task) => (
-                <AdminTaskCard
-                  key={task.title}
-                  title={task.title}
-                  count={task.count}
-                  description={task.description}
-                  tone={task.tone}
-                  actionLabel={task.action}
-                  onAction={task.onClick}
-                />
-              ))}
-              <AdminTaskCard
-                title="오프라인 미결제/보정"
-                count={taskCounts?.offline ?? 0}
-                description="오프라인 미결제, 패키지 발급 실패, 보정 필요 항목을 확인하세요."
-                actionLabel="바로 처리"
-                href="/admin/offline/reconciliation"
-              />
-              <AdminTaskCard
-                title="아카데미 상담"
-                count={taskCounts?.academyApplications ?? 0}
-                description="신규 신청, 검토 중, 상담 대기, 등록 확정 대기 건을 확인하세요."
-                tone="info"
-                actionLabel="바로 처리"
-                href="/admin/academy/applications"
-              />
-            </div>
-          </SectionBody>
-        </Section>
-
-        <Section variant="plain" className="mt-5 space-y-3">
-          <SectionHeader
-            title="업무 상태 요약"
-            description="긴급도와 미처리 상태를 빠르게 좁혀봅니다."
+            title="지금 확인할 업무"
+            description="긴급, 확인 필요, 미처리 순서로 우선순위를 바로 확인하세요."
             className="border-0 bg-transparent px-0 py-0"
           />
-          <div className="grid grid-cols-1 gap-2 bp-sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3 bp-sm:grid-cols-2 bp-lg:grid-cols-4">
             <AdminSummaryCard
               title={PAGE_COPY.dailyTodoLabels.urgent}
               value={todayTodoCount ? `${todayTodoCount.urgent}건` : "-"}
@@ -1457,9 +1415,61 @@ export default function OperationsClient() {
                 setPage(1);
               }}
             />
+            <AdminSummaryCard
+              title="전체 처리 필요"
+              value={dailySummaryValue(dailySummary?.remaining.total)}
+              description="오늘 마감 전 확인할 남은 업무"
+              icon={Inbox}
+              actionLabel="오늘 업무 보기"
+              active={activeQuickView === "today"}
+              onAction={() => applyQuickView("today")}
+            />
           </div>
         </Section>
 
+        <Section className="mt-5">
+          <SectionHeader
+            title="오늘 바로 처리할 업무"
+            description="건수가 있는 항목부터 열어 처리하면 됩니다."
+            aside={
+              <p className="max-w-full break-words text-sm leading-relaxed text-muted-foreground sm:max-w-[360px] sm:text-right">
+                전체 처리 필요 기준입니다. 검색과 필터는 아래 목록에만
+                적용됩니다.
+              </p>
+            }
+          />
+          <SectionBody>
+            <div className="grid gap-3.5 bp-sm:grid-cols-2 bp-lg:grid-cols-4 bp-lg:gap-4">
+              {practicalTaskCards.map((task) => (
+                <AdminTaskCard
+                  key={task.title}
+                  title={task.title}
+                  count={task.count}
+                  description={task.description}
+                  tone={task.tone}
+                  actionLabel={task.action}
+                  onAction={task.onClick}
+                />
+              ))}
+              <AdminTaskCard
+                title="오프라인 미결제/보정"
+                count={taskCounts?.offline ?? 0}
+                description="오프라인 미결제, 패키지 발급 실패, 보정 필요 항목을 확인하세요."
+                tone="warning"
+                actionLabel="바로 처리"
+                href="/admin/offline/reconciliation"
+              />
+              <AdminTaskCard
+                title="아카데미 상담"
+                count={taskCounts?.academyApplications ?? 0}
+                description="신규 신청, 검토 중, 상담 대기, 등록 확정 대기 건을 확인하세요."
+                tone="info"
+                actionLabel="바로 처리"
+                href="/admin/academy/applications"
+              />
+            </div>
+          </SectionBody>
+        </Section>
         <details className="mt-3 rounded-lg border border-border/70 bg-muted/20 px-3 py-2 text-sm">
           <summary className="cursor-pointer font-semibold text-foreground">
             <span className="inline-flex items-center gap-2">
@@ -1630,35 +1640,39 @@ export default function OperationsClient() {
         </section>
 
         <div className="mt-4 rounded-xl border border-border bg-card p-3">
-          <div className={cn(adminSurface.filterCard, "mb-3 p-3 sm:p-3")}>
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-              <div>
-                <p className="text-sm font-medium text-foreground">업무 큐</p>
-                <p className="mt-1 text-xs text-foreground/70">
-                  {activeQuickViewMeta.description}
-                </p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  처리할 업무 유형을 빠르게 좁혀봅니다. 오늘 처리, 취소 요청,
-                  결제 확인처럼 실제 업무 단위로 목록을 전환합니다.
-                </p>
+          <AdminFilterBar
+            className="mb-3 rounded-xl bg-background/70 p-3 shadow-none sm:p-4"
+            quickFilters={QUICK_VIEWS.map((view) => (
+              <Button
+                key={view.key}
+                type="button"
+                size="sm"
+                variant={activeQuickView === view.key ? "default" : "outline"}
+                aria-pressed={activeQuickView === view.key}
+                onClick={() => applyQuickView(view.key)}
+              >
+                {view.label}
+              </Button>
+            ))}
+            actions={
+              activeQuickView !== "all" || activeFilterCount > 0 ? (
+                <Button type="button" size="sm" variant="ghost" onClick={reset}>
+                  전체 필터 초기화
+                </Button>
+              ) : null
+            }
+          >
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="text-sm font-semibold text-foreground">빠른 보기</p>
+                <Badge variant="outline">{activeQuickViewMeta.label}</Badge>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {QUICK_VIEWS.map((view) => (
-                  <Button
-                    key={view.key}
-                    type="button"
-                    size="sm"
-                    variant={
-                      activeQuickView === view.key ? "default" : "outline"
-                    }
-                    onClick={() => applyQuickView(view.key)}
-                  >
-                    {view.label}
-                  </Button>
-                ))}
-              </div>
+              <p className="mt-1 text-xs leading-relaxed text-foreground/75">
+                {activeQuickViewMeta.description} 자주 처리하는 업무 유형을 한 번에
+                전환할 수 있습니다.
+              </p>
             </div>
-          </div>
+          </AdminFilterBar>
           <p className="mb-1 text-xs text-muted-foreground">
             일반 업무는 업무 큐로 전환하고, 특정 이슈 집중 점검은 정밀 검수
             모드를 사용하세요.
@@ -2060,6 +2074,29 @@ export default function OperationsClient() {
                 </Button>
               </div>
             </div>
+          </div>
+          <div className="mt-2 flex flex-col gap-2 rounded-lg border border-border/70 bg-muted/20 px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+              <span className="font-semibold text-foreground">현재 보기</span>
+              <Badge variant="outline">{activeQuickViewMeta.label}</Badge>
+              <span>{activeQuickViewMeta.description}</span>
+              <span className="font-semibold text-foreground">
+                {typeof totalGroups === "number"
+                  ? `총 ${totalGroups.toLocaleString("ko-KR")}건`
+                  : "건수 확인 중"}
+              </span>
+            </div>
+            {(activeQuickView !== "all" || activeFilterCount > 0) && (
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                className="h-7 self-start px-2 text-xs sm:self-auto"
+                onClick={reset}
+              >
+                필터 초기화
+              </Button>
+            )}
           </div>
           <div className="flex items-center gap-2 pt-2">
             <div className="text-xs text-muted-foreground">
