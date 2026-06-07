@@ -408,8 +408,40 @@ export default function NewStringPage() {
         images,
         hybridMain,
         hybridCross,
+
+        // 구매 옵션/재고 관련 상태도 이탈 경고 기준에 포함합니다.
+        colorInventories,
+        variantInventories,
+        gaugeInputsByColor,
+        customColorName,
+        customColorHex,
+        customColorHexTouched,
+        showGaugeStockToUser,
+
+        // 현재 작성 단계도 변경 상태에 포함합니다.
+        currentStepIndex,
+        completedSteps,
       }),
-    [basicInfo, features, tags, inventory, searchKeywordsInput, additionalFeatures, images, hybridMain, hybridCross],
+    [
+      basicInfo,
+      features,
+      tags,
+      inventory,
+      searchKeywordsInput,
+      additionalFeatures,
+      images,
+      hybridMain,
+      hybridCross,
+      colorInventories,
+      variantInventories,
+      gaugeInputsByColor,
+      customColorName,
+      customColorHex,
+      customColorHexTouched,
+      showGaugeStockToUser,
+      currentStepIndex,
+      completedSteps,
+    ],
   );
 
   const baselineRef = useRef<string | null>(null);
@@ -468,6 +500,81 @@ export default function NewStringPage() {
       firstFocusable?.focus({ preventScroll: true });
     });
   }, [currentStepIndex]);
+
+  // 신규 등록 성공 후 폼 초기화
+  const resetNewProductForm = () => {
+    setBasicInfo({
+      name: "",
+      sku: "",
+      shortDescription: "",
+      description: "",
+      brand: "",
+      material: "",
+      gauge: "",
+      color: "",
+      length: "",
+      price: 0,
+      mountingFee: 0,
+      shippingFee: 3000,
+    });
+
+    setFeatures({
+      power: 60,
+      control: 60,
+      spin: 60,
+      durability: 60,
+      comfort: 60,
+    });
+
+    setTags({
+      beginner: false,
+      intermediate: false,
+      advanced: false,
+      baseline: false,
+      serveVolley: false,
+      allCourt: false,
+      power: false,
+    });
+
+    setInventory({
+      stock: 0,
+      lowStock: 5,
+      status: "instock",
+      manageStock: false,
+      allowBackorder: false,
+      isFeatured: false,
+      isNew: false,
+      isSale: false,
+      salePrice: 0,
+    });
+
+    setSearchKeywordsInput("");
+    setColorInventories([]);
+    setVariantInventories([]);
+    setGaugeInputsByColor({});
+    setCustomColorName("");
+    setCustomColorHex(defaultColorPickerValue);
+    setCustomColorHexTouched(false);
+    setShowGaugeStockToUser(true);
+    setAdditionalFeatures("");
+    setImages([]);
+    setHybridMain({
+      brand: "",
+      name: "",
+      gauge: "",
+      color: "",
+      role: "mains",
+    });
+    setHybridCross({
+      brand: "",
+      name: "",
+      gauge: "",
+      color: "",
+      role: "cross",
+    });
+    setCurrentStepIndex(0);
+    setCompletedSteps([]);
+  };
 
   // 폼 제출 핸들러
   const handleSubmit = async (e: React.FormEvent) => {
@@ -709,8 +816,11 @@ export default function NewStringPage() {
 
       showSuccessToast("상품이 등록되었습니다.");
 
-      // router.push('/admin/products'); // 상품 목록 페이지로 즉시 이동
-      router.push(`/admin/products/${data.id}/edit`);
+      // 등록 성공 후 새 상품 등록 화면에 입력값이 남지 않도록 즉시 초기화합니다.
+      resetNewProductForm();
+
+      // 브라우저 뒤로가기로 방금 작성한 dirty form에 다시 돌아오지 않도록 replace를 사용합니다.
+      router.replace(`/admin/products/${data.id}/edit`);
     } catch (error) {
       // 상품 등록 중 에러 발생시
       showErrorToast(getAdminErrorMessage(error) || "서버 오류가 발생했습니다. 잠시 후에 다시 시도하세요.");

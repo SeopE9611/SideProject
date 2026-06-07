@@ -1,4 +1,4 @@
-import type { ProductDetail } from "@/types/admin/products";
+import type { ProductColorInventory, ProductDetail, ProductVariantInventory } from "@/types/admin/products";
 
 export const MAX_PRODUCT_IMAGE_COUNT = 4;
 
@@ -52,6 +52,11 @@ export type ProductEditSnapshotInput = {
   images: string[];
   hybridMain: HybridMainSpec;
   hybridCross: HybridCrossSpec;
+  colorInventories: ProductColorInventory[];
+  variantInventories: ProductVariantInventory[];
+  gaugeInputsByColor: Record<string, string>;
+  showGaugeStockToUser: boolean;
+  mainImageIndex: number;
 };
 
 export type ProductEditHydbridState = {
@@ -59,9 +64,7 @@ export type ProductEditHydbridState = {
   hybridCross: HybridCrossSpec;
 };
 
-export function normalizeHybridState(
-  product: ProductDetail,
-): ProductEditHydbridState {
+export function normalizeHybridState(product: ProductDetail): ProductEditHydbridState {
   return {
     hybridMain: product?.specifications?.hybrid
       ? {
@@ -84,10 +87,36 @@ export function normalizeHybridState(
   };
 }
 
-export function buildProductEditInitialSnapshot(
-  product: ProductDetail,
-): string {
+export function buildProductEditInitialSnapshot(product: ProductDetail): string {
   const hybridState = normalizeHybridState(product);
+
+  const colorInventories =
+    Array.isArray(product.colorInventories) && product.colorInventories.length > 0
+      ? product.colorInventories
+      : Array.isArray(product.colorOptions) && product.colorOptions.length > 0
+        ? product.colorOptions.map((value) => ({
+            value,
+            label: value,
+            colorHex: "",
+            image: "",
+            stock: 0,
+            isSoldOut: false,
+          }))
+        : product.color
+          ? [
+              {
+                value: product.color,
+                label: product.color,
+                colorHex: "",
+                image: "",
+                stock: 0,
+                isSoldOut: false,
+              },
+            ]
+          : [];
+
+  const variantInventories = Array.isArray(product.variantInventories) ? product.variantInventories : [];
+
   return buildProductEditSnapshot({
     basicInfo: {
       name: product.name,
@@ -116,26 +145,25 @@ export function buildProductEditInitialSnapshot(
       isSale: product.inventory.isSale,
       salePrice: product.inventory.salePrice,
     },
-    searchKeywordsInput: Array.isArray(product.searchKeywords)
-      ? product.searchKeywords.join(", ")
-      : "",
+    searchKeywordsInput: Array.isArray(product.searchKeywords) ? product.searchKeywords.join(", ") : "",
     additionalFeatures: product.additionalFeatures,
     images: product.images,
     hybridMain: hybridState.hybridMain,
     hybridCross: hybridState.hybridCross,
+
+    colorInventories,
+    variantInventories,
+    gaugeInputsByColor: {},
+    showGaugeStockToUser: !product.inventory.hideGaugeStock,
+    mainImageIndex: 0,
   });
 }
 
-export function buildProductEditSnapshot(
-  input: ProductEditSnapshotInput,
-): string {
+export function buildProductEditSnapshot(input: ProductEditSnapshotInput): string {
   return JSON.stringify(input);
 }
 
-export function sanitizeUploadFileName(
-  fileName: string,
-  timestamp = Date.now(),
-): string {
+export function sanitizeUploadFileName(fileName: string, timestamp = Date.now()): string {
   const extension = fileName.split(".").pop();
   const base = fileName.replace(/\.[^/.]+$/, "").replace(/[^a-zA-Z0-9_-]/g, "");
 
