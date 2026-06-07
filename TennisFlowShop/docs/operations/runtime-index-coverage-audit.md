@@ -3,7 +3,7 @@
 - 감사일: 2026-06-07
 - 범위: `getDb()` runtime ensure, `ensure-runtime-indexes.mjs`, `check-runtime-indexes.mjs`
 - 방법: 저장소 정적 분석만 수행했다. MongoDB URI/환경변수 값은 확인·출력하지 않았고, DB 연결 및 쓰기 스크립트는 실행하지 않았다.
-- 결론: 세 목록은 동일하지 않다. runtime 87개, ensure script 82개, check script 79개이며 합집합은 96개다.
+- 결론: runtime 87개와 ensure script 82개는 동일하지 않다. check script는 두 생성/보정 경로의 합집합 96개를 읽기 전용으로 점검한다.
 
 ## 확인한 파일
 
@@ -39,11 +39,11 @@
 | 비교                             | 누락/추가 수 | 결과                                                            |
 | -------------------------------- | -----------: | --------------------------------------------------------------- |
 | runtime에만 있고 ensure에는 없음 |           14 | `auth_rate_limit_windows` 2개, `users` OAuth 2개, offline 10개  |
-| runtime에만 있고 check에는 없음  |           17 | 위 14개 + `user_notifications` 3개                              |
+| runtime에만 있고 check에는 없음  |            0 | 없음                                                            |
 | ensure에만 있고 runtime에는 없음 |            9 | 공개 목록용 `products` 3개, `used_rackets` 4개, 검색 이메일 2개 |
 | check에만 있고 runtime에는 없음  |            9 | ensure-only 9개와 동일                                          |
-| ensure에만 있고 check에는 없음   |            3 | `user_notifications` 3개                                        |
-| check에만 있고 ensure에는 없음   |            0 | 없음                                                            |
+| ensure에만 있고 check에는 없음   |            0 | 없음                                                            |
+| check에만 있고 ensure에는 없음   |           14 | runtime-only 14개와 동일                                        |
 
 동일 이름/키라도 옵션 범위가 완전히 같지 않은 항목도 있다.
 
@@ -61,8 +61,8 @@
 | `admin_locks`                | `admin_locks_key_unique`                         | `{"key":1}`                                                                    | `unique`                                                                                                 |   ✅    |   ✅   |  ✅   |
 | `admin_locks`                | `ttl_locked_until`                               | `{"lockedUntil":1}`                                                            | `TTL=0`                                                                                                  |   ✅    |   ✅   |  ✅   |
 | `admin_notes`                | `admin_notes_target_createdAt_idx`               | `{"targetType":1,"targetId":1,"createdAt":-1}`                                 | —                                                                                                        |   ✅    |   ✅   |  ✅   |
-| `auth_rate_limit_windows`    | `auth_rate_limit_lookup_route_key_window_desc`   | `{"routeId":1,"key":1,"windowStart":-1}`                                       | —                                                                                                        |   ✅    |   —    |   —   |
-| `auth_rate_limit_windows`    | `ttl_auth_rate_limit_expireAt`                   | `{"expireAt":1}`                                                               | `TTL=0`                                                                                                  |   ✅    |   —    |   —   |
+| `auth_rate_limit_windows`    | `auth_rate_limit_lookup_route_key_window_desc`   | `{"routeId":1,"key":1,"windowStart":-1}`                                       | —                                                                                                        |   ✅    |   —    |  ✅   |
+| `auth_rate_limit_windows`    | `ttl_auth_rate_limit_expireAt`                   | `{"expireAt":1}`                                                               | `TTL=0`                                                                                                  |   ✅    |   —    |  ✅   |
 | `board_posts`                | `boards_attachments_storagePath`                 | `{"attachments.storagePath":1}`                                                | —                                                                                                        |   ✅    |   ✅   |  ✅   |
 | `board_posts`                | `boards_list_compound`                           | `{"type":1,"status":1,"isPinned":-1,"createdAt":-1}`                           | —                                                                                                        |   ✅    |   ✅   |  ✅   |
 | `board_posts`                | `boards_updatedAt_desc`                          | `{"updatedAt":-1}`                                                             | —                                                                                                        |   ✅    |   ✅   |  ✅   |
@@ -89,16 +89,16 @@
 | `messages`                   | `idx_messages_to_readAt`                         | `{"toUserId":1,"readAt":1}`                                                    | —                                                                                                        |   ✅    |   ✅   |  ✅   |
 | `messages`                   | `ttl_messages_expiresAt`                         | `{"expiresAt":1}`                                                              | `TTL=0; partial={"expiresAt":{"$type":"date"}}`                                                          |   ✅    |   ✅   |  ✅   |
 | `oauth_pending_signups`      | `ttl_oauth_pending_expiresAt`                    | `{"expiresAt":1}`                                                              | `TTL=0`                                                                                                  |   ✅    |   ✅   |  ✅   |
-| `offline_customers`          | `createdAt_-1`                                   | `{"createdAt":-1}`                                                             | —                                                                                                        |   ✅    |   —    |   —   |
-| `offline_customers`          | `emailLower_1`                                   | `{"emailLower":1}`                                                             | —                                                                                                        |   ✅    |   —    |   —   |
-| `offline_customers`          | `linkedUserId_1`                                 | `{"linkedUserId":1}`                                                           | —                                                                                                        |   ✅    |   —    |   —   |
-| `offline_customers`          | `phoneNormalized_1`                              | `{"phoneNormalized":1}`                                                        | —                                                                                                        |   ✅    |   —    |   —   |
-| `offline_service_records`    | `kind_1`                                         | `{"kind":1}`                                                                   | —                                                                                                        |   ✅    |   —    |   —   |
-| `offline_service_records`    | `occurredAt_-1`                                  | `{"occurredAt":-1}`                                                            | —                                                                                                        |   ✅    |   —    |   —   |
-| `offline_service_records`    | `offlineCustomerId_1`                            | `{"offlineCustomerId":1}`                                                      | —                                                                                                        |   ✅    |   —    |   —   |
-| `offline_service_records`    | `payment.status_1`                               | `{"payment.status":1}`                                                         | —                                                                                                        |   ✅    |   —    |   —   |
-| `offline_service_records`    | `status_1`                                       | `{"status":1}`                                                                 | —                                                                                                        |   ✅    |   —    |   —   |
-| `offline_service_records`    | `userId_1`                                       | `{"userId":1}`                                                                 | —                                                                                                        |   ✅    |   —    |   —   |
+| `offline_customers`          | `createdAt_-1`                                   | `{"createdAt":-1}`                                                             | —                                                                                                        |   ✅    |   —    |  ✅   |
+| `offline_customers`          | `emailLower_1`                                   | `{"emailLower":1}`                                                             | —                                                                                                        |   ✅    |   —    |  ✅   |
+| `offline_customers`          | `linkedUserId_1`                                 | `{"linkedUserId":1}`                                                           | —                                                                                                        |   ✅    |   —    |  ✅   |
+| `offline_customers`          | `phoneNormalized_1`                              | `{"phoneNormalized":1}`                                                        | —                                                                                                        |   ✅    |   —    |  ✅   |
+| `offline_service_records`    | `kind_1`                                         | `{"kind":1}`                                                                   | —                                                                                                        |   ✅    |   —    |  ✅   |
+| `offline_service_records`    | `occurredAt_-1`                                  | `{"occurredAt":-1}`                                                            | —                                                                                                        |   ✅    |   —    |  ✅   |
+| `offline_service_records`    | `offlineCustomerId_1`                            | `{"offlineCustomerId":1}`                                                      | —                                                                                                        |   ✅    |   —    |  ✅   |
+| `offline_service_records`    | `payment.status_1`                               | `{"payment.status":1}`                                                         | —                                                                                                        |   ✅    |   —    |  ✅   |
+| `offline_service_records`    | `status_1`                                       | `{"status":1}`                                                                 | —                                                                                                        |   ✅    |   —    |  ✅   |
+| `offline_service_records`    | `userId_1`                                       | `{"userId":1}`                                                                 | —                                                                                                        |   ✅    |   —    |  ✅   |
 | `orders`                     | `ops_orders_searchEmailLower_idx`                | `{"searchEmailLower":1}`                                                       | —                                                                                                        |    —    |   ✅   |  ✅   |
 | `orders`                     | `ops_orders_stringingApplicationId_idx`          | `{"stringingApplicationId":1}`                                                 | —                                                                                                        |   ✅    |   ✅   |  ✅   |
 | `points_transactions`        | `idx_points_user_created`                        | `{"userId":1,"createdAt":-1}`                                                  | —                                                                                                        |   ✅    |   ✅   |  ✅   |
@@ -145,14 +145,14 @@
 | `used_rackets`               | `spec.swingWeight_1`                             | `{"spec.swingWeight":1}`                                                       | —                                                                                                        |   ✅    |   ✅   |  ✅   |
 | `used_rackets`               | `spec.weight_1`                                  | `{"spec.weight":1}`                                                            | —                                                                                                        |   ✅    |   ✅   |  ✅   |
 | `used_rackets`               | `status_1_createdAt_-1`                          | `{"status":1,"createdAt":-1}`                                                  | —                                                                                                        |   ✅    |   ✅   |  ✅   |
-| `user_notifications`         | `idx_user_notifications_user_created`            | `{"userId":1,"createdAt":-1}`                                                  | —                                                                                                        |   ✅    |   ✅   |   —   |
-| `user_notifications`         | `idx_user_notifications_user_read_created`       | `{"userId":1,"readAt":1,"createdAt":-1}`                                       | —                                                                                                        |   ✅    |   ✅   |   —   |
-| `user_notifications`         | `uniq_user_notifications_dedupe_key`             | `{"dedupeKey":1}`                                                              | `unique; partial={"dedupeKey":{"$type":"string"}}`                                                       |   ✅    |   ✅   |   —   |
+| `user_notifications`         | `idx_user_notifications_user_created`            | `{"userId":1,"createdAt":-1}`                                                  | —                                                                                                        |   ✅    |   ✅   |  ✅   |
+| `user_notifications`         | `idx_user_notifications_user_read_created`       | `{"userId":1,"readAt":1,"createdAt":-1}`                                       | —                                                                                                        |   ✅    |   ✅   |  ✅   |
+| `user_notifications`         | `uniq_user_notifications_dedupe_key`             | `{"dedupeKey":1}`                                                              | `unique; partial={"dedupeKey":{"$type":"string"}}`                                                       |   ✅    |   ✅   |  ✅   |
 | `user_sessions`              | `user_sessions_user_at_desc`                     | `{"userId":1,"at":-1}`                                                         | —                                                                                                        |   ✅    |   ✅   |  ✅   |
 | `users`                      | `users_email_unique`                             | `{"email":1}`                                                                  | `unique; background; 차이 E: {"unique":true}; C: {"unique":true}`                                        |   ✅    |   ✅   |  ✅   |
 | `users`                      | `users_lastLoginAt_idx`                          | `{"lastLoginAt":-1}`                                                           | —                                                                                                        |   ✅    |   ✅   |  ✅   |
-| `users`                      | `users_oauth_kakao_id_unique`                    | `{"oauth.kakao.id":1}`                                                         | `unique; partial={"oauth.kakao.id":{"$exists":true,"$type":"string"}}; background`                       |   ✅    |   —    |   —   |
-| `users`                      | `users_oauth_naver_id_unique`                    | `{"oauth.naver.id":1}`                                                         | `unique; partial={"oauth.naver.id":{"$exists":true,"$type":"string"}}; background`                       |   ✅    |   —    |   —   |
+| `users`                      | `users_oauth_kakao_id_unique`                    | `{"oauth.kakao.id":1}`                                                         | `unique; partial={"oauth.kakao.id":{"$exists":true,"$type":"string"}}; background`                       |   ✅    |   —    |  ✅   |
+| `users`                      | `users_oauth_naver_id_unique`                    | `{"oauth.naver.id":1}`                                                         | `unique; partial={"oauth.naver.id":{"$exists":true,"$type":"string"}}; background`                       |   ✅    |   —    |  ✅   |
 | `wishlists`                  | `wishlist_user_product_unique`                   | `{"userId":1,"productId":1}`                                                   | `unique`                                                                                                 |   ✅    |   ✅   |  ✅   |
 
 ## 위치별 인덱스 목록 요약
@@ -177,28 +177,30 @@
 
 이 9개는 공개 목록/운영 검색 성능 목적일 수 있으므로, 단순히 삭제할 불일치로 판단하면 안 된다. 스크립트 설명의 “runtime 보장 범위”와 실제 책임 범위를 구분해 문서화할 필요가 있다.
 
-### check-runtime-indexes: 79개
+### check-runtime-indexes: 96개
 
-전체 사양은 위 비교표의 check 열을 기준으로 한다. ensure 목록에서 `user_notifications` 3개만 빠져 있고, check에만 있는 항목은 없다. 따라서 현재 check가 성공해도 ensure가 담당하는 알림 인덱스 3개의 누락/옵션 불일치를 발견하지 못한다.
+전체 사양은 위 비교표의 check 열을 기준으로 한다. check는 runtime ensure 87개와 ensure script 82개의 합집합 96개를 점검한다. 이번 보강으로 `user_notifications` 3개와 runtime-only 14개를 추가했으며, 인덱스 생성·삭제 없이 이름, 키, `unique`, `sparse`, `expireAfterSeconds`, `partialFilterExpression` 불일치만 보고한다.
+
+offline 인덱스 10개는 runtime `createIndexes()`가 이름을 지정하지 않으므로 MongoDB의 기본 이름 생성 규칙(`<필드>_<방향>`)에 따른 이름을 기대한다. runtime 정의가 복합 키나 별도 옵션으로 바뀌면 check 기대 이름도 함께 검토해야 한다.
 
 ## 특수 인덱스
 
 ### Unique
 
 - runtime: `admin_locks_key_unique`, `board_view_dedupe_unique`, `community_likes_post_user_unique`, `community_post_view_dedupe_unique`, `uniq_pass_application`, `revenue_report_snapshots_yyyymm_unique`, `uniq_user_notifications_dedupe_key`, `uq_points_user_type_refKey`, `uq_points_refKey`, `cancel_refund_risk_subject_event_unique`, `users_email_unique`, `users_oauth_kakao_id_unique`, `users_oauth_naver_id_unique`, `wishlist_user_product_unique`, `user_product_order_unique`, `user_service_app_unique`, `review_user_unique`
-- ensure에는 위 runtime 목록 중 `users` OAuth 2개가 없고, check에는 추가로 `uniq_user_notifications_dedupe_key`가 없다.
+- ensure에는 위 runtime 목록 중 `users` OAuth 2개가 없다. check는 runtime의 unique 인덱스를 모두 점검한다.
 - unique 생성은 기존 중복 데이터 때문에 실패할 수 있으므로 운영 데이터 사전 점검 없이 범위를 넓히면 안 된다.
 
 ### TTL
 
 - runtime: `ttl_oauth_pending_expiresAt`, `ttl_auth_rate_limit_expireAt`, `board_view_dedupe_ttl_30m`, `community_post_view_dedupe_expire_at_ttl`, `ttl_messages_expiresAt`, `ttl_locked_until`
-- ensure/check에는 `ttl_auth_rate_limit_expireAt`가 없다.
+- ensure에는 `ttl_auth_rate_limit_expireAt`가 없고, check는 runtime과 동일하게 `expireAfterSeconds: 0`을 점검한다.
 - `board_view_dedupe_ttl_30m`은 runtime에서 환경 의존 TTL을 사용하지만 ensure/check는 1,800초를 기대한다. 먼저 운영 정책값을 확정해야 한다.
 
 ### Partial
 
 - runtime: `ttl_messages_expiresAt`, `uniq_user_notifications_dedupe_key`, `uq_points_user_type_refKey`, `uq_points_refKey`, `users_oauth_kakao_id_unique`, `users_oauth_naver_id_unique`, `user_product_order_unique`, `user_service_app_unique`
-- ensure에는 `users` OAuth 2개가 없고, check에는 추가로 `uniq_user_notifications_dedupe_key`가 없다.
+- ensure에는 `users` OAuth 2개가 없다. check는 runtime의 partial 인덱스를 모두 점검한다.
 
 ### Background
 
@@ -228,8 +230,8 @@
 
 1. unique/partial 인덱스 추가 또는 옵션 변경: 중복 데이터, partial 대상 문서, 기존 동일 키 인덱스를 먼저 읽기 전용으로 확인해야 한다.
 2. TTL 범위 정렬: 실제 `COMMUNITY_VIEW_DEDUPE_TTL_SECONDS` 정책과 기존 TTL 인덱스 옵션을 확인한 뒤 결정해야 한다.
-3. OAuth unique 인덱스의 ensure/check 편입: 기존 OAuth ID 중복 및 타입 분포를 먼저 점검해야 한다.
-4. offline 인덱스의 ensure/check 편입 또는 이름 명시: 기존 자동 생성 이름과 동일 키 인덱스 중복 여부를 확인해야 한다.
+3. OAuth unique 인덱스의 ensure 편입: 기존 OAuth ID 중복 및 타입 분포를 먼저 점검해야 한다. check 편입은 읽기 전용 점검이므로 완료했다.
+4. offline 인덱스의 ensure 편입 또는 runtime 이름 명시: 기존 자동 생성 이름과 동일 키 인덱스 중복 여부를 확인해야 한다. check는 현재 기본 생성 이름을 기대한다.
 5. runtime-only를 ensure에 추가하는 작업: ensure script가 실제 쓰기 작업이므로 배포 절차, 롤백, 실패 정책을 함께 설계해야 한다.
 6. ensure-only 9개 제거: runtime 외 성능 책임을 가진 인덱스일 수 있으므로 쿼리/explain 근거 없이 제거하면 안 된다.
 7. points/reviews의 drop/update 동작: 인덱스 범위 정렬과 분리해 별도 위험 작업으로 검토해야 한다.
@@ -243,10 +245,11 @@
 - 환경 의존 TTL과 자동 생성 이름은 명시적인 예외 규칙으로 다룬다.
 - 테스트는 MongoDB URI 없이 실행되어야 하며 DB 쓰기를 절대 수행하지 않아야 한다.
 
-### 2순위: check 범위 보완
+### 2순위: check 범위 보완 (완료)
 
-- 가장 명확한 불일치인 `user_notifications` 3개를 check에 추가하는 방안을 검토한다.
-- runtime-only 14개는 unique/TTL/자동 이름 위험을 먼저 확인한 뒤 단계적으로 check에 편입한다.
+- `user_notifications` 3개와 runtime-only 14개를 check에 추가했다.
+- check는 읽기 전용 `listIndexes()` 결과만 비교하며, 누락은 `MISSING`, 키·옵션 불일치는 `MISMATCH`로 보고하고 보정하지 않는다.
+- `background`는 MongoDB 버전/드라이버에 따라 비교 의미가 약하므로 기존 정책대로 점검하지 않는다.
 
 ### 3순위: 책임 범위 분리
 

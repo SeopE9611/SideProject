@@ -10,13 +10,13 @@ if (!uri) {
 }
 
 /**
- * 중요: check 대상 인덱스 범위는 ensure-runtime-indexes와 동일해야 한다.
+ * 중요: check 대상은 runtime ensure와 ensure-runtime-indexes의 합집합을 검사한다.
  *
  * 이유:
- * - ensure가 생성/보정하는 목록보다 check의 검사 목록이 좁으면,
+ * - 생성/보정 경로 중 하나라도 check의 검사 목록보다 넓으면,
  *   실제 운영에 중요한 인덱스가 빠져도 check가 통과하는 오판이 발생한다.
- * - 이번 단계의 목적은 "비교 방식 강화"가 아니라 "검사 대상 범위 정합화"다.
- *   (비교 기준: key/unique/expireAfterSeconds/sparse/partialFilterExpression 은 기존 로직 유지)
+ * - 비교 기준은 key/unique/expireAfterSeconds/sparse/partialFilterExpression이며,
+ *   MongoDB 버전별 의미가 약한 background 옵션은 기존 정책대로 비교하지 않는다.
  */
 const INDEX_SPECS = {
   service_passes: [
@@ -66,6 +66,18 @@ const INDEX_SPECS = {
     {
       name: "user_sessions_user_at_desc",
       keys: { userId: 1, at: -1 },
+      options: {},
+    },
+  ],
+  auth_rate_limit_windows: [
+    {
+      name: "ttl_auth_rate_limit_expireAt",
+      keys: { expireAt: 1 },
+      options: { expireAfterSeconds: 0 },
+    },
+    {
+      name: "auth_rate_limit_lookup_route_key_window_desc",
+      keys: { routeId: 1, key: 1, windowStart: -1 },
       options: {},
     },
   ],
@@ -250,6 +262,26 @@ const INDEX_SPECS = {
       },
     },
   ],
+  user_notifications: [
+    {
+      name: "idx_user_notifications_user_read_created",
+      keys: { userId: 1, readAt: 1, createdAt: -1 },
+      options: {},
+    },
+    {
+      name: "idx_user_notifications_user_created",
+      keys: { userId: 1, createdAt: -1 },
+      options: {},
+    },
+    {
+      name: "uniq_user_notifications_dedupe_key",
+      keys: { dedupeKey: 1 },
+      options: {
+        unique: true,
+        partialFilterExpression: { dedupeKey: { $type: "string" } },
+      },
+    },
+  ],
   points_transactions: [
     {
       name: "idx_points_user_created",
@@ -427,6 +459,44 @@ const INDEX_SPECS = {
       keys: { lastLoginAt: -1 },
       options: {},
     },
+    {
+      name: "users_oauth_kakao_id_unique",
+      keys: { "oauth.kakao.id": 1 },
+      options: {
+        unique: true,
+        partialFilterExpression: {
+          "oauth.kakao.id": { $exists: true, $type: "string" },
+        },
+      },
+    },
+    {
+      name: "users_oauth_naver_id_unique",
+      keys: { "oauth.naver.id": 1 },
+      options: {
+        unique: true,
+        partialFilterExpression: {
+          "oauth.naver.id": { $exists: true, $type: "string" },
+        },
+      },
+    },
+  ],
+  offline_customers: [
+    { name: "phoneNormalized_1", keys: { phoneNormalized: 1 }, options: {} },
+    { name: "emailLower_1", keys: { emailLower: 1 }, options: {} },
+    { name: "linkedUserId_1", keys: { linkedUserId: 1 }, options: {} },
+    { name: "createdAt_-1", keys: { createdAt: -1 }, options: {} },
+  ],
+  offline_service_records: [
+    {
+      name: "offlineCustomerId_1",
+      keys: { offlineCustomerId: 1 },
+      options: {},
+    },
+    { name: "userId_1", keys: { userId: 1 }, options: {} },
+    { name: "occurredAt_-1", keys: { occurredAt: -1 }, options: {} },
+    { name: "status_1", keys: { status: 1 }, options: {} },
+    { name: "payment.status_1", keys: { "payment.status": 1 }, options: {} },
+    { name: "kind_1", keys: { kind: 1 }, options: {} },
   ],
   reviews: [
     {
@@ -564,7 +634,7 @@ try {
         continue;
       }
 
-      // check와 ensure의 비교 기준은 반드시 동일해야 한다.
+      // check와 생성/보정 경로의 비교 기준은 반드시 동일해야 한다.
       // 그래야 "생성/보정 도구는 불일치"인데 "검사 도구는 정상" 같은 운영 오판을 막을 수 있다.
       const keyMatched =
         stableStringify(indexDoc.key) === stableStringify(spec.keys);
