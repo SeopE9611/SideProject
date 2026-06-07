@@ -83,6 +83,9 @@ declare global {
   // 월별 매출 리포트 스냅샷 인덱스 보장 상태
   var _revenueReportSnapshotIndexesReady: Promise<void> | null | undefined;
   var _offlineIndexesReady: Promise<void> | null | undefined;
+
+  // 런타임 인덱스 보장 실패 후 재시도 시각(반복 요청의 즉시 재시도 방지)
+  var _runtimeIndexesRetryAfter: number | undefined;
 }
 
 let clientPromise: Promise<MongoClient>;
@@ -164,56 +167,71 @@ export default clientPromise;
  * - Mongo 연결을 보장하고 DB 핸들을 반환
  * - 리뷰 인덱스를 생명주기당 1회만 보장(아이들포턴트)
  */
+const RUNTIME_INDEX_RETRY_COOLDOWN_MS = 60_000;
+
+function scheduleRuntimeIndexRetry() {
+  global._runtimeIndexesRetryAfter =
+    Date.now() + RUNTIME_INDEX_RETRY_COOLDOWN_MS;
+}
+
 export async function getDb() {
   const c = await clientPromise; // lazy connect + 실패한 Promise 재사용 방지
   const db = c.db(dbName);
+  const canStartRuntimeIndexEnsures =
+    !global._runtimeIndexesRetryAfter ||
+    global._runtimeIndexesRetryAfter <= Date.now();
 
   // 핵심: 인덱스 보장을 "순차 await" 하지 않고, 같은 요청 안에서 병렬로 시작한다.
   // - 기존 구조는 첫 요청/콜드스타트에서 ensure*Indexes를 하나씩 기다려서 지연이 누적됐다.
   // - Promise.all 병렬화는 "동시에 시작"만 개선하고, await Promise.all(...)이 남아 있으면
   //   첫 요청이 "모든 인덱스 보장 완료"까지 기다린다는 점은 동일하다.
-  if (!global._passesIndexesReady) {
+  if (canStartRuntimeIndexEnsures && !global._passesIndexesReady) {
     global._passesIndexesReady = ensurePassIndexes(db).catch((e) => {
       console.error("[passes] ensurePassIndexes failed", e);
-      // 실패 시 다음 요청에서 재시도되도록 null 처리
+      // 실패 시 쿨다운 후 재시도되도록 null 처리
+      scheduleRuntimeIndexRetry();
       global._passesIndexesReady = null;
     });
   }
 
   // auth(oauth_pending_signups, user_sessions) 인덱스 보장(1회)
-  if (!global._authIndexesReady) {
+  if (canStartRuntimeIndexEnsures && !global._authIndexesReady) {
     global._authIndexesReady = ensureAuthIndexes(db).catch((e) => {
       console.error("[auth] ensureAuthIndexes failed", e);
+      scheduleRuntimeIndexRetry();
       global._authIndexesReady = null;
     });
   }
 
   // boards 인덱스 보장(1회)
-  if (!global._boardsIndexesReady) {
+  if (canStartRuntimeIndexEnsures && !global._boardsIndexesReady) {
     global._boardsIndexesReady = ensureBoardIndexes(db).catch((e) => {
       console.error("[boards] ensureBoardIndexes failed", e);
+      scheduleRuntimeIndexRetry();
       global._boardsIndexesReady = null;
     });
   }
 
   // rentals 인덱스 보장(1회)
-  if (!global._rentalsIndexesReady) {
+  if (canStartRuntimeIndexEnsures && !global._rentalsIndexesReady) {
     global._rentalsIndexesReady = ensureRentalIndexes(db).catch((e) => {
       console.error("[rentals] ensureRentalIndexes failed", e);
+      scheduleRuntimeIndexRetry();
       global._rentalsIndexesReady = null;
     });
   }
 
   // messages 인덱스 보장(1회)
-  if (!global._messagesIndexesReady) {
+  if (canStartRuntimeIndexEnsures && !global._messagesIndexesReady) {
     global._messagesIndexesReady = ensureMessageIndexes(db).catch((e) => {
       console.error("[messages] ensureMessageIndexes failed", e);
+      scheduleRuntimeIndexRetry();
       global._messagesIndexesReady = null;
     });
   }
 
   // user_notifications 인덱스 보장(1회)
-  if (!global._userNotificationIndexesReady) {
+  if (canStartRuntimeIndexEnsures && !global._userNotificationIndexesReady) {
     global._userNotificationIndexesReady = ensureUserNotificationIndexes(
       db,
     ).catch((e) => {
@@ -221,46 +239,51 @@ export async function getDb() {
         "[user_notifications] ensureUserNotificationIndexes failed",
         e,
       );
+      scheduleRuntimeIndexRetry();
       global._userNotificationIndexesReady = null;
     });
   }
 
   // points 인덱스 보장(1회)
-  if (!global._pointsIndexesReady) {
+  if (canStartRuntimeIndexEnsures && !global._pointsIndexesReady) {
     global._pointsIndexesReady = ensurePointsIndexes(db).catch((e) => {
       console.error("[points] ensurePointsIndexes failed", e);
+      scheduleRuntimeIndexRetry();
       global._pointsIndexesReady = null;
     });
   }
 
   // used_rackets (Finder 범위검색 성능)
-  if (!global._usedRacketsIndexesReady) {
+  if (canStartRuntimeIndexEnsures && !global._usedRacketsIndexesReady) {
     global._usedRacketsIndexesReady = ensureUsedRacketsIndexes(db).catch(
       (e) => {
         console.error("[used_rackets] ensureUsedRacketsIndexes failed", e);
+        scheduleRuntimeIndexRetry();
         global._usedRacketsIndexesReady = null;
       },
     );
   }
 
   // wishlists 인덱스 보장(1회)
-  if (!global._wishlistIndexesReady) {
+  if (canStartRuntimeIndexEnsures && !global._wishlistIndexesReady) {
     global._wishlistIndexesReady = ensureWishlistIndexes(db).catch((e) => {
       console.error("[wishlists] ensureWishlistIndexes failed", e);
+      scheduleRuntimeIndexRetry();
       global._wishlistIndexesReady = null;
     });
   }
 
   // admin_locks 인덱스 보장(1회)
-  if (!global._adminLocksIndexesReady) {
+  if (canStartRuntimeIndexEnsures && !global._adminLocksIndexesReady) {
     global._adminLocksIndexesReady = ensureAdminLocksIndexes(db).catch((e) => {
       console.error("[admin_locks] ensureAdminLocksIndexes failed", e);
+      scheduleRuntimeIndexRetry();
       global._adminLocksIndexesReady = null;
     });
   }
 
   // admin operations 검색 인덱스 보장(1회)
-  if (!global._adminOperationsIndexesReady) {
+  if (canStartRuntimeIndexEnsures && !global._adminOperationsIndexesReady) {
     global._adminOperationsIndexesReady = ensureAdminOperationsIndexes(
       db,
     ).catch((e) => {
@@ -268,56 +291,66 @@ export async function getDb() {
         "[admin-operations] ensureAdminOperationsIndexes failed",
         e,
       );
+      scheduleRuntimeIndexRetry();
       global._adminOperationsIndexesReady = null;
     });
   }
 
   // admin_notes 인덱스 보장(1회)
-  if (!global._adminNotesIndexesReady) {
+  if (canStartRuntimeIndexEnsures && !global._adminNotesIndexesReady) {
     global._adminNotesIndexesReady = ensureAdminNotesIndexes(db).catch((e) => {
       console.error("[admin_notes] ensureAdminNotesIndexes failed", e);
+      scheduleRuntimeIndexRetry();
       global._adminNotesIndexesReady = null;
     });
   }
 
   // users 인덱스 보장(1회)
-  if (!global._usersIndexesReady) {
+  if (canStartRuntimeIndexEnsures && !global._usersIndexesReady) {
     global._usersIndexesReady = ensureUserIndexes(db).catch((e) => {
       console.error("[users] ensureUserIndexes failed", e);
-      global._usersIndexesReady = null; // 실패 시 다음 요청에서 재시도
+      scheduleRuntimeIndexRetry();
+      global._usersIndexesReady = null; // 실패 시 쿨다운 후 재시도
     });
   }
 
   // cancel_refund_risk_signals 인덱스 보장(1회)
-  if (!global._riskIndexesReady) {
+  if (canStartRuntimeIndexEnsures && !global._riskIndexesReady) {
     global._riskIndexesReady = ensureRiskIndexes(db).catch((e) => {
       console.error("[risk] ensureRiskIndexes failed", e);
+      scheduleRuntimeIndexRetry();
       global._riskIndexesReady = null;
     });
   }
 
   // revenue_report_snapshots 인덱스 보장(1회)
-  if (!global._revenueReportSnapshotIndexesReady) {
+  if (
+    canStartRuntimeIndexEnsures &&
+    !global._revenueReportSnapshotIndexesReady
+  ) {
     global._revenueReportSnapshotIndexesReady =
       ensureRevenueReportSnapshotIndexes(db).catch((e) => {
         console.error(
           "[revenue_report_snapshots] ensureRevenueReportSnapshotIndexes failed",
           e,
         );
+        scheduleRuntimeIndexRetry();
         global._revenueReportSnapshotIndexesReady = null;
       });
   }
 
-  if (!global._offlineIndexesReady) {
+  if (canStartRuntimeIndexEnsures && !global._offlineIndexesReady) {
     global._offlineIndexesReady = ensureOfflineIndexes(db).catch((e) => {
       console.error("[offline] ensureOfflineIndexes failed", e);
+      scheduleRuntimeIndexRetry();
       global._offlineIndexesReady = null;
     });
   }
 
-  if (!global._reviewsIndexesReady) {
+  if (canStartRuntimeIndexEnsures && !global._reviewsIndexesReady) {
     global._reviewsIndexesReady = ensureReviewIndexes(db).catch((e) => {
       console.error("[reviews] ensureReviewIndexes failed", e);
+      scheduleRuntimeIndexRetry();
       global._reviewsIndexesReady = null;
     });
   }
