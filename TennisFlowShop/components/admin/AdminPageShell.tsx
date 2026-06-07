@@ -22,7 +22,7 @@ export default function AdminPageShell({
   return (
     <div
       className={cn(
-        "mx-auto w-full space-y-5 px-3 py-4 bp-sm:px-4 bp-md:px-3 lg:px-5 lg:py-5",
+        "mx-auto w-full px-3 py-4 bp-sm:px-4 bp-md:px-3 lg:px-5 lg:py-5",
         widthByVariant[variant],
         className,
       )}
