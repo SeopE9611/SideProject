@@ -471,6 +471,104 @@ export default function OrdersClient() {
     setSortDirection("desc");
   };
 
+  const applyQuickFilter = (
+    target: "all" | "payment" | "cancel" | "shipping" | "service" | "product",
+  ) => {
+    resetFilters();
+    if (target === "payment") setPaymentFilter("결제대기");
+    if (target === "cancel") setCancelFilter("requested");
+    if (target === "shipping") setShippingFilter("미등록");
+    if (target === "service") setTypeFilter("서비스");
+    if (target === "product") setTypeFilter("상품");
+  };
+
+  const hasQuickViewModifiers = Boolean(
+    searchTerm.trim() ||
+      selectedDate ||
+      sortBy !== "date" ||
+      sortDirection !== "desc",
+  );
+
+  const activeQuickView = hasQuickViewModifiers
+    ? null
+    : paymentFilter === "결제대기" &&
+    statusFilter === "all" &&
+    typeFilter === "all" &&
+    shippingFilter === "all" &&
+    customerTypeFilter === "all" &&
+    cancelFilter === "all"
+      ? "payment"
+      : cancelFilter === "requested" &&
+          statusFilter === "all" &&
+          typeFilter === "all" &&
+          paymentFilter === "all" &&
+          shippingFilter === "all" &&
+          customerTypeFilter === "all"
+        ? "cancel"
+        : shippingFilter === "미등록" &&
+            statusFilter === "all" &&
+            typeFilter === "all" &&
+            paymentFilter === "all" &&
+            customerTypeFilter === "all" &&
+            cancelFilter === "all"
+          ? "shipping"
+          : typeFilter === "서비스" &&
+              statusFilter === "all" &&
+              paymentFilter === "all" &&
+              shippingFilter === "all" &&
+              customerTypeFilter === "all" &&
+              cancelFilter === "all"
+            ? "service"
+            : typeFilter === "상품" &&
+                statusFilter === "all" &&
+                paymentFilter === "all" &&
+                shippingFilter === "all" &&
+                customerTypeFilter === "all" &&
+                cancelFilter === "all"
+              ? "product"
+              : statusFilter === "all" &&
+                  typeFilter === "all" &&
+                  paymentFilter === "all" &&
+                  shippingFilter === "all" &&
+                  customerTypeFilter === "all" &&
+                  cancelFilter === "all"
+                ? "all"
+                : null;
+
+  const quickViewLabel =
+    activeQuickView === "payment"
+      ? "결제 확인"
+      : activeQuickView === "cancel"
+        ? "취소 요청"
+        : activeQuickView === "shipping"
+          ? "배송 누락"
+          : activeQuickView === "service"
+            ? "교체서비스"
+            : activeQuickView === "product"
+              ? "일반 주문"
+              : activeQuickView === "all"
+                ? "전체"
+                : "맞춤 필터";
+
+  const appliedFilterLabels = [
+    statusFilter !== "all" ? statusFilter : null,
+    typeFilter !== "all" ? typeFilter : null,
+    paymentFilter !== "all" ? paymentFilter : null,
+    shippingFilter !== "all" ? `배송 ${shippingFilter}` : null,
+    customerTypeFilter === "member"
+      ? "회원"
+      : customerTypeFilter === "guest"
+        ? "비회원"
+        : null,
+    cancelFilter === "requested"
+      ? "취소 요청"
+      : cancelFilter === "approved"
+        ? "취소 승인"
+        : cancelFilter === "rejected"
+          ? "취소 거절"
+          : null,
+  ].filter(Boolean) as string[];
+
   // 정렬 헤더 클릭 핸들러
   const handleSort = (key: "date" | "total") => {
     if (sortBy === key) {
@@ -585,74 +683,82 @@ export default function OrdersClient() {
       <div className="mx-auto max-w-[1440px]">
         <AdminPageHeader
           title="주문 관리"
-          description="결제 확인, 배송정보 등록, 취소 요청, 교체서비스 포함 주문을 한 곳에서 확인합니다."
+          description="결제 확인, 배송 누락, 취소 요청, 교체서비스 연결 주문을 한곳에서 확인하고 처리합니다."
           icon={PackageSearch}
-          helperText="운영 통합 센터에서 우선순위를 확인한 뒤, 이 화면에서 주문별 상세 처리를 진행하세요."
+          helperText="오늘 처리함에서 우선순위를 확인한 뒤, 이 화면에서 주문별 상세 처리를 진행하세요."
         />
       </div>
 
-      <Card className={cn("mb-4 px-4 py-4 lg:px-5", adminSurface.filterCard)}>
-        <CardHeader className="pb-2 pt-1">
-          <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
-            <div className="space-y-1">
-              <CardTitle className="text-base">업무 가이드</CardTitle>
-              <CardDescription className="text-sm leading-relaxed break-keep">
-                주문 목록을 보기 전에 우선순위를 빠르게 확인하고, 상세 처리는 각
-                주문 상세 화면에서 진행하세요.
-              </CardDescription>
-            </div>
-            <Link
-              href="/admin/operations"
-              className="inline-flex h-9 items-center justify-center rounded-md border border-border bg-background px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            >
-              오늘 처리할 일 보기
-            </Link>
-          </div>
-        </CardHeader>
-        <CardContent className="pt-1">
-          <div className="grid gap-2 md:grid-cols-2">
-            <div className="rounded-md border border-border/70 bg-card px-3 py-2.5">
-              <p className="text-sm font-medium">결제 확인 필요</p>
-              <p className="mt-1 text-sm leading-relaxed text-muted-foreground break-keep">
-                결제 대기·결제 확인 항목을 우선 확인해 출고 지연을 줄입니다.
-              </p>
-            </div>
-            <div className="rounded-md border border-border/70 bg-card px-3 py-2.5">
-              <p className="text-sm font-medium">배송정보 등록</p>
-              <p className="mt-1 text-sm leading-relaxed text-muted-foreground break-keep">
-                운송장 번호와 배송 상태를 최신으로 유지해 CS 문의를 줄입니다.
-              </p>
-            </div>
-            <div className="rounded-md border border-border/70 bg-card px-3 py-2.5">
-              <p className="text-sm font-medium">취소/환불 요청</p>
-              <p className="mt-1 text-sm leading-relaxed text-muted-foreground break-keep">
-                요청 상태와 환불 계좌 확인 여부를 함께 보고 승인 대기 건을
-                처리하세요.
-              </p>
-            </div>
-            <div className="rounded-md border border-border/70 bg-card px-3 py-2.5">
-              <p className="text-sm font-medium">교체서비스 포함 주문 확인</p>
-              <p className="mt-1 text-sm leading-relaxed text-muted-foreground break-keep">
-                주문·신청서 통합 흐름을 함께 확인해 누락 없는 작업 순서를
-                맞추세요.
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="mb-4 rounded-xl border border-border/70 bg-muted/20 px-4 py-3 shadow-sm">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <details className="group min-w-0">
+            <summary className="cursor-pointer list-none text-sm font-medium text-foreground [&::-webkit-details-marker]:hidden">
+              업무 가이드 · 우선 처리 기준 보기
+            </summary>
+            <p className="mt-2 max-w-4xl text-sm leading-relaxed text-muted-foreground break-keep">
+              결제 대기와 배송 미등록 건을 먼저 확인하고, 취소 요청은 환불 계좌
+              준비 여부를 함께 검토하세요. 통합 주문의 배송 정보는 연결된
+              교체서비스 신청서에서 관리합니다.
+            </p>
+          </details>
+          <Link
+            href="/admin/operations"
+            className="inline-flex h-8 shrink-0 items-center justify-center rounded-md border border-border bg-background px-3 text-xs font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          >
+            오늘 처리함 보기
+          </Link>
+        </div>
+      </div>
 
       {/* 필터 및 검색 카드 */}
       <Card className={cn("mb-4 px-4 py-4 lg:px-5", adminSurface.filterCard)}>
         <CardHeader className="pb-2.5">
-          <CardTitle>필터 및 검색</CardTitle>
+          <CardTitle>주문 찾기</CardTitle>
           <CardDescription className="text-xs">
-            주문/신청 ID, 고객명, 이메일로 검색하고 필요한 조건만 선택하세요.
+            빠른 보기로 우선 처리 대상을 찾거나 상세 조건으로 좁혀보세요.
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-1">
           <div className="flex flex-col gap-4">
+            <div>
+              <p className="mb-2 text-xs font-medium text-foreground/80">
+                빠른 보기
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  ["all", "전체"],
+                  ["payment", "결제 확인"],
+                  ["cancel", "취소 요청"],
+                  ["shipping", "배송 누락"],
+                  ["service", "교체서비스"],
+                  ["product", "일반 주문"],
+                ].map(([value, label]) => (
+                  <Button
+                    key={value}
+                    type="button"
+                    size="sm"
+                    variant={activeQuickView === value ? "default" : "outline"}
+                    onClick={() =>
+                      applyQuickFilter(
+                        value as
+                          | "all"
+                          | "payment"
+                          | "cancel"
+                          | "shipping"
+                          | "service"
+                          | "product",
+                      )
+                    }
+                    className="h-8"
+                  >
+                    {label}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
             {/* 검색 input */}
-            <div className="w-full max-w-md">
+            <div className="w-full max-w-md border-t border-border/60 pt-3">
               <div className="relative">
                 <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
                 <Input
@@ -668,6 +774,7 @@ export default function OrdersClient() {
                     size="sm"
                     className="absolute right-0 top-0 h-9 w-9 rounded-l-none px-3"
                     onClick={() => setSearchTerm("")}
+                    aria-label="검색어 지우기"
                   >
                     <X className="h-4 w-4" />
                   </Button>
@@ -676,7 +783,7 @@ export default function OrdersClient() {
             </div>
 
             {/* 필터 컴포넌트들 */}
-            <div className="grid w-full gap-2 border-t pt-2.5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+            <div className="grid w-full gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
               <CustomerTypeFilter
                 value={customerTypeFilter}
                 onChange={setCustomerTypeFilter}
@@ -706,6 +813,34 @@ export default function OrdersClient() {
           </div>
         </CardContent>
       </Card>
+
+      <div className="mb-4 flex flex-col gap-2 rounded-xl border border-border/70 bg-card px-4 py-3 text-sm shadow-sm sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+          <span className="font-semibold text-foreground">
+            현재 보기: {quickViewLabel}
+          </span>
+          {searchTerm.trim() ? (
+            <span className="text-foreground/75">검색어: {searchTerm.trim()}</span>
+          ) : null}
+          {appliedFilterLabels.length > 0 ? (
+            <span className="text-foreground/75">
+              필터: {appliedFilterLabels.join(" / ")}
+            </span>
+          ) : null}
+          <span className="text-foreground/75">
+            {data ? `총 ${data.total.toLocaleString("ko-KR")}건` : "조회 중…"}
+          </span>
+        </div>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={resetFilters}
+          className="h-8 shrink-0 self-start sm:self-auto"
+        >
+          필터 초기화
+        </Button>
+      </div>
 
       {/* 주문 목록 테이블 */}
       <Card className={cn("px-4 py-4 lg:px-5", adminSurface.tableCard)}>
@@ -791,9 +926,9 @@ export default function OrdersClient() {
                     </li>
                     <li>
                       <strong className="font-medium text-foreground">
-                        같은 색 테두리:
+                        연결 묶음:
                       </strong>{" "}
-                      같은 고객 흐름으로 연결된 주문·신청입니다.
+                      같은 묶음으로 정렬된 주문·신청입니다.
                     </li>
                     <li>
                       <strong className="font-medium text-foreground">
@@ -1461,9 +1596,10 @@ export default function OrdersClient() {
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-6 w-6"
+                                className="h-7 w-7 border border-border/60 bg-background"
                               >
                                 <MoreHorizontal className="h-3.5 w-3.5" />
+                                <span className="sr-only">주문 작업 메뉴 열기</span>
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent
