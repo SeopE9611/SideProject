@@ -3,7 +3,7 @@ import OperationsClient from "@/app/admin/operations/_components/OperationsClien
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "운영 통합 센터",
+  title: "오늘 처리함",
 };
 
 export const dynamic = "force-dynamic";
