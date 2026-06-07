@@ -69,6 +69,26 @@ const EMPTY_RECORD_FILTERS = {
   paymentMethod: "",
 };
 
+// 오프라인 접수 흐름 안내용 UI 데이터입니다.
+// 실제 저장/조회 로직에는 영향을 주지 않는 표시 전용 데이터입니다.
+const OFFLINE_WORKFLOW_STEPS = [
+  {
+    icon: Search,
+    title: "1. 고객 확인",
+    description: "온라인 회원과 오프라인 명부를 먼저 검색합니다.",
+  },
+  {
+    icon: UserPlus,
+    title: "2. 고객 선택/등록",
+    description: "기존 고객을 선택하거나 현장 고객을 새로 등록합니다.",
+  },
+  {
+    icon: ClipboardList,
+    title: "3. 작업·결제 기록",
+    description: "선택된 고객 기준으로 작업 내용과 결제 상태를 저장합니다.",
+  },
+];
+
 function toDateInputValue(value: string | Date | null | undefined): string {
   if (!value) return "";
   const date = new Date(value);
@@ -534,6 +554,7 @@ export default function OfflineAdminClient() {
                 <User className="h-5 w-5" />
               </div>
               <div className="min-w-0">
+                <p className="mb-1 text-xs font-semibold text-primary">현재 선택 고객</p>
                 <div className="flex min-w-0 flex-wrap items-center gap-2">
                   <span className="line-clamp-2 break-keep text-lg font-semibold" title={selected.name}>
                     {selected.name}
@@ -574,6 +595,21 @@ export default function OfflineAdminClient() {
         </div>
       )}
 
+      {/* Offline Workflow Guide */}
+      <div className="grid gap-3 md:grid-cols-3">
+        {OFFLINE_WORKFLOW_STEPS.map(({ icon: Icon, title, description }) => (
+          <div key={title} className="rounded-xl border border-border/60 bg-muted/20 p-4">
+            <div className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <Icon className="h-4 w-4" />
+              </div>
+              <p className="text-sm font-semibold text-foreground">{title}</p>
+            </div>
+            <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{description}</p>
+          </div>
+        ))}
+      </div>
+
       {/* Main Grid Layout */}
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
         {/* Left Column: Customer Search & Registration */}
@@ -581,7 +617,7 @@ export default function OfflineAdminClient() {
           {/* Customer Search Card */}
           <Card className="overflow-hidden border-border/60">
             <CardHeader className="pb-0">
-              <SectionHeader icon={Search} title="고객 검색" description="이름, 휴대폰, 이메일로 검색" />
+              <SectionHeader icon={Search} title="고객 찾기" description="온라인 회원과 오프라인 명부를 함께 검색합니다" />
             </CardHeader>
             <CardContent className="pt-4 space-y-4">
               <form
@@ -714,7 +750,7 @@ export default function OfflineAdminClient() {
           {/* New Customer Registration Card */}
           <Card className="overflow-hidden border-border/60">
             <CardHeader className="pb-0">
-              <SectionHeader icon={UserPlus} title="신규 고객 등록" description="새로운 오프라인 고객 추가" />
+              <SectionHeader icon={UserPlus} title="오프라인 고객 등록" description="온라인 계정이 없거나 현장 접수 고객일 때 등록합니다" />
             </CardHeader>
             <CardContent className="pt-4 space-y-4">
               <div className="space-y-3">
@@ -796,7 +832,7 @@ export default function OfflineAdminClient() {
         <div className="xl:col-span-8">
           <Card className="overflow-hidden border-border/60">
             <CardHeader className="pb-0">
-              <SectionHeader icon={ClipboardList} title="오프라인 작업/매출 등록" description={selected ? `${selected.name} 고객의 작업을 등록합니다` : "고객을 먼저 선택해주세요"} />
+              <SectionHeader icon={ClipboardList} title="오프라인 작업/매출 등록" description={selected ? `${selected.name} 고객 기준으로 작업 내용과 결제 상태를 기록합니다` : "고객을 먼저 선택하면 작업·결제 기록을 저장할 수 있습니다"} />
             </CardHeader>
             <CardContent className="pt-4">
               {!selected ? (
@@ -808,6 +844,17 @@ export default function OfflineAdminClient() {
                 </div>
               ) : (
                 <div className="space-y-6">
+                  <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">선택 고객 기준으로 기록합니다</p>
+                        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">작업 저장 전 고객명과 휴대폰 번호를 한 번 더 확인하세요. 저장 후 최근 작업/매출 목록에서 수정할 수 있습니다.</p>
+                      </div>
+                      <Badge variant="secondary" className="w-fit shrink-0">
+                        {selected.source === "online" ? "온라인 회원 연결" : "오프라인 명부"}
+                      </Badge>
+                    </div>
+                  </div>
                   {/* Work Info Section */}
                   <div className="rounded-xl border border-border/60 bg-muted/20 p-5 space-y-4">
                     <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
