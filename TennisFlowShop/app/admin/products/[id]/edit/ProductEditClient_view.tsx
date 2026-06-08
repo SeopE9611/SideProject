@@ -2108,7 +2108,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                                 <div className="flex items-center justify-between gap-2">
                                   <p className="text-sm font-medium text-foreground">{item.label}</p>
                                   <Badge variant={item.done ? "success" : "outline"} className="shrink-0">
-                                    {item.done ? "완료" : "확인"}
+                                    {item.done ? "완료" : "확인필요"}
                                   </Badge>
                                 </div>
                                 <p className="mt-1 text-xs text-muted-foreground">{item.description}</p>
