@@ -460,6 +460,10 @@ export default function PackageSettingsClient() {
                       <CardContent className="p-6">
                         {editingPackage === pkg.id ? (
                           <div className="space-y-4">
+                            <div className="rounded-xl border border-warning/30 bg-warning/10 p-4">
+                              <p className="text-sm font-semibold text-foreground">판매 페이지 반영 설정입니다</p>
+                              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">패키지명, 이용 횟수, 판매 가격, 정가, 유효기간은 고객 판매 페이지와 주문 금액에 직접 반영됩니다. 저장 전 실제 노출될 가격과 할인율을 확인하세요.</p>
+                            </div>
                             <div className="grid grid-cols-2 gap-4">
                               <div>
                                 <Label htmlFor={`name-${pkg.id}`}>패키지명</Label>
@@ -659,7 +663,9 @@ export default function PackageSettingsClient() {
                   ))}
                 </div>
 
-                <div className="flex justify-end">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="text-xs text-muted-foreground">저장 후 패키지 판매 페이지와 신규 주문 금액 계산에 반영됩니다.</p>
+
                   <Button onClick={handleSavePackages} disabled={isSaving} className="bg-primary text-primary-foreground hover:bg-primary/90">
                     <Save className="mr-2 h-4 w-4" />
                     {isSaving ? "저장 중..." : "패키지 설정 저장"}
@@ -679,6 +685,12 @@ export default function PackageSettingsClient() {
                   <CardDescription>패키지 시스템의 전반적인 설정을 관리합니다.</CardDescription>
                 </CardHeader>
                 <CardContent className="p-6 space-y-6">
+                  <div className="rounded-xl border border-warning/30 bg-warning/10 p-4">
+                    <p className="text-sm font-semibold text-foreground">패키지 운영 정책 설정입니다</p>
+                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                      패키지 시스템 활성화, 연장 허용, 유효기간, 최소·최대 이용 횟수는 전체 패키지 운영 방식에 영향을 줍니다. 운영 중인 패키지가 있는 경우 변경 전 적용 범위를 확인하세요.
+                    </p>
+                  </div>
                   <div className="grid gap-6 md:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor="maxValidityDays">최대 유효기간 (일)</Label>
@@ -798,7 +810,9 @@ export default function PackageSettingsClient() {
                     </div>
                   </div>
 
-                  <div className="flex justify-end pt-4">
+                  <div className="flex flex-col gap-2 pt-4 sm:flex-row sm:items-center sm:justify-between">
+                    <p className="text-xs text-muted-foreground">저장 후 패키지 시스템 정책과 연장 가능 여부에 반영됩니다.</p>
+
                     <Button onClick={handleSaveGeneralSettings} disabled={isSaving} className="bg-success/10 hover:bg-success/10 dark:bg-success/15 dark:hover:bg-success/15">
                       <Save className="mr-2 h-4 w-4" />
                       {isSaving ? "저장 중..." : "일반 설정 저장"}
