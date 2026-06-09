@@ -3,11 +3,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  adminFetcher,
-  adminMutator,
-  getAdminErrorMessage,
-} from "@/lib/admin/adminFetcher";
+import { adminFetcher, adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import type {
   OfflineCustomerDto,
@@ -66,9 +62,20 @@ type OfflineRecord = {
   } | null;
   lines?: Array<{
     racketName?: string;
+
+    // 기존 기록 호환용 대표 스트링명입니다.
     stringName?: string;
+
+    // 신규 구조: 메인/크로스 스트링 분리 표시용입니다.
+    mainStringName?: string;
+    crossStringName?: string;
+
     tensionMain?: string;
     tensionCross?: string;
+
+    // 라켓별 금액과 메모입니다.
+    amount?: number | string | null;
+    note?: string | null;
   }>;
   lineSummary?: string;
   payment?: {
@@ -144,58 +151,67 @@ function formatDate(value?: string | Date | null): string {
 
 function formatLineSummary(lines?: OfflineRecord["lines"]): string {
   if (!Array.isArray(lines) || lines.length === 0) return "작업 내용 미입력";
+
   const summary = lines
-    .map((line) => {
+    .map((line, index) => {
       const main = String(line.tensionMain ?? "").trim();
       const cross = String(line.tensionCross ?? "").trim();
       const tension = main || cross ? `${main || "-"}/${cross || "-"}` : "";
-      return [
-        String(line.racketName ?? "").trim(),
-        String(line.stringName ?? "").trim(),
-        tension,
-      ]
-        .filter(Boolean)
-        .join(" · ");
+
+      const mainString = String(line.mainStringName || line.stringName || "").trim();
+      const crossString = String(line.crossStringName || "").trim();
+
+      const stringSummary = mainString && crossString && mainString !== crossString ? `메인 ${mainString} / 크로스 ${crossString}` : mainString ? `스트링 ${mainString}` : "";
+
+      return [lines.length > 1 ? `라켓 ${index + 1}` : "", String(line.racketName ?? "").trim(), stringSummary, tension].filter(Boolean).join(" · ");
     })
     .filter(Boolean)
     .join(", ");
+
   return summary || "작업 내용 미입력";
+}
+
+
+
+function hasLineDetail(line: NonNullable<OfflineRecord["lines"]>[number]): boolean {
+  return [line.racketName, line.stringName, line.mainStringName, line.crossStringName, line.tensionMain, line.tensionCross, line.note].some((value) => String(value ?? "").trim().length > 0) || Number(line.amount ?? 0) > 0;
+}
+
+function formatLineStringInfo(line: NonNullable<OfflineRecord["lines"]>[number]): string {
+  const mainString = String(line.mainStringName || line.stringName || "").trim();
+  const crossString = String(line.crossStringName || "").trim();
+
+  if (mainString && crossString && mainString !== crossString) {
+    return `메인 ${mainString} / 크로스 ${crossString}`;
+  }
+
+  if (mainString) return `스트링 ${mainString}`;
+  if (crossString) return `크로스 ${crossString}`;
+
+  return "-";
+}
+
+function formatLineTensionInfo(line: NonNullable<OfflineRecord["lines"]>[number]): string {
+  const main = String(line.tensionMain ?? "").trim();
+  const cross = String(line.tensionCross ?? "").trim();
+
+  if (!main && !cross) return "-";
+  return `${main || "-"} / ${cross || "-"}`;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
    Reusable UI Components
 ───────────────────────────────────────────────────────────────────────────── */
 
-function SectionCard({
-  children,
-  className = "",
-  id,
-}: {
-  children: ReactNode;
-  className?: string;
-  id?: string;
-}) {
+function SectionCard({ children, className = "", id }: { children: ReactNode; className?: string; id?: string }) {
   return (
-    <div
-      id={id}
-      className={`rounded-xl border border-border/60 bg-card shadow-sm transition-shadow hover:shadow-md ${className}`}
-    >
+    <div id={id} className={`rounded-xl border border-border/60 bg-card shadow-sm transition-shadow hover:shadow-md ${className}`}>
       {children}
     </div>
   );
 }
 
-function SectionHeader({
-  icon: Icon,
-  title,
-  description,
-  action,
-}: {
-  icon: React.ElementType;
-  title: string;
-  description?: string;
-  action?: ReactNode;
-}) {
+function SectionHeader({ icon: Icon, title, description, action }: { icon: React.ElementType; title: string; description?: string; action?: ReactNode }) {
   return (
     <div className="flex items-start justify-between gap-4 border-b border-border/40 px-6 py-5">
       <div className="flex items-start gap-3">
@@ -204,11 +220,7 @@ function SectionHeader({
         </div>
         <div>
           <h3 className="text-lg font-semibold text-foreground">{title}</h3>
-          {description && (
-            <p className="mt-0.5 text-sm text-muted-foreground">
-              {description}
-            </p>
-          )}
+          {description && <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>}
         </div>
       </div>
       {action}
@@ -216,62 +228,32 @@ function SectionHeader({
   );
 }
 
-function InfoItem({
-  icon: Icon,
-  label,
-  value,
-  className = "",
-}: {
-  icon?: React.ElementType;
-  label: string;
-  value: ReactNode;
-  className?: string;
-}) {
+function InfoItem({ icon: Icon, label, value, className = "" }: { icon?: React.ElementType; label: string; value: ReactNode; className?: string }) {
   return (
-    <div
-      className={`group flex items-start gap-3 rounded-lg border border-border/40 bg-muted/30 p-4 transition-colors hover:bg-muted/50 ${className}`}
-    >
+    <div className={`group flex items-start gap-3 rounded-lg border border-border/40 bg-muted/30 p-4 transition-colors hover:bg-muted/50 ${className}`}>
       {Icon && (
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-background text-muted-foreground transition-colors group-hover:bg-primary/10 group-hover:text-primary">
           <Icon className="h-4 w-4" />
         </div>
       )}
       <div className="min-w-0 flex-1">
-        <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-          {label}
-        </p>
-        <div className="mt-1 text-sm font-medium text-foreground">
-          {value || "-"}
-        </div>
+        <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{label}</p>
+        <div className="mt-1 text-sm font-medium text-foreground">{value || "-"}</div>
       </div>
     </div>
   );
 }
 
-function StatCard({
-  label,
-  value,
-  icon: Icon,
-  variant = "default",
-}: {
-  label: string;
-  value: ReactNode;
-  icon?: React.ElementType;
-  variant?: "default" | "highlight" | "warning";
-}) {
+function StatCard({ label, value, icon: Icon, variant = "default" }: { label: string; value: ReactNode; icon?: React.ElementType; variant?: "default" | "highlight" | "warning" }) {
   const variantStyles = {
     default: "border-border/40 bg-muted/30",
     highlight: "border-primary/30 bg-primary/5",
     warning: "border-destructive/30 bg-destructive/5",
   };
   return (
-    <div
-      className={`rounded-lg border p-4 transition-colors hover:bg-muted/50 ${variantStyles[variant]}`}
-    >
+    <div className={`rounded-lg border p-4 transition-colors hover:bg-muted/50 ${variantStyles[variant]}`}>
       <div className="flex items-center justify-between">
-        <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-          {label}
-        </p>
+        <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{label}</p>
         {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
       </div>
       <p className="mt-2 text-xl font-bold text-foreground">{value}</p>
@@ -279,13 +261,7 @@ function StatCard({
   );
 }
 
-function StatusBadge({
-  status,
-  labels,
-}: {
-  status: string;
-  labels: Record<string, string>;
-}) {
+function StatusBadge({ status, labels }: { status: string; labels: Record<string, string> }) {
   const statusStyles: Record<string, string> = {
     received: "bg-info/10 text-info border-info/20",
     in_progress: "bg-warning/10 text-warning border-warning/20",
@@ -296,22 +272,10 @@ function StatusBadge({
     paid: "bg-success/10 text-success border-success/20",
     refunded: "bg-destructive/10 text-destructive border-destructive/20",
   };
-  return (
-    <span
-      className={`inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full border px-2.5 py-1 text-xs font-medium ${statusStyles[status] || "bg-muted text-muted-foreground border-border"}`}
-    >
-      {labels[status] || status}
-    </span>
-  );
+  return <span className={`inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full border px-2.5 py-1 text-xs font-medium ${statusStyles[status] || "bg-muted text-muted-foreground border-border"}`}>{labels[status] || status}</span>;
 }
 
-function Message({
-  type,
-  children,
-}: {
-  type: "success" | "error" | "info";
-  children: ReactNode;
-}) {
+function Message({ type, children }: { type: "success" | "error" | "info"; children: ReactNode }) {
   const styles = {
     success: "bg-success/10 text-success border-success/20",
     error: "bg-destructive/10 text-destructive border-destructive/20",
@@ -324,26 +288,14 @@ function Message({
   };
   const Icon = icons[type];
   return (
-    <div
-      className={`flex items-start gap-2 rounded-lg border p-3 text-sm ${styles[type]}`}
-    >
+    <div className={`flex items-start gap-2 rounded-lg border p-3 text-sm ${styles[type]}`}>
       <Icon className="mt-0.5 h-4 w-4 shrink-0" />
       <span>{children}</span>
     </div>
   );
 }
 
-function FormField({
-  label,
-  htmlFor,
-  children,
-  hint,
-}: {
-  label: string;
-  htmlFor?: string;
-  children: ReactNode;
-  hint?: string;
-}) {
+function FormField({ label, htmlFor, children, hint }: { label: string; htmlFor?: string; children: ReactNode; hint?: string }) {
   return (
     <div className="space-y-2">
       <label htmlFor={htmlFor} className="text-sm font-medium text-foreground">
@@ -355,21 +307,7 @@ function FormField({
   );
 }
 
-function Select({
-  id,
-  value,
-  onChange,
-  options,
-  disabled,
-  className = "",
-}: {
-  id?: string;
-  value: string;
-  onChange: (value: string) => void;
-  options: Array<{ value: string; label: string }>;
-  disabled?: boolean;
-  className?: string;
-}) {
+function Select({ id, value, onChange, options, disabled, className = "" }: { id?: string; value: string; onChange: (value: string) => void; options: Array<{ value: string; label: string }>; disabled?: boolean; className?: string }) {
   return (
     <select
       id={id}
@@ -387,43 +325,19 @@ function Select({
   );
 }
 
-function CollapsibleSection({
-  title,
-  icon: Icon,
-  defaultOpen = false,
-  children,
-  badge,
-  id,
-}: {
-  title: string;
-  icon: React.ElementType;
-  defaultOpen?: boolean;
-  children: ReactNode;
-  badge?: ReactNode;
-  id?: string;
-}) {
+function CollapsibleSection({ title, icon: Icon, defaultOpen = false, children, badge, id }: { title: string; icon: React.ElementType; defaultOpen?: boolean; children: ReactNode; badge?: ReactNode; id?: string }) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   return (
     <div id={id} className="rounded-lg border border-border/40 bg-muted/20">
-      <button
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex w-full items-center justify-between px-4 py-3 text-left transition-colors hover:bg-muted/40"
-      >
+      <button type="button" onClick={() => setIsOpen(!isOpen)} className="flex w-full items-center justify-between px-4 py-3 text-left transition-colors hover:bg-muted/40">
         <div className="flex items-center gap-2">
           <Icon className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm font-medium text-foreground">{title}</span>
           {badge}
         </div>
-        {isOpen ? (
-          <ChevronUp className="h-4 w-4 text-muted-foreground" />
-        ) : (
-          <ChevronDown className="h-4 w-4 text-muted-foreground" />
-        )}
+        {isOpen ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
       </button>
-      {isOpen && (
-        <div className="border-t border-border/40 p-4">{children}</div>
-      )}
+      {isOpen && <div className="border-t border-border/40 p-4">{children}</div>}
     </div>
   );
 }
@@ -468,21 +382,15 @@ const INITIAL_PACKAGE_SELL_FORM: OfflinePackageSellFormState = {
 const LINK_ERROR_MESSAGES: Record<string, string> = {
   "customer not found": "오프라인 고객을 찾을 수 없습니다.",
   "user not found": "온라인 회원을 찾을 수 없습니다.",
-  "customer already linked to another user":
-    "이미 다른 온라인 회원과 연결된 오프라인 고객입니다.",
-  "user already linked to another offline customer":
-    "이미 다른 오프라인 고객과 연결된 온라인 회원입니다.",
+  "customer already linked to another user": "이미 다른 온라인 회원과 연결된 오프라인 고객입니다.",
+  "user already linked to another offline customer": "이미 다른 오프라인 고객과 연결된 온라인 회원입니다.",
   "invalid userId": "온라인 회원 ID가 올바르지 않습니다.",
   "invalid customer id": "오프라인 고객 ID가 올바르지 않습니다.",
 };
 
 function translateLinkError(error: unknown): string {
   const message = getAdminErrorMessage(error);
-  return (
-    LINK_ERROR_MESSAGES[message] ??
-    message ??
-    "온라인 회원 연결에 실패했습니다."
-  );
+  return LINK_ERROR_MESSAGES[message] ?? message ?? "온라인 회원 연결에 실패했습니다.";
 }
 
 type PointFormState = {
@@ -510,17 +418,13 @@ type PackageRefundFormState = {
 };
 
 const PACKAGE_ERROR_MESSAGES: Record<string, string> = {
-  "linked user required":
-    "온라인 회원과 연결된 고객만 패키지를 사용할 수 있습니다.",
-  "user not found":
-    "연결된 온라인 회원 정보를 찾을 수 없어 패키지를 사용할 수 없습니다.",
+  "linked user required": "온라인 회원과 연결된 고객만 패키지를 사용할 수 있습니다.",
+  "user not found": "연결된 온라인 회원 정보를 찾을 수 없어 패키지를 사용할 수 없습니다.",
   "pass not found": "선택한 패키지를 찾을 수 없습니다.",
-  "pass does not belong to linked user":
-    "선택한 패키지는 이 고객의 패키지가 아닙니다.",
+  "pass does not belong to linked user": "선택한 패키지는 이 고객의 패키지가 아닙니다.",
   "pass is not usable": "선택한 패키지는 사용할 수 없습니다.",
   "no remaining pass count": "잔여 횟수가 부족합니다.",
-  "package already used for this record":
-    "이미 이 기록에 패키지가 사용 처리되었습니다.",
+  "package already used for this record": "이미 이 기록에 패키지가 사용 처리되었습니다.",
   "package usage not found": "패키지 사용 이력이 없습니다.",
   "package usage already reverted": "이미 취소된 패키지 사용입니다.",
   "consumption not found": "패키지 사용 이력을 찾을 수 없습니다.",
@@ -528,25 +432,18 @@ const PACKAGE_ERROR_MESSAGES: Record<string, string> = {
   "revert reason required": "패키지 사용 취소 사유를 입력해주세요.",
   "package usage revert failed": "패키지 사용 취소에 실패했습니다.",
   "package consumption failed": "패키지 사용 처리에 실패했습니다.",
-  "package consumed but offline record update failed":
-    "패키지는 차감됐지만 기록 연결에 실패했습니다. 관리자에게 보정이 필요합니다.",
+  "package consumed but offline record update failed": "패키지는 차감됐지만 기록 연결에 실패했습니다. 관리자에게 보정이 필요합니다.",
 };
 
 function translatePackageError(error: unknown): string {
   const message = getAdminErrorMessage(error);
-  return (
-    PACKAGE_ERROR_MESSAGES[message] ??
-    message ??
-    "패키지 사용 처리에 실패했습니다."
-  );
+  return PACKAGE_ERROR_MESSAGES[message] ?? message ?? "패키지 사용 처리에 실패했습니다.";
 }
 
 const PACKAGE_SELL_ERROR_MESSAGES: Record<string, string> = {
   "customer not found": "오프라인 고객을 찾을 수 없습니다.",
-  "linked user required":
-    "온라인 회원과 연결된 고객만 패키지를 판매/발급할 수 있습니다.",
-  "user not found":
-    "연결된 온라인 회원 정보를 찾을 수 없어 패키지를 판매/발급할 수 없습니다.",
+  "linked user required": "온라인 회원과 연결된 고객만 패키지를 판매/발급할 수 있습니다.",
+  "user not found": "연결된 온라인 회원 정보를 찾을 수 없어 패키지를 판매/발급할 수 없습니다.",
   "invalid package name": "패키지명을 입력해주세요.",
   "invalid sessions": "이용 횟수는 1 이상이어야 합니다.",
   "invalid price": "판매 금액은 0원 이상이어야 합니다.",
@@ -555,39 +452,28 @@ const PACKAGE_SELL_ERROR_MESSAGES: Record<string, string> = {
   "package option not found": "선택한 패키지 옵션을 찾을 수 없습니다.",
   "invalid package option": "선택한 패키지 옵션을 사용할 수 없습니다.",
   "package order creation failed": "패키지 주문 생성에 실패했습니다.",
-  "package order created but pass issuance failed":
-    "패키지 주문은 생성됐지만 이용권 발급에 실패했습니다. 관리자 보정이 필요합니다.",
+  "package order created but pass issuance failed": "패키지 주문은 생성됐지만 이용권 발급에 실패했습니다. 관리자 보정이 필요합니다.",
   "package pass issuance failed": "패키지 판매/발급에 실패했습니다.",
 };
 
 function translatePackageSellError(error: unknown): string {
   const message = getAdminErrorMessage(error);
-  return (
-    PACKAGE_SELL_ERROR_MESSAGES[message] ??
-    message ??
-    "패키지 판매/발급에 실패했습니다."
-  );
+  return PACKAGE_SELL_ERROR_MESSAGES[message] ?? message ?? "패키지 판매/발급에 실패했습니다.";
 }
 
 const PACKAGE_REFUND_ERROR_MESSAGES: Record<string, string> = {
   "package order not found": "패키지 주문을 찾을 수 없습니다.",
-  "offline package order required":
-    "오프라인 판매 패키지만 환불 처리할 수 있습니다.",
+  "offline package order required": "오프라인 판매 패키지만 환불 처리할 수 있습니다.",
   "package order already refunded": "이미 환불 처리된 패키지입니다.",
   "service pass not found": "연결된 이용권을 찾을 수 없습니다.",
   "package already used": "이미 사용 이력이 있어 자동 환불할 수 없습니다.",
-  "refund amount must equal paid amount":
-    "이번 단계에서는 전액 환불만 처리할 수 있습니다.",
+  "refund amount must equal paid amount": "이번 단계에서는 전액 환불만 처리할 수 있습니다.",
   "refund failed": "오프라인 패키지 환불 처리에 실패했습니다.",
 };
 
 function translatePackageRefundError(error: unknown): string {
   const message = getAdminErrorMessage(error);
-  return (
-    PACKAGE_REFUND_ERROR_MESSAGES[message] ??
-    message ??
-    "오프라인 패키지 환불 처리에 실패했습니다."
-  );
+  return PACKAGE_REFUND_ERROR_MESSAGES[message] ?? message ?? "오프라인 패키지 환불 처리에 실패했습니다.";
 }
 
 function getPassLabel(pass?: OfflineServicePassSummary | null) {
@@ -598,38 +484,28 @@ function getPassLabel(pass?: OfflineServicePassSummary | null) {
 function isUsablePass(pass: OfflineServicePassSummary) {
   const expiresAt = pass.expiresAt ? new Date(pass.expiresAt) : null;
   const isExpired = expiresAt ? expiresAt.getTime() <= Date.now() : true;
-  return (
-    pass.status === "active" &&
-    Number(pass.remainingCount ?? 0) > 0 &&
-    !isExpired
-  );
+  return pass.status === "active" && Number(pass.remainingCount ?? 0) > 0 && !isExpired;
 }
 
 const POINT_ERROR_MESSAGES: Record<string, string> = {
-  "linked user required":
-    "온라인 회원과 연결된 고객만 포인트를 처리할 수 있습니다.",
+  "linked user required": "온라인 회원과 연결된 고객만 포인트를 처리할 수 있습니다.",
   "invalid amount": "포인트 금액은 1 이상이어야 합니다.",
   "insufficient points": "보유 포인트가 부족합니다.",
-  "points already granted for this record":
-    "이미 이 기록에 포인트 적립이 처리되었습니다.",
-  "points already deducted for this record":
-    "이미 이 기록에 포인트 사용이 처리되었습니다.",
+  "points already granted for this record": "이미 이 기록에 포인트 적립이 처리되었습니다.",
+  "points already deducted for this record": "이미 이 기록에 포인트 사용이 처리되었습니다.",
   "points grant not found": "포인트 적립 이력이 없습니다.",
   "points deduction not found": "포인트 사용 이력이 없습니다.",
   "points grant already reverted": "이미 취소된 포인트 적립입니다.",
   "points deduction already reverted": "이미 취소된 포인트 사용입니다.",
   "revert reason required": "포인트 취소 사유를 입력해주세요.",
-  "insufficient points to revert grant":
-    "보유 포인트가 부족해 적립 취소를 할 수 없습니다.",
+  "insufficient points to revert grant": "보유 포인트가 부족해 적립 취소를 할 수 없습니다.",
   "points revert failed": "포인트 취소에 실패했습니다.",
   "points transaction failed": "포인트 처리에 실패했습니다.",
 };
 
 function translatePointError(error: unknown): string {
   const message = getAdminErrorMessage(error);
-  return (
-    POINT_ERROR_MESSAGES[message] ?? message ?? "포인트 처리에 실패했습니다."
-  );
+  return POINT_ERROR_MESSAGES[message] ?? message ?? "포인트 처리에 실패했습니다.";
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -642,13 +518,9 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
     error,
     isLoading,
     mutate: mutateDetail,
-  } = useSWR<DetailResponse>(
-    `/api/admin/offline/customers/${id}`,
-    authenticatedSWRFetcher,
-    {
-      revalidateOnFocus: false,
-    },
-  );
+  } = useSWR<DetailResponse>(`/api/admin/offline/customers/${id}`, authenticatedSWRFetcher, {
+    revalidateOnFocus: false,
+  });
   const [candidateQuery, setCandidateQuery] = useState({
     name: "",
     phone: "",
@@ -661,41 +533,20 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
   } | null>(null);
   const [candidateMessage, setCandidateMessage] = useState<string | null>(null);
   const [linkMessage, setLinkMessage] = useState<string | null>(null);
-  const [linkMessageType, setLinkMessageType] = useState<
-    "success" | "error" | null
-  >(null);
+  const [linkMessageType, setLinkMessageType] = useState<"success" | "error" | null>(null);
   const [linkingUserId, setLinkingUserId] = useState<string | null>(null);
   const [isUnlinking, setIsUnlinking] = useState(false);
-  const [pointForms, setPointForms] = useState<Record<string, PointFormState>>(
-    {},
-  );
-  const [processingPointKey, setProcessingPointKey] = useState<string | null>(
-    null,
-  );
-  const [packageForms, setPackageForms] = useState<
-    Record<string, PackageFormState>
-  >({});
-  const [processingPackageRecordId, setProcessingPackageRecordId] = useState<
-    string | null
-  >(null);
-  const [packageSellForm, setPackageSellForm] =
-    useState<OfflinePackageSellFormState>(INITIAL_PACKAGE_SELL_FORM);
+  const [pointForms, setPointForms] = useState<Record<string, PointFormState>>({});
+  const [processingPointKey, setProcessingPointKey] = useState<string | null>(null);
+  const [packageForms, setPackageForms] = useState<Record<string, PackageFormState>>({});
+  const [processingPackageRecordId, setProcessingPackageRecordId] = useState<string | null>(null);
+  const [packageSellForm, setPackageSellForm] = useState<OfflinePackageSellFormState>(INITIAL_PACKAGE_SELL_FORM);
   const [isSellingPackage, setIsSellingPackage] = useState(false);
-  const [packageSellMessage, setPackageSellMessage] = useState<string | null>(
-    null,
-  );
-  const [packageSellMessageType, setPackageSellMessageType] = useState<
-    "success" | "error" | null
-  >(null);
-  const [packageRefundForms, setPackageRefundForms] = useState<
-    Record<string, PackageRefundFormState>
-  >({});
-  const [refundingPackageOrderId, setRefundingPackageOrderId] = useState<
-    string | null
-  >(null);
-  const [expandedRecords, setExpandedRecords] = useState<Set<string>>(
-    new Set(),
-  );
+  const [packageSellMessage, setPackageSellMessage] = useState<string | null>(null);
+  const [packageSellMessageType, setPackageSellMessageType] = useState<"success" | "error" | null>(null);
+  const [packageRefundForms, setPackageRefundForms] = useState<Record<string, PackageRefundFormState>>({});
+  const [refundingPackageOrderId, setRefundingPackageOrderId] = useState<string | null>(null);
+  const [expandedRecords, setExpandedRecords] = useState<Set<string>>(new Set());
 
   const candidateKey = submittedCandidateQuery
     ? `/api/admin/offline/customers/${id}/link-candidates?name=${encodeURIComponent(submittedCandidateQuery.name)}&phone=${encodeURIComponent(submittedCandidateQuery.phone)}&email=${encodeURIComponent(submittedCandidateQuery.email)}`
@@ -707,29 +558,19 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
   } = useSWR<LinkCandidatesResponse>(candidateKey, adminFetcher, {
     revalidateOnFocus: false,
   });
-  const { data: packageSettings } = useSWR<PackageSettingsResponse>(
-    "/api/admin/packages/settings",
-    adminFetcher,
-    {
-      revalidateOnFocus: false,
-    },
-  );
+  const { data: packageSettings } = useSWR<PackageSettingsResponse>("/api/admin/packages/settings", adminFetcher, {
+    revalidateOnFocus: false,
+  });
 
   const item = data?.item;
   const records = data?.records ?? [];
-  const pendingCount = records.filter(
-    (record) => record.payment?.status === "pending",
-  ).length;
-  const refundedCount = records.filter(
-    (record) => record.payment?.status === "refunded",
-  ).length;
+  const pendingCount = records.filter((record) => record.payment?.status === "pending").length;
+  const refundedCount = records.filter((record) => record.payment?.status === "refunded").length;
   const candidates = candidatesData?.items ?? [];
   const pointBalance = item?.linkedUser?.pointsBalance ?? null;
   const passes = data?.passes ?? [];
   const packageSales = data?.packageSales ?? [];
-  const packageOptions = (packageSettings?.packageConfigs ?? []).filter(
-    (pkg) => pkg.isActive,
-  );
+  const packageOptions = (packageSettings?.packageConfigs ?? []).filter((pkg) => pkg.isActive);
   const canUseLinkedFeatures = !!item?.linkedUserId && !!item?.linkedUser;
   const usablePasses = passes.filter(isUsablePass);
   const isPackageOptionSelected = !!packageSellForm.packageTypeId;
@@ -763,10 +604,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
     });
   }
 
-  async function handleRecordPoints(
-    recordId: string,
-    mode: "grant" | "deduct",
-  ) {
+  async function handleRecordPoints(recordId: string, mode: "grant" | "deduct") {
     const form = pointForms[recordId];
     const amountText = mode === "grant" ? form?.grantAmount : form?.useAmount;
     const reasonText = mode === "grant" ? form?.grantReason : form?.useReason;
@@ -780,31 +618,21 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
     }
 
     const actionLabel = mode === "grant" ? "적립" : "사용";
-    if (
-      !window.confirm(
-        `이 기록에 ${formatPoints(amount)} ${actionLabel} 처리를 진행하시겠습니까?`,
-      )
-    )
-      return;
+    if (!window.confirm(`이 기록에 ${formatPoints(amount)} ${actionLabel} 처리를 진행하시겠습니까?`)) return;
 
     setProcessingPointKey(`${recordId}:${mode}`);
     updatePointForm(recordId, { message: null, messageType: null });
     try {
-      await adminMutator(
-        `/api/admin/offline/records/${recordId}/points/${mode}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            amount,
-            reason: reasonText?.trim() || undefined,
-          }),
-        },
-      );
+      await adminMutator(`/api/admin/offline/records/${recordId}/points/${mode}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount,
+          reason: reasonText?.trim() || undefined,
+        }),
+      });
       updatePointForm(recordId, {
-        ...(mode === "grant"
-          ? { grantAmount: "", grantReason: "" }
-          : { useAmount: "", useReason: "" }),
+        ...(mode === "grant" ? { grantAmount: "", grantReason: "" } : { useAmount: "", useReason: "" }),
         message: `포인트 ${actionLabel} 처리가 완료되었습니다.`,
         messageType: "success",
       });
@@ -819,16 +647,9 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
     }
   }
 
-  async function handleRecordPointRevert(
-    recordId: string,
-    mode: "grant" | "deduct",
-  ) {
+  async function handleRecordPointRevert(recordId: string, mode: "grant" | "deduct") {
     const form = pointForms[recordId];
-    const reason =
-      (mode === "grant"
-        ? form?.grantRevertReason
-        : form?.deductRevertReason
-      )?.trim() || "";
+    const reason = (mode === "grant" ? form?.grantRevertReason : form?.deductRevertReason)?.trim() || "";
     if (!reason) {
       updatePointForm(recordId, {
         message: "포인트 취소 사유를 입력해주세요.",
@@ -837,41 +658,26 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
       return;
     }
 
-    const confirmMessage =
-      mode === "grant"
-        ? "이 오프라인 작업의 포인트 적립을 취소하고 회원 포인트를 회수하시겠습니까?"
-        : "이 오프라인 작업의 포인트 사용을 취소하고 회원 포인트를 복구하시겠습니까?";
+    const confirmMessage = mode === "grant" ? "이 오프라인 작업의 포인트 적립을 취소하고 회원 포인트를 회수하시겠습니까?" : "이 오프라인 작업의 포인트 사용을 취소하고 회원 포인트를 복구하시겠습니까?";
     if (!window.confirm(confirmMessage)) return;
 
     setProcessingPointKey(`${recordId}:${mode}-revert`);
     updatePointForm(recordId, { message: null, messageType: null });
     try {
-      await adminMutator(
-        `/api/admin/offline/records/${recordId}/points/${mode}/revert`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ reason }),
-        },
-      );
+      await adminMutator(`/api/admin/offline/records/${recordId}/points/${mode}/revert`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason }),
+      });
       updatePointForm(recordId, {
-        ...(mode === "grant"
-          ? { grantRevertReason: "" }
-          : { deductRevertReason: "" }),
-        message:
-          mode === "grant"
-            ? "포인트 적립 취소가 완료되었습니다."
-            : "포인트 사용 취소가 완료되었습니다.",
+        ...(mode === "grant" ? { grantRevertReason: "" } : { deductRevertReason: "" }),
+        message: mode === "grant" ? "포인트 적립 취소가 완료되었습니다." : "포인트 사용 취소가 완료되었습니다.",
         messageType: "success",
       });
       await mutateDetail();
     } catch (err) {
       updatePointForm(recordId, {
-        message:
-          translatePointError(err) ||
-          (mode === "grant"
-            ? "포인트 적립 취소에 실패했습니다."
-            : "포인트 사용 취소에 실패했습니다."),
+        message: translatePointError(err) || (mode === "grant" ? "포인트 적립 취소에 실패했습니다." : "포인트 사용 취소에 실패했습니다."),
         messageType: "error",
       });
     } finally {
@@ -879,10 +685,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
     }
   }
 
-  function updatePackageForm(
-    recordId: string,
-    patch: Partial<PackageFormState>,
-  ) {
+  function updatePackageForm(recordId: string, patch: Partial<PackageFormState>) {
     setPackageForms((prev) => ({
       ...prev,
       [recordId]: {
@@ -900,8 +703,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
       });
       return;
     }
-    const selectedPassId =
-      packageForms[recordId]?.passId || usablePasses[0]?.id || "";
+    const selectedPassId = packageForms[recordId]?.passId || usablePasses[0]?.id || "";
     const selectedPass = passes.find((pass) => pass.id === selectedPassId);
     if (!selectedPassId || !selectedPass) {
       updatePackageForm(recordId, {
@@ -910,12 +712,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
       });
       return;
     }
-    if (
-      !window.confirm(
-        `${getPassLabel(selectedPass)} 1회를 이 오프라인 작업에 사용 처리하시겠습니까?`,
-      )
-    )
-      return;
+    if (!window.confirm(`${getPassLabel(selectedPass)} 1회를 이 오프라인 작업에 사용 처리하시겠습니까?`)) return;
 
     setProcessingPackageRecordId(recordId);
     updatePackageForm(recordId, {
@@ -955,24 +752,16 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
       });
       return;
     }
-    if (
-      !window.confirm(
-        "이 오프라인 작업에 적용된 패키지 사용 1회를 취소하고 잔여 횟수를 복구하시겠습니까?",
-      )
-    )
-      return;
+    if (!window.confirm("이 오프라인 작업에 적용된 패키지 사용 1회를 취소하고 잔여 횟수를 복구하시겠습니까?")) return;
 
     setProcessingPackageRecordId(recordId);
     updatePackageForm(recordId, { message: null, messageType: null });
     try {
-      await adminMutator(
-        `/api/admin/offline/records/${recordId}/package/revert`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ reason }),
-        },
-      );
+      await adminMutator(`/api/admin/offline/records/${recordId}/package/revert`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason }),
+      });
       updatePackageForm(recordId, {
         revertReason: "",
         message: "패키지 사용 취소가 완료되었습니다.",
@@ -981,8 +770,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
       await mutateDetail();
     } catch (err) {
       updatePackageForm(recordId, {
-        message:
-          translatePackageError(err) || "패키지 사용 취소에 실패했습니다.",
+        message: translatePackageError(err) || "패키지 사용 취소에 실패했습니다.",
         messageType: "error",
       });
     } finally {
@@ -1011,17 +799,13 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
 
   async function handlePackageSell() {
     if (!canUseLinkedFeatures) {
-      setPackageSellMessage(
-        "온라인 회원과 연결된 고객만 패키지를 판매/발급할 수 있습니다.",
-      );
+      setPackageSellMessage("온라인 회원과 연결된 고객만 패키지를 판매/발급할 수 있습니다.");
       setPackageSellMessageType("error");
       return;
     }
     const packageName = packageSellForm.packageName.trim();
     const sessions = Number(packageSellForm.sessions);
-    const validityDays = packageSellForm.validityDays.trim()
-      ? Number(packageSellForm.validityDays)
-      : undefined;
+    const validityDays = packageSellForm.validityDays.trim() ? Number(packageSellForm.validityDays) : undefined;
     const price = Number(packageSellForm.price);
     if (!packageName) {
       setPackageSellMessage("패키지명을 입력해주세요.");
@@ -1038,20 +822,12 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
       setPackageSellMessageType("error");
       return;
     }
-    if (
-      validityDays !== undefined &&
-      (!Number.isInteger(validityDays) || validityDays < 1)
-    ) {
+    if (validityDays !== undefined && (!Number.isInteger(validityDays) || validityDays < 1)) {
       setPackageSellMessage("유효기간 일수는 1 이상이어야 합니다.");
       setPackageSellMessageType("error");
       return;
     }
-    if (
-      !window.confirm(
-        "이 고객에게 오프라인 결제 완료 패키지를 발급하시겠습니까?",
-      )
-    )
-      return;
+    if (!window.confirm("이 고객에게 오프라인 결제 완료 패키지를 발급하시겠습니까?")) return;
 
     setIsSellingPackage(true);
     setPackageSellMessage(null);
@@ -1083,10 +859,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
     }
   }
 
-  function updatePackageRefundForm(
-    packageOrderId: string,
-    patch: Partial<PackageRefundFormState>,
-  ) {
+  function updatePackageRefundForm(packageOrderId: string, patch: Partial<PackageRefundFormState>) {
     setPackageRefundForms((prev) => ({
       ...prev,
       [packageOrderId]: {
@@ -1105,24 +878,16 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
       });
       return;
     }
-    if (
-      !window.confirm(
-        "이 오프라인 패키지 판매건을 환불 처리하시겠습니까? 실제 환불은 매장에서 별도로 처리해야 합니다.",
-      )
-    )
-      return;
+    if (!window.confirm("이 오프라인 패키지 판매건을 환불 처리하시겠습니까? 실제 환불은 매장에서 별도로 처리해야 합니다.")) return;
 
     setRefundingPackageOrderId(sale.id);
     updatePackageRefundForm(sale.id, { message: null, messageType: null });
     try {
-      await adminMutator(
-        `/api/admin/offline/package-orders/${sale.id}/refund`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ reason }),
-        },
-      );
+      await adminMutator(`/api/admin/offline/package-orders/${sale.id}/refund`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason }),
+      });
       updatePackageRefundForm(sale.id, {
         reason: "",
         message: "오프라인 패키지 환불 처리가 완료되었습니다.",
@@ -1140,10 +905,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
   }
 
   async function handleLinkUser(userId: string) {
-    if (
-      !window.confirm("이 온라인 회원을 현재 오프라인 고객과 연결하시겠습니까?")
-    )
-      return;
+    if (!window.confirm("이 온라인 회원을 현재 오프라인 고객과 연결하시겠습니까?")) return;
     setLinkingUserId(userId);
     setLinkMessage(null);
     setLinkMessageType(null);
@@ -1166,12 +928,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
   }
 
   async function handleUnlinkUser() {
-    if (
-      !window.confirm(
-        "온라인 회원 연결을 해제하시겠습니까? 기존 오프라인 기록은 삭제되지 않습니다.",
-      )
-    )
-      return;
+    if (!window.confirm("온라인 회원 연결을 해제하시겠습니까? 기존 오프라인 기록은 삭제되지 않습니다.")) return;
     setIsUnlinking(true);
     setLinkMessage(null);
     setLinkMessageType(null);
@@ -1200,9 +957,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
       <div className="flex min-h-[400px] items-center justify-center">
         <div className="text-center">
           <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-          <p className="mt-4 text-sm text-muted-foreground">
-            오프라인 고객 상세 정보를 불러오는 중입니다...
-          </p>
+          <p className="mt-4 text-sm text-muted-foreground">오프라인 고객 상세 정보를 불러오는 중입니다...</p>
         </div>
       </div>
     );
@@ -1215,12 +970,8 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
             <AlertCircle className="h-8 w-8 text-destructive" />
           </div>
-          <h2 className="text-lg font-semibold text-foreground">
-            오프라인 고객 상세를 불러오지 못했습니다
-          </h2>
-          <p className="mt-2 text-sm text-muted-foreground">
-            고객 ID가 잘못되었거나 고객이 삭제되었을 수 있습니다.
-          </p>
+          <h2 className="text-lg font-semibold text-foreground">오프라인 고객 상세를 불러오지 못했습니다</h2>
+          <p className="mt-2 text-sm text-muted-foreground">고객 ID가 잘못되었거나 고객이 삭제되었을 수 있습니다.</p>
           <Button asChild variant="outline" className="mt-6">
             <Link href="/admin/offline">
               <ArrowLeft className="mr-2 h-4 w-4" />
@@ -1241,12 +992,8 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
       {/* Page Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="break-keep text-2xl font-bold leading-tight tracking-tight text-foreground">
-            오프라인 고객 상세
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            고객 기본 정보와 오프라인 작업/매출 이력을 확인합니다.
-          </p>
+          <h1 className="break-keep text-2xl font-bold leading-tight tracking-tight text-foreground">오프라인 고객 상세</h1>
+          <p className="mt-1 text-sm text-muted-foreground">고객 기본 정보와 오프라인 작업/매출 이력을 확인합니다.</p>
         </div>
         <div className="flex shrink-0 flex-wrap gap-2">
           <Button asChild variant="outline" size="sm">
@@ -1272,10 +1019,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
               <User className="h-7 w-7" />
             </div>
             <div className="min-w-0">
-              <h2
-                className="line-clamp-2 break-keep text-xl font-bold leading-tight text-foreground"
-                title={item.name || "이름 없음"}
-              >
+              <h2 className="line-clamp-2 break-keep text-xl font-bold leading-tight text-foreground" title={item.name || "이름 없음"}>
                 {item.name || "이름 없음"}
               </h2>
               <div className="mt-1 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
@@ -1286,10 +1030,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                 {item.email && (
                   <span className="flex min-w-0 items-center gap-1.5">
                     <Mail className="h-3.5 w-3.5 shrink-0" />
-                    <span
-                      className="block max-w-[240px] truncate"
-                      title={item.email}
-                    >
+                    <span className="block max-w-[240px] truncate" title={item.email}>
                       {item.email}
                     </span>
                   </span>
@@ -1304,20 +1045,13 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                 온라인 연결됨
               </Badge>
             ) : (
-              <Badge
-                variant="outline"
-                className="shrink-0 whitespace-nowrap text-muted-foreground"
-              >
+              <Badge variant="outline" className="shrink-0 whitespace-nowrap text-muted-foreground">
                 <Unlink className="mr-1.5 h-3.5 w-3.5" />
                 온라인 미연결
               </Badge>
             )}
             {item.tags?.map((tag) => (
-              <Badge
-                key={tag}
-                variant="secondary"
-                className="shrink-0 whitespace-nowrap"
-              >
+              <Badge key={tag} variant="secondary" className="shrink-0 whitespace-nowrap">
                 {tag}
               </Badge>
             ))}
@@ -1331,21 +1065,14 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
         <div className="space-y-6 lg:col-span-5">
           {/* Customer Basic Info */}
           <SectionCard>
-            <SectionHeader
-              icon={User}
-              title="고객 기본 정보"
-              description="휴대폰 번호와 연락처 정보"
-            />
+            <SectionHeader icon={User} title="고객 기본 정보" description="휴대폰 번호와 연락처 정보" />
             <div className="space-y-4 p-6">
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <InfoItem
                   icon={User}
                   label="고객명"
                   value={
-                    <span
-                      className="line-clamp-2 break-keep font-semibold"
-                      title={item.name || "-"}
-                    >
+                    <span className="line-clamp-2 break-keep font-semibold" title={item.name || "-"}>
                       {item.name || "-"}
                     </span>
                   }
@@ -1355,14 +1082,8 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                   label="휴대폰 번호"
                   value={
                     <div>
-                      <span className="whitespace-nowrap tabular-nums">
-                        {item.phoneMasked || "-"}
-                      </span>
-                      {item.phone && (
-                        <p className="mt-1 whitespace-nowrap text-xs tabular-nums text-muted-foreground">
-                          원번호: {item.phone}
-                        </p>
-                      )}
+                      <span className="whitespace-nowrap tabular-nums">{item.phoneMasked || "-"}</span>
+                      {item.phone && <p className="mt-1 whitespace-nowrap text-xs tabular-nums text-muted-foreground">원번호: {item.phone}</p>}
                     </div>
                   }
                 />
@@ -1370,29 +1091,14 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                   icon={Mail}
                   label="이메일"
                   value={
-                    <span
-                      className="block max-w-[220px] truncate"
-                      title={item.email || "-"}
-                    >
+                    <span className="block max-w-[220px] truncate" title={item.email || "-"}>
                       {item.email || "-"}
                     </span>
                   }
                 />
-                <InfoItem
-                  icon={Calendar}
-                  label="마지막 방문일"
-                  value={formatDate(item.stats?.lastVisitedAt)}
-                />
-                <InfoItem
-                  icon={Clock}
-                  label="등록일"
-                  value={formatDate(item.createdAt)}
-                />
-                <InfoItem
-                  icon={Clock}
-                  label="수정일"
-                  value={formatDate(item.updatedAt)}
-                />
+                <InfoItem icon={Calendar} label="마지막 방문일" value={formatDate(item.stats?.lastVisitedAt)} />
+                <InfoItem icon={Clock} label="등록일" value={formatDate(item.createdAt)} />
+                <InfoItem icon={Clock} label="수정일" value={formatDate(item.updatedAt)} />
               </div>
 
               {/* Memo */}
@@ -1401,15 +1107,10 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                   <FileText className="h-3.5 w-3.5" />
                   메모
                 </div>
-                <p className="mt-2 whitespace-pre-wrap break-keep text-sm leading-relaxed text-foreground">
-                  {item.memo || "등록된 메모가 없습니다."}
-                </p>
+                <p className="mt-2 whitespace-pre-wrap break-keep text-sm leading-relaxed text-foreground">{item.memo || "등록된 메모가 없습니다."}</p>
               </div>
 
-              <p className="text-xs text-muted-foreground">
-                고객 정보 수정은 오프라인 관리 화면 또는 후속 단계에서 지원
-                예정입니다.
-              </p>
+              <p className="text-xs text-muted-foreground">고객 정보 수정은 오프라인 관리 화면 또는 후속 단계에서 지원 예정입니다.</p>
             </div>
           </SectionCard>
 
@@ -1421,14 +1122,9 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
               description="포인트/패키지 연동을 위한 회원 연결"
               action={
                 item.linkedUserId ? (
-                  <Badge className="shrink-0 whitespace-nowrap bg-success/10 text-success border-success/20">
-                    연결됨
-                  </Badge>
+                  <Badge className="shrink-0 whitespace-nowrap bg-success/10 text-success border-success/20">연결됨</Badge>
                 ) : (
-                  <Badge
-                    variant="outline"
-                    className="shrink-0 whitespace-nowrap text-muted-foreground"
-                  >
+                  <Badge variant="outline" className="shrink-0 whitespace-nowrap text-muted-foreground">
                     미연결
                   </Badge>
                 )
@@ -1444,43 +1140,22 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                         <User className="h-5 w-5" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-foreground">
-                          {item.linkedUser?.name || "회원 정보 없음"}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {item.linkedUser?.email || "-"}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {item.linkedUser?.phoneMasked ||
-                            item.linkedUser?.phone ||
-                            "-"}
-                        </p>
-                        <p className="mt-2 text-xs text-muted-foreground truncate">
-                          ID: {item.linkedUserId}
-                        </p>
+                        <p className="font-medium text-foreground">{item.linkedUser?.name || "회원 정보 없음"}</p>
+                        <p className="text-sm text-muted-foreground">{item.linkedUser?.email || "-"}</p>
+                        <p className="text-sm text-muted-foreground">{item.linkedUser?.phoneMasked || item.linkedUser?.phone || "-"}</p>
+                        <p className="mt-2 text-xs text-muted-foreground truncate">ID: {item.linkedUserId}</p>
                       </div>
                     </div>
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    이 연결은 향후 포인트/패키지 연동 기준으로 사용됩니다.
-                  </p>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={handleUnlinkUser}
-                    disabled={isUnlinking}
-                    className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                  >
+                  <p className="text-xs text-muted-foreground">이 연결은 향후 포인트/패키지 연동 기준으로 사용됩니다.</p>
+                  <Button type="button" variant="outline" size="sm" onClick={handleUnlinkUser} disabled={isUnlinking} className="text-destructive hover:bg-destructive/10 hover:text-destructive">
                     <Unlink className="mr-2 h-4 w-4" />
                     {isUnlinking ? "연결 해제 중..." : "연결 해제"}
                   </Button>
                 </>
               ) : (
                 <>
-                  <p className="text-sm text-muted-foreground">
-                    포인트/패키지 연동은 온라인 회원 연결 후 사용할 수 있습니다.
-                  </p>
+                  <p className="text-sm text-muted-foreground">포인트/패키지 연동은 온라인 회원 연결 후 사용할 수 있습니다.</p>
 
                   {/* Search Form */}
                   <form
@@ -1489,14 +1164,8 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                       e.preventDefault();
                       setCandidateMessage(null);
                       setLinkMessage(null);
-                      if (
-                        !candidateQuery.name.trim() &&
-                        !candidateQuery.phone.trim() &&
-                        !candidateQuery.email.trim()
-                      ) {
-                        setCandidateMessage(
-                          "검색어를 하나 이상 입력해 주세요.",
-                        );
+                      if (!candidateQuery.name.trim() && !candidateQuery.phone.trim() && !candidateQuery.email.trim()) {
+                        setCandidateMessage("검색어를 하나 이상 입력해 주세요.");
                         setSubmittedCandidateQuery(null);
                         return;
                       }
@@ -1517,10 +1186,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                           placeholder="회원 이름 입력"
                         />
                       </FormField>
-                      <FormField
-                        label="휴대폰 번호"
-                        htmlFor="link-candidate-phone"
-                      >
+                      <FormField label="휴대폰 번호" htmlFor="link-candidate-phone">
                         <Input
                           id="link-candidate-phone"
                           value={candidateQuery.phone}
@@ -1570,118 +1236,72 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                   </form>
 
                   {/* Search Results */}
-                  {candidateMessage && (
-                    <Message type="error">{candidateMessage}</Message>
-                  )}
+                  {candidateMessage && <Message type="error">{candidateMessage}</Message>}
                   {submittedCandidateQuery && candidatesLoading && (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                       회원 검색 중...
                     </div>
                   )}
-                  {submittedCandidateQuery &&
-                    !candidatesLoading &&
-                    candidates.length === 0 && (
-                      <p className="text-sm text-muted-foreground">
-                        검색 결과가 없습니다.
-                      </p>
-                    )}
-                  {submittedCandidateQuery &&
-                    !candidatesLoading &&
-                    candidates.length > 0 && (
-                      <div className="space-y-2">
-                        {candidates.map((candidate) => {
-                          const isLinkedToCurrent =
-                            candidate.alreadyLinkedOfflineCustomerId ===
-                            item.id;
-                          const isLinkedToOther =
-                            !!candidate.alreadyLinkedOfflineCustomerId &&
-                            !isLinkedToCurrent;
-                          return (
-                            <div
-                              key={candidate.id}
-                              className={`rounded-lg border p-4 transition-colors ${isLinkedToOther ? "border-destructive/30 bg-destructive/5" : isLinkedToCurrent ? "border-success/30 bg-success/5" : "border-border/40 hover:bg-muted/30"}`}
-                            >
-                              <div className="flex items-start justify-between gap-3">
-                                <div className="min-w-0 flex-1">
-                                  <p className="font-medium text-foreground">
-                                    {candidate.name || "이름 없음"}
-                                  </p>
-                                  <p className="text-sm text-muted-foreground truncate">
-                                    {candidate.email || "이메일 없음"}
-                                  </p>
-                                  <p className="text-sm text-muted-foreground">
-                                    {candidate.phoneMasked || "휴대폰 없음"}
-                                  </p>
-                                  <div className="mt-2 flex flex-wrap gap-1.5">
-                                    {candidate.match.name && (
-                                      <Badge
-                                        variant="secondary"
-                                        className="text-xs"
-                                      >
-                                        이름 일치
-                                      </Badge>
-                                    )}
-                                    {candidate.match.phone && (
-                                      <Badge
-                                        variant="secondary"
-                                        className="text-xs"
-                                      >
-                                        휴대폰 일치
-                                      </Badge>
-                                    )}
-                                    {candidate.match.email && (
-                                      <Badge
-                                        variant="secondary"
-                                        className="text-xs"
-                                      >
-                                        이메일 일치
-                                      </Badge>
-                                    )}
-                                  </div>
-                                </div>
-                                <Button
-                                  type="button"
-                                  size="sm"
-                                  onClick={() => handleLinkUser(candidate.id)}
-                                  disabled={
-                                    isLinkedToOther ||
-                                    isLinkedToCurrent ||
-                                    linkingUserId === candidate.id
-                                  }
-                                >
-                                  {isLinkedToCurrent ? (
-                                    <>
-                                      <Check className="mr-1.5 h-3.5 w-3.5" />
-                                      연결됨
-                                    </>
-                                  ) : linkingUserId === candidate.id ? (
-                                    "연결 중..."
-                                  ) : (
-                                    <>
-                                      <Link2 className="mr-1.5 h-3.5 w-3.5" />
-                                      연결
-                                    </>
+                  {submittedCandidateQuery && !candidatesLoading && candidates.length === 0 && <p className="text-sm text-muted-foreground">검색 결과가 없습니다.</p>}
+                  {submittedCandidateQuery && !candidatesLoading && candidates.length > 0 && (
+                    <div className="space-y-2">
+                      {candidates.map((candidate) => {
+                        const isLinkedToCurrent = candidate.alreadyLinkedOfflineCustomerId === item.id;
+                        const isLinkedToOther = !!candidate.alreadyLinkedOfflineCustomerId && !isLinkedToCurrent;
+                        return (
+                          <div
+                            key={candidate.id}
+                            className={`rounded-lg border p-4 transition-colors ${isLinkedToOther ? "border-destructive/30 bg-destructive/5" : isLinkedToCurrent ? "border-success/30 bg-success/5" : "border-border/40 hover:bg-muted/30"}`}
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="min-w-0 flex-1">
+                                <p className="font-medium text-foreground">{candidate.name || "이름 없음"}</p>
+                                <p className="text-sm text-muted-foreground truncate">{candidate.email || "이메일 없음"}</p>
+                                <p className="text-sm text-muted-foreground">{candidate.phoneMasked || "휴대폰 없음"}</p>
+                                <div className="mt-2 flex flex-wrap gap-1.5">
+                                  {candidate.match.name && (
+                                    <Badge variant="secondary" className="text-xs">
+                                      이름 일치
+                                    </Badge>
                                   )}
-                                </Button>
+                                  {candidate.match.phone && (
+                                    <Badge variant="secondary" className="text-xs">
+                                      휴대폰 일치
+                                    </Badge>
+                                  )}
+                                  {candidate.match.email && (
+                                    <Badge variant="secondary" className="text-xs">
+                                      이메일 일치
+                                    </Badge>
+                                  )}
+                                </div>
                               </div>
-                              {isLinkedToOther && (
-                                <p className="mt-2 text-xs text-destructive">
-                                  이미 다른 오프라인 고객과 연결된 회원입니다.
-                                </p>
-                              )}
+                              <Button type="button" size="sm" onClick={() => handleLinkUser(candidate.id)} disabled={isLinkedToOther || isLinkedToCurrent || linkingUserId === candidate.id}>
+                                {isLinkedToCurrent ? (
+                                  <>
+                                    <Check className="mr-1.5 h-3.5 w-3.5" />
+                                    연결됨
+                                  </>
+                                ) : linkingUserId === candidate.id ? (
+                                  "연결 중..."
+                                ) : (
+                                  <>
+                                    <Link2 className="mr-1.5 h-3.5 w-3.5" />
+                                    연결
+                                  </>
+                                )}
+                              </Button>
                             </div>
-                          );
-                        })}
-                      </div>
-                    )}
+                            {isLinkedToOther && <p className="mt-2 text-xs text-destructive">이미 다른 오프라인 고객과 연결된 회원입니다.</p>}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </>
               )}
-              {linkMessage && (
-                <Message type={linkMessageType || "info"}>
-                  {linkMessage}
-                </Message>
-              )}
+              {linkMessage && <Message type={linkMessageType || "info"}>{linkMessage}</Message>}
             </div>
           </SectionCard>
         </div>
@@ -1690,45 +1310,15 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
         <div className="space-y-6 lg:col-span-7">
           {/* Statistics */}
           <SectionCard>
-            <SectionHeader
-              icon={TrendingUp}
-              title="누적 통계"
-              description="오프라인 고객 기준 누적 데이터"
-            />
+            <SectionHeader icon={TrendingUp} title="누적 통계" description="오프라인 고객 기준 누적 데이터" />
             <div className="p-6">
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-                <StatCard
-                  label="방문 횟수"
-                  value={`${item.stats?.visitCount ?? 0}회`}
-                  icon={Calendar}
-                />
-                <StatCard
-                  label="총 작업 수"
-                  value={`${item.stats?.totalServiceCount ?? 0}건`}
-                  icon={Hash}
-                />
-                <StatCard
-                  label="총 결제액"
-                  value={formatCurrency(item.stats?.totalPaid)}
-                  icon={CreditCard}
-                  variant="highlight"
-                />
-                <StatCard
-                  label="마지막 방문"
-                  value={formatDate(item.stats?.lastVisitedAt)}
-                  icon={Clock}
-                />
-                <StatCard
-                  label="미결제 기록"
-                  value={`${pendingCount}건`}
-                  icon={AlertCircle}
-                  variant={pendingCount > 0 ? "warning" : "default"}
-                />
-                <StatCard
-                  label="환불 기록"
-                  value={`${refundedCount}건`}
-                  icon={X}
-                />
+                <StatCard label="방문 횟수" value={`${item.stats?.visitCount ?? 0}회`} icon={Calendar} />
+                <StatCard label="총 작업 수" value={`${item.stats?.totalServiceCount ?? 0}건`} icon={Hash} />
+                <StatCard label="총 결제액" value={formatCurrency(item.stats?.totalPaid)} icon={CreditCard} variant="highlight" />
+                <StatCard label="마지막 방문" value={formatDate(item.stats?.lastVisitedAt)} icon={Clock} />
+                <StatCard label="미결제 기록" value={`${pendingCount}건`} icon={AlertCircle} variant={pendingCount > 0 ? "warning" : "default"} />
+                <StatCard label="환불 기록" value={`${refundedCount}건`} icon={X} />
               </div>
             </div>
           </SectionCard>
@@ -1743,9 +1333,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                 canUseLinkedFeatures && pointBalance !== null ? (
                   <div className="rounded-lg bg-primary/10 px-4 py-2 text-right">
                     <p className="text-xs text-muted-foreground">현재 잔액</p>
-                    <p className="text-lg font-bold text-primary">
-                      {formatPoints(pointBalance)}
-                    </p>
+                    <p className="text-lg font-bold text-primary">{formatPoints(pointBalance)}</p>
                   </div>
                 ) : null
               }
@@ -1753,27 +1341,13 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
             <div className="p-6">
               {canUseLinkedFeatures ? (
                 <div className="space-y-3">
-                  <p className="text-sm text-muted-foreground">
-                    오프라인 작업 기록에서 포인트 적립/사용을 처리할 수
-                    있습니다.
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    포인트 사용 시 실제 결제금액은 별도로 수정하세요. 취소된
-                    포인트 처리는 같은 기록에서 다시 처리할 수 없습니다.
-                  </p>
+                  <p className="text-sm text-muted-foreground">오프라인 작업 기록에서 포인트 적립/사용을 처리할 수 있습니다.</p>
+                  <p className="text-xs text-muted-foreground">포인트 사용 시 실제 결제금액은 별도로 수정하세요. 취소된 포인트 처리는 같은 기록에서 다시 처리할 수 없습니다.</p>
                 </div>
               ) : (
                 <div className="rounded-lg border border-border/40 bg-muted/20 p-4">
-                  <p className="text-sm text-muted-foreground">
-                    온라인 회원과 연결된 고객만 포인트 조회/사용/적립이
-                    가능합니다.
-                  </p>
-                  {item.linkedUserId && !item.linkedUser && (
-                    <p className="mt-2 text-xs text-destructive">
-                      연결된 온라인 회원 정보를 찾을 수 없어 포인트를 처리할 수
-                      없습니다.
-                    </p>
-                  )}
+                  <p className="text-sm text-muted-foreground">온라인 회원과 연결된 고객만 포인트 조회/사용/적립이 가능합니다.</p>
+                  {item.linkedUserId && !item.linkedUser && <p className="mt-2 text-xs text-destructive">연결된 온라인 회원 정보를 찾을 수 없어 포인트를 처리할 수 없습니다.</p>}
                 </div>
               )}
             </div>
@@ -1785,69 +1359,32 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
               icon={Package}
               title="패키지/서비스권"
               description="보유 패키지 현황"
-              action={
-                canUseLinkedFeatures && usablePasses.length > 0 ? (
-                  <Badge className="shrink-0 whitespace-nowrap bg-success/10 text-success border-success/20">
-                    {usablePasses.length}개 사용 가능
-                  </Badge>
-                ) : null
-              }
+              action={canUseLinkedFeatures && usablePasses.length > 0 ? <Badge className="shrink-0 whitespace-nowrap bg-success/10 text-success border-success/20">{usablePasses.length}개 사용 가능</Badge> : null}
             />
             <div className="p-6">
               {!canUseLinkedFeatures ? (
                 <div className="rounded-lg border border-border/40 bg-muted/20 p-4">
-                  <p className="text-sm text-muted-foreground">
-                    온라인 회원과 연결된 고객만 보유 패키지 조회 및 사용 처리가
-                    가능합니다.
-                  </p>
+                  <p className="text-sm text-muted-foreground">온라인 회원과 연결된 고객만 보유 패키지 조회 및 사용 처리가 가능합니다.</p>
                 </div>
               ) : passes.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  보유 패키지/서비스권이 없습니다.
-                </p>
+                <p className="text-sm text-muted-foreground">보유 패키지/서비스권이 없습니다.</p>
               ) : (
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
                   {passes.map((pass) => {
                     const usable = isUsablePass(pass);
                     return (
-                      <div
-                        key={pass.id}
-                        className={`rounded-lg border p-4 transition-colors ${usable ? "border-primary/30 bg-primary/5 hover:bg-primary/10" : "border-border/40 bg-muted/20 text-muted-foreground"}`}
-                      >
+                      <div key={pass.id} className={`rounded-lg border p-4 transition-colors ${usable ? "border-primary/30 bg-primary/5 hover:bg-primary/10" : "border-border/40 bg-muted/20 text-muted-foreground"}`}>
                         <div className="flex items-start justify-between gap-2">
-                          <p className="font-medium text-foreground">
-                            {getPassLabel(pass)}
-                          </p>
-                          <Badge
-                            variant={usable ? "secondary" : "outline"}
-                            className={
-                              usable ? "bg-success/10 text-success" : ""
-                            }
-                          >
+                          <p className="font-medium text-foreground">{getPassLabel(pass)}</p>
+                          <Badge variant={usable ? "secondary" : "outline"} className={usable ? "bg-success/10 text-success" : ""}>
                             {usable ? "사용 가능" : pass.status || "비활성"}
                           </Badge>
                         </div>
                         <div className="mt-3 space-y-1 text-sm">
                           <p>
-                            잔여{" "}
-                            <span className="font-semibold text-foreground">
-                              {Number(pass.remainingCount ?? 0).toLocaleString(
-                                "ko-KR",
-                              )}
-                            </span>{" "}
-                            /{" "}
-                            {Number(pass.totalCount ?? 0).toLocaleString(
-                              "ko-KR",
-                            )}
-                            회
+                            잔여 <span className="font-semibold text-foreground">{Number(pass.remainingCount ?? 0).toLocaleString("ko-KR")}</span> / {Number(pass.totalCount ?? 0).toLocaleString("ko-KR")}회
                           </p>
-                          <p>
-                            사용{" "}
-                            {Number(pass.usedCount ?? 0).toLocaleString(
-                              "ko-KR",
-                            )}
-                            회
-                          </p>
+                          <p>사용 {Number(pass.usedCount ?? 0).toLocaleString("ko-KR")}회</p>
                           <p>만료일 {formatDate(pass.expiresAt)}</p>
                         </div>
                       </div>
@@ -1860,26 +1397,16 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
 
           {/* Package Sell */}
           <SectionCard>
-            <SectionHeader
-              icon={ShoppingBag}
-              title="오프라인 패키지 판매"
-              description="매장에서 결제 완료된 패키지권을 온라인 회원 계정에 발급"
-            />
+            <SectionHeader icon={ShoppingBag} title="오프라인 패키지 판매" description="매장에서 결제 완료된 패키지권을 온라인 회원 계정에 발급" />
             <div className="p-6">
               {!canUseLinkedFeatures ? (
                 <div className="rounded-lg border border-border/40 bg-muted/20 p-4">
-                  <p className="text-sm text-muted-foreground">
-                    온라인 회원과 연결된 고객만 패키지 판매/발급이 가능합니다.
-                  </p>
+                  <p className="text-sm text-muted-foreground">온라인 회원과 연결된 고객만 패키지 판매/발급이 가능합니다.</p>
                 </div>
               ) : (
                 <div className="space-y-4">
                   {packageOptions.length > 0 && (
-                    <FormField
-                      label="패키지 옵션"
-                      htmlFor="offline-package-option"
-                      hint="옵션 선택 시 패키지명, 횟수, 유효기간, 판매 금액을 자동 입력합니다."
-                    >
+                    <FormField label="패키지 옵션" htmlFor="offline-package-option" hint="옵션 선택 시 패키지명, 횟수, 유효기간, 판매 금액을 자동 입력합니다.">
                       <Select
                         id="offline-package-option"
                         value={packageSellForm.packageTypeId}
@@ -1898,37 +1425,21 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
 
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     <FormField label="패키지명" htmlFor="offline-package-name">
-                      <Input
-                        id="offline-package-name"
-                        value={packageSellForm.packageName}
-                        onChange={(e) =>
-                          updatePackageSellForm({ packageName: e.target.value })
-                        }
-                        disabled={isSellingPackage || isPackageOptionSelected}
-                        placeholder="예: 10회권"
-                      />
+                      <Input id="offline-package-name" value={packageSellForm.packageName} onChange={(e) => updatePackageSellForm({ packageName: e.target.value })} disabled={isSellingPackage || isPackageOptionSelected} placeholder="예: 10회권" />
                     </FormField>
-                    <FormField
-                      label="이용 횟수"
-                      htmlFor="offline-package-sessions"
-                    >
+                    <FormField label="이용 횟수" htmlFor="offline-package-sessions">
                       <Input
                         id="offline-package-sessions"
                         type="number"
                         min={1}
                         step={1}
                         value={packageSellForm.sessions}
-                        onChange={(e) =>
-                          updatePackageSellForm({ sessions: e.target.value })
-                        }
+                        onChange={(e) => updatePackageSellForm({ sessions: e.target.value })}
                         disabled={isSellingPackage || isPackageOptionSelected}
                         placeholder="예: 10"
                       />
                     </FormField>
-                    <FormField
-                      label="유효기간 일수"
-                      htmlFor="offline-package-validity"
-                    >
+                    <FormField label="유효기간 일수" htmlFor="offline-package-validity">
                       <Input
                         id="offline-package-validity"
                         type="number"
@@ -1944,27 +1455,19 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                         placeholder="예: 365"
                       />
                     </FormField>
-                    <FormField
-                      label="판매 금액"
-                      htmlFor="offline-package-price"
-                    >
+                    <FormField label="판매 금액" htmlFor="offline-package-price">
                       <Input
                         id="offline-package-price"
                         type="number"
                         min={0}
                         step={1000}
                         value={packageSellForm.price}
-                        onChange={(e) =>
-                          updatePackageSellForm({ price: e.target.value })
-                        }
+                        onChange={(e) => updatePackageSellForm({ price: e.target.value })}
                         disabled={isSellingPackage || isPackageOptionSelected}
                         placeholder="예: 100000"
                       />
                     </FormField>
-                    <FormField
-                      label="결제수단"
-                      htmlFor="offline-package-payment-method"
-                    >
+                    <FormField label="결제수단" htmlFor="offline-package-payment-method">
                       <Select
                         id="offline-package-payment-method"
                         value={packageSellForm.paymentMethod}
@@ -1989,37 +1492,22 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                       id="offline-package-memo"
                       className="min-h-20 w-full rounded-lg border border-border/60 bg-background px-3 py-2.5 text-sm text-foreground transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50"
                       value={packageSellForm.memo}
-                      onChange={(e) =>
-                        updatePackageSellForm({ memo: e.target.value })
-                      }
+                      onChange={(e) => updatePackageSellForm({ memo: e.target.value })}
                       disabled={isSellingPackage}
                       placeholder="오프라인 판매 메모(선택)"
                     />
                   </FormField>
 
                   <div className="flex min-w-0 flex-wrap items-center gap-3">
-                    <Button
-                      type="button"
-                      onClick={handlePackageSell}
-                      disabled={isSellingPackage}
-                    >
+                    <Button type="button" onClick={handlePackageSell} disabled={isSellingPackage}>
                       <Gift className="mr-2 h-4 w-4" />
-                      {isSellingPackage
-                        ? "패키지 판매/발급 중..."
-                        : "패키지 판매/발급"}
+                      {isSellingPackage ? "패키지 판매/발급 중..." : "패키지 판매/발급"}
                     </Button>
-                    <p className="text-xs text-muted-foreground">
-                      판매는 service_pass 발급만 처리하며, 특정 오프라인 기록에
-                      자동 사용 처리하지 않습니다.
-                    </p>
+                    <p className="text-xs text-muted-foreground">판매는 service_pass 발급만 처리하며, 특정 오프라인 기록에 자동 사용 처리하지 않습니다.</p>
                   </div>
                 </div>
               )}
-              {packageSellMessage && (
-                <Message type={packageSellMessageType || "info"}>
-                  {packageSellMessage}
-                </Message>
-              )}
+              {packageSellMessage && <Message type={packageSellMessageType || "info"}>{packageSellMessage}</Message>}
 
               {/* Package Sales History */}
               <CollapsibleSection
@@ -2034,137 +1522,66 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                 }
               >
                 {packageSales.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    표시할 패키지 판매/주문 내역이 없습니다.
-                  </p>
+                  <p className="text-sm text-muted-foreground">표시할 패키지 판매/주문 내역이 없습니다.</p>
                 ) : (
                   <div className="overflow-x-auto rounded-lg border border-border/40">
                     <table className="min-w-[980px] text-left text-sm">
                       <thead className="bg-muted/50 text-xs text-muted-foreground">
                         <tr>
-                          <th className="whitespace-nowrap px-4 py-3 font-medium">
-                            패키지
-                          </th>
-                          <th className="whitespace-nowrap px-4 py-3 font-medium">
-                            횟수
-                          </th>
-                          <th className="whitespace-nowrap px-4 py-3 font-medium">
-                            금액
-                          </th>
-                          <th className="whitespace-nowrap px-4 py-3 font-medium">
-                            결제수단
-                          </th>
-                          <th className="whitespace-nowrap px-4 py-3 font-medium">
-                            결제상태
-                          </th>
-                          <th className="whitespace-nowrap px-4 py-3 font-medium">
-                            결제일
-                          </th>
-                          <th className="whitespace-nowrap px-4 py-3 font-medium">
-                            출처
-                          </th>
-                          <th className="whitespace-nowrap px-4 py-3 font-medium">
-                            환불 처리
-                          </th>
+                          <th className="whitespace-nowrap px-4 py-3 font-medium">패키지</th>
+                          <th className="whitespace-nowrap px-4 py-3 font-medium">횟수</th>
+                          <th className="whitespace-nowrap px-4 py-3 font-medium">금액</th>
+                          <th className="whitespace-nowrap px-4 py-3 font-medium">결제수단</th>
+                          <th className="whitespace-nowrap px-4 py-3 font-medium">결제상태</th>
+                          <th className="whitespace-nowrap px-4 py-3 font-medium">결제일</th>
+                          <th className="whitespace-nowrap px-4 py-3 font-medium">출처</th>
+                          <th className="whitespace-nowrap px-4 py-3 font-medium">환불 처리</th>
                         </tr>
                       </thead>
                       <tbody>
                         {packageSales.map((sale) => {
-                          const isOfflineSale =
-                            sale.source === "offline_admin" ||
-                            sale.source === "offline" ||
-                            sale.sourceLabel === "오프라인 판매";
+                          const isOfflineSale = sale.source === "offline_admin" || sale.source === "offline" || sale.sourceLabel === "오프라인 판매";
                           const refundForm = packageRefundForms[sale.id] ?? {
                             reason: "",
                           };
-                          const isRefunding =
-                            refundingPackageOrderId === sale.id;
+                          const isRefunding = refundingPackageOrderId === sale.id;
                           return (
-                            <tr
-                              key={sale.id}
-                              className="border-t border-border/40 align-top transition-colors hover:bg-muted/30"
-                            >
+                            <tr key={sale.id} className="border-t border-border/40 align-top transition-colors hover:bg-muted/30">
                               <td className="px-4 py-3 font-medium text-foreground">
-                                <span
-                                  className="line-clamp-2 max-w-[220px] break-keep"
-                                  title={
-                                    sale.packageName || "교체 서비스 패키지"
-                                  }
-                                >
+                                <span className="line-clamp-2 max-w-[220px] break-keep" title={sale.packageName || "교체 서비스 패키지"}>
                                   {sale.packageName || "교체 서비스 패키지"}
                                 </span>
                               </td>
-                              <td className="whitespace-nowrap px-4 py-3 tabular-nums">
-                                {Number(sale.sessions ?? 0).toLocaleString(
-                                  "ko-KR",
-                                )}
-                                회
-                              </td>
+                              <td className="whitespace-nowrap px-4 py-3 tabular-nums">{Number(sale.sessions ?? 0).toLocaleString("ko-KR")}회</td>
                               <td className="whitespace-nowrap px-4 py-3 tabular-nums">
                                 <div>{formatCurrency(sale.price)}</div>
-                                {sale.isRefunded && (
-                                  <div className="mt-1 text-xs text-destructive">
-                                    환불{" "}
-                                    {formatCurrency(
-                                      sale.refundAmount ?? sale.price,
-                                    )}
-                                  </div>
-                                )}
+                                {sale.isRefunded && <div className="mt-1 text-xs text-destructive">환불 {formatCurrency(sale.refundAmount ?? sale.price)}</div>}
                               </td>
-                              <td className="whitespace-nowrap px-4 py-3">
-                                {PAYMENT_METHOD_LABELS[
-                                  sale.paymentMethod as OfflinePaymentMethod
-                                ] ??
-                                  sale.paymentMethod ??
-                                  "-"}
-                              </td>
+                              <td className="whitespace-nowrap px-4 py-3">{PAYMENT_METHOD_LABELS[sale.paymentMethod as OfflinePaymentMethod] ?? sale.paymentMethod ?? "-"}</td>
                               <td className="whitespace-nowrap px-4 py-3">
                                 <div>{sale.paymentStatus || "-"}</div>
                                 {sale.isRefunded && (
-                                  <Badge
-                                    variant="destructive"
-                                    className="mt-1 shrink-0 whitespace-nowrap"
-                                  >
+                                  <Badge variant="destructive" className="mt-1 shrink-0 whitespace-nowrap">
                                     환불 완료
                                   </Badge>
                                 )}
                               </td>
                               <td className="whitespace-nowrap px-4 py-3 tabular-nums">
-                                <div>
-                                  {formatDate(sale.paidAt || sale.createdAt)}
-                                </div>
-                                {sale.refundedAt && (
-                                  <div className="mt-1 text-xs text-muted-foreground">
-                                    환불일 {formatDate(sale.refundedAt)}
-                                  </div>
-                                )}
+                                <div>{formatDate(sale.paidAt || sale.createdAt)}</div>
+                                {sale.refundedAt && <div className="mt-1 text-xs text-muted-foreground">환불일 {formatDate(sale.refundedAt)}</div>}
                               </td>
                               <td className="px-4 py-3">
-                                <Badge
-                                  variant={
-                                    isOfflineSale ? "secondary" : "outline"
-                                  }
-                                  className="shrink-0 whitespace-nowrap"
-                                >
-                                  {sale.sourceLabel ||
-                                    (isOfflineSale
-                                      ? "오프라인 판매"
-                                      : "온라인/기존 주문")}
+                                <Badge variant={isOfflineSale ? "secondary" : "outline"} className="shrink-0 whitespace-nowrap">
+                                  {sale.sourceLabel || (isOfflineSale ? "오프라인 판매" : "온라인/기존 주문")}
                                 </Badge>
                               </td>
                               <td className="px-4 py-3">
                                 {!isOfflineSale ? (
-                                  <span className="text-xs text-muted-foreground">
-                                    -
-                                  </span>
+                                  <span className="text-xs text-muted-foreground">-</span>
                                 ) : sale.isRefunded ? (
                                   <div className="space-y-1 text-xs text-muted-foreground">
-                                    <div className="font-medium text-destructive">
-                                      환불 완료
-                                    </div>
-                                    {sale.refundReason && (
-                                      <div>사유: {sale.refundReason}</div>
-                                    )}
+                                    <div className="font-medium text-destructive">환불 완료</div>
+                                    {sale.refundReason && <div>사유: {sale.refundReason}</div>}
                                   </div>
                                 ) : (
                                   <div className="min-w-[240px] space-y-2">
@@ -2178,33 +1595,12 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                                       placeholder="환불 사유 입력"
                                       disabled={!sale.canRefund || isRefunding}
                                     />
-                                    <Button
-                                      size="sm"
-                                      variant="destructive"
-                                      disabled={!sale.canRefund || isRefunding}
-                                      onClick={() => handlePackageRefund(sale)}
-                                    >
-                                      {isRefunding
-                                        ? "환불 처리 중..."
-                                        : "수동 환불 처리"}
+                                    <Button size="sm" variant="destructive" disabled={!sale.canRefund || isRefunding} onClick={() => handlePackageRefund(sale)}>
+                                      {isRefunding ? "환불 처리 중..." : "수동 환불 처리"}
                                     </Button>
-                                    <p className="text-xs text-muted-foreground">
-                                      이 처리는 사이트 내부 기록용입니다. 실제
-                                      현금/카드/계좌이체 환불은 매장에서 별도로
-                                      완료해야 합니다.
-                                    </p>
-                                    {sale.refundBlockedReason && (
-                                      <p className="text-xs text-destructive">
-                                        {sale.refundBlockedReason}
-                                      </p>
-                                    )}
-                                    {refundForm.message && (
-                                      <Message
-                                        type={refundForm.messageType || "info"}
-                                      >
-                                        {refundForm.message}
-                                      </Message>
-                                    )}
+                                    <p className="text-xs text-muted-foreground">이 처리는 사이트 내부 기록용입니다. 실제 현금/카드/계좌이체 환불은 매장에서 별도로 완료해야 합니다.</p>
+                                    {sale.refundBlockedReason && <p className="text-xs text-destructive">{sale.refundBlockedReason}</p>}
+                                    {refundForm.message && <Message type={refundForm.messageType || "info"}>{refundForm.message}</Message>}
                                   </div>
                                 )}
                               </td>
@@ -2223,23 +1619,12 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
 
       {/* Records Section */}
       <SectionCard id="offline-records">
-        <SectionHeader
-          icon={History}
-          title="작업/매출 이력"
-          description="해당 고객의 오프라인 작업/매출 이력"
-          action={
-            records.length > 0 ? (
-              <Badge variant="secondary">{records.length}건</Badge>
-            ) : null
-          }
-        />
+        <SectionHeader icon={History} title="작업/매출 이력" description="해당 고객의 오프라인 작업/매출 이력" action={records.length > 0 ? <Badge variant="secondary">{records.length}건</Badge> : null} />
         <div className="p-6">
           {records.length === 0 ? (
             <div className="rounded-lg border border-dashed border-border/60 bg-muted/20 p-8 text-center">
               <History className="mx-auto h-10 w-10 text-muted-foreground/50" />
-              <p className="mt-3 text-sm text-muted-foreground">
-                아직 등록된 오프라인 작업/매출 이력이 없습니다.
-              </p>
+              <p className="mt-3 text-sm text-muted-foreground">아직 등록된 오프라인 작업/매출 이력이 없습니다.</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -2254,94 +1639,47 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                 };
                 const hasGrant = !!record.points?.grantTxId;
                 const hasDeduct = !!record.points?.deductTxId;
-                const isGrantReverted = Boolean(
-                  record.points?.grantRevertedAt ||
-                  record.points?.grantRevertTxId,
-                );
-                const isDeductReverted = Boolean(
-                  record.points?.deductRevertedAt ||
-                  record.points?.deductRevertTxId,
-                );
+                const isGrantReverted = Boolean(record.points?.grantRevertedAt || record.points?.grantRevertTxId);
+                const isDeductReverted = Boolean(record.points?.deductRevertedAt || record.points?.deductRevertTxId);
                 const canProcessPoints = canUseLinkedFeatures;
-                const pointUnavailableMessage =
-                  item.linkedUserId && !item.linkedUser
-                    ? "연결된 온라인 회원 정보를 찾을 수 없어 포인트를 처리할 수 없습니다."
-                    : "온라인 회원과 연결된 고객만 포인트를 처리할 수 있습니다.";
+                const pointUnavailableMessage = item.linkedUserId && !item.linkedUser ? "연결된 온라인 회원 정보를 찾을 수 없어 포인트를 처리할 수 없습니다." : "온라인 회원과 연결된 고객만 포인트를 처리할 수 있습니다.";
                 const packageUsage = record.packageUsage;
-                const hasPackageUsage =
-                  !!packageUsage?.passId || !!packageUsage?.consumptionId;
-                const isPackageUsageReverted = Boolean(
-                  packageUsage?.isReverted ||
-                  packageUsage?.revertedAt ||
-                  packageUsage?.reverted,
-                );
-                const hasActivePackageUsage =
-                  hasPackageUsage && !isPackageUsageReverted;
-                const usedPass = passes.find(
-                  (pass) => pass.id === packageUsage?.passId,
-                );
+                const hasPackageUsage = !!packageUsage?.passId || !!packageUsage?.consumptionId;
+                const isPackageUsageReverted = Boolean(packageUsage?.isReverted || packageUsage?.revertedAt || packageUsage?.reverted);
+                const hasActivePackageUsage = hasPackageUsage && !isPackageUsageReverted;
+                const usedPass = passes.find((pass) => pass.id === packageUsage?.passId);
                 const packageForm = packageForms[record.id] ?? {
                   passId: usablePasses[0]?.id ?? "",
                   revertReason: "",
                 };
-                const canUsePackageForRecord =
-                  canUseLinkedFeatures &&
-                  !hasPackageUsage &&
-                  usablePasses.length > 0;
+                const canUsePackageForRecord = canUseLinkedFeatures && !hasPackageUsage && usablePasses.length > 0;
                 const isExpanded = expandedRecords.has(record.id);
 
                 return (
-                  <div
-                    key={record.id}
-                    className="rounded-lg border border-border/40 bg-card transition-shadow hover:shadow-sm"
-                  >
+                  <div key={record.id} className="rounded-lg border border-border/40 bg-card transition-shadow hover:shadow-sm">
                     {/* Record Header */}
-                    <button
-                      type="button"
-                      onClick={() => toggleRecordExpand(record.id)}
-                      className="flex w-full items-start justify-between gap-3 p-4 text-left"
-                    >
+                    <button type="button" onClick={() => toggleRecordExpand(record.id)} className="flex w-full items-start justify-between gap-3 p-4 text-left">
                       <div className="flex min-w-0 flex-wrap items-center gap-3">
                         <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
                           <Calendar className="h-5 w-5" />
                         </div>
                         <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-2">
-                            <span className="whitespace-nowrap font-medium tabular-nums text-foreground">
-                              {formatDate(record.occurredAt)}
-                            </span>
-                            <Badge
-                              variant="outline"
-                              className="shrink-0 whitespace-nowrap"
-                            >
+                            <span className="whitespace-nowrap font-medium tabular-nums text-foreground">{formatDate(record.occurredAt)}</span>
+                            <Badge variant="outline" className="shrink-0 whitespace-nowrap">
                               {KIND_LABELS[record.kind] ?? record.kind}
                             </Badge>
-                            <StatusBadge
-                              status={record.status}
-                              labels={RECORD_STATUS_LABELS}
-                            />
+                            <StatusBadge status={record.status} labels={RECORD_STATUS_LABELS} />
                           </div>
-                          <p className="mt-1 line-clamp-2 break-keep text-sm text-muted-foreground">
-                            {record.lineSummary ||
-                              formatLineSummary(record.lines)}
-                          </p>
+                          <p className="mt-1 line-clamp-2 break-keep text-sm text-muted-foreground">{record.lineSummary || formatLineSummary(record.lines)}</p>
                         </div>
                       </div>
                       <div className="flex shrink-0 items-center gap-4">
                         <div className="text-right">
-                          <p className="whitespace-nowrap font-semibold tabular-nums text-foreground">
-                            {formatCurrency(record.payment?.amount)}
-                          </p>
-                          <StatusBadge
-                            status={record.payment?.status || ""}
-                            labels={PAYMENT_STATUS_LABELS}
-                          />
+                          <p className="whitespace-nowrap font-semibold tabular-nums text-foreground">{formatCurrency(record.payment?.amount)}</p>
+                          <StatusBadge status={record.payment?.status || ""} labels={PAYMENT_STATUS_LABELS} />
                         </div>
-                        {isExpanded ? (
-                          <ChevronUp className="h-5 w-5 text-muted-foreground" />
-                        ) : (
-                          <ChevronDown className="h-5 w-5 text-muted-foreground" />
-                        )}
+                        {isExpanded ? <ChevronUp className="h-5 w-5 text-muted-foreground" /> : <ChevronDown className="h-5 w-5 text-muted-foreground" />}
                       </div>
                     </button>
 
@@ -2351,119 +1689,96 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                         <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
                           {/* Basic Info */}
                           <div className="space-y-3">
-                            <h4 className="text-sm font-medium text-foreground">
-                              기본 정보
-                            </h4>
+                            <h4 className="text-sm font-medium text-foreground">기본 정보</h4>
                             <div className="space-y-2 text-sm">
                               <div className="flex justify-between">
-                                <span className="shrink-0 whitespace-nowrap text-muted-foreground">
-                                  결제 수단
-                                </span>
-                                <span className="text-foreground">
-                                  {record.payment?.method
-                                    ? PAYMENT_METHOD_LABELS[
-                                        record.payment.method
-                                      ]
-                                    : "-"}
-                                </span>
+                                <span className="shrink-0 whitespace-nowrap text-muted-foreground">결제 수단</span>
+                                <span className="text-foreground">{record.payment?.method ? PAYMENT_METHOD_LABELS[record.payment.method] : "-"}</span>
                               </div>
                               <div className="flex justify-between">
-                                <span className="shrink-0 whitespace-nowrap text-muted-foreground">
-                                  메모
-                                </span>
-                                <span
-                                  className="line-clamp-2 max-w-[200px] break-keep text-right text-foreground"
-                                  title={record.memo || "-"}
-                                >
+                                <span className="shrink-0 whitespace-nowrap text-muted-foreground">메모</span>
+                                <span className="line-clamp-2 max-w-[200px] break-keep text-right text-foreground" title={record.memo || "-"}>
                                   {record.memo || "-"}
                                 </span>
                               </div>
                             </div>
-                            <Button
-                              asChild
-                              size="sm"
-                              variant="outline"
-                              className="w-full"
-                            >
-                              <Link href="/admin/offline">
-                                오프라인 관리에서 수정
-                              </Link>
+                            {Array.isArray(record.lines) && record.lines.some(hasLineDetail) ? (
+                              <div className="rounded-lg border border-border/40 bg-muted/20 p-3">
+                                <p className="mb-2 text-xs font-semibold text-muted-foreground">라켓별 작업</p>
+
+                                <div className="space-y-2">
+                                  {record.lines.filter(hasLineDetail).map((line, index) => (
+                                    <div key={`${record.id}-line-${index}`} className="rounded-lg border border-border/40 bg-background/70 p-3">
+                                      <div className="mb-2 flex items-center justify-between gap-2">
+                                        <p className="text-sm font-semibold text-foreground">라켓 {index + 1}</p>
+
+                                        {Number(line.amount ?? 0) > 0 ? (
+                                          <Badge variant="secondary" className="shrink-0 whitespace-nowrap">
+                                            {formatCurrency(Number(line.amount ?? 0))}
+                                          </Badge>
+                                        ) : null}
+                                      </div>
+
+                                      <div className="space-y-1.5 text-xs text-muted-foreground">
+                                        <div className="flex justify-between gap-3">
+                                          <span className="shrink-0">라켓명</span>
+                                          <span className="line-clamp-2 break-keep text-right text-foreground">{String(line.racketName ?? "").trim() || "-"}</span>
+                                        </div>
+
+                                        <div className="flex justify-between gap-3">
+                                          <span className="shrink-0">스트링</span>
+                                          <span className="line-clamp-2 break-keep text-right text-foreground">{formatLineStringInfo(line)}</span>
+                                        </div>
+
+                                        <div className="flex justify-between gap-3">
+                                          <span className="shrink-0">텐션</span>
+                                          <span className="text-right text-foreground">{formatLineTensionInfo(line)}</span>
+                                        </div>
+
+                                        {String(line.note ?? "").trim() ? (
+                                          <div className="flex justify-between gap-3">
+                                            <span className="shrink-0">메모</span>
+                                            <span className="line-clamp-2 break-keep text-right text-foreground">{String(line.note ?? "").trim()}</span>
+                                          </div>
+                                        ) : null}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            ) : null}
+                            <Button asChild size="sm" variant="outline" className="w-full">
+                              <Link href="/admin/offline">오프라인 관리에서 수정</Link>
                             </Button>
                           </div>
 
                           {/* Points Section */}
                           <div className="space-y-3">
-                            <h4 className="text-sm font-medium text-foreground">
-                              포인트
-                            </h4>
+                            <h4 className="text-sm font-medium text-foreground">포인트</h4>
                             <div className="flex shrink-0 flex-wrap gap-2">
-                              <Badge
-                                variant={hasGrant ? "secondary" : "outline"}
-                                className={
-                                  hasGrant ? "bg-success/10 text-success" : ""
-                                }
-                              >
+                              <Badge variant={hasGrant ? "secondary" : "outline"} className={hasGrant ? "bg-success/10 text-success" : ""}>
                                 적립 {formatPoints(record.points?.earn)}
                               </Badge>
-                              <Badge
-                                variant={hasDeduct ? "secondary" : "outline"}
-                                className={
-                                  hasDeduct ? "bg-warning/10 text-warning" : ""
-                                }
-                              >
+                              <Badge variant={hasDeduct ? "secondary" : "outline"} className={hasDeduct ? "bg-warning/10 text-warning" : ""}>
                                 사용 {formatPoints(record.points?.use)}
                               </Badge>
                             </div>
                             {!canProcessPoints ? (
-                              <p className="text-xs text-muted-foreground">
-                                {pointUnavailableMessage}
-                              </p>
+                              <p className="text-xs text-muted-foreground">{pointUnavailableMessage}</p>
                             ) : (
                               <div className="grid grid-cols-1 gap-2 xl:grid-cols-2">
                                 <div className="space-y-2 rounded-lg border border-border/40 bg-muted/20 p-3">
-                                  <p className="text-xs font-medium text-muted-foreground">
-                                    적립 포인트
-                                  </p>
+                                  <p className="text-xs font-medium text-muted-foreground">적립 포인트</p>
                                   {hasGrant ? (
                                     <div className="space-y-2 text-xs text-muted-foreground">
-                                      <Badge
-                                        className={
-                                          isGrantReverted
-                                            ? "border-warning/30 bg-warning/10 text-warning"
-                                            : "border-success/20 bg-success/10 text-success"
-                                        }
-                                      >
-                                        {isGrantReverted
-                                          ? "적립 취소 완료"
-                                          : "포인트 적립 완료"}
-                                      </Badge>
-                                      <p>
-                                        적립 포인트:{" "}
-                                        {formatPoints(record.points?.earn)}
-                                      </p>
-                                      <p className="break-all">
-                                        grantTxId: {record.points?.grantTxId}
-                                      </p>
+                                      <Badge className={isGrantReverted ? "border-warning/30 bg-warning/10 text-warning" : "border-success/20 bg-success/10 text-success"}>{isGrantReverted ? "적립 취소 완료" : "포인트 적립 완료"}</Badge>
+                                      <p>적립 포인트: {formatPoints(record.points?.earn)}</p>
+                                      <p className="break-all">grantTxId: {record.points?.grantTxId}</p>
                                       {isGrantReverted ? (
                                         <>
-                                          <p>
-                                            취소일:{" "}
-                                            {formatDate(
-                                              record.points?.grantRevertedAt,
-                                            )}
-                                          </p>
-                                          {record.points?.grantRevertReason && (
-                                            <p>
-                                              사유:{" "}
-                                              {record.points.grantRevertReason}
-                                            </p>
-                                          )}
-                                          <p className="break-keep text-muted-foreground">
-                                            취소된 포인트 처리는 같은 기록에서
-                                            다시 처리할 수 없습니다. 재처리가
-                                            필요한 경우 새 작업 기록 또는 관리자
-                                            포인트 조정 기능을 사용하세요.
-                                          </p>
+                                          <p>취소일: {formatDate(record.points?.grantRevertedAt)}</p>
+                                          {record.points?.grantRevertReason && <p>사유: {record.points.grantRevertReason}</p>}
+                                          <p className="break-keep text-muted-foreground">취소된 포인트 처리는 같은 기록에서 다시 처리할 수 없습니다. 재처리가 필요한 경우 새 작업 기록 또는 관리자 포인트 조정 기능을 사용하세요.</p>
                                         </>
                                       ) : (
                                         <>
@@ -2471,33 +1786,14 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                                             value={form.grantRevertReason}
                                             onChange={(e) =>
                                               updatePointForm(record.id, {
-                                                grantRevertReason:
-                                                  e.target.value,
+                                                grantRevertReason: e.target.value,
                                               })
                                             }
                                             placeholder="적립 취소 사유 입력"
                                             className="h-8 text-sm"
                                           />
-                                          <Button
-                                            type="button"
-                                            size="sm"
-                                            variant="destructive"
-                                            className="w-full"
-                                            onClick={() =>
-                                              handleRecordPointRevert(
-                                                record.id,
-                                                "grant",
-                                              )
-                                            }
-                                            disabled={
-                                              processingPointKey ===
-                                              `${record.id}:grant-revert`
-                                            }
-                                          >
-                                            {processingPointKey ===
-                                            `${record.id}:grant-revert`
-                                              ? "취소 중..."
-                                              : "적립 취소"}
+                                          <Button type="button" size="sm" variant="destructive" className="w-full" onClick={() => handleRecordPointRevert(record.id, "grant")} disabled={processingPointKey === `${record.id}:grant-revert`}>
+                                            {processingPointKey === `${record.id}:grant-revert` ? "취소 중..." : "적립 취소"}
                                           </Button>
                                         </>
                                       )}
@@ -2527,72 +1823,24 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                                         disabled={!canProcessPoints}
                                         className="h-8 text-sm"
                                       />
-                                      <Button
-                                        type="button"
-                                        size="sm"
-                                        className="w-full"
-                                        onClick={() =>
-                                          handleRecordPoints(record.id, "grant")
-                                        }
-                                        disabled={
-                                          !canProcessPoints ||
-                                          processingPointKey ===
-                                            `${record.id}:grant`
-                                        }
-                                      >
-                                        {processingPointKey ===
-                                        `${record.id}:grant`
-                                          ? "처리 중..."
-                                          : "적립"}
+                                      <Button type="button" size="sm" className="w-full" onClick={() => handleRecordPoints(record.id, "grant")} disabled={!canProcessPoints || processingPointKey === `${record.id}:grant`}>
+                                        {processingPointKey === `${record.id}:grant` ? "처리 중..." : "적립"}
                                       </Button>
                                     </>
                                   )}
                                 </div>
                                 <div className="space-y-2 rounded-lg border border-border/40 bg-muted/20 p-3">
-                                  <p className="text-xs font-medium text-muted-foreground">
-                                    사용 포인트
-                                  </p>
+                                  <p className="text-xs font-medium text-muted-foreground">사용 포인트</p>
                                   {hasDeduct ? (
                                     <div className="space-y-2 text-xs text-muted-foreground">
-                                      <Badge
-                                        className={
-                                          isDeductReverted
-                                            ? "border-warning/30 bg-warning/10 text-warning"
-                                            : "border-primary/20 bg-primary/10 text-primary"
-                                        }
-                                      >
-                                        {isDeductReverted
-                                          ? "사용 취소 완료"
-                                          : "포인트 사용 완료"}
-                                      </Badge>
-                                      <p>
-                                        사용 포인트:{" "}
-                                        {formatPoints(record.points?.use)}
-                                      </p>
-                                      <p className="break-all">
-                                        deductTxId: {record.points?.deductTxId}
-                                      </p>
+                                      <Badge className={isDeductReverted ? "border-warning/30 bg-warning/10 text-warning" : "border-primary/20 bg-primary/10 text-primary"}>{isDeductReverted ? "사용 취소 완료" : "포인트 사용 완료"}</Badge>
+                                      <p>사용 포인트: {formatPoints(record.points?.use)}</p>
+                                      <p className="break-all">deductTxId: {record.points?.deductTxId}</p>
                                       {isDeductReverted ? (
                                         <>
-                                          <p>
-                                            취소일:{" "}
-                                            {formatDate(
-                                              record.points?.deductRevertedAt,
-                                            )}
-                                          </p>
-                                          {record.points
-                                            ?.deductRevertReason && (
-                                            <p>
-                                              사유:{" "}
-                                              {record.points.deductRevertReason}
-                                            </p>
-                                          )}
-                                          <p className="break-keep text-muted-foreground">
-                                            취소된 포인트 처리는 같은 기록에서
-                                            다시 처리할 수 없습니다. 재처리가
-                                            필요한 경우 새 작업 기록 또는 관리자
-                                            포인트 조정 기능을 사용하세요.
-                                          </p>
+                                          <p>취소일: {formatDate(record.points?.deductRevertedAt)}</p>
+                                          {record.points?.deductRevertReason && <p>사유: {record.points.deductRevertReason}</p>}
+                                          <p className="break-keep text-muted-foreground">취소된 포인트 처리는 같은 기록에서 다시 처리할 수 없습니다. 재처리가 필요한 경우 새 작업 기록 또는 관리자 포인트 조정 기능을 사용하세요.</p>
                                         </>
                                       ) : (
                                         <>
@@ -2600,33 +1848,14 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                                             value={form.deductRevertReason}
                                             onChange={(e) =>
                                               updatePointForm(record.id, {
-                                                deductRevertReason:
-                                                  e.target.value,
+                                                deductRevertReason: e.target.value,
                                               })
                                             }
                                             placeholder="사용 취소 사유 입력"
                                             className="h-8 text-sm"
                                           />
-                                          <Button
-                                            type="button"
-                                            size="sm"
-                                            variant="outline"
-                                            className="w-full"
-                                            onClick={() =>
-                                              handleRecordPointRevert(
-                                                record.id,
-                                                "deduct",
-                                              )
-                                            }
-                                            disabled={
-                                              processingPointKey ===
-                                              `${record.id}:deduct-revert`
-                                            }
-                                          >
-                                            {processingPointKey ===
-                                            `${record.id}:deduct-revert`
-                                              ? "취소 중..."
-                                              : "사용 취소"}
+                                          <Button type="button" size="sm" variant="outline" className="w-full" onClick={() => handleRecordPointRevert(record.id, "deduct")} disabled={processingPointKey === `${record.id}:deduct-revert`}>
+                                            {processingPointKey === `${record.id}:deduct-revert` ? "취소 중..." : "사용 취소"}
                                           </Button>
                                         </>
                                       )}
@@ -2656,45 +1885,20 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                                         disabled={!canProcessPoints}
                                         className="h-8 text-sm"
                                       />
-                                      <Button
-                                        type="button"
-                                        size="sm"
-                                        variant="outline"
-                                        className="w-full"
-                                        onClick={() =>
-                                          handleRecordPoints(
-                                            record.id,
-                                            "deduct",
-                                          )
-                                        }
-                                        disabled={
-                                          !canProcessPoints ||
-                                          processingPointKey ===
-                                            `${record.id}:deduct`
-                                        }
-                                      >
-                                        {processingPointKey ===
-                                        `${record.id}:deduct`
-                                          ? "처리 중..."
-                                          : "사용"}
+                                      <Button type="button" size="sm" variant="outline" className="w-full" onClick={() => handleRecordPoints(record.id, "deduct")} disabled={!canProcessPoints || processingPointKey === `${record.id}:deduct`}>
+                                        {processingPointKey === `${record.id}:deduct` ? "처리 중..." : "사용"}
                                       </Button>
                                     </>
                                   )}
                                 </div>
                               </div>
                             )}
-                            {form.message && (
-                              <Message type={form.messageType || "info"}>
-                                {form.message}
-                              </Message>
-                            )}
+                            {form.message && <Message type={form.messageType || "info"}>{form.message}</Message>}
                           </div>
 
                           {/* Package Section */}
                           <div className="space-y-3">
-                            <h4 className="text-sm font-medium text-foreground">
-                              패키지
-                            </h4>
+                            <h4 className="text-sm font-medium text-foreground">패키지</h4>
                             {isPackageUsageReverted ? (
                               <div className="rounded-lg border border-warning/30 bg-warning/5 p-3 text-foreground">
                                 <Badge className="border-warning/30 bg-warning/10 text-warning">
@@ -2702,23 +1906,11 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                                   패키지 사용 취소됨
                                 </Badge>
                                 <p className="mt-2 text-xs">
-                                  {getPassLabel(usedPass)}{" "}
-                                  {Number(packageUsage?.usedCount ?? 1)}회 사용
-                                  취소
+                                  {getPassLabel(usedPass)} {Number(packageUsage?.usedCount ?? 1)}회 사용 취소
                                 </p>
-                                <p className="mt-1 text-xs text-muted-foreground">
-                                  취소일: {formatDate(packageUsage?.revertedAt)}
-                                </p>
-                                {packageUsage?.revertReason && (
-                                  <p className="mt-1 text-xs text-muted-foreground">
-                                    사유: {packageUsage.revertReason}
-                                  </p>
-                                )}
-                                <p className="mt-2 text-xs text-muted-foreground">
-                                  이 record는 취소 이력 보존을 위해 다시
-                                  패키지를 사용할 수 없습니다. 새 record를
-                                  등록해 주세요.
-                                </p>
+                                <p className="mt-1 text-xs text-muted-foreground">취소일: {formatDate(packageUsage?.revertedAt)}</p>
+                                {packageUsage?.revertReason && <p className="mt-1 text-xs text-muted-foreground">사유: {packageUsage.revertReason}</p>}
+                                <p className="mt-2 text-xs text-muted-foreground">이 record는 취소 이력 보존을 위해 다시 패키지를 사용할 수 없습니다. 새 record를 등록해 주세요.</p>
                               </div>
                             ) : hasActivePackageUsage ? (
                               <div className="space-y-3 rounded-lg border border-success/30 bg-success/5 p-3">
@@ -2728,28 +1920,14 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                                     패키지 1회 사용 완료
                                   </Badge>
                                   <p className="mt-2 text-xs text-muted-foreground">
-                                    {getPassLabel(usedPass)}{" "}
-                                    {Number(packageUsage?.usedCount ?? 1)}회
-                                    사용
+                                    {getPassLabel(usedPass)} {Number(packageUsage?.usedCount ?? 1)}회 사용
                                   </p>
-                                  {packageUsage?.consumptionId && (
-                                    <p className="mt-1 text-xs text-muted-foreground">
-                                      consumptionId:{" "}
-                                      {packageUsage.consumptionId}
-                                    </p>
-                                  )}
-                                  {!packageUsage?.consumptionId && (
-                                    <p className="mt-1 text-xs text-destructive">
-                                      패키지 사용 상태를 복구해야 합니다.
-                                    </p>
-                                  )}
+                                  {packageUsage?.consumptionId && <p className="mt-1 text-xs text-muted-foreground">consumptionId: {packageUsage.consumptionId}</p>}
+                                  {!packageUsage?.consumptionId && <p className="mt-1 text-xs text-destructive">패키지 사용 상태를 복구해야 합니다.</p>}
                                 </div>
                                 {packageUsage?.consumptionId && (
                                   <div className="space-y-2 rounded-lg border border-border/40 bg-background/70 p-3">
-                                    <p className="text-xs text-muted-foreground">
-                                      잘못 차감한 경우에만 사용 취소하세요.
-                                      패키지 잔여 횟수가 복구됩니다.
-                                    </p>
+                                    <p className="text-xs text-muted-foreground">잘못 차감한 경우에만 사용 취소하세요. 패키지 잔여 횟수가 복구됩니다.</p>
                                     <Input
                                       value={packageForm.revertReason ?? ""}
                                       onChange={(e) =>
@@ -2758,102 +1936,46 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                                         })
                                       }
                                       placeholder="사용 취소 사유를 입력해주세요."
-                                      disabled={
-                                        processingPackageRecordId === record.id
-                                      }
+                                      disabled={processingPackageRecordId === record.id}
                                       className="h-8 text-sm"
                                     />
-                                    <Button
-                                      type="button"
-                                      size="sm"
-                                      variant="destructive"
-                                      className="w-full"
-                                      onClick={() =>
-                                        handleRecordPackageRevert(record.id)
-                                      }
-                                      disabled={
-                                        processingPackageRecordId === record.id
-                                      }
-                                    >
-                                      {processingPackageRecordId === record.id
-                                        ? "처리 중..."
-                                        : "사용 취소"}
+                                    <Button type="button" size="sm" variant="destructive" className="w-full" onClick={() => handleRecordPackageRevert(record.id)} disabled={processingPackageRecordId === record.id}>
+                                      {processingPackageRecordId === record.id ? "처리 중..." : "사용 취소"}
                                     </Button>
                                   </div>
                                 )}
                               </div>
                             ) : (
-                              <Badge
-                                variant="outline"
-                                className="shrink-0 whitespace-nowrap text-muted-foreground"
-                              >
+                              <Badge variant="outline" className="shrink-0 whitespace-nowrap text-muted-foreground">
                                 패키지 미사용
                               </Badge>
                             )}
-                            {!canUseLinkedFeatures && !hasPackageUsage && (
-                              <p className="text-xs text-muted-foreground">
-                                온라인 회원과 연결된 고객만 패키지를 사용할 수
-                                있습니다.
-                              </p>
+                            {!canUseLinkedFeatures && !hasPackageUsage && <p className="text-xs text-muted-foreground">온라인 회원과 연결된 고객만 패키지를 사용할 수 있습니다.</p>}
+                            {canUseLinkedFeatures && usablePasses.length === 0 && !hasPackageUsage && <p className="text-xs text-muted-foreground">사용 가능한 패키지가 없습니다.</p>}
+                            {!hasPackageUsage && canUseLinkedFeatures && usablePasses.length > 0 && (
+                              <div className="space-y-2 rounded-lg border border-border/40 bg-muted/20 p-3">
+                                <p className="text-xs font-medium text-muted-foreground">사용할 패키지</p>
+                                <Select
+                                  value={packageForm.passId}
+                                  onChange={(v) =>
+                                    updatePackageForm(record.id, {
+                                      passId: v,
+                                    })
+                                  }
+                                  disabled={!canUsePackageForRecord || processingPackageRecordId === record.id}
+                                  options={usablePasses.map((pass) => ({
+                                    value: pass.id,
+                                    label: `${getPassLabel(pass)} · 잔여 ${Number(pass.remainingCount ?? 0)}회`,
+                                  }))}
+                                />
+                                <p className="text-xs text-muted-foreground">이 기록에 패키지 1회를 사용 처리합니다.</p>
+                                <Button type="button" size="sm" variant="outline" className="w-full" onClick={() => handleRecordPackageUse(record.id)} disabled={!canUsePackageForRecord || processingPackageRecordId === record.id}>
+                                  <Package className="mr-2 h-4 w-4" />
+                                  {processingPackageRecordId === record.id ? "처리 중..." : "패키지 사용"}
+                                </Button>
+                              </div>
                             )}
-                            {canUseLinkedFeatures &&
-                              usablePasses.length === 0 &&
-                              !hasPackageUsage && (
-                                <p className="text-xs text-muted-foreground">
-                                  사용 가능한 패키지가 없습니다.
-                                </p>
-                              )}
-                            {!hasPackageUsage &&
-                              canUseLinkedFeatures &&
-                              usablePasses.length > 0 && (
-                                <div className="space-y-2 rounded-lg border border-border/40 bg-muted/20 p-3">
-                                  <p className="text-xs font-medium text-muted-foreground">
-                                    사용할 패키지
-                                  </p>
-                                  <Select
-                                    value={packageForm.passId}
-                                    onChange={(v) =>
-                                      updatePackageForm(record.id, {
-                                        passId: v,
-                                      })
-                                    }
-                                    disabled={
-                                      !canUsePackageForRecord ||
-                                      processingPackageRecordId === record.id
-                                    }
-                                    options={usablePasses.map((pass) => ({
-                                      value: pass.id,
-                                      label: `${getPassLabel(pass)} · 잔여 ${Number(pass.remainingCount ?? 0)}회`,
-                                    }))}
-                                  />
-                                  <p className="text-xs text-muted-foreground">
-                                    이 기록에 패키지 1회를 사용 처리합니다.
-                                  </p>
-                                  <Button
-                                    type="button"
-                                    size="sm"
-                                    variant="outline"
-                                    className="w-full"
-                                    onClick={() =>
-                                      handleRecordPackageUse(record.id)
-                                    }
-                                    disabled={
-                                      !canUsePackageForRecord ||
-                                      processingPackageRecordId === record.id
-                                    }
-                                  >
-                                    <Package className="mr-2 h-4 w-4" />
-                                    {processingPackageRecordId === record.id
-                                      ? "처리 중..."
-                                      : "패키지 사용"}
-                                  </Button>
-                                </div>
-                              )}
-                            {packageForm.message && (
-                              <Message type={packageForm.messageType || "info"}>
-                                {packageForm.message}
-                              </Message>
-                            )}
+                            {packageForm.message && <Message type={packageForm.messageType || "info"}>{packageForm.message}</Message>}
                           </div>
                         </div>
                       </div>

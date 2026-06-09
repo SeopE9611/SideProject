@@ -11,7 +11,7 @@ import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher"
 import { maskPhone } from "@/lib/offline/normalizers";
 import { cn } from "@/lib/utils";
 import type { OfflineCustomerDto, OfflinePaymentMethod, OfflineRevenueSummary } from "@/types/admin/offline";
-import { AlertCircle, Calendar, Check, ChevronLeft, ChevronRight, ClipboardList, CreditCard, ExternalLink, History, Mail, Pencil, Phone, RotateCcw, Search, Store, User, UserPlus, Wrench, X } from "lucide-react";
+import { AlertCircle, Calendar, Check, ChevronLeft, ChevronRight, ClipboardList, CreditCard, ExternalLink, History, Mail, Pencil, Phone, Plus, RotateCcw, Search, Store, Trash2, User, UserPlus, Wrench, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import useSWR from "swr";
@@ -33,6 +33,41 @@ type SelectedCustomer =
       email?: string | null;
       offlineCustomerId?: string | null;
     };
+
+type OfflineWorkLineForm = {
+  id: string;
+  racketName: string;
+  mainStringName: string;
+  crossStringName: string;
+  tensionMain: string;
+  tensionCross: string;
+  amount: number;
+  note: string;
+};
+
+const INITIAL_WORK_LINE: OfflineWorkLineForm = {
+  id: "line-1",
+  racketName: "",
+  mainStringName: "",
+  crossStringName: "",
+  tensionMain: "",
+  tensionCross: "",
+  amount: 0,
+  note: "",
+};
+
+function createWorkLine(index: number): OfflineWorkLineForm {
+  return {
+    id: `line-${Date.now()}-${index}`,
+    racketName: "",
+    mainStringName: "",
+    crossStringName: "",
+    tensionMain: "",
+    tensionCross: "",
+    amount: 0,
+    note: "",
+  };
+}
 
 const KIND_LABELS = {
   stringing: "스트링 작업",
@@ -120,21 +155,44 @@ function formatLineSummary(
   lines?: Array<{
     racketName?: string;
     stringName?: string;
+    mainStringName?: string;
+    crossStringName?: string;
     tensionMain?: string;
     tensionCross?: string;
   }>,
 ): string {
   if (!Array.isArray(lines) || lines.length === 0) return "작업 내용 미입력";
+
   const summary = lines
-    .map((line) => {
+    .map((line, index) => {
       const main = String(line.tensionMain ?? "").trim();
       const cross = String(line.tensionCross ?? "").trim();
       const tension = main || cross ? `${main || "-"}/${cross || "-"}` : "";
-      return [String(line.racketName ?? "").trim(), String(line.stringName ?? "").trim(), tension].filter(Boolean).join(" · ");
+
+      const mainString = String(line.mainStringName || line.stringName || "").trim();
+      const crossString = String(line.crossStringName || "").trim();
+
+      const stringSummary = mainString && crossString && mainString !== crossString ? `메인 ${mainString} / 크로스 ${crossString}` : mainString ? `스트링 ${mainString}` : "";
+
+      return [lines.length > 1 ? `라켓 ${index + 1}` : "", String(line.racketName ?? "").trim(), stringSummary, tension].filter(Boolean).join(" · ");
     })
     .filter(Boolean)
     .join(", ");
+
   return summary || "작업 내용 미입력";
+}
+
+function sumLineAmounts(lines?: Array<{ amount?: number | string | null }>): number {
+  if (!Array.isArray(lines)) return 0;
+
+  return lines.reduce((total, line) => {
+    const amount = Number(line.amount ?? 0);
+
+    // 숫자로 변환 불가능한 값은 합계에서 제외합니다.
+    if (!Number.isFinite(amount)) return total;
+
+    return total + amount;
+  }, 0);
 }
 
 // Section Header Component
@@ -241,10 +299,9 @@ export default function OfflineAdminClient() {
   const [editForm, setEditForm] = useState({
     kind: "stringing",
     occurredAt: "",
-    racketName: "",
-    stringName: "",
-    tensionMain: "",
-    tensionCross: "",
+
+    lines: [INITIAL_WORK_LINE],
+
     status: "received",
     paymentStatus: "pending",
     paymentMethod: "cash",
@@ -263,11 +320,14 @@ export default function OfflineAdminClient() {
   const [form, setForm] = useState({
     kind: "stringing",
     status: "received",
-    racketName: "",
-    stringName: "",
-    tensionMain: "",
-    tensionCross: "",
+
+    // 여러 라켓 작업을 담는 배열입니다.
+    lines: [INITIAL_WORK_LINE],
+
+    // 전체 작업 메모입니다. 라켓별 메모는 line.note에 따로 저장합니다.
     memo: "",
+
+    // 전체 결제금액입니다. 라켓별 금액 합계와 다를 수도 있으므로 분리 유지합니다.
     amount: 0,
     method: "cash",
     payStatus: "pending",
@@ -403,6 +463,17 @@ export default function OfflineAdminClient() {
             ? "오늘 기록"
             : "사용자 지정 조건";
 
+  // 신규 등록 폼의 라켓별 금액 합계와 전체 결제금액 차이입니다.
+  // 전체 결제금액은 할인, 추가비, 현장 조정액 때문에 라켓별 합계와 다를 수 있습니다.
+  const workLineTotalAmount = sumLineAmounts(form.lines);
+  const workPaymentAmount = Number(form.amount ?? 0);
+  const workPaymentDifference = workPaymentAmount - workLineTotalAmount;
+
+  // 수정 모달의 라켓별 금액 합계와 전체 결제금액 차이입니다.
+  const editLineTotalAmount = sumLineAmounts(editForm.lines);
+  const editPaymentAmount = Number(editForm.paymentAmount ?? 0);
+  const editPaymentDifference = editPaymentAmount - editLineTotalAmount;
+
   // 빠른 보기 버튼에서 사용할 안전한 필터 적용 함수입니다.
   // 서버가 이미 허용하는 필터 값만 사용합니다.
   function applyRecordQuickView(nextFilters: Partial<typeof EMPTY_RECORD_FILTERS>) {
@@ -420,6 +491,56 @@ export default function OfflineAdminClient() {
     setRecordFilters(EMPTY_RECORD_FILTERS);
     setSubmittedRecordFilters(EMPTY_RECORD_FILTERS);
     setRecordsPage(1);
+  }
+
+  function updateWorkLine(lineId: string, updates: Partial<Omit<OfflineWorkLineForm, "id">>) {
+    setForm((prev) => ({
+      ...prev,
+      lines: prev.lines.map((line) => (line.id === lineId ? { ...line, ...updates } : line)),
+    }));
+  }
+
+  function addWorkLine() {
+    setForm((prev) => ({
+      ...prev,
+      lines: [...prev.lines, createWorkLine(prev.lines.length + 1)],
+    }));
+  }
+
+  function removeWorkLine(lineId: string) {
+    setForm((prev) => {
+      if (prev.lines.length <= 1) return prev;
+
+      return {
+        ...prev,
+        lines: prev.lines.filter((line) => line.id !== lineId),
+      };
+    });
+  }
+
+  function updateEditWorkLine(lineId: string, updates: Partial<Omit<OfflineWorkLineForm, "id">>) {
+    setEditForm((prev) => ({
+      ...prev,
+      lines: prev.lines.map((line) => (line.id === lineId ? { ...line, ...updates } : line)),
+    }));
+  }
+
+  function addEditWorkLine() {
+    setEditForm((prev) => ({
+      ...prev,
+      lines: [...prev.lines, createWorkLine(prev.lines.length + 1)],
+    }));
+  }
+
+  function removeEditWorkLine(lineId: string) {
+    setEditForm((prev) => {
+      if (prev.lines.length <= 1) return prev;
+
+      return {
+        ...prev,
+        lines: prev.lines.filter((line) => line.id !== lineId),
+      };
+    });
   }
 
   return (
@@ -861,7 +982,7 @@ export default function OfflineAdminClient() {
                       <Wrench className="h-4 w-4 text-primary" />
                       작업 정보
                     </div>
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <FormField label="작업 유형" htmlFor="kind">
                         <Select id="kind" value={form.kind} onChange={(e) => setForm({ ...form, kind: e.target.value })}>
                           {Object.entries(KIND_LABELS).map(([k, v]) => (
@@ -871,6 +992,7 @@ export default function OfflineAdminClient() {
                           ))}
                         </Select>
                       </FormField>
+
                       <FormField label="작업 상태" htmlFor="status">
                         <Select id="status" value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
                           {Object.entries(RECORD_STATUS_LABELS).map(([k, v]) => (
@@ -880,18 +1002,79 @@ export default function OfflineAdminClient() {
                           ))}
                         </Select>
                       </FormField>
-                      <FormField label="라켓명" htmlFor="racketName">
-                        <Input id="racketName" placeholder="YONEX ASTROX" value={form.racketName} onChange={(e) => setForm({ ...form, racketName: e.target.value })} className="h-10" />
-                      </FormField>
-                      <FormField label="스트링명" htmlFor="stringName">
-                        <Input id="stringName" placeholder="BG65 POWER" value={form.stringName} onChange={(e) => setForm({ ...form, stringName: e.target.value })} className="h-10" />
-                      </FormField>
-                      <FormField label="메인 텐션" htmlFor="tensionMain">
-                        <Input id="tensionMain" placeholder="26" value={form.tensionMain} onChange={(e) => setForm({ ...form, tensionMain: e.target.value })} className="h-10" />
-                      </FormField>
-                      <FormField label="크로스 텐션" htmlFor="tensionCross">
-                        <Input id="tensionCross" placeholder="28" value={form.tensionCross} onChange={(e) => setForm({ ...form, tensionCross: e.target.value })} className="h-10" />
-                      </FormField>
+                    </div>
+
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">라켓별 작업 정보</p>
+                          <p className="mt-1 text-xs text-muted-foreground">한 고객이 여러 자루를 맡긴 경우 라켓을 추가해서 각각 기록합니다.</p>
+                        </div>
+
+                        <Button type="button" variant="outline" size="sm" onClick={addWorkLine}>
+                          <Plus className="mr-1.5 h-3.5 w-3.5" />
+                          라켓 추가
+                        </Button>
+                      </div>
+
+                      {form.lines.map((line, index) => (
+                        <div key={line.id} className="rounded-xl border border-border/60 bg-background p-4">
+                          <div className="mb-3 flex items-center justify-between gap-2">
+                            <p className="text-sm font-semibold text-foreground">라켓 {index + 1}</p>
+
+                            {form.lines.length > 1 ? (
+                              <Button type="button" variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => removeWorkLine(line.id)}>
+                                <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+                                삭제
+                              </Button>
+                            ) : null}
+                          </div>
+
+                          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            <FormField label="라켓명" htmlFor={`racketName-${line.id}`}>
+                              <Input id={`racketName-${line.id}`} placeholder="바볼랏 퓨어에어로" value={line.racketName} onChange={(e) => updateWorkLine(line.id, { racketName: e.target.value })} className="h-10" />
+                            </FormField>
+
+                            <FormField label="라켓별 금액 (선택)" htmlFor={`lineAmount-${line.id}`}>
+                              <Input
+                                id={`lineAmount-${line.id}`}
+                                type="number"
+                                min={0}
+                                placeholder="20000"
+                                value={line.amount}
+                                onChange={(e) =>
+                                  updateWorkLine(line.id, {
+                                    amount: Number(e.target.value) || 0,
+                                  })
+                                }
+                                className="h-10"
+                              />
+                            </FormField>
+
+                            <FormField label="메인 스트링" htmlFor={`mainStringName-${line.id}`}>
+                              <Input id={`mainStringName-${line.id}`} placeholder="포커스 헥스 1.23 블루" value={line.mainStringName} onChange={(e) => updateWorkLine(line.id, { mainStringName: e.target.value })} className="h-10" />
+                            </FormField>
+
+                            <FormField label="크로스 스트링" htmlFor={`crossStringName-${line.id}`}>
+                              <Input id={`crossStringName-${line.id}`} placeholder="아이스 코드 1.25" value={line.crossStringName} onChange={(e) => updateWorkLine(line.id, { crossStringName: e.target.value })} className="h-10" />
+                            </FormField>
+
+                            <FormField label="메인 텐션" htmlFor={`tensionMain-${line.id}`}>
+                              <Input id={`tensionMain-${line.id}`} placeholder="50" value={line.tensionMain} onChange={(e) => updateWorkLine(line.id, { tensionMain: e.target.value })} className="h-10" />
+                            </FormField>
+
+                            <FormField label="크로스 텐션" htmlFor={`tensionCross-${line.id}`}>
+                              <Input id={`tensionCross-${line.id}`} placeholder="48" value={line.tensionCross} onChange={(e) => updateWorkLine(line.id, { tensionCross: e.target.value })} className="h-10" />
+                            </FormField>
+                          </div>
+
+                          <div className="mt-4">
+                            <FormField label="라켓별 메모 (선택)" htmlFor={`lineNote-${line.id}`}>
+                              <Input id={`lineNote-${line.id}`} placeholder="예: 프레임 흠집 있음, 급한 작업" value={line.note} onChange={(e) => updateWorkLine(line.id, { note: e.target.value })} className="h-10" />
+                            </FormField>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                     <FormField label="작업 메모" htmlFor="memo">
                       <textarea
@@ -910,6 +1093,7 @@ export default function OfflineAdminClient() {
                       <CreditCard className="h-4 w-4 text-primary" />
                       결제 정보
                     </div>
+
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                       <FormField label="결제 상태" htmlFor="payStatus">
                         <Select id="payStatus" value={form.payStatus} onChange={(e) => setForm({ ...form, payStatus: e.target.value })}>
@@ -920,6 +1104,7 @@ export default function OfflineAdminClient() {
                           ))}
                         </Select>
                       </FormField>
+
                       <FormField label="결제수단" htmlFor="method">
                         <Select id="method" value={form.method} onChange={(e) => setForm({ ...form, method: e.target.value })}>
                           {Object.entries(PAYMENT_METHOD_LABELS).map(([k, v]) => (
@@ -929,9 +1114,31 @@ export default function OfflineAdminClient() {
                           ))}
                         </Select>
                       </FormField>
+
                       <FormField label="결제 금액" htmlFor="amount" hint="원 단위로 입력">
-                        <Input id="amount" type="number" placeholder="15000" value={form.amount} onChange={(e) => setForm({ ...form, amount: Number(e.target.value) })} className="h-10" />
+                        <Input id="amount" type="number" min={0} placeholder="15000" value={form.amount} onChange={(e) => setForm({ ...form, amount: Number(e.target.value) })} className="h-10" />
                       </FormField>
+                    </div>
+
+                    <div className="rounded-xl border border-border/60 bg-background px-4 py-3">
+                      <div className="grid gap-3 sm:grid-cols-3">
+                        <div>
+                          <p className="text-xs font-medium text-muted-foreground">라켓별 금액 합계</p>
+                          <p className="mt-1 text-sm font-semibold tabular-nums text-foreground">{formatCurrency(workLineTotalAmount)}</p>
+                        </div>
+
+                        <div>
+                          <p className="text-xs font-medium text-muted-foreground">전체 결제금액</p>
+                          <p className="mt-1 text-sm font-semibold tabular-nums text-foreground">{formatCurrency(workPaymentAmount)}</p>
+                        </div>
+
+                        <div>
+                          <p className="text-xs font-medium text-muted-foreground">차액</p>
+                          <p className={cn("mt-1 text-sm font-semibold tabular-nums", workPaymentDifference === 0 ? "text-muted-foreground" : "text-warning")}>{formatCurrency(workPaymentDifference)}</p>
+                        </div>
+                      </div>
+
+                      <p className="mt-2 text-xs leading-relaxed text-muted-foreground">전체 결제금액은 라켓별 합계와 다를 수 있습니다. 할인, 추가비, 현장 조정 금액이 있으면 차액으로 확인하세요.</p>
                     </div>
                   </div>
 
@@ -975,15 +1182,34 @@ export default function OfflineAdminClient() {
                               userId: selected.source === "online" ? selected.userId : selected.userId || null,
                               kind: form.kind,
                               status: form.status,
-                              lines: [
-                                {
-                                  racketName: form.racketName,
-                                  stringName: form.stringName,
-                                  tensionMain: form.tensionMain,
-                                  tensionCross: form.tensionCross,
-                                  note: form.memo,
-                                },
-                              ],
+                              lines: form.lines
+                                .map((line) => {
+                                  const mainStringName = line.mainStringName.trim();
+                                  const crossStringName = line.crossStringName.trim();
+
+                                  return {
+                                    racketName: line.racketName.trim(),
+
+                                    // 기존 화면/과거 코드 호환용 대표 스트링명입니다.
+                                    stringName: mainStringName && crossStringName && mainStringName !== crossStringName ? `${mainStringName} / ${crossStringName}` : mainStringName || crossStringName,
+
+                                    // 신규 분리 저장 필드입니다.
+                                    mainStringName,
+                                    crossStringName,
+
+                                    tensionMain: line.tensionMain.trim(),
+                                    tensionCross: line.tensionCross.trim(),
+
+                                    // 라켓별 금액입니다. 전체 결제금액은 payment.amount에 따로 저장됩니다.
+                                    amount: Number(line.amount) || 0,
+
+                                    note: line.note.trim(),
+                                  };
+                                })
+                                .filter(
+                                  (line) =>
+                                    [line.racketName, line.stringName, line.mainStringName, line.crossStringName, line.tensionMain, line.tensionCross, line.note].some((value) => String(value ?? "").trim().length > 0) || Number(line.amount) > 0,
+                                ),
                               payment: {
                                 status: form.payStatus,
                                 method: form.method,
@@ -995,10 +1221,7 @@ export default function OfflineAdminClient() {
                           setForm({
                             kind: "stringing",
                             status: "received",
-                            racketName: "",
-                            stringName: "",
-                            tensionMain: "",
-                            tensionCross: "",
+                            lines: [INITIAL_WORK_LINE],
                             memo: "",
                             amount: 0,
                             method: "cash",
@@ -1357,15 +1580,28 @@ export default function OfflineAdminClient() {
                               variant="ghost"
                               className="h-8 w-8 shrink-0 p-0"
                               onClick={() => {
-                                const line = Array.isArray(r.lines) ? (r.lines[0] ?? {}) : {};
+                                const existingLines = Array.isArray(r.lines) && r.lines.length > 0 ? r.lines : [{}];
+
                                 setEditingRecord(r);
                                 setEditForm({
                                   kind: r.kind ?? "stringing",
                                   occurredAt: toDateInputValue(r.occurredAt),
-                                  racketName: line.racketName ?? "",
-                                  stringName: line.stringName ?? "",
-                                  tensionMain: line.tensionMain ?? "",
-                                  tensionCross: line.tensionCross ?? "",
+
+                                  lines: existingLines.map((line: any, index: number) => {
+                                    const fallbackStringName = String(line.stringName ?? "").trim();
+
+                                    return {
+                                      id: `edit-line-${r.id}-${index}`,
+                                      racketName: String(line.racketName ?? ""),
+                                      mainStringName: String(line.mainStringName ?? fallbackStringName),
+                                      crossStringName: String(line.crossStringName ?? ""),
+                                      tensionMain: String(line.tensionMain ?? ""),
+                                      tensionCross: String(line.tensionCross ?? ""),
+                                      amount: Number(line.amount ?? 0),
+                                      note: String(line.note ?? ""),
+                                    };
+                                  }),
+
                                   status: r.status,
                                   paymentStatus: r.payment?.status ?? "pending",
                                   paymentMethod: r.payment?.method ?? "cash",
@@ -1477,41 +1713,93 @@ export default function OfflineAdminClient() {
 
               {/* Work Info */}
               <div className="rounded-xl border border-border/60 bg-muted/20 p-4 space-y-3">
-                <p className="text-sm font-semibold text-foreground">작업 정보</p>
-                <div className="grid grid-cols-2 gap-3">
-                  <FormField label="라켓명" htmlFor="edit-racketName">
-                    <Input id="edit-racketName" value={editForm.racketName} onChange={(e) => setEditForm({ ...editForm, racketName: e.target.value })} className="h-10" />
-                  </FormField>
-                  <FormField label="스트링명" htmlFor="edit-stringName">
-                    <Input id="edit-stringName" value={editForm.stringName} onChange={(e) => setEditForm({ ...editForm, stringName: e.target.value })} className="h-10" />
-                  </FormField>
-                  <FormField label="메인 텐션" htmlFor="edit-tensionMain">
-                    <Input
-                      id="edit-tensionMain"
-                      value={editForm.tensionMain}
-                      onChange={(e) =>
-                        setEditForm({
-                          ...editForm,
-                          tensionMain: e.target.value,
-                        })
-                      }
-                      className="h-10"
-                    />
-                  </FormField>
-                  <FormField label="크로스 텐션" htmlFor="edit-tensionCross">
-                    <Input
-                      id="edit-tensionCross"
-                      value={editForm.tensionCross}
-                      onChange={(e) =>
-                        setEditForm({
-                          ...editForm,
-                          tensionCross: e.target.value,
-                        })
-                      }
-                      className="h-10"
-                    />
-                  </FormField>
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">라켓별 작업 정보</p>
+                    <p className="mt-1 text-xs text-muted-foreground">저장된 라켓별 메인/크로스 스트링, 텐션, 금액을 수정합니다.</p>
+                  </div>
+
+                  <Button type="button" variant="outline" size="sm" onClick={addEditWorkLine}>
+                    <Plus className="mr-1.5 h-3.5 w-3.5" />
+                    라켓 추가
+                  </Button>
                 </div>
+
+                {editForm.lines.map((line, index) => (
+                  <div key={line.id} className="rounded-xl border border-border/60 bg-background p-4">
+                    <div className="mb-3 flex items-center justify-between gap-2">
+                      <p className="text-sm font-semibold text-foreground">라켓 {index + 1}</p>
+
+                      {editForm.lines.length > 1 ? (
+                        <Button type="button" variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => removeEditWorkLine(line.id)}>
+                          <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+                          삭제
+                        </Button>
+                      ) : null}
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      <FormField label="라켓명" htmlFor={`edit-racketName-${line.id}`}>
+                        <Input id={`edit-racketName-${line.id}`} value={line.racketName} onChange={(e) => updateEditWorkLine(line.id, { racketName: e.target.value })} className="h-10" />
+                      </FormField>
+
+                      <FormField label="라켓별 금액 (선택)" htmlFor={`edit-lineAmount-${line.id}`}>
+                        <Input
+                          id={`edit-lineAmount-${line.id}`}
+                          type="number"
+                          min={0}
+                          value={line.amount}
+                          onChange={(e) =>
+                            updateEditWorkLine(line.id, {
+                              amount: Number(e.target.value) || 0,
+                            })
+                          }
+                          className="h-10"
+                        />
+                      </FormField>
+
+                      <FormField label="메인 스트링" htmlFor={`edit-mainStringName-${line.id}`}>
+                        <Input
+                          id={`edit-mainStringName-${line.id}`}
+                          value={line.mainStringName}
+                          onChange={(e) =>
+                            updateEditWorkLine(line.id, {
+                              mainStringName: e.target.value,
+                            })
+                          }
+                          className="h-10"
+                        />
+                      </FormField>
+
+                      <FormField label="크로스 스트링" htmlFor={`edit-crossStringName-${line.id}`}>
+                        <Input
+                          id={`edit-crossStringName-${line.id}`}
+                          value={line.crossStringName}
+                          onChange={(e) =>
+                            updateEditWorkLine(line.id, {
+                              crossStringName: e.target.value,
+                            })
+                          }
+                          className="h-10"
+                        />
+                      </FormField>
+
+                      <FormField label="메인 텐션" htmlFor={`edit-tensionMain-${line.id}`}>
+                        <Input id={`edit-tensionMain-${line.id}`} value={line.tensionMain} onChange={(e) => updateEditWorkLine(line.id, { tensionMain: e.target.value })} className="h-10" />
+                      </FormField>
+
+                      <FormField label="크로스 텐션" htmlFor={`edit-tensionCross-${line.id}`}>
+                        <Input id={`edit-tensionCross-${line.id}`} value={line.tensionCross} onChange={(e) => updateEditWorkLine(line.id, { tensionCross: e.target.value })} className="h-10" />
+                      </FormField>
+                    </div>
+
+                    <div className="mt-4">
+                      <FormField label="라켓별 메모 (선택)" htmlFor={`edit-lineNote-${line.id}`}>
+                        <Input id={`edit-lineNote-${line.id}`} value={line.note} onChange={(e) => updateEditWorkLine(line.id, { note: e.target.value })} className="h-10" />
+                      </FormField>
+                    </div>
+                  </div>
+                ))}
               </div>
 
               {/* Status & Payment Info */}
@@ -1567,6 +1855,7 @@ export default function OfflineAdminClient() {
                     <Input
                       type="number"
                       id="edit-paymentAmount"
+                      min={0}
                       value={editForm.paymentAmount}
                       onChange={(e) =>
                         setEditForm({
@@ -1579,7 +1868,26 @@ export default function OfflineAdminClient() {
                   </FormField>
                 </div>
               </div>
+              <div className="rounded-xl border border-border/60 bg-background px-4 py-3">
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground">라켓별 금액 합계</p>
+                    <p className="mt-1 text-sm font-semibold tabular-nums text-foreground">{formatCurrency(editLineTotalAmount)}</p>
+                  </div>
 
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground">전체 결제금액</p>
+                    <p className="mt-1 text-sm font-semibold tabular-nums text-foreground">{formatCurrency(editPaymentAmount)}</p>
+                  </div>
+
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground">차액</p>
+                    <p className={cn("mt-1 text-sm font-semibold tabular-nums", editPaymentDifference === 0 ? "text-muted-foreground" : "text-warning")}>{formatCurrency(editPaymentDifference)}</p>
+                  </div>
+                </div>
+
+                <p className="mt-2 text-xs leading-relaxed text-muted-foreground">수정 시에도 전체 결제금액은 라켓별 합계와 별도로 저장됩니다. 현장 할인이나 추가비가 있으면 차액으로 관리하세요.</p>
+              </div>
               {/* Memo */}
               <FormField label="작업 메모" htmlFor="edit-memo">
                 <textarea
@@ -1616,14 +1924,30 @@ export default function OfflineAdminClient() {
                           kind: editForm.kind,
                           occurredAt: editForm.occurredAt ? new Date(`${editForm.occurredAt}T00:00:00.000Z`).toISOString() : undefined,
                           status: editForm.status,
-                          lines: [
-                            {
-                              racketName: editForm.racketName,
-                              stringName: editForm.stringName,
-                              tensionMain: editForm.tensionMain,
-                              tensionCross: editForm.tensionCross,
-                            },
-                          ],
+                          lines: editForm.lines
+                            .map((line) => {
+                              const mainStringName = line.mainStringName.trim();
+                              const crossStringName = line.crossStringName.trim();
+
+                              return {
+                                racketName: line.racketName.trim(),
+
+                                // 기존 화면/과거 코드 호환용 대표 스트링명입니다.
+                                stringName: mainStringName && crossStringName && mainStringName !== crossStringName ? `${mainStringName} / ${crossStringName}` : mainStringName || crossStringName,
+
+                                mainStringName,
+                                crossStringName,
+
+                                tensionMain: line.tensionMain.trim(),
+                                tensionCross: line.tensionCross.trim(),
+
+                                amount: Number(line.amount) || 0,
+                                note: line.note.trim(),
+                              };
+                            })
+                            .filter(
+                              (line) => [line.racketName, line.stringName, line.mainStringName, line.crossStringName, line.tensionMain, line.tensionCross, line.note].some((value) => String(value ?? "").trim().length > 0) || Number(line.amount) > 0,
+                            ),
                           payment: {
                             status: editForm.paymentStatus,
                             method: editForm.paymentMethod,
