@@ -464,77 +464,85 @@ export default function PackageSettingsClient() {
                               <p className="text-sm font-semibold text-foreground">판매 페이지 반영 설정입니다</p>
                               <p className="mt-1 text-xs leading-relaxed text-muted-foreground">패키지명, 이용 횟수, 판매 가격, 정가, 유효기간은 고객 판매 페이지와 주문 금액에 직접 반영됩니다. 저장 전 실제 노출될 가격과 할인율을 확인하세요.</p>
                             </div>
-                            <div className="grid grid-cols-2 gap-4">
-                              <div>
-                                <Label htmlFor={`name-${pkg.id}`}>패키지명</Label>
-                                <Input
-                                  id={`name-${pkg.id}`}
-                                  value={pkg.name}
-                                  onChange={(e) =>
-                                    updatePackage(pkg.id, {
-                                      name: e.target.value,
-                                    })
-                                  }
-                                />
-                              </div>
-                              <div>
-                                <Label htmlFor={`sessions-${pkg.id}`}>이용 횟수</Label>
-                                <Input
-                                  id={`sessions-${pkg.id}`}
-                                  type="number"
-                                  value={pkg.sessions}
-                                  onChange={(e) =>
-                                    updatePackage(pkg.id, {
-                                      sessions: Number.parseInt(e.target.value) || 0,
-                                    })
-                                  }
-                                />
-                              </div>
-                            </div>
-                            <p className="text-xs text-muted-foreground">할인율과 절감액은 정가와 판매 가격을 기준으로 자동 계산되며, 할인율은 소수점 첫째 자리까지 표시됩니다.</p>
+                            <div className="rounded-xl border border-border/60 bg-card p-4">
+                              <p className="text-sm font-semibold text-foreground">기본 판매 정보</p>
+                              <p className="mt-1 text-xs text-muted-foreground">고객에게 표시될 패키지명, 이용 횟수, 판매 가격, 유효기간을 설정합니다.</p>
 
-                            <div className="grid grid-cols-2 gap-4">
-                              <div>
-                                <Label htmlFor={`price-${pkg.id}`}>판매 가격 (원)</Label>
-                                <Input
-                                  id={`price-${pkg.id}`}
-                                  type="number"
-                                  value={pkg.price}
-                                  onChange={(e) =>
-                                    updatePackage(pkg.id, {
-                                      price: Number.parseInt(e.target.value) || 0,
-                                    })
-                                  }
-                                />
-                              </div>
-                              <div>
-                                <Label htmlFor={`originalPrice-${pkg.id}`}>정가 (원)</Label>
-                                <Input
-                                  id={`originalPrice-${pkg.id}`}
-                                  type="number"
-                                  value={pkg.originalPrice || ""}
-                                  onChange={(e) =>
-                                    updatePackage(pkg.id, {
-                                      originalPrice: Number.parseInt(e.target.value) || undefined,
-                                    })
-                                  }
-                                  placeholder="할인 표시용 (선택사항)"
-                                />
-                              </div>
-                            </div>
+                              <div className="mt-4 grid grid-cols-2 gap-4">
+                                <div>
+                                  <Label htmlFor={`name-${pkg.id}`}>패키지명</Label>
+                                  <Input
+                                    id={`name-${pkg.id}`}
+                                    value={pkg.name}
+                                    onChange={(e) =>
+                                      updatePackage(pkg.id, {
+                                        name: e.target.value,
+                                      })
+                                    }
+                                  />
+                                </div>
 
-                            <div>
-                              <Label htmlFor={`validityDays-${pkg.id}`}>유효기간 (일)</Label>
-                              <Input
-                                id={`validityDays-${pkg.id}`}
-                                type="number"
-                                value={pkg.validityDays}
-                                onChange={(e) =>
-                                  updatePackage(pkg.id, {
-                                    validityDays: Number.parseInt(e.target.value) || 0,
-                                  })
-                                }
-                              />
+                                <div>
+                                  <Label htmlFor={`sessions-${pkg.id}`}>이용 횟수</Label>
+                                  <Input
+                                    id={`sessions-${pkg.id}`}
+                                    type="number"
+                                    value={pkg.sessions}
+                                    onChange={(e) =>
+                                      updatePackage(pkg.id, {
+                                        sessions: Number.parseInt(e.target.value) || 0,
+                                      })
+                                    }
+                                  />
+                                </div>
+                              </div>
+
+                              <p className="mt-3 text-xs text-muted-foreground">할인율과 절감액은 정가와 판매 가격을 기준으로 자동 계산되며, 할인율은 소수점 첫째 자리까지 표시됩니다.</p>
+
+                              <div className="mt-4 grid grid-cols-2 gap-4">
+                                <div>
+                                  <Label htmlFor={`price-${pkg.id}`}>판매 가격 (원)</Label>
+                                  <Input
+                                    id={`price-${pkg.id}`}
+                                    type="number"
+                                    value={pkg.price}
+                                    onChange={(e) =>
+                                      updatePackage(pkg.id, {
+                                        price: Number.parseInt(e.target.value) || 0,
+                                      })
+                                    }
+                                  />
+                                </div>
+
+                                <div>
+                                  <Label htmlFor={`originalPrice-${pkg.id}`}>정가 (원)</Label>
+                                  <Input
+                                    id={`originalPrice-${pkg.id}`}
+                                    type="number"
+                                    value={pkg.originalPrice || ""}
+                                    onChange={(e) =>
+                                      updatePackage(pkg.id, {
+                                        originalPrice: Number.parseInt(e.target.value) || undefined,
+                                      })
+                                    }
+                                    placeholder="할인 표시용 (선택사항)"
+                                  />
+                                </div>
+                              </div>
+
+                              <div className="mt-4">
+                                <Label htmlFor={`validityDays-${pkg.id}`}>유효기간 (일)</Label>
+                                <Input
+                                  id={`validityDays-${pkg.id}`}
+                                  type="number"
+                                  value={pkg.validityDays}
+                                  onChange={(e) =>
+                                    updatePackage(pkg.id, {
+                                      validityDays: Number.parseInt(e.target.value) || 0,
+                                    })
+                                  }
+                                />
+                              </div>
                             </div>
 
                             <div>
@@ -580,31 +588,40 @@ export default function PackageSettingsClient() {
                                 ))}
                               </div>
                             </div>
+                            <div className="rounded-xl border border-border/60 bg-muted/20 p-4">
+                              <p className="text-sm font-semibold text-foreground">노출 설정</p>
+                              <p className="mt-1 text-xs text-muted-foreground">활성화 여부와 추천 패키지 표시는 고객 판매 페이지 노출에 영향을 줍니다.</p>
 
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center space-x-2">
-                                <Switch
-                                  id={`active-${pkg.id}`}
-                                  checked={pkg.isActive}
-                                  onCheckedChange={(checked) =>
-                                    updatePackage(pkg.id, {
-                                      isActive: checked,
-                                    })
-                                  }
-                                />
-                                <Label htmlFor={`active-${pkg.id}`}>활성화</Label>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <Switch
-                                  id={`popular-${pkg.id}`}
-                                  checked={pkg.isPopular}
-                                  onCheckedChange={(checked) =>
-                                    updatePackage(pkg.id, {
-                                      isPopular: checked,
-                                    })
-                                  }
-                                />
-                                <Label htmlFor={`popular-${pkg.id}`}>추천 패키지</Label>
+                              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                                <div className="flex items-center justify-between rounded-lg border border-border/60 bg-background p-3">
+                                  <Label htmlFor={`active-${pkg.id}`} className="text-sm font-medium">
+                                    활성화
+                                  </Label>
+                                  <Switch
+                                    id={`active-${pkg.id}`}
+                                    checked={pkg.isActive}
+                                    onCheckedChange={(checked) =>
+                                      updatePackage(pkg.id, {
+                                        isActive: checked,
+                                      })
+                                    }
+                                  />
+                                </div>
+
+                                <div className="flex items-center justify-between rounded-lg border border-border/60 bg-background p-3">
+                                  <Label htmlFor={`popular-${pkg.id}`} className="text-sm font-medium">
+                                    추천 패키지
+                                  </Label>
+                                  <Switch
+                                    id={`popular-${pkg.id}`}
+                                    checked={pkg.isPopular}
+                                    onCheckedChange={(checked) =>
+                                      updatePackage(pkg.id, {
+                                        isPopular: checked,
+                                      })
+                                    }
+                                  />
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -612,49 +629,72 @@ export default function PackageSettingsClient() {
                           <div className="space-y-4">
                             {(() => {
                               const meta = getPackagePricingMeta(pkg);
+
                               return (
                                 <>
-                                  <div className="grid grid-cols-3 gap-2 rounded-lg border border-border bg-muted/30 p-3 text-center text-sm">
-                                    <div>
-                                      <p className="text-muted-foreground">회당 금액</p>
-                                      <p className="font-semibold text-foreground">{formatCurrency(meta.perSession)}</p>
-                                    </div>
-                                    <div>
-                                      <p className="text-muted-foreground">할인율</p>
-                                      <p className="font-semibold text-foreground">{meta.discountRate > 0 ? `${meta.discountRate.toFixed(1)}%` : "-"}</p>
-                                    </div>
-                                    <div>
-                                      <p className="text-muted-foreground">절감액</p>
-                                      <p className="font-semibold text-foreground">{meta.savingAmount > 0 ? formatCurrency(meta.savingAmount) : "-"}</p>
+                                  <div className="rounded-xl border border-border/60 bg-muted/20 p-4">
+                                    <div className="flex items-start justify-between gap-3">
+                                      <div>
+                                        <p className="text-xs font-medium text-muted-foreground">판매 가격</p>
+                                        <p className="mt-1 text-2xl font-bold text-foreground">{formatCurrency(pkg.price)}</p>
+                                        {pkg.originalPrice ? <p className="text-sm text-muted-foreground line-through">{formatCurrency(pkg.originalPrice)}</p> : null}
+                                      </div>
+
+                                      <div className="text-right">
+                                        <p className="text-xs font-medium text-muted-foreground">이용 구성</p>
+                                        <p className="mt-1 text-xl font-semibold text-primary">{pkg.sessions}회</p>
+                                        <p className="text-xs text-muted-foreground">{pkg.validityDays}일 유효</p>
+                                      </div>
                                     </div>
                                   </div>
-                                  <p className="text-xs text-muted-foreground">회당 금액은 판매 가격 ÷ 이용 횟수, 할인율은 정가 대비 판매 가격 기준으로 소수점 첫째 자리까지 자동 계산됩니다.</p>
+
+                                  <div className="grid grid-cols-3 gap-2">
+                                    <div className="rounded-lg border border-border/60 bg-card p-3 text-center">
+                                      <p className="text-xs text-muted-foreground">회당 금액</p>
+                                      <p className="mt-1 text-sm font-semibold text-foreground">{formatCurrency(meta.perSession)}</p>
+                                    </div>
+
+                                    <div className="rounded-lg border border-border/60 bg-card p-3 text-center">
+                                      <p className="text-xs text-muted-foreground">할인율</p>
+                                      <p className="mt-1 text-sm font-semibold text-foreground">{meta.discountRate > 0 ? `${meta.discountRate.toFixed(1)}%` : "-"}</p>
+                                    </div>
+
+                                    <div className="rounded-lg border border-border/60 bg-card p-3 text-center">
+                                      <p className="text-xs text-muted-foreground">절감액</p>
+                                      <p className="mt-1 text-sm font-semibold text-foreground">{meta.savingAmount > 0 ? formatCurrency(meta.savingAmount) : "-"}</p>
+                                    </div>
+                                  </div>
+
+                                  <p className="text-xs leading-relaxed text-muted-foreground">회당 금액은 판매 가격 ÷ 이용 횟수, 할인율은 정가 대비 판매 가격 기준으로 자동 계산됩니다.</p>
                                 </>
                               );
                             })()}
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <p className="text-2xl font-bold text-foreground">{formatCurrency(pkg.price)}</p>
-                                {pkg.originalPrice && <p className="text-sm text-muted-foreground line-through">{formatCurrency(pkg.originalPrice)}</p>}
-                              </div>
-                              <div className="text-right">
-                                <p className="text-lg font-semibold text-primary">{pkg.sessions}회</p>
-                                <p className="text-sm text-muted-foreground">{pkg.validityDays}일 유효</p>
-                              </div>
+
+                            <div className="rounded-xl border border-border/60 bg-muted/20 p-4">
+                              <p className="text-sm font-semibold text-foreground">패키지 설명</p>
+                              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{pkg.description || "등록된 설명이 없습니다."}</p>
                             </div>
 
-                            <p className="text-muted-foreground">{pkg.description}</p>
+                            <div className="rounded-xl border border-border/60 bg-card p-4">
+                              <div className="mb-3 flex items-center justify-between gap-2">
+                                <p className="text-sm font-semibold text-foreground">포함 혜택</p>
+                                <Badge variant="secondary" className="text-xs">
+                                  {pkg.features.length}개
+                                </Badge>
+                              </div>
 
-                            <div className="space-y-2">
-                              <p className="text-sm font-medium text-foreground">포함 혜택:</p>
-                              <ul className="text-sm text-muted-foreground space-y-1">
-                                {pkg.features.map((feature, index) => (
-                                  <li key={index} className="flex items-center">
-                                    <span className="w-1.5 h-1.5 bg-primary rounded-full mr-2"></span>
-                                    {feature}
-                                  </li>
-                                ))}
-                              </ul>
+                              {pkg.features.length > 0 ? (
+                                <ul className="space-y-2 text-sm text-muted-foreground">
+                                  {pkg.features.map((feature, index) => (
+                                    <li key={index} className="flex items-start gap-2">
+                                      <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-primary" />
+                                      <span className="leading-relaxed">{feature}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              ) : (
+                                <p className="text-sm text-muted-foreground">등록된 혜택이 없습니다.</p>
+                              )}
                             </div>
                           </div>
                         )}
@@ -691,122 +731,143 @@ export default function PackageSettingsClient() {
                       패키지 시스템 활성화, 연장 허용, 유효기간, 최소·최대 이용 횟수는 전체 패키지 운영 방식에 영향을 줍니다. 운영 중인 패키지가 있는 경우 변경 전 적용 범위를 확인하세요.
                     </p>
                   </div>
-                  <div className="grid gap-6 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="maxValidityDays">최대 유효기간 (일)</Label>
-                      <Input
-                        id="maxValidityDays"
-                        type="number"
-                        value={generalSettings.maxValidityDays}
-                        onChange={(e) =>
-                          setGeneralSettings((prev) => ({
-                            ...prev,
-                            maxValidityDays: Number.parseInt(e.target.value) || 0,
-                          }))
-                        }
-                      />
-                    </div>
+                  <div className="grid gap-4 xl:grid-cols-3">
+                    <div className="rounded-xl border border-border/60 bg-card p-4">
+                      <p className="text-sm font-semibold text-foreground">기간/알림</p>
+                      <p className="mt-1 text-xs text-muted-foreground">패키지 유효기간과 만료 알림 기준을 설정합니다.</p>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="autoExpireNotificationDays">만료 알림 일수</Label>
-                      <Input
-                        id="autoExpireNotificationDays"
-                        type="number"
-                        value={generalSettings.autoExpireNotificationDays}
-                        onChange={(e) =>
-                          setGeneralSettings((prev) => ({
-                            ...prev,
-                            autoExpireNotificationDays: Number.parseInt(e.target.value) || 0,
-                          }))
-                        }
-                      />
-                      <p className="text-sm text-muted-foreground">만료 며칠 전에 고객에게 알림을 보낼지 설정</p>
-                    </div>
+                      <div className="mt-4 space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="maxValidityDays">최대 유효기간 (일)</Label>
+                          <Input
+                            id="maxValidityDays"
+                            type="number"
+                            value={generalSettings.maxValidityDays}
+                            onChange={(e) =>
+                              setGeneralSettings((prev) => ({
+                                ...prev,
+                                maxValidityDays: Number.parseInt(e.target.value) || 0,
+                              }))
+                            }
+                          />
+                        </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="minSessions">최소 이용 횟수</Label>
-                      <Input
-                        id="minSessions"
-                        type="number"
-                        value={generalSettings.minSessions}
-                        onChange={(e) =>
-                          setGeneralSettings((prev) => ({
-                            ...prev,
-                            minSessions: Number.parseInt(e.target.value) || 0,
-                          }))
-                        }
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="maxSessions">최대 이용 횟수</Label>
-                      <Input
-                        id="maxSessions"
-                        type="number"
-                        value={generalSettings.maxSessions}
-                        onChange={(e) =>
-                          setGeneralSettings((prev) => ({
-                            ...prev,
-                            maxSessions: Number.parseInt(e.target.value) || 0,
-                          }))
-                        }
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="extensionFeePercentage">연장 수수료 (%)</Label>
-                      <Input
-                        id="extensionFeePercentage"
-                        type="number"
-                        value={generalSettings.extensionFeePercentage}
-                        onChange={(e) =>
-                          setGeneralSettings((prev) => ({
-                            ...prev,
-                            extensionFeePercentage: Number.parseInt(e.target.value) || 0,
-                          }))
-                        }
-                      />
-                      <p className="text-sm text-muted-foreground">패키지 연장 시 부과할 수수료 비율</p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4 pt-4 border-t">
-                    <div className="flex items-center justify-between p-4 bg-background rounded-xl">
-                      <div>
-                        <Label htmlFor="enablePackages" className="font-medium text-foreground">
-                          패키지 시스템 활성화
-                        </Label>
-                        <p className="text-sm text-muted-foreground">패키지 상품 판매를 활성화/비활성화합니다.</p>
+                        <div className="space-y-2">
+                          <Label htmlFor="autoExpireNotificationDays">만료 알림 일수</Label>
+                          <Input
+                            id="autoExpireNotificationDays"
+                            type="number"
+                            value={generalSettings.autoExpireNotificationDays}
+                            onChange={(e) =>
+                              setGeneralSettings((prev) => ({
+                                ...prev,
+                                autoExpireNotificationDays: Number.parseInt(e.target.value) || 0,
+                              }))
+                            }
+                          />
+                          <p className="text-sm text-muted-foreground">만료 며칠 전에 고객에게 알림을 보낼지 설정</p>
+                        </div>
                       </div>
-                      <Switch
-                        id="enablePackages"
-                        checked={generalSettings.enablePackages}
-                        onCheckedChange={(checked) =>
-                          setGeneralSettings((prev) => ({
-                            ...prev,
-                            enablePackages: checked,
-                          }))
-                        }
-                      />
                     </div>
 
-                    <div className="flex items-center justify-between p-4 bg-background rounded-xl">
-                      <div>
-                        <Label htmlFor="allowExtension" className="font-medium text-foreground">
-                          패키지 연장 허용
-                        </Label>
-                        <p className="text-sm text-muted-foreground">고객이 패키지 연장을 요청할 수 있도록 허용합니다.</p>
+                    <div className="rounded-xl border border-border/60 bg-card p-4">
+                      <p className="text-sm font-semibold text-foreground">이용 횟수/연장</p>
+                      <p className="mt-1 text-xs text-muted-foreground">패키지 이용 횟수 범위와 연장 수수료를 설정합니다.</p>
+
+                      <div className="mt-4 space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="minSessions">최소 이용 횟수</Label>
+                          <Input
+                            id="minSessions"
+                            type="number"
+                            value={generalSettings.minSessions}
+                            onChange={(e) =>
+                              setGeneralSettings((prev) => ({
+                                ...prev,
+                                minSessions: Number.parseInt(e.target.value) || 0,
+                              }))
+                            }
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="maxSessions">최대 이용 횟수</Label>
+                          <Input
+                            id="maxSessions"
+                            type="number"
+                            value={generalSettings.maxSessions}
+                            onChange={(e) =>
+                              setGeneralSettings((prev) => ({
+                                ...prev,
+                                maxSessions: Number.parseInt(e.target.value) || 0,
+                              }))
+                            }
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="extensionFeePercentage">연장 수수료 (%)</Label>
+                          <Input
+                            id="extensionFeePercentage"
+                            type="number"
+                            value={generalSettings.extensionFeePercentage}
+                            onChange={(e) =>
+                              setGeneralSettings((prev) => ({
+                                ...prev,
+                                extensionFeePercentage: Number.parseInt(e.target.value) || 0,
+                              }))
+                            }
+                          />
+                          <p className="text-sm text-muted-foreground">패키지 연장 시 부과할 수수료 비율</p>
+                        </div>
                       </div>
-                      <Switch
-                        id="allowExtension"
-                        checked={generalSettings.allowExtension}
-                        onCheckedChange={(checked) =>
-                          setGeneralSettings((prev) => ({
-                            ...prev,
-                            allowExtension: checked,
-                          }))
-                        }
-                      />
+                    </div>
+
+                    <div className="rounded-xl border border-border/60 bg-muted/20 p-4">
+                      <p className="text-sm font-semibold text-foreground">시스템 상태</p>
+                      <p className="mt-1 text-xs text-muted-foreground">패키지 판매와 연장 요청 가능 여부를 제어합니다.</p>
+
+                      <div className="mt-4 space-y-3">
+                        <div className="flex items-center justify-between rounded-lg border border-border/60 bg-background p-3">
+                          <div>
+                            <Label htmlFor="enablePackages" className="font-medium text-foreground">
+                              패키지 시스템 활성화
+                            </Label>
+                            <p className="mt-1 text-sm text-muted-foreground">패키지 상품 판매를 활성화/비활성화합니다.</p>
+                          </div>
+
+                          <Switch
+                            id="enablePackages"
+                            checked={generalSettings.enablePackages}
+                            onCheckedChange={(checked) =>
+                              setGeneralSettings((prev) => ({
+                                ...prev,
+                                enablePackages: checked,
+                              }))
+                            }
+                          />
+                        </div>
+
+                        <div className="flex items-center justify-between rounded-lg border border-border/60 bg-background p-3">
+                          <div>
+                            <Label htmlFor="allowExtension" className="font-medium text-foreground">
+                              패키지 연장 허용
+                            </Label>
+                            <p className="mt-1 text-sm text-muted-foreground">고객이 패키지 연장을 요청할 수 있도록 허용합니다.</p>
+                          </div>
+
+                          <Switch
+                            id="allowExtension"
+                            checked={generalSettings.allowExtension}
+                            onCheckedChange={(checked) =>
+                              setGeneralSettings((prev) => ({
+                                ...prev,
+                                allowExtension: checked,
+                              }))
+                            }
+                          />
+                        </div>
+                      </div>
                     </div>
                   </div>
 
