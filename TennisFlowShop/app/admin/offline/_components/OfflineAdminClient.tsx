@@ -548,12 +548,17 @@ export default function OfflineAdminClient() {
       setRecordsMessage(null);
       setRecordsMessageType(null);
 
-      await adminMutator("/api/admin/offline/records/bulk", {
+      const result = (await adminMutator("/api/admin/offline/records/bulk", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ids: selectedRecordIds }),
-      });
+      })) as { deletedCount?: number };
 
+      const deletedCount = Number(result?.deletedCount ?? selectedRecordIds.length);
+      const nextTotal = Math.max(0, recordsTotal - deletedCount);
+      const nextTotalPages = Math.max(1, Math.ceil(nextTotal / RECORDS_LIMIT));
+
+      setRecordsPage((page) => Math.min(page, nextTotalPages));
       setSelectedRecordIds([]);
       setRecordsMessage("선택한 오프라인 작업/매출 기록을 삭제했습니다.");
       setRecordsMessageType("success");
@@ -1110,7 +1115,7 @@ export default function OfflineAdminClient() {
                               <Input id={`racketName-${line.id}`} placeholder="바볼랏 퓨어에어로" value={line.racketName} onChange={(e) => updateWorkLine(line.id, { racketName: e.target.value })} className="h-10" />
                             </FormField>
 
-                            <FormField label="라켓별 금액 (선택)" htmlFor={`lineAmount-${line.id}`}>
+                            <FormField label="작업 금액 (선택)" htmlFor={`lineAmount-${line.id}`}>
                               <Input
                                 id={`lineAmount-${line.id}`}
                                 type="number"
@@ -1849,7 +1854,7 @@ export default function OfflineAdminClient() {
                         <Input id={`edit-racketName-${line.id}`} value={line.racketName} onChange={(e) => updateEditWorkLine(line.id, { racketName: e.target.value })} className="h-10" />
                       </FormField>
 
-                      <FormField label="라켓별 금액 (선택)" htmlFor={`edit-lineAmount-${line.id}`}>
+                      <FormField label="작업 금액 (선택)" htmlFor={`edit-lineAmount-${line.id}`}>
                         <Input
                           id={`edit-lineAmount-${line.id}`}
                           type="number"

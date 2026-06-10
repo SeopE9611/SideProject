@@ -16,12 +16,30 @@ function toObjectIds(ids: unknown[]): ObjectId[] {
   return uniqueIds.map((id) => new ObjectId(id));
 }
 
-function hasLinkedAccounting(record: any): boolean {
-  return Boolean(
-    record?.points?.grantTxId ||
-      record?.points?.deductTxId ||
-      record?.packageUsage?.consumptionId,
+function hasActiveLinkedAccounting(record: any): boolean {
+  const points = record?.points ?? {};
+  const packageUsage = record?.packageUsage ?? {};
+
+  const hasActivePointGrant = Boolean(
+    points.grantTxId &&
+      !points.grantRevertTxId &&
+      !points.grantRevertedAt,
   );
+
+  const hasActivePointDeduct = Boolean(
+    points.deductTxId &&
+      !points.deductRevertTxId &&
+      !points.deductRevertedAt,
+  );
+
+  const hasActivePackageUsage = Boolean(
+    packageUsage.consumptionId &&
+      !packageUsage.reverted &&
+      !packageUsage.revertedAt &&
+      !packageUsage.revertedConsumptionId,
+  );
+
+  return hasActivePointGrant || hasActivePointDeduct || hasActivePackageUsage;
 }
 
 async function rebuildOfflineCustomerStats(db: any, customerId: ObjectId, adminId: ObjectId) {
@@ -111,7 +129,7 @@ export async function DELETE(req: Request) {
     );
   }
 
-  const blockedRecords = records.filter(hasLinkedAccounting);
+  const blockedRecords = records.filter(hasActiveLinkedAccounting);
   if (blockedRecords.length > 0) {
     return NextResponse.json(
       {
