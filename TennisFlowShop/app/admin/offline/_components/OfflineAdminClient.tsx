@@ -430,8 +430,28 @@ export default function OfflineAdminClient() {
     !submittedRecordFilters.status &&
     !submittedRecordFilters.paymentMethod;
 
+  const hasOnlyPaymentPaidFilter =
+    submittedRecordFilters.paymentStatus === "paid" &&
+    !submittedRecordFilters.from &&
+    !submittedRecordFilters.to &&
+    !submittedRecordFilters.name &&
+    !submittedRecordFilters.phone &&
+    !submittedRecordFilters.kind &&
+    !submittedRecordFilters.status &&
+    !submittedRecordFilters.paymentMethod;
+
   const hasOnlyInProgressFilter =
     submittedRecordFilters.status === "in_progress" &&
+    !submittedRecordFilters.from &&
+    !submittedRecordFilters.to &&
+    !submittedRecordFilters.name &&
+    !submittedRecordFilters.phone &&
+    !submittedRecordFilters.kind &&
+    !submittedRecordFilters.paymentStatus &&
+    !submittedRecordFilters.paymentMethod;
+
+  const hasOnlyPickedUpFilter =
+    submittedRecordFilters.status === "picked_up" &&
     !submittedRecordFilters.from &&
     !submittedRecordFilters.to &&
     !submittedRecordFilters.name &&
@@ -465,13 +485,17 @@ export default function OfflineAdminClient() {
     ? "전체 작업/매출"
     : hasOnlyPaymentPendingFilter
       ? "미결제 작업"
-      : hasOnlyInProgressFilter
-        ? "작업중"
-        : hasOnlyPackageSaleFilter
-          ? "패키지 판매"
-          : hasOnlyTodayFilter
-            ? "오늘 기록"
-            : "사용자 지정 조건";
+      : hasOnlyPaymentPaidFilter
+        ? "결제완료"
+        : hasOnlyInProgressFilter
+          ? "작업중"
+          : hasOnlyPickedUpFilter
+            ? "수령완료"
+            : hasOnlyPackageSaleFilter
+              ? "패키지 판매"
+              : hasOnlyTodayFilter
+                ? "오늘 기록"
+                : "사용자 지정 조건";
 
   // 신규 등록 폼의 라켓별 금액 합계와 전체 결제금액 차이입니다.
   // 전체 결제금액은 할인, 추가비, 현장 조정액 때문에 라켓별 합계와 다를 수 있습니다.
@@ -1371,6 +1395,32 @@ export default function OfflineAdminClient() {
               }
             >
               미결제
+            </Button>
+
+            <Button
+              type="button"
+              size="sm"
+              variant={currentRecordViewLabel === "결제완료" ? "default" : "outline"}
+              onClick={() =>
+                applyRecordQuickView({
+                  paymentStatus: "paid",
+                })
+              }
+            >
+              결제완료
+            </Button>
+
+            <Button
+              type="button"
+              size="sm"
+              variant={currentRecordViewLabel === "수령완료" ? "default" : "outline"}
+              onClick={() =>
+                applyRecordQuickView({
+                  status: "picked_up",
+                })
+              }
+            >
+              수령완료
             </Button>
 
             <Button
