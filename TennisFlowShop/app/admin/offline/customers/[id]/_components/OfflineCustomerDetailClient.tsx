@@ -39,6 +39,7 @@ import {
   Phone,
   Search,
   ShoppingBag,
+  Trash2,
   TrendingUp,
   Unlink,
   User,
@@ -46,6 +47,7 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import useSWR from "swr";
@@ -170,8 +172,6 @@ function formatLineSummary(lines?: OfflineRecord["lines"]): string {
 
   return summary || "작업 내용 미입력";
 }
-
-
 
 function hasLineDetail(line: NonNullable<OfflineRecord["lines"]>[number]): boolean {
   return [line.racketName, line.stringName, line.mainStringName, line.crossStringName, line.tensionMain, line.tensionCross, line.note].some((value) => String(value ?? "").trim().length > 0) || Number(line.amount ?? 0) > 0;
@@ -513,6 +513,7 @@ function translatePointError(error: unknown): string {
 ───────────────────────────────────────────────────────────────────────────── */
 
 export default function OfflineCustomerDetailClient({ id }: { id: string }) {
+  const router = useRouter();
   const {
     data,
     error,
@@ -546,7 +547,10 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
   const [packageSellMessageType, setPackageSellMessageType] = useState<"success" | "error" | null>(null);
   const [packageRefundForms, setPackageRefundForms] = useState<Record<string, PackageRefundFormState>>({});
   const [refundingPackageOrderId, setRefundingPackageOrderId] = useState<string | null>(null);
+
   const [expandedRecords, setExpandedRecords] = useState<Set<string>>(new Set());
+  const [isDeletingCustomer, setIsDeletingCustomer] = useState(false);
+  const [deleteMessage, setDeleteMessage] = useState<string | null>(null);
 
   const candidateKey = submittedCandidateQuery
     ? `/api/admin/offline/customers/${id}/link-candidates?name=${encodeURIComponent(submittedCandidateQuery.name)}&phone=${encodeURIComponent(submittedCandidateQuery.phone)}&email=${encodeURIComponent(submittedCandidateQuery.email)}`
@@ -948,6 +952,40 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
     }
   }
 
+  async function deleteOfflineCustomer() {
+    if (isDeletingCustomer) return;
+
+    const recordCount = records.length;
+
+    const ok = window.confirm(
+      recordCount > 0
+        ? `이 고객의 오프라인 작업/매출 기록 ${recordCount}건이 남아 있습니다.\n\n기록이 남아 있는 고객은 삭제할 수 없습니다. 먼저 작업 기록을 삭제해주세요.`
+        : `오프라인 고객 "${item?.name || "이름 없음"}" 정보를 삭제하시겠습니까?\n\n온라인 회원, 포인트, 패키지권, 주문 정보는 삭제되지 않습니다.\n이 작업은 되돌릴 수 없습니다.`,
+    );
+
+    if (!ok) return;
+
+    if (recordCount > 0) {
+      setDeleteMessage("작업/매출 기록이 남아 있어 고객을 삭제할 수 없습니다. 먼저 기록을 삭제해주세요.");
+      return;
+    }
+
+    try {
+      setIsDeletingCustomer(true);
+      setDeleteMessage(null);
+
+      await adminMutator(`/api/admin/offline/customers/${id}`, {
+        method: "DELETE",
+      });
+
+      router.replace("/admin/offline");
+    } catch (error) {
+      setDeleteMessage(getAdminErrorMessage(error) || "오프라인 고객 삭제에 실패했습니다.");
+    } finally {
+      setIsDeletingCustomer(false);
+    }
+  }
+
   /* ─────────────────────────────────────────────────────────────────────────────
      Loading & Error States
   ───────────────────────────────────────────────────────────────────────────── */
@@ -1002,14 +1040,22 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
               오프라인 관리
             </Link>
           </Button>
+
           <Button asChild variant="secondary" size="sm">
             <a href="#offline-records">
               <History className="mr-2 h-4 w-4" />
               최근 기록
             </a>
           </Button>
+
+          <Button type="button" variant="destructive" size="sm" disabled={isDeletingCustomer} onClick={deleteOfflineCustomer}>
+            <Trash2 className="mr-2 h-4 w-4" />
+            {isDeletingCustomer ? "삭제 중..." : "고객 삭제"}
+          </Button>
         </div>
       </div>
+
+      {deleteMessage && <div className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">{deleteMessage}</div>}
 
       {/* Customer Quick Info Banner */}
       <div className="rounded-xl border border-primary/20 bg-primary/5 p-5">
