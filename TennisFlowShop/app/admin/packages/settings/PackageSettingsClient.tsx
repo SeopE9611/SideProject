@@ -57,6 +57,101 @@ const PACKAGE_SETTINGS_GUIDES = [
   },
 ];
 
+function isPositiveInteger(value: unknown): boolean {
+  const numberValue = Number(value);
+  return Number.isInteger(numberValue) && numberValue >= 1;
+}
+
+function isNonNegativeNumber(value: unknown): boolean {
+  const numberValue = Number(value);
+  return Number.isFinite(numberValue) && numberValue >= 0;
+}
+
+function buildPackageSettingsValidation(packageConfigs: PackageConfig[], generalSettings: GeneralSettings) {
+  const packageErrors: Record<string, string[]> = {};
+  const generalErrors: string[] = [];
+
+  for (const pkg of packageConfigs) {
+    const errors: string[] = [];
+
+    if (!String(pkg.name ?? "").trim()) {
+      errors.push("패키지명을 입력해야 합니다.");
+    }
+
+    if (!isPositiveInteger(pkg.sessions)) {
+      errors.push("이용 횟수는 1 이상이어야 합니다.");
+    }
+
+    if (!isPositiveInteger(pkg.price)) {
+      errors.push("판매 가격은 1원 이상이어야 합니다.");
+    }
+
+    if (pkg.originalPrice !== undefined && pkg.originalPrice !== null && !isNonNegativeNumber(pkg.originalPrice)) {
+      errors.push("정가는 0원 이상이어야 합니다.");
+    }
+
+    if (typeof pkg.originalPrice === "number" && pkg.originalPrice > 0 && pkg.originalPrice < Number(pkg.price)) {
+      errors.push("정가가 판매 가격보다 낮습니다. 할인 표시가 잘못될 수 있습니다.");
+    }
+
+    if (!isPositiveInteger(pkg.validityDays)) {
+      errors.push("유효기간은 1일 이상이어야 합니다.");
+    }
+
+    if (Array.isArray(pkg.features) && pkg.features.some((feature) => !String(feature).trim())) {
+      errors.push("빈 혜택 문구가 있습니다. 삭제하거나 내용을 입력해주세요.");
+    }
+
+    if (pkg.isPopular && !pkg.isActive) {
+      errors.push("비활성 패키지는 추천 패키지로 표시하지 않는 것이 안전합니다.");
+    }
+
+    if (errors.length > 0) {
+      packageErrors[pkg.id] = errors;
+    }
+  }
+
+  if (!isPositiveInteger(generalSettings.maxValidityDays)) {
+    generalErrors.push("최대 유효기간은 1일 이상이어야 합니다.");
+  }
+
+  if (!isNonNegativeNumber(generalSettings.autoExpireNotificationDays)) {
+    generalErrors.push("만료 알림 일수는 0 이상이어야 합니다.");
+  }
+
+  if (!isPositiveInteger(generalSettings.minSessions)) {
+    generalErrors.push("최소 이용 횟수는 1 이상이어야 합니다.");
+  }
+
+  if (!isPositiveInteger(generalSettings.maxSessions)) {
+    generalErrors.push("최대 이용 횟수는 1 이상이어야 합니다.");
+  }
+
+  if (isPositiveInteger(generalSettings.minSessions) && isPositiveInteger(generalSettings.maxSessions) && Number(generalSettings.minSessions) > Number(generalSettings.maxSessions)) {
+    generalErrors.push("최소 이용 횟수는 최대 이용 횟수보다 클 수 없습니다.");
+  }
+
+  if (!isNonNegativeNumber(generalSettings.extensionFeePercentage)) {
+    generalErrors.push("연장 수수료는 0 이상이어야 합니다.");
+  }
+
+  const packageErrorMessages = Object.entries(packageErrors).flatMap(([packageId, errors]) => {
+    const pkg = packageConfigs.find((item) => item.id === packageId);
+    const packageName = pkg?.name?.trim() || packageId;
+
+    return errors.map((error) => `${packageName}: ${error}`);
+  });
+
+  const messages = [...packageErrorMessages, ...generalErrors];
+
+  return {
+    packageErrors,
+    generalErrors,
+    messages,
+    hasErrors: messages.length > 0,
+  };
+}
+
 export default function PackageSettingsClient() {
   // 서버에서 가져온 패키지 설정
   const [packageConfigs, setPackageConfigs] = useState<PackageConfig[]>(DEFAULT_PACKAGE_CONFIGS);
@@ -124,6 +219,11 @@ export default function PackageSettingsClient() {
 
   // 패키지 설정 저장 (패키지 탭에서 호출)
   const handleSavePackages = async () => {
+    if (validation.hasErrors) {
+      showErrorToast(validation.messages[0] ?? "패키지 설정값을 확인해주세요.");
+      return;
+    }
+
     setIsSaving(true);
 
     const body = {
@@ -142,12 +242,21 @@ export default function PackageSettingsClient() {
       fallbackErrorMessage: "패키지 설정 저장에 실패했습니다.",
     });
 
-    if (result) baselineRef.current = snapshot;
+    if (result) {
+      baselineRef.current = snapshot;
+      await mutate();
+    }
+
     setIsSaving(false);
   };
 
   // 일반 설정 저장 (일반 설정 탭에서 호출)
   const handleSaveGeneralSettings = async () => {
+    if (validation.hasErrors) {
+      showErrorToast(validation.messages[0] ?? "일반 설정값을 확인해주세요.");
+      return;
+    }
+
     setIsSaving(true);
 
     const body = {
@@ -166,7 +275,11 @@ export default function PackageSettingsClient() {
       fallbackErrorMessage: "일반 설정 저장에 실패했습니다.",
     });
 
-    if (result) baselineRef.current = snapshot;
+    if (result) {
+      baselineRef.current = snapshot;
+      await mutate();
+    }
+
     setIsSaving(false);
   };
 
@@ -195,8 +308,38 @@ export default function PackageSettingsClient() {
 
   // 패키지 삭제
   const deletePackage = (id: string) => {
+    const target = packageConfigs.find((pkg) => pkg.id === id);
+
+    if (target?.isActive) {
+      showErrorToast("활성 패키지는 먼저 비활성화한 뒤 삭제해주세요.");
+      return;
+    }
+
     setPackageConfigs((prev) => prev.filter((pkg) => pkg.id !== id));
-    showSuccessToast("패키지가 삭제되었습니다.");
+    showSuccessToast("패키지가 삭제 예정으로 표시되었습니다. 저장해야 최종 반영됩니다.");
+  };
+
+  // 변경 사항 되돌리기
+  const resetLocalChanges = () => {
+    if (!data) return;
+
+    const serverPackages: PackageConfig[] = Array.isArray(data.packageConfigs) ? data.packageConfigs : DEFAULT_PACKAGE_CONFIGS;
+
+    const serverGeneral: GeneralSettings = {
+      ...DEFAULT_GENERAL_SETTINGS,
+      ...(data.generalSettings ?? {}),
+    };
+
+    setPackageConfigs(serverPackages);
+    setGeneralSettings(serverGeneral);
+    setEditingPackage(null);
+    setPendingDeletePackageId(null);
+    baselineRef.current = JSON.stringify({
+      packageConfigs: serverPackages,
+      generalSettings: serverGeneral,
+    });
+
+    showSuccessToast("저장되지 않은 변경사항을 되돌렸습니다.");
   };
 
   // 특징 추가
@@ -233,6 +376,10 @@ export default function PackageSettingsClient() {
       inactive,
     };
   }, [packageConfigs]);
+
+  const validation = useMemo(() => buildPackageSettingsValidation(packageConfigs, generalSettings), [packageConfigs, generalSettings]);
+
+  const canSaveSettings = !validation.hasErrors;
 
   const currentSettingsLabel = isDirty ? "저장되지 않은 변경 있음" : "저장됨";
 
@@ -403,6 +550,45 @@ export default function PackageSettingsClient() {
               <p className="text-xs text-muted-foreground">저장 후 고객 판매 페이지와 패키지 운영 정책에 반영됩니다.</p>
             </div>
           </div>
+          {validation.hasErrors && (
+            <div className="mb-6 rounded-2xl border border-destructive/30 bg-destructive/10 p-4">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
+                <div>
+                  <p className="text-sm font-semibold text-destructive">저장 전 확인이 필요한 설정이 있습니다.</p>
+
+                  <ul className="mt-2 space-y-1 text-xs text-destructive">
+                    {validation.messages.slice(0, 5).map((message) => (
+                      <li key={message}>- {message}</li>
+                    ))}
+                  </ul>
+
+                  {validation.messages.length > 5 && <p className="mt-2 text-xs text-destructive">외 {validation.messages.length - 5}개 항목이 더 있습니다.</p>}
+                </div>
+              </div>
+            </div>
+          )}
+          {isDirty && (
+            <div className="sticky top-20 z-20 mb-6 rounded-2xl border border-primary/20 bg-card/95 p-4 shadow-sm backdrop-blur">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-foreground">저장되지 않은 변경사항이 있습니다.</p>
+                  <p className="mt-1 text-xs text-muted-foreground">저장해야 고객 판매 페이지와 패키지 운영 정책에 반영됩니다.</p>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  <Button type="button" variant="outline" size="sm" onClick={resetLocalChanges} disabled={isSaving}>
+                    변경사항 되돌리기
+                  </Button>
+
+                  <Button type="button" size="sm" onClick={handleSavePackages} disabled={isSaving || !canSaveSettings}>
+                    <Save className="mr-2 h-4 w-4" />
+                    {isSaving ? "저장 중..." : "변경사항 저장"}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
           <Tabs defaultValue="packages" className="space-y-6">
             <Card className={adminSurface.card}>
               <CardContent className="p-6">
@@ -464,6 +650,16 @@ export default function PackageSettingsClient() {
                               <p className="text-sm font-semibold text-foreground">판매 페이지 반영 설정입니다</p>
                               <p className="mt-1 text-xs leading-relaxed text-muted-foreground">패키지명, 이용 횟수, 판매 가격, 정가, 유효기간은 고객 판매 페이지와 주문 금액에 직접 반영됩니다. 저장 전 실제 노출될 가격과 할인율을 확인하세요.</p>
                             </div>
+                            {validation.packageErrors[pkg.id]?.length > 0 && (
+                              <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-4">
+                                <p className="text-sm font-semibold text-destructive">이 패키지에서 수정이 필요한 항목</p>
+                                <ul className="mt-2 space-y-1 text-xs text-destructive">
+                                  {validation.packageErrors[pkg.id].map((error) => (
+                                    <li key={error}>- {error}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
                             <div className="rounded-xl border border-border/60 bg-card p-4">
                               <p className="text-sm font-semibold text-foreground">기본 판매 정보</p>
                               <p className="mt-1 text-xs text-muted-foreground">고객에게 표시될 패키지명, 이용 횟수, 판매 가격, 유효기간을 설정합니다.</p>
@@ -487,10 +683,12 @@ export default function PackageSettingsClient() {
                                   <Input
                                     id={`sessions-${pkg.id}`}
                                     type="number"
+                                    min={1}
+                                    step={1}
                                     value={pkg.sessions}
                                     onChange={(e) =>
                                       updatePackage(pkg.id, {
-                                        sessions: Number.parseInt(e.target.value) || 0,
+                                        sessions: Number.parseInt(e.target.value, 10) || 0,
                                       })
                                     }
                                   />
@@ -505,10 +703,12 @@ export default function PackageSettingsClient() {
                                   <Input
                                     id={`price-${pkg.id}`}
                                     type="number"
+                                    min={1}
+                                    step={1000}
                                     value={pkg.price}
                                     onChange={(e) =>
                                       updatePackage(pkg.id, {
-                                        price: Number.parseInt(e.target.value) || 0,
+                                        price: Number.parseInt(e.target.value, 10) || 0,
                                       })
                                     }
                                   />
@@ -519,10 +719,12 @@ export default function PackageSettingsClient() {
                                   <Input
                                     id={`originalPrice-${pkg.id}`}
                                     type="number"
+                                    min={0}
+                                    step={1000}
                                     value={pkg.originalPrice || ""}
                                     onChange={(e) =>
                                       updatePackage(pkg.id, {
-                                        originalPrice: Number.parseInt(e.target.value) || undefined,
+                                        originalPrice: Number.parseInt(e.target.value, 10) || undefined,
                                       })
                                     }
                                     placeholder="할인 표시용 (선택사항)"
@@ -535,10 +737,12 @@ export default function PackageSettingsClient() {
                                 <Input
                                   id={`validityDays-${pkg.id}`}
                                   type="number"
+                                  min={1}
+                                  step={1}
                                   value={pkg.validityDays}
                                   onChange={(e) =>
                                     updatePackage(pkg.id, {
-                                      validityDays: Number.parseInt(e.target.value) || 0,
+                                      validityDays: Number.parseInt(e.target.value, 10) || 0,
                                     })
                                   }
                                 />
@@ -706,7 +910,7 @@ export default function PackageSettingsClient() {
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <p className="text-xs text-muted-foreground">저장 후 패키지 판매 페이지와 신규 주문 금액 계산에 반영됩니다.</p>
 
-                  <Button onClick={handleSavePackages} disabled={isSaving} className="bg-primary text-primary-foreground hover:bg-primary/90">
+                  <Button onClick={handleSavePackages} disabled={isSaving || !canSaveSettings} className="bg-primary text-primary-foreground hover:bg-primary/90">
                     <Save className="mr-2 h-4 w-4" />
                     {isSaving ? "저장 중..." : "패키지 설정 저장"}
                   </Button>
@@ -731,6 +935,16 @@ export default function PackageSettingsClient() {
                       패키지 시스템 활성화, 연장 허용, 유효기간, 최소·최대 이용 횟수는 전체 패키지 운영 방식에 영향을 줍니다. 운영 중인 패키지가 있는 경우 변경 전 적용 범위를 확인하세요.
                     </p>
                   </div>
+                  {validation.generalErrors.length > 0 && (
+                    <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-4">
+                      <p className="text-sm font-semibold text-destructive">일반 설정에서 수정이 필요한 항목</p>
+                      <ul className="mt-2 space-y-1 text-xs text-destructive">
+                        {validation.generalErrors.map((error) => (
+                          <li key={error}>- {error}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                   <div className="grid gap-4 xl:grid-cols-3">
                     <div className="rounded-xl border border-border/60 bg-card p-4">
                       <p className="text-sm font-semibold text-foreground">기간/알림</p>
@@ -742,11 +956,13 @@ export default function PackageSettingsClient() {
                           <Input
                             id="maxValidityDays"
                             type="number"
+                            min={1}
+                            step={1}
                             value={generalSettings.maxValidityDays}
                             onChange={(e) =>
                               setGeneralSettings((prev) => ({
                                 ...prev,
-                                maxValidityDays: Number.parseInt(e.target.value) || 0,
+                                maxValidityDays: Number.parseInt(e.target.value, 10) || 0,
                               }))
                             }
                           />
@@ -757,11 +973,13 @@ export default function PackageSettingsClient() {
                           <Input
                             id="autoExpireNotificationDays"
                             type="number"
+                            min={0}
+                            step={1}
                             value={generalSettings.autoExpireNotificationDays}
                             onChange={(e) =>
                               setGeneralSettings((prev) => ({
                                 ...prev,
-                                autoExpireNotificationDays: Number.parseInt(e.target.value) || 0,
+                                autoExpireNotificationDays: Number.parseInt(e.target.value, 10) || 0,
                               }))
                             }
                           />
@@ -780,11 +998,13 @@ export default function PackageSettingsClient() {
                           <Input
                             id="minSessions"
                             type="number"
+                            min={1}
+                            step={1}
                             value={generalSettings.minSessions}
                             onChange={(e) =>
                               setGeneralSettings((prev) => ({
                                 ...prev,
-                                minSessions: Number.parseInt(e.target.value) || 0,
+                                minSessions: Number.parseInt(e.target.value, 10) || 0,
                               }))
                             }
                           />
@@ -795,11 +1015,13 @@ export default function PackageSettingsClient() {
                           <Input
                             id="maxSessions"
                             type="number"
+                            min={1}
+                            step={1}
                             value={generalSettings.maxSessions}
                             onChange={(e) =>
                               setGeneralSettings((prev) => ({
                                 ...prev,
-                                maxSessions: Number.parseInt(e.target.value) || 0,
+                                maxSessions: Number.parseInt(e.target.value, 10) || 0,
                               }))
                             }
                           />
@@ -810,11 +1032,13 @@ export default function PackageSettingsClient() {
                           <Input
                             id="extensionFeePercentage"
                             type="number"
+                            min={0}
+                            step={1}
                             value={generalSettings.extensionFeePercentage}
                             onChange={(e) =>
                               setGeneralSettings((prev) => ({
                                 ...prev,
-                                extensionFeePercentage: Number.parseInt(e.target.value) || 0,
+                                extensionFeePercentage: Number.parseInt(e.target.value, 10) || 0,
                               }))
                             }
                           />
@@ -874,7 +1098,7 @@ export default function PackageSettingsClient() {
                   <div className="flex flex-col gap-2 pt-4 sm:flex-row sm:items-center sm:justify-between">
                     <p className="text-xs text-muted-foreground">저장 후 패키지 시스템 정책과 연장 가능 여부에 반영됩니다.</p>
 
-                    <Button onClick={handleSaveGeneralSettings} disabled={isSaving} className="bg-success/10 hover:bg-success/10 dark:bg-success/15 dark:hover:bg-success/15">
+                    <Button onClick={handleSaveGeneralSettings} disabled={isSaving || !canSaveSettings} className="bg-success/10 hover:bg-success/10 dark:bg-success/15 dark:hover:bg-success/15">
                       <Save className="mr-2 h-4 w-4" />
                       {isSaving ? "저장 중..." : "일반 설정 저장"}
                     </Button>
@@ -898,9 +1122,9 @@ export default function PackageSettingsClient() {
           deletePackage(packageId);
         }}
         severity="danger"
-        title="패키지를 삭제할까요?"
-        description="삭제 후에는 판매 설정 목록에서 사라질 수 있으며, 복구가 어려울 수 있습니다. 운영 중인 패키지인지 확인한 뒤 진행해 주세요."
-        confirmText="삭제"
+        title="패키지를 삭제 예정으로 표시할까요?"
+        description="이 작업은 아직 서버에 반영되지 않습니다. 저장 버튼을 눌러야 최종 반영됩니다. 활성 패키지는 먼저 비활성화해야 삭제할 수 있습니다."
+        confirmText="삭제 예정"
         cancelText="취소"
         eventKey="admin-package-settings-delete-confirm"
         eventMeta={{ packageId: pendingDeletePackageId }}
