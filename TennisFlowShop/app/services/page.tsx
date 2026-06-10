@@ -381,7 +381,7 @@ export default async function ServicesPage() {
 
                     <div className="mt-4 rounded-xl border border-border bg-muted/30 p-3">
                       <p className="text-xs font-semibold text-primary">
-                        진행 흐름
+                        진행 순서
                       </p>
                       <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
                         {item.steps}
