@@ -3,6 +3,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { adminMutator } from "@/lib/admin/adminFetcher";
@@ -11,7 +12,7 @@ import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher"
 import { maskPhone } from "@/lib/offline/normalizers";
 import { cn } from "@/lib/utils";
 import type { OfflineCustomerDto, OfflinePaymentMethod, OfflineRevenueSummary } from "@/types/admin/offline";
-import { AlertCircle, Calendar, Check, ChevronLeft, ChevronRight, ClipboardList, CreditCard, ExternalLink, History, Mail, Pencil, Phone, Plus, RotateCcw, Search, Store, Trash2, User, UserPlus, Wrench, X } from "lucide-react";
+import { AlertCircle, Check, ChevronLeft, ChevronRight, ClipboardList, CreditCard, ExternalLink, History, Mail, Pencil, Phone, Plus, RotateCcw, Search, Store, Trash2, User, UserPlus, Wrench, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import useSWR from "swr";
@@ -311,8 +312,13 @@ export default function OfflineAdminClient() {
   const [recordFilters, setRecordFilters] = useState(EMPTY_RECORD_FILTERS);
   const [submittedRecordFilters, setSubmittedRecordFilters] = useState(EMPTY_RECORD_FILTERS);
   const [recordsPage, setRecordsPage] = useState(1);
+  const [selectedRecordIds, setSelectedRecordIds] = useState<string[]>([]);
+  const [isDeletingRecords, setIsDeletingRecords] = useState(false);
+  const [recordsMessage, setRecordsMessage] = useState<string | null>(null);
+  const [recordsMessageType, setRecordsMessageType] = useState<"success" | "error" | null>(null);
   const [editMessage, setEditMessage] = useState<string | null>(null);
   const [isEditingSubmit, setIsEditingSubmit] = useState(false);
+
   const [showFilters, setShowFilters] = useState(false);
   const [summaryPreset, setSummaryPreset] = useState<"today" | "month" | "custom">("month");
   const [summaryRange, setSummaryRange] = useState(() => buildSummaryRangePreset("month"));
@@ -370,8 +376,7 @@ export default function OfflineAdminClient() {
     total?: number;
     totalPages?: number;
   }>(recordsKey, authenticatedSWRFetcher);
-  const { data: summary, isLoading: summaryLoading, error: summaryError } = useSWR<OfflineRevenueSummary>(summaryKey, authenticatedSWRFetcher);
-
+  const { data: summary, isLoading: summaryLoading, error: summaryError, mutate: mutateSummary } = useSWR<OfflineRevenueSummary>(summaryKey, authenticatedSWRFetcher);
   async function selectOfflineCustomer(id: string) {
     const res = (await authenticatedSWRFetcher(`/api/admin/offline/customers/${id}`)) as { item: OfflineCustomerDto };
     setSelected({
@@ -390,6 +395,11 @@ export default function OfflineAdminClient() {
   const recordsTotal = records?.total ?? records?.items?.length ?? 0;
   const recordsTotalPages = records?.totalPages ?? (recordsTotal > 0 ? Math.ceil(recordsTotal / RECORDS_LIMIT) : 0);
   const currentRecordsPage = records?.page ?? recordsPage;
+  const currentPageRecordIds = (records?.items ?? []).map((record: any) => String(record.id ?? "")).filter(Boolean);
+
+  const isCurrentPageAllRecordsSelected = currentPageRecordIds.length > 0 && currentPageRecordIds.every((id) => selectedRecordIds.includes(id));
+
+  const isCurrentPagePartiallySelected = currentPageRecordIds.some((id) => selectedRecordIds.includes(id)) && !isCurrentPageAllRecordsSelected;
 
   // 최근 작업/매출 기록에 실제 적용된 필터가 있는지 확인합니다.
   // 주의: recordFilters는 입력 중인 값이고,
@@ -485,12 +495,77 @@ export default function OfflineAdminClient() {
     setRecordFilters(merged);
     setSubmittedRecordFilters(merged);
     setRecordsPage(1);
+    setSelectedRecordIds([]);
+    setRecordsMessage(null);
+    setRecordsMessageType(null);
   }
 
   function resetRecordFilters() {
     setRecordFilters(EMPTY_RECORD_FILTERS);
     setSubmittedRecordFilters(EMPTY_RECORD_FILTERS);
     setRecordsPage(1);
+    setSelectedRecordIds([]);
+    setRecordsMessage(null);
+    setRecordsMessageType(null);
+  }
+
+  // 선택/전체선택 삭제 함수
+  function toggleRecordSelection(recordId: string, checked: boolean) {
+    setSelectedRecordIds((prev) => {
+      if (checked) {
+        return prev.includes(recordId) ? prev : [...prev, recordId];
+      }
+
+      return prev.filter((id) => id !== recordId);
+    });
+  }
+
+  function toggleSelectAllCurrentRecords(checked: boolean) {
+    setSelectedRecordIds((prev) => {
+      const currentSet = new Set(currentPageRecordIds);
+
+      if (!checked) {
+        return prev.filter((id) => !currentSet.has(id));
+      }
+
+      const next = new Set(prev);
+      currentPageRecordIds.forEach((id) => next.add(id));
+      return Array.from(next);
+    });
+  }
+
+  async function deleteSelectedOfflineRecords() {
+    if (selectedRecordIds.length === 0 || isDeletingRecords) return;
+
+    const ok = window.confirm(
+      `선택한 오프라인 작업/매출 기록 ${selectedRecordIds.length}건을 삭제하시겠습니까?\n\n삭제하면 해당 고객의 오프라인 누적 통계도 다시 계산됩니다.\n포인트/패키지 사용 처리 이력이 있는 기록은 삭제가 제한될 수 있습니다.\n이 작업은 되돌릴 수 없습니다.`,
+    );
+
+    if (!ok) return;
+
+    try {
+      setIsDeletingRecords(true);
+      setRecordsMessage(null);
+      setRecordsMessageType(null);
+
+      await adminMutator("/api/admin/offline/records/bulk", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: selectedRecordIds }),
+      });
+
+      setSelectedRecordIds([]);
+      setRecordsMessage("선택한 오프라인 작업/매출 기록을 삭제했습니다.");
+      setRecordsMessageType("success");
+
+      mutateRecords();
+      mutateSummary();
+    } catch (e: any) {
+      setRecordsMessage(e?.message || "선택 삭제에 실패했습니다.");
+      setRecordsMessageType("error");
+    } finally {
+      setIsDeletingRecords(false);
+    }
   }
 
   function updateWorkLine(lineId: string, updates: Partial<Omit<OfflineWorkLineForm, "id">>) {
@@ -1336,18 +1411,32 @@ export default function OfflineAdminClient() {
           </div>
           {/* 현재 보기 요약: 실제 조회에 적용된 submittedRecordFilters 기준입니다. */}
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-border/60 bg-background px-4 py-3 text-sm">
+            {/* 좌측: 현재 뷰 및 필터 상태 */}
             <p className="font-semibold text-foreground">현재 보기: {currentRecordViewLabel}</p>
-
             {submittedRecordFilterLabels.length > 0 && <p className="text-muted-foreground">필터: {submittedRecordFilterLabels.join(" / ")}</p>}
 
-            <p className="text-muted-foreground">총 {recordsTotal.toLocaleString("ko-KR")}건</p>
+            {/* 우측: 수량 정보 및 액션 버튼 */}
+            <div className="ml-auto flex flex-wrap items-center gap-3">
+              {hasSubmittedRecordFilters && (
+                <Button type="button" size="sm" variant="ghost" onClick={resetRecordFilters}>
+                  필터 초기화
+                </Button>
+              )}
 
-            {hasSubmittedRecordFilters && (
-              <Button type="button" size="sm" variant="ghost" className="ml-auto" onClick={resetRecordFilters}>
-                필터 초기화
+              {/* 총 수량 및 선택 수량 그룹화 */}
+              <div className="flex items-center gap-2 text-sm">
+                <span className="font-medium text-foreground">총 {recordsTotal.toLocaleString("ko-KR")}건</span>
+                <span className="text-muted-foreground/50">|</span> {/* 구분선 추가 */}
+                <span className="text-muted-foreground">선택 {selectedRecordIds.length.toLocaleString("ko-KR")}개</span>
+              </div>
+
+              <Button type="button" size="sm" variant="destructive" disabled={selectedRecordIds.length === 0 || isDeletingRecords} onClick={deleteSelectedOfflineRecords} className="gap-1 whitespace-nowrap">
+                <Trash2 className="h-4 w-4" />
+                {isDeletingRecords ? "삭제 중..." : "선택 삭제"}
               </Button>
-            )}
+            </div>
           </div>
+          {recordsMessage && <Message type={recordsMessageType || "info"}>{recordsMessage}</Message>}
           {/* Filter Section */}
           {showFilters && (
             <form
@@ -1515,25 +1604,42 @@ export default function OfflineAdminClient() {
           {!!records?.items?.length && (
             <div className="overflow-hidden rounded-xl border border-border/60">
               <div className="overflow-x-auto">
-                <table className="min-w-[960px] table-fixed text-sm">
+                <table className="min-w-[1040px] w-full table-fixed text-sm">
                   <thead>
                     <tr className="bg-muted/50">
-                      <th className="whitespace-nowrap px-4 py-3 text-left font-medium text-muted-foreground">날짜</th>
-                      <th className="w-[200px] whitespace-nowrap px-4 py-3 text-left font-medium text-muted-foreground">고객</th>
-                      <th className="whitespace-nowrap px-4 py-3 text-left font-medium text-muted-foreground">유형</th>
-                      <th className="w-[240px] whitespace-nowrap px-4 py-3 text-left font-medium text-muted-foreground">작업 내용</th>
-                      <th className="whitespace-nowrap px-4 py-3 text-left font-medium text-muted-foreground">금액</th>
-                      <th className="whitespace-nowrap px-4 py-3 text-left font-medium text-muted-foreground">결제</th>
-                      <th className="whitespace-nowrap px-4 py-3 text-left font-medium text-muted-foreground">상태</th>
-                      <th className="whitespace-nowrap px-4 py-3 text-left font-medium text-muted-foreground">관리</th>
+                      <th className="w-[48px] px-4 py-3 text-left">
+                        <Checkbox
+                          checked={isCurrentPageAllRecordsSelected || (isCurrentPagePartiallySelected ? "indeterminate" : false)}
+                          onCheckedChange={(checked) => toggleSelectAllCurrentRecords(Boolean(checked))}
+                          aria-label="현재 페이지 전체 선택"
+                        />
+                      </th>
+
+                      <th className="w-[130px] whitespace-nowrap px-4 py-3 text-left font-medium text-muted-foreground">날짜</th>
+                      <th className="w-[190px] whitespace-nowrap px-4 py-3 text-left font-medium text-muted-foreground">고객</th>
+
+                      <th className="w-[120px] whitespace-nowrap px-4 py-3 text-left font-medium text-muted-foreground">유형</th>
+
+                      <th className="px-4 py-3 text-left font-medium text-muted-foreground">작업 내용</th>
+
+                      <th className="w-[110px] whitespace-nowrap px-4 py-3 text-left font-medium text-muted-foreground">금액</th>
+
+                      <th className="w-[100px] whitespace-nowrap px-4 py-3 text-left font-medium text-muted-foreground">결제</th>
+
+                      <th className="w-[100px] whitespace-nowrap px-4 py-3 text-left font-medium text-muted-foreground">상태</th>
+
+                      <th className="w-[96px] whitespace-nowrap px-4 py-3 text-left font-medium text-muted-foreground">관리</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/60">
                     {(records?.items || []).map((r: any) => (
                       <tr key={r.id} className="transition-colors hover:bg-muted/30">
+                        <td className="px-4 py-3">
+                          <Checkbox checked={selectedRecordIds.includes(String(r.id))} onCheckedChange={(checked) => toggleRecordSelection(String(r.id), Boolean(checked))} aria-label={`${r.customerName ?? "오프라인 기록"} 선택`} />
+                        </td>
+
                         <td className="px-4 py-3 whitespace-nowrap">
                           <div className="flex shrink-0 items-center gap-2">
-                            <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
                             <span className="tabular-nums">{formatDate(r.occurredAt)}</span>
                           </div>
                         </td>
