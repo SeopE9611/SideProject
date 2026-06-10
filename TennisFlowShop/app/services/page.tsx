@@ -273,7 +273,7 @@ export default async function ServicesPage() {
     {
       label: "가격 먼저 보기",
       href: "#pricing",
-      helper: "가격 안내 섹션으로 이동합니다.",
+      helper: "가격 안내 페이지로 이동합니다.",
     },
     {
       label: "자주 묻는 질문",
