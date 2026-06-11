@@ -90,7 +90,7 @@ async function handleNiceStringingReturn(req: Request) {
     const prepared = session.nicePrepared;
     if (authResultCode !== "0000" || !tid || !authToken || !signature || !clientId || !prepared || prepared.clientId !== clientId || prepared.orderId !== orderId || session.amount !== amount || amount <= 0) {
       await markFailed("결제 인증 또는 금액 검증에 실패했습니다.");
-      return NextResponse.redirect(new URL(failUrl("AUTH_FAILED", "카드결제 인증에 실패했습니다.", safeApplicationId), req.url));
+      return NextResponse.redirect(new URL(failUrl("AUTH_FAILED", "카드/간편결제 인증에 실패했습니다.", safeApplicationId), req.url));
     }
 
     const credentials = approveCredentials();
@@ -114,7 +114,7 @@ async function handleNiceStringingReturn(req: Request) {
         ...credentials,
       });
       await markFailed("결제 승인 후 신청 상태 검증에 실패했습니다.");
-      return NextResponse.redirect(new URL(failUrl("APPLICATION_INVALID", "신청 상태가 변경되어 카드/간편결제가 취소되었습니다."), req.url));
+      return NextResponse.redirect(new URL(failUrl("APPLICATION_INVALID", "신청 상태가 변경되어 카드/간편결제가 취소되었습니다.", safeApplicationId), req.url));
     }
 
     const now = new Date();
@@ -177,7 +177,7 @@ async function handleNiceStringingReturn(req: Request) {
 
     return NextResponse.redirect(new URL(`/services/success?applicationId=${encodeURIComponent(applicationId)}`, req.url));
   } catch (error: any) {
-    return NextResponse.redirect(new URL(failUrl("PAYMENT_ERROR", error?.message || "결제 처리 중 오류가 발생했습니다."), req.url));
+    return NextResponse.redirect(new URL(failUrl("PAYMENT_ERROR", error?.message || "카드/간편결제 처리 중 오류가 발생했습니다.", safeApplicationId), req.url));
   }
 }
 
