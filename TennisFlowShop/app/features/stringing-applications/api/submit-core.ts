@@ -45,6 +45,7 @@ export type StringingApplicationInput = {
   preferredTime?: string;
   requirements?: string;
   packageOptOut?: boolean;
+  paymentMethod?: "bank_transfer" | "nicepay";
   selectedGauge?: string;
   selectedColor?: string;
   selectedColorLabel?: string;
@@ -218,6 +219,7 @@ export async function submitStringingApplicationCore({
     preferredTime,
     requirements,
     packageOptOut,
+    paymentMethod,
     selectedGauge,
     selectedColor,
     selectedColorLabel,
@@ -470,6 +472,43 @@ export async function submitStringingApplicationCore({
     : rentalObjectId
       ? `rental:${String(rentalObjectId)}`
       : undefined;
+  const standalonePaymentMethod =
+    !orderObjectId && !rentalObjectId && !packageApplied
+      ? paymentMethod === "nicepay"
+        ? "nicepay"
+        : "bank_transfer"
+      : null;
+  const standalonePaymentInfo = standalonePaymentMethod
+    ? {
+        provider: standalonePaymentMethod === "nicepay" ? "nicepay" : "bank",
+        method: standalonePaymentMethod === "nicepay" ? "card" : "무통장입금",
+        status: "결제대기",
+        ...(standalonePaymentMethod === "bank_transfer"
+          ? {
+              bank: normalizedShippingInfo.bank ?? null,
+              depositor: normalizedShippingInfo.depositor ?? null,
+            }
+          : {}),
+      }
+    : null;
+
+  const standalonePaymentFields = packageApplied
+    ? {
+        paymentMethod: "package",
+        paymentStatus: "패키지 적용 완료",
+        paymentInfo: {
+          provider: "package",
+          method: "패키지 사용",
+          status: "패키지 적용 완료",
+        },
+      }
+    : standalonePaymentInfo
+      ? {
+          paymentMethod: standalonePaymentMethod,
+          paymentStatus: standalonePaymentInfo.status,
+          paymentInfo: standalonePaymentInfo,
+        }
+      : {};
 
   const normalizedSelectedGauge =
     typeof selectedGauge === "string" && selectedGauge.trim()
@@ -521,6 +560,7 @@ export async function submitStringingApplicationCore({
     serviceFeeBefore,
     serviceFee: totalPrice,
     serviceAmount: totalPrice,
+    ...standalonePaymentFields,
     packageApplied,
     packagePassId,
     packageRedeemedAt,

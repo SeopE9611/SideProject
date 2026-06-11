@@ -18,6 +18,7 @@ type Props = {
 
   /** page.tsx의 handleSubmit 그대로 넘겨서 클릭 시 동일 로직 실행 */
   handleSubmit: (e: React.FormEvent) => void;
+  finalAction?: React.ReactNode;
 };
 
 export default function ApplyStepFooter({
@@ -28,6 +29,7 @@ export default function ApplyStepFooter({
   isSubmitting,
   isOrderSlotBlocked,
   handleSubmit,
+  finalAction,
 }: Props) {
   return (
     <div className="mt-8 flex justify-between border-t pt-5 dark:border-border">
@@ -52,6 +54,8 @@ export default function ApplyStepFooter({
           다음
           <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
+      ) : finalAction ? (
+        finalAction
       ) : (
         <Button
           type="button"

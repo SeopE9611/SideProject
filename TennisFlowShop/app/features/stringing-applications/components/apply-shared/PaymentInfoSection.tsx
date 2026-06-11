@@ -8,6 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { bankLabelMap } from "@/lib/constants";
+import { isNicePaymentsEnabled } from "@/lib/payments/provider-flags";
 
 export type PaymentInfoSectionProps = {
   formData: any;
@@ -19,6 +20,7 @@ export type PaymentInfoSectionProps = {
   packageInsufficient: boolean;
   packageRemaining: number;
   requiredPassCount: number;
+  allowCardPayment?: boolean;
 };
 
 export default function PaymentInfoSection({
@@ -30,7 +32,10 @@ export default function PaymentInfoSection({
   packageInsufficient,
   packageRemaining,
   requiredPassCount,
+  allowCardPayment = false,
 }: PaymentInfoSectionProps) {
+  const nicePaymentsEnabled = isNicePaymentsEnabled();
+
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
@@ -213,71 +218,112 @@ export default function PaymentInfoSection({
 
       {!usingPackage && (
         <div className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="shippingBank" className="text-sm font-medium">
-              은행 선택 <span className="text-destructive">*</span>
-            </Label>
-            <select
-              id="shippingBank"
-              name="shippingBank"
-              value={formData.shippingBank}
-              onChange={(e) =>
-                setFormData({ ...formData, shippingBank: e.target.value })
-              }
-              className="w-full border border-border px-3 py-2 rounded-md bg-card dark:text-foreground focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200"
-            >
-              <option value="" disabled hidden>
-                입금하실 은행을 선택해주세요.
-              </option>
-              <option value="kakao">{bankLabelMap.kakao.label}</option>
-            </select>
+          <div className="space-y-3">
+            <Label className="text-sm font-medium">결제수단</Label>
+            <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-border p-4">
+              <input
+                type="radio"
+                name="paymentMethod"
+                value="bank_transfer"
+                checked={formData.paymentMethod === "bank_transfer"}
+                onChange={() =>
+                  setFormData({ ...formData, paymentMethod: "bank_transfer" })
+                }
+              />
+              <span className="font-medium">무통장입금</span>
+            </label>
+            {allowCardPayment && nicePaymentsEnabled && (
+              <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-border p-4">
+                <input
+                  type="radio"
+                  name="paymentMethod"
+                  value="nicepay"
+                  checked={formData.paymentMethod === "nicepay"}
+                  onChange={() =>
+                    setFormData({ ...formData, paymentMethod: "nicepay" })
+                  }
+                />
+                <span className="font-medium">카드결제</span>
+              </label>
+            )}
           </div>
 
-          {formData.shippingBank &&
-          (bankLabelMap as any)[formData.shippingBank] ? (
-            <div className="bg-muted/40 dark:bg-muted/30 border border-border rounded-lg p-6">
-              <h3 className="font-semibold text-primary mb-4 flex items-center">
-                <CreditCard className="h-5 w-5 mr-2" />
-                계좌 정보
-              </h3>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-card rounded-lg border dark:border-border">
-                  <span className="text-sm text-muted-foreground">은행</span>
-                  <span className="font-medium text-foreground">
-                    {(bankLabelMap as any)[formData.shippingBank].label}
-                  </span>
+          {formData.paymentMethod === "bank_transfer" && (
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="shippingBank" className="text-sm font-medium">
+                  은행 선택 <span className="text-destructive">*</span>
+                </Label>
+                <select
+                  id="shippingBank"
+                  name="shippingBank"
+                  value={formData.shippingBank}
+                  onChange={(e) =>
+                    setFormData({ ...formData, shippingBank: e.target.value })
+                  }
+                  className="w-full border border-border px-3 py-2 rounded-md bg-card dark:text-foreground focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200"
+                >
+                  <option value="" disabled hidden>
+                    입금하실 은행을 선택해주세요.
+                  </option>
+                  <option value="kakao">{bankLabelMap.kakao.label}</option>
+                </select>
+              </div>
+
+              {formData.shippingBank &&
+              (bankLabelMap as any)[formData.shippingBank] ? (
+                <div className="bg-muted/40 dark:bg-muted/30 border border-border rounded-lg p-6">
+                  <h3 className="font-semibold text-primary mb-4 flex items-center">
+                    <CreditCard className="h-5 w-5 mr-2" />
+                    계좌 정보
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 bg-card rounded-lg border dark:border-border">
+                      <span className="text-sm text-muted-foreground">
+                        은행
+                      </span>
+                      <span className="font-medium text-foreground">
+                        {(bankLabelMap as any)[formData.shippingBank].label}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-card rounded-lg border dark:border-border">
+                      <span className="text-sm text-muted-foreground">
+                        계좌번호
+                      </span>
+                      <span className="font-mono font-medium text-foreground">
+                        {(bankLabelMap as any)[formData.shippingBank].account}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-card rounded-lg border dark:border-border">
+                      <span className="text-sm text-muted-foreground">
+                        예금주
+                      </span>
+                      <span className="font-medium text-foreground">
+                        {(bankLabelMap as any)[formData.shippingBank].holder}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center justify-between p-3 bg-card rounded-lg border dark:border-border">
-                  <span className="text-sm text-muted-foreground">
-                    계좌번호
-                  </span>
-                  <span className="font-mono font-medium text-foreground">
-                    {(bankLabelMap as any)[formData.shippingBank].account}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-card rounded-lg border dark:border-border">
-                  <span className="text-sm text-muted-foreground">예금주</span>
-                  <span className="font-medium text-foreground">
-                    {(bankLabelMap as any)[formData.shippingBank].holder}
-                  </span>
-                </div>
+              ) : null}
+
+              <div className="space-y-2">
+                <Label
+                  htmlFor="shippingDepositor"
+                  className="text-sm font-medium"
+                >
+                  입금자명 <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="shippingDepositor"
+                  name="shippingDepositor"
+                  value={formData.shippingDepositor}
+                  onChange={handleInputChange}
+                  placeholder="입금자명을 입력하세요"
+                  className="focus:ring-2 focus:ring-ring transition-all duration-200"
+                />
               </div>
             </div>
-          ) : null}
-
-          <div className="space-y-2">
-            <Label htmlFor="shippingDepositor" className="text-sm font-medium">
-              입금자명 <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="shippingDepositor"
-              name="shippingDepositor"
-              value={formData.shippingDepositor}
-              onChange={handleInputChange}
-              placeholder="입금자명을 입력하세요"
-              className="focus:ring-2 focus:ring-ring transition-all duration-200"
-            />
-          </div>
+          )}
         </div>
       )}
     </div>
