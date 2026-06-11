@@ -869,6 +869,15 @@ export default function StringingApplicationDetailClient({
   };
 
   const isCancelled = data.status === "취소";
+  const isLinkedApplication = Boolean(data.orderId || data.rentalId);
+  const linkedAdminHref = data.orderId
+    ? `/admin/orders/${data.orderId}`
+    : data.rentalId
+      ? `/admin/rentals/${encodeURIComponent(String(data.rentalId))}`
+      : null;
+  const linkedAdminLabel = data.orderId
+    ? "연결 주문 상세로 이동"
+    : "연결 대여 상세로 이동";
   const effectiveStockDeduction =
     data.stockDeduction ??
     (data as any).stringing?.stockDeduction ??
@@ -1954,8 +1963,8 @@ export default function StringingApplicationDetailClient({
                 </div>
                 {isAdmin && (
                   <CardDescription>
-                    연결된 주문·대여의 진행 단계는 해당 상세에서 관리합니다. 이
-                    화면에서는 신청서 상태와 취소 요청만 직접 조정하세요.
+                    연결된 주문·대여의 진행 단계와 취소 요청은 해당 상세에서
+                    처리합니다. 단독 신청서만 이 화면에서 직접 조정하세요.
                   </CardDescription>
                 )}
               </CardHeader>
@@ -1984,9 +1993,22 @@ export default function StringingApplicationDetailClient({
                                 await historyMutateRef.current();
                               }
                             }}
-                            disabled={isCancelled}
+                            disabled={isCancelled || isLinkedApplication}
                           />
                         </div>
+
+                        {isLinkedApplication && linkedAdminHref && (
+                          <div className="rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-foreground/80">
+                            <p>
+                              이 신청서는 주문/대여와 연결되어 있습니다. 상태
+                              변경은 연결된 주문/대여 상세의 통합 진행 단계에서
+                              처리하세요.
+                            </p>
+                            <Button asChild size="sm" variant="outline" className="mt-2">
+                              <Link href={linkedAdminHref}>{linkedAdminLabel}</Link>
+                            </Button>
+                          </div>
+                        )}
 
                         <div className="text-xs text-foreground/75 space-y-1">
                           {isCancelled ? (
@@ -2035,7 +2057,9 @@ export default function StringingApplicationDetailClient({
                             <div className="rounded-md border border-border bg-muted px-3 py-2 text-sm text-foreground/80">
                               취소된 신청서입니다. 추가 액션이 불가능합니다.
                             </div>
-                          ) : isCancelRequested && !hasOrderCancelRequested ? (
+                          ) : isCancelRequested &&
+                            !hasOrderCancelRequested &&
+                            !isLinkedApplication ? (
                             <>
                               <Button
                                 size="sm"
@@ -2059,9 +2083,11 @@ export default function StringingApplicationDetailClient({
                             </>
                           ) : (
                             <div className="rounded-md border border-border bg-muted px-3 py-2 text-sm text-foreground/80">
-                              {hasOrderCancelRequested
-                                ? "연결 주문에 취소 요청이 있어 주문 상세에서 최종 처리해야 합니다."
-                                : "현재 진행 가능한 관리자 취소 액션이 없습니다."}
+                              {isLinkedApplication
+                                ? "연결 신청서의 취소/환불은 연결된 주문/대여 상세에서 처리해야 합니다."
+                                : hasOrderCancelRequested
+                                  ? "연결 주문에 취소 요청이 있어 주문 상세에서 최종 처리해야 합니다."
+                                  : "현재 진행 가능한 관리자 취소 액션이 없습니다."}
                             </div>
                           )}
                         </div>

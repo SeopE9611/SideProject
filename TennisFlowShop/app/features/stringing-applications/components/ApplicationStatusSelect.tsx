@@ -25,11 +25,13 @@ export function ApplicationStatusSelect({
   applicationId,
   currentStatus,
   onUpdated,
+  disabled = false,
 }: Props) {
   const [isPending, startTransition] = useTransition();
   const [selectedStatus, setSelectedStatus] = useState(currentStatus);
   const router = useRouter();
   const isCancelled = selectedStatus === "취소";
+  const isDisabled = disabled || isPending || isCancelled;
 
   // 상태 동기화
   useEffect(() => {
@@ -66,7 +68,7 @@ export function ApplicationStatusSelect({
     <Select
       value={selectedStatus}
       onValueChange={handleChange}
-      disabled={isPending || isCancelled}
+      disabled={isDisabled}
     >
       <SelectTrigger className="w-[140px]">
         {isCancelled ? (

@@ -203,9 +203,9 @@ export default function LinkedFlowStageCard({
           </p>
         )}
         <p className="text-xs text-muted-foreground break-keep">
-          이 카드는 연결된 주문+신청의 일반 진행 단계만 함께 조정합니다.
-          취소/환불/구매확정 및 개별 상태 관리는 각 상세의 개별 상태 영역을
-          사용해 주세요.
+          연결된 주문과 교체서비스 신청의 진행 단계를 함께 관리합니다.
+          결제/작업/배송 흐름이 어긋나지 않도록 통합 단계에서 처리하세요.
+          취소/환불은 주문 상세의 취소/환불 액션에서 처리하세요.
         </p>
       </CardContent>
     </Card>

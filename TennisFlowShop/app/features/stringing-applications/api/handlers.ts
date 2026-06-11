@@ -1542,6 +1542,15 @@ export async function handleUpdateApplicationStatus(
       { status: 404 },
     );
   }
+  if (beforeAppDoc.orderId || beforeAppDoc.rentalId) {
+    return NextResponse.json(
+      {
+        error:
+          "주문/대여와 연결된 신청서는 신청서 상세에서 단독으로 상태를 변경할 수 없습니다. 연결된 주문/대여 상세의 통합 진행 단계에서 처리해주세요.",
+      },
+      { status: 409 },
+    );
+  }
 
   const now = new Date();
   const wasCanceled = isCancelApplicationStatus(beforeAppDoc?.status);
@@ -1871,6 +1880,15 @@ export async function handleStringingCancelApprove(
       return NextResponse.json(
         { error: "신청서를 찾을 수 없습니다." },
         { status: 404 },
+      );
+    }
+    if (appDoc.orderId || appDoc.rentalId) {
+      return NextResponse.json(
+        {
+          error:
+            "주문/대여와 연결된 신청서는 신청서 상세에서 단독으로 취소 승인할 수 없습니다. 연결된 주문/대여 상세에서 취소/환불을 처리해주세요.",
+        },
+        { status: 409 },
       );
     }
 
