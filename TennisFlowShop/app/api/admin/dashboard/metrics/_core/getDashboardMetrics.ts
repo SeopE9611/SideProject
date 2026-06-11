@@ -129,8 +129,6 @@ type DashboardMetrics = {
       rentalOverdue: number;
       rentalDueSoon: number;
       passExpiringSoon: number;
-      outboxQueued: number;
-      outboxFailed: number;
       stringingAging3d: number;
     };
   };
@@ -244,16 +242,6 @@ type DashboardMetrics = {
       href: string;
     }>;
 
-    outboxBacklog: Array<{
-      id: string;
-      href: string;
-      createdAt: string;
-      status: "queued" | "failed" | "sent";
-      eventType: string;
-      to: string | null;
-      retries: number;
-      error: string | null;
-    }>;
   };
 
   recent: {
@@ -1581,14 +1569,6 @@ export async function getDashboardMetrics(db: Db) {
     .limit(8)
     .toArray();
 
-  // ----------------------------- Notifications Outbox -----------------------------
-
-  const outboxCol = db.collection("notifications_outbox");
-  const outboxQueuedP = outboxCol.countDocuments({ status: "queued" });
-
-  // 실패 건은 “즉시 조치 필요”라 queued와 분리해서 카운트
-  const outboxFailedP = outboxCol.countDocuments({ status: "failed" });
-
   const offlineSummaryMonthP = buildOfflineRevenueSummary(db, {
     from: monthStartUtc,
     to: now,
@@ -1599,25 +1579,6 @@ export async function getDashboardMetrics(db: Db) {
     to: now,
     includePackageSales: true,
   });
-
-  const outboxBacklogListP = outboxCol
-    .find(
-      { status: { $in: ["queued", "failed"] } },
-      {
-        sort: { createdAt: 1 },
-        limit: 10,
-        projection: {
-          _id: 1,
-          createdAt: 1,
-          status: 1,
-          eventType: 1,
-          retries: 1,
-          error: 1,
-          rendered: 1,
-        },
-      },
-    )
-    .toArray();
 
   // ----------------------------- 실행(병렬) -----------------------------
 
@@ -1695,8 +1656,6 @@ export async function getDashboardMetrics(db: Db) {
     lowStockListDocs,
     outOfStockListDocs,
 
-    outboxQueued,
-    outboxFailed,
 
     // 결제 대기(24h+)
     paymentPending24hOrders,
@@ -1721,7 +1680,6 @@ export async function getDashboardMetrics(db: Db) {
     dueSoonRentalsList,
     stringingAgingList,
     stringingAging3d,
-    outboxBacklogList,
     offlineSummaryMonth,
     offlineSummaryToday,
   ] = await Promise.all([
@@ -1798,8 +1756,6 @@ export async function getDashboardMetrics(db: Db) {
     lowStockListP,
     outOfStockListP,
 
-    outboxQueuedP,
-    outboxFailedP,
 
     // 결제 대기(24h+)
     paymentPending24hOrdersP,
@@ -1824,7 +1780,6 @@ export async function getDashboardMetrics(db: Db) {
     dueSoonRentalsListP,
     stringingAgingListP,
     stringingAging3dP,
-    outboxBacklogListP,
     offlineSummaryMonthP,
     offlineSummaryTodayP,
   ]);
@@ -1876,12 +1831,6 @@ export async function getDashboardMetrics(db: Db) {
 
   const pickName = (doc: UnknownDoc) => String((doc.shippingInfo as UnknownDoc | undefined)?.name || (doc.shippingInfo as UnknownDoc | undefined)?.receiverName || (doc.guest as UnknownDoc | undefined)?.name || "고객");
 
-  const pickOutboxTo = (doc: UnknownDoc) => {
-    const rendered = asDoc(doc.rendered);
-    const email = asDoc(rendered?.email);
-    const sms = asDoc(rendered?.sms);
-    return (typeof email?.to === "string" ? email.to : null) || (typeof sms?.to === "string" ? sms.to : null);
-  };
 
   const calcAgeDays = (createdAt: unknown) => {
     const t = toTimeMs(createdAt);
@@ -2098,15 +2047,6 @@ export async function getDashboardMetrics(db: Db) {
     href: `/admin/applications/stringing/${String(d?._id)}`,
   }));
 
-  const outboxBacklog = asDocArray(outboxBacklogList).map((d) => ({
-    id: String(d?._id),
-    createdAt: toIso(d?.createdAt),
-    status: (d?.status || "queued") as "queued" | "failed" | "sent",
-    eventType: String(d?.eventType || ""),
-    to: pickOutboxTo(d),
-    retries: Number(d?.retries || 0),
-    error: d?.error ? String(d.error).slice(0, 140) : null,
-  }));
 
   // dist 라벨 merge:
   // - DB에 결제상태가 'paid'/'pending' 또는 '결제완료'/'결제대기'처럼 섞여 있어도
@@ -2266,9 +2206,7 @@ export async function getDashboardMetrics(db: Db) {
         rentalOverdue: Number(overdueRentals || 0),
         rentalDueSoon: Number(dueSoonRentals || 0),
         passExpiringSoon: Number(passExpiringSoon || 0),
-        outboxQueued,
-        outboxFailed,
-        stringingAging3d: stringingAging3d,
+                stringingAging3d: stringingAging3d,
       },
     },
 
@@ -2326,16 +2264,6 @@ export async function getDashboardMetrics(db: Db) {
       passExpiringSoon: passExpiringSoonList,
 
       stringingAging,
-      outboxBacklog: asDocArray(outboxBacklogList).map((d) => ({
-        id: String(d._id),
-        href: `/admin/notifications/outbox/${String(d._id)}`,
-        createdAt: d?.createdAt instanceof Date ? d.createdAt.toISOString() : typeof d?.createdAt === "string" ? d.createdAt : new Date().toISOString(),
-        status: (getString(d?.status) ?? "queued") as "queued" | "failed" | "sent",
-        eventType: String(d?.eventType || ""),
-        to: pickOutboxTo(d),
-        retries: Number(d?.retries || 0),
-        error: d?.error ? String(d.error) : d?.lastError ? String(d.lastError) : null,
-      })),
       paymentPending24h: paymentPending24hList,
     },
 

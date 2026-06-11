@@ -131,9 +131,6 @@ importers:
       sanitize-html:
         specifier: ^2.17.0
         version: 2.17.0
-      solapi:
-        specifier: ^5.5.2
-        version: 5.5.4
       sonner:
         specifier: ^2.0.3
         version: 2.0.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -3565,10 +3562,6 @@ packages:
   socks@2.8.7:
     resolution: {integrity: sha512-HLpt+uLy/pxB+bum/9DzAgiKS8CX1EvbWxI4zlmgGCExImLdiad2iCwXT5Z4c9c3Eq8rP2318mPW2c+QbtjK8A==}
     engines: {node: '>= 10.0.0', npm: '>= 3.0.0'}
-
-  solapi@5.5.4:
-    resolution: {integrity: sha512-mtjarjA5C6XG60ZelOg7wwj4ScysIro8wv6vXjCEwTYns2uRiy4mu6C1oMCZl51Jw79U0E2oU6ssksuqgpcTzg==}
-    engines: {node: '>=18'}
 
   sonner@2.0.7:
     resolution: {integrity: sha512-W6ZN4p58k8aDKA4XPcx2hpIQXBRAgyiWVkYhT7CvK6D3iAu7xjvVyhQHg2/iaKJZ1XVJ4r7XuwGL+WGEK37i9w==}
@@ -7583,11 +7576,6 @@ snapshots:
     dependencies:
       ip-address: 10.1.0
       smart-buffer: 4.2.0
-
-  solapi@5.5.4:
-    dependencies:
-      date-fns: 4.1.0
-      effect: 3.19.16
 
   sonner@2.0.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
     dependencies:

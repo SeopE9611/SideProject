@@ -1,10 +1,3 @@
-import {
-  onApplicationCanceled,
-  onApplicationSubmitted,
-  onScheduleConfirmed,
-  onScheduleUpdated,
-  onStatusUpdated,
-} from "@/app/features/notifications/triggers/stringing";
 import { submitStringingApplicationCore } from "@/app/features/stringing-applications/api/submit-core";
 import { normalizeCollection } from "@/app/features/stringing-applications/lib/collection";
 import {
@@ -24,7 +17,6 @@ import {
   verifyOrderAccessToken,
 } from "@/lib/auth.utils";
 import { RefundAccountSchema } from "@/lib/cancel-request/refund-account";
-import { normalizeEmail } from "@/lib/claims";
 import clientPromise, { getDb } from "@/lib/mongodb";
 import { normalizeOrderShippingMethod } from "@/lib/order-shipping";
 import { revertConsumption } from "@/lib/passes.service";
@@ -1231,11 +1223,6 @@ export async function handlePatchStringingApplication(
     // const recalculated = await calcStringingTotal(db, updatedTypes);
     // setFields.totalPrice = recalculated;
 
-    // PATCH 이전(현재) 문서에 예약 일정이 있었는지 기록
-    const hadScheduleBefore =
-      Boolean(appDoc?.stringDetails?.preferredDate) &&
-      Boolean(appDoc?.stringDetails?.preferredTime);
-
     // 고객정보 변경
     if (name || email || phone || address || addressDetail || postalCode) {
       // 기존 customer 병합
@@ -1478,67 +1465,6 @@ export async function handlePatchStringingApplication(
       }
     }
 
-    // [교체] 예약 일시가 변경된 경우에만 알림 전송(상태 기반으로 확정/변경 분기)
-    if (hasTimeChange) {
-      const appAfter = await db
-        .collection("stringing_applications")
-        .findOne({ _id: new ObjectId(id) });
-      if (appAfter) {
-        const STATUS_VALUES = [
-          "draft",
-          "검토 중",
-          "접수완료",
-          "작업 중",
-          "교체완료",
-          "취소",
-        ] as const; //
-        type AppStatus = (typeof STATUS_VALUES)[number]; //
-        const toAppStatus = (s: string): AppStatus | null =>
-          (STATUS_VALUES as readonly string[]).includes(s)
-            ? (s as AppStatus)
-            : null; //
-
-        const userCtx = {
-          name:
-            appAfter?.customer?.name ??
-            appAfter?.userSnapshot?.name ??
-            appAfter?.guestName ??
-            undefined,
-          email:
-            appAfter?.customer?.email ??
-            appAfter?.userSnapshot?.email ??
-            appAfter?.guestEmail,
-        };
-        const appStatus: AppStatus =
-          toAppStatus(appAfter.status ?? "") ?? "검토 중"; //
-        const inboundPolicy = await resolveInboundTrackingPolicy(db, appAfter);
-        const appCtx = {
-          applicationId: String(appAfter._id),
-          orderId: appAfter?.orderId ? String(appAfter.orderId) : null,
-          rentalId: appAfter?.rentalId ? String(appAfter.rentalId) : null,
-          status: appStatus,
-          stringDetails: appAfter?.stringDetails,
-          shippingInfo: appAfter?.shippingInfo,
-          collectionMethod: inboundPolicy.collectionMethod,
-          inboundRequired: inboundPolicy.inboundRequired,
-          needsInboundTracking: inboundPolicy.needsInboundTracking,
-        };
-
-        // 규칙:
-        // - 접수완료가 아니면 → '예약 변경 안내'
-        // - 접수완료면서 이전 일정이 없었으면 → '예약 확정 안내'
-        // - 접수완료면서 이전 일정이 있었으면 → '예약 변경 안내'
-        if (appStatus !== "접수완료") {
-          await onScheduleUpdated({ user: userCtx, application: appCtx }); //
-        } else {
-          // 이전 일정 존재 여부 판단을 위해 PATCH 전에 계산한 hadScheduleBefore를 사용
-          if (!hadScheduleBefore)
-            await onScheduleConfirmed({ user: userCtx, application: appCtx }); //
-          else await onScheduleUpdated({ user: userCtx, application: appCtx }); //
-        }
-      }
-    }
-
     return NextResponse.json({ success: true });
   } catch (e: any) {
     if (e?.status) {
@@ -1700,48 +1626,15 @@ export async function handleUpdateApplicationStatus(
     );
   }
 
-  //   공통 컨텍스트 구성 (아래 분기들에서 재사용)
   const appDoc = await db
     .collection("stringing_applications")
-    .findOne({ _id: new ObjectId(id) }); //
+    .findOne({ _id: new ObjectId(id) });
   if (!appDoc) {
-    //
     return NextResponse.json(
       { error: "신청서를 찾을 수 없습니다." },
       { status: 404 },
-    ); //
-  } //
-
-  const userCtx = {
-    //
-    name:
-      appDoc?.customer?.name ??
-      appDoc?.userSnapshot?.name ??
-      appDoc?.guestName ??
-      undefined,
-    email:
-      appDoc?.customer?.email ??
-      appDoc?.userSnapshot?.email ??
-      appDoc?.guestEmail,
-  };
-
-  const appCtx = {
-    //
-    applicationId: id,
-    orderId: appDoc?.orderId ? String(appDoc.orderId) : null,
-    rentalId: appDoc?.rentalId ? String(appDoc.rentalId) : null,
-    status, // 위에서 유효성 보장된 유니온
-    stringDetails: appDoc?.stringDetails,
-    shippingInfo: appDoc?.shippingInfo,
-  };
-  const inboundPolicy = await resolveInboundTrackingPolicy(db, appDoc);
-  Object.assign(appCtx, {
-    collectionMethod: inboundPolicy.collectionMethod,
-    inboundRequired: inboundPolicy.inboundRequired,
-    needsInboundTracking: inboundPolicy.needsInboundTracking,
-  });
-
-  const adminDetailUrl = `${process.env.NEXT_PUBLIC_BASE_URL || ""}/admin/applications/stringing/${id}`; //
+    );
+  }
 
   await appendAdminAudit(
     db,
@@ -1779,32 +1672,6 @@ export async function handleUpdateApplicationStatus(
     req,
   );
 
-  //   알림: 상태 변경 (사용자 메일 + 운영자 슬랙)
-  if (status !== "취소") {
-    await onStatusUpdated({
-      user: userCtx,
-      application: appCtx,
-      adminDetailUrl,
-    });
-  }
-  // '접수완료'로 바뀌었고 일정이 있으면 → 예약 확정 안내(ICS)
-  if (status === "접수완료") {
-    //
-    const hasSchedule =
-      Boolean(appDoc?.stringDetails?.preferredDate) &&
-      Boolean(appDoc?.stringDetails?.preferredTime);
-    if (hasSchedule) {
-      await onScheduleConfirmed({ user: userCtx, application: appCtx }); //
-    }
-  }
-
-  // '취소'로 바뀌었을 때 → "신청 취소 안내" 한 통만 발송하고 종료
-  if (status === "취소") {
-    await onApplicationCanceled({ user: userCtx, application: appCtx }); // 신청 취소 안내 한 통만
-
-    // 상태 업데이트 메일은 생략 (이미 위에서 status !== '취소' 조건으로 막혀있음)
-    return NextResponse.json({ success: true }); // 조기 종료: 아래 로직으로 안 내려가게
-  }
   //  정상 처리 시 성공 응답 반환
   return NextResponse.json({ success: true });
 }
@@ -3323,69 +3190,6 @@ export async function handleSubmitStringingApplication(req: Request) {
       guestOrderId,
       guestRentalId,
       input: body,
-    });
-
-    const name = body?.name ?? "";
-    const email = body?.email ?? "";
-    const contactEmail = normalizeEmail(email);
-    const phone = body?.phone ?? "";
-    const contactPhone = phone.replace(/\D/g, "") || null;
-
-    const STATUS_VALUES = [
-      "draft",
-      "검토 중",
-      "접수완료",
-      "작업 중",
-      "교체완료",
-      "취소",
-    ] as const;
-    type AppStatus = (typeof STATUS_VALUES)[number];
-
-    const userCtx = { name, email: contactEmail || email };
-    const appCtx = {
-      applicationId: String(result.applicationId),
-      orderId: result.orderObjectId ? String(result.orderObjectId) : null,
-      rentalId: result.rentalObjectId ? String(result.rentalObjectId) : null,
-      status: "검토 중" as AppStatus,
-      stringDetails: {
-        preferredDate: body?.preferredDate,
-        preferredTime: body?.preferredTime,
-        racket: body?.racketType,
-        stringTypes: body?.stringTypes,
-      },
-      shippingInfo: body?.shippingInfo,
-      phone,
-      contactPhone,
-    };
-    const normalizedCollectionMethod = normalizeCollection(
-      body?.shippingInfo?.collectionMethod ?? "self_ship",
-    );
-    let orderHasRacket = false;
-    if (result.orderObjectId) {
-      const linkedOrder = await db
-        .collection("orders")
-        .findOne({ _id: result.orderObjectId }, { projection: { items: 1 } });
-      orderHasRacket =
-        Array.isArray(linkedOrder?.items) &&
-        linkedOrder.items.some((it: any) => it?.kind === "racket");
-    }
-    const inboundRequired = result.rentalObjectId
-      ? false
-      : result.orderObjectId
-        ? !orderHasRacket
-        : true;
-    Object.assign(appCtx, {
-      collectionMethod: normalizedCollectionMethod,
-      inboundRequired,
-      needsInboundTracking:
-        inboundRequired && normalizedCollectionMethod === "self_ship",
-    });
-    const adminDetailUrl = `${process.env.NEXT_PUBLIC_BASE_URL || ""}/admin/applications/stringing/${String(result.applicationId)}`;
-
-    await onApplicationSubmitted({
-      user: userCtx,
-      application: appCtx,
-      adminDetailUrl,
     });
 
     const response = NextResponse.json(

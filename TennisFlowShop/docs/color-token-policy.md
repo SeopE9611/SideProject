@@ -50,33 +50,6 @@ rg -n "#[0-9A-Fa-f]{3,6}|style=\{\{[^}]*\b(color|background|border)\b" app compo
   - 소셜 연동 상태 배지(카카오/네이버) 브랜드 식별 색상
   - 배지 렌더링 블록 상단에 브랜드 예외 주석 명시
 
-### 3) 비-웹UI 예외(참고)
-
-- non-web-ui 예외 목록은 `docs/brand-color-exception-whitelist.md`가 아니라 본 문서의 [이메일 템플릿 예외 정책 (고정)](#이메일-템플릿-예외-정책-고정) 섹션에서 관리한다.
-- `app/features/notifications/core/render.ts`: 이메일 HTML 렌더러로 분류하며 웹 UI 토큰 규칙 적용 대상에서 제외.
-
-## 이메일 템플릿 예외 정책 (고정)
-
-`app/features/notifications/core/render.ts`는 메일 클라이언트(예: Gmail, Outlook)의 CSS 지원 제약으로 인해 **인라인 스타일 기반 렌더링이 필수**이므로, `app/globals.css` 토큰 클래스를 직접 적용하지 않는다.
-
-예외 허용 팔레트(고정):
-
-- `surface`: `#FCFCFB` — 메일 본문/카드 배경(off-white)
-- `text`: `#1A1A1A` — 제목/본문 기본 텍스트(charcoal)
-- `sub`: `#636363` — 보조 텍스트/메타 정보
-- `line`: `#E3E3E0` — 구분선/테이블 보더(stone gray)
-- `bgSoft`: `#F4F4F2` — 요약 표의 key 셀 배경
-- `badgeBg`: `#F2F2F0` — 상태 배지 배경
-- `badgeText`: `#1A1A1A` — 상태 배지 텍스트
-- `btnBg`: `#1A1A1A` — CTA 배경
-- `btnText`: `#FAFAFA` — CTA 텍스트
-
-운영 규칙:
-
-- 위 팔레트 외 임의색(`#888`, `#999`, 임의 `rgb/hsl`) 추가를 금지한다.
-- 색상은 반드시 `THEME`의 의미 있는 키를 통해서만 참조한다.
-- 팔레트 조정이 필요하면 본 문서 섹션과 `render.ts`를 동시에 수정해 SSOT를 유지한다.
-
 ## `lib/shadcn-plugin.js` 참조 전수 점검 결과
 
 실행 명령:

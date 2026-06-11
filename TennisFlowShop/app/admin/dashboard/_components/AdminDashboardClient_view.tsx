@@ -552,7 +552,7 @@ export default function AdminDashboardClient() {
           <Card className="border-info/40 bg-info/5">
             <CardHeader className="pb-2">
               <CardTitle className="text-base">확인 필요</CardTitle>
-              <CardDescription>패키지·오프라인·보정·정산</CardDescription>
+              <CardDescription>패키지·오프라인·보정·알림·정산</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
               <div className="flex min-w-0 items-center justify-between gap-2">
@@ -573,12 +573,6 @@ export default function AdminDashboardClient() {
                   {formatAdminNumber(offlineMetrics.pendingOfflineCount)}
                 </Badge>
               </div>
-              {/* <div className="flex min-w-0 items-center justify-between gap-2">
-                <span className="min-w-0 break-words">알림 실패</span>
-                <Badge className="shrink-0 whitespace-nowrap" variant={data.kpi.queue.outboxFailed > 0 ? "destructive" : "secondary"}>
-                  {formatAdminNumber(data.kpi.queue.outboxFailed)}
-                </Badge>
-              </div> */}
               <div className="flex min-w-0 items-center justify-between gap-2">
                 <span className="min-w-0 break-words">지난달 정산</span>
                 <Badge className="shrink-0 whitespace-nowrap" variant={!data.settlements.hasPrevSnapshot ? "destructive" : "secondary"}>
@@ -774,10 +768,7 @@ export default function AdminDashboardClient() {
           <Card className={adminSurface.tableCard}>
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-2 text-base font-semibold">
-                <div className="rounded-full bg-primary/10 p-1.5 dark:bg-primary/20">
-                  <AlertTriangle className="h-4 w-4 text-primary" />
-                </div>
-                오프라인 보정
+                보정
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -787,26 +778,10 @@ export default function AdminDashboardClient() {
                   {formatAdminNumber(data.kpi.queue.offlineReconciliationOpen)}
                 </Badge>
               </div>
-              {/* <div className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2">
-                <span className="text-sm">알림 큐</span>
-                <Badge className="shrink-0 whitespace-nowrap" variant={data.kpi.queue.outboxQueued > 0 ? "default" : "outline"}>
-                  {formatAdminNumber(data.kpi.queue.outboxQueued)}
-                </Badge>
-              </div>
-              <div className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2">
-                <span className="text-sm">알림 실패</span>
-                <Badge className="shrink-0 whitespace-nowrap" variant={data.kpi.queue.outboxFailed > 0 ? "destructive" : "outline"}>
-                  {formatAdminNumber(data.kpi.queue.outboxFailed)}
-                </Badge>
-              </div> */}
               <div className="grid gap-2 pt-1">
                 <Button size="sm" variant="outline" asChild className="w-full bg-transparent">
                   <Link href="/admin/offline/reconciliation">보정 관리</Link>
                 </Button>
-{/*
-                <Button size="sm" variant="outline" asChild className="w-full bg-transparent">
-                  <Link href="/admin/notifications">알림 관리</Link>
-                </Button> */}
               </div>
             </CardContent>
           </Card>
