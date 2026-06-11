@@ -1593,16 +1593,40 @@ export async function getOrders(req: NextRequest): Promise<Response> {
 
   // 1) 필터 먼저 적용 (전체 기준)
   const filtered = combined.filter((order: any) => {
-    // --- 검색(q): id, 고객명, 이메일 ---
-    const idStr = safeLower(order?.id ?? order?._id);
-    const nameStr = safeLower(order?.customer?.name);
-    const emailStr = safeLower(order?.customer?.email);
+    // --- 검색(q): 주문/고객 + 연결 신청서 요약 ---
+    const linkedApplication = order?.linkedStringingApplication;
+    const searchFields = [
+      order?.id ?? order?._id,
+      order?.customer?.name,
+      order?.customer?.email,
+      order?.customer?.phone,
+      order?.stringSummary,
+      order?.shippingInfo?.shippingMethod,
+      ...(Array.isArray(order?.items)
+        ? order.items.map((item: any) => item?.name)
+        : []),
+      linkedApplication?.id,
+      linkedApplication?.status,
+      linkedApplication?.stringSummary,
+      linkedApplication?.shippingInfo?.shippingMethod,
+      linkedApplication?.shippingInfo?.name,
+      linkedApplication?.shippingInfo?.phone,
+      ...(Array.isArray(linkedApplication?.items)
+        ? linkedApplication.items.map((item: any) => item?.name)
+        : []),
+    ];
     const searchMatch =
-      !q || idStr.includes(q) || nameStr.includes(q) || emailStr.includes(q);
+      !q || searchFields.some((field) => safeLower(field).includes(q));
 
     // --- 상태/유형/결제 ---
-    const statusMatch = status === "all" || order?.status === status;
-    const typeMatch = type === "all" || order?.type === type;
+    const statusMatch =
+      status === "all" ||
+      order?.status === status ||
+      linkedApplication?.status === status;
+    const typeMatch =
+      type === "all" ||
+      order?.type === type ||
+      (type === "서비스" && order?.hasStringingApplication === true);
     const paymentMatch = payment === "all" || order?.paymentStatus === payment;
 
     // --- 고객유형(member/guest) ---

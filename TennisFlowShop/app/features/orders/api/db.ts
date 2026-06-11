@@ -392,8 +392,46 @@ export async function fetchCombinedOrders(opts?: {
   // 정책 A: /admin/orders(및 공용 목록 API)는 "주문 + 교체서비스 신청"만 다룬다.
   // 대여 주문(rental_orders)은 /admin/rentals 및 전용 API에서만 관리한다.
   // 따라서 이 통합 목록에는 rental_orders를 append하지 않는다.
-  const combined = [...orders, ...(stringingOrders as any[])].sort(
-    (a: any, b: any) => safeToTime(b?.date) - safeToTime(a?.date),
+  const orderIds = new Set(orders.map((order) => order.id));
+  const appsByOrderId = new Map<string, any[]>();
+
+  for (const app of stringingOrders as any[]) {
+    if (!app?.linkedOrderId || !orderIds.has(app.linkedOrderId)) continue;
+    const linkedApps = appsByOrderId.get(app.linkedOrderId) ?? [];
+    linkedApps.push(app);
+    appsByOrderId.set(app.linkedOrderId, linkedApps);
+  }
+
+  const ordersWithLinkedApplications = orders.map((order) => {
+    const linkedApps = appsByOrderId.get(order.id) ?? [];
+    const latestLinkedApp = linkedApps[0];
+    if (!latestLinkedApp) return order;
+
+    return {
+      ...order,
+      hasStringingApplication: true,
+      isStringServiceApplied: true,
+      linkedStringingApplicationId: latestLinkedApp.id,
+      linkedStringingApplication: {
+        id: latestLinkedApp.id,
+        status: latestLinkedApp.status,
+        cancelStatus: latestLinkedApp.cancelStatus,
+        stringSummary: latestLinkedApp.stringSummary,
+        items: latestLinkedApp.items,
+        shippingInfo: latestLinkedApp.shippingInfo,
+        total: latestLinkedApp.total,
+      },
+    };
+  });
+
+  // 정상 연결 신청서는 대표 주문 행에 흡수하고, 단독/고아 신청서만 독립 행으로 유지한다.
+  const standaloneOrOrphanStringingOrders = (stringingOrders as any[]).filter(
+    (app) => !app?.linkedOrderId || !orderIds.has(app.linkedOrderId),
   );
+
+  const combined = [
+    ...ordersWithLinkedApplications,
+    ...standaloneOrOrphanStringingOrders,
+  ].sort((a: any, b: any) => safeToTime(b?.date) - safeToTime(a?.date));
   return combined;
 }

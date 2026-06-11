@@ -82,6 +82,18 @@ export type Order = {
 export type OrderWithType = Order & {
   __type: "order" | "stringing_application" | "rental_order";
   linkedOrderId?: string | null;
+  hasStringingApplication?: boolean;
+  isStringServiceApplied?: boolean;
+  linkedStringingApplicationId?: string;
+  linkedStringingApplication?: {
+    id: string;
+    status?: string;
+    cancelStatus?: "requested" | "approved" | "rejected";
+    stringSummary?: string;
+    items?: Order["items"];
+    shippingInfo?: Order["shippingInfo"];
+    total?: number;
+  };
 };
 
 export interface ApiResponse {

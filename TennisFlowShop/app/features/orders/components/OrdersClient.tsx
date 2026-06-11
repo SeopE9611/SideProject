@@ -408,6 +408,10 @@ export default function OrdersClient() {
 
   // 연결 신청서는 "최신 수정/생성 시각" 기준으로 1건을 선택해 요약에 사용
   function getLatestStringingApplicationInGroup(group: OrderWithType[]) {
+    const linkedSummary = group.find((order) => order.linkedStringingApplication)
+      ?.linkedStringingApplication;
+    if (linkedSummary) return linkedSummary;
+
     const apps = group.filter(
       (o) => o.__type === "stringing_application",
     ) as Array<OrderWithType & { updatedAt?: string; createdAt?: string }>;
@@ -1074,7 +1078,9 @@ export default function OrdersClient() {
                 groupLinkedOrders(orders).map((group, groupIdx) => {
                   // 이 그룹이 "상품 주문 + 교체서비스 신청서" 묶음인지 체크
                   const hasStringingAppInGroup = group.some(
-                    (o) => o.__type === "stringing_application",
+                    (o) =>
+                      o.__type === "stringing_application" ||
+                      o.hasStringingApplication === true,
                   );
 
                   const borderColors = [
