@@ -38,7 +38,6 @@ import { File, Grid2X2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { MdSportsTennis } from "react-icons/md";
 
 function StepFormSkeleton() {
   return (
@@ -1789,46 +1788,28 @@ export default function StringServiceApplyPage() {
           </div>
 
           {/* Option Cards */}
-          <div className="grid grid-cols-1 gap-3 bp-md:grid-cols-2 bp-xl:grid-cols-4 bp-sm:gap-4 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 gap-4 bp-md:grid-cols-2 bp-sm:gap-5 max-w-4xl mx-auto">
             {[
               {
                 badge: "추천",
                 stepLabel: "선택 01",
                 icon: <Grid2X2 className="h-7 w-7" />,
-                title: "새 스트링 선택",
-                target: "스트링을 고른 뒤 장착 신청까지 이어갑니다.",
+                title: "스트링 구매 후 장착",
+                target:
+                  "새 스트링을 고른 뒤 보유 라켓에 장착 신청까지 이어갑니다.",
                 steps: "스트링 선택 → 결제/장착 정보 입력",
-                cta: "이 방식으로 진행",
+                cta: "스트링 고르고 신청하기",
                 href: "/products?from=apply",
               },
               {
-                badge: "구매 연계",
-                stepLabel: "선택 02",
-                icon: <MdSportsTennis className="h-8 w-8" />,
-                title: "라켓 구매와 함께",
-                target: "라켓 구매 과정에서 원하는 세팅을 선택합니다.",
-                steps: "라켓 선택 → 스트링 선택 → 결제",
-                cta: "이 방식으로 진행",
-                href: "/rackets?from=apply",
-              },
-              {
-                badge: "대여 연계",
-                stepLabel: "선택 03",
-                icon: <MdSportsTennis className="h-8 w-8" />,
-                title: "라켓 대여와 함께",
-                target: "대여 라켓에 필요한 스트링 세팅을 추가합니다.",
-                steps: "라켓 대여 → 스트링 선택 → 대여 결제",
-                cta: "이 방식으로 진행",
-                href: "/rackets?from=apply&rentOnly=1",
-              },
-              {
                 badge: "보유 장비",
-                stepLabel: "선택 04",
+                stepLabel: "선택 02",
                 icon: <File className="h-8 w-8" />,
-                title: "보유 장비로 신청",
-                target: "가지고 있는 라켓이나 스트링으로 작업만 신청합니다.",
+                title: "보유 라켓/보유 스트링으로 장착",
+                target:
+                  "가지고 있는 라켓이나 스트링으로 작업만 신청합니다.",
                 steps: "신청서 작성 → 접수",
-                cta: "이 방식으로 진행",
+                cta: "보유 장비로 신청하기",
                 href: "/services/apply?mode=single",
               },
             ].map((item, index) => (
