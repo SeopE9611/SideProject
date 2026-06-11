@@ -37,6 +37,7 @@ export interface ApplyFormData {
   shippingDepositor: string;
   shippingRequest: string;
   shippingBank: string;
+  paymentMethod: "bank_transfer" | "nicepay";
   packageOptOut: boolean;
   collectionMethod: CollectionMethod;
   pickupDate: string;
@@ -120,6 +121,7 @@ export default function useStringingApplySharedState({
     shippingDepositor: "",
     shippingRequest: "",
     shippingBank: "",
+    paymentMethod: "bank_transfer",
     packageOptOut: false,
     collectionMethod: "self_ship",
     pickupDate: "",
