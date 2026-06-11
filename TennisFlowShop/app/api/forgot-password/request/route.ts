@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { sendEmail } from "@/app/features/notifications/channels/email";
+import { sendEmail } from "@/lib/email/sendEmail";
 import {
   AUTH_RATE_LIMIT_POLICIES,
   enforcePublicAuthRateLimit,
