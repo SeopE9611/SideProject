@@ -31,7 +31,6 @@ import {
 import Link from "next/link";
 
 import type { Metadata } from "next";
-import { MdSportsTennis } from "react-icons/md";
 
 export const metadata: Metadata = {
   title: "장착 서비스",
@@ -221,35 +220,13 @@ export default async function ServicesPage() {
     {
       badge: "추천",
       icon: <Grid2X2 className="h-7 w-7" />,
-      title: "새\u00A0스트링 구매 후 장착",
+      title: "스트링 구매 후 장착",
       description:
-        "스트링을 새로 고르고 기존 라켓에 바로 장착 신청까지 이어갑니다.",
+        "새 스트링을 고른 뒤 보유 라켓에 바로 장착 신청까지 이어갑니다.",
       steps: "스트링 선택 → 결제/장착 정보 입력 → 접수 완료",
       href: "/products?from=apply",
       cta: "스트링 고르고 신청하기",
       featured: true,
-    },
-    {
-      badge: "구매 연계",
-      icon: <MdSportsTennis className="h-7 w-7" />,
-      title: "라켓 구매와 함께 장착",
-      description:
-        "중고 라켓을 구매하면서 원하는 스트링 세팅까지 한\u00A0번에 진행합니다.",
-      steps: "라켓 선택 → 스트링 선택 → 결제 → 장착 접수",
-      href: "/rackets?from=apply",
-      cta: "라켓 고르고 신청하기",
-      featured: false,
-    },
-    {
-      badge: "대여 연계",
-      icon: <MdSportsTennis className="h-7 w-7" />,
-      title: "라켓 대여와 함께 장착",
-      description:
-        "대여 라켓에 원하는 스트링 세팅을 더해 바로 사용하기 좋게 준비합니다.",
-      steps: "라켓 대여 → 스트링 선택 → 대여 결제 → 장착 접수",
-      href: "/rackets?from=apply&rentOnly=1",
-      cta: "대여 라켓 보기",
-      featured: false,
     },
     {
       badge: "보유 장비",
@@ -257,9 +234,9 @@ export default async function ServicesPage() {
       title: "보유 라켓/보유 스트링으로 장착",
       description:
         "이미 가진 라켓이나 스트링으로 교체 작업만 맡기고 싶을 때 선택합니다.",
-      steps: "신청서 작성 → 접수 → 비용 안내/진행",
+      steps: "신청서 작성 → 결제/접수 → 작업 진행",
       href: "/services/apply?mode=single",
-      cta: "보유 장비로 신청",
+      cta: "보유 장비로 신청하기",
       featured: false,
     },
   ];
@@ -352,7 +329,7 @@ export default async function ServicesPage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               {serviceStartOptions.map((item) => (
                 <Link
                   key={item.title}
