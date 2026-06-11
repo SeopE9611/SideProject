@@ -730,8 +730,10 @@ export async function PATCH(
       return new NextResponse("권한이 없습니다.", { status: 403 });
     }
 
-    const attemptsOrderStatusChange =
-      typeof status === "string" && status.trim() !== String(existing.status);
+    const attemptsOrderStatusPatch = Object.prototype.hasOwnProperty.call(
+      body,
+      "status",
+    );
     const attemptsPaymentStatusChange =
       Object.prototype.hasOwnProperty.call(body, "paymentStatus") ||
       (body?.paymentInfo &&
@@ -741,7 +743,7 @@ export async function PATCH(
         (Object.prototype.hasOwnProperty.call(body.payment, "status") ||
           Object.prototype.hasOwnProperty.call(body.payment, "method")));
 
-    if (attemptsOrderStatusChange || attemptsPaymentStatusChange) {
+    if (attemptsOrderStatusPatch || attemptsPaymentStatusChange) {
       const linkedApplication = await db
         .collection("stringing_applications")
         .findOne({
