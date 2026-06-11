@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 
 const NICEPAY_SCRIPT_SRC = "https://pay.nicepay.co.kr/v1/js/";
 
@@ -29,24 +29,14 @@ type NicePrepareResponse = {
   error?: string;
 };
 
-export default function ApplicationNiceCheckoutButton({
-  disabled,
-  payableAmount,
-  submitApplication,
-}: {
-  disabled: boolean;
-  payableAmount: number;
-  submitApplication: () => Promise<string | null>;
-}) {
+export default function ApplicationNiceCheckoutButton({ disabled, payableAmount, submitApplication }: { disabled: boolean; payableAmount: number; submitApplication: () => Promise<string | null> }) {
   const [loading, setLoading] = useState(false);
   const [scriptReady, setScriptReady] = useState(false);
   const [inlineError, setInlineError] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
-    const existing = document.querySelector(
-      `script[src="${NICEPAY_SCRIPT_SRC}"]`,
-    ) as HTMLScriptElement | null;
+    const existing = document.querySelector(`script[src="${NICEPAY_SCRIPT_SRC}"]`) as HTMLScriptElement | null;
     const markReady = () => {
       if (mounted && typeof window.AUTHNICE?.requestPay === "function") {
         setScriptReady(true);
@@ -69,10 +59,7 @@ export default function ApplicationNiceCheckoutButton({
     };
   }, []);
 
-  const isDisabled = useMemo(
-    () => disabled || loading || !scriptReady || payableAmount <= 0,
-    [disabled, loading, payableAmount, scriptReady],
-  );
+  const isDisabled = useMemo(() => disabled || loading || !scriptReady || payableAmount <= 0, [disabled, loading, payableAmount, scriptReady]);
 
   const handleClick = async () => {
     if (isDisabled) return;
@@ -92,17 +79,15 @@ export default function ApplicationNiceCheckoutButton({
         credentials: "include",
         body: JSON.stringify({ applicationId }),
       });
-      const prepared = (await response
-        .json()
-        .catch(() => null)) as NicePrepareResponse | null;
+      const prepared = (await response.json().catch(() => null)) as NicePrepareResponse | null;
       if (!response.ok || !prepared?.success || !prepared.nice) {
-        throw new Error(prepared?.error || "Nice 결제 준비에 실패했습니다.");
+        throw new Error(prepared?.error || "카드/간편결제 준비에 실패했습니다.");
       }
       if (Math.floor(prepared.nice.amount) !== Math.floor(payableAmount)) {
         throw new Error("신청 금액이 변경되었습니다. 다시 확인해주세요.");
       }
       if (typeof window.AUTHNICE?.requestPay !== "function") {
-        throw new Error("Nice 결제창이 준비되지 않았습니다.");
+        throw new Error("카드/간편결제 결제창이 준비되지 않았습니다.");
       }
 
       window.AUTHNICE.requestPay({
@@ -116,11 +101,7 @@ export default function ApplicationNiceCheckoutButton({
         buyerTel: prepared.nice.buyerTel,
         buyerEmail: prepared.nice.buyerEmail,
         fnError: (result: any) => {
-          setInlineError(
-            String(
-              result?.errorMsg || result?.message || "결제가 취소되었습니다.",
-            ),
-          );
+          setInlineError(String(result?.errorMsg || result?.message || "결제가 취소되었습니다."));
           setLoading(false);
         },
       });
@@ -134,13 +115,9 @@ export default function ApplicationNiceCheckoutButton({
     <div className="space-y-2">
       <Button type="button" onClick={handleClick} disabled={isDisabled}>
         {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-        카드결제 후 신청 완료
+        카드/간편결제로 신청 완료
       </Button>
-      {!scriptReady && (
-        <p className="text-xs text-muted-foreground">
-          Nice 결제창 준비 중입니다.
-        </p>
-      )}
+      {!scriptReady && <p className="text-xs text-muted-foreground">카드/간편결제창을 준비 중입니다.</p>}
       {inlineError && <p className="text-xs text-destructive">{inlineError}</p>}
     </div>
   );

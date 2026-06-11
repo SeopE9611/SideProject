@@ -536,7 +536,7 @@ export async function POST(req: Request) {
       new URL(
         toFailUrl(
           "SERVER_ERROR",
-          error?.message || "결제 처리 중 오류가 발생했습니다.",
+          error?.message || "카드/간편결제 처리 중 오류가 발생했습니다.",
         ),
         req.url,
       ),

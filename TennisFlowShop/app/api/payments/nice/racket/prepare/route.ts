@@ -1,26 +1,18 @@
-import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { ObjectId } from "mongodb";
-import clientPromise from "@/lib/mongodb";
 import { verifyAccessToken } from "@/lib/auth.utils";
+import clientPromise from "@/lib/mongodb";
+import { buildNiceOrderName, createNiceOrderId } from "@/lib/payments/nice/server";
 import { isNicePaymentsEnabled } from "@/lib/payments/provider-flags";
+import { ensureTossPaymentSessionIndexes, tossPaymentSessions } from "@/lib/payments/toss/session";
 import { normalizeItemShippingFee } from "@/lib/shipping-fee";
-import {
-  buildNiceOrderName,
-  createNiceOrderId,
-} from "@/lib/payments/nice/server";
-import {
-  ensureTossPaymentSessionIndexes,
-  tossPaymentSessions,
-} from "@/lib/payments/toss/session";
+import { ObjectId } from "mongodb";
+import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 
 const POSTAL_RE = /^\d{5}$/;
 const onlyDigits = (v: unknown) => String(v ?? "").replace(/\D/g, "");
 
 function resolveClientId() {
-  return String(
-    process.env.NICEPAY_CLIENT_KEY ?? process.env.NICEPAY_CLIENT_ID ?? "",
-  ).trim();
+  return String(process.env.NICEPAY_CLIENT_KEY ?? process.env.NICEPAY_CLIENT_ID ?? "").trim();
 }
 
 function resolveAppUrl() {
@@ -51,7 +43,7 @@ export async function POST(req: Request) {
         {
           success: false,
           code: "NICE_CONFIG_MISSING",
-          error: "NicePay client key 설정이 누락되었습니다.",
+          error: "카드/간편결제 설정이 누락되었습니다.",
         },
         { status: 500 },
       );
@@ -61,8 +53,7 @@ export async function POST(req: Request) {
     const racketId = String(body?.racketId ?? "").trim();
 
     const shippingInfo = body?.shippingInfo ?? {};
-    const shippingMethod =
-      shippingInfo?.shippingMethod === "visit" ? "visit" : "courier";
+    const shippingMethod = shippingInfo?.shippingMethod === "visit" ? "visit" : "courier";
     const name = String(shippingInfo?.name ?? "").trim();
     const phone = onlyDigits(shippingInfo?.phone ?? "");
     const address = String(shippingInfo?.address ?? "").trim();
@@ -70,32 +61,16 @@ export async function POST(req: Request) {
     const postalCode = onlyDigits(shippingInfo?.postalCode ?? "").trim();
     const deliveryRequest = String(shippingInfo?.deliveryRequest ?? "").trim();
 
-    if (
-      !ObjectId.isValid(racketId) ||
-      name.length < 2 ||
-      !/^010\d{8}$/.test(phone)
-    ) {
-      return NextResponse.json(
-        { success: false, error: "요청 데이터가 올바르지 않습니다." },
-        { status: 400 },
-      );
+    if (!ObjectId.isValid(racketId) || name.length < 2 || !/^010\d{8}$/.test(phone)) {
+      return NextResponse.json({ success: false, error: "요청 데이터가 올바르지 않습니다." }, { status: 400 });
     }
 
     if (!["visit", "courier"].includes(shippingMethod)) {
-      return NextResponse.json(
-        { success: false, error: "배송 방식이 올바르지 않습니다." },
-        { status: 400 },
-      );
+      return NextResponse.json({ success: false, error: "배송 방식이 올바르지 않습니다." }, { status: 400 });
     }
 
-    if (
-      shippingMethod === "courier" &&
-      (!POSTAL_RE.test(postalCode) || !address)
-    ) {
-      return NextResponse.json(
-        { success: false, error: "배송지 정보를 확인해주세요." },
-        { status: 400 },
-      );
+    if (shippingMethod === "courier" && (!POSTAL_RE.test(postalCode) || !address)) {
+      return NextResponse.json({ success: false, error: "배송지 정보를 확인해주세요." }, { status: 400 });
     }
 
     const cookieStore = await cookies();
@@ -112,37 +87,21 @@ export async function POST(req: Request) {
 
     const client = await clientPromise;
     const db = client.db();
-    const racket = await db
-      .collection("used_rackets")
-      .findOne({ _id: new ObjectId(racketId) });
+    const racket = await db.collection("used_rackets").findOne({ _id: new ObjectId(racketId) });
 
     if (!racket || racket.status !== "available") {
-      return NextResponse.json(
-        { success: false, error: "구매 가능한 라켓이 아닙니다." },
-        { status: 400 },
-      );
+      return NextResponse.json({ success: false, error: "구매 가능한 라켓이 아닙니다." }, { status: 400 });
     }
 
     const racketPrice = Number(racket.price ?? 0);
     if (!Number.isFinite(racketPrice) || racketPrice <= 0) {
-      return NextResponse.json(
-        { success: false, error: "라켓 가격 정보가 올바르지 않습니다." },
-        { status: 400 },
-      );
+      return NextResponse.json({ success: false, error: "라켓 가격 정보가 올바르지 않습니다." }, { status: 400 });
     }
 
-    const shippingFee =
-      shippingMethod === "visit"
-        ? 0
-        : normalizeItemShippingFee(
-            (racket as { shippingFee?: unknown }).shippingFee,
-          );
+    const shippingFee = shippingMethod === "visit" ? 0 : normalizeItemShippingFee((racket as { shippingFee?: unknown }).shippingFee);
     const totalPrice = racketPrice + shippingFee;
     if (!Number.isFinite(totalPrice) || totalPrice <= 0) {
-      return NextResponse.json(
-        { success: false, error: "최종 결제금액이 올바르지 않습니다." },
-        { status: 400 },
-      );
+      return NextResponse.json({ success: false, error: "최종 결제금액이 올바르지 않습니다." }, { status: 400 });
     }
 
     const niceOrderId = createNiceOrderId();
@@ -214,7 +173,7 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         success: false,
-        error: error?.message || "라켓 Nice 결제 준비 중 오류가 발생했습니다.",
+        error: error?.message || "라켓 카드/간편결제 준비 중 오류가 발생했습니다.",
       },
       { status: 500 },
     );

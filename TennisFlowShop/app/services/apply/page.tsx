@@ -69,6 +69,9 @@ export default function StringServiceApplyPage() {
   const orderId = rawOrderId && rawOrderId.trim() ? rawOrderId.trim() : null;
   const rentalId = rawRentalId && rawRentalId.trim() ? rawRentalId.trim() : null;
   const mode = searchParams.get("mode");
+  const paymentError = searchParams.get("paymentError");
+  const paymentErrorMessage = searchParams.get("message");
+  const failedPaymentApplicationId = searchParams.get("applicationId");
   const [loading, setLoading] = useState(true);
 
   // PDP에서 넘어온 상품의 미니 정보(이름, 이미지)
@@ -1593,6 +1596,13 @@ export default function StringServiceApplyPage() {
           <div className="relative">
             {/* 중앙 메인 폼 */}
             <div className="mx-auto w-full md:w-[800px]">
+              {paymentError ? (
+                <div className="mb-4 rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
+                  <p className="font-semibold">카드/간편결제가 완료되지 않았습니다.</p>
+                  <p className="mt-1">{failedPaymentApplicationId ? "신청서는 저장되었으며, 결제만 다시 진행하거나 매장에 문의해 주세요." : "결제 상태를 확인할 수 없습니다. 다시 시도하거나 매장에 문의해 주세요."}</p>
+                  {paymentErrorMessage ? <p className="mt-1 text-xs opacity-80">{paymentErrorMessage}</p> : null}
+                </div>
+              ) : null}
               <Card className="border border-border bg-card shadow-sm bp-lg:bg-card/90">
                 <CardContent className="p-4 bp-sm:p-5 bp-lg:p-6">
                   <div className={`mb-4 rounded-xl border px-4 py-3 ${isOrderSlotBlocked ? "border-border bg-muted/40" : "border-border bg-background/60"}`}>

@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 
 declare global {
   interface Window {
@@ -13,8 +13,7 @@ declare global {
 }
 
 const NICEPAY_SCRIPT_SRC = "https://pay.nicepay.co.kr/v1/js/";
-const PAYMENT_AMOUNT_CHANGED_MESSAGE =
-  "상품 가격, 배송비, 포인트 또는 패키지 사용 정보가 변경되어 결제 금액이 달라졌습니다. 주문 정보를 다시 확인한 뒤 다시 시도해주세요.";
+const PAYMENT_AMOUNT_CHANGED_MESSAGE = "상품 가격, 배송비, 포인트 또는 패키지 사용 정보가 변경되어 결제 금액이 달라졌습니다. 주문 정보를 다시 확인한 뒤 다시 시도해주세요.";
 
 type NicePrepareResponse = {
   success: boolean;
@@ -63,20 +62,14 @@ export default function NiceCheckoutButton({
       }
 
       await new Promise<void>((resolve, reject) => {
-        const existing = document.querySelector(
-          `script[src="${NICEPAY_SCRIPT_SRC}"]`,
-        ) as HTMLScriptElement | null;
+        const existing = document.querySelector(`script[src="${NICEPAY_SCRIPT_SRC}"]`) as HTMLScriptElement | null;
         if (existing) {
           if (typeof window.AUTHNICE?.requestPay === "function") {
             resolve();
             return;
           }
           existing.addEventListener("load", () => resolve(), { once: true });
-          existing.addEventListener(
-            "error",
-            () => reject(new Error("NICE_SCRIPT_LOAD_FAILED")),
-            { once: true },
-          );
+          existing.addEventListener("error", () => reject(new Error("NICE_SCRIPT_LOAD_FAILED")), { once: true });
           return;
         }
         const script = document.createElement("script");
@@ -88,8 +81,7 @@ export default function NiceCheckoutButton({
       });
 
       if (!mounted) return;
-      if (typeof window.AUTHNICE?.requestPay !== "function")
-        throw new Error("NICE_WIDGET_UNAVAILABLE");
+      if (typeof window.AUTHNICE?.requestPay !== "function") throw new Error("NICE_WIDGET_UNAVAILABLE");
       setScriptReady(true);
     };
 
@@ -98,14 +90,10 @@ export default function NiceCheckoutButton({
       setScriptReady(false);
       const code = String(error?.message || "");
       if (code === "NICE_SCRIPT_LOAD_FAILED") {
-        setScriptError(
-          "Nice 결제 스크립트를 불러오지 못했습니다. 새로고침 후 다시 시도해주세요.",
-        );
+        setScriptError("Nice 결제 스크립트를 불러오지 못했습니다. 새로고침 후 다시 시도해주세요.");
         return;
       }
-      setScriptError(
-        "Nice 결제창 준비 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.",
-      );
+      setScriptError("Nice 결제창 준비 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.");
     });
 
     return () => {
@@ -113,10 +101,7 @@ export default function NiceCheckoutButton({
     };
   }, []);
 
-  const isDisabled = useMemo(
-    () => disabled || loading || !scriptReady || !!scriptError,
-    [disabled, loading, scriptReady, scriptError],
-  );
+  const isDisabled = useMemo(() => disabled || loading || !scriptReady || !!scriptError, [disabled, loading, scriptReady, scriptError]);
 
   const handleClick = async () => {
     if (isDisabled) return;
@@ -131,26 +116,20 @@ export default function NiceCheckoutButton({
         body: JSON.stringify(payload),
       });
 
-      const prepJson = (await prepRes
-        .json()
-        .catch(() => null)) as NicePrepareResponse | null;
+      const prepJson = (await prepRes.json().catch(() => null)) as NicePrepareResponse | null;
       if (!prepRes.ok || !prepJson?.success || !prepJson?.nice) {
         onSuccessNavigationAbort?.();
-        throw new Error(prepJson?.error || "Nice 결제 준비에 실패했습니다.");
+        throw new Error(prepJson?.error || "카드/간편결제 준비에 실패했습니다.");
       }
 
       if (typeof window.AUTHNICE?.requestPay !== "function") {
         onSuccessNavigationAbort?.();
-        throw new Error("Nice 결제창이 준비되지 않았습니다.");
+        throw new Error("카드/간편결제 결제창이 준비되지 않았습니다.");
       }
 
       const prepareAmount = Number(prepJson.nice.amount ?? NaN);
       const expectedAmount = Math.floor(Number(payableAmount ?? NaN));
-      if (
-        !Number.isFinite(prepareAmount) ||
-        !Number.isFinite(expectedAmount) ||
-        prepareAmount !== expectedAmount
-      ) {
+      if (!Number.isFinite(prepareAmount) || !Number.isFinite(expectedAmount) || prepareAmount !== expectedAmount) {
         onSuccessNavigationAbort?.();
         console.warn("[nicepay] payment amount mismatch", {
           clientAmount: Number.isFinite(expectedAmount) ? expectedAmount : null,
@@ -172,11 +151,7 @@ export default function NiceCheckoutButton({
         buyerTel: prepJson.nice.buyerTel,
         buyerEmail: prepJson.nice.buyerEmail,
         fnError: (result: any) => {
-          const msg = String(
-            result?.errorMsg ||
-              result?.message ||
-              "결제가 취소되었거나 실패했습니다.",
-          );
+          const msg = String(result?.errorMsg || result?.message || "결제가 취소되었거나 실패했습니다.");
           setInlineError(msg);
           setLoading(false);
           onSuccessNavigationAbort?.();
@@ -190,11 +165,7 @@ export default function NiceCheckoutButton({
 
   return (
     <div className="space-y-2 w-full">
-      <Button
-        onClick={handleClick}
-        className="w-full h-14 text-lg"
-        disabled={isDisabled}
-      >
+      <Button onClick={handleClick} className="w-full h-14 text-lg" disabled={isDisabled}>
         {loading ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -204,11 +175,7 @@ export default function NiceCheckoutButton({
           "결제하기"
         )}
       </Button>
-      {!scriptError && !scriptReady && (
-        <p className="text-xs text-muted-foreground">
-          Nice 결제창 준비 중입니다. 잠시 후 다시 시도해주세요.
-        </p>
-      )}
+      {!scriptError && !scriptReady && <p className="text-xs text-muted-foreground">카드/간편결제창을 준비 중입니다. 잠시 후 다시 시도해주세요.</p>}
       {scriptError && <p className="text-xs text-destructive">{scriptError}</p>}
       {inlineError && <p className="text-xs text-destructive">{inlineError}</p>}
     </div>

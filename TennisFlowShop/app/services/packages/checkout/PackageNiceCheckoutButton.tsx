@@ -42,18 +42,7 @@ type Props = {
   onSuccessNavigationAbort?: () => void;
 };
 
-export default function PackageNiceCheckoutButton({
-  disabled,
-  payableAmount,
-  packageId,
-  packageName,
-  name,
-  phone,
-  email,
-  serviceRequest,
-  onBeforeSuccessNavigation,
-  onSuccessNavigationAbort,
-}: Props) {
+export default function PackageNiceCheckoutButton({ disabled, payableAmount, packageId, packageName, name, phone, email, serviceRequest, onBeforeSuccessNavigation, onSuccessNavigationAbort }: Props) {
   const [loading, setLoading] = useState(false);
   const [inlineError, setInlineError] = useState<string | null>(null);
   const [scriptReady, setScriptReady] = useState(false);
@@ -73,20 +62,14 @@ export default function PackageNiceCheckoutButton({
       }
 
       await new Promise<void>((resolve, reject) => {
-        const existing = document.querySelector(
-          `script[src="${NICEPAY_SCRIPT_SRC}"]`,
-        ) as HTMLScriptElement | null;
+        const existing = document.querySelector(`script[src="${NICEPAY_SCRIPT_SRC}"]`) as HTMLScriptElement | null;
         if (existing) {
           if (typeof window.AUTHNICE?.requestPay === "function") {
             resolve();
             return;
           }
           existing.addEventListener("load", () => resolve(), { once: true });
-          existing.addEventListener(
-            "error",
-            () => reject(new Error("NICE_SCRIPT_LOAD_FAILED")),
-            { once: true },
-          );
+          existing.addEventListener("error", () => reject(new Error("NICE_SCRIPT_LOAD_FAILED")), { once: true });
           return;
         }
 
@@ -99,8 +82,7 @@ export default function PackageNiceCheckoutButton({
       });
 
       if (!mounted) return;
-      if (typeof window.AUTHNICE?.requestPay !== "function")
-        throw new Error("NICE_WIDGET_UNAVAILABLE");
+      if (typeof window.AUTHNICE?.requestPay !== "function") throw new Error("NICE_WIDGET_UNAVAILABLE");
       setScriptReady(true);
     };
 
@@ -109,14 +91,10 @@ export default function PackageNiceCheckoutButton({
       setScriptReady(false);
       const code = String(error?.message || "");
       if (code === "NICE_SCRIPT_LOAD_FAILED") {
-        setScriptError(
-          "Nice 결제 스크립트를 불러오지 못했습니다. 새로고침 후 다시 시도해주세요.",
-        );
+        setScriptError("Nice 결제 스크립트를 불러오지 못했습니다. 새로고침 후 다시 시도해주세요.");
         return;
       }
-      setScriptError(
-        "Nice 결제창 준비 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.",
-      );
+      setScriptError("Nice 결제창 준비 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.");
     });
 
     return () => {
@@ -124,25 +102,14 @@ export default function PackageNiceCheckoutButton({
     };
   }, []);
 
-  const blockedByZeroAmount =
-    !Number.isFinite(payableAmount) || payableAmount <= 0;
-  const isDisabled = useMemo(
-    () =>
-      disabled ||
-      loading ||
-      blockedByZeroAmount ||
-      !scriptReady ||
-      !!scriptError,
-    [disabled, loading, blockedByZeroAmount, scriptReady, scriptError],
-  );
+  const blockedByZeroAmount = !Number.isFinite(payableAmount) || payableAmount <= 0;
+  const isDisabled = useMemo(() => disabled || loading || blockedByZeroAmount || !scriptReady || !!scriptError, [disabled, loading, blockedByZeroAmount, scriptReady, scriptError]);
 
   const handleClick = async () => {
     if (isDisabled) return;
 
     if (blockedByZeroAmount) {
-      setInlineError(
-        "최종 결제금액이 0원인 경우 Nice 결제를 사용할 수 없습니다.",
-      );
+      setInlineError("최종 결제금액이 0원인 경우 Nice 결제를 사용할 수 없습니다.");
       return;
     }
 
@@ -164,17 +131,15 @@ export default function PackageNiceCheckoutButton({
         }),
       });
 
-      const prepJson = (await prepRes
-        .json()
-        .catch(() => null)) as NicePrepareResponse | null;
+      const prepJson = (await prepRes.json().catch(() => null)) as NicePrepareResponse | null;
       if (!prepRes.ok || !prepJson?.success || !prepJson?.nice) {
         onSuccessNavigationAbort?.();
-        throw new Error(prepJson?.error || "Nice 결제 준비에 실패했습니다.");
+        throw new Error(prepJson?.error || "카드/간편결제 준비에 실패했습니다.");
       }
 
       if (typeof window.AUTHNICE?.requestPay !== "function") {
         onSuccessNavigationAbort?.();
-        throw new Error("Nice 결제창이 준비되지 않았습니다.");
+        throw new Error("카드/간편결제 결제창이 준비되지 않았습니다.");
       }
 
       onBeforeSuccessNavigation?.();
@@ -191,11 +156,7 @@ export default function PackageNiceCheckoutButton({
           buyerEmail: prepJson.nice.buyerEmail,
           fnError: (result: any) => {
             onSuccessNavigationAbort?.();
-            const msg = String(
-              result?.errorMsg ||
-                result?.message ||
-                "결제가 취소되었거나 실패했습니다.",
-            );
+            const msg = String(result?.errorMsg || result?.message || "결제가 취소되었거나 실패했습니다.");
             setInlineError(msg);
             setLoading(false);
           },
@@ -212,11 +173,7 @@ export default function PackageNiceCheckoutButton({
 
   return (
     <div className="space-y-2 w-full">
-      <Button
-        onClick={handleClick}
-        className="w-full h-14 text-lg"
-        disabled={isDisabled}
-      >
+      <Button onClick={handleClick} className="w-full h-14 text-lg" disabled={isDisabled}>
         {loading ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -226,16 +183,8 @@ export default function PackageNiceCheckoutButton({
           "결제하기"
         )}
       </Button>
-      {blockedByZeroAmount && (
-        <p className="text-xs text-muted-foreground">
-          최종 결제금액이 0원이라 Nice 결제를 사용할 수 없습니다.
-        </p>
-      )}
-      {!scriptError && !scriptReady && (
-        <p className="text-xs text-muted-foreground">
-          Nice 결제창 준비 중입니다. 잠시 후 다시 시도해주세요.
-        </p>
-      )}
+      {blockedByZeroAmount && <p className="text-xs text-muted-foreground">최종 결제금액이 0원이라 Nice 결제를 사용할 수 없습니다.</p>}
+      {!scriptError && !scriptReady && <p className="text-xs text-muted-foreground">카드/간편결제창을 준비 중입니다. 잠시 후 다시 시도해주세요.</p>}
       {scriptError && <p className="text-xs text-destructive">{scriptError}</p>}
       {inlineError && <p className="text-xs text-destructive">{inlineError}</p>}
     </div>
