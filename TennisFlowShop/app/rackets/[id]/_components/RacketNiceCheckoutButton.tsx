@@ -86,10 +86,10 @@ export default function RacketNiceCheckoutButton({ disabled, payableAmount, payl
       setScriptReady(false);
       const code = String(error?.message || "");
       if (code === "NICE_SCRIPT_LOAD_FAILED") {
-        setScriptError("Nice 결제 스크립트를 불러오지 못했습니다. 새로고침 후 다시 시도해주세요.");
+        setScriptError("카드/간편결제 모듈을 불러오지 못했습니다. 새로고침 후 다시 시도해주세요.");
         return;
       }
-      setScriptError("Nice 결제창 준비 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.");
+      setScriptError("카드/간편결제창 준비 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.");
     });
 
     return () => {
@@ -104,7 +104,7 @@ export default function RacketNiceCheckoutButton({ disabled, payableAmount, payl
     if (isDisabled) return;
 
     if (blockedByZeroAmount) {
-      setInlineError("최종 결제금액이 0원인 경우 Nice 결제를 사용할 수 없습니다.");
+      setInlineError("최종 결제금액이 0원인 경우 카드/간편결제를 사용할 수 없습니다.");
       return;
     }
 
@@ -167,10 +167,10 @@ export default function RacketNiceCheckoutButton({ disabled, payableAmount, payl
             결제 요청 중...
           </>
         ) : (
-          "NicePay로 결제 후 스트링 선택으로 이동"
+          "카드/간편결제 후 스트링 선택으로 이동"
         )}
       </Button>
-      {blockedByZeroAmount && <p className="text-xs text-muted-foreground">최종 결제금액이 0원이라 Nice 결제를 사용할 수 없습니다.</p>}
+      {blockedByZeroAmount && <p className="text-xs text-muted-foreground">최종 결제금액이 0원이라 카드/간편결제를 사용할 수 없습니다.</p>}
       {!scriptError && !scriptReady && <p className="text-xs text-muted-foreground">카드/간편결제창을 준비 중입니다. 잠시 후 다시 시도해주세요.</p>}
       {scriptError && <p className="text-xs text-destructive">{scriptError}</p>}
       {inlineError && <p className="text-xs text-destructive">{inlineError}</p>}
