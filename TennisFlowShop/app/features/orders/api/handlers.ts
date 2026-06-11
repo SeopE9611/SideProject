@@ -1593,6 +1593,8 @@ export async function getOrders(req: NextRequest): Promise<Response> {
 
   // 1) 필터 먼저 적용 (전체 기준)
   const filtered = combined.filter((order: any) => {
+    const linkedApplication = order?.linkedStringingApplication;
+
     // --- 검색(q): id, 고객명, 이메일 ---
     const idStr = safeLower(order?.id ?? order?._id);
     const nameStr = safeLower(order?.customer?.name);
@@ -1602,7 +1604,10 @@ export async function getOrders(req: NextRequest): Promise<Response> {
 
     // --- 상태/유형/결제 ---
     const statusMatch = status === "all" || order?.status === status;
-    const typeMatch = type === "all" || order?.type === type;
+    const typeMatch =
+      type === "all" ||
+      order?.type === type ||
+      (type === "서비스" && order?.hasStringingApplication === true);
     const paymentMatch = payment === "all" || order?.paymentStatus === payment;
 
     // --- 고객유형(member/guest) ---
@@ -1612,11 +1617,21 @@ export async function getOrders(req: NextRequest): Promise<Response> {
       (customerType === "guest" && !order?.userId);
 
     // --- 운송장(shipping): OrdersClient의 기준(getShippingBadge.label)과 동일하게 ---
-    const shippingLabel = getShippingBadge(order).label;
+    const shippingTarget =
+      order?.hasStringingApplication && linkedApplication
+        ? {
+            ...order,
+            shippingInfo: linkedApplication.shippingInfo ?? order?.shippingInfo,
+          }
+        : order;
+    const shippingLabel = getShippingBadge(shippingTarget).label;
     const shippingMatch = shipping === "all" || shippingLabel === shipping;
 
     // --- 취소 요청 상태(cancel) ---
-    const cancelMatch = cancel === "all" || order?.cancelStatus === cancel;
+    const cancelMatch =
+      cancel === "all" ||
+      order?.cancelStatus === cancel ||
+      linkedApplication?.cancelStatus === cancel;
 
     // --- 날짜(date): KST YYYY-MM-DD 기준 일치 여부 ---
     const orderYmd = dateYmd ? toKstYmd(order?.date ?? order?.createdAt) : "";

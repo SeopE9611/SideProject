@@ -1095,15 +1095,22 @@ export default function OrdersClient() {
                   );
 
                   return group.map((order) => {
+                    // 통합 주문 행에서도 연결 신청서 핵심 정보를 빠르게 읽기 위한 참조
+                    const linkedApplication =
+                      getLatestStringingApplicationInGroup(group) ??
+                      (order as any).linkedStringingApplication ??
+                      null;
                     const isLinkedProductOrder =
-                      order.__type === "order" && hasStringingAppInGroup;
+                      order.__type === "order" &&
+                      (hasStringingAppInGroup ||
+                        (order as any).hasStringingApplication === true);
                     const isIntegratedApp =
                       order.__type === "stringing_application" &&
                       !!order.linkedOrderId &&
                       !!anchorOrder;
-                    // 통합 주문 행에서도 연결 신청서 핵심 정보를 빠르게 읽기 위한 참조
-                    const linkedApplication =
-                      getLatestStringingApplicationInGroup(group);
+                    const hasCancelRequest =
+                      order.cancelStatus === "requested" ||
+                      linkedApplication?.cancelStatus === "requested";
                     const linkedReceptionLabel = getReceptionLabel(
                       (linkedApplication as any)?.shippingInfo
                         ?.shippingMethod ??
@@ -1153,7 +1160,7 @@ export default function OrdersClient() {
                                 >
                                   <div className="flex items-center gap-1 w-full min-w-0 justify-start">
                                     {/* 취소요청 상태일 때만 아이콘 노출 */}
-                                    {order.cancelStatus === "requested" && (
+                                    {hasCancelRequest && (
                                       <AlertTriangle
                                         className="h-3 w-3 text-primary shrink-0"
                                         aria-hidden="true"
@@ -1262,7 +1269,7 @@ export default function OrdersClient() {
                                     </Button>
                                   </div>
 
-                                  {order.cancelStatus === "requested" && (
+                                  {hasCancelRequest && (
                                     <p className="mt-2 text-sm text-primary">
                                       취소 요청이 접수된 항목입니다.
                                     </p>
@@ -1434,7 +1441,7 @@ export default function OrdersClient() {
                           {order.__type === "stringing_application" ? (
                             <div className="flex flex-col items-center gap-1">
                               <ApplicationStatusBadge status={order.status} />
-                              {order.cancelStatus === "requested" && (
+                              {hasCancelRequest && (
                                 <Badge
                                   className={cn(
                                     badgeBase,
@@ -1464,7 +1471,7 @@ export default function OrdersClient() {
                                       (order as any).shippingInfo,
                                     )}
                                   </Badge>
-                                  {order.cancelStatus === "requested" && (
+                                  {hasCancelRequest && (
                                     <Badge
                                       className={cn(
                                         badgeBase,
