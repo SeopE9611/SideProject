@@ -142,12 +142,12 @@ export const SIDEBAR_SECTIONS: SidebarSection[] = [
     label: "고객/운영",
     items: [
       { title: "회원 관리", href: "/admin/users", icon: Users, key: "users" },
-      {
-        title: "알림 발송함",
-        href: "/admin/notifications/outbox",
-        icon: Bell,
-        key: "notifications",
-      },
+      // {
+      //   title: "알림 발송함",
+      //   href: "/admin/notifications/outbox",
+      //   icon: Bell,
+      //   key: "notifications",
+      // },
       {
         title: "월별 정산 관리",
         href: "/admin/settlements",

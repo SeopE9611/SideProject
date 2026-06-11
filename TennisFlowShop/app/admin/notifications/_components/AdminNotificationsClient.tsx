@@ -1,56 +1,29 @@
 "use client";
 
+import dynamic from "next/dynamic";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import dynamic from "next/dynamic";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Skeleton } from "@/components/ui/skeleton";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { adminSurface } from "@/components/admin/admin-typography";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-import { showErrorToast, showSuccessToast } from "@/lib/toast";
-import { cn } from "@/lib/utils";
 import { adminMutator } from "@/lib/admin/adminFetcher";
 import { buildQueryString } from "@/lib/admin/urlQuerySync";
-import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { useAdminListQueryState } from "@/lib/admin/useAdminListQueryState";
-import {
-  Loader2,
-  RefreshCcw,
-  Send,
-  Search,
-  Mail,
-  Clock,
-  AlertCircle,
-  CheckCircle2,
-  XCircle,
-  ChevronRight,
-} from "lucide-react";
+import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import { cn } from "@/lib/utils";
+import type { AdminOutboxDetailResponseDto, AdminOutboxListItemDto, AdminOutboxListResponseDto } from "@/types/admin/notifications";
+import { AlertCircle, CheckCircle2, ChevronRight, Clock, Loader2, Mail, RefreshCcw, Search, Send, XCircle } from "lucide-react";
 import Link from "next/link";
-import type {
-  AdminOutboxDetailResponseDto,
-  AdminOutboxListItemDto,
-  AdminOutboxListResponseDto,
-} from "@/types/admin/notifications";
 
 type Status = "all" | "queued" | "failed" | "sent";
 
@@ -65,16 +38,42 @@ function getErrorMessage(error: unknown, fallback: string) {
 }
 
 function asRecord(value: unknown): Record<string, unknown> {
-  return typeof value === "object" && value !== null
-    ? (value as Record<string, unknown>)
-    : {};
+  return typeof value === "object" && value !== null ? (value as Record<string, unknown>) : {};
 }
 
 const LIMIT = 10;
-const AdminConfirmDialog = dynamic(
-  () => import("@/components/admin/AdminConfirmDialog"),
-  { loading: () => null },
-);
+type NotificationListQueryState = {
+  status: Status;
+  qRaw: string;
+  page: number;
+};
+
+const NOTIFICATION_LIST_DEFAULTS: NotificationListQueryState = {
+  status: "all",
+  qRaw: "",
+  page: 1,
+};
+
+const NOTIFICATION_LIST_PAGE_RESET_KEYS: (keyof NotificationListQueryState)[] = ["status", "qRaw"];
+
+function parseNotificationListQueryState(params: URLSearchParams, defaults: NotificationListQueryState): NotificationListQueryState {
+  const status = params.get("status");
+
+  return {
+    status: status === "all" || status === "queued" || status === "failed" || status === "sent" ? status : defaults.status,
+    qRaw: params.get("q") || defaults.qRaw,
+    page: Math.max(1, Number.parseInt(params.get("page") || String(defaults.page), 10) || defaults.page),
+  };
+}
+
+function toNotificationListQueryParams(state: NotificationListQueryState) {
+  return {
+    status: state.status === "all" ? undefined : state.status,
+    q: state.qRaw.trim(),
+    page: state.page === 1 ? undefined : state.page,
+  };
+}
+const AdminConfirmDialog = dynamic(() => import("@/components/admin/AdminConfirmDialog"), { loading: () => null });
 
 function useDebounced<T>(value: T, delay = 350) {
   const [debounced, setDebounced] = useState(value);
@@ -118,36 +117,14 @@ export default function AdminNotificationsClient() {
   const router = useRouter();
   const sp = useSearchParams();
   const pathname = usePathname();
-
-  const { state, patchState, setPage } = useAdminListQueryState<{
-    status: Status;
-    qRaw: string;
-    page: number;
-  }>({
+  const { state, patchState, setPage } = useAdminListQueryState<NotificationListQueryState>({
     pathname: pathname || "/admin/notifications/outbox",
     searchParams: sp,
     replace: router.replace,
-    defaults: { status: "all", qRaw: "", page: 1 },
-    parse: (params, defaults) => {
-      const status = (params.get("status") || defaults.status) as Status;
-      return {
-        status: ["all", "queued", "failed", "sent"].includes(status)
-          ? status
-          : defaults.status,
-        qRaw: params.get("q") || defaults.qRaw,
-        page: Math.max(
-          1,
-          Number.parseInt(params.get("page") || String(defaults.page), 10) ||
-            defaults.page,
-        ),
-      };
-    },
-    toQueryParams: (queryState) => ({
-      status: queryState.status,
-      q: queryState.qRaw.trim(),
-      page: queryState.page === 1 ? undefined : queryState.page,
-    }),
-    pageResetKeys: ["status", "qRaw"],
+    defaults: NOTIFICATION_LIST_DEFAULTS,
+    parse: parseNotificationListQueryState,
+    toQueryParams: toNotificationListQueryParams,
+    pageResetKeys: NOTIFICATION_LIST_PAGE_RESET_KEYS,
   });
 
   const { status, qRaw, page } = state;
@@ -163,18 +140,13 @@ export default function AdminNotificationsClient() {
     return `/api/admin/notifications/outbox?${queryString}`;
   }, [page, status, qDebounced]);
 
-  const { data, error, isValidating, mutate } = useSWR<PageRes>(
-    key,
-    authenticatedSWRFetcher,
-    { revalidateOnFocus: false, revalidateOnReconnect: false },
-  );
+  const { data, error, isValidating, mutate } = useSWR<PageRes>(key, authenticatedSWRFetcher, { revalidateOnFocus: false, revalidateOnReconnect: false });
   // 초기 로딩에는 undefined를 유지해 "실제 0/빈값"과 구분한다.
   const isInitialLoading = !data && !error;
   const rows = data?.items;
   const total = data?.total;
   const totalPages = Math.max(1, Math.ceil((total ?? 0) / LIMIT));
-  const shouldShowEmptyState =
-    !isInitialLoading && !error && Array.isArray(rows) && rows.length === 0;
+  const shouldShowEmptyState = !isInitialLoading && !error && Array.isArray(rows) && rows.length === 0;
 
   const [detailOpen, setDetailOpen] = useState(false);
   const [detailId, setDetailId] = useState<string | null>(null);
@@ -191,9 +163,7 @@ export default function AdminNotificationsClient() {
     setDetail(null);
     try {
       setDetailLoading(true);
-      const j = await authenticatedSWRFetcher<OutboxDetail>(
-        `/api/admin/notifications/outbox/${id}`,
-      );
+      const j = await authenticatedSWRFetcher<OutboxDetail>(`/api/admin/notifications/outbox/${id}`);
       setDetail(j);
     } catch (error: unknown) {
       showErrorToast(getErrorMessage(error, "상세 불러오기 실패"));
@@ -248,6 +218,18 @@ export default function AdminNotificationsClient() {
     };
   }, [data]);
 
+  const hasCustomFilters = status !== "all" || qRaw.trim().length > 0;
+
+  const currentViewLabel = qRaw.trim().length > 0 ? "검색 결과" : status === "queued" ? "대기 중" : status === "failed" ? "실패" : status === "sent" ? "발송 완료" : "전체 알림";
+
+  const resetNotificationFilters = () => {
+    patchState({
+      status: "all",
+      qRaw: "",
+      page: 1,
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div className="space-y-2">
@@ -259,34 +241,17 @@ export default function AdminNotificationsClient() {
           helperText="상태별 집계와 발송 실패 사유를 함께 확인합니다."
           actions={
             <div className="flex flex-wrap items-center gap-2">
-              <Button
-                variant="secondary"
-                size="sm"
-                className="whitespace-nowrap"
-              >
+              <Button variant="secondary" size="sm" className="whitespace-nowrap">
                 목록
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="border-border/40 whitespace-nowrap"
-                disabled
-                title="목록에서 항목을 선택하면 상세 보기로 이동할 수 있습니다."
-                aria-label="항목 선택 전에는 상세 보기 비활성화"
-              >
+              <Button variant="outline" size="sm" className="border-border/40 whitespace-nowrap" disabled title="목록에서 항목을 선택하면 상세 보기로 이동할 수 있습니다." aria-label="항목 선택 전에는 상세 보기 비활성화">
                 상세 (항목 선택)
               </Button>
             </div>
           }
         />
-        <nav
-          className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground"
-          aria-label="알림 관리 breadcrumb"
-        >
-          <Link
-            href="/admin/notifications/outbox"
-            className="font-medium text-foreground"
-          >
+        <nav className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground" aria-label="알림 관리 breadcrumb">
+          <Link href="/admin/notifications/outbox" className="font-medium text-foreground">
             알림 발송함
           </Link>
           <ChevronRight className="h-3.5 w-3.5" />
@@ -295,13 +260,24 @@ export default function AdminNotificationsClient() {
       </div>
 
       <div className="flex items-center gap-2">
-        <Badge variant={isServerCountsSupported ? "secondary" : "outline"}>
-          {isServerCountsSupported ? "전체 결과 기준 집계" : "현재 페이지 기준"}
-        </Badge>
-        <span className="text-xs text-muted-foreground">
-          KPI 카드는 상태별 건수를 보여주며, 목록은 페이지당 {LIMIT}건씩
-          표시됩니다.
-        </span>
+        <Badge variant={isServerCountsSupported ? "secondary" : "outline"}>{isServerCountsSupported ? "전체 결과 기준 집계" : "현재 페이지 기준"}</Badge>
+        <span className="text-xs text-muted-foreground">KPI 카드는 상태별 건수를 보여주며, 목록은 페이지당 {LIMIT}건씩 표시됩니다.</span>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-border/60 bg-card px-4 py-3 text-sm">
+        <p className="font-semibold text-foreground">현재 보기: {currentViewLabel}</p>
+
+        {qRaw.trim() && <p className="text-muted-foreground">검색어: {qRaw.trim()}</p>}
+
+        <div className="ml-auto flex items-center gap-2">
+          {hasCustomFilters && (
+            <Button type="button" size="sm" variant="ghost" onClick={resetNotificationFilters}>
+              필터 초기화
+            </Button>
+          )}
+
+          <span className="text-sm font-medium text-foreground">총 {total ?? "-"}건</span>
+        </div>
       </div>
 
       <div className="grid gap-5 md:grid-cols-3">
@@ -309,19 +285,10 @@ export default function AdminNotificationsClient() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p
-                  className="text-sm font-medium text-muted-foreground"
-                  title="현재 검색 조건 전체에서 대기 상태인 알림 수"
-                >
+                <p className="text-sm font-medium text-muted-foreground" title="현재 검색 조건 전체에서 대기 상태인 알림 수">
                   대기 중
                 </p>
-                <p className="mt-2 text-3xl font-bold">
-                  {isInitialLoading ? (
-                    <Skeleton className="h-8 w-16" />
-                  ) : (
-                    (stats?.queued ?? "-")
-                  )}
-                </p>
+                <p className="mt-2 text-3xl font-bold">{isInitialLoading ? <Skeleton className="h-8 w-16" /> : (stats?.queued ?? "-")}</p>
               </div>
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
                 <Clock className="h-6 w-6 text-primary" />
@@ -334,19 +301,10 @@ export default function AdminNotificationsClient() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p
-                  className="text-sm font-medium text-muted-foreground"
-                  title="현재 검색 조건 전체에서 실패 상태인 알림 수"
-                >
+                <p className="text-sm font-medium text-muted-foreground" title="현재 검색 조건 전체에서 실패 상태인 알림 수">
                   실패
                 </p>
-                <p className="mt-2 text-3xl font-bold">
-                  {isInitialLoading ? (
-                    <Skeleton className="h-8 w-16" />
-                  ) : (
-                    (stats?.failed ?? "-")
-                  )}
-                </p>
+                <p className="mt-2 text-3xl font-bold">{isInitialLoading ? <Skeleton className="h-8 w-16" /> : (stats?.failed ?? "-")}</p>
               </div>
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-destructive dark:bg-destructive/15">
                 <XCircle className="h-6 w-6 text-destructive" />
@@ -359,19 +317,10 @@ export default function AdminNotificationsClient() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p
-                  className="text-sm font-medium text-muted-foreground"
-                  title="현재 검색 조건 전체에서 발송 완료 상태인 알림 수"
-                >
+                <p className="text-sm font-medium text-muted-foreground" title="현재 검색 조건 전체에서 발송 완료 상태인 알림 수">
                   발송 완료
                 </p>
-                <p className="mt-2 text-3xl font-bold">
-                  {isInitialLoading ? (
-                    <Skeleton className="h-8 w-16" />
-                  ) : (
-                    (stats?.sent ?? "-")
-                  )}
-                </p>
+                <p className="mt-2 text-3xl font-bold">{isInitialLoading ? <Skeleton className="h-8 w-16" /> : (stats?.sent ?? "-")}</p>
               </div>
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary/20">
                 <CheckCircle2 className="h-6 w-6 text-primary" />
@@ -389,19 +338,13 @@ export default function AdminNotificationsClient() {
             </div>
             <div>
               <CardTitle>알림 Outbox</CardTitle>
-              <CardDescription>
-                알림 발송 작업 내역을 조회하고 관리합니다 (페이지당 최대 10건)
-              </CardDescription>
+              <CardDescription>알림 발송 작업 내역을 조회하고 관리합니다 (페이지당 최대 10건)</CardDescription>
             </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <Tabs
-              value={status}
-              onValueChange={(v) => patchState({ status: v as Status })}
-              className="w-full lg:w-auto"
-            >
+            <Tabs value={status} onValueChange={(v) => patchState({ status: v as Status })} className="w-full lg:w-auto">
               <TabsList className="grid w-full grid-cols-4 lg:w-auto">
                 <TabsTrigger value="all" className="gap-2">
                   전체
@@ -441,24 +384,13 @@ export default function AdminNotificationsClient() {
             <div className="flex items-center gap-2">
               <div className="relative w-full lg:w-[320px]">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  value={qRaw}
-                  onChange={(e) => patchState({ qRaw: e.target.value })}
-                  placeholder="검색..."
-                  className="pl-9 border-border/40 bg-background/50 backdrop-blur focus-visible:border-primary/40"
-                />
+                <Input value={qRaw} onChange={(e) => patchState({ qRaw: e.target.value })} placeholder="검색..." className="pl-9 border-border/40 bg-background/50 backdrop-blur focus-visible:border-primary/40" />
               </div>
-              <Button
-                variant="outline"
-                onClick={() => mutate()}
-                disabled={isValidating}
-                className="border-border/40 hover:border-border/60"
-              >
-                {isValidating ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <RefreshCcw className="h-4 w-4" />
-                )}
+              <Button type="button" variant="outline" onClick={resetNotificationFilters} disabled={!hasCustomFilters} className="border-border/40 hover:border-border/60">
+                초기화
+              </Button>
+              <Button variant="outline" onClick={() => mutate()} disabled={isValidating} className="border-border/40 hover:border-border/60">
+                {isValidating ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCcw className="h-4 w-4" />}
               </Button>
             </div>
           </div>
@@ -481,19 +413,12 @@ export default function AdminNotificationsClient() {
             ) : shouldShowEmptyState ? (
               <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border/40 py-12">
                 <Mail className="mb-3 h-12 w-12 text-muted-foreground/40" />
-                <p className="text-sm font-medium text-muted-foreground">
-                  알림 데이터가 없습니다
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  필터를 조정하거나 새로운 알림을 기다려주세요
-                </p>
+                <p className="text-sm font-medium text-muted-foreground">알림 데이터가 없습니다</p>
+                <p className="text-xs text-muted-foreground">필터를 조정하거나 새로운 알림을 기다려주세요</p>
               </div>
             ) : (
               (rows ?? []).map((it) => (
-                <Card
-                  key={it.id}
-                  className={cn("group", adminSurface.tableCard)}
-                >
+                <Card key={it.id} className={cn("group", adminSurface.tableCard)}>
                   <CardContent className="p-5">
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                       {/* Left side - Status and main info */}
@@ -502,12 +427,9 @@ export default function AdminNotificationsClient() {
                         <div
                           className={cn(
                             "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg",
-                            it.status === "sent" &&
-                              "bg-primary/10 text-primary dark:bg-primary/20",
-                            it.status === "queued" &&
-                              "bg-muted text-muted-foreground dark:bg-muted dark:text-muted-foreground",
-                            it.status === "failed" &&
-                              "bg-destructive/10 text-destructive dark:bg-destructive/15",
+                            it.status === "sent" && "bg-primary/10 text-primary dark:bg-primary/20",
+                            it.status === "queued" && "bg-muted text-muted-foreground dark:bg-muted dark:text-muted-foreground",
+                            it.status === "failed" && "bg-destructive/10 text-destructive dark:bg-destructive/15",
                           )}
                         >
                           {getStatusIcon(it.status)}
@@ -518,18 +440,8 @@ export default function AdminNotificationsClient() {
                           <div className="flex flex-wrap items-center gap-2">
                             <h4 className="font-semibold">{it.eventType}</h4>
                             <Badge
-                              variant={
-                                it.status === "failed"
-                                  ? "destructive"
-                                  : it.status === "queued"
-                                    ? "secondary"
-                                    : "outline"
-                              }
-                              className={cn(
-                                "text-xs",
-                                it.status === "sent" &&
-                                  "border-border bg-primary/10 text-primary dark:border-border dark:bg-primary/20 dark:text-primary",
-                              )}
+                              variant={it.status === "failed" ? "destructive" : it.status === "queued" ? "secondary" : "outline"}
+                              className={cn("text-xs", it.status === "sent" && "border-border bg-primary/10 text-primary dark:border-border dark:bg-primary/20 dark:text-primary")}
                             >
                               {it.status}
                             </Badge>
@@ -540,58 +452,29 @@ export default function AdminNotificationsClient() {
 
                           <div className="grid gap-2 text-sm lg:grid-cols-2">
                             <div>
-                              <span className="text-muted-foreground">
-                                수신자:
-                              </span>{" "}
-                              <span className="font-medium">
-                                {it.to ?? "-"}
-                              </span>
+                              <span className="text-muted-foreground">수신자:</span> <span className="font-medium">{it.to ?? "-"}</span>
                             </div>
                             {it.subject && (
                               <div>
-                                <span className="text-muted-foreground">
-                                  제목:
-                                </span>{" "}
-                                <span className="font-medium">
-                                  {it.subject}
-                                </span>
+                                <span className="text-muted-foreground">제목:</span> <span className="font-medium">{it.subject}</span>
                               </div>
                             )}
                             <div>
-                              <span className="text-muted-foreground">
-                                생성:
-                              </span>{" "}
-                              <span className="font-medium">
-                                {formatIsoToKstShort(it.createdAt)}
-                              </span>
+                              <span className="text-muted-foreground">생성:</span> <span className="font-medium">{formatIsoToKstShort(it.createdAt)}</span>
                             </div>
                             {it.sentAt && (
                               <div>
-                                <span className="text-muted-foreground">
-                                  발송:
-                                </span>{" "}
-                                <span className="font-medium">
-                                  {formatIsoToKstShort(it.sentAt)}
-                                </span>
+                                <span className="text-muted-foreground">발송:</span> <span className="font-medium">{formatIsoToKstShort(it.sentAt)}</span>
                               </div>
                             )}
                             {(it.applicationId || it.orderId) && (
                               <div>
-                                <span className="text-muted-foreground">
-                                  연결:
-                                </span>{" "}
-                                <span className="font-medium">
-                                  {it.applicationId
-                                    ? `신청 #${it.applicationId}`
-                                    : `주문 #${it.orderId}`}
-                                </span>
+                                <span className="text-muted-foreground">연결:</span> <span className="font-medium">{it.applicationId ? `신청 #${it.applicationId}` : `주문 #${it.orderId}`}</span>
                               </div>
                             )}
                             {it.retries > 0 && (
                               <div>
-                                <span className="text-muted-foreground">
-                                  재시도:
-                                </span>{" "}
+                                <span className="text-muted-foreground">재시도:</span>{" "}
                                 <Badge variant="secondary" className="ml-1">
                                   {it.retries}
                                 </Badge>
@@ -601,51 +484,29 @@ export default function AdminNotificationsClient() {
 
                           {it.error && (
                             <div className="rounded-md border border-destructive/30 bg-destructive/10 p-2 text-xs text-destructive dark:border-destructive/40 dark:bg-destructive/15">
-                              <span className="font-medium">오류:</span>{" "}
-                              {it.error}
+                              <span className="font-medium">오류:</span> {it.error}
                             </div>
                           )}
                         </div>
                       </div>
 
                       <div className="flex shrink-0 flex-wrap items-center gap-2 lg:flex-col">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          asChild
-                          className="border-border/40 hover:border-border/60"
-                        >
-                          <Link href={`/admin/notifications/outbox/${it.id}`}>
-                            상세 페이지
-                          </Link>
+                        <Button size="sm" variant="outline" asChild className="border-border/40 hover:border-border/60">
+                          <Link href={`/admin/notifications/outbox/${it.id}`}>상세 페이지</Link>
                         </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => openDetail(it.id)}
-                          className="border-border/40 hover:border-border/60"
-                        >
+                        <Button size="sm" variant="outline" onClick={() => openDetail(it.id)} className="border-border/40 hover:border-border/60">
                           미리보기
                         </Button>
 
                         {it.status === "failed" && (
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => openConfirm(it.id, "retry")}
-                            className="gap-2"
-                          >
+                          <Button size="sm" variant="destructive" onClick={() => openConfirm(it.id, "retry")} className="gap-2">
                             <RefreshCcw className="h-3.5 w-3.5" />
                             재시도
                           </Button>
                         )}
 
                         {it.status === "queued" && (
-                          <Button
-                            size="sm"
-                            onClick={() => openConfirm(it.id, "force")}
-                            className="gap-2"
-                          >
+                          <Button size="sm" onClick={() => openConfirm(it.id, "force")} className="gap-2">
                             <Send className="h-3.5 w-3.5" />
                             강제 발송
                           </Button>
@@ -661,34 +522,15 @@ export default function AdminNotificationsClient() {
           {(rows?.length ?? 0) > 0 && (
             <div className="flex flex-col items-center justify-between gap-3 border-t border-border/40 pt-5 sm:flex-row">
               <div className="text-sm text-muted-foreground">
-                총{" "}
-                <span className="font-semibold text-foreground">
-                  {total ?? "-"}
-                </span>
-                건(현재 필터) · 페이지당 {LIMIT}건 · 페이지{" "}
-                <span className="font-semibold text-foreground">{page}</span> /{" "}
-                {totalPages}
+                총 <span className="font-semibold text-foreground">{total ?? "-"}</span>
+                건(현재 필터) · 페이지당 {LIMIT}건 · 페이지 <span className="font-semibold text-foreground">{page}</span> / {totalPages}
               </div>
               <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setPage(Math.max(1, page - 1))}
-                  disabled={page <= 1}
-                  className="border-border/40 hover:border-border/60"
-                >
+                <Button variant="outline" size="sm" onClick={() => setPage(Math.max(1, page - 1))} disabled={page <= 1} className="border-border/40 hover:border-border/60">
                   이전
                 </Button>
-                <div className="flex h-9 items-center rounded-md border border-border/40 bg-background/50 px-3 text-sm font-medium">
-                  {page}
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setPage(Math.min(totalPages, page + 1))}
-                  disabled={page >= totalPages}
-                  className="border-border/40 hover:border-border/60"
-                >
+                <div className="flex h-9 items-center rounded-md border border-border/40 bg-background/50 px-3 text-sm font-medium">{page}</div>
+                <Button variant="outline" size="sm" onClick={() => setPage(Math.min(totalPages, page + 1))} disabled={page >= totalPages} className="border-border/40 hover:border-border/60">
                   다음
                 </Button>
               </div>
@@ -747,44 +589,29 @@ export default function AdminNotificationsClient() {
               </pre>
             </div>
           ) : (
-            <div className="py-8 text-center text-sm text-muted-foreground">
-              선택한 항목이 없습니다.
-            </div>
+            <div className="py-8 text-center text-sm text-muted-foreground">선택한 항목이 없습니다.</div>
           )}
 
           <DialogFooter className="gap-2">
             {detailId && detail?.status === "failed" && (
-              <Button
-                variant="destructive"
-                onClick={() => openConfirm(detailId, "retry")}
-                className="gap-2"
-              >
+              <Button variant="destructive" onClick={() => openConfirm(detailId, "retry")} className="gap-2">
                 <RefreshCcw className="h-4 w-4" />
                 재시도
               </Button>
             )}
             {detailId && detail?.status === "queued" && (
-              <Button
-                onClick={() => openConfirm(detailId, "force")}
-                className="gap-2"
-              >
+              <Button onClick={() => openConfirm(detailId, "force")} className="gap-2">
                 <Send className="h-4 w-4" />
                 강제 발송
               </Button>
             )}
             {detailId && (
               <Button variant="outline" asChild className="border-border/40">
-                <Link href={`/admin/notifications/outbox/${detailId}`}>
-                  상세 페이지
-                </Link>
+                <Link href={`/admin/notifications/outbox/${detailId}`}>상세 페이지</Link>
               </Button>
             )}
 
-            <Button
-              variant="outline"
-              onClick={() => setDetailOpen(false)}
-              className="border-border/40"
-            >
+            <Button variant="outline" onClick={() => setDetailOpen(false)} className="border-border/40">
               닫기
             </Button>
           </DialogFooter>
@@ -806,23 +633,11 @@ export default function AdminNotificationsClient() {
           }
           void doForce(action.id);
         }}
-        title={
-          confirmAction?.type === "retry"
-            ? "알림 재시도를 실행할까요?"
-            : "알림을 강제 발송할까요?"
-        }
-        description={
-          confirmAction?.type === "retry"
-            ? "실패한 알림을 즉시 재시도합니다. 고객에게 실제 알림이 발송될 수 있습니다."
-            : "대기 중인 알림을 즉시 강제 발송합니다. 고객에게 실제 알림이 발송될 수 있습니다."
-        }
+        title={confirmAction?.type === "retry" ? "알림 재시도를 실행할까요?" : "알림을 강제 발송할까요?"}
+        description={confirmAction?.type === "retry" ? "실패한 알림을 즉시 재시도합니다. 고객에게 실제 알림이 발송될 수 있습니다." : "대기 중인 알림을 즉시 강제 발송합니다. 고객에게 실제 알림이 발송될 수 있습니다."}
         confirmText={confirmAction?.type === "retry" ? "재시도" : "강제 발송"}
         severity="danger"
-        eventKey={
-          confirmAction?.type === "retry"
-            ? "admin-notifications-outbox-retry-confirm"
-            : "admin-notifications-outbox-force-confirm"
-        }
+        eventKey={confirmAction?.type === "retry" ? "admin-notifications-outbox-retry-confirm" : "admin-notifications-outbox-force-confirm"}
       />
     </div>
   );
