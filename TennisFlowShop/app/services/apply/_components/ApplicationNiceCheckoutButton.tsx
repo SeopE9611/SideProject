@@ -87,7 +87,7 @@ export default function ApplicationNiceCheckoutButton({ disabled, payableAmount,
         throw new Error("신청 금액이 변경되었습니다. 다시 확인해주세요.");
       }
       if (typeof window.AUTHNICE?.requestPay !== "function") {
-        throw new Error("카드/간편결제 결제창이 준비되지 않았습니다.");
+        throw new Error("카드/간편결제창이 준비되지 않았습니다.");
       }
 
       window.AUTHNICE.requestPay({
@@ -106,7 +106,7 @@ export default function ApplicationNiceCheckoutButton({ disabled, payableAmount,
         },
       });
     } catch (error: any) {
-      setInlineError(error?.message || "결제 요청에 실패했습니다.");
+      setInlineError(error?.message || "카드/간편결제 요청에 실패했습니다.");
       setLoading(false);
     }
   };

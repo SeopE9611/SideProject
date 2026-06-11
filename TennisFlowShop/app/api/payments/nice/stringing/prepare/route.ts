@@ -22,7 +22,7 @@ function resolveAppUrl() {
 export async function POST(req: Request) {
   try {
     if (!isNicePaymentsEnabled()) {
-      return NextResponse.json({ success: false, error: "현재 카드결제를 사용할 수 없습니다." }, { status: 503 });
+      return NextResponse.json({ success: false, error: "현재 카드/간편결제를 사용할 수 없습니다." }, { status: 503 });
     }
 
     const body = await req.json().catch(() => ({}));
@@ -47,7 +47,7 @@ export async function POST(req: Request) {
 
     const amount = Math.floor(Number(application.totalPrice ?? 0));
     if (application.orderId || application.rentalId || application.packageApplied || application.servicePaid || application.paymentMethod !== "nicepay" || !Number.isFinite(amount) || amount <= 0) {
-      return NextResponse.json({ success: false, error: "카드결제 가능한 신청 상태가 아닙니다." }, { status: 409 });
+      return NextResponse.json({ success: false, error: "카드/간편결제 가능한 신청 상태가 아닙니다." }, { status: 409 });
     }
 
     const niceOrderId = createNiceOrderId();

@@ -124,7 +124,7 @@ export default function NiceCheckoutButton({
 
       if (typeof window.AUTHNICE?.requestPay !== "function") {
         onSuccessNavigationAbort?.();
-        throw new Error("카드/간편결제 결제창이 준비되지 않았습니다.");
+        throw new Error("카드/간편결제창이 준비되지 않았습니다.");
       }
 
       const prepareAmount = Number(prepJson.nice.amount ?? NaN);
@@ -158,7 +158,7 @@ export default function NiceCheckoutButton({
         },
       });
     } catch (error: any) {
-      setInlineError(error?.message || "결제 요청에 실패했습니다.");
+      setInlineError(error?.message || "카드/간편결제 요청에 실패했습니다.");
       setLoading(false);
     }
   };
