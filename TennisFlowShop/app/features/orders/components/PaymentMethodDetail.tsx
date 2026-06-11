@@ -79,7 +79,7 @@ function getNiceMethodLabel(method?: string, easyPayProvider?: string | null) {
   if (normalized.includes("CARD")) {
     return "카드 결제";
   }
-  return "NicePay 결제";
+  return "카드/간편결제";
 }
 
 function getEasyPayProviderLabel(easyPayProvider?: string | null) {
@@ -169,7 +169,7 @@ export default function PaymentMethodDetail({
               </div>
             )}
             <div className="text-sm text-muted-foreground">
-              결제 제공사: NicePay
+              결제 수단: 카드/간편결제
             </div>
             {statusLabel && (
               <div className="text-sm text-muted-foreground">

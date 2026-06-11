@@ -176,8 +176,8 @@ async function handleNiceStringingReturn(req: Request) {
     );
 
     return NextResponse.redirect(new URL(`/services/success?applicationId=${encodeURIComponent(applicationId)}`, req.url));
-  } catch (error: any) {
-    return NextResponse.redirect(new URL(failUrl("PAYMENT_ERROR", error?.message || "카드/간편결제 처리 중 오류가 발생했습니다.", safeApplicationId), req.url));
+  } catch {
+    return NextResponse.redirect(new URL(failUrl("PAYMENT_ERROR", "카드/간편결제 처리 중 오류가 발생했습니다.", safeApplicationId), req.url));
   }
 }
 

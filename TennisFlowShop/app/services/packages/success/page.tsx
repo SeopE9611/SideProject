@@ -159,7 +159,7 @@ export default async function PackageSuccessPage({
   const paymentMethodLabel = isTossPayment
     ? `토스페이먼츠 (${String(paymentInfo?.method || "CARD")})`
     : isNicePayment
-      ? `NicePay${niceEasyPayProvider ? ` (${niceEasyPayProvider})` : ""} (${String(paymentInfo?.method || "card")})`
+      ? `카드/간편결제${niceEasyPayProvider ? ` (${niceEasyPayProvider})` : ""} (${String(paymentInfo?.method || "card")})`
       : "무통장입금";
   const isPaid = String(packageOrder.paymentStatus ?? "") === "결제완료";
 
@@ -358,7 +358,7 @@ export default async function PackageSuccessPage({
                   ) : (
                     <div className="bg-muted p-4 md:p-6 rounded-xl border border-border">
                       <h3 className="font-bold text-primary mb-3">
-                        {isNicePayment ? "Nice 결제 정보" : "토스 결제 정보"}
+                        {isNicePayment ? "카드/간편결제 정보" : "토스 결제 정보"}
                       </h3>
                       <p className="text-sm text-muted-foreground">
                         결제 상태: 결제완료
@@ -506,7 +506,7 @@ export default async function PackageSuccessPage({
                         </h4>
                         <p className="text-sm text-muted-foreground">
                           {isTossPayment || isNicePayment
-                            ? `${isNicePayment ? "Nice" : "토스"} 결제가 완료되어 패키지가 즉시 활성화되었습니다.`
+                            ? `${isNicePayment ? "카드/간편결제" : "토스 결제"}가 완료되어 패키지가 즉시 활성화되었습니다.`
                             : "패키지 금액을 위 계좌로 입금해주세요. 입금 확인 후 패키지가 활성화돼요."}
                         </p>
                       </div>

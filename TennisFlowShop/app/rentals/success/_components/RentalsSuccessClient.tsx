@@ -172,8 +172,8 @@ export default function RentalsSuccessClient({ data }: Props) {
     data.payment?.method === "nicepay";
   const paymentMethodLabel = isNicePaid
     ? data.paymentInfo?.easyPayProvider
-      ? `NicePay (${data.paymentInfo.easyPayProvider})`
-      : "NicePay"
+      ? `카드/간편결제 (${data.paymentInfo.easyPayProvider})`
+      : "카드/간편결제"
     : "무통장입금";
   return (
     <div className="min-h-full bg-muted/30">

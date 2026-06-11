@@ -79,7 +79,7 @@ function getNiceMethodLabel(method?: string, easyPayProvider?: string | null) {
   if (normalized.includes("CARD")) {
     return "카드 결제";
   }
-  return "NicePay 결제";
+  return "카드/간편결제";
 }
 
 function getEasyPayProviderLabel(easyPayProvider?: string | null) {

@@ -166,7 +166,7 @@ function getNiceMethodLabel(method?: string, easyPayProvider?: string | null) {
   if (normalizedMethod.includes("CARD")) {
     return "카드 결제";
   }
-  return "NicePay 결제";
+  return "카드/간편결제";
 }
 
 // verifyAccessToken은 throw 가능 → 안전하게 null 처리(500 방지)
@@ -849,7 +849,7 @@ export default async function CheckoutSuccessPage({
                               )}
                               {isNicePayment && (
                                 <p className="text-sm text-muted-foreground">
-                                  결제 제공사: NicePay
+                                  결제 수단: 카드/간편결제
                                 </p>
                               )}
                             </>
@@ -937,10 +937,10 @@ export default async function CheckoutSuccessPage({
                           </p>
                           <p>
                             <span className="text-muted-foreground">
-                              결제 제공사:
+                              결제 수단:
                             </span>{" "}
                             <span className="font-semibold text-foreground">
-                              NicePay
+                              카드/간편결제
                             </span>
                           </p>
                           {easyPayProviderLabel && (
