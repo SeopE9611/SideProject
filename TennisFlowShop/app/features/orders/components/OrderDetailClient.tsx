@@ -116,6 +116,7 @@ const getOrderHistoryKey =
 interface OrderDetail {
   _id: string;
   stringingApplicationId?: string;
+  isStringServiceApplied?: boolean;
   status: string;
   date: string;
   customer: {
@@ -534,6 +535,9 @@ export default function OrderDetailClient({ orderId }: Props) {
   const linkedStringingAppId =
     latestLinkedApplication?.id ?? orderDetail.stringingApplicationId ?? null;
   const isShippingManagedByApplication = Boolean(linkedStringingAppId);
+  const isLinkedStringingOrder = Boolean(
+    orderDetail.isStringServiceApplied || linkedStringingAppId,
+  );
 
   // 관리자 상세에서 “수령/배송(사용자가 체크아웃에서 선택한 값)”을 한눈에 보기 위한 배지
   // - 목록(/admin/orders)에서 쓰는 규칙과 동일한 기준으로 표시한다.
@@ -1567,28 +1571,41 @@ export default function OrderDetailClient({ orderId }: Props) {
                 {/* 왼쪽: 상태 변경 영역 */}
                 <div className="rounded-xl border border-border/60 bg-card/70 p-4">
                   <div className="space-y-3">
-                    <div className="rounded-md border border-border bg-muted/60 px-3 py-2 text-sm font-medium text-foreground">
-                      이 영역은 현재 주문의 개별 상태만 조정합니다. 연결된
-                      주문/신청의 공통 흐름 변경은 위 ‘연결 진행 단계’에서
-                      처리합니다.
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-foreground">
-                        주문 진행 상태
-                      </p>
-                      <p className="mt-1 text-xs text-foreground/75">
-                        현재 주문의 진행 단계를 확인하고 필요한 경우 상태를
-                        변경합니다.
-                      </p>
-                    </div>
+                    {isLinkedStringingOrder ? (
+                      <div className="rounded-md border border-primary/20 bg-primary/5 px-3 py-3 text-sm text-foreground/80">
+                        <p className="font-medium text-foreground">
+                          이 주문은 교체서비스 신청서와 연결되어 있습니다.
+                        </p>
+                        <p className="mt-1">
+                          결제/작업/배송 단계는 상단의 통합 진행 단계에서 함께
+                          변경하세요. 취소/환불은 주문 상세의 취소/환불 액션에서
+                          처리하세요.
+                        </p>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="rounded-md border border-border bg-muted/60 px-3 py-2 text-sm font-medium text-foreground">
+                          이 영역은 현재 주문의 개별 상태만 조정합니다.
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">
+                            주문 진행 상태
+                          </p>
+                          <p className="mt-1 text-xs text-foreground/75">
+                            현재 주문의 진행 단계를 확인하고 필요한 경우 상태를
+                            변경합니다.
+                          </p>
+                        </div>
 
-                    <div className="max-w-[280px]">
-                      <OrderStatusSelect
-                        orderId={orderId!}
-                        currentStatus={localStatus}
-                        shippingInfo={orderDetail.shippingInfo}
-                      />
-                    </div>
+                        <div className="max-w-[280px]">
+                          <OrderStatusSelect
+                            orderId={orderId!}
+                            currentStatus={localStatus}
+                            shippingInfo={orderDetail.shippingInfo}
+                          />
+                        </div>
+                      </>
+                    )}
 
                     {!isCanceled && (
                       <p className="text-xs text-foreground/75">
