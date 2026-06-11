@@ -24,9 +24,9 @@ const FAIL_GUIDE_MAP: Record<
   }
 > = {
   PAYMENT_PROVIDER_DISABLED: {
-    title: "현재 Nice 결제를 사용할 수 없어요",
+    title: "현재 카드/간편결제를 사용할 수 없어요",
     description: [
-      "운영 설정상 Nice 결제가 비활성화되어 있어 결제를 진행할 수 없어요.",
+      "운영 설정상 카드/간편결제가 비활성화되어 있어 결제를 진행할 수 없어요.",
       "다른 결제수단을 이용하거나 관리자에게 문의해주세요.",
     ],
   },

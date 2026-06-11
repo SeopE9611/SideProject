@@ -90,10 +90,10 @@ export default function NiceCheckoutButton({
       setScriptReady(false);
       const code = String(error?.message || "");
       if (code === "NICE_SCRIPT_LOAD_FAILED") {
-        setScriptError("Nice 결제 스크립트를 불러오지 못했습니다. 새로고침 후 다시 시도해주세요.");
+        setScriptError("카드/간편결제 스크립트를 불러오지 못했습니다. 새로고침 후 다시 시도해주세요.");
         return;
       }
-      setScriptError("Nice 결제창 준비 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.");
+      setScriptError("카드/간편결제창 준비 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.");
     });
 
     return () => {

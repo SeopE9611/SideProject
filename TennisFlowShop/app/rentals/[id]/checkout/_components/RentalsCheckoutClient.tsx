@@ -1167,7 +1167,7 @@ export default function RentalsCheckoutClient({
                             htmlFor="nicepay"
                             className="flex-1 cursor-pointer font-medium"
                           >
-                            NicePay
+                            카드/간편결제
                           </Label>
                           <CreditCard className="h-5 w-5 text-foreground" />
                         </div>

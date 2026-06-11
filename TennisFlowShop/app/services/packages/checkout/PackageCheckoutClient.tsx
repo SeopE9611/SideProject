@@ -885,7 +885,7 @@ export default function PackageCheckoutClient({
                   </div>
                 ) : paymentMethod === "nicepay" && nicePaymentsEnabled ? (
                   <div className="rounded-lg border border-border bg-secondary px-4 py-3 text-sm text-muted-foreground">
-                    Nice 결제창으로 안전하게 결제를 진행합니다. 결제 버튼을 눌러
+                    카드/간편결제창으로 안전하게 결제를 진행합니다. 결제 버튼을 눌러
                     계속 진행해주세요.
                   </div>
                 ) : null}
@@ -1064,7 +1064,7 @@ export default function PackageCheckoutClient({
                       ? "무통장 입금"
                       : paymentMethod === "tosspayments"
                         ? "Toss 결제"
-                        : "NicePay 결제"}
+                        : "카드/간편결제"}
                   </p>
                   {paymentMethod === "bank_transfer" && (
                     <>
