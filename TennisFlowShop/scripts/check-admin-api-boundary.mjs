@@ -24,8 +24,6 @@ const ADMIN_DIRECT_FETCH_ALLOWLIST = new Set([
   // expiry: 2026-03-31
   "app/admin/boards/BoardsClient.tsx",
   // expiry: 2026-03-31
-  "app/admin/notifications/_components/AdminNotificationsClient.tsx",
-  // expiry: 2026-03-31
   "app/admin/orders/[id]/shipping-update/page.tsx",
   // expiry: 2026-03-31
   "app/admin/orders/[id]/shipping-update/shipping-form.tsx",

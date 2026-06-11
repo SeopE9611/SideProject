@@ -9,8 +9,6 @@
 | `app/api/admin/applications/stringing/[id]/shipping/route.ts` |        PATCH | 미적용                               | 후속 확장 대상                              |
 | `app/api/admin/community/posts/[id]/status/route.ts`          |        PATCH | 미적용                               | 후속 확장 대상                              |
 | `app/api/admin/community/reports/[id]/status/route.ts`        |        PATCH | 미적용                               | 후속 확장 대상                              |
-| `app/api/admin/notifications/outbox/[id]/force/route.ts`      |         POST | 미적용                               | 알림 재처리 계열                            |
-| `app/api/admin/notifications/outbox/[id]/retry/route.ts`      |         POST | 미적용                               | 알림 재처리 계열                            |
 | `app/api/admin/orders/[id]/shipping/route.ts`                 |        PATCH | 미적용                               | 후속 확장 대상                              |
 | `app/api/admin/package-orders/[id]/adjust-sessions/route.ts`  |         POST | 미적용                               | 후속 확장 대상                              |
 | `app/api/admin/package-orders/[id]/extend/route.ts`           |         POST | 미적용                               | 후속 확장 대상                              |

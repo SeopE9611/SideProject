@@ -13,9 +13,7 @@ const BRAND_EXCEPTION_WHITELIST = new Set([
   "lib/badge-style.ts",
 ]);
 
-const NON_WEB_UI_EXCEPTION_WHITELIST = new Set([
-  "app/features/notifications/core/render.ts",
-]);
+const NON_WEB_UI_EXCEPTION_WHITELIST = new Set();
 
 const HEX_COLOR_REGEX = /#[0-9A-Fa-f]{3,8}\b/g;
 const RAW_PALETTE_REGEX =

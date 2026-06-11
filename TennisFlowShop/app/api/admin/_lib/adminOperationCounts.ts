@@ -198,10 +198,6 @@ const academyNeedsActionFilter: Filter<Document> = {
   status: { $in: ["submitted", "reviewing", "contacted"] },
 };
 
-const notificationNeedsActionFilter: Filter<Document> = {
-  status: { $in: ["queued", "failed"] },
-};
-
 const reviewNeedsActionFilter: Filter<Document> = {
   $or: [
     { status: { $in: ["pending", "reported"] } },
@@ -595,7 +591,6 @@ export async function countAdminNavigationSummary(db: Db): Promise<{
     stringing,
     rentals,
     academyApplications,
-    notifications,
     reviews,
     boards,
     operationTaskCounts,
@@ -619,12 +614,6 @@ export async function countAdminNavigationSummary(db: Db): Promise<{
       academyNeedsActionFilter,
       "academy applications",
     ),
-    safeCount(
-      db,
-      "notifications_outbox",
-      notificationNeedsActionFilter,
-      "notifications",
-    ),
     safeCount(db, "reviews", reviewNeedsActionFilter, "reviews"),
     safeCount(db, "community_posts", boardNeedsActionFilter, "boards"),
     countAdminOperationTaskCounts(db),
@@ -638,7 +627,6 @@ export async function countAdminNavigationSummary(db: Db): Promise<{
     offline +
     operationTaskCounts.packagePaymentCheck +
     academyApplications +
-    notifications +
     reviews +
     boards;
 
@@ -649,7 +637,6 @@ export async function countAdminNavigationSummary(db: Db): Promise<{
     offline,
     academyApplications,
     packages: operationTaskCounts.packagePaymentCheck,
-    notifications,
     reviews,
     boards,
   };

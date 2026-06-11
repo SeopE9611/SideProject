@@ -23,9 +23,7 @@
   - border-red-200×1, bg-red-50/50×1, dark:border-red-900/30×1, dark:bg-red-950/10×1, bg-red-100×1, dark:bg-red-900/30×1, text-red-600×1, dark:text-red-400×1, bg-blue-500/70×1, bg-emerald-500/70×1, bg-violet-500/70×1, bg-amber-100×1, dark:bg-amber-900/30×1, text-amber-600×1, dark:text-amber-400×1, bg-emerald-100×1, dark:bg-emerald-900/30×1, text-emerald-600×1, dark:text-emerald-400×1, bg-blue-100×1, dark:bg-blue-900/30×1, text-blue-600×1, dark:text-blue-400×1
 - app/admin/layout.tsx
   - from-slate-50×1, via-indigo-50/30×1, to-sky-50×1, dark:from-slate-900×1, dark:via-slate-900×1, dark:to-slate-950×1, from-blue-600×1, via-indigo-600×1, to-blue-700×1, text-blue-100×1
-- app/admin/notifications/_components/AdminNotificationsClient.tsx
   - text-red-600×4, dark:text-red-400×4, dark:text-emerald-400×3, bg-amber-500/10×2, text-amber-600×2, dark:text-amber-400×2, bg-red-500/10×2, bg-emerald-500/10×2, text-emerald-600×2, border-red-200×2, bg-red-50×2, dark:border-red-900/30×2, dark:bg-red-950/10×2, border-emerald-200×1, bg-emerald-50×1, text-emerald-700×1, dark:border-emerald-900/30×1, dark:bg-emerald-950/20×1, bg-slate-950×1, text-slate-100×1
-- app/admin/notifications/outbox/[id]/_components/OutboxDetailClient.tsx
   - border-red-200×2, bg-red-100×1, text-red-800×1, bg-green-100×1, text-green-800×1, border-green-200×1, bg-yellow-100×1, text-yellow-800×1, border-yellow-200×1, bg-blue-100×1, text-blue-800×1, border-blue-200×1, text-red-600×1, text-red-700×1, bg-red-50×1, border-red-100×1
 - app/admin/operations/_components/filters/operationsFilters.ts
   - bg-slate-500/10×3, text-slate-700×2, bg-violet-500/10×1, text-violet-700×1, bg-orange-500/10×1, text-orange-700×1, bg-sky-500/10×1, text-sky-700×1, text-slate-600×1

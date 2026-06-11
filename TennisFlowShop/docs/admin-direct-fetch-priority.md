@@ -37,7 +37,6 @@
 - `app/admin/rentals/[id]/shipping-update/shipping-form.tsx`
 - `app/admin/rentals/_components/AdminRentalsClient.tsx`
 - `app/admin/rentals/_components/CleanupCreatedButton.tsx`
-- `app/admin/notifications/_components/AdminNotificationsClient.tsx`
 - `app/admin/rackets/[id]/edit/_components/AdminRacketEditClient.tsx`
 - `app/admin/products/ProductsClient.tsx`
 - `app/admin/boards/BoardsClient.tsx`

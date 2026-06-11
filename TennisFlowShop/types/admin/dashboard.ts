@@ -93,8 +93,6 @@ export type DashboardMetrics = {
       rentalOverdue: number;
       rentalDueSoon: number;
       passExpiringSoon: number;
-      outboxQueued: number;
-      outboxFailed: number;
       stringingAging3d: number;
     };
   };
@@ -226,16 +224,6 @@ export type DashboardMetrics = {
       totalPrice: number;
       ageDays: number;
       href: string;
-    }>;
-    outboxBacklog: Array<{
-      id: string;
-      href: string;
-      createdAt: string;
-      status: "queued" | "failed" | "sent";
-      eventType: string;
-      to: string | null;
-      retries: number;
-      error: string | null;
     }>;
   };
   settlements: {
