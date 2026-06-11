@@ -411,6 +411,9 @@ export default async function StringServiceSuccessPage(props: Props) {
     shippingInfo?.depositor ??
     null; // 신청서에도 depositor가 있으면 보조신청서에도 depositor가 있으면 보조
   const bankInfo = bankKey ? (bankLabelMap as any)[bankKey] : null;
+  const isNicePayment =
+    (application as any)?.paymentInfo?.provider === "nicepay" ||
+    (application as any)?.paymentMethod === "nicepay";
 
   // 로그인 여부 확인
   const refreshToken = cookieStore.get("refreshToken")?.value;
@@ -629,11 +632,15 @@ export default async function StringServiceSuccessPage(props: Props) {
                         교체서비스 비용 기준
                       </p>
                     )}
-                    {application.packageApplied && (
+                    {application.packageApplied ? (
                       <p className="mt-2 text-sm text-foreground">
                         패키지 적용으로 입금 불필요
                       </p>
-                    )}
+                    ) : isNicePayment ? (
+                      <p className="mt-2 text-sm text-foreground">
+                        카드/간편결제 완료 · 별도 입금 불필요
+                      </p>
+                    ) : null}
                   </div>
 
                   <div className="bg-muted p-4 md:p-6 rounded-xl">
@@ -875,8 +882,24 @@ export default async function StringServiceSuccessPage(props: Props) {
                       </div>
                     </div>
                   </div>
+                ) : isNicePayment ? (
+                  // ===== 카드/간편결제 완료 안내 =====
+                  <div className="mb-6 md:mb-8">
+                    <h3 className="text-xl font-bold text-foreground mb-4 flex items-center">
+                      <CreditCard className="h-6 w-6 mr-3 text-primary" />
+                      카드/간편결제 완료
+                    </h3>
+                    <div className="rounded-xl border-2 border-border bg-muted/30 p-4 md:p-6">
+                      <p className="font-semibold text-primary">
+                        카드/간편결제가 완료되었습니다.
+                      </p>
+                      <p className="mt-2 text-sm text-foreground">
+                        별도 입금은 필요하지 않으며, 결제 완료 후 신청이 접수되었습니다.
+                      </p>
+                    </div>
+                  </div>
                 ) : (
-                  // ===== 기존 입금 계좌 정보 (패키지 미적용 시에만 노출) =====
+                  // ===== 기존 입금 계좌 정보 (패키지·카드결제 미적용 시에만 노출) =====
                   bankInfo && (
                     <div className="mb-6 md:mb-8">
                       <h3 className="text-xl font-bold text-foreground mb-4 flex items-center">

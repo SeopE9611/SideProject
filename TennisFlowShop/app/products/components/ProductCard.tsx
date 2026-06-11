@@ -459,16 +459,9 @@ const ProductCard = React.memo(
                 >
                   <Link href={detailHref}>
                     <Eye className="w-3 h-3 bp-sm:w-4 bp-sm:h-4 mr-1.5" />
-                    {isApplyFlow ? (
-                      <>
-                        <span className="sm:hidden">교체 신청</span>
-                        <span className="hidden sm:inline">
-                          이 스트링으로 교체 신청
-                        </span>
-                      </>
-                    ) : (
-                      "상세 보기"
-                    )}
+                    <span className="min-w-0 truncate whitespace-nowrap">
+                      {isApplyFlow ? "선택하기" : "상세 보기"}
+                    </span>
                   </Link>
                 </Button>
 
@@ -633,16 +626,9 @@ const ProductCard = React.memo(
             >
               <Link href={detailHref}>
                 <Eye className="h-4 w-4 mr-1.5" />
-                {isApplyFlow ? (
-                  <>
-                    <span className="sm:hidden">교체 신청</span>
-                    <span className="hidden sm:inline">
-                      이 스트링으로 교체 신청
-                    </span>
-                  </>
-                ) : (
-                  "상세 보기"
-                )}
+                <span className="min-w-0 truncate whitespace-nowrap">
+                  {isApplyFlow ? "선택하기" : "상세 보기"}
+                </span>
               </Link>
             </Button>
             <div className="flex justify-end">
