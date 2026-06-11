@@ -730,6 +730,38 @@ export async function PATCH(
       return new NextResponse("권한이 없습니다.", { status: 403 });
     }
 
+    const attemptsOrderStatusChange =
+      typeof status === "string" && status.trim() !== String(existing.status);
+    const attemptsPaymentStatusChange =
+      Object.prototype.hasOwnProperty.call(body, "paymentStatus") ||
+      (body?.paymentInfo &&
+        (Object.prototype.hasOwnProperty.call(body.paymentInfo, "status") ||
+          Object.prototype.hasOwnProperty.call(body.paymentInfo, "method"))) ||
+      (body?.payment &&
+        (Object.prototype.hasOwnProperty.call(body.payment, "status") ||
+          Object.prototype.hasOwnProperty.call(body.payment, "method")));
+
+    if (attemptsOrderStatusChange || attemptsPaymentStatusChange) {
+      const linkedApplication = await db
+        .collection("stringing_applications")
+        .findOne({
+          orderId: { $in: [_id, String(_id)] },
+          status: { $ne: "draft" },
+        });
+      const isLinkedStringingOrder = Boolean(
+        existing.isStringServiceApplied ||
+          existing.stringingApplicationId ||
+          linkedApplication,
+      );
+
+      if (isLinkedStringingOrder) {
+        return new NextResponse(
+          "교체서비스 신청서와 연결된 주문은 주문 상태를 단독으로 변경할 수 없습니다. 결제/작업/배송 단계는 통합 진행 단계에서, 취소/환불은 주문 상세의 취소/환불 액션에서 처리해주세요.",
+          { status: 409 },
+        );
+      }
+    }
+
     // 취소된 주문은 추가 변경 금지
     if (existing.status === "취소") {
       return new NextResponse("취소된 주문입니다.", { status: 400 });
