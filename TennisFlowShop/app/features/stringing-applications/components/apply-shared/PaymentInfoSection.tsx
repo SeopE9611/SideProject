@@ -44,7 +44,7 @@ export default function PaymentInfoSection({
         </div>
         <h2 className="text-2xl font-bold mb-2">결제 정보</h2>
         <p className="text-muted-foreground">
-          패키지와 입금 정보를 확인해주세요
+          패키지와 결제수단을 확인해주세요
         </p>
       </div>
 
@@ -243,7 +243,7 @@ export default function PaymentInfoSection({
                     setFormData({ ...formData, paymentMethod: "nicepay" })
                   }
                 />
-                <span className="font-medium">카드결제</span>
+                <span className="font-medium">카드/간편결제</span>
               </label>
             )}
           </div>

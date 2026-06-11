@@ -787,9 +787,6 @@ export default function StringServiceApplyPage() {
     };
   }, [allowGuestCheckout, authChecked, blockedByLoginGate]);
 
-  // 가격 상태 추가 및 표시
-  const [price, setPrice] = useState<number>(0);
-
   // 수거비 상수
 
   // === 패키지 사용에 필요한 횟수 계산 ===
@@ -1022,8 +1019,13 @@ export default function StringServiceApplyPage() {
     return Number(p ?? 0);
   }, [isRentalBased, rentalAmount, pdpProduct]);
 
-  // 교체비(서비스비) 부분
-  const summaryBase = price; // linesForSubmit 기반 교체비 총합
+  // 교체비(서비스비): 서버 정산과 동일하게 제출 라인의 장착비 합계를 사용
+  const summaryBase = useMemo(() => {
+    return linesForSubmit.reduce((sum, line) => {
+      const fee = Number(line.mountingFee ?? 0);
+      return sum + (Number.isFinite(fee) ? fee : 0);
+    }, 0);
+  }, [linesForSubmit]);
 
   // 대여 기반: 교체비(이미 결제된 값)를 우선 사용
   // - amount.stringingFee가 있으면 그 값을 신뢰(결제 당시 스냅샷)
@@ -1070,8 +1072,6 @@ export default function StringServiceApplyPage() {
   const stringIncludedForCard = isOrderBased || isRentalBased;
   // 헤더 안내문(혼선 방지)
   const headerHintForCard = isRentalBased ? "대여 결제 기준으로 표시됩니다" : isOrderBased ? "주문 결제 금액 기준으로 표시됩니다" : undefined;
-
-  const summaryTotal = serviceCost;
 
   const won = (n: number) => n.toLocaleString("ko-KR") + "원";
 
@@ -1385,7 +1385,7 @@ export default function StringServiceApplyPage() {
             isOrderSlotBlocked={isOrderSlotBlocked}
             order={order}
             lineCount={lineCount}
-            price={price}
+            price={summaryBase}
             priceView={priceView}
             handleStringTypesChange={handleStringTypesChange}
             handleCustomInputChange={handleCustomInputChange}
