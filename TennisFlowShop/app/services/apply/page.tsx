@@ -9,6 +9,7 @@ import useStringingApplySharedState, {
   type CollectionMethod,
 } from "@/app/features/stringing-applications/hooks/useStringingApplySharedState";
 import ApplyHero from "@/app/services/apply/_components/ApplyHero";
+import ApplicationNiceCheckoutButton from "@/app/services/apply/_components/ApplicationNiceCheckoutButton";
 import {
   ApplyPriceSummaryDesktop,
   ApplyPriceSummaryMobile,
@@ -680,7 +681,7 @@ export default function StringServiceApplyPage() {
       // 대여 기반 신청서는 '대여 결제'에서 이미 결제가 완료됨
       // → 구매 UX처럼 결제 스텝은 유지하되, 입력 검증은 생략
       if (isRentalBased) return true;
-      if (!usingPackage) {
+      if (!usingPackage && formData.paymentMethod === "bank_transfer") {
         if (!formData.shippingBank)
           return (toast("은행을 선택해주세요."), false);
         if (!formData.shippingDepositor.trim())
@@ -802,7 +803,7 @@ export default function StringServiceApplyPage() {
 
       if (stepId === 3) {
         if (isRentalBased) return null;
-        if (!usingPackage) {
+        if (!usingPackage && formData.paymentMethod === "bank_transfer") {
           if (!formData.shippingBank) return { id: "shippingBank" };
           if (!formData.shippingDepositor.trim())
             return { id: "shippingDepositor" };
@@ -1095,7 +1096,7 @@ export default function StringServiceApplyPage() {
 
     // 1) 커스텀/보유 스트링 선택 시: 항상 12,000
     if (formData.stringTypes.includes("custom")) {
-      base = CUSTOM_STRING_MOUNTING_FEE;
+      base = CUSTOM_STRING_MOUNTING_FEE * Math.max(1, requiredPassCount);
     }
     // 2) 그 외 스트링 상품이 선택된 경우
     else if (formData.stringTypes.length > 0) {
@@ -1126,7 +1127,7 @@ export default function StringServiceApplyPage() {
     const total = usingPackage ? 0 : base + pickupFee;
 
     return { usingPackage, base, pickupFee, total };
-  }, [formData, orderId, order, usingPackage]);
+  }, [formData, orderId, order, requiredPassCount, usingPackage]);
 
   // 선택된 스트링 상품 정보 (orderId 기반 진입용)
   const selectedOrderItem = useMemo(() => {
@@ -1466,15 +1467,15 @@ export default function StringServiceApplyPage() {
     }, 30);
   }, [currentStepId]);
 
-  const doSubmit = async () => {
+  const doSubmit = async (navigateOnSuccess = true): Promise<string | null> => {
     // 마지막 단계(4단계)가 아니면 제출하지 않음
-    if (currentStep !== steps.length) return;
+    if (currentStep !== steps.length) return null;
 
     if (isOrderSlotBlocked) {
       showErrorToast(
         "이 주문은 추가 신청 가능한 대상이 없습니다. 주문 상세에서 현재 접수 상태를 확인해주세요.",
       );
-      return;
+      return null;
     }
 
     // 마지막 단계 직전까지 전부 재검증: 실패 스텝으로 이동
@@ -1483,7 +1484,7 @@ export default function StringServiceApplyPage() {
       if (!validateStep(stepId, false)) {
         pendingFocusStepIdRef.current = stepId;
         setCurrentStep(idx);
-        return;
+        return null;
       }
     }
 
@@ -1535,6 +1536,7 @@ export default function StringServiceApplyPage() {
       requirements: formData.requirements,
       // 대여 기반 신청서는 결제가 이미 완료되어 있어 패키지 적용을 허용하지 않음
       packageOptOut: isRentalBased ? true : !!formData.packageOptOut,
+      paymentMethod: usingPackage ? undefined : formData.paymentMethod,
       orderId,
       rentalId,
       shippingInfo: {
@@ -1578,7 +1580,7 @@ export default function StringServiceApplyPage() {
           setFormData((prev) => ({ ...prev, preferredTime: "" })); // 선택 시간 해제
           await refetchDisabledTimesFor(formData.preferredDate); // 비활성화 시간 재조회
           setIsSubmitting(false);
-          return;
+          return null;
         }
         // 그 외 일반 오류
         const { message } = await res
@@ -1597,13 +1599,18 @@ export default function StringServiceApplyPage() {
         orderId,
         rentalId,
       });
+      setApplicationId(result.applicationId);
 
-      showSuccessToast("신청이 완료되었습니다!");
-      router.push(
-        `/services/success?applicationId=${encodeURIComponent(result.applicationId)}`,
-      );
+      if (navigateOnSuccess) {
+        showSuccessToast("신청이 완료되었습니다!");
+        router.push(
+          `/services/success?applicationId=${encodeURIComponent(result.applicationId)}`,
+        );
+      }
+      return result.applicationId;
     } catch (error) {
       showErrorToast("신청서 제출 중 오류가 발생했습니다. 다시 시도해주세요.");
+      return null;
     } finally {
       setIsSubmitting(false);
     }
@@ -1611,7 +1618,7 @@ export default function StringServiceApplyPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    void doSubmit();
+    void doSubmit(true);
   };
 
   const handleNext = () => {
@@ -1718,6 +1725,7 @@ export default function StringServiceApplyPage() {
             packageInsufficient={packageInsufficient}
             packageRemaining={packageRemaining}
             requiredPassCount={requiredPassCount}
+            allowCardPayment={isSingleApplyMode}
           />
         );
 
@@ -1806,8 +1814,7 @@ export default function StringServiceApplyPage() {
                 stepLabel: "선택 02",
                 icon: <File className="h-8 w-8" />,
                 title: "보유 라켓/보유 스트링으로 장착",
-                target:
-                  "가지고 있는 라켓이나 스트링으로 작업만 신청합니다.",
+                target: "가지고 있는 라켓이나 스트링으로 작업만 신청합니다.",
                 steps: "신청서 작성 → 결제/접수 → 작업 진행",
                 cta: "보유 장비로 신청하기",
                 href: "/services/apply?mode=single",
@@ -2029,7 +2036,19 @@ export default function StringServiceApplyPage() {
                       isStepValid={isStepValid}
                       isSubmitting={isSubmitting}
                       isOrderSlotBlocked={isOrderSlotBlocked}
-                      handleSubmit={doSubmit}
+                      handleSubmit={() => void doSubmit(true)}
+                      finalAction={
+                        isSingleApplyMode &&
+                        !usingPackage &&
+                        formData.paymentMethod === "nicepay" &&
+                        checkoutTotal > 0 ? (
+                          <ApplicationNiceCheckoutButton
+                            disabled={isSubmitting || isOrderSlotBlocked}
+                            payableAmount={checkoutTotal}
+                            submitApplication={() => doSubmit(false)}
+                          />
+                        ) : undefined
+                      }
                     />
                   </form>
                 </CardContent>

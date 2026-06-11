@@ -15,7 +15,8 @@ export type TossPaymentFlowType =
   | "checkout_order"
   | "package_order"
   | "racket_order"
-  | "rental_order";
+  | "rental_order"
+  | "stringing_application";
 
 export type TossPaymentFailureStage =
   | "session_expired_before_confirm"
@@ -104,6 +105,7 @@ export type TossPaymentSession = {
     phone?: string;
   } | null;
   mongoOrderId?: string | null;
+  applicationId?: string | null;
   paymentKey?: string | null;
   failureStage?: TossPaymentFailureStage;
   failureCode?: string;
