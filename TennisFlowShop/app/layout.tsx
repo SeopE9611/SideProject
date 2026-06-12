@@ -56,7 +56,7 @@ export default async function RootLayout({
   if (token) {
     const payload = verifyAccessToken(token);
     if (payload?.sub) {
-      // 루트 layout은 모든 페이지 전환의 공통 경로이므로,
+      // 루트 layout은 모든 페이지 전환의 공통 경로이므로,,
       // 여기서 매번 DB users.findOne()까지 수행하면 전환 체감이 느려질 수 있다.
       // 따라서 이번 단계에서는 토큰 payload 기반 "최소 initialUser"만 주입하고,
       // 상세 사용자 동기화는 기존 bootstrap(/api/users/me → refresh 재시도) 흐름에 맡긴다.
