@@ -24,6 +24,17 @@ export type OperationSignal = {
   nextAction?: string;
 };
 
+export type LinkedFlowStatusIssue = {
+  severity: "warning";
+  code: "LINKED_STATUS_MISMATCH";
+  title: string;
+  message: string;
+  orderStatus: string;
+  applicationStatus: string;
+  actionHref: string;
+  actionLabel: string;
+};
+
 export type AdminOperationItem = {
   id: string;
   kind: AdminOperationKind;
@@ -84,6 +95,7 @@ export type AdminOperationsGroup = {
   primarySignal: OperationSignal | null;
   signals: OperationSignal[];
   nextAction?: string | null;
+  linkedFlowStatusIssue?: LinkedFlowStatusIssue | null;
   groupReviewLevel?: AdminOperationReviewLevel;
   groupNeedsReview?: boolean;
   groupQueueBucket?: "urgent" | "caution" | "pending" | "clean";
