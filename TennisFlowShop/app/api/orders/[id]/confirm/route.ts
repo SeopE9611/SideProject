@@ -264,7 +264,7 @@ export async function POST(
   const svcRes = await db.collection("stringing_applications").updateMany(
     {
       orderId: orderObjectId,
-      status: "교체완료",
+      status: { $nin: ["draft"] },
       $or: [{ userConfirmedAt: { $exists: false } }, { userConfirmedAt: null }],
     },
     { $set: { userConfirmedAt: confirmedAt } },
