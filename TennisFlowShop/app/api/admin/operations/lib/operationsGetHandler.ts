@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
+import type { Document, Filter } from "mongodb";
 import { requireAdmin } from "@/lib/admin.guard";
 import { createPackagePaymentCheckFilter } from "@/app/api/admin/_lib/packagePaymentCheckFilter";
 import {
@@ -1118,22 +1119,23 @@ export async function handleAdminOperationsGet(req: Request) {
 
   // 패키지 구매는 주문/신청서/대여 linked-flow와 분리된 단독 운영 항목으로 조회한다.
   const packagePurchaseFilter = createPackagePaymentCheckFilter();
-  const packagePurchaseQuery = qRegex
+  const packageObjectIdCandidates = idCandidates.filter(
+    (id): id is ObjectId => id instanceof ObjectId,
+  );
+  const packageSearchOr: Filter<Document>[] = [
+    { "userSnapshot.name": qRegex },
+    { "userSnapshot.email": qRegex },
+    { "serviceInfo.name": qRegex },
+    { "serviceInfo.email": qRegex },
+    { "shippingInfo.name": qRegex },
+    { "packageInfo.title": qRegex },
+  ];
+  if (packageObjectIdCandidates.length > 0) {
+    packageSearchOr.push({ _id: { $in: packageObjectIdCandidates } });
+  }
+  const packagePurchaseQuery: Filter<Document> = qRegex
     ? {
-        $and: [
-          packagePurchaseFilter,
-          {
-            $or: [
-              { "userSnapshot.name": qRegex },
-              { "userSnapshot.email": qRegex },
-              { "serviceInfo.name": qRegex },
-              { "serviceInfo.email": qRegex },
-              { "shippingInfo.name": qRegex },
-              { "packageInfo.title": qRegex },
-              ...(idCandidates.length > 0 ? [{ _id: { $in: idCandidates } }] : []),
-            ],
-          },
-        ],
+        $and: [packagePurchaseFilter, { $or: packageSearchOr }],
       }
     : packagePurchaseFilter;
   const rawPackagePurchases = await db

@@ -142,7 +142,7 @@ export function getAuxiliaryMetaBadgeSpec(kind: AuxiliaryMetaBadgeKind) {
   return badgeStyleSpec("neutral");
 }
 
-export type OrderFlowBadgeState = 1 | 2 | 3 | 4 | 5 | 6 | 7;
+export type OrderFlowBadgeState = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 export type OrderKindBadgeState =
   | "order"
   | "stringing_application"
@@ -157,6 +157,7 @@ export type OrderLinkBadgeState =
 
 export function flowBadgeTone(flow?: OrderFlowBadgeState): BadgeSemanticTone {
   if (!flow || flow === 3) return "neutral";
+  if (flow === 8) return "brand";
   if (flow === 4 || flow === 5) return "warning";
   if (flow === 6 || flow === 7) return "info";
   return "neutral";
