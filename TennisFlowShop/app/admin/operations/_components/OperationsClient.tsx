@@ -172,7 +172,7 @@ const OPERATOR_TERM_MAP: Array<[RegExp, string]> = [
   [/\bpending\b/gi, "미처리"],
 ];
 
-const FLOW_LABEL_BY_ID: Record<1 | 2 | 3 | 4 | 5 | 6 | 7, string> = {
+const FLOW_LABEL_BY_ID: Record<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8, string> = {
   1: "스트링 단품 구매",
   2: "스트링 구매 + 교체서비스 신청(통합)",
   3: "교체서비스 단일 신청",
@@ -180,6 +180,7 @@ const FLOW_LABEL_BY_ID: Record<1 | 2 | 3 | 4 | 5 | 6 | 7, string> = {
   5: "라켓 구매 + 스트링 선택 + 교체서비스 신청(통합)",
   6: "라켓 단품 대여",
   7: "라켓 대여 + 스트링 선택 + 교체서비스 신청(통합)",
+  8: "패키지 구매",
 };
 
 function toOperatorSentence(text?: string | null) {
@@ -592,6 +593,7 @@ const KIND_PRIORITY: Record<Kind, number> = {
   order: 0,
   rental: 1,
   stringing_application: 2,
+  package_purchase: 3,
 };
 
 /**
@@ -613,7 +615,7 @@ function pickOnePerKind(items: OpItem[]) {
     const t2 = it.createdAt ? new Date(it.createdAt).getTime() : 0;
     if (t2 >= t1) byKind.set(it.kind, it);
   }
-  return (["order", "rental", "stringing_application"] as Kind[])
+  return (["order", "rental", "stringing_application", "package_purchase"] as Kind[])
     .map((k) => byKind.get(k))
     .filter(Boolean) as OpItem[];
 }
@@ -1891,6 +1893,7 @@ export default function OperationsClient() {
                       신청서
                     </SelectItem>
                     <SelectItem value="rental">대여</SelectItem>
+                    <SelectItem value="package_purchase">패키지 구매</SelectItem>
                   </SelectContent>
                 </Select>
 
@@ -1919,6 +1922,7 @@ export default function OperationsClient() {
                     <SelectItem value="7">
                       라켓 대여 + 스트링 선택 + 교체서비스 신청(통합)
                     </SelectItem>
+                    <SelectItem value="8">패키지 구매</SelectItem>
                   </SelectContent>
                 </Select>
 
@@ -3147,6 +3151,8 @@ export default function OperationsClient() {
                                             ? "신청서"
                                             : item.kind === "rental"
                                               ? "대여"
+                                              : item.kind === "package_purchase"
+                                                ? "패키지 구매"
                                               : "주문"}
                                         </p>
                                       </div>

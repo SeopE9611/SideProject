@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { requireAdmin } from "@/lib/admin.guard";
+import { createPackagePaymentCheckFilter } from "@/app/api/admin/_lib/packagePaymentCheckFilter";
 import {
   toISO,
   normalizeOrderStatus,
@@ -58,6 +59,7 @@ const KIND_PRIORITY: Record<Kind, number> = {
   order: 0,
   rental: 1,
   stringing_application: 2,
+  package_purchase: 3,
 };
 
 type UnknownDoc = Record<string, unknown>;
@@ -220,6 +222,8 @@ function flowLabelOf(flow: Flow) {
       return "라켓 단품 대여";
     case 7:
       return "라켓 대여 + 스트링 선택 + 교체서비스 신청(통합)";
+    case 8:
+      return "패키지 구매";
     default:
       return "미분류";
   }
@@ -234,6 +238,8 @@ function settlementLabelOf(anchor: SettlementAnchor) {
       return "정산: 대여";
     case "application":
       return "정산: 신청(단독)";
+    case "package_purchase":
+      return "정산: 패키지 구매";
     default:
       return "정산: -";
   }
@@ -252,6 +258,7 @@ function groupKeyOf(it: OpItem): string {
   // 주문/대여는 자기 자신이 앵커
   if (it.kind === "order") return `order:${it.id}`;
   if (it.kind === "rental") return `rental:${it.id}`;
+  if (it.kind === "package_purchase") return `package_purchase:${it.id}`;
 
   // 신청서는 연결된 "주문/대여"를 앵커로
   const rel = it.related;
@@ -629,7 +636,7 @@ function parseFlow(v: string | null): Flow | null {
   if (!v) return null;
   const n = Number(v);
   if (!Number.isInteger(n)) return null;
-  if (n < 1 || n > 7) return null;
+  if (n < 1 || n > 8) return null;
   return n as Flow;
 }
 
@@ -643,7 +650,12 @@ function parseIntParam(
 }
 
 function parseKind(v: string | null): Kind | "all" {
-  if (v === "order" || v === "rental" || v === "stringing_application")
+  if (
+    v === "order" ||
+    v === "rental" ||
+    v === "stringing_application" ||
+    v === "package_purchase"
+  )
     return v;
   return "all";
 }
@@ -712,10 +724,13 @@ function isMatchedByDbCandidate(
     order: Set<string>;
     rental: Set<string>;
     application: Set<string>;
+    packagePurchase: Set<string>;
   },
 ) {
   if (item.kind === "order") return matchedIds.order.has(item.id);
   if (item.kind === "rental") return matchedIds.rental.has(item.id);
+  if (item.kind === "package_purchase")
+    return matchedIds.packagePurchase.has(item.id);
   return matchedIds.application.has(item.id);
 }
 
@@ -1100,6 +1115,47 @@ export async function handleAdminOperationsGet(req: Request) {
       .toArray();
   }
   const dbMatchedRentalIds = new Set(rawRentals.map((r) => String(r?._id)));
+
+  // 패키지 구매는 주문/신청서/대여 linked-flow와 분리된 단독 운영 항목으로 조회한다.
+  const packagePurchaseFilter = createPackagePaymentCheckFilter();
+  const packagePurchaseQuery = qRegex
+    ? {
+        $and: [
+          packagePurchaseFilter,
+          {
+            $or: [
+              { "userSnapshot.name": qRegex },
+              { "userSnapshot.email": qRegex },
+              { "serviceInfo.name": qRegex },
+              { "serviceInfo.email": qRegex },
+              { "shippingInfo.name": qRegex },
+              { "packageInfo.title": qRegex },
+              ...(idCandidates.length > 0 ? [{ _id: { $in: idCandidates } }] : []),
+            ],
+          },
+        ],
+      }
+    : packagePurchaseFilter;
+  const rawPackagePurchases = await db
+    .collection("packageOrders")
+    .find(packagePurchaseQuery)
+    .project({
+      _id: 1,
+      createdAt: 1,
+      status: 1,
+      paymentStatus: 1,
+      totalPrice: 1,
+      userSnapshot: 1,
+      serviceInfo: 1,
+      shippingInfo: 1,
+      packageInfo: 1,
+    })
+    .sort({ createdAt: -1 })
+    .limit(fetchLimit)
+    .toArray();
+  const dbMatchedPackagePurchaseIds = new Set(
+    rawPackagePurchases.map((purchase) => String(purchase?._id)),
+  );
 
   /**
    * 3-1) MAX_FETCH_EACH 컷 보강
@@ -1851,8 +1907,52 @@ export async function handleAdminOperationsGet(req: Request) {
     };
   });
 
+  const packagePurchaseItems: OpItem[] = rawPackagePurchases.map((purchase) => {
+    const id = String(purchase._id);
+    const packageInfo = asDoc(purchase.packageInfo);
+    const sessions = Number(packageInfo?.sessions ?? 0);
+    const packageTitle =
+      getString(packageInfo?.title) ?? (sessions > 0 ? `${sessions}회권` : "패키지");
+    const statusLabel = getString(purchase.status) ?? "주문접수";
+    const paymentLabel = getString(purchase.paymentStatus) ?? "결제대기";
+    const serviceInfo = asDoc(purchase.serviceInfo);
+    const snapshotCustomer = pickCustomerFromDoc(purchase);
+    const customer =
+      snapshotCustomer.name || snapshotCustomer.email
+        ? snapshotCustomer
+        : {
+            name: getString(serviceInfo?.name) ?? "",
+            email: getString(serviceInfo?.email) ?? "",
+          };
+
+    return {
+      id,
+      kind: "package_purchase",
+      createdAt: toISO(purchase.createdAt),
+      customer,
+      title: sessions > 0 ? `${packageTitle} · ${sessions}회` : packageTitle,
+      statusLabel,
+      paymentLabel,
+      amount: Number(purchase.totalPrice ?? 0),
+      flow: 8,
+      flowLabel: "패키지 구매",
+      settlementAnchor: "package_purchase",
+      settlementLabel: "패키지 구매",
+      href: `/admin/packages/${id}`,
+      related: null,
+      isIntegrated: false,
+      pendingReasons: ["새 패키지 구매가 접수되었습니다."],
+      nextAction: "패키지 구매를 확인하고 결제 상태와 이용권 활성화 상태를 확인하세요.",
+    };
+  });
+
   // 5) 병합 → 최신순 정렬 → kind/q 필터
-  let merged: OpItem[] = [...orderItems, ...appItems, ...rentalItems].sort(
+  let merged: OpItem[] = [
+    ...orderItems,
+    ...appItems,
+    ...rentalItems,
+    ...packagePurchaseItems,
+  ].sort(
     (a, b) => {
       const ta = a.createdAt ? new Date(a.createdAt).getTime() : 0;
       const tb = b.createdAt ? new Date(b.createdAt).getTime() : 0;
@@ -1877,6 +1977,7 @@ export async function handleAdminOperationsGet(req: Request) {
       order: dbMatchedOrderIds,
       rental: dbMatchedRentalIds,
       application: dbMatchedAppIds,
+      packagePurchase: dbMatchedPackagePurchaseIds,
     };
     merged = merged.filter(
       (item) =>
@@ -1885,7 +1986,7 @@ export async function handleAdminOperationsGet(req: Request) {
     );
   }
 
-  // flow=1..7 (시나리오) 필터
+  // flow=1..8 (시나리오) 필터
   // - "그룹(통합)"의 구성(앵커/하위)을 깨지 않기 위해, '그룹 키' 기준으로 통째로 남긴다.
   // - 즉, 해당 그룹의 어떤 문서든 flow가 매칭되면 같은 그룹 키의 문서를 같이 남긴다.
   if (flow) {

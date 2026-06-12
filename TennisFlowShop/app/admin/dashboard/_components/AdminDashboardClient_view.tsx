@@ -555,12 +555,12 @@ export default function AdminDashboardClient() {
               <CardDescription>패키지·오프라인·보정·알림·정산</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
-              <div className="flex min-w-0 items-center justify-between gap-2">
-                <span className="min-w-0 break-words">패키지 결제확인</span>
+              <Link href="/admin/operations?kind=package_purchase" className="flex min-w-0 items-center justify-between gap-2 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                <span className="min-w-0 break-words">패키지 구매 확인</span>
                 <Badge className="shrink-0 whitespace-nowrap" variant={data.kpi.queue.packagePaymentCheck > 0 ? "destructive" : "secondary"}>
                   {formatAdminNumber(data.kpi.queue.packagePaymentCheck)}
                 </Badge>
-              </div>
+              </Link>
               <div className="flex min-w-0 items-center justify-between gap-2">
                 <span className="min-w-0 break-words">오프라인 보정</span>
                 <Badge className="shrink-0 whitespace-nowrap" variant={data.kpi.queue.offlineReconciliationOpen > 0 ? "destructive" : "secondary"}>
