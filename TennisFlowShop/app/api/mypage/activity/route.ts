@@ -124,6 +124,7 @@ type ActivityRentalSummary = {
   createdAt: string;
   updatedAt: string;
   status: string;
+  userConfirmedAt?: string | null;
   shippingMethod?: string;
   brand?: string;
   model?: string;
@@ -440,6 +441,7 @@ export async function GET(req: Request) {
             createdAt: 1,
             updatedAt: 1,
             status: 1,
+            userConfirmedAt: 1,
             brand: 1,
             model: 1,
             days: 1,
@@ -861,6 +863,12 @@ export async function GET(req: Request) {
         createdAt,
         updatedAt,
         status: r.status ?? "",
+        userConfirmedAt:
+          r.userConfirmedAt instanceof Date
+            ? r.userConfirmedAt.toISOString()
+            : typeof r.userConfirmedAt === "string"
+              ? r.userConfirmedAt
+              : null,
         shippingMethod: String(r?.shipping?.shippingMethod ?? ""),
         brand: r.brand,
         model: r.model,
@@ -980,6 +988,8 @@ export async function GET(req: Request) {
       const rentalNeedsAction =
         group.kind === "rental" &&
         isRentalTodoActionable({
+          status: group.rental?.status,
+          userConfirmedAt: group.rental?.userConfirmedAt,
           linkedApplications: group.rental?.applicationSummaries,
           primaryApplication: group.application,
           stringingApplicationId: group.rental?.stringingApplicationId,
