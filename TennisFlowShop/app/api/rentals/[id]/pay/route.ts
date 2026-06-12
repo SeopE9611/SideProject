@@ -18,7 +18,7 @@ export const dynamic = "force-dynamic";
  * - 주의: 기존 비즈니스 로직(0원 차단, pending→paid 전이)은 그대로 유지
  */
 const POSTAL_RE = /^\d{5}$/;
-const ALLOWED_BANKS = new Set(["shinhan", "kookmin", "woori"] as const);
+const PAYMENT_BANKS = new Set(["kakao"] as const);
 
 const toTrimmedString = (v: unknown) =>
   v === null || v === undefined ? "" : String(v).trim();
@@ -120,7 +120,7 @@ export async function POST(
     }
 
     // 4) bank allowlist 최종 방어
-    if (body?.payment?.bank && !ALLOWED_BANKS.has(body.payment.bank as any)) {
+    if (body?.payment?.bank && !PAYMENT_BANKS.has(body.payment.bank as any)) {
       return NextResponse.json(
         { ok: false, message: "INVALID_BANK" },
         { status: 400 },

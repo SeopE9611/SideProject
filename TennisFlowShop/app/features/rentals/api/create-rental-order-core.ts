@@ -5,12 +5,16 @@ import {
   type StringingApplicationInput,
 } from "@/app/features/stringing-applications/api/submit-core";
 import { getEffectiveProductPrice } from "@/lib/product-pricing";
+import {
+  RefundAccountSchema,
+  type RefundAccountInfo,
+} from "@/lib/cancel-request/refund-account";
 import { deductPoints, getPointsSummary } from "@/lib/points.service";
 import type { MongoClient, Db } from "mongodb";
 import { ObjectId } from "mongodb";
 
 const POINT_UNIT = 100;
-const ALLOWED_BANKS = new Set(["shinhan", "kookmin", "woori"] as const);
+const PAYMENT_BANKS = new Set(["kakao"] as const);
 
 const rentalOrdersIdemIndexGlobal = globalThis as typeof globalThis & {
   __tf_rental_orders_idem_index_promise__?: Promise<string>;
@@ -122,11 +126,7 @@ export type RentalCreatePayload = {
     deliveryRequest?: string;
     shippingMethod?: "pickup" | "delivery";
   } | null;
-  refundAccount: {
-    bank: "shinhan" | "kookmin" | "woori";
-    account: string;
-    holder: string;
-  };
+  refundAccount: RefundAccountInfo;
   stringing?: {
     requested?: boolean;
     stringId?: string;
@@ -204,10 +204,16 @@ export async function createRentalOrderCore(params: {
   if (
     payment?.method === "bank_transfer" &&
     payment?.bank &&
-    !ALLOWED_BANKS.has(payment.bank as any)
+    !PAYMENT_BANKS.has(payment.bank as any)
   ) {
     throw new Error("INVALID_BANK");
   }
+
+  const parsedRefundAccount = RefundAccountSchema.safeParse(refundAccount);
+  if (!parsedRefundAccount.success) {
+    throw new Error("INVALID_REFUND_ACCOUNT");
+  }
+  const normalizedRefundAccount = parsedRefundAccount.data;
 
   const rawPickup = servicePickupMethod ?? null;
   let pickupMethod: "SELF_SEND" | "SHOP_VISIT";
@@ -492,7 +498,7 @@ export async function createRentalOrderCore(params: {
     userId: userObjectId,
     payment: payment ?? null,
     shipping: normalizedShipping ?? null,
-    refundAccount: refundAccount ?? null,
+    refundAccount: normalizedRefundAccount,
     ...(stringingSnap ? { stringing: stringingSnap } : {}),
   };
 

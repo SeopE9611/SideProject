@@ -7,6 +7,7 @@ import RentalCheckoutStringingRuntimeBridge from "@/app/rentals/[id]/checkout/_c
 import RentalCheckoutStringingSections from "@/app/rentals/[id]/checkout/_components/RentalCheckoutStringingSections";
 import RentalNiceCheckoutButton from "@/app/rentals/[id]/checkout/_components/RentalNiceCheckoutButton";
 import SiteContainer from "@/components/layout/SiteContainer";
+import RefundBankCombobox from "@/components/refund/RefundBankCombobox";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -40,6 +41,7 @@ import {
 } from "@/lib/hooks/useUnsavedChangesGuard";
 import { loadDaumPostcode } from "@/lib/loadDaumPostcode";
 import { isNicePaymentsEnabled } from "@/lib/payments/provider-flags";
+import { isRefundBankCode } from "@/lib/refund-bank-catalog";
 import { showErrorToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import {
@@ -70,9 +72,9 @@ declare global {
 }
 
 // 제출 직전 최종 유효성 가드
-type Bank = "kakao";
+type PaymentBank = "kakao";
 type PaymentMethod = "bank_transfer" | "nicepay";
-const ALLOWED_BANKS = new Set<Bank>(["kakao"]);
+const PAYMENT_BANKS = new Set<PaymentBank>(["kakao"]);
 const POSTAL_RE = /^\d{5}$/;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const onlyDigits = (v: string) => String(v ?? "").replace(/\D/g, "");
@@ -279,9 +281,7 @@ export default function RentalsCheckoutClient({
     userId && pointsStatus === "ready" ? clampPoints(pointsToUse) : 0;
   const payableTotal = Math.max(0, total - appliedPoints);
 
-  const [refundBank, setRefundBank] = useState<
-    "shinhan" | "kookmin" | "woori" | ""
-  >("");
+  const [refundBank, setRefundBank] = useState("");
   const [refundAccount, setRefundAccount] = useState(""); // 계좌번호
   const [refundHolder, setRefundHolder] = useState(""); // 예금주
 
@@ -586,8 +586,8 @@ export default function RentalsCheckoutClient({
       const addressDetailTrim = addressDetail.trim();
       const deliveryRequestTrim = deliveryRequest.trim();
       const depositorTrim = depositor.trim();
-      const selectedBankValue = selectedBank as Bank | "";
-      const refundBankValue = refundBank as Bank | "";
+      const selectedBankValue = selectedBank as PaymentBank | "";
+      const refundBankValue = String(refundBank ?? "").trim();
       const refundAccountDigits = onlyDigits(refundAccount);
       const refundHolderTrim = refundHolder.trim();
 
@@ -623,7 +623,7 @@ export default function RentalsCheckoutClient({
         showErrorToast("입금 은행과 입금자명을 입력해주세요.");
         return;
       }
-      if (!ALLOWED_BANKS.has(selectedBankValue)) {
+      if (!PAYMENT_BANKS.has(selectedBankValue)) {
         showErrorToast("입금 은행 값이 올바르지 않습니다. 다시 선택해주세요.");
         return;
       }
@@ -639,7 +639,7 @@ export default function RentalsCheckoutClient({
         );
         return;
       }
-      if (!ALLOWED_BANKS.has(refundBankValue)) {
+      if (!isRefundBankCode(refundBankValue)) {
         showErrorToast("환급 은행 값이 올바르지 않습니다. 다시 선택해주세요.");
         return;
       }
@@ -1351,22 +1351,11 @@ export default function RentalsCheckoutClient({
                 {/* 환급 은행 */}
                 <div className="space-y-2">
                   <Label htmlFor="refund-bank">환급 은행</Label>
-                  <Select
+                  <RefundBankCombobox
                     value={refundBank}
-                    onValueChange={(v) => setRefundBank(v as any)}
-                  >
-                    <SelectTrigger
-                      id="refund-bank"
-                      className="border-2 focus:border-border"
-                    >
-                      <SelectValue placeholder="환급 받을 은행을 선택하세요" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="shinhan">신한은행</SelectItem>
-                      <SelectItem value="kookmin">국민은행</SelectItem>
-                      <SelectItem value="woori">우리은행</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    onChange={setRefundBank}
+                    placeholder="환급 받을 은행을 선택하세요"
+                  />
                 </div>
                 {/* 계좌번호 */}
                 <div className="space-y-2">

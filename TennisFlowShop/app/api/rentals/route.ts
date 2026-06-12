@@ -3,6 +3,7 @@ import {
   type RentalCreatePayload,
 } from "@/app/features/rentals/api/create-rental-order-core";
 import { verifyAccessToken } from "@/lib/auth.utils";
+import { RefundAccountSchema } from "@/lib/cancel-request/refund-account";
 import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
@@ -48,13 +49,7 @@ const RentalsCreateBodySchema = z
         shippingMethod: z.enum(["pickup", "delivery"]).optional(),
       })
       .passthrough(),
-    refundAccount: z
-      .object({
-        bank: z.enum(["shinhan", "kookmin", "woori"]),
-        account: z.preprocess(toDigits, z.string().min(8).max(20)),
-        holder: z.string().trim().min(2),
-      })
-      .passthrough(),
+    refundAccount: RefundAccountSchema,
     stringing: z
       .object({
         requested: z.coerce.boolean().optional(),
