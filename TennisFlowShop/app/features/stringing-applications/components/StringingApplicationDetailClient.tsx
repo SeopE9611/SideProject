@@ -797,8 +797,13 @@ export default function StringingApplicationDetailClient({
   }
 
   // 관리자이거나(isAdmin), 또는 상태가 userEditableStatuses에 포함될 때를 판단
+  const isRentalLinkedApplication = Boolean(
+    data.rentalId ||
+      String(data.paymentSource ?? "").trim().startsWith("rental:"),
+  );
   const isEditableAllowed =
-    isAdmin || userEditableStatuses.includes(data.status);
+    isAdmin ||
+    (!isRentalLinkedApplication && userEditableStatuses.includes(data.status));
 
   // 요약 표시용 파생 값
   const stringTypeCount = data.stringDetails?.stringTypes?.length ?? 0;
@@ -1002,8 +1007,8 @@ export default function StringingApplicationDetailClient({
       subtitle: "연결된 주문",
     });
   }
-  if (data.rentalId) {
-    const rid = String(data.rentalId);
+  if (linkedRentalId) {
+    const rid = String(linkedRentalId);
     linkedDocs.push({
       kind: "rental",
       id: rid,
@@ -2152,9 +2157,20 @@ export default function StringingApplicationDetailClient({
                       )}
                     </div>
 
+                    {!isAdmin && isRentalLinkedApplication && (
+                      <p className="max-w-xl text-sm text-muted-foreground">
+                        이 교체서비스 신청은 대여 주문과 연결되어 있습니다. 변경이나
+                        취소가 필요하면 대여 상세에서 진행 상태를 확인하거나
+                        고객센터로 문의해주세요.
+                      </p>
+                    )}
+
                     <div className="grid w-full grid-cols-1 gap-2 bp-sm:w-auto bp-sm:grid-cols-2 bp-lg:flex bp-lg:justify-end">
                       {/* 사용자: 아직 취소 요청 전 → "신청 취소 요청" 버튼 */}
-                      {!isAdmin && !isCancelled && !isCancelRequested && (
+                      {!isAdmin &&
+                        !isRentalLinkedApplication &&
+                        !isCancelled &&
+                        !isCancelRequested && (
                         <Button
                           variant="destructive"
                           onClick={handleOpenCancelDialog}
@@ -2167,7 +2183,10 @@ export default function StringingApplicationDetailClient({
                       )}
 
                       {/* 사용자: 이미 취소 요청 상태 → "취소 요청 철회" 버튼 */}
-                      {!isAdmin && !isCancelled && isCancelRequested && (
+                      {!isAdmin &&
+                        !isRentalLinkedApplication &&
+                        !isCancelled &&
+                        isCancelRequested && (
                         <Button
                           variant="outline"
                           size="sm"

@@ -120,6 +120,20 @@ function getActionMeta(action: HistoryItem["action"], isVisitPickup: boolean) {
   }
 }
 
+const RENTAL_STATUS_LABELS: Record<string, string> = {
+  pending: "결제대기",
+  paid: "결제완료",
+  out: "대여중",
+  returned: "반납완료",
+  canceled: "취소됨",
+  cancelled: "취소됨",
+};
+
+function getRentalStatusLabel(status?: string | null) {
+  const raw = String(status ?? "");
+  return RENTAL_STATUS_LABELS[raw.toLowerCase()] ?? raw;
+}
+
 /** 처리 주체 한글 라벨 */
 function getActorLabel(actor?: HistoryItem["actor"]) {
   if (!actor) return "시스템";
@@ -131,7 +145,9 @@ function getActorLabel(actor?: HistoryItem["actor"]) {
 /** 한 줄 설명 문구 생성 */
 function getDescription(item: HistoryItem, isVisitPickup: boolean) {
   const actor = getActorLabel(item.actor);
-  const base = `${actor}가 상태를 ${item.from} → ${item.to}로 변경했습니다.`;
+  const from = getRentalStatusLabel(item.from);
+  const to = getRentalStatusLabel(item.to);
+  const base = `${actor}가 대여 상태를 ${from} → ${to}로 변경했습니다.`;
 
   if (item.action === "cancel-request") {
     const reason =
@@ -151,7 +167,7 @@ function getDescription(item: HistoryItem, isVisitPickup: boolean) {
   }
 
   if (item.action === "out" && isVisitPickup) {
-    return `${actor}가 매장 방문 수령을 확인하여 상태를 ${item.from} → ${item.to}로 변경했습니다.`;
+    return `${actor}가 매장 방문 수령을 확인하여 대여 상태를 ${from} → ${to}로 변경했습니다.`;
   }
 
   // paid / out / returned 등은 기본 문구 사용

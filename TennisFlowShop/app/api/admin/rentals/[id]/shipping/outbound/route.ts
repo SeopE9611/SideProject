@@ -6,6 +6,8 @@ import { ObjectId } from "mongodb";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 import { normalizeRentalPaymentMeta } from "@/lib/admin-ops-normalize";
 import { writeRentalHistory } from "@/app/features/rentals/utils/history";
+import { getLinkedRentalStringingStatus } from "@/lib/admin/rental-stringing-flow.server";
+import { hasRentalStringingService, isRentalStringingComplete } from "@/lib/rental-stringing-flow";
 
 export const dynamic = "force-dynamic";
 
@@ -43,6 +45,21 @@ export async function POST(
       { ok: false, message: "NOT_FOUND" },
       { status: 404 },
     );
+
+  const stringingStatus = await getLinkedRentalStringingStatus(db, rental, id);
+  if (hasRentalStringingService(rental) || stringingStatus !== null) {
+    if (!isRentalStringingComplete(stringingStatus)) {
+      return NextResponse.json(
+        {
+          ok: false,
+          code: "STRINGING_NOT_COMPLETED",
+          message:
+            "교체서비스가 완료된 뒤 출고 또는 대여 시작을 진행할 수 있습니다.",
+        },
+        { status: 409 },
+      );
+    }
+  }
 
   const prevOutbound = rental?.shipping?.outbound ?? {};
   const prevCourier = String(prevOutbound?.courier ?? "").trim();

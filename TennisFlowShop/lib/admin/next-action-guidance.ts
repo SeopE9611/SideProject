@@ -378,6 +378,12 @@ export function inferNextActionForOperationGroup(
         nextAction: "신청서 작업 상태 확인 필요",
       };
     }
+    if (!isAppDone(app.statusLabel)) {
+      return {
+        stage: "Flow 7 · 교체 작업 단계",
+        nextAction: "교체서비스 작업 완료 필요",
+      };
+    }
     if (
       isRentalPaid(rental.statusLabel) &&
       !isRentalOut(rental.statusLabel) &&
@@ -386,12 +392,6 @@ export function inferNextActionForOperationGroup(
       return {
         stage: "Flow 7 · 출고 준비 단계",
         nextAction: "출고 정보 등록 필요",
-      };
-    }
-    if (isAppWorking(app.statusLabel)) {
-      return {
-        stage: "Flow 7 · 교체 작업 단계",
-        nextAction: "신청서 교체완료 처리 필요",
       };
     }
     if (

@@ -53,6 +53,10 @@ import { shortenId } from "@/lib/shorten";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import {
+  hasRentalStringingService,
+  isRentalStringingComplete,
+} from "@/lib/rental-stringing-flow";
+import {
   ArrowLeft,
   Calendar,
   Copy,
@@ -72,11 +76,12 @@ import useSWR from "swr";
 const won = (n: number) => (n || 0).toLocaleString("ko-KR") + "원";
 
 const rentalStatusLabels: Record<string, string> = {
-  pending: "대기중",
+  pending: "결제대기",
   paid: "결제완료",
   out: "대여중",
   returned: "반납완료",
   canceled: "취소됨",
+  cancelled: "취소됨",
 };
 
 const courierLabel: Record<string, string> = {
@@ -556,7 +561,19 @@ export default function AdminRentalDetailClient() {
   const hasCancelRefundAccount = Boolean(cancelRefundAccount);
   const hasLegacyRefundAccount = Boolean(data?.refundAccount);
 
-  const hasLinkedApplication = Boolean(data?.stringingApplicationId);
+  const linkedApplication = data?.linkedStringingApplication ?? null;
+  const linkedApplicationStatus = String(
+    linkedApplication?.status ?? data?.stringingApplicationStatus ?? "",
+  ).trim();
+  const hasLinkedApplication = hasRentalStringingService(data);
+  const isStringingComplete = isRentalStringingComplete(
+    linkedApplicationStatus,
+  );
+  const hasStatusOrderMismatch =
+    hasLinkedApplication &&
+    ["out", "returned"].includes(String(data?.status ?? "")) &&
+    !isStringingComplete;
+  const blockRentalStart = hasLinkedApplication && !isStringingComplete;
 
   const paymentLabel =
     data?.paymentStatusLabel ??
@@ -612,25 +629,39 @@ export default function AdminRentalDetailClient() {
         title: "취소 요청 검토 필요",
         description: "취소 요청 카드 기준으로 승인/거절을 우선 검토하세요.",
       }
-    : needsPaymentCheck
+    : hasStatusOrderMismatch
       ? {
-          tone: "warning",
-          title: "결제 상태 확인 필요",
+          tone: "urgent",
+          title: "상태 순서 확인 필요",
           description:
-            "입금/결제 반영 여부를 확인한 뒤 출고 여부를 판단하세요.",
+            "교체서비스가 완료되지 않았는데 대여가 출고 또는 반납 단계로 진행되었습니다. 교체서비스 상태와 처리 이력을 확인하세요.",
         }
-      : isBeforeOut
+      : needsPaymentCheck
         ? {
             tone: "warning",
-            title: "출고 처리 필요",
+            title: "결제 상태 확인 필요",
             description:
-              "결제 상태와 배송 정보를 확인한 뒤 출고 처리를 진행하세요.",
-            actionLabel: "출고 운송장 등록/수정",
-            actionHref: isVisitPickup
-              ? undefined
-              : `/admin/rentals/${id}/shipping-update`,
+              "입금/결제 반영 여부를 확인한 뒤 출고 여부를 판단하세요.",
           }
-        : needsReturnCheck
+        : isBeforeOut && blockRentalStart
+        ? {
+            tone: "warning",
+            title: "교체서비스 작업 완료 필요",
+            description:
+              "교체서비스가 완료된 뒤 출고 또는 대여 시작을 진행하세요.",
+          }
+        : isBeforeOut
+          ? {
+              tone: "warning",
+              title: "출고 처리 필요",
+              description:
+                "결제 상태와 배송 정보를 확인한 뒤 출고 처리를 진행하세요.",
+              actionLabel: "출고 운송장 등록/수정",
+              actionHref: isVisitPickup
+                ? undefined
+                : `/admin/rentals/${id}/shipping-update`,
+            }
+          : needsReturnCheck
           ? {
               tone: "info",
               title: "반납 확인 필요",
@@ -698,10 +729,6 @@ export default function AdminRentalDetailClient() {
   const isVariantStockMode = effectiveStockDeduction?.mode === "variant";
   const isCanceledState =
     data?.status === "canceled" || data?.status === "cancelled";
-  const linkedApplication = data?.linkedStringingApplication ?? null;
-  const linkedApplicationStatus = String(
-    linkedApplication?.status ?? data?.stringingApplicationStatus ?? "",
-  ).trim();
   const selectedApplicationStatusValue =
     selectedApplicationStatus || linkedApplicationStatus;
   const applicationStatusBadge = getApplicationStatusBadgeSpec(
@@ -786,19 +813,31 @@ export default function AdminRentalDetailClient() {
                 </Button>
 
                 {data?.status !== "canceled" && !isVisitPickup && (
-                  <Button
-                    asChild
-                    variant="outline"
-                    size="sm"
-                    className="h-8 border-border text-foreground hover:bg-muted whitespace-nowrap"
-                  >
-                    <Link href={`/admin/rentals/${id}/shipping-update`}>
-                      <Truck className="h-4 w-4 mr-2" />
-                      {data?.shipping?.outbound?.trackingNumber
-                        ? "출고 운송장 수정"
-                        : "출고 운송장 등록"}
-                    </Link>
-                  </Button>
+                  blockRentalStart ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled
+                      className="h-8 whitespace-nowrap"
+                    >
+                      <Truck className="mr-2 h-4 w-4" />
+                      교체서비스 완료 후 출고 가능
+                    </Button>
+                  ) : (
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="sm"
+                      className="h-8 border-border text-foreground hover:bg-muted whitespace-nowrap"
+                    >
+                      <Link href={`/admin/rentals/${id}/shipping-update`}>
+                        <Truck className="h-4 w-4 mr-2" />
+                        {data?.shipping?.outbound?.trackingNumber
+                          ? "출고 운송장 수정"
+                          : "출고 운송장 등록"}
+                      </Link>
+                    </Button>
+                  )
                 )}
               </div>
             </div>
@@ -1283,8 +1322,8 @@ export default function AdminRentalDetailClient() {
                 ) : data.status === "paid" &&
                   linkedApplicationStatus === "작업 중" ? (
                   <p className="rounded-md border border-warning/40 bg-warning/10 px-3 py-2 text-sm text-foreground">
-                    현재 장착 작업 중입니다. 작업 완료 전 출고 또는 대여 시작
-                    여부를 확인하세요.
+                    현재 장착 작업 중입니다. 교체완료 후 출고 또는 대여 시작을
+                    진행하세요.
                   </p>
                 ) : data.status === "paid" &&
                   linkedApplicationStatus === "교체완료" ? (
@@ -1292,11 +1331,12 @@ export default function AdminRentalDetailClient() {
                     장착 작업이 완료되었습니다. 출고정보 등록 또는 대여 시작
                     단계를 진행할 수 있습니다.
                   </p>
-                ) : data.status === "out" &&
+                ) : ["out", "returned"].includes(data.status) &&
                   linkedApplicationStatus !== "교체완료" ? (
                   <p className="rounded-md border border-warning/40 bg-warning/10 px-3 py-2 text-sm text-foreground">
-                    대여가 시작되었지만 교체서비스가 완료 상태가 아닙니다.
-                    교체서비스 작업 상태를 확인하세요.
+                    상태 순서 확인 필요: 교체서비스가 완료되지 않았는데 대여가
+                    출고 또는 반납 단계로 진행되었습니다. 교체서비스 상태와 처리
+                    이력을 확인하세요.
                   </p>
                 ) : null}
 
@@ -1422,7 +1462,9 @@ export default function AdminRentalDetailClient() {
                 <Button
                   size="sm"
                   className="h-9 bg-muted hover:bg-muted"
-                  disabled={isBusy || data.status !== "paid"}
+                  disabled={
+                    isBusy || data.status !== "paid" || blockRentalStart
+                  }
                   onClick={() => {
                     if (isBusy) return;
                     setPendingAction("out");
@@ -1454,7 +1496,9 @@ export default function AdminRentalDetailClient() {
 
                 {data.status === "paid" && (
                   <p className="w-full text-xs text-muted-foreground">
-                    출고 또는 대여 시작 후 반납 처리할 수 있습니다.
+                    {blockRentalStart
+                      ? "이 대여는 교체서비스와 연결되어 있습니다. 교체서비스 상태가 `교체완료`가 된 뒤 출고 또는 대여 시작을 진행하세요."
+                      : "출고 또는 대여 시작 후 반납 처리할 수 있습니다."}
                   </p>
                 )}
 
