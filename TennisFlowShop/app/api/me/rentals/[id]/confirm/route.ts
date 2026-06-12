@@ -112,6 +112,7 @@ export async function POST(
 
     const fee = Number(rental?.amount?.fee ?? 0);
     const earnedPoints = calcOrderEarnPoints(fee);
+    let pointsGranted = false;
 
     if (earnedPoints > 0) {
       const methodLabel = paymentMethodLabel(rental?.payment?.method);
@@ -120,13 +121,14 @@ export async function POST(
         : "대여 확정 적립";
 
       const rewardRefKey = `rental_confirm_reward:${String(_id)}`;
-      await grantPoints(db, {
+      const grantResult = await grantPoints(db, {
         userId: new ObjectId(userId),
         amount: earnedPoints,
         type: "order_reward",
         reason,
         refKey: rewardRefKey,
       });
+      pointsGranted = !grantResult.duplicated;
     }
 
     const rentalLinks: Record<string, unknown>[] = [
@@ -145,6 +147,13 @@ export async function POST(
           { $or: rentalLinks },
           {
             $or: [
+              { userId: new ObjectId(userId) },
+              { userId: String(userId) },
+            ],
+          },
+          { status: { $in: ["교체완료", "취소"] } },
+          {
+            $or: [
               { userConfirmedAt: { $exists: false } },
               { userConfirmedAt: null },
             ],
@@ -158,7 +167,8 @@ export async function POST(
       ok: true,
       already: alreadyConfirmed,
       message: alreadyConfirmed ? "이미 반납 확정된 대여입니다." : "반납 확정 완료",
-      earnedPoints,
+      earnedPoints: pointsGranted ? earnedPoints : 0,
+      pointsGranted,
       alsoConfirmedServices: (svcRes as any).modifiedCount ?? 0,
     });
   } catch (e) {
