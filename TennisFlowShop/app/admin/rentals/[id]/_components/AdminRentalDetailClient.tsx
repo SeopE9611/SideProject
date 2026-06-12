@@ -7,9 +7,6 @@ import {
 } from "@/app/features/rentals/utils/status";
 import AdminCancelRequestCard from "@/components/admin/AdminCancelRequestCard";
 import AdminInternalNotesCard from "@/components/admin/AdminInternalNotesCard";
-import LinkedDocsCard, {
-  LinkedDocItem,
-} from "@/components/admin/LinkedDocsCard";
 import { adminSurface } from "@/components/admin/admin-typography";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -37,7 +34,6 @@ import {
   ensureAdminMutationSucceeded,
 } from "@/lib/admin/adminFetcher";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
-import { inferNextActionForOperationItem } from "@/lib/admin/next-action-guidance";
 import {
   badgeBase,
   badgeSizeSm,
@@ -400,8 +396,8 @@ export default function AdminRentalDetailClient() {
                   ? "방문 수령 처리할까요?"
                   : "대여 시작 처리할까요?",
                 description: isVisitPickup
-                  ? "방문 수령 확인 후 상태가 대여중(out)으로 변경됩니다."
-                  : "대여 상태가 대여중(out)으로 변경됩니다.",
+                  ? "방문 수령 확인 후 상태가 대여중으로 변경됩니다."
+                  : "대여 상태가 대여중으로 변경됩니다.",
                 confirmText: isVisitPickup ? "방문 수령 처리" : "대여 시작",
                 eventKey: "admin-rental-detail-out-confirm",
                 eventMeta: { rentalId: id, currentStatus: data?.status },
@@ -560,17 +556,7 @@ export default function AdminRentalDetailClient() {
   const hasCancelRefundAccount = Boolean(cancelRefundAccount);
   const hasLegacyRefundAccount = Boolean(data?.refundAccount);
 
-  // 연결 문서(표시 전용)
-  const linkedDocs: LinkedDocItem[] = data?.stringingApplicationId
-    ? [
-        {
-          kind: "stringing_application",
-          id: String(data.stringingApplicationId),
-          href: `/admin/applications/stringing/${encodeURIComponent(String(data.stringingApplicationId))}`,
-          subtitle: "대여 기반 교체서비스 신청서",
-        },
-      ]
-    : [];
+  const hasLinkedApplication = Boolean(data?.stringingApplicationId);
 
   const paymentLabel =
     data?.paymentStatusLabel ??
@@ -605,12 +591,6 @@ export default function AdminRentalDetailClient() {
     data?.stringingReservationLabel,
   );
 
-  const rentalGuide = inferNextActionForOperationItem({
-    kind: "rental",
-    statusLabel: data.status,
-    paymentLabel,
-    hasOutboundTracking: Boolean(data?.shipping?.outbound?.trackingNumber),
-  });
   const lowerStatus = String(data.status ?? "").toLowerCase();
   const lowerPayment = String(paymentLabel ?? "").toLowerCase();
   const hasCancelRequested = cancelInfo?.status === "requested";
@@ -664,12 +644,12 @@ export default function AdminRentalDetailClient() {
                 description:
                   "반납 상태·라켓 상태·환불 계좌를 확인한 뒤 보증금 환불 처리 여부를 판단하세요.",
               }
-            : linkedDocs.length > 0
+            : hasLinkedApplication
               ? {
                   tone: "info",
-                  title: "연결 신청서 확인",
+                  title: "교체서비스 연결 정보 확인",
                   description:
-                    "연결 신청서 상태를 확인한 뒤 후속 처리를 진행하세요.",
+                    "교체서비스 상태와 연결 정보를 확인한 뒤 후속 처리를 진행하세요.",
                 }
               : {
                   tone: "success",
@@ -687,9 +667,9 @@ export default function AdminRentalDetailClient() {
     { label: "반납 처리 확인", href: "#admin-rental-return", show: true },
     { label: "보증금 환불 확인", href: "#admin-rental-deposit", show: true },
     {
-      label: "연결 신청서 확인",
+      label: "교체서비스 연결 정보 확인",
       href: "#admin-rental-linked-docs",
-      show: linkedDocs.length > 0,
+      show: hasLinkedApplication,
     },
     {
       label: "취소 요청 확인",
@@ -823,31 +803,27 @@ export default function AdminRentalDetailClient() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 lg:gap-4">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4 lg:gap-4">
               <div className="min-h-28 rounded-xl border border-border/70 bg-card p-4 shadow-sm">
                 <div className="mb-2 flex items-center space-x-2">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <CreditCard className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium text-foreground">
-                    {isVisitPickup ? "방문 수령 처리 일시" : "대여 시작 일시"}
+                    결제 상태
                   </span>
                 </div>
-                <p className="text-base font-semibold text-foreground">
-                  {data.outAt ? formatDate(data.outAt) : "미처리"}
-                </p>
-              </div>
-
-              <div className="min-h-28 rounded-xl border border-border/70 bg-card p-4 shadow-sm">
-                <div className="mb-2 flex items-center space-x-2">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-foreground">
-                    반납 일시
-                  </span>
-                </div>
-                <p className="text-base font-semibold text-foreground">
-                  {data.returnedAt ? formatDate(data.returnedAt) : "미처리"}
-                </p>
-                <p className="mt-1 text-xs text-foreground/75">
-                  반납 예정: {data.dueAt ? formatDate(data.dueAt) : "-"}
+                {(() => {
+                  const pay = getPaymentStatusBadgeSpec(paymentLabel);
+                  return (
+                    <Badge
+                      variant={pay.variant}
+                      className={cn(badgeBase, badgeSizeSm)}
+                    >
+                      {paymentLabel}
+                    </Badge>
+                  );
+                })()}
+                <p className="mt-2 text-xs text-foreground/75">
+                  총 결제금액 {won(data.amount?.total)}
                 </p>
               </div>
 
@@ -875,61 +851,40 @@ export default function AdminRentalDetailClient() {
 
               <div className="min-h-28 rounded-xl border border-border/70 bg-card p-4 shadow-sm">
                 <div className="mb-2 flex items-center space-x-2">
-                  <CreditCard className="h-4 w-4 text-muted-foreground" />
+                  <Wrench className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium text-foreground">
-                    결제 상태
-                  </span>
-                </div>
-                {(() => {
-                  const pay = getPaymentStatusBadgeSpec(paymentLabel);
-                  return (
-                    <Badge
-                      variant={pay.variant}
-                      className={cn(badgeBase, badgeSizeSm)}
-                    >
-                      {paymentLabel}
-                    </Badge>
-                  );
-                })()}
-                <p className="mt-2 text-xs text-foreground/75">
-                  총 결제금액 {won(data.amount?.total)}
-                </p>
-              </div>
-
-              <div className="min-h-28 rounded-xl border border-border/70 bg-card p-4 shadow-sm">
-                <div className="mb-2 flex items-center space-x-2">
-                  <CreditCard className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-foreground">
-                    보증금 환불
+                    교체서비스
                   </span>
                 </div>
                 <Badge
-                  variant={data.depositRefunded ? "success" : "outline"}
+                  variant={applicationStatusBadge.variant}
                   className={cn(badgeBase, badgeSizeSm)}
                 >
-                  {data.depositRefunded ? "환불 처리 완료" : "미처리"}
+                  {linkedApplicationStatus ||
+                    (hasStringingSummary
+                      ? "교체서비스 검토 중"
+                      : "교체서비스 없음")}
                 </Badge>
-                <p className="mt-2 text-xs text-foreground/75">
-                  {data.depositRefundedAt
-                    ? formatDate(data.depositRefundedAt)
-                    : `보증금 ${won(data.amount?.deposit)}`}
-                </p>
               </div>
 
               <div className="min-h-28 rounded-xl border border-border/70 bg-card p-4 shadow-sm">
                 <div className="mb-2 flex items-center space-x-2">
                   <Truck className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium text-foreground">
-                    {isVisitPickup ? "수령 방법" : "운송장 상태"}
+                    출고/반납
                   </span>
                 </div>
                 <p className="text-sm font-semibold text-foreground">
-                  {isVisitPickup
-                    ? pickupMethodLabel
-                    : `출고 ${Outbound?.trackingNumber ? "등록" : "미등록"} · 반납 ${ReturnShip?.trackingNumber ? "등록" : "미등록"}`}
+                  {data.status === "returned"
+                    ? "반납 완료"
+                    : data.status === "out"
+                      ? "반납 필요"
+                      : Outbound?.trackingNumber
+                        ? "출고 완료"
+                        : "출고 전"}
                 </p>
                 <p className="mt-2 text-xs text-foreground/75">
-                  대여 기간 {data.days}일 · {pickupMethodLabel}
+                  {pickupMethodLabel}
                 </p>
               </div>
             </div>
@@ -1131,19 +1086,7 @@ export default function AdminRentalDetailClient() {
             </div>
           )}
 
-          {/* 연결 문서(공용 카드) */}
-          {linkedDocs.length > 0 && (
-            <div id="admin-rental-linked-docs">
-              <LinkedDocsCard
-                title="연결 신청서"
-                docs={linkedDocs}
-                description={`교체서비스 신청서가 연결되어 있습니다. 현재 단계: ${rentalGuide.stage} · 다음 할 일: ${rentalGuide.nextAction}`}
-                className={adminSurface.card}
-              />
-            </div>
-          )}
-
-          {hasStringingSummary && (
+          {hasStringingSummary && !linkedApplication && (
             <Card className="border-0 shadow-xl ring-1 ring-ring bg-muted/30">
               <CardHeader className="pb-3">
                 <CardTitle className="text-base">
@@ -1175,7 +1118,7 @@ export default function AdminRentalDetailClient() {
                 </p>
                 {data?.stringingApplicationId && (
                   <p className="text-muted-foreground">
-                    신청 상태:{" "}
+                    교체서비스 상태:{" "}
                     <span className="font-medium text-foreground">
                       {data?.stringingApplicationStatus ?? "상태 확인 필요"}
                     </span>
@@ -1243,18 +1186,19 @@ export default function AdminRentalDetailClient() {
           )}
 
           {linkedApplication && (
-            <Card className={cn(adminSurface.card, "overflow-hidden")}>
+            <Card
+              id="admin-rental-linked-docs"
+              className={cn(adminSurface.card, "overflow-hidden")}
+            >
               <CardHeader className="border-b bg-muted/30 pb-3">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <CardTitle className="text-base">
-                      교체서비스 작업 상태 관리
+                      교체서비스 연결 정보
                     </CardTitle>
                     <CardDescription className="mt-1 max-w-3xl leading-relaxed">
-                      이 대여는 교체서비스 신청서와 연결되어 있습니다. 라켓
-                      대여의 결제·출고·반납은 대여 상태에서 관리하고, 스트링
-                      장착 작업 상태는 이 영역에서 관리합니다. 신청서 상세에서는
-                      텐션, 요청사항, 스트링 정보를 참고할 수 있습니다.
+                      연결된 신청 정보와 장착 작업 상태를 한곳에서 확인하고 관리합니다.
+                      대여 결제·출고·반납 처리는 기존 대여 상태 관리 영역에서 진행합니다.
                     </CardDescription>
                   </div>
                   <Badge
@@ -1268,7 +1212,7 @@ export default function AdminRentalDetailClient() {
               <CardContent className="space-y-4 pt-4">
                 <div className="grid gap-3 text-sm sm:grid-cols-2 xl:grid-cols-3">
                   <p className="text-muted-foreground">
-                    연결 신청서 ID:{" "}
+                    신청서 ID:{" "}
                     <span className="font-medium text-foreground">
                       {shortenId(String(linkedApplication.id))}
                     </span>
@@ -1310,10 +1254,10 @@ export default function AdminRentalDetailClient() {
                     </span>
                   </p>
                   <p className="text-muted-foreground sm:col-span-2 xl:col-span-3">
-                    결제 연결:{" "}
+                    결제 포함:{" "}
                     <span className="font-medium text-foreground">
                       {linkedApplicationPaymentIncluded
-                        ? `대여 결제 포함 (${linkedApplication.paymentSource})`
+                        ? "대여 주문에 포함됨"
                         : linkedApplication.paymentSource ||
                           "연결 정보 확인 필요"}
                     </span>
@@ -1352,7 +1296,7 @@ export default function AdminRentalDetailClient() {
                   linkedApplicationStatus !== "교체완료" ? (
                   <p className="rounded-md border border-warning/40 bg-warning/10 px-3 py-2 text-sm text-foreground">
                     대여가 시작되었지만 교체서비스가 완료 상태가 아닙니다.
-                    신청서 작업 상태를 확인하세요.
+                    교체서비스 작업 상태를 확인하세요.
                   </p>
                 ) : null}
 
@@ -1428,10 +1372,10 @@ export default function AdminRentalDetailClient() {
                   {!canUpdateLinkedApplication && (
                     <p className="font-medium text-foreground">
                       {data.status === "returned"
-                        ? "반납 완료된 대여에서는 신청서 작업 상태를 변경할 수 없습니다."
+                        ? "반납 완료된 대여에서는 교체서비스 작업 상태를 변경할 수 없습니다."
                         : data.status === "out"
-                          ? "대여 시작 후에는 신청서 상태를 읽기 전용으로 확인합니다."
-                          : "결제완료 상태에서 신청서 작업 상태를 변경할 수 있습니다."}
+                          ? "대여 시작 후에는 교체서비스 상태를 읽기 전용으로 확인합니다."
+                          : "결제완료 상태에서 교체서비스 작업 상태를 변경할 수 있습니다."}
                     </p>
                   )}
                 </div>
@@ -1452,7 +1396,7 @@ export default function AdminRentalDetailClient() {
             </CardHeader>
             <CardFooter className="pt-4">
               <div className="flex gap-2 flex-wrap">
-                {/* 결제완료 처리(무통장) – pending 상태에서만 노출 */}
+                {/* 입금 확인 처리 – pending 상태에서만 노출 */}
                 {canConfirmPayment && (
                   <Button
                     size="sm"
@@ -1469,12 +1413,12 @@ export default function AdminRentalDetailClient() {
                         결제 처리중…
                       </>
                     ) : (
-                      "결제완료 처리(무통장)"
+                      "입금 확인 처리"
                     )}
                   </Button>
                 )}
 
-                {/* 대여 시작(out) */}
+                {/* 대여 시작 */}
                 <Button
                   size="sm"
                   className="h-9 bg-muted hover:bg-muted"
@@ -1489,11 +1433,11 @@ export default function AdminRentalDetailClient() {
                       ? "방문 수령 처리중…"
                       : "대여 시작 처리중…"
                     : isVisitPickup
-                      ? "방문 수령 처리(out)"
-                      : "대여 시작(out)"}
+                      ? "방문 수령 처리"
+                      : "대여 시작"}
                 </Button>
 
-                {/* 반납 처리(return) */}
+                {/* 반납 처리 */}
                 <Button
                   size="sm"
                   className="h-9 bg-primary text-primary-foreground hover:bg-primary/90"
@@ -1505,12 +1449,12 @@ export default function AdminRentalDetailClient() {
                 >
                   {busyAction === "return"
                     ? "반납 처리중…"
-                    : "반납 처리(return)"}
+                    : "반납 처리"}
                 </Button>
 
                 {data.status === "paid" && (
                   <p className="w-full text-xs text-muted-foreground">
-                    반납 처리는 대여 시작(out) 후 가능합니다.
+                    출고 또는 대여 시작 후 반납 처리할 수 있습니다.
                   </p>
                 )}
 
@@ -1732,7 +1676,7 @@ export default function AdminRentalDetailClient() {
                   {(hasCancelRefundAccount || hasLegacyRefundAccount) && (
                     <div className="space-y-3">
                       <p className="text-sm font-medium text-muted-foreground">
-                        환불 계좌 확인
+                        보증금 환급 정보
                       </p>
                       {hasCancelRefundAccount && (
                         <div className="rounded-lg border border-primary/30 bg-primary/5 p-4">
@@ -1756,7 +1700,7 @@ export default function AdminRentalDetailClient() {
                           <dl className="mt-3 space-y-1 text-sm text-foreground">
                             <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
                               <dt className="text-muted-foreground">
-                                환불 은행
+                                환급 은행
                               </dt>
                               <dd>
                                 {cancelRefundAccount?.bankLabel || "미입력"}
@@ -1821,7 +1765,7 @@ export default function AdminRentalDetailClient() {
                           <dl className="mt-3 space-y-1 text-sm text-foreground">
                             <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
                               <dt className="text-muted-foreground">
-                                환불 은행
+                                환급 은행
                               </dt>
                               <dd>
                                 {getRefundBankLabel(data.refundAccount.bank) ||
@@ -2027,7 +1971,7 @@ export default function AdminRentalDetailClient() {
                   <Calendar className="h-4 w-4 text-muted-foreground mt-1" />
                   <div>
                     <p className="text-sm text-foreground/80">
-                      {isVisitPickup ? "방문 수령 처리(out)" : "대여 시작"}
+                      {isVisitPickup ? "방문 수령 처리" : "대여 시작"}
                     </p>
                     <p className="font-semibold text-foreground">
                       {data.outAt ? formatDate(data.outAt) : "-"}

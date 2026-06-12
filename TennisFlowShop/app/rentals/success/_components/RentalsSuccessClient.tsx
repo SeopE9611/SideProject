@@ -12,10 +12,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { normalizeRentalStatus } from "@/lib/admin-ops-normalize";
 import { badgeToneVariant } from "@/lib/badge-style";
 import { bankLabelMap, racketBrandLabel } from "@/lib/constants";
 import { getRefundBankLabel } from "@/lib/cancel-request/refund-account";
+import { shortenId } from "@/lib/shorten";
 import {
   ArrowRight,
   CheckCircle,
@@ -28,6 +28,24 @@ import {
   Undo2,
 } from "lucide-react";
 import Link from "next/link";
+
+const rentalStatusLabel = (status: string, isBankTransfer: boolean) => {
+  if (status === "pending")
+    return isBankTransfer ? "입금 확인 대기" : "접수 완료";
+  if (status === "paid") return "결제 확인 완료";
+  if (status === "out") return "대여 중";
+  if (status === "returned") return "반납 완료";
+  if (status === "canceled" || status === "cancelled") return "취소됨";
+  return status || "접수 완료";
+};
+
+const stringingStatusLabel = (status?: string | null) => {
+  if (status === "검토 중") return "접수 검토 중";
+  if (status === "접수완료") return "작업 접수 완료";
+  if (status === "작업 중") return "장착 작업 중";
+  if (status === "교체완료") return "장착 완료";
+  return status || "접수 확인 중";
+};
 
 type Props = {
   data: {
@@ -233,25 +251,28 @@ export default function RentalsSuccessClient({ data }: Props) {
             <CardContent className="p-4 md:p-6">
               <div className="space-y-4 rounded-lg border border-border bg-muted/20 p-4 text-sm">
                 <p>
-                  <span className="text-muted-foreground">대여 번호:</span>{" "}
+                  <span className="text-muted-foreground">대여 접수번호:</span>{" "}
                   <span className="font-mono font-semibold text-foreground">
-                    {data.id}
+                    {shortenId(data.id)}
                   </span>
                 </p>
                 {withService && stringingApplicationId && (
                   <p>
                     <span className="text-muted-foreground">
-                      교체서비스 신청 번호:
+                      교체서비스 접수번호:
                     </span>{" "}
                     <span className="font-mono font-semibold text-foreground">
-                      {stringingApplicationId}
+                      {shortenId(stringingApplicationId)}
                     </span>
                   </p>
                 )}
                 <p>
                   <span className="text-muted-foreground">대여 상태:</span>{" "}
                   <span className="font-semibold text-foreground">
-                    {normalizeRentalStatus(data.status)}
+                    {rentalStatusLabel(
+                      data.status,
+                      data.payment?.method === "bank_transfer",
+                    )}
                   </span>
                 </p>
                 {withService && (
@@ -261,7 +282,9 @@ export default function RentalsSuccessClient({ data }: Props) {
                     </span>{" "}
                     <span className="font-semibold text-foreground">
                       {stringingApplied
-                        ? data.applicationSummary?.status || "접수완료"
+                        ? stringingStatusLabel(
+                            data.applicationSummary?.status || "접수완료",
+                          )
                         : "접수 확인 중"}
                     </span>
                   </p>

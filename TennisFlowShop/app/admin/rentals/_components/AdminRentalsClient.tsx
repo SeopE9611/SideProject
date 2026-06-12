@@ -1128,7 +1128,6 @@ export default function AdminRentalsClient() {
               ) : (
                 rentals.map((r, idx) => {
                   const rid = r.id;
-                  const kind = getKindBadge();
                   const svc = getServiceBadge(r);
                   const link = getLinkBadge(r);
                   const flow = getFlowBadge(r);
@@ -1174,13 +1173,7 @@ export default function AdminRentalsClient() {
 
                                 {/* 단독/교체서비스 포함/신청서 연결 여부 */}
                                 {(() => {
-                                  // 테이블 난잡도 개선: badge 목록을 구성하고 AdminBadgeRow로 “접기” 처리
                                   const items: BadgeItem[] = [
-                                    {
-                                      label: kind.label,
-                                      variant: kind.variant,
-                                      title: "문서 종류",
-                                    },
                                     {
                                       label: svc.label,
                                       variant: svc.variant,
@@ -1195,41 +1188,14 @@ export default function AdminRentalsClient() {
                                           },
                                         ]
                                       : []),
-                                    {
-                                      label: flow.shortLabel,
-                                      variant: flow.variant,
-                                      title: `시나리오: ${flow.label}`,
-                                    },
-                                    ...(cancelQuickSignal
-                                      ? [
-                                          {
-                                            label: cancelQuickSignal.label,
-                                            variant: cancelQuickSignal.variant,
-                                            title: "환불 계좌 준비 상태",
-                                          },
-                                        ]
-                                      : []),
-                                    {
-                                      label: pickup.label,
-                                      variant: pickup.variant,
-                                      title: "수령 방법",
-                                    },
-                                    {
-                                      label: settlement.label,
-                                      variant: settlement.variant,
-                                      title: "정산 앵커",
-                                    },
                                   ];
                                   return (
-                                    <AdminBadgeRow
-                                      maxVisible={3}
-                                      items={items}
-                                    />
+                                    <AdminBadgeRow maxVisible={2} items={items} />
                                   );
                                 })()}
                                 {r.stringingApplicationStatus && (
                                   <p className="text-sm text-foreground/75">
-                                    신청 상태: {r.stringingApplicationStatus}
+                                    교체서비스 상태: {r.stringingApplicationStatus}
                                   </p>
                                 )}
                               </button>
