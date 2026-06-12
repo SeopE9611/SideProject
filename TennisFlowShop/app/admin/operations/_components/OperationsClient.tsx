@@ -7,7 +7,6 @@ import {
   ChevronRight,
   ClipboardCheck,
   Copy,
-  Eye,
   Inbox,
   Link2,
   Search,
@@ -158,7 +157,6 @@ const PAGE_COPY = {
 };
 
 const ROW_ACTION_LABELS = {
-  detail: "상세 보기",
   copyId: "문서 ID 복사",
 } as const;
 
@@ -661,98 +659,34 @@ function cancelQuickSignalSpec(cancel?: OpItem["cancel"]): {
   };
 }
 
-type QuickActionTarget = {
+type PrimaryActionTarget = {
   href: string;
   label: string;
 };
 
-const MEANINGFUL_QUICK_ACTION_LABELS = new Set([
-  "취소 검토",
-  "계좌 확인",
-  "신청서 확인",
-  "배송 확인",
-  "대여 확인",
-  "주문 확인",
-  "통합 주문 상세에서 확인",
-]);
+function resolvePrimaryActionTarget(group: {
+  anchor: OpItem;
+  items: OpItem[];
+}): PrimaryActionTarget {
+  const { anchor, items } = group;
+  const isIntegratedOrder =
+    anchor.kind === "order" &&
+    items.some((item) => item.kind === "stringing_application");
 
-function resolveQuickActionTarget(
-  group: {
-    anchor: OpItem;
-    primarySignal?: AdminOperationsGroup["primarySignal"] | null;
-    nextAction?: string | null;
-  },
-  groupGuide: { nextAction?: string | null },
-): QuickActionTarget | null {
-  const anchor = group.anchor;
-  const related = anchor.related;
-  const signal = group.primarySignal;
-  const nextActionText =
-    signal?.nextAction ?? group.nextAction ?? groupGuide.nextAction ?? "";
-  const signalCode = String(signal?.code ?? "").toUpperCase();
-  let candidate: QuickActionTarget | null = null;
-
-  if (!nextActionText.trim()) return null;
-
-  if (anchor.kind === "order" && related?.kind === "stringing_application") {
-    return { href: anchor.href, label: "통합 주문 상세에서 확인" };
+  if (isIntegratedOrder) {
+    return { href: anchor.href, label: "통합 주문 관리" };
   }
 
-  if (
-    nextActionText.includes("환불 계좌") ||
-    nextActionText.includes("취소승인") ||
-    nextActionText.includes("취소거절")
-  ) {
-    candidate = {
-      href: anchor.href,
-      label: nextActionText.includes("환불 계좌") ? "계좌 확인" : "취소 검토",
-    };
+  if (anchor.kind === "order") {
+    return { href: anchor.href, label: "주문 처리" };
   }
-
-  if (
-    !candidate &&
-    (nextActionText.includes("신청서") || signalCode.includes("APP"))
-  ) {
-    if (anchor.kind === "stringing_application") {
-      candidate = { href: anchor.href, label: "신청서 확인" };
-    }
-    if (!candidate && related?.kind === "stringing_application") {
-      candidate = { href: related.href, label: "신청서 확인" };
-    }
+  if (anchor.kind === "stringing_application") {
+    return { href: anchor.href, label: "신청서 처리" };
   }
-
-  const needsShippingCheck =
-    nextActionText.includes("배송") ||
-    nextActionText.includes("출고") ||
-    nextActionText.includes("운송장");
-  if (!candidate && needsShippingCheck) {
-    if (anchor.kind === "order")
-      candidate = { href: anchor.href, label: "배송 확인" };
-    if (!candidate && related?.kind === "order")
-      candidate = { href: related.href, label: "배송 확인" };
+  if (anchor.kind === "rental") {
+    return { href: anchor.href, label: "대여 처리" };
   }
-
-  const needsRentalCheck =
-    nextActionText.includes("대여") ||
-    nextActionText.includes("반납") ||
-    nextActionText.includes("수령");
-  if (!candidate && needsRentalCheck) {
-    if (anchor.kind === "rental")
-      candidate = { href: anchor.href, label: "대여 확인" };
-    if (!candidate && related?.kind === "rental")
-      candidate = { href: related.href, label: "대여 확인" };
-  }
-
-  if (!candidate && anchor.kind === "stringing_application" && related) {
-    if (related.kind === "order")
-      candidate = { href: related.href, label: "주문 확인" };
-    if (!candidate && related.kind === "rental")
-      candidate = { href: related.href, label: "대여 확인" };
-  }
-
-  if (!candidate) return null;
-  if (candidate.href === anchor.href) return null;
-  return candidate;
+  return { href: anchor.href, label: "패키지 구매 확인" };
 }
 
 function collectReviewReasons(g: { anchor: OpItem; items: OpItem[] }) {
@@ -1264,7 +1198,7 @@ export default function OperationsClient() {
         title: "교체서비스 작업",
         count: taskCounts?.stringingWork ?? 0,
         description:
-          "연결 건은 통합 주문 상세에서 진행 단계를 확인하고, 단독 신청서는 신청서 상세에서 처리하세요.",
+          "연결 건은 통합 주문 관리에서 진행 단계를 확인하고, 단독 신청서는 신청서 상세에서 처리하세요.",
         action: "업무 보기",
         onClick: () => {
           setKind("stringing_application");
@@ -2292,25 +2226,10 @@ export default function OperationsClient() {
                       });
                       const slaMeta = getSlaBadgeMeta(slaLevel, elapsedText);
                       const headline = statusHeadlineOf(g.anchor);
-                      const quickActionTarget = resolveQuickActionTarget(
-                        {
-                          anchor: g.anchor,
-                          primarySignal: g.primarySignal,
-                          nextAction: groupGuide.nextAction,
-                        },
-                        groupGuide,
-                      );
-                      const actionableQuickTarget = g.linkedFlowStatusIssue
-                        ? {
-                            href: g.linkedFlowStatusIssue.actionHref,
-                            label: g.linkedFlowStatusIssue.actionLabel,
-                          }
-                        : quickActionTarget &&
-                            MEANINGFUL_QUICK_ACTION_LABELS.has(
-                              quickActionTarget.label,
-                            )
-                          ? quickActionTarget
-                          : null;
+                      const primaryActionTarget = resolvePrimaryActionTarget({
+                        anchor: g.anchor,
+                        items: g.items,
+                      });
                       const anchorCancelQuickSignal = cancelQuickSignalSpec(
                         g.anchor.cancel,
                       );
@@ -2597,43 +2516,23 @@ export default function OperationsClient() {
                             >
                               <div className="flex w-full flex-col items-end gap-1">
                                 <div className="flex w-full flex-col items-end gap-1">
-                                  {actionableQuickTarget && (
-                                    <Button
-                                      asChild
-                                      size="sm"
-                                      variant="default"
-                                      className="h-8 min-w-[96px] justify-center px-2.5 text-xs font-semibold shadow-sm"
-                                      title={
-                                        groupGuide.nextAction ??
-                                        actionableQuickTarget.label
-                                      }
+                                  <Button
+                                    asChild
+                                    size="sm"
+                                    variant="default"
+                                    className="h-8 min-w-[96px] justify-center px-2.5 text-xs font-semibold shadow-sm"
+                                    title={
+                                      groupGuide.nextAction ??
+                                      primaryActionTarget.label
+                                    }
+                                  >
+                                    <Link
+                                      href={primaryActionTarget.href}
+                                      className="text-xs"
                                     >
-                                      <Link
-                                        href={actionableQuickTarget.href}
-                                        className="text-xs"
-                                      >
-                                        {actionableQuickTarget.label}
-                                      </Link>
-                                    </Button>
-                                  )}
-                                  <div className="flex items-center justify-end gap-1">
-                                    <Button
-                                      asChild
-                                      size="sm"
-                                      variant="secondary"
-                                      className="h-8 min-w-[68px] px-2 text-xs"
-                                      title={ROW_ACTION_LABELS.detail}
-                                    >
-                                      <Link
-                                        href={g.anchor.href}
-                                        className="flex items-center gap-1"
-                                        aria-label={ROW_ACTION_LABELS.detail}
-                                      >
-                                        <Eye className="h-3.5 w-3.5" />
-                                        <span className="text-xs">상세</span>
-                                      </Link>
-                                    </Button>
-                                  </div>
+                                      {primaryActionTarget.label}
+                                    </Link>
+                                  </Button>
                                 </div>
                               </div>
                             </TableCell>
@@ -2848,25 +2747,10 @@ export default function OperationsClient() {
                   });
                   const slaMeta = getSlaBadgeMeta(slaLevel, elapsedText);
                   const headline = statusHeadlineOf(g.anchor);
-                  const quickActionTarget = resolveQuickActionTarget(
-                    {
-                      anchor: g.anchor,
-                      primarySignal: g.primarySignal,
-                      nextAction: groupGuide.nextAction,
-                    },
-                    groupGuide,
-                  );
-                  const actionableQuickTarget = g.linkedFlowStatusIssue
-                    ? {
-                        href: g.linkedFlowStatusIssue.actionHref,
-                        label: g.linkedFlowStatusIssue.actionLabel,
-                      }
-                    : quickActionTarget &&
-                        MEANINGFUL_QUICK_ACTION_LABELS.has(
-                          quickActionTarget.label,
-                        )
-                      ? quickActionTarget
-                      : null;
+                  const primaryActionTarget = resolvePrimaryActionTarget({
+                    anchor: g.anchor,
+                    items: g.items,
+                  });
                   const groupCancelRequested = g.items.some(
                     (it) => it.cancel?.status === "requested",
                   );
@@ -3045,30 +2929,14 @@ export default function OperationsClient() {
                         )}
 
                         <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                          {actionableQuickTarget && (
-                            <Button
-                              asChild
-                              size="sm"
-                              variant="default"
-                              className="h-8 min-w-[96px] px-2.5 text-xs font-semibold shadow-sm"
-                            >
-                              <Link href={actionableQuickTarget.href}>
-                                {actionableQuickTarget.label}
-                              </Link>
-                            </Button>
-                          )}
                           <Button
                             asChild
                             size="sm"
-                            variant="secondary"
-                            className="h-8 min-w-[68px] px-2 text-xs"
+                            variant="default"
+                            className="h-8 min-w-[96px] px-2.5 text-xs font-semibold shadow-sm"
                           >
-                            <Link
-                              href={g.anchor.href}
-                              className="inline-flex items-center gap-1"
-                            >
-                              <Eye className="h-3.5 w-3.5" />
-                              상세
+                            <Link href={primaryActionTarget.href}>
+                              {primaryActionTarget.label}
                             </Link>
                           </Button>
                           {g.items.length > 1 && (

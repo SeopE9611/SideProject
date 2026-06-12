@@ -325,13 +325,13 @@ function getLinkedOrderStringingStatusIssue(
   return {
     severity: "warning",
     code: "LINKED_STATUS_MISMATCH",
-    title: "연결 상태 확인 필요",
+    title: "통합 단계 확인 필요",
     message:
-      "주문 상태와 교체서비스 신청 상태가 통합 진행 단계와 맞지 않습니다. 통합 주문 상세에서 진행 단계를 확인하세요.",
+      "주문과 교체서비스 신청서의 진행 단계가 표준 처리 흐름과 다릅니다. 통합 주문 관리에서 현재 단계와 다음 작업을 확인하세요.",
     orderStatus: order.statusLabel,
     applicationStatus: application.statusLabel,
     actionHref: `/admin/orders/${order.id}`,
-    actionLabel: "통합 주문 상세에서 확인",
+    actionLabel: "통합 주문 관리",
   };
 }
 
