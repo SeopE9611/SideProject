@@ -365,21 +365,26 @@ const rentalDueFilter = (nowPlus48Hours: Date): Filter<Document> => ({
   $and: [
     {
       $or: [
+        { status: { $in: ["overdue", "return_requested", "연체"] } },
         {
-          status: {
-            $in: [
-              "overdue",
-              "return_requested",
-              "rented",
-              "out",
-              "대여중",
-              "연체",
-            ],
-          },
+          $and: [
+            { status: { $in: ["rented", "out", "대여중"] } },
+            {
+              $or: [
+                { returnDueAt: { $lte: nowPlus48Hours } },
+                { endDate: { $lte: nowPlus48Hours } },
+                { dueAt: { $lte: nowPlus48Hours } },
+                {
+                  $and: [
+                    { returnDueAt: { $in: [null, ""] } },
+                    { endDate: { $in: [null, ""] } },
+                    { dueAt: { $in: [null, ""] } },
+                  ],
+                },
+              ],
+            },
+          ],
         },
-        { returnDueAt: { $lte: nowPlus48Hours } },
-        { endDate: { $lte: nowPlus48Hours } },
-        { dueAt: { $lte: nowPlus48Hours } },
       ],
     },
     { status: { $nin: TERMINAL_STATUS_VALUES } },
