@@ -8,6 +8,7 @@ import {
   isMountableStringByFee,
 } from "@/lib/orders/string-mounting-policy";
 import { getEffectiveProductPrice } from "@/lib/product-pricing";
+import { getEffectiveRacketPrice } from "@/lib/racket-pricing";
 
 export async function GET(
   _req: Request,
@@ -37,6 +38,7 @@ export async function GET(
     // used_rackets
     brand: 1,
     model: 1,
+    marketing: 1,
   };
 
   // 1) products 먼저
@@ -84,10 +86,8 @@ export async function GET(
     .findOne(idFilter, { projection });
 
   if (racket) {
-    const rawPrice = (racket as any).price;
     const rawShippingFee = (racket as any).shippingFee;
-    const pr = Number(rawPrice);
-    const safePrice = Number.isFinite(pr) && pr >= 0 ? pr : 0;
+    const safePrice = getEffectiveRacketPrice(racket);
 
     return NextResponse.json(
       {
