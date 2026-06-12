@@ -869,11 +869,17 @@ export default function StringingApplicationDetailClient({
   };
 
   const isCancelled = data.status === "취소";
-  const isLinkedApplication = Boolean(data.orderId || data.rentalId);
+  const paymentSourceRaw = String(data.paymentSource ?? "").trim();
+  const linkedRentalId =
+    data.rentalId ??
+    (paymentSourceRaw.startsWith("rental:")
+      ? paymentSourceRaw.slice("rental:".length)
+      : null);
+  const isLinkedApplication = Boolean(data.orderId || linkedRentalId);
   const linkedAdminHref = data.orderId
     ? `/admin/orders/${data.orderId}`
-    : data.rentalId
-      ? `/admin/rentals/${encodeURIComponent(String(data.rentalId))}`
+    : linkedRentalId
+      ? `/admin/rentals/${encodeURIComponent(String(linkedRentalId))}`
       : null;
   const linkedAdminLabel = data.orderId
     ? "연결 주문 상세로 이동"
@@ -887,7 +893,6 @@ export default function StringingApplicationDetailClient({
   const effectiveStockRestore =
     data.stockRestore ?? (data as any).stringing?.stockRestore ?? null;
   const isVariantStockMode = effectiveStockDeduction?.mode === "variant";
-  const paymentSourceRaw = String(data.paymentSource ?? "").trim();
   const linkedPayment = data.linkedPayment ?? null;
   const packageApplied = Boolean(data.packageInfo?.applied);
   const hasOrderLinkedPayment =
@@ -2000,12 +2005,19 @@ export default function StringingApplicationDetailClient({
                         {isLinkedApplication && linkedAdminHref && (
                           <div className="rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-foreground/80">
                             <p>
-                              이 신청서는 주문/대여와 연결되어 있습니다. 상태
-                              변경은 연결된 주문/대여 상세의 통합 진행 단계에서
-                              처리하세요.
+                              {linkedRentalId
+                                ? "이 신청서는 대여 주문과 연결되어 있습니다. 작업 상태 변경은 대여 상세의 ‘교체서비스 작업 상태 관리’에서 처리하세요."
+                                : "이 신청서는 주문과 연결되어 있습니다. 상태 변경은 연결된 주문 상세의 통합 진행 단계에서 처리하세요."}
                             </p>
-                            <Button asChild size="sm" variant="outline" className="mt-2">
-                              <Link href={linkedAdminHref}>{linkedAdminLabel}</Link>
+                            <Button
+                              asChild
+                              size="sm"
+                              variant="outline"
+                              className="mt-2"
+                            >
+                              <Link href={linkedAdminHref}>
+                                {linkedAdminLabel}
+                              </Link>
                             </Button>
                           </div>
                         )}

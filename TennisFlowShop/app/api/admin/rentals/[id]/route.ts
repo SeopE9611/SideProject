@@ -116,42 +116,81 @@ export async function GET(
   let linkedApplicationTensionSummary: string | null = null;
   let linkedApplicationStringNames: string[] = [];
   let linkedApplicationReservationLabel: string | null = null;
+  let linkedApplication: Record<string, unknown> | null = null;
 
   const rawStringingApplicationId = (doc as any).stringingApplicationId;
-  if (rawStringingApplicationId) {
-    const linkedApp = await db
-      .collection("stringing_applications")
-      .findOne(
-        { _id: rawStringingApplicationId },
-        { projection: { status: 1, collectionMethod: 1, stringDetails: 1 } },
-      );
-    linkedApplicationStatus =
-      typeof linkedApp?.status === "string" ? linkedApp.status : null;
-    if (linkedApp) {
-      const lines = getApplicationLines((linkedApp as any).stringDetails);
-      linkedApplicationReceptionLabel = getReceptionLabel(
-        (linkedApp as any).collectionMethod,
-      );
-      linkedApplicationRacketCount = lines.length;
-      linkedApplicationTensionSummary = getTensionSummary(lines);
-      linkedApplicationStringNames = Array.from(
-        new Set(
-          lines
-            .map((line: any) => String(line?.stringName ?? "").trim())
-            .filter(Boolean),
-        ),
-      );
-      const preferredDate = String(
-        (linkedApp as any)?.stringDetails?.preferredDate ?? "",
-      ).trim();
-      const preferredTime = String(
-        (linkedApp as any)?.stringDetails?.preferredTime ?? "",
-      ).trim();
-      linkedApplicationReservationLabel =
-        preferredDate && preferredTime
-          ? `${preferredDate} ${preferredTime}`
-          : null;
-    }
+  const normalizedApplicationId = String(rawStringingApplicationId ?? "");
+  const applicationObjectId = ObjectId.isValid(normalizedApplicationId)
+    ? new ObjectId(normalizedApplicationId)
+    : null;
+  const applicationLinks: Record<string, unknown>[] = [
+    { rentalId: doc._id },
+    { rentalId: id },
+    { paymentSource: `rental:${id}` },
+  ];
+  if (applicationObjectId)
+    applicationLinks.unshift({ _id: applicationObjectId });
+
+  const linkedApp = await db.collection("stringing_applications").findOne(
+    { $or: applicationLinks },
+    {
+      projection: {
+        status: 1,
+        collectionMethod: 1,
+        stringDetails: 1,
+        requirements: 1,
+        paymentSource: 1,
+        rentalId: 1,
+        meta: 1,
+      },
+    },
+  );
+  linkedApplicationStatus =
+    typeof linkedApp?.status === "string" ? linkedApp.status : null;
+  if (linkedApp) {
+    const lines = getApplicationLines((linkedApp as any).stringDetails);
+    linkedApplicationReceptionLabel = getReceptionLabel(
+      (linkedApp as any).collectionMethod,
+    );
+    linkedApplicationRacketCount = lines.length;
+    linkedApplicationTensionSummary = getTensionSummary(lines);
+    linkedApplicationStringNames = Array.from(
+      new Set(
+        lines
+          .map((line: any) => String(line?.stringName ?? "").trim())
+          .filter(Boolean),
+      ),
+    );
+    const preferredDate = String(
+      (linkedApp as any)?.stringDetails?.preferredDate ?? "",
+    ).trim();
+    const preferredTime = String(
+      (linkedApp as any)?.stringDetails?.preferredTime ?? "",
+    ).trim();
+    linkedApplicationReservationLabel =
+      preferredDate && preferredTime
+        ? `${preferredDate} ${preferredTime}`
+        : null;
+    linkedApplication = {
+      id: String(linkedApp._id),
+      status: linkedApplicationStatus,
+      paymentSource: (linkedApp as any).paymentSource ?? null,
+      rentalId: (linkedApp as any).rentalId
+        ? String((linkedApp as any).rentalId)
+        : null,
+      requirements: (linkedApp as any).requirements ?? null,
+      selectedGauge: (linkedApp as any)?.meta?.selectedGauge ?? null,
+      selectedColor:
+        (linkedApp as any)?.meta?.selectedColorLabel ??
+        (linkedApp as any)?.meta?.selectedColor ??
+        null,
+      lines: lines.map((line: any) => ({
+        stringName: line?.stringName ?? null,
+        tensionMain: line?.tensionMain ?? null,
+        tensionCross: line?.tensionCross ?? null,
+        note: line?.note ?? null,
+      })),
+    };
   }
 
   return NextResponse.json({
@@ -172,8 +211,10 @@ export async function GET(
     // 대여 기반 교체 서비스 신청서 연결 정보 (있으면 관리자 상세에서 CTA 노출 가능)
     isStringServiceApplied: !!(doc as any).isStringServiceApplied,
     stringing: (doc as any).stringing ?? null,
-    stringingApplicationId: (doc as any).stringingApplicationId ?? null,
+    stringingApplicationId:
+      linkedApplication?.id ?? (doc as any).stringingApplicationId ?? null,
     stringingApplicationStatus: linkedApplicationStatus,
+    linkedStringingApplication: linkedApplication,
     stringingReceptionLabel: linkedApplicationReceptionLabel,
     stringingRacketCount: linkedApplicationRacketCount,
     stringingTensionSummary: linkedApplicationTensionSummary,
