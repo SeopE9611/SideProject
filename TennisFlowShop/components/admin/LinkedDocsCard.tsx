@@ -74,6 +74,7 @@ const KIND_PRIORITY: Record<LinkedDocKind, number> = {
   order: 0,
   rental: 1,
   stringing_application: 2,
+  package_purchase: 3,
 };
 
 function getDocLabel(kind: LinkedDocKind) {
@@ -84,6 +85,8 @@ function getDocLabel(kind: LinkedDocKind) {
       return { idLabel: "대여번호", ctaLabel: "대여 상세 보기" };
     case "stringing_application":
       return { idLabel: "신청번호", ctaLabel: "신청 상세 보기" };
+    case "package_purchase":
+      return { idLabel: "패키지 주문번호", ctaLabel: "패키지 상세 보기" };
     default:
       return { idLabel: "문서번호", ctaLabel: "상세 보기" };
   }

@@ -1,13 +1,14 @@
+import type { OpsKind } from "@/lib/admin-ops-taxonomy";
 import { isVisitPickupOrder } from "@/lib/order-shipping";
 
 export type OpsLikeItem = {
-  kind: "order" | "stringing_application" | "rental";
+  kind: OpsKind;
   statusLabel?: string | null;
   statusDisplayLabel?: string | null;
   paymentLabel?: string | null;
   flow?: number | null;
   related?: {
-    kind: "order" | "stringing_application" | "rental";
+    kind: OpsKind;
     id: string;
     href: string;
   } | null;
@@ -200,6 +201,20 @@ export function inferNextActionForOperationItem(
       };
     }
     return { stage: "취소 요청 처리 단계", nextAction: "환불 계좌 확인 필요" };
+  }
+
+  if (item.kind === "package_purchase") {
+    if (!doneLike(item.paymentLabel)) {
+      return {
+        stage: "패키지 결제 확인 단계",
+        nextAction: "패키지 구매 결제 상태와 이용권 활성화 상태를 확인하세요.",
+      };
+    }
+
+    return {
+      stage: "패키지 구매 확인 단계",
+      nextAction: "패키지 구매 내역과 이용권 상태를 확인하세요.",
+    };
   }
 
   if (item.kind === "rental") {
