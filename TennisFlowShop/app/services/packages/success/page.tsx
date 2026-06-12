@@ -159,7 +159,7 @@ export default async function PackageSuccessPage({
   const paymentMethodLabel = isTossPayment
     ? `토스페이먼츠 (${String(paymentInfo?.method || "CARD")})`
     : isNicePayment
-      ? `NicePay${niceEasyPayProvider ? ` (${niceEasyPayProvider})` : ""} (${String(paymentInfo?.method || "card")})`
+      ? `카드/간편결제${niceEasyPayProvider ? ` (${niceEasyPayProvider})` : ""}`
       : "무통장입금";
   const isPaid = String(packageOrder.paymentStatus ?? "") === "결제완료";
 
