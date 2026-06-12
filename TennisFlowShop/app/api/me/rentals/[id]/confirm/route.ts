@@ -92,55 +92,74 @@ export async function POST(
       );
     }
 
-    if (rental.userConfirmedAt) {
-      return NextResponse.json({
-        ok: true,
-        already: true,
-        message: "이미 반납 확정된 대여입니다.",
-        earnedPoints: 0,
-      });
-    }
+    const alreadyConfirmed = Boolean(rental.userConfirmedAt);
+    const confirmedAt = rental.userConfirmedAt
+      ? new Date(rental.userConfirmedAt)
+      : new Date();
 
-    await db.collection("rental_orders").updateOne(
-      {
-        _id,
-        $or: [
-          { userConfirmedAt: { $exists: false } },
-          { userConfirmedAt: null },
-        ],
-      },
-      { $set: { userConfirmedAt: new Date() } },
-    );
+    if (!alreadyConfirmed) {
+      await db.collection("rental_orders").updateOne(
+        {
+          _id,
+          $or: [
+            { userConfirmedAt: { $exists: false } },
+            { userConfirmedAt: null },
+          ],
+        },
+        { $set: { userConfirmedAt: confirmedAt } },
+      );
+    }
 
     const fee = Number(rental?.amount?.fee ?? 0);
     const earnedPoints = calcOrderEarnPoints(fee);
 
-    if (earnedPoints <= 0) {
-      return NextResponse.json({
-        ok: true,
-        message: "반납 확정 완료",
-        earnedPoints: 0,
+    if (earnedPoints > 0) {
+      const methodLabel = paymentMethodLabel(rental?.payment?.method);
+      const reason = methodLabel
+        ? `대여 확정 적립 (${methodLabel})`
+        : "대여 확정 적립";
+
+      const rewardRefKey = `rental_confirm_reward:${String(_id)}`;
+      await grantPoints(db, {
+        userId: new ObjectId(userId),
+        amount: earnedPoints,
+        type: "order_reward",
+        reason,
+        refKey: rewardRefKey,
       });
     }
 
-    const methodLabel = paymentMethodLabel(rental?.payment?.method);
-    const reason = methodLabel
-      ? `대여 확정 적립 (${methodLabel})`
-      : "대여 확정 적립";
+    const rentalLinks: Record<string, unknown>[] = [
+      { rentalId: _id },
+      { rentalId: String(_id) },
+      { paymentSource: `rental:${String(_id)}` },
+    ];
+    const stringingApplicationId = String(rental.stringingApplicationId ?? "");
+    if (ObjectId.isValid(stringingApplicationId)) {
+      rentalLinks.unshift({ _id: new ObjectId(stringingApplicationId) });
+    }
 
-    const rewardRefKey = `rental_confirm_reward:${String(_id)}`;
-    await grantPoints(db, {
-      userId: new ObjectId(userId),
-      amount: earnedPoints,
-      type: "order_reward",
-      reason,
-      refKey: rewardRefKey,
-    });
+    const svcRes = await db.collection("stringing_applications").updateMany(
+      {
+        $and: [
+          { $or: rentalLinks },
+          {
+            $or: [
+              { userConfirmedAt: { $exists: false } },
+              { userConfirmedAt: null },
+            ],
+          },
+        ],
+      },
+      { $set: { userConfirmedAt: confirmedAt } },
+    );
 
     return NextResponse.json({
       ok: true,
-      message: "반납 확정 완료",
+      already: alreadyConfirmed,
+      message: alreadyConfirmed ? "이미 반납 확정된 대여입니다." : "반납 확정 완료",
       earnedPoints,
+      alsoConfirmedServices: (svcRes as any).modifiedCount ?? 0,
     });
   } catch (e) {
     console.error("[rental confirm] error:", e);
