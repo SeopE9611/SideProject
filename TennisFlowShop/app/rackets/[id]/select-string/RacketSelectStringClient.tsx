@@ -6,6 +6,7 @@ import SelectStringLayout from "@/app/components/select-string/SelectStringLayou
 import { usePdpBundleStore } from "@/app/store/pdpBundleStore";
 import { useCartStore } from "@/app/store/cartStore";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import { getEffectiveProductPrice } from "@/lib/product-pricing";
 import {
   normalizeGaugeRows,
   normalizeColorRows,
@@ -215,7 +216,7 @@ export default function RacketSelectStringClient({
       addItem({
         id: newStringId,
         name: selectedString?.name ?? "스트링",
-        price: Number(selectedString?.price ?? 0),
+        price: getEffectiveProductPrice(selectedString),
         quantity: qty,
         image: selectedStringImage,
         kind: "product",
@@ -400,7 +401,7 @@ export default function RacketSelectStringClient({
       {
         id: String(p._id),
         name: p.name,
-        price: p.price,
+        price: getEffectiveProductPrice(p),
         quantity: finalQty,
         image: selectedStringImage,
         kind: "product",

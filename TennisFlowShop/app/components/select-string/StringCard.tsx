@@ -9,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { getEffectiveProductPrice } from "@/lib/product-pricing";
 import { cn } from "@/lib/utils";
 import { Check, ChevronRight, Eye, Package } from "lucide-react";
 import Image from "next/image";
@@ -210,7 +211,7 @@ export function StringCard({
             </p>
           )}
           <p className="tabular-nums text-lg font-bold text-foreground">
-            {Number(product.price ?? 0).toLocaleString()}원
+            {getEffectiveProductPrice(product).toLocaleString()}원
           </p>
         </div>
 

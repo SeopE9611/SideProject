@@ -101,6 +101,8 @@ export default function useCheckoutStringingServiceAdapter({
     passId?: string;
     packageSize?: number;
   }>({ has: false });
+  const [packagePreviewLoading, setPackagePreviewLoading] =
+    useState(withStringService);
 
   const previewOrder = useMemo(() => {
     const items = orderItems.map((item) => ({
@@ -142,13 +144,19 @@ export default function useCheckoutStringingServiceAdapter({
   const { setFormData } = shared;
 
   useEffect(() => {
-    if (!withStringService) return;
+    if (!withStringService) {
+      setPackagePreviewLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    setPackagePreviewLoading(true);
 
     (async () => {
       try {
         const res = await fetch("/api/passes/me", { credentials: "include" });
         if (!res.ok) {
-          setPackagePreview({ has: false });
+          if (!cancelled) setPackagePreview({ has: false });
           return;
         }
 
@@ -165,22 +173,30 @@ export default function useCheckoutStringingServiceAdapter({
         );
 
         if (items.length === 0) {
-          setPackagePreview({ has: false });
+          if (!cancelled) setPackagePreview({ has: false });
           return;
         }
 
         const pass = items[0];
-        setPackagePreview({
-          has: true,
-          remaining: pass.remainingCount,
-          expiresAt: pass.expiresAt,
-          passId: pass.id,
-          packageSize: pass.packageSize,
-        });
+        if (!cancelled) {
+          setPackagePreview({
+            has: true,
+            remaining: pass.remainingCount,
+            expiresAt: pass.expiresAt,
+            passId: pass.id,
+            packageSize: pass.packageSize,
+          });
+        }
       } catch {
-        setPackagePreview({ has: false });
+        if (!cancelled) setPackagePreview({ has: false });
+      } finally {
+        if (!cancelled) setPackagePreviewLoading(false);
       }
     })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [withStringService]);
 
   useEffect(() => {
@@ -467,6 +483,7 @@ export default function useCheckoutStringingServiceAdapter({
 
     isMember,
     packagePreview,
+    packagePreviewLoading,
     canApplyPackage,
     packageInsufficient,
     packageRemaining,

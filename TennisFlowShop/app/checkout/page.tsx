@@ -1327,7 +1327,10 @@ export default function CheckoutPage() {
     const hasStringingLineErrors = !!(
       withStringService && checkoutStringingAdapter?.hasLineValidationErrors
     );
-    const resolvedCanSubmit = canSubmit && !hasStringingLineErrors;
+    const resolvedCanSubmit =
+      canSubmit &&
+      !hasStringingLineErrors &&
+      !checkoutStringingAdapter?.packagePreviewLoading;
     const requestStringingValidationMessages = () => {
       if (!hasStringingLineErrors) return;
       setShowStringingValidationErrors(true);
