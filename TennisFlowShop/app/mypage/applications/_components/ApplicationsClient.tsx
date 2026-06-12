@@ -559,6 +559,7 @@ export default function ApplicationsClient() {
             // 우선순위: 주문 기반(orderId) > 대여 기반(rentalId)
             const hasOrderLink = Boolean(orderId);
             const hasRentalLink = !hasOrderLink && Boolean(rentalId);
+            const isLinkedApplication = Boolean(orderId || rentalId);
 
             // 종료 상태(수정 금지)
             const CLOSED = ["작업 중", "교체완료"];
@@ -941,7 +942,7 @@ export default function ApplicationsClient() {
                         </Button>
                       ))}
 
-                    {isStringService && (
+                    {isStringService && !isLinkedApplication && (
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
@@ -953,6 +954,7 @@ export default function ApplicationsClient() {
                                   Boolean(userConfirmedAt);
 
                                 const canConfirm =
+                                  !isLinkedApplication &&
                                   app.status === "교체완료" &&
                                   !isUserConfirmed &&
                                   !isCancelRequested &&

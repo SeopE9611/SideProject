@@ -797,10 +797,13 @@ export default function StringingApplicationDetailClient({
   }
 
   // 관리자이거나(isAdmin), 또는 상태가 userEditableStatuses에 포함될 때를 판단
+  const isOrderLinkedApplication = Boolean(data.orderId);
   const isRentalLinkedApplication = Boolean(
     data.rentalId ||
       String(data.paymentSource ?? "").trim().startsWith("rental:"),
   );
+  const isLinkedApplication =
+    isOrderLinkedApplication || isRentalLinkedApplication;
   const isEditableAllowed =
     !isRentalLinkedApplication &&
     (isAdmin || userEditableStatuses.includes(data.status));
@@ -880,7 +883,6 @@ export default function StringingApplicationDetailClient({
     (paymentSourceRaw.startsWith("rental:")
       ? paymentSourceRaw.slice("rental:".length)
       : null);
-  const isLinkedApplication = Boolean(data.orderId || linkedRentalId);
   const linkedAdminHref = data.orderId
     ? `/admin/orders/${data.orderId}`
     : linkedRentalId
@@ -946,12 +948,13 @@ export default function StringingApplicationDetailClient({
   const confirmableStatuses = ["반송완료", "교체완료", "완료"];
   const canConfirmExchange =
     !isAdmin &&
-    !isRentalLinkedApplication &&
+    !isLinkedApplication &&
     !isCancelled &&
     !isCancelRequested &&
     !isUserConfirmed &&
     confirmableStatuses.includes(data.status);
-  const showConfirmExchangeButton = canConfirmExchange || isUserConfirmed;
+  const showConfirmExchangeButton =
+    !isLinkedApplication && (canConfirmExchange || isUserConfirmed);
   const userProgressSteps = [
     { key: "접수완료", label: "접수 완료" },
     { key: "검토 중", label: "검토 중" },
@@ -1232,7 +1235,7 @@ export default function StringingApplicationDetailClient({
           ctaLabel: hasTracking ? "라켓 발송 수정" : "라켓 발송 등록",
           ctaHref: inboundTrackingHref,
         }
-      : !isAdmin && !isRentalLinkedApplication && showConfirmExchangeButton && canConfirmExchange
+      : !isAdmin && !isLinkedApplication && showConfirmExchangeButton && canConfirmExchange
         ? {
             label: "교체서비스 확정",
             ctaLabel: "교체서비스 확정",
@@ -1461,7 +1464,7 @@ export default function StringingApplicationDetailClient({
                     )}
 
                     {/* 사용자: 교체확정 버튼(확정 가능 시, 또는 이미 확정된 경우에만 노출) */}
-                    {!isAdmin && !isRentalLinkedApplication && showConfirmExchangeButton && (
+                    {!isAdmin && !isLinkedApplication && showConfirmExchangeButton && (
                       <Button
                         size="sm"
                         disabled={!canConfirmExchange || isConfirmSubmitting}
@@ -2048,8 +2051,11 @@ export default function StringingApplicationDetailClient({
                                 에 접수된 신청입니다.
                               </p>
                               <p>
-                                주문 구매확정과 교체서비스 확정은 별도로
-                                처리됩니다.
+                                {isOrderLinkedApplication
+                                  ? "이 교체서비스는 연결된 주문의 구매확정과 함께 처리됩니다."
+                                  : isRentalLinkedApplication
+                                    ? "이 교체서비스는 연결된 대여의 이용확정과 함께 처리됩니다."
+                                    : "단독 교체서비스는 신청 상세에서 확정할 수 있습니다."}
                               </p>
                             </>
                           )}
@@ -2145,27 +2151,24 @@ export default function StringingApplicationDetailClient({
                       )}
                       {!isCancelled &&
                         !isCancelRequested &&
-                        !isRentalLinkedApplication &&
+                        !isLinkedApplication &&
                         !canConfirmExchange &&
                         !isUserConfirmed && (
                           <span className="block">
                             교체 완료 후 교체서비스 확정을 진행할 수 있습니다.
                           </span>
                         )}
-                      {!isCancelled &&
-                        !isCancelRequested &&
-                        !isRentalLinkedApplication && (
-                          <span className="block">
-                            주문 구매확정과 교체서비스 확정은 별도로 처리됩니다.
-                          </span>
-                        )}
                     </div>
+
+                    {!isAdmin && isOrderLinkedApplication && (
+                      <p className="max-w-xl text-sm text-muted-foreground">
+                        이 교체서비스는 연결된 주문의 구매확정과 함께 처리됩니다.
+                      </p>
+                    )}
 
                     {!isAdmin && isRentalLinkedApplication && (
                       <p className="max-w-xl text-sm text-muted-foreground">
-                        이 교체서비스는 대여 주문과 연결되어 있습니다. 작업 상태는
-                        대여 상세에서 함께 확인되며, 고객 확인은 대여 수령 확인
-                        흐름으로 진행됩니다.
+                        이 교체서비스는 연결된 대여의 이용확정과 함께 처리됩니다.
                       </p>
                     )}
 
