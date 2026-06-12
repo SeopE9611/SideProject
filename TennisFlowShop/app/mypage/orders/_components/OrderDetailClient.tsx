@@ -1021,7 +1021,8 @@ export default function OrderDetailClient({
                     <CardTitle>교체서비스 정보</CardTitle>
                     <CardDescription>
                       이 주문과 함께 신청한 교체서비스 정보를 한 페이지에서
-                      확인할 수 있습니다.
+                      확인할 수 있으며, 연결된 교체서비스는 주문 구매확정과 함께
+                      처리됩니다.
                     </CardDescription>
                   </div>
                   <div className="flex flex-wrap gap-2">
