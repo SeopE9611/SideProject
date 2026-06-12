@@ -3,6 +3,7 @@ import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 import { verifyAccessToken } from "@/lib/auth.utils";
+import { RefundAccountSchema } from "@/lib/cancel-request/refund-account";
 import { z } from "zod";
 
 export const dynamic = "force-dynamic";
@@ -18,7 +19,7 @@ export const dynamic = "force-dynamic";
  */
 
 const POSTAL_RE = /^\d{5}$/;
-const ALLOWED_BANKS = new Set(["shinhan", "kookmin", "woori"] as const);
+const PAYMENT_BANKS = new Set(["kakao"] as const);
 
 const toTrimmedString = (v: unknown) =>
   v === null || v === undefined ? "" : String(v).trim();
@@ -49,14 +50,6 @@ const ShippingSchema = z
   })
   .passthrough();
 
-const RefundAccountSchema = z
-  .object({
-    bank: z.enum(["shinhan", "kookmin", "woori"]),
-    account: z.preprocess(toDigits, z.string().min(8).max(20)),
-    holder: z.preprocess(toTrimmedString, z.string().min(2).max(50)),
-  })
-  .passthrough();
-
 const PrepareBodySchema = z
   .object({
     payment: PaymentSchema.nullable().optional(),
@@ -70,7 +63,7 @@ const PrepareBodySchema = z
  * body: {
  *   payment?: { method: 'bank_transfer'; bank?: string; depositor?: string },
  *   shipping?: { name, phone, postalCode, address, addressDetail?, deliveryRequest? },
- *   refundAccount?: { bank: 'shinhan'|'kookmin'|'woori', account: string, holder: string }
+ *   refundAccount?: { bank: string, account: string, holder: string }
  * }
  */
 export async function POST(
@@ -136,7 +129,7 @@ export async function POST(
 
     // 은행 값 최종 방어(입금 bank)
     const bank = body?.payment?.bank ? String(body.payment.bank).trim() : "";
-    if (bank && !ALLOWED_BANKS.has(bank as any)) {
+    if (bank && !PAYMENT_BANKS.has(bank as any)) {
       return NextResponse.json(
         { ok: false, message: "INVALID_BANK" },
         { status: 400 },

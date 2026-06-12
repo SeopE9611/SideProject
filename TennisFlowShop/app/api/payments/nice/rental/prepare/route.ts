@@ -1,5 +1,6 @@
 import { verifyAccessToken } from "@/lib/auth.utils";
 import clientPromise from "@/lib/mongodb";
+import { RefundAccountSchema } from "@/lib/cancel-request/refund-account";
 import { buildNiceOrderName, createNiceOrderId } from "@/lib/payments/nice/server";
 import { isNicePaymentsEnabled } from "@/lib/payments/provider-flags";
 import { ensureTossPaymentSessionIndexes, tossPaymentSessions } from "@/lib/payments/toss/session";
@@ -31,11 +32,7 @@ const BodySchema = z.object({
   servicePickupMethod: z.enum(["SELF_SEND", "SHOP_VISIT", "delivery", "pickup"]).optional(),
   payment: z.object({ method: z.literal("nicepay") }).optional(),
   shipping: z.record(z.any()).optional(),
-  refundAccount: z.object({
-    bank: z.enum(["shinhan", "kookmin", "woori"]),
-    account: z.string().trim().min(8),
-    holder: z.string().trim().min(2),
-  }),
+  refundAccount: RefundAccountSchema,
   stringing: z
     .object({
       requested: z.coerce.boolean().optional(),

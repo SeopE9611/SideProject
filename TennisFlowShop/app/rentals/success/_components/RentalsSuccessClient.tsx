@@ -15,6 +15,7 @@ import { Separator } from "@/components/ui/separator";
 import { normalizeRentalStatus } from "@/lib/admin-ops-normalize";
 import { badgeToneVariant } from "@/lib/badge-style";
 import { bankLabelMap, racketBrandLabel } from "@/lib/constants";
+import { getRefundBankLabel } from "@/lib/cancel-request/refund-account";
 import {
   ArrowRight,
   CheckCircle,
@@ -163,8 +164,8 @@ export default function RentalsSuccessClient({ data }: Props) {
     (typeof window !== "undefined" &&
       sessionStorage.getItem("rentals-refund-holder")) ||
     "";
-  const refundBankInfo = refundBankKey
-    ? (bankLabelMap as any)[refundBankKey]
+  const refundBankLabel = refundBankKey
+    ? getRefundBankLabel(refundBankKey)
     : null;
 
   const isNicePaid =
@@ -555,9 +556,9 @@ export default function RentalsSuccessClient({ data }: Props) {
                     반납 완료 후 아래 계좌로 보증금을 환급해 드립니다.
                   </p>
                   <div className="mt-4 space-y-1">
-                    {refundBankInfo && (
+                    {refundBankLabel && (
                       <div>
-                        은행: <b>{refundBankInfo.label}</b>
+                        은행: <b>{refundBankLabel}</b>
                       </div>
                     )}
                     {refundAccount && (
