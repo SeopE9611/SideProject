@@ -73,7 +73,10 @@ const getStatusBadgeVariant = (status: string) => {
   }
 };
 
-const getStatusLabel = (status: string) => {
+const getStatusLabel = (status: string, hasOutboundShipping = false) => {
+  if (status === "pending") return "입금 확인 대기";
+  if (status === "paid")
+    return hasOutboundShipping ? "출고됨 · 수령 확인 대기" : "출고 준비 중";
   const baseLabel = getMypageUserStatusLabel(status);
   if (baseLabel === "취소") return "취소됨";
   return baseLabel;
@@ -229,7 +232,9 @@ export default function RentalsList() {
                     variant={getStatusBadgeVariant(r.status)}
                     className="shrink-0 whitespace-nowrap px-3 py-1 text-xs font-medium"
                   >
-                    {getStatusLabel(r.status)}
+                    {r.depositRefundedAt
+                      ? "보증금 환급 완료"
+                      : getStatusLabel(r.status, r.hasOutboundShipping)}
                   </Badge>
                   {r.cancelStatus === "requested" ? (
                     <Badge

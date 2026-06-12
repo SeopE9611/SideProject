@@ -96,6 +96,19 @@ export async function POST(
       );
     }
 
+    const paymentSource = String(app.paymentSource ?? "").trim();
+    if (app.rentalId || paymentSource.startsWith("rental:")) {
+      return NextResponse.json(
+        {
+          ok: false,
+          code: "RENTAL_LINKED_CONFIRM_NOT_ALLOWED",
+          message:
+            "대여와 연결된 교체서비스는 대여 수령 확인 흐름에서 함께 진행됩니다.",
+        },
+        { status: 409 },
+      );
+    }
+
     if (app.status !== "교체완료") {
       return NextResponse.json(
         { ok: false, message: "교체완료 상태에서만 확정할 수 있습니다." },

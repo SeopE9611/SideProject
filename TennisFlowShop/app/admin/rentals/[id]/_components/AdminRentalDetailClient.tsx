@@ -107,7 +107,7 @@ const fmt = (v?: string | Date | null) =>
 
 const rentalHistoryActionLabels: Record<string, string> = {
   paid: "결제 확인",
-  out: "대여 시작 / 방문 수령 처리",
+  out: "수령 확인 / 대여 시작",
   returned: "반납 완료",
   "cancel-request": "취소 요청",
   "cancel-approved": "취소 승인",
@@ -399,11 +399,13 @@ export default function AdminRentalDetailClient() {
             ? {
                 title: isVisitPickup
                   ? "방문 수령 처리할까요?"
-                  : "대여 시작 처리할까요?",
+                  : "수령 확인 후 대여를 시작할까요?",
                 description: isVisitPickup
-                  ? "방문 수령 확인 후 상태가 대여중으로 변경됩니다."
-                  : "대여 상태가 대여중으로 변경됩니다.",
-                confirmText: isVisitPickup ? "방문 수령 처리" : "대여 시작",
+                  ? "방문 수령 확인 시점부터 대여 기간과 반납 예정일이 계산됩니다."
+                  : "고객 수령 확인 시점부터 대여 기간과 반납 예정일이 계산됩니다.",
+                confirmText: isVisitPickup
+                  ? "방문 수령 처리"
+                  : "수령 확인 / 대여 시작",
                 eventKey: "admin-rental-detail-out-confirm",
                 eventMeta: { rentalId: id, currentStatus: data?.status },
               }
@@ -573,7 +575,12 @@ export default function AdminRentalDetailClient() {
     hasLinkedApplication &&
     ["out", "returned"].includes(String(data?.status ?? "")) &&
     !isStringingComplete;
-  const blockRentalStart = hasLinkedApplication && !isStringingComplete;
+  const hasOutboundTracking = Boolean(
+    String(data?.shipping?.outbound?.trackingNumber ?? "").trim(),
+  );
+  const blockRentalStart =
+    (hasLinkedApplication && !isStringingComplete) ||
+    (!isVisitPickup && !hasOutboundTracking);
 
   const paymentLabel =
     data?.paymentStatusLabel ??
@@ -643,20 +650,27 @@ export default function AdminRentalDetailClient() {
             description:
               "입금/결제 반영 여부를 확인한 뒤 출고 여부를 판단하세요.",
           }
-        : isBeforeOut && blockRentalStart
+        : isBeforeOut && hasLinkedApplication && !isStringingComplete
         ? {
             tone: "warning",
             title: "교체서비스 작업 완료 필요",
             description:
               "교체서비스가 완료된 뒤 출고 또는 대여 시작을 진행하세요.",
           }
+        : isBeforeOut && !isVisitPickup && hasOutboundTracking
+          ? {
+              tone: "warning",
+              title: "출고 완료 · 수령 확인 대기",
+              description: "고객 수령 확인 후 대여를 시작하세요.",
+            }
         : isBeforeOut
           ? {
               tone: "warning",
-              title: "출고 처리 필요",
-              description:
-                "결제 상태와 배송 정보를 확인한 뒤 출고 처리를 진행하세요.",
-              actionLabel: "출고 운송장 등록/수정",
+              title: isVisitPickup ? "방문 수령 처리 필요" : "출고 운송장 등록 필요",
+              description: isVisitPickup
+                ? "고객 방문 수령을 확인한 뒤 대여를 시작하세요."
+                : "교체서비스 완료 상태를 확인한 뒤 출고 운송장을 등록하세요.",
+              actionLabel: isVisitPickup ? undefined : "출고 운송장 등록/수정",
               actionHref: isVisitPickup
                 ? undefined
                 : `/admin/rentals/${id}/shipping-update`,
@@ -875,7 +889,9 @@ export default function AdminRentalDetailClient() {
                 </div>
                 {(() => {
                   const rentalLabel =
-                    rentalStatusLabels[data.status] || data.status;
+                    data.status === "paid" && hasOutboundTracking
+                      ? "결제완료 · 수령 확인 대기"
+                      : rentalStatusLabels[data.status] || data.status;
                   const rentalSpec = getRentalStatusBadgeSpec(data.status);
                   return (
                     <Badge
@@ -1473,10 +1489,10 @@ export default function AdminRentalDetailClient() {
                   {busyAction === "out"
                     ? isVisitPickup
                       ? "방문 수령 처리중…"
-                      : "대여 시작 처리중…"
+                      : "수령 확인 처리중…"
                     : isVisitPickup
                       ? "방문 수령 처리"
-                      : "대여 시작"}
+                      : "수령 확인 / 대여 시작"}
                 </Button>
 
                 {/* 반납 처리 */}
@@ -1496,9 +1512,11 @@ export default function AdminRentalDetailClient() {
 
                 {data.status === "paid" && (
                   <p className="w-full text-xs text-muted-foreground">
-                    {blockRentalStart
+                    {hasLinkedApplication && !isStringingComplete
                       ? "이 대여는 교체서비스와 연결되어 있습니다. 교체서비스 상태가 `교체완료`가 된 뒤 출고 또는 대여 시작을 진행하세요."
-                      : "출고 또는 대여 시작 후 반납 처리할 수 있습니다."}
+                      : !isVisitPickup && !hasOutboundTracking
+                        ? "택배 배송 건은 출고 운송장을 등록한 뒤 수령 확인 / 대여 시작을 진행하세요."
+                        : "고객 수령 확인 후 대여를 시작할 수 있습니다."}
                   </p>
                 )}
 
@@ -2015,7 +2033,7 @@ export default function AdminRentalDetailClient() {
                   <Calendar className="h-4 w-4 text-muted-foreground mt-1" />
                   <div>
                     <p className="text-sm text-foreground/80">
-                      {isVisitPickup ? "방문 수령 처리" : "대여 시작"}
+                      {isVisitPickup ? "방문 수령 처리" : "수령 확인 / 대여 시작"}
                     </p>
                     <p className="font-semibold text-foreground">
                       {data.outAt ? formatDate(data.outAt) : "-"}
@@ -2027,7 +2045,7 @@ export default function AdminRentalDetailClient() {
                   <div>
                     <p className="text-sm text-foreground/80">반납 예정</p>
                     <p className="font-semibold text-foreground">
-                      {data.dueAt ? formatDate(data.dueAt) : "-"}
+                      {data.dueAt ? formatDate(data.dueAt) : "수령 확인 후 계산"}
                     </p>
                   </div>
                 </div>

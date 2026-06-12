@@ -4,7 +4,6 @@ import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 import { ObjectId } from "mongodb";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
-import { normalizeRentalPaymentMeta } from "@/lib/admin-ops-normalize";
 import { writeRentalHistory } from "@/app/features/rentals/utils/history";
 import { getLinkedRentalStringingStatus } from "@/lib/admin/rental-stringing-flow.server";
 import { hasRentalStringingService, isRentalStringingComplete } from "@/lib/rental-stringing-flow";
@@ -74,42 +73,37 @@ export async function POST(
   );
 
   const currentStatus = String(rental?.status ?? "").trim();
-  const isVisitPickup =
-    String(rental?.servicePickupMethod ?? "").trim() === "SHOP_VISIT";
-  const isPaymentCompleted =
-    normalizeRentalPaymentMeta(rental).label === "결제완료";
-  const shouldAutoTransitToOut =
-    !isVisitPickup &&
-    !hadOutbound &&
-    isPaymentCompleted &&
-    !["canceled", "cancelled", "returned", "out"].includes(currentStatus);
-
-  const outAt = new Date().toISOString();
-  const rawDays = Number(rental?.days ?? 7);
-  const days = rawDays === 7 || rawDays === 15 || rawDays === 30 ? rawDays : 7;
-  const due = new Date(outAt);
-  due.setDate(due.getDate() + days);
-  const dueAt = due.toISOString();
-
-  const nextShippedAt = shippedAt ? new Date(shippedAt) : new Date();
-  const updateDoc: any = {
-    $set: {
-      "shipping.outbound": {
-        courier,
-        trackingNumber,
-        shippedAt: nextShippedAt,
+  if (currentStatus !== "paid") {
+    return NextResponse.json(
+      {
+        ok: false,
+        code: "INVALID_STATE",
+        message: "결제완료 상태에서만 출고 운송장을 등록할 수 있습니다.",
       },
-      updatedAt: new Date(),
-    },
-  };
-
-  if (shouldAutoTransitToOut) {
-    updateDoc.$set.status = "out";
-    updateDoc.$set.outAt = outAt;
-    updateDoc.$set.dueAt = dueAt;
+      { status: 409 },
+    );
   }
 
-  await db.collection("rental_orders").updateOne({ _id }, updateDoc);
+  const nextShippedAt = shippedAt ? new Date(shippedAt) : new Date();
+  const updated = await db.collection("rental_orders").updateOne(
+    { _id, status: "paid" },
+    {
+      $set: {
+        "shipping.outbound": {
+          courier,
+          trackingNumber,
+          shippedAt: nextShippedAt,
+        },
+        updatedAt: new Date(),
+      },
+    },
+  );
+  if (updated.matchedCount === 0) {
+    return NextResponse.json(
+      { ok: false, code: "INVALID_STATE", message: "출고 운송장 등록 불가 상태" },
+      { status: 409 },
+    );
+  }
 
   await appendAdminAudit(
     db,
@@ -117,42 +111,31 @@ export async function POST(
       type: "admin.rentals.shipping.outbound.post",
       actorId: guard.admin._id,
       targetId: _id,
-      message: shouldAutoTransitToOut
-        ? "대여 출고 배송정보 등록 및 자동 상태 전환"
-        : hadOutbound
-          ? "대여 출고 배송정보 수정"
-          : "대여 출고 배송정보 등록",
+      message: hadOutbound ? "출고 운송장 수정" : "출고 운송장 등록",
       diff: {
         outbound: {
           courier: String(courier).trim(),
           trackingNumber: String(trackingNumber).trim(),
           shippedAt: nextShippedAt,
         },
-        ...(shouldAutoTransitToOut
-          ? {
-              status: {
-                from: currentStatus,
-                to: "out",
-                reason: "first-outbound-shipping-registration",
-              },
-              outAt,
-              dueAt,
-            }
-          : {}),
       },
     },
     req,
   );
 
-  if (shouldAutoTransitToOut) {
-    await writeRentalHistory(db, _id, {
-      action: "out",
-      from: currentStatus || "paid",
-      to: "out",
-      actor: { role: "admin", id: String(guard.admin._id) },
-      snapshot: { reason: "first-outbound-shipping-registration" },
-    });
-  }
+  await writeRentalHistory(db, _id, {
+    action: hadOutbound ? "outbound-shipping-updated" : "outbound-shipping-set",
+    from: currentStatus,
+    to: currentStatus,
+    actor: { role: "admin", id: String(guard.admin._id) },
+    snapshot: {
+      outbound: {
+        courier: String(courier).trim(),
+        trackingNumber: String(trackingNumber).trim(),
+        shippedAt: nextShippedAt,
+      },
+    },
+  });
 
   return NextResponse.json({ ok: true });
 }
