@@ -117,6 +117,7 @@ type ActivityGroup = {
     id?: string;
     createdAt?: string;
     status: string;
+    userConfirmedAt?: string | null;
     brand?: string;
     model?: string;
     totalAmount?: number;
@@ -386,15 +387,11 @@ const getTodoPrimaryReason = (group: ActivityGroup): string | null => {
     }
 
     const actionableApplication = group.order?.applicationSummaries?.find(
-      (app) => isApplicationTodoActionable(app),
+      (app) => isApplicationTrackingNeeded(app),
     );
 
     if (isApplicationTrackingNeeded(actionableApplication)) {
       return "운송장 등록 필요";
-    }
-
-    if (isApplicationConfirmNeeded(actionableApplication)) {
-      return "교체확정 필요";
     }
 
     const isConfirmed =
@@ -412,15 +409,18 @@ const getTodoPrimaryReason = (group: ActivityGroup): string | null => {
     if (isTerminalCanceledStatus(group.rental?.status)) return null;
 
     const actionableApplication = group.rental?.applicationSummaries?.find(
-      (app) => isApplicationTodoActionable(app),
+      (app) => isApplicationTrackingNeeded(app),
     );
 
     if (isApplicationTrackingNeeded(actionableApplication)) {
       return "운송장 등록 필요";
     }
 
-    if (isApplicationConfirmNeeded(actionableApplication)) {
-      return "교체확정 필요";
+    if (
+      getMypageNormalizedStatus(group.rental?.status) === "반납완료" &&
+      !group.rental?.userConfirmedAt
+    ) {
+      return "이용확정 필요";
     }
 
     if (
@@ -451,6 +451,7 @@ const getFlowNextActionText = (
   if (opts?.todoPrimaryReason) {
     const todoMessageMap: Record<string, string> = {
       "구매확정 필요": "상품을 받으셨다면 구매확정을 진행해주세요.",
+      "이용확정 필요": "반납 내용을 확인하고 이용확정을 진행해주세요.",
       "운송장 등록 필요": "운송장 정보를 등록해주세요.",
       "교체확정 필요": "작업 내용을 확인하고 교체확정을 진행해주세요.",
       "후기를 남길 수 있어요": "구매확정된 상품은 후기를 작성할 수 있어요.",
@@ -496,7 +497,10 @@ const getFlowNextActionText = (
       return "대여 상품 출고 또는 수령 준비 중입니다.";
     if (normalized === "대여중")
       return "대여 중입니다. 반납 일정을 확인해주세요.";
-    if (normalized === "반납완료") return "반납이 완료되었습니다.";
+    if (normalized === "반납완료")
+      return group.rental?.userConfirmedAt
+        ? "이용확정이 완료되었습니다."
+        : "반납 내용을 확인하고 이용확정을 진행해주세요.";
     if (
       !group.rental?.stringingApplicationId &&
       group.rental?.withStringService
@@ -553,6 +557,9 @@ export default function TransactionFlowList() {
   const searchParams = useSearchParams();
   const scope = parseOrdersScope(searchParams.get("scope")) ?? "all";
   const [confirmingOrderId, setConfirmingOrderId] = useState<string | null>(
+    null,
+  );
+  const [confirmingRentalId, setConfirmingRentalId] = useState<string | null>(
     null,
   );
   const [confirmingApplicationId, setConfirmingApplicationId] = useState<
@@ -826,6 +833,45 @@ export default function TransactionFlowList() {
     }
   };
 
+  const handleConfirmRental = async (rentalId: string) => {
+    if (confirmingRentalId) return;
+    if (
+      !window.confirm(
+        "이용확정 처리하시겠습니까?\n확정 후에는 되돌릴 수 없습니다.",
+      )
+    )
+      return;
+
+    try {
+      setConfirmingRentalId(rentalId);
+      const res = await fetch(`/api/me/rentals/${rentalId}/confirm`, {
+        method: "POST",
+        credentials: "include",
+      });
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok || data?.ok === false) {
+        showErrorToast(data?.message || "이용확정 처리 중 오류가 발생했습니다.");
+        return;
+      }
+
+      const earnedPoints = Number(data?.earnedPoints ?? 0);
+      showSuccessToast(
+        data?.pointsGranted && earnedPoints > 0
+          ? `이용확정이 완료되었습니다. ${earnedPoints.toLocaleString()}P가 적립되었습니다.`
+          : data?.already
+            ? data?.message || "이미 이용확정된 대여입니다."
+            : "이용확정이 완료되었습니다.",
+      );
+      await refreshRelatedQueries();
+    } catch (e) {
+      console.error(e);
+      showErrorToast("이용확정 처리 중 오류가 발생했습니다.");
+    } finally {
+      setConfirmingRentalId(null);
+    }
+  };
+
   const handleApplicationCancelRequest = async (
     params: CancelStringingParams,
   ) => {
@@ -974,7 +1020,7 @@ export default function TransactionFlowList() {
         </div>
       ) : null}
       <p className="text-xs text-foreground/75">
-        주문 구매확정과 교체서비스 확정은 별도로 처리됩니다.
+        연결된 주문/대여와 교체서비스는 하나의 확정으로 처리됩니다.
       </p>
       {items.length === 0 ? (
         <Card className="border-0 bg-card">
@@ -1019,9 +1065,9 @@ export default function TransactionFlowList() {
               : g.kind === "rental"
                 ? (g.rental?.applicationSummaries ?? [])
                 : [];
-          const linkedActionableApplication = linkedApps.find((app) =>
-            isApplicationTodoActionable(app),
-          );
+          const linkedActionableApplication =
+            linkedApps.find((app) => isApplicationTrackingNeeded(app)) ??
+            linkedApps.find((app) => isApplicationTodoActionable(app));
           const prefersApplicationView =
             scope === "application" && Boolean(g.application);
           const displayApplication = g.application;
@@ -1029,6 +1075,10 @@ export default function TransactionFlowList() {
             g.kind === "application" || prefersApplicationView;
           const applicationActionTarget =
             displayApplication ?? linkedActionableApplication;
+          const isLinkedApplicationConfirmSuppressed = Boolean(
+            applicationActionTarget?.orderId ||
+              applicationActionTarget?.rentalId,
+          );
           const actionableApplicationId = applicationActionTarget?.id;
           const primaryLinkedApplicationId =
             g.kind === "order"
@@ -1645,6 +1695,30 @@ export default function TransactionFlowList() {
                       !prefersApplicationView
                     ) {
                       if (
+                        normalizedStatus === "반납완료" &&
+                        !g.rental?.userConfirmedAt
+                      ) {
+                        actions.push({
+                          key: "rental-confirm",
+                          priority: 0,
+                          pinInline: true,
+                          node: (
+                            <Button
+                              key="rental-confirm"
+                              size="sm"
+                              disabled={confirmingRentalId === rentalId}
+                              onClick={() => handleConfirmRental(rentalId)}
+                            >
+                              <CheckCircle className="mr-1 h-3.5 w-3.5" />
+                              {confirmingRentalId === rentalId
+                                ? "처리 중..."
+                                : "이용확정"}
+                            </Button>
+                          ),
+                        });
+                      }
+
+                      if (
                         ["pending", "paid", "대기중", "결제완료"].includes(
                           normalizedStatus,
                         ) &&
@@ -1774,7 +1848,8 @@ export default function TransactionFlowList() {
                         getMypageNormalizedStatus(
                           applicationActionTarget.status,
                         ) === "교체완료" &&
-                        !applicationActionTarget.userConfirmedAt
+                        !applicationActionTarget.userConfirmedAt &&
+                        !isLinkedApplicationConfirmSuppressed
                       ) {
                         actions.push({
                           key: "application-confirm",
