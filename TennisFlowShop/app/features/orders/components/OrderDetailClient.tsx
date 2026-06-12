@@ -763,8 +763,9 @@ export default function OrderDetailClient({ orderId }: Props) {
         : linkedDocs.length > 0 || Boolean(orderDetail.stringingApplicationId)
           ? {
               tone: "info",
-              title: "연결 신청서 확인",
-              description: "연결 문서를 먼저 확인한 뒤 상태 변경을 진행하세요.",
+              title: "연결 신청서 세부정보 확인",
+              description:
+                "라켓, 스트링, 텐션과 요청사항은 연결 신청서에서 참고할 수 있습니다.",
             }
           : orderGuide.stage || isDoneLikeStatus
             ? {
@@ -786,7 +787,7 @@ export default function OrderDetailClient({ orderId }: Props) {
       show: isCancelRequested || Boolean(cancelInfo),
     },
     {
-      label: "연결 신청서 확인",
+      label: "연결 신청서 참고",
       href: "#admin-order-linked",
       show: linkedDocs.length > 0 || Boolean(orderDetail.stringingApplicationId),
     },
@@ -1150,6 +1151,30 @@ export default function OrderDetailClient({ orderId }: Props) {
             )}
           </div>
 
+          {isLinkedStringingOrder && (
+            <Card className="mb-4 border border-primary/30 bg-primary/10 shadow-sm">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base text-primary">
+                  교체서비스 연결 주문입니다
+                </CardTitle>
+                <CardDescription className="space-y-1 text-sm leading-relaxed text-foreground/80">
+                  <span className="block">
+                    이 주문은 상품 주문과 교체서비스 신청서가 함께 연결된 통합
+                    주문입니다.
+                  </span>
+                  <span className="block">
+                    결제 확인, 작업 접수·진행, 인도 준비·완료는 아래 연결 진행
+                    단계에서 관리하세요.
+                  </span>
+                  <span className="block">
+                    연결 신청서 상세에서는 라켓, 스트링, 텐션, 요청사항 등 세부
+                    작업 정보를 참고할 수 있습니다.
+                  </span>
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          )}
+
           <Card
             className={cn("mb-6", getNextActionCardClass(nextActionGuide.tone))}
           >
@@ -1327,7 +1352,7 @@ export default function OrderDetailClient({ orderId }: Props) {
               <CardContent className="p-4">
                 <div className="grid gap-2 md:grid-cols-[auto_minmax(0,1fr)_minmax(0,1fr)] md:items-center md:gap-4">
                   <p className="text-sm font-semibold text-primary">
-                    연결 업무 가이드
+                    1. 진행 상태 관리
                   </p>
                   <p className="text-sm text-foreground/80">
                     현재 단계:{" "}
@@ -1368,9 +1393,10 @@ export default function OrderDetailClient({ orderId }: Props) {
             <div className="mb-6">
               <Card className={adminSurface.card}>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-base">연결 문맥 요약</CardTitle>
+                  <CardTitle className="text-base">4. 연결 문서 참고</CardTitle>
                   <CardDescription>
-                    연결된 신청 문서와 최신 접수 핵심 정보를 한 번에 확인합니다.
+                    연결 신청서는 상태 변경 경로가 아니라 요청사항과 작업 세부정보를
+                    확인하는 참고 문서입니다.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -1413,7 +1439,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                                   variant="outline"
                                   size="sm"
                                 >
-                                  상세 보기
+                                  신청서 세부정보 보기
                                 </Button>
                               </Link>
                             </div>
@@ -1541,7 +1567,11 @@ export default function OrderDetailClient({ orderId }: Props) {
           <Card className={cn("mb-6 overflow-hidden", adminSurface.cardMuted)}>
             <CardHeader className="bg-muted/30 border-b pb-3">
               <div className="flex items-center justify-between gap-3">
-                <CardTitle>주문 상태 관리</CardTitle>
+                <CardTitle>
+                  {isLinkedStringingOrder
+                    ? "2. 결제·취소/환불"
+                    : "주문 상태 관리"}
+                </CardTitle>
                 {(() => {
                   const st = getOrderStatusBadgeSpec(localStatus);
                   return (
@@ -1558,7 +1588,9 @@ export default function OrderDetailClient({ orderId }: Props) {
                 })()}
               </div>
               <CardDescription>
-                현재 주문의 상태 변경과 취소 관련 운영 액션을 한곳에서 처리합니다.
+                {isLinkedStringingOrder
+                  ? "결제 상태를 확인하고 취소/환불을 처리합니다. 통합 진행 상태는 위 연결 진행 단계에서 변경하세요."
+                  : "현재 주문의 상태 변경과 취소 관련 운영 액션을 한곳에서 처리합니다."}
                 <br />
                 {/* 방문 수령 주문은 수령 전/후 기준으로 안내 문구 분기 */}
                 {isVisitPickup
@@ -1577,8 +1609,8 @@ export default function OrderDetailClient({ orderId }: Props) {
                           이 주문은 교체서비스 신청서와 연결되어 있습니다.
                         </p>
                         <p className="mt-1">
-                          결제/작업/배송 단계는 상단의 통합 진행 단계에서 함께
-                          변경하세요. 취소/환불은 주문 상세의 취소/환불 액션에서
+                          주문과 신청서의 진행 상태는 상단 연결 진행 단계에서 함께
+                          변경합니다. 이 영역에서는 결제 상태를 확인하고 취소/환불을
                           처리하세요.
                         </p>
                       </div>
@@ -1862,8 +1894,17 @@ export default function OrderDetailClient({ orderId }: Props) {
               <CardHeader className="bg-muted/30 border-b pb-3">
                 <CardTitle className="flex items-center">
                   <Truck className="mr-2 h-5 w-5 text-primary" />
-                  {getOrderDeliveryInfoTitle(orderDetail.shippingInfo)}
+                  {isShippingManagedByApplication
+                    ? "3. 교체서비스 수거·인도 정보"
+                    : getOrderDeliveryInfoTitle(orderDetail.shippingInfo)}
                 </CardTitle>
+                {isShippingManagedByApplication && (
+                  <CardDescription>
+                    고객의 라켓 수거·인도에 필요한 정보를 연결 신청서 기준으로
+                    확인하거나 등록합니다. 진행 상태 변경은 연결 진행 단계에서
+                    처리하세요.
+                  </CardDescription>
+                )}
               </CardHeader>
               <CardContent className="p-4 lg:p-5">
                 {isShippingManagedByApplication && linkedStringingAppId ? (
@@ -1914,7 +1955,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                             <Link
                               href={`/admin/applications/stringing/${linkedStringingAppId}`}
                             >
-                              신청서 상세 보기
+                              신청서 세부정보 보기
                             </Link>
                           </Button>
 
@@ -1935,8 +1976,9 @@ export default function OrderDetailClient({ orderId }: Props) {
                         </div>
 
                         <p className="text-xs text-foreground/75">
-                          주문(상품) 운송장 대신 신청서의 라켓 발송 정보를
-                          기준으로 관리합니다.
+                          이 영역은 연결 신청서의 수거·인도 정보를 확인하거나
+                          등록하는 곳입니다. 주문과 신청서의 진행 상태는 연결 진행
+                          단계에서 함께 변경하세요.
                         </p>
                       </div>
                     </div>
