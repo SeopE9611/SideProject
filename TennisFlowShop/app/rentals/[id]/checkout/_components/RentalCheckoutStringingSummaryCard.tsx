@@ -1,9 +1,8 @@
 "use client";
 
-import { CheckCircle2, CircleDot, ClipboardList } from "lucide-react";
-
 import type useRentalCheckoutStringingServiceAdapter from "@/app/features/stringing-applications/hooks/useRentalCheckoutStringingServiceAdapter";
 import { Badge } from "@/components/ui/badge";
+import { ShoppingBag } from "lucide-react";
 
 type RentalCheckoutStringingServiceAdapter = ReturnType<
   typeof useRentalCheckoutStringingServiceAdapter
@@ -14,133 +13,42 @@ type Props = {
 };
 
 export default function RentalCheckoutStringingSummaryCard({ adapter }: Props) {
-  const { summary, completion, visitTimeRange, visitSlotCountUi } = adapter;
-  const reservationLabel =
-    summary.reservationLabel && visitTimeRange && visitSlotCountUi > 1
-      ? `${summary.reservationLabel} (${visitTimeRange.start}~${visitTimeRange.end}, ${visitSlotCountUi}슬롯)`
-      : summary.reservationLabel;
-  const lineConfiguredDone =
-    completion.lineConfiguredCount === completion.totalLineCount &&
-    completion.totalLineCount > 0;
-  const statusMessage = completion.isReadyToSubmit
-    ? "현재 설정으로 대여 주문과 함께 교체 서비스가 접수됩니다."
-    : completion.needsVisitReservation && !completion.hasReservation
-      ? "방문 예약만 완료하면 접수 준비가 완료됩니다."
-      : "기본 설정을 확인하면 접수 준비가 완료됩니다.";
+  const { summary, completion } = adapter;
 
   return (
-    <div className="space-y-4 rounded-xl border border-border/70 bg-secondary/20 px-4 py-5 bp-sm:px-5">
+    <section className="space-y-3 rounded-lg border border-border bg-background/50 p-4">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="flex items-center gap-2 text-sm font-semibold text-foreground">
-            <ClipboardList className="h-4 w-4 text-primary" />
-            교체 서비스 요약
+            <ShoppingBag className="h-4 w-4 text-primary" />
+            구매 스트링
           </p>
-          <p className="mt-1.5 text-xs text-muted-foreground">
-            대여 주문과 함께 접수될 내용을 확인하세요.
+          <p className="mt-1 text-xs text-muted-foreground">
+            대여 라켓에 장착할 구매 스트링과 교체서비스 비용입니다.
           </p>
         </div>
         <Badge
           variant={completion.isReadyToSubmit ? "success" : "secondary"}
-          className="mt-0.5 border border-border/70 bg-background"
+          className="border border-border/70 bg-background"
         >
           {completion.statusLabel}
         </Badge>
       </div>
 
-      <div className="grid grid-cols-1 gap-x-5 gap-y-2.5 rounded-lg border border-border/70 bg-background p-3.5 text-sm bp-sm:grid-cols-2">
-        <p>
-          <span className="text-muted-foreground">접수 방식:</span>{" "}
-          <span className="font-medium">{summary.collectionLabel}</span>
-        </p>
-        <p>
-          <span className="text-muted-foreground">작업 수량:</span>{" "}
-          <span className="font-medium">{summary.lineCount}자루</span>
-        </p>
-        <p>
-          <span className="text-muted-foreground">구매 스트링:</span>{" "}
-          <span className="font-medium">
+      <dl className="grid grid-cols-1 gap-3 text-sm bp-sm:grid-cols-2">
+        <div>
+          <dt className="text-xs text-muted-foreground">구매 스트링</dt>
+          <dd className="mt-1 font-medium text-foreground">
             {summary.stringNames.join(", ") || "미선택"}
-          </span>
-        </p>
-        <p>
-          <span className="text-muted-foreground">텐션:</span>{" "}
-          <span className="font-medium">{summary.tensionSummary}</span>
-        </p>
-        {reservationLabel && (
-          <p>
-            <span className="text-muted-foreground">예약 정보:</span>{" "}
-            <span className="font-medium">{reservationLabel}</span>
-          </p>
-        )}
-        <p>
-          <span className="text-muted-foreground">교체 서비스 비용:</span>{" "}
-          <span className="font-medium">{summary.priceLabel}</span>
-        </p>
-        <p>
-          <span className="text-muted-foreground">추가 요청:</span>{" "}
-          <span className="font-medium">{summary.requestPreview}</span>
-        </p>
-      </div>
-
-      <div className="rounded-lg border border-border/70 bg-background/80 p-3">
-        <p className="mb-2 text-[11px] font-medium tracking-wide text-muted-foreground">
-          진행 상태
-        </p>
-        <div className="flex flex-wrap gap-2 text-xs">
-          <Badge
-            variant={completion.basicConfigured ? "success" : "secondary"}
-            className="gap-1 border border-border/70 font-normal"
-          >
-            <CircleDot className="h-3 w-3" />
-            기본 설정 {completion.basicConfigured ? "완료" : "미완료"}
-          </Badge>
-          <Badge
-            variant={lineConfiguredDone ? "success" : "secondary"}
-            className="gap-1 border border-border/70 font-normal"
-          >
-            <CircleDot className="h-3 w-3" />
-            장착 설정 {completion.lineConfiguredCount}/
-            {completion.totalLineCount} 완료
-          </Badge>
-          {completion.needsVisitReservation && (
-            <Badge
-              variant={completion.hasReservation ? "success" : "warning"}
-              className="gap-1 border border-border/70 font-normal"
-            >
-              <CircleDot className="h-3 w-3" />
-              방문 예약 {completion.hasReservation ? "완료" : "필요"}
-            </Badge>
-          )}
-          {!completion.needsVisitReservation && (
-            <Badge
-              variant="secondary"
-              className="gap-1 border border-border/70 font-normal"
-            >
-              <CircleDot className="h-3 w-3" />
-              방문 예약 없음
-            </Badge>
-          )}
-          <Badge
-            variant={
-              summary.requestPreview === "없음" ? "secondary" : "success"
-            }
-            className="gap-1 border border-border/70 font-normal"
-          >
-            <CircleDot className="h-3 w-3" />
-            추가 요청 {summary.requestPreview === "없음" ? "없음" : "입력됨"}
-          </Badge>
+          </dd>
         </div>
-      </div>
-
-      <p className="flex items-center gap-1.5 border-t border-border/70 pt-1 text-xs text-foreground">
-        {completion.isReadyToSubmit ? (
-          <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
-        ) : (
-          <CircleDot className="h-3.5 w-3.5 text-muted-foreground" />
-        )}
-        {statusMessage}
-      </p>
-    </div>
+        <div>
+          <dt className="text-xs text-muted-foreground">교체서비스 비용</dt>
+          <dd className="mt-1 font-medium text-foreground">
+            {summary.priceLabel}
+          </dd>
+        </div>
+      </dl>
+    </section>
   );
 }
