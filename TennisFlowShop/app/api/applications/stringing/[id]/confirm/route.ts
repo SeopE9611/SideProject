@@ -158,6 +158,9 @@ export async function POST(
         (order as any).userConfirmedAt ||
         (order as any).status === "구매확정"
       ) {
+        const confirmedAt = (order as any).userConfirmedAt
+          ? new Date((order as any).userConfirmedAt)
+          : new Date();
         await db.collection("stringing_applications").updateOne(
           {
             _id,
@@ -166,7 +169,7 @@ export async function POST(
               { userConfirmedAt: null },
             ],
           },
-          { $set: { userConfirmedAt: new Date() } },
+          { $set: { userConfirmedAt: confirmedAt } },
         );
         return NextResponse.json({
           ok: true,
@@ -271,7 +274,7 @@ export async function POST(
       const svcRes = await db.collection("stringing_applications").updateMany(
         {
           orderId: orderObjectId,
-          status: { $nin: ["draft"] },
+          status: { $in: ["교체완료", "취소"] },
           $or: [
             { userConfirmedAt: { $exists: false } },
             { userConfirmedAt: null },
