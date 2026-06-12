@@ -23,6 +23,7 @@ import type {
   AdminOperationsSummary,
   AdminOperationsWarnFilter,
   AdminOperationsWarnSort,
+  LinkedFlowStatusIssue,
   OperationSignal,
   OperationSignalLevel,
 } from "@/types/admin/operations";
@@ -266,6 +267,64 @@ function pickAnchor(groupItems: OpItem[]): OpItem {
     groupItems.find((x) => x.kind === "rental") ??
     groupItems[0]!
   );
+}
+
+const VALID_LINKED_ORDER_STRINGING_STATUS_PAIRS = new Set([
+  "대기중:검토중",
+  "결제완료:접수완료",
+  "결제완료:작업중",
+  "배송중:교체완료",
+  "배송완료:교체완료",
+]);
+
+function normalizeLinkedStatus(value: string | undefined) {
+  return String(value ?? "")
+    .trim()
+    .replace(/\s+/g, "");
+}
+
+function getLinkedOrderStringingStatusIssue(
+  items: OpItem[],
+): LinkedFlowStatusIssue | null {
+  const order = items.find((item) => item.kind === "order");
+  if (!order) return null;
+
+  const application = items
+    .filter(
+      (item) =>
+        item.kind === "stringing_application" &&
+        item.related?.kind === "order" &&
+        item.related.id === order.id &&
+        normalizeLinkedStatus(item.statusLabel).toLowerCase() !== "draft",
+    )
+    .sort((a, b) => {
+      const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return bTime - aTime;
+    })[0];
+  if (!application) return null;
+
+  const orderStatus = normalizeLinkedStatus(order.statusLabel);
+  const applicationStatus = normalizeLinkedStatus(application.statusLabel);
+  if (
+    VALID_LINKED_ORDER_STRINGING_STATUS_PAIRS.has(
+      `${orderStatus}:${applicationStatus}`,
+    )
+  ) {
+    return null;
+  }
+
+  return {
+    severity: "warning",
+    code: "LINKED_STATUS_MISMATCH",
+    title: "연결 상태 확인 필요",
+    message:
+      "주문 상태와 교체서비스 신청 상태가 통합 진행 단계와 맞지 않습니다. 통합 주문 상세에서 진행 단계를 확인하세요.",
+    orderStatus: order.statusLabel,
+    applicationStatus: application.statusLabel,
+    actionHref: `/admin/orders/${order.id}`,
+    actionLabel: "통합 주문 상세에서 확인",
+  };
 }
 
 function isWarnGroup(g: OpGroup) {
@@ -544,6 +603,7 @@ function buildGroups(list: OpItem[]): AdminOperationsGroup[] {
     const createdAt = ts ? new Date(ts).toISOString() : null;
     const signals = items.flatMap((it) => it.signals ?? []);
     const primarySignal = pickPrimarySignal(signals);
+    const linkedFlowStatusIssue = getLinkedOrderStringingStatusIssue(items);
     return {
       groupKey: key,
       anchorId: anchor.id,
@@ -553,6 +613,7 @@ function buildGroups(list: OpItem[]): AdminOperationsGroup[] {
       signals,
       primarySignal,
       nextAction: anchor.nextAction ?? null,
+      linkedFlowStatusIssue,
     };
   });
 }
@@ -1655,7 +1716,9 @@ export async function handleAdminOperationsGet(req: Request) {
         })();
         return settlementLabelOf(anchor);
       })(),
-      href: `/admin/applications/stringing/${id}`,
+      href: linkedOrderId
+        ? `/admin/orders/${linkedOrderId}`
+        : `/admin/applications/stringing/${id}`,
       related,
       isIntegrated,
       warnReasons: warnByKey.get(`stringing_application:${id}`) ?? [],
@@ -1890,7 +1953,8 @@ export async function handleAdminOperationsGet(req: Request) {
 
   const groupsWithQueue = groups.map((group) => {
     const groupReviewLevel = computeGroupReviewLevel(group);
-    const groupNeedsReview = groupReviewLevel === "action";
+    const groupNeedsReview =
+      groupReviewLevel === "action" || Boolean(group.linkedFlowStatusIssue);
     const queueBucket: AdminOperationsGroup["groupQueueBucket"] = isGroupWarn(
       group,
     )

@@ -671,6 +671,7 @@ const MEANINGFUL_QUICK_ACTION_LABELS = new Set([
   "배송 확인",
   "대여 확인",
   "주문 확인",
+  "통합 주문 상세에서 확인",
 ]);
 
 function resolveQuickActionTarget(
@@ -690,6 +691,10 @@ function resolveQuickActionTarget(
   let candidate: QuickActionTarget | null = null;
 
   if (!nextActionText.trim()) return null;
+
+  if (anchor.kind === "order" && related?.kind === "stringing_application") {
+    return { href: anchor.href, label: "통합 주문 상세에서 확인" };
+  }
 
   if (
     nextActionText.includes("환불 계좌") ||
@@ -1003,6 +1008,7 @@ export default function OperationsClient() {
           groupReviewLevel: group.groupReviewLevel ?? "none",
           groupNeedsReview: Boolean(group.groupNeedsReview),
           groupQueueBucket: group.groupQueueBucket ?? "clean",
+          linkedFlowStatusIssue: group.linkedFlowStatusIssue ?? null,
         };
       });
   }, [data?.groups]);
@@ -1256,8 +1262,8 @@ export default function OperationsClient() {
         title: "교체서비스 작업",
         count: taskCounts?.stringingWork ?? 0,
         description:
-          "고객 요청사항, 스트링/장력, 연결 주문 상태를 확인한 뒤 작업 상태를 변경하세요.",
-        action: "신청 보기",
+          "연결 건은 통합 주문 상세에서 진행 단계를 확인하고, 단독 신청서는 신청서 상세에서 처리하세요.",
+        action: "업무 보기",
         onClick: () => {
           setKind("stringing_application");
           setPage(1);
@@ -2290,11 +2296,15 @@ export default function OperationsClient() {
                         },
                         groupGuide,
                       );
-                      const actionableQuickTarget =
-                        quickActionTarget &&
-                        MEANINGFUL_QUICK_ACTION_LABELS.has(
-                          quickActionTarget.label,
-                        )
+                      const actionableQuickTarget = g.linkedFlowStatusIssue
+                        ? {
+                            href: g.linkedFlowStatusIssue.actionHref,
+                            label: g.linkedFlowStatusIssue.actionLabel,
+                          }
+                        : quickActionTarget &&
+                            MEANINGFUL_QUICK_ACTION_LABELS.has(
+                              quickActionTarget.label,
+                            )
                           ? quickActionTarget
                           : null;
                       const anchorCancelQuickSignal = cancelQuickSignalSpec(
@@ -2434,6 +2444,17 @@ export default function OperationsClient() {
                                   </span>{" "}
                                   {nextActionText}
                                 </p>
+                                {g.linkedFlowStatusIssue && (
+                                  <div className="rounded-md border border-warning/40 bg-warning/5 px-2 py-1.5 text-xs text-foreground/80">
+                                    <Badge
+                                      variant="outline"
+                                      className="mb-1 border-warning/50 text-warning"
+                                    >
+                                      {g.linkedFlowStatusIssue.title}
+                                    </Badge>
+                                    <p>{g.linkedFlowStatusIssue.message}</p>
+                                  </div>
+                                )}
                                 {hasReasonCard && (
                                   <div className="space-y-1">
                                     <Button
@@ -2831,9 +2852,15 @@ export default function OperationsClient() {
                     },
                     groupGuide,
                   );
-                  const actionableQuickTarget =
-                    quickActionTarget &&
-                    MEANINGFUL_QUICK_ACTION_LABELS.has(quickActionTarget.label)
+                  const actionableQuickTarget = g.linkedFlowStatusIssue
+                    ? {
+                        href: g.linkedFlowStatusIssue.actionHref,
+                        label: g.linkedFlowStatusIssue.actionLabel,
+                      }
+                    : quickActionTarget &&
+                        MEANINGFUL_QUICK_ACTION_LABELS.has(
+                          quickActionTarget.label,
+                        )
                       ? quickActionTarget
                       : null;
                   const groupCancelRequested = g.items.some(
@@ -2958,6 +2985,17 @@ export default function OperationsClient() {
                           </span>
                           {nextActionText}
                         </p>
+                        {g.linkedFlowStatusIssue && (
+                          <div className="rounded-md border border-warning/40 bg-warning/5 px-2 py-1.5 text-xs text-foreground/80">
+                            <Badge
+                              variant="outline"
+                              className="mb-1 border-warning/50 text-warning"
+                            >
+                              {g.linkedFlowStatusIssue.title}
+                            </Badge>
+                            <p>{g.linkedFlowStatusIssue.message}</p>
+                          </div>
+                        )}
                         {hasReasonCard && (
                           <div className="space-y-1">
                             <Button
