@@ -21,6 +21,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import AsyncState from "@/components/system/AsyncState";
 import { runAdminActionWithToast } from "@/lib/admin/adminActionHelpers";
@@ -34,6 +41,7 @@ import { inferNextActionForOperationItem } from "@/lib/admin/next-action-guidanc
 import {
   badgeBase,
   badgeSizeSm,
+  getApplicationStatusBadgeSpec,
   getPaymentStatusBadgeSpec,
   getRentalStatusBadgeSpec,
 } from "@/lib/badge-style";
@@ -41,6 +49,10 @@ import { buildAdminCancelRequestView } from "@/lib/cancel-request/admin-cancel-r
 import { getRefundBankLabel } from "@/lib/cancel-request/refund-account";
 import { racketBrandLabel, stringColorLabel } from "@/lib/constants";
 import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
+import {
+  APPLICATION_STATUSES,
+  type ApplicationStatus,
+} from "@/lib/application-status";
 import { shortenId } from "@/lib/shorten";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
@@ -148,6 +160,11 @@ export default function AdminRentalDetailClient() {
   const router = useRouter();
   const [confirming, setConfirming] = useState(false);
   const [isSyncingNice, setIsSyncingNice] = useState(false);
+  const [selectedApplicationStatus, setSelectedApplicationStatus] = useState<
+    ApplicationStatus | ""
+  >("");
+  const [isUpdatingApplicationStatus, setIsUpdatingApplicationStatus] =
+    useState(false);
 
   const { data, error, isLoading, mutate } = useSWR(
     id ? `/api/admin/rentals/${id}` : null,
@@ -234,6 +251,32 @@ export default function AdminRentalDetailClient() {
       fallbackErrorMessage: "처리 실패",
     });
     if (result) await mutate();
+  };
+
+  const onUpdateApplicationStatus = async () => {
+    if (!selectedApplicationStatus || isUpdatingApplicationStatus) return;
+    setIsUpdatingApplicationStatus(true);
+    try {
+      const result = await runAdminActionWithToast({
+        action: async () => {
+          const json = await adminMutator<{ ok?: boolean; message?: string }>(
+            `/api/admin/linked-flows/rental-stringing/${id}/application-status`,
+            {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ status: selectedApplicationStatus }),
+            },
+          );
+          ensureAdminMutationSucceeded(json, "교체서비스 상태 변경 실패");
+          return json;
+        },
+        successMessage: `교체서비스 상태를 ${selectedApplicationStatus}(으)로 변경했습니다.`,
+        fallbackErrorMessage: "교체서비스 상태 변경 실패",
+      });
+      if (result) await mutate();
+    } finally {
+      setIsUpdatingApplicationStatus(false);
+    }
   };
 
   const onSyncNicePayment = async () => {
@@ -675,6 +718,35 @@ export default function AdminRentalDetailClient() {
   const isVariantStockMode = effectiveStockDeduction?.mode === "variant";
   const isCanceledState =
     data?.status === "canceled" || data?.status === "cancelled";
+  const linkedApplication = data?.linkedStringingApplication ?? null;
+  const linkedApplicationStatus = String(
+    linkedApplication?.status ?? data?.stringingApplicationStatus ?? "",
+  ).trim();
+  const selectedApplicationStatusValue =
+    selectedApplicationStatus || linkedApplicationStatus;
+  const applicationStatusBadge = getApplicationStatusBadgeSpec(
+    linkedApplicationStatus,
+  );
+  const canUpdateLinkedApplication = data?.status === "paid";
+  const linkedApplicationLines = Array.isArray(linkedApplication?.lines)
+    ? linkedApplication.lines
+    : [];
+  const linkedApplicationNotes = Array.from(
+    new Set(
+      linkedApplicationLines
+        .map((line: any) => String(line?.note ?? "").trim())
+        .filter(Boolean),
+    ),
+  );
+  const linkedApplicationStrings = Array.from(
+    new Set(
+      linkedApplicationLines
+        .map((line: any) => String(line?.stringName ?? "").trim())
+        .filter(Boolean),
+    ),
+  );
+  const linkedApplicationPaymentIncluded =
+    String(linkedApplication?.paymentSource ?? "") === `rental:${id}`;
 
   return (
     <div className="min-h-screen bg-muted/30 dark:bg-muted/30">
@@ -1170,6 +1242,203 @@ export default function AdminRentalDetailClient() {
             </Card>
           )}
 
+          {linkedApplication && (
+            <Card className={cn(adminSurface.card, "overflow-hidden")}>
+              <CardHeader className="border-b bg-muted/30 pb-3">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <CardTitle className="text-base">
+                      교체서비스 작업 상태 관리
+                    </CardTitle>
+                    <CardDescription className="mt-1 max-w-3xl leading-relaxed">
+                      이 대여는 교체서비스 신청서와 연결되어 있습니다. 라켓
+                      대여의 결제·출고·반납은 대여 상태에서 관리하고, 스트링
+                      장착 작업 상태는 이 영역에서 관리합니다. 신청서 상세에서는
+                      텐션, 요청사항, 스트링 정보를 참고할 수 있습니다.
+                    </CardDescription>
+                  </div>
+                  <Badge
+                    variant={applicationStatusBadge.variant}
+                    className={cn(badgeBase, badgeSizeSm)}
+                  >
+                    {linkedApplicationStatus || "상태 확인 필요"}
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4 pt-4">
+                <div className="grid gap-3 text-sm sm:grid-cols-2 xl:grid-cols-3">
+                  <p className="text-muted-foreground">
+                    연결 신청서 ID:{" "}
+                    <span className="font-medium text-foreground">
+                      {shortenId(String(linkedApplication.id))}
+                    </span>
+                  </p>
+                  <p className="text-muted-foreground">
+                    스트링명:{" "}
+                    <span className="font-medium text-foreground">
+                      {linkedApplicationStrings.join(", ") ||
+                        stringingName ||
+                        "정보 없음"}
+                    </span>
+                  </p>
+                  <p className="text-muted-foreground">
+                    게이지/색상:{" "}
+                    <span className="font-medium text-foreground">
+                      {[
+                        linkedApplication.selectedGauge,
+                        linkedApplication.selectedColor,
+                      ]
+                        .filter(Boolean)
+                        .join(" / ") || "정보 없음"}
+                    </span>
+                  </p>
+                  <p className="text-muted-foreground">
+                    텐션:{" "}
+                    <span className="font-medium text-foreground">
+                      {data?.stringingTensionSummary ?? "정보 없음"}
+                    </span>
+                  </p>
+                  <p className="text-muted-foreground sm:col-span-2">
+                    요청사항:{" "}
+                    <span className="font-medium text-foreground">
+                      {[
+                        linkedApplication.requirements,
+                        ...linkedApplicationNotes,
+                      ]
+                        .filter(Boolean)
+                        .join(" / ") || "요청사항 없음"}
+                    </span>
+                  </p>
+                  <p className="text-muted-foreground sm:col-span-2 xl:col-span-3">
+                    결제 연결:{" "}
+                    <span className="font-medium text-foreground">
+                      {linkedApplicationPaymentIncluded
+                        ? `대여 결제 포함 (${linkedApplication.paymentSource})`
+                        : linkedApplication.paymentSource ||
+                          "연결 정보 확인 필요"}
+                    </span>
+                  </p>
+                </div>
+
+                <div className="rounded-lg border border-border/70 bg-muted/20 p-3 text-xs leading-relaxed text-muted-foreground">
+                  <p>대여 결제 상태: 대여 주문의 결제 확인 여부</p>
+                  <p>교체서비스 상태: 스트링 장착 작업 진행 여부</p>
+                  <p>출고/대여 시작: 작업 완료 후 진행하는 운영 단계</p>
+                  <p>반납 상태: 대여 시작 이후 반납 관리</p>
+                </div>
+
+                {data.status === "pending" ? (
+                  <p className="rounded-md border border-warning/40 bg-warning/10 px-3 py-2 text-sm text-foreground">
+                    결제 확인 후 교체서비스 작업 상태를 변경하세요.
+                  </p>
+                ) : data.status === "paid" &&
+                  linkedApplicationStatus === "검토 중" ? (
+                  <p className="rounded-md border border-info/40 bg-info/10 px-3 py-2 text-sm text-foreground">
+                    결제가 확인되었습니다. 교체서비스 작업 접수가 필요합니다.
+                  </p>
+                ) : data.status === "paid" &&
+                  linkedApplicationStatus === "작업 중" ? (
+                  <p className="rounded-md border border-warning/40 bg-warning/10 px-3 py-2 text-sm text-foreground">
+                    현재 장착 작업 중입니다. 작업 완료 전 출고 또는 대여 시작
+                    여부를 확인하세요.
+                  </p>
+                ) : data.status === "paid" &&
+                  linkedApplicationStatus === "교체완료" ? (
+                  <p className="rounded-md border border-info/40 bg-info/10 px-3 py-2 text-sm text-foreground">
+                    장착 작업이 완료되었습니다. 출고정보 등록 또는 대여 시작
+                    단계를 진행할 수 있습니다.
+                  </p>
+                ) : data.status === "out" &&
+                  linkedApplicationStatus !== "교체완료" ? (
+                  <p className="rounded-md border border-warning/40 bg-warning/10 px-3 py-2 text-sm text-foreground">
+                    대여가 시작되었지만 교체서비스가 완료 상태가 아닙니다.
+                    신청서 작업 상태를 확인하세요.
+                  </p>
+                ) : null}
+
+                <div className="flex flex-col gap-3 rounded-lg border border-border/70 p-3 sm:flex-row sm:items-end sm:justify-between">
+                  <div className="space-y-2">
+                    <p className="text-sm font-semibold text-foreground">
+                      변경할 작업 상태
+                    </p>
+                    <Select
+                      value={selectedApplicationStatusValue}
+                      onValueChange={(value) =>
+                        setSelectedApplicationStatus(value as ApplicationStatus)
+                      }
+                      disabled={
+                        !canUpdateLinkedApplication ||
+                        isUpdatingApplicationStatus
+                      }
+                    >
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="상태 선택" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {APPLICATION_STATUSES.map((status) => (
+                          <SelectItem key={status} value={status}>
+                            {status}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">
+                      저장 시 {linkedApplicationStatus || "현재 상태"} →{" "}
+                      {selectedApplicationStatusValue || "선택 상태"}(으)로
+                      변경됩니다.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Button asChild size="sm" variant="outline">
+                      <Link
+                        href={`/admin/applications/stringing/${encodeURIComponent(String(linkedApplication.id))}`}
+                      >
+                        신청서 상세 보기
+                      </Link>
+                    </Button>
+                    <Button
+                      size="sm"
+                      disabled={
+                        !canUpdateLinkedApplication ||
+                        isUpdatingApplicationStatus ||
+                        !selectedApplicationStatusValue ||
+                        selectedApplicationStatusValue ===
+                          linkedApplicationStatus
+                      }
+                      onClick={onUpdateApplicationStatus}
+                    >
+                      {isUpdatingApplicationStatus
+                        ? "저장 중…"
+                        : "작업 상태 저장"}
+                    </Button>
+                  </div>
+                </div>
+                <div className="space-y-1 text-xs leading-relaxed text-muted-foreground">
+                  <p>
+                    이 작업은 연결된 교체서비스 신청서의 작업 상태만 변경합니다.
+                    대여 결제, 출고, 대여 시작, 반납 처리는 기존 대여 액션에서
+                    별도로 진행하세요.
+                  </p>
+                  <p>접수완료: 결제 확인 후 작업 접수 상태로 표시합니다.</p>
+                  <p>작업 중: 실제 스트링 장착 작업이 시작된 상태입니다.</p>
+                  <p>
+                    교체완료: 장착 작업이 완료되어 출고 또는 수령 준비가 가능한
+                    상태입니다.
+                  </p>
+                  {!canUpdateLinkedApplication && (
+                    <p className="font-medium text-foreground">
+                      {data.status === "returned"
+                        ? "반납 완료된 대여에서는 신청서 작업 상태를 변경할 수 없습니다."
+                        : data.status === "out"
+                          ? "대여 시작 후에는 신청서 상태를 읽기 전용으로 확인합니다."
+                          : "결제완료 상태에서 신청서 작업 상태를 변경할 수 있습니다."}
+                    </p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           <Card
             id="admin-rental-return"
             className={cn(adminSurface.card, "overflow-hidden")}
@@ -1228,7 +1497,7 @@ export default function AdminRentalDetailClient() {
                 <Button
                   size="sm"
                   className="h-9 bg-primary text-primary-foreground hover:bg-primary/90"
-                  disabled={isBusy || !["paid", "out"].includes(data.status)}
+                  disabled={isBusy || data.status !== "out"}
                   onClick={() => {
                     if (isBusy) return;
                     setPendingAction("return");
@@ -1238,6 +1507,12 @@ export default function AdminRentalDetailClient() {
                     ? "반납 처리중…"
                     : "반납 처리(return)"}
                 </Button>
+
+                {data.status === "paid" && (
+                  <p className="w-full text-xs text-muted-foreground">
+                    반납 처리는 대여 시작(out) 후 가능합니다.
+                  </p>
+                )}
 
                 {/* 환불/해제 버튼 (아래는 기존 코드 그대로) */}
                 {data.status === "returned" &&
