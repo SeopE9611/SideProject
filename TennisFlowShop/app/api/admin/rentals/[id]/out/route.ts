@@ -5,6 +5,8 @@ import { verifyAdminCsrf } from '@/lib/admin/verifyAdminCsrf';
 import { canTransitIdempotent } from '@/app/features/rentals/utils/status';
 import { writeRentalHistory } from '@/app/features/rentals/utils/history';
 import { appendAdminAudit } from '@/lib/admin/appendAdminAudit';
+import { getLinkedRentalStringingStatus } from '@/lib/admin/rental-stringing-flow.server';
+import { hasRentalStringingService, isRentalStringingComplete } from '@/lib/rental-stringing-flow';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,6 +27,16 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   if (['out', 'returned'].includes(currentStatus)) return NextResponse.json({ ok: true, id });
   if (!canTransitIdempotent(currentStatus, 'out') || currentStatus !== 'paid') {
     return NextResponse.json({ ok: false, code: 'INVALID_STATE', message: '대여 시작 불가 상태' }, { status: 409 });
+  }
+
+  const stringingStatus = await getLinkedRentalStringingStatus(guard.db, order, id);
+  if (hasRentalStringingService(order) || stringingStatus !== null) {
+    if (!isRentalStringingComplete(stringingStatus)) {
+      return NextResponse.json(
+        { ok: false, code: 'STRINGING_NOT_COMPLETED', message: '교체서비스가 완료된 뒤 출고 또는 대여 시작을 진행할 수 있습니다.' },
+        { status: 409 },
+      );
+    }
   }
 
   const outAt = new Date().toISOString();

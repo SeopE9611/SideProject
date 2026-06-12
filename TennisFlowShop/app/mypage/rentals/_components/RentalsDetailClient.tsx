@@ -388,13 +388,17 @@ export default function RentalsDetailClient({
   const isVisitPickup = rentalShippingMethod === "pickup";
 
   // 대기중/결제완료 + 아직 취소요청이 아닌 경우에만 '활성화' 허용 (버튼 자체는 항상 노출)
+  const isOnlineCancelRestricted =
+    ["out", "returned", "canceled", "cancelled"].includes(data.status) ||
+    Boolean(data.depositRefundedAt);
   const canRequestCancel =
     // 상태는 pending 또는 paid만 허용
     (data.status === "pending" || data.status === "paid") &&
     // 출고 운송장이 아직 없을 때만
     !hasOutboundShipping &&
     // 이미 취소 요청이 들어가 있지 않은 경우만
-    (!data.cancelRequest || data.cancelRequest.status !== "requested");
+    (!data.cancelRequest || data.cancelRequest.status !== "requested") &&
+    !data.depositRefundedAt;
   // 취소 상태 배너용 데이터
   const cancelBanner = data.cancelRequest?.status
     ? {
@@ -488,16 +492,22 @@ export default function RentalsDetailClient({
             )}
 
             {/* 버튼은 항상 노출하되, 조건을 만족하지 않으면 비활성화 */}
-            <Button
-              variant="destructive"
-              size="sm"
-              disabled={!canRequestCancel}
-              onClick={() => setCancelDialogOpen(true)}
-              className={`gap-2 ${!canRequestCancel ? "cursor-not-allowed opacity-60" : ""}`}
-            >
-              <XCircle className="mr-2 h-4 w-4" />
-              대여 취소 요청
-            </Button>
+            {canRequestCancel ? (
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => setCancelDialogOpen(true)}
+                className="gap-2"
+              >
+                <XCircle className="mr-2 h-4 w-4" />
+                대여 취소 요청
+              </Button>
+            ) : isOnlineCancelRestricted ? (
+              <p className="max-w-sm text-sm text-muted-foreground">
+                이미 출고 또는 대여가 진행된 건은 온라인 취소 요청이 불가합니다.
+                변경이 필요하면 고객센터로 문의해주세요.
+              </p>
+            ) : null}
 
             <Button
               variant="outline"

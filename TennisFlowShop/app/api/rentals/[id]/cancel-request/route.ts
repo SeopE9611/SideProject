@@ -103,10 +103,21 @@ export async function POST(
     const currentStatus: string = rental.status ?? "pending";
 
     // 이미 취소된 건에 대한 추가 요청 차단
-    if (currentStatus === "canceled") {
+    if (currentStatus === "canceled" || currentStatus === "cancelled") {
       return NextResponse.json(
         { ok: false, message: "ALREADY_CANCELED" },
         { status: 400 },
+      );
+    }
+
+    if (rental.depositRefundedAt) {
+      return NextResponse.json(
+        {
+          ok: false,
+          message: "INVALID_STATE",
+          detail: "보증금 환급이 완료된 대여는 취소 요청이 불가합니다.",
+        },
+        { status: 409 },
       );
     }
 

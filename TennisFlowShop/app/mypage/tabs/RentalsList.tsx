@@ -391,7 +391,8 @@ export default function RentalsList() {
                     대여 취소 요청 철회
                   </Button>
                 ) : ["pending", "paid"].includes(r.status) &&
-                  !r.hasOutboundShipping ? (
+                  !r.hasOutboundShipping &&
+                  !r.depositRefundedAt ? (
                   <Button
                     size="sm"
                     variant="destructive"

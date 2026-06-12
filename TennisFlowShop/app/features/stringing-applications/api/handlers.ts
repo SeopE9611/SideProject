@@ -1542,7 +1542,13 @@ export async function handleUpdateApplicationStatus(
       { status: 404 },
     );
   }
-  if (beforeAppDoc.orderId || beforeAppDoc.rentalId) {
+  const linkedPaymentSource = String(beforeAppDoc.paymentSource ?? "").trim();
+  if (
+    beforeAppDoc.orderId ||
+    beforeAppDoc.rentalId ||
+    linkedPaymentSource.startsWith("order:") ||
+    linkedPaymentSource.startsWith("rental:")
+  ) {
     return NextResponse.json(
       {
         error:
@@ -1707,6 +1713,17 @@ export async function handleStringingCancelRequest(
       return NextResponse.json(
         { error: "신청서를 찾을 수 없습니다." },
         { status: 404 },
+      );
+    }
+
+    const paymentSourceRaw = String((appDoc as any).paymentSource ?? "").trim();
+    if ((appDoc as any).rentalId || paymentSourceRaw.startsWith("rental:")) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "대여와 연결된 교체서비스 신청은 신청서 상세에서 단독으로 취소 요청할 수 없습니다.",
+        },
+        { status: 409 },
       );
     }
 
