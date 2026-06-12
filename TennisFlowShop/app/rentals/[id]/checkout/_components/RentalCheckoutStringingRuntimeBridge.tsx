@@ -10,6 +10,7 @@ type RentalCheckoutStringingRuntimeBridgeProps = {
   rentalId: string;
   rentalRacketId: string;
   rentalDays: number;
+  rentalRacketName: string;
   withStringService: boolean;
   stringProduct: {
     id: string;

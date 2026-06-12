@@ -120,7 +120,7 @@ export default function RentalCheckoutStringingCompactEditor({
         >
           <span className="inline-flex items-center gap-2">
             <Settings2 className="h-4 w-4 text-primary/80" />
-            라켓별 교체서비스 상세 설정하기
+            교체서비스 상세 설정하기
           </span>
           <span
             className={
@@ -212,7 +212,7 @@ export default function RentalCheckoutStringingCompactEditor({
           </section>
 
           <section className="space-y-4">
-            <p className="text-sm font-semibold text-foreground">라켓별 설정</p>
+            <p className="text-sm font-semibold text-foreground">텐션 및 요청사항</p>
             {lineCount >= 2 && (
               <div className="rounded-lg border border-border/80 bg-muted/15 p-3.5">
                 <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
@@ -283,25 +283,16 @@ export default function RentalCheckoutStringingCompactEditor({
                 >
                   <div className="space-y-1">
                     <p className="text-xs font-semibold text-foreground">
-                      라켓 {index + 1}
+                      장착 대상 라켓
+                    </p>
+                    <p className="text-sm font-medium text-foreground">
+                      {line.racketType}
                     </p>
                     <p className="text-xs text-foreground/75">
-                      {line.stringName}
+                      대여 상품 기준으로 자동 반영 · 구매 스트링: {line.stringName}
                     </p>
                   </div>
-                  <div className="grid grid-cols-1 gap-2.5 bp-sm:grid-cols-3">
-                    <Input
-                      className="h-10 px-3"
-                      value={line.racketType ?? ""}
-                      onChange={(e) =>
-                        handleLineFieldChange(
-                          index,
-                          "racketType",
-                          e.target.value,
-                        )
-                      }
-                      placeholder="라켓명"
-                    />
+                  <div className="grid grid-cols-1 gap-2.5 bp-sm:grid-cols-2">
                     <Input
                       className="h-10 px-3"
                       value={line.tensionMain ?? ""}
@@ -332,7 +323,7 @@ export default function RentalCheckoutStringingCompactEditor({
                     onChange={(e) =>
                       handleLineFieldChange(index, "note", e.target.value)
                     }
-                    placeholder="라켓별 메모 (선택)"
+                    placeholder="장착 요청사항 (선택)"
                     className="min-h-[84px] px-3 py-2.5"
                   />
                 </div>
