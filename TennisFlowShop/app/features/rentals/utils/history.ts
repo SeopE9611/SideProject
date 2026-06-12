@@ -3,6 +3,8 @@ import { Db, ObjectId } from "mongodb";
 type HistoryAction =
   | "paid"
   | "out"
+  | "outbound-shipping-set"
+  | "outbound-shipping-updated"
   | "returned"
   | "cancel-request"
   | "cancel-approved"

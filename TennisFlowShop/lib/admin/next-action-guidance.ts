@@ -16,6 +16,8 @@ export type OpsLikeItem = {
   hasOutboundTracking?: boolean;
   hasInboundTracking?: boolean;
   rentalDueAt?: string | null;
+  depositRefundedAt?: string | null;
+  linkedApplicationStatus?: string | null;
   shippingMethod?: string | null;
   cancelStatus?: "none" | "requested" | "approved" | "rejected" | null;
   cancelRequested?: boolean;
@@ -231,7 +233,12 @@ export function inferNextActionForOperationItem(
 
   if (item.kind === "rental") {
     if (isRentalReturned(item.statusLabel)) {
-      return { stage: "대여 반납 완료 단계", nextAction: "후속 조치 없음" };
+      return {
+        stage: "대여 반납 완료 단계",
+        nextAction: item.depositRefundedAt
+          ? "후속 조치 없음"
+          : "보증금 환급 확인 필요",
+      };
     }
     if (isRentalPending(item.statusLabel) || !doneLike(item.paymentLabel)) {
       return {
@@ -240,12 +247,18 @@ export function inferNextActionForOperationItem(
       };
     }
     if (isRentalPaid(item.statusLabel) && !isRentalOut(item.statusLabel)) {
+      if (item.linkedApplicationStatus && !isAppDone(item.linkedApplicationStatus)) {
+        return {
+          stage: "교체서비스 작업 단계",
+          nextAction: "교체서비스 작업 완료 필요",
+        };
+      }
       if (!item.hasOutboundTracking) {
-        return { stage: "출고 준비 단계", nextAction: "출고 정보 등록 필요" };
+        return { stage: "출고 준비 단계", nextAction: "출고 운송장 등록 필요" };
       }
       return {
-        stage: "출고 준비 단계",
-        nextAction: "사용자 수령 확인 후 대여 시작 처리 필요",
+        stage: "수령 확인 대기 단계",
+        nextAction: "수령 확인 / 대여 시작 필요",
       };
     }
     if (isRentalOut(item.statusLabel)) {

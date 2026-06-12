@@ -1136,6 +1136,7 @@ export async function handleAdminOperationsGet(req: Request) {
     returnDueAt: 1,
     endDate: 1,
     dueAt: 1,
+    depositRefundedAt: 1,
   };
   let rawRentals = await db
     .collection("rental_orders")
@@ -1947,6 +1948,8 @@ export async function handleAdminOperationsGet(req: Request) {
         paymentLabel: rentalPaymentMeta.label,
         hasOutboundTracking,
         rentalDueAt,
+        depositRefundedAt: toISO(r?.depositRefundedAt),
+        linkedApplicationStatus: getString(linkedApplication?.status),
         cancelStatus: cancel.status,
         refundAccountReady: cancel.refundAccountReady,
       }),

@@ -29,6 +29,21 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     return NextResponse.json({ ok: false, code: 'INVALID_STATE', message: '대여 시작 불가 상태' }, { status: 409 });
   }
 
+  const isVisitPickup = String(order?.servicePickupMethod ?? '').trim() === 'SHOP_VISIT';
+  const hasOutboundTracking = Boolean(
+    String(order?.shipping?.outbound?.trackingNumber ?? '').trim(),
+  );
+  if (!isVisitPickup && !hasOutboundTracking) {
+    return NextResponse.json(
+      {
+        ok: false,
+        code: 'OUTBOUND_TRACKING_REQUIRED',
+        message: '택배 배송 건은 출고 운송장 등록 후 수령 확인 / 대여 시작을 진행할 수 있습니다.',
+      },
+      { status: 409 },
+    );
+  }
+
   const stringingStatus = await getLinkedRentalStringingStatus(guard.db, order, id);
   if (hasRentalStringingService(order) || stringingStatus !== null) {
     if (!isRentalStringingComplete(stringingStatus)) {
@@ -58,7 +73,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       type: 'admin.rentals.status.out',
       actorId: guard.admin._id,
       targetId: _id,
-      message: '대여 상태를 paid → out 으로 전환',
+      message: isVisitPickup ? '방문 수령 처리' : '수령 확인 / 대여 시작',
       diff: { from: 'paid', to: 'out', outAt, dueAt },
     },
     req,

@@ -216,6 +216,7 @@ export default function RentalsDetailClient({
   applicationUrl,
 }: Props) {
   const [data, setData] = useState<Rental | null>(null);
+  const [isReceiving, setIsReceiving] = useState(false);
   const refreshRental = async () => {
     try {
       const res = await fetch(`/api/me/rentals/${id}`, {
@@ -231,6 +232,38 @@ export default function RentalsDetailClient({
 
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const handleReceiveRental = async () => {
+    if (isReceiving) return;
+    if (
+      !window.confirm(
+        "라켓 수령을 확인하시겠습니까?\n확인 시점부터 대여 기간이 시작되고 반납 예정일이 계산됩니다.",
+      )
+    )
+      return;
+
+    try {
+      setIsReceiving(true);
+      const res = await fetch(`/api/rentals/${id}/receive`, {
+        method: "POST",
+        credentials: "include",
+      });
+      const body = await res.json().catch(() => null);
+      if (!res.ok) {
+        throw new Error(body?.message || "수령 확인을 처리하지 못했습니다.");
+      }
+      showSuccessToast("수령 확인이 완료되어 대여가 시작되었습니다.");
+      await refreshRental();
+    } catch (error) {
+      showErrorToast(
+        error instanceof Error
+          ? error.message
+          : "수령 확인을 처리하지 못했습니다.",
+      );
+    } finally {
+      setIsReceiving(false);
+    }
+  };
+
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
 
   const [withdrawing, setWithdrawing] = useState(false);
@@ -386,6 +419,21 @@ export default function RentalsDetailClient({
     data.shipping?.shippingMethod,
   );
   const isVisitPickup = rentalShippingMethod === "pickup";
+  const isLinkedStringingComplete =
+    !data.withStringService || data.applicationSummary?.status === "교체완료";
+  const canReceiveRental =
+    data.status === "paid" &&
+    !isVisitPickup &&
+    hasOutboundShipping &&
+    isLinkedStringingComplete;
+  const displayStatusLabel =
+    data.depositRefundedAt
+      ? "보증금 환급 완료"
+      : data.status === "paid"
+      ? hasOutboundShipping
+        ? "출고됨 · 수령 확인 대기"
+        : "출고 준비 중"
+      : getStatusLabel(data.status);
 
   // 대기중/결제완료 + 아직 취소요청이 아닌 경우에만 '활성화' 허용 (버튼 자체는 항상 노출)
   const isOnlineCancelRestricted =
@@ -522,6 +570,22 @@ export default function RentalsDetailClient({
             </Button>
           </div>
         </div>
+        {canReceiveRental && (
+          <div className="mb-4 rounded-xl border border-primary/20 bg-primary/10 p-4">
+            <p className="font-semibold text-foreground">라켓을 수령하셨나요?</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              수령 확인을 누르면 오늘부터 대여 기간이 시작되고 반납 예정일이 계산됩니다.
+            </p>
+            <Button
+              size="sm"
+              className="mt-3"
+              disabled={isReceiving}
+              onClick={handleReceiveRental}
+            >
+              {isReceiving ? "수령 확인 처리 중..." : "수령 확인하고 대여 시작"}
+            </Button>
+          </div>
+        )}
         {nextTodo && (
           <NextTodoCallout
             className="mb-4"
@@ -567,7 +631,7 @@ export default function RentalsDetailClient({
               variant={getStatusBadgeVariant(data.status)}
               className="px-3 py-1 text-sm font-medium"
             >
-              {getStatusLabel(data.status)}
+              {displayStatusLabel}
             </Badge>
           </div>
         </div>
@@ -752,7 +816,7 @@ export default function RentalsDetailClient({
                     variant={getStatusBadgeVariant(data.status)}
                     className="mt-1"
                   >
-                    {getStatusLabel(data.status)}
+                    {displayStatusLabel}
                   </Badge>
                 </div>
               </div>
@@ -762,7 +826,7 @@ export default function RentalsDetailClient({
                 <div>
                   <p className="text-sm text-foreground/80">반납 예정일</p>
                   <p className="font-semibold text-foreground">
-                    {data.outAt && data.dueAt ? formatDate(data.dueAt) : "-"}
+                    {data.dueAt ? formatDate(data.dueAt) : "대여 시작 후 계산"}
                   </p>
                 </div>
               </div>
@@ -864,7 +928,7 @@ export default function RentalsDetailClient({
               <div className="flex-1">
                 <p className="text-sm font-medium text-foreground">대여 시작</p>
                 <p className="text-sm text-foreground/80">
-                  {data.outAt ? formatDateTime(data.outAt) : "-"}
+                  {data.outAt ? formatDateTime(data.outAt) : "수령 확인 대기"}
                 </p>
               </div>
             </div>
@@ -915,7 +979,7 @@ export default function RentalsDetailClient({
               <div className="flex-1">
                 <p className="text-sm font-medium text-foreground">반납 예정</p>
                 <p className="text-sm text-foreground/80">
-                  {data.outAt && data.dueAt ? formatDate(data.dueAt) : "-"}
+                  {data.dueAt ? formatDate(data.dueAt) : "대여 시작 후 계산"}
                 </p>
               </div>
             </div>

@@ -802,8 +802,8 @@ export default function StringingApplicationDetailClient({
       String(data.paymentSource ?? "").trim().startsWith("rental:"),
   );
   const isEditableAllowed =
-    isAdmin ||
-    (!isRentalLinkedApplication && userEditableStatuses.includes(data.status));
+    !isRentalLinkedApplication &&
+    (isAdmin || userEditableStatuses.includes(data.status));
 
   // 요약 표시용 파생 값
   const stringTypeCount = data.stringDetails?.stringTypes?.length ?? 0;
@@ -946,6 +946,7 @@ export default function StringingApplicationDetailClient({
   const confirmableStatuses = ["반송완료", "교체완료", "완료"];
   const canConfirmExchange =
     !isAdmin &&
+    !isRentalLinkedApplication &&
     !isCancelled &&
     !isCancelRequested &&
     !isUserConfirmed &&
@@ -1231,7 +1232,7 @@ export default function StringingApplicationDetailClient({
           ctaLabel: hasTracking ? "라켓 발송 수정" : "라켓 발송 등록",
           ctaHref: inboundTrackingHref,
         }
-      : !isAdmin && showConfirmExchangeButton && canConfirmExchange
+      : !isAdmin && !isRentalLinkedApplication && showConfirmExchangeButton && canConfirmExchange
         ? {
             label: "교체서비스 확정",
             ctaLabel: "교체서비스 확정",
@@ -1450,7 +1451,7 @@ export default function StringingApplicationDetailClient({
                     </Tooltip>
 
                     {/* 사용자: 서비스 리뷰 작성 버튼 (교체확정 이후에만 노출) */}
-                    {!isAdmin && (
+                    {!isAdmin && !isRentalLinkedApplication && (
                       <ServiceReviewCTA
                         applicationId={data.id}
                         status={data.status}
@@ -1460,7 +1461,7 @@ export default function StringingApplicationDetailClient({
                     )}
 
                     {/* 사용자: 교체확정 버튼(확정 가능 시, 또는 이미 확정된 경우에만 노출) */}
-                    {!isAdmin && showConfirmExchangeButton && (
+                    {!isAdmin && !isRentalLinkedApplication && showConfirmExchangeButton && (
                       <Button
                         size="sm"
                         disabled={!canConfirmExchange || isConfirmSubmitting}
@@ -2144,24 +2145,27 @@ export default function StringingApplicationDetailClient({
                       )}
                       {!isCancelled &&
                         !isCancelRequested &&
+                        !isRentalLinkedApplication &&
                         !canConfirmExchange &&
                         !isUserConfirmed && (
                           <span className="block">
                             교체 완료 후 교체서비스 확정을 진행할 수 있습니다.
                           </span>
                         )}
-                      {!isCancelled && !isCancelRequested && (
-                        <span className="block">
-                          주문 구매확정과 교체서비스 확정은 별도로 처리됩니다.
-                        </span>
-                      )}
+                      {!isCancelled &&
+                        !isCancelRequested &&
+                        !isRentalLinkedApplication && (
+                          <span className="block">
+                            주문 구매확정과 교체서비스 확정은 별도로 처리됩니다.
+                          </span>
+                        )}
                     </div>
 
                     {!isAdmin && isRentalLinkedApplication && (
                       <p className="max-w-xl text-sm text-muted-foreground">
-                        이 교체서비스 신청은 대여 주문과 연결되어 있습니다. 변경이나
-                        취소가 필요하면 대여 상세에서 진행 상태를 확인하거나
-                        고객센터로 문의해주세요.
+                        이 교체서비스는 대여 주문과 연결되어 있습니다. 작업 상태는
+                        대여 상세에서 함께 확인되며, 고객 확인은 대여 수령 확인
+                        흐름으로 진행됩니다.
                       </p>
                     )}
 
