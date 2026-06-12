@@ -13,6 +13,7 @@ type Params = {
   rentalId: string;
   rentalRacketId: string;
   rentalDays: number;
+  rentalRacketName: string;
   stringProduct: {
     id: string;
     name: string;
@@ -51,6 +52,7 @@ export default function useRentalCheckoutStringingServiceAdapter({
   rentalId,
   rentalRacketId,
   rentalDays,
+  rentalRacketName,
   stringProduct,
   name,
   email,
@@ -77,6 +79,18 @@ export default function useRentalCheckoutStringingServiceAdapter({
   });
 
   const { setFormData } = shared;
+
+  useEffect(() => {
+    if (!withStringService || !rentalRacketName) return;
+
+    setFormData((prev) => ({
+      ...prev,
+      racketType: rentalRacketName,
+      lines: Array.isArray(prev.lines)
+        ? prev.lines.map((line) => ({ ...line, racketType: rentalRacketName }))
+        : prev.lines,
+    }));
+  }, [withStringService, rentalRacketName, setFormData]);
 
   useEffect(() => {
     if (!withStringService) return;

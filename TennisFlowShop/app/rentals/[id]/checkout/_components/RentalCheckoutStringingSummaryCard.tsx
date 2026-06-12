@@ -58,7 +58,7 @@ export default function RentalCheckoutStringingSummaryCard({ adapter }: Props) {
           <span className="font-medium">{summary.lineCount}자루</span>
         </p>
         <p>
-          <span className="text-muted-foreground">선택 스트링:</span>{" "}
+          <span className="text-muted-foreground">구매 스트링:</span>{" "}
           <span className="font-medium">
             {summary.stringNames.join(", ") || "미선택"}
           </span>
@@ -100,7 +100,7 @@ export default function RentalCheckoutStringingSummaryCard({ adapter }: Props) {
             className="gap-1 border border-border/70 font-normal"
           >
             <CircleDot className="h-3 w-3" />
-            라켓별 설정 {completion.lineConfiguredCount}/
+            장착 설정 {completion.lineConfiguredCount}/
             {completion.totalLineCount} 완료
           </Badge>
           {completion.needsVisitReservation && (

@@ -183,6 +183,9 @@ export default function RentalsCheckoutClient({
    * 2) URL/서버/DB 로직이 단순해지고, 구매 UX와 체감이 동일해짐
    */
   const selectedString = initial.selectedString ?? null;
+  const rentalRacketName = initial.racket
+    ? `${racketBrandLabel(initial.racket.brand)} ${initial.racket.model}`.trim()
+    : "대여 라켓";
   const requestStringing = Boolean(selectedString?.id);
   const normalizedSelectedColor =
     typeof selectedColor === "string" && selectedColor.trim()
@@ -812,7 +815,7 @@ export default function RentalsCheckoutClient({
               <div className="bg-muted border-b border-border p-4 md:p-6">
                 <CardTitle className="flex items-center gap-3">
                   <Package className="h-5 w-5 text-primary" />
-                  대여 상품
+                  대여 라켓
                 </CardTitle>
                 <CardDescription className="mt-2">
                   선택하신 라켓 정보입니다.
@@ -838,9 +841,7 @@ export default function RentalsCheckoutClient({
                   <div className="flex-1">
                     <div className="text-sm text-foreground/80">중고 라켓</div>
                     <h3 className="font-semibold text-foreground">
-                      {initial.racket
-                        ? `${racketBrandLabel(initial.racket.brand)} ${initial.racket.model}`
-                        : ""}
+                      {rentalRacketName}
                     </h3>
                     <div className="flex items-center gap-2 mt-1">
                       <Badge
@@ -852,6 +853,10 @@ export default function RentalsCheckoutClient({
                       <span className="text-xs text-foreground/75">
                         대여 기간 {initial.period}일
                       </span>
+                    </div>
+                    <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm text-foreground/80">
+                      <span>대여료: {initial.fee.toLocaleString()}원</span>
+                      <span>보증금: {initial.deposit.toLocaleString()}원</span>
                     </div>
                   </div>
                 </div>
@@ -943,7 +948,7 @@ export default function RentalsCheckoutClient({
                     {selectedString ? (
                       <div className="space-y-1">
                         <div className="text-xs text-foreground/75">
-                          선택된 스트링
+                          구매 스트링
                         </div>
                         <div className="font-semibold text-foreground">
                           {selectedString.name}
@@ -958,14 +963,19 @@ export default function RentalsCheckoutClient({
                             색상: {normalizedSelectedColor}
                           </div>
                         ) : null}
-                        <div className="text-sm text-foreground/80">
-                          {selectedString.price.toLocaleString()}원 + 교체{" "}
-                          {selectedString.mountingFee.toLocaleString()}원
+                        <div className="mt-2 grid gap-1 text-sm text-foreground/80 bp-sm:grid-cols-2">
+                          <span>
+                            스트링 구매가: {selectedString.price.toLocaleString()}원
+                          </span>
+                          <span>
+                            교체서비스 장착비: {selectedString.mountingFee.toLocaleString()}원
+                          </span>
                         </div>
 
-                        <div className="mt-2 text-xs text-foreground/75">
-                          * 대여 결제 시 입력한 교체서비스 정보가 함께
-                          접수됩니다. (구형/예외 건만 별도 신청서 이동)
+                        <div className="mt-3 rounded-md bg-muted/70 p-3 text-xs text-foreground/80">
+                          대여 라켓은 반납 대상이며, 선택한 스트링은 구매
+                          상품으로 결제됩니다. 교체서비스 비용은 스트링 장착
+                          작업 비용입니다.
                         </div>
                       </div>
                     ) : (
@@ -1510,7 +1520,7 @@ export default function RentalsCheckoutClient({
                 <CardContent className="p-4 md:p-6 space-y-4 md:space-y-6">
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">대여 수수료</span>
+                      <span className="text-muted-foreground">대여료</span>
                       <span className="font-semibold text-lg">
                         {initial.fee.toLocaleString()}원
                       </span>
@@ -1525,7 +1535,7 @@ export default function RentalsCheckoutClient({
                       <>
                         <div className="flex justify-between items-center">
                           <span className="text-muted-foreground">
-                            스트링 금액
+                            스트링 구매가
                           </span>
                           <span className="font-semibold text-lg">
                             {selectedString.price.toLocaleString()}원
@@ -1534,7 +1544,7 @@ export default function RentalsCheckoutClient({
 
                         <div className="flex justify-between items-center">
                           <span className="text-foreground/80">
-                            교체서비스 비용
+                            교체서비스 장착비
                           </span>
                           <span className="font-semibold text-lg">
                             {stringingFee.toLocaleString()}원
@@ -1542,6 +1552,11 @@ export default function RentalsCheckoutClient({
                         </div>
                       </>
                     )}
+
+                    <div className="flex justify-between items-center">
+                      <span className="text-muted-foreground">배송비</span>
+                      <span className="font-semibold text-lg">0원</span>
+                    </div>
 
                     {/* 포인트 차감 표시 */}
                     {appliedPoints > 0 && (
@@ -1733,6 +1748,7 @@ export default function RentalsCheckoutClient({
       rentalId={initial.racketId}
       rentalRacketId={initial.racketId}
       rentalDays={initial.period}
+      rentalRacketName={rentalRacketName}
       stringProduct={stringProduct}
       name={name}
       email={email}
