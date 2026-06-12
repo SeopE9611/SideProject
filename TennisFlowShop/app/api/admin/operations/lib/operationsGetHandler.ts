@@ -295,14 +295,12 @@ function getLinkedOrderStringingStatusIssue(
   items: OpItem[],
 ): LinkedFlowStatusIssue | null {
   const order = items.find((item) => item.kind === "order");
-  if (!order) return null;
-
   const application = items
     .filter(
       (item) =>
         item.kind === "stringing_application" &&
         item.related?.kind === "order" &&
-        item.related.id === order.id &&
+        (!order || item.related.id === order.id) &&
         normalizeLinkedStatus(item.statusLabel).toLowerCase() !== "draft",
     )
     .sort((a, b) => {
@@ -310,24 +308,59 @@ function getLinkedOrderStringingStatusIssue(
       const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
       return bTime - aTime;
     })[0];
-  if (!application) return null;
+  const integrityReason = items
+    .flatMap((item) => item.warnReasons ?? [])
+    .find((reason) =>
+      ["찾지 못했습니다", "DB에 없습니다", "불일치", "역방향 링크"].some(
+        (keyword) => reason.includes(keyword),
+      ),
+    );
+
+  if (integrityReason && (order || application)) {
+    const missing =
+      integrityReason.includes("찾지 못했습니다") ||
+      integrityReason.includes("DB에 없습니다");
+    const target = order ?? application!;
+    return {
+      severity: "warning",
+      code: missing ? "LINKED_DOC_MISSING" : "LINKED_DOC_REFERENCE_MISMATCH",
+      title: "연결 문서 확인 필요",
+      message: integrityReason,
+      orderStatus: order?.statusLabel ?? "-",
+      applicationStatus: application?.statusLabel ?? "-",
+      actionHref: order ? `/admin/orders/${order.id}` : target.href,
+      actionLabel: order ? "통합 주문 관리" : "신청서 확인",
+    };
+  }
+
+  if (!order || !application) return null;
 
   const orderStatus = normalizeLinkedStatus(order.statusLabel);
   const applicationStatus = normalizeLinkedStatus(application.statusLabel);
-  if (
-    VALID_LINKED_ORDER_STRINGING_STATUS_PAIRS.has(
-      `${orderStatus}:${applicationStatus}`,
-    )
-  ) {
-    return null;
-  }
+  const statusPair = `${orderStatus}:${applicationStatus}`;
+  if (VALID_LINKED_ORDER_STRINGING_STATUS_PAIRS.has(statusPair)) return null;
+
+  const isClosed = (status: string) =>
+    ["취소", "환불", "구매확정", "cancel", "refund", "confirmed"].some(
+      (keyword) => status.toLowerCase().includes(keyword.toLowerCase()),
+    );
+  if (isClosed(orderStatus) || isClosed(applicationStatus)) return null;
+
+  const transientPairs = new Set([
+    "대기중:접수완료",
+    "결제완료:검토중",
+    "배송중:작업중",
+    "배송완료:작업중",
+  ]);
+  const isTransient = transientPairs.has(statusPair);
 
   return {
-    severity: "warning",
+    severity: isTransient ? "review" : "warning",
     code: "LINKED_STATUS_MISMATCH",
-    title: "통합 단계 확인 필요",
-    message:
-      "주문과 교체서비스 신청서의 진행 단계가 표준 처리 흐름과 다릅니다. 통합 주문 관리에서 현재 단계와 다음 작업을 확인하세요.",
+    title: isTransient ? "통합 단계 검토" : "통합 단계 확인 필요",
+    message: isTransient
+      ? "주문과 교체서비스 신청서가 다음 단계 처리 전 일시적으로 어긋날 수 있는 조합입니다. 다음 작업 시 현재 단계를 함께 확인하세요."
+      : "주문과 교체서비스 신청서의 진행 단계가 표준 처리 흐름과 다릅니다. 통합 주문 관리에서 현재 단계와 다음 작업을 확인하세요.",
     orderStatus: order.statusLabel,
     applicationStatus: application.statusLabel,
     actionHref: `/admin/orders/${order.id}`,
@@ -1098,6 +1131,11 @@ export async function handleAdminOperationsGet(req: Request) {
     stringingApplicationId: 1,
     isStringServiceApplied: 1,
     cancelRequest: 1,
+    "shipping.outbound": 1,
+    outboundTrackingNo: 1,
+    returnDueAt: 1,
+    endDate: 1,
+    dueAt: 1,
   };
   let rawRentals = await db
     .collection("rental_orders")
@@ -1799,6 +1837,7 @@ export async function handleAdminOperationsGet(req: Request) {
         kind: "stringing_application",
         statusLabel: String(a?.status ?? "접수완료"),
         paymentLabel: paymentDerived.paymentLabel,
+        related,
         cancelStatus: cancel.status,
         refundAccountReady: cancel.refundAccountReady,
       }),
@@ -1823,7 +1862,10 @@ export async function handleAdminOperationsGet(req: Request) {
     const days = Number(r?.days ?? r?.period ?? 0);
     const amount = normalizeRentalAmountTotal(r);
     const rentalPaymentMeta = normalizeRentalPaymentMeta(r);
-    const hasOutboundTracking = Boolean(r?.shipping?.outbound?.trackingNumber);
+    const hasOutboundTracking = Boolean(
+      r?.shipping?.outbound?.trackingNumber ?? r?.outboundTrackingNo,
+    );
+    const rentalDueAt = toISO(r?.returnDueAt ?? r?.endDate ?? r?.dueAt);
     const linkedApplication = appId ? appById.get(appId) : null;
     const stringingDoc = asDoc(r?.stringing);
     const stringingName = getString(stringingDoc?.name);
@@ -1897,12 +1939,14 @@ export async function handleAdminOperationsGet(req: Request) {
           }
         : undefined,
       hasOutboundTracking,
+      rentalDueAt,
       cancel,
       ...inferNextActionForOperationItem({
         kind: "rental",
         statusLabel: normalizeRentalStatus(r?.status),
         paymentLabel: rentalPaymentMeta.label,
         hasOutboundTracking,
+        rentalDueAt,
         cancelStatus: cancel.status,
         refundAccountReady: cancel.refundAccountReady,
       }),
@@ -2057,7 +2101,8 @@ export async function handleAdminOperationsGet(req: Request) {
   const groupsWithQueue = groups.map((group) => {
     const groupReviewLevel = computeGroupReviewLevel(group);
     const groupNeedsReview =
-      groupReviewLevel === "action" || Boolean(group.linkedFlowStatusIssue);
+      groupReviewLevel === "action" ||
+      group.linkedFlowStatusIssue?.severity === "warning";
     const queueBucket: AdminOperationsGroup["groupQueueBucket"] = isGroupWarn(
       group,
     )

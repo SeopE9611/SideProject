@@ -15,6 +15,7 @@ export type OpsLikeItem = {
   hasShippingInfo?: boolean;
   hasOutboundTracking?: boolean;
   hasInboundTracking?: boolean;
+  rentalDueAt?: string | null;
   shippingMethod?: string | null;
   cancelStatus?: "none" | "requested" | "approved" | "rejected" | null;
   cancelRequested?: boolean;
@@ -51,6 +52,10 @@ const isRentalPaid = (status?: string | null) => {
   const s = String(status ?? "").toLowerCase();
   return s === "paid" || s.includes("결제완료");
 };
+const isRentalReturned = (status?: string | null) => {
+  const s = String(status ?? "").toLowerCase();
+  return s === "returned" || s.includes("반납완료");
+};
 const isRentalOut = (status?: string | null) => {
   const s = String(status ?? "").toLowerCase();
   return s === "out" || s.includes("대여중");
@@ -67,6 +72,13 @@ const isAppWorking = (status?: string | null) => {
 const isAppDone = (status?: string | null) => {
   const s = String(status ?? "").toLowerCase();
   return s.includes("교체완료") || s === "완료";
+};
+
+const isRentalDueSoon = (dueAt?: string | null) => {
+  if (!dueAt) return null;
+  const dueTime = new Date(dueAt).getTime();
+  if (!Number.isFinite(dueTime)) return null;
+  return dueTime <= Date.now() + 48 * 60 * 60 * 1000;
 };
 
 const hasIncludedPaymentContext = (paymentLabel?: string | null) => {
@@ -212,12 +224,15 @@ export function inferNextActionForOperationItem(
     }
 
     return {
-      stage: "패키지 구매 확인 단계",
-      nextAction: "패키지 구매 내역과 이용권 상태를 확인하세요.",
+      stage: "패키지 활성화 완료 단계",
+      nextAction: "후속 조치 없음",
     };
   }
 
   if (item.kind === "rental") {
+    if (isRentalReturned(item.statusLabel)) {
+      return { stage: "대여 반납 완료 단계", nextAction: "후속 조치 없음" };
+    }
     if (isRentalPending(item.statusLabel) || !doneLike(item.paymentLabel)) {
       return {
         stage: "대여 결제 확인 단계",
@@ -234,9 +249,15 @@ export function inferNextActionForOperationItem(
       };
     }
     if (isRentalOut(item.statusLabel)) {
+      const dueSoon = isRentalDueSoon(item.rentalDueAt);
+      if (dueSoon === false) {
+        return { stage: "대여 진행 단계", nextAction: "후속 조치 없음" };
+      }
       return {
-        stage: "대여 진행 단계",
-        nextAction: "반납 일정 및 연결 신청서 상태 확인 필요",
+        stage: dueSoon ? "반납 확인 단계" : "대여 일정 확인 단계",
+        nextAction: dueSoon
+          ? "반납 예정일이 임박했거나 지났습니다. 반납 확인 필요"
+          : "반납 예정일 확인 필요",
       };
     }
   }
@@ -265,14 +286,14 @@ export function inferNextActionForOperationItem(
       };
     }
     if (isAppDone(item.statusLabel)) {
-      return {
-        stage: "교체 완료 단계",
-        nextAction: "연결 문서(주문/대여) 후속 상태 반영 여부 확인 필요",
-      };
+      return { stage: "교체 완료 단계", nextAction: "후속 조치 없음" };
     }
   }
 
   if (item.kind === "order") {
+    if (isOrderClosed(item.statusLabel) || isOrderConfirmed(item.statusLabel)) {
+      return inferStandaloneOrderGuide(item);
+    }
     if (item.related?.kind === "stringing_application") {
       if (!doneLike(item.paymentLabel)) {
         return {
@@ -385,6 +406,8 @@ export function inferNextActionForOperationGroup(
     }
   }
 
+  if (rental && isRentalOut(rental.statusLabel))
+    return inferNextActionForOperationItem(rental);
   if (app) return inferNextActionForOperationItem(app);
   if (rental) return inferNextActionForOperationItem(rental);
   return inferNextActionForOperationItem(items[0] ?? { kind: "order" });

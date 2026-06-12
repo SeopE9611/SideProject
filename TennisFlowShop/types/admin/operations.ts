@@ -33,8 +33,11 @@ export type OperationSignal = {
 };
 
 export type LinkedFlowStatusIssue = {
-  severity: "warning";
-  code: "LINKED_STATUS_MISMATCH";
+  severity: "warning" | "review";
+  code:
+    | "LINKED_DOC_MISSING"
+    | "LINKED_DOC_REFERENCE_MISMATCH"
+    | "LINKED_STATUS_MISMATCH";
   title: string;
   message: string;
   orderStatus: string;
@@ -84,6 +87,7 @@ export type AdminOperationItem = {
   shippingMethod?: string | null;
   hasShippingInfo?: boolean;
   hasOutboundTracking?: boolean;
+  rentalDueAt?: string | null;
   cancel?: {
     status: AdminOperationCancelStatus;
     requestedAt?: string | null;
