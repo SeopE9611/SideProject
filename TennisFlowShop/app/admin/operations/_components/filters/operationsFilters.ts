@@ -5,7 +5,7 @@ import {
 } from "@/lib/badge-style";
 
 export type Kind = OpsKind;
-export type Flow = 1 | 2 | 3 | 4 | 5 | 6 | 7;
+export type Flow = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
 export function prevMonthYyyymmKST() {
   const fmt = new Intl.DateTimeFormat("en-CA", {

@@ -3,7 +3,11 @@
  * - 의도: 여러 관리자 화면(주문/대여/운영함)에서 동일한 의미를 동일한 텍스트/색상으로 유지
  * - 주의: 여기서는 “표시(UI)” 규칙만. 정산(금액 산정) 정책은 settlementPolicy가 기준.
  */
-export type OpsKind = "order" | "stringing_application" | "rental";
+export type OpsKind =
+  | "order"
+  | "stringing_application"
+  | "rental"
+  | "package_purchase";
 export type OpsBadgeTone =
   | "success"
   | "warning"
@@ -16,6 +20,7 @@ export type OpsSignalType = "status" | "payment";
 export function opsKindLabel(kind: OpsKind) {
   if (kind === "order") return "주문";
   if (kind === "stringing_application") return "신청서";
+  if (kind === "package_purchase") return "패키지 구매";
   return "대여";
 }
 
@@ -23,6 +28,7 @@ const opsKindColors: Record<OpsKind, OpsBadgeTone> = {
   order: "info",
   stringing_application: "warning",
   rental: "success",
+  package_purchase: "brand",
 };
 
 export function opsKindBadgeTone(kind: OpsKind): OpsBadgeTone {
@@ -64,6 +70,7 @@ export function opsStatusBadgeTone(kind: OpsKind, label: string): OpsBadgeTone {
   if (kind === "order") return orderStatusColors[label] ?? "neutral";
   if (kind === "stringing_application")
     return applicationStatusColors[label] ?? "neutral";
+  if (kind === "package_purchase") return orderStatusColors[label] ?? "neutral";
   return rentalStatusColors[label] ?? "neutral";
 }
 
