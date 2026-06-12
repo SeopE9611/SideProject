@@ -96,6 +96,11 @@ export default function LinkedFlowStageCard({
   }, [applicationStatus, orderStatus, selectedStage, shippingInfo]);
 
   const isSameStage = currentStage === selectedStage;
+  const nextStage = useMemo(() => {
+    if (!currentStage) return null;
+    const currentIndex = LINKED_FLOW_STAGE_LIST.indexOf(currentStage);
+    return LINKED_FLOW_STAGE_LIST[currentIndex + 1] ?? null;
+  }, [currentStage]);
 
   const handleSave = () => {
     if (disabled) {
@@ -147,10 +152,10 @@ export default function LinkedFlowStageCard({
   return (
     <Card className={className}>
       <CardHeader className="pb-3">
-        <CardTitle className="text-base">연결 진행 단계</CardTitle>
+        <CardTitle className="text-base">1. 진행 상태 관리 · 연결 진행 단계</CardTitle>
         <CardDescription>
-          연결된 주문/신청서의 일반 흐름을 함께 변경하는 단축 조작입니다. 개별
-          상태 조정은 아래 주문 상태/신청 상태 영역에서 따로 처리하세요.
+          이 단계 변경은 주문 상태와 교체서비스 신청 상태를 함께 업데이트합니다.
+          현재 단계와 저장 시 변경값을 확인한 뒤 처리하세요.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -161,11 +166,19 @@ export default function LinkedFlowStageCard({
               ? getLinkedFlowStageLabelForDisplay(currentStage, shippingInfo)
               : "판별 불가"}
           </Badge>
+          <span className="text-muted-foreground">다음 단계</span>
+          <Badge variant="outline">
+            {nextStage
+              ? getLinkedFlowStageLabelForDisplay(nextStage, shippingInfo)
+              : currentStage
+                ? "마지막 단계"
+                : "판별 불가"}
+          </Badge>
         </div>
 
         <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
           <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">단계 선택</p>
+            <p className="text-xs text-muted-foreground">변경할 단계</p>
             <Select
               value={selectedStage}
               onValueChange={(value) =>
@@ -195,6 +208,9 @@ export default function LinkedFlowStageCard({
         </div>
 
         <div className="rounded-md border bg-muted/40 p-3 text-xs text-muted-foreground break-keep">
+          <p className="mb-1 font-medium text-foreground">
+            저장 시 함께 변경되는 상태
+          </p>
           {previewText}
         </div>
         {disabledReason && (
@@ -203,8 +219,8 @@ export default function LinkedFlowStageCard({
           </p>
         )}
         <p className="text-xs text-muted-foreground break-keep">
-          연결된 주문과 교체서비스 신청의 진행 단계를 함께 관리합니다.
-          결제/작업/배송 흐름이 어긋나지 않도록 통합 단계에서 처리하세요.
+          결제 확인, 작업 접수·진행, 인도 준비·완료는 이 카드에서 관리합니다.
+          배송/수령 정보 등록과 신청서 세부 확인은 아래 정보 영역을 이용하고,
           취소/환불은 주문 상세의 취소/환불 액션에서 처리하세요.
         </p>
       </CardContent>
