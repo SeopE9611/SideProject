@@ -455,11 +455,11 @@ const ProductCard = React.memo(
                   asChild
                   variant="default"
                   size="sm"
-                  className="h-10 w-full text-xs sm:text-sm"
+                  className="h-auto min-h-10 w-full text-xs sm:text-sm"
                 >
                   <Link href={detailHref}>
                     <Eye className="w-3 h-3 bp-sm:w-4 bp-sm:h-4 mr-1.5" />
-                    <span className="min-w-0 truncate whitespace-nowrap">
+                    <span className="min-w-0 break-keep">
                       {isApplyFlow ? "이 스트링 선택" : "교체서비스와 함께 선택"}
                     </span>
                   </Link>
@@ -622,11 +622,11 @@ const ProductCard = React.memo(
               asChild
               type="button"
               variant="outline"
-              className="h-10 text-sm"
+              className="h-auto min-h-10 text-sm"
             >
               <Link href={detailHref}>
                 <Eye className="h-4 w-4 mr-1.5" />
-                <span className="min-w-0 truncate whitespace-nowrap">
+                <span className="min-w-0 break-keep">
                   {isApplyFlow ? "이 스트링 선택" : "교체서비스와 함께 선택"}
                 </span>
               </Link>

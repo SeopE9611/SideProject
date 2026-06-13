@@ -227,7 +227,7 @@ export default function FinderRacketCard({ racket }: { racket: FinderRacket }) {
             </div>
 
             {/* 액션 버튼 */}
-            <div className="mt-auto grid grid-cols-2 gap-2 bp-lg:flex bp-lg:flex-wrap bp-lg:items-center">
+            <div className="mt-auto grid grid-cols-1 gap-2 bp-sm:grid-cols-2 bp-lg:flex bp-lg:flex-wrap bp-lg:items-center">
               <RacketSpecQuickViewDialog
                 racket={compareItem}
                 trigger={

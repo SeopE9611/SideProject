@@ -337,7 +337,7 @@ export default function RentalsList() {
                 ) : null}
               </div>
 
-              <div className="flex flex-wrap items-center gap-2 border-t border-border/60 pt-3 md:pt-4 [&_button]:whitespace-nowrap">
+              <div className="grid grid-cols-1 gap-2 border-t border-border/60 pt-3 bp-sm:flex bp-sm:flex-wrap bp-sm:items-center md:pt-4 [&_button]:w-full bp-sm:[&_button]:w-auto">
                 <Button
                   size="sm"
                   variant="outline"
