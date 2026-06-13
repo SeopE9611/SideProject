@@ -453,12 +453,11 @@ const ProductCard = React.memo(
 
               {featureEntries.length > 0 && (
                 <div className="mb-3">
-                  <div className="grid grid-cols-2 gap-1.5 text-[11px] sm:text-xs">
+                  <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-[11px] sm:text-xs">
                     {featureEntries.map((feature, index) => (
                       <div
                         key={feature.key}
                         className={cn(
-                          productMetaPillClass,
                           "min-w-0",
                           featureEntries.length % 2 === 1 &&
                             index === featureEntries.length - 1 &&
@@ -472,6 +471,12 @@ const ProductCard = React.memo(
                           <span className="shrink-0 whitespace-nowrap tabular-nums font-semibold text-primary">
                             {feature.value}/100
                           </span>
+                        </div>
+                        <div className="mt-1 h-1 overflow-hidden rounded-full bg-muted">
+                          <div
+                            className="h-full rounded-full bg-primary/70"
+                            style={{ width: `${feature.value}%` }}
+                          />
                         </div>
                       </div>
                     ))}
@@ -612,12 +617,9 @@ const ProductCard = React.memo(
             </div>
 
             {featureEntries.length > 0 && (
-              <div className="mb-3 flex flex-wrap gap-1.5 text-[11px] sm:text-xs">
+              <div className="mb-3 grid grid-cols-2 gap-x-3 gap-y-1.5 text-[11px] sm:text-xs">
                 {featureEntries.map((feature) => (
-                  <div
-                    key={feature.key}
-                    className={cn(productMetaPillClass, "min-w-[88px] flex-1")}
-                  >
+                  <div key={feature.key} className="min-w-0">
                     <div className="flex min-w-0 items-center justify-between gap-1">
                       <span className="shrink-0 whitespace-nowrap text-muted-foreground font-medium">
                         {feature.label}
@@ -625,6 +627,12 @@ const ProductCard = React.memo(
                       <span className="shrink-0 whitespace-nowrap tabular-nums font-semibold text-primary">
                         {feature.value}/100
                       </span>
+                    </div>
+                    <div className="mt-1 h-1 overflow-hidden rounded-full bg-muted">
+                      <div
+                        className="h-full rounded-full bg-primary/70"
+                        style={{ width: `${feature.value}%` }}
+                      />
                     </div>
                   </div>
                 ))}

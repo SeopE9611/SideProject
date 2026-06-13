@@ -227,7 +227,7 @@ export default function FinderRacketCard({ racket }: { racket: FinderRacket }) {
             </div>
 
             {/* 액션 버튼 */}
-            <div className="mt-auto grid grid-cols-1 gap-2 bp-sm:grid-cols-2 bp-lg:flex bp-lg:flex-wrap bp-lg:items-center">
+            <div className="mt-auto grid grid-cols-1 gap-2 bp-xl:grid-cols-2">
               <RacketSpecQuickViewDialog
                 racket={compareItem}
                 trigger={
@@ -235,7 +235,8 @@ export default function FinderRacketCard({ racket }: { racket: FinderRacket }) {
                     type="button"
                     variant="outline"
                     size="sm"
-                    className="h-10 w-full min-w-0 whitespace-nowrap rounded-lg bg-transparent px-2 text-xs bp-sm:text-sm bp-lg:h-9 bp-lg:min-w-[7.5rem] bp-lg:w-auto bp-lg:flex-none"
+                    wrap="responsive"
+                    className="w-full min-w-0 rounded-lg bg-transparent px-2 text-xs bp-sm:text-sm"
                   >
                     <Info className="mr-1.5 h-3.5 w-3.5" />
                     상세 스펙
@@ -248,7 +249,7 @@ export default function FinderRacketCard({ racket }: { racket: FinderRacket }) {
                 size="sm"
                 variant={selected ? "default" : "outline"}
                 className={cn(
-                  "h-10 w-full min-w-0 whitespace-nowrap rounded-lg px-2 text-xs bp-sm:text-sm bp-lg:h-9 bp-lg:min-w-[7.5rem] bp-lg:w-auto bp-lg:flex-none",
+                  "w-full min-w-0 rounded-lg px-2 text-xs bp-sm:text-sm",
                   selected && "bg-secondary text-foreground",
                 )}
                 onClick={() => {
@@ -276,7 +277,8 @@ export default function FinderRacketCard({ racket }: { racket: FinderRacket }) {
               <Button
                 asChild
                 size="sm"
-                className="h-10 w-full min-w-0 whitespace-nowrap rounded-lg px-2 text-xs bp-sm:text-sm bp-lg:h-9 bp-lg:min-w-[7.5rem] bp-lg:w-auto bp-lg:flex-none"
+                wrap="responsive"
+                className="w-full min-w-0 rounded-lg px-2 text-xs bp-sm:text-sm"
               >
                 <Link href={`/rackets/${racket.id}/select-string`}>
                   <ShoppingCart className="mr-1.5 h-3.5 w-3.5" />
@@ -301,7 +303,8 @@ export default function FinderRacketCard({ racket }: { racket: FinderRacket }) {
                   variant="secondary"
                   disabled
                   title={rentalDisabledReason ?? undefined}
-                  className="h-10 w-full min-w-0 whitespace-nowrap rounded-lg px-2 text-xs opacity-50 bp-sm:text-sm bp-lg:h-9 bp-lg:min-w-[7.5rem] bp-lg:w-auto bp-lg:flex-none"
+                  wrap="responsive"
+                  className="w-full min-w-0 rounded-lg px-2 text-xs opacity-50 bp-sm:text-sm"
                 >
                   대여 불가
                 </Button>
