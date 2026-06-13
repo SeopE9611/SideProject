@@ -10,6 +10,7 @@ type Props = {
   reviewAllDone?: boolean;
   unreviewedCount?: number;
   reviewNextTargetProductId?: string | null;
+  serviceLinkedOrder?: boolean;
 
   // 상태 게이트용
   orderStatus?: string;
@@ -27,6 +28,7 @@ export default function OrderReviewCTA({
   reviewAllDone,
   unreviewedCount,
   reviewNextTargetProductId,
+  serviceLinkedOrder = false,
   orderStatus,
   userConfirmedAt,
   showOnlyWhenCompleted = false,
@@ -34,6 +36,8 @@ export default function OrderReviewCTA({
   loading = false,
   className,
 }: Props) {
+  if (serviceLinkedOrder) return null;
+
   // 완료(구매확정) 상태 게이트
   const isConfirmed = Boolean(userConfirmedAt) || orderStatus === "구매확정";
   if (showOnlyWhenCompleted && !isConfirmed) {

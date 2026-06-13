@@ -594,6 +594,9 @@ export default function OrderDetailClient({
     hasLinkedStringingApps ||
     Boolean(orderDetail?.stringingApplicationId) ||
     orderDetail?.isStringServiceApplied === true;
+  const serviceLinkedOrder =
+    Boolean(orderDetail?.shippingInfo?.withStringService) ||
+    hasSubmittedStringingApplication;
 
   // 리뷰/링크에 사용할 대표 신청 ID
   // - API 계약: stringingApplicationId는 최신 신청서(updatedAt/createdAt desc)
@@ -1337,7 +1340,11 @@ export default function OrderDetailClient({
         )}
 
         <div id="reviews-cta" className="mt-4">
-          {allReviewed ? (
+          {serviceLinkedOrder ? (
+            <div className="rounded-xl border border-border bg-muted/20 p-4 text-sm text-muted-foreground">
+              교체서비스가 연결된 주문은 서비스 리뷰만 작성할 수 있습니다.
+            </div>
+          ) : allReviewed ? (
             <div className="flex flex-col gap-3 rounded-xl border border-primary/20 bg-primary/10 p-4 shadow-sm dark:bg-primary/20 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:p-6">
               <div className="flex items-center gap-3 text-primary">
                 <CheckCircle className="h-6 w-6" />
@@ -1388,6 +1395,7 @@ export default function OrderDetailClient({
                 orderStatus={orderDetail.status}
                 userConfirmedAt={orderDetail.userConfirmedAt ?? null}
                 showOnlyWhenCompleted
+                serviceLinkedOrder={serviceLinkedOrder}
                 loading={!reviewsReady}
               />
             </div>
