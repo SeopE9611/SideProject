@@ -659,39 +659,39 @@ export default function FilterableProductList({
     [isFetchingMore, hasMore, isLoadingInitial, loadMore],
   );
 
-  // 데스크톱(좌측 고정 패널): 선택 즉시 적용(=기존대로 selectedXXX 사용)
+  // 데스크톱/모바일 공통: 패널 안에서는 draft만 변경하고 적용 시 커밋
   const desktopFilterPanelProps = {
-    selectedBrand,
-    setSelectedBrand,
-    selectedMaterial,
-    setSelectedMaterial,
-    selectedBounce,
-    setSelectedBounce,
-    selectedControl,
-    setSelectedControl,
-    selectedSpin,
-    setSelectedSpin,
-    selectedDurability,
-    setSelectedDurability,
-    selectedComfort,
-    setSelectedComfort,
-    searchQuery,
-    setSearchQuery,
-    priceRange,
-    setPriceRange,
-    exposureFilter,
-    onExposureChange: setExposureFilter,
-    resetKey,
-    activeFiltersCount,
-    onReset: handleResetAll,
+    selectedBrand: draftBrand,
+    setSelectedBrand: setDraftBrand,
+    selectedMaterial: draftMaterial,
+    setSelectedMaterial: setDraftMaterial,
+    selectedBounce: draftBounce,
+    setSelectedBounce: setDraftBounce,
+    selectedControl: draftControl,
+    setSelectedControl: setDraftControl,
+    selectedSpin: draftSpin,
+    setSelectedSpin: setDraftSpin,
+    selectedDurability: draftDurability,
+    setSelectedDurability: setDraftDurability,
+    selectedComfort: draftComfort,
+    setSelectedComfort: setDraftComfort,
+    searchQuery: draftSearchQuery,
+    setSearchQuery: setDraftSearchQuery,
+    priceRange: draftPriceRange,
+    setPriceRange: setDraftPriceRange,
+    exposureFilter: draftExposureFilter,
+    onExposureChange: setDraftExposureFilter,
+    resetKey: draftResetKey,
+    activeFiltersCount: activeDraftCount,
+    onReset: handleResetAllDraft,
     isLoadingInitial,
     showFilters,
     setShowFilters,
     brands,
-    onClose: undefined,
-    onSearchSubmit: handleSearchSubmit,
-    onClearSearch: handleClearSearch,
-    onClearInput: handleClearInput,
+    onClose: cancelFiltersSheet,
+    onSearchSubmit: applyFiltersSheet,
+    onClearSearch: () => setDraftSearchQuery(""),
+    onClearInput: () => setDraftSearchQuery(""),
   };
 
   // 모바일(Sheet): draft만 변경 → "적용"에서만 커밋
@@ -731,23 +731,16 @@ export default function FilterableProductList({
 
   return (
     <>
-      <Sheet open={showFilters} onOpenChange={handleSheetOpenChange}>
+      <Sheet open={showFilters && isMobileViewport} onOpenChange={handleSheetOpenChange}>
         <SheetContent
-          side="right"
-          className="w-[92vw] max-w-sm p-0 overflow-y-auto"
+          side="bottom"
+          className="max-h-[85dvh] rounded-t-2xl p-0 overflow-y-auto"
         >
           <FilterPanel {...mobileFilterPanelProps} />
         </SheetContent>
       </Sheet>
 
-      <div className="grid grid-cols-1 gap-6 bp-lg:grid-cols-[240px_minmax(0,1fr)] bp-xl:grid-cols-[260px_minmax(0,1fr)] bp-xl:gap-7">
-        {/* 필터 사이드바 */}
-        <div className={cn("hidden bp-lg:block", "space-y-4 md:space-y-6")}>
-          <div className="sticky top-20 self-start">
-            <FilterPanel {...desktopFilterPanelProps} />
-          </div>
-        </div>
-
+      <div>
         {/* 상품 목록 */}
         <div className="min-w-0">
           <div className="mb-6 bp-md:mb-8 space-y-3">
@@ -784,7 +777,7 @@ export default function FilterableProductList({
                   if (showFilters) cancelFiltersSheet();
                   else openFiltersSheet();
                 }}
-                className="bp-lg:hidden h-9 shrink-0 whitespace-nowrap px-3 border-border hover:bg-primary/10 dark:hover:bg-primary/20"
+                className="h-9 shrink-0 whitespace-nowrap px-3 border-border hover:bg-primary/10 dark:hover:bg-primary/20"
                 aria-expanded={showFilters}
                 aria-label="필터 열기"
               >
@@ -792,6 +785,11 @@ export default function FilterableProductList({
                 필터{activeFiltersCount > 0 && `(${activeFiltersCount})`}
               </Button>
             </div>
+            {showFilters && !isMobileViewport && (
+              <div className="rounded-xl border border-border bg-card/50">
+                <FilterPanel {...desktopFilterPanelProps} />
+              </div>
+            )}
             {activeFiltersCount > 0 && (
               <div className="rounded-lg border border-border bg-card p-3">
                 <div className="mb-2 flex items-center justify-between gap-2">

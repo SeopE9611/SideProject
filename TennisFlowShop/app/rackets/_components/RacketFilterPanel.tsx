@@ -106,16 +106,6 @@ export default function RacketFilterPanel({
           <div className="mb-5 flex items-center justify-between">
             <div className="flex gap-2 items-center">
               <h2 className="font-bold text-xl text-foreground">필터</h2>
-              {onClose && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={onClose}
-                  className="sm:hidden bg-transparent"
-                >
-                  닫기
-                </Button>
-              )}
             </div>
             <div className="flex gap-2">
               {activeFiltersCount > 0 && (

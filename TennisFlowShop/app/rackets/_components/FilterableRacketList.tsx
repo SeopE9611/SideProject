@@ -544,33 +544,33 @@ export default function FilterableRacketList({
     searchParams,
   ]);
 
-  // 데스크톱(좌측 고정 패널): 선택 즉시 반영(=기존 selected 사용)
+  // 데스크톱/모바일 공통: 패널 안에서는 draft만 변경하고 적용 시 커밋
   const desktopFilterPanelProps = {
-    selectedBrand,
-    setSelectedBrand,
-    selectedCondition,
-    setSelectedCondition,
-    searchQuery,
-    setSearchQuery,
-    priceMin,
-    priceMax,
-    onChangePriceMin: setPriceMin,
-    onChangePriceMax: setPriceMax,
-    rentOnly,
-    setRentOnly,
-    exposureFilter,
-    onExposureChange: setExposureFilter,
-    resetKey,
-    activeFiltersCount,
-    onReset: handleResetAll,
+    selectedBrand: draftBrand,
+    setSelectedBrand: setDraftBrand,
+    selectedCondition: draftCondition,
+    setSelectedCondition: setDraftCondition,
+    searchQuery: draftSearchQuery,
+    setSearchQuery: setDraftSearchQuery,
+    priceMin: draftPriceMin,
+    priceMax: draftPriceMax,
+    onChangePriceMin: setDraftPriceMin,
+    onChangePriceMax: setDraftPriceMax,
+    rentOnly: draftRentOnly,
+    setRentOnly: setDraftRentOnly,
+    exposureFilter: draftExposureFilter,
+    onExposureChange: setDraftExposureFilter,
+    resetKey: draftResetKey,
+    activeFiltersCount: activeDraftCount,
+    onReset: handleResetAllDraft,
     isLoadingInitial: isLoading,
     showFilters,
     setShowFilters,
     brands,
-    onClose: undefined,
-    onSearchSubmit: handleSearchSubmit,
-    onClearSearch: handleClearSearch,
-    onClearInput: handleClearInput,
+    onClose: cancelFiltersSheet,
+    onSearchSubmit: applyFiltersSheet,
+    onClearSearch: () => setDraftSearchQuery(""),
+    onClearInput: () => setDraftSearchQuery(""),
   };
 
   // 모바일(Sheet): draft만 변경 → "검색/적용"에서만 커밋
@@ -604,23 +604,16 @@ export default function FilterableRacketList({
 
   return (
     <>
-      <Sheet open={showFilters} onOpenChange={handleSheetOpenChange}>
+      <Sheet open={showFilters && !isDesktopViewport} onOpenChange={handleSheetOpenChange}>
         <SheetContent
-          side="right"
-          className="w-full bp-sm:w-[420px] bp-md:w-[480px] max-w-none p-0 overflow-y-auto"
+          side="bottom"
+          className="max-h-[85dvh] rounded-t-2xl p-0 overflow-y-auto"
         >
           <RacketFilterPanel {...mobileFilterPanelProps} />
         </SheetContent>
       </Sheet>
 
-      <div className="grid grid-cols-1 gap-5 bp-md:gap-8 bp-lg:grid-cols-[300px_minmax(0,1fr)] bp-xl:grid-cols-[320px_minmax(0,1fr)]">
-        {/* 필터 사이드바 */}
-        <div className={cn("hidden bp-lg:block", "space-y-4 bp-md:space-y-6")}>
-          <div className="sticky top-20 self-start">
-            <RacketFilterPanel {...desktopFilterPanelProps} />
-          </div>
-        </div>
-
+      <div>
         {/* 상품 목록 */}
         <div className="min-w-0">
           <div className="mb-6 space-y-3 bp-md:mb-8">
@@ -658,7 +651,7 @@ export default function FilterableRacketList({
                     if (showFilters) cancelFiltersSheet();
                     else openFiltersSheet();
                   }}
-                  className="h-9 whitespace-nowrap border-border px-3 hover:bg-secondary bp-lg:hidden"
+                  className="h-9 whitespace-nowrap border-border px-3 hover:bg-secondary"
                   aria-expanded={showFilters}
                   aria-label="필터 열기"
                 >
@@ -714,6 +707,11 @@ export default function FilterableRacketList({
                 )}
               </div>
             </div>
+            {showFilters && isDesktopViewport && (
+              <div className="rounded-xl border border-border bg-card/50">
+                <RacketFilterPanel {...desktopFilterPanelProps} />
+              </div>
+            )}
 
             {activeFiltersCount > 0 && (
               <div className="rounded-lg border border-border bg-card p-3">

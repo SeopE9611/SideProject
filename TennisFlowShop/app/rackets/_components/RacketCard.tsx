@@ -290,9 +290,8 @@ const RacketCard = React.memo(
       stackOnNarrow?: boolean;
     }) => {
       const compact = options?.compact ?? false;
-      const stackOnNarrow = options?.stackOnNarrow ?? false;
       const buttonClassName = cn(
-        "inline-flex h-10 w-full min-w-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 text-center font-semibold [&_svg]:mr-0 [&_svg]:shrink-0",
+        "inline-flex w-full min-w-0 items-center justify-center gap-1.5 rounded-lg px-2.5 text-center font-semibold [&_svg]:mr-0 [&_svg]:shrink-0",
         compact ? "text-[12px] bp-sm:text-xs bp-md:text-sm" : "text-sm",
       );
       const disabledButtonClassName = cn(
@@ -305,7 +304,7 @@ const RacketCard = React.memo(
         <div
           className={cn(
             "grid w-full gap-2",
-            stackOnNarrow ? "grid-cols-1 bp-sm:grid-cols-2" : "grid-cols-2",
+            "grid-cols-1 bp-xl:grid-cols-2",
           )}
         >
           {canBuy ? (

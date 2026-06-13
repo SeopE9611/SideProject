@@ -183,17 +183,6 @@ export const FilterPanel = React.memo(function FilterPanel({
                 <h2 className="break-keep text-lg font-bold leading-tight text-foreground">
                   필터
                 </h2>
-                {onClose && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={onClose}
-                    className="bp-sm:hidden h-7 px-2 text-xs bg-transparent"
-                  >
-                    닫기
-                  </Button>
-                )}
               </div>
               <div className="flex gap-2">
                 {activeFiltersCount > 0 && (
