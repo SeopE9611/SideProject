@@ -440,25 +440,6 @@ export default function FilterableRacketList({
     [openFiltersSheet, cancelFiltersSheet],
   );
 
-  // 뷰포트가 lg(>=1024)로 커지면 Sheet는 자동으로 "취소 닫기"
-  useEffect(() => {
-    if (!showFilters) return;
-
-    const mql = window.matchMedia("(min-width: 1024px)");
-    const onChange = (e: MediaQueryListEvent) => {
-      if (e.matches) cancelFiltersSheet();
-    };
-
-    // 이미 lg 이상이면 즉시 닫기
-    if (mql.matches) {
-      cancelFiltersSheet();
-      return;
-    }
-
-    mql.addEventListener("change", onChange);
-    return () => mql.removeEventListener("change", onChange);
-  }, [showFilters, cancelFiltersSheet]);
-
   const observerRef = useRef<IntersectionObserver | null>(null);
   const sentinelRef = useCallback(
     (node: HTMLDivElement | null) => {
