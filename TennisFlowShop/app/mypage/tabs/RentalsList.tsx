@@ -348,7 +348,7 @@ export default function RentalsList() {
                     href={`/mypage?tab=orders&flowType=rental&flowId=${r.id}&from=orders`}
                     className="inline-flex items-center gap-1"
                   >
-                    상세 보기
+                    대여 상세 보기
                     <ArrowRight className="h-3 w-3" />
                   </Link>
                 </Button>
@@ -364,7 +364,7 @@ export default function RentalsList() {
                       href={`/mypage?tab=orders&flowType=application&flowId=${r.stringingApplicationId}&from=orders`}
                       className="inline-flex items-center gap-1"
                     >
-                      교체서비스 보기
+                      교체서비스 상세 보기
                       <ArrowRight className="h-3 w-3" />
                     </Link>
                   </Button>

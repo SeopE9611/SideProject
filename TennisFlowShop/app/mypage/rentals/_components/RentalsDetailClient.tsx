@@ -508,7 +508,7 @@ export default function RentalsDetailClient({
               <Button asChild className="gap-2">
                 <Link href={applicationHref}>
                   <Wrench className="h-4 w-4" />
-                  교체서비스 보기
+                  교체서비스 상세 보기
                 </Link>
               </Button>
             ) : canApplyStringService ? (
@@ -736,7 +736,7 @@ export default function RentalsDetailClient({
               </>
             ) : (
               <p className="text-muted-foreground">
-                교체서비스가 포함된 대여입니다. 신청 상세에서 접수 상태를 확인할
+                교체서비스가 포함된 대여입니다. 교체서비스 상세에서 접수 상태를 확인할
                 수 있습니다.
               </p>
             )}
@@ -745,7 +745,7 @@ export default function RentalsDetailClient({
                 <Button asChild variant="outline" className="gap-2">
                   <Link href={applicationHref}>
                     <Wrench className="h-4 w-4" />
-                    신청 상세 이동
+                    교체서비스 상세 보기
                   </Link>
                 </Button>
               </div>

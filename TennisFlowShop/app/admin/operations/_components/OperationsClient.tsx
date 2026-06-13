@@ -171,12 +171,12 @@ const OPERATOR_TERM_MAP: Array<[RegExp, string]> = [
 ];
 
 const FLOW_LABEL_BY_ID: Record<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8, string> = {
-  1: "스트링 단품 구매",
+  1: "레거시 · 스트링 단품 구매",
   2: "스트링 구매 + 교체서비스 신청(통합)",
   3: "교체서비스 단일 신청",
-  4: "라켓 단품 구매",
+  4: "레거시 · 라켓 단품 구매",
   5: "라켓 구매 + 스트링 선택 + 교체서비스 신청(통합)",
-  6: "라켓 단품 대여",
+  6: "레거시 · 라켓 단품 대여",
   7: "라켓 대여 + 스트링 선택 + 교체서비스 신청(통합)",
   8: "패키지 구매",
 };
@@ -1843,16 +1843,16 @@ export default function OperationsClient() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">시나리오(전체)</SelectItem>
-                    <SelectItem value="1">스트링 단품 구매</SelectItem>
+                    <SelectItem value="1">레거시 · 스트링 단품 구매</SelectItem>
                     <SelectItem value="2">
                       스트링 구매 + 교체서비스 신청(통합)
                     </SelectItem>
                     <SelectItem value="3">교체서비스 단일 신청</SelectItem>
-                    <SelectItem value="4">라켓 단품 구매</SelectItem>
+                    <SelectItem value="4">레거시 · 라켓 단품 구매</SelectItem>
                     <SelectItem value="5">
                       라켓 구매 + 스트링 선택 + 교체서비스 신청(통합)
                     </SelectItem>
-                    <SelectItem value="6">라켓 단품 대여</SelectItem>
+                    <SelectItem value="6">레거시 · 라켓 단품 대여</SelectItem>
                     <SelectItem value="7">
                       라켓 대여 + 스트링 선택 + 교체서비스 신청(통합)
                     </SelectItem>

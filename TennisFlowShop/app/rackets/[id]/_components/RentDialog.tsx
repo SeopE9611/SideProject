@@ -82,7 +82,7 @@ export default function RentDialog({
         onClick={() => setOpen(true)}
       >
         <Calendar className="mr-2 h-4 w-4" />
-        대여하기
+        스트링 선택 후 대여
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>

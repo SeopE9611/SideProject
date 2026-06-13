@@ -197,7 +197,7 @@ const RacketCard = React.memo(
         : "대여 불가 상태입니다"
       : undefined;
     const displayBrandLabel = racketBrandLabel(racket.brand) || brandLabel;
-    const buyLabel = isApplyFlow ? "스트링 선택" : "구매하기";
+    const buyLabel = isApplyFlow ? "스트링 선택" : "스트링 선택 후 구매";
     const salePrice = getEffectiveRacketPrice(racket);
     const discountRate = getRacketDiscountRate(racket);
     const hasSalePrice = discountRate > 0;

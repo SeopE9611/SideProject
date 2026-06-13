@@ -460,7 +460,7 @@ const ProductCard = React.memo(
                   <Link href={detailHref}>
                     <Eye className="w-3 h-3 bp-sm:w-4 bp-sm:h-4 mr-1.5" />
                     <span className="min-w-0 truncate whitespace-nowrap">
-                      {isApplyFlow ? "선택하기" : "상세 보기"}
+                      {isApplyFlow ? "이 스트링 선택" : "교체서비스와 함께 선택"}
                     </span>
                   </Link>
                 </Button>
@@ -474,7 +474,7 @@ const ProductCard = React.memo(
                     disabled={isSoldOut}
                     className="h-9 whitespace-nowrap sm:h-10 text-xs sm:text-sm"
                   >
-                    단품 구매
+                    레거시 단품 구매
                   </Button>
                 )}
 
@@ -627,7 +627,7 @@ const ProductCard = React.memo(
               <Link href={detailHref}>
                 <Eye className="h-4 w-4 mr-1.5" />
                 <span className="min-w-0 truncate whitespace-nowrap">
-                  {isApplyFlow ? "선택하기" : "상세 보기"}
+                  {isApplyFlow ? "이 스트링 선택" : "교체서비스와 함께 선택"}
                 </span>
               </Link>
             </Button>
@@ -662,7 +662,7 @@ const ProductCard = React.memo(
               onClick={handleStringSingleBuy}
               disabled={isSoldOut}
             >
-              단품 구매
+              레거시 단품 구매
             </Button>
           )}
 

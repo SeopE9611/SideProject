@@ -674,7 +674,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const canCheckoutWithService = isMountableStringByFee(product?.mountingFee);
   const isApplyFlow = searchParams.get("from") === "apply";
   const serviceCtaLabel = isApplyFlow
-    ? "이 스트링 선택하기"
+    ? "이 스트링 선택"
     : "교체서비스 신청하기";
   const shouldEmphasizeServiceCta =
     isApplyFlow || !ENABLE_STRING_STANDALONE_ORDER;

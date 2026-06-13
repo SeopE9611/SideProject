@@ -210,17 +210,17 @@ function hasOrderShippingInfo(order: UnknownDoc) {
 function flowLabelOf(flow: Flow) {
   switch (flow) {
     case 1:
-      return "스트링 단품 구매";
+      return "레거시 · 스트링 단품 구매";
     case 2:
       return "스트링 구매 + 교체서비스 신청(통합)";
     case 3:
       return "교체서비스 단일 신청";
     case 4:
-      return "라켓 단품 구매";
+      return "레거시 · 라켓 단품 구매";
     case 5:
       return "라켓 구매 + 스트링 선택 + 교체서비스 신청(통합)";
     case 6:
-      return "라켓 단품 대여";
+      return "레거시 · 라켓 단품 대여";
     case 7:
       return "라켓 대여 + 스트링 선택 + 교체서비스 신청(통합)";
     case 8:

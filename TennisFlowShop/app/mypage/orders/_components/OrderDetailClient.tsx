@@ -885,7 +885,7 @@ export default function OrderDetailClient({
               </div>
               <div className="min-w-0">
                 <h1 className="break-keep text-xl font-bold leading-tight text-foreground bp-sm:text-3xl">
-                  이용 상세
+                  주문 상세
                 </h1>
                 <p
                   className="mt-1 break-keep text-sm text-muted-foreground"
@@ -1557,8 +1557,8 @@ export default function OrderDetailClient({
                 {shouldShowStringingTimelineHint && (
                   <p>
                     {primaryStringingAppId
-                      ? "연결된 신청 상세에서 교체서비스 진행 상태를 확인해주세요."
-                      : "교체서비스가 포함된 주문은 신청 상세에서 작업 진행 상태를 함께 확인할 수 있습니다."}
+                      ? "연결된 교체서비스 상세에서 진행 상태를 확인해주세요."
+                      : "교체서비스가 포함된 주문은 교체서비스 상세에서 작업 진행 상태를 함께 확인할 수 있습니다."}
                   </p>
                 )}
               </div>

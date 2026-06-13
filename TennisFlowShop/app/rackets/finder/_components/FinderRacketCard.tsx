@@ -280,7 +280,7 @@ export default function FinderRacketCard({ racket }: { racket: FinderRacket }) {
               >
                 <Link href={`/rackets/${racket.id}/select-string`}>
                   <ShoppingCart className="mr-1.5 h-3.5 w-3.5" />
-                  구매하기
+                  스트링 선택 후 구매
                 </Link>
               </Button>
 

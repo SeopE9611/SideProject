@@ -436,7 +436,7 @@ const getTodoPrimaryReason = (group: ActivityGroup): string | null => {
   if (isTerminalCanceledStatus(group.application?.status)) return null;
 
   if (isApplicationTrackingNeeded(group.application)) return "운송장 등록 필요";
-  if (isApplicationConfirmNeeded(group.application)) return "교체확정 필요";
+  if (isApplicationConfirmNeeded(group.application)) return "교체서비스 확정 필요";
 
   return null;
 };
@@ -453,7 +453,8 @@ const getFlowNextActionText = (
       "구매확정 필요": "상품을 받으셨다면 구매확정을 진행해주세요.",
       "이용확정 필요": "반납 내용을 확인하고 이용확정을 진행해주세요.",
       "운송장 등록 필요": "운송장 정보를 등록해주세요.",
-      "교체확정 필요": "작업 내용을 확인하고 교체확정을 진행해주세요.",
+      "교체서비스 확정 필요":
+        "작업 내용을 확인하고 교체서비스 확정을 진행해주세요.",
       "후기를 남길 수 있어요": "구매확정된 상품은 후기를 작성할 수 있어요.",
       "교체서비스 신청 필요": "교체서비스 신청을 이어서 진행해주세요.",
     };
@@ -523,7 +524,7 @@ const getFlowNextActionText = (
   if (normalized === "처리중" || normalized === "작업 중")
     return "교체서비스 작업이 진행 중입니다. 완료 안내를 기다려주세요.";
   if (normalized === "교체완료")
-    return "작업 내용을 확인하고 교체확정을 진행해주세요.";
+    return "작업 내용을 확인하고 교체서비스 확정을 진행해주세요.";
   if (normalized === "거절")
     return "신청이 반려되었습니다. 자세한 내용은 고객센터로 문의해주세요.";
   return null;
@@ -821,7 +822,7 @@ export default function TransactionFlowList() {
       }
       showSuccessToast(
         data?.already
-          ? data?.message || "이미 교체확정된 신청입니다."
+          ? data?.message || "이미 교체서비스 확정된 신청입니다."
           : "교체 확정이 완료되었습니다.",
       );
       await refreshRelatedQueries();
@@ -1499,7 +1500,7 @@ export default function TransactionFlowList() {
                         : detailHref;
 
                     const resolvedDetailLabel = hasOrderLinkedApplication
-                      ? "이용 상세 보기"
+                      ? "교체서비스 상세 보기"
                       : "상세 보기";
 
                     const detailPriority =
@@ -1757,7 +1758,7 @@ export default function TransactionFlowList() {
                               <Link
                                 href={`/mypage?tab=orders&flowType=application&flowId=${g.rental.stringingApplicationId}&${flowQuery}`}
                               >
-                                교체서비스 보기
+                                교체서비스 상세 보기
                               </Link>
                             </Button>
                           ),
@@ -1923,7 +1924,7 @@ export default function TransactionFlowList() {
                                   : `/mypage?tab=orders&flowType=application&flowId=${actionableApplicationId}&${flowQuery}`
                               }
                             >
-                              이용 상세 보기
+                              교체서비스 상세 보기
                             </Link>
                           </Button>
                         ),
