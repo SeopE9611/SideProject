@@ -304,7 +304,7 @@ const RacketCard = React.memo(
         <div
           className={cn(
             "grid w-full gap-2",
-            "grid-cols-1 bp-xl:grid-cols-2",
+            "grid-cols-1",
           )}
         >
           {canBuy ? (
