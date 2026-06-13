@@ -398,7 +398,7 @@ export const FilterPanel = React.memo(function FilterPanel({
               </div>
             </div>
             {onClose && (
-              <div className="mt-6 border-t border-border pt-4 flex gap-2">
+              <div className="sticky bottom-0 mt-6 flex gap-2 border-t border-border bg-card py-4">
                 <Button
                   type="button"
                   variant="outline"

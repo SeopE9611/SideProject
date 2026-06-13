@@ -585,12 +585,20 @@ export default function FilterableRacketList({
 
   return (
     <>
-      <Sheet open={showFilters && isFilterSheetViewport} onOpenChange={handleSheetOpenChange}>
+      <Sheet open={showFilters} onOpenChange={handleSheetOpenChange}>
         <SheetContent
-          side="bottom"
-          className="max-h-[85dvh] rounded-t-2xl p-0 overflow-y-auto"
+          side={isFilterSheetViewport ? "bottom" : "left"}
+          className={
+            isFilterSheetViewport
+              ? "max-h-[85dvh] rounded-t-2xl p-0 overflow-y-auto"
+              : "h-dvh w-[min(420px,calc(100vw-24px))] max-w-none overflow-y-auto p-0"
+          }
         >
-          <RacketFilterPanel {...mobileFilterPanelProps} />
+          <RacketFilterPanel
+            {...(isFilterSheetViewport
+              ? mobileFilterPanelProps
+              : desktopFilterPanelProps)}
+          />
         </SheetContent>
       </Sheet>
 
@@ -598,8 +606,8 @@ export default function FilterableRacketList({
         {/* 상품 목록 */}
         <div className="min-w-0">
           <div className="mb-6 space-y-3 bp-md:mb-8">
-            <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
-              <div className="flex flex-wrap items-center gap-2 bp-sm:gap-3">
+            <div className="space-y-3">
+              <div>
                 <div
                   className="text-base font-semibold tabular-nums text-foreground bp-sm:text-lg"
                   aria-live="polite"
@@ -624,6 +632,9 @@ export default function FilterableRacketList({
                     </span>
                   ) : null}
                 </div>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-between gap-3">
                 <Button
                   type="button"
                   variant="outline"
@@ -639,9 +650,7 @@ export default function FilterableRacketList({
                   <Filter className="mr-2 h-4 w-4" />
                   필터{activeFiltersCount > 0 && `(${activeFiltersCount})`}
                 </Button>
-              </div>
-
-              <div className="flex items-center justify-between gap-2 bp-sm:justify-end bp-sm:gap-3">
+                <div className="ml-auto flex min-w-0 items-center gap-2 bp-sm:gap-3">
                 <Select value={sortOption} onValueChange={setSortOption}>
                   <SelectTrigger className="h-9 w-full min-w-0 rounded-lg border-2 bg-card text-sm focus:border-border bp-sm:w-[180px] dark:focus:border-border">
                     <SelectValue placeholder="정렬" />
@@ -686,13 +695,9 @@ export default function FilterableRacketList({
                     </Button>
                   </div>
                 )}
+                </div>
               </div>
             </div>
-            {showFilters && !isFilterSheetViewport && (
-              <div className="rounded-xl border border-border bg-card/50">
-                <RacketFilterPanel {...desktopFilterPanelProps} />
-              </div>
-            )}
 
             {activeFiltersCount > 0 && (
               <div className="rounded-lg border border-border bg-card p-3">
