@@ -220,21 +220,32 @@ export default async function ServicesPage() {
     {
       badge: "추천",
       icon: <Grid2X2 className="h-7 w-7" />,
-      title: "스트링 구매 후 장착",
+      title: "새 스트링으로 교체서비스 신청",
       description:
         "새 스트링을 고른 뒤 보유 라켓에 바로 장착 신청까지 이어갑니다.",
       steps: "스트링 선택 → 결제/장착 정보 입력 → 접수 완료",
       href: "/products?from=apply",
-      cta: "스트링 고르고 신청하기",
+      cta: "새 스트링 선택하기",
       featured: true,
+    },
+    {
+      badge: "라켓 구매/대여",
+      icon: <Target className="h-7 w-7" />,
+      title: "라켓 구매/대여 후 스트링 선택",
+      description:
+        "라켓을 구매하거나 대여한 뒤 스트링을 선택해 교체서비스까지 함께 진행합니다.",
+      steps: "라켓 선택 → 스트링 선택 → 결제/접수",
+      href: "/rackets?from=apply",
+      cta: "라켓 구매/대여 시작하기",
+      featured: false,
     },
     {
       badge: "보유 장비",
       icon: <File className="h-7 w-7" />,
-      title: "보유 라켓/보유 스트링으로 장착",
+      title: "보유 장비로 교체서비스 신청",
       description:
         "이미 가진 라켓이나 스트링으로 교체 작업만 맡기고 싶을 때 선택합니다.",
-      steps: "신청서 작성 → 결제/접수 → 작업 진행",
+      steps: "교체서비스 정보 입력 → 결제/접수 → 작업 진행",
       href: "/services/apply?mode=single",
       cta: "보유 장비로 신청하기",
       featured: false,
@@ -329,7 +340,7 @@ export default async function ServicesPage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
               {serviceStartOptions.map((item) => (
                 <Link
                   key={item.title}

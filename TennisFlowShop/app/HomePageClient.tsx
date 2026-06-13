@@ -739,11 +739,11 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   가장 많이 찾는 시작
                 </p>
                 <h3 className="text-base bp-sm:text-lg font-semibold break-keep text-foreground">
-                  스트링 교체 신청
+                  보유 장비로 교체서비스 신청
                 </h3>
                 <p className="mt-2 text-sm leading-relaxed text-foreground/80">
-                  보유 라켓이 있거나 새{"\u00A0"}스트링을 구매해서 장착까지
-                  맡기고 싶을 때 선택하세요.
+                  이미 보유한 라켓이나 스트링으로 교체 작업만 맡길 때
+                  선택하세요.
                 </p>
               </div>
             </Link>
@@ -791,10 +791,11 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
               </div>
               <div>
                 <h3 className="text-base bp-sm:text-lg font-semibold break-keep text-foreground">
-                  라켓{"\u00A0"}구매/대여 후 교체 신청
+                  라켓{"\u00A0"}구매/대여 + 스트링 선택
                 </h3>
                 <p className="mt-2 text-sm leading-relaxed text-foreground/80">
-                  라켓을 구매하거나 대여하면서 스트링 장착까지 함께 진행합니다.
+                  라켓을 구매하거나 대여한 뒤 스트링을 선택해 교체서비스까지
+                  함께 진행합니다.
                 </p>
               </div>
             </Link>
@@ -992,7 +993,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
               >
                 <Link href="/services/apply">
                   <Wrench className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
-                  스트링 교체 신청
+                  보유 장비로 교체서비스 신청
                 </Link>
               </Button>
             </div>
