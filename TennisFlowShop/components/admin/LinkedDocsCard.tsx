@@ -84,7 +84,7 @@ function getDocLabel(kind: LinkedDocKind) {
     case "rental":
       return { idLabel: "대여번호", ctaLabel: "대여 상세 보기" };
     case "stringing_application":
-      return { idLabel: "신청번호", ctaLabel: "신청 상세 보기" };
+      return { idLabel: "신청번호", ctaLabel: "신청서 상세 보기" };
     case "package_purchase":
       return { idLabel: "패키지 주문번호", ctaLabel: "패키지 상세 보기" };
     default:
