@@ -455,7 +455,8 @@ const ProductCard = React.memo(
                   asChild
                   variant="default"
                   size="sm"
-                  className="h-auto min-h-10 w-full text-xs sm:text-sm"
+                  wrap="responsive"
+                  className="w-full text-xs sm:text-sm"
                 >
                   <Link href={detailHref}>
                     <Eye className="w-3 h-3 bp-sm:w-4 bp-sm:h-4 mr-1.5" />
@@ -622,7 +623,8 @@ const ProductCard = React.memo(
               asChild
               type="button"
               variant="outline"
-              className="h-auto min-h-10 text-sm"
+              wrap="responsive"
+              className="text-sm"
             >
               <Link href={detailHref}>
                 <Eye className="h-4 w-4 mr-1.5" />
