@@ -87,6 +87,16 @@ type AppLite = {
   requirements?: string | null;
 };
 
+const SERVICE_REVIEW_SELECTABLE_STATUSES = new Set([
+  "교체완료",
+  "반송완료",
+  "완료",
+]);
+
+function isServiceReviewSelectableStatus(status?: string | null) {
+  return SERVICE_REVIEW_SELECTABLE_STATUSES.has(String(status ?? "").trim());
+}
+
 // 예약일자 포멧
 function formatKoDate(iso?: string | null) {
   if (!iso) return "";
@@ -519,11 +529,11 @@ export default function ReviewWritePage() {
       // 전체 목록 세팅(토글용)
       setAllApps(formattedAll);
 
-      // 1차(초기 필수) 목록: 교체완료 상태만 반영
+      // 1차(초기 필수) 목록: 서비스 완료 계열 상태만 반영
       // - 첫 진입에서는 "선택 가능한 최소 목록"이 우선 필요
       // - 이미 리뷰한 신청서 제외는 아래 mine 응답이 오면 후순위로 정밀 반영
-      const eligibleByStatus = formattedAll.filter(
-        (x) => x.status === "교체완료",
+      const eligibleByStatus = formattedAll.filter((x) =>
+        isServiceReviewSelectableStatus(x.status),
       );
       setApps(eligibleByStatus);
 
@@ -601,7 +611,7 @@ export default function ReviewWritePage() {
           setReviewedMap({});
         }
       } catch {
-        // 네트워크/권한 이슈가 있어도 1차 목록(교체완료)은 유지
+        // 네트워크/권한 이슈가 있어도 1차 목록(서비스 완료 계열)은 유지
         setReviewedMap({});
       }
     })();
@@ -1165,10 +1175,11 @@ export default function ReviewWritePage() {
 
                       {shownApps.map((a) => {
                         const isEligible =
-                          a.status === "교체완료" && !reviewedMap[a._id];
+                          isServiceReviewSelectableStatus(a.status) &&
+                          !reviewedMap[a._id];
                         const reason = reviewedMap[a._id]
                           ? "이미 리뷰 작성됨"
-                          : a.status !== "교체완료"
+                          : !isServiceReviewSelectableStatus(a.status)
                             ? `상태: ${a.status ?? "미정"}`
                             : "";
 
