@@ -80,6 +80,39 @@ function getFeatureEntries(features?: Record<string, number>) {
     .filter((item) => item.value > 0);
 }
 
+function PerformanceSummary({
+  entries,
+}: {
+  entries: ReturnType<typeof getFeatureEntries>;
+}) {
+  if (entries.length === 0) return null;
+
+  return (
+    <section className="mb-3 rounded-lg border border-border/50 bg-muted/20 px-2.5 py-2">
+      <p className="mb-1.5 text-[10px] font-semibold tracking-wide text-muted-foreground">
+        성능 요약
+      </p>
+      <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[11px] sm:text-xs">
+        {entries.map((feature, index) => (
+          <div
+            key={feature.key}
+            className={cn(
+              "flex min-w-0 items-baseline justify-between gap-1 border-b border-border/40 pb-1",
+              entries.length % 2 === 1 &&
+                index === entries.length - 1 &&
+                "col-span-2",
+              index >= entries.length - 2 && "border-b-0 pb-0",
+            )}
+          >
+            <span className="text-muted-foreground">{feature.label}</span>
+            <strong className="tabular-nums text-foreground">{feature.value}</strong>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 // shadcn Button의 hover:bg-accent / hover:text-accent-foreground 간섭을 피하기 위해
 // 순수 <button>으로 구현한 위시리스트 토글 버튼
 function WishButton({
@@ -450,38 +483,7 @@ const ProductCard = React.memo(
                 {priceBlock("left")}
               </div>
 
-              {featureEntries.length > 0 && (
-                <div className="mb-3">
-                  <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-[11px] sm:text-xs">
-                    {featureEntries.map((feature, index) => (
-                      <div
-                        key={feature.key}
-                        className={cn(
-                          "min-w-0",
-                          featureEntries.length % 2 === 1 &&
-                            index === featureEntries.length - 1 &&
-                            "col-span-2",
-                        )}
-                      >
-                        <div className="flex min-w-0 items-center justify-between gap-1">
-                          <span className="shrink-0 whitespace-nowrap text-muted-foreground font-medium">
-                            {feature.label}
-                          </span>
-                          <span className="shrink-0 whitespace-nowrap tabular-nums font-semibold text-primary">
-                            {feature.value}/100
-                          </span>
-                        </div>
-                        <div className="mt-1 h-1 overflow-hidden rounded-full bg-muted">
-                          <div
-                            className="h-full rounded-full bg-primary/70"
-                            style={{ width: `${feature.value}%` }}
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+              <PerformanceSummary entries={featureEntries} />
 
               <div className="grid max-w-md grid-cols-1 gap-2">
                 <Button
@@ -615,28 +617,7 @@ const ProductCard = React.memo(
               </span>
             </div>
 
-            {featureEntries.length > 0 && (
-              <div className="mb-3 grid grid-cols-2 gap-x-3 gap-y-1.5 text-[11px] sm:text-xs">
-                {featureEntries.map((feature) => (
-                  <div key={feature.key} className="min-w-0">
-                    <div className="flex min-w-0 items-center justify-between gap-1">
-                      <span className="shrink-0 whitespace-nowrap text-muted-foreground font-medium">
-                        {feature.label}
-                      </span>
-                      <span className="shrink-0 whitespace-nowrap tabular-nums font-semibold text-primary">
-                        {feature.value}/100
-                      </span>
-                    </div>
-                    <div className="mt-1 h-1 overflow-hidden rounded-full bg-muted">
-                      <div
-                        className="h-full rounded-full bg-primary/70"
-                        style={{ width: `${feature.value}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+            <PerformanceSummary entries={featureEntries} />
 
             <div className="mt-auto flex justify-end pt-4">
               {priceBlock("right")}

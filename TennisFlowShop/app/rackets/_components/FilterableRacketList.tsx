@@ -96,7 +96,7 @@ export default function FilterableRacketList({
   // 정렬 / 뷰 모드
   const [sortOption, setSortOption] = useState("latest");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [isDesktopViewport, setIsDesktopViewport] = useState(false);
+  const [isFilterSheetViewport, setIsFilterSheetViewport] = useState(false);
   const [rentOnly, setRentOnly] = useState(
     () => searchParams.get("rentOnly") === "1",
   );
@@ -348,20 +348,20 @@ export default function FilterableRacketList({
   }, []);
 
   useEffect(() => {
-    const mql = window.matchMedia("(min-width: 1200px)");
-    const syncDesktop = (matches: boolean) => {
-      setIsDesktopViewport(matches);
-      if (!matches) setViewMode("grid");
+    const mql = window.matchMedia("(max-width: 767px)");
+    const syncViewport = (matches: boolean) => {
+      setIsFilterSheetViewport(matches);
+      if (matches) setViewMode("grid");
     };
-    syncDesktop(mql.matches);
-    const onChange = (e: MediaQueryListEvent) => syncDesktop(e.matches);
+    syncViewport(mql.matches);
+    const onChange = (e: MediaQueryListEvent) => syncViewport(e.matches);
     mql.addEventListener("change", onChange);
     return () => mql.removeEventListener("change", onChange);
   }, []);
 
-  const effectiveViewMode: "grid" | "list" = isDesktopViewport
-    ? viewMode
-    : "grid";
+  const effectiveViewMode: "grid" | "list" = isFilterSheetViewport
+    ? "grid"
+    : viewMode;
 
   // draft를 현재 applied(selected) 값으로 동기화 (Sheet 열 때/취소할 때)
   const syncDraftFromApplied = useCallback(() => {
@@ -585,7 +585,7 @@ export default function FilterableRacketList({
 
   return (
     <>
-      <Sheet open={showFilters && !isDesktopViewport} onOpenChange={handleSheetOpenChange}>
+      <Sheet open={showFilters && isFilterSheetViewport} onOpenChange={handleSheetOpenChange}>
         <SheetContent
           side="bottom"
           className="max-h-[85dvh] rounded-t-2xl p-0 overflow-y-auto"
@@ -634,7 +634,7 @@ export default function FilterableRacketList({
                   }}
                   className="h-9 whitespace-nowrap border-border px-3 hover:bg-secondary"
                   aria-expanded={showFilters}
-                  aria-label="필터 열기"
+                  aria-label={showFilters ? "필터 닫기" : "필터 열기"}
                 >
                   <Filter className="mr-2 h-4 w-4" />
                   필터{activeFiltersCount > 0 && `(${activeFiltersCount})`}
@@ -655,7 +655,7 @@ export default function FilterableRacketList({
                   </SelectContent>
                 </Select>
 
-                {isDesktopViewport && (
+                {!isFilterSheetViewport && (
                   <div className="flex shrink-0 items-center rounded-lg border border-border bg-card p-1">
                     <Button
                       type="button"
@@ -688,7 +688,7 @@ export default function FilterableRacketList({
                 )}
               </div>
             </div>
-            {showFilters && isDesktopViewport && (
+            {showFilters && !isFilterSheetViewport && (
               <div className="rounded-xl border border-border bg-card/50">
                 <RacketFilterPanel {...desktopFilterPanelProps} />
               </div>
