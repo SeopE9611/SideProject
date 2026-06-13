@@ -245,7 +245,7 @@ function FinalPaymentConfirmCard({
         <div className="space-y-3 text-sm">
           <div className="flex items-center justify-between gap-3 py-1">
             <span className="min-w-0 break-words text-foreground/80">
-              주문 상품 ({orderItemsCount}개)
+              상품 판매가 합계 ({orderItemsCount}개)
             </span>
             <span className="shrink-0 whitespace-nowrap text-right font-semibold tabular-nums">
               {subtotal.toLocaleString()}원
@@ -1755,7 +1755,10 @@ export default function CheckoutPage() {
                             </div>
                           </div>
 
-                          <div className="flex items-center justify-between bp-sm:flex-col bp-sm:items-end bp-sm:justify-center bp-sm:text-right bp-sm:min-w-[120px]">
+                          <div className="flex items-end justify-between gap-3 bp-sm:min-w-[140px] bp-sm:flex-col bp-sm:justify-center bp-sm:text-right">
+                            <span className="text-xs font-medium text-muted-foreground">
+                              판매가 · 수량 {item.quantity}개
+                            </span>
                             <div className="whitespace-nowrap text-lg font-bold tabular-nums text-foreground bp-sm:text-xl">
                               {(item.price * item.quantity).toLocaleString()}
                               <span className="text-sm font-medium text-muted-foreground">
@@ -1770,7 +1773,7 @@ export default function CheckoutPage() {
                     {/* 상품 금액 소계 */}
                     <div className="mt-5 flex items-center justify-between gap-3 border-t border-dashed border-border/60 pt-5">
                       <span className="text-sm text-foreground/80">
-                        상품 금액 합계
+                        상품 판매가 합계
                       </span>
                       <span className="whitespace-nowrap text-xl font-bold tabular-nums text-foreground">
                         {subtotal.toLocaleString()}
@@ -1954,9 +1957,9 @@ export default function CheckoutPage() {
                       </div>
                     </div>
                   </div>
-                  <CardContent className="p-4 bp-sm:p-5">
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <CardContent className="p-5 bp-sm:p-6">
+                    <div className="max-w-4xl space-y-5">
+                      <div className="grid grid-cols-1 gap-x-5 gap-y-4 md:grid-cols-2">
                         <div className="space-y-2">
                           <Label
                             htmlFor="recipient-name"
@@ -2058,14 +2061,14 @@ export default function CheckoutPage() {
                               우편번호
                             </Label>
 
-                            <div className="flex gap-2 max-w-[400px]">
+                            <div className="flex max-w-md gap-2">
                               <Input
                                 id="address-postal"
                                 readOnly
                                 value={postalCode}
                                 placeholder="우편번호"
                                 className={cn(
-                                  "h-10 flex-1 cursor-not-allowed border-2 bg-muted",
+                                  "h-11 min-w-0 flex-1 cursor-not-allowed border-2 bg-muted md:max-w-[180px]",
                                   showPostalCodeError &&
                                     "border-destructive/30",
                                 )}
@@ -2077,7 +2080,7 @@ export default function CheckoutPage() {
                                   touchField("postalCode");
                                   handleFindPostcode();
                                 }}
-                                className="h-10 shrink-0"
+                                className="h-11 shrink-0"
                               >
                                 <MapPin className="h-4 w-4 mr-2" />
                                 우편번호 검색
@@ -2102,7 +2105,7 @@ export default function CheckoutPage() {
                               value={address}
                               placeholder="기본 주소"
                               className={cn(
-                                "h-10 cursor-not-allowed border-2 bg-muted",
+                                "h-11 cursor-not-allowed border-2 bg-muted",
                                 showPostalCodeError && "border-destructive/30",
                               )}
                             />
@@ -2117,7 +2120,7 @@ export default function CheckoutPage() {
                               onBlur={() => touchField("addressDetail")}
                               placeholder="상세 주소를 입력하세요"
                               className={cn(
-                                "h-10 border-2 transition-colors focus:border-border",
+                                "h-11 border-2 transition-colors focus:border-border",
                                 showAddressDetailError &&
                                   "border-destructive/30 focus:border-destructive/30",
                               )}
