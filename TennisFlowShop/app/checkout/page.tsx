@@ -1755,16 +1755,25 @@ export default function CheckoutPage() {
                             </div>
                           </div>
 
-                          <div className="flex items-end justify-between gap-3 bp-sm:min-w-[140px] bp-sm:flex-col bp-sm:justify-center bp-sm:text-right">
-                            <span className="text-xs font-medium text-muted-foreground">
-                              판매가 · 수량 {item.quantity}개
-                            </span>
-                            <div className="whitespace-nowrap text-lg font-bold tabular-nums text-foreground bp-sm:text-xl">
-                              {(item.price * item.quantity).toLocaleString()}
-                              <span className="text-sm font-medium text-muted-foreground">
-                                원
+                          <div className="rounded-lg border border-border/50 bg-card/70 px-3 py-2 bp-sm:min-w-[160px] bp-sm:text-right">
+                            <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 bp-sm:justify-end">
+                              <span className="text-xs font-medium text-muted-foreground">
+                                판매가
                               </span>
+                              <div className="whitespace-nowrap text-lg font-bold tabular-nums text-foreground bp-sm:text-xl">
+                                {(item.price * item.quantity).toLocaleString()}
+                                <span className="ml-0.5 text-sm font-medium text-muted-foreground">
+                                  원
+                                </span>
+                              </div>
                             </div>
+                            <p className="mt-1 text-xs text-muted-foreground">
+                              단가{" "}
+                              <span className="tabular-nums">
+                                {item.price.toLocaleString()}원
+                              </span>{" "}
+                              × {item.quantity}개
+                            </p>
                           </div>
                         </div>
                       ))}
@@ -1958,7 +1967,7 @@ export default function CheckoutPage() {
                     </div>
                   </div>
                   <CardContent className="p-5 bp-sm:p-6">
-                    <div className="max-w-4xl space-y-5">
+                    <div className="mx-auto w-full max-w-5xl space-y-6">
                       <div className="grid grid-cols-1 gap-x-5 gap-y-4 md:grid-cols-2">
                         <div className="space-y-2">
                           <Label
@@ -2017,7 +2026,7 @@ export default function CheckoutPage() {
                             )}
                           </div>
                         </div>
-                        <div className="space-y-2 sm:col-span-2">
+                        <div className="space-y-2 md:col-span-2">
                           <Label
                             htmlFor="recipient-phone"
                             className="flex items-center gap-2 text-sm font-medium"
@@ -2051,8 +2060,8 @@ export default function CheckoutPage() {
                       </div>
 
                       {needsShippingAddress && (
-                        <>
-                          <div className="space-y-2">
+                        <div className="grid grid-cols-1 gap-x-5 gap-y-4 border-t border-border/60 pt-6 md:grid-cols-2">
+                          <div className="space-y-2 md:col-span-2">
                             <Label
                               htmlFor="address-postal"
                               className="flex items-center gap-2 text-sm"
@@ -2061,14 +2070,14 @@ export default function CheckoutPage() {
                               우편번호
                             </Label>
 
-                            <div className="flex max-w-md gap-2">
+                            <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 bp-sm:max-w-md">
                               <Input
                                 id="address-postal"
                                 readOnly
                                 value={postalCode}
                                 placeholder="우편번호"
                                 className={cn(
-                                  "h-11 min-w-0 flex-1 cursor-not-allowed border-2 bg-muted md:max-w-[180px]",
+                                  "h-11 min-w-0 cursor-not-allowed border-2 bg-muted bp-sm:max-w-[180px]",
                                   showPostalCodeError &&
                                     "border-destructive/30",
                                 )}
@@ -2080,9 +2089,9 @@ export default function CheckoutPage() {
                                   touchField("postalCode");
                                   handleFindPostcode();
                                 }}
-                                className="h-11 shrink-0"
+                                className="h-11 min-w-0 px-3 bp-sm:px-4"
                               >
-                                <MapPin className="h-4 w-4 mr-2" />
+                                <MapPin className="mr-1.5 h-4 w-4 shrink-0 bp-sm:mr-2" />
                                 우편번호 검색
                               </Button>
                             </div>
@@ -2097,7 +2106,7 @@ export default function CheckoutPage() {
                             </div>
                           </div>
 
-                          <div className="space-y-2">
+                          <div className="space-y-2 md:col-span-2">
                             <Label htmlFor="address-main">기본 주소</Label>
                             <Input
                               id="address-main"
@@ -2111,7 +2120,7 @@ export default function CheckoutPage() {
                             />
                           </div>
 
-                          <div className="space-y-2">
+                          <div className="space-y-2 md:col-span-2">
                             <Label htmlFor="address-detail">상세 주소</Label>
                             <Input
                               id="address-detail"
@@ -2134,7 +2143,7 @@ export default function CheckoutPage() {
                             </div>
                           </div>
 
-                          <div className="space-y-2">
+                          <div className="space-y-2 md:col-span-2">
                             <Label
                               htmlFor="delivery-request"
                               className="flex items-center gap-2 text-sm"
@@ -2153,7 +2162,7 @@ export default function CheckoutPage() {
                             />
                           </div>
 
-                          <div className="rounded-lg border border-border bg-muted p-3">
+                          <div className="rounded-lg border border-border bg-muted p-3 md:col-span-2">
                             <div className="flex items-center space-x-2">
                               <Checkbox
                                 id="save-address"
@@ -2176,7 +2185,7 @@ export default function CheckoutPage() {
                               </p>
                             )}
                           </div>
-                        </>
+                        </div>
                       )}
                     </div>
                   </CardContent>

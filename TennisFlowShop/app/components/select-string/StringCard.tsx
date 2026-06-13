@@ -154,6 +154,17 @@ export function StringCard({
 
   const isDisabled =
     disabled || disabledByGauge || disabledByColor || isSoldOut || isShort;
+  const regularPrice = Number(product?.price ?? 0);
+  const salePrice = getEffectiveProductPrice(product);
+  const hasSalePrice =
+    Number.isFinite(salePrice) &&
+    salePrice > 0 &&
+    salePrice < regularPrice;
+  const discountAmount = hasSalePrice ? regularPrice - salePrice : 0;
+  const discountRate =
+    hasSalePrice && regularPrice > 0
+      ? Math.round((discountAmount / regularPrice) * 100)
+      : 0;
 
   return (
     <div
@@ -210,9 +221,39 @@ export function StringCard({
               {product.shortDescription}
             </p>
           )}
-          <p className="tabular-nums text-lg font-bold text-foreground">
-            {getEffectiveProductPrice(product).toLocaleString()}원
-          </p>
+          {hasSalePrice ? (
+            <div className="space-y-1 tabular-nums">
+              <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                <span className="text-xs font-medium text-muted-foreground">
+                  할인가
+                </span>
+                <span className="text-lg font-bold text-foreground">
+                  {getEffectiveProductPrice(product).toLocaleString()}원
+                </span>
+              </div>
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+                <span className="text-muted-foreground">정가</span>
+                <span className="text-muted-foreground line-through">
+                  {regularPrice.toLocaleString()}원
+                </span>
+                <Badge variant="destructive" className="text-[10px]">
+                  {discountRate}% OFF
+                </Badge>
+                <span className="font-medium text-destructive">
+                  {discountAmount.toLocaleString()}원 할인
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 tabular-nums">
+              <span className="text-xs font-medium text-muted-foreground">
+                판매가
+              </span>
+              <span className="text-lg font-bold text-foreground">
+                {getEffectiveProductPrice(product).toLocaleString()}원
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Color Selector */}
